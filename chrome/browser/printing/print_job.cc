@@ -218,23 +218,23 @@ class PrintJob::PdfConversionState {
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
-             const PdfConverter::StartCallback& start_callback) {
-    converter_ = PdfConverter::StartPdfConverter(
-          data, conversion_settings, start_callback);
+             PdfConverter::StartCallback start_callback) {
+    converter_ = PdfConverter::StartPdfConverter(data, conversion_settings,
+                                                 std::move(start_callback));
   }
 
-  void GetMorePages(const PdfConverter::GetPageCallback& get_page_callback) {
+  void GetMorePages(PdfConverter::GetPageCallback get_page_callback) {
     const int kMaxNumberOfTempFilesPerDocument = 3;
     while (pages_in_progress_ < kMaxNumberOfTempFilesPerDocument &&
            current_page_ < page_count_) {
       ++pages_in_progress_;
-      converter_->GetPage(current_page_++, get_page_callback);
+      converter_->GetPage(current_page_++, std::move(get_page_callback));
     }
   }
 
-  void OnPageProcessed(const PdfConverter::GetPageCallback& get_page_callback) {
+  void OnPageProcessed(PdfConverter::GetPageCallback get_page_callback) {
     --pages_in_progress_;
-    GetMorePages(get_page_callback);
+    GetMorePages(std::move(get_page_callback));
     // Release converter if we don't need this any more.
     if (!pages_in_progress_ && current_page_ >= page_count_)
       converter_.reset();
