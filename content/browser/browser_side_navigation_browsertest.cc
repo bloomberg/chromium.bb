@@ -11,6 +11,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -23,6 +24,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/controllable_http_response.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
@@ -38,10 +40,11 @@
 
 namespace content {
 
-class BrowserSideNavigationBrowserTest : public ContentBrowserTest {
- public:
-  BrowserSideNavigationBrowserTest() {}
-
+// Test with BrowserSideNavigation enabled (aka PlzNavigate).
+// If you don't need a custom embedded test server, please use the next class
+// below (BrowserSideNavigationBrowserTest), it will automatically start the
+// default server.
+class BrowserSideNavigationBaseBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableBrowserSideNavigation);
@@ -49,6 +52,14 @@ class BrowserSideNavigationBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
+  }
+};
+
+class BrowserSideNavigationBrowserTest
+    : public BrowserSideNavigationBaseBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    BrowserSideNavigationBaseBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 };
@@ -512,6 +523,63 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, BackFollowedByReload) {
   // The reload should have cancelled the back navigation, and the last
   // committed URL should still be the second URL.
   EXPECT_EQ(url2, shell()->web_contents()->GetLastCommittedURL());
+}
+
+// Navigation are started in the browser process. After the headers are
+// received, the URLLoaderClient is transfered from the browser process to the
+// renderer process. This test ensures that when the the URLLoader is deleted
+// (in the browser process), the URLLoaderClient (in the renderer process) stops
+// properly.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBaseBrowserTest,
+                       CancelRequestAfterReadyToCommit) {
+  // This test cancels the request using the ResourceDispatchHost. With the
+  // NetworkService, it is not used so the request is not canceled.
+  // TODO(arthursonzogni): Find a way to cancel a request from the browser
+  // with the NetworkService.
+  if (base::FeatureList::IsEnabled(features::kNetworkService))
+    return;
+
+  ControllableHttpResponse response(embedded_test_server(), "/main_document");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Load a new document. Commit the navigation but do not send the full
+  //    response's body.
+  GURL url(embedded_test_server()->GetURL("/main_document"));
+  TestNavigationManager navigation_manager(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+
+  // Let the navigation start.
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+
+  // The server sends the first part of the response and waits.
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<html><body> ... ");
+
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  GlobalRequestID global_id =
+      navigation_manager.GetNavigationHandle()->GetGlobalRequestID();
+  navigation_manager.ResumeNavigation();
+
+  // The navigation commits successfully. The renderer is waiting for the
+  // response's body.
+  navigation_manager.WaitForNavigationFinished();
+
+  // 2) The ResourceDispatcherHost cancels the request.
+  auto cancel_request = [](GlobalRequestID global_id) {
+    ResourceDispatcherHostImpl* rdh =
+        static_cast<ResourceDispatcherHostImpl*>(ResourceDispatcherHost::Get());
+    rdh->CancelRequest(global_id.child_id, global_id.request_id);
+  };
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(cancel_request, global_id));
+
+  // 3) Check that the load stops properly.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 }
 
 }  // namespace content

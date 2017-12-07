@@ -143,21 +143,15 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       int render_frame_route_id,
       bool do_not_prompt_for_login);
 
-  // Returns the callback to intercept the navigation response.
-  NavigationURLLoader::NavigationInterceptionCB GetNavigationInterceptionCB(
-      const scoped_refptr<ResourceResponse>& response,
-      mojo::ScopedDataPipeConsumerHandle consumer_handle,
+  // Continue a navigation that ends up to be a download after it reaches the
+  // OnResponseStarted() step. It has to be called on the UI thread.
+  void InterceptNavigation(
+      std::unique_ptr<ResourceRequest> resource_request,
+      std::vector<GURL> url_chain,
+      scoped_refptr<ResourceResponse> response,
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       net::CertStatus cert_status,
       int frame_tree_node_id);
-
-  // Checks if a download is allowed, |on_download_allowed_cb| is called if
-  // the download is allowed.
-  void CheckDownloadAllowed(
-      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-      const GURL& url,
-      const std::string& request_method,
-      UniqueUrlDownloadHandlerPtr downloader,
-      base::OnceClosure on_download_allowed_cb);
 
  private:
   using DownloadSet = std::set<DownloadItem*>;
@@ -222,10 +216,26 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       std::unique_ptr<content::DownloadUrlParameters> params,
       uint32_t id);
 
-  // Called when download permission check is complete.
-  void OnDownloadAllowedCheckComplete(UniqueUrlDownloadHandlerPtr downloader,
-                                      base::OnceClosure callback,
-                                      bool allow);
+  void InterceptNavigationOnChecksComplete(
+      ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      std::unique_ptr<ResourceRequest> resource_request,
+      std::vector<GURL> url_chain,
+      scoped_refptr<ResourceResponse> response,
+      net::CertStatus cert_status,
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      bool is_download_allowed);
+
+  // Called when a navigation turns to be a download. Create a new
+  // DownloadHandler. It will be used to continue the loading instead of the
+  // regular document loader. Must be called on the IO thread.
+  static void CreateDownloadHandlerForNavigation(
+      base::WeakPtr<DownloadManagerImpl> download_manager,
+      ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      std::unique_ptr<ResourceRequest> resource_request,
+      std::vector<GURL> url_chain,
+      scoped_refptr<ResourceResponse> response,
+      net::CertStatus cert_status,
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
   // Factory for creation of downloads items.
   std::unique_ptr<DownloadItemFactory> item_factory_;

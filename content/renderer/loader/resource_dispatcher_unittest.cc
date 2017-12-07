@@ -237,7 +237,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
         TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
         blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr,
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        mojo::ScopedDataPipeConsumerHandle());
+        mojom::URLLoaderClientEndpointsPtr());
     peer_context->request_id = request_id;
     return request_id;
   }

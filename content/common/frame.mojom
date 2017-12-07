@@ -38,13 +38,20 @@ struct RequestNavigationParams;
 // Implemented by the frame provider and currently must be associated with the
 // legacy IPC channel.
 interface FrameNavigationControl {
-  // Tells the renderer that a navigation is ready to commit.  The renderer
-  // should request |body_url| to get access to the stream containing the body
-  // of the response. When the Network Service is enabled, |body_url| is not
-  // used and instead the data is passed to the renderer via |body_data|. In
-  // that case |subresource_loader_factories| may also be provided by the
-  // browser as a a means for the renderer to load subresources where
-  // applicable.
+  // Tells the renderer that a navigation is ready to commit.
+  //
+  // The renderer should request |body_url| to get access to the stream
+  // containing the body of the response. When the Network Service or
+  // NavigationMojoResponse is enabled, |body_url| is not used and instead
+  // |url_loader_client_endpoints| provides a way to continue the navigation.
+  //
+  // Note: |body_url| and |url_loader_client_endpoints| will be empty iff the
+  // navigation URL wasn't handled by the network stack (i.e. JavaScript URLs,
+  // renderer debug URLs, same document navigations, about:blank, ...)
+  //
+  // When the Network Service is enabled, |subresource_loader_factories| may
+  // also be provided by the browser as a a means for the renderer to load
+  // subresources where applicable.
   //
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation
@@ -56,13 +63,14 @@ interface FrameNavigationControl {
   // cases, and thus shouldn't be trusted.
   // TODO(crbug.com/783506): Replace devtools navigation token with the generic
   // navigation token that can be passed from renderer to the browser.
-  CommitNavigation(URLResponseHead head,
-                   url.mojom.Url body_url,
-                   CommonNavigationParams common_params,
-                   RequestNavigationParams request_params,
-                   handle<data_pipe_consumer>? body_data,
-                   URLLoaderFactoryBundle? subresource_loader_factories,
-                   mojo.common.mojom.UnguessableToken devtools_navigation_token);
+  CommitNavigation(
+      URLResponseHead head,
+      url.mojom.Url body_url,
+      CommonNavigationParams common_params,
+      RequestNavigationParams request_params,
+      URLLoaderClientEndpoints? url_loader_client_endpoints,
+      URLLoaderFactoryBundle? subresource_loader_factories,
+      mojo.common.mojom.UnguessableToken devtools_navigation_token);
 };
 
 // Implemented by the frame (e.g. renderer processes).
@@ -225,4 +233,3 @@ interface FrameHost {
       blink.mojom.WebSandboxFlags sandbox_flags,
       array<blink.mojom.ParsedFeaturePolicyDeclaration> parsed_header);
 };
-

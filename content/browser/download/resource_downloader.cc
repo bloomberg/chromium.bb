@@ -8,7 +8,6 @@
 
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/download/download_utils.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -98,16 +97,21 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
 }
 
 // static
-std::unique_ptr<ResourceDownloader> ResourceDownloader::CreateWithURLLoader(
+std::unique_ptr<ResourceDownloader>
+ResourceDownloader::InterceptNavigationResponse(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<ResourceRequest> resource_request,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    std::unique_ptr<ThrottlingURLLoader> url_loader,
-    base::Optional<network::URLLoaderCompletionStatus> status) {
+    std::vector<GURL> url_chain,
+    const scoped_refptr<ResourceResponse>& response,
+    net::CertStatus cert_status,
+    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request), web_contents_getter,
       DownloadItem::kInvalidId);
-  downloader->InitializeURLLoader(std::move(url_loader), std::move(status));
+  downloader->InterceptResponse(std::move(response), std::move(url_chain),
+                                cert_status,
+                                std::move(url_loader_client_endpoints));
   return downloader;
 }
 
@@ -131,6 +135,8 @@ void ResourceDownloader::Start(
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
   guid_ = download_url_parameters->guid();
+
+  // Set up the URLLoaderClient.
   url_loader_client_ = std::make_unique<DownloadResponseHandler>(
       resource_request_.get(), this,
       std::make_unique<DownloadSaveInfo>(
@@ -138,70 +144,57 @@ void ResourceDownloader::Start(
       is_parallel_request, download_url_parameters->is_transient(),
       download_url_parameters->fetch_error_body(),
       std::vector<GURL>(1, resource_request_->url));
+  mojom::URLLoaderClientPtr url_loader_client_ptr;
+  url_loader_client_binding_ =
+      std::make_unique<mojo::Binding<mojom::URLLoaderClient>>(
+          url_loader_client_.get(), mojo::MakeRequest(&url_loader_client_ptr));
 
+  // Set up the URLLoader
+  mojom::URLLoaderRequest url_loader_request = mojo::MakeRequest(&url_loader_);
   if (download_url_parameters->url().SchemeIs(url::kBlobScheme)) {
-    // To avoid race conditions with blob URL being immediately revoked after
-    // the download starting (which ThrottlingURLLoader doesn't handle), call
-    // directly into BlobURLLoaderFactory for blob URLs.
-    mojom::URLLoaderRequest url_loader_request;
-    mojom::URLLoaderClientPtr client;
-    blob_client_binding_ =
-        std::make_unique<mojo::Binding<mojom::URLLoaderClient>>(
-            url_loader_client_.get());
-    blob_client_binding_->Bind(mojo::MakeRequest(&client));
     BlobURLLoaderFactory::CreateLoaderAndStart(
         std::move(url_loader_request), *(resource_request_.get()),
-        std::move(client), download_url_parameters->GetBlobDataHandle());
+        std::move(url_loader_client_ptr),
+        download_url_parameters->GetBlobDataHandle());
   } else {
-    url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-        url_loader_factory_getter->GetNetworkFactory(),
-        std::vector<std::unique_ptr<URLLoaderThrottle>>(),
+    url_loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
+        std::move(url_loader_request),
         0,  // routing_id
         0,  // request_id
         mojom::kURLLoadOptionSendSSLInfoWithResponse |
             mojom::kURLLoadOptionSniffMimeType,
-        *(resource_request_.get()), url_loader_client_.get(),
-        download_url_parameters->GetNetworkTrafficAnnotation(),
-        base::ThreadTaskRunnerHandle::Get());
+        *(resource_request_.get()), std::move(url_loader_client_ptr),
+        net::MutableNetworkTrafficAnnotationTag(
+            download_url_parameters->GetNetworkTrafficAnnotation()));
     url_loader_->SetPriority(net::RequestPriority::IDLE,
                              0 /* intra_priority_value */);
   }
 }
 
-void ResourceDownloader::InitializeURLLoader(
-    std::unique_ptr<ThrottlingURLLoader> url_loader,
-    base::Optional<network::URLLoaderCompletionStatus> status) {
-  url_loader_status_ = std::move(status);
-  url_loader_ = std::move(url_loader);
-  url_loader_client_ = std::make_unique<URLLoaderStatusMonitor>(
-      base::Bind(&ResourceDownloader::OnURLLoaderStatusChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
-  url_loader_->set_forwarding_client(url_loader_client_.get());
-}
-
-void ResourceDownloader::OnURLLoaderStatusChanged(
-    const network::URLLoaderCompletionStatus& status) {
-  DCHECK(!url_loader_status_);
-  url_loader_status_ = status;
-}
-
-void ResourceDownloader::StartNavigationInterception(
+void ResourceDownloader::InterceptResponse(
     const scoped_refptr<ResourceResponse>& response,
-    mojo::ScopedDataPipeConsumerHandle consumer_handle,
+    std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    std::vector<GURL> url_chain) {
+    mojom::URLLoaderClientEndpointsPtr endpoints) {
+  // Set the URLLoader.
+  url_loader_.Bind(std::move(endpoints->url_loader));
+
+  // Create the new URLLoaderClient that will intercept the navigation.
   url_loader_client_ = std::make_unique<DownloadResponseHandler>(
       resource_request_.get(), this, std::make_unique<DownloadSaveInfo>(),
-      false, false, false, url_chain);
-  url_loader_->set_forwarding_client(url_loader_client_.get());
+      false, false, false, std::move(url_chain));
+
+  // Simulate on the new URLLoaderClient calls that happened on the old client.
   net::SSLInfo info;
   info.cert_status = cert_status;
   url_loader_client_->OnReceiveResponse(response->head,
                                         base::Optional<net::SSLInfo>(info),
                                         mojom::DownloadedTempFilePtr());
-  url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle));
-  if (url_loader_status_)
-    url_loader_client_->OnComplete(url_loader_status_.value());
+
+  // Bind the new client.
+  url_loader_client_binding_ =
+      base::MakeUnique<mojo::Binding<mojom::URLLoaderClient>>(
+          url_loader_client_.get(), std::move(endpoints->url_loader_client));
 }
 
 void ResourceDownloader::OnResponseStarted(

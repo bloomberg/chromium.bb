@@ -12,7 +12,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 
 namespace base {
@@ -58,16 +57,17 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
       const scoped_refptr<ResourceResponse>& response) override;
-  void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                         std::unique_ptr<StreamHandle> body,
-                         mojo::ScopedDataPipeConsumerHandle consumer_handle,
-                         const net::SSLInfo& ssl_info,
-                         std::unique_ptr<NavigationData> navigation_data,
-                         const GlobalRequestID& request_id,
-                         bool is_download,
-                         bool is_stream,
-                         base::Optional<SubresourceLoaderParams>
-                             subresource_loader_params) override;
+  void OnResponseStarted(
+      const scoped_refptr<ResourceResponse>& response,
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      std::unique_ptr<StreamHandle> body,
+      const net::SSLInfo& ssl_info,
+      std::unique_ptr<NavigationData> navigation_data,
+      const GlobalRequestID& request_id,
+      bool is_download,
+      bool is_stream,
+      base::Optional<SubresourceLoaderParams> subresource_loader_params)
+      override;
   void OnRequestFailed(bool in_cache,
                        int net_error,
                        const base::Optional<net::SSLInfo>& ssl_info) override;
@@ -76,9 +76,9 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
  private:
   net::RedirectInfo redirect_info_;
   scoped_refptr<ResourceResponse> redirect_response_;
+  mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
   scoped_refptr<ResourceResponse> response_;
   std::unique_ptr<StreamHandle> body_;
-  mojo::ScopedDataPipeConsumerHandle handle_;
   int net_error_;
   net::SSLInfo ssl_info_;
   int on_request_handled_counter_;

@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace base {
@@ -49,6 +50,14 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   // Disaptches the messages received after SetDefersLoading is called.
   void FlushDeferredMessages();
 
+  // Binds this instance to the given URLLoaderClient endpoints so that it can
+  // start getting the mojo calls from the given loader. This is used only for
+  // the main resource loading when NavigationMojoResponse and/or NetworkService
+  // is enabled. Otherwise (in regular subresource loading cases) |this| is not
+  // bound to a client request, but used via ThrottlingURLLoader to get client
+  // upcalls from the loader.
+  void Bind(mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+
   // mojom::URLLoaderClient implementation
   void OnReceiveResponse(const ResourceResponseHead& response_head,
                          const base::Optional<net::SSLInfo>& ssl_info,
@@ -68,16 +77,23 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
  private:
   bool NeedsStoringMessage() const;
   void StoreAndDispatch(const IPC::Message& message);
+  void OnConnectionClosed();
 
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
   mojom::DownloadedTempFilePtr downloaded_file_;
   std::vector<IPC::Message> deferred_messages_;
   const int request_id_;
   bool has_received_response_ = false;
+  bool has_received_complete_ = false;
   bool is_deferred_ = false;
   int32_t accumulated_transfer_size_diff_during_deferred_ = 0;
   ResourceDispatcher* const resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // Used in NavigationMojoResponse and NetworkService.
+  mojom::URLLoaderPtr url_loader_;
+  mojo::Binding<mojom::URLLoaderClient> url_loader_client_binding_;
+
   base::WeakPtrFactory<URLLoaderClientImpl> weak_factory_;
 };
 

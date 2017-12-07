@@ -71,6 +71,10 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
   // Disconnects the client connection and releases the URLLoader.
   void DisconnectClient();
 
+  // Disconnect the forwarding URLLoaderClient and the URLLoader. Returns the
+  // datapipe endpoints.
+  mojom::URLLoaderClientEndpointsPtr Unbind();
+
   // Sets the forwarding client to receive all subsequent notifications.
   void set_forwarding_client(mojom::URLLoaderClient* client) {
     forwarding_client_ = client;

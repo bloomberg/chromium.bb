@@ -63,12 +63,13 @@ class TestRenderFrameHost::NavigationInterceptor
       const GURL& body_url,
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
-      mojo::ScopedDataPipeConsumerHandle body_data,
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::Optional<URLLoaderFactoryBundle> subresource_loader_factories,
       const base::UnguessableToken& devtools_navigation_token) override {
     frame_host_->GetProcess()->set_did_frame_commit_navigation(true);
     frame_host_->GetInternalNavigationControl()->CommitNavigation(
-        head, body_url, common_params, request_params, std::move(body_data),
+        head, body_url, common_params, request_params,
+        std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories), devtools_navigation_token);
   }
 

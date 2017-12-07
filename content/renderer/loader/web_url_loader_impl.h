@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
@@ -37,7 +38,7 @@ struct CONTENT_EXPORT StreamOverrideParameters {
   ~StreamOverrideParameters();
 
   GURL stream_url;
-  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
   ResourceResponseHead response;
   std::vector<GURL> redirects;
   std::vector<ResourceResponseInfo> redirect_responses;

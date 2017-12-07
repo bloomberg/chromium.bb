@@ -255,8 +255,13 @@ class FileURLDirectoryLoader
       completion_status = net::ERR_FAILED;
     }
 
+    // All the data has been written now. Close the data pipe. The consumer will
+    // be notified that there will be no more data to read from now.
+    data_producer_.reset();
+
     client_->OnComplete(network::URLLoaderCompletionStatus(completion_status));
     client_.reset();
+
     MaybeDeleteSelf();
   }
 
@@ -517,6 +522,10 @@ class FileURLLoader : public mojom::URLLoader {
   }
 
   void OnFileWritten(MojoResult result) {
+    // All the data has been written now. Close the data pipe. The consumer will
+    // be notified that there will be no more data to read from now.
+    data_producer_.reset();
+
     if (result == MOJO_RESULT_OK)
       client_->OnComplete(network::URLLoaderCompletionStatus(net::OK));
     else

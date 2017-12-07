@@ -6,15 +6,9 @@
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_H_
 
 #include <memory>
-#include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "content/common/content_export.h"
-#include "services/network/public/cpp/url_loader_completion_status.h"
-
-class GURL;
 
 namespace content {
 
@@ -25,9 +19,7 @@ class NavigationURLLoaderFactory;
 class ResourceContext;
 class ServiceWorkerNavigationHandle;
 class StoragePartition;
-class ThrottlingURLLoader;
 struct NavigationRequestInfo;
-struct ResourceRequest;
 
 // PlzNavigate: The navigation logic's UI thread entry point into the resource
 // loading stack. It exposes an interface to control the request prior to
@@ -63,21 +55,6 @@ class CONTENT_EXPORT NavigationURLLoader {
 
   // Called in response to OnResponseStarted to process the response.
   virtual void ProceedWithResponse() = 0;
-
-  // Callback to intercept the response from the URLLoader. Only used when
-  // network service is enabled. Args: the initial resource request,
-  // the URLLoader for sending the request, url chain, optional completion
-  // status if it has already been received.
-  using NavigationInterceptionCB = base::OnceCallback<void(
-      std::unique_ptr<ResourceRequest>,
-      std::unique_ptr<ThrottlingURLLoader>,
-      std::vector<GURL>,
-      base::Optional<network::URLLoaderCompletionStatus>)>;
-
-  // This method is called to intercept the url response. Caller is responsible
-  // for handling the URLLoader later on. The callback should be called on the
-  // same thread that URLLoader is constructed.
-  virtual void InterceptNavigation(NavigationInterceptionCB callback) = 0;
 
  protected:
   NavigationURLLoader() {}

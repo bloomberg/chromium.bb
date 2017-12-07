@@ -202,6 +202,11 @@ void ThrottlingURLLoader::DisconnectClient() {
   loader_cancelled_ = true;
 }
 
+mojom::URLLoaderClientEndpointsPtr ThrottlingURLLoader::Unbind() {
+  return mojom::URLLoaderClientEndpoints::New(url_loader_.PassInterface(),
+                                              client_binding_.Unbind());
+}
+
 ThrottlingURLLoader::ThrottlingURLLoader(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     mojom::URLLoaderClient* client,

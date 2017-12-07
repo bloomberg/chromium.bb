@@ -521,7 +521,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const GURL& body_url,
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
-      mojo::ScopedDataPipeConsumerHandle body_data,
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::Optional<URLLoaderFactoryBundle> subresource_loaders,
       const base::UnguessableToken& devtools_navigation_token) override;
 

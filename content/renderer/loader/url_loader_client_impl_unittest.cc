@@ -37,7 +37,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
         blink::WebURLRequest::LoadingIPCType::kMojo,
         url_loader_factory_proxy_.get(),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        mojo::ScopedDataPipeConsumerHandle());
+        mojom::URLLoaderClientEndpointsPtr());
     request_peer_context_.request_id = request_id_;
 
     base::RunLoop().RunUntilIdle();
