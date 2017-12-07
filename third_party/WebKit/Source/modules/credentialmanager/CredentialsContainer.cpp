@@ -67,7 +67,7 @@ void RejectDueToCredentialManagerError(ScriptPromiseResolver* resolver,
       break;
     case kWebCredentialManagerPendingRequestError:
       resolver->Reject(DOMException::Create(kInvalidStateError,
-                                            "A 'get()' request is pending."));
+                                            "A request is already pending."));
       break;
     case kWebCredentialManagerNotAllowedError:
       resolver->Reject(DOMException::Create(kNotAllowedError,

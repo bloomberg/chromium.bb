@@ -116,12 +116,11 @@ test("device_unittests") {
   # Linux, requires udev.
   if (!is_linux_without_udev && !is_android) {
     sources += [
-      "u2f/fake_hid_impl_for_testing.cc",
-      "u2f/fake_hid_impl_for_testing.h",
       "u2f/u2f_hid_device_unittest.cc",
       "u2f/u2f_hid_discovery_unittest.cc",
     ]
     deps += [
+      "//device/u2f:test_support",
       "//services/device/public/cpp/hid",
       "//services/device/public/interfaces",
       "//services/service_manager/public/cpp",
