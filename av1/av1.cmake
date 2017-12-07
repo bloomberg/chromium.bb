@@ -333,6 +333,10 @@ if (CONFIG_CONVOLVE_ROUND)
         "${AOM_ROOT}/av1/common/x86/av1_convolve_scale_sse4.c")
   endif()
 
+  set(AOM_AV1_COMMON_INTRIN_SSE2
+      ${AOM_AV1_COMMON_INTRIN_SSE2}
+      "${AOM_ROOT}/av1/common/x86/convolve_sse2.c")
+
   set(AOM_AV1_COMMON_INTRIN_AVX2
       ${AOM_AV1_COMMON_INTRIN_AVX2}
       "${AOM_ROOT}/av1/common/x86/convolve_avx2.c")
