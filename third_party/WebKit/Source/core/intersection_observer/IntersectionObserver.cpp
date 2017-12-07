@@ -5,6 +5,7 @@
 #include "core/intersection_observer/IntersectionObserver.h"
 
 #include <algorithm>
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8IntersectionObserverDelegate.h"
 #include "bindings/core/v8/v8_intersection_observer_callback.h"
@@ -35,7 +36,6 @@ namespace {
 // IntersectionObserver with an EventCallback.
 class IntersectionObserverDelegateImpl final
     : public IntersectionObserverDelegate {
-  WTF_MAKE_NONCOPYABLE(IntersectionObserverDelegateImpl);
 
  public:
   IntersectionObserverDelegateImpl(ExecutionContext* context,
@@ -57,6 +57,7 @@ class IntersectionObserverDelegateImpl final
  private:
   WeakMember<ExecutionContext> context_;
   IntersectionObserver::EventCallback callback_;
+  DISALLOW_COPY_AND_ASSIGN(IntersectionObserverDelegateImpl);
 };
 
 void ParseRootMargin(String root_margin_parameter,
