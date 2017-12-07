@@ -32,6 +32,7 @@
 
 #include <limits>
 
+#include "base/macros.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "platform/runtime_enabled_features.h"
@@ -53,7 +54,6 @@ static void GetHeapSize(HeapInfo& info) {
 }
 
 class HeapSizeCache {
-  WTF_MAKE_NONCOPYABLE(HeapSizeCache);
   USING_FAST_MALLOC(HeapSizeCache);
 
  public:
@@ -94,6 +94,7 @@ class HeapSizeCache {
   double last_update_time_;
 
   HeapInfo info_;
+  DISALLOW_COPY_AND_ASSIGN(HeapSizeCache);
 };
 
 // We quantize the sizes to make it more difficult for an attacker to see
