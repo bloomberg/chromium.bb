@@ -320,7 +320,8 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
   int64_t timestamp = buffer->timestamp().InMicroseconds();
   void* user_priv = reinterpret_cast<void*>(&timestamp);
   {
-    TRACE_EVENT1("media", "vpx_codec_decode", "timestamp", timestamp);
+    TRACE_EVENT2("media", "vpx_codec_decode", "timestamp", timestamp,
+                 "buffer size (B)", buffer->data_size());
     vpx_codec_err_t status =
         vpx_codec_decode(vpx_codec_.get(), buffer->data(), buffer->data_size(),
                          user_priv, 0 /* deadline */);
