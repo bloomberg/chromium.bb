@@ -7,6 +7,8 @@
 
 #include <CoreAudio/AudioHardware.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -21,22 +23,36 @@ class MEDIA_EXPORT AudioDeviceListenerMac {
   // |listener_cb| will be called when a device change occurs; it's a permanent
   // callback and must outlive AudioDeviceListenerMac.  Note that |listener_cb|
   // might not be executed on the same thread as construction.
-  explicit AudioDeviceListenerMac(const base::Closure& listener_cb);
+  AudioDeviceListenerMac(base::RepeatingClosure listener_cb,
+                         bool monitor_default_input = false,
+                         bool monitor_addition_removal = false);
   ~AudioDeviceListenerMac();
 
  private:
   friend class AudioDeviceListenerMacTest;
-  static const AudioObjectPropertyAddress kDeviceChangePropertyAddress;
+  class PropertyListener;
+  static const AudioObjectPropertyAddress
+      kDefaultOutputDeviceChangePropertyAddress;
+  static const AudioObjectPropertyAddress
+      kDefaultInputDeviceChangePropertyAddress;
+  static const AudioObjectPropertyAddress kDevicesPropertyAddress;
 
-  static OSStatus OnDefaultDeviceChanged(
-      AudioObjectID object, UInt32 num_addresses,
-      const AudioObjectPropertyAddress addresses[], void* context);
+  static OSStatus OnEvent(AudioObjectID object,
+                          UInt32 num_addresses,
+                          const AudioObjectPropertyAddress addresses[],
+                          void* context);
 
-  base::Closure listener_cb_;
+  bool AddPropertyListener(PropertyListener* property_listener);
+  void RemovePropertyListener(PropertyListener* property_listener);
+
+  base::RepeatingClosure listener_cb_;
+  std::unique_ptr<PropertyListener> default_output_listener_;
+  std::unique_ptr<PropertyListener> default_input_listener_;
+  std::unique_ptr<PropertyListener> addition_removal_listener_;
 
   // AudioDeviceListenerMac must be constructed and destructed on the same
   // thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerMac);
 };
