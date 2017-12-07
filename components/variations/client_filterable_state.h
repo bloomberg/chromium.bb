@@ -14,7 +14,7 @@
 
 namespace variations {
 
-// A contianer for all of the client state which is used for filtering studies.
+// A container for all of the client state which is used for filtering studies.
 struct ClientFilterableState {
   static Study::Platform GetCurrentPlatform();
 
