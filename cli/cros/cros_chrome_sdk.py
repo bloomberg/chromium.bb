@@ -537,7 +537,7 @@ class ChromeSDKCommand(command.CliCommand):
         help='Provides extra args to "gn gen". Uses the same format as '
              'gn gen, e.g. "foo = true bar = 1".')
     parser.add_argument(
-        '--gn-gen', action='store_true', default=False, dest='gn_gen',
+        '--gn-gen', action='store_true', default=True, dest='gn_gen',
         help='Run "gn gen" if args.gn is stale.')
     parser.add_argument(
         '--nogn-gen', action='store_false', dest='gn_gen',
