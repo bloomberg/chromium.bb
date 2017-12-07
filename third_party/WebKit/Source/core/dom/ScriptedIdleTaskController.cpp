@@ -231,14 +231,6 @@ void ScriptedIdleTaskController::RunCallback(
           GetExecutionContext(), id, allotted_time_millis,
           callback_type == IdleDeadline::CallbackType::kCalledByTimeout));
   idle_task->invoke(IdleDeadline::Create(deadline_seconds, callback_type));
-
-  double overrun_millis =
-      std::max((MonotonicallyIncreasingTime() - deadline_seconds) * 1000, 0.0);
-
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, idle_callback_overrun_histogram,
-      ("WebCore.ScriptedIdleTaskController.IdleCallbackOverrun", 0, 10000, 50));
-  idle_callback_overrun_histogram.Count(overrun_millis);
 }
 
 void ScriptedIdleTaskController::ContextDestroyed(ExecutionContext*) {

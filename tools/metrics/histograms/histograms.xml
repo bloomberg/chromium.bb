@@ -95341,6 +95341,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebCore.ScriptedIdleTaskController.IdleCallbackDeadline"
     units="ms">
+  <obsolete>
+    Deprecated November 2017.
+  </obsolete>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     The amount of time allotted to a requestIdleCallback callback, i.e., the
