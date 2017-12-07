@@ -4,6 +4,8 @@
 
 #include "cc/paint/raw_memory_transfer_cache_entry.h"
 
+#include <string.h>
+
 namespace cc {
 
 ClientRawMemoryTransferCacheEntry::ClientRawMemoryTransferCacheEntry(
