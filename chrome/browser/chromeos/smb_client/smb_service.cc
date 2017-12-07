@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 
 using chromeos::file_system_provider::Service;
 
@@ -23,6 +24,11 @@ SmbService::SmbService(Profile* profile)
 }
 
 SmbService::~SmbService() {}
+
+// static
+SmbService* SmbService::Get(content::BrowserContext* context) {
+  return SmbServiceFactory::Get(context);
+}
 
 base::File::Error SmbService::Mount(
     const file_system_provider::MountOptions& options) {
