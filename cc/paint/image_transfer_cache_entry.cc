@@ -42,9 +42,10 @@ size_t ClientImageTransferCacheEntry::SerializedSize() const {
   return size_;
 }
 
-bool ClientImageTransferCacheEntry::Serialize(size_t size,
-                                              uint8_t* data) const {
-  PaintOpWriter writer(data, size);
+bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
+  DCHECK_GE(data.size(), SerializedSize());
+
+  PaintOpWriter writer(data.data(), data.size());
   writer.Write(pixmap_->colorType());
   writer.Write(pixmap_->width());
   writer.Write(pixmap_->height());
@@ -53,7 +54,7 @@ bool ClientImageTransferCacheEntry::Serialize(size_t size,
   writer.WriteData(pixmap_size, pixmap_->addr());
   // TODO(ericrk): Handle colorspace.
 
-  if (writer.size() != size)
+  if (writer.size() != data.size())
     return false;
 
   return true;
@@ -66,14 +67,13 @@ TransferCacheEntryType ServiceImageTransferCacheEntry::Type() const {
   return TransferCacheEntryType::kImage;
 }
 
-size_t ServiceImageTransferCacheEntry::Size() const {
+size_t ServiceImageTransferCacheEntry::CachedSize() const {
   return size_;
 }
 
 bool ServiceImageTransferCacheEntry::Deserialize(GrContext* context,
-                                                 size_t size,
-                                                 uint8_t* data) {
-  PaintOpReader reader(data, size);
+                                                 base::span<uint8_t> data) {
+  PaintOpReader reader(data.data(), data.size());
   SkColorType color_type;
   reader.Read(&color_type);
   uint32_t width;
@@ -82,7 +82,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(GrContext* context,
   reader.Read(&height);
   size_t pixel_size;
   reader.ReadSize(&pixel_size);
-  size_ = size;
+  size_ = data.size();
   if (!reader.valid())
     return false;
   // TODO(ericrk): Handle colorspace.

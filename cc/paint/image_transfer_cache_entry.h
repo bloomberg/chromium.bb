@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/containers/span.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "third_party/skia/include/core/SkImage.h"
 
@@ -21,12 +22,12 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
   explicit ClientImageTransferCacheEntry(
       const SkPixmap* pixmap,
       const SkColorSpace* target_color_space);
-  ~ClientImageTransferCacheEntry() override;
+  ~ClientImageTransferCacheEntry() final;
 
   // ClientTransferCacheEntry implementation:
-  TransferCacheEntryType Type() const override;
-  size_t SerializedSize() const override;
-  bool Serialize(size_t size, uint8_t* data) const override;
+  TransferCacheEntryType Type() const final;
+  size_t SerializedSize() const final;
+  bool Serialize(base::span<uint8_t> data) const final;
 
  private:
   const SkPixmap* const pixmap_;
@@ -37,12 +38,12 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
     : public ServiceTransferCacheEntry {
  public:
   ServiceImageTransferCacheEntry();
-  ~ServiceImageTransferCacheEntry() override;
+  ~ServiceImageTransferCacheEntry() final;
 
   // ServiceTransferCacheEntry implementation:
-  TransferCacheEntryType Type() const override;
-  size_t Size() const override;
-  bool Deserialize(GrContext* context, size_t size, uint8_t* data) override;
+  TransferCacheEntryType Type() const final;
+  size_t CachedSize() const final;
+  bool Deserialize(GrContext* context, base::span<uint8_t> data) final;
 
   const sk_sp<SkImage>& image() { return image_; }
 

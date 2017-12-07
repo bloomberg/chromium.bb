@@ -20,6 +20,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -7106,8 +7107,8 @@ void GLES2Implementation::CreateTransferCacheEntryCHROMIUM(
   ScopedMappedMemoryPtr mapped_alloc(entry.SerializedSize(), helper_,
                                      mapped_memory_.get());
   DCHECK(mapped_alloc.valid());
-  bool succeeded = entry.Serialize(
-      mapped_alloc.size(), reinterpret_cast<uint8_t*>(mapped_alloc.address()));
+  bool succeeded = entry.Serialize(base::make_span(
+      reinterpret_cast<uint8_t*>(mapped_alloc.address()), mapped_alloc.size()));
   DCHECK(succeeded);
 
   helper_->CreateTransferCacheEntryCHROMIUM(

@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -20434,7 +20435,8 @@ error::Error GLES2DecoderImpl::HandleCreateTransferCacheEntryCHROMIUM(
                                   handle_shm_id);
 
   if (!GetContextGroup()->transfer_cache()->CreateLockedEntry(
-          handle_id, handle, type, gr_context_.get(), data_memory, data_size))
+          handle_id, handle, type, gr_context_.get(),
+          base::make_span(data_memory, data_size)))
     return error::kInvalidArguments;
 
   return error::kNoError;
