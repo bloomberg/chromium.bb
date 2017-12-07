@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
@@ -24,7 +26,9 @@ namespace net_reporting_header_parser_fuzzer {
 
 void FuzzReportingHeaderParser(const std::string& data,
                               const net::ReportingPolicy& policy) {
-  net::TestReportingContext context(policy);
+  net::TestReportingContext context(base::DefaultClock::GetInstance(),
+                                    base::DefaultTickClock::GetInstance(),
+                                    policy);
   net::ReportingHeaderParser::ParseHeader(&context, kUrl_, data.c_str());
   std::vector<const net::ReportingClient*> clients;
   context.cache()->GetClients(&clients);

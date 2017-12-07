@@ -30,7 +30,8 @@ class ReportingServiceTest : public ::testing::Test {
   const std::string kType_ = "type";
 
   ReportingServiceTest()
-      : context_(new TestReportingContext(ReportingPolicy())),
+      : context_(
+            new TestReportingContext(&clock_, &tick_clock_, ReportingPolicy())),
         service_(
             ReportingService::CreateForTesting(base::WrapUnique(context_))) {}
 
@@ -38,6 +39,9 @@ class ReportingServiceTest : public ::testing::Test {
   ReportingService* service() { return service_.get(); }
 
  private:
+  base::SimpleTestClock clock_;
+  base::SimpleTestTickClock tick_clock_;
+
   TestReportingContext* context_;
   std::unique_ptr<ReportingService> service_;
 };

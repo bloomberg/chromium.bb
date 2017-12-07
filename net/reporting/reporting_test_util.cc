@@ -125,10 +125,12 @@ bool TestReportingDelegate::CanUseClient(const url::Origin& origin,
   return true;
 }
 
-TestReportingContext::TestReportingContext(const ReportingPolicy& policy)
+TestReportingContext::TestReportingContext(base::Clock* clock,
+                                           base::TickClock* tick_clock,
+                                           const ReportingPolicy& policy)
     : ReportingContext(policy,
-                       std::make_unique<base::SimpleTestClock>(),
-                       std::make_unique<base::SimpleTestTickClock>(),
+                       clock,
+                       tick_clock,
                        std::make_unique<TestReportingUploader>(),
                        std::make_unique<TestReportingDelegate>()),
       delivery_timer_(new base::MockTimer(/* retain_user_task= */ false,
@@ -169,7 +171,8 @@ void ReportingTestBase::SimulateRestart(base::TimeDelta delta,
 void ReportingTestBase::CreateContext(const ReportingPolicy& policy,
                                       base::Time now,
                                       base::TimeTicks now_ticks) {
-  context_ = std::make_unique<TestReportingContext>(policy);
+  context_ =
+      std::make_unique<TestReportingContext>(&clock_, &tick_clock_, policy);
   clock()->SetNow(now);
   tick_clock()->SetNowTicks(now_ticks);
 }

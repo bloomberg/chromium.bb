@@ -218,7 +218,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
     : params_(std::move(params)),
       use_localhost_requests_(false),
       disable_offline_check_(false),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       last_connection_change_(tick_clock_->NowTicks()),
       current_network_id_(nqe::internal::NetworkID(
           NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
@@ -226,17 +226,17 @@ NetworkQualityEstimator::NetworkQualityEstimator(
           INT32_MIN)),
       http_downstream_throughput_kbps_observations_(
           params_.get(),
-          tick_clock_.get(),
+          tick_clock_,
           params_->weight_multiplier_per_second(),
           params_->weight_multiplier_per_signal_strength_level()),
       http_rtt_ms_observations_(
           params_.get(),
-          tick_clock_.get(),
+          tick_clock_,
           params_->weight_multiplier_per_second(),
           params_->weight_multiplier_per_signal_strength_level()),
       transport_rtt_ms_observations_(
           params_.get(),
-          tick_clock_.get(),
+          tick_clock_,
           params_->weight_multiplier_per_second(),
           params_->weight_multiplier_per_signal_strength_level()),
       effective_connection_type_at_last_main_frame_(
@@ -272,7 +272,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       this, params_.get(), base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
                  base::Unretained(this)),
-      tick_clock_.get(), net_log_));
+      tick_clock_, net_log_));
 
   watcher_factory_.reset(new nqe::internal::SocketWatcherFactory(
       base::ThreadTaskRunnerHandle::Get(),
@@ -281,7 +281,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
                  base::Unretained(this)),
       base::Bind(&NetworkQualityEstimator::ShouldSocketWatcherNotifyRTT,
                  base::Unretained(this)),
-      tick_clock_.get()));
+      tick_clock_));
 
   // Record accuracy after a 15 second interval. The values used here must
   // remain in sync with the suffixes specified in
@@ -1669,15 +1669,15 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
 }
 
 void NetworkQualityEstimator::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
+    base::TickClock* tick_clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  tick_clock_ = std::move(tick_clock);
-  http_rtt_ms_observations_.SetTickClockForTesting(tick_clock_.get());
-  transport_rtt_ms_observations_.SetTickClockForTesting(tick_clock_.get());
+  tick_clock_ = tick_clock;
+  http_rtt_ms_observations_.SetTickClockForTesting(tick_clock_);
+  transport_rtt_ms_observations_.SetTickClockForTesting(tick_clock_);
   http_downstream_throughput_kbps_observations_.SetTickClockForTesting(
-      tick_clock_.get());
-  throughput_analyzer_->SetTickClockForTesting(tick_clock_.get());
-  watcher_factory_->SetTickClockForTesting(tick_clock_.get());
+      tick_clock_);
+  throughput_analyzer_->SetTickClockForTesting(tick_clock_);
+  watcher_factory_->SetTickClockForTesting(tick_clock_);
 }
 
 double NetworkQualityEstimator::RandDouble() const {

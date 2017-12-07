@@ -98,7 +98,7 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
     NetLog* net_log,
     base::TickClock* clock)
     : pref_delegate_(std::move(pref_delegate)),
-      clock_(clock ? clock : &default_clock_),
+      clock_(clock ? clock : base::DefaultTickClock::GetInstance()),
       net_log_(
           NetLogWithSource::Make(net_log,
                                  NetLogSourceType::HTTP_SERVER_PROPERTIES)) {

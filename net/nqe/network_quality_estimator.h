@@ -272,7 +272,7 @@ class NET_EXPORT NetworkQualityEstimator
       const;
 
   // Overrides the tick clock used by |this| for testing.
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
   // Returns a random double in the range [0.0, 1.0). Virtualized for testing.
   virtual double RandDouble() const;
@@ -567,7 +567,7 @@ class NET_EXPORT NetworkQualityEstimator
   bool disable_offline_check_;
 
   // Tick clock used by the network quality estimator.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Intervals after the main frame request arrives at which accuracy of network
   // quality prediction is recorded.

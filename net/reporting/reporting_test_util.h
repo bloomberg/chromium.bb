@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_uploader.h"
@@ -102,15 +104,11 @@ class TestReportingDelegate : public ReportingDelegate {
 // Clock, TickClock, Timer, and ReportingUploader.
 class TestReportingContext : public ReportingContext {
  public:
-  TestReportingContext(const ReportingPolicy& policy);
+  TestReportingContext(base::Clock* clock,
+                       base::TickClock* tick_clock,
+                       const ReportingPolicy& policy);
   ~TestReportingContext();
 
-  base::SimpleTestClock* test_clock() {
-    return reinterpret_cast<base::SimpleTestClock*>(clock());
-  }
-  base::SimpleTestTickClock* test_tick_clock() {
-    return reinterpret_cast<base::SimpleTestTickClock*>(tick_clock());
-  }
   base::MockTimer* test_delivery_timer() { return delivery_timer_; }
   base::MockTimer* test_garbage_collection_timer() {
     return garbage_collection_timer_;
@@ -151,10 +149,8 @@ class ReportingTestBase : public ::testing::Test {
 
   const ReportingPolicy& policy() { return context_->policy(); }
 
-  base::SimpleTestClock* clock() { return context_->test_clock(); }
-  base::SimpleTestTickClock* tick_clock() {
-    return context_->test_tick_clock();
-  }
+  base::SimpleTestClock* clock() { return &clock_; }
+  base::SimpleTestTickClock* tick_clock() { return &tick_clock_; }
   base::MockTimer* delivery_timer() { return context_->test_delivery_timer(); }
   base::MockTimer* garbage_collection_timer() {
     return context_->test_garbage_collection_timer();
@@ -186,6 +182,8 @@ class ReportingTestBase : public ::testing::Test {
                      base::Time now,
                      base::TimeTicks now_ticks);
 
+  base::SimpleTestClock clock_;
+  base::SimpleTestTickClock tick_clock_;
   std::unique_ptr<TestReportingContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingTestBase);

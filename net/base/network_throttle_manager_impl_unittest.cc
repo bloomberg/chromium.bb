@@ -47,14 +47,12 @@ class NetworkThrottleManagerTest : public testing::Test,
                                    NetworkThrottleManager::ThrottleDelegate {
  public:
   NetworkThrottleManagerTest()
-      : clock_(new base::SimpleTestTickClock),
-        now_(base::TimeTicks::Now()),
+      : now_(base::TimeTicks::Now()),
         throttle_state_change_count_(0),
         last_throttle_to_change_state_(nullptr),
         throttle_manager_(new NetworkThrottleManagerImpl) {
-    clock_->SetNowTicks(now_);
-    throttle_manager_->SetTickClockForTesting(
-        std::unique_ptr<base::TickClock>(clock_));
+    clock_.SetNowTicks(now_);
+    throttle_manager_->SetTickClockForTesting(&clock_);
   }
 
  protected:
@@ -67,7 +65,7 @@ class NetworkThrottleManagerTest : public testing::Test,
 
   // Set the offset of the test clock from now_.
   void SetClockDelta(base::TimeDelta time_delta) {
-    clock_->SetNowTicks(now_ + time_delta);
+    clock_.SetNowTicks(now_ + time_delta);
   }
 
   // Throttle creation
@@ -108,7 +106,7 @@ class NetworkThrottleManagerTest : public testing::Test,
       base::ResetAndReturn(&throttle_state_changed_callback_).Run();
   }
 
-  base::SimpleTestTickClock* clock_;
+  base::SimpleTestTickClock clock_;
   base::TimeTicks now_;
   int throttle_state_change_count_;
   NetworkThrottleManager::Throttle* last_throttle_to_change_state_;

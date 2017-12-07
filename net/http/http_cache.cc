@@ -321,7 +321,7 @@ HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
       fail_conditionalization_for_test_(false),
       mode_(NORMAL),
       network_layer_(std::move(network_layer)),
-      clock_(new base::DefaultClock()),
+      clock_(base::DefaultClock::GetInstance()),
       weak_factory_(this) {
   HttpNetworkSession* session = network_layer_->GetSession();
   // Session may be NULL in unittests.

@@ -42,8 +42,8 @@ class NET_EXPORT ReportingContext {
 
   const ReportingPolicy& policy() { return policy_; }
 
-  base::Clock* clock() { return clock_.get(); }
-  base::TickClock* tick_clock() { return tick_clock_.get(); }
+  base::Clock* clock() { return clock_; }
+  base::TickClock* tick_clock() { return tick_clock_; }
   ReportingUploader* uploader() { return uploader_.get(); }
 
   ReportingDelegate* delegate() { return delegate_.get(); }
@@ -63,16 +63,16 @@ class NET_EXPORT ReportingContext {
 
  protected:
   ReportingContext(const ReportingPolicy& policy,
-                   std::unique_ptr<base::Clock> clock,
-                   std::unique_ptr<base::TickClock> tick_clock,
+                   base::Clock* clock,
+                   base::TickClock* tick_clock,
                    std::unique_ptr<ReportingUploader> uploader,
                    std::unique_ptr<ReportingDelegate> delegate);
 
  private:
   ReportingPolicy policy_;
 
-  std::unique_ptr<base::Clock> clock_;
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::Clock* clock_;
+  base::TickClock* tick_clock_;
   std::unique_ptr<ReportingUploader> uploader_;
 
   base::ObserverList<ReportingObserver, /* check_empty= */ true> observers_;

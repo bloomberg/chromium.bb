@@ -313,8 +313,8 @@ TEST_F(SSLClientSessionCacheTest, Expiration) {
   SSLClientSessionCache::Config config;
   config.expiration_check_count = kExpirationCheckCount;
   SSLClientSessionCache cache(config);
-  base::SimpleTestClock* clock = MakeTestClock().release();
-  cache.SetClockForTesting(base::WrapUnique(clock));
+  std::unique_ptr<base::SimpleTestClock> clock = MakeTestClock();
+  cache.SetClockForTesting(clock.get());
 
   // Add |kNumEntries - 1| entries.
   for (size_t i = 0; i < kNumEntries - 1; i++) {
@@ -362,8 +362,8 @@ TEST_F(SSLClientSessionCacheTest, LookupExpirationCheck) {
   SSLClientSessionCache::Config config;
   config.expiration_check_count = kExpirationCheckCount;
   SSLClientSessionCache cache(config);
-  base::SimpleTestClock* clock = MakeTestClock().release();
-  cache.SetClockForTesting(base::WrapUnique(clock));
+  std::unique_ptr<base::SimpleTestClock> clock = MakeTestClock();
+  cache.SetClockForTesting(clock.get());
 
   // Insert an entry into the session cache.
   bssl::UniquePtr<SSL_SESSION> session =
@@ -410,8 +410,8 @@ TEST_F(SSLClientSessionCacheTest, TestFlushOnMemoryNotifications) {
   SSLClientSessionCache::Config config;
   config.expiration_check_count = kExpirationCheckCount;
   SSLClientSessionCache cache(config);
-  base::SimpleTestClock* clock = MakeTestClock().release();
-  cache.SetClockForTesting(base::WrapUnique(clock));
+  std::unique_ptr<base::SimpleTestClock> clock = MakeTestClock();
+  cache.SetClockForTesting(clock.get());
 
   // Insert an entry into the session cache.
   bssl::UniquePtr<SSL_SESSION> session1 =

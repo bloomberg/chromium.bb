@@ -192,13 +192,13 @@ void NetworkErrorLoggingService::OnNetworkError(const ErrorDetails& details) {
 }
 
 void NetworkErrorLoggingService::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
+    base::TickClock* tick_clock) {
   DCHECK(tick_clock);
-  tick_clock_ = std::move(tick_clock);
+  tick_clock_ = tick_clock;
 }
 
 NetworkErrorLoggingService::NetworkErrorLoggingService()
-    : tick_clock_(base::MakeUnique<base::DefaultTickClock>()),
+    : tick_clock_(base::DefaultTickClock::GetInstance()),
       reporting_service_(nullptr) {}
 
 bool NetworkErrorLoggingService::ParseHeader(const std::string& json_value,

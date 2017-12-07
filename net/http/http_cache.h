@@ -170,10 +170,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   Mode mode() { return mode_; }
 
   // Get/Set the cache's clock. These are public only for testing.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-    clock_ = std::move(clock);
-  }
-  base::Clock* clock() const { return clock_.get(); }
+  void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
+  base::Clock* clock() const { return clock_; }
 
   // Close currently active sockets so that fresh page loads will not use any
   // recycled connections.  For sockets currently in use, they may not close
@@ -566,7 +564,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   std::unique_ptr<PlaybackCacheMap> playback_cache_map_;
 
   // A clock that can be swapped out for testing.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   THREAD_CHECKER(thread_checker_);
 
