@@ -502,10 +502,6 @@ typedef struct macroblockd_plane {
 #endif
   uint8_t *color_index_map;
 
-  // number of 4x4s in current block
-  uint16_t n4_w, n4_h;
-  // log2 of n4_w, n4_h
-  uint8_t n4_wl, n4_hl;
   // block size in pixels
   uint8_t width, height;
 
