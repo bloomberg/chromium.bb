@@ -5096,6 +5096,84 @@ IN_PROC_BROWSER_TEST_P(SSLUITestTransientAndCommitted,
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
+namespace {
+
+// A handler which changes the response. The first time it's called for
+// |relative_url| it'll give an empty response. The second time it'll
+// redirect to |redirect_url|.
+std::unique_ptr<net::test_server::HttpResponse> ChangingHandler(
+    int* count,
+    const std::string& relative_url,
+    const GURL& redirect_url,
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != relative_url)
+    return nullptr;
+
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  if ((*count)++) {
+    http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+    http_response->AddCustomHeader("Location", redirect_url.spec());
+  }
+  return std::move(http_response);
+}
+
+}  // namespace
+
+// Check that SSL state isn't stale when navigating to an existing page that
+// gives a different response. This covers the case of going from http to
+// https. http://crbug.com/792221
+IN_PROC_BROWSER_TEST_F(SSLUITest, ExistingPageHTTPToHTTPSSSLState) {
+  ASSERT_TRUE(https_server_.Start());
+  int count = 0;
+  std::string relative_url = "/foo";
+  GURL redirect_url = https_server_.GetURL("/simple.html");
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(ChangingHandler, &count, relative_url, redirect_url));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url = embedded_test_server()->GetURL(relative_url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), url);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
+
+  content::TestNavigationObserver observer(tab, 1);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  observer.Wait();
+
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
+// Check that SSL state isn't stale when navigating to an existing page that
+// gives a different response. This covers the case of going from https to
+// http URL. http://crbug.com/792221
+IN_PROC_BROWSER_TEST_F(SSLUITest, ExistingPageHTTPSToHTTPSSLState) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  int count = 0;
+  std::string relative_url = "/foo";
+  GURL redirect_url = embedded_test_server()->GetURL("/simple.html");
+  https_server_.RegisterRequestHandler(
+      base::BindRepeating(ChangingHandler, &count, relative_url, redirect_url));
+  ASSERT_TRUE(https_server_.Start());
+  const GURL url = https_server_.GetURL(relative_url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), url);
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  content::TestNavigationObserver observer(tab, 1);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  observer.Wait();
+
+  CheckUnauthenticatedState(tab, AuthState::NONE);
+
+  // We also manually check the cert on the NavigationEntry, since in the case
+  // of http URLs GetSecurityLevelForRequest will return SecurityLevel::NONE for
+  // http URLs.
+  NavigationEntry* entry = tab->GetController().GetVisibleEntry();
+  ASSERT_FALSE(!!entry->GetSSL().certificate);
+}
+
 // Checks that a restore followed immediately by a history navigation doesn't
 // lose SSL state.
 // Disabled since this is a test for bug 738177.

@@ -1288,12 +1288,14 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
         entry->GetSSL() = last_entry->GetSSL();
       }
     } else {
-      // When restoring a tab, the serialized NavigationEntry doesn't have the
-      // SSL state.
-      // Only copy in the restore case since this code path can be taken during
-      // navigation. See http://crbug.com/727892
-      if (was_restored)
+      // In rapid back/forward navigations |handle| sometimes won't have a cert
+      // (http://crbug.com/727892). So we use the handle's cert if it exists,
+      // otherwise we only reuse the existing cert if the origins match.
+      if (handle->GetSSLInfo().is_valid()) {
         entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
+      } else if (entry->GetURL().GetOrigin() != handle->GetURL().GetOrigin()) {
+        entry->GetSSL() = SSLStatus();
+      }
     }
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
