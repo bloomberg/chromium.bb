@@ -62,7 +62,8 @@ ui::ModalType PWAConfirmationView::GetModalType() const {
 }
 
 base::string16 PWAConfirmationView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
+  return l10n_util::GetStringUTF16(
+      IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
 }
 
 bool PWAConfirmationView::ShouldShowCloseButton() const {

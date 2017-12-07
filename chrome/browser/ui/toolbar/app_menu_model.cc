@@ -108,6 +108,26 @@ base::string16 GetUpgradeDialogMenuItemName() {
   }
 }
 
+// Returns the appropriate menu label for the IDC_CREATE_HOSTED_APP command.
+base::string16 GetCreateHostedAppMenuItemName(Browser* browser) {
+  bool installable_app = false;
+
+  if (browser->tab_strip_model() &&
+      browser->tab_strip_model()->GetActiveWebContents()) {
+    const banners::AppBannerManager::Installable installable =
+        banners::AppBannerManager::GetInstallable(
+            browser->tab_strip_model()->GetActiveWebContents());
+    if (installable ==
+        banners::AppBannerManager::Installable::INSTALLABLE_YES) {
+      installable_app = true;
+    }
+  }
+
+  return l10n_util::GetStringUTF16(installable_app
+                                       ? IDS_INSTALL_TO_OS_LAUNCH_SURFACE
+                                       : IDS_ADD_TO_OS_LAUNCH_SURFACE);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,6 +270,7 @@ bool AppMenuModel::IsItemForCommandIdDynamic(int command_id) const {
 #elif defined(OS_WIN)
          command_id == IDC_PIN_TO_START_SCREEN ||
 #endif
+         command_id == IDC_CREATE_HOSTED_APP ||
          command_id == IDC_UPGRADE_DIALOG;
 }
 
@@ -272,6 +293,8 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringUTF16(string_id);
     }
 #endif
+    case IDC_CREATE_HOSTED_APP:
+      return GetCreateHostedAppMenuItemName(browser_);
     case IDC_UPGRADE_DIALOG:
       return GetUpgradeDialogMenuItemName();
     default:
@@ -742,7 +765,7 @@ void AppMenuModel::Build() {
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   if (extensions::util::IsNewBookmarkAppsEnabled() &&
       banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
-    AddItemWithStringId(IDC_CREATE_HOSTED_APP, IDS_ADD_TO_OS_LAUNCH_SURFACE);
+    AddItem(IDC_CREATE_HOSTED_APP, GetCreateHostedAppMenuItemName(browser_));
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

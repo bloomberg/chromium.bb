@@ -12,6 +12,8 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -28,6 +30,12 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/installation/installation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/banners/app_banner_manager_android.h"
+#else
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
+#endif
 
 namespace {
 
@@ -192,6 +200,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       load_finished_(false),
       triggered_by_devtools_(false),
       status_reporter_(std::make_unique<NullStatusReporter>()),
+      installable_(Installable::UNKNOWN),
       weak_factory_(this) {
   DCHECK(manager_);
 
@@ -266,11 +275,32 @@ void AppBannerManager::PerformInstallableCheck() {
                                GetWeakPtr()));
 }
 
+// static
+AppBannerManager::Installable AppBannerManager::GetInstallable(
+    content::WebContents* web_contents) {
+  AppBannerManager* manager = nullptr;
+#if defined(OS_ANDROID)
+  manager = AppBannerManagerAndroid::FromWebContents(web_contents);
+#else
+  manager = AppBannerManagerDesktop::FromWebContents(web_contents);
+#endif
+
+  return manager ? manager->installable() : Installable::UNKNOWN;
+}
+
+AppBannerManager::Installable AppBannerManager::installable() const {
+  return installable_;
+}
+
 void AppBannerManager::OnDidPerformInstallableCheck(
     const InstallableData& data) {
   UpdateState(State::ACTIVE);
   if (data.has_worker && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
+
+  installable_ = data.error_code == NO_ERROR_DETECTED
+                     ? Installable::INSTALLABLE_YES
+                     : Installable::INSTALLABLE_NO;
 
   if (data.error_code != NO_ERROR_DETECTED) {
     if (data.error_code == NO_MATCHING_SERVICE_WORKER)
@@ -323,6 +353,7 @@ void AppBannerManager::ResetCurrentPageData() {
   manifest_url_ = GURL();
   validated_url_ = GURL();
   referrer_.erase();
+  installable_ = Installable::UNKNOWN;
 }
 
 void AppBannerManager::Terminate() {
