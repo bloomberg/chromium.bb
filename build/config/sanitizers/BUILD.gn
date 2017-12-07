@@ -200,9 +200,7 @@ config("default_sanitizer_ldflags") {
       ldflags += [ "-fsanitize=vptr" ]
     }
 
-    if (use_fuzzing_engine) {
-      ldflags += [ "-fsanitize=fuzzer-no-link" ]
-    } else if (use_sanitizer_coverage) {
+    if (use_sanitizer_coverage) {
       ldflags += [ "-fsanitize-coverage=$sanitizer_coverage_flags" ]
     }
 
@@ -399,9 +397,8 @@ config("cfi_icall_generalize_pointers") {
 
 config("coverage_flags") {
   cflags = []
-  if (use_fuzzing_engine) {
-    cflags += [ "-fsanitize=fuzzer-no-link" ]
-  } else if (use_sanitizer_coverage) {
+
+  if (use_sanitizer_coverage) {
     cflags += [
       "-fsanitize-coverage=$sanitizer_coverage_flags",
       "-mllvm",
