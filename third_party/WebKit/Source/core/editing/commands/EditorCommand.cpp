@@ -1242,7 +1242,7 @@ static bool ExecuteMoveLeftAndModifySelection(LocalFrame& frame,
 }
 
 // Returns true if selection is modified.
-bool ModifySelectionyWithPageGranularity(
+bool ModifySelectionWithPageGranularity(
     LocalFrame& frame,
     SelectionModifyAlteration alter,
     unsigned vertical_distance,
@@ -1274,7 +1274,7 @@ static bool ExecuteMovePageDown(LocalFrame& frame,
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
-  return ModifySelectionyWithPageGranularity(
+  return ModifySelectionWithPageGranularity(
       frame, SelectionModifyAlteration::kMove, distance,
       SelectionModifyVerticalDirection::kDown);
 }
@@ -1286,7 +1286,7 @@ static bool ExecuteMovePageDownAndModifySelection(LocalFrame& frame,
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
-  return ModifySelectionyWithPageGranularity(
+  return ModifySelectionWithPageGranularity(
       frame, SelectionModifyAlteration::kExtend, distance,
       SelectionModifyVerticalDirection::kDown);
 }
@@ -1298,7 +1298,7 @@ static bool ExecuteMovePageUp(LocalFrame& frame,
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
-  return ModifySelectionyWithPageGranularity(
+  return ModifySelectionWithPageGranularity(
       frame, SelectionModifyAlteration::kMove, distance,
       SelectionModifyVerticalDirection::kUp);
 }
@@ -1310,7 +1310,7 @@ static bool ExecuteMovePageUpAndModifySelection(LocalFrame& frame,
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
-  return ModifySelectionyWithPageGranularity(
+  return ModifySelectionWithPageGranularity(
       frame, SelectionModifyAlteration::kExtend, distance,
       SelectionModifyVerticalDirection::kUp);
 }
