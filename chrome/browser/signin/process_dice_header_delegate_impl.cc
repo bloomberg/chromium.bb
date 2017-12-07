@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
 
+#include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
@@ -12,6 +14,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -91,7 +95,6 @@ void ProcessDiceHeaderDelegateImpl::EnableSync(const std::string& account_id) {
   Browser* browser = nullptr;
   if (web_contents) {
     browser = chrome::FindBrowserWithWebContents(web_contents);
-
     // After signing in to Chrome, the user should be redirected to the NTP.
     RedirectToNtp(web_contents);
   }
@@ -101,4 +104,26 @@ void ProcessDiceHeaderDelegateImpl::EnableSync(const std::string& account_id) {
   VLOG(1) << "Start sync after web sign-in.";
   new DiceTurnSyncOnHelper(profile_, browser, signin_access_point_,
                            signin_reason_, account_id);
+}
+
+void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeFailure(
+    const std::string& email,
+    const GoogleServiceAuthError& error) {
+  DCHECK_NE(GoogleServiceAuthError::NONE, error.state());
+  bool should_enable_sync = ShouldEnableSync();
+  if (!should_enable_sync &&
+      !signin::IsDiceEnabledForProfile(profile_->GetPrefs())) {
+    return;
+  }
+
+  // Show pop up-dialog.
+  content::WebContents* web_contents = this->web_contents();
+  Browser* browser = web_contents
+                         ? chrome::FindBrowserWithWebContents(web_contents)
+                         : chrome::FindBrowserWithProfile(profile_);
+  LoginUIServiceFactory::GetForProfile(profile_)->DisplayLoginResult(
+      browser, base::UTF8ToUTF16(error.ToString()), base::UTF8ToUTF16(email));
+
+  if (should_enable_sync && web_contents)
+    RedirectToNtp(web_contents);
 }

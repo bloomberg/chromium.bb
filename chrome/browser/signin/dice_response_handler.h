@@ -16,6 +16,7 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
+class AboutSigninInternals;
 class AccountTrackerService;
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
@@ -36,6 +37,11 @@ class ProcessDiceHeaderDelegate {
   // Called after the account was seeded in the account tracker service and
   // after the refresh token was fetched and updated in the token service.
   virtual void EnableSync(const std::string& account_id) = 0;
+
+  // Handles a failure in the token exchange (i.e. shows the error to the user).
+  virtual void HandleTokenExchangeFailure(
+      const std::string& email,
+      const GoogleServiceAuthError& error) = 0;
 };
 
 // Processes the Dice responses from Gaia.
@@ -49,7 +55,8 @@ class DiceResponseHandler : public KeyedService {
                       SigninManager* signin_manager,
                       ProfileOAuth2TokenService* profile_oauth2_token_service,
                       AccountTrackerService* account_tracker_service,
-                      AccountReconcilor* account_reconcilor);
+                      AccountReconcilor* account_reconcilor,
+                      AboutSigninInternals* about_signin_internals);
   ~DiceResponseHandler() override;
 
   // Must be called when receiving a Dice response header.
@@ -81,6 +88,7 @@ class DiceResponseHandler : public KeyedService {
     void set_should_enable_sync(bool should_enable_sync) {
       should_enable_sync_ = should_enable_sync;
     }
+    ProcessDiceHeaderDelegate* delegate() { return delegate_.get(); }
 
    private:
     // Called by |timeout_closure_| when the request times out.
@@ -134,12 +142,8 @@ class DiceResponseHandler : public KeyedService {
 
   // Called after exchanging an OAuth 2.0 authorization code for a refresh token
   // after DiceAction::SIGNIN.
-  void OnTokenExchangeSuccess(
-      DiceTokenFetcher* token_fetcher,
-      std::string gaia_id,
-      std::string email,
-      std::string refresh_token,
-      std::unique_ptr<ProcessDiceHeaderDelegate> delegate);
+  void OnTokenExchangeSuccess(DiceTokenFetcher* token_fetcher,
+                              const std::string& refresh_token);
   void OnTokenExchangeFailure(DiceTokenFetcher* token_fetcher,
                               const GoogleServiceAuthError& error);
 
@@ -148,6 +152,7 @@ class DiceResponseHandler : public KeyedService {
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;
   AccountReconcilor* account_reconcilor_;
+  AboutSigninInternals* about_signin_internals_;
   std::vector<std::unique_ptr<DiceTokenFetcher>> token_fetchers_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceResponseHandler);
