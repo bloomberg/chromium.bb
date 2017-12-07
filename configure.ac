@@ -7,7 +7,7 @@ AM_CONFIG_HEADER(liblouis/config.h)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wall])
 
 # Checks for programs.
 # Try to compile using C99
@@ -25,6 +25,7 @@ gl_tools_INIT
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AM_PROG_AR
 
 # Checks for libraries.
 AC_CHECK_LIB([yaml], [yaml_parser_initialize])

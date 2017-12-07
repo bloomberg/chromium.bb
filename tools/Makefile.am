@@ -1,6 +1,7 @@
 SUBDIRS = gnulib lou_maketable.d
 
 AM_CPPFLAGS =					\
+	-Wall -Wextra				\
 	-I$(top_srcdir)/liblouis		\
 	-I$(top_srcdir)/tools/gnulib		\
 	-I$(top_builddir)/tools/gnulib
