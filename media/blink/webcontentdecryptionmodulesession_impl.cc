@@ -57,6 +57,9 @@ convertMessageType(CdmMessageType message_type) {
     case CdmMessageType::LICENSE_RELEASE:
       return blink::WebContentDecryptionModuleSession::Client::MessageType::
           kLicenseRelease;
+    case CdmMessageType::INDIVIDUALIZATION_REQUEST:
+      return blink::WebContentDecryptionModuleSession::Client::MessageType::
+          kIndividualizationRequest;
   }
 
   NOTREACHED();

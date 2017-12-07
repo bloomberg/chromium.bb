@@ -204,6 +204,8 @@ cdm::MessageType ConvertMessageType(media::CdmMessageType message_type) {
       return cdm::kLicenseRenewal;
     case media::CdmMessageType::LICENSE_RELEASE:
       return cdm::kLicenseRelease;
+    case media::CdmMessageType::INDIVIDUALIZATION_REQUEST:
+      return cdm::kIndividualizationRequest;
   }
 
   NOTREACHED();

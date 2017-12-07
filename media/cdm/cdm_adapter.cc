@@ -149,9 +149,8 @@ CdmMessageType ToMediaMessageType(cdm::MessageType message_type) {
       return CdmMessageType::LICENSE_RENEWAL;
     case cdm::kLicenseRelease:
       return CdmMessageType::LICENSE_RELEASE;
-    // TODO(xhwang): Support kIndividualizationRequest.
     case cdm::kIndividualizationRequest:
-      return CdmMessageType::LICENSE_REQUEST;
+      return CdmMessageType::INDIVIDUALIZATION_REQUEST;
   }
 
   NOTREACHED() << "Unexpected cdm::MessageType " << message_type;

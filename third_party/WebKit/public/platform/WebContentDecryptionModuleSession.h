@@ -49,7 +49,8 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleSession {
     enum class MessageType {
       kLicenseRequest,
       kLicenseRenewal,
-      kLicenseRelease
+      kLicenseRelease,
+      kIndividualizationRequest
     };
 
     virtual void Message(MessageType,

@@ -28,7 +28,8 @@
 enum MediaKeyMessageType {
     "license-request",
     "license-renewal",
-    "license-release"
+    "license-release",
+    "individualization-request"
 };
 
 [
