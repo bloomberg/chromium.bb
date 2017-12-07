@@ -26,6 +26,7 @@
 #ifndef FilterOperation_h
 #define FilterOperation_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/style/ShadowData.h"
 #include "platform/Length.h"
@@ -33,7 +34,6 @@
 #include "platform/graphics/BoxReflection.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -46,7 +46,6 @@ class SVGElementProxy;
 
 class CORE_EXPORT FilterOperation
     : public GarbageCollectedFinalized<FilterOperation> {
-  WTF_MAKE_NONCOPYABLE(FilterOperation);
 
  public:
   enum OperationType {
@@ -121,6 +120,7 @@ class CORE_EXPORT FilterOperation
  private:
   virtual FilterOperation* Blend(const FilterOperation* from,
                                  double progress) const = 0;
+  DISALLOW_COPY_AND_ASSIGN(FilterOperation);
 };
 
 #define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, operationType)  \

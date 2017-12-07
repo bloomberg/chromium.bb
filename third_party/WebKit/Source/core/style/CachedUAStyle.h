@@ -23,13 +23,13 @@
 #ifndef CachedUAStyle_h
 #define CachedUAStyle_h
 
+#include "base/macros.h"
 #include "core/css/StyleColor.h"
 #include "core/style/FillLayer.h"
 #include "core/style/NinePieceImage.h"
 #include "platform/LengthSize.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -42,7 +42,6 @@ class ComputedStyle;
 // ApplyMatchedProperties for later use during AdjustComputedStyle.
 class CachedUAStyle {
   USING_FAST_MALLOC(CachedUAStyle);
-  WTF_MAKE_NONCOPYABLE(CachedUAStyle);
   friend class ComputedStyle;
 
  public:
@@ -81,6 +80,7 @@ class CachedUAStyle {
 
  private:
   explicit CachedUAStyle(const ComputedStyle*);
+  DISALLOW_COPY_AND_ASSIGN(CachedUAStyle);
 };
 
 }  // namespace blink
