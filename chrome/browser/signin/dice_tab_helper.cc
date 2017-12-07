@@ -23,16 +23,12 @@ DiceTabHelper::DiceTabHelper(content::WebContents* web_contents)
 
 DiceTabHelper::~DiceTabHelper() {}
 
-void DiceTabHelper::SetSigninAccessPoint(
-    signin_metrics::AccessPoint access_point) {
-  DCHECK_EQ(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
-            signin_access_point_);
+void DiceTabHelper::InitializeSigninFlow(
+    signin_metrics::AccessPoint access_point,
+    signin_metrics::Reason reason) {
   signin_access_point_ = access_point;
-}
-
-void DiceTabHelper::SetSigninReason(signin_metrics::Reason reason) {
-  DCHECK_EQ(signin_metrics::Reason::REASON_UNKNOWN_REASON, signin_reason_);
   signin_reason_ = reason;
+  should_start_sync_after_web_signin_ = true;
 }
 
 void DiceTabHelper::DidStartNavigation(

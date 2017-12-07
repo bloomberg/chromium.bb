@@ -154,8 +154,7 @@ void SigninViewController::ShowDiceSigninTab(
   DCHECK_EQ(signin_url, active_contents->GetVisibleURL());
   DiceTabHelper::CreateForWebContents(active_contents);
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(active_contents);
-  tab_helper->SetSigninAccessPoint(access_point);
-  tab_helper->SetSigninReason(signin_reason);
+  tab_helper->InitializeSigninFlow(access_point, signin_reason);
 
   if (signin_reason == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT) {
     signin_metrics::LogSigninAccessPointStarted(access_point);
