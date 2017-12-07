@@ -15,6 +15,7 @@ import argparse
 import datetime
 import json
 import logging
+import re
 
 from webkitpy.common.net.buildbot import current_build_link
 from webkitpy.common.net.git_cl import GitCL
@@ -25,6 +26,7 @@ from webkitpy.layout_tests.port.base import Port
 from webkitpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
 from webkitpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from webkitpy.w3c.import_notifier import ImportNotifier
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_copier import TestCopier
 from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
@@ -58,8 +60,14 @@ class TestImporter(object):
         # Another Git instance with local WPT as CWD, which can only be
         # instantiated after the working directory is created.
         self.wpt_git = None
-        # The WPT revision we are importing.
+        # The WPT revision we are importing and the one imported last time.
         self.wpt_revision = None
+        self.last_wpt_revision = None
+        # A list of rebaselined tests and a dictionary of new test expectations
+        # mapping failing tests to platforms to
+        # wpt_expectations_updater.SimpleTestResult.
+        self.rebaselined_tests = None
+        self.new_test_expectations = None
         self.verbose = False
 
     def main(self, argv=None):
@@ -98,6 +106,7 @@ class TestImporter(object):
 
         _log.debug('Noting the revision we are importing.')
         self.wpt_revision = self.wpt_git.latest_git_commit()
+        self.last_wpt_revision = self._get_last_imported_wpt_revision()
         import_commit = 'wpt@%s' % self.wpt_revision
 
         _log.info('Importing %s to Chromium %s', import_commit, chromium_revision)
@@ -154,6 +163,9 @@ class TestImporter(object):
             return 1
 
         if not self.run_commit_queue_for_cl():
+            return 1
+
+        if not self.send_notifications(local_wpt):
             return 1
 
         return 0
@@ -529,7 +541,7 @@ class TestImporter(object):
         """
         _log.info('Adding test expectations lines to LayoutTests/TestExpectations.')
         expectation_updater = WPTExpectationsUpdater(self.host)
-        expectation_updater.run(args=[])
+        self.rebaselined_tests, self.new_test_expectations = expectation_updater.update_expectations()
 
     def update_all_test_expectations_files(self, deleted_tests, renamed_tests):
         """Updates all test expectations files for tests that have been deleted or renamed.
@@ -596,3 +608,26 @@ class TestImporter(object):
         if not abs_path.startswith(self.finder.layout_tests_dir()):
             return None
         return self.fs.relpath(abs_path, self.finder.layout_tests_dir())
+
+    def _get_last_imported_wpt_revision(self):
+        """Finds the last imported WPT revision."""
+        # TODO(robertma): Only match commit subjects.
+        output = self.chromium_git.most_recent_log_matching('^Import wpt@')
+        result = re.search(r'Import wpt@(\w+)', output)
+        if result:
+            return result.group(1)
+        else:
+            _log.error('Cannot find last WPT import.')
+            return None
+
+    def send_notifications(self, local_wpt):
+        # Check the format of these values.
+        issue = self.git_cl.run(['status', '--field=id']).strip()
+        # FIXME(robertma): this does not work! https://crbug.com/792611
+        patchset = self.git_cl.run(['status', '--field=patch']).strip()
+        # Construct the notifier here so that any errors won't affect the import.
+        notifier = ImportNotifier(self.host, self.chromium_git, local_wpt)
+        notifier.main(self.last_wpt_revision, self.wpt_revision,
+                      self.rebaselined_tests, self.new_test_expectations,
+                      issue, patchset)
+        return True
