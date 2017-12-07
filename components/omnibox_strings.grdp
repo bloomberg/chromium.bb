@@ -68,6 +68,9 @@
   <message name="IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH" desc="Text for screenreaders describing a suggested search.">
     <ph name="TEXT">$1<ex>dogs</ex> search suggestion</ph>
   </message>
+  <message name="IDS_ACC_AUTOCOMPLETE_QUICK_ANSWER" desc="Readable text represening a query typed by the user in the omnibox, followed by an indication that an answer to that query will follow, followed by the answer. The commas are significant as they will introduce a pause in the spoken text.">
+    <ph name="QUERY">$1<ex>weather in los angeles</ex></ph>, answer, <ph name="ANSWER">$2<ex>sunny and 84 degrees</ex></ph>
+  </message>
   <message name="IDS_ACC_AUTOCOMPLETE_BOOKMARK" desc="Text for screenreaders describing a URL from a bookmark.">
     <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> bookmark</ph>
   </message>
