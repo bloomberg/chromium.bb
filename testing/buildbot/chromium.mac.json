@@ -391,11 +391,14 @@
         }
       },
       {
+        "args": [
+          "--jobs=1"
+        ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         }
       },
       {
@@ -794,11 +797,14 @@
         }
       },
       {
+        "args": [
+          "--jobs=1"
+        ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         }
       },
       {
@@ -1204,7 +1210,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         }
       },
       {
@@ -1643,11 +1649,14 @@
         }
       },
       {
+        "args": [
+          "--jobs=1"
+        ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         }
       },
       {
@@ -2039,11 +2048,14 @@
         }
       },
       {
+        "args": [
+          "--jobs=1"
+        ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         }
       }
     ]

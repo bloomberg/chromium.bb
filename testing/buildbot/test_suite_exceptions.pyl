@@ -1628,41 +1628,6 @@
       'Win7 Tests (dbg)(1)',
     ],
   },
-  'telemetry_unittests': {
-    'modifications': {
-      'Linux Tests': {
-        'args': [
-          '--jobs=1',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-      },
-      'Linux Tests (dbg)(1)': {
-        'args': [
-          '--jobs=1',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-      },
-      'Linux Tests (dbg)(1)(32)': {
-        'args': [
-          '--jobs=1',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-      },
-      # TODO(kbr): this looks like an accident while removing parallelism from
-      # telemetry_perf_unittests.
-      'Mac10.12 Tests': {
-        'args': [
-          '--jobs=1',
-        ],
-      },
-    },
-  },
   'traffic_annotation_auditor_unittests': {
     'modifications': {
       'Linux Tests': {
