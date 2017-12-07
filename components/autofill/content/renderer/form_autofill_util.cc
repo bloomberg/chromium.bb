@@ -791,12 +791,19 @@ void ForEachMatchingFormFieldCommon(
     const WebInputElement* input_element = ToWebInputElement(element);
     CR_DEFINE_STATIC_LOCAL(WebString, kValue, ("value"));
     CR_DEFINE_STATIC_LOCAL(WebString, kPlaceholder, ("placeholder"));
+
     if (!force_override && !is_initiating_element &&
         // A text field, with a non-empty value that is NOT the value of the
         // input field's "value" or "placeholder" attribute, is skipped.
+        // Some sites fill the fields with formatting string. To tell the
+        // difference between the values entered by the user and the site, we'll
+        // sanitize the value. If the sanitized value is empty, it means that
+        // the site has filled the field, in this case, the field is not
+        // skipped.
         (IsAutofillableInputElement(input_element) ||
          IsTextAreaElement(*element)) &&
         !element->Value().IsEmpty() &&
+        !SanitizedFieldIsEmpty(element->Value().Utf16()) &&
         (!element->HasAttribute(kValue) ||
          element->GetAttribute(kValue) != element->Value()) &&
         (!element->HasAttribute(kPlaceholder) ||
