@@ -230,7 +230,7 @@
   web::NavigationItem* item =
       webState->GetNavigationManager()->GetVisibleItem();
   GURL URL = item ? item->GetURL().GetOrigin() : GURL::EmptyGURL();
-  BOOL isNTP = URL == GURL(kChromeUINewTabURL);
+  BOOL isNTP = (URL == GURL(kChromeUINewTabURL));
 
   // Don't do anything for a live non-ntp tab.
   if (webState == [self getWebState] && !isNTP) {
