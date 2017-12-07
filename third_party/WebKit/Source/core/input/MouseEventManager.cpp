@@ -913,7 +913,9 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
     // corresponding pointer.
     if (initiator == DragInitiator::kMouse) {
       frame_->GetEventHandler().HandlePointerEvent(
-          WebPointerEvent(WebInputEvent::Type::kPointerCancel, event.Event()));
+          WebPointerEvent(WebPointerProperties::PointerType::kMouse,
+                          event.Event().TimeStampSeconds()),
+          Vector<WebPointerEvent>());
     }
     // TODO(crbug.com/708278): If the drag starts with touch the touch cancel
     // should trigger the release of pointer capture.

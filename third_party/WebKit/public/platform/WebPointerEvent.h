@@ -29,17 +29,19 @@ class WebPointerEvent : public WebInputEvent, public WebPointerProperties {
                                         const WebTouchPoint&);
   BLINK_PLATFORM_EXPORT WebPointerEvent(WebInputEvent::Type,
                                         const WebMouseEvent&);
-
-  // TODO(crbug.com/736014): We need a clarified definition of the scale and
-  // the coordinate space on these attributes.
-  float width;
-  float height;
+  // Creates a PointerCausedUaAction pointer event.
+  BLINK_PLATFORM_EXPORT WebPointerEvent(WebPointerProperties::PointerType,
+                                        double time_stamp_seconds);
 
   // ------------ Touch Point Specific ------------
 
   float rotation_angle;
 
   // ------------ Touch Event Specific ------------
+
+  // A unique identifier for the touch event. Valid ids start at one and
+  // increase monotonically. Zero means an unknown id.
+  uint32_t unique_touch_event_id;
 
   // Whether the event is blocking, non-blocking, all event
   // listeners were passive or was forced to be non-blocking.
@@ -54,9 +56,16 @@ class WebPointerEvent : public WebInputEvent, public WebPointerProperties {
   // scroll.
   bool touch_start_or_first_touch_move;
 
-  // A unique identifier for the touch event. Valid ids start at one and
-  // increase monotonically. Zero means an unknown id.
-  uint32_t unique_touch_event_id;
+  // ------------ Common fields across pointer types ------------
+
+  // True if this pointer was processed as part of gesture detection and it may
+  // cause scrolling.
+  bool scroll_capable;
+
+  // TODO(crbug.com/736014): We need a clarified definition of the scale and
+  // the coordinate space on these attributes.
+  float width;
+  float height;
 
 #if INSIDE_BLINK
   bool IsCancelable() const { return dispatch_type == kBlocking; }

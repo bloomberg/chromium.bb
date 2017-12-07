@@ -34,7 +34,9 @@ class CORE_EXPORT PointerEventManager
   // cause firing DOM pointerevents, mouseevent, and touch events accordingly.
   // TODO(crbug.com/625841): We need to get all event handling path to go
   // through this function.
-  WebInputEventResult HandlePointerEvent(const WebPointerEvent&);
+  WebInputEventResult HandlePointerEvent(
+      const WebPointerEvent&,
+      const Vector<WebPointerEvent>& coalesced_events);
 
   // Sends the mouse pointer events and the boundary events
   // that it may cause. It also sends the compat mouse events
@@ -46,10 +48,6 @@ class CORE_EXPORT PointerEventManager
       const AtomicString& type,
       const WebMouseEvent&,
       const Vector<WebMouseEvent>& coalesced_events);
-
-  WebInputEventResult HandleTouchEvents(
-      const WebTouchEvent&,
-      const Vector<WebTouchEvent>& coalesced_events);
 
   // Sends boundary events pointerout/leave/over/enter and
   // mouseout/leave/over/enter to the corresponding targets.
@@ -91,6 +89,13 @@ class CORE_EXPORT PointerEventManager
   bool PrimaryPointerdownCanceled(uint32_t unique_touch_event_id);
 
   void ProcessPendingPointerCaptureForPointerLock(const WebMouseEvent&);
+
+  // Sends any outstanding events. For example it notifies TouchEventManager
+  // to group any changes to touch since last FlushEvents and send the touch
+  // event out to js. Since after this function any outstanding event is sent,
+  // it also clears any state that might have kept since the last call to this
+  // function.
+  WebInputEventResult FlushEvents();
 
  private:
   typedef HeapHashMap<int,
@@ -137,22 +142,20 @@ class CORE_EXPORT PointerEventManager
     Member<PointerEvent> pointer_event_;
   };
 
-  // Sends pointercancels for existing PointerEvents. For example when browser
-  // starts dragging with mouse or when we start scrolling with scroll capable
-  // pointers pointercancel events should be dispatched.
-  void DispatchPointerCancelEvents(const WebPointerEvent&);
-
-  // Enables firing of touch-type PointerEvents after they were inhibited by
-  // blockTouchPointers().
-  void UnblockTouchPointers();
+  // Sends pointercancels for existing PointerEvents that are interrupted.
+  // For example when browser starts dragging with mouse or when we start
+  // scrolling with scroll capable pointers pointercancel events should be
+  // dispatched for those. Also sets initial states accordingly so the
+  // following events in that stream don't generate pointerevents (e.g.
+  // in the scrolling case which scroll starts and pointerevents stop and
+  // touchevents continue to fire).
+  void HandlePointerInterruption(const WebPointerEvent&);
 
   // Returns PointerEventTarget for a WebTouchPoint, hit-testing as necessary.
   EventHandlingUtil::PointerEventTarget ComputePointerEventTarget(
-      const WebTouchPoint&);
+      const WebPointerEvent&);
 
-  // Sends touch pointer events and sets consumed bits in TouchInfo array
-  // based on the return value of pointer event handlers.
-  void DispatchTouchPointerEvent(
+  WebInputEventResult DispatchTouchPointerEvent(
       const WebPointerEvent&,
       const Vector<WebPointerEvent>& coalesced_events,
       const EventHandlingUtil::PointerEventTarget&);
@@ -231,6 +234,14 @@ class CORE_EXPORT PointerEventManager
   PointerEventFactory pointer_event_factory_;
   Member<TouchEventManager> touch_event_manager_;
   Member<MouseEventManager> mouse_event_manager_;
+
+  // TODO(crbug.com/789643): If we go with one token for pointerevent and one
+  // for touch events then we can remove this class field.
+  // It keeps the shared user gesture token between DOM touch events and
+  // pointerevents. It gets created at first when this class gets notified of
+  // the appropriate pointerevent and it must be cleared after the corresponding
+  // touch event is sent (i.e. after FlushEvents).
+  std::unique_ptr<UserGestureIndicator> user_gesture_holder_;
 
   // The pointerId of the PointerEvent currently being dispatched within this
   // frame or 0 if none.

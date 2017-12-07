@@ -177,6 +177,8 @@ class WebInputEvent {
     kTouchMove,
     kTouchEnd,
     kTouchCancel,
+    // TODO(nzolghadr): This event should be replaced with
+    // kPointerCausedUaAction
     kTouchScrollStarted,
     kTouchTypeLast = kTouchScrollStarted,
 
@@ -186,7 +188,8 @@ class WebInputEvent {
     kPointerUp,
     kPointerMove,
     kPointerCancel,
-    kPointerTypeLast = kPointerCancel,
+    kPointerCausedUaAction,
+    kPointerTypeLast = kPointerCausedUaAction,
 
     kTypeLast = kTouchTypeLast
   };
@@ -385,6 +388,7 @@ class WebInputEvent {
       CASE_TYPE(PointerUp);
       CASE_TYPE(PointerMove);
       CASE_TYPE(PointerCancel);
+      CASE_TYPE(PointerCausedUaAction);
     }
 #undef CASE_TYPE
     NOTREACHED();
