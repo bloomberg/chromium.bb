@@ -68,7 +68,7 @@ UiScene::Elements GetVisibleElements(UiElement* root,
     }
     if (reticle_parent_id == element.id()) {
       elements.push_back(reticle);
-      reticle->set_draw_phase(element.draw_phase());
+      reticle->SetDrawPhase(element.draw_phase());
     }
   }
   return elements;
@@ -256,7 +256,7 @@ UiScene::Elements UiScene::GetVisibleControllerElements() const {
             // included in a list of elements we vend. The other controller
             // elements are drawn in the foreground phase, so we will update the
             // reticle to match here.
-            reticle->set_draw_phase(kPhaseForeground);
+            reticle->SetDrawPhase(kPhaseForeground);
           }
           return need_to_add_reticle;
         }
@@ -283,9 +283,8 @@ UiScene::Elements UiScene::GetPotentiallyVisibleElements() const {
 
 UiScene::UiScene() {
   root_element_ = base::MakeUnique<UiElement>();
-  root_element_->set_name(kRoot);
-  root_element_->set_draw_phase(kPhaseNone);
-  root_element_->SetVisible(true);
+  root_element_->SetName(kRoot);
+  root_element_->SetDrawPhase(kPhaseNone);
   root_element_->set_hit_testable(false);
 }
 

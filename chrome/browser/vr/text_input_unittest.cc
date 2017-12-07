@@ -144,7 +144,7 @@ TEST(TextInputTest, HintText) {
   auto instance =
       base::MakeUnique<TextInput>(512, 10, TextInput::OnFocusChangedCallback(),
                                   TextInput::OnInputEditedCallback());
-  instance->set_name(kOmniboxTextField);
+  instance->SetName(kOmniboxTextField);
   instance->SetSize(1, 0);
   TextInput* element = instance.get();
   scene.root_element().AddChild(std::move(instance));
@@ -167,7 +167,7 @@ TEST(TextInputTest, Cursor) {
   auto instance =
       base::MakeUnique<TextInput>(512, 10, TextInput::OnFocusChangedCallback(),
                                   TextInput::OnInputEditedCallback());
-  instance->set_name(kOmniboxTextField);
+  instance->SetName(kOmniboxTextField);
   instance->SetSize(1, 0);
   TextInput* element = instance.get();
   scene.root_element().AddChild(std::move(instance));

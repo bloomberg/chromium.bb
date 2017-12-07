@@ -68,12 +68,12 @@ class ViewportAwareRootTest : public testing::Test {
   void SetUp() override {
     scene_ = base::MakeUnique<UiScene>();
     auto viewport_aware_root = base::MakeUnique<ViewportAwareRootForTesting>();
-    viewport_aware_root->set_draw_phase(kPhaseForeground);
+    viewport_aware_root->SetDrawPhase(kPhaseForeground);
     viewport_root = viewport_aware_root.get();
     scene_->AddUiElement(kRoot, std::move(viewport_aware_root));
 
     auto element = base::MakeUnique<UiElement>();
-    element->set_draw_phase(kPhaseForeground);
+    element->SetDrawPhase(kPhaseForeground);
     element->SetTranslate(0.f, 0.f, -1.f);
     viewport_element = element.get();
     viewport_root->AddChild(std::move(element));
@@ -223,16 +223,16 @@ TEST_F(ViewportAwareRootTest, ResetPositionWhenReshow) {
 
 TEST_F(ViewportAwareRootTest, IsChildrenVisible) {
   auto element = base::MakeUnique<UiElement>();
-  element->set_draw_phase(kPhaseNone);
+  element->SetDrawPhase(kPhaseNone);
   UiElement* child = element.get();
   viewport_element->AddChild(std::move(element));
-  viewport_element->set_draw_phase(kPhaseNone);
+  viewport_element->SetDrawPhase(kPhaseNone);
   // root
   //   viewport_element  -> no draw, visible
   //     child           -> no draw, visible
   EXPECT_FALSE(viewport_root->HasVisibleChildren());
 
-  child->set_draw_phase(kPhaseForeground);
+  child->SetDrawPhase(kPhaseForeground);
   // root
   //   viewport_element  -> no draw, visible
   //     child           -> drawable, visible
@@ -246,13 +246,13 @@ TEST_F(ViewportAwareRootTest, IsChildrenVisible) {
   EXPECT_FALSE(viewport_root->HasVisibleChildren());
 
   child->SetVisibleImmediately(true);
-  viewport_element->set_draw_phase(kPhaseForeground);
+  viewport_element->SetDrawPhase(kPhaseForeground);
   // root
   //   viewport_element  -> drawable, visible
   //     child           -> drawable, visible
   EXPECT_TRUE(viewport_root->HasVisibleChildren());
 
-  viewport_element->set_draw_phase(kPhaseForeground);
+  viewport_element->SetDrawPhase(kPhaseForeground);
   viewport_element->SetVisibleImmediately(false);
   // root
   //   viewport_element  -> drawable, invisible

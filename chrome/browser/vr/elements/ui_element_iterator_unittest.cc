@@ -24,31 +24,31 @@ namespace {
 //     8 kCeiling
 void MakeTree(UiScene* scene) {
   auto element = base::MakeUnique<UiElement>();
-  element->set_name(k2dBrowsingRoot);
+  element->SetName(k2dBrowsingRoot);
   scene->AddUiElement(kRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
-  element->set_name(kFloor);
+  element->SetName(kFloor);
   scene->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
-  element->set_name(k2dBrowsingContentGroup);
+  element->SetName(k2dBrowsingContentGroup);
   scene->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
-  element->set_name(kBackplane);
+  element->SetName(kBackplane);
   scene->AddUiElement(k2dBrowsingContentGroup, std::move(element));
 
   element = base::MakeUnique<UiElement>();
-  element->set_name(kContentQuad);
+  element->SetName(kContentQuad);
   scene->AddUiElement(k2dBrowsingContentGroup, std::move(element));
 
   element = base::MakeUnique<UiElement>();
-  element->set_name(kUrlBar);
+  element->SetName(kUrlBar);
   scene->AddUiElement(k2dBrowsingContentGroup, std::move(element));
 
   element = base::MakeUnique<UiElement>();
-  element->set_name(kCeiling);
+  element->SetName(kCeiling);
   scene->AddUiElement(k2dBrowsingRoot, std::move(element));
 }
 

@@ -31,7 +31,6 @@ TEST(LinearLayout, HorizontalLayout) {
   auto element = base::MakeUnique<UiElement>();
   UiElement* rect_a = element.get();
   rect_a->SetSize(10, 10);
-  rect_a->SetVisible(true);
   layout.AddChild(std::move(element));
 
   // One element should require no position adjustment at all.
@@ -42,7 +41,6 @@ TEST(LinearLayout, HorizontalLayout) {
   element = base::MakeUnique<UiElement>();
   UiElement* rect_b = element.get();
   rect_b->SetSize(20, 20);
-  rect_b->SetVisible(true);
   layout.AddChild(std::move(element));
   layout.LayOutChildren();
 
@@ -74,7 +72,6 @@ TEST(LinearLayout, Orientations) {
     auto element = base::MakeUnique<TestElement>();
     rect = element.get();
     element->SetSize(10, 10);
-    element->SetVisible(true);
     layout.AddChild(std::move(element));
   }
 
@@ -108,23 +105,18 @@ TEST(LinearLayout, NestedLayouts) {
   //     rect_c
   auto parent_layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
   UiElement* p_parent_layout = parent_layout.get();
-  parent_layout->SetVisible(true);
   auto child_layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
   UiElement* p_child_layout = child_layout.get();
-  child_layout->SetVisible(true);
   auto rect_a = base::MakeUnique<TestElement>();
   TestElement* p_rect_a = rect_a.get();
-  rect_a->SetVisible(true);
   rect_a->SetSize(10, 10);
   child_layout->AddChild(std::move(rect_a));
   auto rect_b = base::MakeUnique<TestElement>();
   TestElement* p_rect_b = rect_b.get();
-  rect_b->SetVisible(true);
   rect_b->SetSize(10, 10);
   child_layout->AddChild(std::move(rect_b));
   auto rect_c = base::MakeUnique<TestElement>();
   TestElement* p_rect_c = rect_c.get();
-  rect_c->SetVisible(true);
   rect_c->SetSize(999, 10);
   parent_layout->AddChild(std::move(child_layout));
   parent_layout->AddChild(std::move(rect_c));

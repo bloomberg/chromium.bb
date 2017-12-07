@@ -23,8 +23,8 @@ TextInput::TextInput(int maximum_width_pixels,
     : focus_changed_callback_(focus_changed_callback),
       input_edit_callback_(input_edit_callback) {
   auto text = base::MakeUnique<Text>(maximum_width_pixels, font_height_meters);
-  text->set_type(kTypeTextInputHint);
-  text->set_draw_phase(kPhaseForeground);
+  text->SetType(kTypeTextInputHint);
+  text->SetDrawPhase(kPhaseForeground);
   text->set_hit_testable(false);
   text->set_focusable(false);
   text->set_x_anchoring(LEFT);
@@ -36,8 +36,8 @@ TextInput::TextInput(int maximum_width_pixels,
   this->AddChild(std::move(text));
 
   text = base::MakeUnique<Text>(maximum_width_pixels, font_height_meters);
-  text->set_type(kTypeTextInputText);
-  text->set_draw_phase(kPhaseForeground);
+  text->SetType(kTypeTextInputText);
+  text->SetDrawPhase(kPhaseForeground);
   text->set_hit_testable(true);
   text->set_focusable(false);
   text->set_x_anchoring(LEFT);
@@ -52,8 +52,8 @@ TextInput::TextInput(int maximum_width_pixels,
 
   auto cursor = base::MakeUnique<Rect>();
   cursor->SetVisible(false);
-  cursor->set_type(kTypeTextInputCursor);
-  cursor->set_draw_phase(kPhaseForeground);
+  cursor->SetType(kTypeTextInputCursor);
+  cursor->SetDrawPhase(kPhaseForeground);
   cursor->set_hit_testable(false);
   cursor->set_focusable(false);
   cursor->set_x_anchoring(LEFT);

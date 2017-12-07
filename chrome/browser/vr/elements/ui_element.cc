@@ -66,21 +66,21 @@ UiElement::~UiElement() {
   animation_player_.set_target(nullptr);
 }
 
-void UiElement::set_name(UiElementName name) {
+void UiElement::SetName(UiElementName name) {
   name_ = name;
   OnSetName();
 }
 
 void UiElement::OnSetName() {}
 
-void UiElement::set_type(UiElementType type) {
+void UiElement::SetType(UiElementType type) {
   type_ = type;
   OnSetType();
 }
 
 void UiElement::OnSetType() {}
 
-void UiElement::set_draw_phase(DrawPhase draw_phase) {
+void UiElement::SetDrawPhase(DrawPhase draw_phase) {
   draw_phase_ = draw_phase;
   OnSetDrawPhase();
 }
