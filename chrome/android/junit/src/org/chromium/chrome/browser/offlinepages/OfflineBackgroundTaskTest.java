@@ -120,7 +120,7 @@ public class OfflineBackgroundTaskTest {
     public void tearDown() throws Exception {
         // Clean up static state for subsequent Robolectric tests.
         CommandLine.reset();
-        SysUtils.reset();
+        SysUtils.resetForTesting();
         ApplicationStatus.destroyForJUnitTests();
     }
 
