@@ -13,9 +13,6 @@ namespace offline_pages {
 // needs to be in BROWSER code, but the interface is used from COMPONENTS code.
 class OfflinePagesUkmReporter {
  public:
-  static const char kRequestUkmEventName[];
-  static const char kForegroundUkmMetricName[];
-
   virtual ~OfflinePagesUkmReporter() = default;
 
   // Report that an offline copy has been made of this URL.
