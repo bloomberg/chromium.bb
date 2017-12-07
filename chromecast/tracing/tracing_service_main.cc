@@ -93,7 +93,7 @@ class TraceCopyTask : public base::MessagePumpLibevent::Watcher {
         out_fd_(std::move(out_fd)),
         out_watcher_(FROM_HERE),
         callback_(std::move(callback)) {}
-  virtual ~TraceCopyTask() {}
+  ~TraceCopyTask() override {}
 
   void Start() {
     base::MessageLoopForIO::current()->WatchFileDescriptor(
@@ -178,7 +178,7 @@ class TraceConnection : public base::MessagePumpLibevent::Watcher {
         connection_watcher_(FROM_HERE),
         callback_(std::move(callback)),
         weak_ptr_factory_(this) {}
-  virtual ~TraceConnection() {}
+  ~TraceConnection() override {}
 
   void Init() {
     base::MessageLoopForIO::current()->WatchFileDescriptor(
@@ -336,7 +336,7 @@ class TracingService : public base::MessagePumpLibevent::Watcher {
  public:
   TracingService()
       : server_socket_watcher_(FROM_HERE), weak_ptr_factory_(this) {}
-  virtual ~TracingService() {}
+  ~TracingService() override {}
 
   bool Init() {
     server_socket_ = CreateServerSocket();
