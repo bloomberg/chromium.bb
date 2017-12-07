@@ -480,9 +480,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
   } else {
-    int ref;
-
-    for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+    for (int ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
       const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
       if (frame < LAST_FRAME) {
 #if CONFIG_INTRABC
@@ -1753,12 +1751,11 @@ static void read_tile_info(AV1Decoder *const pbi,
       pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
     }
 #if CONFIG_MAX_TILE
-    int i;
-    for (i = 0; i <= cm->tile_cols; i++) {
+    for (int i = 0; i <= cm->tile_cols; i++) {
       cm->tile_col_start_sb[i] =
           ((i * cm->tile_width - 1) >> cm->mib_size_log2) + 1;
     }
-    for (i = 0; i <= cm->tile_rows; i++) {
+    for (int i = 0; i <= cm->tile_rows; i++) {
       cm->tile_row_start_sb[i] =
           ((i * cm->tile_height - 1) >> cm->mib_size_log2) + 1;
     }
@@ -2281,11 +2278,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
       for (mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
            mi_row += cm->mib_size) {
-        int mi_col;
-
         av1_zero_left_context(&td->xd);
 
-        for (mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
+        for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
              mi_col += cm->mib_size) {
 #if CONFIG_SYMBOLRATE
           av1_record_superblock(td->xd.counts);
@@ -2594,8 +2589,7 @@ static int read_global_motion_params(WarpedMotionParams *params,
 }
 
 static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  int frame;
-  for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
+  for (int frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
     const WarpedMotionParams *ref_params =
         cm->error_resilient_mode ? &default_warp_params
                                  : &cm->prev_frame->global_motion[frame];
@@ -3770,17 +3764,14 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
 static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
                                 size_t *header_size) {
-  OBU_TYPE obu_type;
-  int obu_extension_flag;
-
   *header_size = 1;
 
   // first bit is obu_forbidden_bit (0) according to R19
   aom_rb_read_bit(rb);
 
-  obu_type = (OBU_TYPE)aom_rb_read_literal(rb, 4);
+  const OBU_TYPE obu_type = (OBU_TYPE)aom_rb_read_literal(rb, 4);
   aom_rb_read_literal(rb, 2);  // reserved
-  obu_extension_flag = aom_rb_read_bit(rb);
+  const int obu_extension_flag = aom_rb_read_bit(rb);
   if (obu_extension_flag) {
     *header_size += 1;
     aom_rb_read_literal(rb, 3);  // temporal_id
