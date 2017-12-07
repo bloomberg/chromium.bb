@@ -99,6 +99,19 @@ TEST(QuatTest, Scaling) {
   }
 }
 
+TEST(QuatTest, Normalization) {
+  Quaternion q(1, -1, 1, -1);
+  EXPECT_NEAR(q.Length(), 4, kEpsilon);
+
+  q = q.Normalized();
+
+  EXPECT_NEAR(q.Length(), 1, kEpsilon);
+  EXPECT_NEAR(q.x(), 0.5, kEpsilon);
+  EXPECT_NEAR(q.y(), -0.5, kEpsilon);
+  EXPECT_NEAR(q.z(), 0.5, kEpsilon);
+  EXPECT_NEAR(q.w(), -0.5, kEpsilon);
+}
+
 TEST(QuatTest, Lerp) {
   for (size_t i = 1; i < 100; ++i) {
     Quaternion a(0, 0, 0, 0);
