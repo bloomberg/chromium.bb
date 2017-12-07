@@ -1113,7 +1113,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  int i;
 
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
@@ -1194,7 +1193,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
 #endif  // CONFIG_INTRABC
 
-  (void)i;
   mbmi->mode =
       read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
 
@@ -1556,14 +1554,12 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
                                        MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
-  int i;
 
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
 
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-  (void)i;
   mbmi->mode = read_intra_mode(r, ec_ctx->y_mode_cdf[size_group_lookup[bsize]]);
 
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
