@@ -11,6 +11,7 @@
 
 #include <assert.h>
 
+#include "./aom_dsp_rtcd.h"
 #include "./av1_rtcd.h"
 #include "aom_dsp/txfm_common.h"
 #include "av1/common/enums.h"
@@ -115,7 +116,7 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
         // flip upside down
         temp_in[r] = input[(txfm_size_row - r - 1) * stride + c];
     }
-    round_shift_array(temp_in, txfm_size_row, -shift[0]);
+    av1_round_shift_array(temp_in, txfm_size_row, -shift[0]);
     // Multiply everything by Sqrt2 on the larger dimension if the
     // transform is rectangular and the size difference is a factor of 2.
     // If the size difference is a factor of 4, multiply by
@@ -124,10 +125,10 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
       for (r = 0; r < txfm_size_row; ++r)
         temp_in[r] = (int32_t)fdct_round_shift(temp_in[r] * Sqrt2);
     } else if (rect_type == 2) {
-      round_shift_array(temp_in, txfm_size_row, -rect_type2_shift);
+      av1_round_shift_array(temp_in, txfm_size_row, -rect_type2_shift);
     }
     txfm_func_col(temp_in, temp_out, cos_bit_col, stage_range_col);
-    round_shift_array(temp_out, txfm_size_row, -shift[1]);
+    av1_round_shift_array(temp_out, txfm_size_row, -shift[1]);
     if (cfg->lr_flip == 0) {
       for (r = 0; r < txfm_size_row; ++r)
         buf[r * txfm_size_col + c] = temp_out[r];
@@ -154,14 +155,14 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
     }
     txfm_func_row(buf + r * txfm_size_col, output + r * txfm_size_col,
                   cos_bit_row, stage_range_row);
-    round_shift_array(output + r * txfm_size_col, txfm_size_col, -shift[2]);
+    av1_round_shift_array(output + r * txfm_size_col, txfm_size_col, -shift[2]);
   }
 }
 
 void av1_fwd_txfm2d_4x8_c(const int16_t *input, int32_t *output, int stride,
                           TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int32_t txfm_buf[4 * 8];
+  DECLARE_ALIGNED(32, int32_t, txfm_buf[4 * 8]);
   int16_t rinput[4 * 8];
   TX_SIZE tx_size = TX_4X8;
   TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
@@ -194,7 +195,7 @@ void av1_fwd_txfm2d_8x4_c(const int16_t *input, int32_t *output, int stride,
 void av1_fwd_txfm2d_8x16_c(const int16_t *input, int32_t *output, int stride,
                            TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int32_t txfm_buf[8 * 16];
+  DECLARE_ALIGNED(32, int32_t, txfm_buf[8 * 16]);
   int16_t rinput[8 * 16];
   TX_SIZE tx_size = TX_8X16;
   TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
@@ -227,7 +228,7 @@ void av1_fwd_txfm2d_16x8_c(const int16_t *input, int32_t *output, int stride,
 void av1_fwd_txfm2d_16x32_c(const int16_t *input, int32_t *output, int stride,
                             TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int32_t txfm_buf[16 * 32];
+  DECLARE_ALIGNED(32, int32_t, txfm_buf[16 * 32]);
   int16_t rinput[16 * 32];
   TX_SIZE tx_size = TX_16X32;
   TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
@@ -260,7 +261,7 @@ void av1_fwd_txfm2d_32x16_c(const int16_t *input, int32_t *output, int stride,
 void av1_fwd_txfm2d_4x16_c(const int16_t *input, int32_t *output, int stride,
                            TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int32_t txfm_buf[4 * 16];
+  DECLARE_ALIGNED(32, int32_t, txfm_buf[4 * 16]);
   int16_t rinput[4 * 16];
   TX_SIZE tx_size = TX_4X16;
   TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
@@ -293,7 +294,7 @@ void av1_fwd_txfm2d_16x4_c(const int16_t *input, int32_t *output, int stride,
 void av1_fwd_txfm2d_8x32_c(const int16_t *input, int32_t *output, int stride,
                            TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int32_t txfm_buf[32 * 8];
+  DECLARE_ALIGNED(32, int32_t, txfm_buf[32 * 8]);
   int16_t rinput[32 * 8];
   TX_SIZE tx_size = TX_8X32;
   TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
@@ -378,7 +379,7 @@ void av1_fwd_txfm2d_64x64_c(const int16_t *input, int32_t *output, int stride,
 void av1_fwd_txfm2d_32x64_c(const int16_t *input, int32_t *output, int stride,
                             TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int32_t txfm_buf[32 * 64];
+  DECLARE_ALIGNED(32, int32_t, txfm_buf[32 * 64]);
   int16_t rinput[64 * 32];
   TX_SIZE tx_size = TX_32X64;
   TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
@@ -424,7 +425,7 @@ void av1_fwd_txfm2d_64x32_c(const int16_t *input, int32_t *output, int stride,
 void av1_fwd_txfm2d_16x64_c(const int16_t *input, int32_t *output, int stride,
                             TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int32_t txfm_buf[64 * 16];
+  DECLARE_ALIGNED(32, int32_t, txfm_buf[64 * 16]);
   int16_t rinput[64 * 16];
   TX_SIZE tx_size = TX_16X64;
   TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);

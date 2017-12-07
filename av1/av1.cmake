@@ -26,6 +26,7 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/av1_inv_txfm1d_cfg.h"
     "${AOM_ROOT}/av1/common/av1_loopfilter.c"
     "${AOM_ROOT}/av1/common/av1_loopfilter.h"
+    "${AOM_ROOT}/av1/common/av1_txfm.c"
     "${AOM_ROOT}/av1/common/av1_txfm.h"
     "${AOM_ROOT}/av1/common/blockd.c"
     "${AOM_ROOT}/av1/common/blockd.h"
@@ -176,6 +177,8 @@ set(AOM_AV1_COMMON_INTRIN_SSSE3
     "${AOM_ROOT}/av1/common/x86/av1_convolve_ssse3.c")
 
 set(AOM_AV1_COMMON_INTRIN_SSE4_1
+    "${AOM_ROOT}/av1/common/x86/av1_txfm_sse4.c"
+    "${AOM_ROOT}/av1/common/x86/av1_txfm_sse4.h"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm1d_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm2d_sse4.c"
     "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_sse4.c")

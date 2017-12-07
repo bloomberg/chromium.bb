@@ -64,12 +64,12 @@ static INLINE void fwd_txfm2d_sse4_1(const int16_t *input, int32_t *output,
 
   int16_array_with_stride_to_int32_array_without_stride(input, stride, txfm_buf,
                                                         txfm_size);
-  round_shift_array_32_sse4_1(buf_128, out_128, txfm2d_size_128, -shift[0]);
+  av1_round_shift_array_32_sse4_1(buf_128, out_128, txfm2d_size_128, -shift[0]);
   txfm_func_col(out_128, buf_128, cos_bit_col, stage_range_col);
-  round_shift_array_32_sse4_1(buf_128, out_128, txfm2d_size_128, -shift[1]);
+  av1_round_shift_array_32_sse4_1(buf_128, out_128, txfm2d_size_128, -shift[1]);
   transpose_32(txfm_size, out_128, buf_128);
   txfm_func_row(buf_128, out_128, cos_bit_row, stage_range_row);
-  round_shift_array_32_sse4_1(out_128, buf_128, txfm2d_size_128, -shift[2]);
+  av1_round_shift_array_32_sse4_1(out_128, buf_128, txfm2d_size_128, -shift[2]);
   transpose_32(txfm_size, buf_128, out_128);
 }
 

@@ -69,6 +69,9 @@ AV1_COMMON_SRCS-yes += common/scan.c
 AV1_COMMON_SRCS-yes += common/scan.h
 # TODO(angiebird) the forward transform belongs under encoder/
 AV1_COMMON_SRCS-yes += common/av1_txfm.h
+AV1_COMMON_SRCS-yes += common/av1_txfm.c
+AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/av1_txfm_sse4.h
+AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/av1_txfm_sse4.c
 AV1_COMMON_SRCS-yes += common/av1_fwd_txfm1d.h
 AV1_COMMON_SRCS-yes += common/av1_fwd_txfm1d.c
 AV1_COMMON_SRCS-yes += common/av1_inv_txfm1d.h

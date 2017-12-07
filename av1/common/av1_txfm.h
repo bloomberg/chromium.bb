@@ -85,23 +85,6 @@ static INLINE int32_t round_shift(int32_t value, int bit) {
   return (int32_t)(((int64_t)value + (1ll << (bit - 1))) >> bit);
 }
 
-static INLINE void round_shift_array(int32_t *arr, int size, int bit) {
-  int i;
-  if (bit == 0) {
-    return;
-  } else {
-    if (bit > 0) {
-      for (i = 0; i < size; i++) {
-        arr[i] = round_shift(arr[i], bit);
-      }
-    } else {
-      for (i = 0; i < size; i++) {
-        arr[i] = arr[i] * (1 << (-bit));
-      }
-    }
-  }
-}
-
 static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
                                int bit) {
   int32_t result_32 = (int32_t)clamp64((int64_t)w0 * in0 + (int64_t)w1 * in1,

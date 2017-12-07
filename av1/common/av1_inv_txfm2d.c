@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "./aom_dsp_rtcd.h"
 #include "./av1_rtcd.h"
 #include "aom_dsp/inv_txfm.h"
 #include "av1/common/enums.h"
@@ -185,7 +186,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   // Rows
   for (r = 0; r < txfm_size_row; ++r) {
     txfm_func_row(input, buf_ptr, cos_bit_row, stage_range_row);
-    round_shift_array(buf_ptr, txfm_size_col, -shift[0]);
+    av1_round_shift_array(buf_ptr, txfm_size_col, -shift[0]);
     // Multiply everything by Sqrt2 if the transform is rectangular with
     // log ratio being 1 or -1, if the log ratio is 2 or -2, multiply by
     // 2^rect_type2_shift.
@@ -193,7 +194,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
       for (c = 0; c < txfm_size_col; ++c)
         buf_ptr[c] = (int32_t)dct_const_round_shift(buf_ptr[c] * Sqrt2);
     } else if (rect_type2_shift) {
-      round_shift_array(buf_ptr, txfm_size_col, -rect_type2_shift);
+      av1_round_shift_array(buf_ptr, txfm_size_col, -rect_type2_shift);
     }
     input += txfm_size_col;
     buf_ptr += txfm_size_col;
@@ -210,7 +211,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
         temp_in[r] = buf[r * txfm_size_col + (txfm_size_col - c - 1)];
     }
     txfm_func_col(temp_in, temp_out, cos_bit_col, stage_range_col);
-    round_shift_array(temp_out, txfm_size_row, -shift[1]);
+    av1_round_shift_array(temp_out, txfm_size_row, -shift[1]);
     if (cfg->ud_flip == 0) {
       for (r = 0; r < txfm_size_row; ++r) {
         output[r * stride + c] =
@@ -241,14 +242,14 @@ static INLINE void inv_txfm2d_add_facade(const int32_t *input, uint16_t *output,
 
 void av1_inv_txfm2d_add_4x8_c(const int32_t *input, uint16_t *output,
                               int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[4 * 8 + 8 + 8];
+  DECLARE_ALIGNED(32, int, txfm_buf[4 * 8 + 8 + 8]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_4X8, bd);
 }
 
 void av1_inv_txfm2d_add_8x4_c(const int32_t *input, uint16_t *output,
                               int stride, TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int txfm_buf[8 * 4 + 8 + 8];
+  DECLARE_ALIGNED(32, int, txfm_buf[8 * 4 + 8 + 8]);
   int32_t rinput[8 * 4];
   uint16_t routput[8 * 4];
   TX_SIZE tx_size = TX_8X4;
@@ -263,21 +264,21 @@ void av1_inv_txfm2d_add_8x4_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #else
-  int txfm_buf[8 * 4 + 4 + 4];
+  DECLARE_ALIGNED(32, int, txfm_buf[8 * 4 + 4 + 4]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_8X4, bd);
 #endif
 }
 
 void av1_inv_txfm2d_add_8x16_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[8 * 16 + 16 + 16];
+  DECLARE_ALIGNED(32, int, txfm_buf[8 * 16 + 16 + 16]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_8X16, bd);
 }
 
 void av1_inv_txfm2d_add_16x8_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int txfm_buf[16 * 8 + 16 + 16];
+  DECLARE_ALIGNED(32, int, txfm_buf[16 * 8 + 16 + 16]);
   int32_t rinput[16 * 8];
   uint16_t routput[16 * 8];
   TX_SIZE tx_size = TX_16X8;
@@ -292,21 +293,21 @@ void av1_inv_txfm2d_add_16x8_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #else
-  int txfm_buf[16 * 8 + 8 + 8];
+  DECLARE_ALIGNED(32, int, txfm_buf[16 * 8 + 8 + 8]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X8, bd);
 #endif
 }
 
 void av1_inv_txfm2d_add_16x32_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[16 * 32 + 32 + 32];
+  DECLARE_ALIGNED(32, int, txfm_buf[16 * 32 + 32 + 32]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X32, bd);
 }
 
 void av1_inv_txfm2d_add_32x16_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int txfm_buf[32 * 16 + 32 + 32];
+  DECLARE_ALIGNED(32, int, txfm_buf[32 * 16 + 32 + 32]);
   int32_t rinput[32 * 16];
   uint16_t routput[32 * 16];
   TX_SIZE tx_size = TX_32X16;
@@ -321,32 +322,32 @@ void av1_inv_txfm2d_add_32x16_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #else
-  int txfm_buf[32 * 16 + 16 + 16];
+  DECLARE_ALIGNED(32, int, txfm_buf[32 * 16 + 16 + 16]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X16, bd);
 #endif
 }
 
 void av1_inv_txfm2d_add_4x4_c(const int32_t *input, uint16_t *output,
                               int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[4 * 4 + 4 + 4];
+  DECLARE_ALIGNED(32, int, txfm_buf[4 * 4 + 4 + 4]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_4X4, bd);
 }
 
 void av1_inv_txfm2d_add_8x8_c(const int32_t *input, uint16_t *output,
                               int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[8 * 8 + 8 + 8];
+  DECLARE_ALIGNED(32, int, txfm_buf[8 * 8 + 8 + 8]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_8X8, bd);
 }
 
 void av1_inv_txfm2d_add_16x16_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[16 * 16 + 16 + 16];
+  DECLARE_ALIGNED(32, int, txfm_buf[16 * 16 + 16 + 16]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X16, bd);
 }
 
 void av1_inv_txfm2d_add_32x32_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[32 * 32 + 32 + 32];
+  DECLARE_ALIGNED(32, int, txfm_buf[32 * 32 + 32 + 32]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X32, bd);
 }
 
@@ -363,7 +364,7 @@ void av1_inv_txfm2d_add_64x64_c(const int32_t *input, uint16_t *output,
     memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
   }
   memset(mod_input + 32 * 64, 0, 32 * 64 * sizeof(*mod_input));
-  int txfm_buf[64 * 64 + 64 + 64];
+  DECLARE_ALIGNED(32, int, txfm_buf[64 * 64 + 64 + 64]);
   inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_64X64,
                         bd);
 }
@@ -379,7 +380,7 @@ void av1_inv_txfm2d_add_64x32_c(const int32_t *input, uint16_t *output,
     memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
   }
 #if CONFIG_TXMG
-  int txfm_buf[64 * 32 + 64 + 64];
+  DECLARE_ALIGNED(32, int, txfm_buf[64 * 32 + 64 + 64]);
   int32_t rinput[64 * 32];
   uint16_t routput[64 * 32];
   TX_SIZE tx_size = TX_64X32;
@@ -394,7 +395,7 @@ void av1_inv_txfm2d_add_64x32_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #else
-  int txfm_buf[64 * 32 + 64 + 64];
+  DECLARE_ALIGNED(32, int, txfm_buf[64 * 32 + 64 + 64]);
   inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_64X32,
                         bd);
 #endif  // CONFIG_TXMG
@@ -408,7 +409,7 @@ void av1_inv_txfm2d_add_32x64_c(const int32_t *input, uint16_t *output,
   int32_t mod_input[32 * 64];
   memcpy(mod_input, input, 32 * 32 * sizeof(*mod_input));
   memset(mod_input + 32 * 32, 0, 32 * 32 * sizeof(*mod_input));
-  int txfm_buf[64 * 32 + 64 + 64];
+  DECLARE_ALIGNED(32, int, txfm_buf[64 * 32 + 64 + 64]);
   inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_32X64,
                         bd);
 }
@@ -421,7 +422,7 @@ void av1_inv_txfm2d_add_16x64_c(const int32_t *input, uint16_t *output,
   int32_t mod_input[16 * 64];
   memcpy(mod_input, input, 16 * 32 * sizeof(*mod_input));
   memset(mod_input + 16 * 32, 0, 16 * 32 * sizeof(*mod_input));
-  int txfm_buf[16 * 64 + 64 + 64];
+  DECLARE_ALIGNED(32, int, txfm_buf[16 * 64 + 64 + 64]);
   inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_16X64,
                         bd);
 }
@@ -437,7 +438,7 @@ void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
     memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
   }
 #if CONFIG_TXMG
-  int txfm_buf[16 * 64 + 64 + 64];
+  DECLARE_ALIGNED(32, int, txfm_buf[16 * 64 + 64 + 64]);
   int32_t rinput[16 * 64];
   uint16_t routput[16 * 64];
   TX_SIZE tx_size = TX_64X16;
@@ -452,7 +453,7 @@ void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #else
-  int txfm_buf[16 * 64 + 64 + 64];
+  DECLARE_ALIGNED(32, int, txfm_buf[16 * 64 + 64 + 64]);
   inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_64X16,
                         bd);
 #endif  // CONFIG_TXMG
@@ -461,14 +462,14 @@ void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
 
 void av1_inv_txfm2d_add_4x16_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[4 * 16 + 16 + 16];
+  DECLARE_ALIGNED(32, int, txfm_buf[4 * 16 + 16 + 16]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_4X16, bd);
 }
 
 void av1_inv_txfm2d_add_16x4_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int txfm_buf[4 * 16 + 16 + 16];
+  DECLARE_ALIGNED(32, int, txfm_buf[4 * 16 + 16 + 16]);
   int32_t rinput[4 * 16];
   uint16_t routput[4 * 16];
   TX_SIZE tx_size = TX_16X4;
@@ -483,21 +484,21 @@ void av1_inv_txfm2d_add_16x4_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #else
-  int txfm_buf[4 * 16 + 16 + 16];
+  DECLARE_ALIGNED(32, int, txfm_buf[4 * 16 + 16 + 16]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X4, bd);
 #endif  // CONFIG_TXMG
 }
 
 void av1_inv_txfm2d_add_8x32_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
-  int txfm_buf[8 * 32 + 32 + 32];
+  DECLARE_ALIGNED(32, int, txfm_buf[8 * 32 + 32 + 32]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_8X32, bd);
 }
 
 void av1_inv_txfm2d_add_32x8_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
 #if CONFIG_TXMG
-  int txfm_buf[8 * 32 + 32 + 32];
+  DECLARE_ALIGNED(32, int, txfm_buf[8 * 32 + 32 + 32]);
   int32_t rinput[8 * 32];
   uint16_t routput[8 * 32];
   TX_SIZE tx_size = TX_32X8;
@@ -512,7 +513,7 @@ void av1_inv_txfm2d_add_32x8_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #else
-  int txfm_buf[8 * 32 + 32 + 32];
+  DECLARE_ALIGNED(32, int, txfm_buf[8 * 32 + 32 + 32]);
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X8, bd);
 #endif  // CONFIG_TXMG
 }
