@@ -107,6 +107,21 @@ static const int idx_n_column_to_subblock[4][2] = {
 #define MV_BORDER (8 << 3)  // Allow 8 pels in 1/8th pel units
 #endif                      // CONFIG_EXT_PARTITION
 
+#if CONFIG_FRAME_MARKER
+// Get the number of frames between the current frame and a reference frame
+static INLINE int get_ref_frame_dist(const AV1_COMMON *cm,
+                                     MV_REFERENCE_FRAME ref) {
+  // get the offset between the key frame and the current frame
+  const int cur_frame_offset = cm->frame_offset;
+  // get the offset between the key frame and the reference frame
+  const int ref_buf_idx = cm->frame_refs[ref - LAST_FRAME].idx;
+  if (ref_buf_idx == INVALID_IDX) return INT_MAX;
+  const int ref_frame_offset =
+      cm->buffer_pool->frame_bufs[ref_buf_idx].cur_frame_offset;
+  return cur_frame_offset - ref_frame_offset;
+}
+#endif  // CONFIG_FRAME_MARKER
+
 static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
   clamp_mv(mv, xd->mb_to_left_edge - bw * 8 - MV_BORDER,
            xd->mb_to_right_edge + bw * 8 + MV_BORDER,
