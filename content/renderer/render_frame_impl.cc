@@ -6730,13 +6730,12 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
 
   blink::WebURLRequest& request = info.url_request;
 
-  // Set RequestorOrigin and SiteForCookies
+  // Set SiteForCookies.
   WebDocument frame_document = frame_->GetDocument();
   if (request.GetFrameType() == blink::WebURLRequest::kFrameTypeTopLevel)
     request.SetSiteForCookies(request.Url());
   else
     request.SetSiteForCookies(frame_document.SiteForCookies());
-  request.SetRequestorOrigin(frame_document.GetSecurityOrigin());
 
   // Note: At this stage, the goal is to apply all the modifications the
   // renderer wants to make to the request, and then send it to the browser, so

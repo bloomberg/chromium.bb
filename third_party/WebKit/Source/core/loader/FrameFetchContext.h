@@ -224,7 +224,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   Settings* GetSettings() const;
   String GetUserAgent() const;
   scoped_refptr<const SecurityOrigin> GetRequestorOrigin();
-  scoped_refptr<const SecurityOrigin> GetRequestorOriginForFrameLoading();
   ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
   bool ShouldSendClientHint(mojom::WebClientHintsType,

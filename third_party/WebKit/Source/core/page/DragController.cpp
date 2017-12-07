@@ -293,8 +293,12 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
 
   if (OperationForLoad(drag_data, local_root) != kDragOperationNone) {
     if (page_->GetSettings().GetNavigateOnDragDrop()) {
-      page_->MainFrame()->Navigate(
-          FrameLoadRequest(nullptr, ResourceRequest(drag_data->AsURL())));
+      ResourceRequest resource_request(drag_data->AsURL());
+      // TODO(mkwst): Perhaps this should use a unique origin as the requestor
+      // origin rather than the origin of the dragged data URL?
+      resource_request.SetRequestorOrigin(
+          SecurityOrigin::Create(KURL(drag_data->AsURL())));
+      page_->MainFrame()->Navigate(FrameLoadRequest(nullptr, resource_request));
     }
 
     // TODO(bokan): This case happens when we end a URL drag inside a guest

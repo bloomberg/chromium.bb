@@ -194,7 +194,6 @@ struct FrameFetchContext::FrozenState final
       const ContentSecurityPolicy* content_security_policy,
       KURL site_for_cookies,
       scoped_refptr<const SecurityOrigin> requestor_origin,
-      scoped_refptr<const SecurityOrigin> requestor_origin_for_frame_loading,
       const ClientHintsPreferences& client_hints_preferences,
       float device_pixel_ratio,
       const String& user_agent,
@@ -209,7 +208,6 @@ struct FrameFetchContext::FrozenState final
         content_security_policy(content_security_policy),
         site_for_cookies(site_for_cookies),
         requestor_origin(requestor_origin),
-        requestor_origin_for_frame_loading(requestor_origin_for_frame_loading),
         client_hints_preferences(client_hints_preferences),
         device_pixel_ratio(device_pixel_ratio),
         user_agent(user_agent),
@@ -225,7 +223,6 @@ struct FrameFetchContext::FrozenState final
   const Member<const ContentSecurityPolicy> content_security_policy;
   const KURL site_for_cookies;
   const scoped_refptr<const SecurityOrigin> requestor_origin;
-  const scoped_refptr<const SecurityOrigin> requestor_origin_for_frame_loading;
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
   const String user_agent;
@@ -902,18 +899,15 @@ void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     }
   }
 
-  // Subresource requests inherit their requestor origin from |document_|
-  // directly.  Top-level frame types are taken care of in 'FrameLoadRequest()'.
-  // Auxiliary frame types in 'CreateWindow()' and 'FrameLoader::Load'.
-  if (!request.RequestorOrigin()) {
-    if (request.GetFrameType() == WebURLRequest::kFrameTypeNone) {
+  // * For subresources, the initiator origin is the origin of the
+  //   |document_| that contains them.
+  // * For loading a new document in the frame, the initiator is not set here.
+  //   In most of the cases, it is set in the FrameLoadRequest constructor.
+  //   Otherwise, it must be set immediately after the request has been created.
+  //   See the calls to ResourceRequest::SetRequestorOrigin().
+  if (request.GetFrameType() == WebURLRequest::kFrameTypeNone) {
+    if (!request.RequestorOrigin())
       request.SetRequestorOrigin(GetRequestorOrigin());
-    } else {
-      // Set the requestor origin to the same origin as the frame's document
-      // if it hasn't yet been set. (We may hit here for nested frames and
-      // redirect cases)
-      request.SetRequestorOrigin(GetRequestorOriginForFrameLoading());
-    }
   }
 }
 
@@ -1133,14 +1127,6 @@ scoped_refptr<const SecurityOrigin> FrameFetchContext::GetRequestorOrigin() {
   return GetSecurityOrigin();
 }
 
-scoped_refptr<const SecurityOrigin>
-FrameFetchContext::GetRequestorOriginForFrameLoading() {
-  if (IsDetached())
-    return frozen_state_->requestor_origin;
-
-  return GetFrame()->GetDocument()->GetSecurityOrigin();
-}
-
 ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences() const {
   if (IsDetached())
     return frozen_state_->client_hints_preferences;
@@ -1221,18 +1207,17 @@ FetchContext* FrameFetchContext::Detach() {
         GetReferrerPolicy(), GetOutgoingReferrer(), Url(), GetSecurityOrigin(),
         GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(), GetRequestorOrigin(),
-        GetRequestorOriginForFrameLoading(), GetClientHintsPreferences(),
-        GetDevicePixelRatio(), GetUserAgent(), IsMainFrame(),
-        IsSVGImageChromeClient());
+        GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
+        IsMainFrame(), IsSVGImageChromeClient());
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = new FrozenState(
         kReferrerPolicyDefault, String(), NullURL(), GetSecurityOrigin(),
         GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(),
-        SecurityOrigin::CreateUnique(), SecurityOrigin::CreateUnique(),
-        GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
-        IsMainFrame(), IsSVGImageChromeClient());
+        SecurityOrigin::CreateUnique(), GetClientHintsPreferences(),
+        GetDevicePixelRatio(), GetUserAgent(), IsMainFrame(),
+        IsSVGImageChromeClient());
   }
 
   // This is needed to break a reference cycle in which off-heap

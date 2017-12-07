@@ -437,8 +437,6 @@ DOMWindow* CreateWindow(const String& url_string,
                                                             : kMaybeSetOpener);
   frame_request.GetResourceRequest().SetFrameType(
       WebURLRequest::kFrameTypeAuxiliary);
-  frame_request.GetResourceRequest().SetRequestorOrigin(
-      SecurityOrigin::Create(active_frame->GetDocument()->Url()));
 
   // Normally, FrameLoader would take care of setting the referrer for a
   // navigation that is triggered from javascript. However, creating a window

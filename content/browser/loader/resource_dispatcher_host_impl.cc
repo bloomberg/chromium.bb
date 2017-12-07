@@ -1213,14 +1213,13 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     }
 
     new_request->set_method(request_data.method);
-
     new_request->set_site_for_cookies(request_data.site_for_cookies);
 
-    // The initiator should normally be present, unless this is a navigation in
-    // a top-level frame. It may be null for some top-level navigations (eg:
-    // browser-initiated ones).
+    // The initiator should normally be present, unless this is a navigation.
+    // Browser-initiated navigations don't have an initiator document, the
+    // others have one.
     DCHECK(request_data.request_initiator.has_value() ||
-           request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME);
+           IsResourceTypeFrame(request_data.resource_type));
     new_request->set_initiator(request_data.request_initiator);
 
     if (request_data.originated_from_service_worker) {
