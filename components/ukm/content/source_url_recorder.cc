@@ -18,10 +18,6 @@
 
 namespace {
 
-bool IsValidUkmUrl(const GURL& url) {
-  return url.SchemeIsHTTPOrHTTPS();
-}
-
 // SourceUrlRecorderWebContentsObserver is responsible for recording UKM source
 // URLs, for all main frame navigations in a given WebContents.
 // SourceUrlRecorderWebContentsObserver records both the final URL for a
@@ -122,12 +118,10 @@ void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
 
   const ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-
-  if (IsValidUkmUrl(initial_url))
-    ukm_recorder->UpdateSourceURL(source_id, initial_url);
+  ukm_recorder->UpdateSourceURL(source_id, initial_url);
 
   const GURL& final_url = navigation_handle->GetURL();
-  if (final_url != initial_url && IsValidUkmUrl(final_url))
+  if (final_url != initial_url)
     ukm_recorder->UpdateSourceURL(source_id, final_url);
 }
 

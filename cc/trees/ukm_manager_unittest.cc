@@ -10,8 +10,8 @@
 namespace cc {
 namespace {
 
-const char kTestUrl1[] = "chrome://test";
-const char kTestUrl2[] = "chrome://test2";
+const char kTestUrl1[] = "https://example.com/foo";
+const char kTestUrl2[] = "https://example.com/bar";
 
 const char kUserInteraction[] = "Compositor.UserInteraction";
 const char kCheckerboardArea[] = "CheckerboardedContentArea";

@@ -41868,6 +41868,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Recording disabled"/>
   <int value="2" label="Max hit"/>
   <int value="3" label="Not whitelisted"/>
+  <int value="4" label="Unsupported URL scheme"/>
 </enum>
 
 <enum name="UmaCleanExitConsistency">
