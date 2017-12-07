@@ -32,18 +32,17 @@ class DataReductionProxyConfigurator {
   DataReductionProxyConfigurator(net::NetLog* net_log,
                                  DataReductionProxyEventCreator* event_creator);
 
-  virtual ~DataReductionProxyConfigurator();
+  ~DataReductionProxyConfigurator();
 
   // Enables data reduction using the proxy servers in |proxies_for_http|.
   // TODO: crbug.com/675764: Pass a vector of DataReductionProxyServer
   // instead of net::ProxyServer.
-  virtual void Enable(
-      const NetworkPropertiesManager& network_properties_manager,
-      const std::vector<DataReductionProxyServer>& proxies_for_http);
+  void Enable(const NetworkPropertiesManager& network_properties_manager,
+              const std::vector<DataReductionProxyServer>& proxies_for_http);
 
   // Constructs a proxy configuration suitable for disabling the Data Reduction
   // proxy.
-  virtual void Disable();
+  void Disable();
 
   // Sets the host patterns to bypass.
   //

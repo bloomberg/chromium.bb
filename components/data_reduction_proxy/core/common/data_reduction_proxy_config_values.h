@@ -15,7 +15,9 @@ class DataReductionProxyConfigValues {
  public:
   virtual ~DataReductionProxyConfigValues() {}
 
-  // Returns the HTTP proxy servers to be used.
+  // Returns the HTTP proxy servers to be used. Proxies that cannot be used
+  // because they are temporarily or permanently marked as bad are also
+  // included.
   virtual const std::vector<DataReductionProxyServer>& proxies_for_http()
       const = 0;
 };

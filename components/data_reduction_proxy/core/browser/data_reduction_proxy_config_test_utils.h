@@ -107,7 +107,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   void SetCurrentNetworkID(const std::string& network_id);
 
   using DataReductionProxyConfig::UpdateConfigForTesting;
-  using DataReductionProxyConfig::OnInsecureProxyWarmupURLProbeStatusChange;
   using DataReductionProxyConfig::HandleWarmupFetcherResponse;
 
  private:

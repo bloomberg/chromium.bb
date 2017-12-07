@@ -202,13 +202,6 @@ class DataReductionProxyConfig
   const NetworkPropertiesManager& GetNetworkPropertiesManager() const;
 
  protected:
-  // Should be called when there is a change in the status of the availability
-  // of the insecure data saver proxies triggered due to fetching of the warmup
-  // URL. |is_core_proxy| indicates if the warmup URL was fetched over a core
-  // data saver proxy or not.
-  void OnInsecureProxyWarmupURLProbeStatusChange(bool insecure_proxies_allowed,
-                                                 bool is_core_proxy);
-
   virtual base::TimeTicks GetTicksNow() const;
 
   // Updates the Data Reduction Proxy configurator with the current config.
