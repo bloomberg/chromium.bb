@@ -62,7 +62,6 @@
 #include "av1/decoder/decodetxb.h"
 #endif
 #include "av1/decoder/detokenize.h"
-#include "av1/decoder/dsubexp.h"
 #include "av1/decoder/symbolrate.h"
 
 #include "av1/common/warped_motion.h"

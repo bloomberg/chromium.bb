@@ -15,7 +15,6 @@
 #include "av1/common/txb_common.h"
 #include "av1/decoder/decodemv.h"
 #include "av1/decoder/decodetxb.h"
-#include "av1/decoder/dsubexp.h"
 #include "av1/decoder/symbolrate.h"
 
 #define ACCT_STR __func__
