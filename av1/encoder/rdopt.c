@@ -10647,9 +10647,11 @@ PALETTE_EXIT:
     x->compound_idx = 1;  // COMPOUND_AVERAGE
 #if SKIP_MODE_WITH_JNT_COMP
     const int cur_offset = (int)cm->frame_offset;
-    const int cur_to_fwd = cur_offset - cm->ref_frame_idx_0;
-    const int cur_to_bwd = abs(cm->ref_frame_idx_1 - cur_offset);
-    if (cur_to_fwd != cur_to_bwd && xd->all_one_sided_refs) {
+    int ref_offset[2];
+    get_skip_mode_ref_offsets(cm, ref_offset);
+    const int cur_to_ref0 = cur_offset - ref_offset[0];
+    const int cur_to_ref1 = abs(cur_offset - ref_offset[0]);
+    if (cur_to_ref0 != cur_to_ref1 && xd->all_one_sided_refs) {
       // Decide on the JNT_COMP mode.
       int64_t best_skip_mode_rd = INT64_MAX;
       int best_compound_idx = 0;

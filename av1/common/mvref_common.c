@@ -2022,7 +2022,7 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *const cm) {
   cm->is_skip_mode_allowed = 0;
   cm->ref_frame_idx_0 = cm->ref_frame_idx_1 = INVALID_IDX;
 
-  if (cm->frame_type == KEY_FRAME || cm->intra_only) return;
+  if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE) return;
 
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
   const int cur_frame_offset = cm->frame_offset;
@@ -2030,7 +2030,7 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *const cm) {
   int ref_idx[2] = { INVALID_IDX, INVALID_IDX };
   int ref_buf_idx[2] = { INVALID_IDX, INVALID_IDX };
 
-  // Identify the nearest forward and backward references
+  // Identify the nearest forward and backward references.
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     const int buf_idx = cm->frame_refs[i].idx;
     if (buf_idx == INVALID_IDX) continue;
@@ -2053,30 +2053,15 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *const cm) {
     }
   }
 
-  // Flag is set when and only when both forward and backward references
-  // are available and the difference between their temporal distance to
-  // the current frame is no greater than 1, i.e. they may have the same
-  // temporal distance to the current frame, or the distances are off by 1.
   if (ref_idx[0] != INVALID_IDX && ref_idx[1] != INVALID_IDX) {
-    const int cur_to_fwd = cm->frame_offset - ref_frame_offset[0];
-    const int cur_to_bwd = ref_frame_offset[1] - cm->frame_offset;
-#if 0
-    if ((ref_frame_offset[1] - ref_frame_offset[0]) <= 3)
-#endif  // 0
-    if (abs(cur_to_fwd - cur_to_bwd) <= 1) {
-      cm->is_skip_mode_allowed = 1;
-      cm->ref_frame_idx_0 = ref_idx[0];
-      cm->ref_frame_idx_1 = ref_idx[1];
-    }
-  }
-
-  // NOTE: Low delay scenario
-  if (av1_refs_are_one_sided(cm)) {
-    assert(ref_idx[1] == INVALID_IDX);
-    assert(ref_idx[0] != INVALID_IDX);
-    // Identify the second closest forward reference frame.
+    // == Bi-directional prediction ==
+    cm->is_skip_mode_allowed = 1;
+    cm->ref_frame_idx_0 = ref_idx[0];
+    cm->ref_frame_idx_1 = ref_idx[1];
+  } else if (ref_idx[0] != INVALID_IDX && ref_idx[1] == INVALID_IDX) {
+    // == Forward prediction only ==
+    // Identify the second nearest forward reference.
     ref_frame_offset[1] = -1;
-    cm->is_skip_mode_allowed = 0;
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
       const int buf_idx = cm->frame_refs[i].idx;
       if (buf_idx == INVALID_IDX) continue;
@@ -2091,14 +2076,9 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *const cm) {
       }
     }
     if (ref_frame_offset[1] >= 0) {
-      const int cur_to_fwd0 = cur_frame_offset - ref_frame_offset[0];
-      const int cur_to_fwd1 = cur_frame_offset - ref_frame_offset[1];
-      assert(cur_to_fwd1 > cur_to_fwd0);
-      if ((cur_to_fwd1 - cur_to_fwd0) <= 1) {
-        cm->is_skip_mode_allowed = 1;
-        cm->ref_frame_idx_0 = AOMMIN(ref_idx[0], ref_idx[1]);
-        cm->ref_frame_idx_1 = AOMMAX(ref_idx[0], ref_idx[1]);
-      }
+      cm->is_skip_mode_allowed = 1;
+      cm->ref_frame_idx_0 = AOMMIN(ref_idx[0], ref_idx[1]);
+      cm->ref_frame_idx_1 = AOMMAX(ref_idx[0], ref_idx[1]);
     }
   }
 

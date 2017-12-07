@@ -2198,9 +2198,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
   if (mbmi->skip_mode) {
     const int cur_offset = (int)cm->frame_offset;
-    const int cur_to_fwd = cur_offset - cm->ref_frame_idx_0;
-    const int cur_to_bwd = abs(cm->ref_frame_idx_1 - cur_offset);
-    if (cur_to_fwd != cur_to_bwd && xd->all_one_sided_refs) {
+    int ref_offset[2];
+    get_skip_mode_ref_offsets(cm, ref_offset);
+    const int cur_to_ref0 = cur_offset - ref_offset[0];
+    const int cur_to_ref1 = abs(cur_offset - ref_offset[1]);
+    if (cur_to_ref0 != cur_to_ref1 && xd->all_one_sided_refs) {
       const int comp_index_ctx = get_comp_index_context(cm, xd);
       mbmi->compound_idx = aom_read_symbol(
           r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
@@ -2349,12 +2351,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_EXT_SKIP
   mbmi->skip_mode = read_skip_mode(cm, xd, mbmi->segment_id, r);
-#if 0
-  if (mbmi->skip_mode)
-    printf("Frame=%d, frame_offset=%d, (mi_row,mi_col)=(%d,%d), skip_mode=%d\n",
-           cm->current_video_frame, cm->frame_offset, mi_row, mi_col,
-           mbmi->skip_mode);
-#endif  // 0
 
   if (mbmi->skip_mode)
     mbmi->skip = 1;
