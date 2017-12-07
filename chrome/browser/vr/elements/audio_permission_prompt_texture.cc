@@ -37,7 +37,7 @@ constexpr float kButtonRadius = 0.0035f;
 
 constexpr float kButtonWidth = 0.162f;
 
-constexpr char kPreferredFontNameForButtons[] = "sans-serif.medium";
+constexpr char kPreferredFontNameForButtons[] = "sans-serif-medium";
 
 }  // namespace
 
