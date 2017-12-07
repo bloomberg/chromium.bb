@@ -11,9 +11,8 @@ import json
 
 class CrossOriginPush(IntegrationTest):
   # Ensure cross origin push from trusted proxy server is adopted by Chromium.
-  # Disabled on android because the net log is not copied yet. crbug.com/761507
   @ChromeVersionEqualOrAfterM(62)
-  def testClientConfigVariationsHeader(self):
+  def testCrossOriginPush(self):
     with TestDriver() as t:
       t.UseNetLog()
       t.AddChromeArg('--enable-spdy-proxy-auth')
