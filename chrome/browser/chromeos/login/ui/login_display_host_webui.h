@@ -42,7 +42,6 @@ class FocusRingController;
 namespace chromeos {
 
 class ArcKioskController;
-class DemoAppLauncher;
 class LoginDisplayWebUI;
 class WebUILoginView;
 
@@ -80,7 +79,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   void StartAppLaunch(const std::string& app_id,
                       bool diagnostic_mode,
                       bool auto_launch) override;
-  void StartDemoAppLaunch() override;
   void StartArcKiosk(const AccountId& account_id) override;
   bool IsVoiceInteractionOobe() override;
   void StartVoiceInteractionOobe() override;
@@ -206,9 +204,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
 
   // App launch controller.
   std::unique_ptr<AppLaunchController> app_launch_controller_;
-
-  // Demo app launcher.
-  std::unique_ptr<DemoAppLauncher> demo_app_launcher_;
 
   // ARC kiosk controller.
   std::unique_ptr<ArcKioskController> arc_kiosk_controller_;

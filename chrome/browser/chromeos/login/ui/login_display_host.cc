@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -62,6 +63,14 @@ void LoginDisplayHost::PrewarmAuthentication() {
   auth_prewarmer_ = std::make_unique<AuthPrewarmer>();
   auth_prewarmer_->PrewarmAuthentication(base::BindOnce(
       &LoginDisplayHost::OnAuthPrewarmDone, weak_factory_.GetWeakPtr()));
+}
+
+void LoginDisplayHost::StartDemoAppLaunch() {
+  VLOG(1) << "Login >> starting demo app.";
+  SetStatusAreaVisible(false);
+
+  demo_app_launcher_ = std::make_unique<DemoAppLauncher>();
+  demo_app_launcher_->StartDemoAppLaunch();
 }
 
 void LoginDisplayHost::OnAuthPrewarmDone() {

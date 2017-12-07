@@ -37,7 +37,6 @@
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -791,14 +790,6 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
 void LoginDisplayHostWebUI::OnPreferencesChanged() {
   if (is_showing_login_)
     login_display_->OnPreferencesChanged();
-}
-
-void LoginDisplayHostWebUI::StartDemoAppLaunch() {
-  VLOG(1) << "Login WebUI >> starting demo app.";
-  SetStatusAreaVisible(false);
-
-  demo_app_launcher_.reset(new DemoAppLauncher());
-  demo_app_launcher_->StartDemoAppLaunch();
 }
 
 void LoginDisplayHostWebUI::StartAppLaunch(const std::string& app_id,
