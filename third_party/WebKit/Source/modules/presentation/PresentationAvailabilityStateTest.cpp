@@ -171,7 +171,7 @@ TEST_F(PresentationAvailabilityStateTest,
 TEST_F(PresentationAvailabilityStateTest,
        RequestAvailabilityOneUrlNoAvailabilityChange) {
   auto* mock_callback =
-      new testing::StrictMock<MockPresentationAvailabilityCallbacks>();
+      new ::testing::StrictMock<MockPresentationAvailabilityCallbacks>();
 
   EXPECT_CALL(mock_presentation_service_, ListenForScreenAvailability(url1_))
       .Times(1);
