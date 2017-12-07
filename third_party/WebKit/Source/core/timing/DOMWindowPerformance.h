@@ -5,10 +5,10 @@
 #ifndef DOMWindowPerformance_h
 #define DOMWindowPerformance_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -19,7 +19,6 @@ class CORE_EXPORT DOMWindowPerformance final
     : public GarbageCollected<DOMWindowPerformance>,
       public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPerformance);
-  WTF_MAKE_NONCOPYABLE(DOMWindowPerformance);
 
  public:
   static DOMWindowPerformance& From(LocalDOMWindow&);
@@ -34,6 +33,7 @@ class CORE_EXPORT DOMWindowPerformance final
   Performance* performance();
 
   Member<Performance> performance_;
+  DISALLOW_COPY_AND_ASSIGN(DOMWindowPerformance);
 };
 
 }  // namespace blink
