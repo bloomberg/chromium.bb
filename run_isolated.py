@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.10.2'
+__version__ = '0.10.3'
 
 import argparse
 import base64
@@ -140,6 +140,58 @@ for more information.
 
 *** May the SIGKILL force be with you ***
 """
+
+
+TaskData = collections.namedtuple(
+    'TaskData', [
+      # List of strings; the command line to use, independent of what was
+      # specified in the isolated file.
+      'command',
+      # List of strings; the arguments to add to the command specified in the
+      # isolated file.
+      'extra_args',
+      # Hash of the .isolated file that must be retrieved to recreate the tree
+      # of files to run the target executable. The command specified in the
+      # .isolated is executed.  Mutually exclusive with command argument.
+      'isolated_hash',
+      # isolateserver.Storage instance to retrieve remote objects. This object
+      # has a reference to an isolateserver.StorageApi, which does the actual
+      # I/O.
+      'storage',
+      # isolateserver.LocalCache instance to keep from retrieving the same
+      # objects constantly by caching the objects retrieved. Can be on-disk or
+      # in-memory.
+      'isolate_cache',
+      # List of paths relative to root_dir to put into the output isolated
+      # bundle upon task completion (see link_outputs_to_outdir).
+      'outputs',
+      # Function (run_dir) => context manager that installs named caches into
+      # |run_dir|.
+      'install_named_caches',
+      # If True, the temporary directory will be deliberately leaked for later
+      # examination.
+      'leak_temp_dir',
+      # Path to the directory to use to create the temporary directory. If not
+      # specified, a random temporary directory is created.
+      'root_dir',
+      # Kills the process if it lasts more than this amount of seconds.
+      'hard_timeout',
+      # Number of seconds to wait between SIGTERM and SIGKILL.
+      'grace_period',
+      # Path to a file with bot state, used in place of ${SWARMING_BOT_FILE}
+      # task command line argument.
+      'bot_file',
+      # Logical account to switch LUCI_CONTEXT into.
+      'switch_to_account',
+      # Context manager dir => CipdInfo, see install_client_and_packages.
+      'install_packages_fn',
+      # Create tree with symlinks instead of hardlinks.
+      'use_symlinks',
+      # Environment variables to set.
+      'env',
+      # Environment variables to mutate with relative directories.
+      # Example: {"ENV_KEY": ['relative', 'paths', 'to', 'prepend']}
+      'env_prefix'])
 
 
 def get_as_zip_package(executable=True):
@@ -516,19 +568,15 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
   return outputs_ref, success, stats
 
 
-def map_and_run(
-    command, isolated_hash, storage, isolate_cache, outputs,
-    install_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
-    bot_file, switch_to_account, install_packages_fn, use_symlinks, raw_cmd,
-    env, env_prefixes, constant_run_path):
+def map_and_run(data, constant_run_path):
   """Runs a command with optional isolated input/output.
 
-  See run_tha_test for argument documentation.
+  Arguments:
+  - data: TaskData instance.
+  - constant_run_path: TODO
 
   Returns metadata about the result.
   """
-  assert isinstance(command, list), command
-  assert root_dir or root_dir is None
   result = {
     'duration': None,
     'exit_code': None,
@@ -565,45 +613,48 @@ def map_and_run(
     'version': 5,
   }
 
-  if root_dir:
-    file_path.ensure_tree(root_dir, 0700)
-  elif isolate_cache.cache_dir:
-    root_dir = os.path.dirname(isolate_cache.cache_dir)
+  if data.root_dir:
+    file_path.ensure_tree(data.root_dir, 0700)
+  elif data.isolate_cache.cache_dir:
+    data = data._replace(
+        root_dir=os.path.dirname(data.isolate_cache.cache_dir))
   # See comment for these constants.
   # If root_dir is not specified, it is not constant.
   # TODO(maruel): This is not obvious. Change this to become an error once we
   # make the constant_run_path an exposed flag.
-  if constant_run_path and root_dir:
-    run_dir = os.path.join(root_dir, ISOLATED_RUN_DIR)
+  if constant_run_path and data.root_dir:
+    run_dir = os.path.join(data.root_dir, ISOLATED_RUN_DIR)
     if os.path.isdir(run_dir):
       file_path.rmtree(run_dir)
     os.mkdir(run_dir)
   else:
-    run_dir = make_temp_dir(ISOLATED_RUN_DIR, root_dir)
+    run_dir = make_temp_dir(ISOLATED_RUN_DIR, data.root_dir)
   # storage should be normally set but don't crash if it is not. This can happen
   # as Swarming task can run without an isolate server.
-  out_dir = make_temp_dir(ISOLATED_OUT_DIR, root_dir) if storage else None
-  tmp_dir = make_temp_dir(ISOLATED_TMP_DIR, root_dir)
+  out_dir = make_temp_dir(
+      ISOLATED_OUT_DIR, data.root_dir) if data.storage else None
+  tmp_dir = make_temp_dir(ISOLATED_TMP_DIR, data.root_dir)
   cwd = run_dir
 
+  command = data.command
   try:
-    with install_packages_fn(run_dir) as cipd_info:
+    with data.install_packages_fn(run_dir) as cipd_info:
       if cipd_info:
         result['stats']['cipd'] = cipd_info.stats
         result['cipd_pins'] = cipd_info.pins
 
-      if isolated_hash:
+      if data.isolated_hash:
         isolated_stats = result['stats'].setdefault('isolated', {})
         bundle, isolated_stats['download'] = fetch_and_map(
-            isolated_hash=isolated_hash,
-            storage=storage,
-            cache=isolate_cache,
+            isolated_hash=data.isolated_hash,
+            storage=data.storage,
+            cache=data.isolate_cache,
             outdir=run_dir,
-            use_symlinks=use_symlinks)
+            use_symlinks=data.use_symlinks)
         change_tree_read_only(run_dir, bundle.read_only)
         # Inject the command
-        if not raw_cmd and bundle.command:
-          command = bundle.command + command
+        if not command and bundle.command:
+          command = bundle.command + data.extra_args
           # Only set the relative directory if the isolated file specified a
           # command, and no raw command was specified.
           if bundle.relative_cwd:
@@ -619,23 +670,24 @@ def map_and_run(
 
       # If we have an explicit list of files to return, make sure their
       # directories exist now.
-      if storage and outputs:
-        isolateserver.create_directories(run_dir, outputs)
+      if data.storage and data.outputs:
+        isolateserver.create_directories(run_dir, data.outputs)
 
       command = tools.fix_python_path(command)
-      command = process_command(command, out_dir, bot_file)
+      command = process_command(command, out_dir, data.bot_file)
       file_path.ensure_command_has_abs_path(command, cwd)
 
-      with install_named_caches(run_dir):
+      with data.install_named_caches(run_dir):
         sys.stdout.flush()
         start = time.time()
         try:
           # Need to switch the default account before 'get_command_env' call,
           # so it can grab correct value of LUCI_CONTEXT env var.
-          with set_luci_context_account(switch_to_account, tmp_dir):
-            env = get_command_env(tmp_dir, cipd_info, cwd, env, env_prefixes)
+          with set_luci_context_account(data.switch_to_account, tmp_dir):
+            env = get_command_env(
+                tmp_dir, cipd_info, cwd, data.env, data.env_prefix)
             result['exit_code'], result['had_hard_timeout'] = run_command(
-                command, cwd, env, hard_timeout, grace_period)
+                command, cwd, env, data.hard_timeout, data.grace_period)
         finally:
           result['duration'] = max(time.time() - start, 0)
   except Exception as e:
@@ -650,10 +702,10 @@ def map_and_run(
     try:
       # Try to link files to the output directory, if specified.
       if out_dir:
-        link_outputs_to_outdir(run_dir, out_dir, outputs)
+        link_outputs_to_outdir(run_dir, out_dir, data.outputs)
 
       success = False
-      if leak_temp_dir:
+      if data.leak_temp_dir:
         success = True
         logging.warning(
             'Deliberately leaking %s for later examination', run_dir)
@@ -670,7 +722,7 @@ def map_and_run(
             logging.error('Failure with %s', e)
             success = False
           if not success:
-            sys.stderr.write(OUTLIVING_ZOMBIE_MSG % ('run', grace_period))
+            sys.stderr.write(OUTLIVING_ZOMBIE_MSG % ('run', data.grace_period))
             if result['exit_code'] == 0:
               result['exit_code'] = 1
         if fs.isdir(tmp_dir):
@@ -680,7 +732,7 @@ def map_and_run(
             logging.error('Failure with %s', e)
             success = False
           if not success:
-            sys.stderr.write(OUTLIVING_ZOMBIE_MSG % ('temp', grace_period))
+            sys.stderr.write(OUTLIVING_ZOMBIE_MSG % ('temp', data.grace_period))
             if result['exit_code'] == 0:
               result['exit_code'] = 1
 
@@ -688,7 +740,7 @@ def map_and_run(
       if out_dir:
         isolated_stats = result['stats'].setdefault('isolated', {})
         result['outputs_ref'], success, isolated_stats['upload'] = (
-            delete_and_upload(storage, out_dir, leak_temp_dir))
+            delete_and_upload(data.storage, out_dir, data.leak_temp_dir))
       if not success and result['exit_code'] == 0:
         result['exit_code'] = 1
     except Exception as e:
@@ -699,14 +751,8 @@ def map_and_run(
   return result
 
 
-def run_tha_test(
-    command, isolated_hash, storage, isolate_cache, outputs,
-    install_named_caches, leak_temp_dir, result_json, root_dir, hard_timeout,
-    grace_period, bot_file, switch_to_account, install_packages_fn,
-    use_symlinks, raw_cmd, env, env_prefixes):
+def run_tha_test(data, result_json):
   """Runs an executable and records execution metadata.
-
-  Either command or isolated_hash must be specified.
 
   If isolated_hash is specified, downloads the dependencies in the cache,
   hardlinks them into a temporary directory and runs the command specified in
@@ -717,46 +763,13 @@ def run_tha_test(
   file.
 
   Arguments:
-    command: a list of string; the command to run OR optional arguments to add
-             to the command stated in the .isolated file if a command was
-             specified.
-    isolated_hash: the SHA-1 of the .isolated file that must be retrieved to
-                   recreate the tree of files to run the target executable.
-                   The command specified in the .isolated is executed.
-                   Mutually exclusive with command argument.
-    storage: an isolateserver.Storage object to retrieve remote objects. This
-             object has a reference to an isolateserver.StorageApi, which does
-             the actual I/O.
-    isolate_cache: an isolateserver.LocalCache to keep from retrieving the
-                   same objects constantly by caching the objects retrieved.
-                   Can be on-disk or in-memory.
-    outputs: list of paths relative to root_dir to put into the output isolated
-             bundle upon task completion (see link_outputs_to_outdir).
-    install_named_caches: a function (run_dir) => context manager that installs
-                          named caches into |run_dir|.
-    leak_temp_dir: if true, the temporary directory will be deliberately leaked
-                   for later examination.
-    result_json: file path to dump result metadata into. If set, the process
-                 exit code is always 0 unless an internal error occurred.
-    root_dir: path to the directory to use to create the temporary directory. If
-              not specified, a random temporary directory is created.
-    hard_timeout: kills the process if it lasts more than this amount of
-                  seconds.
-    grace_period: number of seconds to wait between SIGTERM and SIGKILL.
-    bot_file: path to a file with bot state, used in place of
-              ${SWARMING_BOT_FILE} task command line argument.
-    switch_to_account: a logical account to switch LUCI_CONTEXT into.
-    install_packages_fn: context manager dir => CipdInfo, see
-                         install_client_and_packages.
-    use_symlinks: create tree with symlinks instead of hardlinks.
-    raw_cmd: ignore the command in the isolated file.
-    env: environment variables to set
-    env_prefixes: {"ENV_KEY": ['relative', 'paths', 'to', 'prepend']}
+  - data: TaskData instance.
+  - result_json: File path to dump result metadata into. If set, the process
+    exit code is always 0 unless an internal error occurred.
 
   Returns:
     Process exit code that should be used.
   """
-  root_dir = _to_unicode(root_dir)
   if result_json:
     # Write a json output file right away in case we get killed.
     result = {
@@ -769,11 +782,7 @@ def run_tha_test(
     tools.write_json(result_json, result, dense=True)
 
   # run_isolated exit code. Depends on if result_json is used or not.
-  result = map_and_run(
-      command, isolated_hash, storage, isolate_cache, outputs,
-      install_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
-      bot_file, switch_to_account, install_packages_fn, use_symlinks, raw_cmd,
-      env, env_prefixes, True)
+  result = map_and_run(data, True)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
@@ -1211,50 +1220,41 @@ def main(args):
             logging.exception('Error while removing named cache %r at %r. '
                               'The cache will be lost.', path, name)
 
+  extra_args = []
+  command = []
+  if options.raw_cmd:
+    command = args
+  else:
+    extra_args = args
+
+  data = TaskData(
+      command=command,
+      extra_args=extra_args,
+      isolated_hash=options.isolated,
+      storage=None,
+      isolate_cache=isolate_cache,
+      outputs=options.output,
+      install_named_caches=install_named_caches,
+      leak_temp_dir=options.leak_temp_dir,
+      root_dir=_to_unicode(options.root_dir),
+      hard_timeout=options.hard_timeout,
+      grace_period=options.grace_period,
+      bot_file=options.bot_file,
+      switch_to_account=options.switch_to_account,
+      install_packages_fn=install_packages_fn,
+      use_symlinks=options.use_symlinks,
+      env=options.env,
+      env_prefix=options.env_prefix)
   try:
     if options.isolate_server:
       storage = isolateserver.get_storage(
           options.isolate_server, options.namespace)
       with storage:
+        data = data._replace(storage=storage)
         # Hashing schemes used by |storage| and |isolate_cache| MUST match.
         assert storage.hash_algo == isolate_cache.hash_algo
-        return run_tha_test(
-            args,
-            options.isolated,
-            storage,
-            isolate_cache,
-            options.output,
-            install_named_caches,
-            options.leak_temp_dir,
-            options.json, options.root_dir,
-            options.hard_timeout,
-            options.grace_period,
-            options.bot_file,
-            options.switch_to_account,
-            install_packages_fn,
-            options.use_symlinks,
-            options.raw_cmd,
-            options.env,
-            options.env_prefix)
-    return run_tha_test(
-        args,
-        options.isolated,
-        None,
-        isolate_cache,
-        options.output,
-        install_named_caches,
-        options.leak_temp_dir,
-        options.json,
-        options.root_dir,
-        options.hard_timeout,
-        options.grace_period,
-        options.bot_file,
-        options.switch_to_account,
-        install_packages_fn,
-        options.use_symlinks,
-        options.raw_cmd,
-        options.env,
-        options.env_prefix)
+        return run_tha_test(data, options.json)
+    return run_tha_test(data, options.json)
   except (cipd.Error, named_cache.Error) as ex:
     print >> sys.stderr, ex.message
     return 1

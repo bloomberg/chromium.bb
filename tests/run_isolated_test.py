@@ -264,25 +264,25 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'make_tree_deleteable', 'make_tree_writeable'):
       self.mock(file_path, i, functools.partial(add, i))
 
-    ret = run_isolated.run_tha_test(
-        command or [],
-        isolated_hash,
-        StorageFake(files),
-        isolateserver.MemoryCache(),
-        None,
-        init_named_caches_stub,
-        False,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        run_isolated.noop_install_packages,
-        False,
-        False,
-        {},
-        {})
+    data = run_isolated.TaskData(
+        command=command or [],
+        extra_args=[],
+        isolated_hash=isolated_hash,
+        storage=StorageFake(files),
+        isolate_cache=isolateserver.MemoryCache(),
+        outputs=None,
+        install_named_caches=init_named_caches_stub,
+        leak_temp_dir=False,
+        root_dir=None,
+        hard_timeout=60,
+        grace_period=30,
+        bot_file=None,
+        switch_to_account=False,
+        install_packages_fn=run_isolated.noop_install_packages,
+        use_symlinks=False,
+        env={},
+        env_prefix={})
+    ret = run_isolated.run_tha_test(data, None)
     self.assertEqual(0, ret)
     return make_tree_call
 
@@ -400,6 +400,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
       '--no-log',
       '--cache', self.tempdir,
       '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--raw-cmd',
       '--',
       '/bin/echo',
       'hello',
@@ -420,6 +421,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
       '--cache', self.tempdir,
       '--named-cache-root', os.path.join(self.tempdir, 'c'),
       '--switch-to-account', 'task',
+      '--raw-cmd',
       '--',
       '/bin/echo',
       'hello',
@@ -446,6 +448,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
       '--cache', self.tempdir,
       '--named-cache-root', os.path.join(self.tempdir, 'c'),
       '--switch-to-account', 'task',
+      '--raw-cmd',
       '--',
       '/bin/echo',
       'hello',
@@ -473,6 +476,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--root-dir', workdir,
         '--leak-temp-dir',
         '--named-cache-root', os.path.join(self.tempdir, 'c'),
+        '--raw-cmd',
         '--',
         '/bin/echo',
         'hello',
@@ -525,6 +529,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
       '--cipd-server', self.cipd_server.url,
       '--cipd-cache', cipd_cache,
       '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--raw-cmd',
+      '--',
       'bin/echo${EXECUTABLE_SUFFIX}',
       'hello',
       'world',
@@ -574,6 +580,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
       '--cipd-server', self.cipd_server.url,
       '--cipd-cache', cipd_cache,
       '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--raw-cmd',
+      '--',
       'bin/echo${EXECUTABLE_SUFFIX}',
       'hello',
       'world',
@@ -612,6 +620,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
       '--named-cache-root', os.path.join(self.tempdir, 'c'),
       '--named-cache', 'cache_foo', 'foo',
       '--named-cache', 'cache_bar', 'bar',
+      '--raw-cmd',
+      '--',
       'bin/echo${EXECUTABLE_SUFFIX}',
       'hello',
       'world',
@@ -789,25 +799,25 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       store = isolateserver.get_storage(server.url, 'default-store')
 
       self.mock(sys, 'stdout', StringIO.StringIO())
-      ret = run_isolated.run_tha_test(
-          [],
-          isolated_hash,
-          store,
-          isolateserver.MemoryCache(),
-          None,
-          init_named_caches_stub,
-          False,
-          None,
-          None,
-          None,
-          None,
-          None,
-          None,
-          run_isolated.noop_install_packages,
-          False,
-          False,
-          {},
-          {})
+      data = run_isolated.TaskData(
+          command=[],
+          extra_args=[],
+          isolated_hash=isolated_hash,
+          storage=store,
+          isolate_cache=isolateserver.MemoryCache(),
+          outputs=None,
+          install_named_caches=init_named_caches_stub,
+          leak_temp_dir=False,
+          root_dir=None,
+          hard_timeout=60,
+          grace_period=30,
+          bot_file=None,
+          switch_to_account=False,
+          install_packages_fn=run_isolated.noop_install_packages,
+          use_symlinks=False,
+          env={},
+          env_prefix={})
+      ret = run_isolated.run_tha_test(data, None)
       self.assertEqual(0, ret)
 
       # It uploaded back. Assert the store has a new item containing foo.
@@ -847,7 +857,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
 # Like RunIsolatedTestRun, but ensures that specific output files
 # (as opposed to anything in $(ISOLATED_OUTDIR)) are returned.
 class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
-  def _run_test(self, isolated, command):
+  def _run_test(self, isolated, command, extra_args):
     # Starts a full isolate server mock and have run_tha_test() uploads results
     # back after the task completed.
     server = isolateserver_mock.MockIsolateServer()
@@ -881,25 +891,25 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       store = isolateserver.get_storage(server.url, 'default-store')
 
       self.mock(sys, 'stdout', StringIO.StringIO())
-      ret = run_isolated.run_tha_test(
-          command,
-          isolated_hash,
-          store,
-          isolateserver.MemoryCache(),
-          ['foo', 'foodir/foo2'],
-          init_named_caches_stub,
-          False,
-          None,
-          None,
-          None,
-          None,
-          None,
-          None,
-          run_isolated.noop_install_packages,
-          False,
-          False,
-          {},
-          {})
+      data = run_isolated.TaskData(
+          command=command,
+          extra_args=extra_args,
+          isolated_hash=isolated_hash,
+          storage=store,
+          isolate_cache=isolateserver.MemoryCache(),
+          outputs=['foo', 'foodir/foo2'],
+          install_named_caches=init_named_caches_stub,
+          leak_temp_dir=False,
+          root_dir=None,
+          hard_timeout=60,
+          grace_period=30,
+          bot_file=None,
+          switch_to_account=False,
+          install_packages_fn=run_isolated.noop_install_packages,
+          use_symlinks=False,
+          env={},
+          env_prefix={})
+      ret = run_isolated.run_tha_test(data, None)
       self.assertEqual(0, ret)
 
       # It uploaded back. Assert the store has a new item containing foo.
@@ -951,7 +961,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       u'files': {},
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    self._run_test(isolated, [])
+    self._run_test(isolated, [], [])
 
   def test_output_cmd(self):
     isolated = {
@@ -959,7 +969,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       u'files': {},
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    self._run_test(isolated, ['cmd.py', 'foo', 'foodir/foo2'])
+    self._run_test(isolated, ['cmd.py', 'foo', 'foodir/foo2'], [])
 
   def test_output_cmd_isolated_extra_args(self):
     isolated = {
@@ -968,7 +978,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       u'files': {},
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    self._run_test(isolated, ['foo', 'foodir/foo2'])
+    self._run_test(isolated, [], ['foo', 'foodir/foo2'])
 
 
 class RunIsolatedJsonTest(RunIsolatedTestBase):
