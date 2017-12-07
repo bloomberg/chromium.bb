@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -347,6 +348,19 @@ BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
       RecordProcessNavigationResult(
           ProcessNavigationResult::kCancelPrerenderContents);
       return content::NavigationThrottle::CANCEL_AND_IGNORE;
+    }
+
+    content::NavigationEntry* last_entry = navigation_handle()
+                                               ->GetWebContents()
+                                               ->GetController()
+                                               .GetLastCommittedEntry();
+    // We are about to open a new app window context. Record the time since the
+    // last navigation in this context. (If it is very small, this context
+    // probably redirected immediately, which is a bad user experience.)
+    if (last_entry && !last_entry->GetTimestamp().is_null()) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "Extensions.BookmarkApp.OpenAppDeltaSinceLastNavigation",
+          base::Time::Now() - last_entry->GetTimestamp());
     }
 
     content::NavigationThrottle::ThrottleCheckResult result =
