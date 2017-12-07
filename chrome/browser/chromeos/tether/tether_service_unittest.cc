@@ -609,13 +609,13 @@ TEST_F(TetherServiceTest, TestBleAdvertisingSupportedButIncorrectlyRecorded) {
 }
 
 TEST_F(TetherServiceTest, TestFeatureFlagDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kInstantTethering);
-
   EXPECT_FALSE(TetherService::Get(profile_.get()));
 }
 
 TEST_F(TetherServiceTest, TestFeatureFlagEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kInstantTethering);
+
   TetherService* tether_service = TetherService::Get(profile_.get());
   ASSERT_TRUE(tether_service);
 
