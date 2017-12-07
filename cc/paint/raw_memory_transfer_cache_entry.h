@@ -18,10 +18,10 @@ class CC_PAINT_EXPORT ClientRawMemoryTransferCacheEntry
     : public ClientTransferCacheEntry {
  public:
   explicit ClientRawMemoryTransferCacheEntry(std::vector<uint8_t> data);
-  ~ClientRawMemoryTransferCacheEntry() override;
-  TransferCacheEntryType Type() const override;
-  size_t SerializedSize() const override;
-  bool Serialize(size_t size, uint8_t* data) const override;
+  ~ClientRawMemoryTransferCacheEntry() final;
+  TransferCacheEntryType Type() const final;
+  size_t SerializedSize() const final;
+  bool Serialize(base::span<uint8_t> data) const final;
 
  private:
   std::vector<uint8_t> data_;
@@ -31,10 +31,10 @@ class CC_PAINT_EXPORT ServiceRawMemoryTransferCacheEntry
     : public ServiceTransferCacheEntry {
  public:
   ServiceRawMemoryTransferCacheEntry();
-  ~ServiceRawMemoryTransferCacheEntry() override;
-  TransferCacheEntryType Type() const override;
-  size_t Size() const override;
-  bool Deserialize(GrContext* context, size_t size, uint8_t* data) override;
+  ~ServiceRawMemoryTransferCacheEntry() final;
+  TransferCacheEntryType Type() const final;
+  size_t CachedSize() const final;
+  bool Deserialize(GrContext* context, base::span<uint8_t> data) final;
   const std::vector<uint8_t>& data() { return data_; }
 
  private:

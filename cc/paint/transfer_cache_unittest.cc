@@ -248,7 +248,7 @@ class InvalidIdTransferCacheEntry : public ClientTransferCacheEntry {
         static_cast<uint32_t>(TransferCacheEntryType::kLast) + 1);
   }
   size_t SerializedSize() const override { return sizeof(uint32_t); }
-  bool Serialize(size_t size, uint8_t* data) const override { return true; }
+  bool Serialize(base::span<uint8_t> data) const override { return true; }
 };
 
 TEST_F(TransferCacheTest, InvalidTypeFails) {

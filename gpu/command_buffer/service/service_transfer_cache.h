@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/mru_cache.h"
+#include "base/containers/span.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/common/transfer_cache_entry_id.h"
@@ -33,8 +34,7 @@ class GPU_EXPORT ServiceTransferCache {
                          ServiceDiscardableHandle handle,
                          cc::TransferCacheEntryType type,
                          GrContext* context,
-                         uint8_t* data_memory,
-                         size_t data_size);
+                         base::span<uint8_t> data);
   bool UnlockEntry(TransferCacheEntryId id);
   bool DeleteEntry(TransferCacheEntryId id);
   cc::ServiceTransferCacheEntry* GetEntry(TransferCacheEntryId id);

@@ -43,8 +43,7 @@ bool ServiceTransferCache::CreateLockedEntry(TransferCacheEntryId id,
                                              ServiceDiscardableHandle handle,
                                              cc::TransferCacheEntryType type,
                                              GrContext* context,
-                                             uint8_t* data_memory,
-                                             size_t data_size) {
+                                             base::span<uint8_t> data) {
   auto found = entries_.Peek(id);
   if (found != entries_.end()) {
     return false;
@@ -55,8 +54,8 @@ bool ServiceTransferCache::CreateLockedEntry(TransferCacheEntryId id,
   if (!entry)
     return false;
 
-  entry->Deserialize(context, data_size, data_memory);
-  total_size_ += entry->Size();
+  entry->Deserialize(context, data);
+  total_size_ += entry->CachedSize();
   entries_.Put(id, CacheEntryInternal(handle, std::move(entry)));
   EnforceLimits();
   return true;
@@ -77,7 +76,7 @@ bool ServiceTransferCache::DeleteEntry(TransferCacheEntryId id) {
     return false;
 
   found->second.handle.ForceDelete();
-  total_size_ -= found->second.entry->Size();
+  total_size_ -= found->second.entry->CachedSize();
   entries_.Erase(found);
   return true;
 }
@@ -100,7 +99,7 @@ void ServiceTransferCache::EnforceLimits() {
       continue;
     }
 
-    total_size_ -= it->second.entry->Size();
+    total_size_ -= it->second.entry->CachedSize();
     it = entries_.Erase(it);
   }
 }
