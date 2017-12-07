@@ -75,6 +75,14 @@ class UiTexture {
     kWrappingBehaviorNoWrap,
   };
 
+  struct TextRenderParameters {
+    SkColor color = SK_ColorBLACK;
+    TextAlignment text_alignment = kTextAlignmentNone;
+    WrappingBehavior wrapping_behavior = kWrappingBehaviorNoWrap;
+    bool cursor_enabled = false;
+    int cursor_position = 0;
+  };
+
  protected:
   virtual void Draw(SkCanvas* canvas, const gfx::Size& texture_size) = 0;
 
@@ -85,12 +93,20 @@ class UiTexture {
     *target = value;
   }
 
-  // Prepares a set of RenderText objects with the given color and fonts.
+  // Prepares a set of RenderText objects with the given parameters.
   // Attempts to fit the text within the provided size. |flags| specifies how
   // the text should be rendered. If multiline is requested and provided height
   // is 0, it will be set to the minimum needed to fit the whole text. If
   // multiline is not requested and provided width is 0, it will be set to the
   // minimum needed to fit the whole text.
+  static std::vector<std::unique_ptr<gfx::RenderText>> PrepareDrawStringRect(
+      const base::string16& text,
+      const gfx::FontList& font_list,
+      gfx::Rect* bounds,
+      const TextRenderParameters& parameters);
+
+  // Deprecated legacy text prep function. UI elements that use this routine
+  // should migrate to use Text elements, rather than drawing text directly.
   static std::vector<std::unique_ptr<gfx::RenderText>> PrepareDrawStringRect(
       const base::string16& text,
       const gfx::FontList& font_list,

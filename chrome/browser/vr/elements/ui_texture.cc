@@ -66,11 +66,25 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     gfx::Rect* bounds,
     UiTexture::TextAlignment text_alignment,
     UiTexture::WrappingBehavior wrapping_behavior) {
+  TextRenderParameters parameters;
+  parameters.color = color;
+  parameters.text_alignment = text_alignment;
+  parameters.wrapping_behavior = wrapping_behavior;
+  return PrepareDrawStringRect(text, font_list, bounds, parameters);
+}
+
+std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
+    const base::string16& text,
+    const gfx::FontList& font_list,
+    gfx::Rect* bounds,
+    const TextRenderParameters& parameters) {
   DCHECK(bounds);
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines;
 
-  if (wrapping_behavior == kWrappingBehaviorWrap) {
+  if (parameters.wrapping_behavior == kWrappingBehaviorWrap) {
+    DCHECK(!parameters.cursor_enabled);
+
     gfx::Rect rect(*bounds);
     std::vector<base::string16> strings;
     gfx::ElideRectangleText(text, font_list, bounds->width(),
@@ -81,7 +95,7 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     int line_height = 0;
     for (size_t i = 0; i < strings.size(); i++) {
       std::unique_ptr<gfx::RenderText> render_text = CreateConfiguredRenderText(
-          strings[i], font_list, color, text_alignment);
+          strings[i], font_list, parameters.color, parameters.text_alignment);
 
       if (i == 0) {
         // Measure line and center text vertically.
@@ -104,10 +118,14 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
       bounds->set_height(height);
 
   } else {
-    std::unique_ptr<gfx::RenderText> render_text =
-        CreateConfiguredRenderText(text, font_list, color, text_alignment);
-    if (bounds->width() != 0)
+    std::unique_ptr<gfx::RenderText> render_text = CreateConfiguredRenderText(
+        text, font_list, parameters.color, parameters.text_alignment);
+    if (bounds->width() != 0 && !parameters.cursor_enabled)
       render_text->SetElideBehavior(gfx::TRUNCATE);
+    if (parameters.cursor_enabled) {
+      render_text->SetCursorEnabled(true);
+      render_text->SetCursorPosition(parameters.cursor_position);
+    }
 
     if (bounds->width() == 0)
       bounds->set_width(render_text->GetStringSize().width());
