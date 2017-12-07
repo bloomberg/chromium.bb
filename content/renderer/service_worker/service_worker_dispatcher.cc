@@ -43,14 +43,18 @@ void* const kHasBeenDeleted = reinterpret_cast<void*>(0x1);
 }  // namespace
 
 ServiceWorkerDispatcher::ServiceWorkerDispatcher(
-    ThreadSafeSender* thread_safe_sender,
-    base::SingleThreadTaskRunner* main_thread_task_runner)
-    : thread_safe_sender_(thread_safe_sender),
-      main_thread_task_runner_(main_thread_task_runner) {
+    scoped_refptr<ThreadSafeSender> thread_safe_sender,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    : thread_safe_sender_(std::move(thread_safe_sender)),
+      main_thread_task_runner_(std::move(main_thread_task_runner)) {
   g_dispatcher_tls.Pointer()->Set(static_cast<void*>(this));
 }
 
 ServiceWorkerDispatcher::~ServiceWorkerDispatcher() {
+  if (allow_reinstantiation_) {
+    g_dispatcher_tls.Pointer()->Set(nullptr);
+    return;
+  }
   g_dispatcher_tls.Pointer()->Set(kHasBeenDeleted);
 }
 
@@ -70,8 +74,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 ServiceWorkerDispatcher*
 ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-    ThreadSafeSender* thread_safe_sender,
-    base::SingleThreadTaskRunner* main_thread_task_runner) {
+    scoped_refptr<ThreadSafeSender> thread_safe_sender,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
     NOTREACHED() << "Re-instantiating TLS ServiceWorkerDispatcher.";
     g_dispatcher_tls.Pointer()->Set(nullptr);
@@ -80,8 +84,8 @@ ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
     return static_cast<ServiceWorkerDispatcher*>(
         g_dispatcher_tls.Pointer()->Get());
 
-  ServiceWorkerDispatcher* dispatcher =
-      new ServiceWorkerDispatcher(thread_safe_sender, main_thread_task_runner);
+  ServiceWorkerDispatcher* dispatcher = new ServiceWorkerDispatcher(
+      std::move(thread_safe_sender), std::move(main_thread_task_runner));
   if (WorkerThread::GetCurrentId())
     WorkerThread::AddObserver(dispatcher);
   return dispatcher;
@@ -92,6 +96,10 @@ ServiceWorkerDispatcher* ServiceWorkerDispatcher::GetThreadSpecificInstance() {
     return nullptr;
   return static_cast<ServiceWorkerDispatcher*>(
       g_dispatcher_tls.Pointer()->Get());
+}
+
+void ServiceWorkerDispatcher::AllowReinstantiationForTesting() {
+  allow_reinstantiation_ = true;
 }
 
 void ServiceWorkerDispatcher::WillStopCurrentWorkerThread() {

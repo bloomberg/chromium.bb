@@ -61,6 +61,7 @@
 #include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/WebKit/common/blob/blob.mojom.h"
 #include "third_party/WebKit/common/blob/blob_registry.mojom.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -623,14 +624,16 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-    std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client)
+    std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
+    scoped_refptr<ThreadSafeSender> sender,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
-      sender_(ChildThreadImpl::current()->thread_safe_sender()),
+      sender_(sender),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_thread_task_runner_(ChildThreadImpl::current()->GetIOTaskRunner()),
+      io_thread_task_runner_(io_thread_task_runner),
       proxy_(nullptr),
       pending_dispatcher_request_(std::move(dispatcher_request)),
       pending_controller_request_(std::move(controller_request)),
@@ -643,7 +646,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
   pending_network_provider_ = ServiceWorkerNetworkProvider::CreateForController(
-      std::move(provider_info));
+      std::move(provider_info), sender_);
   provider_context_ = pending_network_provider_->context();
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
@@ -1838,6 +1841,11 @@ ServiceWorkerContextClient::GetWeakPtr() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(context_);
   return context_->weak_factory.GetWeakPtr();
+}
+
+// static
+void ServiceWorkerContextClient::ResetThreadSpecificInstanceForTesting() {
+  g_worker_client_tls.Pointer()->Set(nullptr);
 }
 
 }  // namespace content
