@@ -53,10 +53,10 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
 // Key for saving collapsed session state in the UserDefaults.
 NSString* const kCollapsedSectionsKey = @"ChromeRecentTabsCollapsedSections";
+
+namespace {
 
 // Key for saving whether the Other Device section is collapsed.
 NSString* const kOtherDeviceCollapsedKey = @"OtherDevicesCollapsed";
@@ -1005,6 +1005,8 @@ enum CellType {
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged {
   DCHECK(_signinPromoViewMediator);
+  if ([self sectionIsCollapsed:kOtherDeviceCollapsedKey])
+    return;
   NSInteger sectionIndex =
       [self sectionIndexForSectionType:OTHER_DEVICES_SECTION];
   DCHECK(sectionIndex != NSNotFound);
