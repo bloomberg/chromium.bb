@@ -44,7 +44,8 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
 #if INSIDE_BLINK
   template <typename Interface>
   void AddInterface(
-      WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>)> factory) {
+      base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>
+          factory) {
     AddInterface(Interface::Name_,
                  WTF::BindRepeating(
                      &InterfaceRegistry::ForwardToInterfaceFactory<Interface>,
@@ -65,7 +66,7 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
 
   template <typename Interface>
   void AddAssociatedInterface(
-      WTF::RepeatingFunction<void(mojo::AssociatedInterfaceRequest<Interface>)>
+      base::RepeatingCallback<void(mojo::AssociatedInterfaceRequest<Interface>)>
           factory) {
     AddAssociatedInterface(
         Interface::Name_,
@@ -77,8 +78,7 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
  private:
   template <typename Interface>
   static void ForwardToInterfaceFactory(
-      const WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>)>&
-          factory,
+      base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)> factory,
       mojo::ScopedMessagePipeHandle handle) {
     factory.Run(mojo::InterfaceRequest<Interface>(std::move(handle)));
   }
@@ -93,8 +93,8 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
 
   template <typename Interface>
   static void ForwardToAssociatedInterfaceFactory(
-      const WTF::RepeatingFunction<
-          void(mojo::AssociatedInterfaceRequest<Interface>)>& factory,
+      base::RepeatingCallback<void(mojo::AssociatedInterfaceRequest<Interface>)>
+          factory,
       mojo::ScopedInterfaceEndpointHandle handle) {
     factory.Run(mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)));
   }

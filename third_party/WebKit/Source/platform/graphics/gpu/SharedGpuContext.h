@@ -5,13 +5,12 @@
 #ifndef SharedGpuContext_h
 #define SharedGpuContext_h
 
+#include <memory>
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
-#include "platform/wtf/Functional.h"
 #include "platform/wtf/ThreadSpecific.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -37,7 +36,7 @@ class PLATFORM_EXPORT SharedGpuContext {
   static bool IsValidWithoutRestoring();
 
   using ContextProviderFactory =
-      WTF::RepeatingFunction<std::unique_ptr<WebGraphicsContext3DProvider>(
+      base::RepeatingCallback<std::unique_ptr<WebGraphicsContext3DProvider>(
           bool* is_gpu_compositing_disabled)>;
   static void SetContextProviderFactoryForTesting(ContextProviderFactory);
   // Resets the global instance including the |context_provider_factory_| and

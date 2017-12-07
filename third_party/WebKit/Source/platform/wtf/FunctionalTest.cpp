@@ -138,7 +138,7 @@ class CountGeneration {
 TEST(FunctionalTest, WeakPtr) {
   HasWeakPtrSupport obj;
   int counter = 0;
-  WTF::RepeatingClosure bound =
+  base::RepeatingClosure bound =
       WTF::BindRepeating(&HasWeakPtrSupport::Increment, obj.GetWeakPtr(),
                          WTF::Unretained(&counter));
 

@@ -5,6 +5,7 @@
 #ifndef IntersectionObserver_h
 #define IntersectionObserver_h
 
+#include "base/callback.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/intersection_observer/IntersectionObservation.h"
 #include "core/intersection_observer/IntersectionObserverEntry.h"
@@ -29,7 +30,7 @@ class CORE_EXPORT IntersectionObserver final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  using EventCallback = WTF::RepeatingFunction<void(
+  using EventCallback = base::RepeatingCallback<void(
       const HeapVector<Member<IntersectionObserverEntry>>&)>;
 
   static IntersectionObserver* Create(const IntersectionObserverInit&,

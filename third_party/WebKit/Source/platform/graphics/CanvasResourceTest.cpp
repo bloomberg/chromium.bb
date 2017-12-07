@@ -7,6 +7,7 @@
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
+#include "platform/wtf/Functional.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"

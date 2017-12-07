@@ -1282,8 +1282,8 @@ void WebGLRenderingContextBase::DestroyContext() {
 
   extensions_util_.reset();
 
-  WTF::RepeatingClosure null_closure;
-  WTF::RepeatingFunction<void(const char*, int32_t)> null_function;
+  base::RepeatingClosure null_closure;
+  base::RepeatingCallback<void(const char*, int32_t)> null_function;
   GetDrawingBuffer()->ContextProvider()->SetLostContextCallback(
       std::move(null_closure));
   GetDrawingBuffer()->ContextProvider()->SetErrorMessageCallback(
