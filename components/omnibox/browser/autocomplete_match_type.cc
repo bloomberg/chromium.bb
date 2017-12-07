@@ -108,29 +108,40 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
 
   const base::string16 sentinal =
       base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
+  const bool has_description = !additional_descriptive_text.empty();
   switch (message) {
     case IDS_ACC_AUTOCOMPLETE_SEARCH_HISTORY:
     case IDS_ACC_AUTOCOMPLETE_SEARCH:
     case IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH:
-      // Additional descriptive text NOT relevant.
-      if (label_prefix_length)
-        *label_prefix_length = AccessibilityLabelPrefixLength(
-            l10n_util::GetStringFUTF16(message, sentinal));
-      return l10n_util::GetStringFUTF16(message, match_text);
+      // Search match.
+      // If additional descriptive text exists with a search, treat as search
+      // with immediate answer, such as Weather in Boston: 53 degrees.
+      if (has_description)
+        message = IDS_ACC_AUTOCOMPLETE_QUICK_ANSWER;
+      break;
 
     case IDS_ACC_AUTOCOMPLETE_HISTORY:
     case IDS_ACC_AUTOCOMPLETE_BOOKMARK:
     case IDS_ACC_AUTOCOMPLETE_CLIPBOARD:
-      // Additional descriptive text relevant.
-      if (label_prefix_length)
-        *label_prefix_length =
-            AccessibilityLabelPrefixLength(l10n_util::GetStringFUTF16(
-                message, sentinal, additional_descriptive_text));
-      return l10n_util::GetStringFUTF16(message, match_text,
-                                        additional_descriptive_text);
+      // History match.
+      // May have descriptive text for the title of the page.
+      break;
     default:
+      NOTREACHED();
       break;
   }
-  NOTREACHED();
-  return match_text;
+
+  // Get the length of friendly text inserted before the actual suggested match.
+  if (label_prefix_length) {
+    *label_prefix_length =
+        has_description
+            ? AccessibilityLabelPrefixLength(l10n_util::GetStringFUTF16(
+                  message, sentinal, additional_descriptive_text))
+            : AccessibilityLabelPrefixLength(
+                  l10n_util::GetStringFUTF16(message, sentinal));
+  }
+
+  return has_description ? l10n_util::GetStringFUTF16(
+                               message, match_text, additional_descriptive_text)
+                         : l10n_util::GetStringFUTF16(message, match_text);
 }

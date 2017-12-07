@@ -30,6 +30,7 @@
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/suggestion_answer.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
@@ -612,9 +613,13 @@ void OmniboxViewMac::OnTemporaryTextMaybeChanged(
     model()->OnChanged();
   [field_ clearUndoChain];
 
+  // Get friendly accessibility label.
+  base::string16 description =
+      match.answer ? match.answer->second_line().AccessibleText()
+                   : match.description;
   AnnounceAutocompleteForScreenReader(
       AutocompleteMatchType::ToAccessibilityLabel(match.type, display_text,
-                                                  match.description));
+                                                  description));
 }
 
 bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(
