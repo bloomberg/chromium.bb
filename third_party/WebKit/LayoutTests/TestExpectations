@@ -1907,7 +1907,6 @@ crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-se
 crbug.com/711529 http/tests/origin_trials/sample-api-workers.html [ Crash Timeout ]
 crbug.com/711529 http/tests/permissions/test-api-surface.html [ Timeout ]
 crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
-crbug.com/711529 http/tests/security/cross-origin-createImageBitmap-structured-clone.html [ Timeout ]
 crbug.com/711529 http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
 
 # Expected failures during incremental implementation of mojo notification.
