@@ -514,6 +514,7 @@ base::Optional<CdmMessageType> ToMediaCdmMessageType(pb::CdmMessageType value) {
     CASE_RETURN_OTHER(LICENSE_REQUEST);
     CASE_RETURN_OTHER(LICENSE_RENEWAL);
     CASE_RETURN_OTHER(LICENSE_RELEASE);
+    CASE_RETURN_OTHER(INDIVIDUALIZATION_REQUEST);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -525,6 +526,7 @@ base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(CdmMessageType value) {
     CASE_RETURN_OTHER(LICENSE_REQUEST);
     CASE_RETURN_OTHER(LICENSE_RENEWAL);
     CASE_RETURN_OTHER(LICENSE_RELEASE);
+    CASE_RETURN_OTHER(INDIVIDUALIZATION_REQUEST);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }

@@ -297,6 +297,7 @@ enum CdmMessageType {
   LICENSE_REQUEST = 0;
   LICENSE_RENEWAL = 1;
   LICENSE_RELEASE = 2;
+  INDIVIDUALIZATION_REQUEST = 3;
 }
 
 // Proto version of media::CdmSessionType.

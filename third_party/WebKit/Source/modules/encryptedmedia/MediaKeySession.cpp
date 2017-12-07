@@ -883,6 +883,10 @@ void MediaKeySession::Message(MessageType message_type,
         kLicenseRelease:
       init.setMessageType("license-release");
       break;
+    case WebContentDecryptionModuleSession::Client::MessageType::
+        kIndividualizationRequest:
+      init.setMessageType("individualization-request");
+      break;
   }
   init.setMessage(DOMArrayBuffer::Create(static_cast<const void*>(message),
                                          message_length));
