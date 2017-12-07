@@ -19,7 +19,9 @@ class TabLifecycleObserver {
   virtual void OnDiscardedStateChange(content::WebContents* contents,
                                       bool is_discarded) = 0;
 
-  // Invoked when
+  // Invoked when the auto-discardable state of |contents| changes.
+  // |is_auto_discardable| indicates whether |contents| can be automatically
+  // discarded.
   virtual void OnAutoDiscardableStateChange(content::WebContents* contents,
                                             bool is_auto_discardable) = 0;
 
