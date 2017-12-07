@@ -571,8 +571,8 @@
   if (!loading) {
     [self stopProgressBar];
   } else {
-    [self.progressBar setProgress:0];
     [self.progressBar setHidden:NO animated:YES completion:nil];
+    [self.progressBar setProgress:0];
   }
 }
 
