@@ -94,6 +94,13 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   static const char* RAILModeToString(v8::RAILMode rail_mode);
   static const char* VirtualTimePolicyToString(
       WebViewScheduler::VirtualTimePolicy virtual_time_policy);
+  // The lowest bucket for fine-grained Expected Queueing Time reporting.
+  static const int kMinExpectedQueueingTimeBucket = 1;
+  // The highest bucket for fine-grained Expected Queueing Time reporting, in
+  // microseconds.
+  static const int kMaxExpectedQueueingTimeBucket = 4 * 1000 * 1000;
+  // The number of buckets for fine-grained Expected Queueing Time reporting.
+  static const int kNumberExpectedQueueingTimeBuckets = 50;
 
   explicit RendererSchedulerImpl(
       std::unique_ptr<TaskQueueManager> task_queue_manager);
@@ -158,6 +165,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
                                         bool is_disjoint_window) override;
+  void OnReportFineGrainedExpectedQueueingTime(
+      const char* split_description,
+      base::TimeDelta queueing_time) override;
   void OnReportSplitExpectedQueueingTime(
       const char* split_description,
       base::TimeDelta queueing_time) override;

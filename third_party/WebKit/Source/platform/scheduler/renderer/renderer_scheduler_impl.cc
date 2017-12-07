@@ -2249,6 +2249,10 @@ void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
 
   UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
                       queueing_time);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "RendererScheduler.ExpectedTaskQueueingDuration2",
+      queueing_time.InMicroseconds(), kMinExpectedQueueingTimeBucket,
+      kMaxExpectedQueueingTimeBucket, kNumberExpectedQueueingTimeBuckets);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "estimated_queueing_time_for_window",
                  queueing_time.InMillisecondsF());
@@ -2263,6 +2267,15 @@ void RendererSchedulerImpl::OnReportSplitExpectedQueueingTime(
     const char* split_description,
     base::TimeDelta queueing_time) {
   base::UmaHistogramTimes(split_description, queueing_time);
+}
+
+void RendererSchedulerImpl::OnReportFineGrainedExpectedQueueingTime(
+    const char* split_description,
+    base::TimeDelta queueing_time) {
+  base::UmaHistogramCustomCounts(
+      split_description, queueing_time.InMicroseconds(),
+      kMinExpectedQueueingTimeBucket, kMaxExpectedQueueingTimeBucket,
+      kNumberExpectedQueueingTimeBuckets);
 }
 
 AutoAdvancingVirtualTimeDomain* RendererSchedulerImpl::GetVirtualTimeDomain() {

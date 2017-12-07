@@ -69644,13 +69644,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true"
+    name="RendererScheduler.ExpectedQueueingTimeByFrameStatus"
+    units="microseconds">
+  <owner>npm@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Expected queueing time split by tasks according to their frame status, in
+    microseconds. The sum of the split values will be equal to the total,
+    reported on RendererScheduler.ExpectedTaskQueueingDuration2. This is
+    equivalent to RendererScheduler.ExpectedQueueingTimeByFrameType, just with
+    different units. Recorded for each 1000 ms window.
+  </summary>
+</histogram>
+
 <histogram base="true" name="RendererScheduler.ExpectedQueueingTimeByFrameType"
     units="ms">
   <owner>npm@chromium.org</owner>
   <summary>
     Expected queueing time split by tasks according to their frame type. The sum
     of the split values should be equal to the total, reported on
-    RendererScheduler.ExpectedQueueingTimeWhenQueueingTime.
+    RendererScheduler.ExpectedTaskQueueingDuration. Recorded for each 1000 ms
+    window.
   </summary>
 </histogram>
 
@@ -69660,7 +69675,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Expected queueing time split by tasks according to the type of their task
     queue. The sum of the split values should be equal to the total, reported on
-    RendererScheduler.ExpectedQueueingTimeWhenQueueingTime.
+    RendererScheduler.ExpectedTaskQueueingDuration. Recorded for each 1000 ms
+    window.
   </summary>
 </histogram>
 
@@ -69682,6 +69698,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The estimated queueing duration which would be observed for additional high
     priority tasks posted to the RendererScheduler. Recorded for each 1000 ms
     window.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.ExpectedTaskQueueingDuration2"
+    units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <owner>npm@chromium.org</owner>
+  <summary>
+    The estimated queueing duration which would be observed for additional high
+    priority tasks posted to the RendererScheduler, in microseconds. Recorded
+    for each 1000 ms window.
   </summary>
 </histogram>
 
@@ -107862,6 +107889,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Other"
       label="Expected Queueing Time from events with detached or nonexistent
              frames."/>
+  <affected-histogram
+      name="RendererScheduler.ExpectedQueueingTimeByFrameStatus"/>
   <affected-histogram name="RendererScheduler.ExpectedQueueingTimeByFrameType"/>
 </histogram_suffixes>
 
