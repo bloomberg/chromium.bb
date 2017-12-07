@@ -1795,6 +1795,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Processing in WebRTC"/>
 </enum>
 
+<enum name="AuthenticatedLaunchUserEvent">
+  <int value="0" label="Local Reauth Dialog"/>
+  <int value="1" label="Gaia Reauth Dialog"/>
+  <int value="2" label="Supervised Profile Blocked Warning"/>
+  <int value="3" label="Used Profile Blocked Warning"/>
+  <int value="4" label="Forced Primary Signin Dialog"/>
+</enum>
+
 <enum name="AuthMethod">
   <int value="0" label="Password"/>
   <int value="1" label="PIN"/>
