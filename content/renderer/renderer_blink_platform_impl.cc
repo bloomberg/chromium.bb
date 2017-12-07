@@ -917,7 +917,8 @@ RendererBlinkPlatformImpl::CreateMediaRecorderHandler() {
 
 std::unique_ptr<WebRTCPeerConnectionHandler>
 RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
-    WebRTCPeerConnectionHandlerClient* client) {
+    WebRTCPeerConnectionHandlerClient* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
   if (!render_thread)
@@ -926,7 +927,8 @@ RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
 #if BUILDFLAG(ENABLE_WEBRTC)
   PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
-  return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client);
+  return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client,
+                                                                task_runner);
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)

@@ -168,7 +168,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void SampleGamepads(device::Gamepads&) override;
   std::unique_ptr<blink::WebRTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler(
-      blink::WebRTCPeerConnectionHandlerClient* client) override;
+      blink::WebRTCPeerConnectionHandlerClient* client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
   std::unique_ptr<blink::WebMediaRecorderHandler> CreateMediaRecorderHandler()
