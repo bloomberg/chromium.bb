@@ -33,30 +33,6 @@ const char KeyStorageLinux::kFolderName[] = "Chromium Keys";
 const char KeyStorageLinux::kKey[] = "Chromium Safe Storage";
 #endif
 
-namespace {
-
-// Copies the password value from |result| to |password| and notifies on
-// |on_password_received| that the result is ready.
-void OnPasswordReceived(base::WaitableEvent* on_password_received,
-                        std::string* password,
-                        const std::string& result) {
-  *password = result;
-  if (on_password_received)
-    on_password_received->Signal();
-}
-
-// Copies the initialisation result from |result| to |success| and notifies on
-// |on_initialized| that the result is ready.
-void OnInitialized(base::WaitableEvent* on_initialized,
-                   bool* success,
-                   const bool& result) {
-  *success = result;
-  if (on_initialized)
-    on_initialized->Signal();
-}
-
-}  // namespace
-
 // static
 std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
     const os_crypt::Config& config) {
@@ -137,10 +113,10 @@ bool KeyStorageLinux::WaitForInitOnTaskRunner() {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool success;
-  PostTaskAndReplyWithResult(
-      task_runner, FROM_HERE,
-      base::BindOnce(&KeyStorageLinux::Init, base::Unretained(this)),
-      base::BindOnce(&OnInitialized, &initialized, &success));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&KeyStorageLinux::BlockOnInitThenSignal,
+                     base::Unretained(this), &initialized, &success));
   initialized.Wait();
   return success;
 }
@@ -158,14 +134,27 @@ std::string KeyStorageLinux::GetKey() {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::string password;
-  PostTaskAndReplyWithResult(
-      task_runner, FROM_HERE,
-      base::BindOnce(&KeyStorageLinux::GetKeyImpl, base::Unretained(this)),
-      base::BindOnce(&OnPasswordReceived, &password_loaded, &password));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&KeyStorageLinux::BlockOnGetKeyImplThenSignal,
+                     base::Unretained(this), &password_loaded, &password));
   password_loaded.Wait();
   return password;
 }
 
 base::SequencedTaskRunner* KeyStorageLinux::GetTaskRunner() {
   return nullptr;
+}
+
+void KeyStorageLinux::BlockOnGetKeyImplThenSignal(
+    base::WaitableEvent* on_password_received,
+    std::string* password) {
+  *password = GetKeyImpl();
+  on_password_received->Signal();
+}
+
+void KeyStorageLinux::BlockOnInitThenSignal(base::WaitableEvent* on_inited,
+                                            bool* success) {
+  *success = Init();
+  on_inited->Signal();
 }
