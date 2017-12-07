@@ -164,7 +164,7 @@ void ObtainDefaultObservations(
                                     74);
 
   default_observations[NetworkChangeNotifier::CONNECTION_3G] =
-      nqe::internal::NetworkQuality(base::TimeDelta::FromMilliseconds(272),
+      nqe::internal::NetworkQuality(base::TimeDelta::FromMilliseconds(273),
                                     base::TimeDelta::FromMilliseconds(209),
                                     749);
 
@@ -304,7 +304,7 @@ void ObtainConnectionThresholds(
   default_effective_connection_type_thresholds[EFFECTIVE_CONNECTION_TYPE_3G] =
       nqe::internal::NetworkQuality(
           // Set to the 50th percentile of 3G RTT observations on Android.
-          base::TimeDelta::FromMilliseconds(273),
+          base::TimeDelta::FromMilliseconds(272),
           base::TimeDelta::FromMilliseconds(204),
           nqe::internal::INVALID_RTT_THROUGHPUT);
 
@@ -560,6 +560,25 @@ NetworkQualityEstimatorParams::EffectiveConnectionTypeAlgorithm
 NetworkQualityEstimatorParams::GetEffectiveConnectionTypeAlgorithm() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return effective_connection_type_algorithm_;
+}
+
+EffectiveConnectionType NetworkQualityEstimatorParams::GetDefaultECT(
+    NetworkChangeNotifier::ConnectionType connection_type) const {
+  switch (connection_type) {
+    case NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    case NetworkChangeNotifier::CONNECTION_ETHERNET:
+    case NetworkChangeNotifier::CONNECTION_WIFI:
+    case NetworkChangeNotifier::CONNECTION_4G:
+    case NetworkChangeNotifier::CONNECTION_NONE:
+    case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      return EFFECTIVE_CONNECTION_TYPE_4G;
+    case NetworkChangeNotifier::CONNECTION_2G:
+      return EFFECTIVE_CONNECTION_TYPE_2G;
+    case NetworkChangeNotifier::CONNECTION_3G:
+      return EFFECTIVE_CONNECTION_TYPE_3G;
+  }
+  NOTREACHED();
+  return EFFECTIVE_CONNECTION_TYPE_4G;
 }
 
 }  // namespace net
