@@ -80,11 +80,7 @@ public class ToolbarProgressBarTest {
             }
         });
 
-        // Make sure the progress bar is invisible before starting any of the tests.
-        if (mProgressBar.getVisibility() == View.VISIBLE) {
-            int count = mProgressVisibilityHelper.getCallCount();
-            mProgressVisibilityHelper.waitForCallback(count, 1);
-        }
+        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(false));
     }
 
     /**
