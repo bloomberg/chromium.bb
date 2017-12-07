@@ -30,6 +30,10 @@ public class GvrKeyboardLoaderClient {
 
     private static IGvrKeyboardLoader sLoader = null;
     private static ClassLoader sRemoteClassLoader = null;
+    // GVR doesn't support setting the context twice in the application's lifetime and crashes if we
+    // do so. Setting the same context wrapper is a no-op, so we keep a reference to the one we
+    // create and use it across re-initialization of the keyboard api.
+    private static KeyboardContextWrapper sContextWrapper = null;
 
     @CalledByNative
     public static long loadKeyboardSDK() {
@@ -86,8 +90,10 @@ public class GvrKeyboardLoaderClient {
 
     @CalledByNative
     public static Context getContextWrapper() {
+        if (sContextWrapper != null) return sContextWrapper;
         Context context = ContextUtils.getApplicationContext();
-        return new KeyboardContextWrapper(getRemoteContext(context), context);
+        sContextWrapper = new KeyboardContextWrapper(getRemoteContext(context), context);
+        return sContextWrapper;
     }
 
     @CalledByNative
