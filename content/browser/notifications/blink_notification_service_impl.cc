@@ -5,11 +5,13 @@
 #include "content/browser/notifications/blink_notification_service_impl.h"
 
 #include "base/logging.h"
+#include "base/strings/string16.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/notification_resources.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
@@ -26,22 +28,25 @@ PlatformNotificationService* Service() {
 
 BlinkNotificationServiceImpl::BlinkNotificationServiceImpl(
     PlatformNotificationContextImpl* notification_context,
+    BrowserContext* browser_context,
     ResourceContext* resource_context,
     int render_process_id,
     const url::Origin& origin,
     mojo::InterfaceRequest<blink::mojom::NotificationService> request)
     : notification_context_(notification_context),
+      browser_context_(browser_context),
       resource_context_(resource_context),
       render_process_id_(render_process_id),
       origin_(origin),
       binding_(this, std::move(request)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(notification_context_);
+  DCHECK(browser_context_);
   DCHECK(resource_context_);
 
   binding_.set_connection_error_handler(base::BindOnce(
       &BlinkNotificationServiceImpl::OnConnectionError,
-      base::Unretained(this) /* the channel is owned by this */));
+      base::Unretained(this) /* the channel is owned by |this| */));
 }
 
 BlinkNotificationServiceImpl::~BlinkNotificationServiceImpl() {
@@ -66,6 +71,24 @@ void BlinkNotificationServiceImpl::GetPermissionStatus(
 void BlinkNotificationServiceImpl::OnConnectionError() {
   notification_context_->RemoveService(this);
   // |this| has now been deleted.
+}
+
+void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
+    const base::string16& title) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!Service())
+    return;
+  PlatformNotificationData platform_notification_data;
+  platform_notification_data.title = title;
+  // TODO(crbug.com/595685): Plumb through the rest of the notification data and
+  // the notification resources from blink.
+  // Using base::Unretained is safe because Service() returns a singleton.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&PlatformNotificationService::DisplayNotification,
+                     base::Unretained(Service()), browser_context_, "",
+                     origin_.GetURL(), platform_notification_data,
+                     NotificationResources()));
 }
 
 }  // namespace content

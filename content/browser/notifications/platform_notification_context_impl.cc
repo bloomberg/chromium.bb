@@ -142,7 +142,8 @@ void PlatformNotificationContextImpl::CreateServiceOnIO(
     mojo::InterfaceRequest<blink::mojom::NotificationService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   services_.push_back(std::make_unique<BlinkNotificationServiceImpl>(
-      this, resource_context, render_process_id, origin, std::move(request)));
+      this, browser_context_, resource_context, render_process_id, origin,
+      std::move(request)));
 }
 
 void PlatformNotificationContextImpl::RemoveService(

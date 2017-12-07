@@ -118,6 +118,11 @@ Notification* Notification::Create(ExecutionContext* context,
   if (exception_state.HadException())
     return nullptr;
 
+  if (context->IsContextDestroyed()) {
+    exception_state.ThrowTypeError("Illegal invocation.");
+    return nullptr;
+  }
+
   Notification* notification =
       new Notification(context, Type::kNonPersistent, data);
   notification->SchedulePrepareShow();
@@ -186,11 +191,17 @@ void Notification::PrepareShow() {
 void Notification::DidLoadResources(NotificationResourcesLoader* loader) {
   DCHECK_EQ(loader, loader_.Get());
 
-  const SecurityOrigin* origin = GetExecutionContext()->GetSecurityOrigin();
+  ExecutionContext* execution_context = GetExecutionContext();
+  const SecurityOrigin* origin = execution_context->GetSecurityOrigin();
   DCHECK(origin);
 
-  GetWebNotificationManager()->Show(WebSecurityOrigin(origin), data_,
-                                    loader->GetResources(), this);
+  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
+    NotificationManager::From(execution_context)
+        ->DisplayNonPersistentNotification(data_.title);
+  } else {
+    GetWebNotificationManager()->Show(WebSecurityOrigin(origin), data_,
+                                      loader->GetResources(), this);
+  }
   loader_.Clear();
 
   state_ = State::kShowing;
@@ -209,7 +220,11 @@ void Notification::close() {
                                               WrapPersistent(this)));
     state_ = State::kClosing;
 
-    GetWebNotificationManager()->Close(this);
+    if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
+      // TODO(crbug.com/595685): Implement Close path via Mojo.
+    } else {
+      GetWebNotificationManager()->Close(this);
+    }
     return;
   }
 
