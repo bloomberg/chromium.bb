@@ -145,7 +145,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     int first_pos = (c == 0);
 
 #if CONFIG_NEW_QUANT
-    dqv_val = &dq_val[band][0];
+    dqv_val = &dq_val[band != 0][0];
 #endif  // CONFIG_NEW_QUANT
 
     comb_token = last_pos ? 2 * av1_read_record_bit(xd->counts, r, ACCT_STR) + 2
@@ -186,7 +186,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       token += av1_read_record_symbol(xd->counts, r, coef_tail_cdfs[band][ctx],
                                       TAIL_TOKENS, ACCT_STR);
 #if CONFIG_NEW_QUANT
-    dqv_val = &dq_val[band][0];
+    dqv_val = &dq_val[band != 0][0];
 #endif  // CONFIG_NEW_QUANT
 
     *max_scan_line = AOMMAX(*max_scan_line, scan[c]);

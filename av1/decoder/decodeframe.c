@@ -1303,7 +1303,8 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
 #endif  // CONFIG_AOM_QM
 #if CONFIG_NEW_QUANT
     for (int dq = 0; dq < QUANT_PROFILES; dq++) {
-      for (int b = 0; b < COEF_BANDS; ++b) {
+      // DC and AC coefs
+      for (int b = 0; b < 2; ++b) {
         av1_get_dequant_val_nuq(cm->y_dequant_QTX[i][b != 0], b,
                                 cm->y_dequant_nuq_QTX[i][dq][b], NULL, dq);
         av1_get_dequant_val_nuq(cm->u_dequant_QTX[i][b != 0], b,

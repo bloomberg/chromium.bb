@@ -31,54 +31,38 @@ typedef struct {
   uint8_t doff;              // dequantization
 } qprofile_type;
 
-static const qprofile_type nuq[QUANT_PROFILES][COEF_BANDS] = {
+static const qprofile_type nuq[QUANT_PROFILES][2] = {
   {
       // lossless
-      { { 64, 128, 128 }, 0 },  // dc, band 0
-      { { 64, 128, 128 }, 0 },  // band 1
-      { { 64, 128, 128 }, 0 },  // band 2
-      { { 64, 128, 128 }, 0 },  // band 3
-      { { 64, 128, 128 }, 0 },  // band 4
-      { { 64, 128, 128 }, 0 },  // band 5
+      { { 64, 128, 128 }, 0 },  // dc
+      { { 64, 128, 128 }, 0 },  // ac
   },
   {
-      { { 64, 128, 128 }, 4 },  // dc, band 0
-      { { 64, 128, 128 }, 4 },  // band 1
-      { { 64, 128, 128 }, 4 },  // band 2
-      { { 64, 128, 128 }, 4 },  // band 3
-      { { 64, 128, 128 }, 4 },  // band 4
-      { { 64, 128, 128 }, 4 }   // band 5
+      { { 64, 128, 128 }, 4 },  // dc
+      { { 64, 128, 128 }, 4 },  // ac
   },
   {
-      { { 64, 128, 128 }, 6 },  // dc, band 0
-      { { 64, 128, 128 }, 6 },  // band 1
-      { { 64, 128, 128 }, 6 },  // band 2
-      { { 64, 128, 128 }, 6 },  // band 3
-      { { 64, 128, 128 }, 6 },  // band 4
-      { { 64, 128, 128 }, 6 }   // band 5
+      { { 64, 128, 128 }, 6 },  // dc
+      { { 64, 128, 128 }, 6 },  // ac
   },
   {
-      { { 64, 128, 128 }, 8 },  // dc, band 0
-      { { 64, 128, 128 }, 8 },  // band 1
-      { { 64, 128, 128 }, 8 },  // band 2
-      { { 64, 128, 128 }, 8 },  // band 3
-      { { 64, 128, 128 }, 8 },  // band 4
-      { { 64, 128, 128 }, 8 }   // band 5
+      { { 64, 128, 128 }, 8 },  // dc
+      { { 64, 128, 128 }, 8 },  // ac
   }
 };
 
-static const uint8_t *get_nuq_knots(int band, int q_profile) {
-  return nuq[q_profile][band].knots;
+static const uint8_t *get_nuq_knots(int is_ac_coeff, int q_profile) {
+  return nuq[q_profile][is_ac_coeff].knots;
 }
 
-static INLINE int16_t quant_to_doff_fixed(int band, int q_profile) {
-  return nuq[q_profile][band].doff;
+static INLINE int16_t quant_to_doff_fixed(int is_ac_coeff, int q_profile) {
+  return nuq[q_profile][is_ac_coeff].doff;
 }
 
 // get cumulative bins
-static INLINE void get_cuml_bins_nuq(int q, int band, tran_low_t *cuml_bins,
-                                     int q_profile) {
-  const uint8_t *knots = get_nuq_knots(band, q_profile);
+static INLINE void get_cuml_bins_nuq(int q, int is_ac_coeff,
+                                     tran_low_t *cuml_bins, int q_profile) {
+  const uint8_t *knots = get_nuq_knots(is_ac_coeff, q_profile);
   int16_t cuml_knots[NUQ_KNOTS];
   int i;
   cuml_knots[0] = knots[0];
@@ -87,22 +71,22 @@ static INLINE void get_cuml_bins_nuq(int q, int band, tran_low_t *cuml_bins,
     cuml_bins[i] = ROUND_POWER_OF_TWO(cuml_knots[i] * q, 7);
 }
 
-void av1_get_dequant_val_nuq(int q, int band, tran_low_t *dq,
+void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
                              tran_low_t *cuml_bins, int q_profile) {
-  const uint8_t *knots = get_nuq_knots(band, q_profile);
+  const uint8_t *knots = get_nuq_knots(is_ac_coeff, q_profile);
   tran_low_t cuml_bins_[NUQ_KNOTS], *cuml_bins_ptr;
   tran_low_t doff;
   int i;
   cuml_bins_ptr = (cuml_bins ? cuml_bins : cuml_bins_);
-  get_cuml_bins_nuq(q, band, cuml_bins_ptr, q_profile);
+  get_cuml_bins_nuq(q, is_ac_coeff, cuml_bins_ptr, q_profile);
   dq[0] = 0;
   for (i = 1; i < NUQ_KNOTS; ++i) {
-    doff = quant_to_doff_fixed(band, q_profile);
+    doff = quant_to_doff_fixed(is_ac_coeff, q_profile);
     doff = ROUND_POWER_OF_TWO(doff * knots[i], 7);
     dq[i] =
         cuml_bins_ptr[i - 1] + ROUND_POWER_OF_TWO((knots[i] - doff * 2) * q, 8);
   }
-  doff = quant_to_doff_fixed(band, q_profile);
+  doff = quant_to_doff_fixed(is_ac_coeff, q_profile);
   dq[NUQ_KNOTS] =
       cuml_bins_ptr[NUQ_KNOTS - 1] + ROUND_POWER_OF_TWO((64 - doff) * q, 7);
 }

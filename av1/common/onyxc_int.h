@@ -352,12 +352,9 @@ typedef struct AV1Common {
   int max_qmlevel;
 #endif
 #if CONFIG_NEW_QUANT
-  dequant_val_type_nuq y_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES]
-                                        [COEF_BANDS];
-  dequant_val_type_nuq u_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES]
-                                        [COEF_BANDS];
-  dequant_val_type_nuq v_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES]
-                                        [COEF_BANDS];
+  dequant_val_type_nuq y_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES][2];
+  dequant_val_type_nuq u_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES][2];
+  dequant_val_type_nuq v_dequant_nuq_QTX[MAX_SEGMENTS][QUANT_PROFILES][2];
 #endif
 
   /* We allocate a MODE_INFO struct for each macroblock, together with

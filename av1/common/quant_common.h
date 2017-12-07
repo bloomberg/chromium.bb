@@ -85,7 +85,7 @@ static inline TX_SIZE get_qm_tx_size(TX_SIZE tx_size) {
 
 typedef tran_low_t dequant_val_type_nuq[NUQ_KNOTS + 1];
 typedef tran_low_t cuml_bins_type_nuq[NUQ_KNOTS];
-void av1_get_dequant_val_nuq(int q, int band, tran_low_t *dq,
+void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
                              tran_low_t *cuml_bins, int dq_off_index);
 tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq);
 tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq);
