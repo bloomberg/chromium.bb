@@ -73,6 +73,7 @@ var CLASSES = {
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
   HIDE_NOTIFICATION: 'mv-notice-hide',
+  INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
@@ -732,6 +733,17 @@ function init() {
   };
 
   window.addEventListener('message', handlePostMessage);
+
+  document.body.classList.add(CLASSES.INITED);
+}
+
+
+function loadConfig() {
+  var configScript = document.createElement('script');
+  configScript.type = 'text/javascript';
+  configScript.src = 'chrome-search://local-ntp/config.js';
+  configScript.onload = init;
+  document.head.appendChild(configScript);
 }
 
 
@@ -739,7 +751,7 @@ function init() {
  * Binds event listeners.
  */
 function listen() {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', loadConfig);
 }
 
 
