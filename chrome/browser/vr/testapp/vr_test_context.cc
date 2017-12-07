@@ -171,9 +171,6 @@ void VrTestContext::HandleInput(ui::Event* event) {
         incognito_ = !incognito_;
         ui_->SetIncognito(incognito_);
         break;
-      case ui::DomCode::US_O:
-        CreateFakeOmniboxSuggestions();
-        break;
       case ui::DomCode::US_D:
         ui_->Dump();
         break;
@@ -366,25 +363,6 @@ void VrTestContext::CreateFakeTextInput() {
   ui_->OnInputEdited(info);
 }
 
-void VrTestContext::CreateFakeOmniboxSuggestions() {
-  // Every time this method is called, change the number of suggestions shown.
-  static int num_suggestions = 0;
-
-  auto result = base::MakeUnique<OmniboxSuggestions>();
-  for (int i = 0; i < num_suggestions; i++) {
-    result->suggestions.emplace_back(OmniboxSuggestion(
-        base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
-        base::UTF8ToUTF16(
-            "Very lengthy description of the suggestion that would wrap "
-            "if not truncated through some other means."),
-        AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/")));
-  }
-  ui_->SetOmniboxSuggestions(std::move(result));
-
-  num_suggestions++;
-  num_suggestions %= 5;
-}
-
 void VrTestContext::CreateFakeVoiceSearchResult() {
   if (!model_->speech.recognizing_speech)
     return;
@@ -476,7 +454,22 @@ void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
 }
 
 void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
-void VrTestContext::StartAutocomplete(const base::string16& string) {}
-void VrTestContext::StopAutocomplete() {}
+
+void VrTestContext::StartAutocomplete(const base::string16& string) {
+  auto result = base::MakeUnique<OmniboxSuggestions>();
+  for (int i = 0; i < 5; i++) {
+    result->suggestions.emplace_back(OmniboxSuggestion(
+        base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
+        base::UTF8ToUTF16(
+            "Very lengthy description of the suggestion that would wrap "
+            "if not truncated through some other means."),
+        AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/")));
+  }
+  ui_->SetOmniboxSuggestions(std::move(result));
+}
+
+void VrTestContext::StopAutocomplete() {
+  ui_->SetOmniboxSuggestions(base::MakeUnique<OmniboxSuggestions>());
+}
 
 }  // namespace vr

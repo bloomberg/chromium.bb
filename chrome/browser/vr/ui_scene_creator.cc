@@ -102,6 +102,7 @@ void OnSuggestionModelAdded(UiScene* scene,
       base::MakeUnique<Text>(1024, kSuggestionContentTextHeightDMM);
   content_text->SetDrawPhase(kPhaseForeground);
   content_text->SetType(kTypeOmniboxSuggestionContentText);
+  content_text->set_hit_testable(false);
   content_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   content_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
   content_text->SetMultiLine(false);
@@ -113,6 +114,7 @@ void OnSuggestionModelAdded(UiScene* scene,
       base::MakeUnique<Text>(1024, kSuggestionDescriptionTextHeightDMM);
   description_text->SetDrawPhase(kPhaseForeground);
   description_text->SetType(kTypeOmniboxSuggestionDescriptionText);
+  description_text->set_hit_testable(false);
   description_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   description_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
   description_text->SetMultiLine(false);
@@ -122,6 +124,7 @@ void OnSuggestionModelAdded(UiScene* scene,
 
   auto text_layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
   text_layout->SetType(kTypeOmniboxSuggestionTextLayout);
+  text_layout->set_hit_testable(false);
   text_layout->set_margin(kSuggestionLineGapDMM);
   text_layout->AddChild(std::move(content_text));
   text_layout->AddChild(std::move(description_text));
@@ -132,6 +135,7 @@ void OnSuggestionModelAdded(UiScene* scene,
 
   auto suggestion_layout = base::MakeUnique<LinearLayout>(LinearLayout::kRight);
   suggestion_layout->SetType(kTypeOmniboxSuggestionLayout);
+  suggestion_layout->set_hit_testable(false);
   suggestion_layout->AddChild(std::move(icon_box));
   suggestion_layout->AddChild(std::move(text_layout));
   suggestion_layout->AddChild(std::move(right_margin));
@@ -139,6 +143,8 @@ void OnSuggestionModelAdded(UiScene* scene,
   auto background = base::MakeUnique<Rect>();
   background->SetType(kTypeOmniboxSuggestionBackground);
   background->SetDrawPhase(kPhaseForeground);
+  background->set_hit_testable(true);
+  background->set_bubble_events(true);
   background->set_bounds_contain_children(true);
   background->SetColor(SK_ColorGREEN);
   background->AddChild(std::move(suggestion_layout));
@@ -1103,13 +1109,15 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_container->SetDrawPhase(kPhaseForeground);
   omnibox_container->SetSize(kOmniboxWidthDMM, kOmniboxHeightDMM);
   omnibox_container->SetColor(SK_ColorWHITE);
+  omnibox_container->SetTranslate(0, kUrlBarVerticalOffsetDMM, 0);
   omnibox_container->SetTransitionedProperties({TRANSFORM});
   omnibox_container->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind([](Model* m) { return m->omnibox_input_active; },
                  base::Unretained(model_)),
       base::Bind(
           [](UiElement* e, const bool& v) {
-            float y_offset = v ? kOmniboxVerticalOffsetDMM : 0;
+            float y_offset =
+                v ? kOmniboxVerticalOffsetDMM : kUrlBarVerticalOffsetDMM;
             e->SetTranslate(0, y_offset, 0);
           },
           omnibox_container.get())));
@@ -1133,12 +1141,32 @@ void UiSceneCreator::CreateOmnibox() {
       base::BindRepeating([](Model* m) { return m->omnibox_input_active; },
                           base::Unretained(model_)),
       base::BindRepeating(
-          [](TextInput* e, const bool& v) {
+          [](TextInput* e, Model* m, const bool& v) {
+            m->omnibox_text_field_info = TextInputInfo();
             if (v) {
               e->RequestFocus();
             }
           },
-          base::Unretained(omnibox_text_field.get()))));
+          base::Unretained(omnibox_text_field.get()),
+          base::Unretained(model_))));
+  omnibox_text_field->AddBinding(base::MakeUnique<Binding<AutocompleteStatus>>(
+      base::BindRepeating(
+          [](Model* m) {
+            AutocompleteStatus state;
+            state.active = m->omnibox_input_active;
+            state.input = m->omnibox_text_field_info.text;
+            return state;
+          },
+          base::Unretained(model_)),
+      base::BindRepeating(
+          [](UiBrowserInterface* browser, const AutocompleteStatus& r) {
+            if (r.active) {
+              browser->StartAutocomplete(r.input);
+            } else {
+              browser->StopAutocomplete();
+            }
+          },
+          base::Unretained(browser_))));
   BindColor(model_, omnibox_text_field.get(), &ColorScheme::omnibox_text,
             &TextInput::SetTextColor);
   BindColor(model_, omnibox_text_field.get(), &ColorScheme::cursor,

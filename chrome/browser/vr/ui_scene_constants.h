@@ -186,11 +186,11 @@ static constexpr float kReticleHeight = 0.025f;
 
 static constexpr float kOmniboxWidthDMM = 0.848f;
 static constexpr float kOmniboxHeightDMM = 0.088f;
-static constexpr float kOmniboxVerticalOffsetDMM = -0.1f;
+static constexpr float kOmniboxVerticalOffsetDMM = -0.2f;
 static constexpr float kOmniboxTextHeightDMM = 0.032f;
 static constexpr float kOmniboxTextMarginDMM = 0.024f;
 static constexpr float kOmniboxCloseButtonDiameterDMM = 0.088f;
-static constexpr float kOmniboxCloseButtonVerticalOffsetDMM = -0.5;
+static constexpr float kOmniboxCloseButtonVerticalOffsetDMM = -0.55;
 
 static constexpr float kSuggestionHeightDMM = 0.088f;
 static constexpr float kSuggestionGapDMM = 0.008f;
