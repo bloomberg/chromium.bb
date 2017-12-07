@@ -273,6 +273,14 @@ bool LayoutTable::IsLogicalWidthAuto() const {
 void LayoutTable::UpdateLogicalWidth() {
   RecalcSectionsIfNeeded();
 
+  if (IsFlexItemIncludingDeprecated() || IsGridItem()) {
+    // TODO(jfernandez): Investigate whether the grid layout algorithm provides
+    // all the logic needed and that we're not skipping anything essential due
+    // to the early return here.
+    LayoutBlock::UpdateLogicalWidth();
+    return;
+  }
+
   if (IsOutOfFlowPositioned()) {
     LogicalExtentComputedValues computed_values;
     ComputePositionedLogicalWidth(computed_values);
