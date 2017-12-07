@@ -250,6 +250,8 @@ class ScheduledReload final : public ScheduledNavigation {
     if (resource_request.IsNull())
       return;
     FrameLoadRequest request = FrameLoadRequest(nullptr, resource_request);
+    request.GetResourceRequest().SetRequestorOrigin(
+        SecurityOrigin::Create(resource_request.Url()));
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
     MaybeLogScheduledNavigationClobber(
         ScheduledNavigationType::kScheduledReload, frame);
@@ -265,8 +267,14 @@ class ScheduledReload final : public ScheduledNavigation {
 
  private:
   explicit ScheduledReload(LocalFrame* frame)
-      : ScheduledNavigation(Reason::kReload, 0.0, nullptr, true, true),
-        frame_(frame) {}
+      : ScheduledNavigation(Reason::kReload,
+                            0.0,
+                            nullptr /*origin_document */,
+                            true,
+                            true),
+        frame_(frame) {
+    DCHECK(frame->GetDocument());
+  }
 
   Member<LocalFrame> frame_;
 };

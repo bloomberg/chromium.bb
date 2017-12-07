@@ -90,25 +90,9 @@ FrameLoadRequest::FrameLoadRequest(
       WebURLRequest::kFetchRedirectModeManual);
 
   if (origin_document) {
+    DCHECK(!resource_request_.RequestorOrigin());
     resource_request_.SetRequestorOrigin(
         SecurityOrigin::Create(origin_document->Url()));
-    return;
-  }
-
-  // If we don't have an origin document, and we're going to throw away the
-  // response data regardless, set the requestor to a unique origin.
-  if (substitute_data_.IsValid()) {
-    resource_request_.SetRequestorOrigin(SecurityOrigin::CreateUnique());
-    return;
-  }
-
-  // If we're dealing with a top-level request, use the origin of the requested
-  // URL as the initiator.
-  // TODO(mkwst): This should be `nullptr`. https://crbug.com/625969
-  if (resource_request_.GetFrameType() == WebURLRequest::kFrameTypeTopLevel) {
-    resource_request_.SetRequestorOrigin(
-        SecurityOrigin::Create(resource_request.Url()));
-    return;
   }
 }
 
