@@ -43,4 +43,4 @@ import webkitpy.common.version_check
 from webkitpy.layout_tests.servers import cli_wrapper
 from webkitpy.layout_tests.servers import pywebsocket
 
-cli_wrapper.main(pywebsocket.PyWebSocket, description)
+cli_wrapper.main(pywebsocket.PyWebSocket, description=__doc__)
