@@ -436,7 +436,7 @@ void UiInputManager::UnfocusFocusedElement() {
   if (focused && focused->focusable()) {
     focused->OnFocusChanged(false);
   }
-  focused_element_id_ = -1;
+  focused_element_id_ = 0;
 }
 
 void UiInputManager::RequestFocus(int element_id) {
@@ -451,6 +451,13 @@ void UiInputManager::RequestFocus(int element_id) {
 
   focused_element_id_ = element_id;
   focused->OnFocusChanged(true);
+}
+
+void UiInputManager::RequestUnfocus(int element_id) {
+  if (element_id != focused_element_id_)
+    return;
+
+  UnfocusFocusedElement();
 }
 
 void UiInputManager::OnInputEdited(const TextInputInfo& info) {

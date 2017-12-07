@@ -16,6 +16,11 @@ void TextInputDelegate::SetRequestFocusCallback(
   request_focus_callback_ = callback;
 }
 
+void TextInputDelegate::SetRequestUnfocusCallback(
+    const RequestUnfocusCallback& callback) {
+  request_unfocus_callback_ = callback;
+}
+
 void TextInputDelegate::SetUpdateInputCallback(
     const UpdateInputCallback& callback) {
   update_input_callback_ = callback;
@@ -24,6 +29,11 @@ void TextInputDelegate::SetUpdateInputCallback(
 void TextInputDelegate::RequestFocus(int element_id) {
   if (!request_focus_callback_.is_null())
     request_focus_callback_.Run(element_id);
+}
+
+void TextInputDelegate::RequestUnfocus(int element_id) {
+  if (!request_unfocus_callback_.is_null())
+    request_unfocus_callback_.Run(element_id);
 }
 
 void TextInputDelegate::UpdateInput(const vr::TextInputInfo& info) {

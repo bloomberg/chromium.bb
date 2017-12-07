@@ -58,7 +58,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   unsigned int CreateFakeContentTexture();
   void CreateFakeOmniboxSuggestions();
   void CreateFakeVoiceSearchResult();
-  void CreateFakeTextInput();
+  void CreateFakeTextInputOrCommit(bool commit);
   void CycleWebVrModes();
   void ToggleSplashScreen();
   gfx::Transform ProjectionMatrix() const;

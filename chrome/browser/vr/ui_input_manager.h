@@ -58,6 +58,7 @@ class UiInputManager {
 
   // Text input related.
   void RequestFocus(int element_id);
+  void RequestUnfocus(int element_id);
   void OnInputEdited(const TextInputInfo& info);
   void OnInputCommitted(const TextInputInfo& info);
   void OnKeyboardHidden();

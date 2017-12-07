@@ -93,6 +93,13 @@ void TextInput::RequestFocus() {
   delegate_->RequestFocus(id());
 }
 
+void TextInput::RequestUnfocus() {
+  if (!delegate_)
+    return;
+
+  delegate_->RequestUnfocus(id());
+}
+
 void TextInput::SetHintText(const base::string16& text) {
   hint_element_->SetText(text);
 }
@@ -101,7 +108,9 @@ void TextInput::OnInputEdited(const TextInputInfo& info) {
   input_edit_callback_.Run(info);
 }
 
-void TextInput::OnInputCommitted(const TextInputInfo& info) {}
+void TextInput::OnInputCommitted(const TextInputInfo& info) {
+  input_commit_callback_.Run(info);
+}
 
 void TextInput::SetTextColor(SkColor color) {
   text_element_->SetColor(color);
