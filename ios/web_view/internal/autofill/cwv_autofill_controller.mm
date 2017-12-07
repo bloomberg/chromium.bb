@@ -12,7 +12,6 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
-#import "components/autofill/ios/browser/autofill_client_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
@@ -24,6 +23,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
+#import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
@@ -48,7 +48,7 @@
   autofill::AutofillManager* _autofillManager;
 
   // Autofill client associated with |webState|.
-  std::unique_ptr<autofill::AutofillClientIOS> _autofillClient;
+  std::unique_ptr<autofill::WebViewAutofillClientIOS> _autofillClient;
 
   // Javascript autofill manager associated with |webState|.
   JsAutofillManager* _JSAutofillManager;
@@ -83,7 +83,7 @@
             ios_web_view::WebViewOAuth2TokenServiceFactory::GetForBrowserState(
                 browserState),
             base::Closure()));
-    _autofillClient.reset(new autofill::AutofillClientIOS(
+    _autofillClient.reset(new autofill::WebViewAutofillClientIOS(
         browserState->GetPrefs(),
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
             browserState),

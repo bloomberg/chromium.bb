@@ -9,34 +9,26 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/card_unmask_delegate.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
-#import "components/autofill/ios/browser/autofill_client_ios.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
-
-class IdentityProvider;
-
-namespace infobars {
-class InfoBarManager;
-}
-
-namespace ios {
-class ChromeBrowserState;
-}
-
-namespace password_manager {
-class PasswordGenerationManager;
-}
-
-namespace web {
-class WebState;
-}
+#include "components/infobars/core/infobar_manager.h"
+#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "google_apis/gaia/identity_provider.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace autofill {
 
-// Chrome iOS implementation of AutofillClientIOS.
-class ChromeAutofillClientIOS : public AutofillClientIOS {
+// Chrome iOS implementation of AutofillClient.
+class ChromeAutofillClientIOS : public AutofillClient {
  public:
   ChromeAutofillClientIOS(
       ios::ChromeBrowserState* browser_state,
@@ -48,8 +40,14 @@ class ChromeAutofillClientIOS : public AutofillClientIOS {
   ~ChromeAutofillClientIOS() override;
 
   // AutofillClientIOS implementation.
+  PersonalDataManager* GetPersonalDataManager() override;
+  PrefService* GetPrefs() override;
+  syncer::SyncService* GetSyncService() override;
+  IdentityProvider* GetIdentityProvider() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   AddressNormalizer* GetAddressNormalizer() override;
+  SaveCardBubbleController* GetSaveCardBubbleController() override;
+  void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
@@ -65,15 +63,39 @@ class ChromeAutofillClientIOS : public AutofillClientIOS {
                                    const base::Closure& callback) override;
   void LoadRiskData(
       const base::Callback<void(const std::string&)>& callback) override;
+  bool HasCreditCardScanFeature() override;
+  void ScanCreditCard(const CreditCardScanCallback& callback) override;
+  void ShowAutofillPopup(
+      const gfx::RectF& element_bounds,
+      base::i18n::TextDirection text_direction,
+      const std::vector<Suggestion>& suggestions,
+      base::WeakPtr<AutofillPopupDelegate> delegate) override;
+  void HideAutofillPopup() override;
+  bool IsAutocompleteEnabled() override;
+  void UpdateAutofillPopupDataListValues(
+      const std::vector<base::string16>& values,
+      const std::vector<base::string16>& labels) override;
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
       const std::vector<FormStructure*>& forms) override;
+  void DidFillOrPreviewField(const base::string16& autofilled_value,
+                             const base::string16& profile_full_name) override;
+  scoped_refptr<AutofillWebDataService> GetDatabase() override;
   void DidInteractWithNonsecureCreditCardInput() override;
+  bool IsContextSecure() override;
+  bool ShouldShowSigninPromo() override;
+  bool IsAutofillSupported() override;
+  void ExecuteCommand(int id) override;
 
  private:
+  PrefService* pref_service_;
+  PersonalDataManager* personal_data_manager_;
+  web::WebState* web_state_;
+  __weak id<AutofillClientIOSBridge> bridge_;
+  std::unique_ptr<IdentityProvider> identity_provider_;
+  scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordGenerationManager* password_generation_manager_;
-  std::unique_ptr<IdentityProvider> identity_provider_;
   CardUnmaskPromptControllerImpl unmask_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClientIOS);
