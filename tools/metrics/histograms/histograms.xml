@@ -39353,10 +39353,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Navigation.Intercept.WillStart" units="microseconds">
+  <obsolete>
+    Deprecated in favor of mainframe/subframe breakouts
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     The microseconds it takes for the InterceptNavigationThrottle to determine
     if the navigation should be ignored, at WillStartRequest time.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Intercept.WillStart.Mainframe" units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The microseconds it takes for the InterceptNavigationThrottle to determine
+    if the navigation should be ignored, at WillStartRequest time for main
+    frames.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Intercept.WillStart.Subframe" units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The microseconds it takes for the InterceptNavigationThrottle to determine
+    if the navigation should be ignored, at WillStartRequest time for subframes.
   </summary>
 </histogram>
 

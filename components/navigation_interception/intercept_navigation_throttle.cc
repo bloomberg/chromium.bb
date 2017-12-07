@@ -29,8 +29,13 @@ InterceptNavigationThrottle::WillStartRequest() {
   base::ElapsedTimer timer;
 
   auto result = CheckIfShouldIgnoreNavigation(false);
-  UMA_HISTOGRAM_COUNTS_10M("Navigation.Intercept.WillStart",
-                           timer.Elapsed().InMicroseconds());
+  if (navigation_handle()->IsInMainFrame()) {
+    UMA_HISTOGRAM_COUNTS_10M("Navigation.Intercept.WillStart.Mainframe",
+                             timer.Elapsed().InMicroseconds());
+  } else {
+    UMA_HISTOGRAM_COUNTS_10M("Navigation.Intercept.WillStart.Subframe",
+                             timer.Elapsed().InMicroseconds());
+  }
   return result;
 }
 
