@@ -93599,7 +93599,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="VRDisplayPresentResult" enum="PresentationResult">
+<histogram name="VRDisplayPresentResult" enum="VRPresentationResult">
   <owner>billorr@chromium.org</owner>
   <summary>
     The result of calls to VRDisplay::requestPresent().  Reported twice per

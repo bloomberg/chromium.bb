@@ -34208,22 +34208,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="Login action added, Subframe, pw empty"/>
 </enum>
 
-<enum name="PresentationResult">
-  <int value="0" label="Requested"/>
-  <int value="1" label="Success"/>
-  <int value="2" label="SuccessAlreadyPresenting"/>
-  <int value="3" label="VRDisplayCannotPresent"/>
-  <int value="4" label="PresentationNotSupportedByDisplay"/>
-  <int value="5" label="VRDisplayNotFound"/>
-  <int value="6" label="NotInitiatedByUserGesture"/>
-  <int value="7" label="InvalidNumberOfLayers"/>
-  <int value="8" label="InvalidLayerSource"/>
-  <int value="9" label="LayerSourceMissingWebGLContext"/>
-  <int value="10" label="InvalidLayerBounds"/>
-  <int value="11" label="ServiceInactive"/>
-  <int value="12" label="RequestDenied"/>
-</enum>
-
 <enum name="PresentationUrlType">
   <int value="0" label="Other"/>
   <int value="1" label="Cast"/>
@@ -43305,6 +43289,22 @@ Called by update_traffic_annotation_histograms.py.-->
 <enum name="VRComponentStatus">
   <int value="0" label="Component is ready to use"/>
   <int value="1" label="Component is not ready to use. Reason unknown."/>
+</enum>
+
+<enum name="VRPresentationResult">
+  <int value="0" label="Requested"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="SuccessAlreadyPresenting"/>
+  <int value="3" label="VRDisplayCannotPresent"/>
+  <int value="4" label="PresentationNotSupportedByDisplay"/>
+  <int value="5" label="VRDisplayNotFound"/>
+  <int value="6" label="NotInitiatedByUserGesture"/>
+  <int value="7" label="InvalidNumberOfLayers"/>
+  <int value="8" label="InvalidLayerSource"/>
+  <int value="9" label="LayerSourceMissingWebGLContext"/>
+  <int value="10" label="InvalidLayerBounds"/>
+  <int value="11" label="ServiceInactive"/>
+  <int value="12" label="RequestDenied"/>
 </enum>
 
 <enum name="VRSuppressedElement">
