@@ -6,6 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,13 +21,9 @@ namespace {
 // Checks for equality between |cert_storage1| and |cert_storage2|.
 bool CertStoragesAreEqual(CRWSessionCertificateStorage* cert_storage1,
                           CRWSessionCertificateStorage* cert_storage2) {
-  std::string cert_string1;
-  bool success1 = net::X509Certificate::GetDEREncoded(
-      cert_storage1.certificate->os_cert_handle(), &cert_string1);
-  std::string cert_string2;
-  bool success2 = net::X509Certificate::GetDEREncoded(
-      cert_storage2.certificate->os_cert_handle(), &cert_string2);
-  return success1 && success2 && cert_string1 == cert_string2 &&
+  return net::x509_util::CryptoBufferEqual(
+             cert_storage1.certificate->cert_buffer(),
+             cert_storage2.certificate->cert_buffer()) &&
          cert_storage1.host == cert_storage2.host &&
          cert_storage1.status == cert_storage2.status;
 }

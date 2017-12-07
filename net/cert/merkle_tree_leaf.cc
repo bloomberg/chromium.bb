@@ -35,14 +35,14 @@ bool GetMerkleTreeLeaf(const X509Certificate* cert,
                        const SignedCertificateTimestamp* sct,
                        MerkleTreeLeaf* merkle_tree_leaf) {
   if (sct->origin == SignedCertificateTimestamp::SCT_EMBEDDED) {
-    if (cert->GetIntermediateCertificates().empty() ||
-        !GetPrecertSignedEntry(cert->os_cert_handle(),
-                               cert->GetIntermediateCertificates().front(),
+    if (cert->intermediate_buffers().empty() ||
+        !GetPrecertSignedEntry(cert->cert_buffer(),
+                               cert->intermediate_buffers().front().get(),
                                &merkle_tree_leaf->signed_entry)) {
       return false;
     }
   } else {
-    if (!GetX509SignedEntry(cert->os_cert_handle(),
+    if (!GetX509SignedEntry(cert->cert_buffer(),
                             &merkle_tree_leaf->signed_entry)) {
       return false;
     }

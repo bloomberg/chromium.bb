@@ -9,6 +9,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 
@@ -250,16 +251,11 @@ std::unique_ptr<net::MockCertVerifier> CronetTestBase::CreateMockCertVerifier(
 
 bool CronetTestBase::CalculatePublicKeySha256(const net::X509Certificate& cert,
                                               net::HashValue* out_hash_value) {
-  // Convert the cert to DER encoded bytes.
-  std::string der_cert_bytes;
-  net::X509Certificate::OSCertHandle cert_handle = cert.os_cert_handle();
-  if (!net::X509Certificate::GetDEREncoded(cert_handle, &der_cert_bytes)) {
-    LOG(INFO) << "Unable to convert the given cert to DER encoding";
-    return false;
-  }
   // Extract the public key from the cert.
   base::StringPiece spki_bytes;
-  if (!net::asn1::ExtractSPKIFromDERCert(der_cert_bytes, &spki_bytes)) {
+  if (!net::asn1::ExtractSPKIFromDERCert(
+          net::x509_util::CryptoBufferAsStringPiece(cert.cert_buffer()),
+          &spki_bytes)) {
     LOG(INFO) << "Unable to retrieve the public key from the DER cert";
     return false;
   }

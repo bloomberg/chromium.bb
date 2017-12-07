@@ -273,7 +273,7 @@ TEST(TrustStoreMacTest, SystemCerts) {
         x509_util::CreateSecCertificateFromBytes(cert->der_cert().UnsafeData(),
                                                  cert->der_cert().Length()));
     if (!cert_handle) {
-      ADD_FAILURE() << "CreateOSCertHandleFromBytes " << hash_text;
+      ADD_FAILURE() << "CreateCertBufferFromBytes " << hash_text;
       continue;
     }
     base::ScopedCFTypeRef<SecTrustRef> trust;

@@ -18,6 +18,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -96,10 +97,12 @@ TEST(CertVerifierCacheSerializerTest, RestoreMultipleEntriesIntoNewVerifier) {
 
   // Create a certificate that contains both a leaf and an intermediate/root and
   // use that certificate for www2.example.com.
-  net::X509Certificate::OSCertHandles chain;
-  chain.push_back(root_cert->os_cert_handle());
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> chain;
+  chain.push_back(net::x509_util::DupCryptoBuffer(root_cert->cert_buffer()));
   const scoped_refptr<net::X509Certificate> combined_cert =
-      net::X509Certificate::CreateFromHandle(ok_cert->os_cert_handle(), chain);
+      net::X509Certificate::CreateFromBuffer(
+          net::x509_util::DupCryptoBuffer(ok_cert->cert_buffer()),
+          std::move(chain));
   ASSERT_TRUE(combined_cert);
 
   ignore_result(callback.GetResult(verifier.Verify(

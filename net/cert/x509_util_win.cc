@@ -35,29 +35,27 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromCertContexts(
   if (!os_cert || !os_cert->pbCertEncoded || !os_cert->cbCertEncoded)
     return nullptr;
   bssl::UniquePtr<CRYPTO_BUFFER> cert_handle(
-      X509Certificate::CreateOSCertHandleFromBytes(
+      X509Certificate::CreateCertBufferFromBytes(
           reinterpret_cast<const char*>(os_cert->pbCertEncoded),
           os_cert->cbCertEncoded));
   if (!cert_handle)
     return nullptr;
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  X509Certificate::OSCertHandles intermediates_raw;
   for (PCCERT_CONTEXT os_intermediate : os_chain) {
     if (!os_intermediate || !os_intermediate->pbCertEncoded ||
         !os_intermediate->cbCertEncoded)
       return nullptr;
     bssl::UniquePtr<CRYPTO_BUFFER> intermediate_cert_handle(
-        X509Certificate::CreateOSCertHandleFromBytes(
+        X509Certificate::CreateCertBufferFromBytes(
             reinterpret_cast<const char*>(os_intermediate->pbCertEncoded),
             os_intermediate->cbCertEncoded));
     if (!intermediate_cert_handle)
       return nullptr;
-    intermediates_raw.push_back(intermediate_cert_handle.get());
     intermediates.push_back(std::move(intermediate_cert_handle));
   }
   scoped_refptr<X509Certificate> result(
-      X509Certificate::CreateFromHandleUnsafeOptions(
-          cert_handle.get(), intermediates_raw, options));
+      X509Certificate::CreateFromBufferUnsafeOptions(
+          std::move(cert_handle), std::move(intermediates), options));
   return result;
 }
 
@@ -80,19 +78,17 @@ ScopedPCCERT_CONTEXT CreateCertContextWithChain(
   PCCERT_CONTEXT primary_cert = nullptr;
 
   BOOL ok = CertAddEncodedCertificateToStore(
-      store.get(), X509_ASN_ENCODING,
-      CRYPTO_BUFFER_data(cert->os_cert_handle()),
-      base::checked_cast<DWORD>(CRYPTO_BUFFER_len(cert->os_cert_handle())),
+      store.get(), X509_ASN_ENCODING, CRYPTO_BUFFER_data(cert->cert_buffer()),
+      base::checked_cast<DWORD>(CRYPTO_BUFFER_len(cert->cert_buffer())),
       CERT_STORE_ADD_ALWAYS, &primary_cert);
   if (!ok || !primary_cert)
     return nullptr;
   ScopedPCCERT_CONTEXT scoped_primary_cert(primary_cert);
 
-  for (X509Certificate::OSCertHandle intermediate :
-       cert->GetIntermediateCertificates()) {
+  for (const auto& intermediate : cert->intermediate_buffers()) {
     ok = CertAddEncodedCertificateToStore(
-        store.get(), X509_ASN_ENCODING, CRYPTO_BUFFER_data(intermediate),
-        base::checked_cast<DWORD>(CRYPTO_BUFFER_len(intermediate)),
+        store.get(), X509_ASN_ENCODING, CRYPTO_BUFFER_data(intermediate.get()),
+        base::checked_cast<DWORD>(CRYPTO_BUFFER_len(intermediate.get())),
         CERT_STORE_ADD_ALWAYS, NULL);
     if (!ok) {
       if (invalid_intermediate_behavior == InvalidIntermediateBehavior::kFail)

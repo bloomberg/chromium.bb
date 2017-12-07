@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
 #include "net/quic/chromium/quic_http_stream.h"
 #include "net/quic/chromium/quic_stream_factory.h"
@@ -137,11 +138,7 @@ void QuicStreamFactoryPeer::CacheDummyServerConfig(
   scoped_refptr<X509Certificate> cert(
       ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
   DCHECK(cert);
-  std::string der_bytes;
-  bool success =
-      X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_bytes);
-  DCHECK(success);
-  certs.push_back(der_bytes);
+  certs.emplace_back(x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
 
   QuicCryptoClientConfig* crypto_config = &factory->crypto_config_;
   QuicCryptoClientConfig::CachedState* cached =

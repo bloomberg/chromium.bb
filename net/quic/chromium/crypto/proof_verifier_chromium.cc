@@ -522,7 +522,7 @@ bool ProofVerifierChromium::Job::VerifySignature(
 
   size_t size_bits;
   X509Certificate::PublicKeyType type;
-  X509Certificate::GetPublicKeyInfo(cert_->os_cert_handle(), &size_bits, &type);
+  X509Certificate::GetPublicKeyInfo(cert_->cert_buffer(), &size_bits, &type);
   if (type == X509Certificate::kPublicKeyTypeRSA) {
     crypto::SignatureVerifier::HashAlgorithm hash_alg =
         crypto::SignatureVerifier::SHA256;

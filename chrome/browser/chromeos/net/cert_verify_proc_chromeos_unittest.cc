@@ -12,6 +12,7 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/nss_cert_database_chromeos.h"
+#include "net/cert/x509_util.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -21,10 +22,10 @@ namespace chromeos {
 
 namespace {
 
-std::string GetSubjectCN(net::X509Certificate::OSCertHandle cert_handle) {
+std::string GetSubjectCN(CRYPTO_BUFFER* cert_handle) {
   scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromHandle(
-          cert_handle, net::X509Certificate::OSCertHandles());
+      net::X509Certificate::CreateFromBuffer(
+          net::x509_util::DupCryptoBuffer(cert_handle), {});
   if (!cert)
     return std::string();
   return "CN=" + cert->subject().common_name;
@@ -109,10 +110,9 @@ class CertVerifyProcChromeOSTest : public testing::Test {
     int error =
         verify_proc->Verify(cert, "127.0.0.1", std::string(), flags, NULL,
                             additional_trust_anchors, &verify_result);
-    if (!verify_result.verified_cert->GetIntermediateCertificates().empty()) {
-      net::X509Certificate::OSCertHandle root =
-          verify_result.verified_cert->GetIntermediateCertificates().back();
-      root_subject_name->assign(GetSubjectCN(root));
+    if (!verify_result.verified_cert->intermediate_buffers().empty()) {
+      root_subject_name->assign(GetSubjectCN(
+          verify_result.verified_cert->intermediate_buffers().back().get()));
     } else {
       root_subject_name->clear();
     }

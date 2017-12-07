@@ -56,6 +56,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -849,9 +850,8 @@ TEST_F(DownloadProtectionServiceTest,
   scoped_refptr<net::X509Certificate> test_cert(
       ReadTestCertificate("test_cn.pem"));
   ASSERT_TRUE(test_cert.get());
-  std::string test_cert_der;
-  net::X509Certificate::GetDEREncoded(test_cert->os_cert_handle(),
-                                      &test_cert_der);
+  std::string test_cert_der(
+      net::x509_util::CryptoBufferAsStringPiece(test_cert->cert_buffer()));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
       .WillRepeatedly(TrustSignature(test_cert_der));
   EXPECT_CALL(*sb_service_->mock_database_manager(),
@@ -2089,10 +2089,8 @@ TEST_F(DownloadProtectionServiceTest, GetCertificateWhitelistStrings) {
   scoped_refptr<net::X509Certificate> issuer_cert(
       ReadTestCertificate("issuer.pem"));
   ASSERT_TRUE(issuer_cert.get());
-  std::string issuer_der;
-  net::X509Certificate::GetDEREncoded(issuer_cert->os_cert_handle(),
-                                      &issuer_der);
-  std::string hashed = base::SHA1HashString(issuer_der);
+  std::string hashed = base::SHA1HashString(std::string(
+      net::x509_util::CryptoBufferAsStringPiece(issuer_cert->cert_buffer())));
   std::string cert_base =
       "cert/" + base::HexEncode(hashed.data(), hashed.size());
 

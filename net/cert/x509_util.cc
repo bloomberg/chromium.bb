@@ -4,6 +4,7 @@
 
 #include "net/cert/x509_util.h"
 
+#include <string.h>
 #include <memory>
 
 #include "base/lazy_instance.h"
@@ -159,15 +160,13 @@ bool GetTLSServerEndPointChannelBinding(const X509Certificate& certificate,
                                         std::string* token) {
   static const char kChannelBindingPrefix[] = "tls-server-end-point:";
 
-  std::string der_encoded_certificate;
-  if (!X509Certificate::GetDEREncoded(certificate.os_cert_handle(),
-                                      &der_encoded_certificate))
-    return false;
+  base::StringPiece der_encoded_certificate =
+      x509_util::CryptoBufferAsStringPiece(certificate.cert_buffer());
 
   der::Input tbs_certificate_tlv;
   der::Input signature_algorithm_tlv;
   der::BitString signature_value;
-  if (!ParseCertificate(der::Input(&der_encoded_certificate),
+  if (!ParseCertificate(der::Input(der_encoded_certificate),
                         &tbs_certificate_tlv, &signature_algorithm_tlv,
                         &signature_value, nullptr))
     return false;
@@ -393,6 +392,20 @@ bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
                         data.size(), GetBufferPool()));
 }
 
+bssl::UniquePtr<CRYPTO_BUFFER> DupCryptoBuffer(CRYPTO_BUFFER* buffer) {
+  CRYPTO_BUFFER_up_ref(buffer);
+  return bssl::UniquePtr<CRYPTO_BUFFER>(buffer);
+}
+
+bool CryptoBufferEqual(const CRYPTO_BUFFER* a, const CRYPTO_BUFFER* b) {
+  DCHECK(a && b);
+  if (a == b)
+    return true;
+  return CRYPTO_BUFFER_len(a) == CRYPTO_BUFFER_len(b) &&
+         memcmp(CRYPTO_BUFFER_data(a), CRYPTO_BUFFER_data(b),
+                CRYPTO_BUFFER_len(a)) == 0;
+}
+
 base::StringPiece CryptoBufferAsStringPiece(const CRYPTO_BUFFER* buffer) {
   return base::StringPiece(
       reinterpret_cast<const char*>(CRYPTO_BUFFER_data(buffer)),
@@ -406,11 +419,14 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
     return nullptr;
   }
 
-  std::vector<CRYPTO_BUFFER*> intermediate_chain;
-  for (size_t i = 1; i < sk_CRYPTO_BUFFER_num(buffers); ++i)
-    intermediate_chain.push_back(sk_CRYPTO_BUFFER_value(buffers, i));
-  return X509Certificate::CreateFromHandle(sk_CRYPTO_BUFFER_value(buffers, 0),
-                                           intermediate_chain);
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediate_chain;
+  for (size_t i = 1; i < sk_CRYPTO_BUFFER_num(buffers); ++i) {
+    intermediate_chain.push_back(
+        DupCryptoBuffer(sk_CRYPTO_BUFFER_value(buffers, i)));
+  }
+  return X509Certificate::CreateFromBuffer(
+      DupCryptoBuffer(sk_CRYPTO_BUFFER_value(buffers, 0)),
+      std::move(intermediate_chain));
 }
 
 ParseCertificateOptions DefaultParseCertificateOptions() {

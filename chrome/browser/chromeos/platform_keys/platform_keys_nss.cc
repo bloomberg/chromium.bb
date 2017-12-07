@@ -42,6 +42,7 @@
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/cert/x509_util.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
@@ -830,13 +831,10 @@ void SelectClientCertificates(
 
 std::string GetSubjectPublicKeyInfo(
     const scoped_refptr<net::X509Certificate>& certificate) {
-  std::string der_bytes;
-  if (!net::X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
-                                           &der_bytes))
-    return {};
-
   base::StringPiece spki_bytes;
-  if (!net::asn1::ExtractSPKIFromDERCert(der_bytes, &spki_bytes))
+  if (!net::asn1::ExtractSPKIFromDERCert(
+          net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
+          &spki_bytes))
     return {};
   return spki_bytes.as_string();
 }
@@ -847,7 +845,7 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
   net::X509Certificate::PublicKeyType key_type_tmp =
       net::X509Certificate::kPublicKeyTypeUnknown;
   size_t key_size_bits_tmp = 0;
-  net::X509Certificate::GetPublicKeyInfo(certificate->os_cert_handle(),
+  net::X509Certificate::GetPublicKeyInfo(certificate->cert_buffer(),
                                          &key_size_bits_tmp, &key_type_tmp);
 
   if (key_type_tmp == net::X509Certificate::kPublicKeyTypeUnknown) {

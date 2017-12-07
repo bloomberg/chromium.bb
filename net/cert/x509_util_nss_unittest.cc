@@ -25,17 +25,6 @@ std::string BytesForNSSCert(CERTCertificate* cert) {
   return der_encoded;
 }
 
-std::string BytesForX509CertHandle(X509Certificate::OSCertHandle handle) {
-  std::string result;
-  if (!X509Certificate::GetDEREncoded(handle, &result))
-    ADD_FAILURE();
-  return result;
-}
-
-std::string BytesForX509Cert(X509Certificate* cert) {
-  return BytesForX509CertHandle(cert->os_cert_handle());
-}
-
 }  // namespace
 
 TEST(X509UtilNSSTest, IsSameCertificate) {
@@ -121,7 +110,7 @@ TEST(X509UtilNSSTest, CreateCERTCertificateListFromX509Certificate) {
       GetTestCertsDirectory(), "multi-root-chain1.pem",
       X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   ASSERT_TRUE(x509_cert);
-  EXPECT_EQ(3U, x509_cert->GetIntermediateCertificates().size());
+  EXPECT_EQ(3U, x509_cert->intermediate_buffers().size());
 
   ScopedCERTCertificateList nss_certs =
       x509_util::CreateCERTCertificateListFromX509Certificate(x509_cert.get());
@@ -129,13 +118,16 @@ TEST(X509UtilNSSTest, CreateCERTCertificateListFromX509Certificate) {
   for (int i = 0; i < 4; ++i)
     ASSERT_TRUE(nss_certs[i]);
 
-  EXPECT_EQ(BytesForX509Cert(x509_cert.get()),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(x509_cert->cert_buffer()),
             BytesForNSSCert(nss_certs[0].get()));
-  EXPECT_EQ(BytesForX509CertHandle(x509_cert->GetIntermediateCertificates()[0]),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(
+                x509_cert->intermediate_buffers()[0].get()),
             BytesForNSSCert(nss_certs[1].get()));
-  EXPECT_EQ(BytesForX509CertHandle(x509_cert->GetIntermediateCertificates()[1]),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(
+                x509_cert->intermediate_buffers()[1].get()),
             BytesForNSSCert(nss_certs[2].get()));
-  EXPECT_EQ(BytesForX509CertHandle(x509_cert->GetIntermediateCertificates()[2]),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(
+                x509_cert->intermediate_buffers()[2].get()),
             BytesForNSSCert(nss_certs[3].get()));
 }
 
@@ -152,12 +144,15 @@ TEST(X509UtilTest, CreateCERTCertificateListFromX509CertificateErrors) {
       ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(ok_cert);
 
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  intermediates.push_back(std::move(bad_cert));
+  intermediates.push_back(x509_util::DupCryptoBuffer(ok_cert2->cert_buffer()));
   scoped_refptr<X509Certificate> cert_with_intermediates(
-      X509Certificate::CreateFromHandle(
-          ok_cert->os_cert_handle(),
-          {bad_cert.get(), ok_cert2->os_cert_handle()}));
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(ok_cert->cert_buffer()),
+          std::move(intermediates)));
   ASSERT_TRUE(cert_with_intermediates);
-  EXPECT_EQ(2U, cert_with_intermediates->GetIntermediateCertificates().size());
+  EXPECT_EQ(2U, cert_with_intermediates->intermediate_buffers().size());
 
   // Normal CreateCERTCertificateListFromX509Certificate fails with invalid
   // certs in chain.
@@ -175,9 +170,9 @@ TEST(X509UtilTest, CreateCERTCertificateListFromX509CertificateErrors) {
   for (const auto& nss_cert : nss_certs)
     ASSERT_TRUE(nss_cert.get());
 
-  EXPECT_EQ(BytesForX509Cert(ok_cert.get()),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(ok_cert->cert_buffer()),
             BytesForNSSCert(nss_certs[0].get()));
-  EXPECT_EQ(BytesForX509Cert(ok_cert2.get()),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(ok_cert2->cert_buffer()),
             BytesForNSSCert(nss_certs[1].get()));
 }
 
@@ -254,8 +249,9 @@ TEST(X509UtilNSSTest, CreateX509CertificateFromCERTCertificate_NoChain) {
   ASSERT_TRUE(nss_cert);
   scoped_refptr<X509Certificate> x509_cert =
       x509_util::CreateX509CertificateFromCERTCertificate(nss_cert.get());
-  EXPECT_EQ(BytesForNSSCert(nss_cert.get()), BytesForX509Cert(x509_cert.get()));
-  EXPECT_TRUE(x509_cert->GetIntermediateCertificates().empty());
+  EXPECT_EQ(BytesForNSSCert(nss_cert.get()),
+            x509_util::CryptoBufferAsStringPiece(x509_cert->cert_buffer()));
+  EXPECT_TRUE(x509_cert->intermediate_buffers().empty());
 }
 
 TEST(X509UtilNSSTest, CreateX509CertificateFromCERTCertificate_EmptyChain) {
@@ -265,8 +261,9 @@ TEST(X509UtilNSSTest, CreateX509CertificateFromCERTCertificate_EmptyChain) {
   scoped_refptr<X509Certificate> x509_cert =
       x509_util::CreateX509CertificateFromCERTCertificate(
           nss_cert.get(), std::vector<CERTCertificate*>());
-  EXPECT_EQ(BytesForNSSCert(nss_cert.get()), BytesForX509Cert(x509_cert.get()));
-  EXPECT_TRUE(x509_cert->GetIntermediateCertificates().empty());
+  EXPECT_EQ(BytesForNSSCert(nss_cert.get()),
+            x509_util::CryptoBufferAsStringPiece(x509_cert->cert_buffer()));
+  EXPECT_TRUE(x509_cert->intermediate_buffers().empty());
 }
 
 TEST(X509UtilNSSTest, CreateX509CertificateFromCERTCertificate_WithChain) {
@@ -283,9 +280,11 @@ TEST(X509UtilNSSTest, CreateX509CertificateFromCERTCertificate_WithChain) {
   scoped_refptr<X509Certificate> x509_cert =
       x509_util::CreateX509CertificateFromCERTCertificate(nss_cert.get(),
                                                           chain);
-  EXPECT_EQ(BytesForNSSCert(nss_cert.get()), BytesForX509Cert(x509_cert.get()));
-  ASSERT_EQ(1U, x509_cert->GetIntermediateCertificates().size());
-  EXPECT_EQ(BytesForX509CertHandle(x509_cert->GetIntermediateCertificates()[0]),
+  EXPECT_EQ(BytesForNSSCert(nss_cert.get()),
+            x509_util::CryptoBufferAsStringPiece(x509_cert->cert_buffer()));
+  ASSERT_EQ(1U, x509_cert->intermediate_buffers().size());
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(
+                x509_cert->intermediate_buffers()[0].get()),
             BytesForNSSCert(nss_cert2.get()));
 }
 
@@ -305,9 +304,9 @@ TEST(X509UtilNSSTest, CreateX509CertificateListFromCERTCertificates) {
   ASSERT_EQ(2U, x509_certs.size());
 
   EXPECT_EQ(BytesForNSSCert(nss_certs[0].get()),
-            BytesForX509Cert(x509_certs[0].get()));
+            x509_util::CryptoBufferAsStringPiece(x509_certs[0]->cert_buffer()));
   EXPECT_EQ(BytesForNSSCert(nss_certs[1].get()),
-            BytesForX509Cert(x509_certs[1].get()));
+            x509_util::CryptoBufferAsStringPiece(x509_certs[1]->cert_buffer()));
 }
 
 TEST(X509UtilNSSTest, CreateX509CertificateListFromCERTCertificates_EmptyList) {

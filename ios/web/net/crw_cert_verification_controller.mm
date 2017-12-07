@@ -17,6 +17,7 @@
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_proc_ios.h"
+#include "net/cert/x509_util.h"
 #include "net/cert/x509_util_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -125,12 +126,12 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   // |webView:didReceiveAuthenticationChallenge:completionHandler:|,
   // but the server-supplied chain in
   // |webView:didFailProvisionalNavigation:withError:|.
-  if (!cert->GetIntermediateCertificates().empty()) {
-    cert = net::X509Certificate::CreateFromHandle(
-        cert->os_cert_handle(), net::X509Certificate::OSCertHandles());
+  if (!cert->intermediate_buffers().empty()) {
+    cert = net::X509Certificate::CreateFromBuffer(
+        net::x509_util::DupCryptoBuffer(cert->cert_buffer()), {});
     DCHECK(cert);
   }
-  DCHECK(cert->GetIntermediateCertificates().empty());
+  DCHECK(cert->intermediate_buffers().empty());
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
                              _certPolicyCache->AllowCertForHost(
                                  cert.get(), base::SysNSStringToUTF8(host),

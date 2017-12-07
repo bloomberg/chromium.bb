@@ -9,6 +9,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/test/test_data_directory.h"
 
 namespace net {
@@ -52,12 +53,14 @@ scoped_refptr<X509Certificate> CreateCertificateChainFromFile(
   if (certs.empty())
     return NULL;
 
-  X509Certificate::OSCertHandles intermediates;
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
   for (size_t i = 1; i < certs.size(); ++i)
-    intermediates.push_back(certs[i]->os_cert_handle());
+    intermediates.push_back(
+        x509_util::DupCryptoBuffer(certs[i]->cert_buffer()));
 
-  scoped_refptr<X509Certificate> result(X509Certificate::CreateFromHandle(
-        certs[0]->os_cert_handle(), intermediates));
+  scoped_refptr<X509Certificate> result(X509Certificate::CreateFromBuffer(
+      x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
+      std::move(intermediates)));
   return result;
 }
 

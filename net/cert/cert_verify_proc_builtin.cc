@@ -293,25 +293,20 @@ bool CertVerifyProcBuiltin::SupportsOCSPStapling() const {
   return true;
 }
 
-scoped_refptr<ParsedCertificate> ParseCertificateFromOSHandle(
-    X509Certificate::OSCertHandle cert_handle,
+scoped_refptr<ParsedCertificate> ParseCertificateFromBuffer(
+    CRYPTO_BUFFER* cert_handle,
     CertErrors* errors) {
-  std::string cert_bytes;
-  if (!X509Certificate::GetDEREncoded(cert_handle, &cert_bytes))
-    return nullptr;
-  return ParsedCertificate::Create(x509_util::CreateCryptoBuffer(cert_bytes),
+  return ParsedCertificate::Create(x509_util::DupCryptoBuffer(cert_handle),
                                    x509_util::DefaultParseCertificateOptions(),
                                    errors);
 }
 
 void AddIntermediatesToIssuerSource(X509Certificate* x509_cert,
                                     CertIssuerSourceStatic* intermediates) {
-  const X509Certificate::OSCertHandles& cert_handles =
-      x509_cert->GetIntermediateCertificates();
   CertErrors errors;
-  for (auto it = cert_handles.begin(); it != cert_handles.end(); ++it) {
+  for (const auto& intermediate : x509_cert->intermediate_buffers()) {
     scoped_refptr<ParsedCertificate> cert =
-        ParseCertificateFromOSHandle(*it, &errors);
+        ParseCertificateFromBuffer(intermediate.get(), &errors);
     if (cert)
       intermediates->AddCert(std::move(cert));
     // TODO(crbug.com/634443): Surface these parsing errors?
@@ -371,9 +366,9 @@ void MapPathBuilderErrorsToCertStatus(const CertPathErrors& errors,
     *cert_status |= CERT_STATUS_INVALID;
 }
 
-X509Certificate::OSCertHandle CreateOSCertHandle(
+bssl::UniquePtr<CRYPTO_BUFFER> CreateCertBuffers(
     const scoped_refptr<ParsedCertificate>& certificate) {
-  return X509Certificate::CreateOSCertHandleFromBytes(
+  return X509Certificate::CreateCertBufferFromBytes(
       reinterpret_cast<const char*>(certificate->der_cert().UnsafeData()),
       certificate->der_cert().Length());
 }
@@ -386,19 +381,17 @@ X509Certificate::OSCertHandle CreateOSCertHandle(
 scoped_refptr<X509Certificate> CreateVerifiedCertChain(
     X509Certificate* target_cert,
     const CertPathBuilderResultPath& path) {
-  X509Certificate::OSCertHandles intermediates;
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
 
   // Skip the first certificate in the path as that is the target certificate
   for (size_t i = 1; i < path.certs.size(); ++i)
-    intermediates.push_back(CreateOSCertHandle(path.certs[i]));
+    intermediates.push_back(CreateCertBuffers(path.certs[i]));
 
-  scoped_refptr<X509Certificate> result = X509Certificate::CreateFromHandle(
-      target_cert->os_cert_handle(), intermediates);
+  scoped_refptr<X509Certificate> result = X509Certificate::CreateFromBuffer(
+      x509_util::DupCryptoBuffer(target_cert->cert_buffer()),
+      std::move(intermediates));
   // |target_cert| was already successfully parsed, so this should never fail.
   DCHECK(result);
-
-  for (const X509Certificate::OSCertHandle handle : intermediates)
-    X509Certificate::FreeOSCertHandle(handle);
 
   return result;
 }
@@ -534,8 +527,8 @@ int CertVerifyProcBuiltin::VerifyInternal(
   base::Time verification_time = base::Time::Now();
 
   // Parse the target certificate.
-  scoped_refptr<ParsedCertificate> target = ParseCertificateFromOSHandle(
-      input_cert->os_cert_handle(), &parsing_errors);
+  scoped_refptr<ParsedCertificate> target =
+      ParseCertificateFromBuffer(input_cert->cert_buffer(), &parsing_errors);
   if (!target) {
     // TODO(crbug.com/634443): Surface these parsing errors?
     verify_result->cert_status |= CERT_STATUS_INVALID;
@@ -551,8 +544,8 @@ int CertVerifyProcBuiltin::VerifyInternal(
       CreateSslSystemTrustStore();
 
   for (const auto& x509_cert : additional_trust_anchors) {
-    scoped_refptr<ParsedCertificate> cert = ParseCertificateFromOSHandle(
-        x509_cert->os_cert_handle(), &parsing_errors);
+    scoped_refptr<ParsedCertificate> cert =
+        ParseCertificateFromBuffer(x509_cert->cert_buffer(), &parsing_errors);
     if (cert)
       ssl_trust_store->AddTrustAnchor(cert);
     // TODO(eroman): Surface parsing errors of additional trust anchor.

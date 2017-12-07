@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,10 +29,11 @@ TEST(CertVerifierTest, RequestParamsComparators) {
 
   // Create a certificate that contains both a leaf and an
   // intermediate/root.
-  X509Certificate::OSCertHandles chain;
-  chain.push_back(root_cert->os_cert_handle());
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> chain;
+  chain.push_back(x509_util::DupCryptoBuffer(root_cert->cert_buffer()));
   const scoped_refptr<X509Certificate> combined_cert =
-      X509Certificate::CreateFromHandle(ok_cert->os_cert_handle(), chain);
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(ok_cert->cert_buffer()), std::move(chain));
   ASSERT_TRUE(combined_cert.get());
 
   const CertificateList empty_list;

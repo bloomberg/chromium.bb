@@ -33,12 +33,8 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
 
   // Add the certificate to the parallel |test_trust_store_|.
   CertErrors errors;
-  std::string cert_bytes;
-  if (!X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
-                                      &cert_bytes))
-    return false;
   scoped_refptr<ParsedCertificate> parsed = ParsedCertificate::Create(
-      x509_util::CreateCryptoBuffer(cert_bytes),
+      x509_util::DupCryptoBuffer(certificate->cert_buffer()),
       x509_util::DefaultParseCertificateOptions(), &errors);
   if (!parsed)
     return false;

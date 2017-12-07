@@ -15,6 +15,7 @@
 #include "net/cert/ct_serialization.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert/x509_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/quic/core/crypto/proof_verifier.h"
@@ -134,12 +135,9 @@ class ProofVerifierChromiumTest : public ::testing::Test {
     scoped_refptr<X509Certificate> cert = GetTestServerCertificate();
     ASSERT_TRUE(cert);
 
-    std::string der_bytes;
-    ASSERT_TRUE(
-        X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_bytes));
-
     certs->clear();
-    certs->push_back(der_bytes);
+    certs->emplace_back(
+        x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
   }
 
   std::string GetTestSignature() {
@@ -161,12 +159,9 @@ class ProofVerifierChromiumTest : public ::testing::Test {
         der_test_cert.data(), der_test_cert.length());
     ASSERT_TRUE(test_cert.get());
 
-    std::string der_bytes;
-    ASSERT_TRUE(X509Certificate::GetDEREncoded(test_cert->os_cert_handle(),
-                                               &der_bytes));
-
     certs->clear();
-    certs->push_back(der_bytes);
+    certs->emplace_back(
+        x509_util::CryptoBufferAsStringPiece(test_cert->cert_buffer()));
   }
 
   void CheckSCT(bool sct_expected_ok) {

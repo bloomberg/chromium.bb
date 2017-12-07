@@ -39,17 +39,6 @@ std::string BytesForSecCert(const void* sec_cert) {
       reinterpret_cast<SecCertificateRef>(const_cast<void*>(sec_cert)));
 }
 
-std::string BytesForX509CertHandle(X509Certificate::OSCertHandle handle) {
-  std::string result;
-  if (!X509Certificate::GetDEREncoded(handle, &result))
-    ADD_FAILURE();
-  return result;
-}
-
-std::string BytesForX509Cert(X509Certificate* cert) {
-  return BytesForX509CertHandle(cert->os_cert_handle());
-}
-
 }  // namespace
 
 TEST(X509UtilTest, CreateSecCertificateArrayForX509Certificate) {
@@ -57,7 +46,7 @@ TEST(X509UtilTest, CreateSecCertificateArrayForX509Certificate) {
       GetTestCertsDirectory(), "multi-root-chain1.pem",
       X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   ASSERT_TRUE(cert);
-  EXPECT_EQ(3U, cert->GetIntermediateCertificates().size());
+  EXPECT_EQ(3U, cert->intermediate_buffers().size());
 
   base::ScopedCFTypeRef<CFMutableArrayRef> sec_certs(
       CreateSecCertificateArrayForX509Certificate(cert.get()));
@@ -66,13 +55,16 @@ TEST(X509UtilTest, CreateSecCertificateArrayForX509Certificate) {
   for (int i = 0; i < 4; ++i)
     ASSERT_TRUE(CFArrayGetValueAtIndex(sec_certs.get(), i));
 
-  EXPECT_EQ(BytesForX509Cert(cert.get()),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
             BytesForSecCert(CFArrayGetValueAtIndex(sec_certs.get(), 0)));
-  EXPECT_EQ(BytesForX509CertHandle(cert->GetIntermediateCertificates()[0]),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(
+                cert->intermediate_buffers()[0].get()),
             BytesForSecCert(CFArrayGetValueAtIndex(sec_certs.get(), 1)));
-  EXPECT_EQ(BytesForX509CertHandle(cert->GetIntermediateCertificates()[1]),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(
+                cert->intermediate_buffers()[1].get()),
             BytesForSecCert(CFArrayGetValueAtIndex(sec_certs.get(), 2)));
-  EXPECT_EQ(BytesForX509CertHandle(cert->GetIntermediateCertificates()[2]),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(
+                cert->intermediate_buffers()[2].get()),
             BytesForSecCert(CFArrayGetValueAtIndex(sec_certs.get(), 3)));
 }
 
@@ -89,12 +81,15 @@ TEST(X509UtilTest, CreateSecCertificateArrayForX509CertificateErrors) {
       ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(ok_cert);
 
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  intermediates.push_back(std::move(bad_cert));
+  intermediates.push_back(x509_util::DupCryptoBuffer(ok_cert2->cert_buffer()));
   scoped_refptr<X509Certificate> cert_with_intermediates(
-      X509Certificate::CreateFromHandle(
-          ok_cert->os_cert_handle(),
-          {bad_cert.get(), ok_cert2->os_cert_handle()}));
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(ok_cert->cert_buffer()),
+          std::move(intermediates)));
   ASSERT_TRUE(cert_with_intermediates);
-  EXPECT_EQ(2U, cert_with_intermediates->GetIntermediateCertificates().size());
+  EXPECT_EQ(2U, cert_with_intermediates->intermediate_buffers().size());
 
   // Normal CreateSecCertificateArrayForX509Certificate fails with invalid
   // certs in chain.
@@ -111,9 +106,9 @@ TEST(X509UtilTest, CreateSecCertificateArrayForX509CertificateErrors) {
   for (int i = 0; i < 2; ++i)
     ASSERT_TRUE(CFArrayGetValueAtIndex(sec_certs.get(), i));
 
-  EXPECT_EQ(BytesForX509Cert(ok_cert.get()),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(ok_cert->cert_buffer()),
             BytesForSecCert(CFArrayGetValueAtIndex(sec_certs.get(), 0)));
-  EXPECT_EQ(BytesForX509Cert(ok_cert2.get()),
+  EXPECT_EQ(x509_util::CryptoBufferAsStringPiece(ok_cert2->cert_buffer()),
             BytesForSecCert(CFArrayGetValueAtIndex(sec_certs.get(), 1)));
 }
 
@@ -124,10 +119,14 @@ TEST(X509UtilTest,
       X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   ASSERT_EQ(4u, certs.size());
 
-  std::string bytes_cert0 = BytesForX509CertHandle(certs[0]->os_cert_handle());
-  std::string bytes_cert1 = BytesForX509CertHandle(certs[1]->os_cert_handle());
-  std::string bytes_cert2 = BytesForX509CertHandle(certs[2]->os_cert_handle());
-  std::string bytes_cert3 = BytesForX509CertHandle(certs[3]->os_cert_handle());
+  std::string bytes_cert0(
+      x509_util::CryptoBufferAsStringPiece(certs[0]->cert_buffer()));
+  std::string bytes_cert1(
+      x509_util::CryptoBufferAsStringPiece(certs[1]->cert_buffer()));
+  std::string bytes_cert2(
+      x509_util::CryptoBufferAsStringPiece(certs[2]->cert_buffer()));
+  std::string bytes_cert3(
+      x509_util::CryptoBufferAsStringPiece(certs[3]->cert_buffer()));
 
   base::ScopedCFTypeRef<SecCertificateRef> sec_cert0(
       CreateSecCertificateFromBytes(
@@ -156,37 +155,34 @@ TEST(X509UtilTest,
   scoped_refptr<X509Certificate> x509_cert_no_intermediates =
       CreateX509CertificateFromSecCertificate(sec_cert0.get(), {});
   ASSERT_TRUE(x509_cert_no_intermediates);
-  EXPECT_EQ(0U,
-            x509_cert_no_intermediates->GetIntermediateCertificates().size());
-  EXPECT_EQ(bytes_cert0, BytesForX509CertHandle(
-                             x509_cert_no_intermediates->os_cert_handle()));
+  EXPECT_EQ(0U, x509_cert_no_intermediates->intermediate_buffers().size());
+  EXPECT_EQ(bytes_cert0, x509_util::CryptoBufferAsStringPiece(
+                             x509_cert_no_intermediates->cert_buffer()));
 
   scoped_refptr<X509Certificate> x509_cert_one_intermediate =
       CreateX509CertificateFromSecCertificate(sec_cert0.get(),
                                               {sec_cert1.get()});
   ASSERT_TRUE(x509_cert_one_intermediate);
-  EXPECT_EQ(bytes_cert0, BytesForX509CertHandle(
-                             x509_cert_one_intermediate->os_cert_handle()));
-  ASSERT_EQ(1U,
-            x509_cert_one_intermediate->GetIntermediateCertificates().size());
+  EXPECT_EQ(bytes_cert0, x509_util::CryptoBufferAsStringPiece(
+                             x509_cert_one_intermediate->cert_buffer()));
+  ASSERT_EQ(1U, x509_cert_one_intermediate->intermediate_buffers().size());
   EXPECT_EQ(bytes_cert1,
-            BytesForX509CertHandle(
-                x509_cert_one_intermediate->GetIntermediateCertificates()[0]));
+            x509_util::CryptoBufferAsStringPiece(
+                x509_cert_one_intermediate->intermediate_buffers()[0].get()));
 
   scoped_refptr<X509Certificate> x509_cert_two_intermediates =
       CreateX509CertificateFromSecCertificate(
           sec_cert0.get(), {sec_cert1.get(), sec_cert2.get()});
   ASSERT_TRUE(x509_cert_two_intermediates);
-  EXPECT_EQ(bytes_cert0, BytesForX509CertHandle(
-                             x509_cert_two_intermediates->os_cert_handle()));
-  ASSERT_EQ(2U,
-            x509_cert_two_intermediates->GetIntermediateCertificates().size());
+  EXPECT_EQ(bytes_cert0, x509_util::CryptoBufferAsStringPiece(
+                             x509_cert_two_intermediates->cert_buffer()));
+  ASSERT_EQ(2U, x509_cert_two_intermediates->intermediate_buffers().size());
   EXPECT_EQ(bytes_cert1,
-            BytesForX509CertHandle(
-                x509_cert_two_intermediates->GetIntermediateCertificates()[0]));
+            x509_util::CryptoBufferAsStringPiece(
+                x509_cert_two_intermediates->intermediate_buffers()[0].get()));
   EXPECT_EQ(bytes_cert2,
-            BytesForX509CertHandle(
-                x509_cert_two_intermediates->GetIntermediateCertificates()[1]));
+            x509_util::CryptoBufferAsStringPiece(
+                x509_cert_two_intermediates->intermediate_buffers()[1].get()));
 }
 
 }  // namespace x509_util

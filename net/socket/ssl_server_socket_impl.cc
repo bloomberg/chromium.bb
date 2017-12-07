@@ -542,7 +542,7 @@ int SSLServerContextImpl::SocketImpl::Init() {
     return ERR_UNEXPECTED;
 
   // Set certificate and private key.
-  DCHECK(context_->cert_->os_cert_handle());
+  DCHECK(context_->cert_->cert_buffer());
   DCHECK(context_->key_->key());
   if (!SetSSLChainAndKey(ssl_.get(), context_->cert_.get(),
                          context_->key_->key(), nullptr)) {

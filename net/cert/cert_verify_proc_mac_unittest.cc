@@ -19,6 +19,7 @@
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -69,11 +70,14 @@ TEST(CertVerifyProcMacTest, MacCRLIntermediate) {
   // Add E as trust anchor.
   ScopedTestRoot test_root_E(path_3_certs[3].get());  // E-by-E
 
-  X509Certificate::OSCertHandles intermediates;
-  intermediates.push_back(path_2_certs[1]->os_cert_handle());  // B-by-C
-  intermediates.push_back(path_2_certs[2]->os_cert_handle());  // C-by-E
-  scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromHandle(
-      path_3_certs[0]->os_cert_handle(), intermediates);
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  intermediates.push_back(
+      x509_util::DupCryptoBuffer(path_2_certs[1]->cert_buffer()));  // B-by-C
+  intermediates.push_back(
+      x509_util::DupCryptoBuffer(path_2_certs[2]->cert_buffer()));  // C-by-E
+  scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromBuffer(
+      x509_util::DupCryptoBuffer(path_3_certs[0]->cert_buffer()),
+      std::move(intermediates));
   ASSERT_TRUE(cert);
 
   std::unique_ptr<TestKeychainSearchList> test_keychain_search_list(
@@ -113,13 +117,13 @@ TEST(CertVerifyProcMacTest, MacCRLIntermediate) {
   ASSERT_EQ(0U, verify_result.cert_status);
   ASSERT_TRUE(verify_result.verified_cert.get());
 
-  const X509Certificate::OSCertHandles& verified_intermediates =
-      verify_result.verified_cert->GetIntermediateCertificates();
+  const auto& verified_intermediates =
+      verify_result.verified_cert->intermediate_buffers();
   ASSERT_EQ(3U, verified_intermediates.size());
 
   scoped_refptr<X509Certificate> intermediate =
-      X509Certificate::CreateFromHandle(verified_intermediates[1],
-                                        X509Certificate::OSCertHandles());
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(verified_intermediates[1].get()), {});
   ASSERT_TRUE(intermediate);
 
   scoped_refptr<X509Certificate> expected_intermediate = path_3_certs[2];
@@ -171,8 +175,8 @@ TEST(CertVerifyProcMacTest, MacKeychainReordering) {
   EXPECT_FALSE(verify_result.has_sha1);
   ASSERT_TRUE(verify_result.verified_cert.get());
 
-  const X509Certificate::OSCertHandles& verified_intermediates =
-      verify_result.verified_cert->GetIntermediateCertificates();
+  const auto& verified_intermediates =
+      verify_result.verified_cert->intermediate_buffers();
   ASSERT_EQ(2U, verified_intermediates.size());
 }
 

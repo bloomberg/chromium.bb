@@ -383,7 +383,7 @@ TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
   ASSERT_EQ(1U, failed.size());
   // Note: this compares pointers directly.  It's okay in this case because
   // ImportCACerts returns the same pointers that were passed in.  In the
-  // general case IsSameOSCert should be used.
+  // general case x509_util::CryptoBufferEqual should be used.
   EXPECT_EQ(certs[0], failed[0].certificate);
   EXPECT_THAT(failed[0].net_error, IsError(ERR_IMPORT_CA_CERT_NOT_CA));
 

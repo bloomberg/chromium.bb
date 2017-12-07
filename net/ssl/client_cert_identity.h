@@ -56,7 +56,8 @@ class NET_EXPORT ClientCertIdentity {
   // this will change the value of |certificate()|, and any references that
   // were retained to the previous value will not reflect the updated
   // intermediates list.
-  void SetIntermediates(X509Certificate::OSCertHandles intermediates);
+  void SetIntermediates(
+      std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates);
 
  private:
   scoped_refptr<net::X509Certificate> cert_;

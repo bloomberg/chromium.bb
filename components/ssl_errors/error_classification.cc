@@ -163,7 +163,7 @@ void RecordUMAStatistics(bool overridable,
         RecordSSLInterstitialCause(overridable, LOCALHOST);
       if (IsHostnameNonUniqueOrDotless(hostname))
         RecordSSLInterstitialCause(overridable, PRIVATE_URL);
-      if (net::X509Certificate::IsSelfSigned(cert.os_cert_handle()))
+      if (net::X509Certificate::IsSelfSigned(cert.cert_buffer()))
         RecordSSLInterstitialCause(overridable, SELF_SIGNED);
       break;
     }

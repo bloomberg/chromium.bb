@@ -169,7 +169,7 @@ std::string GetPEMEncodedIssuer(CERTCertificate* cert) {
     return std::string();
   }
   std::string pem_encoded_issuer;
-  if (!net::X509Certificate::GetPEMEncoded(issuer->os_cert_handle(),
+  if (!net::X509Certificate::GetPEMEncoded(issuer->cert_buffer(),
                                            &pem_encoded_issuer)) {
     LOG(ERROR) << "Couldn't PEM-encode certificate.";
     return std::string();

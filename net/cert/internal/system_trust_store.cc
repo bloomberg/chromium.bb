@@ -175,8 +175,7 @@ class FuchsiaSystemCerts {
     for (const auto& cert : certs) {
       CertErrors errors;
       auto parsed = ParsedCertificate::Create(
-          bssl::UniquePtr<CRYPTO_BUFFER>(
-              X509Certificate::DupOSCertHandle(cert->os_cert_handle())),
+          x509_util::DupCryptoBuffer(cert->cert_buffer()),
           x509_util::DefaultParseCertificateOptions(), &errors);
       CHECK(parsed) << errors.ToDebugString();
       system_trust_store_.AddTrustAnchor(parsed);

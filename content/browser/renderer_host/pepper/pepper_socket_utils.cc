@@ -21,6 +21,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
@@ -123,11 +124,11 @@ bool GetCertificateFields(const net::X509Certificate& cert,
   fields->SetField(
       PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_AFTER,
       std::make_unique<base::Value>(cert.valid_expiry().ToDoubleT()));
-  std::string der;
-  net::X509Certificate::GetDEREncoded(cert.os_cert_handle(), &der);
-  fields->SetField(
-      PP_X509CERTIFICATE_PRIVATE_RAW,
-      base::Value::CreateWithCopiedBuffer(der.data(), der.length()));
+  base::StringPiece cert_der =
+      net::x509_util::CryptoBufferAsStringPiece(cert.cert_buffer());
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_RAW,
+                   std::make_unique<base::Value>(base::Value::BlobStorage(
+                       cert_der.begin(), cert_der.end())));
   return true;
 }
 

@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace content {
@@ -72,19 +73,15 @@ void AddExplanations(
     std::unique_ptr<protocol::Array<String>> certificate =
         protocol::Array<String>::create();
     if (it.certificate) {
-      std::string der;
       std::string encoded;
-      bool rv = net::X509Certificate::GetDEREncoded(
-          it.certificate->os_cert_handle(), &der);
-      DCHECK(rv);
-      base::Base64Encode(der, &encoded);
-
+      base::Base64Encode(net::x509_util::CryptoBufferAsStringPiece(
+                             it.certificate->cert_buffer()),
+                         &encoded);
       certificate->addItem(encoded);
 
-      for (auto* cert : it.certificate->GetIntermediateCertificates()) {
-        rv = net::X509Certificate::GetDEREncoded(cert, &der);
-        DCHECK(rv);
-        base::Base64Encode(der, &encoded);
+      for (const auto& cert : it.certificate->intermediate_buffers()) {
+        base::Base64Encode(
+            net::x509_util::CryptoBufferAsStringPiece(cert.get()), &encoded);
         certificate->addItem(encoded);
       }
     }

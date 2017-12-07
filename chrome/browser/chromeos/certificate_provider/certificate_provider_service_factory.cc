@@ -28,6 +28,7 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/ssl/ssl_private_key.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
@@ -135,12 +136,8 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
       return false;
   }
   request.digest.assign(digest.begin(), digest.end());
-  std::string cert_der;
-  if (!net::X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
-                                           &cert_der)) {
-    LOG(ERROR) << "Could not DER encode the certificate.";
-    return false;  // Behave as if the extension wasn't registered anymore.
-  }
+  base::StringPiece cert_der =
+      net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer());
   request.certificate.assign(cert_der.begin(), cert_der.end());
 
   std::unique_ptr<base::ListValue> internal_args(new base::ListValue);

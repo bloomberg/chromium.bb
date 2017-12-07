@@ -231,11 +231,10 @@ bool SetSSLChainAndKey(SSL* ssl,
                        EVP_PKEY* pkey,
                        const SSL_PRIVATE_KEY_METHOD* custom_key) {
   std::vector<CRYPTO_BUFFER*> chain_raw;
-  chain_raw.push_back(cert->os_cert_handle());
-  for (X509Certificate::OSCertHandle handle :
-       cert->GetIntermediateCertificates()) {
-    chain_raw.push_back(handle);
-  }
+  chain_raw.reserve(1 + cert->intermediate_buffers().size());
+  chain_raw.push_back(cert->cert_buffer());
+  for (const auto& handle : cert->intermediate_buffers())
+    chain_raw.push_back(handle.get());
 
   if (!SSL_set_chain_and_key(ssl, chain_raw.data(), chain_raw.size(), pkey,
                              custom_key)) {

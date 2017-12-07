@@ -37,6 +37,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
+#include "net/cert/x509_util.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
 #include "net/der/tag.h"
@@ -2339,24 +2340,23 @@ TEST_F(SSLClientSocketTest, VerifyServerChainProperlyOrdered) {
   scoped_refptr<X509Certificate> server_certificate = ssl_info.unverified_cert;
 
   // Get the intermediates as received  client side.
-  const X509Certificate::OSCertHandles& server_intermediates =
-      server_certificate->GetIntermediateCertificates();
+  const auto& server_intermediates = server_certificate->intermediate_buffers();
 
   // Check that the unverified server certificate chain is properly retrieved
   // from the underlying ssl stack.
   ASSERT_EQ(4U, server_certs.size());
 
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(
-      server_certificate->os_cert_handle(), server_certs[0]->os_cert_handle()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(server_certificate->cert_buffer(),
+                                           server_certs[0]->cert_buffer()));
 
   ASSERT_EQ(3U, server_intermediates.size());
 
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(server_intermediates[0],
-                                            server_certs[1]->os_cert_handle()));
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(server_intermediates[1],
-                                            server_certs[2]->os_cert_handle()));
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(server_intermediates[2],
-                                            server_certs[3]->os_cert_handle()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(server_intermediates[0].get(),
+                                           server_certs[1]->cert_buffer()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(server_intermediates[1].get(),
+                                           server_certs[2]->cert_buffer()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(server_intermediates[2].get(),
+                                           server_certs[3]->cert_buffer()));
 
   sock_->Disconnect();
   EXPECT_FALSE(sock_->IsConnected());
@@ -2393,13 +2393,16 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
 
   ASSERT_TRUE(certs[0]->Equals(unverified_certs[0].get()));
 
-  X509Certificate::OSCertHandles temp_intermediates;
-  temp_intermediates.push_back(certs[1]->os_cert_handle());
-  temp_intermediates.push_back(certs[2]->os_cert_handle());
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> temp_intermediates;
+  temp_intermediates.push_back(
+      x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  temp_intermediates.push_back(
+      x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
 
   CertVerifyResult verify_result;
-  verify_result.verified_cert = X509Certificate::CreateFromHandle(
-      certs[0]->os_cert_handle(), temp_intermediates);
+  verify_result.verified_cert = X509Certificate::CreateFromBuffer(
+      x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
+      std::move(temp_intermediates));
   ASSERT_TRUE(verify_result.verified_cert);
 
   // Add a rule that maps the server cert (A) to the chain of A->B->C2
@@ -2432,29 +2435,28 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   // Verify that SSLInfo contains the corrected re-constructed chain A -> B
   // -> C2.
   ASSERT_TRUE(ssl_info.cert);
-  const X509Certificate::OSCertHandles& intermediates =
-      ssl_info.cert->GetIntermediateCertificates();
+  const auto& intermediates = ssl_info.cert->intermediate_buffers();
   ASSERT_EQ(2U, intermediates.size());
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(ssl_info.cert->os_cert_handle(),
-                                            certs[0]->os_cert_handle()));
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(intermediates[0],
-                                            certs[1]->os_cert_handle()));
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(intermediates[1],
-                                            certs[2]->os_cert_handle()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(ssl_info.cert->cert_buffer(),
+                                           certs[0]->cert_buffer()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(intermediates[0].get(),
+                                           certs[1]->cert_buffer()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(intermediates[1].get(),
+                                           certs[2]->cert_buffer()));
 
   // Verify that SSLInfo also contains the chain as received from the server.
   ASSERT_TRUE(ssl_info.unverified_cert);
-  const X509Certificate::OSCertHandles& served_intermediates =
-      ssl_info.unverified_cert->GetIntermediateCertificates();
+  const auto& served_intermediates =
+      ssl_info.unverified_cert->intermediate_buffers();
   ASSERT_EQ(3U, served_intermediates.size());
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(
-      ssl_info.cert->os_cert_handle(), unverified_certs[0]->os_cert_handle()));
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(
-      served_intermediates[0], unverified_certs[1]->os_cert_handle()));
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(
-      served_intermediates[1], unverified_certs[2]->os_cert_handle()));
-  EXPECT_TRUE(X509Certificate::IsSameOSCert(
-      served_intermediates[2], unverified_certs[3]->os_cert_handle()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(ssl_info.cert->cert_buffer(),
+                                           unverified_certs[0]->cert_buffer()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(served_intermediates[0].get(),
+                                           unverified_certs[1]->cert_buffer()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(served_intermediates[1].get(),
+                                           unverified_certs[2]->cert_buffer()));
+  EXPECT_TRUE(x509_util::CryptoBufferEqual(served_intermediates[2].get(),
+                                           unverified_certs[3]->cert_buffer()));
 
   sock_->Disconnect();
   EXPECT_FALSE(sock_->IsConnected());
