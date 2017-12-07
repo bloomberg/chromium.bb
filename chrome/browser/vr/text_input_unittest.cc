@@ -57,6 +57,11 @@ class MockKeyboardDelegate : public KeyboardDelegate {
                bool(const gfx::Point3F&, const gfx::Point3F&, gfx::Point3F*));
   MOCK_METHOD0(OnBeginFrame, void());
   MOCK_METHOD1(Draw, void(const CameraModel&));
+  MOCK_METHOD1(OnHoverEnter, void(const gfx::PointF&));
+  MOCK_METHOD0(OnHoverLeave, void());
+  MOCK_METHOD1(OnMove, void(const gfx::PointF&));
+  MOCK_METHOD1(OnButtonDown, void(const gfx::PointF&));
+  MOCK_METHOD1(OnButtonUp, void(const gfx::PointF&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockKeyboardDelegate);
@@ -136,6 +141,26 @@ TEST_F(TextInputSceneTest, InputFieldEdit) {
 TEST_F(TextInputSceneTest, ClickOnTextGrabsFocus) {
   EXPECT_CALL(*text_input_delegate_, RequestFocus(_));
   text_input_->get_text_element()->OnButtonUp({0, 0});
+}
+
+TEST(TextInputTest, ControllerInteractionsSentToDelegate) {
+  auto keyboard = base::MakeUnique<Keyboard>();
+  auto kb_delegate = base::MakeUnique<StrictMock<MockKeyboardDelegate>>();
+  testing::Sequence s;
+  EXPECT_CALL(*kb_delegate, HideKeyboard()).InSequence(s);
+  keyboard->SetKeyboardDelegate(kb_delegate.get());
+
+  EXPECT_CALL(*kb_delegate, OnHoverEnter(_)).InSequence(s);
+  EXPECT_CALL(*kb_delegate, OnHoverLeave()).InSequence(s);
+  EXPECT_CALL(*kb_delegate, OnMove(_)).InSequence(s);
+  EXPECT_CALL(*kb_delegate, OnButtonDown(_)).InSequence(s);
+  EXPECT_CALL(*kb_delegate, OnButtonUp(_)).InSequence(s);
+  gfx::PointF p;
+  keyboard->OnHoverEnter(p);
+  keyboard->OnHoverLeave();
+  keyboard->OnMove(p);
+  keyboard->OnButtonDown(p);
+  keyboard->OnButtonUp(p);
 }
 
 TEST(TextInputTest, HintText) {

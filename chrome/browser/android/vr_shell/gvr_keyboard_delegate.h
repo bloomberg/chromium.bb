@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/keyboard_ui_interface.h"
 #include "third_party/gvr-android-keyboard/src/libraries/headers/vr/gvr/capi/include/gvr_keyboard.h"
@@ -25,7 +24,6 @@ class GvrKeyboardDelegate : public vr::KeyboardDelegate {
   static std::unique_ptr<GvrKeyboardDelegate> Create();
   ~GvrKeyboardDelegate() override;
 
-  void SetController(VrController* controller);
   void SetUiInterface(vr::KeyboardUiInterface* ui);
 
   typedef int32_t EventType;
@@ -41,6 +39,9 @@ class GvrKeyboardDelegate : public vr::KeyboardDelegate {
                gfx::Point3F* hit_position) override;
   void Draw(const vr::CameraModel& model) override;
 
+  void OnButtonDown(const gfx::PointF& position) override;
+  void OnButtonUp(const gfx::PointF& position) override;
+
   // Called to update GVR keyboard with the given text input info.
   void UpdateInput(const vr::TextInputInfo& info);
 
@@ -50,7 +51,6 @@ class GvrKeyboardDelegate : public vr::KeyboardDelegate {
   void OnGvrKeyboardEvent(EventType);
   vr::TextInputInfo GetTextInfo();
 
-  VrController* controller_;
   vr::KeyboardUiInterface* ui_;
   gvr_keyboard_context* gvr_keyboard_ = nullptr;
   OnEventCallback keyboard_event_callback_;

@@ -67,6 +67,41 @@ void Keyboard::NotifyClientTransformOperationsAnimated(
   delegate_->SetTransform(LocalTransform());
 }
 
+void Keyboard::OnHoverEnter(const gfx::PointF& position) {
+  if (!delegate_)
+    return;
+
+  delegate_->OnHoverEnter(position);
+}
+
+void Keyboard::OnHoverLeave() {
+  if (!delegate_)
+    return;
+
+  delegate_->OnHoverLeave();
+}
+
+void Keyboard::OnMove(const gfx::PointF& position) {
+  if (!delegate_)
+    return;
+
+  delegate_->OnMove(position);
+}
+
+void Keyboard::OnButtonDown(const gfx::PointF& position) {
+  if (!delegate_)
+    return;
+
+  delegate_->OnButtonDown(position);
+}
+
+void Keyboard::OnButtonUp(const gfx::PointF& position) {
+  if (!delegate_)
+    return;
+
+  delegate_->OnButtonUp(position);
+}
+
 bool Keyboard::OnBeginFrame(const base::TimeTicks& time,
                             const gfx::Vector3dF& head_direction) {
   if (!delegate_)

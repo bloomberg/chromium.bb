@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/android_vsync_helper.h"
-#include "chrome/browser/android/vr_shell/gvr_keyboard_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/controller_mesh.h"
@@ -83,8 +82,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
             gvr_context* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
-            bool start_in_web_vr_mode,
-            GvrKeyboardDelegate* keyboard_delegate);
+            bool start_in_web_vr_mode);
   ~VrShellGl() override;
 
   void Initialize();
@@ -244,7 +242,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 
   GlBrowserInterface* browser_;
-  GvrKeyboardDelegate* keyboard_delegate_;
 
   uint8_t frame_index_ = 0;
   // Larger than frame_index_ so it can be initialized out-of-band.
