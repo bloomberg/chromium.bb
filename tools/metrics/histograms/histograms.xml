@@ -22425,6 +22425,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BookmarkApp.GetAppForCurrentURLDuration" units="ms">
+  <owner>mgiuca@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <summary>
+    Time it takes to retrieve the app for the current URL during a navigation.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.BookmarkApp.GetAppForWindowDuration" units="ms">
+  <owner>mgiuca@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <summary>
+    Time it takes to retrieve the app associated with the window during a
+    navigation.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.BookmarkApp.GetTargetAppDuration" units="ms">
+  <owner>mgiuca@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <summary>
+    Time it takes to retrieve the app for the target url during a navigation.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.BookmarkApp.NavigationResult"
     enum="BookmarkAppNavigationResult">
   <owner>mgiuca@chromium.org</owner>
