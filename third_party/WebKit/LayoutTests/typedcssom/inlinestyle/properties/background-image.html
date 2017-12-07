@@ -9,8 +9,8 @@
 test(function() {
   testElement.attributeStyleMap.set('background-image', new CSSURLImageValue(''));
   document.body.offsetTop;
-  assert_equals(testElement.attributeStyleMap.get('background-image').intrinsicHeight, 0);
-  assert_equals(testElement.attributeStyleMap.get('background-image').intrinsicWidth, 0);
+  assert_equals(testElement.attributeStyleMap.get('background-image').intrinsicHeight, null);
+  assert_equals(testElement.attributeStyleMap.get('background-image').intrinsicWidth, null);
 }, "Check that setting background-image to CSSURLImageValue('') doesn't cause a crash");
 
 runInlineStylePropertyMapTests( {
