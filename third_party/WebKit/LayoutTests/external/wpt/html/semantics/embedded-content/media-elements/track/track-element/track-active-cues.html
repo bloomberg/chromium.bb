@@ -1,8 +1,8 @@
-<!doctype html>
-<title>Test to ensure that no text track cues are active after the video is unloaded.</title>
-<script src="../media-file.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<!DOCTYPE html>
+<title>Ensure that no text track cues are active after the video is unloaded</title>
+<script src="/common/media.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
     var eventCount = 0;
@@ -16,7 +16,7 @@ async_test(function(t) {
     }
 
     var video = document.createElement('video');
-    video.src = findMediaFile('video', '../content/test');
+    video.src = getVideoURI('/media/movie_5');
     var trackElement = document.createElement('track');
 
     trackElement.onload = t.step_func(eventCallback);
@@ -31,7 +31,7 @@ async_test(function(t) {
         assert_equals(trackElement.track.activeCues.length, 0);
     });
 
-    trackElement.src = 'captions-webvtt/captions-fast.vtt';
+    trackElement.src = 'resources/captions-fast.vtt';
     trackElement.kind = 'captions';
     trackElement.default = true;
     video.appendChild(trackElement);
