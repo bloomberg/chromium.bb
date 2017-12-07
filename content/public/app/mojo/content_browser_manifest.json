@@ -22,6 +22,7 @@
           "blink::mojom::BackgroundSyncService",
           "blink::mojom::BlobRegistry",
           "blink::mojom::BroadcastChannelProvider",
+          "blink::mojom::LockManager",
           "blink::mojom::Hyphenation",
           "blink::mojom::MimeRegistry",
           "blink::mojom::OffscreenCanvasProvider",
@@ -123,6 +124,7 @@
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
           "blink::mojom::DedicatedWorkerFactory",
+          "blink::mojom::LockManager",
           "blink::mojom::GeolocationService",
           "blink::mojom::InsecureInputService",
           "blink::mojom::KeyboardLockService",
@@ -176,6 +178,7 @@
     "navigation:dedicated_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::LockManager",
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
           "payments::mojom::PaymentManager",
@@ -188,6 +191,7 @@
     "navigation:service_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::LockManager",
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
           "blink::mojom::WebSocket",
@@ -201,6 +205,7 @@
     "navigation:shared_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::LockManager",
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
           "blink::mojom::WebSocket",

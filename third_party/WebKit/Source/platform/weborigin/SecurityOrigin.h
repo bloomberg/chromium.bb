@@ -181,6 +181,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   bool CanAccessPasswordManager() const { return !IsUnique(); }
   bool CanAccessFileSystem() const { return !IsUnique(); }
   bool CanAccessCacheStorage() const { return !IsUnique(); }
+  bool CanAccessLocks() const { return !IsUnique(); }
 
   // Technically, we should always allow access to sessionStorage, but we
   // currently don't handle creating a sessionStorage area for unique

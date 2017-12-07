@@ -695,6 +695,15 @@ interface ImageData
 interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
     method constructor
+interface Lock
+    attribute @@toStringTag
+    getter mode
+    getter scope
+    method constructor
+interface LockManager
+    attribute @@toStringTag
+    method acquire
+    method constructor
 interface MessageChannel
     attribute @@toStringTag
     getter port1
@@ -2546,6 +2555,7 @@ interface WorkerNavigator
     getter budget
     getter connection
     getter hardwareConcurrency
+    getter locks
     getter onLine
     getter permissions
     getter platform

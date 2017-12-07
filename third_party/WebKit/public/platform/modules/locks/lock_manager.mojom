@@ -1,0 +1,36 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "url/mojo/origin.mojom";
+
+// An opaque handle passed from the browser process to a child process to reflect a
+// held lock. The lock is released when the handle is dropped.
+interface LockHandle {};
+
+interface LockRequest {
+  // Request was granted.
+  Granted(LockHandle lock_handle);
+
+  // Request failed; e.g. request was only "if available" and it was not.
+  Failed();
+
+  // TODO(jsbell): Abort() is not yet used.
+  Abort(string reason);
+};
+
+interface LockManager {
+  enum LockMode {
+    SHARED,
+    EXCLUSIVE
+  };
+
+  enum WaitMode {
+    WAIT,
+    NO_WAIT
+  };
+
+  RequestLock(url.mojom.Origin origin, array<string> scope, LockMode mode, WaitMode wait, LockRequest request);
+};

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Web Locks API: Shared Mode</title>
+<link rel=help href="https://github.com/inexorabletash/web-locks">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+promise_test(async t => {
+  const granted = [];
+  function log_grant(n) { return () => { granted.push(n); }; }
+
+  await Promise.all([
+    navigator.locks.acquire('a', {mode: 'shared'}, log_grant(1)),
+    navigator.locks.acquire('b', {mode: 'shared'}, log_grant(2)),
+    navigator.locks.acquire('c', {mode: 'shared'}, log_grant(3)),
+    navigator.locks.acquire('a', {mode: 'shared'}, log_grant(4)),
+    navigator.locks.acquire('b', {mode: 'shared'}, log_grant(5)),
+    navigator.locks.acquire('c', {mode: 'shared'}, log_grant(6)),
+  ]);
+
+  assert_array_equals(granted, [1, 2, 3, 4, 5, 6]);
+}, 'Lock requests are granted in order');
+
+promise_test(async t => {
+  let ab_acquired = false, a_acquired = false, b_acquired = false;
+
+  await navigator.locks.acquire(['a', 'b'], {mode: 'shared'}, async lock => {
+    ab_acquired = true;
+
+    // Since lock over [a, b] is held, these requests would be blocked if the
+    // locks were not all 'shared', causing this test to time out.
+
+    await navigator.locks.acquire('a', {mode: 'shared'}, lock => {
+      a_acquired = true;
+    });
+
+    await navigator.locks.acquire('b', {mode: 'shared'}, lock => {
+      b_acquired = true;
+    });
+  });
+
+  assert_true(ab_acquired, 'requested lock was acquired');
+  assert_true(a_acquired, 'first lock with overlapping scope acquired');
+  assert_true(a_acquired, 'second lock with overlapping scope acquired');
+}, 'Shared locks are not exclusive');
+
+</script>

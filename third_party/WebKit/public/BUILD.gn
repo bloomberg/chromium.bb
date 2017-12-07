@@ -782,6 +782,7 @@ mojom("mojo_bindings") {
     "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/insecure_input/insecure_input_service.mojom",
     "platform/modules/keyboard_lock/keyboard_lock.mojom",
+    "platform/modules/locks/lock_manager.mojom",
     "platform/modules/manifest/manifest.mojom",
     "platform/modules/manifest/manifest_manager.mojom",
     "platform/modules/notifications/notification.mojom",

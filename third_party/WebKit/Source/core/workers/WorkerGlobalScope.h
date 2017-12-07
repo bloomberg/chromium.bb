@@ -194,7 +194,7 @@ class CORE_EXPORT WorkerGlobalScope
   std::unique_ptr<WorkerSettings> worker_settings_;
 
   mutable Member<WorkerLocation> location_;
-  mutable Member<WorkerNavigator> navigator_;
+  mutable TraceWrapperMember<WorkerNavigator> navigator_;
 
   WorkerThread* thread_;
 

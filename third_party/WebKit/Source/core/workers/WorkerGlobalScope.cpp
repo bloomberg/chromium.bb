@@ -411,6 +411,7 @@ void WorkerGlobalScope::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   Supplementable<WorkerGlobalScope>::TraceWrappers(visitor);
   WorkerOrWorkletGlobalScope::TraceWrappers(visitor);
+  visitor->TraceWrappers(navigator_);
 }
 
 }  // namespace blink
