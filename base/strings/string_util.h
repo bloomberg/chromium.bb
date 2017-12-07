@@ -437,6 +437,8 @@ BASE_EXPORT char16* WriteInto(string16* str, size_t length_with_null);
 // strings. For example, instead of using SplitString, modifying the vector,
 // then using JoinString, use SplitStringPiece followed by JoinString so that no
 // copies of those strings are created until the final join operation.
+//
+// Use StrCat (in base/strings/strcat.h) if you don't need a separator.
 BASE_EXPORT std::string JoinString(const std::vector<std::string>& parts,
                                    StringPiece separator);
 BASE_EXPORT string16 JoinString(const std::vector<string16>& parts,

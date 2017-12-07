@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -163,7 +164,7 @@ class HttpRequest {
     }
     pieces.insert(pieces.end(), {crlf});
 
-    std::string request = base::JoinString(pieces, "");
+    std::string request = base::StrCat(pieces);
     scoped_refptr<net::IOBuffer> base_buffer =
         new net::IOBuffer(request.size());
     memcpy(base_buffer->data(), request.data(), request.size());

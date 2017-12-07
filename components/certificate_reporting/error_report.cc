@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/network_time/network_time_tracker.h"
@@ -57,7 +58,7 @@ bool CertificateChainToString(scoped_refptr<net::X509Certificate> cert,
   if (!cert->GetPEMEncodedChain(&pem_encoded_chain))
     return false;
 
-  *result = base::JoinString(pem_encoded_chain, "");
+  *result = base::StrCat(pem_encoded_chain);
   return true;
 }
 

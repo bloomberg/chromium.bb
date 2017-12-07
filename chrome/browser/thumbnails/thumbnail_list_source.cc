@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/strings/string_util.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
@@ -172,6 +172,6 @@ void ThumbnailListSource::OnMostVisitedURLsAvailable(
   }
   out.push_back(kHtmlFooter);
 
-  std::string out_html = base::JoinString(out, base::StringPiece());
+  std::string out_html = base::StrCat(out);
   callback.Run(base::RefCountedString::TakeString(&out_html));
 }

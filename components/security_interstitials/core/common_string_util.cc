@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
-#include "base/strings/string_util.h"
+#include "base/strings/strcat.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/net_errors.h"
@@ -46,8 +46,7 @@ void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,
                             base::TimeFormatShortDate(time_triggered));
   std::vector<std::string> encoded_chain;
   ssl_info.cert->GetPEMEncodedChain(&encoded_chain);
-  load_time_data->SetString(
-      "pem", base::JoinString(encoded_chain, base::StringPiece()));
+  load_time_data->SetString("pem", base::StrCat(encoded_chain));
 }
 
 }  // namespace common_string_util

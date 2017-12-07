@@ -9,6 +9,7 @@
 #include <map>
 #include <utility>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -100,7 +101,7 @@ bool ShareServiceImpl::ReplacePlaceholders(base::StringPiece url_template,
   split_template.push_back(url_template.substr(
       start_index_to_copy, url_template.size() - start_index_to_copy));
 
-  *url_template_filled = base::JoinString(split_template, base::StringPiece());
+  *url_template_filled = base::StrCat(split_template);
   return true;
 }
 
