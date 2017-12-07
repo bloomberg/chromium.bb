@@ -29,6 +29,7 @@ NotificationManager::NotificationManager() {}
 void NotificationManager::SendNotifications(
     bool bounds_obscure_usable_region,
     bool bounds_affect_layout,
+    bool is_locked,
     const gfx::Rect& bounds,
     const base::ObserverList<KeyboardControllerObserver>& observers) {
   bool is_available = !bounds.IsEmpty();
@@ -49,6 +50,13 @@ void NotificationManager::SendNotifications(
       ShouldSendWorkspaceDisplacementBoundsNotification(
           workspace_layout_offset_region);
 
+  KeyboardStateDescriptor state;
+  state.is_available = is_available;
+  state.is_locked = is_locked;
+  state.visual_bounds = bounds;
+  state.occluded_bounds = occluded_region;
+  state.displaced_bounds = workspace_layout_offset_region;
+
   for (KeyboardControllerObserver& observer : observers) {
     if (send_availability_notification)
       observer.OnKeyboardAvailabilityChanging(is_available);
@@ -63,6 +71,8 @@ void NotificationManager::SendNotifications(
       observer.OnKeyboardWorkspaceDisplacingBoundsChanging(
           workspace_layout_offset_region);
     }
+
+    observer.OnKeyboardAppearanceChanging(state);
 
     // TODO(blakeo): remove this when all consumers have migrated to one of
     // the notifications above.

@@ -262,8 +262,8 @@ void KeyboardController::NotifyContentsBoundsChanging(
   if (ui_->HasContentsWindow() && ui_->GetContentsWindow()->IsVisible()) {
     notification_manager_.SendNotifications(
         container_behavior_->BoundsObscureUsableRegion(),
-        container_behavior_->BoundsAffectWorkspaceLayout(), new_bounds,
-        observer_list_);
+        container_behavior_->BoundsAffectWorkspaceLayout(), keyboard_locked(),
+        new_bounds, observer_list_);
 
     if (keyboard::IsKeyboardOverscrollEnabled())
       ui_->InitInsets(new_bounds);

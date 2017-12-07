@@ -14,6 +14,15 @@ class Rect;
 
 namespace keyboard {
 
+// Describes the various attributes of the keyboard's appearance and usability.
+struct KeyboardStateDescriptor {
+  bool is_available;
+  bool is_locked;
+  gfx::Rect visual_bounds;
+  gfx::Rect occluded_bounds;
+  gfx::Rect displaced_bounds;
+};
+
 // Observers to the KeyboardController are notified of significant events that
 // occur with the keyboard, such as the bounds or visiility changing.
 class KEYBOARD_EXPORT KeyboardControllerObserver {
@@ -41,6 +50,12 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   // keyboard.
   virtual void OnKeyboardWorkspaceDisplacingBoundsChanging(
       const gfx::Rect& new_bounds){};
+
+  // Redundant with other various notification methods. Use this if the state of
+  // multiple properties need to be conveyed simultaneously to observer
+  // implementations without the need to track multiple stateful properties.
+  virtual void OnKeyboardAppearanceChanging(
+      const KeyboardStateDescriptor& state){};
 
   // Called when the keyboard was closed.
   virtual void OnKeyboardClosed(){};
