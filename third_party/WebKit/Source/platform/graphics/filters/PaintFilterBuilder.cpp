@@ -84,6 +84,7 @@ sk_sp<PaintFilter> Build(
       requires_pm_color_validation
           ? effect->CreateImageFilter()
           : effect->CreateImageFilterWithoutValidation();
+
   sk_sp<PaintFilter> filter = TransformInterpolationSpace(
       orig_filter, effect->OperatingInterpolationSpace(), interpolation_space);
   effect->SetImageFilter(interpolation_space, requires_pm_color_validation,

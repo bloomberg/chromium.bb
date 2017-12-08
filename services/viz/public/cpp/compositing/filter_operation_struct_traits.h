@@ -129,6 +129,8 @@ struct StructTraits<viz::mojom::FilterOperationDataView, cc::FilterOperation> {
       const cc::FilterOperation& operation) {
     if (operation.type() != cc::FilterOperation::REFERENCE)
       return nullptr;
+    if (!operation.image_filter())
+      return nullptr;
     return operation.image_filter()->cached_sk_filter_;
   }
 
