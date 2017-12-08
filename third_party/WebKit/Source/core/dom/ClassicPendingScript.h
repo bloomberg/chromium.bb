@@ -70,7 +70,8 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   bool IsExternal() const override { return is_external_; }
   bool ErrorOccurred() const override;
   bool WasCanceled() const override;
-  bool StartStreamingIfPossible(ScriptStreamer::Type, WTF::Closure) override;
+  bool StartStreamingIfPossible(ScriptStreamer::Type,
+                                base::OnceClosure) override;
   bool IsCurrentlyStreaming() const override;
   KURL UrlForTracing() const override;
   void DisposeInternal() override;
@@ -126,7 +127,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   bool intervened_ = false;
 
   Member<ScriptStreamer> streamer_;
-  WTF::Closure streamer_done_;
+  base::OnceClosure streamer_done_;
 
   // This flag tracks whether streamer_ is currently streaming. It is used
   // mainly to prevent re-streaming a script while it is being streamed.

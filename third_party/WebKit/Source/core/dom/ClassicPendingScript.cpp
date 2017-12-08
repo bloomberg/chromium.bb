@@ -322,7 +322,7 @@ void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {
       // Call the streamer_done_ callback. Ensure that is_currently_streaming_
       // is reset only after the callback returns, to prevent accidentally
       // start streaming by work done within the callback. (crbug.com/754360)
-      WTF::Closure done = std::move(streamer_done_);
+      base::OnceClosure done = std::move(streamer_done_);
       if (done)
         std::move(done).Run();
       is_currently_streaming_ = false;
@@ -349,7 +349,7 @@ void ClassicPendingScript::OnPurgeMemory() {
 
 bool ClassicPendingScript::StartStreamingIfPossible(
     ScriptStreamer::Type streamer_type,
-    WTF::Closure done) {
+    base::OnceClosure done) {
   if (IsCurrentlyStreaming())
     return false;
 

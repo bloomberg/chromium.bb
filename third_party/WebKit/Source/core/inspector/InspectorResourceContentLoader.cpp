@@ -143,7 +143,7 @@ int InspectorResourceContentLoader::CreateClientId() {
 
 void InspectorResourceContentLoader::EnsureResourcesContentLoaded(
     int client_id,
-    WTF::Closure callback) {
+    base::OnceClosure callback) {
   if (!started_)
     Start();
   callbacks_.insert(client_id, Callbacks())

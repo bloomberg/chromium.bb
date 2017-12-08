@@ -73,8 +73,8 @@ class CORE_EXPORT WorkerScriptLoader final
                           network::mojom::FetchRequestMode,
                           network::mojom::FetchCredentialsMode,
                           WebAddressSpace,
-                          WTF::Closure response_callback,
-                          WTF::Closure finished_callback);
+                          base::OnceClosure response_callback,
+                          base::OnceClosure finished_callback);
 
   // This will immediately invoke |finishedCallback| if loadAsynchronously()
   // is in progress.
@@ -132,8 +132,8 @@ class CORE_EXPORT WorkerScriptLoader final
   void ProcessContentSecurityPolicy(const ResourceResponse&);
 
   // Callbacks for loadAsynchronously().
-  WTF::Closure response_callback_;
-  WTF::Closure finished_callback_;
+  base::OnceClosure response_callback_;
+  base::OnceClosure finished_callback_;
 
   Persistent<ThreadableLoader> threadable_loader_;
   String response_encoding_;

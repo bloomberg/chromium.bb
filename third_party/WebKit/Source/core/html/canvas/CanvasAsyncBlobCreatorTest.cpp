@@ -45,7 +45,7 @@ class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
   void CreateNullAndReturnResult() override {}
   void SignalAlternativeCodePathFinishedForTesting() override;
   void PostDelayedTaskToCurrentThread(const WebTraceLocation&,
-                                      WTF::Closure,
+                                      base::OnceClosure,
                                       double delay_ms) override;
 };
 
@@ -55,7 +55,7 @@ void MockCanvasAsyncBlobCreator::SignalAlternativeCodePathFinishedForTesting() {
 
 void MockCanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
     const WebTraceLocation& location,
-    WTF::Closure task,
+    base::OnceClosure task,
     double delay_ms) {
   DCHECK(IsMainThread());
   Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(

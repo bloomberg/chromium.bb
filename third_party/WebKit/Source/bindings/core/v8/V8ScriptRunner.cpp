@@ -278,7 +278,7 @@ v8::MaybeLocal<v8::Script> PostStreamCompile(
   return script;
 }
 
-typedef Function<v8::MaybeLocal<v8::Script>(
+typedef base::OnceCallback<v8::MaybeLocal<v8::Script>(
     v8::Isolate*,
     v8::Local<v8::String>,
     v8::ScriptOrigin,

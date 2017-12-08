@@ -44,11 +44,11 @@ class MockPendingScript : public PendingScript {
   // future release of googletest, but for now we use the recommended
   // workaround of 'bumping' the method-to-be-mocked to another method.
   bool StartStreamingIfPossible(ScriptStreamer::Type type,
-                                WTF::Closure closure) override {
+                                base::OnceClosure closure) override {
     return DoStartStreamingIfPossible(type, &closure);
   }
   MOCK_METHOD2(DoStartStreamingIfPossible,
-               bool(ScriptStreamer::Type, WTF::Closure*));
+               bool(ScriptStreamer::Type, base::OnceClosure*));
 
  protected:
   MOCK_METHOD0(DisposeInternal, void());
@@ -72,7 +72,7 @@ class MockScriptLoader final : public ScriptLoader {
   // Set up the mock for streaming. The closure passed in will receive the
   // 'finish streaming' callback, so that the test case can control when
   // the mock streaming has mock finished.
-  MockScriptLoader* SetupForStreaming(WTF::Closure& finished_callback);
+  MockScriptLoader* SetupForStreaming(base::OnceClosure& finished_callback);
   MockScriptLoader* SetupForNonStreaming();
 
   virtual void Trace(blink::Visitor*);
@@ -89,7 +89,7 @@ void MockScriptLoader::Trace(blink::Visitor* visitor) {
 }
 
 MockScriptLoader* MockScriptLoader::SetupForStreaming(
-    WTF::Closure& finished_callback) {
+    base::OnceClosure& finished_callback) {
   mock_pending_script_ = MockPendingScript::Create();
   SetupForNonStreaming();
 
@@ -98,11 +98,12 @@ MockScriptLoader* MockScriptLoader::SetupForStreaming(
   // streamig is done.
   EXPECT_CALL(*mock_pending_script_, DoStartStreamingIfPossible(_, _))
       .WillOnce(Return(false))
-      .WillOnce(Invoke([&finished_callback](ScriptStreamer::Type,
-                                            WTF::Closure* callback) -> bool {
-        finished_callback = std::move(*callback);
-        return true;
-      }))
+      .WillOnce(
+          Invoke([&finished_callback](ScriptStreamer::Type,
+                                      base::OnceClosure* callback) -> bool {
+            finished_callback = std::move(*callback);
+            return true;
+          }))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pending_script_, IsCurrentlyStreaming())
       .WillRepeatedly(
@@ -523,7 +524,7 @@ TEST_F(ScriptRunnerTest, TryStreamWhenEnqueingScript) {
 }
 
 TEST_F(ScriptRunnerTest, DontExecuteWhileStreaming) {
-  WTF::Closure callback;
+  base::OnceClosure callback;
   Persistent<MockScriptLoader> script_loader1 =
       MockScriptLoader::Create()->SetupForStreaming(callback);
   EXPECT_CALL(*script_loader1, IsReady()).WillRepeatedly(Return(true));

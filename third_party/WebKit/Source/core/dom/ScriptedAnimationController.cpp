@@ -87,7 +87,7 @@ void ScriptedAnimationController::CancelCallback(CallbackId id) {
 }
 
 void ScriptedAnimationController::RunTasks() {
-  Vector<WTF::Closure> tasks;
+  Vector<base::OnceClosure> tasks;
   tasks.swap(task_queue_);
   for (auto& task : tasks)
     std::move(task).Run();
@@ -172,7 +172,7 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   ScheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::EnqueueTask(WTF::Closure task) {
+void ScriptedAnimationController::EnqueueTask(base::OnceClosure task) {
   task_queue_.push_back(std::move(task));
   ScheduleAnimationIfNeeded();
 }

@@ -3258,7 +3258,7 @@ WebInputMethodController* WebViewImpl::GetActiveWebInputMethodController()
 }
 
 void WebViewImpl::RequestDecode(const PaintImage& image,
-                                WTF::Function<void(bool)> callback) {
+                                base::OnceCallback<void(bool)> callback) {
   layer_tree_view_->RequestDecode(image, std::move(callback));
 }
 

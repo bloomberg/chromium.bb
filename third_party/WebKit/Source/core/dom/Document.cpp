@@ -4803,7 +4803,7 @@ EventQueue* Document::GetEventQueue() const {
   return dom_window_->GetEventQueue();
 }
 
-void Document::EnqueueAnimationFrameTask(WTF::Closure task) {
+void Document::EnqueueAnimationFrameTask(base::OnceClosure task) {
   EnsureScriptedAnimationController().EnqueueTask(std::move(task));
 }
 

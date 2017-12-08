@@ -82,7 +82,8 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
   bool ErrorOccurred() const override;
   bool WasCanceled() const override { return false; }
 
-  bool StartStreamingIfPossible(ScriptStreamer::Type, WTF::Closure) override {
+  bool StartStreamingIfPossible(ScriptStreamer::Type,
+                                base::OnceClosure) override {
     return false;
   }
   bool IsCurrentlyStreaming() const override { return false; }

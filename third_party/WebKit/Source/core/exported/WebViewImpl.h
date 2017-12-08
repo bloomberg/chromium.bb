@@ -472,7 +472,7 @@ class CORE_EXPORT WebViewImpl final
     last_hidden_page_popup_ = page_popup;
   }
 
-  void RequestDecode(const PaintImage&, WTF::Function<void(bool)> callback);
+  void RequestDecode(const PaintImage&, base::OnceCallback<void(bool)>);
 
  private:
   void SetPageScaleFactorAndLocation(float, const FloatPoint&);

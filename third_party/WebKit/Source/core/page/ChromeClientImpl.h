@@ -232,7 +232,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void RequestDecode(LocalFrame*,
                      const PaintImage&,
-                     WTF::Function<void(bool)> callback) override;
+                     base::OnceCallback<void(bool)>) override;
 
  private:
   explicit ChromeClientImpl(WebViewImpl*);
