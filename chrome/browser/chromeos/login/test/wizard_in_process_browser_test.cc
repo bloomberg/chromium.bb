@@ -46,9 +46,16 @@ void WizardInProcessBrowserTest::SetUpOnMainThread() {
 void WizardInProcessBrowserTest::TearDownOnMainThread() {
   ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
 
-  // LoginDisplayHost owns controllers and all windows.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, host_);
-  base::RunLoop().RunUntilIdle();
+  if (!host_)
+    return;
+
+  // LoginDisplayHost owns controllers and all windows. It needs to be destroyed
+  // here because the derived tests have clean-up code assuming LoginDisplayHost
+  // is gone.
+  base::RunLoop run_loop;
+  host_->Finalize(run_loop.QuitClosure());
+  run_loop.Run();
+  host_ = nullptr;
 }
 
 }  // namespace chromeos
