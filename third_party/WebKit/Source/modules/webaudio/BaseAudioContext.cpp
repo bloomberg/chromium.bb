@@ -29,8 +29,6 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/v8_decode_error_callback.h"
-#include "bindings/modules/v8/v8_decode_success_callback.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -987,8 +985,6 @@ void BaseAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(listener_);
   visitor->Trace(active_source_nodes_);
   visitor->Trace(resume_resolvers_);
-  visitor->Trace(success_callbacks_);
-  visitor->Trace(error_callbacks_);
   visitor->Trace(decode_audio_resolvers_);
   visitor->Trace(periodic_wave_sine_);
   visitor->Trace(periodic_wave_square_);
@@ -997,20 +993,6 @@ void BaseAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(audio_worklet_);
   EventTargetWithInlineData::Trace(visitor);
   PausableObject::Trace(visitor);
-}
-
-void BaseAudioContext::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
-  EventTargetWithInlineData::TraceWrappers(visitor);
-
-  // Inform V8's GC that we have references to these objects so they
-  // don't get collected until we're done with them.
-  for (auto callback : success_callbacks_) {
-    visitor->TraceWrappers(callback);
-  }
-  for (auto callback : error_callbacks_) {
-    visitor->TraceWrappers(callback);
-  }
 }
 
 const SecurityOrigin* BaseAudioContext::GetSecurityOrigin() const {
