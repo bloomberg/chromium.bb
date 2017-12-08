@@ -5,5 +5,5 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "video_capture_device_unittest.cc": [ "+mojo/edk/embedder" ],
+  ".*_unittest.cc": [ "+mojo/edk/embedder" ],
 }
