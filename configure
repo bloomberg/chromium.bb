@@ -513,6 +513,7 @@ post_process_cmdline() {
       soft_enable loopfilter_level
       soft_enable cfl
       soft_enable deblock_13tap
+      soft_enable max_tile
       soft_enable frame_marker
       soft_enable kf_ctx
       soft_enable striped_loop_restoration

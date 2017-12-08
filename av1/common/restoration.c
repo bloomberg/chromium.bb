@@ -100,10 +100,8 @@ void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
 #endif  // CONFIG_MAX_TILE
 
   const AV1PixelRect tile_rect = get_ext_tile_rect(&tile_info, cm, is_uv);
-  assert(tile_rect.left == 0 && tile_rect.top == 0);
-
-  const int max_tile_w = tile_rect.right;
-  const int max_tile_h = tile_rect.bottom;
+  const int max_tile_w = tile_rect.right - tile_rect.left;
+  const int max_tile_h = tile_rect.bottom - tile_rect.top;
 
   // To calculate hpertile and vpertile (horizontal and vertical units per
   // tile), we basically want to divide the largest tile width or height by the
