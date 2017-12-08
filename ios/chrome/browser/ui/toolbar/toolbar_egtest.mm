@@ -193,10 +193,10 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_ACCNAME_RELOAD);
   id<GREYMatcher> bookmarkButton =
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
-  id<GREYMatcher> voiceSearchButton =
-      grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
-                     IDS_IOS_ACCNAME_VOICE_SEARCH),
-                 grey_ancestor(grey_kindOfClass([ToolbarView class])), nil);
+  id<GREYMatcher> voiceSearchButton = grey_allOf(
+      chrome_test_util::ButtonWithAccessibilityLabelId(
+          IDS_IOS_ACCNAME_VOICE_SEARCH),
+      grey_ancestor(grey_kindOfClass([LegacyToolbarView class])), nil);
   NSString* ntpOmniboxLabel = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   NSString* focusedOmniboxLabel = l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
   NSString* omniboxLabel =

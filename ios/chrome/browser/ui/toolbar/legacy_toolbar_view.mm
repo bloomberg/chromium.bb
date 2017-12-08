@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/legacy_toolbar_view.h"
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_view_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
-@implementation ToolbarView
+@implementation LegacyToolbarView
 
 @synthesize delegate = delegate_;
 @synthesize animatingTransition = animatingTransition_;

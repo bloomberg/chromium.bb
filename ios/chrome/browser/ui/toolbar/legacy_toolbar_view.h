@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -11,7 +11,7 @@
 
 @protocol ToolbarViewDelegate;
 
-@interface ToolbarView : UIView<RelaxedBoundsConstraintsHitTestSupport>
+@interface LegacyToolbarView : UIView<RelaxedBoundsConstraintsHitTestSupport>
 - (instancetype)initWithNibName:(NSString*)name
                          bundle:(NSBundle*)bundle NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
@@ -25,4 +25,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_VIEW_H_
