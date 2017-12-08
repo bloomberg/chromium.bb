@@ -19,6 +19,8 @@ namespace content {
 class WebContents;
 }
 
+class OomInterventionDecider;
+
 // A tab helper for near-OOM intervention. This class depends on
 // OutOfMemoryReporter. OutOfMemoryReporter must be created on TabHelpers
 // before creating OomInterventionTabHelper.
@@ -67,6 +69,9 @@ class OomInterventionTabHelper
   bool navigation_started_ = false;
   base::Optional<base::TimeTicks> near_oom_detected_time_;
   std::unique_ptr<NearOomMonitor::Subscription> subscription_;
+
+  // Not owned. This will be nullptr in incognito mode.
+  OomInterventionDecider* decider_;
 
   blink::mojom::OomInterventionPtr intervention_;
 

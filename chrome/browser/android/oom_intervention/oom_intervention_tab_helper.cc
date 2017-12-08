@@ -6,8 +6,10 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/ui/android/infobars/near_oom_infobar.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -69,7 +71,9 @@ bool OomInterventionTabHelper::IsEnabled() {
 
 OomInterventionTabHelper::OomInterventionTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      decider_(OomInterventionDecider::GetForBrowserContext(
+          web_contents->GetBrowserContext())) {
   OutOfMemoryReporter::FromWebContents(web_contents)->AddObserver(this);
 }
 
@@ -84,6 +88,12 @@ void OomInterventionTabHelper::DeclineIntervention() {
   RecordInterventionUserDecision(false);
   intervention_.reset();
   intervention_state_ = InterventionState::DECLINED;
+
+  if (decider_) {
+    DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
+    const std::string& host = web_contents()->GetVisibleURL().host();
+    decider_->OnInterventionDeclined(host);
+  }
 }
 
 void OomInterventionTabHelper::WebContentsDestroyed() {
@@ -195,6 +205,12 @@ void OomInterventionTabHelper::OnForegroundOOMDetected(
     RecordNearOomDetectionEndReason(
         NearOomDetectionEndReason::OOM_PROTECTED_CRASH);
   }
+
+  if (decider_) {
+    DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
+    const std::string& host = web_contents()->GetVisibleURL().host();
+    decider_->OnOomDetected(host);
+  }
 }
 
 void OomInterventionTabHelper::StartMonitoringIfNeeded() {
@@ -218,7 +234,14 @@ void OomInterventionTabHelper::OnNearOomDetected() {
   near_oom_detected_time_ = base::TimeTicks::Now();
   subscription_.reset();
 
-  if (RendererPauseIsEnabled()) {
+  bool trigger_intervention = RendererPauseIsEnabled();
+  if (trigger_intervention && decider_) {
+    DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
+    const std::string& host = web_contents()->GetVisibleURL().host();
+    trigger_intervention = decider_->CanTriggerIntervention(host);
+  }
+
+  if (trigger_intervention) {
     content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
     DCHECK(main_frame);
     content::RenderProcessHost* render_process_host = main_frame->GetProcess();
