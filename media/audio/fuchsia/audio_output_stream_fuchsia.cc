@@ -57,7 +57,6 @@ void AudioOutputStreamFuchsia::Start(AudioSourceCallback* callback) {
 }
 
 void AudioOutputStreamFuchsia::Stop() {
-  DCHECK(callback_);
   callback_ = nullptr;
   started_time_ = base::TimeTicks();
   timer_.Stop();
