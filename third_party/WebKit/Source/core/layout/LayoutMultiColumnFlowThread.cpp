@@ -734,7 +734,7 @@ void LayoutMultiColumnFlowThread::CalculateColumnCountAndWidth(
   LayoutBlock* column_block = MultiColumnBlockFlow();
   const ComputedStyle* column_style = column_block->Style();
   LayoutUnit available_width = column_block->ContentLogicalWidth();
-  LayoutUnit column_gap = LayoutUnit(column_block->ColumnGap());
+  LayoutUnit column_gap = ColumnGap(*column_style);
   LayoutUnit computed_column_width =
       max(LayoutUnit(1), LayoutUnit(column_style->ColumnWidth()));
   unsigned computed_column_count = max<int>(1, column_style->ColumnCount());
@@ -760,6 +760,14 @@ void LayoutMultiColumnFlowThread::CalculateColumnCountAndWidth(
                 .ToUnsigned();
     width = ((available_width + column_gap) / count) - column_gap;
   }
+}
+
+LayoutUnit LayoutMultiColumnFlowThread::ColumnGap(const ComputedStyle& style) {
+  if (style.HasNormalColumnGap()) {
+    // "1em" is recommended as the normal gap setting. Matches <p> margins.
+    return LayoutUnit(style.GetFontDescription().ComputedSize());
+  }
+  return LayoutUnit(style.ColumnGap());
 }
 
 void LayoutMultiColumnFlowThread::CreateAndInsertMultiColumnSet(
@@ -1292,13 +1300,11 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   // need when laid out inside the columns. In order to eventually end up with
   // the desired column width, we need to convert them to values pertaining to
   // the multicol container.
-  const LayoutBlockFlow* multicol_container = MultiColumnBlockFlow();
-  const ComputedStyle* multicol_style = multicol_container->Style();
+  const ComputedStyle* multicol_style = MultiColumnBlockFlow()->Style();
   LayoutUnit column_count(
       multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount());
   LayoutUnit column_width;
-  LayoutUnit gap_extra =
-      LayoutUnit((column_count - 1) * multicol_container->ColumnGap());
+  LayoutUnit gap_extra((column_count - 1) * ColumnGap(*multicol_style));
   if (multicol_style->HasAutoColumnWidth()) {
     min_preferred_logical_width_ =
         min_preferred_logical_width_ * column_count + gap_extra;

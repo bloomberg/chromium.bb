@@ -1327,14 +1327,6 @@ void LayoutBlock::OffsetForContents(LayoutPoint& offset) const {
   offset = FlipForWritingMode(offset);
 }
 
-int LayoutBlock::ColumnGap() const {
-  if (Style()->HasNormalColumnGap()) {
-    // "1em" is recommended as the normal gap setting. Matches <p> margins.
-    return Style()->GetFontDescription().ComputedPixelSize();
-  }
-  return static_cast<int>(Style()->ColumnGap());
-}
-
 void LayoutBlock::ScrollbarsChanged(bool horizontal_scrollbar_changed,
                                     bool vertical_scrollbar_changed,
                                     ScrollbarChangeContext context) {
