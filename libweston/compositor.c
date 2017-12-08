@@ -4699,6 +4699,7 @@ WL_EXPORT void
 weston_head_detach(struct weston_head *head)
 {
 	struct weston_output *output = head->output;
+	char *head_names;
 
 	wl_list_remove(&head->output_link);
 	wl_list_init(&head->output_link);
@@ -4713,8 +4714,16 @@ weston_head_detach(struct weston_head *head)
 	if (output->enabled) {
 		weston_head_remove_global(head);
 
-		if (wl_list_empty(&output->head_list))
+		if (wl_list_empty(&output->head_list)) {
+			weston_log("Output '%s' no heads left, disabling.\n",
+				   output->name);
 			weston_output_disable(output);
+		} else {
+			head_names = weston_output_create_heads_string(output);
+			weston_log("Output '%s' updated to have head(s) %s\n",
+				   output->name, head_names);
+			free(head_names);
+		}
 	}
 }
 
