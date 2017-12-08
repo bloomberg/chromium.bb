@@ -10,27 +10,18 @@
 <script src="resources/presentation-setup.js"></script>
 <script>
 let fakeDisplays = fakeVRDisplays();
-let fakeDisplay = fakeDisplays["Pixel"];
+let fakeDisplay = fakeDisplays["FakeMagicWindowOnly"];
 
 vr_test( (t) => {
   return navigator.getVRDisplays().then( (displays) => {
     let display = displays[0];
 
-    function compareEyes(actual, expected) {
-      t.step( () => {
-        assert_equals(actual.offset.length, expected.offset.length);
-        for (let i = 0; i < expected.offset.length; i++) {
-          assert_approx_equals(actual.offset[i], expected.offset[i],
-              FLOAT_EPSILON);
-        }
+    t.step( () => {
+      console.log(display.getEyeParameters);
+      assert_equals(display.getEyeParameters("left"), null);
+      assert_equals(display.getEyeParameters("right"), null);
+    }, "Eye parameters are null");
 
-        assert_equals(actual.renderWidth, expected.renderWidth);
-        assert_equals(actual.renderHeight, expected.renderHeight);
-      }, "Returned eye parameters match provided parameters");
-    }
-
-    compareEyes(display.getEyeParameters("left"), fakeDisplay.leftEye);
-    compareEyes(display.getEyeParameters("right"), fakeDisplay.rightEye);
     t.done();
   }, (err) => {
     t.step( () => {
@@ -39,6 +30,6 @@ vr_test( (t) => {
     t.done();
   });
 }, [fakeDisplay],
-"Test that actual eye parameters match the expected parameters");
+"Test that device which doesn't present has no eye parameters");
 
 </script>

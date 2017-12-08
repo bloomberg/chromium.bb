@@ -19,14 +19,12 @@ class VREyeParameters final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  VREyeParameters();
+  explicit VREyeParameters(const device::mojom::blink::VREyeParametersPtr&);
 
   DOMFloat32Array* offset() const { return offset_; }
   VRFieldOfView* FieldOfView() const { return field_of_view_; }
   unsigned long renderWidth() const { return render_width_; }
   unsigned long renderHeight() const { return render_height_; }
-
-  void Update(const device::mojom::blink::VREyeParametersPtr&);
 
   virtual void Trace(blink::Visitor*);
 
