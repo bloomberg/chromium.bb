@@ -152,7 +152,7 @@ class ChromeDriver(object):
     elif chrome_binary:
       options['binary'] = chrome_binary
 
-    if sys.platform.startswith('linux'):
+    if sys.platform.startswith('linux') and android_package is None:
       if chrome_switches is None:
         chrome_switches = []
       # Workaround for crbug.com/611886.
