@@ -458,6 +458,16 @@
     },
   },
   {
+    'name': 'chromium.lkgr',
+    'machines': {
+      'ASAN Release': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
+      },
+    },
+  },
+  {
     'name': 'chromium.mac',
     'machines': {
       'Mac Builder': {
