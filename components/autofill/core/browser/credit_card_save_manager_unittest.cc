@@ -2459,8 +2459,8 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
   // Add a masked credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11", "2017",
-                          "1");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
+                          NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kVisaCard);
   personal_data_.AddServerCreditCard(credit_card);
 
@@ -2498,8 +2498,8 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
   // Add a masked credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11", "2017",
-                          "1");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
+                          NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kVisaCard);
   personal_data_.AddServerCreditCard(credit_card);
 
