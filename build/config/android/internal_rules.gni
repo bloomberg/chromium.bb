@@ -1401,11 +1401,7 @@ if (enable_java_templates) {
             get_path_info(_packaged_resources_path, "dir") + "/" +
             get_path_info(_packaged_resources_path, "name") +
             ".intermediate.ap_"
-
-        # TODO(estevenson): Remove this check.
-        if (defined(invoker.post_process_args)) {
-          _srcjar_path = "${_srcjar_path}.intermediate.srcjar"
-        }
+        _srcjar_path = "${_srcjar_path}.intermediate.srcjar"
       }
     }
     action(_process_resources_target_name) {
@@ -1625,35 +1621,27 @@ if (enable_java_templates) {
         depfile = "${target_gen_dir}/${target_name}.d"
         script = invoker.post_process_script
         args = [
-          "--depfile",
-          rebase_path(depfile, root_build_dir),
-          "--apk-path",
-          rebase_path(_packaged_resources_path, root_build_dir),
-          "--output",
-          rebase_path(invoker.output, root_build_dir),
-        ]
+                 "--depfile",
+                 rebase_path(depfile, root_build_dir),
+                 "--apk-path",
+                 rebase_path(_packaged_resources_path, root_build_dir),
+                 "--output",
+                 rebase_path(invoker.output, root_build_dir),
+                 "--srcjar-in",
+                 rebase_path(_srcjar_path, root_build_dir),
+                 "--srcjar-out",
+                 rebase_path(invoker.srcjar_path, root_build_dir),
+               ] + invoker.post_process_args
         inputs = [
+          _srcjar_path,
           _packaged_resources_path,
         ]
         outputs = [
           invoker.output,
+          invoker.srcjar_path,
         ]
-        public_deps = [
-          ":${_process_resources_target_name}",
-        ]
-
-        # TODO(estevenson): Remove this check.
-        if (defined(invoker.post_process_args)) {
-          args += [
-                    "--srcjar-in",
-                    rebase_path(_srcjar_path, root_build_dir),
-                    "--srcjar-out",
-                    rebase_path(invoker.srcjar_path, root_build_dir),
-                  ] + invoker.post_process_args
-          inputs += [ _srcjar_path ]
-          outputs += [ invoker.srcjar_path ]
-          public_deps += invoker.post_process_deps
-        }
+        public_deps =
+            [ ":${_process_resources_target_name}" ] + invoker.post_process_deps
       }
     }
   }

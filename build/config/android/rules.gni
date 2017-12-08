@@ -2048,12 +2048,8 @@ if (enable_java_templates) {
       version_name = _version_name
       if (defined(invoker.post_process_package_resources_script)) {
         post_process_script = invoker.post_process_package_resources_script
-
-        # TODO(estevenson): Remove this check.
-        if (defined(invoker.post_process_package_resources_deps)) {
-          post_process_deps = invoker.post_process_package_resources_deps
-          post_process_args = invoker.post_process_package_resources_args
-        }
+        post_process_deps = invoker.post_process_package_resources_deps
+        post_process_args = invoker.post_process_package_resources_args
       }
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       r_text_out_path = "${target_gen_dir}/${target_name}_R.txt"
