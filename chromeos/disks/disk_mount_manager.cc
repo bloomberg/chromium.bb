@@ -10,6 +10,8 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -17,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/suspend_unmount_manager.h"
 
@@ -32,7 +35,8 @@ constexpr char kStatefulPartition[] = "/mnt/stateful_partition";
 DiskMountManager* g_disk_mount_manager = NULL;
 
 // The DiskMountManager implementation.
-class DiskMountManagerImpl : public DiskMountManager {
+class DiskMountManagerImpl : public DiskMountManager,
+                             public CrosDisksClient::Observer {
  public:
   DiskMountManagerImpl() :
     already_refreshed_(false),
@@ -43,29 +47,18 @@ class DiskMountManagerImpl : public DiskMountManager {
         dbus_thread_manager->GetPowerManagerClient();
     suspend_unmount_manager_.reset(
         new SuspendUnmountManager(this, power_manager_client));
-    cros_disks_client_->SetMountEventHandler(
-        base::Bind(&DiskMountManagerImpl::OnMountEvent,
-                   weak_ptr_factory_.GetWeakPtr()));
-    cros_disks_client_->SetMountCompletedHandler(
-        base::Bind(&DiskMountManagerImpl::OnMountCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
-    cros_disks_client_->SetFormatCompletedHandler(
-        base::Bind(&DiskMountManagerImpl::OnFormatCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
-    cros_disks_client_->SetRenameCompletedHandler(
-        base::Bind(&DiskMountManagerImpl::OnRenameCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
+    cros_disks_client_->AddObserver(this);
   }
 
-  ~DiskMountManagerImpl() override = default;
+  ~DiskMountManagerImpl() override { cros_disks_client_->RemoveObserver(this); }
 
   // DiskMountManager override.
-  void AddObserver(Observer* observer) override {
+  void AddObserver(DiskMountManager::Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
   // DiskMountManager override.
-  void RemoveObserver(Observer* observer) override {
+  void RemoveObserver(DiskMountManager::Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
@@ -425,8 +418,8 @@ class DiskMountManagerImpl : public DiskMountManager {
     }
   }
 
-  // Callback to handle MountCompleted signal and Mount method call failure.
-  void OnMountCompleted(const MountEntry& entry) {
+  // CrosDisksClient::Observer override.
+  void OnMountCompleted(const MountEntry& entry) override {
     MountCondition mount_condition = MOUNT_CONDITION_NONE;
     if (entry.mount_type() == MOUNT_TYPE_DEVICE) {
       if (entry.error_code() == MOUNT_ERROR_UNKNOWN_FILESYSTEM) {
@@ -547,9 +540,9 @@ class DiskMountManagerImpl : public DiskMountManager {
     NotifyFormatStatusUpdate(FORMAT_STARTED, FORMAT_ERROR_NONE, device_path);
   }
 
-  // Callback to handle FormatCompleted signal and Format method call failure.
+  // CrosDisksClient::Observer override.
   void OnFormatCompleted(FormatError error_code,
-                         const std::string& device_path) {
+                         const std::string& device_path) override {
     auto iter = disks_.find(device_path);
 
     // disk might have been removed by now?
@@ -603,9 +596,9 @@ class DiskMountManagerImpl : public DiskMountManager {
     NotifyRenameStatusUpdate(RENAME_STARTED, RENAME_ERROR_NONE, device_path);
   }
 
-  // Callback to handle RenameCompleted signal and Rename method call failure.
+  // CrosDisksClient::Observer override.
   void OnRenameCompleted(RenameError error_code,
-                         const std::string& device_path) {
+                         const std::string& device_path) override {
     auto iter = disks_.find(device_path);
 
     // disk might have been removed by now?
@@ -724,8 +717,9 @@ class DiskMountManagerImpl : public DiskMountManager {
     refresh_callbacks_.clear();
   }
 
-  // Callback to handle mount event signals.
-  void OnMountEvent(MountEventType event, const std::string& device_path_arg) {
+  // CrosDisksClient::Observer override.
+  void OnMountEvent(MountEventType event,
+                    const std::string& device_path_arg) override {
     // Take a copy of the argument so we can modify it below.
     std::string device_path = device_path_arg;
     switch (event) {
@@ -819,7 +813,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // Mount event change observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<DiskMountManager::Observer> observers_;
 
   CrosDisksClient* cros_disks_client_;
 
@@ -913,7 +907,7 @@ bool DiskMountManager::Disk::IsAutoMountable() const {
   // Only the second condition is checked here, because Disks are created from
   // non-virtual mount devices only.
   return !on_boot_device_;
-};
+}
 
 bool DiskMountManager::Disk::IsStatefulPartition() const {
   return mount_path_ == kStatefulPartition;

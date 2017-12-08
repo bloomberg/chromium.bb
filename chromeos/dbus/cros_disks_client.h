@@ -280,31 +280,34 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   typedef base::Callback<void(const DiskInfo& disk_info)>
       GetDevicePropertiesCallback;
 
-  // A callback to handle MountCompleted signal.
-  typedef base::Callback<void(const MountEntry& entry)> MountCompletedHandler;
+  class Observer {
+   public:
+    // Called when a mount event signal is received.
+    virtual void OnMountEvent(MountEventType event_type,
+                              const std::string& device_path) = 0;
 
-  // A callback to handle FormatCompleted signal.
-  // The first argument is the error code.
-  // The second argument is the device path.
-  typedef base::Callback<void(FormatError error_code,
-                              const std::string& device_path)>
-      FormatCompletedHandler;
+    // Called when a MountCompleted signal is received.
+    virtual void OnMountCompleted(const MountEntry& entry) = 0;
 
-  // A callback to handle RenameCompleted signal.
-  // The first argument is the error code.
-  // The second argument is the device path.
-  typedef base::Callback<void(RenameError error_code,
-                              const std::string& device_path)>
-      RenameCompletedHandler;
+    // Called when a FormatCompleted signal is received.
+    virtual void OnFormatCompleted(FormatError error_code,
+                                   const std::string& device_path) = 0;
 
-  // A callback to handle mount events.
-  // The first argument is the event type.
-  // The second argument is the device path.
-  typedef base::Callback<void(MountEventType event_type,
-                              const std::string& device_path)>
-      MountEventHandler;
+    // Called when a RenameCompleted signal is received.
+    virtual void OnRenameCompleted(RenameError error_code,
+                                   const std::string& device_path) = 0;
+
+   protected:
+    virtual ~Observer() = default;
+  };
 
   ~CrosDisksClient() override;
+
+  // Registers the given |observer| to listen D-Bus signals.
+  virtual void AddObserver(Observer* observer) = 0;
+
+  // Unregisters the |observer| from this instance.
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Calls Mount method.  |callback| is called after the method call succeeds,
   // otherwise, |error_callback| is called.
@@ -366,26 +369,6 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   virtual void GetDeviceProperties(const std::string& device_path,
                                    const GetDevicePropertiesCallback& callback,
                                    const base::Closure& error_callback) = 0;
-
-  // Registers |mount_event_handler| as a callback to be invoked when a mount
-  // event signal is received.
-  virtual void SetMountEventHandler(
-      const MountEventHandler& mount_event_handler) = 0;
-
-  // Registers |mount_completed_handler| as a callback to be invoked when a
-  // MountCompleted signal is received.
-  virtual void SetMountCompletedHandler(
-      const MountCompletedHandler& mount_completed_handler) = 0;
-
-  // Registers |format_completed_handler| as a callback to be invoked when a
-  // FormatCompleted signal is received.
-  virtual void SetFormatCompletedHandler(
-      const FormatCompletedHandler& format_completed_handler) = 0;
-
-  // Registers |rename_completed_handler| as a callback to be invoked when a
-  // RenameCompleted signal is received.
-  virtual void SetRenameCompletedHandler(
-      const RenameCompletedHandler& rename_completed_handler) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

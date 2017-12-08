@@ -6,6 +6,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -793,8 +796,8 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
   // Send failing FORMAT_COMPLETED signal.
   // The failure is marked by ! in fromt of the path (but this should change
   // soon).
-  fake_cros_disks_client_->SendFormatCompletedEvent(
-      chromeos::FORMAT_ERROR_UNKNOWN, kDevice1SourcePath);
+  fake_cros_disks_client_->NotifyFormatCompleted(chromeos::FORMAT_ERROR_UNKNOWN,
+                                                 kDevice1SourcePath);
 
   // The observer should get notified that the device was unmounted and that
   // formatting has started.
@@ -840,8 +843,8 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendFormatCompletedEvent(chromeos::FORMAT_ERROR_NONE,
-                                                    kDevice1SourcePath);
+  fake_cros_disks_client_->NotifyFormatCompleted(chromeos::FORMAT_ERROR_NONE,
+                                                 kDevice1SourcePath);
 
   // The observer should receive UNMOUNTING, FORMAT_STARTED and FORMAT_COMPLETED
   // events (all of them without an error set).
@@ -886,11 +889,11 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendFormatCompletedEvent(chromeos::FORMAT_ERROR_NONE,
-                                                    kDevice1SourcePath);
+  fake_cros_disks_client_->NotifyFormatCompleted(chromeos::FORMAT_ERROR_NONE,
+                                                 kDevice1SourcePath);
 
   // Simulate the device remounting.
-  fake_cros_disks_client_->SendMountCompletedEvent(
+  fake_cros_disks_client_->NotifyMountCompleted(
       chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
       chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
 
@@ -913,8 +916,8 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_EQ("vfat", fake_cros_disks_client_->last_format_filesystem());
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendFormatCompletedEvent(chromeos::FORMAT_ERROR_NONE,
-                                                    kDevice1SourcePath);
+  fake_cros_disks_client_->NotifyFormatCompleted(chromeos::FORMAT_ERROR_NONE,
+                                                 kDevice1SourcePath);
 
   // The observer should receive UNMOUNTING, FORMAT_STARTED and FORMAT_COMPLETED
   // events (all of them without an error set) twice (once for each formatting
@@ -957,10 +960,10 @@ TEST_F(DiskMountManagerTest, MountPath_RecordAccessMode) {
                      chromeos::MOUNT_TYPE_DEVICE,
                      chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
   // Simulate cros_disks reporting mount completed.
-  fake_cros_disks_client_->SendMountCompletedEvent(
+  fake_cros_disks_client_->NotifyMountCompleted(
       chromeos::MOUNT_ERROR_NONE, kSourcePath1, chromeos::MOUNT_TYPE_DEVICE,
       kMountPath1);
-  fake_cros_disks_client_->SendMountCompletedEvent(
+  fake_cros_disks_client_->NotifyMountCompleted(
       chromeos::MOUNT_ERROR_NONE, kSourcePath2, chromeos::MOUNT_TYPE_DEVICE,
       kMountPath2);
 
@@ -999,7 +1002,7 @@ TEST_F(DiskMountManagerTest, MountPath_ReadOnlyDevice) {
                      chromeos::MOUNT_TYPE_DEVICE,
                      chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
   // Simulate cros_disks reporting mount completed.
-  fake_cros_disks_client_->SendMountCompletedEvent(
+  fake_cros_disks_client_->NotifyMountCompleted(
       chromeos::MOUNT_ERROR_NONE, kReadOnlyDeviceSourcePath,
       chromeos::MOUNT_TYPE_DEVICE, kReadOnlyDeviceMountPath);
 
@@ -1022,7 +1025,7 @@ TEST_F(DiskMountManagerTest, RemountRemovableDrives) {
   manager->RemountAllRemovableDrives(chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
 
   // Simulate cros_disks reporting mount completed.
-  fake_cros_disks_client_->SendMountCompletedEvent(
+  fake_cros_disks_client_->NotifyMountCompleted(
       chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
       chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
 
@@ -1040,7 +1043,7 @@ TEST_F(DiskMountManagerTest, RemountRemovableDrives) {
   manager->RemountAllRemovableDrives(chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
   // Simulate cros_disks reporting mount completed.
-  fake_cros_disks_client_->SendMountCompletedEvent(
+  fake_cros_disks_client_->NotifyMountCompleted(
       chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
       chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
   // Event handlers of observers should be called.
@@ -1246,8 +1249,8 @@ TEST_F(DiskMountManagerTest, Rename_RenameFails) {
   // Send failing RENAME_COMPLETED signal.
   // The failure is marked by ! in fromt of the path (but this should change
   // soon).
-  fake_cros_disks_client_->SendRenameCompletedEvent(
-      chromeos::RENAME_ERROR_UNKNOWN, kDevice1SourcePath);
+  fake_cros_disks_client_->NotifyRenameCompleted(chromeos::RENAME_ERROR_UNKNOWN,
+                                                 kDevice1SourcePath);
 
   // The observer should get notified that the device was unmounted and that
   // renaming has started.
@@ -1293,8 +1296,8 @@ TEST_F(DiskMountManagerTest, Rename_RenameSuccess) {
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendRenameCompletedEvent(chromeos::RENAME_ERROR_NONE,
-                                                    kDevice1SourcePath);
+  fake_cros_disks_client_->NotifyRenameCompleted(chromeos::RENAME_ERROR_NONE,
+                                                 kDevice1SourcePath);
 
   // The observer should receive UNMOUNTING, RENAME_STARTED and RENAME_COMPLETED
   // events (all of them without an error set).
@@ -1342,11 +1345,11 @@ TEST_F(DiskMountManagerTest, Rename_ConsecutiveRenameCalls) {
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendRenameCompletedEvent(chromeos::RENAME_ERROR_NONE,
-                                                    kDevice1SourcePath);
+  fake_cros_disks_client_->NotifyRenameCompleted(chromeos::RENAME_ERROR_NONE,
+                                                 kDevice1SourcePath);
 
   // Simulate the device remounting.
-  fake_cros_disks_client_->SendMountCompletedEvent(
+  fake_cros_disks_client_->NotifyMountCompleted(
       chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
       chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
 
@@ -1374,8 +1377,8 @@ TEST_F(DiskMountManagerTest, Rename_ConsecutiveRenameCalls) {
             disks.find(kDevice1SourcePath)->second->base_mount_path());
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendRenameCompletedEvent(chromeos::RENAME_ERROR_NONE,
-                                                    kDevice1SourcePath);
+  fake_cros_disks_client_->NotifyRenameCompleted(chromeos::RENAME_ERROR_NONE,
+                                                 kDevice1SourcePath);
 
   // The observer should receive UNMOUNTING, RENAME_STARTED and RENAME_COMPLETED
   // events (all of them without an error set) twice (once for each renaming

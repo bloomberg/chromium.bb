@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -94,7 +95,17 @@ bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
 // The CrosDisksClient implementation.
 class CrosDisksClientImpl : public CrosDisksClient {
  public:
-  CrosDisksClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
+  CrosDisksClientImpl() : proxy_(nullptr), weak_ptr_factory_(this) {}
+
+  // CrosDisksClient override.
+  void AddObserver(Observer* observer) override {
+    observer_list_.AddObserver(observer);
+  }
+
+  // CrosDisksClient override.
+  void RemoveObserver(Observer* observer) override {
+    observer_list_.RemoveObserver(observer);
+  }
 
   // CrosDisksClient override.
   void Mount(const std::string& source_path,
@@ -223,74 +234,50 @@ class CrosDisksClientImpl : public CrosDisksClient {
                        error_callback));
   }
 
-  // CrosDisksClient override.
-  void SetMountEventHandler(
-      const MountEventHandler& mount_event_handler) override {
-    static const SignalEventTuple kSignalEventTuples[] = {
-      { cros_disks::kDeviceAdded, CROS_DISKS_DEVICE_ADDED },
-      { cros_disks::kDeviceScanned, CROS_DISKS_DEVICE_SCANNED },
-      { cros_disks::kDeviceRemoved, CROS_DISKS_DEVICE_REMOVED },
-      { cros_disks::kDiskAdded, CROS_DISKS_DISK_ADDED },
-      { cros_disks::kDiskChanged, CROS_DISKS_DISK_CHANGED },
-      { cros_disks::kDiskRemoved, CROS_DISKS_DISK_REMOVED },
-    };
-    const size_t kNumSignalEventTuples = arraysize(kSignalEventTuples);
-
-    for (size_t i = 0; i < kNumSignalEventTuples; ++i) {
-      proxy_->ConnectToSignal(
-          cros_disks::kCrosDisksInterface,
-          kSignalEventTuples[i].signal_name,
-          base::Bind(&CrosDisksClientImpl::OnMountEvent,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     kSignalEventTuples[i].event_type,
-                     mount_event_handler),
-          base::Bind(&CrosDisksClientImpl::OnSignalConnected,
-                     weak_ptr_factory_.GetWeakPtr()));
-    }
-  }
-
-  // CrosDisksClient override.
-  void SetMountCompletedHandler(
-      const MountCompletedHandler& mount_completed_handler) override {
-    proxy_->ConnectToSignal(
-        cros_disks::kCrosDisksInterface,
-        cros_disks::kMountCompleted,
-        base::Bind(&CrosDisksClientImpl::OnMountCompleted,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   mount_completed_handler),
-        base::Bind(&CrosDisksClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // CrosDisksClient override.
-  void SetFormatCompletedHandler(
-      const FormatCompletedHandler& format_completed_handler) override {
-    proxy_->ConnectToSignal(
-        cros_disks::kCrosDisksInterface,
-        cros_disks::kFormatCompleted,
-        base::Bind(&CrosDisksClientImpl::OnFormatCompleted,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   format_completed_handler),
-        base::Bind(&CrosDisksClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // CrosDisksClient override.
-  void SetRenameCompletedHandler(
-      const RenameCompletedHandler& rename_completed_handler) override {
-    proxy_->ConnectToSignal(
-        cros_disks::kCrosDisksInterface, cros_disks::kRenameCompleted,
-        base::Bind(&CrosDisksClientImpl::OnRenameCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), rename_completed_handler),
-        base::Bind(&CrosDisksClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
  protected:
   void Init(dbus::Bus* bus) override {
     proxy_ = bus->GetObjectProxy(
         cros_disks::kCrosDisksServiceName,
         dbus::ObjectPath(cros_disks::kCrosDisksServicePath));
+
+    // Register handlers for D-Bus signals.
+    constexpr SignalEventTuple kSignalEventTuples[] = {
+        {cros_disks::kDeviceAdded, CROS_DISKS_DEVICE_ADDED},
+        {cros_disks::kDeviceScanned, CROS_DISKS_DEVICE_SCANNED},
+        {cros_disks::kDeviceRemoved, CROS_DISKS_DEVICE_REMOVED},
+        {cros_disks::kDiskAdded, CROS_DISKS_DISK_ADDED},
+        {cros_disks::kDiskChanged, CROS_DISKS_DISK_CHANGED},
+        {cros_disks::kDiskRemoved, CROS_DISKS_DISK_REMOVED},
+    };
+    for (const auto& entry : kSignalEventTuples) {
+      proxy_->ConnectToSignal(
+          cros_disks::kCrosDisksInterface, entry.signal_name,
+          base::BindRepeating(&CrosDisksClientImpl::OnMountEvent,
+                              weak_ptr_factory_.GetWeakPtr(), entry.event_type),
+          base::BindOnce(&CrosDisksClientImpl::OnSignalConnected,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
+
+    proxy_->ConnectToSignal(
+        cros_disks::kCrosDisksInterface, cros_disks::kMountCompleted,
+        base::BindRepeating(&CrosDisksClientImpl::OnMountCompleted,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CrosDisksClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    proxy_->ConnectToSignal(
+        cros_disks::kCrosDisksInterface, cros_disks::kFormatCompleted,
+        base::BindRepeating(&CrosDisksClientImpl::OnFormatCompleted,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CrosDisksClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    proxy_->ConnectToSignal(
+        cros_disks::kCrosDisksInterface, cros_disks::kRenameCompleted,
+        base::BindRepeating(&CrosDisksClientImpl::OnRenameCompleted,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CrosDisksClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -429,32 +416,34 @@ class CrosDisksClientImpl : public CrosDisksClient {
     callback.Run(disk);
   }
 
-  // Handles mount event signals and calls |handler|.
-  void OnMountEvent(MountEventType event_type,
-                    MountEventHandler handler,
-                    dbus::Signal* signal) {
+  // Handles mount event signals and notifies observers.
+  void OnMountEvent(MountEventType event_type, dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     std::string device;
     if (!reader.PopString(&device)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    handler.Run(event_type, device);
+
+    for (auto& observer : observer_list_)
+      observer.OnMountEvent(event_type, device);
   }
 
-  // Handles MountCompleted signal and calls |handler|.
-  void OnMountCompleted(MountCompletedHandler handler, dbus::Signal* signal) {
+  // Handles MountCompleted signal and notifies observers.
+  void OnMountCompleted(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     MountEntry entry;
     if (!ReadMountEntryFromDbus(&reader, &entry)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    handler.Run(entry);
+
+    for (auto& observer : observer_list_)
+      observer.OnMountCompleted(entry);
   }
 
-  // Handles FormatCompleted signal and calls |handler|.
-  void OnFormatCompleted(FormatCompletedHandler handler, dbus::Signal* signal) {
+  // Handles FormatCompleted signal and notifies observers.
+  void OnFormatCompleted(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     uint32_t error_code = 0;
     std::string device_path;
@@ -462,11 +451,15 @@ class CrosDisksClientImpl : public CrosDisksClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    handler.Run(static_cast<FormatError>(error_code), device_path);
+
+    for (auto& observer : observer_list_) {
+      observer.OnFormatCompleted(static_cast<FormatError>(error_code),
+                                 device_path);
+    }
   }
 
-  // Handles RenameCompleted signal and calls |handler|.
-  void OnRenameCompleted(RenameCompletedHandler handler, dbus::Signal* signal) {
+  // Handles RenameCompleted signal and notifies observers.
+  void OnRenameCompleted(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     uint32_t error_code = 0;
     std::string device_path;
@@ -474,7 +467,11 @@ class CrosDisksClientImpl : public CrosDisksClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    handler.Run(static_cast<RenameError>(error_code), device_path);
+
+    for (auto& observer : observer_list_) {
+      observer.OnRenameCompleted(static_cast<RenameError>(error_code),
+                                 device_path);
+    }
   }
 
   // Handles the result of signal connection setup.
@@ -486,6 +483,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   }
 
   dbus::ObjectProxy* proxy_;
+
+  base::ObserverList<Observer> observer_list_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
