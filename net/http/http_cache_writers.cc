@@ -103,12 +103,14 @@ bool HttpCache::Writers::StopCaching(bool keep_entry) {
   return true;
 }
 
-void HttpCache::Writers::AddTransaction(Transaction* transaction,
-                                        bool is_exclusive,
-                                        RequestPriority priority,
-                                        const TransactionInfo& info) {
+void HttpCache::Writers::AddTransaction(
+    Transaction* transaction,
+    ParallelWritingPattern initial_writing_pattern,
+    RequestPriority priority,
+    const TransactionInfo& info) {
   DCHECK(transaction);
-  DCHECK(CanAddWriters());
+  ParallelWritingPattern writers_pattern;
+  DCHECK(CanAddWriters(&writers_pattern));
 
   DCHECK_EQ(0u, all_writers_.count(transaction));
 
@@ -117,6 +119,15 @@ void HttpCache::Writers::AddTransaction(Transaction* transaction,
   should_keep_entry_ =
       IsValidResponseForWriter(info.partial != nullptr, &(info.response_info));
 
+  if (all_writers_.empty()) {
+    DCHECK_EQ(PARALLEL_WRITING_NONE, parallel_writing_pattern_);
+    parallel_writing_pattern_ = initial_writing_pattern;
+    if (parallel_writing_pattern_ != PARALLEL_WRITING_JOIN)
+      is_exclusive_ = true;
+  } else {
+    DCHECK_EQ(PARALLEL_WRITING_JOIN, parallel_writing_pattern_);
+  }
+
   if (info.partial && !info.truncated) {
     DCHECK(!partial_do_not_truncate_);
     partial_do_not_truncate_ = true;
@@ -124,11 +135,6 @@ void HttpCache::Writers::AddTransaction(Transaction* transaction,
 
   std::pair<Transaction*, TransactionInfo> writer(transaction, info);
   all_writers_.insert(writer);
-
-  if (is_exclusive) {
-    DCHECK_EQ(1u, all_writers_.size());
-    is_exclusive_ = true;
-  }
 
   priority_ = std::max(priority, priority_);
   if (network_transaction_) {
@@ -227,7 +233,8 @@ bool HttpCache::Writers::ContainsOnlyIdleWriters() const {
   return waiting_for_read_.empty() && !active_transaction_;
 }
 
-bool HttpCache::Writers::CanAddWriters() {
+bool HttpCache::Writers::CanAddWriters(ParallelWritingPattern* reason) {
+  *reason = PARALLEL_WRITING_NONE;
   //  While cleaning up writers (truncation) we should delay adding new writers.
   //  The caller can try again later.
   if (next_state_ == State::ASYNC_OP_COMPLETE_PRE_TRUNCATE ||
@@ -236,6 +243,7 @@ bool HttpCache::Writers::CanAddWriters() {
     return false;
   }
 
+  *reason = parallel_writing_pattern_;
   if (all_writers_.empty())
     return true;
 
