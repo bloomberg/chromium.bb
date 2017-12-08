@@ -201,6 +201,14 @@ class BluetoothDetailedView : public TrayDetailsView {
   }
 
   void Update() {
+    // Update immediately for initial device list and
+    // when bluetooth is disabled.
+    if (device_map_.size() == 0 ||
+        !Shell::Get()->tray_bluetooth_helper()->GetBluetoothEnabled()) {
+      DoUpdate();
+      return;
+    }
+
     // Return here since an update is already queued.
     if (timer_.IsRunning())
       return;
