@@ -66,11 +66,10 @@ size_t GetMaxEntries() {
 // them, UKM needs to take into account extension-sync consent, which is not
 // yet done.
 bool HasSupportedScheme(const GURL& url) {
-  // TODO(asvitkine): Support chrome:// and about: URLs here once we have
-  // approval (and necessary logic) for them. Via:
-  //   url.SchemeIs(url::kAboutScheme) || url.SchemeIs("chrome")
-  // Also add FTP Scheme once approved: url.SchemeIs(url::kFtpScheme)
-  return url.SchemeIsHTTPOrHTTPS();
+  // Note: kChromeUIScheme is defined in content, which this code can't
+  // depend on - since it's used by iOS too. So "chrome" is hardcoded here.
+  return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
+         url.SchemeIs(url::kAboutScheme) || url.SchemeIs("chrome");
 }
 
 // True if we should record the initial_url field of the UKM Source proto.
@@ -117,6 +116,11 @@ GURL SanitizeURL(const GURL& url) {
   GURL::Replacements remove_params;
   remove_params.ClearUsername();
   remove_params.ClearPassword();
+  // chrome:// and about: URLs params are never used for navigation, only to
+  // prepopulate data on the page, so don't include their params.
+  if (url.SchemeIs(url::kAboutScheme) || url.SchemeIs("chrome")) {
+    remove_params.ClearQuery();
+  }
   return url.ReplaceComponents(remove_params);
 }
 
