@@ -204,6 +204,41 @@ class SimulatorTestRunnerTest(TestCase):
     with self.assertRaises(test_runner.AppLaunchError):
       tr.launch()
 
+  def test_get_launch_command(self):
+    """Ensures test filters are set correctly for launch command"""
+    tr = test_runner.SimulatorTestRunner(
+      'fake-app',
+      'fake-iossim',
+      'platform',
+      'os',
+      'xcode-version',
+      'xcode-build',
+      'out-dir',
+    )
+    tr.xctest_path = 'fake.xctest'
+    # Cases test_filter is not empty, with empty/non-empty self.test_cases.
+    tr.test_cases = []
+    cmd = tr.get_launch_command(['a'], invert=False)
+    self.assertIn('-t', cmd)
+    self.assertIn('a', cmd)
+
+    tr.test_cases = ['a', 'b']
+    cmd = tr.get_launch_command(['a'], invert=False)
+    self.assertIn('-t', cmd)
+    self.assertIn('a', cmd)
+    self.assertNotIn('b', cmd)
+
+    # Cases test_filter is empty, with empty/non-empty self.test_cases.
+    tr.test_cases = []
+    cmd = tr.get_launch_command(test_filter=None, invert=False)
+    self.assertNotIn('-t', cmd)
+
+    tr.test_cases = ['a', 'b']
+    cmd = tr.get_launch_command(test_filter=None, invert=False)
+    self.assertIn('-t', cmd)
+    self.assertIn('a', cmd)
+    self.assertIn('b', cmd)
+
   def test_relaunch(self):
     """Ensures test is relaunched on test crash until tests complete."""
     def set_up(self):
@@ -256,6 +291,96 @@ class SimulatorTestRunnerTest(TestCase):
     )
     tr.launch()
     self.assertTrue(tr.logs)
+
+
+class DeviceTestRunnerTest(TestCase):
+  def setUp(self):
+    super(DeviceTestRunnerTest, self).setUp()
+
+    def install_xcode(build, mac_toolchain_cmd, xcode_app_path):
+      return True
+
+    self.mock(test_runner.find_xcode, 'find_xcode',
+              lambda _: {'found': True})
+    self.mock(test_runner.find_xcode, 'get_current_xcode_info', lambda: {
+        'version': 'test version', 'build': 'test build', 'path': 'test/path'})
+    self.mock(test_runner, 'install_xcode', install_xcode)
+    self.mock(test_runner.subprocess, 'check_output',
+              lambda _: 'fake-bundle-id')
+    self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
+    self.mock(os.path, 'exists', lambda _: True)
+
+    self.tr = test_runner.DeviceTestRunner(
+        'fake-app',
+        'xcode-version',
+        'xcode-build',
+        'out-dir',
+    )
+    self.tr.xctestrun_data = {'TestTargetName':{}}
+
+  def test_with_test_filter_without_test_cases(self):
+    """Ensures tests in the run with test_filter and no test_cases."""
+    self.tr.set_xctest_filters(['a', 'b'], invert=False)
+    self.assertEqual(
+        self.tr.xctestrun_data['TestTargetName']['OnlyTestIdentifiers'],
+        ['a', 'b']
+    )
+
+  def test_invert_with_test_filter_without_test_cases(self):
+    """Ensures tests in the run invert with test_filter and no test_cases."""
+    self.tr.set_xctest_filters(['a', 'b'], invert=True)
+    self.assertEqual(
+        self.tr.xctestrun_data['TestTargetName']['SkipTestIdentifiers'],
+        ['a', 'b']
+    )
+
+  def test_with_test_filter_with_test_cases(self):
+    """Ensures tests in the run with test_filter and test_cases."""
+    self.tr.test_cases = ['a', 'b', 'c', 'd']
+    self.tr.set_xctest_filters(['a', 'b', 'irrelevant test'], invert=False)
+    self.assertEqual(
+        self.tr.xctestrun_data['TestTargetName']['OnlyTestIdentifiers'],
+        ['a', 'b']
+    )
+
+  def test_invert_with_test_filter_with_test_cases(self):
+    """Ensures tests in the run invert with test_filter and test_cases."""
+    self.tr.test_cases = ['a', 'b', 'c', 'd']
+    self.tr.set_xctest_filters(['a', 'b', 'irrelevant test'], invert=True)
+    self.assertEqual(
+        self.tr.xctestrun_data['TestTargetName']['OnlyTestIdentifiers'],
+        ['c', 'd']
+    )
+
+  def test_without_test_filter_without_test_cases(self):
+    """Ensures tests in the run with no test_filter and no test_cases."""
+    self.tr.set_xctest_filters(test_filter=None, invert=False)
+    self.assertIsNone(
+        self.tr.xctestrun_data['TestTargetName'].get('OnlyTestIdentifiers'))
+
+  def test_invert_without_test_filter_without_test_cases(self):
+    """Ensures tests in the run invert with no test_filter and no test_cases."""
+    self.tr.set_xctest_filters(test_filter=None, invert=True)
+    self.assertIsNone(
+        self.tr.xctestrun_data['TestTargetName'].get('OnlyTestIdentifiers'))
+
+  def test_without_test_filter_with_test_cases(self):
+    """Ensures tests in the run with no test_filter but test_cases."""
+    self.tr.test_cases = ['a', 'b', 'c', 'd']
+    self.tr.set_xctest_filters(test_filter=None, invert=False)
+    self.assertEqual(
+        self.tr.xctestrun_data['TestTargetName']['OnlyTestIdentifiers'],
+        ['a', 'b', 'c', 'd']
+    )
+
+  def test_invert_without_test_filter_with_test_cases(self):
+    """Ensures tests in the run invert with no test_filter but test_cases."""
+    self.tr.test_cases = ['a', 'b', 'c', 'd']
+    self.tr.set_xctest_filters(test_filter=None, invert=True)
+    self.assertEqual(
+        self.tr.xctestrun_data['TestTargetName']['OnlyTestIdentifiers'],
+        ['a', 'b', 'c', 'd']
+    )
 
 
 if __name__ == '__main__':

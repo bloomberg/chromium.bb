@@ -51,10 +51,12 @@ class DeviceDetectionError(TestRunnerError):
     super(DeviceDetectionError, self).__init__(
       'Expected one device, found %s:\n%s' % (len(udids), '\n'.join(udids)))
 
+
 class DeviceRestartError(TestRunnerError):
   """Error restarting a device."""
   def __init__(self):
     super(DeviceRestartError, self).__init__('Error restarting a device')
+
 
 class PlugInsNotFoundError(TestRunnerError):
   """The PlugIns directory was not found."""
@@ -209,6 +211,7 @@ class TestRunner(object):
     mac_toolchain='',
     retries=None,
     test_args=None,
+    test_cases=None,
     xcode_path='',
     xctest=False,
   ):
@@ -225,6 +228,8 @@ class TestRunner(object):
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
+      test_cases: List of tests to be included in the test run. None or [] to
+        include all tests.
       xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
@@ -263,6 +268,7 @@ class TestRunner(object):
     self.out_dir = out_dir
     self.retries = retries or 0
     self.test_args = test_args or []
+    self.test_cases = test_cases or []
     self.xcode_version = xcode_version
     self.xctest_path = ''
 
@@ -495,6 +501,7 @@ class SimulatorTestRunner(TestRunner):
       mac_toolchain='',
       retries=None,
       test_args=None,
+      test_cases=None,
       xcode_path='',
       xctest=False,
   ):
@@ -516,6 +523,8 @@ class SimulatorTestRunner(TestRunner):
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
+      test_cases: List of tests to be included in the test run. None or [] to
+        include all tests.
       xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
@@ -534,6 +543,7 @@ class SimulatorTestRunner(TestRunner):
         mac_toolchain=mac_toolchain,
         retries=retries,
         test_args=test_args,
+        test_cases=test_cases,
         xcode_path=xcode_path,
         xctest=xctest,
     )
@@ -687,6 +697,9 @@ class SimulatorTestRunner(TestRunner):
         gtest_filter = get_gtest_filter(test_filter, invert=invert)
         cmd.extend(['-e', 'GKIF_SCENARIO_FILTER=%s' % kif_filter])
         cmd.extend(['-c', '--gtest_filter=%s' % gtest_filter])
+    elif self.xctest_path and not invert:
+      for test_case in self.test_cases:
+        cmd.extend(['-t', test_case])
 
     for env_var in self.env_vars:
       cmd.extend(['-e', env_var])
@@ -725,6 +738,7 @@ class DeviceTestRunner(TestRunner):
     restart=False,
     retries=None,
     test_args=None,
+    test_cases=None,
     xctest=False,
     xcode_path='',
   ):
@@ -742,6 +756,8 @@ class DeviceTestRunner(TestRunner):
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
+      test_cases: List of tests to be included in the test run. None or [] to
+        include all tests.
       xctest: Whether or not this is an XCTest.
       xcode_path: Path to Xcode.app folder where its contents will be installed.
 
@@ -759,6 +775,7 @@ class DeviceTestRunner(TestRunner):
       env_vars=env_vars,
       retries=retries,
       test_args=test_args,
+      test_cases=test_cases,
       xctest=xctest,
       mac_toolchain=mac_toolchain,
       xcode_path=xcode_path,
@@ -856,6 +873,28 @@ class DeviceTestRunner(TestRunner):
     self.retrieve_crash_reports()
     self.uninstall_apps()
 
+  def set_xctest_filters(self, test_filter=None, invert=False):
+    """Sets the tests be included in the test run."""
+    if self.test_cases:
+      filter = self.test_cases
+      if test_filter:
+        # If inverted, the filter should match tests in test_cases except the
+        # ones in test_filter. Otherwise, the filter should be tests both in
+        # test_cases and test_filter. test_filter is used for test retries, it
+        # should be a subset of test_cases. If the intersection of test_cases
+        # and test_filter fails, use test_filter.
+        filter = (sorted(set(filter) - set(test_filter)) if invert
+                  else sorted(set(filter) & set(test_filter)) or test_filter)
+      self.xctestrun_data['TestTargetName'].update(
+        {'OnlyTestIdentifiers': filter})
+    elif test_filter:
+      if invert:
+        self.xctestrun_data['TestTargetName'].update(
+          {'SkipTestIdentifiers': test_filter})
+      else:
+        self.xctestrun_data['TestTargetName'].update(
+          {'OnlyTestIdentifiers': test_filter})
+
   def get_launch_command(self, test_filter=None, invert=False):
     """Returns the command that can be used to launch the test app.
 
@@ -868,13 +907,7 @@ class DeviceTestRunner(TestRunner):
       A list of strings forming the command to launch the test.
     """
     if self.xctest_path:
-      if test_filter:
-        if invert:
-          self.xctestrun_data['TestTargetName'].update(
-            {'SkipTestIdentifiers': test_filter})
-        else:
-          self.xctestrun_data['TestTargetName'].update(
-            {'OnlyTestIdentifiers': test_filter})
+      self.set_xctest_filters(test_filter, invert)
       if self.env_vars:
         self.xctestrun_data['TestTargetName'].update(
           {'EnvironmentVariables': self.env_vars})
