@@ -60,7 +60,8 @@
     SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
   }
 
-  function step2(callFrames) {
+  async function step2(callFrames) {
+    await TestRunner.addSnifferPromise(Sources.CallStackSidebarPane.prototype, '_updatedForTest');
     SourcesTestRunner.captureStackTrace(callFrames);
     TestRunner.addResult('\n=== Evaluating on iframe ===');
     evaluateInConsoleAndDump(step3);
