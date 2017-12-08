@@ -54,10 +54,6 @@ class VIEWS_EXPORT PlatformStyle {
   // Whether ripples should be used for visual feedback on control activation.
   static const bool kUseRipples;
 
-  // Whether to mirror the arrow of bubble dialogs in RTL, such that the bubble
-  // opens in the opposite direction.
-  static const bool kMirrorBubbleArrowInRTLByDefault;
-
   // Whether to scroll text fields to the beginning when they gain or lose
   // focus.
   static const bool kTextfieldScrollsToStartOnFocusChange;

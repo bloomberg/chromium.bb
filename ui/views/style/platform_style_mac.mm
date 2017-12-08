@@ -23,12 +23,6 @@ const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 const bool PlatformStyle::kUseRipples = false;
 
-// On Mac, the Cocoa browser window does not flip its UI in RTL (e.g. bookmark
-// star remains on the right, padlock on the left). So bubbles should open in
-// the same direction as in LTR by default, unless the entire browser is views.
-const bool PlatformStyle::kMirrorBubbleArrowInRTLByDefault =
-    BUILDFLAG(MAC_VIEWS_BROWSER);
-
 const Button::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     Button::NOTIFY_ON_PRESS;
 

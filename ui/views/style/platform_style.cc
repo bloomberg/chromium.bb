@@ -47,7 +47,6 @@ const Button::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
 const bool PlatformStyle::kReturnClicksFocusedControl = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
 const bool PlatformStyle::kUseRipples = true;
-const bool PlatformStyle::kMirrorBubbleArrowInRTLByDefault = true;
 const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;
 
 // static
