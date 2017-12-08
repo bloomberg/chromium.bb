@@ -754,8 +754,11 @@ MediaRouter.prototype.start = function() {
       this.mediaRouteProviderBinding_.createInterfacePtrAndBind()).then(
           function(response) {
             return {
-              'enable_dial_discovery': response.enableDialDiscovery,
-              'enable_cast_discovery': response.enableCastDiscovery,
+              'instance_id': response.instanceId,
+              'config': {
+                'enable_dial_discovery': response.config.enableDialDiscovery,
+                'enable_cast_discovery': response.config.enableCastDiscovery,
+              }
             };
           });
 }
