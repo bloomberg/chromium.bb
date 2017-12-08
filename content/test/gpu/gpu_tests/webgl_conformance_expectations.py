@@ -639,9 +639,21 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
         bug=609883)
+    self.Flaky('conformance/ogles/GL/all/all_001_to_004.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
+    self.Flaky('conformance/ogles/GL/cos/cos_001_to_006.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
+    self.Flaky('conformance/ogles/GL/swizzlers/swizzlers_041_to_048.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
+    self.Flaky('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-luminance-luminance-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=716496)
+    self.Flaky('conformance/textures/misc/' +
+        'tex-video-using-tex-unit-non-zero.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
         bug=610951)
