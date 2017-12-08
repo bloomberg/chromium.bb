@@ -83,13 +83,6 @@ const base::Feature kSearchProviderWarmUpOnFocus{
 #endif
 };
 
-// Feature used to enable the transmission of HTTPS URLs as part of the
-// context to the suggest server (assuming SearchProvider is permitted to
-// transmit URLs for context in the first place).
-const base::Feature kSearchProviderContextAllowHttpsUrls{
-    "OmniboixSearchProviderContextAllowHttpsUrls",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used for the Zero Suggest Redirect to Chrome Field Trial.
 const base::Feature kZeroSuggestRedirectToChrome{
     "ZeroSuggestRedirectToChrome", base::FEATURE_DISABLED_BY_DEFAULT};
