@@ -6,7 +6,7 @@
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"
-#include "contrib/optimizations/inffast_chunky.h"
+#include "contrib/optimizations/inffast_chunk.h"
 #include "contrib/optimizations/chunkcopy.h"
 
 #ifdef ASMINF
@@ -52,7 +52,7 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void ZLIB_INTERNAL inflate_fast_chunky(strm, start)
+void ZLIB_INTERNAL inflate_fast_chunk_(strm, start)
 z_streamp strm;
 unsigned start;         /* inflate()'s starting value for strm->avail_out */
 {

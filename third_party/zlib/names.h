@@ -171,4 +171,9 @@
 #define adler32_simd_ Cr_z_adler32_simd_
 #endif
 
+#if defined(INFLATE_CHUNK_SIMD_SSE2) || defined(INFLATE_CHUNK_SIMD_NEON)
+/* Symbols added by contrib/optimizations/inffast_chunk */
+#define inflate_fast_chunk_ Cr_z_inflate_fast_chunk_
+#endif
+
 #endif  /* THIRD_PARTY_ZLIB_NAMES_H_ */

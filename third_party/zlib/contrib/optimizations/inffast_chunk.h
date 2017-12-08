@@ -9,4 +9,7 @@
    subject to change. Applications should only use zlib.h.
  */
 
-void ZLIB_INTERNAL inflate_fast_chunky OF((z_streamp strm, unsigned start));
+// TODO(cblume): incorporate the patch done on crbug.com/764431 here and
+// in related files to define and use INFLATE_FAST_MIN_HAVE/_LEFT etc.
+
+void ZLIB_INTERNAL inflate_fast_chunk_ OF((z_streamp strm, unsigned start));
