@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/core/task.h"
 
 namespace offline_pages {
@@ -33,7 +34,7 @@ class TemporaryPagesConsistencyCheckTask : public Task {
   void Run() override;
 
  private:
-  void OnCheckConsistencyDone(bool result);
+  void OnCheckConsistencyDone(SyncOperationResult result);
 
   // The store for consistency check. Not owned.
   OfflinePageMetadataStoreSQL* store_;

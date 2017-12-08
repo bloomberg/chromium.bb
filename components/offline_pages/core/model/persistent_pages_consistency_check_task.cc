@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_page_types.h"
@@ -57,13 +57,11 @@ std::vector<PageInfo> GetAllPersistentPageInfos(
 std::set<base::FilePath> GetAllArchives(const base::FilePath& archives_dir) {
   std::set<base::FilePath> result;
   base::FileEnumerator file_enumerator(archives_dir, false,
-                                       base::FileEnumerator::FILES);
+                                       base::FileEnumerator::FILES,
+                                       FILE_PATH_LITERAL("*.mhtml"));
   for (auto archive_path = file_enumerator.Next(); !archive_path.empty();
        archive_path = file_enumerator.Next()) {
-    if (file_enumerator.GetInfo().GetName().MatchesExtension(
-            FILE_PATH_LITERAL(".mhtml"))) {
-      result.insert(archive_path);
-    }
+    result.insert(archive_path);
   }
   return result;
 }
@@ -89,17 +87,12 @@ bool DeleteFiles(const std::vector<base::FilePath>& file_paths) {
   return result;
 }
 
-// The method will return false if:
-// - An invalid database pointer is provided by the store, which indicates store
-//   failure, or
-// - The transaction of database operations fails at start or commit, or
-// - At least one deletion of an offline page entry failed, or
-// - At least one file deletion failed
-bool CheckConsistencySync(const base::FilePath& archives_dir,
-                          const std::vector<std::string>& namespaces,
-                          sql::Connection* db) {
+SyncOperationResult CheckConsistencySync(
+    const base::FilePath& archives_dir,
+    const std::vector<std::string>& namespaces,
+    sql::Connection* db) {
   if (!db)
-    return false;
+    return SyncOperationResult::INVALID_DB_CONNECTION;
 
   // One large database transaction that will:
   // 1. Gets persistent page infos from the database.
@@ -107,7 +100,7 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
   // 3. Delete metadata entries from the database.
   sql::Transaction transaction(db);
   if (!transaction.Begin())
-    return false;
+    return SyncOperationResult::TRANSACTION_BEGIN_ERROR;
 
   auto persistent_page_infos = GetAllPersistentPageInfos(namespaces, db);
 
@@ -128,10 +121,16 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
   // and the database operations will be rolled back since the transaction will
   // not be committed.
   if (!DeletePagesByOfflineIds(offline_ids_to_delete, db))
-    return false;
+    return SyncOperationResult::DB_OPERATION_ERROR;
+
+  if (offline_ids_to_delete.size() > 0) {
+    UMA_HISTOGRAM_COUNTS(
+        "OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount",
+        static_cast<int32_t>(offline_ids_to_delete.size()));
+  }
 
   if (!transaction.Commit())
-    return false;
+    return SyncOperationResult::TRANSACTION_COMMIT_ERROR;
 
   // Delete any files in the persistent archive directory that no longer have
   // associated entries in the database.
@@ -144,7 +143,16 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
     }
   }
 
-  return DeleteFiles(files_to_delete);
+  if (files_to_delete.size() > 0) {
+    UMA_HISTOGRAM_COUNTS(
+        "OfflinePages.ConsistencyCheck.Persistent.PagesMissingDbEntryCount",
+        static_cast<int32_t>(files_to_delete.size()));
+  }
+
+  if (!DeleteFiles(files_to_delete))
+    return SyncOperationResult::FILE_OPERATION_ERROR;
+
+  return SyncOperationResult::SUCCESS;
 }
 
 }  // namespace
@@ -178,11 +186,10 @@ void PersistentPagesConsistencyCheckTask::Run() {
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PersistentPagesConsistencyCheckTask::OnCheckConsistencyDone(bool result) {
-  // TODO(romax): https://crbug.com/772204. Replace the DVLOG with UMA
-  // collecting. If there's a need, introduce more detailed local enums
-  // indicating which part failed.
-  DVLOG(1) << "PersistentPagesConsistencyCheck returns with result: " << result;
+void PersistentPagesConsistencyCheckTask::OnCheckConsistencyDone(
+    SyncOperationResult result) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.ConsistencyCheck.Persistent.Result",
+                            result, SyncOperationResult::RESULT_COUNT);
   TaskComplete();
 }
 
