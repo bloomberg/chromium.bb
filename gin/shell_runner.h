@@ -48,10 +48,6 @@ class GIN_EXPORT ShellRunner : public Runner {
   // Runner overrides:
   void Run(const std::string& source,
            const std::string& resource_name) override;
-  v8::Local<v8::Value> Call(v8::Local<v8::Function> function,
-                             v8::Local<v8::Value> receiver,
-                             int argc,
-                             v8::Local<v8::Value> argv[]) override;
   ContextHolder* GetContextHolder() override;
 
  private:
