@@ -13,6 +13,7 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchDataLoader.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -171,13 +172,23 @@ void CompileFromResponseCallback(
 
 // See https://crbug.com/708238 for tracking avoiding the hand-generated code.
 void WasmCompileStreamingImpl(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  v8::Isolate* isolate = args.GetIsolate();
   ScriptState* script_state = ScriptState::ForCurrentRealm(args);
+  V8PerIsolateData* per_isolate_data =
+      V8PerIsolateData::From(script_state->GetIsolate());
 
-  // TODO(yukishiino): The following code creates a new v8::FunctionTemplate
-  // for every call, and leaks it.  Should reuse the same v8::FunctionTemplate.
-  v8::Local<v8::Function> compile_callback =
-      v8::Function::New(isolate, CompileFromResponseCallback);
+  // An unique key of the v8::FunctionTemplate cache in V8PerIsolateData.
+  // Everyone uses address of something as a key, so the address of |unique_key|
+  // is guaranteed to be unique for the function template cache.
+  static const int unique_key = 0;
+  v8::Local<v8::FunctionTemplate> function_template =
+      per_isolate_data->FindOrCreateOperationTemplate(
+          script_state->World(), &unique_key, CompileFromResponseCallback,
+          v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 1);
+  v8::Local<v8::Function> compile_callback;
+  if (!function_template->GetFunction(script_state->GetContext())
+           .ToLocal(&compile_callback)) {
+    return;  // Throw an exception.
+  }
 
   // treat either case of parameter as
   // Promise.resolve(parameter)
