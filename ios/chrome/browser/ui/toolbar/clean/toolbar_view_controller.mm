@@ -645,9 +645,12 @@
   self.stopButton.hiddenInCurrentState = !loading;
   if (!loading) {
     [self stopProgressBar];
-  } else {
-    [self.progressBar setHidden:NO animated:YES completion:nil];
+  } else if (self.progressBar.hidden) {
     [self.progressBar setProgress:0];
+    [self.progressBar setHidden:NO animated:YES completion:nil];
+    // Layout if needed the progress bar to avoir having the progress bar going
+    // backward when opening a page from the NTP.
+    [self.progressBar layoutIfNeeded];
   }
 }
 
