@@ -836,7 +836,9 @@ void UserMediaProcessor::CreateAudioTracks(
     // be removed.
     for (auto& device : overridden_audio_devices) {
       device.matched_output_device_id = "";
-      device.matched_output = media::AudioParameters::UnavailableDeviceParams();
+      // Audio parameters must be invalid in order to ensure that the matched
+      // output device will not be used.
+      device.matched_output = media::AudioParameters();
     }
   }
 
