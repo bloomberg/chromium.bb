@@ -164,19 +164,21 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   EXPECT_TRUE(
       WaitForRenderFrameReady(contents->GetInterstitialPage()->GetMainFrame()));
   EXPECT_EQ(expect_wifi == EXPECT_WIFI_YES,
-            IsInterstitialDisplayingText(contents->GetInterstitialPage(),
-                                         "Wi-Fi"));
+            IsInterstitialDisplayingText(
+                contents->GetInterstitialPage()->GetMainFrame(), "Wi-Fi"));
   if (!wifi_ssid.empty()) {
     EXPECT_EQ(expect_wifi_ssid == EXPECT_WIFI_SSID_YES,
-              IsInterstitialDisplayingText(contents->GetInterstitialPage(),
-                                           wifi_ssid));
+              IsInterstitialDisplayingText(
+                  contents->GetInterstitialPage()->GetMainFrame(), wifi_ssid));
   }
   EXPECT_EQ(expect_login_url == EXPECT_LOGIN_URL_YES,
-            IsInterstitialDisplayingText(contents->GetInterstitialPage(),
-                                         expected_login_hostname));
+            IsInterstitialDisplayingText(
+                contents->GetInterstitialPage()->GetMainFrame(),
+                expected_login_hostname));
   EXPECT_EQ(expect_login_url == EXPECT_LOGIN_URL_NO,
-            IsInterstitialDisplayingText(contents->GetInterstitialPage(),
-                                         kGenericLoginURLText));
+            IsInterstitialDisplayingText(
+                contents->GetInterstitialPage()->GetMainFrame(),
+                kGenericLoginURLText));
 
   // Check that a red/dangerous lock icon is showing on the interstitial.
   SecurityStateTabHelper* helper =

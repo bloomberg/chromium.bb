@@ -3578,7 +3578,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   ASSERT_TRUE(content::WaitForRenderFrameReady(interstitial->GetMainFrame()));
 
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      interstitial, "proceed-link"));
+      interstitial->GetMainFrame(), "proceed-link"));
   EXPECT_NE(base::UTF8ToUTF16("OK"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
@@ -3684,7 +3684,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingAllowed) {
 
   // The interstitial should display the proceed link.
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      interstitial, "proceed-link"));
+      interstitial->GetMainFrame(), "proceed-link"));
 }
 
 // Test that when SSL error overriding is disallowed by policy, the
@@ -3721,7 +3721,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
 
   // The interstitial should not display the proceed link.
   EXPECT_FALSE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      interstitial, "proceed-link"));
+      interstitial->GetMainFrame(), "proceed-link"));
 
   // The interstitial should not proceed, even if the command is sent in
   // some other way (e.g., via the keyboard shortcut).

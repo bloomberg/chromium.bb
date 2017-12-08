@@ -121,8 +121,8 @@ void BadClockUI::HandleCommand(SecurityInterstitialCommand command) {
     case CMD_ERROR:
     case CMD_TEXT_FOUND:
     case CMD_TEXT_NOT_FOUND:
-      // Commands are only for testing.
-      NOTREACHED() << "Unexpected command: " << command;
+      // Commands are for testing.
+      break;
   }
 }
 

@@ -20,17 +20,17 @@ void SSLErrorTabHelper::DidFinishNavigation(
   auto it = blocking_pages_for_navigations_.find(
       navigation_handle->GetNavigationId());
 
-  if (it == blocking_pages_for_navigations_.end()) {
-    blocking_page_for_currently_committed_navigation_.reset();
-    return;
+  if (navigation_handle->HasCommitted()) {
+    if (it == blocking_pages_for_navigations_.end()) {
+      blocking_page_for_currently_committed_navigation_.reset();
+    } else {
+      blocking_page_for_currently_committed_navigation_ = std::move(it->second);
+    }
   }
 
-  if (navigation_handle->HasCommitted()) {
-    blocking_page_for_currently_committed_navigation_ = std::move(it->second);
-  } else {
-    blocking_page_for_currently_committed_navigation_.reset();
+  if (it != blocking_pages_for_navigations_.end()) {
+    blocking_pages_for_navigations_.erase(it);
   }
-  blocking_pages_for_navigations_.erase(it);
 }
 
 // static
