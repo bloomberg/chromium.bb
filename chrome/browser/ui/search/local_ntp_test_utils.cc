@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -119,6 +120,7 @@ void SetUserSelectedDefaultSearchProvider(Profile* profile,
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
+  search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
   TemplateURL* template_url =
       template_url_service->Add(std::make_unique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
