@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -508,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
   EXPECT_TRUE(menu_button->menu()->IsShowing());
 
   // Show a content setting icon.
-  const auto& content_setting_views =
+  auto& content_setting_views =
       frame_view->hosted_app_button_container_->content_setting_views_;
 
   for (auto* v : content_setting_views)
@@ -522,10 +523,32 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
 
   content_settings->OnGeolocationPermissionSet(kAppStartURL.GetOrigin(), true);
 
-  int visible = std::count_if(
-      content_setting_views.begin(), content_setting_views.end(),
-      [](const ContentSettingImageView* v) { return v->visible(); });
-  EXPECT_EQ(1, visible);
+  auto is_visible = [](const ContentSettingImageView* v) {
+    return v->visible();
+  };
+
+  EXPECT_EQ(1, std::count_if(content_setting_views.begin(),
+                             content_setting_views.end(), is_visible));
+
+  // Press the content setting button.
+  auto content_setting_view = std::find_if(
+      content_setting_views.begin(), content_setting_views.end(), is_visible);
+
+  base::HistogramTester histograms;
+
+  (*content_setting_view)
+      ->OnKeyPressed(
+          ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE));
+  (*content_setting_view)
+      ->OnKeyReleased(
+          ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_SPACE, ui::EF_NONE));
+
+  histograms.ExpectBucketCount(
+      "HostedAppFrame.ContentSettings.ImagePressed",
+      static_cast<int>(ContentSettingImageModel::ImageType::GEOLOCATION), 1);
+  histograms.ExpectBucketCount(
+      "ContentSettings.ImagePressed",
+      static_cast<int>(ContentSettingImageModel::ImageType::GEOLOCATION), 1);
 
   // The app and domain should render next to the window title.
   frame_header->LayoutRenderTexts(gfx::Rect(300, 30), 100, 100);

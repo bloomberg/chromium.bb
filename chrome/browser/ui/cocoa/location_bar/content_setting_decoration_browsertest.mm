@@ -17,8 +17,8 @@ class ContentSettingDecorationTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     std::unique_ptr<ContentSettingImageModel> content_setting_image_model(
-        ContentSettingSimpleImageModel::CreateForContentTypeForTesting(
-            CONTENT_SETTINGS_TYPE_GEOLOCATION));
+        ContentSettingImageModel::CreateForContentType(
+            ContentSettingImageModel::ImageType::GEOLOCATION));
     BrowserWindowController* controller = [BrowserWindowController
         browserWindowControllerForWindow:browser()
                                              ->window()

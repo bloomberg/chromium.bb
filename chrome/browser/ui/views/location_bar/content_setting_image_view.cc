@@ -199,6 +199,8 @@ bool ContentSettingImageView::ShowBubble(const ui::Event& event) {
       bubble_view_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     }
     bubble_widget->Show();
+    delegate_->OnContentSettingImageBubbleShown(
+        content_setting_image_model_->image_type());
   }
 
   return true;

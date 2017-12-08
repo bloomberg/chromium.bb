@@ -11052,6 +11052,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.ImagePressed" enum="ContentSettingImageType">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    Counts which content setting buttons are pressed by the user.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.LastSettingParsed" enum="LastSettingParsed">
   <obsolete>
     Deprecated 2015-10-05 in Issue 433475. Histogram was used temorarily for
@@ -28539,6 +28546,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     older than in History page. Last bucket is any entry of that value or
     higher. Confirmed removal is not guaranteed, just an initiation of 'Remove
     selected items'.
+  </summary>
+</histogram>
+
+<histogram name="HostedAppFrame.ContentSettings.ImagePressed"
+    enum="ContentSettingImageType">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    Counts which content setting buttons in the hosted app frame are pressed by
+    the user.
   </summary>
 </histogram>
 
