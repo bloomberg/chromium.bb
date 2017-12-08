@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 
 @protocol ApplicationCommands;
@@ -22,6 +23,7 @@
 @interface ToolbarViewController
     : UIViewController<ActivityServicePositioner,
                        BubbleViewAnchorPointProvider,
+                       FullscreenUIElement,
                        ToolbarConsumer>
 
 - (instancetype)initWithDispatcher:

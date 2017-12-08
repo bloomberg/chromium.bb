@@ -38,12 +38,11 @@ class FullscreenMediator : public FullscreenModelObserver {
   // FullscreenModelObserver:
   void FullscreenModelProgressUpdated(FullscreenModel* model) override;
   void FullscreenModelEnabledStateChanged(FullscreenModel* model) override;
+  void FullscreenModelScrollEventStarted(FullscreenModel* model) override;
   void FullscreenModelScrollEventEnded(FullscreenModel* model) override;
 
   // Stops the current scroll end animation if one is in progress.
   void StopAnimating();
-  // Performs cleanup tasks for the animator.
-  void CleanUpAnimator();
 
   // The controller.
   FullscreenController* controller_ = nullptr;

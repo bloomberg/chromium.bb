@@ -318,6 +318,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/fullscreen:legacy_fullscreen",
     "//ios/chrome/browser/ui/fullscreen:new_fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:new_fullscreen_ui",
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/history_popup:coordinator",
     "//ios/chrome/browser/ui/history_popup/requirements",

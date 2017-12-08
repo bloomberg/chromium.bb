@@ -183,6 +183,21 @@
       anchorPointForToolsMenuButton:direction];
 }
 
+#pragma mark - FullscreenUIElement
+
+// FullscreenUIElements in this adapter are no-ops.  ToolbarCoordinator updates
+// its view controller's UI for fullscreen events.
+
+- (void)updateForFullscreenProgress:(CGFloat)progress {
+}
+
+- (void)updateForFullscreenEnabled:(BOOL)enabled {
+}
+
+- (void)finishFullscreenScrollWithAnimator:
+    (FullscreenScrollEndAnimator*)animator {
+}
+
 #pragma mark - ToolsMenuPresentationProvider
 
 - (UIButton*)presentingButtonForToolsMenuCoordinator:

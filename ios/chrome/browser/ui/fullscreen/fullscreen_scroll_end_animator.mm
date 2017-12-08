@@ -19,6 +19,8 @@
 @interface FullscreenScrollEndAnimator () {
   // The bezier backing the timing curve.
   std::unique_ptr<gfx::CubicBezier> _bezier;
+  // The current progress value that was recorded when the animator was stopped.
+  CGFloat _progressUponStopping;
 }
 @end
 
@@ -48,9 +50,35 @@
 #pragma mark Accessors
 
 - (CGFloat)currentProgress {
+  if (self.state == UIViewAnimatingStateStopped)
+    return _progressUponStopping;
   CGFloat interpolationFraction = _bezier->Solve(self.fractionComplete);
   CGFloat range = self.finalProgress - self.startProgress;
   return self.startProgress + interpolationFraction * range;
+}
+
+#pragma mark Public
+
+- (CGFloat)progressForAnimatingPosition:(UIViewAnimatingPosition)position {
+  switch (position) {
+    case UIViewAnimatingPositionStart:
+      return self.startProgress;
+    case UIViewAnimatingPositionEnd:
+      return self.finalProgress;
+    case UIViewAnimatingPositionCurrent:
+      return self.currentProgress;
+  }
+}
+
+#pragma mark UIViewAnimating
+
+- (void)stopAnimation:(BOOL)withoutFinishing {
+  // Record the progress value when transitioning from the active to stopped
+  // state.  This allows |currentProgress| to return the correct value after
+  // stopping, as |fractionComplete| is reset to 0.0 for stopped animators.
+  if (self.state == UIViewAnimatingStateActive)
+    _progressUponStopping = self.currentProgress;
+  [super stopAnimation:withoutFinishing];
 }
 
 #pragma mark UIViewPropertyAnimator

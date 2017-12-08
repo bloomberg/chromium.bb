@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
@@ -37,7 +38,8 @@
                   ActivityServicePositioner,
                   QRScannerResultLoading,
                   BubbleViewAnchorPointProvider,
-                  ToolsMenuPresentationProvider>
+                  ToolsMenuPresentationProvider,
+                  FullscreenUIElement>
 
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible;
 - (void)start;

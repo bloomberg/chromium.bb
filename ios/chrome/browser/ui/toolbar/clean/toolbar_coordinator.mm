@@ -7,6 +7,7 @@
 #import <CoreLocation/CoreLocation.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -20,6 +21,10 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
@@ -58,6 +63,8 @@
 @interface ToolbarCoordinator ()<LocationBarDelegate, OmniboxPopupPositioner> {
   std::unique_ptr<LocationBarControllerImpl> _locationBar;
   std::unique_ptr<OmniboxPopupViewIOS> _popupView;
+  // Observer that updates |toolbarViewController| for fullscreen events.
+  std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
 
 // The View Controller managed by this coordinator.
@@ -177,6 +184,14 @@
   self.toolbarViewController.locationBarView = self.locationBarView;
   self.toolbarViewController.dispatcher = self.dispatcher;
 
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    _fullscreenObserver =
+        base::MakeUnique<FullscreenUIUpdater>(self.toolbarViewController);
+    FullscreenControllerFactory::GetInstance()
+        ->GetForBrowserState(self.browserState)
+        ->AddObserver(_fullscreenObserver.get());
+  }
+
   DCHECK(self.toolbarViewController.toolsMenuButton);
   self.toolsMenuButtonObserverBridge = [[ToolsMenuButtonObserverBridge alloc]
       initWithModel:ReadingListModelFactory::GetForBrowserState(
@@ -202,6 +217,13 @@
   _locationBar.reset();
   self.locationBarView = nil;
   [self stopObservingTTSNotifications];
+
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    FullscreenControllerFactory::GetInstance()
+        ->GetForBrowserState(self.browserState)
+        ->RemoveObserver(_fullscreenObserver.get());
+    _fullscreenObserver = nullptr;
+  }
 }
 
 #pragma mark - Public

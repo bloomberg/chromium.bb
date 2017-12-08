@@ -54,6 +54,12 @@ void FullscreenMediator::FullscreenModelEnabledStateChanged(
   }
 }
 
+void FullscreenMediator::FullscreenModelScrollEventStarted(
+    FullscreenModel* model) {
+  DCHECK_EQ(model_, model);
+  StopAnimating();
+}
+
 void FullscreenMediator::FullscreenModelScrollEventEnded(
     FullscreenModel* model) {
   DCHECK_EQ(model_, model);
@@ -61,7 +67,11 @@ void FullscreenMediator::FullscreenModelScrollEventEnded(
   animator_ = [[FullscreenScrollEndAnimator alloc]
       initWithStartProgress:model_->progress()];
   [animator_ addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    CleanUpAnimator();
+    DCHECK(finalPosition == UIViewAnimatingPositionEnd ||
+           finalPosition == UIViewAnimatingPositionCurrent);
+    model_->AnimationEndedWithProgress(
+        [animator_ progressForAnimatingPosition:finalPosition]);
+    animator_ = nil;
   }];
   for (auto& observer : observers_) {
     observer.FullscreenScrollEventEnded(controller_, animator_);
@@ -75,11 +85,13 @@ void FullscreenMediator::StopAnimating() {
 
   DCHECK_EQ(animator_.state, UIViewAnimatingStateActive);
   [animator_ stopAnimation:NO];
-  [animator_ finishAnimationAtPosition:UIViewAnimatingPositionCurrent];
-}
 
-void FullscreenMediator::CleanUpAnimator() {
-  DCHECK(animator_);
-  model_->AnimationEndedWithProgress(animator_.currentProgress);
-  animator_ = nil;
+  // Property animators throw exceptions if they are deallocated in the
+  // UIViewAnimatingStateStopped state.  Since the cleanup occurring in the
+  // animator's completion block occurs before |-finishAnimationAtPosition:|
+  // resets the state to UIViewAnimatingStateInactive, the animator is retained
+  // here so that it can be deallocated when reset to inactive.
+  FullscreenScrollEndAnimator* animator = animator_;
+  [animator_ finishAnimationAtPosition:UIViewAnimatingPositionCurrent];
+  animator = nil;
 }

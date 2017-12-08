@@ -14,11 +14,26 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Object that increments |counter| by 1 for its lifetime.
+class ScopedIncrementer {
+ public:
+  explicit ScopedIncrementer(size_t* counter) : counter_(counter) {
+    ++(*counter_);
+  }
+  ~ScopedIncrementer() { --(*counter_); }
+
+ private:
+  size_t* counter_;
+};
+}
+
 FullscreenModel::FullscreenModel() = default;
 FullscreenModel::~FullscreenModel() = default;
 
 void FullscreenModel::IncrementDisabledCounter() {
   if (++disabled_counter_ == 1U) {
+    ScopedIncrementer disabled_incrementer(&observer_callback_count_);
     for (auto& observer : observers_) {
       observer.FullscreenModelEnabledStateChanged(this);
     }
@@ -28,6 +43,7 @@ void FullscreenModel::IncrementDisabledCounter() {
 void FullscreenModel::DecrementDisabledCounter() {
   DCHECK_GT(disabled_counter_, 0U);
   if (!--disabled_counter_) {
+    ScopedIncrementer enabled_incrementer(&observer_callback_count_);
     for (auto& observer : observers_) {
       observer.FullscreenModelEnabledStateChanged(this);
     }
@@ -64,7 +80,7 @@ void FullscreenModel::SetYContentOffset(CGFloat y_content_offset) {
   if (!has_base_offset())
     UpdateBaseOffset();
 
-  if (scrolling_) {
+  if (scrolling_ && !observer_callback_count_) {
     CGFloat delta = base_offset_ - y_content_offset_;
     SetProgress(1.0 + delta / toolbar_height_);
   } else {
@@ -81,6 +97,7 @@ void FullscreenModel::SetScrollViewIsScrolling(bool scrolling) {
     return;
   scrolling_ = scrolling;
   if (!scrolling_) {
+    ScopedIncrementer scroll_ended_incrementer(&observer_callback_count_);
     for (auto& observer : observers_) {
       observer.FullscreenModelScrollEventEnded(this);
     }
@@ -95,9 +112,13 @@ void FullscreenModel::SetScrollViewIsDragging(bool dragging) {
   if (dragging_ == dragging)
     return;
   dragging_ = dragging;
-  // Update the base offset when dragging occurs.
-  if (dragging_)
+  if (dragging_) {
+    ScopedIncrementer scroll_started_incrementer(&observer_callback_count_);
+    for (auto& observer : observers_) {
+      observer.FullscreenModelScrollEventStarted(this);
+    }
     UpdateBaseOffset();
+  }
 }
 
 bool FullscreenModel::IsScrollViewDragging() const {
@@ -110,6 +131,8 @@ void FullscreenModel::SetProgress(CGFloat progress) {
   if (AreCGFloatsEqual(progress_, progress))
     return;
   progress_ = progress;
+
+  ScopedIncrementer progress_incrementer(&observer_callback_count_);
   for (auto& observer : observers_) {
     observer.FullscreenModelProgressUpdated(this);
   }

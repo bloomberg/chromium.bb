@@ -17,6 +17,7 @@ class FullscreenControllerObserver;
 class FullscreenMediator;
 class FullscreenModel;
 class FullscreenWebStateListObserver;
+class WebStateList;
 
 // An object that observes scrolling events in the main content area and
 // calculates how much of the toolbar should be visible as a result.  When the
@@ -33,6 +34,13 @@ class FullscreenController : public KeyedService {
   // remove this ad-hoc broadcaster and drive the animations via the Browser's
   // ChromeBroadcaster.
   ChromeBroadcaster* broadcaster() { return broadcaster_; }
+
+  // The WebStateList for the Browser whose fullscreen state is managed by this
+  // controller.
+  // TODO(crbug.com/790886): Once FullscreenController is a BrowserUserData,
+  // remove this, as the Browser's WebStateList can be used directly rather than
+  // being set.
+  void SetWebStateList(WebStateList* web_state_list);
 
   // Adds and removes FullscreenControllerObservers.
   void AddObserver(FullscreenControllerObserver* observer);
@@ -56,6 +64,9 @@ class FullscreenController : public KeyedService {
 
   // The broadcaster that drives the model.
   __strong ChromeBroadcaster* broadcaster_ = nil;
+  // The WebStateList for the Browser whose fullscreen is managed by this
+  // object.
+  WebStateList* web_state_list_ = nullptr;
   // The model used to calculate fullscreen state.
   std::unique_ptr<FullscreenModel> model_;
   // The bridge used to forward brodcasted UI to |model_|.

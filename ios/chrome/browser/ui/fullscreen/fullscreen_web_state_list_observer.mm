@@ -20,6 +20,7 @@ FullscreenWebStateListObserver::FullscreenWebStateListObserver(
   DCHECK(model_);
   DCHECK(web_state_list_);
   web_state_list_->AddObserver(this);
+  web_state_observer_.SetWebState(web_state_list_->GetActiveWebState());
 }
 
 FullscreenWebStateListObserver::~FullscreenWebStateListObserver() {

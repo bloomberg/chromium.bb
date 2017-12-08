@@ -4,7 +4,13 @@
 
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 
+#include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
@@ -19,6 +25,8 @@
 @interface LegacyToolbarCoordinator () {
   // Coordinator for the tools menu UI.
   ToolsMenuCoordinator* _toolsMenuCoordinator;
+  // The fullscreen updater.
+  std::unique_ptr<FullscreenUIUpdater> _fullscreenUpdater;
 }
 
 @property(nonatomic, strong) id<Toolbar> toolbarController;
@@ -54,7 +62,24 @@
   }
   return self;
 }
+
+- (void)start {
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    _fullscreenUpdater =
+        base::MakeUnique<FullscreenUIUpdater>(self.toolbarController);
+    FullscreenControllerFactory::GetInstance()
+        ->GetForBrowserState(self.tabModel.browserState)
+        ->AddObserver(_fullscreenUpdater.get());
+  }
+}
+
 - (void)stop {
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    FullscreenControllerFactory::GetInstance()
+        ->GetForBrowserState(self.tabModel.browserState)
+        ->RemoveObserver(_fullscreenUpdater.get());
+    _fullscreenUpdater = nullptr;
+  }
   self.toolbarController = nil;
 }
 

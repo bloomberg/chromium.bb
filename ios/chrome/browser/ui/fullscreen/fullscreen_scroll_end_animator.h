@@ -30,6 +30,9 @@
     NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
+// Returns the progress value corresponding with |position|.
+- (CGFloat)progressForAnimatingPosition:(UIViewAnimatingPosition)position;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_SCROLL_END_ANIMATOR_H_
