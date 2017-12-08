@@ -627,122 +627,6 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
 }
 
-#if NC_MODE_INFO
-static void set_mode_info_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
-                            ThreadData *td, int mi_row, int mi_col,
-                            BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx) {
-  const TileInfo *const tile = &tile_data->tile_info;
-  MACROBLOCK *const x = &td->mb;
-  set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
-  update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, 1);
-}
-
-static void set_mode_info_sb(const AV1_COMP *const cpi, ThreadData *td,
-                             TileDataEnc *tile_data, TOKENEXTRA **tp,
-                             int mi_row, int mi_col, BLOCK_SIZE bsize,
-                             PC_TREE *pc_tree) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const int hbs = mi_size_wide[bsize] / 2;
-  const PARTITION_TYPE partition = pc_tree->partitioning;
-  BLOCK_SIZE subsize = get_subsize(bsize, partition);
-#if CONFIG_EXT_PARTITION_TYPES
-  const BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
-  const int quarter_step = mi_size_wide[bsize] / 4;
-#endif
-
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
-
-  switch (partition) {
-    case PARTITION_NONE:
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col, subsize,
-                      &pc_tree->none);
-      break;
-    case PARTITION_VERT:
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col, subsize,
-                      &pc_tree->vertical[0]);
-      if (mi_col + hbs < cm->mi_cols) {
-        set_mode_info_b(cpi, tile_data, td, mi_row, mi_col + hbs, subsize,
-                        &pc_tree->vertical[1]);
-      }
-      break;
-    case PARTITION_HORZ:
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col, subsize,
-                      &pc_tree->horizontal[0]);
-      if (mi_row + hbs < cm->mi_rows) {
-        set_mode_info_b(cpi, tile_data, td, mi_row + hbs, mi_col, subsize,
-                        &pc_tree->horizontal[1]);
-      }
-      break;
-    case PARTITION_SPLIT:
-      set_mode_info_sb(cpi, td, tile_data, tp, mi_row, mi_col, subsize,
-                       pc_tree->split[0]);
-      set_mode_info_sb(cpi, td, tile_data, tp, mi_row, mi_col + hbs, subsize,
-                       pc_tree->split[1]);
-      set_mode_info_sb(cpi, td, tile_data, tp, mi_row + hbs, mi_col, subsize,
-                       pc_tree->split[2]);
-      set_mode_info_sb(cpi, td, tile_data, tp, mi_row + hbs, mi_col + hbs,
-                       subsize, pc_tree->split[3]);
-      break;
-#if CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_EXT_PARTITION_TYPES_AB
-#error NC_MODE_INFO+MOTION_VAR not yet supported for new HORZ/VERT_AB partitions
-#endif
-    case PARTITION_HORZ_A:
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col, bsize2,
-                      &pc_tree->horizontala[0]);
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col + hbs, bsize2,
-                      &pc_tree->horizontala[1]);
-      set_mode_info_b(cpi, tile_data, td, mi_row + hbs, mi_col, subsize,
-                      &pc_tree->horizontala[2]);
-      break;
-    case PARTITION_HORZ_B:
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col, subsize,
-                      &pc_tree->horizontalb[0]);
-      set_mode_info_b(cpi, tile_data, td, mi_row + hbs, mi_col, bsize2,
-                      &pc_tree->horizontalb[1]);
-      set_mode_info_b(cpi, tile_data, td, mi_row + hbs, mi_col + hbs, bsize2,
-                      &pc_tree->horizontalb[2]);
-      break;
-    case PARTITION_VERT_A:
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col, bsize2,
-                      &pc_tree->verticala[0]);
-      set_mode_info_b(cpi, tile_data, td, mi_row + hbs, mi_col, bsize2,
-                      &pc_tree->verticala[1]);
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col + hbs, subsize,
-                      &pc_tree->verticala[2]);
-      break;
-    case PARTITION_VERT_B:
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col, subsize,
-                      &pc_tree->verticalb[0]);
-      set_mode_info_b(cpi, tile_data, td, mi_row, mi_col + hbs, bsize2,
-                      &pc_tree->verticalb[1]);
-      set_mode_info_b(cpi, tile_data, td, mi_row + hbs, mi_col + hbs, bsize2,
-                      &pc_tree->verticalb[2]);
-      break;
-    case PARTITION_HORZ_4:
-      for (int i = 0; i < 4; ++i) {
-        int this_mi_row = mi_row + i * quarter_step;
-        if (i > 0 && this_mi_row >= cm->mi_rows) break;
-
-        set_mode_info_b(cpi, tile_data, td, this_mi_row, mi_col, subsize,
-                        &pc_tree->horizontal4[i]);
-      }
-      break;
-    case PARTITION_VERT_4:
-      for (int i = 0; i < 4; ++i) {
-        int this_mi_col = mi_col + i * quarter_step;
-        if (i > 0 && this_mi_col >= cm->mi_cols) break;
-
-        set_mode_info_b(cpi, tile_data, td, mi_row, this_mi_col, subsize,
-                        &pc_tree->vertical4[i]);
-      }
-      break;
-#endif  // CONFIG_EXT_PARTITION_TYPES
-    default: assert(0 && "Invalid partition type."); break;
-  }
-}
-#endif
-
 void av1_setup_src_planes(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
                           int mi_row, int mi_col) {
   uint8_t *const buffers[3] = { src->y_buffer, src->u_buffer, src->v_buffer };
@@ -3170,10 +3054,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       pc_tree->index != 3) {
     if (bsize == cm->sb_size) {
-#if NC_MODE_INFO
-      set_mode_info_sb(cpi, td, tile_data, tp, mi_row, mi_col, bsize, pc_tree);
-#endif
-
 #if CONFIG_LV_MAP
       x->cb_offset = 0;
 #endif

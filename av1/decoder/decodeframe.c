@@ -574,77 +574,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
-#if NC_MODE_INFO
-static void detoken_and_recon_sb(AV1Decoder *const pbi, MACROBLOCKD *const xd,
-                                 int mi_row, int mi_col, aom_reader *r,
-                                 BLOCK_SIZE bsize) {
-  AV1_COMMON *const cm = &pbi->common;
-  const int hbs = mi_size_wide[bsize] >> 1;
-#if CONFIG_EXT_PARTITION_TYPES
-  BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
-#endif
-  PARTITION_TYPE partition;
-  BLOCK_SIZE subsize;
-  const int has_rows = (mi_row + hbs) < cm->mi_rows;
-  const int has_cols = (mi_col + hbs) < cm->mi_cols;
-
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
-
-  partition = get_partition(cm, mi_row, mi_col, bsize);
-  subsize = subsize_lookup[partition][bsize];
-
-  switch (partition) {
-    case PARTITION_NONE:
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
-      break;
-    case PARTITION_HORZ:
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-      if (has_rows)
-        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, subsize);
-      break;
-    case PARTITION_VERT:
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-      if (has_cols)
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, subsize);
-      break;
-    case PARTITION_SPLIT:
-      detoken_and_recon_sb(pbi, xd, mi_row, mi_col, r, subsize);
-      detoken_and_recon_sb(pbi, xd, mi_row, mi_col + hbs, r, subsize);
-      detoken_and_recon_sb(pbi, xd, mi_row + hbs, mi_col, r, subsize);
-      detoken_and_recon_sb(pbi, xd, mi_row + hbs, mi_col + hbs, r, subsize);
-      break;
-#if CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_EXT_PARTITION_TYPES_AB
-#error NC_MODE_INFO+MOTION_VAR not yet supported for new HORZ/VERT_AB partitions
-#endif
-    case PARTITION_HORZ_A:
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize2);
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, bsize2);
-      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, subsize);
-      break;
-    case PARTITION_HORZ_B:
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, bsize2);
-      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col + hbs, r,
-                                   bsize2);
-      break;
-    case PARTITION_VERT_A:
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize2);
-      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, bsize2);
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, subsize);
-      break;
-    case PARTITION_VERT_B:
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-      decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, bsize2);
-      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col + hbs, r,
-                                   bsize2);
-      break;
-#endif
-    default: assert(0 && "Invalid partition type");
-  }
-}
-#endif
-
 static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                          int mi_row, int mi_col, aom_reader *r,
 #if CONFIG_EXT_PARTITION_TYPES
@@ -657,9 +586,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
                     bsize);
 
-#if !(NC_MODE_INFO)
   decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
-#endif
 }
 
 static PARTITION_TYPE read_partition(MACROBLOCKD *xd, int mi_row, int mi_col,
@@ -2259,10 +2186,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif
           decode_partition(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                            cm->sb_size);
-#if NC_MODE_INFO
-          detoken_and_recon_sb(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
-                               cm->sb_size);
-#endif
 #if CONFIG_LPF_SB
           if (USE_LOOP_FILTER_SUPERBLOCK) {
             // apply deblocking filtering right after each superblock is decoded

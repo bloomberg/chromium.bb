@@ -2133,86 +2133,13 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   }
 }
 
-#if NC_MODE_INFO
-static void write_tokens_sb(AV1_COMP *cpi, const TileInfo *const tile,
-                            aom_writer *w, const TOKENEXTRA **tok,
-                            const TOKENEXTRA *const tok_end, int mi_row,
-                            int mi_col, BLOCK_SIZE bsize) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const int hbs = mi_size_wide[bsize] / 2;
-  PARTITION_TYPE partition;
-  BLOCK_SIZE subsize;
-
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
-
-  partition = get_partition(cm, mi_row, mi_col, bsize);
-  subsize = get_subsize(bsize, partition);
-
-  switch (partition) {
-    case PARTITION_NONE:
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      break;
-    case PARTITION_HORZ:
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      if (mi_row + hbs < cm->mi_rows)
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-      break;
-    case PARTITION_VERT:
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      if (mi_col + hbs < cm->mi_cols)
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-      break;
-    case PARTITION_SPLIT:
-      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, subsize);
-      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs,
-                      subsize);
-      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col,
-                      subsize);
-      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs,
-                      subsize);
-      break;
-#if CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_EXT_PARTITION_TYPES_AB
-#error NC_MODE_INFO+MOTION_VAR not yet supported for new HORZ/VERT_AB partitions
-#endif
-    case PARTITION_HORZ_A:
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-      break;
-    case PARTITION_HORZ_B:
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
-      break;
-    case PARTITION_VERT_A:
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-      break;
-    case PARTITION_VERT_B:
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
-      break;
-#endif  // CONFIG_EXT_PARTITION_TYPES
-    default: assert(0);
-  }
-}
-#endif
-
 static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                           aom_writer *w, const TOKENEXTRA **tok,
                           const TOKENEXTRA *const tok_end, int mi_row,
                           int mi_col) {
   write_mbmi_b(cpi, tile, w, mi_row, mi_col);
 
-#if NC_MODE_INFO
-  (void)tok;
-  (void)tok_end;
-#else
   write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-#endif
 }
 
 static void write_partition(const AV1_COMMON *const cm,
@@ -2483,9 +2410,6 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 
     for (mi_col = mi_col_start; mi_col < mi_col_end; mi_col += cm->mib_size) {
       write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, cm->sb_size);
-#if NC_MODE_INFO
-      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, cm->sb_size);
-#endif
     }
   }
 }
