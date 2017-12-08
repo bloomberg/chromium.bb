@@ -136,11 +136,14 @@ Polymer({
       // The password might have been cleared during the duration of the
       // getActiveModes call.
       this.passwordInvalid_ = !valid && !!this.password_;
+
+      // Select the whole password if user entered an incorrect password.
       // Return focus to the password input if it lost focus while being checked
       // (user pressed confirm button).
-      if (this.passwordInvalid_ &&
-          this.shadowRoot.activeElement != this.$.passwordInput) {
-        this.$.passwordInput.focus();
+      if (this.passwordInvalid_) {
+        this.$.passwordInput.inputElement.select();
+        if (!this.$.passwordInput.focused)
+          this.$.passwordInput.focus();
       }
 
       if (valid) {

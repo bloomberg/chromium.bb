@@ -140,6 +140,7 @@
       'target_name': 'password_prompt_dialog',
       'dependencies': [
         '../compiled_resources2.gyp:route',
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-input/compiled_resources2.gyp:paper-input-extracted',
         '<(EXTERNS_GYP):quick_unlock_private',
         'lock_screen_constants',
       ],
