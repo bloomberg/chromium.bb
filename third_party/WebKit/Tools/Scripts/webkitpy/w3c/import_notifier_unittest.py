@@ -7,6 +7,7 @@ import unittest
 from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import mock_git_commands
+from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.w3c.local_wpt_mock import MockLocalWPT
 from webkitpy.w3c.import_notifier import ImportNotifier, TestFailure
 from webkitpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
@@ -16,6 +17,11 @@ class ImportNotifierTest(unittest.TestCase):
 
     def setUp(self):
         self.host = MockHost()
+        # Mock a virtual test suite at virtual/gpu/external/wpt/foo.
+        self.host.filesystem = MockFileSystem({
+            '/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites':
+            '[{"prefix": "gpu", "base": "external/wpt/foo", "args": ["--foo"]}]'
+        })
         self.git = self.host.git()
         self.local_wpt = MockLocalWPT()
         self.notifier = ImportNotifier(self.host, self.git, self.local_wpt)
@@ -51,25 +57,23 @@ class ImportNotifierTest(unittest.TestCase):
 
     def test_more_failures_in_baseline_fewer_fails(self):
         executive = mock_git_commands({
-            'diff': '''diff --git a/foo-expected.txt b/foo-expected.txt
---- a/foo-expected.txt
-+++ b/foo-expected.txt
--FAIL an old failure
--FAIL new failure 1
-+FAIL new failure 2
-'''
+            'diff': ('diff --git a/foo-expected.txt b/foo-expected.txt\n'
+                     '--- a/foo-expected.txt\n'
+                     '+++ b/foo-expected.txt\n'
+                     '-FAIL an old failure\n'
+                     '-FAIL new failure 1\n'
+                     '+FAIL new failure 2\n')
         })
         self.notifier.git = MockGit(executive=executive)
         self.assertFalse(self.notifier.more_failures_in_baseline('foo-expected.txt'))
 
     def test_more_failures_in_baseline_same_fails(self):
         executive = mock_git_commands({
-            'diff': '''diff --git a/foo-expected.txt b/foo-expected.txt
---- a/foo-expected.txt
-+++ b/foo-expected.txt
--FAIL an old failure
-+FAIL new failure 1
-'''
+            'diff': ('diff --git a/foo-expected.txt b/foo-expected.txt\n'
+                     '--- a/foo-expected.txt\n'
+                     '+++ b/foo-expected.txt\n'
+                     '-FAIL an old failure\n'
+                     '+FAIL a new failure\n')
         })
         self.notifier.git = MockGit(executive=executive)
         self.assertFalse(self.notifier.more_failures_in_baseline('foo-expected.txt'))
@@ -133,6 +137,21 @@ class ImportNotifierTest(unittest.TestCase):
             'Fake subject: https://github.com/w3c/web-platform-tests/commit/SHA1 [affecting this directory]\n'
             'Fake subject: https://github.com/w3c/web-platform-tests/commit/SHA2\n'
         )
+
+    def test_find_owned_directory_non_virtual(self):
+        self.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS',
+            'test@chromium.org'
+        )
+        self.assertEqual(self.notifier.find_owned_directory('external/wpt/foo/bar.html'), 'external/wpt/foo')
+        self.assertEqual(self.notifier.find_owned_directory('external/wpt/foo/bar/baz.html'), 'external/wpt/foo')
+
+    def test_find_owned_directory_virtual(self):
+        self.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS',
+            'test@chromium.org'
+        )
+        self.assertEqual(self.notifier.find_owned_directory('virtual/gpu/external/wpt/foo/bar.html'), 'external/wpt/foo')
 
     def test_test_failure_to_str_baseline_change(self):
         failure = TestFailure(

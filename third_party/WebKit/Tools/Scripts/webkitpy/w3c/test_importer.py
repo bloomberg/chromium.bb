@@ -622,9 +622,7 @@ class TestImporter(object):
             return None
 
     def send_notifications(self, local_wpt):
-        # Check the format of these values.
         issue = self.git_cl.run(['status', '--field=id']).strip()
-        # FIXME(robertma): this does not work! https://crbug.com/792611
         patchset = self.git_cl.run(['status', '--field=patch']).strip()
         # Construct the notifier here so that any errors won't affect the import.
         notifier = ImportNotifier(self.host, self.chromium_git, local_wpt)
