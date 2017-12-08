@@ -261,7 +261,7 @@ void MimeUtil::AddSupportedMediaFormats() {
   const CodecSet ogg_audio_codecs{FLAC, OPUS, VORBIS};
 
 #if !defined(OS_ANDROID)
-  CodecSet ogg_video_codecs{THEORA};
+  CodecSet ogg_video_codecs{THEORA, VP8};
 #else
   CodecSet ogg_video_codecs;
 #endif  // !defined(OS_ANDROID)
@@ -279,32 +279,38 @@ void MimeUtil::AddSupportedMediaFormats() {
   CodecSet webm_codecs(webm_audio_codecs);
   webm_codecs.insert(webm_video_codecs.begin(), webm_video_codecs.end());
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   const CodecSet mp3_codecs{MP3};
+
+  CodecSet mp4_audio_codecs;
+  mp4_audio_codecs.emplace(MP3);
+  mp4_audio_codecs.emplace(FLAC);
+
+  // Only VP9 with valid codec string vp09.xx.xx.xx.xx.xx.xx.xx is supported.
+  // See ParseVp9CodecID for details.
+  CodecSet mp4_video_codecs;
+  mp4_video_codecs.emplace(VP9);
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   const CodecSet aac{MPEG2_AAC, MPEG4_AAC};
+  mp4_audio_codecs.insert(aac.begin(), aac.end());
 
   CodecSet avc_and_aac(aac);
   avc_and_aac.emplace(H264);
 
-  CodecSet mp4_audio_codecs(aac);
-  mp4_audio_codecs.emplace(MP3);
-  mp4_audio_codecs.emplace(FLAC);
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   mp4_audio_codecs.emplace(AC3);
   mp4_audio_codecs.emplace(EAC3);
 #endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 
-  CodecSet mp4_video_codecs;
   mp4_video_codecs.emplace(H264);
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   mp4_video_codecs.emplace(HEVC);
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  // Only VP9 with valid codec string vp09.xx.xx.xx.xx.xx.xx.xx is supported.
-  // See ParseVp9CodecID for details.
-  mp4_video_codecs.emplace(VP9);
+
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
   mp4_video_codecs.emplace(DOLBY_VISION);
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   if (base::FeatureList::IsEnabled(kAv1Decoder))
     mp4_video_codecs.emplace(AV1);
@@ -312,7 +318,6 @@ void MimeUtil::AddSupportedMediaFormats() {
 
   CodecSet mp4_codecs(mp4_audio_codecs);
   mp4_codecs.insert(mp4_video_codecs.begin(), mp4_video_codecs.end());
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
   const CodecSet implicit_codec;
   AddContainerWithCodecs("audio/wav", wav_codecs, false);
@@ -328,15 +333,15 @@ void MimeUtil::AddSupportedMediaFormats() {
   // TODO(ddorwin): Should the application type support Opus?
   AddContainerWithCodecs("application/ogg", ogg_codecs, false);
   AddContainerWithCodecs("audio/flac", implicit_codec, false);
+  AddContainerWithCodecs("audio/mpeg", mp3_codecs, false);  // Allow "mp3".
+  AddContainerWithCodecs("audio/mp3", implicit_codec, false);
+  AddContainerWithCodecs("audio/x-mp3", implicit_codec, false);
+  AddContainerWithCodecs("audio/mp4", mp4_audio_codecs, false);
+  DCHECK(!mp4_video_codecs.empty());
+  AddContainerWithCodecs("video/mp4", mp4_codecs, false);
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  AddContainerWithCodecs("audio/mpeg", mp3_codecs, true);  // Allow "mp3".
-  AddContainerWithCodecs("audio/mp3", implicit_codec, true);
-  AddContainerWithCodecs("audio/x-mp3", implicit_codec, true);
   AddContainerWithCodecs("audio/aac", implicit_codec, true);  // AAC / ADTS.
-  AddContainerWithCodecs("audio/mp4", mp4_audio_codecs, true);
-  DCHECK(!mp4_video_codecs.empty());
-  AddContainerWithCodecs("video/mp4", mp4_codecs, true);
   // These strings are supported for backwards compatibility only and thus only
   // support the codecs needed for compatibility.
   AddContainerWithCodecs("audio/x-m4a", aac, true);
@@ -516,6 +521,19 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
 void MimeUtil::RemoveProprietaryMediaTypesAndCodecs() {
   for (const auto& container : proprietary_media_containers_)
     media_format_map_.erase(container);
+
+  // TODO(chcunningham): Delete this hack (really this whole test-only method).
+  // This is done as short term workaround for LayoutTests to pass. MP4 is no
+  // longer proprietary, but may still contain proprietary codecs (e.g. AVC).
+  // Many  layout tests only check for container support and may break (absent
+  // this  hack) if run on a non-proprietary build. This mess is being fixed in
+  // https://chromium-review.googlesource.com/c/chromium/src/+/807604
+  media_format_map_.erase("video/mp4");
+  media_format_map_.erase("audio/mp4");
+  media_format_map_.erase("audio/mpeg");
+  media_format_map_.erase("audio/mp3");
+  media_format_map_.erase("audio/x-mp3");
+
   allow_proprietary_codecs_ = false;
 }
 
@@ -970,7 +988,6 @@ bool MimeUtil::IsCodecProprietary(Codec codec) const {
     case INVALID_CODEC:
     case AC3:
     case EAC3:
-    case MP3:
     case MPEG2_AAC:
     case MPEG4_AAC:
     case H264:
@@ -978,6 +995,7 @@ bool MimeUtil::IsCodecProprietary(Codec codec) const {
     case DOLBY_VISION:
       return true;
 
+    case MP3:
     case PCM:
     case VORBIS:
     case OPUS:

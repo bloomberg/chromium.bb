@@ -241,6 +241,11 @@ MATCHER(ParsedDTSGreaterThanPTS, "") {
          CONTAINS_STRING(arg, ", which is after the frame's PTS");
 }
 
+MATCHER_P2(CodecUnsupportedInContainer, codec, container, "") {
+  return CONTAINS_STRING(arg, std::string(codec) + "' is not supported for '" +
+                                  std::string(container));
+}
+
 MATCHER_P(FoundStream, stream_type_string, "") {
   return CONTAINS_STRING(
       arg, "found_" + std::string(stream_type_string) + "_stream\":true");

@@ -28,6 +28,8 @@ source_set("cdm") {
   sources = [
     "aes_decryptor.cc",
     "aes_decryptor.h",
+    "cenc_utils.cc",
+    "cenc_utils.h",
     "default_cdm_factory.cc",
     "default_cdm_factory.h",
     "json_web_key.cc",
@@ -48,13 +50,6 @@ source_set("cdm") {
   ]
 
   configs += [ "//media:subcomponent_config" ]
-
-  if (proprietary_codecs) {
-    sources += [
-      "cenc_utils.cc",
-      "cenc_utils.h",
-    ]
-  }
 
   if (enable_library_cdms) {
     deps += [
