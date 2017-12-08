@@ -32,6 +32,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/error_conversion.h"
 #include "ppapi/host/ppapi_host.h"
@@ -684,12 +685,12 @@ void PepperTCPSocketMessageFilter::DoWrite(
   int net_result = net::ERR_FAILED;
   if (socket_) {
     DCHECK_EQ(state_.state(), TCPSocketState::CONNECTED);
+    // TODO(crbug.com/656607): Add proper annotation.
     net_result = socket_->Write(
-        write_buffer_.get(),
-        write_buffer_->BytesRemaining(),
+        write_buffer_.get(), write_buffer_->BytesRemaining(),
         base::Bind(&PepperTCPSocketMessageFilter::OnWriteCompleted,
-                   base::Unretained(this),
-                   context));
+                   base::Unretained(this), context),
+        NO_TRAFFIC_ANNOTATION_BUG_656607);
   } else if (ssl_socket_) {
     DCHECK_EQ(state_.state(), TCPSocketState::SSL_CONNECTED);
     net_result = ssl_socket_->Write(
