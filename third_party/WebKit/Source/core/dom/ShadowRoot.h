@@ -190,11 +190,12 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   Member<ShadowRootRareDataV0> shadow_root_rare_data_v0_;
   TraceWrapperMember<StyleSheetList> style_sheet_list_;
   Member<SlotAssignment> slot_assignment_;
-  unsigned child_shadow_root_count_ : 13;
-  unsigned type_ : 2;
-  unsigned registered_with_parent_shadow_root_ : 1;
-  unsigned descendant_insertion_points_is_valid_ : 1;
-  unsigned delegates_focus_ : 1;
+  unsigned short child_shadow_root_count_;
+  unsigned short type_ : 2;
+  unsigned short registered_with_parent_shadow_root_ : 1;
+  unsigned short descendant_insertion_points_is_valid_ : 1;
+  unsigned short delegates_focus_ : 1;
+  unsigned short unused_ : 11;
 };
 
 inline Element* ShadowRoot::ActiveElement() const {

@@ -61,10 +61,11 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
       TreeScope(*this, document),
       style_sheet_list_(nullptr),
       child_shadow_root_count_(0),
-      type_(static_cast<unsigned>(type)),
+      type_(static_cast<unsigned short>(type)),
       registered_with_parent_shadow_root_(false),
       descendant_insertion_points_is_valid_(false),
-      delegates_focus_(false) {}
+      delegates_focus_(false),
+      unused_(0) {}
 
 ShadowRoot::~ShadowRoot() {}
 
