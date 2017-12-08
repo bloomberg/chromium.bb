@@ -7,6 +7,7 @@
 
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/app/main_controller.h"
+#include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #include "ios/chrome/browser/download/pass_kit_test_util.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -47,10 +48,10 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
         "<a id='bad' href='/bad'>Bad</a>"
         "<a id='good' href='/good'>Good</a>");
   } else if (request.GetURL().path() == "/bad") {
-    result->AddCustomHeader("Content-Type", "application/vnd.apple.pkpass");
+    result->AddCustomHeader("Content-Type", kPkPassMimeType);
     result->set_content("corrupted");
   } else if (request.GetURL().path() == "/good") {
-    result->AddCustomHeader("Content-Type", "application/vnd.apple.pkpass");
+    result->AddCustomHeader("Content-Type", kPkPassMimeType);
     result->set_content(testing::GetTestPass());
   }
 

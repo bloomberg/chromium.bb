@@ -10,6 +10,7 @@
 #import <PassKit/PassKit.h>
 
 #include "base/memory/ptr_util.h"
+#include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper_delegate.h"
 #import "ios/web/public/download/download_task.h"
 #include "net/url_request/url_fetcher_response_writer.h"
@@ -43,7 +44,7 @@ void PassKitTabHelper::CreateForWebState(
 }
 
 void PassKitTabHelper::Download(std::unique_ptr<web::DownloadTask> task) {
-  DCHECK_EQ(task->GetMimeType(), "application/vnd.apple.pkpass");
+  DCHECK_EQ(task->GetMimeType(), kPkPassMimeType);
   web::DownloadTask* task_ptr = task.get();
   // Start may call OnDownloadUpdated immediately, so add the task to the set of
   // unfinished tasks.
