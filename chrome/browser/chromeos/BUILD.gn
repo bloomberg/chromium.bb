@@ -119,6 +119,7 @@ source_set("chromeos") {
     "//components/sync_wifi",
     "//components/toolbar",
     "//components/tracing:startup_tracing",
+    "//components/ukm/content",
     "//components/user_manager",
     "//services/metrics/public/cpp:ukm_builders",
     "//third_party/fontconfig",
