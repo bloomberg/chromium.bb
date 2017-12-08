@@ -1728,7 +1728,7 @@ static void doubleOrNullStringAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 
   // Prepare the value to be set.
   DoubleOrString cppValue;
-  V8DoubleOrNullOrString::ToImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::kNullable, exceptionState);
+  V8DoubleOrString::ToImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::kNullable, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -5443,7 +5443,7 @@ static void voidMethodDoubleOrNullOrDOMStringArgMethod(const v8::FunctionCallbac
   }
 
   DoubleOrString arg;
-  V8DoubleOrNullOrString::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNullable, exceptionState);
+  V8DoubleOrString::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNullable, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -6455,7 +6455,7 @@ static void voidMethodDefaultDoubleOrStringArgsMethod(const v8::FunctionCallback
     defaultLongArg.SetDouble(10);
   }
   if (!info[1]->IsUndefined()) {
-    V8DoubleOrStringOrNull::ToImpl(info.GetIsolate(), info[1], defaultStringArg, UnionTypeConversionMode::kNullable, exceptionState);
+    V8DoubleOrString::ToImpl(info.GetIsolate(), info[1], defaultStringArg, UnionTypeConversionMode::kNullable, exceptionState);
     if (exceptionState.HadException())
       return;
   } else {
