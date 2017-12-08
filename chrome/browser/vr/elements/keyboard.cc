@@ -55,18 +55,6 @@ void Keyboard::NotifyClientFloatAnimated(float value,
   UpdateDelegateVisibility();
 }
 
-void Keyboard::NotifyClientTransformOperationsAnimated(
-    const cc::TransformOperations& operations,
-    int target_property_id,
-    cc::Animation* animation) {
-  UiElement::NotifyClientTransformOperationsAnimated(
-      operations, target_property_id, animation);
-  if (!delegate_)
-    return;
-
-  delegate_->SetTransform(LocalTransform());
-}
-
 void Keyboard::OnHoverEnter(const gfx::PointF& position) {
   if (!delegate_)
     return;
@@ -112,6 +100,13 @@ bool Keyboard::OnBeginFrame(const base::TimeTicks& time,
   // hover effects and showing/hiding of the keyboard will be drawn by the
   // controller's dirtyness, so it's safe to assume not visual changes here.
   return false;
+}
+
+void Keyboard::OnUpdatedWorldSpaceTransform() {
+  if (!delegate_)
+    return;
+
+  delegate_->SetTransform(world_space_transform());
 }
 
 void Keyboard::Render(UiElementRenderer* renderer,
