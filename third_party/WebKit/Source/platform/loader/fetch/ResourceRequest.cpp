@@ -77,9 +77,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       is_external_request_(false),
       cors_preflight_policy_(
           network::mojom::CORSPreflightPolicy::kConsiderPreflight),
-      loading_ipc_type_(RuntimeEnabledFeatures::LoadingWithMojoEnabled()
-                            ? WebURLRequest::LoadingIPCType::kMojo
-                            : WebURLRequest::LoadingIPCType::kChromeIPC),
+      loading_ipc_type_(WebURLRequest::LoadingIPCType::kMojo),
       is_same_document_navigation_(false),
       input_perf_metric_report_policy_(
           InputToLoadPerfMetricReportPolicy::kNoReport),

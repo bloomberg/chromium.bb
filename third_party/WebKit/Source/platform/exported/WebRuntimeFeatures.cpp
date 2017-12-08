@@ -169,7 +169,6 @@ void WebRuntimeFeatures::EnableLazyParseCSS(bool enable) {
 }
 
 void WebRuntimeFeatures::EnableLoadingWithMojo(bool enable) {
-  RuntimeEnabledFeatures::SetLoadingWithMojoEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableMediaCapture(bool enable) {
@@ -209,7 +208,6 @@ void WebRuntimeFeatures::EnableNotifications(bool enable) {
 }
 
 void WebRuntimeFeatures::EnableNotificationsWithMojo(bool enable) {
-  RuntimeEnabledFeatures::SetLoadingWithMojoEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableNavigatorContentUtils(bool enable) {
