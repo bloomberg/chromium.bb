@@ -14,6 +14,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_injection.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
@@ -93,6 +94,7 @@ ScriptContext* ScriptContextSet::GetContextByV8Context(
 
 ScriptContext* ScriptContextSet::GetMainWorldContextForFrame(
     content::RenderFrame* render_frame) {
+  v8::HandleScope handle_scope(blink::MainThreadIsolate());
   return GetContextByV8Context(
       render_frame->GetWebFrame()->MainWorldScriptContext());
 }
