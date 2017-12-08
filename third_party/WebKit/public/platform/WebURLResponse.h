@@ -202,6 +202,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetSecurityStyle(WebSecurityStyle);
 
   BLINK_PLATFORM_EXPORT void SetSecurityDetails(const WebSecurityDetails&);
+  BLINK_PLATFORM_EXPORT WebSecurityDetails SecurityDetailsForTesting();
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT const ResourceResponse& ToResourceResponse() const;
