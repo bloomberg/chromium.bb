@@ -26,6 +26,16 @@ ProviderId ProviderId::CreateFromNativeId(const std::string& native_id) {
   return ProviderId(native_id, NATIVE);
 }
 
+ProviderId ProviderId::FromString(const std::string& str) {
+  if (str.length() == 0)
+    return ProviderId();  // Invalid.
+
+  if (str[0] == '@')
+    return ProviderId::CreateFromNativeId(str.substr(1));
+
+  return ProviderId::CreateFromExtensionId(str);
+}
+
 const extensions::ExtensionId& ProviderId::GetExtensionId() const {
   CHECK_EQ(EXTENSION, type_);
   return internal_id_;
@@ -33,10 +43,6 @@ const extensions::ExtensionId& ProviderId::GetExtensionId() const {
 
 const std::string& ProviderId::GetNativeId() const {
   CHECK_EQ(NATIVE, type_);
-  return internal_id_;
-}
-
-const std::string& ProviderId::GetIdUnsafe() const {
   return internal_id_;
 }
 
@@ -53,13 +59,12 @@ std::string ProviderId::ToString() const {
     case NATIVE:
       return std::string("@") + internal_id_;
     case INVALID:
-      NOTREACHED();
       return "";
   }
 }
 
 bool ProviderId::operator==(const ProviderId& other) const {
-  return type_ == other.GetType() && internal_id_ == other.GetIdUnsafe();
+  return type_ == other.type_ && internal_id_ == other.internal_id_;
 }
 
 bool ProviderId::operator<(const ProviderId& other) const {

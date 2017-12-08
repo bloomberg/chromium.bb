@@ -196,20 +196,20 @@ class FileManagerPrivateIsPiexLoaderEnabledFunction
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateIsPiexLoaderEnabledFunction);
 };
 
-// Implements the chrome.fileManagerPrivate.getProvidingExtensions method.
-class FileManagerPrivateGetProvidingExtensionsFunction
+// Implements the chrome.fileManagerPrivate.getProviders method.
+class FileManagerPrivateGetProvidersFunction
     : public UIThreadExtensionFunction {
  public:
-  FileManagerPrivateGetProvidingExtensionsFunction();
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getProvidingExtensions",
-                             FILEMANAGERPRIVATE_GETPROVIDINGEXTENSIONS)
+  FileManagerPrivateGetProvidersFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getProviders",
+                             FILEMANAGERPRIVATE_GETPROVIDERS)
  protected:
-  ~FileManagerPrivateGetProvidingExtensionsFunction() override {}
+  ~FileManagerPrivateGetProvidersFunction() override {}
 
  private:
   ResponseAction Run() override;
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGetProvidingExtensionsFunction);
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGetProvidersFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.addProvidedFileSystem method.

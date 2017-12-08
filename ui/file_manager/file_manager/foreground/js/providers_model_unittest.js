@@ -11,6 +11,7 @@ loadTimeData.data = {
 // A providing extension which has mounted a file system, and doesn't support
 // multiple mounts.
 var MOUNTED_SINGLE_PROVIDING_EXTENSION = {
+  providerId: 'mounted-single-provider-id',
   extensionId: 'mounted-single-extension-id',
   name: 'mounted-single-extension-name',
   configurable: false,
@@ -22,6 +23,7 @@ var MOUNTED_SINGLE_PROVIDING_EXTENSION = {
 // A providing extension which has not mounted a file system, and doesn't
 // support  multiple mounts.
 var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
+  providerId: 'not-mounted-single-provider-id',
   extensionId: 'not-mounted-single-extension-id',
   name: 'not-mounted-single-extension-name',
   configurable: false,
@@ -32,6 +34,7 @@ var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
 // A providing extension which has not mounted a file system, and doesn't
 // support  multiple mounts.
 var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
+  providerId: 'not-mounted-single-provider-id',
   extensionId: 'not-mounted-single-extension-id',
   name: 'not-mounted-single-extension-name',
   configurable: false,
@@ -43,6 +46,7 @@ var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
 // A providing extension which has mounted a file system and supports mounting
 // more.
 var MOUNTED_MULTIPLE_PROVIDING_EXTENSION = {
+  providerId: 'mounted-multiple-provider-id',
   extensionId: 'mounted-multiple-extension-id',
   name: 'mounted-multiple-extension-name',
   configurable: true,
@@ -52,8 +56,9 @@ var MOUNTED_MULTIPLE_PROVIDING_EXTENSION = {
 };
 
 // A providing extension which has not mounted a file system but it's of "file"
-// source. Such extensions do mounting via file handlers.
+// source. Such providers do mounting via file handlers.
 var NOT_MOUNTED_FILE_PROVIDING_EXTENSION = {
+  providerId: 'file-provider-id',
   extensionId: 'file-extension-id',
   name: 'file-extension-name',
   configurable: false,
@@ -63,9 +68,10 @@ var NOT_MOUNTED_FILE_PROVIDING_EXTENSION = {
 };
 
 // A providing extension which has not mounted a file system but it's of
-// "device" source. Such extensions are not mounted by user, but automatically
+// "device" source. Such providers are not mounted by user, but automatically
 // when the device is attached.
 var NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION = {
+  providerId: 'device-provider-id',
   extensionId: 'device-extension-id',
   name: 'device-extension-name',
   configurable: false,
@@ -76,31 +82,30 @@ var NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION = {
 
 var volumeManager = null;
 
-function addProvidedVolume(volumeManager, extensionId, volumeId) {
+function addProvidedVolume(volumeManager, providerId, volumeId) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
   fileSystem.entries['/'] = new MockDirectoryEntry(fileSystem, '');
 
   var volumeInfo = new VolumeInfoImpl(
-      VolumeManagerCommon.VolumeType.PROVIDED,
-      volumeId,
-      fileSystem,
-      '',           // error
-      '',           // deviceType
-      '',           // devicePath
-      false,        // isReadonly
-      false,        // isReadonlyRemovableDevice
+      VolumeManagerCommon.VolumeType.PROVIDED, volumeId, fileSystem,
+      '',                                         // error
+      '',                                         // deviceType
+      '',                                         // devicePath
+      false,                                      // isReadonly
+      false,                                      // isReadonlyRemovableDevice
       {isCurrentProfile: true, displayName: ''},  // profile
-      '',           // label
-      extensionId,  // extensionId
-      false);       // hasMedia
+      '',                                         // label
+      providerId,                                 // providerId
+      false);                                     // hasMedia
 
   volumeManager.volumeInfoList.push(volumeInfo);
 }
 
 function setUp() {
-  // Create a dummy API for fetching a list of providing extensions.
+  // Create a dummy API for fetching a list of providers.
+  // TODO(mtomasz): Add some native (non-extension) providers.
   chrome.fileManagerPrivate = {
-    getProvidingExtensions: function(callback) {
+    getProviders: function(callback) {
       callback([MOUNTED_SINGLE_PROVIDING_EXTENSION,
                 NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION,
                 MOUNTED_MULTIPLE_PROVIDING_EXTENSION,
@@ -113,49 +118,78 @@ function setUp() {
 
   // Create a dummy volume manager.
   volumeManager = new MockVolumeManagerWrapper();
-  addProvidedVolume(volumeManager,
-      MOUNTED_SINGLE_PROVIDING_EXTENSION.extensionId, 'volume-1');
-  addProvidedVolume(volumeManager,
-      MOUNTED_MULTIPLE_PROVIDING_EXTENSION.extensionId, 'volume-2');
+  addProvidedVolume(
+      volumeManager, MOUNTED_SINGLE_PROVIDING_EXTENSION.providerId, 'volume-1');
+  addProvidedVolume(
+      volumeManager, MOUNTED_MULTIPLE_PROVIDING_EXTENSION.providerId,
+      'volume-2');
 }
 
 function testGetInstalledProviders(callback) {
   var model = new ProvidersModel(volumeManager);
-  reportPromise(model.getInstalledProviders().then(
-      function(extensions) {
-        assertEquals(5, extensions.length);
-        assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.extensionId,
-            extensions[0].extensionId);
-        assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.name,
-            extensions[0].extensionName);
-        assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.configurable,
-            extensions[0].configurable);
-        assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.watchable,
-            extensions[0].watchable);
-        assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.multipleMounts,
-            extensions[0].multipleMounts);
-        assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.source,
-            extensions[0].source);
+  reportPromise(
+      model.getInstalledProviders().then(function(providers) {
+        assertEquals(5, providers.length);
+        assertEquals(
+            MOUNTED_SINGLE_PROVIDING_EXTENSION.providerId,
+            providers[0].providerId);
+        assertEquals(
+            MOUNTED_SINGLE_PROVIDING_EXTENSION.extensionId,
+            providers[0].extensionId);
+        assertEquals(
+            MOUNTED_SINGLE_PROVIDING_EXTENSION.name, providers[0].name);
+        assertEquals(
+            MOUNTED_SINGLE_PROVIDING_EXTENSION.configurable,
+            providers[0].configurable);
+        assertEquals(
+            MOUNTED_SINGLE_PROVIDING_EXTENSION.watchable,
+            providers[0].watchable);
+        assertEquals(
+            MOUNTED_SINGLE_PROVIDING_EXTENSION.multipleMounts,
+            providers[0].multipleMounts);
+        assertEquals(
+            MOUNTED_SINGLE_PROVIDING_EXTENSION.source, providers[0].source);
 
-        assertEquals(NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION.extensionId,
-            extensions[1].extensionId);
-        assertEquals(MOUNTED_MULTIPLE_PROVIDING_EXTENSION.extensionId,
-            extensions[2].extensionId);
-        assertEquals(NOT_MOUNTED_FILE_PROVIDING_EXTENSION.extensionId,
-            extensions[3].extensionId);
-        assertEquals(NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION.extensionId,
-            extensions[4].extensionId);
- }), callback);
+        assertEquals(
+            NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION.providerId,
+            providers[1].providerId);
+        assertEquals(
+            MOUNTED_MULTIPLE_PROVIDING_EXTENSION.providerId,
+            providers[2].providerId);
+        assertEquals(
+            NOT_MOUNTED_FILE_PROVIDING_EXTENSION.providerId,
+            providers[3].providerId);
+        assertEquals(
+            NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION.providerId,
+            providers[4].providerId);
+
+        assertEquals(
+            NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION.extensionId,
+            providers[1].extensionId);
+        assertEquals(
+            MOUNTED_MULTIPLE_PROVIDING_EXTENSION.extensionId,
+            providers[2].extensionId);
+        assertEquals(
+            NOT_MOUNTED_FILE_PROVIDING_EXTENSION.extensionId,
+            providers[3].extensionId);
+        assertEquals(
+            NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION.extensionId,
+            providers[4].extensionId);
+      }),
+      callback);
 }
 
 function testGetMountableProviders(callback) {
   var model = new ProvidersModel(volumeManager);
-  reportPromise(model.getMountableProviders().then(
-      function(extensions) {
-        assertEquals(2, extensions.length);
-        assertEquals(NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION.extensionId,
-            extensions[0].extensionId);
-        assertEquals(MOUNTED_MULTIPLE_PROVIDING_EXTENSION.extensionId,
-            extensions[1].extensionId);
-  }), callback);
+  reportPromise(
+      model.getMountableProviders().then(function(providers) {
+        assertEquals(2, providers.length);
+        assertEquals(
+            NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION.providerId,
+            providers[0].providerId);
+        assertEquals(
+            MOUNTED_MULTIPLE_PROVIDING_EXTENSION.providerId,
+            providers[1].providerId);
+      }),
+      callback);
 }

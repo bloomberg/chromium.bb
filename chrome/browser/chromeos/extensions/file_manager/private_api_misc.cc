@@ -504,57 +504,53 @@ FileManagerPrivateIsPiexLoaderEnabledFunction::Run() {
 #endif
 }
 
-FileManagerPrivateGetProvidingExtensionsFunction::
-    FileManagerPrivateGetProvidingExtensionsFunction()
-    : chrome_details_(this) {
-}
+FileManagerPrivateGetProvidersFunction::FileManagerPrivateGetProvidersFunction()
+    : chrome_details_(this) {}
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateGetProvidingExtensionsFunction::Run() {
+FileManagerPrivateGetProvidersFunction::Run() {
   using chromeos::file_system_provider::Capabilities;
   using chromeos::file_system_provider::ProviderId;
   using chromeos::file_system_provider::ProviderInterface;
   using chromeos::file_system_provider::Service;
   const Service* const service = Service::Get(chrome_details_.GetProfile());
 
-  using api::file_manager_private::ProvidingExtension;
-  std::vector<ProvidingExtension> providing_extensions;
+  using api::file_manager_private::Provider;
+  std::vector<Provider> result;
   for (const auto& pair : service->GetProviders()) {
     const ProviderInterface* const provider = pair.second.get();
     const ProviderId provider_id = provider->GetId();
 
-    // TODO(baileyberro, mtomasz): Add support for NATIVE too.
-    if (provider_id.GetType() != ProviderId::EXTENSION) {
-      continue;
-    }
+    Provider result_item;
+    result_item.provider_id = provider->GetId().ToString();
+    if (provider_id.GetType() == ProviderId::EXTENSION)
+      result_item.extension_id.reset(
+          new std::string(provider_id.GetExtensionId()));
+    result_item.name = provider->GetName();
 
-    ProvidingExtension providing_extension;
-    providing_extension.extension_id = provider_id.GetExtensionId();
-    providing_extension.name = provider->GetName();
-    Capabilities capabilities = provider->GetCapabilities();
-    providing_extension.configurable = capabilities.configurable;
-    providing_extension.watchable = capabilities.watchable;
-    providing_extension.multiple_mounts = capabilities.multiple_mounts;
+    const Capabilities capabilities = provider->GetCapabilities();
+    result_item.configurable = capabilities.configurable;
+    result_item.watchable = capabilities.watchable;
+    result_item.multiple_mounts = capabilities.multiple_mounts;
     switch (capabilities.source) {
       case SOURCE_FILE:
-        providing_extension.source =
+        result_item.source =
             api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_FILE;
         break;
       case SOURCE_DEVICE:
-        providing_extension.source =
+        result_item.source =
             api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_DEVICE;
         break;
       case SOURCE_NETWORK:
-        providing_extension.source =
+        result_item.source =
             api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_NETWORK;
         break;
     }
-    providing_extensions.push_back(std::move(providing_extension));
+    result.push_back(std::move(result_item));
   }
 
   return RespondNow(ArgumentList(
-      api::file_manager_private::GetProvidingExtensions::Results::Create(
-          providing_extensions)));
+      api::file_manager_private::GetProviders::Results::Create(result)));
 }
 
 FileManagerPrivateAddProvidedFileSystemFunction::
@@ -573,8 +569,7 @@ FileManagerPrivateAddProvidedFileSystemFunction::Run() {
   using chromeos::file_system_provider::ProviderId;
   Service* const service = Service::Get(chrome_details_.GetProfile());
 
-  if (!service->RequestMount(
-          ProviderId::CreateFromExtensionId(params->extension_id)))
+  if (!service->RequestMount(ProviderId::FromString(params->provider_id)))
     return RespondNow(Error("Failed to request a new mount."));
 
   return RespondNow(NoArguments());

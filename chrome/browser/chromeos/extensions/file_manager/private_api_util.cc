@@ -212,10 +212,14 @@ void VolumeToVolumeMetadata(
   volume_metadata->configurable = volume.configurable();
   volume_metadata->watchable = volume.watchable();
 
-  // TODO(baileyberro): Refactor extension_id into provider_id here.
   if (volume.type() == VOLUME_TYPE_PROVIDED) {
-    volume_metadata->extension_id.reset(
-        new std::string(volume.provider_id().GetIdUnsafe()));
+    volume_metadata->provider_id.reset(
+        new std::string(volume.provider_id().ToString()));
+    if (volume.provider_id().GetType() ==
+        chromeos::file_system_provider::ProviderId::EXTENSION) {
+      volume_metadata->extension_id.reset(
+          new std::string(volume.provider_id().GetExtensionId()));
+    }
     volume_metadata->file_system_id.reset(
         new std::string(volume.file_system_id()));
   }

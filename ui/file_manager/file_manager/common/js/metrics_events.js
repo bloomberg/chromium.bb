@@ -34,14 +34,17 @@ metrics.Dimension_ = {
 };
 
 /**
- * Enumeration of known FSPs used to qualify "provided" extensions
+ * Enumeration of known FSPs used to qualify "providers"
  * "screens" on analytics. All FSPs NOT present in this list
  * will be reported to analytics as 'provided-unknown'.
  *
  * NOTE: When an unknown provider is encountered, a separate event will be
  * sent to analytics with the id. Consulation of that event will provided
- * an indication when an extension is popular enough to be added to the
+ * an indication when a provider is popular enough to be added to the
  * whitelist.
+ *
+ * These look like extension ids, but are actually provider ids which may
+ * but don't have to be extension ids.
  *
  * @enum {string}
  */
@@ -66,11 +69,11 @@ metrics.FileSystemProviders = {
 /**
  * Returns a new "screen" name for a provided file system type. Returns
  * 'unknown' for unknown providers.
- * @param {string|undefined} extensionId The FSP provider extension ID.
+ * @param {string|undefined} providerId The FSP provider ID.
  * @return {string} Name or 'unknown' if extension is unrecognized.
  */
-metrics.getFileSystemProviderName = function(extensionId) {
-  return metrics.FileSystemProviders[extensionId] || 'unknown';
+metrics.getFileSystemProviderName = function(providerId) {
+  return metrics.FileSystemProviders[providerId] || 'unknown';
 };
 
 /**
