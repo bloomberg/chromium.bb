@@ -67,7 +67,7 @@ void FullscreenModel::SetYContentOffset(CGFloat y_content_offset) {
   if (scrolling_) {
     CGFloat delta = base_offset_ - y_content_offset_;
     SetProgress(1.0 + delta / toolbar_height_);
-  } else if (!locked_) {
+  } else {
     UpdateBaseOffset();
   }
 }
@@ -96,20 +96,12 @@ void FullscreenModel::SetScrollViewIsDragging(bool dragging) {
     return;
   dragging_ = dragging;
   // Update the base offset when dragging occurs.
-  if (dragging_ && !locked_)
+  if (dragging_)
     UpdateBaseOffset();
 }
 
 bool FullscreenModel::IsScrollViewDragging() const {
   return dragging_;
-}
-
-void FullscreenModel::SetBaseOffsetLocked(bool locked) {
-  locked_ = locked;
-}
-
-bool FullscreenModel::IsBaseOffsetLocked() const {
-  return locked_;
 }
 
 void FullscreenModel::SetProgress(CGFloat progress) {

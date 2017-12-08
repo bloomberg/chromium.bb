@@ -67,18 +67,9 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   void SetScrollViewIsScrolling(bool scrolling);
   bool ISScrollViewScrolling() const;
 
-  // Setter for whether the scroll view is being dragged.  Unlocked base offsets
-  // will be reset to all y content offset values received while the user is
-  // not dragging.
+  // Setter for whether the scroll view is being dragged.
   void SetScrollViewIsDragging(bool dragging);
   bool IsScrollViewDragging() const;
-
-  // Setter for whether the base content offset is locked.  If the base offset
-  // is locked, the toolbar's location will be tied with a specific content
-  // offset of the scroll view, rather than being able to be shown mid-way
-  // through the page.
-  void SetBaseOffsetLocked(bool locked);
-  bool IsBaseOffsetLocked() const;
 
  private:
   // Setter for |progress_|.  Notifies observers of the new value if
@@ -113,8 +104,6 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   bool scrolling_ = false;
   // Whether the main content is being dragged.
   bool dragging_ = false;
-  // Whether |base_offset_| is locked.
-  bool locked_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenModel);
 };
