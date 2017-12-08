@@ -152,13 +152,13 @@ TEST(FunctionalTest, WeakPtr) {
   EXPECT_EQ(1, counter);
 }
 
-void MakeClosure(Closure** closure_out) {
-  *closure_out = new Closure(WTF::Bind([] {}));
+void MakeClosure(base::OnceClosure** closure_out) {
+  *closure_out = new base::OnceClosure(WTF::Bind([] {}));
   LEAK_SANITIZER_IGNORE_OBJECT(*closure_out);
 }
 
 TEST(FunctionalTest, ThreadRestriction) {
-  Closure* closure = nullptr;
+  base::OnceClosure* closure = nullptr;
 
   base::Thread thread("testing");
   thread.Start();

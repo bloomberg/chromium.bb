@@ -77,15 +77,15 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
                        TimeDelta delay);
 
   // For same-thread posting. Must be called from the associated WebThread.
-  void PostTask(const WebTraceLocation&, WTF::Closure);
+  void PostTask(const WebTraceLocation&, base::OnceClosure);
 
   // For same-thread cancellable task posting. Returns a TaskHandle object for
   // cancellation.
   WARN_UNUSED_RESULT TaskHandle PostCancellableTask(const WebTraceLocation&,
-                                                    WTF::Closure);
+                                                    base::OnceClosure);
   WARN_UNUSED_RESULT TaskHandle
   PostDelayedCancellableTask(const WebTraceLocation&,
-                             WTF::Closure,
+                             base::OnceClosure,
                              TimeDelta delay);
 
  protected:

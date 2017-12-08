@@ -318,12 +318,12 @@ v8::Local<v8::Object> V8PerIsolateData::FindInstanceInPrototypeChain(
       templ);
 }
 
-void V8PerIsolateData::AddEndOfScopeTask(WTF::Closure task) {
+void V8PerIsolateData::AddEndOfScopeTask(base::OnceClosure task) {
   end_of_scope_tasks_.push_back(std::move(task));
 }
 
 void V8PerIsolateData::RunEndOfScopeTasks() {
-  Vector<WTF::Closure> tasks;
+  Vector<base::OnceClosure> tasks;
   tasks.swap(end_of_scope_tasks_);
   for (auto& task : tasks)
     std::move(task).Run();
