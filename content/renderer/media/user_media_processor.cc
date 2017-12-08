@@ -960,7 +960,8 @@ void UserMediaProcessor::DelayedGetUserMediaRequestFailed(
       return;
     case MEDIA_DEVICE_NO_HARDWARE:
       web_request.RequestFailed(
-          blink::WebUserMediaRequest::Error::kDevicesNotFound);
+          blink::WebUserMediaRequest::Error::kDevicesNotFound,
+          "Requested device not found");
       return;
     case MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED:
       NOTREACHED();
