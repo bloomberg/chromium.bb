@@ -45,7 +45,6 @@ class CORE_EXPORT DocumentModuleScriptFetcher : public ModuleScriptFetcher,
                 const HeapVector<Member<ConsoleMessage>>& error_messages);
 
   Member<ResourceFetcher> fetcher_;
-  bool was_fetched_ = false;
 };
 
 }  // namespace blink

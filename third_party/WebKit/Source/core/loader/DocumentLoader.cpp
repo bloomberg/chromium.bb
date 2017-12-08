@@ -205,7 +205,7 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
       resource = ImageResource::Fetch(params, Fetcher());
       break;
     case Resource::kScript:
-      resource = ScriptResource::Fetch(params, Fetcher());
+      resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
       break;
     case Resource::kCSSStyleSheet:
       resource = CSSStyleSheetResource::Fetch(params, Fetcher());
