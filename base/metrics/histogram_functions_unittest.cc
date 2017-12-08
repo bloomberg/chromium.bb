@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -17,7 +18,7 @@ enum UmaHistogramTestingEnum {
   UMA_HISTOGRAM_TESTING_ENUM_THIRD
 };
 
-TEST(HistogramFunctionsTest, HistogramExactLinear) {
+TEST(HistogramFunctionsTest, ExactLinear) {
   std::string histogram("Testing.UMA.HistogramExactLinear");
   HistogramTester tester;
   UmaHistogramExactLinear(histogram, 10, 100);
@@ -37,7 +38,7 @@ TEST(HistogramFunctionsTest, HistogramExactLinear) {
   tester.ExpectTotalCount(histogram, 5);
 }
 
-TEST(HistogramFunctionsTest, HistogramEnumeration) {
+TEST(HistogramFunctionsTest, Enumeration) {
   std::string histogram("Testing.UMA.HistogramEnumeration");
   HistogramTester tester;
   UmaHistogramEnumeration(histogram, UMA_HISTOGRAM_TESTING_ENUM_FIRST,
@@ -53,7 +54,7 @@ TEST(HistogramFunctionsTest, HistogramEnumeration) {
   tester.ExpectTotalCount(histogram, 2);
 }
 
-TEST(HistogramFunctionsTest, HistogramBoolean) {
+TEST(HistogramFunctionsTest, Boolean) {
   std::string histogram("Testing.UMA.HistogramBoolean");
   HistogramTester tester;
   UmaHistogramBoolean(histogram, true);
@@ -63,7 +64,7 @@ TEST(HistogramFunctionsTest, HistogramBoolean) {
   tester.ExpectTotalCount(histogram, 2);
 }
 
-TEST(HistogramFunctionsTest, HistogramPercentage) {
+TEST(HistogramFunctionsTest, Percentage) {
   std::string histogram("Testing.UMA.HistogramPercentage");
   HistogramTester tester;
   UmaHistogramPercentage(histogram, 50);
@@ -74,7 +75,7 @@ TEST(HistogramFunctionsTest, HistogramPercentage) {
   tester.ExpectTotalCount(histogram, 2);
 }
 
-TEST(HistogramFunctionsTest, HistogramCounts) {
+TEST(HistogramFunctionsTest, Counts) {
   std::string histogram("Testing.UMA.HistogramCount.Custom");
   HistogramTester tester;
   UmaHistogramCustomCounts(histogram, 10, 1, 100, 10);
@@ -89,7 +90,7 @@ TEST(HistogramFunctionsTest, HistogramCounts) {
   tester.ExpectTotalCount(histogram, 5);
 }
 
-TEST(HistogramFunctionsTest, HistogramTimes) {
+TEST(HistogramFunctionsTest, Times) {
   std::string histogram("Testing.UMA.HistogramTimes");
   HistogramTester tester;
   UmaHistogramTimes(histogram, TimeDelta::FromSeconds(1));
@@ -104,6 +105,23 @@ TEST(HistogramFunctionsTest, HistogramTimes) {
   // Check the value by picking any overflow time.
   tester.ExpectTimeBucketCount(histogram, TimeDelta::FromSeconds(11), 2);
   tester.ExpectTotalCount(histogram, 4);
+}
+
+TEST(HistogramFunctionsTest, Sparse_SupportsLargeRange) {
+  std::string histogram("Testing.UMA.HistogramSparse");
+  HistogramTester tester;
+  UmaHistogramSparse(histogram, 0);
+  UmaHistogramSparse(histogram, 123456789);
+  UmaHistogramSparse(histogram, 123456789);
+  EXPECT_THAT(tester.GetAllSamples(histogram),
+              testing::ElementsAre(Bucket(0, 1), Bucket(123456789, 2)));
+}
+
+TEST(HistogramFunctionsTest, Sparse_SupportsNegativeValues) {
+  std::string histogram("Testing.UMA.HistogramSparse");
+  HistogramTester tester;
+  UmaHistogramSparse(histogram, -1);
+  tester.ExpectUniqueSample(histogram, -1, 1);
 }
 
 }  // namespace base.

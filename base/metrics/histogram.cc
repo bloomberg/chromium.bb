@@ -21,7 +21,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -437,8 +437,8 @@ bool Histogram::InspectConstructionArguments(StringPiece name,
   }
 
   if (!check_okay) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Histogram.BadConstructionArguments",
-                                static_cast<Sample>(HashMetricName(name)));
+    UmaHistogramSparse("Histogram.BadConstructionArguments",
+                       static_cast<Sample>(HashMetricName(name)));
   }
 
   return check_okay;

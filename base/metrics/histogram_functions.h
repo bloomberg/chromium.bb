@@ -110,6 +110,35 @@ BASE_EXPORT void UmaHistogramMemoryMB(const std::string& name, int sample);
 // Used to measure common MB-granularity memory stats. Range is up to ~64G.
 BASE_EXPORT void UmaHistogramMemoryLargeMB(const std::string& name, int sample);
 
+// For recording sparse histograms.
+// The |sample| can be a negative or non-negative number.
+//
+// Sparse histograms are well suited for recording counts of exact sample values
+// that are sparsely distributed over a relatively large range, in cases where
+// ultra-fast performance is not critical. For instance, Sqlite.Version.* are
+// sparse because for any given database, there's going to be exactly one
+// version logged.
+//
+// Performance:
+// ------------
+// Sparse histograms are typically more memory-efficient but less time-efficient
+// than other histograms. Essentially, they sparse histograms use a map rather
+// than a vector for their backing storage; they also require lock acquisition
+// to increment a sample, whereas other histogram do not. Hence, each increment
+// operation is a bit slower than for other histograms. But, if the data is
+// sparse, then they use less memory client-side, because they allocate buckets
+// on demand rather than preallocating.
+//
+// Data size:
+// ----------
+// Note that server-side, we still need to load all buckets, across all users,
+// at once. Thus, please avoid exploding such histograms, i.e. uploading many
+// many distinct values to the server (across all users). Concretely, keep the
+// number of distinct values <= 100 ideally, definitely <= 1000. If you have no
+// guarantees on the range of your data, use clamping, e.g.:
+//   UmaHistogramSparse("MyHistogram", ClampToRange(value, 0, 200));
+BASE_EXPORT void UmaHistogramSparse(const std::string& name, int sample);
+
 }  // namespace base
 
 #endif  // BASE_METRICS_HISTOGRAM_FUNCTIONS_H_

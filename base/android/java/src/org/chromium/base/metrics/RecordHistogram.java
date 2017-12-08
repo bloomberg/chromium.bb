@@ -163,11 +163,11 @@ public class RecordHistogram {
     }
 
     /**
-    * Records a sparse histogram. This is the Java equivalent of UMA_HISTOGRAM_SPARSE_SLOWLY.
-    * @param name name of the histogram
-    * @param sample sample to be recorded. All values of |sample| are valid, including negative
-    *        values.
-    */
+     * Records a sparse histogram. This is the Java equivalent of UmaHistogramSparse.
+     * @param name name of the histogram
+     * @param sample sample to be recorded. All values of |sample| are valid, including negative
+     *        values.
+     */
     public static void recordSparseSlowlyHistogram(String name, int sample) {
         if (sDisabledBy != null) return;
         long key = getCachedHistogramKey(name);

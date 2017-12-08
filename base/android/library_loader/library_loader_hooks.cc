@@ -11,6 +11,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "jni/LibraryLoader_jni.h"
 
@@ -79,9 +80,8 @@ void RecordChromiumAndroidLinkerRendererHistogram() {
 
 void RecordLibraryPreloaderRendereHistogram() {
   if (g_library_preloader_renderer_histogram_code_registered) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Android.NativeLibraryPreloader.Result.Renderer",
-        g_library_preloader_renderer_histogram_code);
+    UmaHistogramSparse("Android.NativeLibraryPreloader.Result.Renderer",
+                       g_library_preloader_renderer_histogram_code);
   }
 }
 
@@ -139,9 +139,7 @@ static void JNI_LibraryLoader_RecordLibraryPreloaderBrowserHistogram(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jint status) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "Android.NativeLibraryPreloader.Result.Browser",
-      status);
+  UmaHistogramSparse("Android.NativeLibraryPreloader.Result.Browser", status);
 }
 
 static void JNI_LibraryLoader_RegisterLibraryPreloaderRendererHistogram(
