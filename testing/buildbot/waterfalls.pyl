@@ -326,6 +326,45 @@
     },
   },
   {
+    'name': 'chromium.chromiumos',
+    'machines': {
+      'Linux ChromiumOS Builder': {
+        'additional_compile_targets': [
+          'All',
+        ],
+      },
+      'Linux ChromiumOS Tests (dbg)(1)': {
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_dbg_gtests',
+        },
+      },
+      'chromeos-amd64-generic-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-daisy-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'linux-chromeos-dbg': {
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_dbg_gtests',
+        },
+      },
+      'linux-chromeos-rel': {
+        'additional_compile_targets': [
+          'All',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_rel_gtests',
+          'isolated_scripts': 'linux_chromeos_rel_isolated_scripts',
+        },
+      },
+    },
+  },
+  {
     'name': 'chromium.linux',
     'machines': {
       'Fuchsia ARM64': {
