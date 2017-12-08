@@ -52,6 +52,18 @@ using content::BrowserThread;
 
 namespace component_updater {
 
+namespace {
+// TODO(xiaochu): add metrics for component usage (crbug.com/793052).
+static void LogCustomUninstall(base::Optional<bool> result) {}
+static std::string GenerateId(const std::string& sha2hashstr) {
+  // kIdSize is the count of a pair of hex in the sha2hash array.
+  // In string representation of sha2hash, size is doubled since each hex is
+  // represented by a single char.
+  return crx_file::id_util::GenerateIdFromHex(
+      sha2hashstr.substr(0, crx_file::id_util::kIdSize * 2));
+}
+}  // namespace
+
 using ConfigMap = std::map<std::string, std::map<std::string, std::string>>;
 
 ComponentConfig::ComponentConfig(const std::string& name,
@@ -102,6 +114,11 @@ CrOSComponentInstallerPolicy::OnCustomInstall(
 }
 
 void CrOSComponentInstallerPolicy::OnCustomUninstall() {
+  g_browser_process->platform_part()->UnregisterCompatibleCrosComponentPath(
+      name);
+
+  chromeos::DBusThreadManager::Get()->GetImageLoaderClient()->UnmountComponent(
+      name, base::BindOnce(&LogCustomUninstall));
 }
 
 void CrOSComponentInstallerPolicy::ComponentReady(
@@ -111,7 +128,7 @@ void CrOSComponentInstallerPolicy::ComponentReady(
   std::string min_env_version;
   if (manifest && manifest->GetString("min_env_version", &min_env_version)) {
     if (IsCompatible(env_version, min_env_version)) {
-      g_browser_process->platform_part()->SetCompatibleCrosComponentPath(
+      g_browser_process->platform_part()->RegisterCompatibleCrosComponentPath(
           GetName(), path);
     }
   }
@@ -173,21 +190,18 @@ static void LoadComponentInternal(
     const std::string& name,
     base::OnceCallback<void(const std::string&)> load_callback) {
   DCHECK(g_browser_process->platform_part()->IsCompatibleCrosComponent(name));
-  chromeos::ImageLoaderClient* loader =
-      chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
-  if (loader) {
-    base::FilePath path;
-    path = g_browser_process->platform_part()->GetCompatibleCrosComponentPath(
-        name);
-    // path is empty if no compatible component is available to load.
-    if (!path.empty()) {
-      loader->LoadComponentAtPath(
-          name, path, base::BindOnce(&LoadResult, std::move(load_callback)));
-      return;
-    }
+  const base::FilePath path =
+      g_browser_process->platform_part()->GetCompatibleCrosComponentPath(name);
+  // path is empty if no compatible component is available to load.
+  if (!path.empty()) {
+    chromeos::DBusThreadManager::Get()
+        ->GetImageLoaderClient()
+        ->LoadComponentAtPath(
+            name, path, base::BindOnce(&LoadResult, std::move(load_callback)));
+  } else {
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(load_callback), std::string()));
   }
-  base::PostTask(FROM_HERE,
-                 base::BindOnce(std::move(load_callback), std::string()));
 }
 
 // It calls LoadComponentInternal to load the installed component.
@@ -223,20 +237,19 @@ void CrOSComponent::InstallComponent(
     base::OnceCallback<void(const std::string&)> load_callback) {
   const ConfigMap components = CONFIG_MAP_CONTENT;
   const auto it = components.find(name);
-  if (name.empty() || it == components.end()) {
+  if (it == components.end()) {
     base::PostTask(FROM_HERE,
                    base::BindOnce(std::move(load_callback), std::string()));
     return;
   }
   ComponentConfig config(it->first, it->second.find("env_version")->second,
                          it->second.find("sha2hashstr")->second);
-  RegisterComponent(cus, config,
-                    base::BindOnce(RegisterResult, cus,
-                                   crx_file::id_util::GenerateIdFromHex(
-                                       it->second.find("sha2hashstr")->second)
-                                       .substr(0, 32),
-                                   base::BindOnce(InstallResult, name,
-                                                  std::move(load_callback))));
+  RegisterComponent(
+      cus, config,
+      base::BindOnce(
+          RegisterResult, cus,
+          GenerateId(it->second.find("sha2hashstr")->second),
+          base::BindOnce(InstallResult, name, std::move(load_callback))));
 }
 
 void CrOSComponent::LoadComponent(
@@ -250,6 +263,19 @@ void CrOSComponent::LoadComponent(
     // A compatible component is intalled, load it directly.
     LoadComponentInternal(name, std::move(load_callback));
   }
+}
+
+bool CrOSComponent::UnloadComponent(const std::string& name) {
+  const ConfigMap components = CONFIG_MAP_CONTENT;
+  const auto it = components.find(name);
+  if (it == components.end()) {
+    // Component |name| does not exist.
+    return false;
+  }
+  component_updater::ComponentUpdateService* updater =
+      g_browser_process->component_updater();
+  const std::string id = GenerateId(it->second.find("sha2hashstr")->second);
+  return updater->UnregisterComponent(id);
 }
 
 std::vector<ComponentConfig> CrOSComponent::GetInstalledComponents() {

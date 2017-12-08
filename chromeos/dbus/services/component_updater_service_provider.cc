@@ -33,6 +33,14 @@ void ComponentUpdaterServiceProvider::Start(
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ComponentUpdaterServiceProvider::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  exported_object->ExportMethod(
+      kComponentUpdaterServiceInterface,
+      kComponentUpdaterServiceUnloadComponentMethod,
+      base::Bind(&ComponentUpdaterServiceProvider::UnloadComponent,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ComponentUpdaterServiceProvider::OnExported,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ComponentUpdaterServiceProvider::OnExported(
@@ -79,6 +87,25 @@ void ComponentUpdaterServiceProvider::OnLoadComponent(
         dbus::ErrorResponse::FromMethodCall(method_call, kErrorInternalError,
                                             "Failed to load component");
     response_sender.Run(std::move(error_response));
+  }
+}
+
+void ComponentUpdaterServiceProvider::UnloadComponent(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+  std::string component_name;
+  if (reader.PopString(&component_name)) {
+    if (delegate_->UnloadComponent(component_name)) {
+      response_sender.Run(dbus::Response::FromMethodCall(method_call));
+    } else {
+      response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+          method_call, kErrorInternalError, "Failed to unload component"));
+    }
+  } else {
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, kErrorInvalidArgs,
+        "Missing component name string argument."));
   }
 }
 

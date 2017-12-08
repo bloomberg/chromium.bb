@@ -50,6 +50,10 @@ class CHROMEOS_EXPORT ImageLoaderClient : public DBusClient {
   virtual void RemoveComponent(const std::string& name,
                                DBusMethodCallback<bool> callback) = 0;
 
+  // Unmounts all mount points given component |name|.
+  virtual void UnmountComponent(const std::string& name,
+                                DBusMethodCallback<bool> callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static ImageLoaderClient* Create();

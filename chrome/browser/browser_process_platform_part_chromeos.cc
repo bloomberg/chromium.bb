@@ -193,10 +193,15 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
   system_clock_.reset();
 }
 
-void BrowserProcessPlatformPart::SetCompatibleCrosComponentPath(
+void BrowserProcessPlatformPart::RegisterCompatibleCrosComponentPath(
     const std::string& name,
     const base::FilePath& path) {
   compatible_cros_components_[name] = path;
+}
+
+void BrowserProcessPlatformPart::UnregisterCompatibleCrosComponentPath(
+    const std::string& name) {
+  compatible_cros_components_.erase(name);
 }
 
 bool BrowserProcessPlatformPart::IsCompatibleCrosComponent(
