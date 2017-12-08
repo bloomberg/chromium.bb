@@ -97,6 +97,8 @@ _VERSION_SPECIFIC_FILTER['64'] = [
 _VERSION_SPECIFIC_FILTER['63'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
     'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
+    'ChromeDriverPageLoadTimeoutTest.testHistoryNavigationWithPageLoadTimeout',
+    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
 ]
 
 _OS_SPECIFIC_FILTER = {}
