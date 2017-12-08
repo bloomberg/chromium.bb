@@ -136,4 +136,8 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 }
 #endif
 
+bool ViewsDelegate::ShouldMirrorArrowsInRTL() const {
+  return true;
+}
+
 }  // namespace views
