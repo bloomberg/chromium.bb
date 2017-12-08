@@ -345,17 +345,9 @@ bool BaseSearchProvider::CanSendURL(
   if (IsNTPPage(page_classification))
     return false;
 
-  // Only allow HTTP URLs or HTTPS URLs.  For HTTPS URLs, require that either
-  // the appropriate feature flag is enabled or the URL is the same domain as
-  // the search provider.
-  const bool scheme_allowed =
-      (current_page_url.scheme() == url::kHttpScheme) ||
-      ((current_page_url.scheme() == url::kHttpsScheme) &&
-       (base::FeatureList::IsEnabled(
-            omnibox::kSearchProviderContextAllowHttpsUrls) ||
-        net::registry_controlled_domains::SameDomainOrHost(
-            current_page_url, suggest_url,
-            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)));
+  // Only allow HTTP URLs or HTTPS URLs.
+  const bool scheme_allowed = (current_page_url.scheme() == url::kHttpScheme) ||
+                              (current_page_url.scheme() == url::kHttpsScheme);
   if (!scheme_allowed)
     return false;
 
