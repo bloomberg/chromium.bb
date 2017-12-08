@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_list_observer.h"
+#import "ios/chrome/browser/ui/fullscreen/voice_over_fullscreen_disabler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,6 +21,8 @@ FullscreenController::FullscreenController()
       model_(base::MakeUnique<FullscreenModel>()),
       bridge_(
           [[ChromeBroadcastOberverBridge alloc] initWithObserver:model_.get()]),
+      voice_over_disabler_(
+          [[VoiceOverFullscreenDisabler alloc] initWithController:this]),
       mediator_(base::MakeUnique<FullscreenMediator>(this, model_.get())) {
   DCHECK(broadcaster_);
   [broadcaster_ addObserver:bridge_
@@ -67,6 +70,7 @@ void FullscreenController::DecrementDisabledCounter() {
 
 void FullscreenController::Shutdown() {
   mediator_->Disconnect();
+  [voice_over_disabler_ disconnect];
   if (web_state_list_observer_)
     web_state_list_observer_->Disconnect();
   [broadcaster_ removeObserver:bridge_
