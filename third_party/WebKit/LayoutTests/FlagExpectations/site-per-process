@@ -1,6 +1,9 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/793127: Crash related to frame consolidation CL.
+crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
+
 # https://crbug.com/789781: Document blocking should skip these cases.
 crbug.com/789781 http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
 crbug.com/789781 http/tests/xmlhttprequest/origin-whitelisting-removal.html [ Failure ]
