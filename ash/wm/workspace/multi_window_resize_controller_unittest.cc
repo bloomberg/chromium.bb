@@ -370,6 +370,8 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
   w2_state->OnWMEvent(&snap_right);
   EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED, w2_state->GetStateType());
+  EXPECT_EQ(0.5f, w1_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, w2_state->snapped_width_ratio());
 
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(w1->bounds().CenterPoint());
@@ -399,6 +401,8 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   EXPECT_EQ(gfx::Rect(0, 0, 300, 252), w1->bounds());
   EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED, w2_state->GetStateType());
   EXPECT_EQ(gfx::Rect(300, 0, 100, 252), w2->bounds());
+  EXPECT_EQ(0.75f, w1_state->snapped_width_ratio());
+  EXPECT_EQ(0.25f, w2_state->snapped_width_ratio());
 }
 
 }  // namespace ash
