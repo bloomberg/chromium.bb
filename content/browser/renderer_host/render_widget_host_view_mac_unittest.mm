@@ -2226,7 +2226,8 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
 
 // Ensure RenderWidgetHostViewMac claims hotkeys when AppKit spams the UI with
 // -performKeyEquivalent:, but only when the window is key.
-TEST_F(RenderWidgetHostViewMacTest, ForwardKeyEquivalentsOnlyIfKey) {
+// Flaky: https://crbug.com/792907
+TEST_F(RenderWidgetHostViewMacTest, DISABLED_ForwardKeyEquivalentsOnlyIfKey) {
   MockRenderWidgetHostDelegate delegate;
   TestBrowserContext browser_context;
 
