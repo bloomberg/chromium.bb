@@ -340,6 +340,9 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   (void)blk_col;
   aom_write_bin(w, eob == 0,
                 ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
+  if (plane == 0 && eob == 0) {
+    assert(tx_type == DCT_DCT);
+  }
   if (eob == 0) return;
 
   av1_txb_init_levels(tcoeff, width, height, levels);
@@ -2575,7 +2578,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   av1_merge_rd_stats(rd_stats, &best_rd_stats);
 
-  if (best_eob == 0 && is_inter_block(mbmi)) best_tx_type = DCT_DCT;
+  if (best_eob == 0) best_tx_type = DCT_DCT;
 
   if (plane == 0)
     mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = best_tx_type;

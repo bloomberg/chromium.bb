@@ -71,19 +71,19 @@ int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
                             int bit_depth, int *val_count);
 #endif  // CONFIG_HIGHBITDEPTH
 
-void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+void av1_dist_block(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                     BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
                     TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
                     OUTPUT_STATUS output_status);
 
 #if CONFIG_DIST_8X8
-int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
+int64_t av1_dist_8x8(const struct AV1_COMP *const cpi, const MACROBLOCK *x,
                      const uint8_t *src, int src_stride, const uint8_t *dst,
                      int dst_stride, const BLOCK_SIZE tx_bsize, int bsw,
                      int bsh, int visible_w, int visible_h, int qindex);
 #endif
 
-int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
+int av1_cost_coeffs(const struct AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                     int blk_row, int blk_col, int block, TX_SIZE tx_size,
                     const SCAN_ORDER *scan_order, const ENTROPY_CONTEXT *a,
                     const ENTROPY_CONTEXT *l, int use_fast_coef_costing);
@@ -92,11 +92,11 @@ void av1_rd_pick_intra_mode_sb(const struct AV1_COMP *cpi, struct macroblock *x,
                                struct RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                PICK_MODE_CONTEXT *ctx, int64_t best_rd);
 
-unsigned int av1_get_sby_perpixel_variance(const AV1_COMP *cpi,
+unsigned int av1_get_sby_perpixel_variance(const struct AV1_COMP *cpi,
                                            const struct buf_2d *ref,
                                            BLOCK_SIZE bs);
 #if CONFIG_HIGHBITDEPTH
-unsigned int av1_high_get_sby_perpixel_variance(const AV1_COMP *cpi,
+unsigned int av1_high_get_sby_perpixel_variance(const struct AV1_COMP *cpi,
                                                 const struct buf_2d *ref,
                                                 BLOCK_SIZE bs, int bd);
 #endif

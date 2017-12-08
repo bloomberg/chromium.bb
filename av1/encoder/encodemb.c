@@ -37,6 +37,7 @@
 #include "av1/common/daala_inv_txfm.h"
 #endif
 #include "av1/encoder/rd.h"
+#include "av1/encoder/rdopt.h"
 
 #if CONFIG_CFL
 #include "av1/common/cfl.h"
@@ -661,6 +662,19 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                                 pd->dst.stride, p->eobs[block],
                                 cm->reduced_tx_set_used);
   }
+
+#if CONFIG_TXK_SEL
+  if (plane == 0 && p->eobs[block] == 0) {
+#if DISABLE_TRELLISQ_SEARCH
+    xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
+        DCT_DCT;
+#else
+    assert(xd->mi[0]->mbmi.txk_type[blk_row << MAX_MIB_SIZE_LOG2 + blk_col] ==
+           DCT_DCT);
+#endif
+  }
+#endif  // CONFIG_TXK_SEL
+
 #if CONFIG_MISMATCH_DEBUG
   if (dry_run == OUTPUT_ENABLED) {
     int pixel_c, pixel_r;
@@ -934,6 +948,18 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                     AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l, CONFIG_LV_MAP);
+
+#if CONFIG_TXK_SEL
+    if (plane == 0 && p->eobs[block] == 0) {
+#if DISABLE_TRELLISQ_SEARCH
+      xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
+          DCT_DCT;
+#else
+      assert(xd->mi[0]->mbmi.txk_type[blk_row << MAX_MIB_SIZE_LOG2 + blk_col] ==
+             DCT_DCT);
+#endif
+    }
+#endif  // CONFIG_TXK_SEL
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_B);
