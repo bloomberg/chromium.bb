@@ -119,7 +119,7 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 
 - (void)willStartSignIn:(ChromeSigninViewController*)controller {
   DCHECK_EQ(self, controller);
-  controller.shouldClearData = SHOULD_CLEAR_DATA_CLEAR_DATA;
+  controller.shouldClearData = SHOULD_CLEAR_DATA_MERGE_DATA;
   [_firstRunConfig setSignInAttempted:YES];
 }
 
