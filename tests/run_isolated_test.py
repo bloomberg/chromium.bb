@@ -114,8 +114,12 @@ class RunIsolatedTestBase(auto_stub.TestCase):
   def setUp(self):
     super(RunIsolatedTestBase, self).setUp()
     os.environ.pop('LUCI_CONTEXT', None)
+    self._previous_dir = os.getcwd()
     self.tempdir = tempfile.mkdtemp(prefix=u'run_isolated_test')
     logging.debug(self.tempdir)
+    cwd = os.path.join(self.tempdir, 'cwd')
+    os.mkdir(cwd)
+    os.chdir(cwd)
     self.mock(run_isolated, 'make_temp_dir', self.fake_make_temp_dir)
     self.mock(run_isolated.auth, 'ensure_logged_in', lambda _: None)
     self.mock(
@@ -127,6 +131,7 @@ class RunIsolatedTestBase(auto_stub.TestCase):
   def tearDown(self):
     # Remove mocks.
     super(RunIsolatedTestBase, self).tearDown()
+    os.chdir(self._previous_dir)
     file_path.rmtree(self.tempdir)
     if self._cipd_server:
       self._cipd_server.close()
@@ -136,11 +141,6 @@ class RunIsolatedTestBase(auto_stub.TestCase):
     if not self._cipd_server:
       self._cipd_server = cipdserver_mock.MockCipdServer()
     return self._cipd_server
-
-  @property
-  def run_test_temp_dir(self):
-    """Where to map all files in run_isolated.run_tha_test."""
-    return os.path.join(self.tempdir, run_isolated.ISOLATED_RUN_DIR)
 
   def fake_make_temp_dir(self, prefix, _root_dir):
     """Predictably returns directory for run_tha_test (one per test case)."""
@@ -153,12 +153,16 @@ class RunIsolatedTestBase(auto_stub.TestCase):
     os.makedirs(temp_dir)
     return temp_dir
 
-  def temp_join(self, *args):
-    """Shortcut for joining path with self.run_test_temp_dir."""
-    return os.path.join(self.run_test_temp_dir, *args)
+  def ir_dir(self, *args):
+    """Shortcut for joining path with ISOLATED_RUN_DIR.
+
+    Where to map all files in run_isolated.run_tha_test().
+    """
+    return os.path.join(self.tempdir, run_isolated.ISOLATED_RUN_DIR, *args)
 
 
 class RunIsolatedTest(RunIsolatedTestBase):
+  # Mocked Popen so no subprocess is started.
   def setUp(self):
     super(RunIsolatedTest, self).setUp()
     # list of func(args, **kwargs) -> retcode
@@ -173,7 +177,6 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # pylint: disable=no-self-argument
     class Popen(object):
       def __init__(self2, args, **kwargs):
-        kwargs.pop('cwd', None)
         if not self.capture_popen_env:
           kwargs.pop('env', None)
         if self.capture_luci_ctx:
@@ -215,15 +218,18 @@ class RunIsolatedTest(RunIsolatedTestBase):
     cmd = [
         '--no-log',
         '--isolated', isolated_hash,
-        '--cache', self.tempdir,
-        '--named-cache-root', os.path.join(self.tempdir, 'c'),
+        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
+        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
         '--isolate-server', 'https://localhost',
         '--root-dir', self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
     self.assertEqual(
-        [([self.temp_join(u'foo.exe'), u'cmd with space'], {'detached': True})],
+        [
+          ([self.ir_dir(u'foo.exe'), u'cmd with space'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def test_main_args(self):
@@ -238,9 +244,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--use-symlinks',
         '--no-log',
         '--isolated', isolated_hash,
-        '--cache', self.tempdir,
+        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
         '--isolate-server', 'https://localhost',
-        '--named-cache-root', os.path.join(self.tempdir, 'c'),
+        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
         '--root-dir', self.tempdir,
         '--',
         '--extraargs',
@@ -250,9 +256,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(0, ret)
     self.assertEqual(
         [
-          ([self.temp_join(u'foo.exe'), u'cmd w/ space', '--extraargs', 'bar'],
-            {'detached': True}),
-          ],
+          ([self.ir_dir(u'foo.exe'), u'cmd w/ space', '--extraargs', 'bar'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def _run_tha_test(self, isolated_hash=None, files=None, command=None):
@@ -266,6 +272,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     data = run_isolated.TaskData(
         command=command or [],
+        relative_cwd=None,
         extra_args=[],
         isolated_hash=isolated_hash,
         storage=StorageFake(files),
@@ -297,9 +304,11 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'make_tree_deleteable',
         ],
         make_tree_call)
-    self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
-        [([self.temp_join(u'invalid'), u'command'], {'detached': True})],
+        [
+          ([self.ir_dir(u'invalid'), u'command'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def test_run_tha_test_naked_read_only_0(self):
@@ -317,9 +326,11 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'make_tree_deleteable',
         ],
         make_tree_call)
-    self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
-        [([self.temp_join(u'invalid'), u'command'], {'detached': True})],
+        [
+          ([self.ir_dir(u'invalid'), u'command'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def test_run_tha_test_naked_read_only_1(self):
@@ -337,9 +348,12 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'make_tree_deleteable', 'make_tree_deleteable',
         ],
         make_tree_call)
-    self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
-        [([self.temp_join(u'invalid'), u'command'], {'detached': True})],
+        [
+          (
+            [self.ir_dir(u'invalid'), u'command'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def test_run_tha_test_naked_read_only_2(self):
@@ -357,9 +371,11 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'make_tree_deleteable',
         ],
         make_tree_call)
-    self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
-        [([self.temp_join(u'invalid'), u'command'], {'detached': True})],
+        [
+          ([self.ir_dir(u'invalid'), u'command'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def mock_popen_with_oserr(self):
@@ -382,24 +398,28 @@ class RunIsolatedTest(RunIsolatedTestBase):
     cmd = [
         '--no-log',
         '--isolated', isolated_hash,
-        '--cache', self.tempdir,
+        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
         '--isolate-server', 'https://localhost',
-        '--named-cache-root', os.path.join(self.tempdir, 'c'),
+        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
         '--root-dir', self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(1, ret)
     self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
-        [([self.temp_join(u'invalid'), u'command'], {'detached': True})],
+        [
+          (
+            [self.ir_dir(u'invalid'), u'command'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def test_main_naked_without_isolated(self):
     self.mock_popen_with_oserr()
     cmd = [
       '--no-log',
-      '--cache', self.tempdir,
-      '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
+      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
       '--raw-cmd',
       '--',
       '/bin/echo',
@@ -408,9 +428,12 @@ class RunIsolatedTest(RunIsolatedTestBase):
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(1, ret)
-    self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
-        [([u'/bin/echo', u'hello', u'world'], {'detached': True})],
+        [
+          (
+            [u'/bin/echo', u'hello', u'world'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def test_main_naked_with_account_switch(self):
@@ -418,8 +441,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.mock_popen_with_oserr()
     cmd = [
       '--no-log',
-      '--cache', self.tempdir,
-      '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
+      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
       '--switch-to-account', 'task',
       '--raw-cmd',
       '--',
@@ -445,8 +468,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.mock_popen_with_oserr()
     cmd = [
       '--no-log',
-      '--cache', self.tempdir,
-      '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
+      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
       '--switch-to-account', 'task',
       '--raw-cmd',
       '--',
@@ -472,10 +495,10 @@ class RunIsolatedTest(RunIsolatedTestBase):
     try:
       cmd = [
         '--no-log',
-        '--cache', self.tempdir,
+        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
         '--root-dir', workdir,
         '--leak-temp-dir',
-        '--named-cache-root', os.path.join(self.tempdir, 'c'),
+        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
         '--raw-cmd',
         '--',
         '/bin/echo',
@@ -521,14 +544,14 @@ class RunIsolatedTest(RunIsolatedTestBase):
     cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
     cmd = [
       '--no-log',
-      '--cache', os.path.join(self.tempdir, 'cache'),
+      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
       '--cipd-client-version', 'git:wowza',
       '--cipd-package', 'bin:infra/tools/echo/${platform}:latest',
       '--cipd-package', '.:infra/data/x:latest',
       '--cipd-package', '.:infra/data/y:canary',
       '--cipd-server', self.cipd_server.url,
       '--cipd-cache', cipd_cache,
-      '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
       '--raw-cmd',
       '--',
       'bin/echo${EXECUTABLE_SUFFIX}',
@@ -568,19 +591,20 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertTrue(echo_cmd[0].endswith(
         os.path.sep + 'bin' + os.path.sep + 'echo' + cipd.EXECUTABLE_SUFFIX),
         echo_cmd[0])
-    self.assertEqual(echo_cmd[1:], ['hello', 'world'])
+    self.assertEqual(echo_cmd[1:], [u'hello', u'world'])
 
   def test_main_naked_with_cipd_client_no_packages(self):
     cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
     cmd = [
       '--no-log',
-      '--cache', os.path.join(self.tempdir, 'cache'),
+      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
       '--cipd-enabled',
       '--cipd-client-version', 'git:wowza',
       '--cipd-server', self.cipd_server.url,
       '--cipd-cache', cipd_cache,
-      '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
       '--raw-cmd',
+      '--relative-cwd', 'a',
       '--',
       'bin/echo${EXECUTABLE_SUFFIX}',
       'hello',
@@ -600,10 +624,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertTrue(fs.isfile(client_binary_link))
 
     # 'cipd ensure' was NOT called (only 'echo hello world' was).
-    self.assertEqual(1, len(self.popen_calls))
-    cmd, kwargs = self.popen_calls[0]
-    env = kwargs['env']
-    self.assertEqual(cmd[1:], ['hello', 'world'])
+    env = self.popen_calls[0][1].pop('env')
+    self.assertEqual(
+        [
+          ([self.ir_dir(u'a', 'bin', 'echo'), u'hello', u'world'],
+            {'cwd': self.ir_dir('a'), 'detached': True}),
+        ],
+        self.popen_calls)
 
     # Directory with cipd client is in front of PATH.
     path = env['PATH'].split(os.pathsep)
@@ -612,12 +639,32 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # CIPD_CACHE_DIR is set.
     self.assertEqual(os.path.join(cipd_cache, 'cache'), env['CIPD_CACHE_DIR'])
 
+  def test_main_relative_cwd_no_cmd(self):
+    cmd = [
+      '--relative-cwd', 'a',
+    ]
+    with self.assertRaises(SystemExit):
+      run_isolated.main(cmd)
+
+  def test_main_bad_relative_cwd(self):
+    cmd = [
+      '--raw-cmd',
+      '--relative-cwd', 'a/../../b',
+      '--',
+      'bin/echo${EXECUTABLE_SUFFIX}',
+      'hello',
+      'world',
+    ]
+    with self.assertRaises(SystemExit):
+      run_isolated.main(cmd)
+
   def test_main_naked_with_caches(self):
+    nc = os.path.join(self.tempdir, 'named_cache')
     cmd = [
       '--no-log',
       '--leak-temp-dir',
-      '--cache', os.path.join(self.tempdir, 'cache'),
-      '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
+      '--named-cache-root', nc,
       '--named-cache', 'cache_foo', 'foo',
       '--named-cache', 'cache_bar', 'bar',
       '--raw-cmd',
@@ -630,12 +677,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(0, ret)
 
     for cache_name in ('cache_foo', 'cache_bar'):
-      named_path = os.path.join(self.tempdir, 'c', 'named', cache_name)
+      named_path = os.path.join(nc, 'named', cache_name)
       self.assertTrue(os.path.exists(named_path))
-      self.assertEqual(
-          os.path.join(self.tempdir, 'c'),
-          os.path.dirname(os.readlink(named_path)),
-      )
+      self.assertEqual(nc, os.path.dirname(os.readlink(named_path)))
 
   def test_modified_cwd(self):
     isolated = json_dumps({
@@ -645,9 +689,12 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     _ = self._run_tha_test(isolated_hash, files)
-    self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
-        [([self.temp_join(u'out', u'some.exe'), 'arg'], {'detached': True})],
+        [
+          (
+            [self.ir_dir(u'out', u'some.exe'), 'arg'],
+            {'cwd': self.ir_dir('some'), 'detached': True}),
+        ],
         self.popen_calls)
 
   def test_python_cmd(self):
@@ -658,19 +705,22 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     _ = self._run_tha_test(isolated_hash, files)
-    self.assertEqual(1, len(self.popen_calls))
     # Injects sys.executable.
     self.assertEqual(
         [
-          ([sys.executable, os.path.join(u'..', 'out', 'cmd.py'), u'arg'],
-            {'detached': True}),
+          (
+            [sys.executable, os.path.join(u'..', 'out', 'cmd.py'), u'arg'],
+            {'cwd': self.ir_dir('some'), 'detached': True}),
         ],
         self.popen_calls)
 
   def test_run_tha_test_non_isolated(self):
     _ = self._run_tha_test(command=['/bin/echo', 'hello', 'world'])
     self.assertEqual(
-        [([u'/bin/echo', u'hello', u'world'], {'detached': True})],
+        [
+          ([u'/bin/echo', u'hello', u'world'],
+            {'cwd': self.ir_dir(), 'detached': True}),
+        ],
         self.popen_calls)
 
   def test_clean_caches(self):
@@ -678,12 +728,12 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # one item from each is removed.
     fake_time = 1
     fake_free_space = [102400]
-    np = self.temp_join('named_cache')
-    ip = self.temp_join('isolated_cache')
+    np = os.path.join(self.tempdir, 'named_cache')
+    ip = os.path.join(self.tempdir, 'isolated_cache')
     args = [
       '--named-cache-root', np, '--cache', ip, '--clean',
       '--min-free-space', '10240',
-      '--log-file', self.temp_join('run_isolated.log'),
+      '--log-file', self.ir_dir('run_isolated.log'),
     ]
     self.mock(file_path, 'get_free_space', lambda _: fake_free_space[0])
     parser, options, _ = run_isolated.parse_args(args)
@@ -769,6 +819,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
 
 class RunIsolatedTestRun(RunIsolatedTestBase):
+  # Runs the actual command requested.
   def test_output(self):
     # Starts a full isolate server mock and have run_tha_test() uploads results
     # back after the task completed.
@@ -801,6 +852,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       self.mock(sys, 'stdout', StringIO.StringIO())
       data = run_isolated.TaskData(
           command=[],
+          relative_cwd=None,
           extra_args=[],
           isolated_hash=isolated_hash,
           storage=store,
@@ -854,9 +906,9 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       server.close()
 
 
-# Like RunIsolatedTestRun, but ensures that specific output files
-# (as opposed to anything in $(ISOLATED_OUTDIR)) are returned.
 class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
+  # Like RunIsolatedTestRun, but ensures that specific output files
+  # (as opposed to anything in $(ISOLATED_OUTDIR)) are returned.
   def _run_test(self, isolated, command, extra_args):
     # Starts a full isolate server mock and have run_tha_test() uploads results
     # back after the task completed.
@@ -893,6 +945,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       self.mock(sys, 'stdout', StringIO.StringIO())
       data = run_isolated.TaskData(
           command=command,
+          relative_cwd=None,
           extra_args=extra_args,
           isolated_hash=isolated_hash,
           storage=store,
@@ -991,7 +1044,6 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     # pylint: disable=no-self-argument
     class Popen(object):
       def __init__(self2, args, **kwargs):
-        kwargs.pop('cwd', None)
         kwargs.pop('env', None)
         self.popen_calls.append((args, kwargs))
         # Assume ${ISOLATED_OUTDIR} is the last one for testing purpose.
@@ -1014,7 +1066,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     # archived back on termination.
     self.mock(tools, 'disable_buffering', lambda: None)
     sub_cmd = [
-      self.temp_join(u'foo.exe'), u'cmd with space',
+      self.ir_dir(u'foo.exe'), u'cmd with space',
       '${ISOLATED_OUTDIR}/out.txt',
     ]
     isolated_in_json = json_dumps({'command': sub_cmd})
@@ -1027,9 +1079,9 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     cmd = [
         '--no-log',
         '--isolated', isolated_in_hash,
-        '--cache', self.tempdir,
+        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
         '--isolate-server', 'https://localhost:1',
-        '--named-cache-root', os.path.join(self.tempdir, 'c'),
+        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
         '--json', out,
         '--root-dir', self.tempdir,
     ]
@@ -1038,7 +1090,9 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     # Replace ${ISOLATED_OUTDIR} with the temporary directory.
     sub_cmd[2] = self.popen_calls[0][0][2]
     self.assertNotIn('ISOLATED_OUTDIR', sub_cmd[2])
-    self.assertEqual([(sub_cmd, {'detached': True})], self.popen_calls)
+    self.assertEqual(
+        [(sub_cmd, {'cwd': self.ir_dir(), 'detached': True})],
+        self.popen_calls)
     isolated_out = {
       'algo': 'sha-1',
       'files': {

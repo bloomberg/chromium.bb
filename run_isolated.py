@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.10.3'
+__version__ = '0.10.4'
 
 import argparse
 import base64
@@ -147,6 +147,8 @@ TaskData = collections.namedtuple(
       # List of strings; the command line to use, independent of what was
       # specified in the isolated file.
       'command',
+      # Relative directory to start command into.
+      'relative_cwd',
       # List of strings; the arguments to add to the command specified in the
       # isolated file.
       'extra_args',
@@ -626,7 +628,7 @@ def map_and_run(data, constant_run_path):
     run_dir = os.path.join(data.root_dir, ISOLATED_RUN_DIR)
     if os.path.isdir(run_dir):
       file_path.rmtree(run_dir)
-    os.mkdir(run_dir)
+    os.mkdir(run_dir, 0700)
   else:
     run_dir = make_temp_dir(ISOLATED_RUN_DIR, data.root_dir)
   # storage should be normally set but don't crash if it is not. This can happen
@@ -635,7 +637,8 @@ def map_and_run(data, constant_run_path):
       ISOLATED_OUT_DIR, data.root_dir) if data.storage else None
   tmp_dir = make_temp_dir(ISOLATED_TMP_DIR, data.root_dir)
   cwd = run_dir
-
+  if data.relative_cwd:
+    cwd = os.path.normpath(os.path.join(cwd, data.relative_cwd))
   command = data.command
   try:
     with data.install_packages_fn(run_dir) as cipd_info:
@@ -667,6 +670,17 @@ def map_and_run(data, constant_run_path):
             '<Please secify a command when triggering your Swarming task>\n')
         result['exit_code'] = 1
         return result
+
+      if not cwd.startswith(run_dir):
+        # Handle this as a task failure, not an internal failure. This is a
+        # 'last chance' way to gate against directory escape.
+        sys.stderr.write('<Relative CWD is outside of run directory!>\n')
+        result['exit_code'] = 1
+        return result
+
+      if not os.path.isdir(cwd):
+        # Accepts relative_cwd that does not exist.
+        os.makedirs(cwd, 0700)
 
       # If we have an explicit list of files to return, make sure their
       # directories exist now.
@@ -1023,6 +1037,10 @@ def create_option_parser():
       help='Ignore the isolated command, use the one supplied at the command '
            'line')
   parser.add_option(
+      '--relative-cwd',
+      help='Ignore the isolated \'relative_cwd\' and use this one instead; '
+           'requires --raw-cmd')
+  parser.add_option(
       '--env', default=[], action='append',
       help='Environment variables to set for the child process')
   parser.add_option(
@@ -1224,11 +1242,19 @@ def main(args):
   command = []
   if options.raw_cmd:
     command = args
+    if options.relative_cwd:
+      a = os.path.normpath(os.path.abspath(options.relative_cwd))
+      if not a.startswith(os.getcwd()):
+        parser.error(
+            '--relative-cwd must not try to escape the working directory')
   else:
+    if options.relative_cwd:
+      parser.error('--relative-cwd requires --raw-cmd')
     extra_args = args
 
   data = TaskData(
       command=command,
+      relative_cwd=options.relative_cwd,
       extra_args=extra_args,
       isolated_hash=options.isolated,
       storage=None,
