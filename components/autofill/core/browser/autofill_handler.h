@@ -40,6 +40,11 @@ class AutofillHandler {
                             const gfx::RectF& bounding_box,
                             const base::TimeTicks timestamp);
 
+  // Invoked when the textfield is scrolled.
+  void OnTextFieldDidScroll(const FormData& form,
+                            const FormFieldData& field,
+                            const gfx::RectF& bounding_box);
+
   // Invoked when the |form| needs to be autofilled, the |bounding_box| is
   // a window relative value of |field|.
   void OnQueryFormFieldAutofill(int query_id,
@@ -112,6 +117,10 @@ class AutofillHandler {
                                         const FormFieldData& field,
                                         const gfx::RectF& bounding_box,
                                         const base::TimeTicks timestamp) = 0;
+
+  virtual void OnTextFieldDidScrollImpl(const FormData& form,
+                                        const FormFieldData& field,
+                                        const gfx::RectF& bounding_box) = 0;
 
   virtual void OnQueryFormFieldAutofillImpl(int query_id,
                                             const FormData& form,

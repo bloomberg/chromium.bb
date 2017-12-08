@@ -35,6 +35,11 @@ class AutofillProvider {
                                     const gfx::RectF& bounding_box,
                                     const base::TimeTicks timestamp) = 0;
 
+  virtual void OnTextFieldDidScroll(AutofillHandlerProxy* handler,
+                                    const FormData& form,
+                                    const FormFieldData& field,
+                                    const gfx::RectF& bounding_box) = 0;
+
   virtual bool OnWillSubmitForm(AutofillHandlerProxy* handler,
                                 const FormData& form,
                                 const base::TimeTicks timestamp) = 0;

@@ -64,6 +64,9 @@ interface AutofillAgent {
   // Configures the render to require, or not, the secure context to query
   // autofill suggestion, the default is false.
   SetSecureContextRequired(bool required);
+
+  // Configures whether scroll is required in order to complete focus. The default is true.
+  SetFocusRequiresScroll(bool require);
 };
 
 // There is one instance of this interface per render frame in the render

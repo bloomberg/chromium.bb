@@ -45,6 +45,7 @@ ContentAutofillDriver::ContentAutofillDriver(
     autofill_handler_ = base::MakeUnique<AutofillHandlerProxy>(this, provider);
     GetAutofillAgent()->SetUserGestureRequired(false);
     GetAutofillAgent()->SetSecureContextRequired(true);
+    GetAutofillAgent()->SetFocusRequiresScroll(false);
   } else {
     autofill_handler_ = base::MakeUnique<AutofillManager>(
         this, client, app_locale, enable_download_manager);
@@ -204,6 +205,12 @@ void ContentAutofillDriver::TextFieldDidChange(const FormData& form,
                                                const gfx::RectF& bounding_box,
                                                base::TimeTicks timestamp) {
   autofill_handler_->OnTextFieldDidChange(form, field, bounding_box, timestamp);
+}
+
+void ContentAutofillDriver::TextFieldDidScroll(const FormData& form,
+                                               const FormFieldData& field,
+                                               const gfx::RectF& bounding_box) {
+  autofill_handler_->OnTextFieldDidScroll(form, field, bounding_box);
 }
 
 void ContentAutofillDriver::QueryFormFieldAutofill(
