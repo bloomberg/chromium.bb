@@ -69,7 +69,8 @@ TEST(GetBaseMessageIdForMode, GoogleStringIds) {
 
   // Run through all install modes, checking that the mode-specific strings are
   // mapped properly by GetBaseMessageIdForMode.
-  ASSERT_EQ(install_static::NUM_INSTALL_MODES, mode_to_strings.size());
+  ASSERT_EQ(static_cast<size_t>(install_static::NUM_INSTALL_MODES),
+            mode_to_strings.size());
   for (int mode_index = 0; mode_index < install_static::NUM_INSTALL_MODES;
        ++mode_index) {
     SCOPED_TRACE(testing::Message() << "install mode index: " << mode_index);
