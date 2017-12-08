@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+import os
 import time
 
 from chromite.cbuildbot.stages import generic_stages
@@ -20,13 +21,13 @@ from chromite.lib import failures_lib
 from chromite.lib.const import waterfall
 
 
-def BuilderName(build_name, active_waterfall, branch):
+def BuilderName(build_config, active_waterfall, current_builder):
   """Gets the corresponding builder name of the build.
 
   Args:
-    build_name: build config (string) of the build.
+    build_config: build config (string) of the build.
     active_waterfall: active waterfall to run the build.
-    branch: branch to run the build.
+    current_builder: buildbot builder name of the current builder, or None.
 
   Returns:
     Builder name to run the build on.
@@ -34,9 +35,12 @@ def BuilderName(build_name, active_waterfall, branch):
   # The builder name is configured differently for release builds in
   # chromeos and chromeos_release waterfalls. (see crbug.com/755276)
   if active_waterfall == waterfall.WATERFALL_RELEASE:
-    return '%s %s' % (build_name, branch)
+    assert current_builder
+    # Example: master-release release-R64-10176.B
+    named_branch = current_builder.split()[1]
+    return '%s %s' % (build_config, named_branch)
   else:
-    return build_name
+    return build_config
 
 
 class ScheduleSlavesStage(generic_stages.BuilderStage):
@@ -80,8 +84,9 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
                     More context: crbug.com/661689
       dryrun: Whether a dryrun, default to False.
     """
+    current_buildername = os.environ.get('BUILDBOT_BUILDERNAME', None)
     builder_name = BuilderName(
-        build_name, build_config.active_waterfall, self._run.manifest_branch)
+        build_name, build_config.active_waterfall, current_buildername)
 
     # TODO: Find a way to unify these tags with
     #       remote_try._GetRequestBody

@@ -29,11 +29,12 @@ class HelperMethodTests(cros_test_lib.MockTestCase):
   def testBuilderName(self):
     """Test BuilderName."""
     builder_name = scheduler_stages.BuilderName(
-        'parrot-release', waterfall.WATERFALL_INTERNAL, 'master')
+        'parrot-release', waterfall.WATERFALL_INTERNAL, 'master-release')
     self.assertEqual(builder_name, 'parrot-release')
 
     builder_name = scheduler_stages.BuilderName(
-        'parrot-release', waterfall.WATERFALL_RELEASE, 'release-R62-9901.B')
+        'parrot-release', waterfall.WATERFALL_RELEASE,
+        'master-release release-R62-9901.B')
     self.assertEqual(builder_name, 'parrot-release release-R62-9901.B')
 
 
