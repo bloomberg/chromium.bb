@@ -23,6 +23,8 @@
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroid x64',
     ],
     'modifications': {
       'Lollipop Tablet Tester': {
@@ -42,8 +44,75 @@
       },
     },
   },
+  'angle_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTAndroidCFI',
+      'ToTLinuxMSan',
+    ],
+  },
+  'app_shell_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'CrWinClang',
+      'CrWinClang(dbg)',
+      'CrWinClang(shared)',
+      'CrWinClang64',
+      'CrWinClang64(dbg)',
+      'CrWinClang64(dll)',
+      'CrWinClangLLD',
+      'CrWinClangLLD64',
+      'CrWinClngLLD64dbg',
+      'CrWinClngLLDdbg',
+      'ToTLinuxASan',
+      'ToTLinuxMSan',
+      'ToTLinuxUBSanVptr',
+      'ToTWin',
+      'ToTWin(dbg)',
+      'ToTWin(dll)',
+      'ToTWin64',
+      'ToTWin64(dbg)',
+      'ToTWin64(dll)',
+      'ToTWinCFI',
+      'ToTWinCFI64',
+      'ToTWinThinLTO64',
+    ],
+  },
+  'aura_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'CrWinClang',
+      'CrWinClang(dbg)',
+      'CrWinClang(shared)',
+      'CrWinClang64',
+      'CrWinClang64(dbg)',
+      'CrWinClang64(dll)',
+      'CrWinClangLLD',
+      'CrWinClangLLD64',
+      'CrWinClngLLD64dbg',
+      'CrWinClngLLDdbg',
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
+      'ToTWin',
+      'ToTWin(dbg)',
+      'ToTWin(dll)',
+      'ToTWin64',
+      'ToTWin64(dbg)',
+      'ToTWin64(dll)',
+      'ToTWinCFI',
+      'ToTWinCFI64',
+      'ToTWinThinLTO64',
+    ],
+  },
   'base_unittests': {
     'modifications': {
+      # chromium.android
       'KitKat Tablet Tester': {
         'swarming': {
           'hard_timeout': 300,
@@ -69,6 +138,12 @@
           'hard_timeout': 600,
         },
       },
+      # chromium.clang
+      'ToTMac': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
     },
   },
   'breakpad_unittests': {
@@ -91,6 +166,11 @@
     },
   },
   'browser_tests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsanCov',
+      'ToTLinuxUBSanVptr',
+    ],
     'modifications': {
       'Win7 Tests (dbg)(1)': {
         'swarming': {
@@ -122,6 +202,56 @@
           'shards': 5,
         },
       },
+      # chromium.clang
+      'CFI Linux (icall)': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+      'CrWinClang(dbg)': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'CrWinClang64(dbg)': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'ToTLinux': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+      'ToTLinuxASan': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+      'ToTLinuxLLD': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+      'ToTWin(dbg)': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'ToTWin64(dbg)': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'ToTLinuxThinLTO': {
+        # TODO(kbr): remove this spurious filter.
+        'args': [
+          '--gtest_filter=-SaveType/SavePageMultiFrameBrowserTest.ObjectElements/0',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+      },
     },
   },
   'blink_heap_unittests': {
@@ -136,6 +266,11 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'ToTLinuxMSan',
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Cast Audio Linux',
       'Cast Linux',
@@ -171,6 +306,11 @@
   },
   'blink_platform_unittests': {
     'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'ToTLinuxMSan',
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
@@ -234,9 +374,15 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
   },
   'capture_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTLinuxUBSanVptr',
+    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
@@ -286,6 +432,9 @@
       # TODO(kbr): why are the cast unit tests not run on the Cast bots?!
       'Cast Audio Linux',
       'Cast Linux',
+      # chromium.clang
+      'ToTAndroidCFI',
+      'ToTLinuxThinLTO',
     ],
   },
   'cc_unittests': {
@@ -331,11 +480,43 @@
       'Mac',
     ],
   },
+  'chrome_elf_import_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'CrWinClang',
+      'CrWinClang(dbg)',
+      'CrWinClang(shared)',
+      'CrWinClang64',
+      'CrWinClang64(dbg)',
+      'CrWinClang64(dll)',
+      'CrWinClangLLD',
+      'CrWinClangLLD64',
+      'CrWinClngLLD64dbg',
+      'CrWinClngLLDdbg',
+      'ToTWin(dll)',
+      'ToTWin64',
+      'ToTWin64(dbg)',
+      'ToTWin64(dll)',
+      'ToTWinCFI',
+      'ToTWinCFI64',
+      'ToTWinThinLTO64',
+    ],
+  },
   'chrome_public_test_apk': {
     'remove_from': [
       # TODO(kbr): on chromium.android this removal looks like an accident.
       'Marshmallow Phone Tester (rel)',
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
+    'key_removals': {
+      'ToTAndroid x64': [
+        'args',
+      ],
+    },
     'modifications': {
       'KitKat Phone Tester (dbg)': {
         'swarming': {
@@ -373,15 +554,25 @@
           'hard_timeout': 1800,
         },
       },
+      # chromium.clang
+      'ToTAndroid x64': {
+        'swarming': {
+          'shards': 1,
+          'hard_timeout': 0,
+        },
+      },
     },
   },
   'chrome_public_test_vr_apk': {
     'remove_from': [
+      # chromium.android
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+      # chromium.clang
+      'ToTAndroid x64',
     ],
     'modifications': {
       'Lollipop Phone Tester': {
@@ -412,7 +603,16 @@
     },
   },
   'chrome_sync_shell_test_apk': {
+    'key_removals': {
+      'ToTAndroid x64': [
+        'args',
+      ],
+      'ToTAndroidCFI': [
+        'args',
+      ],
+    },
     'modifications': {
+      # chromium.android
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 2,
@@ -433,6 +633,17 @@
           'hard_timeout': 1200,
         },
       },
+      # chromium.clang
+      'ToTAndroid x64': {
+        'swarming': {
+          'hard_timeout': 0,
+        },
+      },
+      'ToTAndroidCFI': {
+        'swarming': {
+          'hard_timeout': 0,
+        },
+      },
     },
   },
   'chromedriver_unittests': {
@@ -441,6 +652,9 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
     ],
   },
   'components_background_task_scheduler_junit_tests': {
@@ -462,6 +676,14 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTLinux',
+      'ToTLinuxASan',
+      'ToTLinuxLLD',
+      'ToTLinuxMSan',
+      'ToTLinuxUBSanVptr',
+      'ToTMac',
+      'ToTMacASan',
       # On chromium.linux, unclear why these aren't run on the Cast bots.
       'Cast Audio Linux',
       'Cast Linux',
@@ -494,6 +716,8 @@
   },
   'components_unittests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxUBSanVptr',
       # On chromium.linux, unclear why these aren't run on the Cast bots.
       'Cast Audio Linux',
       'Cast Linux',
@@ -531,24 +755,38 @@
       },
     },
   },
+  'compositor_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'CrWinClang',
+      'CrWinClang(dbg)',
+      'CrWinClang(shared)',
+      'CrWinClang64',
+      'CrWinClang64(dbg)',
+      'CrWinClang64(dll)',
+      'CrWinClangLLD',
+      'CrWinClangLLD64',
+      'CrWinClngLLD64dbg',
+      'CrWinClngLLDdbg',
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
+      'ToTWin',
+      'ToTWin(dbg)',
+      'ToTWin(dll)',
+      'ToTWin64',
+      'ToTWin64(dbg)',
+      'ToTWin64(dll)',
+      'ToTWinCFI',
+      'ToTWinCFI64',
+      'ToTWinThinLTO64',
+    ],
+  },
   'content_browsertests': {
     'modifications': {
-      'Cast Audio Linux': {
-        'args': [
-          '--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter',
-        ],
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
-      'Cast Linux': {
-        'args': [
-          '--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter',
-        ],
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
+      # chromium.android
       'KitKat Tablet Tester': {
         'swarming': {
           'hard_timeout': 1800,
@@ -605,10 +843,35 @@
           'shards': 2,
         },
       },
+      # chromium.clang
+      'ToTLinuxUBSanVptr': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+      # chromium.linux
+      'Cast Audio Linux': {
+        'args': [
+          '--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter',
+        ],
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'Cast Linux': {
+        'args': [
+          '--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter',
+        ],
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
     },
   },
   'content_shell_crash_test': {
     'remove_from': [
+      # chromium.clang
+      'ToTMac',
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
@@ -624,7 +887,17 @@
     ],
   },
   'content_shell_test_apk': {
+    'key_removals': {
+      # chromium.clang
+      'ToTAndroid x64': [
+        'args',
+      ],
+      'ToTAndroidCFI': [
+        'args',
+      ],
+    },
     'modifications': {
+      # chromium.android
       'KitKat Tablet Tester': {
         'swarming': {
           'hard_timeout': 1200,
@@ -646,6 +919,19 @@
         'swarming': {
           'hard_timeout': 1500,
           'shards': 2,
+        },
+      },
+      # chromium.clang
+      'ToTAndroid x64': {
+        'swarming': {
+          'hard_timeout': 0,
+          'shards': 1,
+        },
+      },
+      'ToTAndroidCFI': {
+        'swarming': {
+          'hard_timeout': 0,
+          'shards': 1,
         },
       },
     },
@@ -673,6 +959,15 @@
       },
     },
   },
+  'crashpad_tests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'ToTMacASan',
+    ],
+  },
   'crypto_unittests': {
     'remove_from': [
        # TODO(dpranke) - remove this exception.
@@ -689,6 +984,8 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
       # TODO(kbr): on chromium.linux, it's unclear why these show up on "Cast
       # Audio Linux" at all, since they're supposed to be compiled out for
       # Chromecast.
@@ -696,11 +993,19 @@
   },
   'dbus_unittests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
+      # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
   },
   'device_unittests': {
     'remove_from': [
+      # chromium.clang
+      'ToTMac',
+      'ToTMacASan',
+      # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
     'modifications': {
@@ -747,16 +1052,18 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
   },
-  'dbus_unittests': {
-    'remove_from': [
-      'Linux Tests (dbg)(1)(32)',
-    ],
-  },
   'events_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
+    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
@@ -777,6 +1084,11 @@
   },
   'extensions_browsertests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinux',
+      'ToTLinuxLLD',
+      'ToTMac',
+      'ToTMacASan',
       # On chromium.mac, unclear why these aren't run.
       'Mac10.10 Tests',
       'Mac10.11 Tests',
@@ -788,6 +1100,12 @@
   'filesystem_service_unittests': {
     'remove_from': [
       'Linux Tests (dbg)(1)(32)',
+    ],
+  },
+  'gcm_unit_tests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
   },
   'gfx_unittests': {
@@ -838,6 +1156,12 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTLinux',
+      'ToTLinuxASan',
+      'ToTLinuxLLD',
+      'ToTLinuxMSan',
+      'ToTLinuxUBSanVptr',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -870,6 +1194,48 @@
   },
   'gl_unittests': {
     'modifications': {
+      'CFI Linux (icall)': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+      'CFI Linux ToT': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+      'ToTAndroidCFI': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+            },
+          ],
+        },
+      },
       'Lollipop Phone Tester': {
         'swarming': {
           'hard_timeout': 960,
@@ -887,6 +1253,16 @@
       },
     },
   },
+  'gn_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTLinux',
+      'ToTLinuxASan',
+      'ToTLinuxLLD',
+      'ToTLinuxMSan',
+      'ToTLinuxUBSanVptr',
+    ],
+  },
   'google_apis_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run.
@@ -899,6 +1275,8 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -908,6 +1286,10 @@
   },
   'gpu_ipc_service_unittests': {
     'remove_from': [
+      # chromium.clang
+      'CrWinClngLLD64dbg',
+      'ToTLinuxLLD',
+      # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
     'modifications': {
@@ -961,8 +1343,43 @@
       'Mac10.11 Tests',
     ],
   },
+  'install_static_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'CrWinClang',
+      'CrWinClang(dbg)',
+      'CrWinClang(shared)',
+      'CrWinClang64',
+      'CrWinClang64(dbg)',
+      'CrWinClang64(dll)',
+      'CrWinClangLLD',
+      'CrWinClangLLD64',
+      'CrWinClngLLD64dbg',
+      'CrWinClngLLDdbg',
+      'ToTWin(dbg)',
+      'ToTWin(dll)',
+      'ToTWin64',
+      'ToTWin64(dbg)',
+      'ToTWin64(dll)',
+      'ToTWinCFI',
+      'ToTWinCFI64',
+      'ToTWinThinLTO64',
+    ],
+  },
   'interactive_ui_tests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTLinuxUBSanVptr',
+    ],
     'modifications': {
+      'CFI Linux (icall)': {
+        'swarming': {
+          'shards': 1,
+        },
+      },
       # Unclear why this isn't sharded.
       'Linux Tests': {
         'swarming': {
@@ -1055,6 +1472,8 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
   },
   'keyboard_unittests': {
@@ -1079,6 +1498,13 @@
       'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroid x64',
+      'ToTLinux',
+      'ToTLinuxASan',
+      'ToTLinuxLLD',
+      'ToTLinuxThinLTO',
+      'ToTLinuxUBSanVptr',
       # On chromium.linux, unclear why these aren't run.
       'Linux Tests',
       'Linux Tests (dbg)(1)',
@@ -1108,6 +1534,13 @@
       'linux-chromeos-rel',
     ],
   },
+  'mac_installer_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTMac',
+      'ToTMacASan',
+    ],
+  },
   'media_blink_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
@@ -1115,6 +1548,8 @@
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroid x64',
     ],
     'modifications': {
       'Lollipop Tablet Tester': {
@@ -1137,6 +1572,10 @@
     ],
   },
   'media_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTLinuxUBSanVptr',
+    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
@@ -1186,12 +1625,15 @@
       # TODO(dpranke) - remove this exception.
       'Linux Tests SANDBOX',
 
-      'Win7 Tests (dbg)(1)',
+      # chromium.clang
+      'ToTMac',
       # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
       'Mac10.10 Tests',
       'Mac10.11 Tests',
       'Mac10.12 Tests',
       'Mac10.9 Tests (dbg)',
+      # chromium.win
+      'Win7 Tests (dbg)(1)',
     ],
   },
   'midi_unittests': {
@@ -1206,6 +1648,8 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
   },
   'mojo_common_unittests': {
@@ -1221,6 +1665,9 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1246,6 +1693,9 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1271,6 +1721,9 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1296,6 +1749,9 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1317,8 +1773,11 @@
       'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroid x64',
     ],
     'modifications': {
+      # chromium.android
       'KitKat Phone Tester (dbg)': {
         'args': [
           '--gs-results-bucket=chromium-result-details',
@@ -1334,15 +1793,48 @@
           '--gs-results-bucket=chromium-result-details',
         ],
       },
+      # chromium.clang
+      'ToTAndroidCFI': {
+        'swarming': {
+          'hard_timeout': 0,
+        },
+      },
     },
+  },
+  'nacl_helper_nonsfi_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'CFI Linux (icall)',
+      'CFI Linux ToT',
+      'ToTLinux (dbg)',
+      'ToTLinuxASan',
+      'ToTLinuxMSan',
+      'ToTLinuxThinLTO',
+      'ToTLinuxUBSanVptr',
+    ],
+  },
+  'nacl_loader_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
+    ],
   },
   'native_theme_unittests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTMacASan',
+      # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
   },
   'net_unittests': {
+    'remove_from': [
+      'CrWinAsanCov',
+    ],
     'modifications': {
+      # chromium.android
       'KitKat Tablet Tester': {
         'swarming': {
           'hard_timeout': 1800,
@@ -1376,6 +1868,12 @@
           'hard_timeout': 1800,
         },
       },
+      # chromium.clang
+      'ToTLinuxASan': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
     },
   },
   'printing_unittests': {
@@ -1397,6 +1895,8 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
       # On chromium.linux, unclear why these aren't run on 32-bit.
       'Linux Tests (dbg)(1)(32)',
     ],
@@ -1419,6 +1919,9 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTAndroid x64',
+      'ToTAndroidCFI',
       # On chromium.linux, unclear why these aren't run on 32-bit.
       'Linux Tests (dbg)(1)(32)',
     ],
@@ -1442,6 +1945,9 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroid x64',
+      'ToTAndroidCFI',
     ],
     'modifications': {
       'Marshmallow 64 bit Tester': {
@@ -1470,6 +1976,9 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'ToTAndroid x64',
+      'ToTAndroidCFI',
       # On chromium.linux, unclear why these aren't run on 32-bit.
       'Linux Tests (dbg)(1)(32)',
     ],
@@ -1485,6 +1994,9 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroid x64',
+      'ToTAndroidCFI',
     ],
     'modifications': {
       'Marshmallow 64 bit Tester': {
@@ -1578,6 +2090,15 @@
       'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'CFI Linux (icall)',
+      'CFI Linux ToT',
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'ToTAndroidASan',
+      'ToTLinuxMSan',
+      'ToTLinuxThinLTO',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1661,6 +2182,8 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1704,6 +2227,13 @@
     },
   },
   'storage_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxLLD',
+      'ToTLinuxThinLTO',
+      'ToTLinuxUBSanVptr',
+    ],
     'modifications': {
       # chromium.android
       'KitKat Phone Tester (dbg)': {
@@ -1912,6 +2442,11 @@
     },
   },
   'ui_touch_selection_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
+    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
@@ -1927,11 +2462,14 @@
   },
   'unit_tests': {
     'remove_from': [
+      # chromium.clang
+      'CrWinAsanCov',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
     ],
     'modifications': {
+      # chromium.android
       'KitKat Tablet Tester': {
         'swarming': {
           'hard_timeout': 1200,
@@ -1968,6 +2506,12 @@
           'shards': 2,
         },
       },
+      # chromium.clang
+      'ToTLinuxASan': {
+        'swarming': {
+          'shards': 2,
+        },
+      }
     },
   },
   'url_unittests': {
@@ -1982,10 +2526,16 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
   },
   'views_unittests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',
+      'ToTMacASan',
+      # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
   },
@@ -2003,6 +2553,16 @@
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
       'Nougat Phone Tester',
+      # chromium.clang
+      'CFI Linux (icall)',
+      'CFI Linux ToT',
+      'ToTAndroid x64',
+      'ToTAndroidASan',
+      'ToTLinux',
+      'ToTLinuxASan',
+      'ToTLinuxLLD',
+      'ToTLinuxThinLTO',
+      'ToTLinuxUBSanVptr',
       # chromium.win
       'Win10 Tests x64',
     ],
@@ -2048,6 +2608,8 @@
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroid x64',
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
@@ -2075,12 +2637,37 @@
       },
     },
   },
+  'vr_pixeltests': {
+    'remove_from': [
+      # chromium.android
+      'KitKat Phone Tester (dbg)',
+      'KitKat Phone Tester (rel)',
+      'KitKat Tablet Tester',
+      'Lollipop Phone Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow 64 bit Tester',
+      'Marshmallow Phone Tester (rel)',
+      'Marshmallow Tablet Tester',
+      # chromium.clang
+      'ToTAndroid x64',
+      # chromium.win
+      'Win 7 Tests x64 (1)',
+      'Win10 Tests x64',
+      'Win7 Tests (1)',
+      'Win7 Tests (dbg)(1)',
+    ],
+  },
   'webkit_layout_tests': {
     'remove_from': [
+      # chromium.clang
+      'ToTMac',
+      # chromium.linux
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
+      # chromium.mac
       'Mac10.9 Tests',
       'Mac10.9 Tests (dbg)',
+      # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
       'Win7 Tests (1)',
@@ -2174,6 +2761,8 @@
   },
   'webkit_python_tests': {
     'remove_from': [
+      # chromium.clang
+      'ToTMac',
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
@@ -2202,6 +2791,13 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'ToTAndroidCFI',
+      'ToTLinuxMSan',
+      'ToTLinuxThinLTO',
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Cast Audio Linux',
       'Cast Linux',
@@ -2224,8 +2820,17 @@
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Nougat Phone Tester',
+      # chromium.clang
+      'ToTAndroid x64',
     ],
+    'key_removals': {
+      # chromium.clang
+      'ToTAndroidCFI': [
+        'args',
+      ],
+    },
     'modifications': {
+      # chromium.android
       'Lollipop Phone Tester': {
         'swarming': {
           'shards': 6,
@@ -2257,6 +2862,35 @@
       },
     },
   },
+  'wm_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'CrWinClang',
+      'CrWinClang(dbg)',
+      'CrWinClang(shared)',
+      'CrWinClang64',
+      'CrWinClang64(dbg)',
+      'CrWinClang64(dll)',
+      'CrWinClangLLD',
+      'CrWinClangLLD64',
+      'CrWinClngLLD64dbg',
+      'CrWinClngLLDdbg',
+      'ToTLinuxASan',
+      'ToTLinuxUBSanVptr',
+      'ToTWin',
+      'ToTWin(dbg)',
+      'ToTWin(dll)',
+      'ToTWin64',
+      'ToTWin64(dbg)',
+      'ToTWin64(dll)',
+      'ToTWinCFI',
+      'ToTWinCFI64',
+      'ToTWinThinLTO64',
+    ],
+  },
   'wtf_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run.
@@ -2273,6 +2907,12 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'ToTAndroidCFI',
+      'ToTLinuxMSan',
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Cast Audio Linux',
       'Cast Linux',
