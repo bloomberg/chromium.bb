@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -140,9 +141,8 @@ void URLRequestContext::InsertURLRequest(const URLRequest* request) const {
     largest_outstanding_requests_count_seen_ = url_requests_.size();
     UMA_HISTOGRAM_COUNTS_1M("Net.URLRequestContext.OutstandingRequests",
                             largest_outstanding_requests_count_seen_);
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Net.URLRequestContext.OutstandingRequests.Type",
-        request->traffic_annotation().unique_id_hash_code);
+    base::UmaHistogramSparse("Net.URLRequestContext.OutstandingRequests.Type",
+                             request->traffic_annotation().unique_id_hash_code);
   }
 }
 

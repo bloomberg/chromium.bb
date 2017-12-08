@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -816,10 +817,10 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   // The MTU used by QUIC is limited to a fairly small set of predefined values
   // (initial values and MTU discovery values), but does not fare well when
   // bucketed.  Because of that, a sparse histogram is used here.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ClientSideMtu",
-                              connection()->max_packet_length());
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ServerSideMtu",
-                              stats.max_received_packet_size);
+  base::UmaHistogramSparse("Net.QuicSession.ClientSideMtu",
+                           connection()->max_packet_length());
+  base::UmaHistogramSparse("Net.QuicSession.ServerSideMtu",
+                           stats.max_received_packet_size);
 
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.MtuProbesSent",
                           connection()->mtu_probe_count());
@@ -1378,7 +1379,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
   logger_->OnConnectionClosed(error, error_details, source);
   if (source == ConnectionCloseSource::FROM_PEER) {
     if (IsCryptoHandshakeConfirmed()) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Net.QuicSession.ConnectionCloseErrorCodeServer.HandshakeConfirmed",
           error);
       base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
@@ -1388,11 +1389,11 @@ void QuicChromiumClientSession::OnConnectionClosed(
       if (num_streams > 0)
         histogram->AddCount(error, num_streams);
     }
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Net.QuicSession.ConnectionCloseErrorCodeServer", error);
+    base::UmaHistogramSparse("Net.QuicSession.ConnectionCloseErrorCodeServer",
+                             error);
   } else {
     if (IsCryptoHandshakeConfirmed()) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Net.QuicSession.ConnectionCloseErrorCodeClient.HandshakeConfirmed",
           error);
       base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
@@ -1402,8 +1403,8 @@ void QuicChromiumClientSession::OnConnectionClosed(
       if (num_streams > 0)
         histogram->AddCount(error, num_streams);
     }
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Net.QuicSession.ConnectionCloseErrorCodeClient", error);
+    base::UmaHistogramSparse("Net.QuicSession.ConnectionCloseErrorCodeClient",
+                             error);
   }
 
   if (error == QUIC_NETWORK_IDLE_TIMEOUT) {
@@ -1421,7 +1422,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
         UMA_HISTOGRAM_COUNTS_1M(
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveTLPCount",
             connection()->sent_packet_manager().GetConsecutiveTlpCount());
-        UMA_HISTOGRAM_SPARSE_SLOWLY(
+        base::UmaHistogramSparse(
             "Net.QuicSession.TimedOutWithOpenStreams.LocalPort",
             connection()->self_address().port());
       }
@@ -1451,19 +1452,19 @@ void QuicChromiumClientSession::OnConnectionClosed(
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_PUBLIC_RESET);
     } else if (connection()->GetStats().packets_received == 0) {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_BLACK_HOLE);
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Net.QuicSession.ConnectionClose.HandshakeFailureBlackHole.QuicError",
           error);
     } else {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_UNKNOWN);
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Net.QuicSession.ConnectionClose.HandshakeFailureUnknown.QuicError",
           error);
     }
   }
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",
-                              connection()->transport_version());
+  base::UmaHistogramSparse("Net.QuicSession.QuicVersion",
+                           connection()->transport_version());
   NotifyFactoryOfSessionGoingAway();
   QuicSession::OnConnectionClosed(error, error_details, source);
 
@@ -1500,10 +1501,10 @@ void QuicChromiumClientSession::OnConnectivityProbeReceived(
 int QuicChromiumClientSession::HandleWriteError(
     int error_code,
     scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -error_code);
+  base::UmaHistogramSparse("Net.QuicSession.WriteError", -error_code);
   if (IsCryptoHandshakeConfirmed()) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError.HandshakeConfirmed",
-                                -error_code);
+    base::UmaHistogramSparse("Net.QuicSession.WriteError.HandshakeConfirmed",
+                             -error_code);
   }
   if (stream_factory_ == nullptr ||
       !stream_factory_->migrate_sessions_on_network_change()) {
@@ -1922,8 +1923,7 @@ void QuicChromiumClientSession::StartReading() {
 
 void QuicChromiumClientSession::CloseSessionOnError(int net_error,
                                                     QuicErrorCode quic_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError",
-                              -net_error);
+  base::UmaHistogramSparse("Net.QuicSession.CloseSessionOnError", -net_error);
 
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(net_error);
@@ -1944,8 +1944,7 @@ void QuicChromiumClientSession::CloseSessionOnError(int net_error,
 void QuicChromiumClientSession::CloseSessionOnErrorLater(
     int net_error,
     QuicErrorCode quic_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError",
-                              -net_error);
+  base::UmaHistogramSparse("Net.QuicSession.CloseSessionOnError", -net_error);
 
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(net_error);
@@ -2224,9 +2223,8 @@ void QuicChromiumClientSession::LogMetricsOnNetworkDisconnected() {
         "Net.QuicNetworkGapBetweenWriteErrorAndDisconnection",
         write_error_to_disconnection_gap, base::TimeDelta::FromMilliseconds(1),
         base::TimeDelta::FromMinutes(10), 100);
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Net.QuicSession.WriteError.NetworkDisconnected",
-        -most_recent_write_error_);
+    base::UmaHistogramSparse("Net.QuicSession.WriteError.NetworkDisconnected",
+                             -most_recent_write_error_);
     most_recent_write_error_ = 0;
     most_recent_write_error_timestamp_ = base::TimeTicks();
   }
@@ -2305,7 +2303,7 @@ void QuicChromiumClientSession::OnReadError(
     return;
   }
   DVLOG(1) << "Closing session on read error: " << result;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ReadError", -result);
+  base::UmaHistogramSparse("Net.QuicSession.ReadError", -result);
   connection()->CloseConnection(QUIC_PACKET_READ_ERROR, ErrorToString(result),
                                 ConnectionCloseBehavior::SILENT_CLOSE);
 }

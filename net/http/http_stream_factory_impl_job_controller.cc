@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -998,7 +999,7 @@ void HttpStreamFactoryImpl::JobController::ReportBrokenAlternativeService() {
 
   int error_to_report = alternative_job_net_error_;
   alternative_job_net_error_ = OK;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AlternateServiceFailed", -error_to_report);
+  base::UmaHistogramSparse("Net.AlternateServiceFailed", -error_to_report);
 
   if (error_to_report == ERR_NETWORK_CHANGED ||
       error_to_report == ERR_INTERNET_DISCONNECTED) {

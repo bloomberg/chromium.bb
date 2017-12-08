@@ -21,7 +21,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/android/network_library.h"
 #endif
@@ -760,7 +760,7 @@ void NetworkChangeNotifier::LogOperatorCodeHistogram(ConnectionType type) {
       mcc_mnc = 0;
     }
   }
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NCN.NetworkOperatorMCCMNC", mcc_mnc);
+  base::UmaHistogramSparse("NCN.NetworkOperatorMCCMNC", mcc_mnc);
 #endif
 }
 

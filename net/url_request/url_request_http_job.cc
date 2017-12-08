@@ -100,7 +100,7 @@ void LogTrustAnchor(const net::HashValueVector& spki_hashes) {
     if (id != 0)
       break;
   }
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.Certificate.TrustAnchor.Request", id);
+  base::UmaHistogramSparse("Net.Certificate.TrustAnchor.Request", id);
 }
 
 // Records per-request histograms relating to Certificate Transparency

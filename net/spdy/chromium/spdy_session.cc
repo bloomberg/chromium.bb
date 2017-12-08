@@ -13,8 +13,8 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -2539,7 +2539,7 @@ void SpdySession::DoDrainSession(Error err, const SpdyString& description) {
       NetLogEventType::HTTP2_SESSION_CLOSE,
       base::Bind(&NetLogSpdySessionCloseCallback, err, &description));
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SpdySession.ClosedOnError", -err);
+  base::UmaHistogramSparse("Net.SpdySession.ClosedOnError", -err);
 
   if (err == OK) {
     // We ought to be going away already, as this is a graceful close.
