@@ -7,9 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Feature to choose whether the toolbar uses UIViewPropertyAnimators.
-extern const base::Feature kPropertyAnimationsToolbar;
-
 // Feature to choose whether to use the clean Toolbar stack or
 // WebToolbarController.
 extern const base::Feature kCleanToolbar;

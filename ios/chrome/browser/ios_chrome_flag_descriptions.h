@@ -85,11 +85,6 @@ extern const char kPasswordExportDescription[];
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
 
-// Title and description for the flag to have the toolbar use
-// UIViewPropertyAnimators.
-extern const char kPropertyAnimationsToolbarName[];
-extern const char kPropertyAnimationsToolbarDescription[];
-
 // Title and description for the flag to have the toolbar respect the safe area.
 extern const char kSafeAreaCompatibleToolbarName[];
 extern const char kSafeAreaCompatibleToolbarDescription[];
