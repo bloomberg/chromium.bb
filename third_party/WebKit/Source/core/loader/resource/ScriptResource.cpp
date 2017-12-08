@@ -42,12 +42,13 @@
 namespace blink {
 
 ScriptResource* ScriptResource::Fetch(FetchParameters& params,
-                                      ResourceFetcher* fetcher) {
+                                      ResourceFetcher* fetcher,
+                                      ResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
   params.SetRequestContext(WebURLRequest::kRequestContextScript);
   return ToScriptResource(
-      fetcher->RequestResource(params, ScriptResourceFactory()));
+      fetcher->RequestResource(params, ScriptResourceFactory(), client));
 }
 
 ScriptResource::ScriptResource(

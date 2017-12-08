@@ -217,7 +217,7 @@ void PossiblyFetchBlockedDocWriteScript(const Resource* resource,
       resource->Url(), element_document.GetSecurityOrigin(),
       resource->Encoding(), FetchParameters::kIdleLoad);
   AddHeader(&params);
-  ScriptResource::Fetch(params, element_document.Fetcher());
+  ScriptResource::Fetch(params, element_document.Fetcher(), nullptr);
 }
 
 }  // namespace blink
