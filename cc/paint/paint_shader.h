@@ -134,7 +134,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   friend class PaintOpReader;
   friend class PaintOpSerializationTestUtils;
   friend class PaintOpWriter;
-  friend class ScopedImageFlags;
+  friend class ScopedRasterFlags;
   FRIEND_TEST_ALL_PREFIXES(PaintShaderTest, DecodePaintRecord);
 
   explicit PaintShader(Type type);

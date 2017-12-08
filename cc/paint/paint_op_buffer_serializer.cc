@@ -5,7 +5,7 @@
 #include "cc/paint/paint_op_buffer_serializer.h"
 
 #include "base/bind.h"
-#include "cc/paint/scoped_image_flags.h"
+#include "cc/paint/scoped_raster_flags.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -124,18 +124,10 @@ bool PaintOpBufferSerializer::SerializeOpWithFlags(
     PaintOp::SerializeOptions* options,
     const PlaybackParams& params,
     uint8_t alpha) {
-  const bool needs_flag_override =
-      alpha != 255 ||
-      (flags_op->flags.HasDiscardableImages() && options->image_provider);
-
-  base::Optional<ScopedImageFlags> scoped_flags;
-  if (needs_flag_override) {
-    scoped_flags.emplace(options->image_provider, &flags_op->flags,
-                         options->canvas->getTotalMatrix(), alpha);
-  }
-
-  const PaintFlags* flags_to_serialize =
-      scoped_flags ? scoped_flags->flags() : &flags_op->flags;
+  const ScopedRasterFlags scoped_flags(
+      &flags_op->flags, options->image_provider,
+      options->canvas->getTotalMatrix(), alpha);
+  const PaintFlags* flags_to_serialize = scoped_flags.flags();
   if (!flags_to_serialize)
     return true;
 
