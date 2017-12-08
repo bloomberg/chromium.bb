@@ -389,7 +389,6 @@ CompileFn SelectCompileFunction(V8CacheOptions cache_options,
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     ScriptState* script_state,
     const ScriptSourceCode& source,
-    CachedMetadataHandler* cache_metadata_handler,
     AccessControlStatus access_control_status,
     V8CacheOptions v8_cache_options,
     const ReferrerScriptInfo& referrer_info) {
@@ -402,7 +401,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   return CompileScript(script_state, V8String(isolate, source.Source()),
                        source.Url(), source.SourceMapUrl(),
                        source.StartPosition(), source.SourceLocationType(),
-                       source.Streamer(), cache_metadata_handler,
+                       source.Streamer(), source.CacheHandler(),
                        access_control_status, v8_cache_options, referrer_info);
 }
 

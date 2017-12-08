@@ -4,6 +4,8 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 
+#include "core/loader/resource/ScriptResource.h"
+
 namespace blink {
 
 namespace {
@@ -49,9 +51,11 @@ String SourceMapUrlFromResponse(const ResourceResponse& response) {
 ScriptSourceCode::ScriptSourceCode(
     const String& source,
     ScriptSourceLocationType source_location_type,
+    CachedMetadataHandler* cache_handler,
     const KURL& url,
     const TextPosition& start_position)
     : source_(TreatNullSourceAsEmpty(source)),
+      cache_handler_(cache_handler),
       url_(StripFragmentIdentifier(url)),
       start_position_(start_position),
       source_location_type_(source_location_type) {
@@ -62,7 +66,7 @@ ScriptSourceCode::ScriptSourceCode(
 ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
                                    ScriptResource* resource)
     : source_(TreatNullSourceAsEmpty(resource->SourceText())),
-      resource_(resource),
+      cache_handler_(resource->CacheHandler()),
       streamer_(streamer),
       url_(StripFragmentIdentifier(resource->GetResponse().Url())),
       source_map_url_(SourceMapUrlFromResponse(resource->GetResponse())),
@@ -72,7 +76,7 @@ ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
 ScriptSourceCode::~ScriptSourceCode() {}
 
 void ScriptSourceCode::Trace(blink::Visitor* visitor) {
-  visitor->Trace(resource_);
+  visitor->Trace(cache_handler_);
   visitor->Trace(streamer_);
 }
 

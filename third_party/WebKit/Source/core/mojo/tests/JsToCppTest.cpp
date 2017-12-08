@@ -12,6 +12,7 @@
 #include "core/page/Page.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "platform/SharedBuffer.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/core/mojo/tests/JsToCpp.mojom-blink.h"

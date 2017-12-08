@@ -67,7 +67,6 @@ class CORE_EXPORT V8ScriptRunner final {
   // CachedMetadataHandler is set when metadata caching is supported.
   static v8::MaybeLocal<v8::Script> CompileScript(ScriptState*,
                                                   const ScriptSourceCode&,
-                                                  CachedMetadataHandler*,
                                                   AccessControlStatus,
                                                   V8CacheOptions,
                                                   const ReferrerScriptInfo&);

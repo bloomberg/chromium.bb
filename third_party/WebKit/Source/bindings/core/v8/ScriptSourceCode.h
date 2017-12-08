@@ -34,13 +34,15 @@
 #include "bindings/core/v8/ScriptSourceLocationType.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/CoreExport.h"
-#include "core/loader/resource/ScriptResource.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+
+class ScriptResource;
+class CachedMetadataHandler;
 
 class CORE_EXPORT ScriptSourceCode final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -50,6 +52,7 @@ class CORE_EXPORT ScriptSourceCode final {
   ScriptSourceCode(
       const String& source,
       ScriptSourceLocationType = ScriptSourceLocationType::kUnknown,
+      CachedMetadataHandler* cache_handler = nullptr,
       const KURL& = KURL(),
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
@@ -67,7 +70,7 @@ class CORE_EXPORT ScriptSourceCode final {
   bool IsNull() const { return source_.IsNull(); }
 
   const String& Source() const { return source_; }
-  ScriptResource* GetResource() const { return resource_; }
+  CachedMetadataHandler* CacheHandler() const { return cache_handler_; }
   KURL Url() const;
   int StartLine() const { return start_position_.line_.OneBasedInt(); }
   const TextPosition& StartPosition() const { return start_position_; }
@@ -80,7 +83,7 @@ class CORE_EXPORT ScriptSourceCode final {
 
  private:
   const String source_;
-  Member<ScriptResource> resource_;
+  Member<CachedMetadataHandler> cache_handler_;
   Member<ScriptStreamer> streamer_;
   const KURL url_;
   const String source_map_url_;

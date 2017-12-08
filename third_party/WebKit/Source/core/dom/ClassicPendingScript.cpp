@@ -246,9 +246,9 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
 
   error_occurred = ErrorOccurred();
   if (!is_external_) {
-    ScriptSourceCode source_code(GetElement()->TextFromChildren(),
-                                 source_location_type_, document_url,
-                                 StartingPosition());
+    ScriptSourceCode source_code(
+        GetElement()->TextFromChildren(), source_location_type_,
+        nullptr /* cache_handler */, document_url, StartingPosition());
     return ClassicScript::Create(source_code, options_, kSharableCrossOrigin);
   }
 
