@@ -327,7 +327,11 @@ def cpp_value(interface, method, number_of_arguments):
     if ('PartialInterfaceImplementedAs' in method.extended_attributes and
             not method.is_static):
         cpp_arguments.append('*impl')
-    cpp_arguments.extend(argument.name for argument in arguments)
+    for argument in arguments:
+        if argument.idl_type.base_type == 'SerializedScriptValue':
+            cpp_arguments.append('std::move(%s)' % argument.name)
+        else:
+            cpp_arguments.append(argument.name)
 
     if ('RaisesException' in method.extended_attributes or
           (method.is_constructor and

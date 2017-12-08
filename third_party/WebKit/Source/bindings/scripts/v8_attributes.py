@@ -498,6 +498,8 @@ def setter_expression(interface, attribute, context):
                 'V8EventListenerHelper::GetEventListener(' +
                 'ScriptState::ForRelevantRealm(info), v8Value, true, ' +
                 'kListenerFindOrCreate)')
+    elif idl_type.base_type == 'SerializedScriptValue':
+        arguments.append('std::move(cppValue)')
     else:
         arguments.append('cppValue')
     if idl_type.is_explicit_nullable:
