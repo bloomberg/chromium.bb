@@ -31,6 +31,7 @@
 #ifndef InspectorMemoryAgent_h
 #define InspectorMemoryAgent_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Memory.h"
@@ -44,8 +45,6 @@ class InspectedFrames;
 class CORE_EXPORT InspectorMemoryAgent final
     : public InspectorBaseAgent<protocol::Memory::Metainfo>,
       public BlinkLeakDetectorClient {
-  WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
-
  public:
   static InspectorMemoryAgent* Create(InspectedFrames* frames) {
     return new InspectorMemoryAgent(frames);
@@ -68,6 +67,7 @@ class CORE_EXPORT InspectorMemoryAgent final
   std::unique_ptr<BlinkLeakDetector> detector_;
   std::unique_ptr<PrepareForLeakDetectionCallback> callback_;
   Member<InspectedFrames> frames_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorMemoryAgent);
 };
 
 }  // namespace blink

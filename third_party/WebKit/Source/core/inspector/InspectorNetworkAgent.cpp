@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SourceLocation.h"
@@ -148,8 +149,6 @@ static std::unique_ptr<protocol::Network::Headers> BuildObjectForHeaders(
 }
 
 class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
-  WTF_MAKE_NONCOPYABLE(InspectorFileReaderLoaderClient);
-
  public:
   InspectorFileReaderLoaderClient(
       scoped_refptr<BlobDataHandle> blob,
@@ -208,6 +207,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
   std::unique_ptr<GetResponseBodyCallback> callback_;
   std::unique_ptr<FileReaderLoader> loader_;
   scoped_refptr<SharedBuffer> raw_data_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorFileReaderLoaderClient);
 };
 
 KURL UrlWithoutFragment(const KURL& url) {

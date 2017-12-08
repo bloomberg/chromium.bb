@@ -31,6 +31,7 @@
 #ifndef InspectorDOMDebuggerAgent_h
 #define InspectorDOMDebuggerAgent_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/V8EventListenerInfo.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -57,8 +58,6 @@ class DictionaryValue;
 
 class CORE_EXPORT InspectorDOMDebuggerAgent final
     : public InspectorBaseAgent<protocol::DOMDebugger::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
-
  public:
   static void EventListenersInfoForTarget(v8::Isolate*,
                                           v8::Local<v8::Value>,
@@ -159,6 +158,7 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   Member<InspectorDOMAgent> dom_agent_;
   v8_inspector::V8InspectorSession* v8_session_;
   HeapHashMap<Member<Node>, uint32_t> dom_breakpoints_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorDOMDebuggerAgent);
 };
 
 }  // namespace blink

@@ -26,11 +26,11 @@
 #ifndef InspectorApplicationCacheAgent_h
 #define InspectorApplicationCacheAgent_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/ApplicationCache.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -39,8 +39,6 @@ class InspectedFrames;
 
 class CORE_EXPORT InspectorApplicationCacheAgent final
     : public InspectorBaseAgent<protocol::ApplicationCache::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
-
  public:
   static InspectorApplicationCacheAgent* Create(
       InspectedFrames* inspected_frames) {
@@ -87,6 +85,7 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
                                                    DocumentLoader*&);
 
   Member<InspectedFrames> inspected_frames_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorApplicationCacheAgent);
 };
 
 }  // namespace blink

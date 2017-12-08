@@ -5,10 +5,10 @@
 #ifndef InspectorIOAgent_h
 #define InspectorIOAgent_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/IO.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace v8 {
@@ -23,8 +23,6 @@ namespace blink {
 
 class CORE_EXPORT InspectorIOAgent final
     : public InspectorBaseAgent<protocol::IO::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorIOAgent);
-
  public:
   InspectorIOAgent(v8::Isolate*, v8_inspector::V8InspectorSession*);
 
@@ -39,6 +37,7 @@ class CORE_EXPORT InspectorIOAgent final
 
   v8::Isolate* isolate_;
   v8_inspector::V8InspectorSession* v8_session_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorIOAgent);
 };
 
 }  // namespace blink

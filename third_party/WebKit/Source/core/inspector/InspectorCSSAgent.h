@@ -26,6 +26,7 @@
 #ifndef InspectorCSSAgent_h
 #define InspectorCSSAgent_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
@@ -62,7 +63,6 @@ class CORE_EXPORT InspectorCSSAgent final
     : public InspectorBaseAgent<protocol::CSS::Metainfo>,
       public InspectorDOMAgent::DOMListener,
       public InspectorStyleSheetBase::Listener {
-  WTF_MAKE_NONCOPYABLE(InspectorCSSAgent);
   USING_GARBAGE_COLLECTED_MIXIN(InspectorCSSAgent);
 
  public:
@@ -333,6 +333,7 @@ class CORE_EXPORT InspectorCSSAgent final
 
   friend class InspectorResourceContentLoaderCallback;
   friend class StyleSheetBinder;
+  DISALLOW_COPY_AND_ASSIGN(InspectorCSSAgent);
 };
 
 }  // namespace blink

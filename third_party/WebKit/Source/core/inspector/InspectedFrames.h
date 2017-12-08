@@ -5,10 +5,10 @@
 #ifndef InspectedFrames_h
 #define InspectedFrames_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -17,8 +17,6 @@ class LocalFrame;
 
 class CORE_EXPORT InspectedFrames final
     : public GarbageCollectedFinalized<InspectedFrames> {
-  WTF_MAKE_NONCOPYABLE(InspectedFrames);
-
  public:
   class CORE_EXPORT Iterator {
     STACK_ALLOCATED();
@@ -52,6 +50,7 @@ class CORE_EXPORT InspectedFrames final
  private:
   Member<LocalFrame> root_;
   String instrumentation_token_;
+  DISALLOW_COPY_AND_ASSIGN(InspectedFrames);
 };
 
 }  // namespace blink

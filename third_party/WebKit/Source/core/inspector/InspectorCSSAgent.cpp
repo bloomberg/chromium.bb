@@ -25,6 +25,7 @@
 
 #include "core/inspector/InspectorCSSAgent.h"
 
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/StylePropertyShorthand.h"
@@ -354,20 +355,19 @@ static unsigned ComputePseudoClassMask(
 }
 
 class InspectorCSSAgent::StyleSheetAction : public InspectorHistory::Action {
-  WTF_MAKE_NONCOPYABLE(StyleSheetAction);
-
  public:
   StyleSheetAction(const String& name) : InspectorHistory::Action(name) {}
 
   virtual std::unique_ptr<protocol::CSS::CSSStyle> TakeSerializedStyle() {
     return nullptr;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StyleSheetAction);
 };
 
 class InspectorCSSAgent::SetStyleSheetTextAction final
     : public InspectorCSSAgent::StyleSheetAction {
-  WTF_MAKE_NONCOPYABLE(SetStyleSheetTextAction);
-
  public:
   SetStyleSheetTextAction(InspectorStyleSheetBase* style_sheet,
                           const String& text)
@@ -411,12 +411,11 @@ class InspectorCSSAgent::SetStyleSheetTextAction final
   Member<InspectorStyleSheetBase> style_sheet_;
   String text_;
   String old_text_;
+  DISALLOW_COPY_AND_ASSIGN(SetStyleSheetTextAction);
 };
 
 class InspectorCSSAgent::ModifyRuleAction final
     : public InspectorCSSAgent::StyleSheetAction {
-  WTF_MAKE_NONCOPYABLE(ModifyRuleAction);
-
  public:
   enum Type {
     kSetRuleSelector,
@@ -531,12 +530,11 @@ class InspectorCSSAgent::ModifyRuleAction final
   SourceRange old_range_;
   SourceRange new_range_;
   Member<CSSRule> css_rule_;
+  DISALLOW_COPY_AND_ASSIGN(ModifyRuleAction);
 };
 
 class InspectorCSSAgent::SetElementStyleAction final
     : public InspectorCSSAgent::StyleSheetAction {
-  WTF_MAKE_NONCOPYABLE(SetElementStyleAction);
-
  public:
   SetElementStyleAction(InspectorStyleSheetForInlineStyle* style_sheet,
                         const String& text)
@@ -583,12 +581,11 @@ class InspectorCSSAgent::SetElementStyleAction final
   Member<InspectorStyleSheetForInlineStyle> style_sheet_;
   String text_;
   String old_text_;
+  DISALLOW_COPY_AND_ASSIGN(SetElementStyleAction);
 };
 
 class InspectorCSSAgent::AddRuleAction final
     : public InspectorCSSAgent::StyleSheetAction {
-  WTF_MAKE_NONCOPYABLE(AddRuleAction);
-
  public:
   AddRuleAction(InspectorStyleSheet* style_sheet,
                 const String& rule_text,
@@ -633,6 +630,7 @@ class InspectorCSSAgent::AddRuleAction final
   String old_text_;
   SourceRange location_;
   SourceRange added_range_;
+  DISALLOW_COPY_AND_ASSIGN(AddRuleAction);
 };
 
 // static

@@ -31,6 +31,7 @@
 
 #include <v8-inspector.h>
 #include <memory>
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -63,7 +64,6 @@ class WebTouchEvent;
 class CORE_EXPORT InspectorOverlayAgent final
     : public InspectorBaseAgent<protocol::Overlay::Metainfo>,
       public InspectorOverlayHost::Listener {
-  WTF_MAKE_NONCOPYABLE(InspectorOverlayAgent);
   USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
 
  public:
@@ -223,6 +223,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   bool screenshot_mode_ = false;
   IntPoint screenshot_anchor_;
   IntPoint screenshot_position_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);
 };
 
 }  // namespace blink

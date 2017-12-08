@@ -31,6 +31,7 @@
 #ifndef InspectorPageAgent_h
 #define InspectorPageAgent_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Page.h"
@@ -60,8 +61,6 @@ using blink::protocol::Maybe;
 
 class CORE_EXPORT InspectorPageAgent final
     : public InspectorBaseAgent<protocol::Page::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
-
  public:
   class Client {
    public:
@@ -238,6 +237,7 @@ class CORE_EXPORT InspectorPageAgent final
   bool reloading_;
   Member<InspectorResourceContentLoader> inspector_resource_content_loader_;
   int resource_content_loader_client_id_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorPageAgent);
 };
 
 }  // namespace blink

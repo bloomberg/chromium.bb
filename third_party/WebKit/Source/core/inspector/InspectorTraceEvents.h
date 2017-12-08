@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -70,8 +71,6 @@ class ParseHTML;
 }
 
 class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
-  WTF_MAKE_NONCOPYABLE(InspectorTraceEvents);
-
  public:
   InspectorTraceEvents() {}
 
@@ -118,6 +117,7 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
 
  private:
   Member<CoreProbeSink> instrumenting_agents_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorTraceEvents);
 };
 
 namespace InspectorLayoutEvent {

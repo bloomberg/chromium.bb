@@ -6,6 +6,7 @@
 #define ThreadDebugger_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/inspector/ConsoleTypes.h"
@@ -25,8 +26,6 @@ class SourceLocation;
 // TODO(dgozman): rename this to ThreadInspector (and subclasses).
 class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
                                    public V8PerIsolateData::Data {
-  WTF_MAKE_NONCOPYABLE(ThreadDebugger);
-
  public:
   explicit ThreadDebugger(v8::Isolate*);
   ~ThreadDebugger() override;
@@ -115,6 +114,7 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
   Vector<v8_inspector::V8InspectorClient::TimerCallback> timer_callbacks_;
   Vector<void*> timer_data_;
   std::unique_ptr<UserGestureIndicator> user_gesture_indicator_;
+  DISALLOW_COPY_AND_ASSIGN(ThreadDebugger);
 };
 
 template <>

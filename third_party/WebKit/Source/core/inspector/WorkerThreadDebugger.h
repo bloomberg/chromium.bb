@@ -31,6 +31,7 @@
 #ifndef WorkerThreadDebugger_h
 #define WorkerThreadDebugger_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/ThreadDebugger.h"
 
@@ -41,8 +42,6 @@ class SourceLocation;
 class WorkerThread;
 
 class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
-  WTF_MAKE_NONCOPYABLE(WorkerThreadDebugger);
-
  public:
   explicit WorkerThreadDebugger(v8::Isolate*);
   ~WorkerThreadDebugger() override;
@@ -87,6 +86,7 @@ class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
 
   int paused_context_group_id_;
   WTF::HashMap<int, WorkerThread*> worker_threads_;
+  DISALLOW_COPY_AND_ASSIGN(WorkerThreadDebugger);
 };
 
 }  // namespace blink
