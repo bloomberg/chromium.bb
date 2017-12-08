@@ -240,11 +240,18 @@ suffixes, annotate the element with the attribute `base="true"`. This instructs
 tools not to treat the partial base name as a distinct histogram. Note that
 suffixes can be applied recursively.
 
+### Enum labels
+
+_All_ histograms, including boolean and sparse histograms, may have enum labels
+provided via [enums.xml](./enums.xml). Using labels is encouraged whenever
+labels would be clearer than raw numeric values.
+
 ## When To Use Sparse Histograms
 
 Sparse histograms are well suited for recording counts of exact sample values
 that are sparsely distributed over a large range.  They can be used with enums
-as well as regular integer values.
+as well as regular integer values. It is often valuable to provide labels in
+[enums.xml](./enums.xml).
 
 The implementation uses a lock and a map, whereas other histogram types use a
 vector and no lock. It is thus more costly to add values to, and each value
