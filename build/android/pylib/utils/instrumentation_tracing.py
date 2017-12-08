@@ -17,6 +17,7 @@ function from such a module will be added to the trace.
 import contextlib
 import functools
 import inspect
+import os
 import re
 import sys
 import threading
@@ -108,7 +109,16 @@ def _generate_trace_function(to_include, to_exclude):
   included = set()
   excluded = set()
 
+  tracing_pid = os.getpid()
+
   def traceFunction(frame, event, arg):
+    del arg
+
+    # Don't try to trace in subprocesses.
+    if os.getpid() != tracing_pid:
+      sys.settrace(None)
+      return None
+
     # pylint: disable=unused-argument
     if event not in ("call", "return"):
       return None
