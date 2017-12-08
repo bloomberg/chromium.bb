@@ -170,12 +170,21 @@ message DeviceUnregisterRequest {
 message DeviceUnregisterResponse {
 }
 
-// Request from device to server to upload device EMCert
-// (enterprise machine cert used for remote attestation).
+// Request from device to server to upload device certificate.
 // GoogleDMToken MUST be in HTTP Authorization header.
 message DeviceCertUploadRequest {
-  // EMCert in X.509 format.
+  enum CertificateType {
+    // Default value for when a type is not specified.
+    CERTIFICATE_TYPE_UNSPECIFIED = 0;
+    // Enterprise machine certificate used for remote attestation.
+    ENTERPRISE_MACHINE_CERTIFICATE = 1;
+    // Enrollment certificate used to obtain an enrollment identifier.
+    ENTERPRISE_ENROLLMENT_CERTIFICATE = 2;
+  }
+  // Certificate in X.509 format.
   optional bytes device_certificate = 1;
+  // Type of certificate. If omitted, will be guessed from the certificate.
+  optional CertificateType certificate_type = 2;
 }
 
 // Response from server to device for cert upload request.
@@ -467,6 +476,9 @@ message PolicyData {
   // this topic in order to receive notifications that one or more commands are
   // available for execution.
   optional string command_invalidation_topic = 27;
+
+  // Whether the device needs to upload an enrollment identifier to the cloud.
+  optional bool enrollment_id_needed = 28;
 }
 
 message PolicyFetchResponse {
