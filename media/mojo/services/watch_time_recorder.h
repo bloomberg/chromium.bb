@@ -47,18 +47,20 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
 
   const mojom::PlaybackPropertiesPtr properties_;
 
-  // Mapping of WatchTime metric keys to MeanTimeBetweenRebuffers (MTBR) and
-  // smooth rate (had zero rebuffers) keys.
-  struct RebufferMapping {
-    RebufferMapping(const RebufferMapping& copy);
-    RebufferMapping(WatchTimeKey watch_time_key,
-                    base::StringPiece mtbr_key,
-                    base::StringPiece smooth_rate_key);
+  // Mapping of WatchTime metric keys to MeanTimeBetweenRebuffers (MTBR), smooth
+  // rate (had zero rebuffers), and discard (<7s watch time) keys.
+  struct ExtendedMetricsKeyMap {
+    ExtendedMetricsKeyMap(const ExtendedMetricsKeyMap& copy);
+    ExtendedMetricsKeyMap(WatchTimeKey watch_time_key,
+                          base::StringPiece mtbr_key,
+                          base::StringPiece smooth_rate_key,
+                          base::StringPiece discard_key);
     const WatchTimeKey watch_time_key;
     const base::StringPiece mtbr_key;
     const base::StringPiece smooth_rate_key;
+    const base::StringPiece discard_key;
   };
-  const std::vector<RebufferMapping> rebuffer_keys_;
+  const std::vector<ExtendedMetricsKeyMap> extended_metrics_keys_;
 
   using WatchTimeInfo = base::flat_map<WatchTimeKey, base::TimeDelta>;
   WatchTimeInfo watch_time_info_;

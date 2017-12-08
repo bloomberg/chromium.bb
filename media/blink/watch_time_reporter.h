@@ -27,10 +27,11 @@ namespace media {
 // changes during the playback of media. We record metrics for audio only
 // playbacks as well as video only or audio+video playbacks of sufficient size.
 //
-// Watch time for our purposes is defined as the amount of elapsed media time. A
-// minimum of 7 seconds of unmuted media must be watched to start watch time
-// monitoring. Watch time is checked every 5 seconds from then on and reported
-// to multiple buckets: All, MSE, SRC, EME, AC, and battery.
+// Watch time for our purposes is defined as the amount of elapsed media time.
+// Any amount of elapsed time is reported to the WatchTimeRecorder, but only
+// amounts above limits::kMinimumElapsedWatchTimeSecs are reported to UMA. Watch
+// time is checked every 5 seconds from then on and reported to multiple
+// buckets: All, MSE, SRC, EME, AC, and battery.
 //
 // Either of paused or muted is sufficient to stop watch time metric reports.
 // Each of these has a hysteresis where if the state change is undone within 5

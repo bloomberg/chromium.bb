@@ -133,6 +133,19 @@ const char kRebuffersCountAudioVideoMse[] =
 const char kRebuffersCountAudioVideoEme[] =
     "Media.RebuffersCount.AudioVideo.EME";
 
+const char kDiscardedWatchTimeAudioSrc[] =
+    "Media.WatchTime.Audio.Discarded.SRC";
+const char kDiscardedWatchTimeAudioMse[] =
+    "Media.WatchTime.Audio.Discarded.MSE";
+const char kDiscardedWatchTimeAudioEme[] =
+    "Media.WatchTime.Audio.Discarded.EME";
+const char kDiscardedWatchTimeAudioVideoSrc[] =
+    "Media.WatchTime.AudioVideo.Discarded.SRC";
+const char kDiscardedWatchTimeAudioVideoMse[] =
+    "Media.WatchTime.AudioVideo.Discarded.MSE";
+const char kDiscardedWatchTimeAudioVideoEme[] =
+    "Media.WatchTime.AudioVideo.Discarded.EME";
+
 base::StringPiece WatchTimeKeyToString(WatchTimeKey key) {
   switch (key) {
     case WatchTimeKey::kAudioAll:

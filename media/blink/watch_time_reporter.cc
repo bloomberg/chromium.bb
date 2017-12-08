@@ -5,15 +5,9 @@
 #include "media/blink/watch_time_reporter.h"
 
 #include "base/power_monitor/power_monitor.h"
-#include "media/base/limits.h"
 #include "media/base/watch_time_keys.h"
 
 namespace media {
-
-// The minimum amount of media playback which can elapse before we'll report
-// watch time metrics for a playback.
-constexpr base::TimeDelta kMinimumElapsedWatchTime =
-    base::TimeDelta::FromSeconds(limits::kMinimumElapsedWatchTimeSecs);
 
 // The minimum width and height of videos to report watch time metrics for.
 constexpr gfx::Size kMinimumVideoSize = gfx::Size(200, 140);
@@ -334,7 +328,7 @@ void WatchTimeReporter::UpdateWatchTime() {
   if (last_media_timestamp_ != current_timestamp) {
     last_media_timestamp_ = current_timestamp;
 
-    if (elapsed >= kMinimumElapsedWatchTime) {
+    if (elapsed > base::TimeDelta()) {
       RECORD_WATCH_TIME(All, elapsed);
       if (properties_->is_mse)
         RECORD_WATCH_TIME(Mse, elapsed);
@@ -362,9 +356,9 @@ void WatchTimeReporter::UpdateWatchTime() {
     const base::TimeDelta elapsed_power =
         last_media_power_timestamp_ - start_timestamp_for_power_;
 
-    // Again, only update watch time if enough time has elapsed; we need to
-    // recheck the elapsed time here since the power source can change anytime.
-    if (elapsed_power >= kMinimumElapsedWatchTime) {
+    // Again, only update watch time if any time has elapsed; we need to recheck
+    // the elapsed time here since the power source can change anytime.
+    if (elapsed_power > base::TimeDelta()) {
       if (is_on_battery_power_)
         RECORD_WATCH_TIME(Battery, elapsed_power);
       else
@@ -394,7 +388,7 @@ void WatchTimeReporter::UpdateWatchTime() {
     const base::TimeDelta elapsed_controls =
         last_media_controls_timestamp_ - start_timestamp_for_controls_;
 
-    if (elapsed_controls >= kMinimumElapsedWatchTime) {
+    if (elapsed_controls > base::TimeDelta()) {
       if (has_native_controls_)
         RECORD_FOREGROUND_WATCH_TIME(NativeControlsOn, elapsed_controls);
       else
@@ -425,7 +419,7 @@ void WatchTimeReporter::UpdateWatchTime() {
     const base::TimeDelta elapsed_display_type =
         last_media_display_type_timestamp_ - start_timestamp_for_display_type_;
 
-    if (elapsed_display_type >= kMinimumElapsedWatchTime) {
+    if (elapsed_display_type > base::TimeDelta()) {
       switch (display_type_for_recording_) {
         case blink::WebMediaPlayer::DisplayType::kInline:
           RECORD_DISPLAY_WATCH_TIME(DisplayInline, elapsed_display_type);

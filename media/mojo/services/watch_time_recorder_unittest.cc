@@ -42,7 +42,12 @@ class WatchTimeRecorderTest : public testing::Test {
         smooth_keys_({kRebuffersCountAudioSrc, kRebuffersCountAudioMse,
                       kRebuffersCountAudioEme, kRebuffersCountAudioVideoSrc,
                       kRebuffersCountAudioVideoMse,
-                      kRebuffersCountAudioVideoEme}) {
+                      kRebuffersCountAudioVideoEme}),
+        discard_keys_({kDiscardedWatchTimeAudioSrc, kDiscardedWatchTimeAudioMse,
+                       kDiscardedWatchTimeAudioEme,
+                       kDiscardedWatchTimeAudioVideoSrc,
+                       kDiscardedWatchTimeAudioVideoMse,
+                       kDiscardedWatchTimeAudioVideoEme}) {
     ResetMetricRecorders();
     WatchTimeRecorder::CreateWatchTimeRecorderProvider(
         mojo::MakeRequest(&provider_));
@@ -103,14 +108,13 @@ class WatchTimeRecorderTest : public testing::Test {
     ExpectHelper(smooth_keys_, keys, count);
   }
 
+  void ExpectNoUkmWatchTime() {
+    ASSERT_EQ(0u, test_recorder_->sources_count());
+    ASSERT_EQ(0u, test_recorder_->entries_count());
+  }
+
   void ExpectUkmWatchTime(const std::vector<base::StringPiece>& keys,
                           base::TimeDelta value) {
-    if (keys.empty()) {
-      ASSERT_EQ(0u, test_recorder_->sources_count());
-      ASSERT_EQ(0u, test_recorder_->entries_count());
-      return;
-    }
-
     const auto& entries =
         test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
     EXPECT_EQ(1u, entries.size());
@@ -141,6 +145,7 @@ class WatchTimeRecorderTest : public testing::Test {
   const std::vector<WatchTimeKey> computation_keys_;
   const std::vector<base::StringPiece> mtbr_keys_;
   const std::vector<base::StringPiece> smooth_keys_;
+  const std::vector<base::StringPiece> discard_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(WatchTimeRecorderTest);
 };
@@ -174,7 +179,7 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
     // These keys are only reported for a full finalize.
     ExpectMtbrTime({}, base::TimeDelta());
     ExpectZeroRebuffers({});
-    ExpectUkmWatchTime({}, base::TimeDelta());
+    ExpectNoUkmWatchTime();
 
     // Verify nothing else is recorded except for what we finalized above.
     ResetMetricRecorders();
@@ -184,32 +189,99 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
     ExpectMtbrTime({}, base::TimeDelta());
     ExpectZeroRebuffers({});
 
-    if (key == WatchTimeKey::kAudioAll || key == WatchTimeKey::kAudioVideoAll ||
-        key == WatchTimeKey::kAudioBackgroundAll ||
-        key == WatchTimeKey::kAudioVideoBackgroundAll ||
-        key == WatchTimeKey::kVideoAll ||
-        key == WatchTimeKey::kVideoBackgroundAll) {
-      ExpectUkmWatchTime({UkmEntry::kWatchTimeName}, kWatchTime2);
-    } else {
-      ExpectUkmWatchTime({}, base::TimeDelta());
+    switch (key) {
+      case WatchTimeKey::kAudioAll:
+      case WatchTimeKey::kAudioBackgroundAll:
+      case WatchTimeKey::kAudioVideoAll:
+      case WatchTimeKey::kAudioVideoBackgroundAll:
+      case WatchTimeKey::kVideoAll:
+      case WatchTimeKey::kVideoBackgroundAll:
+        ExpectUkmWatchTime({UkmEntry::kWatchTimeName}, kWatchTime2);
+        break;
+
+      // These keys are not reported, instead we boolean flags for each type.
+      case WatchTimeKey::kAudioMse:
+      case WatchTimeKey::kAudioEme:
+      case WatchTimeKey::kAudioSrc:
+      case WatchTimeKey::kAudioEmbeddedExperience:
+      case WatchTimeKey::kAudioBackgroundMse:
+      case WatchTimeKey::kAudioBackgroundEme:
+      case WatchTimeKey::kAudioBackgroundSrc:
+      case WatchTimeKey::kAudioBackgroundEmbeddedExperience:
+      case WatchTimeKey::kAudioVideoMse:
+      case WatchTimeKey::kAudioVideoEme:
+      case WatchTimeKey::kAudioVideoSrc:
+      case WatchTimeKey::kAudioVideoEmbeddedExperience:
+      case WatchTimeKey::kAudioVideoBackgroundMse:
+      case WatchTimeKey::kAudioVideoBackgroundEme:
+      case WatchTimeKey::kAudioVideoBackgroundSrc:
+      case WatchTimeKey::kAudioVideoBackgroundEmbeddedExperience:
+      case WatchTimeKey::kVideoMse:
+      case WatchTimeKey::kVideoEme:
+      case WatchTimeKey::kVideoSrc:
+      case WatchTimeKey::kVideoEmbeddedExperience:
+      case WatchTimeKey::kVideoBackgroundMse:
+      case WatchTimeKey::kVideoBackgroundEme:
+      case WatchTimeKey::kVideoBackgroundSrc:
+      case WatchTimeKey::kVideoBackgroundEmbeddedExperience:
+        ExpectUkmWatchTime({}, base::TimeDelta());
+        break;
+
+      // These keys roll up into the battery watch time field.
+      case WatchTimeKey::kAudioBattery:
+      case WatchTimeKey::kAudioBackgroundBattery:
+      case WatchTimeKey::kAudioVideoBattery:
+      case WatchTimeKey::kAudioVideoBackgroundBattery:
+      case WatchTimeKey::kVideoBattery:
+      case WatchTimeKey::kVideoBackgroundBattery:
+        ExpectUkmWatchTime({UkmEntry::kWatchTime_BatteryName}, kWatchTime2);
+        break;
+
+      // These keys roll up into the AC watch time field.
+      case WatchTimeKey::kAudioAc:
+      case WatchTimeKey::kAudioBackgroundAc:
+      case WatchTimeKey::kAudioVideoAc:
+      case WatchTimeKey::kAudioVideoBackgroundAc:
+      case WatchTimeKey::kVideoAc:
+      case WatchTimeKey::kVideoBackgroundAc:
+        ExpectUkmWatchTime({UkmEntry::kWatchTime_ACName}, kWatchTime2);
+        break;
+
+      case WatchTimeKey::kAudioVideoDisplayFullscreen:
+      case WatchTimeKey::kVideoDisplayFullscreen:
+        ExpectUkmWatchTime({UkmEntry::kWatchTime_DisplayFullscreenName},
+                           kWatchTime2);
+        break;
+
+      case WatchTimeKey::kAudioVideoDisplayInline:
+      case WatchTimeKey::kVideoDisplayInline:
+        ExpectUkmWatchTime({UkmEntry::kWatchTime_DisplayInlineName},
+                           kWatchTime2);
+        break;
+
+      case WatchTimeKey::kAudioVideoDisplayPictureInPicture:
+      case WatchTimeKey::kVideoDisplayPictureInPicture:
+        ExpectUkmWatchTime({UkmEntry::kWatchTime_DisplayPictureInPictureName},
+                           kWatchTime2);
+        break;
+
+      case WatchTimeKey::kAudioNativeControlsOn:
+      case WatchTimeKey::kAudioVideoNativeControlsOn:
+      case WatchTimeKey::kVideoNativeControlsOn:
+        ExpectUkmWatchTime({UkmEntry::kWatchTime_NativeControlsOnName},
+                           kWatchTime2);
+        break;
+
+      case WatchTimeKey::kAudioNativeControlsOff:
+      case WatchTimeKey::kAudioVideoNativeControlsOff:
+      case WatchTimeKey::kVideoNativeControlsOff:
+        ExpectUkmWatchTime({UkmEntry::kWatchTime_NativeControlsOffName},
+                           kWatchTime2);
+        break;
     }
 
     ResetMetricRecorders();
   }
-}
-
-TEST_F(WatchTimeRecorderTest, FinalizeWithoutWatchTime) {
-  Initialize(true, true, false, true);
-  wtr_.reset();
-  base::RunLoop().RunUntilIdle();
-
-  // No watch time should have been recorded even though a finalize event will
-  // be sent.
-  ExpectWatchTime({}, base::TimeDelta());
-  ExpectMtbrTime({}, base::TimeDelta());
-  ExpectZeroRebuffers({});
-  ExpectUkmWatchTime({}, base::TimeDelta());
-  ASSERT_EQ(0U, test_recorder_->sources_count());
 }
 
 TEST_F(WatchTimeRecorderTest, TestRebufferingMetrics) {
@@ -237,12 +309,101 @@ TEST_F(WatchTimeRecorderTest, TestRebufferingMetrics) {
 
   ExpectMtbrTime({}, base::TimeDelta());
   ExpectZeroRebuffers(smooth_keys_);
+
+  // Now rerun the test with a small amount of watch time and ensure rebuffering
+  // isn't recorded because we haven't met the watch time requirements.
+  ResetMetricRecorders();
+  constexpr base::TimeDelta kWatchTimeShort = base::TimeDelta::FromSeconds(5);
+  for (auto key : computation_keys_)
+    wtr_->RecordWatchTime(key, kWatchTimeShort);
+  wtr_->UpdateUnderflowCount(1);
+  wtr_->UpdateUnderflowCount(2);
+  wtr_->FinalizeWatchTime({});
+  base::RunLoop().RunUntilIdle();
+
+  // Nothing should be logged since this doesn't meet requirements.
+  ExpectMtbrTime({}, base::TimeDelta());
+  for (auto key : smooth_keys_)
+    histogram_tester_->ExpectTotalCount(key.as_string(), 0);
+}
+
+TEST_F(WatchTimeRecorderTest, TestDiscardMetrics) {
+  Initialize(true, false, true, true);
+
+  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(5);
+  for (auto key : computation_keys_)
+    wtr_->RecordWatchTime(key, kWatchTime);
+
+  // Trigger finalization of everything.
+  wtr_->FinalizeWatchTime({});
+  base::RunLoop().RunUntilIdle();
+
+  // No standard watch time should be recorded because it falls below the
+  // reporting threshold.
+  ExpectWatchTime({}, base::TimeDelta());
+
+  // Verify the time was instead logged to the discard keys.
+  for (auto key : discard_keys_) {
+    histogram_tester_->ExpectUniqueSample(key.as_string(),
+                                          kWatchTime.InMilliseconds(), 1);
+  }
+
+  // UKM watch time won't be logged because we aren't sending "All" keys.
+  ExpectUkmWatchTime({}, base::TimeDelta());
 }
 
 #define EXPECT_UKM(name, value) \
   test_recorder_->ExpectEntryMetric(entry, name, value)
 #define EXPECT_NO_UKM(name) \
   EXPECT_FALSE(test_recorder_->EntryHasMetric(entry, name))
+
+TEST_F(WatchTimeRecorderTest, FinalizeWithoutWatchTime) {
+  mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
+      kCodecAAC, kCodecH264, true, true, false, false, false, false,
+      gfx::Size(800, 600), url::Origin::Create(GURL(kTestOrigin)), true);
+  provider_->AcquireWatchTimeRecorder(properties.Clone(),
+                                      mojo::MakeRequest(&wtr_));
+  wtr_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // No watch time should have been recorded even though a finalize event will
+  // be sent, however a UKM entry with the playback properties will still be
+  // generated.
+  ExpectWatchTime({}, base::TimeDelta());
+  ExpectMtbrTime({}, base::TimeDelta());
+  ExpectZeroRebuffers({});
+  ExpectUkmWatchTime({}, base::TimeDelta());
+
+  const auto& entries = test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
+
+    EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
+    EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
+    EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
+    EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
+    EXPECT_UKM(UkmEntry::kHasVideoName, properties->has_video);
+    EXPECT_UKM(UkmEntry::kIsEMEName, properties->is_eme);
+    EXPECT_UKM(UkmEntry::kIsMSEName, properties->is_mse);
+    EXPECT_UKM(UkmEntry::kLastPipelineStatusName, PIPELINE_OK);
+    EXPECT_UKM(UkmEntry::kRebuffersCountName, 0);
+    EXPECT_UKM(UkmEntry::kVideoNaturalWidthName,
+               properties->natural_size.width());
+    EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
+               properties->natural_size.height());
+
+    EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTimeName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_BatteryName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOnName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOffName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayFullscreenName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayInlineName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayPictureInPictureName);
+  }
+}
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
   mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
@@ -251,7 +412,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
   provider_->AcquireWatchTimeRecorder(properties.Clone(),
                                       mojo::MakeRequest(&wtr_));
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(4);
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime);
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
