@@ -5,9 +5,6 @@
 #include "net/proxy/proxy_config_service_linux.h"
 
 #include <errno.h>
-#if defined(USE_GCONF)
-#include <gconf/gconf-client.h>
-#endif  // defined(USE_GCONF)
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,8 +39,11 @@
 #include "net/proxy/proxy_server.h"
 #include "url/url_canon.h"
 
+#if defined(USE_GCONF)
+#include <gconf/gconf-client.h>
+#endif  // defined(USE_GCONF)
 #if defined(USE_GIO)
-#include "library_loaders/libgio.h"  // nogncheck
+#include <gio/gio.h>
 #endif  // defined(USE_GIO)
 
 namespace net {
@@ -520,7 +520,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
 #endif  // defined(USE_GCONF)
 
 #if defined(USE_GIO)
-const char kProxyGConfSchema[] = "org.gnome.system.proxy";
+const char kProxyGSettingsSchema[] = "org.gnome.system.proxy";
 
 // This setting getter uses gsettings, as used in most GNOME 3 desktops.
 class SettingGetterImplGSettings
@@ -558,18 +558,8 @@ class SettingGetterImplGSettings
     DCHECK(!client_);
   }
 
-  bool SchemaExists(base::StringPiece schema_name) {
-    const gchar* const* schemas = libgio_loader_.g_settings_list_schemas();
-    while (*schemas) {
-      if (!strcmp(schema_name.data(), static_cast<const char*>(*schemas)))
-        return true;
-      schemas++;
-    }
-    return false;
-  }
-
-  // LoadAndCheckVersion() must be called *before* Init()!
-  bool LoadAndCheckVersion(base::Environment* env);
+  // CheckVersion() must be called *before* Init()!
+  bool CheckVersion(base::Environment* env);
 
   bool Init(const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner)
       override {
@@ -577,18 +567,19 @@ class SettingGetterImplGSettings
     DCHECK(!client_);
     DCHECK(!task_runner_.get());
 
-    if (!SchemaExists(kProxyGConfSchema) ||
-        !(client_ = libgio_loader_.g_settings_new(kProxyGConfSchema))) {
+    if (!g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
+                                         kProxyGSettingsSchema, FALSE) ||
+        !(client_ = g_settings_new(kProxyGSettingsSchema))) {
       // It's not clear whether/when this can return NULL.
       LOG(ERROR) << "Unable to create a gsettings client";
       return false;
     }
     task_runner_ = glib_task_runner;
     // We assume these all work if the above call worked.
-    http_client_ = libgio_loader_.g_settings_get_child(client_, "http");
-    https_client_ = libgio_loader_.g_settings_get_child(client_, "https");
-    ftp_client_ = libgio_loader_.g_settings_get_child(client_, "ftp");
-    socks_client_ = libgio_loader_.g_settings_get_child(client_, "socks");
+    http_client_ = g_settings_get_child(client_, "http");
+    https_client_ = g_settings_get_child(client_, "https");
+    ftp_client_ = g_settings_get_child(client_, "ftp");
+    socks_client_ = g_settings_get_child(client_, "socks");
     DCHECK(http_client_ && https_client_ && ftp_client_ && socks_client_);
     return true;
   }
@@ -713,7 +704,7 @@ class SettingGetterImplGSettings
                        base::StringPiece key,
                        std::string* result) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    gchar* value = libgio_loader_.g_settings_get_string(client, key.data());
+    gchar* value = g_settings_get_string(client, key.data());
     if (!value)
       return false;
     *result = value;
@@ -722,20 +713,19 @@ class SettingGetterImplGSettings
   }
   bool GetBoolByPath(GSettings* client, base::StringPiece key, bool* result) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    *result = static_cast<bool>(
-        libgio_loader_.g_settings_get_boolean(client, key.data()));
+    *result = static_cast<bool>(g_settings_get_boolean(client, key.data()));
     return true;
   }
   bool GetIntByPath(GSettings* client, base::StringPiece key, int* result) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    *result = libgio_loader_.g_settings_get_int(client, key.data());
+    *result = g_settings_get_int(client, key.data());
     return true;
   }
   bool GetStringListByPath(GSettings* client,
                            base::StringPiece key,
                            std::vector<std::string>* result) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    gchar** list = libgio_loader_.g_settings_get_strv(client, key.data());
+    gchar** list = g_settings_get_strv(client, key.data());
     if (!list)
       return false;
     for (size_t i = 0; list[i]; ++i) {
@@ -786,51 +776,18 @@ class SettingGetterImplGSettings
   // thread. Only for assertions.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  LibGioLoader libgio_loader_;
-
   DISALLOW_COPY_AND_ASSIGN(SettingGetterImplGSettings);
 };
 
-bool SettingGetterImplGSettings::LoadAndCheckVersion(
+bool SettingGetterImplGSettings::CheckVersion(
     base::Environment* env) {
-  // LoadAndCheckVersion() must be called *before* Init()!
+  // CheckVersion() must be called *before* Init()!
   DCHECK(!client_);
 
-  // The APIs to query gsettings were introduced after the minimum glib
-  // version we target, so we can't link directly against them. We load them
-  // dynamically at runtime, and if they don't exist, return false here. (We
-  // support linking directly via gyp flags though.) Additionally, even when
-  // they are present, we do two additional checks to make sure we should use
-  // them and not gconf. First, we attempt to load the schema for proxy
-  // settings. Second, we check for the program that was used in older
-  // versions of GNOME to configure proxy settings, and return false if it
-  // exists. Some distributions (e.g. Ubuntu 11.04) have the API and schema
-  // but don't use gsettings for proxy settings, but they do have the old
-  // binary, so we detect these systems that way.
-
-  {
-    // TODO(phajdan.jr): Redesign the code to load library on different thread.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-    // Try also without .0 at the end; on some systems this may be required.
-    if (!libgio_loader_.Load("libgio-2.0.so.0") &&
-        !libgio_loader_.Load("libgio-2.0.so")) {
-      VLOG(1) << "Cannot load gio library. Will fall back to gconf.";
-      return false;
-    }
-
-    // g_type_init will be deprecated in 2.36. 2.35 is the development
-    // version for 2.36, hence do not call g_type_init starting 2.35.
-    // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
-    if (libgio_loader_.glib_check_version(2, 35, 0)) {
-      libgio_loader_.g_type_init();
-    }
-  }
-
   GSettings* client = nullptr;
-  if (SchemaExists(kProxyGConfSchema)) {
-    ANNOTATE_SCOPED_MEMORY_LEAK;  // http://crbug.com/380782
-    client = libgio_loader_.g_settings_new(kProxyGConfSchema);
+  if (g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
+                                      kProxyGSettingsSchema, FALSE)) {
+    client = g_settings_new(kProxyGSettingsSchema);
   }
   if (!client) {
     VLOG(1) << "Cannot create gsettings client. Will fall back to gconf.";
@@ -1545,8 +1502,8 @@ ProxyConfigServiceLinux::Delegate::Delegate(
       std::unique_ptr<SettingGetterImplGSettings> gs_getter(
           new SettingGetterImplGSettings());
       // We have to load symbols and check the GNOME version in use to decide
-      // if we should use the gsettings getter. See LoadAndCheckVersion().
-      if (gs_getter->LoadAndCheckVersion(env_var_getter_.get()))
+      // if we should use the gsettings getter. See CheckVersion().
+      if (gs_getter->CheckVersion(env_var_getter_.get()))
         setting_getter_ = std::move(gs_getter);
       }
 #endif
