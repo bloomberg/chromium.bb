@@ -69,6 +69,12 @@ class MODULES_EXPORT InspectorIndexedDBAgent final
                    int page_size,
                    protocol::Maybe<protocol::IndexedDB::KeyRange>,
                    std::unique_ptr<RequestDataCallback>) override;
+  void deleteObjectStoreEntries(
+      const String& security_origin,
+      const String& database_name,
+      const String& object_store_name,
+      std::unique_ptr<protocol::IndexedDB::KeyRange>,
+      std::unique_ptr<DeleteObjectStoreEntriesCallback>) override;
   void clearObjectStore(const String& security_origin,
                         const String& database_name,
                         const String& object_store_name,
