@@ -729,9 +729,9 @@ TEST_F(UkmServiceTest, UnsupportedSchemes) {
   } test_cases[] = {
       {"http://google.ca/", true},
       {"https://google.ca/", true},
-      {"ftp://google.ca/", false},
-      {"about:blank", false},
-      {"chrome://version/", false},
+      {"ftp://google.ca/", true},
+      {"about:blank", true},
+      {"chrome://version/", true},
       {"file:///tmp/", false},
       {"chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj", false},
       {"abc://google.ca/", false},
@@ -795,6 +795,43 @@ TEST_F(UkmServiceTest, SanitizeUrlAuthParams) {
   ASSERT_EQ(1, proto_report.sources_size());
   const Source& proto_source = proto_report.sources(0);
   EXPECT_EQ("https://example.com/", proto_source.url());
+}
+
+TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
+  struct {
+    const char* url;
+    const char* expected_url;
+  } test_cases[] = {
+      {"chrome://version/?foo=bar", "chrome://version/"},
+      {"about:blank?foo=bar", "about:blank"},
+      {"chrome://histograms/Variations", "chrome://histograms/Variations"},
+      {"http://google.ca/?foo=bar", "http://google.ca/?foo=bar"},
+      {"https://google.ca/?foo=bar", "https://google.ca/?foo=bar"},
+      {"ftp://google.ca/?foo=bar", "ftp://google.ca/?foo=bar"},
+  };
+
+  for (const auto& test : test_cases) {
+    ClearPrefs();
+
+    UkmService service(&prefs_, &client_);
+    TestRecordingHelper recorder(&service);
+    EXPECT_EQ(0, GetPersistedLogCount());
+    service.Initialize();
+    task_runner_->RunUntilIdle();
+    service.EnableRecording();
+    service.EnableReporting();
+
+    auto id = GetWhitelistedSourceId(0);
+    recorder.UpdateSourceURL(id, GURL(test.url));
+
+    service.Flush();
+    EXPECT_EQ(1, GetPersistedLogCount());
+
+    auto proto_report = GetPersistedReport();
+    ASSERT_EQ(1, proto_report.sources_size());
+    const Source& proto_source = proto_report.sources(0);
+    EXPECT_EQ(test.expected_url, proto_source.url());
+  }
 }
 
 }  // namespace ukm
