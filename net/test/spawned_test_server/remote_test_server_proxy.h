@@ -24,12 +24,15 @@ class IPEndPoint;
 // address.
 class RemoteTestServerProxy {
  public:
-  RemoteTestServerProxy(
-      const IPEndPoint& remote_address,
+  explicit RemoteTestServerProxy(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~RemoteTestServerProxy();
 
   uint16_t local_port() const { return local_port_; }
+
+  // Starts the proxy for the specified |remote_address|. Must be called before
+  // any incoming connection on local_port() are initiated.
+  void Start(const IPEndPoint& remote_address);
 
  private:
   class Core;

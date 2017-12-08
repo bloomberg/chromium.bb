@@ -1918,11 +1918,16 @@ class ServerRunner(testserver_base.TestServerRunner):
           print ('AIA server started on %s:%d...' %
               (host, self.__ocsp_server.server_port))
 
+          ocsp_server_port = self.__ocsp_server.server_port
+          if self.options.ocsp_proxy_port_number != 0:
+            ocsp_server_port = self.options.ocsp_proxy_port_number
+            server_data['ocsp_port'] = self.__ocsp_server.server_port
+
           (pem_cert_and_key, intermediate_cert_der) = \
               minica.GenerateCertKeyAndIntermediate(
                   subject = self.options.cert_common_name,
-                  ca_issuers_url = ("http://%s:%d/ca_issuers" %
-                                    (host, self.__ocsp_server.server_port)),
+                  ca_issuers_url =
+                      ("http://%s:%d/ca_issuers" % (host, ocsp_server_port)),
                   serial = self.options.cert_serial)
 
           self.__ocsp_server.ocsp_response = None
@@ -1991,10 +1996,14 @@ class ServerRunner(testserver_base.TestServerRunner):
             raise testserver_base.OptionError('unknown OCSP produced: ' +
                 self.options.ocsp_produced)
 
+          ocsp_server_port = self.__ocsp_server.server_port
+          if self.options.ocsp_proxy_port_number != 0:
+            ocsp_server_port = self.options.ocsp_proxy_port_number
+            server_data['ocsp_port'] = self.__ocsp_server.server_port
+
           (pem_cert_and_key, ocsp_der) = minica.GenerateCertKeyAndOCSP(
               subject = self.options.cert_common_name,
-              ocsp_url = ("http://%s:%d/ocsp" %
-                  (host, self.__ocsp_server.server_port)),
+              ocsp_url = ("http://%s:%d/ocsp" % (host, ocsp_server_port)),
               ocsp_states = ocsp_states,
               ocsp_dates = ocsp_dates,
               ocsp_produced = ocsp_produced,
@@ -2295,6 +2304,10 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   help='If set, the OCSP server will return '
                                   'a tryLater status rather than the actual '
                                   'OCSP response.')
+    self.option_parser.add_option('--ocsp-proxy-port-number', default=0,
+                                  type='int', dest='ocsp_proxy_port_number',
+                                  help='Port allocated for OCSP proxy '
+                                  'when connection is proxied.')
     self.option_parser.add_option('--alert-after-handshake',
                                   dest='alert_after_handshake',
                                   default=False, action='store_true',

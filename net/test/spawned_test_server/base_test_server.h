@@ -380,6 +380,7 @@ class BaseTestServer {
  protected:
   virtual ~BaseTestServer();
   Type type() const { return type_; }
+  const SSLOptions& ssl_options() const { return ssl_options_; }
 
   bool started() const { return started_; }
 
