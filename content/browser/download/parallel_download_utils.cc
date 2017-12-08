@@ -15,15 +15,15 @@ namespace content {
 namespace {
 
 // Default value for |kMinSliceSizeFinchKey|, when no parameter is specified.
-const int64_t kMinSliceSizeParallelDownload = 2097152;
+const int64_t kMinSliceSizeParallelDownload = 1365333;
 
 // Default value for |kParallelRequestCountFinchKey|, when no parameter is
 // specified.
-const int kParallelRequestCount = 2;
+const int kParallelRequestCount = 3;
 
 // The default remaining download time in seconds required for parallel request
 // creation.
-const int kDefaultRemainingTimeInSeconds = 10;
+const int kDefaultRemainingTimeInSeconds = 2;
 
 // TODO(qinmin): replace this with a comparator operator in
 // DownloadItem::ReceivedSlice.

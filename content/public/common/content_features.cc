@@ -228,7 +228,13 @@ const base::Feature kOutOfBlinkCORS{"OutOfBlinkCORS",
 
 // Whether a download can be handled by parallel jobs.
 const base::Feature kParallelDownloading{
-    "ParallelDownloading", base::FEATURE_DISABLED_BY_DEFAULT};
+  "ParallelDownloading",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Whether document level event listeners should default 'passive' to true.
 const base::Feature kPassiveDocumentEventListeners{
