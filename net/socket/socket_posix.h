@@ -76,12 +76,10 @@ class NET_EXPORT_PRIVATE SocketPosix : public base::MessageLoopForIO::Watcher {
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   const CompletionCallback& callback);
-  // TODO(crbug.com/656607): Remove default value.
   int Write(IOBuffer* buf,
             int buf_len,
             const CompletionCallback& callback,
-            const NetworkTrafficAnnotationTag& traffic_annotation =
-                NO_TRAFFIC_ANNOTATION_BUG_656607);
+            const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Waits for next write event. This is called by TCPSocketPosix for TCP
   // fastopen after sending first data. Returns ERR_IO_PENDING if it starts

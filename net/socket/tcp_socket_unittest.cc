@@ -23,6 +23,7 @@
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -168,7 +169,8 @@ class TCPSocketTest : public PlatformTest {
 
       TestCompletionCallback write_callback;
       int write_result = accepted_socket->Write(
-          write_buffer.get(), write_buffer->size(), write_callback.callback());
+          write_buffer.get(), write_buffer->size(), write_callback.callback(),
+          TRAFFIC_ANNOTATION_FOR_TESTS);
 
       scoped_refptr<IOBufferWithSize> read_buffer(
           new IOBufferWithSize(message.size()));
@@ -388,7 +390,8 @@ TEST_F(TCPSocketTest, ReadWrite) {
 
     TestCompletionCallback write_callback;
     int write_result = accepted_socket->Write(
-        write_buffer.get(), write_buffer->size(), write_callback.callback());
+        write_buffer.get(), write_buffer->size(), write_callback.callback(),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     write_result = write_callback.GetResult(write_result);
     ASSERT_TRUE(write_result >= 0);
     bytes_written += write_result;

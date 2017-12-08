@@ -20,6 +20,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
 
@@ -259,8 +260,10 @@ void BluetoothSocketNet::SendFrontWriteRequest() {
                  this,
                  request->success_callback,
                  request->error_callback);
+  // TODO(crbug.com/656607): Add proper annotation.
   int send_result =
-      tcp_socket_->Write(request->buffer.get(), request->buffer_size, callback);
+      tcp_socket_->Write(request->buffer.get(), request->buffer_size, callback,
+                         NO_TRAFFIC_ANNOTATION_BUG_656607);
   if (send_result != net::ERR_IO_PENDING) {
     callback.Run(send_result);
   }
