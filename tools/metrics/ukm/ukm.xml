@@ -327,10 +327,28 @@ be describing additional metrics about the same event.
       interaction. This value should be between [0, 100].
     </summary>
   </metric>
+  <metric name="CheckerboardedImagesCount">
+    <summary>
+      The number of images checker-imaged and re-rasterized during this
+      interaction.
+    </summary>
+  </metric>
   <metric name="NumMissingTiles">
     <summary>
       The number of visible tiles per frame checkerboarded during this
       interaction.
+    </summary>
+  </metric>
+</event>
+
+<event name="Compositor.Rendering">
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    Metrics related to rendering in the compositor.
+  </summary>
+  <metric name="CheckerboardedImagesCount">
+    <summary>
+      The number of images checker-imaged and re-rasterized on this page.
     </summary>
   </metric>
 </event>

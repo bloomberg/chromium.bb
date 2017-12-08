@@ -407,6 +407,9 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
     ImageInvalidationUpdateDurationHistogramTimer image_invalidation_timer;
     PaintImageIdFlatSet images_to_invalidate =
         tile_manager_.TakeImagesToInvalidateOnSyncTree();
+    if (ukm_manager_)
+      ukm_manager_->AddCheckerboardedImages(images_to_invalidate.size());
+
     if (image_animation_controller_.has_value()) {
       const auto& animated_images =
           image_animation_controller_.value().AnimateForSyncTree(
