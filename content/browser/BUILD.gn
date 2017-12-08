@@ -2252,8 +2252,8 @@ jumbo_source_set("browser") {
       "compositor/browser_compositor_output_surface.h",
       "compositor/gpu_browser_compositor_output_surface.cc",
       "compositor/gpu_browser_compositor_output_surface.h",
+      "compositor/gpu_output_surface_mac.cc",
       "compositor/gpu_output_surface_mac.h",
-      "compositor/gpu_output_surface_mac.mm",
       "compositor/gpu_process_transport_factory.cc",
       "compositor/gpu_process_transport_factory.h",
       "compositor/gpu_surfaceless_browser_compositor_output_surface.cc",
@@ -2289,7 +2289,7 @@ jumbo_source_set("browser") {
         # GL_TRIANGLES_ADJACENCY_EXT and GL_TRIANGLE_STRIP_ADJACENCY_EXT. They
         # get the same values but with different formatting (0xD vs 0x000D).
         # https://crbug.com/783666
-        "compositor/gpu_output_surface_mac.mm",
+        "compositor/gpu_output_surface_mac.cc",
       ]
     }
     if (enable_vulkan) {
