@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/manager/display_manager.h"
 
 namespace aura {
 
@@ -38,18 +39,20 @@ TestWindowTree::GetLastNewWindowProperties() {
   return std::move(last_new_window_properties_);
 }
 
-void TestWindowTree::NotifyClientAboutAcceleratedWidget() {
-  // This magic value comes from managed_display_info.cc
-  const int64_t kSynthesizedDisplayIdStart = 2200000000LL;
+void TestWindowTree::NotifyClientAboutAcceleratedWidgets(
+    display::DisplayManager* display_manager) {
+  int synth_accelerated_widget = 1;
+  for (const auto& display : display_manager->active_display_list()) {
 #if defined(OS_WIN)
-  const gfx::AcceleratedWidget kSynthesizedAcceleratedWidget =
-      reinterpret_cast<gfx::AcceleratedWidget>(1);
+    gfx::AcceleratedWidget widget =
+        reinterpret_cast<gfx::AcceleratedWidget>(synth_accelerated_widget);
 #else
-  const gfx::AcceleratedWidget kSynthesizedAcceleratedWidget =
-      static_cast<gfx::AcceleratedWidget>(1);
+    gfx::AcceleratedWidget widget =
+        static_cast<gfx::AcceleratedWidget>(synth_accelerated_widget);
 #endif
-  window_manager_->WmOnAcceleratedWidgetForDisplay(
-      kSynthesizedDisplayIdStart, kSynthesizedAcceleratedWidget);
+    window_manager_->WmOnAcceleratedWidgetForDisplay(display.id(), widget);
+    ++synth_accelerated_widget;
+  }
 }
 
 void TestWindowTree::AckAllChanges() {

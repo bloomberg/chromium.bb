@@ -221,6 +221,7 @@ display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .UpdateDisplay(display_specs);
+  ash_test_helper_->NotifyClientAboutAcceleratedWidgets();
 }
 
 aura::Window* AshTestBase::CurrentContext() {

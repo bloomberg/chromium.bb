@@ -13,6 +13,10 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/mus/mus_types.h"
 
+namespace display {
+class DisplayManager;
+}
+
 namespace aura {
 
 enum class WindowTreeChangeType {
@@ -72,7 +76,8 @@ class TestWindowTree : public ui::mojom::WindowTree {
 
   // Notifies the client about the accelerated widget when mus is not hosting
   // viz.
-  void NotifyClientAboutAcceleratedWidget();
+  void NotifyClientAboutAcceleratedWidgets(
+      display::DisplayManager* display_manager);
 
   // Acks all changes with a value of true.
   void AckAllChanges();
