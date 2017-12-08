@@ -487,10 +487,6 @@ TEST_F(ShellTest, ToggleAutoHide) {
 // Tests that the cursor-filter is ahead of the drag-drop controller in the
 // pre-target list.
 TEST_F(ShellTest, TestPreTargetHandlerOrder) {
-  // TODO: investigate failure in mash, http://crbug.com/695758.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   Shell* shell = Shell::Get();
   ui::EventTargetTestApi test_api(shell);
   ShellTestApi shell_test_api(shell);
@@ -517,8 +513,6 @@ TEST_F(ShellTest, EnvPreTargetHandler) {
 
 // Verifies keyboard is re-created on proper timing.
 TEST_F(ShellTest, KeyboardCreation) {
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       keyboard::switches::kEnableVirtualKeyboard);
 

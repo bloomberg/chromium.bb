@@ -137,10 +137,6 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
 }
 
 TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
-  // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Creating windows without a valid ShelfItemType does not add items.
   EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<views::Widget> widget1 =

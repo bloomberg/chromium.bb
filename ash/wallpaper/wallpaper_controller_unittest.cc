@@ -457,13 +457,10 @@ TEST_F(WallpaperControllerTest, GetMaxDisplaySize) {
   EXPECT_EQ("1000x300",
             WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
-  // TODO: mash doesn't support rotation yet, http://crbug.com/695556.
-  if (Shell::GetAshConfig() != Config::MASH) {
-    // Rotated display should return the rotated size.
-    UpdateDisplay("1000x300*2/r");
-    EXPECT_EQ("300x1000",
-              WallpaperController::GetMaxDisplaySizeInNative().ToString());
-  }
+  // Rotated display should return the rotated size.
+  UpdateDisplay("1000x300*2/r");
+  EXPECT_EQ("300x1000",
+            WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
   // UI Scaling shouldn't affect the native size.
   UpdateDisplay("1000x300*2@1.5");

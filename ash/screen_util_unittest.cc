@@ -4,7 +4,6 @@
 
 #include "ash/screen_util.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
@@ -131,10 +130,6 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
 }
 
 TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktopGrid) {
-  // TODO: requires unified desktop mode. http://crbug.com/581462.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   UpdateDisplay("500x400,400x600,300x600,200x300,600x200,350x400");
   display_manager()->SetUnifiedDesktopEnabled(true);
 

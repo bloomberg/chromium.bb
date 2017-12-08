@@ -144,6 +144,12 @@
 -ShelfLayoutManagerTest.AutoHideShelfOnScreenBoundary
 -ShelfLayoutManagerTest.GestureDrag
 
+# TODO: http://crbug.com/695562
+-ShelfWindowWatcherTest.CreateAndRemoveShelfItemProperties
+
+# TODO: Probably event filter problem. http://crbug.com/695758
+-ShellTest.TestPreTargetHandlerOrder
+
 # TODO: Needs virtual keyboard. http://crbug.com/698892
 -SystemModalContainerLayoutManagerTest.SystemModalDialogGetPushedButNotCroppedFromKeyboard
 -SystemModalContainerLayoutManagerTest.SystemModalDialogGetPushedButNotCroppedFromKeyboardIfNotCentered
@@ -154,6 +160,9 @@
 -TabletModeWindowManagerTest.ExitFullScreenWithEdgeSwipeFromTop
 -TabletModeWindowManagerTest.ExitFullScreenWithEdgeTouchAtBottom
 -TabletModeWindowManagerTest.ExitFullScreenWithEdgeTouchAtTop
+
+# TODO: Needs CursorManager. http://crbug.com/631103
+-TooltipControllerTest.HideTooltipWhenCursorHidden
 
 # TODO: Touch HUD. http://crbug.com/698032
 -TouchHudDebugTest.DualDisplays
@@ -182,9 +191,22 @@
 -VirtualKeyboardControllerAutoTest.SuppressedIfExternalKeyboardPresent
 -VirtualKeyboardControllerAutoTest.SuppressedInMaximizedMode
 
+# TODO: Needs virtual keyboard, but different issue. http://crbug.com/695640
+-VirtualKeyboardRootWindowControllerTest.EnsureCaretInWorkAreaWithMultipleDisplays
+-VirtualKeyboardRootWindowControllerTest.FollowInputFocus
+-VirtualKeyboardRootWindowControllerTest.VirtualKeyboardOnTouchableDisplayOnly
+-VirtualKeyboardRootWindowControllerTest.VirtualKeyboardShowOnSpecifiedDisplay
+
 # TODO: http://crbug.com/698894
 -WindowCycleControllerTest.MouseEventsCaptured
 -WindowCycleControllerTest.TabKeyNotLeaked
+
+# TODO: Needs CursorManager. http://crbug.com/631103
+-WindowManagerTest.MouseEventCursors
+-WindowManagerTest.UpdateCursorVisibility
+-WindowManagerTest.UpdateCursorVisibilityOnKeyEvent
+-WindowManagerTest.UpdateCursorVisibilityAccelerator
+-WindowManagerTest.TestCursorClientObserver
 
 # TODO: Crashes in bounds_animator.cc. http://crbug.com/730759
 -WindowSelectorTest.MultipleDisplays
@@ -198,11 +220,20 @@
 # TODO: Panel focus is broken. http://crbug.com/780936
 -WorkspaceControllerTest.WindowEdgeMouseHitTestPanel
 
+# TODO: Possible event filter problem. http://crbug.com/699175
+-WorkspaceEventHandlerTest.DoubleClickCaptionTogglesMaximize
+-WorkspaceEventHandlerTest.DoubleClickSingleAxisResizeEdge
+-WorkspaceEventHandlerTest.DoubleClickSingleAxisWhenSideSnapped
+-WorkspaceEventHandlerTest.DoubleTapCaptionTogglesMaximize
+
 # TODO: Needs virtual keyboard. http://crbug.com/616909
 -WorkspaceLayoutManagerKeyboardTest.AdjustWindowForA11yKeyboard
 -WorkspaceLayoutManagerKeyboardTest.ChildWindowFocused
 -WorkspaceLayoutManagerKeyboardTest.IgnoreKeyboardBoundsChange
 -WorkspaceLayoutManagerKeyboardTest.IgnoreWorkAreaChangeinNonStickyMode
+
+# TODO: Possible display config issue. http://crbug.com/793101
+-WorkspaceLayoutManagerTest.KeepMinimumVisibilityInDisplays
 
 # TODO: Needs CursorManager. http://crbug.com/631103
 -WorkspaceWindowResizerTest.MouseMoveWithTouchDrag

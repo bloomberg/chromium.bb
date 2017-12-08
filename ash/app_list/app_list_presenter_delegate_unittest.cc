@@ -7,7 +7,6 @@
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
@@ -654,10 +653,6 @@ TEST_P(AppListPresenterDelegateTest, TapAndClickEnablesSearchBox) {
 // alignment.
 TEST_F(AppListPresenterDelegateTest,
        ShelfBackgroundRespondsToAppListBeingShown) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
 
   // Show the app list, the shelf background should be transparent.

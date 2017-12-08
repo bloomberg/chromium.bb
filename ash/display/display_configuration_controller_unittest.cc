@@ -6,7 +6,6 @@
 
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -44,11 +43,6 @@ class DisplayConfigurationControllerSmoothRotationTest : public AshTestBase {
 using DisplayConfigurationControllerTest = AshTestBase;
 
 TEST_F(DisplayConfigurationControllerTest, OnlyHasOneAnimator) {
-  // TODO(wutao): needs display_configuration_controller
-  // http://crbug.com/686839.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   DisplayConfigurationControllerTestApi testapi(
       Shell::Get()->display_configuration_controller());
