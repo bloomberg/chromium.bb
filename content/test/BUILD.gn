@@ -676,6 +676,7 @@ test("content_browsertests") {
     "../browser/accessibility/dump_accessibility_browsertest_base.h",
     "../browser/accessibility/dump_accessibility_events_browsertest.cc",
     "../browser/accessibility/dump_accessibility_tree_browsertest.cc",
+    "../browser/accessibility/fullscreen_browsertest.cc",
     "../browser/accessibility/hit_testing_browsertest.cc",
     "../browser/accessibility/site_per_process_accessibility_browsertest.cc",
     "../browser/accessibility/snapshot_ax_tree_browsertest.cc",
@@ -1888,7 +1889,9 @@ test("content_unittests") {
   # Screen capture unit tests.
   if (is_linux || is_mac || is_win) {
     deps += [ "//third_party/libyuv" ]
-    sources += [ "../browser/media/capture/web_contents_video_capture_device_unittest.cc" ]
+    sources += [
+      "../browser/media/capture/web_contents_video_capture_device_unittest.cc",
+    ]
     if (use_aura) {
       sources += [ "../browser/media/capture/cursor_renderer_aura_unittest.cc" ]
     }

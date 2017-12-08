@@ -82,6 +82,7 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLSlotElement.h"
@@ -914,10 +915,19 @@ bool Node::IsInert() const {
 
   DCHECK(!ChildNeedsDistributionRecalc());
 
-  const HTMLDialogElement* dialog = GetDocument().ActiveModalDialog();
-  if (dialog && this != GetDocument() &&
-      !FlatTreeTraversal::ContainsIncludingPseudoElement(*dialog, *this)) {
-    return true;
+  if (this != GetDocument()) {
+    // TODO(foolip): When fullscreen uses top layer, this can be simplified to
+    // just look at the topmost element in top layer. https://crbug.com/240576.
+    // Note: It's currently appropriate that a modal dialog element takes
+    // precedence over a fullscreen element, because it will be rendered on top,
+    // but with fullscreen merged into top layer that will no longer be true.
+    const Element* modal_element = GetDocument().ActiveModalDialog();
+    if (!modal_element)
+      modal_element = Fullscreen::FullscreenElementFrom(GetDocument());
+    if (modal_element && !FlatTreeTraversal::ContainsIncludingPseudoElement(
+                             *modal_element, *this)) {
+      return true;
+    }
   }
 
   if (RuntimeEnabledFeatures::InertAttributeEnabled()) {
