@@ -102,6 +102,10 @@ void TestDictionary::setStringSequenceMember(const Vector<String>& value) {
   has_string_sequence_member_ = true;
 }
 
+void TestDictionary::setTestEnumOrTestEnumSequenceMember(const TestEnumOrTestEnumSequence& value) {
+  test_enum_or_test_enum_sequence_member_ = value;
+}
+
 void TestDictionary::setTestInterface2OrUint8ArrayMember(const TestInterface2OrUint8Array& value) {
   test_interface_2_or_uint8_array_member_ = value;
 }
@@ -147,6 +151,7 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(garbage_collected_record_member_);
   visitor->Trace(internal_dictionary_sequence_member_);
   visitor->Trace(other_double_or_string_member_);
+  visitor->Trace(test_enum_or_test_enum_sequence_member_);
   visitor->Trace(test_interface_2_or_uint8_array_member_);
   visitor->Trace(test_interface_garbage_collected_member_);
   visitor->Trace(test_interface_garbage_collected_or_null_member_);

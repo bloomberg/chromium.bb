@@ -49,4 +49,5 @@ dictionary TestDictionary {
     [Clamp] long applicableToTypeLongMember;
     [TreatNullAs=EmptyString] DOMString applicableToTypeStringMember;
     (double or sequence<double>) unionMemberWithSequenceDefault = [];
+    (TestEnum or sequence<TestEnum>) testEnumOrTestEnumSequenceMember;
 };

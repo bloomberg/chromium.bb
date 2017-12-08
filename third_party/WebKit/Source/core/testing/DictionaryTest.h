@@ -8,6 +8,7 @@
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/double_or_string.h"
+#include "bindings/core/v8/internal_enum_or_internal_enum_sequence.h"
 #include "core/dom/Element.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -89,6 +90,7 @@ class DictionaryTest : public ScriptWrappable {
   String derived_derived_string_member_;
   bool required_boolean_member_;
   Nullable<HashMap<String, String>> dictionary_member_properties_;
+  InternalEnumOrInternalEnumSequence internal_enum_or_internal_enum_sequence_;
 };
 
 }  // namespace blink
