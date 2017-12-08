@@ -281,7 +281,7 @@ void IntersectionObserver::unobserve(Element* target,
 }
 
 void IntersectionObserver::ComputeIntersectionObservations() {
-  if (!RootIsValid())
+  if (!RootIsValid() || !delegate_->GetExecutionContext())
     return;
   Document* delegate_document = ToDocument(delegate_->GetExecutionContext());
   if (!delegate_document || delegate_document->IsStopped())
