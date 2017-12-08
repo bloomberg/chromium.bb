@@ -5,6 +5,7 @@
 #ifndef SharedWorkerReportingProxy_h
 #define SharedWorkerReportingProxy_h
 
+#include "base/macros.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/heap/GarbageCollected.h"
@@ -19,8 +20,6 @@ class WebSharedWorkerImpl;
 class SharedWorkerReportingProxy final
     : public GarbageCollectedFinalized<SharedWorkerReportingProxy>,
       public WorkerReportingProxy {
-  WTF_MAKE_NONCOPYABLE(SharedWorkerReportingProxy);
-
  public:
   SharedWorkerReportingProxy(WebSharedWorkerImpl*, ParentFrameTaskRunners*);
   ~SharedWorkerReportingProxy() override;
@@ -48,6 +47,7 @@ class SharedWorkerReportingProxy final
   WebSharedWorkerImpl* worker_;
 
   Member<ParentFrameTaskRunners> parent_frame_task_runners_;
+  DISALLOW_COPY_AND_ASSIGN(SharedWorkerReportingProxy);
 };
 
 }  // namespace blink

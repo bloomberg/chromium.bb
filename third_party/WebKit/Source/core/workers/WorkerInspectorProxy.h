@@ -5,6 +5,7 @@
 #ifndef WorkerInspectorProxy_h
 #define WorkerInspectorProxy_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ThreadDebugger.h"
@@ -75,7 +76,6 @@ class CORE_EXPORT WorkerInspectorProxy final
 };
 
 struct CORE_EXPORT GlobalScopeInspectorCreationParams final {
-  WTF_MAKE_NONCOPYABLE(GlobalScopeInspectorCreationParams);
   USING_FAST_MALLOC(GlobalScopeInspectorCreationParams);
 
  public:
@@ -88,6 +88,9 @@ struct CORE_EXPORT GlobalScopeInspectorCreationParams final {
 
   WorkerInspectorProxy::PauseOnWorkerStart pause_on_start;
   v8_inspector::V8StackTraceId stack_id;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GlobalScopeInspectorCreationParams);
 };
 
 }  // namespace blink

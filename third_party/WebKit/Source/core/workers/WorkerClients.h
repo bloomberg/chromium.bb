@@ -31,10 +31,10 @@
 #ifndef WorkerClients_h
 #define WorkerClients_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/Supplementable.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -45,7 +45,6 @@ namespace blink {
 class CORE_EXPORT WorkerClients final : public GarbageCollected<WorkerClients>,
                                         public Supplementable<WorkerClients> {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerClients);
-  WTF_MAKE_NONCOPYABLE(WorkerClients);
 
  public:
   static WorkerClients* Create() { return new WorkerClients; }
@@ -56,6 +55,7 @@ class CORE_EXPORT WorkerClients final : public GarbageCollected<WorkerClients>,
 
  private:
   WorkerClients() {}
+  DISALLOW_COPY_AND_ASSIGN(WorkerClients);
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<WorkerClients>;

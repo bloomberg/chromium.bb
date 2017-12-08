@@ -5,6 +5,7 @@
 #ifndef ThreadedObjectProxyBase_h
 #define ThreadedObjectProxyBase_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
@@ -21,8 +22,6 @@ class ThreadedMessagingProxyBase;
 // ThreadedMessagingProxyBase always outlives this proxy.
 class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
   USING_FAST_MALLOC(ThreadedObjectProxyBase);
-  WTF_MAKE_NONCOPYABLE(ThreadedObjectProxyBase);
-
  public:
   ~ThreadedObjectProxyBase() override = default;
 
@@ -49,6 +48,7 @@ class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
   // Used to post a task to ThreadedMessagingProxyBase on the parent context
   // thread.
   CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+  DISALLOW_COPY_AND_ASSIGN(ThreadedObjectProxyBase);
 };
 
 }  // namespace blink

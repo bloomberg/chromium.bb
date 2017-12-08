@@ -5,6 +5,7 @@
 #ifndef Worklet_h
 #define Worklet_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -30,7 +31,6 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // Eager finalization is needed to notify parent object destruction of the
   // GC-managed messaging proxy and to initiate worklet termination.
   EAGERLY_FINALIZE();
-  WTF_MAKE_NONCOPYABLE(Worklet);
 
  public:
   virtual ~Worklet();
@@ -82,6 +82,8 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // on their insertion order. Access to this map should be thread-safe."
   // https://drafts.css-houdini.org/worklets/#module-responses-map
   Member<WorkletModuleResponsesMap> module_responses_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(Worklet);
 };
 
 }  // namespace blink

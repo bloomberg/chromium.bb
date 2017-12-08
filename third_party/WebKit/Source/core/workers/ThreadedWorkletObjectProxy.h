@@ -5,6 +5,7 @@
 #ifndef ThreadedWorkletObjectProxy_h
 #define ThreadedWorkletObjectProxy_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/workers/ThreadedObjectProxyBase.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -25,7 +26,6 @@ class WorkerThread;
 // module script loading.
 class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
   USING_FAST_MALLOC(ThreadedWorkletObjectProxy);
-  WTF_MAKE_NONCOPYABLE(ThreadedWorkletObjectProxy);
 
  public:
   static std::unique_ptr<ThreadedWorkletObjectProxy> Create(
@@ -54,6 +54,7 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
   // the tasks.
   CrossThreadWeakPersistent<ThreadedWorkletMessagingProxy>
       messaging_proxy_weak_ptr_;
+  DISALLOW_COPY_AND_ASSIGN(ThreadedWorkletObjectProxy);
 };
 
 }  // namespace blink
