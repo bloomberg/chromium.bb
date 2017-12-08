@@ -119,6 +119,15 @@ class WindowSizer {
   // The maximum default window width. This value may differ between platforms.
   static const int kWindowMaxDefaultWidth;
 
+#if defined(OS_CHROMEOS)
+  // The number of pixels which are kept free top, left and right when a window
+  // gets positioned to its default location.
+  static const int kDesktopBorderSize = 16;
+
+  // Maximum width of a window even if there is more room on the desktop.
+  static const int kMaximumWindowWidth = 1100;
+#endif
+
  private:
   // The edge of the screen to check for out-of-bounds.
   enum Edge { TOP, LEFT, BOTTOM, RIGHT };
@@ -178,6 +187,9 @@ class WindowSizer {
   // if it was set to SHOW_STATE_DEFAULT.
   void GetTabbedBrowserBoundsAsh(gfx::Rect* bounds,
                                  ui::WindowShowState* show_state) const;
+
+  // Returns the default bounds for a browser window on |display|.
+  static gfx::Rect GetDefaultWindowBoundsAsh(const display::Display& display);
 #endif
 
   // Determine the default show state for the window - not looking at other

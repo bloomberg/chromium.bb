@@ -289,11 +289,8 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
                                          gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
 #if defined(OS_CHROMEOS)
-  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-  if (ash_util::ShouldOpenAshOnStartup()) {
-    *default_bounds = ash::WindowPositioner::GetDefaultWindowBounds(display);
-    return;
-  }
+  *default_bounds = GetDefaultWindowBoundsAsh(display);
+  return;
 #endif
   gfx::Rect work_area = display.work_area();
 

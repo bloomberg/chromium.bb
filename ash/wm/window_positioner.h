@@ -13,10 +13,6 @@ namespace aura {
 class Window;
 }
 
-namespace display {
-class Display;
-}
-
 namespace gfx {
 class Rect;
 class Size;
@@ -32,13 +28,6 @@ class ASH_EXPORT WindowPositioner {
   // will default to maximized.
   static int GetForceMaximizedWidthLimit();
 
-  // The number of pixels which are kept free top, left and right when a window
-  // gets positioned to its default location.
-  static const int kDesktopBorderSize;
-
-  // Maximum width of a window even if there is more room on the desktop.
-  static const int kMaximumWindowWidth;
-
   // Computes and returns the bounds and show state for new window
   // based on the parameter passed AND existing windows. |window| is
   // the one this function will generate a bounds for and used to
@@ -52,9 +41,6 @@ class ASH_EXPORT WindowPositioner {
       ui::WindowShowState show_state_in,
       gfx::Rect* bounds_in_out,
       ui::WindowShowState* show_state_out);
-
-  // Returns the default bounds for a window to be created in the |display|.
-  static gfx::Rect GetDefaultWindowBounds(const display::Display& display);
 
   // Check if after removal or hide of the given |removed_window| an
   // automated desktop location management can be performed and

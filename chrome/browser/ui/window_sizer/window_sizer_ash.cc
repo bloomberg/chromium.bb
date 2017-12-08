@@ -30,7 +30,7 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
       // For trusted popups (v1 apps and system windows), do not use the last
       // active window bounds, only use saved or default bounds.
       if (!GetSavedWindowBounds(bounds, show_state))
-        GetDefaultWindowBounds(GetTargetDisplay(gfx::Rect()), bounds);
+        *bounds = GetDefaultWindowBoundsAsh(GetTargetDisplay(gfx::Rect()));
       determined = true;
     } else {
       // In Ash, prioritize the last saved |show_state|. If you have questions
@@ -61,7 +61,7 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
       // gets maximized after this method returns. Return a sensible default
       // in order to make restored state visibly different from maximized.
       *show_state = ui::SHOW_STATE_MAXIMIZED;
-      *bounds = ash::WindowPositioner::GetDefaultWindowBounds(display);
+      *bounds = GetDefaultWindowBoundsAsh(display);
       determined = true;
     }
   }
@@ -87,7 +87,7 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
     // target display.
     display = target_display_provider_->GetTargetDisplay(screen_,
                                                          *bounds_in_screen);
-    *bounds_in_screen = ash::WindowPositioner::GetDefaultWindowBounds(display);
+    *bounds_in_screen = GetDefaultWindowBoundsAsh(display);
   }
 
   if (browser_->is_session_restore()) {
@@ -113,4 +113,23 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
   ash::WindowPositioner::GetBoundsAndShowStateForNewWindow(
       browser_window, is_saved_bounds, passed_show_state, bounds_in_screen,
       show_state);
+}
+
+gfx::Rect WindowSizer::GetDefaultWindowBoundsAsh(
+    const display::Display& display) {
+  const gfx::Rect work_area = display.work_area();
+  // There should be a 'desktop' border around the window at the left and right
+  // side.
+  int default_width = work_area.width() - 2 * kDesktopBorderSize;
+  // There should also be a 'desktop' border around the window at the top.
+  // Since the workspace excludes the tray area we only need one border size.
+  int default_height = work_area.height() - kDesktopBorderSize;
+  int offset_x = kDesktopBorderSize;
+  if (default_width > kMaximumWindowWidth) {
+    // The window should get centered on the screen and not follow the grid.
+    offset_x = (work_area.width() - kMaximumWindowWidth) / 2;
+    default_width = kMaximumWindowWidth;
+  }
+  return gfx::Rect(work_area.x() + offset_x, work_area.y() + kDesktopBorderSize,
+                   default_width, default_height);
 }
