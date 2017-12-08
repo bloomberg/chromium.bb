@@ -55,6 +55,19 @@ class StoreUpdateResult {
   StoreState store_state;
 };
 
+// This enum is backed by a UMA histogram therefore its entries should not be
+// deleted or re-ordered and new ones should only be appended.
+// See enum definition with the same name in tools/metrics/histograms/enum.xml.
+enum OfflinePagesStoreEvent {
+  STORE_OPENED_FIRST_TIME = 0,
+  STORE_REOPENED = 1,
+  STORE_CLOSED = 2,
+  STORE_CLOSE_SKIPPED = 3,
+
+  // NOTE: always keep this entry at the end.
+  STORE_EVENT_COUNT
+};
+
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_STORE_TYPES_H_

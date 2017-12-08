@@ -44,7 +44,7 @@ std::vector<PrefetchItemState> TaskTestBase::GetAllStatesExcept(
 }
 
 TaskTestBase::TaskTestBase()
-    : task_runner_(new base::TestSimpleTaskRunner),
+    : task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_),
       store_test_util_(task_runner_) {}
 
@@ -57,7 +57,7 @@ void TaskTestBase::SetUp() {
 
 void TaskTestBase::TearDown() {
   store_test_util_.DeleteStore();
-  RunUntilIdle();
+  task_runner_->FastForwardUntilNoTasksRemain();
   testing::Test::TearDown();
 }
 

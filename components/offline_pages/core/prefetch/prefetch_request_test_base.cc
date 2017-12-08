@@ -18,7 +18,7 @@ const char PrefetchRequestTestBase::kExperimentValueSetInFieldTrial[] =
     "Test Experiment";
 
 PrefetchRequestTestBase::PrefetchRequestTestBase()
-    : task_runner_(new base::TestSimpleTaskRunner),
+    : task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_),
       request_context_(new net::TestURLRequestContextGetter(
           base::ThreadTaskRunnerHandle::Get())) {}
@@ -93,6 +93,10 @@ std::string PrefetchRequestTestBase::GetExperiementHeaderValue(
 
 void PrefetchRequestTestBase::RunUntilIdle() {
   task_runner_->RunUntilIdle();
+}
+
+void PrefetchRequestTestBase::FastForwardUntilNoTasksRemain() {
+  task_runner_->FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace offline_pages

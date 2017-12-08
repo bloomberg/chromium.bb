@@ -54591,6 +54591,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.PrefetchStore.StoreEvent"
+    enum="OfflinePagesStoreEvent">
+  <owner>fgorski@chromium.org</owner>
+  <summary>
+    Counts when the offline pages prefetch store is opened or closed.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.PrefetchStore.TimeFromCloseToOpen" units="ms">
+  <owner>fgorski@chromium.org</owner>
+  <summary>
+    Tracks the time between store closing and reopening again within a session.
+    The store is meant to close itself after a period of inactivity. We are
+    trying to assess how much time the store is unloaded from memory vs. time it
+    is loaded and not used. This event will be reported when the store is opened
+    after being closed within the same lifetime of Chrome.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.PrefetchUsage" enum="OfflinePagesPrefetchUsage">
   <owner>dimich@chromium.org</owner>
   <summary>

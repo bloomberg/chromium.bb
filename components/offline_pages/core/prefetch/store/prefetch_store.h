@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace sql {
 class Connection;
@@ -49,6 +50,11 @@ class PrefetchStore {
   template <typename T>
   using ResultCallback = base::OnceCallback<void(T)>;
 
+  // Defines inactivity time of DB after which it is going to be closed.
+  // TODO(fgorski): Derive appropriate value in a scientific way.
+  static constexpr base::TimeDelta kClosingDelay =
+      base::TimeDelta::FromSeconds(20);
+
   // Creates an instance of |PrefetchStore| with an in-memory SQLite database.
   explicit PrefetchStore(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
@@ -78,13 +84,18 @@ class PrefetchStore {
       return;
     }
 
+    // Ensure that any scheduled close operations are canceled.
+    closing_weak_ptr_factory_.InvalidateWeakPtrs();
+
     sql::Connection* db =
         initialization_status_ == InitializationStatus::SUCCESS ? db_.get()
                                                                 : nullptr;
     base::PostTaskAndReplyWithResult(
         blocking_task_runner_.get(), FROM_HERE,
         base::BindOnce(std::move(run_callback), db),
-        std::move(result_callback));
+        base::BindOnce(&PrefetchStore::RescheduleClosing<T>,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(result_callback)));
   }
 
   // Gets the initialization status of the store.
@@ -103,6 +114,26 @@ class PrefetchStore {
   // Used to conclude opening/resetting DB connection.
   void OnInitializeDone(base::OnceClosure pending_command, bool success);
 
+  // Reschedules the closing with a delay. Ensures that |result_callback| is
+  // called.
+  template <typename T>
+  void RescheduleClosing(ResultCallback<T> result_callback, T result) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&PrefetchStore::CloseInternal,
+                       closing_weak_ptr_factory_.GetWeakPtr()),
+        kClosingDelay);
+
+    std::move(result_callback).Run(std::move(result));
+  }
+
+  // Internal function initiating the closing.
+  void CloseInternal();
+
+  // Completes the closing. Main purpose is to destroy the db pointer.
+  void CloseInternalDone(
+      std::unique_ptr<sql::Connection, base::OnTaskRunnerDeleter> db);
+
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
@@ -118,8 +149,13 @@ class PrefetchStore {
   // Initialization status of the store.
   InitializationStatus initialization_status_;
 
+  // Time of the last time the store was closed. Kept for metrics reporting.
+  base::Time last_closing_time_;
+
   // Weak pointer to control the callback.
   base::WeakPtrFactory<PrefetchStore> weak_ptr_factory_;
+  // Weak pointer to cancel closing of the store.
+  base::WeakPtrFactory<PrefetchStore> closing_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchStore);
 };

@@ -64,7 +64,7 @@ class PrefetchDownloaderImplTest : public PrefetchRequestTestBase {
   void TearDown() override {
     prefetch_service_taco_.reset();
     PrefetchRequestTestBase::TearDown();
-    RunUntilIdle();
+    FastForwardUntilNoTasksRemain();
   }
 
   void StartDownload(const std::string& download_id,

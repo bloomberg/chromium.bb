@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/test/mock_callback.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -62,7 +62,7 @@ class TaskTestBase : public testing::Test {
                                        PrefetchItemState state) const;
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   TestPrefetchNetworkRequestFactory prefetch_request_factory_;

@@ -4,7 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
 
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
@@ -37,14 +37,14 @@ class PrefetchDownloaderQuotaTest : public testing::Test {
   void SetTestingMaxDailyQuotaBytes(const std::string& max_config);
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   PrefetchStoreTestUtil store_test_util_;
   variations::testing::VariationParamsManager params_manager_;
 };
 
 PrefetchDownloaderQuotaTest::PrefetchDownloaderQuotaTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
+    : task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_),
       store_test_util_(task_runner_) {}
 

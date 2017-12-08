@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/test/histogram_tester.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
@@ -50,7 +50,7 @@ class DownloadCompletedTaskTest : public testing::Test {
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   TestPrefetchDispatcher dispatcher_;
   PrefetchStoreTestUtil store_test_util_;
@@ -58,7 +58,7 @@ class DownloadCompletedTaskTest : public testing::Test {
 };
 
 DownloadCompletedTaskTest::DownloadCompletedTaskTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
+    : task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_),
       store_test_util_(task_runner_) {}
 
