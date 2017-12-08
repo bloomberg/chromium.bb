@@ -177,9 +177,10 @@ void ScriptRunner::MovePendingScript(Document& old_document,
     DCHECK(!old_document.GetFrame());
     old_context_document = &old_document;
   }
-  if (old_context_document != new_context_document)
+  if (old_context_document != new_context_document) {
     old_context_document->GetScriptRunner()->MovePendingScript(
         new_context_document->GetScriptRunner(), script_loader);
+  }
 }
 
 void ScriptRunner::MovePendingScript(ScriptRunner* new_runner,

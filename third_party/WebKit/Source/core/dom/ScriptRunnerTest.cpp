@@ -371,9 +371,10 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
 
   EXPECT_CALL(*script_loaders[0], Execute())
       .WillOnce(Invoke([&script_loaders, this] {
-        for (int i = 2; i < 20; i++)
+        for (int i = 2; i < 20; i++) {
           script_runner_->NotifyScriptReady(script_loaders[i],
                                             ScriptRunner::kAsync);
+        }
         order_.push_back(0);
       }));
 
