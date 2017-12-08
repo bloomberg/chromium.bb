@@ -574,8 +574,12 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterBasic) {
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
 
-  // No log should have been generated yet since the message loop has not had
-  // any chance to pump.
+  EXPECT_WATCH_TIME(Ac, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(All, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(Eme, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(Mse, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(NativeControlsOff, kWatchTimeEarly);
+  EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kWatchTimeEarly);
   CycleReportingTimer();
 
   wtr_->OnUnderflow();
@@ -594,11 +598,12 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterBasic) {
 }
 
 TEST_P(WatchTimeReporterTest, WatchTimeReporterUnderflow) {
+  constexpr base::TimeDelta kWatchTimeFirst = base::TimeDelta::FromSeconds(5);
   constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(10);
   constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(15);
   EXPECT_CALL(*this, GetCurrentMediaTime())
       .WillOnce(testing::Return(base::TimeDelta()))
-      .WillOnce(testing::Return(base::TimeDelta::FromSeconds(5)))
+      .WillOnce(testing::Return(kWatchTimeFirst))
       .WillOnce(testing::Return(kWatchTimeEarly))
       .WillOnce(testing::Return(kWatchTimeEarly))
       .WillRepeatedly(testing::Return(kWatchTimeLate));
@@ -606,8 +611,12 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterUnderflow) {
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
 
-  // No log should have been generated yet since the message loop has not had
-  // any chance to pump.
+  EXPECT_WATCH_TIME(Ac, kWatchTimeFirst);
+  EXPECT_WATCH_TIME(All, kWatchTimeFirst);
+  EXPECT_WATCH_TIME(Eme, kWatchTimeFirst);
+  EXPECT_WATCH_TIME(Mse, kWatchTimeFirst);
+  EXPECT_WATCH_TIME(NativeControlsOff, kWatchTimeFirst);
+  EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kWatchTimeFirst);
   CycleReportingTimer();
 
   wtr_->OnUnderflow();
@@ -733,6 +742,14 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterShownHiddenBackground) {
   EXPECT_FALSE(IsBackgroundMonitoring());
   EXPECT_TRUE(IsMonitoring());
 
+  const base::TimeDelta kExpectedForegroundWatchTime =
+      kWatchTimeLate - kWatchTimeEarly;
+  EXPECT_WATCH_TIME(Ac, kExpectedForegroundWatchTime);
+  EXPECT_WATCH_TIME(All, kExpectedForegroundWatchTime);
+  EXPECT_WATCH_TIME(Eme, kExpectedForegroundWatchTime);
+  EXPECT_WATCH_TIME(Mse, kExpectedForegroundWatchTime);
+  EXPECT_WATCH_TIME(NativeControlsOff, kExpectedForegroundWatchTime);
+  EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kExpectedForegroundWatchTime);
   EXPECT_WATCH_TIME_FINALIZED();
   wtr_.reset();
 }

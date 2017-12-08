@@ -88,6 +88,16 @@ MEDIA_EXPORT extern const char kRebuffersCountAudioVideoSrc[];
 MEDIA_EXPORT extern const char kRebuffersCountAudioVideoMse[];
 MEDIA_EXPORT extern const char kRebuffersCountAudioVideoEme[];
 
+// Amount of watch time less than minimum required, which ends up not being
+// reported as part of the standard WatchTime keys. Allows estimation of an
+// upper bound on uncollected watch time.
+MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioSrc[];
+MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioMse[];
+MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioEme[];
+MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioVideoSrc[];
+MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioVideoMse[];
+MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioVideoEme[];
+
 MEDIA_EXPORT base::StringPiece WatchTimeKeyToString(WatchTimeKey key);
 
 }  // namespace media
