@@ -41,6 +41,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/text_input_test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -52,6 +53,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 
 using extensions::AppWindow;
@@ -103,6 +105,43 @@ class BrowserClientForTextInputClientMac : public ChromeContentBrowserClient {
       filters_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserClientForTextInputClientMac);
+};
+
+// This class observes the RenderWidgetHostViewCocoa corresponding to the outer
+// most WebContents provided for newly added subviews. The added subview
+// corresponds to a NSPopUpButtonCell which will be removed shortly after being
+// shown.
+class NewSubViewAddedObserver : content::RenderWidgetHostViewCocoaObserver {
+ public:
+  explicit NewSubViewAddedObserver(content::WebContents* web_contents)
+      : content::RenderWidgetHostViewCocoaObserver(web_contents) {}
+
+  ~NewSubViewAddedObserver() override {}
+
+  void WaitForNextSubView() {
+    if (did_receive_rect_)
+      return;
+
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+  }
+
+  const gfx::Rect& view_bounds_in_screen() const { return bounds_; }
+
+ private:
+  void DidAddSubviewWillBeDismissed(
+      const gfx::Rect& bounds_in_root_view) override {
+    did_receive_rect_ = true;
+    bounds_ = bounds_in_root_view;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  bool did_receive_rect_ = false;
+  gfx::Rect bounds_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewSubViewAddedObserver);
 };
 #endif  // OS_MACOSX
 
@@ -1894,3 +1933,56 @@ IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest, CompositionRangeUpdates) {
       gfx::Range::InvalidRange(), 0, 3);
   observer.WaitForCompositionRangeLength(3U);
 }
+
+#if defined(OS_MACOSX)
+// This test verifies that drop-down lists appear correctly inside OOPIF-based
+// webviews which have offset inside embedder. This is a test for all guest
+// views as the logic for showing such popups is inside content/ layer. For more
+// context see https://crbug.com/772840.
+IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest,
+                       DropDownPopupInCorrectPosition) {
+  // This test only works with OOPIF-based guests, since BrowserPlugin guests
+  // don't keep the WebContentsTree.
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  TestHelper("testSelectPopupPositionInMac", "web_view/shim", NO_TEST_SERVER);
+  ASSERT_TRUE(guest_web_contents_);
+
+  // This is set in javascript.
+  const float distance_from_root_view_origin = 250.0;
+  // Verify that the view is offset inside root view as expected.
+  content::RenderWidgetHostView* guest_rwhv =
+      guest_web_contents_->GetRenderWidgetHostView();
+  while (guest_rwhv->TransformPointToRootCoordSpace(gfx::Point())
+             .OffsetFromOrigin()
+             .Length() < distance_from_root_view_origin) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  // Now trigger the popup and wait until it is displayed. The popup will get
+  // dismissed after being shown.
+  NewSubViewAddedObserver popup_observer(embedder_web_contents_);
+  // Now send a mouse click and wait until the <select> tag is focused.
+  SimulateRWHMouseClick(guest_rwhv->GetRenderWidgetHost(),
+                        blink::WebMouseEvent::Button::kLeft, 5, 5);
+  popup_observer.WaitForNextSubView();
+
+  // Verify the popup bounds intersect with those of the guest. Since the popup
+  // is relatively small (the width is determined by the <select> element's
+  // width and the hight is a factor of font-size and number of items), the
+  // intersection alone is a good indication the popup is shown properly inside
+  // the screen.
+  gfx::Rect guest_bounds_in_embedder(
+      guest_rwhv->TransformPointToRootCoordSpace(gfx::Point()),
+      guest_rwhv->GetViewBounds().size());
+  EXPECT_TRUE(guest_bounds_in_embedder.Intersects(
+      popup_observer.view_bounds_in_screen()))
+      << "Guest bounds:" << guest_bounds_in_embedder.ToString()
+      << " do not intersect with popup bounds:"
+      << popup_observer.view_bounds_in_screen().ToString();
+}
+#endif
