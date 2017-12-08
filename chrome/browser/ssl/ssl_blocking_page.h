@@ -31,7 +31,6 @@ class SSLErrorUI;
 }
 
 class CertReportHelper;
-class SSLUITest;
 class ChromeMetricsHelper;
 
 // This class is responsible for showing/hiding the interstitial page that is
@@ -75,7 +74,7 @@ class SSLBlockingPage
 
  protected:
   friend class policy::PolicyTest_SSLErrorOverridingDisallowed_Test;
-  friend class SSLUITest;
+  friend class SSLUITestBase;
 
   SSLBlockingPage(
       content::WebContents* web_contents,

@@ -15,6 +15,7 @@
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,9 +23,8 @@
 
 namespace chrome_browser_interstitials {
 
-bool IsInterstitialDisplayingText(
-    const content::InterstitialPage* const interstitial,
-    const std::string& text) {
+bool IsInterstitialDisplayingText(content::RenderFrameHost* interstitial_frame,
+                                  const std::string& text) {
   // It's valid for |text| to contain "\'", but simply look for "'" instead
   // since this function is used for searching host names and a predefined
   // string.
@@ -35,8 +35,8 @@ bool IsInterstitialDisplayingText(
       text.c_str(), security_interstitials::CMD_TEXT_FOUND,
       security_interstitials::CMD_TEXT_NOT_FOUND);
   int result = 0;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(interstitial->GetMainFrame(),
-                                                  command, &result));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(interstitial_frame, command,
+                                                  &result));
   return result == security_interstitials::CMD_TEXT_FOUND;
 }
 
@@ -65,8 +65,9 @@ testing::AssertionResult SecurityInterstitialIDNTest::VerifyIDNDecoded() const {
   if (!WaitForRenderFrameReady(contents->GetInterstitialPage()->GetMainFrame()))
     return testing::AssertionFailure() << "Render frame not ready";
 
-  if (IsInterstitialDisplayingText(contents->GetInterstitialPage(),
-                                   kHostnameJSUnicode)) {
+  if (IsInterstitialDisplayingText(
+          contents->GetInterstitialPage()->GetMainFrame(),
+          kHostnameJSUnicode)) {
     return testing::AssertionSuccess();
   }
   return testing::AssertionFailure() << "Interstitial not displaying text";
