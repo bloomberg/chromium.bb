@@ -48,6 +48,7 @@ class TestDownloadDriver : public DownloadDriver {
   void Resume(const std::string& guid) override;
   base::Optional<DriverEntry> Find(const std::string& guid) override;
   std::set<std::string> GetActiveDownloads() override;
+  size_t EstimateMemoryUsage() const override;
 
  private:
   bool is_ready_;

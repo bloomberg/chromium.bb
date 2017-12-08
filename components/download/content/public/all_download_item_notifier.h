@@ -69,6 +69,9 @@ class AllDownloadItemNotifier : public content::DownloadManager::Observer,
   // Returns NULL if the manager has gone down.
   content::DownloadManager* GetManager() const { return manager_; }
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
  private:
   // DownloadManager::Observer
   void OnManagerInitialized() override;

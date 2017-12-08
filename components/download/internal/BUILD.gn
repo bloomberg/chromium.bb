@@ -43,6 +43,7 @@ static_library("internal") {
     "log_source.h",
     "logger_impl.cc",
     "logger_impl.h",
+    "memory_tracker.h",
     "model.h",
     "model_impl.cc",
     "model_impl.h",

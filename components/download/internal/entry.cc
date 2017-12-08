@@ -4,6 +4,8 @@
 
 #include "components/download/internal/entry.h"
 
+#include "base/trace_event/memory_usage_estimator.h"
+
 namespace download {
 
 Entry::Entry()
@@ -48,6 +50,16 @@ bool Entry::operator==(const Entry& other) const {
          resumption_count == other.resumption_count &&
          cleanup_attempt_count == other.cleanup_attempt_count &&
          traffic_annotation == other.traffic_annotation;
+}
+
+size_t Entry::EstimateMemoryUsage() const {
+  // Ignore size of small primary types and objects.
+  return base::trace_event::EstimateMemoryUsage(guid) +
+         base::trace_event::EstimateMemoryUsage(request_params.url) +
+         base::trace_event::EstimateMemoryUsage(request_params.method) +
+         base::trace_event::EstimateMemoryUsage(
+             request_params.request_headers.ToString()) +
+         base::trace_event::EstimateMemoryUsage(target_file_path.value());
 }
 
 }  // namespace download

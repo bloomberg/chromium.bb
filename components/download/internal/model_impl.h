@@ -34,6 +34,7 @@ class ModelImpl : public Model {
   void Remove(const std::string& guid) override;
   Entry* Get(const std::string& guid) override;
   EntryList PeekEntries() override;
+  size_t EstimateMemoryUsage() const override;
 
  private:
   using OwnedEntryMap = std::map<std::string, std::unique_ptr<Entry>>;

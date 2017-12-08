@@ -12,6 +12,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "components/download/internal/client_set.h"
 #include "components/download/internal/config.h"
 #include "components/download/internal/entry.h"
@@ -117,13 +121,22 @@ ControllerImpl::ControllerImpl(
   DCHECK(log_sink_);
 }
 
-ControllerImpl::~ControllerImpl() = default;
+ControllerImpl::~ControllerImpl() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+}
 
 void ControllerImpl::Initialize(const base::Closure& callback) {
   DCHECK_EQ(controller_state_, State::CREATED);
 
   init_callback_ = callback;
   controller_state_ = State::INITIALIZING;
+
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "DownloadService", base::ThreadTaskRunnerHandle::Get());
+
+  TRACE_EVENT_ASYNC_BEGIN0("download_service", "DownloadServiceInitialize",
+                           this);
 
   driver_->Initialize(this);
   model_->Initialize(this);
@@ -582,6 +595,21 @@ base::Optional<LogSource::EntryDetails> ControllerImpl::GetServiceDownload(
       std::make_pair(entry, driver_entry));
 }
 
+bool ControllerImpl::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                                  base::trace_event::ProcessMemoryDump* pmd) {
+  auto* dump = pmd->GetOrCreateAllocatorDump("components/download");
+
+  size_t memory_cost =
+      base::trace_event::EstimateMemoryUsage(externally_active_downloads_);
+  memory_cost += model_->EstimateMemoryUsage();
+  memory_cost += driver_->EstimateMemoryUsage();
+
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(memory_cost));
+  return true;
+}
+
 void ControllerImpl::OnDeviceStatusChanged(const DeviceStatus& device_status) {
   if (controller_state_ != State::READY)
     return;
@@ -950,6 +978,8 @@ void ControllerImpl::NotifyClientsOfStartup(bool state_lost) {
 }
 
 void ControllerImpl::NotifyServiceOfStartup() {
+  TRACE_EVENT_ASYNC_END0("download_service", "DownloadServiceInitialize", this);
+
   if (init_callback_.is_null())
     return;
 
@@ -1112,6 +1142,8 @@ void ControllerImpl::ActivateMoreDownloads() {
 
   if (!device_status_listener_->is_valid_state())
     return;
+
+  TRACE_EVENT0("download_service", "ActivateMoreDownloads");
 
   // Check all the entries and the configuration to throttle number of
   // downloads.
