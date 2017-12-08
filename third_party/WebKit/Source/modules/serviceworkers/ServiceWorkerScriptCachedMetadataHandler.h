@@ -35,6 +35,7 @@ class ServiceWorkerScriptCachedMetadataHandler : public CachedMetadataHandler {
   scoped_refptr<CachedMetadata> GetCachedMetadata(
       uint32_t data_type_id) const override;
   String Encoding() const override;
+  bool IsServedFromCacheStorage() const override;
 
  private:
   ServiceWorkerScriptCachedMetadataHandler(WorkerGlobalScope*,

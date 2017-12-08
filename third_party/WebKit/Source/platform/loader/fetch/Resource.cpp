@@ -124,6 +124,10 @@ class Resource::CachedMetadataHandlerImpl : public CachedMetadataHandler {
   void ClearCachedMetadata(CacheType) override;
   scoped_refptr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
   String Encoding() const override;
+  bool IsServedFromCacheStorage() const override {
+    return !GetResponse().CacheStorageCacheName().IsNull();
+  }
+
   // Sets the serialized metadata retrieved from the platform's cache.
   void SetSerializedCachedMetadata(const char*, size_t);
 
@@ -222,7 +226,6 @@ class Resource::ServiceWorkerResponseCachedMetadataHandler
  private:
   explicit ServiceWorkerResponseCachedMetadataHandler(Resource*,
                                                       const SecurityOrigin*);
-  String cache_storage_cache_name_;
   scoped_refptr<const SecurityOrigin> security_origin_;
 };
 
