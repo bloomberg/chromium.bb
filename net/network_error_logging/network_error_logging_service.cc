@@ -92,6 +92,7 @@ const struct {
     // http.protocol.error?
     {ERR_INVALID_HTTP_RESPONSE, "http.response.invalid"},
     {ERR_TOO_MANY_REDIRECTS, "http.response.redirect_loop"},
+    {ERR_EMPTY_RESPONSE, "http.response.empty"},
     // http.failed?
 
     {ERR_ABORTED, "abandoned"},
