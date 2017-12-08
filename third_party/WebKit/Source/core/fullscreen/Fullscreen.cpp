@@ -903,6 +903,11 @@ void Fullscreen::FullscreenElementChanged(Element* old_element,
 
   // TODO(foolip): This should not call |UpdateStyleAndLayoutTree()|.
   GetDocument()->UpdateStyleAndLayoutTree();
+
+  // Any element not contained by the fullscreen element is inert (see
+  // |Node::IsInert()|), so changing the fullscreen element will typically
+  // change the inertness of most elements. Clear the entire cache.
+  GetDocument()->ClearAXObjectCache();
 }
 
 void Fullscreen::Trace(blink::Visitor* visitor) {
