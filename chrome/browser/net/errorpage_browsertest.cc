@@ -244,77 +244,20 @@ class FailFirstNRequestsInterceptor : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(FailFirstNRequestsInterceptor);
 };
 
-// An interceptor that serves LinkDoctor responses.  It also allows waiting
-// until a certain number of requests have been sent.
-// TODO(mmenke):  Wait until responses have been received instead.
+// An interceptor that serves LinkDoctor responses.  It also notifies the
+// provided owner every time there is a new request.
 class LinkDoctorInterceptor : public net::URLRequestInterceptor {
  public:
-  LinkDoctorInterceptor() : num_requests_(0),
-                            requests_to_wait_for_(-1),
-                            weak_factory_(this) {
-  }
-
-  ~LinkDoctorInterceptor() override {}
+  explicit LinkDoctorInterceptor(class ErrorPageTest* owner) : owner_(owner) {}
+  ~LinkDoctorInterceptor() override = default;
 
   // net::URLRequestInterceptor implementation
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&LinkDoctorInterceptor::RequestCreated,
-                       weak_factory_.GetWeakPtr()));
-
-    base::FilePath root_http;
-    PathService::Get(chrome::DIR_TEST_DATA, &root_http);
-    return new net::URLRequestMockHTTPJob(
-        request, network_delegate,
-        root_http.AppendASCII("mock-link-doctor.json"));
-  }
-
-  void WaitForRequests(int32_t requests_to_wait_for) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK_EQ(-1, requests_to_wait_for_);
-    DCHECK(!run_loop_);
-
-    if (requests_to_wait_for >= num_requests_)
-      return;
-
-    requests_to_wait_for_ = requests_to_wait_for;
-    run_loop_.reset(new base::RunLoop());
-    run_loop_->Run();
-    run_loop_.reset();
-    requests_to_wait_for_ = -1;
-    EXPECT_EQ(num_requests_, requests_to_wait_for);
-  }
-
-  // It is up to the caller to wait until all relevant requests has been
-  // created, either through calling WaitForRequests or some other manner,
-  // before calling this method.
-  int32_t num_requests() const {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    return num_requests_;
-  }
+      net::NetworkDelegate* network_delegate) const override;
 
  private:
-  void RequestCreated() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    num_requests_++;
-    if (num_requests_ == requests_to_wait_for_)
-      run_loop_->Quit();
-  }
-
-  // These are only used on the UI thread.
-  int32_t num_requests_;
-  int32_t requests_to_wait_for_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  // This prevents any risk of flake if any test doesn't wait for a request
-  // it sent.  Mutable so it can be accessed from a const function.
-  mutable base::WeakPtrFactory<LinkDoctorInterceptor> weak_factory_;
+  ErrorPageTest* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(LinkDoctorInterceptor);
 };
@@ -363,8 +306,8 @@ class ErrorPageTest : public InProcessBrowserTest {
     HISTORY_NAVIGATE_FORWARD,
   };
 
-  ErrorPageTest() : link_doctor_interceptor_(NULL) {}
-  ~ErrorPageTest() override {}
+  ErrorPageTest() = default;
+  ~ErrorPageTest() override = default;
 
   // Navigates the active tab to a mock url created for the file at |file_path|.
   // Needed for StaleCacheStatus and StaleCacheStatusFailedCorrections tests.
@@ -473,15 +416,17 @@ class ErrorPageTest : public InProcessBrowserTest {
             (testing::AssertionFailure() << "Exception message is " << result));
   }
 
-  LinkDoctorInterceptor* link_doctor_interceptor() {
-    return link_doctor_interceptor_;
+  void RequestCreated() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    num_requests_++;
+    if (num_requests_ == requests_to_wait_for_)
+      run_loop_->Quit();
   }
 
  protected:
   void SetUpOnMainThread() override {
-    link_doctor_interceptor_ = new LinkDoctorInterceptor();
     std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
-        link_doctor_interceptor_);
+        new LinkDoctorInterceptor(this));
     // Ownership of the |interceptor_| is passed to an object the IO thread, but
     // a pointer is kept in the test fixture.  As soon as anything calls
     // URLRequestFilter::ClearHandlers(), |interceptor_| can become invalid.
@@ -507,6 +452,30 @@ class ErrorPageTest : public InProcessBrowserTest {
 #else
     return CanShowNetworkDiagnosticsDialog();
 #endif
+  }
+
+  void WaitForRequests(int32_t requests_to_wait_for) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK_EQ(-1, requests_to_wait_for_);
+    DCHECK(!run_loop_);
+
+    if (requests_to_wait_for >= num_requests_)
+      return;
+
+    requests_to_wait_for_ = requests_to_wait_for;
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset();
+    requests_to_wait_for_ = -1;
+    EXPECT_EQ(num_requests_, requests_to_wait_for);
+  }
+
+  // It is up to the caller to wait until all relevant requests has been
+  // created, either through calling WaitForRequests or some other manner,
+  // before calling this method.
+  int32_t num_requests() const {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    return num_requests_;
   }
 
  private:
@@ -540,8 +509,28 @@ class ErrorPageTest : public InProcessBrowserTest {
     test_navigation_observer.Wait();
   }
 
-  LinkDoctorInterceptor* link_doctor_interceptor_;
+ private:
+  // These are only used on the UI thread.
+  int32_t num_requests_ = 0;
+  int32_t requests_to_wait_for_ = -1;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
+
+net::URLRequestJob* LinkDoctorInterceptor::MaybeInterceptRequest(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ErrorPageTest::RequestCreated, base::Unretained(owner_)));
+
+  base::FilePath root_http;
+  PathService::Get(chrome::DIR_TEST_DATA, &root_http);
+  return new net::URLRequestMockHTTPJob(
+      request, network_delegate,
+      root_http.AppendASCII("mock-link-doctor.json"));
+}
 
 class TestFailProvisionalLoadObserver : public content::WebContentsObserver {
  public:
@@ -591,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, FileNotFound) {
 
   ExpectDisplayingLocalErrorPage(browser(), net::ERR_FILE_NOT_FOUND);
   // Should not request Link Doctor corrections for local errors.
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
   // Only errors on HTTP/HTTPS pages should display a diagnostics button.
   EXPECT_FALSE(IsDisplayingDiagnosticsLink(browser()));
 }
@@ -604,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Failed) {
 
   ExpectDisplayingLocalErrorPage(browser(), net::ERR_FAILED);
   // Should not request Link Doctor corrections for this error.
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 }
 
 // Test that a DNS error occuring in the main frame redirects to an error page.
@@ -614,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_Basic) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 }
 
 // Test that a DNS error occuring in the main frame does not result in an
@@ -625,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack1) {
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 }
 
 // Test that a DNS error occuring in the main frame does not result in an
@@ -636,16 +625,16 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 
   NavigateToFileURL("title3.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(2, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(2, num_requests());
 
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
-  EXPECT_EQ(2, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(2, num_requests());
 }
 
 // Test that a DNS error occuring in the main frame does not result in an
@@ -656,19 +645,19 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 
   NavigateToFileURL("title3.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(2, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(2, num_requests());
 
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
 
   GoForwardAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(3, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(3, num_requests());
 }
 
 // Test that a DNS error occuring in the main frame does not result in an
@@ -679,22 +668,22 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 
   NavigateToFileURL("title2.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(2, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(2, num_requests());
 
   GoBackAndWaitForTitle("Title Of More Awesomeness", 1);
 
   GoForwardAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(3, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(3, num_requests());
 
   GoForwardAndWaitForTitle("Title Of Awesomeness", 1);
-  EXPECT_EQ(3, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(3, num_requests());
 }
 
 // Test that the search link on a DNS error page works.
@@ -704,7 +693,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoSearch) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -726,8 +715,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoSearch) {
   // There should have been another Link Doctor request, for tracking purposes.
   // Have to wait for it, since the search page does not depend on having
   // sent the tracking request.
-  link_doctor_interceptor()->WaitForRequests(2);
-  EXPECT_EQ(2, link_doctor_interceptor()->num_requests());
+  WaitForRequests(2);
+  EXPECT_EQ(2, num_requests());
 
   // Check the path and query string.
   std::string url;
@@ -741,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoSearch) {
   // Go back to the error page, to make sure the history is correct.
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(3, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(3, num_requests());
 }
 
 // Test that the reload button on a DNS error page works.
@@ -751,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoReload) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -771,8 +760,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoReload) {
   // for the new error page, and one for tracking purposes.  Have to make sure
   // to wait for the tracking request, since the new error page does not depend
   // on it.
-  link_doctor_interceptor()->WaitForRequests(3);
-  EXPECT_EQ(3, link_doctor_interceptor()->num_requests());
+  WaitForRequests(3);
+  EXPECT_EQ(3, num_requests());
 }
 
 // Test that the reload button on a DNS error page works after a same document
@@ -785,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest,
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -798,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest,
   // Page being displayed should not change.
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   // No new requests should have been issued.
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 
   // Clicking the reload button should load the error page again, and there
   // should be two commits, as before.
@@ -815,8 +804,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest,
   // for the new error page, and one for tracking purposes.  Have to make sure
   // to wait for the tracking request, since the new error page does not depend
   // on it.
-  link_doctor_interceptor()->WaitForRequests(3);
-  EXPECT_EQ(3, link_doctor_interceptor()->num_requests());
+  WaitForRequests(3);
+  EXPECT_EQ(3, num_requests());
 }
 
 // Test that clicking links on a DNS error page works.
@@ -826,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoClickLink) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -853,8 +842,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoClickLink) {
   // There should have been a tracking request to the correction service.  Have
   // to make sure to wait the tracking request, since the new page does not
   // depend on it.
-  link_doctor_interceptor()->WaitForRequests(2);
-  EXPECT_EQ(2, link_doctor_interceptor()->num_requests());
+  WaitForRequests(2);
+  EXPECT_EQ(2, num_requests());
 }
 
 // Test that a DNS error occuring in an iframe does not result in showing
@@ -868,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
   EXPECT_EQ(2,
       browser()->tab_strip_model()->GetActiveWebContents()->
           GetController().GetEntryCount());
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 }
 
 // This test fails regularly on win_rel trybots. See crbug.com/121540
@@ -887,7 +876,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBack) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/iframe_dns_error.html"));
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 }
 
 // This test fails regularly on win_rel trybots. See crbug.com/121540
@@ -905,7 +894,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBackAndForward) {
   NavigateToFileURL("iframe_dns_error.html");
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
   GoForwardAndWaitForTitle("Blah", 1);
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 }
 
 // Test that a DNS error occuring in an iframe, once the main document is
@@ -973,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
     EXPECT_EQ(fail_url, fail_observer.fail_url());
     EXPECT_EQ(2, wc->GetController().GetEntryCount());
   }
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 }
 
 // Checks that navigation corrections are not loaded when we receive an actual
@@ -982,7 +971,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURLAndWaitForTitle(embedded_test_server()->GetURL("/page404.html"),
                                "SUCCESS", 1);
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 }
 
 // Checks that navigation corrections are loaded in response to a 404 page with
@@ -996,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Empty404) {
   // This depends on the non-internationalized error ID string in
   // localized_error.cc.
   ExpectDisplayingNavigationCorrections(browser(), "HTTP ERROR 404");
-  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(1, num_requests());
 }
 
 // Checks that a local error page is shown in response to a 500 error page
@@ -1009,7 +998,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Empty500) {
   // This depends on the non-internationalized error ID string in
   // localized_error.cc.
   ExpectDisplayingLocalErrorPage(browser(), "HTTP ERROR 500");
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 }
 
 // Checks that when an error occurs, the stale cache status of the page
@@ -1053,7 +1042,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   ui_test_utils::NavigateToURLWithPost(browser(), test_url);
   EXPECT_TRUE(ProbeStaleCopyValue(false));
   EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 
   // Clear the cache and reload the same URL; confirm the error page is told
   // that there is no cached copy.
@@ -1065,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(ProbeStaleCopyValue(false));
   EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
-  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  EXPECT_EQ(0, num_requests());
 }
 
 // Check that the easter egg is present and initialised and is not disabled.
