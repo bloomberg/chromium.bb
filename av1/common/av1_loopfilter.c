@@ -369,7 +369,6 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
     int lvl_seg = clamp(mbmi->current_delta_lf_from_base + cm->lf.filter_level,
                         0, MAX_LOOP_FILTER);
 #endif
-    const int scale = 1 << (lvl_seg >> 5);
 #if CONFIG_LOOPFILTER_LEVEL
     assert(plane >= 0 && plane <= 2);
     const int seg_lf_feature_id = seg_lvl_lf_lut[plane][dir_idx];
@@ -385,6 +384,7 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
 #endif  // CONFIG_LOOPFILTER_LEVEL
 
     if (cm->lf.mode_ref_delta_enabled) {
+      const int scale = 1 << (lvl_seg >> 5);
       lvl_seg += cm->lf.ref_deltas[mbmi->ref_frame[0]] * scale;
       if (mbmi->ref_frame[0] > INTRA_FRAME)
         lvl_seg += cm->lf.mode_deltas[mode_lf_lut[mbmi->mode]] * scale;
@@ -459,7 +459,6 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
   // n_shift is the multiplier for lf_deltas
   // the multiplier is 1 for when filter_lvl is between 0 and 31;
   // 2 when filter_lvl is between 32 and 63
-  int scale = 1 << (default_filt_lvl >> 5);
   loop_filter_info_n *const lfi = &cm->lf_info;
   struct loopfilter *const lf = &cm->lf;
   const struct segmentation *const seg = &cm->seg;
@@ -498,8 +497,7 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
       } else {
         int ref, mode;
 #if CONFIG_LOOPFILTER_LEVEL
-        scale = 1 << (lvl_seg >> 5);
-
+        const int scale = 1 << (lvl_seg >> 5);
         const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
         lfi->lvl[seg_id][dir][INTRA_FRAME][0] =
             clamp(intra_lvl, 0, MAX_LOOP_FILTER);
@@ -513,7 +511,7 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
           }
         }
 #else
-        (void)default_filt_lvl_r;
+        const int scale = 1 << (default_filt_lvl >> 5);
         const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
         lfi->lvl[seg_id][INTRA_FRAME][0] = clamp(intra_lvl, 0, MAX_LOOP_FILTER);
 
