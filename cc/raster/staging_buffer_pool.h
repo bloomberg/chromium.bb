@@ -60,7 +60,6 @@ class CC_EXPORT StagingBufferPool
                     ResourceProvider* resource_provider,
                     bool use_partial_raster,
                     int max_staging_buffer_usage_in_bytes);
-  void RegisterMemoryCoordinatorClient();
   void Shutdown();
 
   // Overridden from base::trace_event::MemoryDumpProvider:

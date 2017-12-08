@@ -145,30 +145,20 @@ StagingBufferPool::StagingBufferPool(
   DCHECK(worker_context_provider_);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::StagingBufferPool", base::ThreadTaskRunnerHandle::Get());
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   reduce_memory_usage_callback_ = base::Bind(
       &StagingBufferPool::ReduceMemoryUsage, weak_ptr_factory_.GetWeakPtr());
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&StagingBufferPool::RegisterMemoryCoordinatorClient,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 StagingBufferPool::~StagingBufferPool() {
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
 
-void StagingBufferPool::RegisterMemoryCoordinatorClient() {
-  // Register this component with base::MemoryCoordinatorClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
-}
-
 void StagingBufferPool::Shutdown() {
-  // Unregister this component with memory_coordinator::ClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
-
   base::AutoLock lock(lock_);
+
   if (buffers_.empty())
     return;
 
