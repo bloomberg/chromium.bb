@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include <sys/select.h>
 #include <unistd.h>
-#define XK_MISCELLANY
-#include <X11/keysymdef.h>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -24,13 +22,8 @@
 #include "media/base/keyboard_event_counter.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
-
-// These includes need to be later than dictated by the style guide due to
-// Xlib header pollution, specifically the min, max, and Status macros.
-#include <X11/XKBlib.h>
-#include <X11/Xlibint.h>
-#include <X11/extensions/record.h>
 
 namespace media {
 namespace {
