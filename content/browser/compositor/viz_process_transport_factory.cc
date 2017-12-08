@@ -248,6 +248,15 @@ void VizProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
   // Do nothing and resize when a CompositorFrame with a new size arrives.
 }
 
+void VizProcessTransportFactory::SetDisplayColorMatrix(
+    ui::Compositor* compositor,
+    const SkMatrix44& matrix) {
+  auto iter = compositor_data_map_.find(compositor);
+  if (iter == compositor_data_map_.end() || !iter->second.display_private)
+    return;
+  iter->second.display_private->SetDisplayColorMatrix(gfx::Transform(matrix));
+}
+
 void VizProcessTransportFactory::SetDisplayColorSpace(
     ui::Compositor* compositor,
     const gfx::ColorSpace& blending_color_space,

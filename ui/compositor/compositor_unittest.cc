@@ -19,6 +19,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 
 using testing::Mock;
 using testing::_;
@@ -123,6 +124,43 @@ class MockCompositorLockClient : public ui::CompositorLockClient {
 };
 
 }  // namespace
+
+TEST_F(CompositorTestWithMessageLoop, OutputColorMatrix) {
+  auto root_layer = std::make_unique<Layer>(ui::LAYER_SOLID_COLOR);
+  root_layer->SetBounds(gfx::Rect(10, 10));
+  compositor()->SetRootLayer(root_layer.get());
+  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10));
+  DCHECK(compositor()->IsVisible());
+
+  // Set a non-identity color matrix on the compistor display, and expect it to
+  // be set on the context factory.
+  SkMatrix44 color_matrix(SkMatrix44::kIdentity_Constructor);
+  color_matrix.set(1, 1, 0.7f);
+  color_matrix.set(2, 2, 0.4f);
+  compositor()->SetDisplayColorMatrix(color_matrix);
+  InProcessContextFactory* context_factory_private =
+      static_cast<InProcessContextFactory*>(
+          compositor()->context_factory_private());
+  compositor()->ScheduleDraw();
+  DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  EXPECT_EQ(color_matrix,
+            context_factory_private->GetOutputColorMatrix(compositor()));
+
+  // Simulate a lost context by releasing the output surface and setting it on
+  // the compositor again. Expect that the same color matrix will be set again
+  // on the context factory.
+  context_factory_private->ResetOutputColorMatrixToIdentity(compositor());
+  compositor()->SetVisible(false);
+  EXPECT_EQ(gfx::kNullAcceleratedWidget,
+            compositor()->ReleaseAcceleratedWidget());
+  compositor()->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
+  compositor()->SetVisible(true);
+  compositor()->ScheduleDraw();
+  DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  EXPECT_EQ(color_matrix,
+            context_factory_private->GetOutputColorMatrix(compositor()));
+  compositor()->SetRootLayer(nullptr);
+}
 
 TEST_F(CompositorTestWithMockedTime, LocksAreObserved) {
   std::unique_ptr<CompositorLock> lock;

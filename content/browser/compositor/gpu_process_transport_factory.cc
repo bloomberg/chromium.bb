@@ -829,6 +829,19 @@ void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
     data->display->Resize(size);
 }
 
+void GpuProcessTransportFactory::SetDisplayColorMatrix(
+    ui::Compositor* compositor,
+    const SkMatrix44& matrix) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second.get();
+  DCHECK(data);
+
+  if (data->display)
+    data->display->SetColorMatrix(matrix);
+}
+
 void GpuProcessTransportFactory::SetDisplayColorSpace(
     ui::Compositor* compositor,
     const gfx::ColorSpace& blending_color_space,
