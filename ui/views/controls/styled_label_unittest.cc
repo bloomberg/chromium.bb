@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_features.h"
@@ -142,7 +143,13 @@ TEST_F(StyledLabelTest, RespectLeadingSpacesInNonFirstLine) {
             static_cast<Label*>(styled()->child_at(1))->text());
 }
 
-TEST_F(StyledLabelTest, CorrectWrapAtNewline) {
+// https://crbug.com/793184
+#if defined(OS_MACOSX)
+#define MAYBE_CorrectWrapAtNewline DISABLED_CorrectWrapAtNewline
+#else
+#define MAYBE_CorrectWrapAtNewline CorrectWrapAtNewline
+#endif
+TEST_F(StyledLabelTest, MAYBE_CorrectWrapAtNewline) {
   const std::string first_line = "Line one";
   const std::string second_line = "  two";
   const std::string multiline_text(first_line + "\n" + second_line);
@@ -357,7 +364,13 @@ TEST_F(StyledLabelTest, StyledRangeCustomFontUnderlined) {
       static_cast<Label*>(styled()->child_at(1))->font_list().GetFontStyle());
 }
 
-TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
+// https://crbug.com/793184
+#if defined(OS_MACOSX)
+#define MAYBE_StyledRangeTextStyleBold DISABLED_StyledRangeTextStyleBold
+#else
+#define MAYBE_StyledRangeTextStyleBold StyledRangeTextStyleBold
+#endif
+TEST_F(StyledLabelTest, MAYBE_StyledRangeTextStyleBold) {
   test::TestLayoutProvider bold_provider;
   const std::string bold_text(
       "This is a block of text whose style will be set to BOLD in the test");
@@ -547,7 +560,13 @@ TEST_P(MDStyledLabelTest, StyledRangeWithTooltip) {
   EXPECT_EQ(ASCIIToUTF16("tooltip"), tooltip);
 }
 
-TEST_F(StyledLabelTest, SetTextContextAndDefaultStyle) {
+// https://crbug.com/793184
+#if defined(OS_MACOSX)
+#define MAYBE_SetTextContextAndDefaultStyle DISABLED_SetTextContextAndDefaultStyle
+#else
+#define MAYBE_SetTextContextAndDefaultStyle SetTextContextAndDefaultStyle
+#endif
+TEST_F(StyledLabelTest, MAYBE_SetTextContextAndDefaultStyle) {
   const std::string text("This is a test block of text.");
   InitStyledLabel(text);
   styled()->SetTextContext(style::CONTEXT_DIALOG_TITLE);
