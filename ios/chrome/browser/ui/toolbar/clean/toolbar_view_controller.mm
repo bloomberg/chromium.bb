@@ -142,13 +142,28 @@
   // the StackView.
   self.contractButton.hidden = NO;
   self.contractButton.alpha = 0;
+
+  [UIViewPropertyAnimator
+      runningPropertyAnimatorWithDuration:ios::material::kDuration2
+                                    delay:0
+                                  options:UIViewAnimationOptionCurveEaseIn
+                               animations:^{
+                                 [self
+                                     setHorizontalTranslationOffset:
+                                         kToolbarButtonAnimationOffset
+                                                         forButtons:
+                                                  self.leadingStackViewButtons];
+                                 [self
+                                     setHorizontalTranslationOffset:
+                                         -kToolbarButtonAnimationOffset
+                                                         forButtons:
+                                                 self.trailingStackViewButtons];
+                                 [self setAllVisibleToolbarButtonsOpacity:0];
+                               }
+                               completion:nil];
+
   [animator addAnimations:^{
     [self.view layoutIfNeeded];
-    [self setHorizontalTranslationOffset:-kToolbarButtonAnimationOffset
-                              forButtons:self.leadingStackViewButtons];
-    [self setHorizontalTranslationOffset:kToolbarButtonAnimationOffset
-                              forButtons:self.trailingStackViewButtons];
-    [self setAllVisibleToolbarButtonsOpacity:0];
   }];
   // When the locationBarContainer has been expanded the Contract button will
   // fade in.
@@ -357,35 +372,48 @@
         constraintEqualToConstant:kToolbarShadowHeight],
   ]];
 
-  // Stack views directly in view constraints. Main StackViews.
+  // Stack views constraints.
   // Layout: |[leadingStackView]-[locationBarContainer]-[trailingStackView]|.
+  // Safe Area constraints.
   CGFloat leadingMargin = IsIPadIdiom() ? kLeadingMarginIPad : 0;
   UILayoutGuide* viewSafeAreaGuide = SafeAreaLayoutGuideForView(self.view);
-  NSArray* stackViewRegularConstraints = @[
+  [NSLayoutConstraint activateConstraints:@[
     [self.leadingStackView.leadingAnchor
         constraintEqualToAnchor:viewSafeAreaGuide.leadingAnchor
                        constant:leadingMargin],
     [self.trailingStackView.trailingAnchor
         constraintEqualToAnchor:viewSafeAreaGuide.trailingAnchor]
-  ];
+  ]];
+  // Stackviews and locationBar Spacing constraints. These will be disabled when
+  // expanding the omnibox.
+  NSArray<NSLayoutConstraint*>* stackViewSpacingConstraint = [NSLayoutConstraint
+      constraintsWithVisualFormat:
+          @"H:[leadingStack]-(spacing)-[locationBar]-(spacing)-[trailingStack]"
+                          options:0
+                          metrics:@{
+                            @"spacing" : @(kHorizontalMargin)
+                          }
+                            views:@{
+                              @"leadingStack" : self.leadingStackView,
+                              @"locationBar" : self.locationBarContainer,
+                              @"trailingStack" : self.trailingStackView
+                            }];
   [self.regularToolbarConstraints
-      addObjectsFromArray:stackViewRegularConstraints];
-  [NSLayoutConstraint activateConstraints:stackViewRegularConstraints];
+      addObjectsFromArray:stackViewSpacingConstraint];
+  // Vertical constraints.
+  [NSLayoutConstraint activateConstraints:stackViewSpacingConstraint];
   ApplyVisualConstraintsWithMetrics(
       @[
-        @"H:[leadingStack]-(spacing)-[locationBar]-(spacing)-[trailingStack]",
         @"V:[leadingStack(height)]-(margin)-|",
         @"V:[trailingStack(height)]-(margin)-|"
       ],
       @{
         @"leadingStack" : self.leadingStackView,
-        @"locationBar" : self.locationBarContainer,
         @"trailingStack" : self.trailingStackView
       },
       @{
         @"height" : @(kToolbarHeight - 2 * kButtonVerticalMargin),
         @"margin" : @(kButtonVerticalMargin),
-        @"spacing" : @(kHorizontalMargin)
       });
 
   // LocationBarContainer constraints.
