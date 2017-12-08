@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "net/base/load_flags.h"
@@ -57,16 +58,19 @@ ProfileAvatarDownloader::~ProfileAvatarDownloader() {
 }
 
 void ProfileAvatarDownloader::Start() {
-  // In unit tests, the browser process can return a NULL request context.
-  net::URLRequestContextGetter* request_context =
-      g_browser_process->system_request_context();
-  if (request_context) {
+  SystemNetworkContextManager* system_network_context_manager =
+      g_browser_process->system_network_context_manager();
+  // In unit tests, the browser process can return a NULL context manager
+  if (!system_network_context_manager)
+    return;
+  content::mojom::URLLoaderFactory* loader_factory =
+      system_network_context_manager->GetURLLoaderFactory();
+  if (loader_factory) {
     fetcher_->Init(
-        request_context,
         std::string(),
-        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
         net::LOAD_NORMAL);
-    fetcher_->Start();
+    fetcher_->Start(loader_factory);
   }
 }
 

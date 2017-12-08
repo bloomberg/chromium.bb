@@ -74,20 +74,19 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::Run() {
     }
   }
 
-  net::URLRequestContextGetter* context_getter = nullptr;
+  content::mojom::URLLoaderFactory* loader_factory = nullptr;
   if (!icon_url.is_empty()) {
-    context_getter =
-        content::BrowserContext::GetDefaultStoragePartition(browser_context())->
-            GetURLRequestContext();
+    loader_factory =
+        content::BrowserContext::GetDefaultStoragePartition(browser_context())
+            ->GetURLLoaderFactoryForBrowserProcess();
   }
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
-      this, params_->details.id, params_->details.manifest, icon_url,
-      context_getter);
+      this, params_->details.id, params_->details.manifest, icon_url);
 
   // The helper will call us back via OnWebstoreParseSuccess or
   // OnWebstoreParseFailure.
-  helper->Start();
+  helper->Start(loader_factory);
 
   // Matched with a Release in OnWebstoreParseSuccess/OnWebstoreParseFailure.
   AddRef();
