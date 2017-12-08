@@ -18,6 +18,7 @@ from chromite.lib import cgroups
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_logging
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
 from chromite.lib import gs
@@ -223,12 +224,34 @@ class MoblabVMTestStageTestCase(
     mock_gs_context = mock.create_autospec(gs.GSContext)
     self.PatchObject(gs, 'GSContext', autospec=True,
                      return_value=mock_gs_context)
+    mock_buildbot_link = self.PatchObject(cros_logging, 'PrintBuildbotLink')
     mock_moblab_vm = mock.create_autospec(moblab_vm.MoblabVm)
     self.PatchObject(moblab_vm, 'MoblabVm', autospec=True,
                      return_value=mock_moblab_vm)
     mock_run_moblab_tests = self.PatchObject(vm_test_stages, 'RunMoblabTests',
                                              autospec=True)
 
+    # Prepopulate results in the results directory to test result link printing.
+    osutils.SafeMakedirsNonRoot(os.path.join(
+        self._temp_host_prefix, 'results',
+        'results-1-moblab_DummyServerNoSspSuite',
+        'moblab_RunSuite', 'sysinfo', 'var', 'log', 'bootup',
+    ))
+    osutils.SafeMakedirsNonRoot(os.path.join(
+        self._temp_host_prefix, 'results',
+        'results-1-moblab_DummyServerNoSspSuite',
+        'moblab_RunSuite', 'sysinfo', 'var', 'log', 'autotest',
+    ))
+    osutils.SafeMakedirsNonRoot(os.path.join(
+        self._temp_host_prefix, 'results',
+        'results-1-moblab_DummyServerNoSspSuite',
+        'moblab_RunSuite', 'sysinfo', 'var', 'log_diff', 'autotest',
+    ))
+    osutils.SafeMakedirsNonRoot(os.path.join(
+        self._temp_host_prefix, 'results',
+        'results-1-moblab_DummyServerNoSspSuite',
+        'sysinfo', 'mnt', 'moblab', 'results',
+    ))
     self.RunStage()
 
     self.assertEqual(mock_create_test_root.call_count, 1)
@@ -239,9 +262,12 @@ class MoblabVMTestStageTestCase(
     mock_run_moblab_tests.assert_called_once_with(
         'moblab-generic-vm', mock.ANY, mock.ANY,
         self._temp_host_path('results'))
+    # 1 for the overall results during _Upload, 4 more for the detailed logs.
+    self.assertEqual(mock_buildbot_link.call_count, 5)
 
     self.assertEqual(mock_moblab_vm.Stop.call_count, 1)
     self.assertEqual(mock_moblab_vm.Destroy.call_count, 1)
+
 
 
 class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):

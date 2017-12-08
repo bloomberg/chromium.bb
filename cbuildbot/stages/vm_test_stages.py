@@ -418,7 +418,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     tarball_path = os.path.join(self.archive_path, tarball_relpath)
     cros_build_lib.CreateTarball(tarball_path, workspace,
                                  compression=cros_build_lib.COMP_BZIP2)
-    self._Upload(tarball_relpath, 'workspace')
+    self._Upload(tarball_relpath, 'moblabvm workspace')
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def _ArchiveTestResults(self, results_dir):
@@ -427,7 +427,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     Args:
       results_dir: Path to a directory used for creating result files.
     """
-    results_reldir = 'results'
+    results_reldir = 'moblab_vm_test_results'
     cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_dir],
                                   print_cmd=False)
     archive_dir = os.path.join(self.archive_path, results_reldir)
@@ -439,10 +439,47 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
 
     shutil.copytree(results_dir, archive_dir, symlinks=False,
                     ignore=_ShouldIgnore)
-    self._Upload(results_reldir, 'results')
-    # TODO(pprabhu): List the failed tests with links for easy access like
-    # VMTest does. We can't simly use ListTests because the result directory
-    # looks different from when ctest is used.
+    self._Upload(results_reldir)
+    self._PrintDetailedLogLinks(results_reldir)
+
+  def _PrintDetailedLogLinks(self, results_reldir):
+    """Print links to interesting logs from the test runs.
+
+    Args:
+      results_reldir: Relative directory on GS to the top-level results.
+    """
+    test_dir_re = re.compile(r'results-\d+-[\w_]+')
+    archive_dir = os.path.join(self.archive_path, results_reldir)
+    test_dirs = [x for x in os.listdir(archive_dir) if test_dir_re.match(x)]
+    for test_dir in test_dirs:
+      var_dir = os.path.join(results_reldir, test_dir, 'moblab_RunSuite',
+                             'sysinfo', 'var')
+      self._PrintDetailedLogLinkIfExists(
+          os.path.join(var_dir, 'log', 'bootup'),
+          '%s [moblab boot logs]:  ' % test_dir,
+      )
+      self._PrintDetailedLogLinkIfExists(
+          os.path.join(var_dir, 'log', 'autotest'),
+          '%s [infra logs from moblab]:  ' % test_dir,
+      )
+      self._PrintDetailedLogLinkIfExists(
+          os.path.join(var_dir, 'log_diff', 'bootup'),
+          '%s [moblab boot logs, diffed against pre-test]:  ' % test_dir,
+      )
+      self._PrintDetailedLogLinkIfExists(
+          os.path.join(var_dir, 'log_diff', 'autotest'),
+          '%s [infra logs from moblab, diffed against pre-test]:  ' % test_dir,
+      )
+      self._PrintDetailedLogLinkIfExists(
+          os.path.join(results_reldir, test_dir, 'sysinfo', 'mnt', 'moblab',
+                       'results'),
+          '%s [test logs from moblab]:  ' % test_dir,
+      )
+
+  def _PrintDetailedLogLinkIfExists(self, subpath, prefix):
+    """Print a single log link, if the given subpath exists."""
+    if os.path.isdir(os.path.join(self.archive_path, subpath)):
+      self.PrintDownloadLink(subpath, prefix=prefix)
 
   def _SubDutTargetImage(self):
     """Return a "good" image for the sub-DUT."""
@@ -452,12 +489,15 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     # (2) This image is available on GS for provision flow.
     return '%s/%s' % (self._run.bot_id, self._run.GetVersion())
 
-  def _Upload(self, path, prefix):
+  def _Upload(self, path, prefix=''):
     """Upload |path| to GS and print a link to it on the log."""
     logging.info('Uploading artifact %s to Google Storage...', path)
     with self.ArtifactUploader(archive=False, strict=False) as queue:
       queue.put([path])
-    self.PrintDownloadLink(path, '%s: ' % prefix)
+    if prefix:
+      self.PrintDownloadLink(path, '%s: ' % prefix)
+    else:
+      self.PrintDownloadLink(path)
 
 
 
@@ -534,7 +574,6 @@ def GetTestResultsDir(buildroot, test_results_dir):
   """
   test_results_dir = test_results_dir.lstrip('/')
   return os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR, test_results_dir)
-
 
 def ArchiveTestResults(results_path, archive_dir):
   """Archives the test results to |archive_dir|.
