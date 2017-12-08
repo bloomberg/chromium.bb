@@ -90,6 +90,19 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertDeepEquals([''], quickUnlockPrivateApi.credentials);
       });
 
+      test('EnterInvalidPasswordSelectsAllText', function() {
+        var confirmButton = getFromElement('#passwordInput');
+        quickUnlockPrivateApi.accountPassword = 'bar';
+        passwordElement.value = 'foo';
+        MockInteractions.tap(
+            getFromElement('paper-button[class="action-button"]'));
+
+        assertEquals(0, passwordElement.inputElement.selectionStart);
+        assertEquals(
+            passwordElement.value.length,
+            passwordElement.inputElement.selectionEnd);
+      });
+
       test('TapConfirmButtonWithWrongPasswordRestoresFocus', function() {
         var confirmButton = getFromElement('#passwordInput');
         quickUnlockPrivateApi.accountPassword = 'bar';
@@ -97,7 +110,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         MockInteractions.tap(
             getFromElement('paper-button[class="action-button"]'));
 
-        assertEquals(element.shadowRoot.activeElement, passwordElement);
+        assertTrue(passwordElement.focused);
       });
 
       // A bad password does not provide an authenticated setModes object, and a
