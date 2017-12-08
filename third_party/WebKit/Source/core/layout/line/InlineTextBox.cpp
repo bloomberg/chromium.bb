@@ -119,9 +119,10 @@ LayoutUnit InlineTextBox::BaselinePosition(FontBaseline baseline_type) const {
 LayoutUnit InlineTextBox::LineHeight() const {
   if (!IsText() || !GetLineLayoutItem().Parent())
     return LayoutUnit();
-  if (GetLineLayoutItem().IsBR())
+  if (GetLineLayoutItem().IsBR()) {
     return LayoutUnit(
         LineLayoutBR(GetLineLayoutItem()).LineHeight(IsFirstLineStyle()));
+  }
   if (Parent()->GetLineLayoutItem() == GetLineLayoutItem().Parent())
     return Parent()->LineHeight();
   return LineLayoutBoxModel(GetLineLayoutItem().Parent())
