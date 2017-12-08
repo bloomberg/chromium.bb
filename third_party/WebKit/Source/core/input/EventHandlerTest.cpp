@@ -17,12 +17,16 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/testing/PageTestBase.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -33,6 +37,8 @@ class EventHandlerTest : public PageTestBase {
   void SetHtmlInnerHTML(const char* html_content);
   ShadowRoot* SetShadowContent(const char* shadow_content, const char* host);
 };
+
+class EventHandlerIFrameTest : public SimTest {};
 
 class TapEventBuilder : public WebGestureEvent {
  public:
@@ -975,6 +981,97 @@ TEST_F(EventHandlerNavigationTest, MouseButtonsDontNavigate) {
       mouse_forward_event);
 
   EXPECT_EQ(0, Offset());
+}
+
+// Test that leaving a window leaves mouse position unknown.
+TEST_F(EventHandlerTest, MouseLeaveResetsUnknownState) {
+  SetHtmlInnerHTML("<div></div>");
+  WebMouseEvent mouse_down_event(WebMouseEvent::kMouseDown,
+                                 WebFloatPoint(262, 29), WebFloatPoint(329, 67),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::kTimeStampForTesting);
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
+
+  WebMouseEvent mouse_leave_event(
+      WebMouseEvent::kMouseLeave, WebFloatPoint(262, 29),
+      WebFloatPoint(329, 67), WebPointerProperties::Button::kNoButton, 1,
+      WebInputEvent::Modifiers::kNoModifiers,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_leave_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseLeaveEvent(
+      mouse_leave_event);
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
+}
+
+// Test that leaving an iframe sets the mouse position to unknown on that
+// iframe.
+TEST_F(EventHandlerIFrameTest, MouseLeaveResets) {
+  WebView().Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      width: 200px;
+      height: 200px;
+    }
+    iframe {
+      width: 200px;
+      height: 200px;
+    }
+    </style>
+    <div></div>
+    <iframe id='frame' src='frame.html'></iframe>
+  )HTML");
+
+  frame_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+  WebMouseEvent mouse_move_inside_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(100, 229),
+      WebFloatPoint(100, 229), WebPointerProperties::Button::kNoButton, 0,
+      WebInputEvent::Modifiers::kNoModifiers,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_move_inside_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_inside_event, Vector<WebMouseEvent>());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
+  auto* child_frame =
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+  child_frame->contentDocument()
+      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild());
+  EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild()->IsLocalFrame());
+  EXPECT_FALSE(ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild())
+                   ->GetEventHandler()
+                   .IsMousePositionUnknown());
+
+  WebMouseEvent mouse_move_outside_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(300, 29), WebFloatPoint(300, 29),
+      WebPointerProperties::Button::kNoButton, 0,
+      WebInputEvent::Modifiers::kNoModifiers,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_move_outside_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_outside_event, Vector<WebMouseEvent>());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
+  EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild());
+  EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild()->IsLocalFrame());
+  EXPECT_TRUE(ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild())
+                  ->GetEventHandler()
+                  .IsMousePositionUnknown());
 }
 
 }  // namespace blink

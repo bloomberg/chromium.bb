@@ -583,9 +583,13 @@ FloatPoint MouseEventManager::LastKnownMousePositionGlobal() {
 }
 
 void MouseEventManager::SetLastKnownMousePosition(const WebMouseEvent& event) {
-  is_mouse_position_unknown_ = false;
+  is_mouse_position_unknown_ = event.GetType() == WebInputEvent::kMouseLeave;
   last_known_mouse_position_ = event.PositionInRootFrame();
   last_known_mouse_global_position_ = event.PositionInScreen();
+}
+
+void MouseEventManager::SetLastMousePositionAsUnknown() {
+  is_mouse_position_unknown_ = true;
 }
 
 void MouseEventManager::DispatchFakeMouseMoveEventSoon(
