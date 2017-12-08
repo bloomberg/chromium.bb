@@ -25,7 +25,9 @@ class JobEventDetails;
 class MetafilePlayer;
 class PrintJobWorker;
 class PrintedDocument;
+#if defined(OS_WIN)
 class PrintedPage;
+#endif
 class PrinterQuery;
 
 // Manages the print work for a specific document. Talks to the printer through
@@ -206,14 +208,19 @@ class JobEventDetails : public base::RefCountedThreadSafe<JobEventDetails> {
 #endif
   };
 
+#if defined(OS_WIN)
   JobEventDetails(Type type,
                   int job_id,
                   PrintedDocument* document,
                   PrintedPage* page);
+#endif
+  JobEventDetails(Type type, int job_id, PrintedDocument* document);
 
   // Getters.
   PrintedDocument* document() const;
+#if defined(OS_WIN)
   PrintedPage* page() const;
+#endif
   Type type() const {
     return type_;
   }
@@ -225,7 +232,9 @@ class JobEventDetails : public base::RefCountedThreadSafe<JobEventDetails> {
   ~JobEventDetails();
 
   scoped_refptr<PrintedDocument> document_;
+#if defined(OS_WIN)
   scoped_refptr<PrintedPage> page_;
+#endif
   const Type type_;
   int job_id_;
 

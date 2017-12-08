@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PRINTED_PAGE_H_
-#define PRINTING_PRINTED_PAGE_H_
+#ifndef PRINTING_PRINTED_PAGE_WIN_H_
+#define PRINTING_PRINTED_PAGE_WIN_H_
 
 #include <memory>
 
@@ -34,16 +34,10 @@ class PRINTING_EXPORT PrintedPage
   const MetafilePlayer* metafile() const;
   const gfx::Size& page_size() const { return page_size_; }
   const gfx::Rect& page_content_rect() const { return page_content_rect_; }
-#if defined(OS_WIN)
   void set_shrink_factor(float shrink_factor) {
     shrink_factor_ = shrink_factor;
   }
   float shrink_factor() const { return shrink_factor_; }
-#endif  // OS_WIN
-
-  // Get page content rect adjusted based on
-  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
-  gfx::Rect GetCenteredPageContentRect(const gfx::Size& paper_size) const;
 
  private:
   friend class base::RefCountedThreadSafe<PrintedPage>;
@@ -56,10 +50,8 @@ class PRINTING_EXPORT PrintedPage
   // Actual paint data.
   const std::unique_ptr<MetafilePlayer> metafile_;
 
-#if defined(OS_WIN)
   // Shrink done in comparison to desired_dpi.
   float shrink_factor_;
-#endif  // OS_WIN
 
   // The physical page size. To support multiple page formats inside on print
   // job.
@@ -73,4 +65,4 @@ class PRINTING_EXPORT PrintedPage
 
 }  // namespace printing
 
-#endif  // PRINTING_PRINTED_PAGE_H_
+#endif  // PRINTING_PRINTED_PAGE_WIN_H_

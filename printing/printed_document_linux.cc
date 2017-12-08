@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "printing/page_number.h"
-#include "printing/printed_page.h"
 #include "printing/printing_context_linux.h"
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -16,25 +14,18 @@
 
 namespace printing {
 
-void PrintedDocument::RenderPrintedPage(
-    const PrintedPage& page, PrintingContext* context) const {
-#ifndef NDEBUG
-  {
-    // Make sure the page is from our list.
-    base::AutoLock lock(lock_);
-    DCHECK(&page == mutable_.pages_.find(page.page_number() - 1)->second.get());
-  }
-#endif
-
+bool PrintedDocument::RenderPrintedDocument(PrintingContext* context) {
   DCHECK(context);
 
+  if (context->NewPage() != PrintingContext::OK)
+    return false;
   {
     base::AutoLock lock(lock_);
-    if (page.page_number() - 1 == mutable_.first_page) {
-      static_cast<PrintingContextLinux*>(context)
-          ->PrintDocument(*page.metafile());
-    }
+    const MetafilePlayer* metafile = GetMetafile();
+    DCHECK(metafile);
+    static_cast<PrintingContextLinux*>(context)->PrintDocument(*metafile);
   }
+  return context->PageDone() == PrintingContext::OK;
 }
 
 }  // namespace printing
