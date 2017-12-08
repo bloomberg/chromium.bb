@@ -336,6 +336,11 @@ void PictureLayerTilingSet::RemoveTilingsAboveScaleKey(
       });
 }
 
+void PictureLayerTilingSet::ReleaseAllResources() {
+  RemoveAllTilings();
+  raster_source_ = nullptr;
+}
+
 void PictureLayerTilingSet::RemoveAllTilings() {
   tilings_.clear();
 }

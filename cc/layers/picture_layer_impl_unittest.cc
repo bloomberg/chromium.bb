@@ -221,14 +221,16 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
   void ResetTilingsAndRasterScales() {
     if (pending_layer()) {
       pending_layer()->ReleaseTileResources();
-      EXPECT_FALSE(pending_layer()->tilings());
+      EXPECT_TRUE(pending_layer()->tilings());
+      EXPECT_EQ(0u, pending_layer()->num_tilings());
       pending_layer()->RecreateTileResources();
-      EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
+      EXPECT_EQ(0u, pending_layer()->num_tilings());
     }
 
     if (active_layer()) {
       active_layer()->ReleaseTileResources();
-      EXPECT_FALSE(active_layer()->tilings());
+      EXPECT_TRUE(active_layer()->tilings());
+      EXPECT_EQ(0u, pending_layer()->num_tilings());
       active_layer()->RecreateTileResources();
       EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
     }
@@ -516,9 +518,10 @@ TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
   EXPECT_LT(low_res_factor, 1.f);
 
   active_layer()->ReleaseTileResources();
-  EXPECT_FALSE(active_layer()->tilings());
+  EXPECT_TRUE(active_layer()->tilings());
+  EXPECT_EQ(0u, active_layer()->num_tilings());
   active_layer()->RecreateTileResources();
-  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
+  EXPECT_EQ(0u, active_layer()->num_tilings());
 
   SetupDrawPropertiesAndUpdateTiles(active_layer(),
                                     6.f,  // ideal contents scale
@@ -589,7 +592,6 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighResTiling) {
   EXPECT_LT(low_res_factor, 1.f);
 
   pending_layer()->ReleaseTileResources();
-  EXPECT_FALSE(pending_layer()->tilings());
   pending_layer()->RecreateTileResources();
   EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
 
@@ -1391,13 +1393,11 @@ TEST_F(PictureLayerImplTest, ReleaseTileResources) {
 
   // All tilings should be removed when losing output surface.
   active_layer()->ReleaseTileResources();
-  EXPECT_FALSE(active_layer()->tilings());
   active_layer()->RecreateTileResources();
-  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
+  EXPECT_EQ(0u, active_layer()->num_tilings());
   pending_layer()->ReleaseTileResources();
-  EXPECT_FALSE(pending_layer()->tilings());
   pending_layer()->RecreateTileResources();
-  EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
+  EXPECT_EQ(0u, pending_layer()->num_tilings());
 
   // This should create new tilings.
   SetupDrawPropertiesAndUpdateTiles(pending_layer(),
@@ -1418,13 +1418,16 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
 
   // All tilings should be removed when losing output surface.
   active_layer()->ReleaseResources();
-  EXPECT_FALSE(active_layer()->tilings());
+  EXPECT_TRUE(active_layer()->tilings());
+  EXPECT_EQ(0u, active_layer()->num_tilings());
   active_layer()->RecreateTileResources();
-  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
+  EXPECT_EQ(0u, active_layer()->num_tilings());
+
   pending_layer()->ReleaseResources();
-  EXPECT_FALSE(pending_layer()->tilings());
+  EXPECT_TRUE(pending_layer()->tilings());
+  EXPECT_EQ(0u, pending_layer()->num_tilings());
   pending_layer()->RecreateTileResources();
-  EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
+  EXPECT_EQ(0u, pending_layer()->num_tilings());
 }
 
 TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
@@ -3784,13 +3787,15 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseTileResources) {
 
   // All tilings should be removed when losing output surface.
   active_layer()->ReleaseTileResources();
-  EXPECT_FALSE(active_layer()->tilings());
+  EXPECT_TRUE(active_layer()->tilings());
+  EXPECT_EQ(0u, active_layer()->num_tilings());
   active_layer()->RecreateTileResources();
-  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
+  EXPECT_EQ(0u, active_layer()->num_tilings());
   pending_layer()->ReleaseTileResources();
-  EXPECT_FALSE(pending_layer()->tilings());
+  EXPECT_TRUE(pending_layer()->tilings());
+  EXPECT_EQ(0u, pending_layer()->num_tilings());
   pending_layer()->RecreateTileResources();
-  EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
+  EXPECT_EQ(0u, pending_layer()->num_tilings());
 
   // This should create new tilings.
   SetupDrawPropertiesAndUpdateTiles(pending_layer(),
