@@ -790,21 +790,36 @@ void GLES2DecoderTestBase::SetBucketAsCStrings(uint32_t bucket_id,
   ClearSharedMemory();
 }
 
-void GLES2DecoderTestBase::SetupClearTextureExpectations(GLuint service_id,
-                                                         GLuint old_service_id,
-                                                         GLenum bind_target,
-                                                         GLenum target,
-                                                         GLint level,
-                                                         GLenum internal_format,
-                                                         GLenum format,
-                                                         GLenum type,
-                                                         GLint xoffset,
-                                                         GLint yoffset,
-                                                         GLsizei width,
-                                                         GLsizei height) {
+void GLES2DecoderTestBase::SetupClearTextureExpectations(
+    GLuint service_id,
+    GLuint old_service_id,
+    GLenum bind_target,
+    GLenum target,
+    GLint level,
+    GLenum format,
+    GLenum type,
+    GLint xoffset,
+    GLint yoffset,
+    GLsizei width,
+    GLsizei height,
+    GLuint bound_pixel_unpack_buffer) {
   EXPECT_CALL(*gl_, BindTexture(bind_target, service_id))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, _))
+      .Times(2)
+      .RetiresOnSaturation();
+  if (bound_pixel_unpack_buffer) {
+    EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_UNPACK_BUFFER, _))
+        .Times(2)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, _))
+        .Times(2)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, _))
+        .Times(2)
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl_, TexSubImage2D(target, level, xoffset, yoffset, width,
                                   height, format, type, _))
       .Times(1)
@@ -817,6 +832,73 @@ void GLES2DecoderTestBase::SetupClearTextureExpectations(GLuint service_id,
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
 #endif
+}
+
+void GLES2DecoderTestBase::SetupClearTexture3DExpectations(
+    GLsizeiptr buffer_size,
+    GLenum target,
+    GLuint tex_service_id,
+    GLint level,
+    GLenum format,
+    GLenum type,
+    size_t tex_sub_image_3d_num_calls,
+    GLint* xoffset,
+    GLint* yoffset,
+    GLint* zoffset,
+    GLsizei* width,
+    GLsizei* height,
+    GLsizei* depth,
+    GLuint bound_pixel_unpack_buffer) {
+  InSequence seq;
+  EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  if (bound_pixel_unpack_buffer) {
+    EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  EXPECT_CALL(*gl_, GenBuffersARB(1, _)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_UNPACK_BUFFER, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(
+      *gl_, BufferData(GL_PIXEL_UNPACK_BUFFER, buffer_size, _, GL_STATIC_DRAW))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(target, tex_service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  for (size_t ii = 0; ii < tex_sub_image_3d_num_calls; ++ii) {
+    EXPECT_CALL(*gl_, TexSubImage3DNoData(target, level, xoffset[ii],
+                                          yoffset[ii], zoffset[ii], width[ii],
+                                          height[ii], depth[ii], format, type))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, _)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  if (bound_pixel_unpack_buffer) {
+    EXPECT_CALL(*gl_,
+                BindBuffer(GL_PIXEL_UNPACK_BUFFER, bound_pixel_unpack_buffer))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  EXPECT_CALL(*gl_, BindTexture(target, _)).Times(1).RetiresOnSaturation();
 }
 
 void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearing(

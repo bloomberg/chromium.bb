@@ -338,6 +338,18 @@ class ScopedResolvedFramebufferBinder {
   DISALLOW_COPY_AND_ASSIGN(ScopedResolvedFramebufferBinder);
 };
 
+// Temporarily changes a decoder's PIXEL_UNPACK_BUFFER to 0 and set pixel unpack
+// params to default, and restore them when this object goes out of scope.
+class ScopedPixelUnpackState {
+ public:
+  explicit ScopedPixelUnpackState(ContextState* state);
+  ~ScopedPixelUnpackState();
+
+ private:
+  ContextState* state_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedPixelUnpackState);
+};
+
 // Encapsulates an OpenGL texture.
 class BackTexture {
  public:
@@ -2716,6 +2728,16 @@ ScopedResolvedFramebufferBinder::~ScopedResolvedFramebufferBinder() {
     decoder_->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
     decoder_->RestoreDeviceWindowRectangles();
   }
+}
+
+ScopedPixelUnpackState::ScopedPixelUnpackState(ContextState* state)
+    : state_(state) {
+  DCHECK(state_);
+  state_->PushTextureUnpackState();
+}
+
+ScopedPixelUnpackState::~ScopedPixelUnpackState() {
+  state_->RestoreUnpackState();
 }
 
 BackTexture::BackTexture(GLES2DecoderImpl* decoder)
@@ -6470,6 +6492,7 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
         !tex->GetLevelType(target, 0, &type, &internal_format) &&
         tex->GetLevelType(target, tex->base_level(), &type, &internal_format)) {
       format = TextureManager::ExtractFormatFromStorageFormat(internal_format);
+      ScopedPixelUnpackState reset_restore(&state_);
       api()->glTexImage2DFn(target, 0, internal_format, 1, 1, 0, format, type,
                             nullptr);
       texture_zero_level_set = true;
@@ -6505,6 +6528,7 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
     // This may have some unwanted side effects, but we expect command buffer
     // validation to prevent you from doing anything weird with the texture
     // after this, like calling texSubImage2D sucessfully.
+    ScopedPixelUnpackState reset_restore(&state_);
     api()->glTexImage2DFn(target, 0, internal_format, 0, 0, 0, format, type,
                           nullptr);
   }
@@ -13033,30 +13057,15 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     tile_height = height;
   }
 
-  Buffer* bound_buffer =
-      buffer_manager()->GetBufferInfoForTarget(&state_, GL_PIXEL_UNPACK_BUFFER);
-  if (bound_buffer) {
-    // If an unpack buffer is bound, we need to clear unpack parameters
-    // because they have been applied to the driver.
-    // Note: if it is not bound, we don't need to do anything, since they were
-    // set to 0 in ContextState::UpdateUnpackParameters.
-    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
-    if (state_.unpack_row_length > 0)
-      api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
-    if (state_.unpack_image_height > 0)
-      api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, 0);
-    DCHECK_EQ(0, state_.unpack_skip_pixels);
-    DCHECK_EQ(0, state_.unpack_skip_rows);
-    DCHECK_EQ(0, state_.unpack_skip_images);
-  }
+  api()->glBindTextureFn(texture->target(), texture->service_id());
   {
     // Add extra scope to destroy zero and the object it owns right
     // after its usage.
     // Assumes the size has already been checked.
     std::unique_ptr<char[]> zero(new char[size]);
     memset(zero.get(), 0, size);
-    api()->glBindTextureFn(texture->target(), texture->service_id());
 
+    ScopedPixelUnpackState reset_restore(&state_);
     GLint y = 0;
     while (y < height) {
       GLint h = y + tile_height > height ? height - y : tile_height;
@@ -13066,14 +13075,6 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
           zero.get());
       y += tile_height;
     }
-  }
-  if (bound_buffer) {
-    if (state_.unpack_row_length > 0)
-      api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, state_.unpack_row_length);
-    if (state_.unpack_image_height > 0)
-      api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT,
-                             state_.unpack_image_height);
-    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_buffer->service_id());
   }
 
   TextureRef* bound_texture =
@@ -13221,53 +13222,31 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
 
   TRACE_EVENT1("gpu", "GLES2DecoderImpl::ClearLevel3D", "size", size);
 
-  GLuint buffer_id = 0;
-  api()->glGenBuffersARBFn(1, &buffer_id);
-  api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, buffer_id);
   {
-    // Include padding as some drivers incorrectly requires padding for the
-    // last row.
-    buffer_size += padding;
-    std::unique_ptr<char[]> zero(new char[buffer_size]);
-    memset(zero.get(), 0, buffer_size);
-    // TODO(zmo): Consider glMapBufferRange instead.
-    api()->glBufferDataFn(GL_PIXEL_UNPACK_BUFFER, buffer_size, zero.get(),
-                          GL_STATIC_DRAW);
+    ScopedPixelUnpackState reset_restore(&state_);
+    GLuint buffer_id = 0;
+    api()->glGenBuffersARBFn(1, &buffer_id);
+    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, buffer_id);
+    {
+      // Include padding as some drivers incorrectly requires padding for the
+      // last row.
+      buffer_size += padding;
+      std::unique_ptr<char[]> zero(new char[buffer_size]);
+      memset(zero.get(), 0, buffer_size);
+      // TODO(zmo): Consider glMapBufferRange instead.
+      api()->glBufferDataFn(GL_PIXEL_UNPACK_BUFFER, buffer_size, zero.get(),
+                            GL_STATIC_DRAW);
+    }
+
+    api()->glBindTextureFn(texture->target(), texture->service_id());
+    for (size_t ii = 0; ii < subs.size(); ++ii) {
+      api()->glTexSubImage3DFn(target, level, subs[ii].xoffset,
+                               subs[ii].yoffset, subs[ii].zoffset,
+                               subs[ii].width, subs[ii].height, subs[ii].depth,
+                               format, type, nullptr);
+    }
+    api()->glDeleteBuffersARBFn(1, &buffer_id);
   }
-
-  Buffer* bound_buffer = buffer_manager()->GetBufferInfoForTarget(
-      &state_, GL_PIXEL_UNPACK_BUFFER);
-  if (bound_buffer) {
-    // If an unpack buffer is bound, we need to clear unpack parameters
-    // because they have been applied to the driver.
-    if (state_.unpack_row_length > 0)
-      api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
-    if (state_.unpack_image_height > 0)
-      api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, 0);
-    DCHECK_EQ(0, state_.unpack_skip_pixels);
-    DCHECK_EQ(0, state_.unpack_skip_rows);
-    DCHECK_EQ(0, state_.unpack_skip_images);
-  }
-
-  api()->glBindTextureFn(texture->target(), texture->service_id());
-
-  for (size_t ii = 0; ii < subs.size(); ++ii) {
-    api()->glTexSubImage3DFn(target, level, subs[ii].xoffset, subs[ii].yoffset,
-                             subs[ii].zoffset, subs[ii].width, subs[ii].height,
-                             subs[ii].depth, format, type, nullptr);
-  }
-
-  if (bound_buffer) {
-    if (state_.unpack_row_length > 0)
-      api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, state_.unpack_row_length);
-    if (state_.unpack_image_height > 0)
-      api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT,
-                             state_.unpack_image_height);
-  }
-
-  api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER,
-                        bound_buffer ? bound_buffer->service_id() : 0);
-  api()->glDeleteBuffersARBFn(1, &buffer_id);
 
   TextureRef* bound_texture =
       texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
@@ -14184,7 +14163,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage(
       group_->LoseContexts(error::kInnocent);
       return error::kLostContext;
     }
-    state_.PushTextureDecompressionUnpackState();
+    ScopedPixelUnpackState reset_restore(&state_);
     if (dimension == ContextState::k2D) {
       api()->glTexImage2DFn(
           target, level, format_info->decompressed_internal_format, width,
@@ -14196,7 +14175,6 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage(
           height, depth, border, format_info->decompressed_format,
           format_info->decompressed_type, decompressed_data.get());
     }
-    state_.RestoreUnpackState();
   } else {
     if (dimension == ContextState::k2D) {
       api()->glCompressedTexImage2DFn(target, level, internal_format, width,
@@ -14564,7 +14542,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexSubImage(
       group_->LoseContexts(error::kInnocent);
       return error::kLostContext;
     }
-    state_.PushTextureDecompressionUnpackState();
+    ScopedPixelUnpackState reset_restore(&state_);
     if (dimension == ContextState::k2D) {
       api()->glTexSubImage2DFn(target, level, xoffset, yoffset, width, height,
                                format_info->decompressed_format,
@@ -14576,7 +14554,6 @@ error::Error GLES2DecoderImpl::DoCompressedTexSubImage(
                                format_info->decompressed_type,
                                decompressed_data.get());
     }
-    state_.RestoreUnpackState();
   } else {
     if (dimension == ContextState::k2D) {
       api()->glCompressedTexSubImage2DFn(target, level, xoffset, yoffset, width,
@@ -14833,6 +14810,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
       std::unique_ptr<char[]> zero(new char[pixels_size]);
       memset(zero.get(), 0, pixels_size);
+      ScopedPixelUnpackState reset_restore(&state_);
       api()->glTexImage2DFn(target, level, final_internal_format, width, height,
                             border, format, type, zero.get());
     }
@@ -17329,6 +17307,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     // Ensure that the glTexImage2D succeeds.
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(kFunctionName);
     api()->glBindTextureFn(dest_binding_target, dest_texture->service_id());
+    ScopedPixelUnpackState reset_restore(&state_);
     api()->glTexImage2DFn(
         dest_target, dest_level,
         TextureManager::AdjustTexInternalFormat(feature_info_.get(),
@@ -17790,8 +17769,11 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
 
   // As a fallback, copy into a non-compressed GL_RGBA texture.
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(kFunctionName);
-  api()->glTexImage2DFn(dest_texture->target(), 0, GL_RGBA, source_width,
-                        source_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  {
+    ScopedPixelUnpackState reset_restore(&state_);
+    api()->glTexImage2DFn(dest_texture->target(), 0, GL_RGBA, source_width,
+                          source_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  }
   GLenum error = LOCAL_PEEK_GL_ERROR(kFunctionName);
   if (error != GL_NO_ERROR) {
     RestoreCurrentTextureBindings(&state_, dest_texture->target(),

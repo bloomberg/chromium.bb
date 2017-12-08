@@ -1820,10 +1820,10 @@ TEST_P(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
   // Expect 2 levels will be cleared.
   SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
                                 GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
-                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 2, 2);
+                                GL_UNSIGNED_BYTE, 0, 0, 2, 2, 0);
   SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
                                 GL_TEXTURE_2D, GL_TEXTURE_2D, 1, GL_RGBA,
-                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 1, 1);
+                                GL_UNSIGNED_BYTE, 0, 0, 1, 1, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -1853,10 +1853,10 @@ TEST_P(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
   // Expect 2 levels will be cleared.
   SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
                                 GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
-                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 2, 2);
+                                GL_UNSIGNED_BYTE, 0, 0, 2, 2, 0);
   SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
                                 GL_TEXTURE_2D, GL_TEXTURE_2D, 1, GL_RGBA,
-                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 1, 1);
+                                GL_UNSIGNED_BYTE, 0, 0, 1, 1, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
 
   EXPECT_CALL(*gl_,
@@ -2082,11 +2082,11 @@ TEST_P(GLES2DecoderManualInitTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
   SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
                                 GL_TEXTURE_CUBE_MAP,
                                 GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA,
-                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 2, 2);
+                                GL_UNSIGNED_BYTE, 0, 0, 2, 2, 0);
   SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
                                 GL_TEXTURE_CUBE_MAP,
                                 GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 1, GL_RGBA,
-                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 1, 1);
+                                GL_UNSIGNED_BYTE, 0, 0, 1, 1, 0);
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
