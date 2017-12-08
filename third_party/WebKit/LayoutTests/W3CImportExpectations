@@ -297,6 +297,9 @@ external/wpt/html/browsers/history/the-history-interface/traverse_the_history_wr
 external/wpt/html/semantics/document-metadata/the-style-element/style-error-01.html [ Skip ]
 external/wpt/svg/linking/scripted [ Skip ]
 
+# Temporarily skip this test until crbug.com/793160 is fixed.
+external/wpt/mimesniff/mime-types/parsing.any.js [ Skip ]
+
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
 external/wpt/FileAPI/BlobURL/test1-manual.html [ Skip ]
 external/wpt/FileAPI/BlobURL/test2-manual.html [ Skip ]
