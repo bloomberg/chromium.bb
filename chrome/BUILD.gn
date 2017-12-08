@@ -203,7 +203,6 @@ if (!is_android && !is_mac) {
           "//content:sandbox_helper_win",
           "//content/public/common:static_switches",
           "//crypto",
-          "//gpu/config:crash_keys",
           "//sandbox",
           "//third_party/breakpad:breakpad_handler",
           "//third_party/breakpad:breakpad_sender",

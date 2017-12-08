@@ -254,7 +254,6 @@ static_library("common") {
     "//google_apis",
     "//gpu/command_buffer/service",
     "//gpu/config",
-    "//gpu/config:crash_keys",
     "//ipc",
     "//media",
     "//mojo/edk/system",

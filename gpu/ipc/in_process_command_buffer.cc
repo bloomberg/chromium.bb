@@ -15,7 +15,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
-#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -356,8 +355,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                                                   .use_virtualized_gl_contexts;
 
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
+  crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
+                                                                        : "0");
 
   if (use_virtualized_gl_context_) {
     context_ = gl_share_group_->GetSharedContext(surface_.get());
@@ -447,8 +446,8 @@ void InProcessCommandBuffer::Destroy() {
 bool InProcessCommandBuffer::DestroyOnGpuThread() {
   CheckSequencedThread();
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
+  crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
+                                                                        : "0");
   gpu_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   // Clean up GL resources if possible.
   bool have_context = context_.get() && context_->MakeCurrent(surface_.get());
@@ -526,8 +525,8 @@ void InProcessCommandBuffer::QueueTask(bool out_of_order,
 
 void InProcessCommandBuffer::ProcessTasksOnGpuThread() {
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
+  crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
+                                                                        : "0");
   while (command_buffer_->scheduled()) {
     base::AutoLock lock(task_queue_lock_);
     if (task_queue_.empty())
@@ -592,8 +591,8 @@ void InProcessCommandBuffer::PerformDelayedWorkOnGpuThread() {
   delayed_work_pending_ = false;
   base::AutoLock lock(command_buffer_lock_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
+  crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
+                                                                        : "0");
   if (MakeCurrent()) {
     decoder_->PerformIdleWork();
     decoder_->ProcessPendingQueries(false);

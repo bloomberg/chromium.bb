@@ -8,19 +8,20 @@ namespace gpu {
 namespace crash_keys {
 
 #if !defined(OS_ANDROID)
-const char kGPUVendorID[] = "gpu-venid";
-const char kGPUDeviceID[] = "gpu-devid";
+crash_reporter::CrashKeyString<16> gpu_vendor_id("gpu-venid");
+crash_reporter::CrashKeyString<16> gpu_device_id("gpu-devid");
 #endif
-const char kGPUDriverVersion[] = "gpu-driver";
-const char kGPUPixelShaderVersion[] = "gpu-psver";
-const char kGPUVertexShaderVersion[] = "gpu-vsver";
+crash_reporter::CrashKeyString<64> gpu_driver_version("gpu-driver");
+crash_reporter::CrashKeyString<16> gpu_pixel_shader_version("gpu-psver");
+crash_reporter::CrashKeyString<16> gpu_vertex_shader_version("gpu-vsver");
 #if defined(OS_MACOSX)
-const char kGPUGLVersion[] = "gpu-glver";
+crash_reporter::CrashKeyString<64> gpu_gl_version("gpu-glver");
 #elif defined(OS_POSIX)
-const char kGPUVendor[] = "gpu-gl-vendor";
-const char kGPURenderer[] = "gpu-gl-renderer";
+crash_reporter::CrashKeyString<256> gpu_vendor("gpu-gl-vendor");
+crash_reporter::CrashKeyString<128> gpu_renderer("gpu-gl-renderer");
 #endif
-const char kGPUGLContextIsVirtual[] = "gpu-gl-context-is-virtual";
+crash_reporter::CrashKeyString<4> gpu_gl_context_is_virtual(
+    "gpu-gl-context-is-virtual");
 
 }  // namespace crash_keys
 }  // namespace gpu

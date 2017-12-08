@@ -18,13 +18,14 @@ group("config") {
   }
 }
 
-# This needs to be a small target, because it links into both chrome.exe and
-# chrome.dll targets. If this target grows, that will lead to a size regression.
-# See https://crbug.com/703622
 source_set("crash_keys") {
   sources = [
     "gpu_crash_keys.cc",
     "gpu_crash_keys.h",
+  ]
+
+  deps = [
+    "//components/crash/core/common:crash_key",
   ]
 }
 
