@@ -40,10 +40,6 @@ Added code to capture java stderr for better handling of native->java crashes.
 Fixed invalid using decl in logging header debug.h
 Only attempt to symbolize with ELF libraries.
 
-Changed the stack script to use llvm symbolizer instead of addr2line,
-objdump, etc, since llvm symbolizer is more efficient in finding
-function names, line numbers etc.
-
 Android relocation packing tool details:
     Copy sources from AOSP bionic/tools/relocation_packer
     Remove scripts that regenerate golden test data (not relevant here)
