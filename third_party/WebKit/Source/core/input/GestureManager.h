@@ -5,6 +5,7 @@
 #ifndef GestureManager_h
 #define GestureManager_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestRequest.h"
@@ -24,8 +25,6 @@ class MouseEventManager;
 // gesture to the responsible class.
 class CORE_EXPORT GestureManager
     : public GarbageCollectedFinalized<GestureManager> {
-  WTF_MAKE_NONCOPYABLE(GestureManager);
-
  public:
   GestureManager(LocalFrame&,
                  ScrollManager&,
@@ -80,6 +79,7 @@ class CORE_EXPORT GestureManager
   const Member<SelectionController> selection_controller_;
 
   WTF::Optional<WTF::TimeTicks> last_show_press_timestamp_;
+  DISALLOW_COPY_AND_ASSIGN(GestureManager);
 };
 
 }  // namespace blink

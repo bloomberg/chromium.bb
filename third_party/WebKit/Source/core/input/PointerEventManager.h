@@ -5,6 +5,7 @@
 #ifndef PointerEventManager_h
 #define PointerEventManager_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/events/PointerEvent.h"
 #include "core/events/PointerEventFactory.h"
@@ -24,8 +25,6 @@ class MouseEventManager;
 // properties of active pointer events.
 class CORE_EXPORT PointerEventManager
     : public GarbageCollectedFinalized<PointerEventManager> {
-  WTF_MAKE_NONCOPYABLE(PointerEventManager);
-
  public:
   PointerEventManager(LocalFrame&, MouseEventManager&);
   void Trace(blink::Visitor*);
@@ -116,8 +115,6 @@ class CORE_EXPORT PointerEventManager
   };
 
   class PointerEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
-    WTF_MAKE_NONCOPYABLE(PointerEventBoundaryEventDispatcher);
-
    public:
     PointerEventBoundaryEventDispatcher(PointerEventManager*, PointerEvent*);
 
@@ -140,6 +137,7 @@ class CORE_EXPORT PointerEventManager
                   bool check_for_listener);
     Member<PointerEventManager> pointer_event_manager_;
     Member<PointerEvent> pointer_event_;
+    DISALLOW_COPY_AND_ASSIGN(PointerEventBoundaryEventDispatcher);
   };
 
   // Sends pointercancels for existing PointerEvents that are interrupted.
@@ -246,6 +244,8 @@ class CORE_EXPORT PointerEventManager
   // The pointerId of the PointerEvent currently being dispatched within this
   // frame or 0 if none.
   int dispatching_pointer_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(PointerEventManager);
 };
 
 }  // namespace blink

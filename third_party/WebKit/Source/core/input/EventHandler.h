@@ -26,6 +26,7 @@
 #ifndef EventHandler_h
 #define EventHandler_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/UserGestureIndicator.h"
@@ -78,8 +79,6 @@ class WebTouchEvent;
 
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {
-  WTF_MAKE_NONCOPYABLE(EventHandler);
-
  public:
   explicit EventHandler(LocalFrame&);
   void Trace(blink::Visitor*);
@@ -438,6 +437,8 @@ class CORE_EXPORT EventHandler final
                            EditableAnchorTextCanStartSelection);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            ReadOnlyInputDoesNotInheritUserSelect);
+
+  DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };
 
 }  // namespace blink
