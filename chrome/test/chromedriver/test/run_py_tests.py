@@ -87,6 +87,8 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'MobileEmulationCapabilityTest.testDeviceName',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabs',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2164
+    'ChromeDriverTest.testSendTextToAlert',
 ]
 
 _VERSION_SPECIFIC_FILTER['64'] = [
