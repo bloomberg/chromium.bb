@@ -30,8 +30,13 @@ namespace search_provider_logos {
 class LogoService;
 }  // namespace search_provider_logos
 
-// Serves HTML and resources for the local new tab page i.e.
-// chrome-search://local-ntp/local-ntp.html
+// Serves HTML and resources for the local New Tab page, i.e.
+// chrome-search://local-ntp/local-ntp.html.
+// WARNING: Due to the threading model of URLDataSource, some methods of this
+// class are called on the UI thread, others on the IO thread. All data members
+// live on the UI thread, so make sure not to access them from the IO thread!
+// To prevent accidental access, all methods that get called on the IO thread
+// are implemented as non-member functions.
 class LocalNtpSource : public content::URLDataSource,
                        public OneGoogleBarServiceObserver {
  public:
