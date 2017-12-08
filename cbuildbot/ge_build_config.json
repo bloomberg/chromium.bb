@@ -1719,6 +1719,7 @@
             "bvt-installer",
             "bvt-arc",
             "au",
+            "bvt-cq",
             "bvt-perbuild"
           ],
           "cq_test_enabled": false,
