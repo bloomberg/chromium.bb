@@ -84,7 +84,7 @@ static uint8_t add_ref_mv_candidate(
         int_mv this_refmv;
 #if CONFIG_EXT_WARPED_MOTION
         if (candidate->motion_mode == WARPED_CAUSAL && do_warping) {
-          WarpedMotionParams wm = candidate->wm_params[0];
+          const WarpedMotionParams wm = candidate->wm_params[0];
           const int bw = block_size_wide[bsize];
           const int bh = block_size_high[bsize];
           int global_offset_c = mi_col * MI_SIZE;

@@ -671,7 +671,7 @@ typedef struct macroblockd {
 // same with that in AV1_COMMON
 #endif
   struct aom_internal_error_info *error_info;
-  WarpedMotionParams *global_motion;
+  const WarpedMotionParams *global_motion;
   int prev_qindex;
   int delta_qindex;
   int current_qindex;

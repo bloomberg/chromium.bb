@@ -5826,7 +5826,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
   int is_global[2];
   for (ref = 0; ref < 2; ++ref) {
-    WarpedMotionParams *const wm =
+    const WarpedMotionParams *const wm =
         &xd->global_motion[xd->mi[0]->mbmi.ref_frame[ref]];
     is_global[ref] = is_global_mv_block(xd->mi[0], block, wm->wmtype);
   }
@@ -6521,7 +6521,7 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   const int ir = (block - ic) >> 1;
   const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x) + 4 * ic;
   const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
-  WarpedMotionParams *const wm = &xd->global_motion[other_ref];
+  const WarpedMotionParams *const wm = &xd->global_motion[other_ref];
   int is_global = is_global_mv_block(xd->mi[0], block, wm->wmtype);
 
   // This function should only ever be called for compound modes
@@ -7787,7 +7787,7 @@ static int64_t motion_mode_rd(
           if (!is_comp_pred && have_newmv_in_inter_mode(this_mode)) {
             int tmp_rate_mv = 0;
             const int_mv mv0 = mbmi->mv[0];
-            WarpedMotionParams wm_params0 = mbmi->wm_params[0];
+            const WarpedMotionParams wm_params0 = mbmi->wm_params[0];
 #if CONFIG_EXT_WARPED_MOTION
             int num_proj_ref0 = mbmi->num_proj_ref[0];
 

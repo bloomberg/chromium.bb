@@ -981,7 +981,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_INTRABC
   int is_global[2] = { 0, 0 };
   for (ref = 0; ref < 1 + is_compound; ++ref) {
-    WarpedMotionParams *const wm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
+    const WarpedMotionParams *const wm =
+        &xd->global_motion[mi->mbmi.ref_frame[ref]];
     is_global[ref] = is_global_mv_block(mi, block, wm->wmtype);
   }
 
@@ -2172,7 +2173,8 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   const int is_scaled = av1_is_scaled(sf);
   ConvolveParams conv_params = get_conv_params(ref, 0, plane);
   WarpTypesAllowed warp_types;
-  WarpedMotionParams *const wm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
+  const WarpedMotionParams *const wm =
+      &xd->global_motion[mi->mbmi.ref_frame[ref]];
   warp_types.global_warp_allowed = is_global_mv_block(mi, block, wm->wmtype);
   warp_types.local_warp_allowed = mi->mbmi.motion_mode == WARPED_CAUSAL;
 
