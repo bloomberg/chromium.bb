@@ -74,17 +74,6 @@ NET_EXPORT bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                                      base::Time not_valid_after,
                                      std::string* der_cert);
 
-// Provides a method to parse a DER-encoded X509 certificate without calling any
-// OS primitives. This is useful in sandboxed processes.
-NET_EXPORT bool ParseCertificateSandboxed(
-    const base::StringPiece& certificate,
-    std::string* subject,
-    std::string* issuer,
-    base::Time* not_before,
-    base::Time* not_after,
-    std::vector<std::string>* dns_names,
-    std::vector<std::string>* ip_addresses);
-
 // Returns a CRYPTO_BUFFER_POOL for deduplicating certificates.
 NET_EXPORT CRYPTO_BUFFER_POOL* GetBufferPool();
 

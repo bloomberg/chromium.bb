@@ -114,33 +114,6 @@ bool AddTime(CBB* cbb, base::Time time) {
          der::EncodeGeneralizedTime(generalized_time, out) && CBB_flush(cbb);
 }
 
-bool GetCommonName(const der::Input& tlv, std::string* common_name) {
-  RDNSequence rdn_sequence;
-  if (!ParseName(tlv, &rdn_sequence))
-    return false;
-
-  for (const auto& rdn : rdn_sequence) {
-    for (const auto& atv : rdn) {
-      if (atv.type == TypeCommonNameOid()) {
-        return atv.ValueAsString(common_name);
-      }
-    }
-  }
-  return true;
-}
-
-bool DecodeTime(const der::GeneralizedTime& generalized_time,
-                base::Time* time) {
-  base::Time::Exploded exploded = {0};
-  exploded.year = generalized_time.year;
-  exploded.month = generalized_time.month;
-  exploded.day_of_month = generalized_time.day;
-  exploded.hour = generalized_time.hours;
-  exploded.minute = generalized_time.minutes;
-  exploded.second = generalized_time.seconds;
-  return base::Time::FromUTCExploded(exploded, time);
-}
-
 class BufferPoolSingleton {
  public:
   BufferPoolSingleton() : pool_(CRYPTO_BUFFER_POOL_new()) {}
@@ -317,61 +290,6 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
   }
   bssl::UniquePtr<uint8_t> delete_cert_bytes(cert_bytes);
   der_encoded->assign(reinterpret_cast<char*>(cert_bytes), cert_len);
-  return true;
-}
-
-bool ParseCertificateSandboxed(const base::StringPiece& certificate,
-                               std::string* subject,
-                               std::string* issuer,
-                               base::Time* not_before,
-                               base::Time* not_after,
-                               std::vector<std::string>* dns_names,
-                               std::vector<std::string>* ip_addresses) {
-  der::Input cert_data(certificate);
-  der::Input tbs_cert, signature_alg;
-  der::BitString signature_value;
-  if (!ParseCertificate(cert_data, &tbs_cert, &signature_alg, &signature_value,
-                        nullptr))
-    return false;
-
-  ParsedTbsCertificate parsed_tbs_cert;
-  if (!ParseTbsCertificate(tbs_cert, DefaultParseCertificateOptions(),
-                           &parsed_tbs_cert, nullptr))
-    return false;
-
-  if (!GetCommonName(parsed_tbs_cert.subject_tlv, subject))
-    return false;
-
-  if (!GetCommonName(parsed_tbs_cert.issuer_tlv, issuer))
-    return false;
-
-  if (!DecodeTime(parsed_tbs_cert.validity_not_before, not_before))
-    return false;
-
-  if (!DecodeTime(parsed_tbs_cert.validity_not_after, not_after))
-    return false;
-
-  if (!parsed_tbs_cert.has_extensions)
-    return true;
-
-  std::map<der::Input, ParsedExtension> extensions;
-  if (!ParseExtensions(parsed_tbs_cert.extensions_tlv, &extensions))
-    return false;
-
-  CertErrors unused_errors;
-  std::vector<std::string> san;
-  auto iter = extensions.find(SubjectAltNameOid());
-  if (iter != extensions.end()) {
-    std::unique_ptr<GeneralNames> subject_alt_names =
-        GeneralNames::Create(iter->second.value, &unused_errors);
-    if (subject_alt_names) {
-      for (const auto& dns_name : subject_alt_names->dns_names)
-        dns_names->push_back(dns_name.as_string());
-      for (const auto& ip : subject_alt_names->ip_addresses)
-        ip_addresses->push_back(ip.ToString());
-    }
-  }
-
   return true;
 }
 

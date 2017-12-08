@@ -50,7 +50,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/ct_sct_to_string.h"
-#include "net/cert/x509_util.h"
+#include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -305,22 +305,28 @@ void SetSecurityStyleAndDetails(const GURL& url,
   for (size_t i = 0; i < sct_list.size(); ++i)
     sct_list[i] = NetSCTToBlinkSCT(info.signed_certificate_timestamps[i]);
 
-  std::string subject, issuer;
-  base::Time valid_start, valid_expiry;
-  std::vector<std::string> san;
-  bool rv = net::x509_util::ParseCertificateSandboxed(
-      info.certificate[0], &subject, &issuer, &valid_start, &valid_expiry, &san,
-      &san);
-  if (!rv) {
+  scoped_refptr<net::X509Certificate> cert(
+      net::X509Certificate::CreateFromBytes(info.certificate[0].data(),
+                                            info.certificate[0].size()));
+  if (!cert) {
     NOTREACHED();
     response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
     return;
   }
 
-  blink::WebVector<blink::WebString> web_san(san.size());
+  std::vector<std::string> san_dns;
+  std::vector<std::string> san_ip;
+  cert->GetSubjectAltName(&san_dns, &san_ip);
+  blink::WebVector<blink::WebString> web_san(san_dns.size() + san_ip.size());
   std::transform(
-      san.begin(), san.end(), web_san.begin(),
+      san_dns.begin(), san_dns.end(), web_san.begin(),
       [](const std::string& h) { return blink::WebString::FromLatin1(h); });
+  std::transform(san_ip.begin(), san_ip.end(), web_san.begin() + san_dns.size(),
+                 [](const std::string& h) {
+                   net::IPAddress ip(reinterpret_cast<const uint8_t*>(h.data()),
+                                     h.size());
+                   return blink::WebString::FromLatin1(ip.ToString());
+                 });
 
   blink::WebVector<blink::WebString> web_cert(info.certificate.size());
   std::transform(
@@ -330,9 +336,11 @@ void SetSecurityStyleAndDetails(const GURL& url,
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
       WebString::FromASCII(protocol), WebString::FromASCII(key_exchange),
       WebString::FromASCII(key_exchange_group), WebString::FromASCII(cipher),
-      WebString::FromASCII(mac), WebString::FromUTF8(subject), web_san,
-      WebString::FromUTF8(issuer), valid_start.ToDoubleT(),
-      valid_expiry.ToDoubleT(), web_cert, sct_list);
+      WebString::FromASCII(mac),
+      WebString::FromUTF8(cert->subject().common_name), web_san,
+      WebString::FromUTF8(cert->issuer().common_name),
+      cert->valid_start().ToDoubleT(), cert->valid_expiry().ToDoubleT(),
+      web_cert, sct_list);
 
   response->SetSecurityDetails(webSecurityDetails);
 }
