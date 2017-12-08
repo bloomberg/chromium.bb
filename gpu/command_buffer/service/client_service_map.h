@@ -19,7 +19,10 @@ template <typename ClientType, typename ServiceType>
 class ClientServiceMap {
  public:
   ClientServiceMap()
-      : client_to_service_array_(kInitialFlatArraySize, invalid_service_id()),
+      : ClientServiceMap(std::numeric_limits<ServiceType>::max()) {}
+  explicit ClientServiceMap(ServiceType invalid_service_id)
+      : invalid_service_id_(invalid_service_id),
+        client_to_service_array_(kInitialFlatArraySize, invalid_service_id),
         client_to_service_map_() {}
 
   void SetIDMapping(ClientType client_id, ServiceType service_id) {
@@ -123,9 +126,7 @@ class ClientServiceMap {
     return false;
   }
 
-  ServiceType invalid_service_id() const {
-    return std::numeric_limits<ServiceType>::max();
-  }
+  const ServiceType& invalid_service_id() const { return invalid_service_id_; }
 
   template <typename FunctionType>
   void ForEach(FunctionType func) const {
@@ -147,6 +148,7 @@ class ClientServiceMap {
   static constexpr size_t kMaxFlatArraySize = 0x4000;
 
  private:
+  ServiceType invalid_service_id_;
   std::vector<ServiceType> client_to_service_array_;
   std::unordered_map<ClientType, ServiceType> client_to_service_map_;
 };
