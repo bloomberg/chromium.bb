@@ -16,6 +16,7 @@
 -ServiceWorkerVersionBrowserV8CacheTest.Restart
 
 # http://crbug.com/721398
+-ClearSiteDataThrottleBrowserTest.CacheIntegrationTest
 -ClearSiteDataThrottleBrowserTest.CookiesIntegrationTest
 -ClearSiteDataThrottleBrowserTest.Credentials
 -ClearSiteDataThrottleBrowserTest.CredentialsOnRedirect
