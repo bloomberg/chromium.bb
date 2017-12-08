@@ -682,11 +682,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 }
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
-bool ScriptLoader::FetchClassicScript(
-    const KURL& url,
-    Document& element_document,
-    const ScriptFetchOptions& options,
-    const WTF::TextEncoding& encoding) {
+bool ScriptLoader::FetchClassicScript(const KURL& url,
+                                      Document& element_document,
+                                      const ScriptFetchOptions& options,
+                                      const WTF::TextEncoding& encoding) {
   FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
   if (!parser_inserted_ || element_->AsyncAttributeValue() ||
       element_->DeferAttributeValue())
