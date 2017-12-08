@@ -133,6 +133,11 @@ IN_PROC_BROWSER_TEST_P(MediaCapabilitiesTestWithConfigType,
       kSupported,
       CanDecodeVideo(config_type, "'video/webm; codecs=\"vp09.00.10.08\"'"));
 
+  // VP09 is available in MP4 container irrespective of USE_PROPRIETARY_CODECS.
+  EXPECT_EQ(
+      kSupported,
+      CanDecodeVideo(config_type, "'video/mp4; codecs=\"vp09.00.10.08\"'"));
+
   // Supported when built with USE_PROPRIETARY_CODECS
   EXPECT_EQ(kPropSupported,
             CanDecodeVideo(config_type, "'video/mp4; codecs=\"avc1.42E01E\"'"));
@@ -142,9 +147,6 @@ IN_PROC_BROWSER_TEST_P(MediaCapabilitiesTestWithConfigType,
             CanDecodeVideo(config_type, "'video/mp4; codecs=\"avc1.42701E\"'"));
   EXPECT_EQ(kPropSupported,
             CanDecodeVideo(config_type, "'video/mp4; codecs=\"avc1.42F01E\"'"));
-  EXPECT_EQ(
-      kPropSupported,
-      CanDecodeVideo(config_type, "'video/mp4; codecs=\"vp09.00.10.08\"'"));
 
   // Test a handful of invalid strings.
   EXPECT_EQ(kUnsupported,
@@ -172,14 +174,14 @@ IN_PROC_BROWSER_TEST_P(MediaCapabilitiesTestWithConfigType,
             CanDecodeAudio(config_type, "'audio/webm; codecs=\"opus\"'"));
   EXPECT_EQ(kSupported,
             CanDecodeAudio(config_type, "'audio/webm; codecs=\"vorbis\"'"));
+  EXPECT_EQ(kSupported,
+            CanDecodeAudio(config_type, "'audio/mp4; codecs=\"flac\"'"));
+  EXPECT_EQ(kSupported, CanDecodeAudio(config_type, "'audio/mpeg'"));
 
   // Supported when built with USE_PROPRIETARY_CODECS
   EXPECT_EQ(kPropSupported,
             CanDecodeAudio(config_type, "'audio/mp4; codecs=\"mp4a.40.02\"'"));
   EXPECT_EQ(kPropSupported, CanDecodeAudio(config_type, "'audio/aac'"));
-  EXPECT_EQ(kPropSupported,
-            CanDecodeAudio(config_type, "'audio/mp4; codecs=\"flac\"'"));
-  EXPECT_EQ(kPropSupported, CanDecodeAudio(config_type, "'audio/mpeg'"));
 
   // Test a handful of invalid strings.
   EXPECT_EQ(kUnsupported,
@@ -219,7 +221,7 @@ IN_PROC_BROWSER_TEST_P(MediaCapabilitiesTestWithConfigType,
             CanDecodeAudio(config_type, "'audio/ogg; codecs=\"opus\"'"));
 
   // MP3 is only supported via audio/mpeg for MSE.
-  EXPECT_EQ(prop_type_supported,
+  EXPECT_EQ(type_supported,
             CanDecodeAudio(config_type, "'audio/mp4; codecs=\"mp4a.69\"'"));
 
   // Ogg not supported in MSE.

@@ -172,32 +172,26 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
       "application/vnd.apple.mpegurl"));
   EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType("audio/mpegurl"));
   EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType("audio/x-mpegurl"));
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mp4"));
-  EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-m4a"));
-  EXPECT_TRUE(IsSupportedMediaMimeType("video/mp4"));
-  EXPECT_TRUE(IsSupportedMediaMimeType("video/x-m4v"));
-
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mp3"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-mp3"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mpeg"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/mp4"));
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-m4a"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/x-m4v"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/aac"));
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   EXPECT_TRUE(IsSupportedMediaMimeType("video/mp2t"));
 #else
   EXPECT_FALSE(IsSupportedMediaMimeType("video/mp2t"));
-#endif
-#else
-  EXPECT_FALSE(IsSupportedMediaMimeType("audio/mp4"));
-  EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-m4a"));
-  EXPECT_FALSE(IsSupportedMediaMimeType("video/mp4"));
-  EXPECT_FALSE(IsSupportedMediaMimeType("video/x-m4v"));
+#endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 
-  EXPECT_FALSE(IsSupportedMediaMimeType("audio/mp3"));
-  EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-mp3"));
-  EXPECT_FALSE(IsSupportedMediaMimeType("audio/mpeg"));
+#else
+  EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-m4a"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/x-m4v"));
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/aac"));
 #endif  // USE_PROPRIETARY_CODECS
   EXPECT_FALSE(IsSupportedMediaMimeType("video/mp3"));
@@ -328,11 +322,9 @@ TEST(MimeUtilTest, ParseAudioCodecString) {
     EXPECT_EQ(kCodecAAC, out_codec);
   }
 
-  // Valid FLAC string when proprietary codecs are supported. FLAC-in-MP4
-  // currently requires proprietary codecs to demux mp4.
-  EXPECT_EQ(kUsePropCodecs,
-            ParseAudioCodecString("audio/mp4", "flac", &out_is_ambiguous,
-                                  &out_codec));
+  // Valid FLAC string with MP4. Neither decoding nor demuxing is proprietary.
+  EXPECT_TRUE(ParseAudioCodecString("audio/mp4", "flac", &out_is_ambiguous,
+                                    &out_codec));
   if (kUsePropCodecs) {
     EXPECT_FALSE(out_is_ambiguous);
     EXPECT_EQ(kCodecFLAC, out_codec);

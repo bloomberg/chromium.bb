@@ -20,6 +20,10 @@
 #include "media/formats/mp4/parse_result.h"
 #include "media/formats/mp4/track_run_iterator.h"
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#include "media/formats/mp4/aac.h"
+#endif
+
 namespace media {
 namespace mp4 {
 
@@ -73,9 +77,11 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   void ChangeState(State new_state);
 
   bool EmitConfigs();
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   bool PrepareAACBuffer(const AAC& aac_config,
                         std::vector<uint8_t>* frame_buf,
                         std::vector<SubsampleEntry>* subsamples) const;
+#endif
   ParseResult EnqueueSample(BufferQueueMap* buffers);
   bool SendAndFlushSamples(BufferQueueMap* buffers);
 

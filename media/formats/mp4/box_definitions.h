@@ -210,6 +210,7 @@ struct MEDIA_EXPORT HandlerReference : Box {
   std::string name;
 };
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 struct MEDIA_EXPORT AVCDecoderConfigurationRecord : Box {
   DECLARE_BOX_METHODS(AVCDecoderConfigurationRecord);
 
@@ -235,6 +236,7 @@ struct MEDIA_EXPORT AVCDecoderConfigurationRecord : Box {
  private:
   bool ParseInternal(BufferReader* reader, MediaLog* media_log);
 };
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 struct MEDIA_EXPORT VPCodecConfigurationRecord : Box {
   DECLARE_BOX_METHODS(VPCodecConfigurationRecord);
@@ -272,7 +274,9 @@ struct MEDIA_EXPORT ElementaryStreamDescriptor : Box {
   DECLARE_BOX_METHODS(ElementaryStreamDescriptor);
 
   uint8_t object_type;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   AAC aac;
+#endif
 };
 
 struct MEDIA_EXPORT FlacSpecificBox : Box {

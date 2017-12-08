@@ -3104,13 +3104,17 @@ TEST_P(ChunkDemuxerTest, CodecPrefixMatching) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+
 #if defined(OS_ANDROID)
   if (HasPlatformDecoderSupport())
     expected = ChunkDemuxer::kOk;
 #else
   expected = ChunkDemuxer::kOk;
-#endif
-#endif
+#endif  // defined(OS_ANDROID)
+
+#else
+  EXPECT_MEDIA_LOG(CodecUnsupportedInContainer("avc1.4D4041", "video/mp4"));
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
   EXPECT_EQ(AddId("source_id", "video/mp4", "avc1.4D4041"), expected);
 }
@@ -3120,9 +3124,6 @@ TEST_P(ChunkDemuxerTest, CodecPrefixMatching) {
 TEST_P(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  expected = ChunkDemuxer::kOk;
-#endif
   const char* codec_ids[] = {
     // GPAC places leading zeros on the audio object type.
     "mp4a.40.02",
@@ -3130,6 +3131,12 @@ TEST_P(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
   };
 
   for (size_t i = 0; i < arraysize(codec_ids); ++i) {
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    expected = ChunkDemuxer::kOk;
+#else
+    EXPECT_MEDIA_LOG(CodecUnsupportedInContainer(codec_ids[i], "audio/mp4"));
+#endif
+
     ChunkDemuxer::Status result = AddId("source_id", "audio/mp4", codec_ids[i]);
 
     EXPECT_EQ(result, expected)
@@ -4876,11 +4883,7 @@ TEST_P(ChunkDemuxerTest, SequenceModeSingleTrackNoWarning) {
 }
 
 TEST_P(ChunkDemuxerTest, Mp4Vp9CodecSupport) {
-  ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  expected = ChunkDemuxer::kOk;
-#endif
-
+  ChunkDemuxer::Status expected = ChunkDemuxer::kOk;
   EXPECT_EQ(AddId("source_id", "video/mp4", "vp09.00.10.08"), expected);
 }
 
