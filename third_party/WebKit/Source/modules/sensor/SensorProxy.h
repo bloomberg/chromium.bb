@@ -60,7 +60,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   bool IsInitialized() const { return state_ == kInitialized; }
 
   void AddConfiguration(device::mojom::blink::SensorConfigurationPtr,
-                        Function<void(bool)>);
+                        base::OnceCallback<void(bool)>);
 
   void RemoveConfiguration(device::mojom::blink::SensorConfigurationPtr);
 

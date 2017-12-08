@@ -532,7 +532,7 @@ void PresentationConnection::SendMessageToTargetConnection(
     mojom::blink::PresentationConnectionMessagePtr message) {
   if (target_connection_) {
     target_connection_->OnMessage(std::move(message),
-                                  WTF::Function<void(bool)>());
+                                  base::OnceCallback<void(bool)>());
   }
 }
 

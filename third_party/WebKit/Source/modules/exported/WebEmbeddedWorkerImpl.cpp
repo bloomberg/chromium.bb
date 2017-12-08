@@ -302,7 +302,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
       WebURLRequest::kRequestContextServiceWorker,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
-      worker_start_data_.address_space, WTF::Closure(),
+      worker_start_data_.address_space, base::OnceClosure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
   // Do nothing here since onScriptLoaderFinished() might have been already

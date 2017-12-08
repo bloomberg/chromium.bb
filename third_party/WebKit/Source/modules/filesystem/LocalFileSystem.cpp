@@ -112,9 +112,10 @@ WebFileSystem* LocalFileSystem::GetFileSystem() const {
   return platform->FileSystem();
 }
 
-void LocalFileSystem::RequestFileSystemAccessInternal(ExecutionContext* context,
-                                                      WTF::Closure allowed,
-                                                      WTF::Closure denied) {
+void LocalFileSystem::RequestFileSystemAccessInternal(
+    ExecutionContext* context,
+    base::OnceClosure allowed,
+    base::OnceClosure denied) {
   if (!context->IsDocument()) {
     if (!Client().RequestFileSystemAccessSync(context)) {
       std::move(denied).Run();

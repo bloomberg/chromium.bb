@@ -18,7 +18,7 @@ namespace blink {
 class RemotePlayback;
 class V8RemotePlaybackAvailabilityCallback;
 
-// Wraps either a WTF::Closure or RemotePlaybackAvailabilityCallback object
+// Wraps either a base::OnceClosure or RemotePlaybackAvailabilityCallback object
 // to be kept in the RemotePlayback's |availability_callbacks_| map.
 class AvailabilityCallbackWrapper final
     : public GarbageCollectedFinalized<AvailabilityCallbackWrapper>,

@@ -47,8 +47,9 @@ class StorageErrorCallback
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(DOMError*) = 0;
 
-  MODULES_EXPORT static WTF::Closure CreateSameThreadTask(StorageErrorCallback*,
-                                                          ExceptionCode);
+  MODULES_EXPORT static base::OnceClosure CreateSameThreadTask(
+      StorageErrorCallback*,
+      ExceptionCode);
 
  private:
   static void Run(StorageErrorCallback*, ExceptionCode);

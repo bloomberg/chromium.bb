@@ -48,7 +48,7 @@ const AtomicString& RemotePlaybackStateToString(WebRemotePlaybackState state) {
 }
 
 void RunRemotePlaybackTask(ExecutionContext* context,
-                           WTF::Closure task,
+                           base::OnceClosure task,
                            std::unique_ptr<int> task_id) {
   probe::AsyncTask async_task(context, task_id.get());
   std::move(task).Run();
@@ -240,11 +240,11 @@ void RemotePlayback::PromptInternal() {
           availability_urls_,
           std::make_unique<RemotePlaybackConnectionCallbacks>(this));
     } else {
-      // TODO(yuryu): Wrapping PromptCancelled with WTF::Closure as
+      // TODO(yuryu): Wrapping PromptCancelled with base::OnceClosure as
       // InspectorInstrumentation requires a globally unique pointer to track
       // tasks. We can remove the wrapper if InspectorInstrumentation returns a
       // task id.
-      WTF::Closure task =
+      base::OnceClosure task =
           WTF::Bind(&RemotePlayback::PromptCancelled, WrapPersistent(this));
       std::unique_ptr<int> task_id = std::make_unique<int>(0);
       probe::AsyncTaskScheduled(GetExecutionContext(), "promptCancelled",
@@ -279,11 +279,11 @@ int RemotePlayback::WatchAvailabilityInternal(
   } while (!availability_callbacks_.insert(id, callback).is_new_entry);
 
   // Report the current availability via the callback.
-  // TODO(yuryu): Wrapping notifyInitialAvailability with WTF::Closure as
+  // TODO(yuryu): Wrapping notifyInitialAvailability with base::OnceClosure as
   // InspectorInstrumentation requires a globally unique pointer to track tasks.
   // We can remove the wrapper if InspectorInstrumentation returns a task id.
-  WTF::Closure task = WTF::Bind(&RemotePlayback::NotifyInitialAvailability,
-                                WrapPersistent(this), id);
+  base::OnceClosure task = WTF::Bind(&RemotePlayback::NotifyInitialAvailability,
+                                     WrapPersistent(this), id);
   std::unique_ptr<int> task_id = std::make_unique<int>(0);
   probe::AsyncTaskScheduled(GetExecutionContext(), "watchAvailabilityCallback",
                             task_id.get());
