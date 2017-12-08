@@ -4,6 +4,8 @@
 
 #include "components/download/content/public/all_download_item_notifier.h"
 
+#include "base/trace_event/memory_usage_estimator.h"
+
 namespace download {
 
 AllDownloadItemNotifier::AllDownloadItemNotifier(
@@ -33,6 +35,10 @@ AllDownloadItemNotifier::~AllDownloadItemNotifier() {
     (*it)->RemoveObserver(this);
   }
   observing_.clear();
+}
+
+size_t AllDownloadItemNotifier::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(observing_);
 }
 
 void AllDownloadItemNotifier::OnManagerInitialized() {

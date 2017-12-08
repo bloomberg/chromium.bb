@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "components/download/internal/controller.h"
 #include "components/download/internal/download_driver.h"
 #include "components/download/internal/entry.h"
@@ -47,7 +48,8 @@ class ControllerImpl : public Controller,
                        public Model::Client,
                        public DeviceStatusListener::Observer,
                        public NavigationMonitor::Observer,
-                       public LogSource {
+                       public LogSource,
+                       public base::trace_event::MemoryDumpProvider {
  public:
   // |config| and |log_sink| are externally owned and must be guaranteed to
   // outlive this class.
@@ -108,6 +110,10 @@ class ControllerImpl : public Controller,
   LogSource::EntryDetailsList GetServiceDownloads() override;
   base::Optional<EntryDetails> GetServiceDownload(
       const std::string& guid) override;
+
+  // MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Called when the file monitor and download file directory are initialized.
   void OnFileMonitorReady(bool success);

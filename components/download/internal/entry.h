@@ -49,6 +49,9 @@ struct Entry {
 
   bool operator==(const Entry& other) const;
 
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
+
   // The feature that is requesting this download.
   DownloadClient client = DownloadClient::INVALID;
 

@@ -123,5 +123,9 @@ std::set<std::string> TestDownloadDriver::GetActiveDownloads() {
   return guids;
 }
 
+size_t TestDownloadDriver::EstimateMemoryUsage() const {
+  return 0u;
+}
+
 }  // namespace test
 }  // namespace download

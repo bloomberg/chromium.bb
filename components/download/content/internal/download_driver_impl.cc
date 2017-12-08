@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/driver_entry.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -232,6 +233,11 @@ std::set<std::string> DownloadDriverImpl::GetActiveDownloads() {
   }
 
   return guids;
+}
+
+size_t DownloadDriverImpl::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(guid_to_remove_) +
+         notifier_->EstimateMemoryUsage();
 }
 
 void DownloadDriverImpl::OnDownloadUpdated(content::DownloadManager* manager,

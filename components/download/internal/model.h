@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "components/download/internal/entry.h"
+#include "components/download/internal/memory_tracker.h"
 #include "components/download/public/clients.h"
 
 namespace download {
@@ -18,7 +19,7 @@ class Store;
 
 // The model that contains a runtime representation of Entry entries. Any
 // updates to the model will be persisted to a backing |Store| as necessary.
-class Model {
+class Model : public MemoryTracker {
  public:
   // The Client which is responsible for handling all relevant messages from the
   // model.
@@ -58,7 +59,7 @@ class Model {
 
   using EntryList = std::vector<Entry*>;
 
-  virtual ~Model() = default;
+  ~Model() override = default;
 
   // Initializes the Model.  Client::OnInitialized() will be called in response.
   // The Model can be used after that call.

@@ -10,6 +10,7 @@
 
 #include "base/optional.h"
 #include "components/download/internal/driver_entry.h"
+#include "components/download/internal/memory_tracker.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
@@ -31,7 +32,7 @@ enum class FailureType {
 
 // The interface that includes all the operations to interact with low level
 // download library functionalities.
-class DownloadDriver {
+class DownloadDriver : public MemoryTracker {
  public:
   // The client to receive updates from content download library.
   // The update events for all downloads will pass through, so it's the
@@ -64,7 +65,7 @@ class DownloadDriver {
     virtual bool IsTrackingDownload(const std::string& guid) const = 0;
   };
 
-  virtual ~DownloadDriver() = default;
+  ~DownloadDriver() override = default;
 
   // Initialize the driver to receive download updates.
   virtual void Initialize(Client* client) = 0;
