@@ -42,6 +42,9 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
   virtual void SetMagicWindowEnabled(bool enabled) = 0;
 
+  // The fallback device should only be provided in lieu of other devices.
+  virtual bool IsFallbackDevice() = 0;
+
   // TODO(mthiesse): The browser should handle browser-side exiting of
   // presentation before device/ is even aware presentation is being exited.
   // Then the browser should call ExitPresent() on Device, which does device/

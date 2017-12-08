@@ -251,6 +251,8 @@ test("device_unittests") {
 
   if (enable_vr && is_android) {
     sources += [
+      "vr/orientation/orientation_device_provider_unittest.cc",
+      "vr/orientation/orientation_device_unittest.cc",
       "vr/vr_device_base_unittest.cc",
       "vr/vr_display_impl_unittest.cc",
     ]
@@ -260,6 +262,8 @@ test("device_unittests") {
       "//device/vr:fakes",
       "//device/vr:java",
       "//device/vr:mojo_bindings",
+      "//services/device/public/cpp/generic_sensor",
+      "//ui/display",
     ]
   }
 }

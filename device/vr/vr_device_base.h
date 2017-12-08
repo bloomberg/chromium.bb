@@ -39,6 +39,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
       mojom::VRPresentationProviderRequest request,
       mojom::VRDisplayHost::RequestPresentCallback callback);
   virtual void ExitPresent();
+  bool IsFallbackDevice() override;
 
   void AddDisplay(VRDisplayImpl* display);
   void RemoveDisplay(VRDisplayImpl* display);

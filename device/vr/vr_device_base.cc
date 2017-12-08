@@ -46,6 +46,10 @@ void VRDeviceBase::OnExitPresent() {
   SetPresentingDisplay(nullptr);
 }
 
+bool VRDeviceBase::IsFallbackDevice() {
+  return false;
+};
+
 mojom::VRDisplayInfoPtr VRDeviceBase::GetVRDisplayInfo() {
   DCHECK(display_info_);
   return display_info_.Clone();
