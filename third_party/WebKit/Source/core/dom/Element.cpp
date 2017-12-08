@@ -1835,8 +1835,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   }
 
   if (!IsActiveSlotOrActiveV0InsertionPoint()) {
-    context.resolved_style = GetNonAttachedStyle();
-    LayoutTreeBuilderForElement builder(*this, context.resolved_style);
+    LayoutTreeBuilderForElement builder(*this, GetNonAttachedStyle());
     builder.CreateLayoutObjectIfNeeded();
 
     if (ComputedStyle* style = builder.ResolvedStyle()) {
@@ -1857,7 +1856,6 @@ void Element::AttachLayoutTree(AttachContext& context) {
   SelectorFilterParentScope filter_scope(*this);
 
   AttachContext children_context(context);
-  children_context.resolved_style = nullptr;
 
   LayoutObject* layout_object = GetLayoutObject();
   if (layout_object)
@@ -2224,7 +2222,6 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
-    reattach_context.resolved_style = GetNonAttachedStyle();
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);

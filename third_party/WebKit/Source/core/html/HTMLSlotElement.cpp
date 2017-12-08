@@ -204,7 +204,6 @@ AtomicString HTMLSlotElement::GetName() const {
 void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
   if (SupportsAssignment()) {
     AttachContext children_context(context);
-    children_context.resolved_style = nullptr;
 
     for (auto& node : ChildrenInFlatTreeIfAssignmentIsSupported()) {
       if (node->NeedsAttach())

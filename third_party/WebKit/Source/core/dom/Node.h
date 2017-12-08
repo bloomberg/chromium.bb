@@ -626,7 +626,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   struct AttachContext {
     STACK_ALLOCATED();
-    ComputedStyle* resolved_style = nullptr;
     // Keep track of previously attached in-flow box during attachment so that
     // we don't need to backtrack past display:none/contents and out of flow
     // objects when we need to do whitespace re-attachment.
