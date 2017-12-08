@@ -235,12 +235,9 @@ void Gpu::EstablishGpuChannel(
   SendEstablishGpuChannelRequest();
 }
 
-scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync(
-    bool* connection_error) {
+scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync() {
   TRACE_EVENT0("mus", "Gpu::EstablishGpuChannelSync");
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (connection_error)
-    *connection_error = false;
 
   scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannel();
   if (channel)

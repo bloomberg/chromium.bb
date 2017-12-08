@@ -1981,12 +1981,11 @@ void RenderThreadImpl::CompositingModeFallbackToSoftware() {
   is_gpu_compositing_disabled_ = true;
 }
 
-scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync(
-    bool* connection_error) {
+scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel =
-      gpu_->EstablishGpuChannelSync(connection_error);
+      gpu_->EstablishGpuChannelSync();
   if (gpu_channel)
     GetContentClient()->SetGpuInfo(gpu_channel->gpu_info());
   return gpu_channel;
@@ -2028,13 +2027,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       callback.Run(nullptr);
       return;
     }
-    bool connection_error = false;
-    scoped_refptr<gpu::GpuChannelHost> channel =
-        EstablishGpuChannelSync(&connection_error);
-    // If the connection to the host is gone, then don't bother running the
-    // |callback| to retry.
-    if (connection_error)
-      return;
+    scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
     // If the channel could not be established correctly, then return null. This
     // would cause the compositor to wait and try again at a later time.
     if (!channel) {
@@ -2077,13 +2070,8 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     return;
   }
 
-  bool connection_error = false;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-      EstablishGpuChannelSync(&connection_error);
-  // If the connection to the host is gone, then don't bother running the
-  // |callback| to retry.
-  if (connection_error)
-    return;
+      EstablishGpuChannelSync();
   if (!gpu_channel_host) {
     // Wait and try again. We may hear that the compositing mode has switched
     // to software in the meantime.

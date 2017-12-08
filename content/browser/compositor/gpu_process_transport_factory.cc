@@ -960,7 +960,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
     return shared_main_thread_contexts_;
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-      gpu_channel_factory_->EstablishGpuChannelSync(nullptr);
+      gpu_channel_factory_->EstablishGpuChannelSync();
   if (!gpu_channel_host ||
       gpu_channel_host->gpu_feature_info()
               .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] !=

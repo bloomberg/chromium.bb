@@ -282,12 +282,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
-  // time this routine returns. If |connection_error| is set to true, it was
-  // unable to connect to the host process to try establish a channel, which
-  // should mean that the host is shutting this process down and there's no
-  // reason to retry.
-  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(
-      bool* connection_error = nullptr);
+  // time this routine returns.
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
 
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager();
 

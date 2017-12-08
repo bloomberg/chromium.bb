@@ -246,10 +246,7 @@ TEST_F(GpuTest, EstablishRequestAsyncThenSync) {
       },
       base::Unretained(&counter)));
 
-  bool connection_error = false;
-  scoped_refptr<gpu::GpuChannelHost> host =
-      gpu()->EstablishGpuChannelSync(&connection_error);
-  EXPECT_FALSE(connection_error);
+  scoped_refptr<gpu::GpuChannelHost> host = gpu()->EstablishGpuChannelSync();
   EXPECT_EQ(1, counter);
   EXPECT_TRUE(host);
 }
@@ -276,10 +273,7 @@ TEST_F(GpuTest, EstablishRequestAsyncThenSyncWithResponse) {
   // Run EstablishGpuChannelSync() before the posted task can run. The response
   // to the async request should be used immediately, the pending callback
   // should fire and then EstablishGpuChannelSync() should return.
-  bool connection_error = false;
-  scoped_refptr<gpu::GpuChannelHost> host =
-      gpu()->EstablishGpuChannelSync(&connection_error);
-  EXPECT_FALSE(connection_error);
+  scoped_refptr<gpu::GpuChannelHost> host = gpu()->EstablishGpuChannelSync();
   EXPECT_EQ(1, counter);
   EXPECT_TRUE(host);
 
