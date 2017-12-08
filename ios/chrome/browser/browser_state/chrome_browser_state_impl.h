@@ -51,6 +51,7 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
   // BrowserState:
   bool IsOffTheRecord() const override;
   base::FilePath GetStatePath() const override;
+  void RegisterServices(StaticServiceMap* services) override;
 
  private:
   friend class ChromeBrowserStateManagerImpl;

@@ -30,6 +30,8 @@ source_set("signin") {
     "gaia_auth_fetcher_ios_private.h",
     "gaia_cookie_manager_service_factory.cc",
     "gaia_cookie_manager_service_factory.h",
+    "identity_service_creator.cc",
+    "identity_service_creator.h",
     "ios_chrome_signin_client.h",
     "ios_chrome_signin_client.mm",
     "ios_chrome_signin_status_metrics_provider_delegate.cc",
@@ -74,6 +76,8 @@ source_set("signin") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/web",
     "//net",
+    "//services/identity:lib",
+    "//services/identity/public/interfaces",
     "//url",
   ]
 }

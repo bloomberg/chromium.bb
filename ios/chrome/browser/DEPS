@@ -101,6 +101,7 @@ include_rules = [
   "+libxml/xmlwriter.h",
   "+net",
   "+rlz/features",
+  "+services/identity/public",
   "+services/metrics/public",
   "+services/service_manager/public",
   "+third_party/breakpad/breakpad/src/client/ios",

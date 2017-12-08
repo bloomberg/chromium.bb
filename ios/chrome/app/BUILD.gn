@@ -7,6 +7,12 @@ import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
+import("//services/service_manager/public/service_manifest.gni")
+
+service_manifest("chrome_browser_manifest_overlay") {
+  source = "//ios/chrome/browser/chrome_browser_manifest_overlay.json"
+  packaged_services = [ "//services/identity:manifest" ]
+}
 
 source_set("app") {
   configs += [ "//build/config/compiler:enable_arc" ]

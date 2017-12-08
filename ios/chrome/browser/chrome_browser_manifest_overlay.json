@@ -1,0 +1,11 @@
+{
+  "name": "web_browser",
+  "display_name": "Chrome",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "identity": [ "identity_manager" ]
+      }
+    }
+  }
+}
