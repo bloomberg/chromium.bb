@@ -294,8 +294,8 @@ bool InstallUtil::DeleteRegistryKey(HKEY root_key,
                                     REGSAM wow64_access) {
   VLOG(1) << "Deleting registry key " << key_path;
   RegKey target_key;
-  LONG result = target_key.Open(root_key, key_path.c_str(),
-                                KEY_READ | KEY_WRITE | wow64_access);
+  LONG result =
+      target_key.Open(root_key, key_path.c_str(), DELETE | wow64_access);
 
   if (result == ERROR_FILE_NOT_FOUND)
     return true;
