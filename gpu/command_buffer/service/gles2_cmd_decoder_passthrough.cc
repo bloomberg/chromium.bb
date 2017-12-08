@@ -76,8 +76,7 @@ void RequestExtensions(gl::GLApi* api,
 
 }  // anonymous namespace
 
-PassthroughResources::PassthroughResources() = default;
-
+PassthroughResources::PassthroughResources() : texture_object_map(nullptr) {}
 PassthroughResources::~PassthroughResources() = default;
 
 void PassthroughResources::Destroy(gl::GLApi* api) {
@@ -87,7 +86,7 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
   DeleteServiceObjects(
       &texture_id_map, have_context,
       [this, api](GLuint client_id, GLuint texture) {
-        if (texture_object_map.find(client_id) == texture_object_map.end()) {
+        if (!texture_object_map.GetServiceID(client_id, nullptr)) {
           api->glDeleteTexturesFn(1, &texture);
         }
       });
@@ -117,11 +116,12 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
                        });
 
   if (!have_context) {
-    for (auto passthrough_texture : texture_object_map) {
-      passthrough_texture.second->MarkContextLost();
-    }
+    texture_object_map.ForEach(
+        [api](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
+          texture->MarkContextLost();
+        });
   }
-  texture_object_map.clear();
+  texture_object_map.Clear();
 }
 
 ScopedFramebufferBindingReset::ScopedFramebufferBindingReset(gl::GLApi* api)
@@ -1293,10 +1293,12 @@ bool GLES2DecoderPassthroughImpl::GetServiceTextureId(
 }
 
 TextureBase* GLES2DecoderPassthroughImpl::GetTextureBase(uint32_t client_id) {
-  auto texture_object_iter = resources_->texture_object_map.find(client_id);
-  return (texture_object_iter != resources_->texture_object_map.end())
-             ? texture_object_iter->second.get()
-             : nullptr;
+  scoped_refptr<TexturePassthrough> texture = nullptr;
+  if (resources_->texture_object_map.GetServiceID(client_id, &texture)) {
+    return texture.get();
+  } else {
+    return nullptr;
+  }
 }
 
 bool GLES2DecoderPassthroughImpl::ClearLevel(Texture* texture,
@@ -1388,14 +1390,12 @@ void GLES2DecoderPassthroughImpl::BindImage(uint32_t client_texture_id,
                                             uint32_t texture_target,
                                             gl::GLImage* image,
                                             bool can_bind_to_sampler) {
-  auto passthrough_texture_iter =
-      resources_->texture_object_map.find(client_texture_id);
-  if (passthrough_texture_iter == resources_->texture_object_map.end()) {
+  scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
+  if (!resources_->texture_object_map.GetServiceID(client_texture_id,
+                                                   &passthrough_texture)) {
     return;
   }
 
-  TexturePassthrough* passthrough_texture =
-      passthrough_texture_iter->second.get();
   DCHECK(passthrough_texture != nullptr);
 
   GLenum bind_target = GLES2Util::GLFaceTargetToTextureTarget(texture_target);
@@ -1976,10 +1976,10 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
 }
 
 void GLES2DecoderPassthroughImpl::VerifyServiceTextureObjectsExist() {
-  for (const auto& texture_mapping : resources_->texture_object_map) {
-    DCHECK_EQ(GL_TRUE,
-              api()->glIsTextureFn(texture_mapping.second->service_id()));
-  }
+  resources_->texture_object_map.ForEach(
+      [this](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
+        DCHECK_EQ(GL_TRUE, api()->glIsTextureFn(texture->service_id()));
+      });
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleRasterCHROMIUM(

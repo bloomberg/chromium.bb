@@ -68,7 +68,7 @@ struct PassthroughResources {
   // Mapping of client texture IDs to TexturePassthrough objects used to make
   // sure all textures used by mailboxes are not deleted until all textures
   // using the mailbox are deleted
-  std::unordered_map<GLuint, scoped_refptr<TexturePassthrough>>
+  ClientServiceMap<GLuint, scoped_refptr<TexturePassthrough>>
       texture_object_map;
 
   // Mapping of client buffer IDs that are mapped to the shared memory used to
