@@ -14,14 +14,6 @@
 // kToolbarTransitionAnimationKey.
 @property(nonatomic, readonly) NSMutableArray* transitionLayers;
 
-// UIViewPropertyAnimator for expanding the location bar.
-@property(nonatomic, strong)
-    UIViewPropertyAnimator* omniboxExpanderAnimator API_AVAILABLE(ios(10.0));
-
-// UIViewPropertyAnimator for contracting the location bar.
-@property(nonatomic, strong)
-    UIViewPropertyAnimator* omniboxContractorAnimator API_AVAILABLE(ios(10.0));
-
 // The view containing all the content of the toolbar. It respects the trailing
 // and leading anchors of the safe area.
 @property(nonatomic, readonly, strong) UIView* contentView;
@@ -92,13 +84,6 @@
 // Animates the tools menu button and stack button for full bleed omnibox
 // animation used for Material.
 - (void)animateStandardControlsForOmniboxExpansion:(BOOL)growOmnibox;
-
-// Animates in the standard Toolbar buttons when the Location bar is
-// contracting.
-- (void)configureFadeInAnimation API_AVAILABLE(ios(10.0));
-
-// Animates out the standard Toolbar buttons when the Location bar is expanding.
-- (void)configureFadeOutAnimation API_AVAILABLE(ios(10.0));
 
 // Sets up |button| with images named by the given |imageEnum| and the current
 // toolbar style.  Sets images synchronously for |initialState|, and

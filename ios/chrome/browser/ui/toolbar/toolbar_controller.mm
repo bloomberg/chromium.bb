@@ -81,12 +81,6 @@ using ios::material::TimingFunction;
   NSArray* standardButtons_;
   ToolsMenuButtonObserverBridge* toolsMenuButtonObserverBridge_;
   ToolbarControllerStyle style_;
-
-  // Backing object for |self.omniboxExpanderAnimator|.
-  API_AVAILABLE(ios(10.0)) UIViewPropertyAnimator* _omniboxExpanderAnimator;
-
-  // Backing object for |self.omniboxContractorAnimator|.
-  API_AVAILABLE(ios(10.0)) UIViewPropertyAnimator* _omniboxContractorAnimator;
 }
 
 // Leading and trailing safe area constraint for faking a safe area. These
@@ -610,23 +604,6 @@ using ios::material::TimingFunction;
     [self fadeInStandardControls];
 }
 
-- (UIViewPropertyAnimator*)omniboxExpanderAnimator {
-  return _omniboxExpanderAnimator;
-}
-
-- (void)setOmniboxExpanderAnimator:
-    (UIViewPropertyAnimator*)omniboxExpanderAnimator {
-  _omniboxExpanderAnimator = omniboxExpanderAnimator;
-}
-
-- (UIViewPropertyAnimator*)omniboxContractorAnimator {
-  return _omniboxContractorAnimator;
-}
-
-- (void)setOmniboxContractorAnimator:
-    (UIViewPropertyAnimator*)omniboxContractorAnimator {
-  _omniboxContractorAnimator = omniboxContractorAnimator;
-}
 
 #pragma mark - ToolsMenuPresentationProvider
 
@@ -684,34 +661,6 @@ using ios::material::TimingFunction;
                      [shadowView_ setAlpha:0];
                      [fullBleedShadowView_ setAlpha:1];
                    }];
-}
-
-- (void)configureFadeOutAnimation API_AVAILABLE(ios(10.0)) {
-  __weak NSArray* weakStandardButtons = standardButtons_;
-  __weak UIView* weakShadowView = shadowView_;
-  __weak UIView* weakFullBleedShadowView = fullBleedShadowView_;
-  [self.omniboxExpanderAnimator addAnimations:^{
-    // Animate the opacity of the buttons to 0 and 10 pixels in the
-    // leading-to-trailing direction.
-    for (UIButton* button in weakStandardButtons) {
-      if (![button isHidden])
-        button.alpha = 0;
-      button.frame = CGRectOffset(button.frame, kButtonFadeOutXOffset, 0);
-    }
-
-    // Fade to the full bleed shadow.
-    weakShadowView.alpha = 0;
-    weakFullBleedShadowView.alpha = 1;
-  }];
-
-  // After the animation is done and the buttons are hidden, move the buttons
-  // back to the position they originally were.
-  [self.omniboxExpanderAnimator
-      addCompletion:^(UIViewAnimatingPosition finalPosition) {
-        for (UIButton* button in weakStandardButtons) {
-          button.frame = CGRectOffset(button.frame, -kButtonFadeOutXOffset, 0);
-        }
-      }];
 }
 
 - (void)fadeInStandardControls {

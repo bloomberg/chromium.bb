@@ -94,12 +94,6 @@ const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
-const char kPropertyAnimationsToolbarName[] =
-    "UIViewPropertyAnimator Animated Toolbar";
-const char kPropertyAnimationsToolbarDescription[] =
-    "When enabled, Toolbar animations will be done using "
-    "UIViewPropertyAnimator";
-
 const char kSafeAreaCompatibleToolbarName[] = "Safe Area Compatible Toolbar";
 const char kSafeAreaCompatibleToolbarDescription[] =
     "When enabled, the toolbar resizes itself when the safe area changes.";
