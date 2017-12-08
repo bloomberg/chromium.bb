@@ -30,7 +30,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.PasswordManagerHandler.PasswordListObserver;
@@ -80,9 +79,6 @@ public class PasswordEntryEditor extends Fragment {
     // If true this is an exception site (never save here).
     // If false this represents a saved name/password.
     private boolean mException;
-
-    @VisibleForTesting
-    public static final String VIEW_PASSWORDS = "view-passwords";
 
     private ClipboardManager mClipboard;
     private Bundle mExtras;
