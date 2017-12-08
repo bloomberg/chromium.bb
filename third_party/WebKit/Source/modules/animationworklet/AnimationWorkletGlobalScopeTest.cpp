@@ -58,8 +58,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     Document* document = page_->GetFrame().GetDocument();
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), document->UserAgent(), "" /* source_code */,
-            nullptr /* cached_meta_data */,
+            document->Url(), document->UserAgent(),
             nullptr /* content_security_policy_parsed_headers */,
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
             clients, document->AddressSpace(),

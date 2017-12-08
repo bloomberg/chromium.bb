@@ -130,8 +130,7 @@ class DedicatedWorkerMessagingProxyForTest
         ToDocument(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, "fake user agent", source,
-            nullptr /* cached_meta_data */, headers.get(),
+            script_url, "fake user agent", headers.get(),
             kReferrerPolicyDefault, security_origin_.get(),
             nullptr /* worker_clients */, kWebAddressSpaceLocal,
             nullptr /* origin_trial_tokens */, std::move(worker_settings),
@@ -139,7 +138,7 @@ class DedicatedWorkerMessagingProxyForTest
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow),
-        script_url, v8_inspector::V8StackTraceId());
+        script_url, v8_inspector::V8StackTraceId(), source);
   }
 
   DedicatedWorkerThreadForTest* GetDedicatedWorkerThread() {

@@ -35,8 +35,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   GlobalScopeCreationParams(
       const KURL& script_url,
       const String& user_agent,
-      const String& source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data,
       const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
       ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
@@ -51,8 +49,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   KURL script_url;
   String user_agent;
-  String source_code;
-  std::unique_ptr<Vector<char>> cached_meta_data;
 
   // |content_security_policy_parsed_headers| and
   // |content_security_policy_raw_headers| are mutually exclusive.

@@ -319,14 +319,14 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
       shadow_page_->GetDocument()->GetFrame()->GetSettings());
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          url_, document->UserAgent(), main_script_loader_->SourceText(),
-          nullptr /* cached_meta_data */,
+          url_, document->UserAgent(),
           content_security_policy ? content_security_policy->Headers().get()
                                   : nullptr,
           referrer_policy, starter_origin, worker_clients,
           main_script_loader_->ResponseAddressSpace(),
           main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
           kV8CacheOptionsDefault, std::move(pending_interface_provider_));
+  String source_code = main_script_loader_->SourceText();
 
   // SharedWorker can sometimes run tasks that are initiated by/associated with
   // a document's frame but these documents can be from a different process. So
@@ -351,7 +351,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
       std::move(global_scope_creation_params), thread_startup_data,
       std::make_unique<GlobalScopeInspectorCreationParams>(
           worker_inspector_proxy_->ShouldPauseOnWorkerStart(document)),
-      task_runners);
+      task_runners, source_code);
   worker_inspector_proxy_->WorkerThreadCreated(document, GetWorkerThread(),
                                                url_);
   client_->WorkerScriptLoaded();

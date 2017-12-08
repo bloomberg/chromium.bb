@@ -178,7 +178,6 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       std::make_unique<MainThreadWorkletReportingProxy>(&GetDocument());
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       GetDocument().Url(), GetDocument().UserAgent(),
-      String() /* source_code */, nullptr /* cached_meta_data */,
       nullptr /* content_security_policy_parsed_headers */,
       GetDocument().GetReferrerPolicy(), GetDocument().GetSecurityOrigin(),
       nullptr /* worker_clients */, GetDocument().AddressSpace(),

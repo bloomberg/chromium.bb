@@ -175,8 +175,7 @@ class ThreadedWorkletMessagingProxyForTest
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), document->UserAgent(), "" /* source_code */,
-            std::move(cached_meta_data),
+            document->Url(), document->UserAgent(),
             document->GetContentSecurityPolicy()->Headers().get(),
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
             worker_clients, document->AddressSpace(),

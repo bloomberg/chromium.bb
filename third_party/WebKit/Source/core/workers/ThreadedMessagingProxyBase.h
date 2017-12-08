@@ -76,7 +76,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase
       std::unique_ptr<GlobalScopeCreationParams>,
       const WTF::Optional<WorkerBackingThreadStartupData>&,
       const KURL& script_url,
-      const v8_inspector::V8StackTraceId&);
+      const v8_inspector::V8StackTraceId&,
+      const String& source_code = String());
   virtual void WorkerThreadCreated();
 
   ThreadableLoadingContext* CreateThreadableLoadingContext() const;

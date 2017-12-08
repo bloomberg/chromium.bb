@@ -298,10 +298,10 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          KURL("http://fake.url/"), "fake user agent", "// fake source code",
-          nullptr /* cachedMetaData */, headers.get(), kReferrerPolicyDefault,
-          security_origin_.get(), nullptr /* workerClients */,
-          kWebAddressSpaceLocal, nullptr /* originTrialToken */,
+          KURL("http://fake.url/"), "fake user agent", headers.get(),
+          kReferrerPolicyDefault, security_origin_.get(),
+          nullptr /* workerClients */, kWebAddressSpaceLocal,
+          nullptr /* originTrialToken */,
           std::make_unique<WorkerSettings>(Settings::Create().get()),
           kV8CacheOptionsDefault);
 
