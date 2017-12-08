@@ -124,6 +124,43 @@ NSView* AcceleratedWidgetMac::GetNSView(gfx::AcceleratedWidget widget) {
   return widget_mac->view_->AcceleratedWidgetGetNSView();
 }
 
+void AcceleratedWidgetMac::SetSuspended(bool is_suspended) {
+  is_suspended_ = is_suspended;
+}
+
+void AcceleratedWidgetMac::UpdateCALayerTree(
+    const gfx::CALayerParams& ca_layer_params) {
+  if (ca_layer_params.ca_context_id) {
+    if ([remote_layer_ contextId] != ca_layer_params.ca_context_id) {
+      remote_layer_.reset([[CALayerHost alloc] init]);
+      [remote_layer_ setContextId:ca_layer_params.ca_context_id];
+      [remote_layer_
+          setAutoresizingMask:kCALayerMaxXMargin | kCALayerMaxYMargin];
+    }
+  } else {
+    remote_layer_.reset();
+  }
+
+  if (is_suspended_)
+    return;
+
+  if (remote_layer_) {
+    GotCALayerFrame(base::scoped_nsobject<CALayer>(remote_layer_.get(),
+                                                   base::scoped_policy::RETAIN),
+                    ca_layer_params.pixel_size, ca_layer_params.scale_factor);
+  } else {
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+        IOSurfaceLookupFromMachPort(ca_layer_params.io_surface_mach_port));
+    if (!io_surface) {
+      LOG(ERROR) << "Unable to open IOSurface for frame.";
+    }
+    GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
+                      ca_layer_params.scale_factor);
+  }
+  if (view_)
+    view_->AcceleratedWidgetSwapCompleted();
+}
+
 void AcceleratedWidgetMac::GotCALayerFrame(
     base::scoped_nsobject<CALayer> content_layer,
     const gfx::Size& pixel_size,
@@ -149,7 +186,6 @@ void AcceleratedWidgetMac::GotCALayerFrame(
     [io_surface_layer_ removeFromSuperlayer];
     io_surface_layer_.reset();
   }
-  view_->AcceleratedWidgetSwapCompleted();
 }
 
 void AcceleratedWidgetMac::GotIOSurfaceFrame(
@@ -186,7 +222,6 @@ void AcceleratedWidgetMac::GotIOSurfaceFrame(
     [content_layer_ removeFromSuperlayer];
     content_layer_.reset();
   }
-  view_->AcceleratedWidgetSwapCompleted();
 }
 
 }  // namespace ui

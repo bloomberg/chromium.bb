@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
+#include "ui/accelerated_widget_mac/ca_layer_frame_sink.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -44,10 +45,11 @@ class AcceleratedWidgetMacNSView {
 };
 
 // AcceleratedWidgetMac owns a tree of CALayers. The widget may be passed
-// to a ui::Compositor, which will cause, through its output surface, calls to
-// GotAcceleratedFrame and GotSoftwareFrame. The CALayers may be installed
-// in an NSView by setting the AcceleratedWidgetMacNSView for the helper.
-class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
+// to a ui::Compositor, which will, through its output surface, call the
+// CALayerFrameSink interface. The CALayers may be installed in an NSView
+// by setting the AcceleratedWidgetMacNSView for the helper.
+class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
+    : public CALayerFrameSink {
  public:
   AcceleratedWidgetMac();
   virtual ~AcceleratedWidgetMac();
@@ -60,16 +62,19 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
 
-  // Populate the vsync parameters for the surface's display.
-  void GetVSyncParameters(
-      base::TimeTicks* timebase, base::TimeDelta* interval) const;
-
-  static AcceleratedWidgetMac* Get(gfx::AcceleratedWidget widget);
-
   // Translate from a gfx::AcceleratedWidget to the NSView in which it will
   // appear. This may return nil if |widget| is invalid or is not currently
   // attached to an NSView.
   static NSView* GetNSView(gfx::AcceleratedWidget widget);
+
+ private:
+  // For CALayerFrameSink::FromAcceleratedWidget to access Get.
+  friend class CALayerFrameSink;
+
+  // Translate from a gfx::AcceleratedWidget handle to the underlying
+  // AcceleratedWidgetMac (used by other gfx::AcceleratedWidget translation
+  // functions).
+  static AcceleratedWidgetMac* Get(gfx::AcceleratedWidget widget);
 
   void GotCALayerFrame(base::scoped_nsobject<CALayer> content_layer,
                        const gfx::Size& pixel_size,
@@ -78,12 +83,22 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
                          const gfx::Size& pixel_size,
                          float scale_factor);
 
- private:
+  // gfx::CALayerFrameSink implementation:
+  void SetSuspended(bool suspended) override;
+  void UpdateCALayerTree(const gfx::CALayerParams& ca_layer_params) override;
+  void GetVSyncParameters(base::TimeTicks* timebase,
+                          base::TimeDelta* interval) const override;
+
   // The AcceleratedWidgetMacNSView that is using this as its internals.
-  AcceleratedWidgetMacNSView* view_;
+  AcceleratedWidgetMacNSView* view_ = nullptr;
 
   // A phony NSView handle used to identify this.
-  gfx::AcceleratedWidget native_widget_;
+  gfx::AcceleratedWidget native_widget_ = gfx::kNullAcceleratedWidget;
+
+  // If the output surface is suspended, then |remote_layer_| will be updated,
+  // but the NSView's layer hierarchy will remain unchanged.
+  bool is_suspended_ = false;
+  base::scoped_nsobject<CALayerHost> remote_layer_;
 
   // A flipped layer, which acts as the parent of the compositing and software
   // layers. This layer is flipped so that the we don't need to recompute the
