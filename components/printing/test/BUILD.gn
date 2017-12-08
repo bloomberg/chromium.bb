@@ -23,6 +23,7 @@ static_library("test_support") {
     "//content/test:test_support",
     "//ipc",
     "//printing",
+    "//printing:test_support",
     "//skia",
     "//testing/gtest",
     "//ui/gfx/geometry",
