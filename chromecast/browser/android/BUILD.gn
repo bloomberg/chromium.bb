@@ -11,9 +11,8 @@ assert(is_android)
 cast_shell_android_manifest =
     "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
 
-manifest_variables = [
-  "cast_build_enable_background_activities=$enable_background_activities",
-]
+manifest_variables =
+    [ "cast_build_enable_background_activities=$enable_background_activities" ]
 
 jinja_template("cast_shell_manifest") {
   input = "apk/AndroidManifest.xml.jinja2"
@@ -69,6 +68,7 @@ android_library("cast_shell_java") {
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsActivity.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsService.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsComponent.java",
+    "$java_src_dir/org/chromium/chromecast/shell/LogcatElision.java",
     "$java_src_dir/org/chromium/chromecast/shell/LogcatExtractor.java",
   ]
 
@@ -102,6 +102,7 @@ android_library("cast_shell_java") {
 junit_binary("cast_shell_junit_tests") {
   java_files = [
     "junit/src/org/chromium/chromecast/shell/CastWebContentsComponentTest.java",
+    "junit/src/org/chromium/chromecast/shell/LogcatElisionUnitTest.java",
     "junit/src/org/chromium/chromecast/shell/LogcatExtractorUnitTest.java",
   ]
 
@@ -113,5 +114,6 @@ junit_binary("cast_shell_junit_tests") {
     "//base:base_java_test_support",
     "//content/public/android:content_java",
     "//third_party/android_tools:android_support_core_utils_java",
+    "//third_party/hamcrest:hamcrest_java",
   ]
 }

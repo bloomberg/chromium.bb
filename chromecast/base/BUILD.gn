@@ -269,12 +269,24 @@ if (is_android) {
     java_files = [
       "$java_src_dir/org/chromium/chromecast/base/CastSettingsManager.java",
       "$java_src_dir/org/chromium/chromecast/base/ChromecastConfigAndroid.java",
+      "$java_src_dir/org/chromium/chromecast/base/CircularBuffer.java",
       "$java_src_dir/org/chromium/chromecast/base/DumpstateWriter.java",
       "$java_src_dir/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",
     ]
 
     deps = [
       "//base:base_java",
+    ]
+  }
+
+  junit_binary("cast_base_junit_tests") {
+    java_test_dir = "//chromecast/base/java/test"
+    java_files = [
+      "$java_test_dir/org/chromium/chromecast/base/CircularBufferTest.java",
+    ]
+    deps = [
+      ":base_java",
+      "//third_party/hamcrest:hamcrest_java",
     ]
   }
 }
