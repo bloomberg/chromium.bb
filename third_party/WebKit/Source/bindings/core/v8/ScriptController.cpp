@@ -113,8 +113,7 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
                                          source.StartPosition()));
   v8::Local<v8::Value> result;
   {
-    CachedMetadataHandler* cache_handler =
-        source.GetResource() ? source.GetResource()->CacheHandler() : nullptr;
+    CachedMetadataHandler* cache_handler = source.CacheHandler();
 
     V8CacheOptions v8_cache_options =
         CacheOptions(cache_handler, GetFrame()->GetSettings());
@@ -133,8 +132,8 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     v8::Local<v8::Script> script;
 
     if (!V8ScriptRunner::CompileScript(ScriptState::From(context), source,
-                                       cache_handler, access_control_status,
-                                       v8_cache_options, referrer_info)
+                                       access_control_status, v8_cache_options,
+                                       referrer_info)
              .ToLocal(&script))
       return result;
 

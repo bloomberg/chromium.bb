@@ -254,7 +254,6 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
 
 ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     const ScriptSourceCode& source_code,
-    CachedMetadataHandler* cache_handler,
     V8CacheOptions v8_cache_options) {
   TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
                InspectorEvaluateScriptEvent::Data(nullptr, source_code.Url(),
@@ -273,8 +272,8 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   // - a work{er,let} script is always "not parser inserted".
   ReferrerScriptInfo referrer_info;
   if (V8ScriptRunner::CompileScript(script_state_.get(), source_code,
-                                    cache_handler, kSharableCrossOrigin,
-                                    v8_cache_options, referrer_info)
+                                    kSharableCrossOrigin, v8_cache_options,
+                                    referrer_info)
           .ToLocal(&compiled_script))
     maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
                                                      global_scope_);
@@ -307,13 +306,12 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
 bool WorkerOrWorkletScriptController::Evaluate(
     const ScriptSourceCode& source_code,
     ErrorEvent** error_event,
-    CachedMetadataHandler* cache_handler,
     V8CacheOptions v8_cache_options) {
   if (IsExecutionForbidden())
     return false;
 
   ExecutionState state(this);
-  EvaluateInternal(source_code, cache_handler, v8_cache_options);
+  EvaluateInternal(source_code, v8_cache_options);
   if (IsExecutionForbidden())
     return false;
 
@@ -357,7 +355,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
 ScriptValue WorkerOrWorkletScriptController::EvaluateAndReturnValueForTest(
     const ScriptSourceCode& source_code) {
   ExecutionState state(this);
-  return EvaluateInternal(source_code, nullptr, kV8CacheOptionsDefault);
+  return EvaluateInternal(source_code, kV8CacheOptionsDefault);
 }
 
 void WorkerOrWorkletScriptController::ForbidExecution() {
