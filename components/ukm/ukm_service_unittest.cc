@@ -776,4 +776,25 @@ TEST_F(UkmServiceTest, UnsupportedSchemes) {
   }
 }
 
+TEST_F(UkmServiceTest, SanitizeUrlAuthParams) {
+  UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
+  EXPECT_EQ(0, GetPersistedLogCount());
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  auto id = GetWhitelistedSourceId(0);
+  recorder.UpdateSourceURL(id, GURL("https://username:password@example.com/"));
+
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+
+  auto proto_report = GetPersistedReport();
+  ASSERT_EQ(1, proto_report.sources_size());
+  const Source& proto_source = proto_report.sources(0);
+  EXPECT_EQ("https://example.com/", proto_source.url());
+}
+
 }  // namespace ukm
