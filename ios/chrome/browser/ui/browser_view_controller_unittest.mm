@@ -81,7 +81,7 @@ using web::WebStateImpl;
     Testing)<CRWNativeContentProvider, PassKitDialogProvider>
 - (void)pageLoadStarted:(NSNotification*)notification;
 - (void)pageLoadComplete:(NSNotification*)notification;
-- (void)tabSelected:(Tab*)tab;
+- (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar;
 - (void)tabDeselected:(NSNotification*)notification;
 - (void)tabCountChanged:(NSNotification*)notification;
 @end
@@ -363,7 +363,7 @@ TEST_F(BrowserViewControllerTest, DISABLED_TestPageLoadComplete) {
 TEST_F(BrowserViewControllerTest, TestTabSelected) {
   id tabMock = (id)tab_;
   [[tabMock expect] wasShown];
-  [bvc_ tabSelected:tab_];
+  [bvc_ tabSelected:tab_ notifyToolbar:YES];
   EXPECT_EQ([[tab_ view] superview], static_cast<UIView*>([bvc_ contentArea]));
   EXPECT_OCMOCK_VERIFY(tabMock);
 }
@@ -375,7 +375,7 @@ TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
   id tabMock = (id)tab_;
   [tabMock onSelector:@selector(url) callBlockExpectation:block];
   [[tabMock expect] wasShown];
-  [bvc_ tabSelected:tab_];
+  [bvc_ tabSelected:tab_ notifyToolbar:YES];
   EXPECT_EQ([[tab_ view] superview], static_cast<UIView*>([bvc_ contentArea]));
   EXPECT_OCMOCK_VERIFY(tabMock);
 }

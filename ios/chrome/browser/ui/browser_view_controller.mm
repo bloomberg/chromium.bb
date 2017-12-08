@@ -1748,7 +1748,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           // animation.
           Tab* currentTab = [_model currentTab];
           if (currentTab) {
-            [self tabSelected:currentTab];
+            [self tabSelected:currentTab notifyToolbar:NO];
           }
           startVoiceSearchIfNecessaryBlock();
 
@@ -2589,7 +2589,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 // Called when a tab is selected in the model. Make any required view changes.
 // The notification will not be sent when the tab is already the selected tab.
-- (void)tabSelected:(Tab*)tab {
+// |notifyToolbar| indicates whether the toolbar is notified that the tab has
+// changed.
+- (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar {
   DCHECK(tab);
 
   // Ignore changes while the tab stack view is visible (or while suspended).
@@ -2597,7 +2599,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (!self.visible || ![_model webUsageEnabled])
     return;
 
-  [self displayTab:tab isNewSelection:YES];
+  [self displayTab:tab isNewSelection:notifyToolbar];
 
   if (_expectingForegroundTab && !self.inNewTabAnimation) {
     // Now that the new tab has been displayed, return to normal. Rather than
@@ -4912,7 +4914,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   [_paymentRequestManager setActiveWebState:newTab.webState];
 
-  [self tabSelected:newTab];
+  [self tabSelected:newTab notifyToolbar:YES];
 }
 
 // Observer method, tab changed.
