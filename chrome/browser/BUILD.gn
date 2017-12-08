@@ -1136,6 +1136,7 @@ split_static_library("browser") {
     "process_resource_usage.cc",
     "process_resource_usage.h",
     "process_singleton.h",
+    "process_singleton_mac.mm",
     "process_singleton_win.cc",
     "profiles/avatar_menu_actions.h",
     "profiles/bookmark_model_loaded_observer.cc",

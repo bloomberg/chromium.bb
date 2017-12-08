@@ -777,10 +777,18 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   base::TimeDelta sleep_interval = timeout / retry_attempts;
 
   ScopedSocket socket;
+  int pid = 0;
   for (int retries = 0; retries <= retry_attempts; ++retries) {
     // Try to connect to the socket.
-    if (ConnectSocket(&socket, socket_path_, cookie_path_))
+    if (ConnectSocket(&socket, socket_path_, cookie_path_)) {
+#if defined(OS_MACOSX)
+      // On Mac, we want the open process' pid in case there are
+      // Apple Events to forward. See crbug.com/777863.
+      std::string hostname;
+      ParseLockPath(lock_path_, &hostname, &pid);
+#endif
       break;
+    }
 
     // If we're in a race with another process, they may be in Create() and have
     // created the lock but not attached to the socket.  So we check if the
@@ -788,7 +796,6 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     // chrome browser.  If so, we loop and try again for |timeout|.
 
     std::string hostname;
-    int pid;
     if (!ParseLockPath(lock_path_, &hostname, &pid)) {
       // No lockfile exists.
       return PROCESS_NONE;
@@ -838,6 +845,11 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     base::PlatformThread::Sleep(sleep_interval);
   }
 
+#if defined(OS_MACOSX)
+  if (pid > 0 && WaitForAndForwardOpenURLEvent(pid)) {
+    return PROCESS_NOTIFIED;
+  }
+#endif
   timeval socket_timeout = TimeDeltaToTimeVal(timeout);
   setsockopt(socket.fd(),
              SOL_SOCKET,
