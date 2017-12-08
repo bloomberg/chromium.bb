@@ -80,12 +80,10 @@ typedef enum {
 // Called when animations added by |-animateFadeWithStyle:| can be removed.
 - (void)cleanUpFadeAnimations;
 
-// New animations API. Currently are behind a flag since they require iOS 10
-// APIs to work. They replace all animations above.
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0));
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0));
+// New animations API, currently behind clean-toolbar flag.
+// They replace all animations above.
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator;
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator;
 
 // Initial touch on the Omnibox triggers a "pre-edit" state. The current
 // URL is shown without any insertion point. First character typed replaces

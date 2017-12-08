@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -301,37 +302,41 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                                   [self fadeAnimationLayers]);
 }
 
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0)) {
-  __weak OmniboxTextFieldIOS* weakSelf = self;
-  [self rightView].alpha = 0;
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator {
+  // Hide the rightView button so its not visibile on its initial layout
+  // while the expan animation is happening.
+  self.rightView.hidden = YES;
+  self.rightView.frame = [self rightViewRectForBounds:self.bounds];
+  [animator addAnimations:^{
+    [self layoutIfNeeded];
+    [self.rightView layoutIfNeeded];
+  }];
+
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    UIView* trailingView = [weakSelf rightView];
-    CGRect finalTrailingViewFrame = trailingView.frame;
-    trailingView.frame =
-        CGRectLayoutOffset(trailingView.frame, kPositionAnimationLeadingOffset);
+    self.rightView.hidden = NO;
+    self.rightView.alpha = 0;
+    self.rightView.frame =
+        CGRectLayoutOffset(self.rightView.frame, kToolbarButtonAnimationOffset);
     [UIViewPropertyAnimator
         runningPropertyAnimatorWithDuration:0.2
                                       delay:0.1
                                     options:UIViewAnimationOptionCurveEaseOut
                                  animations:^{
-                                   trailingView.alpha = 1.0;
-                                   trailingView.frame = finalTrailingViewFrame;
+                                   self.rightView.alpha = 1.0;
+                                   self.rightView.frame = CGRectLayoutOffset(
+                                       self.rightView.frame,
+                                       -kToolbarButtonAnimationOffset);
                                  }
                                  completion:nil];
   }];
 }
 
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0)) {
-  UIView* trailingView = [self rightView];
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator {
   [animator addAnimations:^{
-    trailingView.alpha = 0;
-    trailingView.frame.origin = CGPointMake(
-        trailingView.frame.origin.x + kPositionAnimationLeadingOffset,
-        trailingView.frame.origin.y);
+    self.rightView.alpha = 0;
+    self.rightView.frame =
+        CGRectLayoutOffset(self.rightView.frame, kToolbarButtonAnimationOffset);
   }];
-
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     self.rightView = nil;
   }];

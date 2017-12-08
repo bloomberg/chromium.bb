@@ -54,14 +54,12 @@
 // Perform animations for expanding the omnibox. This animation can be seen on
 // an iPhone when the omnibox is focused. It involves sliding the leading button
 // out and fading its alpha.
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0));
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator;
 
 // Perform animations for expanding the omnibox. This animation can be seen on
 // an iPhone when the omnibox is defocused. It involves sliding the leading
 // button in and fading its alpha.
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0));
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator;
 
 @end
 
