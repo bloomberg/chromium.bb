@@ -14,9 +14,12 @@ const char kTestUrl1[] = "https://example.com/foo";
 const char kTestUrl2[] = "https://example.com/bar";
 
 const char kUserInteraction[] = "Compositor.UserInteraction";
+const char kRendering[] = "Compositor.Rendering";
+
 const char kCheckerboardArea[] = "CheckerboardedContentArea";
 const char kCheckerboardAreaRatio[] = "CheckerboardedContentAreaRatio";
 const char kMissingTiles[] = "NumMissingTiles";
+const char kCheckerboardedImagesCount[] = "CheckerboardedImagesCount";
 
 class UkmManagerTest : public testing::Test {
  public:
@@ -36,6 +39,7 @@ TEST_F(UkmManagerTest, Basic) {
   manager_->SetUserInteractionInProgress(true);
   manager_->AddCheckerboardStatsForFrame(5, 1, 10);
   manager_->AddCheckerboardStatsForFrame(15, 3, 30);
+  manager_->AddCheckerboardedImages(6);
   manager_->SetUserInteractionInProgress(false);
 
   // We should see a single entry for the interaction above.
@@ -49,6 +53,7 @@ TEST_F(UkmManagerTest, Basic) {
     test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardArea, 10);
     test_ukm_recorder_->ExpectEntryMetric(entry, kMissingTiles, 2);
     test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardAreaRatio, 50);
+    test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardedImagesCount, 6);
   }
   test_ukm_recorder_->Purge();
 
@@ -75,6 +80,16 @@ TEST_F(UkmManagerTest, Basic) {
     test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardArea, 20);
     test_ukm_recorder_->ExpectEntryMetric(entry, kMissingTiles, 3);
     test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardAreaRatio, 20);
+    test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardedImagesCount, 0);
+  }
+
+  // An entry for rendering is emitted when the URL changes.
+  const auto& entries_rendering =
+      test_ukm_recorder_->GetEntriesByName(kRendering);
+  EXPECT_EQ(1u, entries_rendering.size());
+  for (const auto* entry : entries_rendering) {
+    EXPECT_EQ(original_id, entry->source_id);
+    test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardedImagesCount, 6);
   }
 }
 
