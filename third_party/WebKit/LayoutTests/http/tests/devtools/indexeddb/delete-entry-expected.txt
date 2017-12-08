@@ -1,0 +1,22 @@
+Tests object store and index entry deletion.
+
+Dumping IndexedDB tree:
+    database: database1 - http://127.0.0.1:8000
+        Object store: objectStore1
+            Index: index1
+Dumping ObjectStore data:
+    Object store: objectStore1
+            Key = testKey1, value = {"injectedScriptId":2,"id":1}
+            Key = testKey2, value = {"injectedScriptId":2,"id":2}
+            Index: index1
+                Key = testKey1, value = {"injectedScriptId":2,"id":3}
+                Key = testKey2, value = {"injectedScriptId":2,"id":4}
+Dumping ObjectStore data:
+    Object store: objectStore1
+            Key = testKey2, value = {"injectedScriptId":2,"id":5}
+            Index: index1
+                Key = testKey2, value = {"injectedScriptId":2,"id":6}
+Dumping ObjectStore data:
+    Object store: objectStore1
+            Index: index1
+
