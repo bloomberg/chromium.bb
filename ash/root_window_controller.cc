@@ -641,17 +641,14 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
   menu_model_ = std::make_unique<ShelfContextMenuModel>(
       std::vector<mojom::MenuItemPtr>(), nullptr, display_id);
 
-  menu_model_adapter_ = std::make_unique<views::MenuModelAdapter>(
-      menu_model_.get(),
-      base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this)));
-
   // The wallpaper controller may not be set yet if the user clicked on the
   // status area before the initial animation completion. See crbug.com/222218
   if (!wallpaper_widget_controller())
     return;
 
   menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_adapter_->CreateMenu(), views::MenuRunner::CONTEXT_MENU);
+      menu_model_.get(), views::MenuRunner::CONTEXT_MENU,
+      base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this)));
   menu_runner_->RunMenuAt(wallpaper_widget_controller()->widget(), nullptr,
                           gfx::Rect(location_in_screen, gfx::Size()),
                           views::MENU_ANCHOR_TOPLEFT, source_type);
@@ -1029,7 +1026,6 @@ void RootWindowController::ResetRootForNewWindowsIfNecessary() {
 
 void RootWindowController::OnMenuClosed() {
   menu_runner_.reset();
-  menu_model_adapter_.reset();
   menu_model_.reset();
   shelf_->UpdateVisibilityState();
 }
