@@ -31,7 +31,6 @@
 #include "core/frame/Navigator.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
-#include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/MediaErrorState.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"

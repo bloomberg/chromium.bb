@@ -36,7 +36,6 @@
 #include "public/web/WebApplyConstraintsRequest.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMediaDeviceChangeObserver.h"
-#include "public/web/WebMediaDevicesRequest.h"
 #include "public/web/WebUserMediaClient.h"
 #include "public/web/WebUserMediaRequest.h"
 
@@ -57,11 +56,6 @@ void UserMediaClient::RequestUserMedia(UserMediaRequest* request) {
 void UserMediaClient::CancelUserMediaRequest(UserMediaRequest* request) {
   if (client_)
     client_->CancelUserMediaRequest(WebUserMediaRequest(request));
-}
-
-void UserMediaClient::RequestMediaDevices(MediaDevicesRequest* request) {
-  if (client_)
-    client_->RequestMediaDevices(request);
 }
 
 void UserMediaClient::SetMediaDeviceChangeObserver(MediaDevices* observer) {

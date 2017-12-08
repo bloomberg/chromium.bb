@@ -30,7 +30,6 @@
 #include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -428,26 +427,8 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     RequestUserMediaForTest(user_media_request);
   }
 
-  void RequestMediaDevicesForTest() {
-    blink::WebMediaDevicesRequest media_devices_request;
-    *state_ = REQUEST_NOT_COMPLETE;
-    RequestMediaDevices(media_devices_request);
-  }
-
-  void EnumerateDevicesSucceded(
-      blink::WebMediaDevicesRequest* request,
-      blink::WebVector<blink::WebMediaDeviceInfo>& devices) override {
-    *state_ = REQUEST_SUCCEEDED;
-    last_devices_ = devices;
-  }
-
-  const blink::WebVector<blink::WebMediaDeviceInfo>& last_devices() {
-    return last_devices_;
-  }
-
  private:
   RequestState* state_;
-  blink::WebVector<blink::WebMediaDeviceInfo> last_devices_;
 };
 
 }  // namespace
@@ -880,61 +861,6 @@ TEST_F(UserMediaClientImplTest, StopTrackAfterReload) {
   video_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
-}
-
-TEST_F(UserMediaClientImplTest, EnumerateMediaDevices) {
-  user_media_client_impl_->RequestMediaDevicesForTest();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(REQUEST_SUCCEEDED, request_state());
-  EXPECT_EQ(static_cast<size_t>(5),
-            user_media_client_impl_->last_devices().size());
-
-  // Audio input device with matched output ID.
-  const blink::WebMediaDeviceInfo* device =
-      &user_media_client_impl_->last_devices()[0];
-  EXPECT_FALSE(device->DeviceId().IsEmpty());
-  EXPECT_EQ(blink::WebMediaDeviceInfo::kMediaDeviceKindAudioInput,
-            device->Kind());
-  EXPECT_FALSE(device->Label().IsEmpty());
-  EXPECT_FALSE(device->GroupId().IsEmpty());
-
-  // Audio input device without matched output ID.
-  device = &user_media_client_impl_->last_devices()[1];
-  EXPECT_FALSE(device->DeviceId().IsEmpty());
-  EXPECT_EQ(blink::WebMediaDeviceInfo::kMediaDeviceKindAudioInput,
-            device->Kind());
-  EXPECT_FALSE(device->Label().IsEmpty());
-  EXPECT_FALSE(device->GroupId().IsEmpty());
-
-  // Video input devices.
-  device = &user_media_client_impl_->last_devices()[2];
-  EXPECT_FALSE(device->DeviceId().IsEmpty());
-  EXPECT_EQ(blink::WebMediaDeviceInfo::kMediaDeviceKindVideoInput,
-            device->Kind());
-  EXPECT_FALSE(device->Label().IsEmpty());
-  EXPECT_TRUE(device->GroupId().IsEmpty());
-
-  device = &user_media_client_impl_->last_devices()[3];
-  EXPECT_FALSE(device->DeviceId().IsEmpty());
-  EXPECT_EQ(blink::WebMediaDeviceInfo::kMediaDeviceKindVideoInput,
-            device->Kind());
-  EXPECT_FALSE(device->Label().IsEmpty());
-  EXPECT_TRUE(device->GroupId().IsEmpty());
-
-  // Audio output device.
-  device = &user_media_client_impl_->last_devices()[4];
-  EXPECT_FALSE(device->DeviceId().IsEmpty());
-  EXPECT_EQ(blink::WebMediaDeviceInfo::kMediaDeviceKindAudioOutput,
-            device->Kind());
-  EXPECT_FALSE(device->Label().IsEmpty());
-  EXPECT_FALSE(device->GroupId().IsEmpty());
-
-  // Verfify group IDs.
-  EXPECT_TRUE(user_media_client_impl_->last_devices()[0].GroupId().Equals(
-      user_media_client_impl_->last_devices()[4].GroupId()));
-  EXPECT_FALSE(user_media_client_impl_->last_devices()[1].GroupId().Equals(
-      user_media_client_impl_->last_devices()[4].GroupId()));
 }
 
 TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
