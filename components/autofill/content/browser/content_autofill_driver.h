@@ -80,6 +80,9 @@ class ContentAutofillDriver : public AutofillDriver,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box,
                           base::TimeTicks timestamp) override;
+  void TextFieldDidScroll(const FormData& form,
+                          const FormFieldData& field,
+                          const gfx::RectF& bounding_box) override;
   void QueryFormFieldAutofill(int32_t id,
                               const FormData& form,
                               const FormFieldData& field,

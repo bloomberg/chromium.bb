@@ -122,6 +122,29 @@ void AutofillProviderAndroid::OnTextFieldDidChange(
       transformed_bounding.width(), transformed_bounding.height());
 }
 
+void AutofillProviderAndroid::OnTextFieldDidScroll(
+    AutofillHandlerProxy* handler,
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  size_t index;
+  if (!IsCurrentlyLinkedHandler(handler) || !IsCurrentlyLinkedForm(form) ||
+      !form_->GetSimilarFieldIndex(field, &index))
+    return;
+
+  form_->OnTextFieldDidChange(index, field.value);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  gfx::RectF transformed_bounding = ToClientAreaBound(bounding_box);
+  Java_AutofillProvider_onTextFieldDidScroll(
+      env, obj, index, transformed_bounding.x(), transformed_bounding.y(),
+      transformed_bounding.width(), transformed_bounding.height());
+}
+
 bool AutofillProviderAndroid::OnWillSubmitForm(
     AutofillHandlerProxy* handler,
     const FormData& form,

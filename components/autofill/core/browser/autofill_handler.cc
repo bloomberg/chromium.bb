@@ -36,6 +36,18 @@ void AutofillHandler::OnTextFieldDidChange(const FormData& form,
   OnTextFieldDidChangeImpl(form, field, transformed_box, timestamp);
 }
 
+void AutofillHandler::OnTextFieldDidScroll(const FormData& form,
+                                           const FormFieldData& field,
+                                           const gfx::RectF& bounding_box) {
+  if (!IsValidFormData(form) || !IsValidFormFieldData(field))
+    return;
+
+  gfx::RectF transformed_box =
+      driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
+
+  OnTextFieldDidScrollImpl(form, field, transformed_box);
+}
+
 void AutofillHandler::OnQueryFormFieldAutofill(int query_id,
                                                const FormData& form,
                                                const FormFieldData& field,

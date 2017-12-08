@@ -88,6 +88,10 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
     called_field_change_ = true;
   }
 
+  void TextFieldDidScroll(const FormData& form,
+                          const FormFieldData& field,
+                          const gfx::RectF& bounding_box) override {}
+
   void QueryFormFieldAutofill(int32_t id,
                               const FormData& form,
                               const FormFieldData& field,

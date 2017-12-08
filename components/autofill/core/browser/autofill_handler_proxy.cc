@@ -29,6 +29,13 @@ void AutofillHandlerProxy::OnTextFieldDidChangeImpl(
   provider_->OnTextFieldDidChange(this, form, field, bounding_box, timestamp);
 }
 
+void AutofillHandlerProxy::OnTextFieldDidScrollImpl(
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box) {
+  provider_->OnTextFieldDidScroll(this, form, field, bounding_box);
+}
+
 void AutofillHandlerProxy::OnQueryFormFieldAutofillImpl(
     int query_id,
     const FormData& form,

@@ -211,6 +211,18 @@ void AutofillAgent::DidFinishDocumentLoad() {
 }
 
 void AutofillAgent::DidChangeScrollOffset() {
+  if (!focus_requires_scroll_ && is_popup_possibly_visible_ &&
+      element_.Focused()) {
+    FormData form;
+    FormFieldData field;
+    if (form_util::FindFormAndFieldForFormControlElement(element_, &form,
+                                                         &field)) {
+      GetAutofillDriver()->TextFieldDidScroll(
+          form, field,
+          render_frame()->GetRenderView()->ElementBoundsInWindow(element_));
+    }
+  }
+
   if (IsKeyboardAccessoryEnabled())
     return;
 
@@ -220,7 +232,7 @@ void AutofillAgent::DidChangeScrollOffset() {
 void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   was_focused_before_now_ = false;
 
-  if (IsKeyboardAccessoryEnabled() &&
+  if ((IsKeyboardAccessoryEnabled() || !focus_requires_scroll_) &&
       WebUserGestureIndicator::IsProcessingUserGesture(
           node.IsNull() ? nullptr : node.GetDocument().GetFrame())) {
     focused_node_was_last_clicked_ = true;
@@ -593,6 +605,10 @@ void AutofillAgent::SetSecureContextRequired(bool required) {
   is_secure_context_required_ = required;
 }
 
+void AutofillAgent::SetFocusRequiresScroll(bool require) {
+  focus_requires_scroll_ = require;
+}
+
 void AutofillAgent::QueryAutofillSuggestions(
     const WebFormControlElement& element) {
   if (!element.GetDocument().GetFrame())
@@ -711,7 +727,7 @@ void AutofillAgent::DidCompleteFocusChangeInFrame() {
   if (!focused_element.IsNull() && password_autofill_agent_)
     password_autofill_agent_->FocusedNodeHasChanged(focused_element);
 
-  if (!IsKeyboardAccessoryEnabled())
+  if (!IsKeyboardAccessoryEnabled() && focus_requires_scroll_)
     HandleFocusChangeComplete();
 }
 
@@ -720,7 +736,7 @@ void AutofillAgent::DidReceiveLeftMouseDownOrGestureTapInNode(
   DCHECK(!node.IsNull());
   focused_node_was_last_clicked_ = node.Focused();
 
-  if (IsKeyboardAccessoryEnabled())
+  if (IsKeyboardAccessoryEnabled() || !focus_requires_scroll_)
     HandleFocusChangeComplete();
 }
 

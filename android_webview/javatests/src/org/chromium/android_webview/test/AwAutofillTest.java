@@ -518,16 +518,32 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testTouchingFormBasicTest() throws Throwable {
-        // Currently, touching form triggers autofill only when the app resizes on showing soft
-        // input keyboard. (https://crbug.com/730764)
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+    public void testTouchingFormWithAdjustResize() throws Throwable {
+        ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mRule.getActivity().getWindow().setSoftInputMode(
                         WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             }
         });
+        internalTestTriggerTest();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testTouchingFormWithAdjustPan() throws Throwable {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mRule.getActivity().getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+            }
+        });
+        internalTestTriggerTest();
+    }
+
+    private void internalTestTriggerTest() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'"
