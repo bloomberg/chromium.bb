@@ -7069,12 +7069,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "vr_common_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "vr_pixeltests"
       }
     ]
   },
