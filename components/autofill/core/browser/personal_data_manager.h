@@ -37,7 +37,6 @@ class SigninManagerBase;
 
 namespace autofill {
 class AutofillInteractiveTest;
-class AutofillTest;
 class PersonalDataManagerObserver;
 class PersonalDataManagerFactory;
 }  // namespace autofill
@@ -293,6 +292,11 @@ class PersonalDataManager : public KeyedService,
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, AddProfile_CrazyCharacters);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, AddProfile_Invalid);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           AddCreditCard_CrazyCharacters);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, AddCreditCard_Invalid);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FirstMiddleLast);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
@@ -352,7 +356,6 @@ class PersonalDataManager : public KeyedService,
                            GetCreditCardSuggestions_NoCardsLoadedIfDisabled);
 
   friend class autofill::AutofillInteractiveTest;
-  friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
   friend class FormDataImporterTest;
   friend class PersonalDataManagerTest;
