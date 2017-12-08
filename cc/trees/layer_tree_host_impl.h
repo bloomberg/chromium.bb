@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -137,6 +138,14 @@ class LayerTreeHostImplClient {
   virtual void NotifyImageDecodeRequestFinished() = 0;
 
   virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
+
+  // Called when a presentation time is requested. |source_frames| identifies
+  // the frames that correspond to the request.
+  virtual void DidPresentCompositorFrameOnImplThread(
+      const std::vector<int>& source_frames,
+      base::TimeTicks time,
+      base::TimeDelta refresh,
+      uint32_t flags) = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}
@@ -563,7 +572,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
 
-  viz::CompositorFrameMetadata MakeCompositorFrameMetadata() const;
+  viz::CompositorFrameMetadata MakeCompositorFrameMetadata();
 
   // Viewport rectangle and clip in device space.  These rects are used to
   // prioritize raster and determine what is submitted in a CompositorFrame.
@@ -942,6 +951,15 @@ class CC_EXPORT LayerTreeHostImpl
   base::Optional<ImageAnimationController> image_animation_controller_;
 
   std::unique_ptr<UkmManager> ukm_manager_;
+
+  // Maps from presentation_token set on CF to the source frame that requested
+  // it. Presentation tokens are requested if the active tree has
+  // request_presentation_time() set.
+  base::flat_map<uint32_t, int> presentation_token_to_frame_;
+
+  // If non-zero identifies the presentation-token added to the last CF. Reset
+  // to zero when no more presentation tokens are in flight.
+  uint32_t last_presentation_token_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

@@ -319,6 +319,21 @@ void LayerTreeHost::FinishCommitOnImplThread(
 
   sync_tree->set_source_frame_number(SourceFrameNumber());
 
+  // Set presentation token if any pending .
+  bool request_presentation_time = false;
+  if (!pending_presentation_time_callbacks_.empty()) {
+    request_presentation_time = true;
+    frame_to_presentation_time_callbacks_[SourceFrameNumber()] =
+        std::move(pending_presentation_time_callbacks_);
+    pending_presentation_time_callbacks_.clear();
+  } else if (!frame_to_presentation_time_callbacks_.empty()) {
+    // There are pending callbacks. Keep requesting the presentation callback
+    // in case a previous frame was dropped (the callbacks run when the frame
+    // makes it to screen).
+    request_presentation_time = true;
+  }
+  sync_tree->set_request_presentation_time(request_presentation_time);
+
   if (needs_full_tree_sync_)
     TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);
 
@@ -669,6 +684,22 @@ bool LayerTreeHost::UpdateLayers() {
   return result;
 }
 
+void LayerTreeHost::DidPresentCompositorFrame(
+    const std::vector<int>& source_frames,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  for (int frame : source_frames) {
+    if (!frame_to_presentation_time_callbacks_.count(frame))
+      continue;
+
+    for (auto& callback : frame_to_presentation_time_callbacks_[frame])
+      std::move(callback).Run(time, refresh, flags);
+
+    frame_to_presentation_time_callbacks_.erase(frame);
+  }
+}
+
 void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
 }
@@ -929,6 +960,11 @@ bool LayerTreeHost::IsThreaded() const {
   DCHECK(compositor_mode_ != CompositorMode::THREADED ||
          task_runner_provider_->HasImplThread());
   return compositor_mode_ == CompositorMode::THREADED;
+}
+
+void LayerTreeHost::RequestPresentationTimeForNextFrame(
+    PresentationTimeCallback callback) {
+  pending_presentation_time_callbacks_.push_back(std::move(callback));
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {

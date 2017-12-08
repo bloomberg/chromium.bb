@@ -51,6 +51,10 @@ class CC_EXPORT ProxyMain : public Proxy {
   void DidCompletePageScaleAnimation();
   void BeginMainFrame(
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
+  void DidPresentCompositorFrame(const std::vector<int>& source_frames,
+                                 base::TimeTicks time,
+                                 base::TimeDelta refresh,
+                                 uint32_t flags);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;

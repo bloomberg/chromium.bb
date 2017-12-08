@@ -500,6 +500,17 @@ void ProxyImpl::NotifyImageDecodeRequestFinished() {
   SetNeedsCommitOnImplThread();
 }
 
+void ProxyImpl::DidPresentCompositorFrameOnImplThread(
+    const std::vector<int>& source_frames,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
+                                proxy_main_weak_ptr_, source_frames, time,
+                                refresh, flags));
+}
+
 void ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   host_impl_->WillBeginImplFrame(args);

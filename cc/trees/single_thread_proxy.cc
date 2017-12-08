@@ -463,6 +463,15 @@ void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
   SetNeedsCommitOnImplThread();
 }
 
+void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
+    const std::vector<int>& source_frames,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  layer_tree_host_->DidPresentCompositorFrame(source_frames, time, refresh,
+                                              flags);
+}
+
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->SetMainThreadWantsBeginMainFrameNotExpected(

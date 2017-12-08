@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -355,17 +356,14 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       base::TimeDelta timeout =
           base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
 
-  // Internal functions, called back by command-buffer contexts on swap buffer
-  // events.
-
-  // Signals swap has been posted.
-  void OnSwapBuffersPosted();
-
-  // Signals swap has completed.
-  void OnSwapBuffersComplete();
-
-  // Signals swap has aborted (e.g. lost context).
-  void OnSwapBuffersAborted();
+  // Registers a callback that is run when the next frame successfully makes it
+  // to the screen (it's entirely possible some frames may be dropped between
+  // the time this is called and the callback is run).
+  // See ui/gfx/presentation_feedback.h for details on the args (TimeTicks is
+  // always non-zero).
+  using PresentationTimeCallback =
+      base::OnceCallback<void(base::TimeTicks, base::TimeDelta, uint32_t)>;
+  void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
 
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}

@@ -49,6 +49,8 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // so that frames are submitted only at the rate it can handle them.
   virtual void DidReceiveCompositorFrameAck() = 0;
 
+  // See ui/gfx/presentation_feedback.h for details on args. |time| is always
+  // non-zero.
   virtual void DidPresentCompositorFrame(uint32_t presentation_token,
                                          base::TimeTicks time,
                                          base::TimeDelta refresh,
