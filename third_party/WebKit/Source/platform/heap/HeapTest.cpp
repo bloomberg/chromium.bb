@@ -5072,11 +5072,11 @@ TEST(HeapTest, RegressNullIsStrongified) {
 }
 
 TEST(HeapTest, Bind) {
-  WTF::Closure closure =
+  base::OnceClosure closure =
       WTF::Bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::Trace),
                 WrapPersistent(Bar::Create()), nullptr);
   // OffHeapInt* should not make Persistent.
-  WTF::Closure closure2 =
+  base::OnceClosure closure2 =
       WTF::Bind(&OffHeapInt::VoidFunction, OffHeapInt::Create(1));
   PreciselyCollectGarbage();
   // The closure should have a persistent handle to the Bar.
@@ -5084,7 +5084,7 @@ TEST(HeapTest, Bind) {
 
   UseMixin::trace_count_ = 0;
   Mixin* mixin = UseMixin::Create();
-  WTF::Closure mixin_closure =
+  base::OnceClosure mixin_closure =
       WTF::Bind(static_cast<void (Mixin::*)(Visitor*)>(&Mixin::Trace),
                 WrapPersistent(mixin), nullptr);
   PreciselyCollectGarbage();

@@ -109,7 +109,7 @@ class PLATFORM_EXPORT WebViewScheduler {
   // policy is not affected when the budget expires.
   virtual void GrantVirtualTimeBudget(
       base::TimeDelta budget,
-      WTF::Closure budget_exhausted_callback) = 0;
+      base::OnceClosure budget_exhausted_callback) = 0;
 
   // It's possible for pages to send infinite messages which can arbitrarily
   // block virtual time.  We can prevent this by setting an upper limit on the

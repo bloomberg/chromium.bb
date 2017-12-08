@@ -18,18 +18,19 @@ class PLATFORM_EXPORT ContentSettingCallbacks {
   WTF_MAKE_NONCOPYABLE(ContentSettingCallbacks);
 
  public:
-  static std::unique_ptr<ContentSettingCallbacks> Create(WTF::Closure allowed,
-                                                         WTF::Closure denied);
+  static std::unique_ptr<ContentSettingCallbacks> Create(
+      base::OnceClosure allowed,
+      base::OnceClosure denied);
   virtual ~ContentSettingCallbacks() {}
 
   void OnAllowed() { std::move(allowed_).Run(); }
   void OnDenied() { std::move(denied_).Run(); }
 
  private:
-  ContentSettingCallbacks(WTF::Closure allowed, WTF::Closure denied);
+  ContentSettingCallbacks(base::OnceClosure allowed, base::OnceClosure denied);
 
-  WTF::Closure allowed_;
-  WTF::Closure denied_;
+  base::OnceClosure allowed_;
+  base::OnceClosure denied_;
 };
 
 }  // namespace blink

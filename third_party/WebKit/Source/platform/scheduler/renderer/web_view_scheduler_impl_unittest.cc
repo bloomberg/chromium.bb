@@ -211,7 +211,7 @@ void RunVirtualTimeRecorderTask(base::SimpleTestTickClock* clock,
       task_runner->MonotonicallyIncreasingVirtualTimeSeconds() * 1000.0);
 }
 
-WTF::Closure MakeVirtualTimeRecorderTask(
+base::OnceClosure MakeVirtualTimeRecorderTask(
     base::SimpleTestTickClock* clock,
     scoped_refptr<WebTaskRunner> task_runner,
     std::vector<base::TimeTicks>* out_real_times,

@@ -39,7 +39,7 @@ void RunCrossThreadClosure(CrossThreadClosure task) {
 
 class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
  public:
-  explicit Runner(WTF::Closure task)
+  explicit Runner(base::OnceClosure task)
       : task_(std::move(task)), weak_ptr_factory_(this) {}
 
   base::WeakPtr<Runner> AsWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
@@ -47,7 +47,7 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
   bool IsActive() const { return task_ && !task_.IsCancelled(); }
 
   void Cancel() {
-    WTF::Closure task = std::move(task_);
+    base::OnceClosure task = std::move(task_);
     weak_ptr_factory_.InvalidateWeakPtrs();
   }
 
@@ -68,15 +68,15 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
   // There is a circular reference in the example above as:
   //   foo -> m_handle -> m_runner -> m_task -> Persistent<Foo> in WTF::bind.
   // The TaskHandle parameter on run() is needed to break the circle by clearing
-  // |m_task| when the wrapped WTF::Closure is deleted.
+  // |m_task| when the wrapped base::OnceClosure is deleted.
   void Run(const TaskHandle&) {
-    WTF::Closure task = std::move(task_);
+    base::OnceClosure task = std::move(task_);
     weak_ptr_factory_.InvalidateWeakPtrs();
     std::move(task).Run();
   }
 
  private:
-  WTF::Closure task_;
+  base::OnceClosure task_;
   base::WeakPtrFactory<Runner> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Runner);
@@ -131,12 +131,12 @@ void WebTaskRunner::PostDelayedTask(const WebTraceLocation& location,
 }
 
 void WebTaskRunner::PostTask(const WebTraceLocation& location,
-                             WTF::Closure task) {
+                             base::OnceClosure task) {
   PostDelayedTask(location, std::move(task), base::TimeDelta());
 }
 
 TaskHandle WebTaskRunner::PostCancellableTask(const WebTraceLocation& location,
-                                              WTF::Closure task) {
+                                              base::OnceClosure task) {
   DCHECK(RunsTasksInCurrentSequence());
   scoped_refptr<TaskHandle::Runner> runner =
       base::AdoptRef(new TaskHandle::Runner(std::move(task)));
@@ -147,7 +147,7 @@ TaskHandle WebTaskRunner::PostCancellableTask(const WebTraceLocation& location,
 
 TaskHandle WebTaskRunner::PostDelayedCancellableTask(
     const WebTraceLocation& location,
-    WTF::Closure task,
+    base::OnceClosure task,
     TimeDelta delay) {
   DCHECK(RunsTasksInCurrentSequence());
   scoped_refptr<TaskHandle::Runner> runner =

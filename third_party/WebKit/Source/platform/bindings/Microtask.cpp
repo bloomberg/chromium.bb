@@ -42,16 +42,16 @@ void Microtask::PerformCheckpoint(v8::Isolate* isolate) {
 }
 
 static void MicrotaskFunctionCallback(void* data) {
-  std::unique_ptr<WTF::Closure> task =
-      WTF::WrapUnique(static_cast<WTF::Closure*>(data));
+  std::unique_ptr<base::OnceClosure> task =
+      WTF::WrapUnique(static_cast<base::OnceClosure*>(data));
   std::move(*task).Run();
 }
 
-void Microtask::EnqueueMicrotask(WTF::Closure callback) {
+void Microtask::EnqueueMicrotask(base::OnceClosure callback) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   isolate->EnqueueMicrotask(
       &MicrotaskFunctionCallback,
-      static_cast<void*>(new WTF::Closure(std::move(callback))));
+      static_cast<void*>(new base::OnceClosure(std::move(callback))));
 }
 
 }  // namespace blink

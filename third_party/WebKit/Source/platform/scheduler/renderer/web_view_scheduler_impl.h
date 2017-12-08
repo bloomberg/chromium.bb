@@ -53,8 +53,9 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void DisableVirtualTimeForTesting() override;
   bool VirtualTimeAllowedToAdvance() const override;
   void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;
-  void GrantVirtualTimeBudget(base::TimeDelta budget,
-                              WTF::Closure budget_exhausted_callback) override;
+  void GrantVirtualTimeBudget(
+      base::TimeDelta budget,
+      base::OnceClosure budget_exhausted_callback) override;
   void SetMaxVirtualTimeTaskStarvationCount(
       int max_task_starvation_count) override;
   void AudioStateChanged(bool is_audio_playing) override;
