@@ -1905,6 +1905,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-memex", flag_descriptions::kChromeMemexName,
      flag_descriptions::kChromeMemexDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeMemexFeature)},
+    {"enable-chrome-home-survey",
+     flag_descriptions::kChromeHomeEnableSurveyName,
+     flag_descriptions::kChromeHomeEnableSurveyDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeHomeSurvey)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"enable-tab-modal-js-dialog-android",
