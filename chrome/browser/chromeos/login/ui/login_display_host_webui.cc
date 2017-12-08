@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -435,11 +434,8 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
 
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 
-  // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
-  // because/ APP_TERMINATING will never be fired as long as this keeps
-  // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
-  // browser instance that will block the shutdown.
-  registrar_.Add(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+  // Close the login screen on NOTIFICATION_APP_TERMINATING.
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
   // NOTIFICATION_BROWSER_OPENED is issued after browser is created, but
@@ -600,13 +596,13 @@ void LoginDisplayHostWebUI::Finalize(base::OnceClosure completion_callback) {
 
   switch (finalize_animation_type_) {
     case ANIMATION_NONE:
-      ShutdownDisplayHost(false);
+      ShutdownDisplayHost();
       break;
     case ANIMATION_WORKSPACE:
       if (ash::Shell::HasInstance())
         ScheduleWorkspaceAnimation();
 
-      ShutdownDisplayHost(false);
+      ShutdownDisplayHost();
       break;
     case ANIMATION_FADE_OUT:
       // Display host is deleted once animation is completed
@@ -901,13 +897,13 @@ void LoginDisplayHostWebUI::Observe(
                       content::NotificationService::AllSources());
     registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
                       content::NotificationService::AllSources());
-  } else if (type == chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST) {
-    ShutdownDisplayHost(true);
+  } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
+    ShutdownDisplayHost();
   } else if (type == chrome::NOTIFICATION_BROWSER_OPENED && session_starting_) {
     // Browsers created before session start (windows opened by extensions, for
     // example) are ignored.
     OnBrowserCreated();
-    registrar_.Remove(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+    registrar_.Remove(this, chrome::NOTIFICATION_APP_TERMINATING,
                       content::NotificationService::AllSources());
     registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_OPENED,
                       content::NotificationService::AllSources());
@@ -1034,21 +1030,19 @@ void LoginDisplayHostWebUI::OnWillRemoveView(views::Widget* widget,
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, MultiUserWindowManager::Observer:
 void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
-  ShutdownDisplayHost(false);
+  ShutdownDisplayHost();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, private
 
-void LoginDisplayHostWebUI::ShutdownDisplayHost(bool post_quit_task) {
+void LoginDisplayHostWebUI::ShutdownDisplayHost() {
   if (shutting_down_)
     return;
 
   shutting_down_ = true;
   registrar_.RemoveAll();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-  if (post_quit_task)
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void LoginDisplayHostWebUI::ScheduleWorkspaceAnimation() {
@@ -1069,14 +1063,14 @@ void LoginDisplayHostWebUI::ScheduleFadeOutAnimation(int animation_speed_ms) {
   // is created before session start, which triggers the close of the login
   // window. In this case, we should shut down the display host directly.
   if (!login_window_) {
-    ShutdownDisplayHost(false);
+    ShutdownDisplayHost();
     return;
   }
   ui::Layer* layer = login_window_->GetLayer();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.AddObserver(new AnimationObserver(
       base::Bind(&LoginDisplayHostWebUI::ShutdownDisplayHost,
-                 animation_weak_ptr_factory_.GetWeakPtr(), false)));
+                 animation_weak_ptr_factory_.GetWeakPtr())));
   animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(animation_speed_ms));
   layer->SetOpacity(0);

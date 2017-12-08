@@ -153,8 +153,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   };
 
   // Marks display host for deletion.
-  // If |post_quit_task| is true also posts Quit task to the MessageLoop.
-  void ShutdownDisplayHost(bool post_quit_task);
+  void ShutdownDisplayHost();
 
   // Schedules workspace transition animation.
   void ScheduleWorkspaceAnimation();

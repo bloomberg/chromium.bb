@@ -88,12 +88,6 @@ class LoginSigninTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
   }
 
-  void TearDownOnMainThread() override {
-    // Close the login manager, which otherwise holds a KeepAlive that is not
-    // cleared in time by the end of the test.
-    LoginDisplayHost::default_host()->Finalize(base::OnceClosure());
-  }
-
   void SetUpOnMainThread() override {
     LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
   }
@@ -250,9 +244,6 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   // Cursor should be shown after cursor is moved.
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
   EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
-
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-      FROM_HERE, LoginDisplayHost::default_host());
 
   TestSystemTrayIsVisible(false);
 }

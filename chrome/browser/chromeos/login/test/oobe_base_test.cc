@@ -130,12 +130,6 @@ void OobeBaseTest::SetUpOnMainThread() {
 }
 
 void OobeBaseTest::TearDownOnMainThread() {
-  // If the login display is still showing, exit gracefully.
-  if (LoginDisplayHost::default_host()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&chrome::AttemptExit));
-    content::RunMessageLoop();
-  }
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
   ExtensionApiTest::TearDownOnMainThread();
