@@ -15,17 +15,18 @@ class RegistryVerifier(verifier.Verifier):
       'KEY_WOW64_64KEY': _winreg.KEY_WOW64_64KEY,
   }
 
+  _ROOT_KEY_MAPPING = {
+      'HKEY_CLASSES_ROOT': _winreg.HKEY_CLASSES_ROOT,
+      'HKEY_CURRENT_USER': _winreg.HKEY_CURRENT_USER,
+      'HKEY_LOCAL_MACHINE': _winreg.HKEY_LOCAL_MACHINE,
+      'HKEY_USERS': _winreg.HKEY_USERS,
+  }
+
   def _RootKeyConstant(self, root_key):
     """Converts a root registry key string into a _winreg.HKEY_* constant."""
-    root_key_mapping = {
-        'HKEY_CLASSES_ROOT': _winreg.HKEY_CLASSES_ROOT,
-        'HKEY_CURRENT_USER': _winreg.HKEY_CURRENT_USER,
-        'HKEY_LOCAL_MACHINE': _winreg.HKEY_LOCAL_MACHINE,
-        'HKEY_USERS': _winreg.HKEY_USERS,
-    }
-    if root_key not in root_key_mapping:
+    if root_key not in RegistryVerifier._ROOT_KEY_MAPPING:
       raise KeyError("Unknown root registry key '%s'" % root_key)
-    return root_key_mapping[root_key]
+    return RegistryVerifier._ROOT_KEY_MAPPING[root_key]
 
   def _RegistryViewConstant(self, registry_view):
     """Converts a registry view string into a _winreg.KEY_WOW64* constant."""
