@@ -21,11 +21,17 @@ INSTANTIATE_TEST_CASE_P(All,
                         PaintControllerPaintTest,
                         ::testing::ValuesIn(kDefaultPaintTestConfigurations));
 
-using PaintControllerPaintTestForSlimmingPaintV2 = PaintControllerPaintTest;
+using PaintControllerPaintTestForSPv2 = PaintControllerPaintTest;
 INSTANTIATE_TEST_CASE_P(
     All,
-    PaintControllerPaintTestForSlimmingPaintV2,
+    PaintControllerPaintTestForSPv2,
     ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
+
+using PaintControllerPaintTestForNonSPv1 = PaintControllerPaintTest;
+INSTANTIATE_TEST_CASE_P(
+    All,
+    PaintControllerPaintTestForNonSPv1,
+    ::testing::ValuesIn(kSlimmingPaintNonV1TestConfigurations));
 
 TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   SetBodyInnerHTML(
@@ -35,20 +41,9 @@ TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   Element& div = *ToElement(GetDocument().body()->firstChild());
   InlineTextBox& text_inline_box =
       *ToLayoutText(div.firstChild()->GetLayoutObject())->FirstTextBox();
-
-  DisplayItemClient* background_client = nullptr;
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    // With SPv1 and RLS, the document background uses the scrolling contents
-    // layer as its DisplayItemClient.
-    background_client = GetLayoutView().Layer()->GraphicsLayerBacking();
-  } else {
-    background_client = &GetLayoutView();
-  }
-
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 2,
-      TestDisplayItem(*background_client, kDocumentBackgroundType),
+      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
       TestDisplayItem(text_inline_box, kForegroundType));
 
   div.focus();
@@ -56,7 +51,7 @@ TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(*background_client, kDocumentBackgroundType),
+      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
       TestDisplayItem(text_inline_box, kForegroundType),
       TestDisplayItem(CaretDisplayItemClientForTesting(),
                       DisplayItem::kCaret));  // New!
@@ -72,19 +67,9 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
   InlineTextBox& first_text_box = *text.FirstTextBox();
 
-  DisplayItemClient* background_client = nullptr;
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    // With SPv1 and RLS, the document background uses the scrolling contents
-    // layer as its DisplayItemClient.
-    background_client = GetLayoutView().Layer()->GraphicsLayerBacking();
-  } else {
-    background_client = &GetLayoutView();
-  }
-
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 2,
-      TestDisplayItem(*background_client, kDocumentBackgroundType),
+      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
       TestDisplayItem(first_text_box, kForegroundType));
 
   div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
@@ -96,12 +81,12 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(*background_client, kDocumentBackgroundType),
+      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
       TestDisplayItem(new_first_text_box, kForegroundType),
       TestDisplayItem(second_text_box, kForegroundType));
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
+TEST_P(PaintControllerPaintTestForNonSPv1, ChunkIdClientCacheFlag) {
   SetBodyInnerHTML(R"HTML(
     <div id='div' style='width: 200px; height: 200px; opacity: 0.5'>
       <div style='width: 100px; height: 100px; background-color:
@@ -113,10 +98,12 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
   LayoutObject& sub_div2 = *sub_div.NextSibling();
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 3,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(sub_div, kBackgroundType),
-                      TestDisplayItem(sub_div2, kBackgroundType));
+
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
+      TestDisplayItem(sub_div, kBackgroundType),
+      TestDisplayItem(sub_div2, kBackgroundType));
 
   // Verify that the background does not scroll.
   const PaintChunk& background_chunk = RootPaintController().PaintChunks()[0];
@@ -139,7 +126,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   EXPECT_TRUE(RootPaintController().ClientCacheIsValid(sub_div));
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingNoFold) {
+TEST_P(PaintControllerPaintTestForNonSPv1, CompositingNoFold) {
   SetBodyInnerHTML(R"HTML(
     <div id='div' style='width: 200px; height: 200px; opacity: 0.5'>
       <div style='width: 100px; height: 100px; background-color:
@@ -149,17 +136,13 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingNoFold) {
   LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
 
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(sub_div, kBackgroundType));
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
+      TestDisplayItem(sub_div, kBackgroundType));
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2, FrameScrollingContents) {
-  // TODO(wangxianzhu): Fix cull rect issue when painting layered contents
-  // under overflow clip (in this case the LayoutView).
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
+TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -178,30 +161,48 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, FrameScrollingContents) {
   auto& div3 = *GetLayoutObjectByElementId("div3");
   auto& div4 = *GetLayoutObjectByElementId("div4");
 
-  // Initial cull rect: (0,0 4800x4600)
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(GetLayoutView(), kScrollHitTestType),
-                      TestDisplayItem(div1, kBackgroundType),
-                      TestDisplayItem(div2, kBackgroundType));
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
+    // small for RootLayerScrolling.
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 3,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(GetLayoutView(), kScrollHitTestType),
+        TestDisplayItem(div1, kBackgroundType));
+  } else {
+    // Initial cull rect: (0,0 4800x4600).
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 4,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(GetLayoutView(), kScrollHitTestType),
+        TestDisplayItem(div1, kBackgroundType),
+        TestDisplayItem(div2, kBackgroundType));
+  }
 
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(5000, 5000), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  // Cull rect after scroll: (1000,1000 8800x8600)
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(GetLayoutView(), kScrollHitTestType),
-                      TestDisplayItem(div2, kBackgroundType),
-                      TestDisplayItem(div3, kBackgroundType),
-                      TestDisplayItem(div4, kBackgroundType));
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
+    // small for RootLayerScrolling.
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 2,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(GetLayoutView(), kScrollHitTestType));
+  } else {
+    // Cull rect after scroll: (1000,1000 8800x8600).
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 5,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(GetLayoutView(), kScrollHitTestType),
+        TestDisplayItem(div2, kBackgroundType),
+        TestDisplayItem(div3, kBackgroundType),
+        TestDisplayItem(div4, kBackgroundType));
+  }
 }
 
-// TODO(wangxianzhu): Fix cull rect issue when painting layered contents under
-// overflow clip and add a test case.
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
-       BlockScrollingNonLayeredContents) {
+TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -244,7 +245,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
                       TestDisplayItem(div4, kBackgroundType));
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -274,8 +275,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ScrollHitTestOrder) {
                       TestDisplayItem(child, kBackgroundType));
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
-       NonStackingScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -316,7 +316,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
                       TestDisplayItem(pos_z_child, kBackgroundType));
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2, StackingScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -355,7 +355,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, StackingScrollHitTestOrder) {
                       TestDisplayItem(pos_z_child, kBackgroundType));
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
+TEST_P(PaintControllerPaintTestForSPv2,
        NonStackingScrollHitTestOrderWithoutBackground) {
   SetBodyInnerHTML(R"HTML(
     <style>

@@ -51,16 +51,6 @@ TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
   IntRect interest_rect(0, 0, 640, 480);
   Paint(&interest_rect);
 
-  DisplayItemClient* background_client = nullptr;
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    // With SPv1 and RLS, the document background uses the scrolling contents
-    // layer as its DisplayItemClient.
-    background_client = GetLayoutView().Layer()->GraphicsLayerBacking();
-  } else {
-    background_client = &GetLayoutView();
-  }
-
   const NGPaintFragment& root_fragment = *block_flow.PaintFragment();
   EXPECT_EQ(1u, root_fragment.Children().size());
   const NGPaintFragment& line_box_fragment = *root_fragment.Children()[0];
@@ -69,7 +59,7 @@ TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(*background_client, DisplayItem::kDocumentBackground),
+      TestDisplayItem(ViewBackgroundClient(), DisplayItem::kDocumentBackground),
       TestDisplayItem(root_fragment, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(text_fragment, kForegroundType));
 }

@@ -62,18 +62,16 @@ void PrePaintTreeWalk::Walk(LocalFrameView& root_frame) {
   PrePaintTreeWalkContext initial_context;
 
   // GeometryMapper depends on paint properties.
-  if (NeedsTreeBuilderContextUpdate(root_frame, initial_context))
+  bool needs_tree_builder_context_update =
+      NeedsTreeBuilderContextUpdate(root_frame, initial_context);
+  if (needs_tree_builder_context_update)
     GeometryMapper::ClearCache();
-
-#if DCHECK_IS_ON()
-  bool needed_paint_property_update = root_frame.NeedsPaintPropertyUpdate();
-#endif
 
   Walk(root_frame, initial_context);
   paint_invalidator_.ProcessPendingDelayedPaintInvalidations();
 
 #if DCHECK_IS_ON()
-  if (!needed_paint_property_update)
+  if (!needs_tree_builder_context_update)
     return;
   if (VLOG_IS_ON(2) && root_frame.GetLayoutView()) {
     LOG(ERROR) << "PrePaintTreeWalk::Walk(root_frame_view=" << &root_frame

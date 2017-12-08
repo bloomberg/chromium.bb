@@ -327,12 +327,14 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   if (!object.IsBoxModelObject())
     return false;
   const LayoutBoxModelObject& box_model = ToLayoutBoxModelObject(object);
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      box_model.IsLayoutView()) {
+
+  if (box_model.IsLayoutView()) {
     // Root layer scrolling always creates a translation node for LayoutView to
     // ensure fixed and absolute contexts use the correct transform space.
-    return true;
+    // Otherwise we have created all needed property nodes on the FrameView.
+    return RuntimeEnabledFeatures::RootLayerScrollingEnabled();
   }
+
   if (box_model.HasLayer() && box_model.Layer()->PaintsWithTransform(
                                   kGlobalPaintFlattenCompositingLayers)) {
     return true;
@@ -918,23 +920,21 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
       !full_context_.force_subtree_update)
     return;
 
-  auto* rare_paint_data = fragment_data_.GetRarePaintData();
-
   if (!object_.HasLayer() && !NeedsPaintOffsetTranslation(object_)) {
-    if (rare_paint_data)
+    if (auto* rare_paint_data = fragment_data_.GetRarePaintData())
       rare_paint_data->ClearLocalBorderBoxProperties();
   } else {
-    DCHECK(rare_paint_data);
+    auto& rare_paint_data = fragment_data_.EnsureRarePaintData();
     const ClipPaintPropertyNode* clip = context_.current.clip;
-    if (rare_paint_data->PaintProperties() &&
-        rare_paint_data->PaintProperties()->FragmentClip()) {
-      clip = rare_paint_data->PaintProperties()->FragmentClip();
+    if (rare_paint_data.PaintProperties() &&
+        rare_paint_data.PaintProperties()->FragmentClip()) {
+      clip = rare_paint_data.PaintProperties()->FragmentClip();
     }
 
     PropertyTreeState local_border_box = PropertyTreeState(
         context_.current.transform, clip, context_.current_effect);
 
-    rare_paint_data->SetLocalBorderBoxProperties(local_border_box);
+    rare_paint_data.SetLocalBorderBoxProperties(local_border_box);
   }
 }
 
@@ -1561,13 +1561,23 @@ PaintPropertyTreeBuilderFragmentContext ContextForFragment(
   return context;
 }
 
+void ObjectPaintPropertyTreeBuilder::InitFragmentPaintProperties(
+    FragmentData& fragment,
+    bool needs_paint_properties) {
+  if (needs_paint_properties) {
+    fragment.EnsureRarePaintData().EnsurePaintProperties();
+  } else if (fragment.PaintProperties()) {
+    context_.force_subtree_update = true;
+    fragment.GetRarePaintData()->ClearPaintProperties();
+  }
+}
+
 void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
     bool needs_paint_properties) {
   FragmentData& first_fragment =
       object_.GetMutableForPainting().FirstFragment();
   first_fragment.ClearNextFragment();
-  if (needs_paint_properties)
-    first_fragment.EnsureRarePaintData().EnsurePaintProperties();
+  InitFragmentPaintProperties(first_fragment, needs_paint_properties);
   if (context_.fragments.IsEmpty()) {
     context_.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
   } else {
@@ -1589,92 +1599,75 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
       NeedsScrollOrScrollTranslation(object_) ||
       NeedsFragmentationClip(object_, *context_.painting_layer);
 
-  bool needs_fragments = NeedsFragmentation(object_, *context_.painting_layer);
-  bool had_paint_properties = object_.FirstFragment().PaintProperties();
-  if (!needs_paint_properties && !needs_fragments && !object_.HasLayer()) {
-    if (had_paint_properties) {
-      context_.force_subtree_update = true;
-      object_.FirstFragment().GetRarePaintData()->ClearPaintProperties();
-    }
+  if (!NeedsFragmentation(object_, *context_.painting_layer)) {
     InitSingleFragmentFromParent(needs_paint_properties);
   } else {
-    if (!needs_fragments) {
-      InitSingleFragmentFromParent(needs_paint_properties);
-    } else {
-      // We need at least the fragments for all fragmented objects, which store
-      // their local border box properties and paint invalidation data (such
-      // as paint offset and visual rect) on each fragment.
-      PaintLayer* paint_layer = object_.PaintingLayer();
-      PaintLayer* enclosing_pagination_layer =
-          paint_layer->EnclosingPaginationLayer();
+    // We need at least the fragments for all fragmented objects, which store
+    // their local border box properties and paint invalidation data (such
+    // as paint offset and visual rect) on each fragment.
+    PaintLayer* paint_layer = object_.PaintingLayer();
+    PaintLayer* enclosing_pagination_layer =
+        paint_layer->EnclosingPaginationLayer();
 
-      LayoutRect object_bounding_box_in_flow_thread =
-          BoundingBoxInPaginationContainer(object_,
-                                           *enclosing_pagination_layer);
-      const LayoutFlowThread& flow_thread =
-          ToLayoutFlowThread(enclosing_pagination_layer->GetLayoutObject());
-      FragmentainerIterator iterator(flow_thread,
-                                     object_bounding_box_in_flow_thread);
+    LayoutRect object_bounding_box_in_flow_thread =
+        BoundingBoxInPaginationContainer(object_, *enclosing_pagination_layer);
+    const LayoutFlowThread& flow_thread =
+        ToLayoutFlowThread(enclosing_pagination_layer->GetLayoutObject());
+    FragmentainerIterator iterator(flow_thread,
+                                   object_bounding_box_in_flow_thread);
 
-      Vector<PaintPropertyTreeBuilderFragmentContext> new_fragment_contexts;
-      FragmentData* current_fragment_data = nullptr;
+    Vector<PaintPropertyTreeBuilderFragmentContext> new_fragment_contexts;
+    FragmentData* current_fragment_data = nullptr;
 
-      int fragment_count = 0;
-      for (; !iterator.AtEnd() && fragment_count < kMaxNumFragments;
-           iterator.Advance(), fragment_count++) {
-        if (!current_fragment_data) {
-          current_fragment_data =
-              &object_.GetMutableForPainting().FirstFragment();
-        } else {
-          current_fragment_data = &current_fragment_data->EnsureNextFragment();
-        }
-
-        RarePaintData& rare_paint_data =
-            current_fragment_data->EnsureRarePaintData();
-
-        if (needs_paint_properties)
-          rare_paint_data.EnsurePaintProperties();
-
-        // 1. Compute clip in flow thread space of the containing flow thread.
-        LayoutRect fragment_clip(iterator.ClipRectInFlowThread());
-        // 2. Convert #1 to visual coordinates in the space of the flow
-        // thread.
-        fragment_clip.Move(iterator.PaginationOffset());
-        // 3. Adust #2 to visual coordinates in the containing "paint offset"
-        // space.
-        {
-          DCHECK(context_.fragments[0].current.paint_offset_root);
-          LayoutPoint pagination_visual_offset =
-              VisualOffsetFromPaintOffsetRoot(context_.fragments[0],
-                                              enclosing_pagination_layer);
-
-          // Adjust for paint offset of the root, which may have a subpixel
-          // component.
-          // The paint offset root never has more than one fragment.
-          pagination_visual_offset.MoveBy(
-              context_.fragments[0]
-                  .current.paint_offset_root->FirstFragment()
-                  .PaintOffset());
-
-          fragment_clip.MoveBy(pagination_visual_offset);
-        }
-        // 4. Match to parent fragments from the same containing flow
-        // thread.
-        new_fragment_contexts.push_back(
-            ContextForFragment(fragment_clip, context_.fragments));
-        // 5. Save off PaginationOffset (which allows us to adjust
-        // logical paint offsets into the space of the current fragment later.
-
-        current_fragment_data->GetRarePaintData()->SetPaginationOffset(
-            ToLayoutPoint(iterator.PaginationOffset()));
-      }
-      if (current_fragment_data) {
-        current_fragment_data->ClearNextFragment();
-        context_.fragments = new_fragment_contexts;
+    int fragment_count = 0;
+    for (; !iterator.AtEnd() && fragment_count < kMaxNumFragments;
+         iterator.Advance(), fragment_count++) {
+      if (!current_fragment_data) {
+        current_fragment_data =
+            &object_.GetMutableForPainting().FirstFragment();
       } else {
-        // This will be an empty fragment - get rid of it?
-        InitSingleFragmentFromParent(needs_paint_properties);
+        current_fragment_data = &current_fragment_data->EnsureNextFragment();
       }
+
+      InitFragmentPaintProperties(*current_fragment_data,
+                                  needs_paint_properties);
+
+      // 1. Compute clip in flow thread space of the containing flow thread.
+      LayoutRect fragment_clip(iterator.ClipRectInFlowThread());
+      // 2. Convert #1 to visual coordinates in the space of the flow thread.
+      fragment_clip.Move(iterator.PaginationOffset());
+      // 3. Adust #2 to visual coordinates in the containing "paint offset"
+      // space.
+      {
+        DCHECK(context_.fragments[0].current.paint_offset_root);
+        LayoutPoint pagination_visual_offset = VisualOffsetFromPaintOffsetRoot(
+            context_.fragments[0], enclosing_pagination_layer);
+
+        // Adjust for paint offset of the root, which may have a subpixel
+        // component.
+        // The paint offset root never has more than one fragment.
+        pagination_visual_offset.MoveBy(
+            context_.fragments[0]
+                .current.paint_offset_root->FirstFragment()
+                .PaintOffset());
+
+        fragment_clip.MoveBy(pagination_visual_offset);
+      }
+      // 4. Match to parent fragments from the same containing flow thread.
+      new_fragment_contexts.push_back(
+          ContextForFragment(fragment_clip, context_.fragments));
+      // 5. Save off PaginationOffset (which allows us to adjust
+      // logical paint offsets into the space of the current fragment later.
+
+      current_fragment_data->EnsureRarePaintData().SetPaginationOffset(
+          ToLayoutPoint(iterator.PaginationOffset()));
+    }
+    if (current_fragment_data) {
+      current_fragment_data->ClearNextFragment();
+      context_.fragments = new_fragment_contexts;
+    } else {
+      // This will be an empty fragment - get rid of it?
+      InitSingleFragmentFromParent(needs_paint_properties);
     }
   }
 

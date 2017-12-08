@@ -15,7 +15,7 @@ class PaintPropertyTreeUpdateTest : public PaintPropertyTreeBuilderTest {};
 INSTANTIATE_TEST_CASE_P(
     All,
     PaintPropertyTreeUpdateTest,
-    ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
+    ::testing::ValuesIn(kSlimmingPaintNonV1TestConfigurations));
 
 TEST_P(PaintPropertyTreeUpdateTest,
        ThreadedScrollingDisabledMainThreadScrollReason) {

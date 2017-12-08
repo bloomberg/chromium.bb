@@ -41,6 +41,11 @@ static constexpr unsigned kDefaultPaintTestConfigurations[] = {
     kSlimmingPaintV2 | kRootLayerScrolling,
 };
 
+static constexpr unsigned kSlimmingPaintNonV1TestConfigurations[] = {
+    kSlimmingPaintV175, kSlimmingPaintV175 | kRootLayerScrolling,
+    kSlimmingPaintV2, kSlimmingPaintV2 | kRootLayerScrolling,
+};
+
 static constexpr unsigned kSlimmingPaintV2TestConfigurations[] = {
     kSlimmingPaintV2, kSlimmingPaintV2 | kRootLayerScrolling,
 };
