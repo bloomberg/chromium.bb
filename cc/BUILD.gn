@@ -630,6 +630,7 @@ cc_test("cc_unittests") {
     "raster/raster_source_unittest.cc",
     "raster/scoped_gpu_raster_unittest.cc",
     "raster/single_thread_task_graph_runner_unittest.cc",
+    "raster/staging_buffer_pool_unittest.cc",
     "raster/synchronous_task_graph_runner_unittest.cc",
     "raster/task_graph_work_queue_unittest.cc",
     "raster/texture_compressor_etc1_unittest.cc",
