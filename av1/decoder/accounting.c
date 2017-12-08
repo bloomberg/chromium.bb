@@ -31,7 +31,7 @@ static int aom_accounting_hash(const char *str) {
 /* Dictionary lookup based on an open-addressing hash table. */
 int aom_accounting_dictionary_lookup(Accounting *accounting, const char *str) {
   int hash;
-  int len;
+  size_t len;
   AccountingDictionary *dictionary;
   dictionary = &accounting->syms.dictionary;
   hash = aom_accounting_hash(str);
