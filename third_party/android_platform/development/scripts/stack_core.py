@@ -158,7 +158,7 @@ def PrintDivider():
   print
   print '-----------------------------------------------------\n'
 
-def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome, arch_defined, llvm_symbolizer):
+def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome, arch_defined):
   """Convert strings containing native crash to a stack."""
   InitWidthRelatedLineMatchers()
 
@@ -189,7 +189,7 @@ def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome, arch_define
       print ('Find ABI:' + arch)
       symbol.ARCH = arch
 
-  ResolveCrashSymbol(list(useful_log), more_info, llvm_symbolizer)
+  ResolveCrashSymbol(list(useful_log), more_info)
   end = time.time()
   logging.debug('Finished resolving symbols. Elapsed time: %.4fs',
                 (end - start))
@@ -304,7 +304,7 @@ class PreProcessLog:
         useful_log.append(line)
     return useful_log, self._so_dirs
 
-def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
+def ResolveCrashSymbol(lines, more_info):
   """Convert unicode strings which contains native crash to a stack
   """
 
@@ -313,14 +313,38 @@ def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
   last_frame = -1
   pid = -1
 
+  # It is faster to get symbol information with a single call rather than with
+  # separate calls for each line. Since symbol.SymbolInformation caches results,
+  # we can extract all the addresses that we will want symbol information for
+  # from the log and call symbol.SymbolInformation so that the results are
+  # cached in the following lookups.
+  code_addresses = {}
+
   # Collects all java exception lines, keyed by pid for later output during
   # native crash handling.
   java_stderr_by_pid = {}
   for line in lines:
+    lib, address = None, None
+
+    match = _TRACE_LINE.match(line) or _DEBUG_TRACE_LINE.match(line)
+    if match:
+      address, lib = match.group('address', 'lib')
+
+    match = _VALUE_LINE.match(line)
+    if match and not _CODE_LINE.match(line):
+      (_0, _1, address, lib, _2, _3) = match.groups()
+
+    if lib:
+      code_addresses.setdefault(lib, set()).add(address)
+
     java_stderr_match = _JAVA_STDERR_LINE.search(line)
     if java_stderr_match:
       pid, msg = java_stderr_match.groups()
       java_stderr_by_pid.setdefault(pid, []).append(msg)
+
+  for lib in code_addresses:
+    symbol.SymbolInformationForSet(
+        symbol.TranslateLibPath(lib), code_addresses[lib], more_info)
 
   for line in lines:
     # AndroidFeedback adds zero width spaces into its crash reports. These
@@ -386,19 +410,25 @@ def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
         logging.debug('Identified lib: %s' % area)
         # If a calls b which further calls c and c is inlined to b, we want to
         # display "a -> b -> c" in the stack trace instead of just "a -> c"
-        # To use llvm symbolizer, the hexadecimal address has to start with 0x.
-        info = llvm_symbolizer.GetSymbolInformation(
-            os.path.join(symbol.SYMBOLS_DIR, symbol.TranslateLibPath(area)),
-            '0x' + code_addr)
+        info = symbol.SymbolInformation(area, code_addr, more_info)
         logging.debug('symbol information: %s' % info)
         nest_count = len(info) - 1
-        for source_symbol, source_location in info:
+        for (source_symbol, source_location, object_symbol_with_offset) in info:
+          if not source_symbol:
+            if symbol_present:
+              source_symbol = symbol.CallCppFilt(symbol_name)
+            else:
+              source_symbol = UNKNOWN
+          if not source_location:
+            source_location = area
           if nest_count > 0:
             nest_count = nest_count - 1
             trace_lines.append(('v------>', source_symbol, source_location))
           else:
+            if not object_symbol_with_offset:
+              object_symbol_with_offset = source_symbol
             trace_lines.append((code_addr,
-                                source_symbol,
+                                object_symbol_with_offset,
                                 source_location))
     match = _VALUE_LINE.match(line)
     if match:
@@ -406,14 +436,20 @@ def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
       if area == UNKNOWN or area == HEAP or area == STACK or not area:
         value_lines.append((addr, value, '', area))
       else:
-        info = llvm_symbolizer.GetSymbolInformation(
-            os.path.join(symbol.SYMBOLS_DIR, symbol.TranslateLibPath(area)),
-            '0x' + code_addr)
-        source_symbol, source_location = info.pop()
-
+        info = symbol.SymbolInformation(area, value, more_info)
+        (source_symbol, source_location, object_symbol_with_offset) = info.pop()
+        if not source_symbol:
+          if symbol_present:
+            source_symbol = symbol.CallCppFilt(symbol_name)
+          else:
+            source_symbol = UNKNOWN
+        if not source_location:
+          source_location = area
+        if not object_symbol_with_offset:
+          object_symbol_with_offset = source_symbol
         value_lines.append((addr,
                             value,
-                            source_symbol,
+                            object_symbol_with_offset,
                             source_location))
 
   java_lines = []
