@@ -39,6 +39,8 @@ class CachedMetadataHandler
   // Returns the encoding to which the cache is specific.
   virtual String Encoding() const = 0;
 
+  virtual bool IsServedFromCacheStorage() const = 0;
+
  protected:
   CachedMetadataHandler() {}
 };
