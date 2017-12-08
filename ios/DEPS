@@ -12,4 +12,8 @@ include_rules = [
   # For unit tests.
   "+ios/testing",
   "+third_party/ocmock",
+
+  # To avoid includes from web::HttpServer since it is deprecated. Reference
+  # to crbug.com/708307.
+  "-ios/web/public/test/http_server/http_server.h",
 ]
