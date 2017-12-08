@@ -1666,7 +1666,7 @@ static void read_tile_info(AV1Decoder *const pbi,
     const int no_loopfilter = !lf->filter_level;
 #endif
     const int no_cdef = cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
-                        cm->nb_cdef_strengths == 1;
+                        cm->cdef_uv_strengths[0] == 0;
 #if CONFIG_LOOP_RESTORATION
     const int no_restoration =
         cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
@@ -3082,6 +3082,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
     cm->nb_cdef_strengths = 1;
+    cm->cdef_uv_strengths[0] = 0;
 #if CONFIG_LOOP_RESTORATION
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
