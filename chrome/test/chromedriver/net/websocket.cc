@@ -30,6 +30,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_source.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/websockets/websocket_frame.h"
 
 #if defined(OS_WIN)
@@ -182,9 +183,9 @@ void WebSocket::ContinueWritingIfNecessary() {
     pending_write_.clear();
   }
   int code =
-      socket_->Write(write_buffer_.get(),
-                     write_buffer_->BytesRemaining(),
-                     base::Bind(&WebSocket::OnWrite, base::Unretained(this)));
+      socket_->Write(write_buffer_.get(), write_buffer_->BytesRemaining(),
+                     base::Bind(&WebSocket::OnWrite, base::Unretained(this)),
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
   if (code != net::ERR_IO_PENDING)
     OnWrite(code);
 }
