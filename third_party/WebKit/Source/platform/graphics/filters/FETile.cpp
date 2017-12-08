@@ -41,6 +41,9 @@ FloatRect FETile::MapInputs(const FloatRect& rect) const {
 sk_sp<PaintFilter> FETile::CreateImageFilter() {
   sk_sp<PaintFilter> input(
       PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
+  if (!input)
+    return nullptr;
+
   FloatRect src_rect;
   if (InputEffect(0)->GetFilterEffectType() == kFilterEffectTypeSourceInput)
     src_rect = GetFilter()->FilterRegion();

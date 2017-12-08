@@ -324,8 +324,11 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
           FilterEffect* filter_effect = reference_filter->LastEffect();
           current_interpolation_space =
               filter_effect->OperatingInterpolationSpace();
-          filters.AppendReferenceFilter(PaintFilterBuilder::Build(
-              filter_effect, current_interpolation_space));
+          auto paint_filter = PaintFilterBuilder::Build(
+              filter_effect, current_interpolation_space);
+          if (!paint_filter)
+            continue;
+          filters.AppendReferenceFilter(std::move(paint_filter));
         }
         reference_operation.SetFilter(reference_filter);
         break;
