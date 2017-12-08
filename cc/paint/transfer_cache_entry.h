@@ -23,8 +23,9 @@ namespace cc {
 enum class TransferCacheEntryType {
   kRawMemory,
   kImage,
+  kPaintTypeface,
   // Add new entries above this line, make sure to update kLast.
-  kLast = kImage,
+  kLast = kPaintTypeface,
 };
 
 // An interface used on the client to serialize a transfer cache entry

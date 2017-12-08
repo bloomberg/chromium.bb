@@ -18,7 +18,9 @@ class CC_PAINT_EXPORT PaintTypeface {
     kSkTypeface,
     kFontConfigInterfaceIdAndTtcIndex,
     kFilenameAndTtcIndex,
-    kFamilyNameAndFontStyle
+    kFamilyNameAndFontStyle,
+    // We need to update this if the list is modified.
+    kLastType = kFamilyNameAndFontStyle
   };
 
   static PaintTypeface TestTypeface();
