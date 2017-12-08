@@ -53,6 +53,8 @@ source_set("new_fullscreen_internal") {
     "fullscreen_web_state_list_observer.mm",
     "fullscreen_web_state_observer.h",
     "fullscreen_web_state_observer.mm",
+    "voice_over_fullscreen_disabler.h",
+    "voice_over_fullscreen_disabler.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

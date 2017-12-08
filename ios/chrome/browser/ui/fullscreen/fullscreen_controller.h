@@ -17,6 +17,7 @@ class FullscreenControllerObserver;
 class FullscreenMediator;
 class FullscreenModel;
 class FullscreenWebStateListObserver;
+@class VoiceOverFullscreenDisabler;
 class WebStateList;
 
 // An object that observes scrolling events in the main content area and
@@ -71,6 +72,8 @@ class FullscreenController : public KeyedService {
   std::unique_ptr<FullscreenModel> model_;
   // The bridge used to forward brodcasted UI to |model_|.
   __strong ChromeBroadcastOberverBridge* bridge_ = nil;
+  // A helper object that disables fullscreen when VoiceOver is enabled.
+  __strong VoiceOverFullscreenDisabler* voice_over_disabler_ = nil;
   // Object that manages sending signals to FullscreenControllerObservers.
   std::unique_ptr<FullscreenMediator> mediator_;
   // A WebStateListObserver that updates |model_| for WebStateList changes.
