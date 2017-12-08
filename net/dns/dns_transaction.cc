@@ -767,8 +767,15 @@ class DnsTransactionImpl : public DnsTransaction,
         previous_attempt->GetQuery()->CloneWithNewId(id);
 
     RecordLostPacketsIfAny();
-    // Cancel all other attempts, no point waiting on them.
-    attempts_.clear();
+
+    // Cancel all other attempts that have not received a response, no point
+    // waiting on them.
+    for (auto it = attempts_.begin(); it != attempts_.end();) {
+      if (!(*it)->is_completed())
+        it = attempts_.erase(it);
+      else
+        ++it;
+    }
 
     unsigned attempt_number = attempts_.size();
 
