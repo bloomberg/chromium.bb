@@ -178,7 +178,6 @@
       'KitKat Phone Tester (dbg)': {
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
-          'isolated_scripts': 'telemetry_perf_unittests_isolated_scripts',
           'junit_tests': 'chromium_junit_tests',
         },
         'swarming': {
