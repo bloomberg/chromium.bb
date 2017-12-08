@@ -55,3 +55,22 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "prerender_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/browser/ui/omnibox:omnibox_internal",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/web/public/test/http_server",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
