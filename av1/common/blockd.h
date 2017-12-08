@@ -846,7 +846,7 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
 #endif  // USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
-#if CONFIG_DAALA_TX32
+#if CONFIG_DAALA_TX_DST32
   if (tx_size_sqr_up > TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
   if (is_inter)
@@ -1082,7 +1082,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   return get_default_tx_type(plane_type, xd, block_raster_idx, tx_size);
 #endif  // FIXED_TX_TYPE
 
-#if CONFIG_DAALA_TX32
+#if CONFIG_DAALA_TX_DST32
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32)
 #else
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32 ||

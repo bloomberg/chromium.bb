@@ -6584,6 +6584,9 @@ void od_bin_fdst32(od_coeff y[32], const od_coeff *x, int xstride) {
   od_coeff tt;
   od_coeff tu;
   od_coeff tv;
+  #if !CONFIG_DAALA_TX_DST32
+    assert(0 && "od_bin_fdst32() called when !CONFIG_DAALA_TX_DST32");
+  #endif
   t0 = x[0*xstride];
   t1 = x[1*xstride];
   t2 = x[2*xstride];
@@ -6685,6 +6688,9 @@ void od_bin_idst32(od_coeff *x, int xstride, const od_coeff y[32]) {
   od_coeff tt;
   od_coeff tu;
   od_coeff tv;
+  #if !CONFIG_DAALA_TX_DST32
+    assert(0 && "od_bin_idst32() called when !CONFIG_DAALA_TX_DST32");
+  #endif
   t0 = y[0];
   tg = y[1];
   t8 = y[2];
