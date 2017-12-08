@@ -1307,7 +1307,7 @@ const char kSingleClickAutofillDescription[] =
 
 const char kSitePerProcessName[] = "Strict site isolation";
 const char kSitePerProcessDescription[] =
-    "Highly experimental security mode that ensures each renderer process "
+    "Experimental security mode that ensures each renderer process "
     "contains pages from at most one site. In this mode, out-of-process "
     "iframes will be used whenever an iframe is cross-site.";
 
