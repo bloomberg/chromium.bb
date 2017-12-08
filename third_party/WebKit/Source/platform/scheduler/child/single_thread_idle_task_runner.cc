@@ -35,31 +35,33 @@ bool SingleThreadIdleTaskRunner::RunsTasksInCurrentSequence() const {
 }
 
 void SingleThreadIdleTaskRunner::PostIdleTask(const base::Location& from_here,
-                                              const IdleTask& idle_task) {
+                                              IdleTask idle_task) {
   delegate_->OnIdleTaskPosted();
   idle_priority_task_runner_->PostTask(
-      from_here, base::Bind(&SingleThreadIdleTaskRunner::RunTask,
-                            weak_scheduler_ptr_, idle_task));
+      from_here, base::BindOnce(&SingleThreadIdleTaskRunner::RunTask,
+                                weak_scheduler_ptr_, std::move(idle_task)));
 }
 
 void SingleThreadIdleTaskRunner::PostDelayedIdleTask(
     const base::Location& from_here,
     const base::TimeDelta delay,
-    const IdleTask& idle_task) {
+    IdleTask idle_task) {
   base::TimeTicks first_run_time = delegate_->NowTicks() + delay;
   delayed_idle_tasks_.insert(std::make_pair(
       first_run_time,
-      std::make_pair(from_here, base::Bind(&SingleThreadIdleTaskRunner::RunTask,
-                                           weak_scheduler_ptr_, idle_task))));
+      std::make_pair(
+          from_here,
+          base::BindOnce(&SingleThreadIdleTaskRunner::RunTask,
+                         weak_scheduler_ptr_, std::move(idle_task)))));
 }
 
 void SingleThreadIdleTaskRunner::PostNonNestableIdleTask(
     const base::Location& from_here,
-    const IdleTask& idle_task) {
+    IdleTask idle_task) {
   delegate_->OnIdleTaskPosted();
   idle_priority_task_runner_->PostNonNestableTask(
-      from_here, base::Bind(&SingleThreadIdleTaskRunner::RunTask,
-                            weak_scheduler_ptr_, idle_task));
+      from_here, base::BindOnce(&SingleThreadIdleTaskRunner::RunTask,
+                                weak_scheduler_ptr_, std::move(idle_task)));
 }
 
 void SingleThreadIdleTaskRunner::EnqueueReadyDelayedIdleTasks() {
@@ -83,7 +85,7 @@ void SingleThreadIdleTaskRunner::RunTask(IdleTask idle_task) {
                (deadline - base::TimeTicks::Now()).InMillisecondsF());
   if (blame_context_)
     blame_context_->Enter();
-  idle_task.Run(deadline);
+  std::move(idle_task).Run(deadline);
   if (blame_context_)
     blame_context_->Leave();
   delegate_->DidProcessIdleTask();

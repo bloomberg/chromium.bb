@@ -28,10 +28,8 @@ class MockTask {
   MOCK_METHOD0(Run, void());
 };
 
-class MockIdleTask : public blink::WebThread::IdleTask {
+class MockIdleTask {
  public:
-  ~MockIdleTask() override {}
-
   MOCK_METHOD1(Run, void(double deadline));
 };
 
@@ -140,17 +138,19 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
 }
 
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
-  std::unique_ptr<MockIdleTask> task(new MockIdleTask());
+  MockIdleTask task;
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  EXPECT_CALL(*task, Run(_));
-  ON_CALL(*task, Run(_)).WillByDefault(Invoke([&completion](double) {
+  EXPECT_CALL(task, Run(_));
+  ON_CALL(task, Run(_)).WillByDefault(Invoke([&completion](double) {
     completion.Signal();
   }));
 
-  thread_->PostIdleTask(BLINK_FROM_HERE, task.release());
+  thread_->PostIdleTask(
+      BLINK_FROM_HERE,
+      base::BindOnce(&MockIdleTask::Run, WTF::Unretained(&task)));
   // We need to post a wake-up task or idle work will never happen.
   thread_->GetWebTaskRunner()->PostDelayedTask(
       BLINK_FROM_HERE, CrossThreadBind([] {}), TimeDelta::FromMilliseconds(50));

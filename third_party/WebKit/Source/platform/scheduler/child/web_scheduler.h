@@ -58,7 +58,7 @@ class PLATFORM_EXPORT WebScheduler {
   // tasks which may be reordered relative to other task types and may be
   // starved for an arbitrarily long time if no idle time is available.
   // Takes ownership of |IdleTask|. Can be called from any thread.
-  virtual void PostIdleTask(const WebTraceLocation&, WebThread::IdleTask*) = 0;
+  virtual void PostIdleTask(const WebTraceLocation&, WebThread::IdleTask) = 0;
 
   // Like postIdleTask but guarantees that the posted task will not run
   // nested within an already-running task. Posting an idle task as
@@ -66,7 +66,7 @@ class PLATFORM_EXPORT WebScheduler {
   // make it run later than it normally would, but it won't make it
   // run earlier than it normally would.
   virtual void PostNonNestableIdleTask(const WebTraceLocation&,
-                                       WebThread::IdleTask*) = 0;
+                                       WebThread::IdleTask) = 0;
 
   // Returns a WebTaskRunner for loading tasks. Can be called from any thread.
   virtual WebTaskRunner* LoadingTaskRunner() = 0;
@@ -110,14 +110,6 @@ class PLATFORM_EXPORT WebScheduler {
   virtual scheduler::RendererScheduler* GetRendererSchedulerForTest() {
     return nullptr;
   }
-
-#ifdef INSIDE_BLINK
-  // Helpers for posting bound functions as tasks.
-  typedef Function<void(double deadline_seconds)> IdleTask;
-
-  void PostIdleTask(const WebTraceLocation&, IdleTask);
-  void PostNonNestableIdleTask(const WebTraceLocation&, IdleTask);
-#endif
 };
 
 }  // namespace blink

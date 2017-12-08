@@ -36,9 +36,9 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() override;
   void PostIdleTask(const WebTraceLocation& location,
-                    WebThread::IdleTask* task) override;
+                    WebThread::IdleTask task) override;
   void PostNonNestableIdleTask(const WebTraceLocation& location,
-                               WebThread::IdleTask* task) override;
+                               WebThread::IdleTask task) override;
   WebTaskRunner* LoadingTaskRunner() override;
   WebTaskRunner* TimerTaskRunner() override;
   WebTaskRunner* V8TaskRunner() override;
@@ -54,8 +54,7 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
       scheduler::RendererScheduler::NavigatingFrameType type) override {}
 
  private:
-  static void RunIdleTask(std::unique_ptr<WebThread::IdleTask> task,
-                          base::TimeTicks deadline);
+  static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
 
   ChildScheduler* child_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;

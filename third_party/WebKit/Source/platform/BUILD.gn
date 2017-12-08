@@ -337,7 +337,6 @@ jumbo_component("platform") {
     "WebMouseEvent.cpp",
     "WebMouseWheelEvent.cpp",
     "WebPointerEvent.cpp",
-    "WebScheduler.cpp",
     "WebTaskRunner.cpp",
     "WebTaskRunner.h",
     "WebTextInputInfo.cpp",

@@ -38,7 +38,7 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
   PlatformThreadId ThreadId() const override = 0;
 
   virtual void PostIdleTask(const WebTraceLocation& location,
-                            IdleTask* idle_task);
+                            IdleTask idle_task);
 
   void AddTaskObserver(TaskObserver* observer) override;
   void RemoveTaskObserver(TaskObserver* observer) override;
@@ -69,9 +69,8 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
   virtual void AddTaskTimeObserverInternal(TaskTimeObserver*) {}
   virtual void RemoveTaskTimeObserverInternal(TaskTimeObserver*) {}
 
-  static void RunWebThreadIdleTask(
-      std::unique_ptr<WebThread::IdleTask> idle_task,
-      base::TimeTicks deadline);
+  static void RunWebThreadIdleTask(WebThread::IdleTask idle_task,
+                                   base::TimeTicks deadline);
 
  private:
   typedef std::map<TaskObserver*, TaskObserverAdapter*> TaskObserverMap;

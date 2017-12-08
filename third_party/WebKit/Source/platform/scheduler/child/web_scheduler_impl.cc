@@ -44,27 +44,26 @@ bool WebSchedulerImpl::CanExceedIdleDeadlineIfRequired() {
   return child_scheduler_->CanExceedIdleDeadlineIfRequired();
 }
 
-void WebSchedulerImpl::RunIdleTask(
-    std::unique_ptr<blink::WebThread::IdleTask> task,
-    base::TimeTicks deadline) {
-  task->Run((deadline - base::TimeTicks()).InSecondsF());
+void WebSchedulerImpl::RunIdleTask(blink::WebThread::IdleTask task,
+                                   base::TimeTicks deadline) {
+  std::move(task).Run((deadline - base::TimeTicks()).InSecondsF());
 }
 
 void WebSchedulerImpl::PostIdleTask(const blink::WebTraceLocation& location,
-                                    blink::WebThread::IdleTask* task) {
+                                    blink::WebThread::IdleTask task) {
   DCHECK(idle_task_runner_);
   idle_task_runner_->PostIdleTask(
-      location, base::Bind(&WebSchedulerImpl::RunIdleTask,
-                           base::Passed(base::WrapUnique(task))));
+      location,
+      base::BindOnce(&WebSchedulerImpl::RunIdleTask, std::move(task)));
 }
 
 void WebSchedulerImpl::PostNonNestableIdleTask(
     const blink::WebTraceLocation& location,
-    blink::WebThread::IdleTask* task) {
+    blink::WebThread::IdleTask task) {
   DCHECK(idle_task_runner_);
   idle_task_runner_->PostNonNestableIdleTask(
-      location, base::Bind(&WebSchedulerImpl::RunIdleTask,
-                           base::Passed(base::WrapUnique(task))));
+      location,
+      base::BindOnce(&WebSchedulerImpl::RunIdleTask, std::move(task)));
 }
 
 blink::WebTaskRunner* WebSchedulerImpl::LoadingTaskRunner() {
