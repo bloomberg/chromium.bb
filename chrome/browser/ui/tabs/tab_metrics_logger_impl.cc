@@ -8,15 +8,18 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_metrics_event.pb.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_importance_signals.h"
 #include "net/base/mime_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h"
 
 using metrics::TabMetricsEvent;
 
@@ -104,8 +107,19 @@ void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
   // audio indicator in the tab strip.
   entry.SetWasRecentlyAudible(web_contents->WasRecentlyAudible());
 
-  entry.SetIsPinned(tab_strip_model->IsTabPinned(index))
+  resource_coordinator::TabManager* tab_manager =
+      g_browser_process->GetTabManager();
+  DCHECK(tab_manager);
+
+  entry
+      .SetHasBeforeUnloadHandler(
+          web_contents->GetMainFrame()->GetSuddenTerminationDisablerState(
+              blink::kBeforeUnloadHandler))
       .SetHasFormEntry(
           web_contents->GetPageImportanceSignals().had_form_interaction)
+      // TODO(michaelpg): This dependency should be reversed during the
+      // resource_coordinator refactor: crbug.com/775644.
+      .SetIsExtensionProtected(!tab_manager->IsTabAutoDiscardable(web_contents))
+      .SetIsPinned(tab_strip_model->IsTabPinned(index))
       .Record(ukm_recorder);
 }

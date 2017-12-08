@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_activity_watcher.h"
 #include "chrome/browser/ui/tabs/tab_metrics_event.pb.h"
@@ -50,7 +52,10 @@ const GURL kTestUrls[] = {
 const UkmMetricMap kBasicMetricValues({
     {TabManager_TabMetrics::kContentTypeName,
      TabMetricsEvent::CONTENT_TYPE_TEXT_HTML},
+    // TODO(michaelpg): Test HasBeforeUnloadHandler in a browser_test.
+    {TabManager_TabMetrics::kHasBeforeUnloadHandlerName, 0},
     {TabManager_TabMetrics::kHasFormEntryName, 0},
+    {TabManager_TabMetrics::kIsExtensionProtectedName, 0},
     {TabManager_TabMetrics::kIsPinnedName, 0},
     {TabManager_TabMetrics::kKeyEventCountName, 0},
     {TabManager_TabMetrics::kMouseEventCountName, 0},
@@ -297,6 +302,11 @@ TEST_F(TabActivityWatcherTest, TabMetrics) {
     SCOPED_TRACE("");
     ExpectNewEntry(kTestUrls[1], expected_metrics);
   }
+
+  // Simulate an extension protecting the tab.
+  g_browser_process->GetTabManager()->SetTabAutoDiscardableState(
+      test_contents_2, false);
+  expected_metrics[TabManager_TabMetrics::kIsExtensionProtectedName] = 1;
 
   // Site engagement score should round down to the nearest 10.
   SiteEngagementService::Get(profile())->ResetBaseScoreForURL(kTestUrls[1], 45);
