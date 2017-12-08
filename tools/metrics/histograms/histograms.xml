@@ -31274,11 +31274,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Layout.ScrollAnchor.SerializedAnchorSelectorLength"
+    units="characters">
+  <owner>pnoland@chromium.org</owner>
+  <summary>
+    The number of characters in the selector computed for a serialized scroll
+    anchor. Recorded when a scroll anchor is serialized.
+  </summary>
+</histogram>
+
 <histogram name="Layout.ScrollAnchor.SuppressedBySanaclap" enum="BooleanHit">
   <owner>ymalik@chromium.org</owner>
   <summary>
     Records the number of times scroll anchoring is suppressed because of the
     SANACLAP bit being set on an ancestor (see bit.ly/sanaclap).
+  </summary>
+</histogram>
+
+<histogram name="Layout.ScrollAnchor.TimeToComputeAnchorNodeSelector"
+    units="microseconds">
+  <owner>pnoland@chromium.org</owner>
+  <summary>
+    The time it took to compute the selector of a serialized anchor element.
   </summary>
 </histogram>
 

@@ -4,6 +4,9 @@
 
 #include "core/layout/ScrollAnchor.h"
 
+#include "core/css/CSSMarkup.h"
+#include "core/dom/ElementTraversal.h"
+#include "core/dom/NthIndexCache.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -16,6 +19,8 @@
 
 namespace blink {
 
+// With 100 unique strings, a 2^12 slot table has a false positive rate of ~2%.
+using ClassnameFilter = BloomFilter<12>;
 using Corner = ScrollAnchor::Corner;
 using SerializedAnchor = ScrollAnchor::SerializedAnchor;
 
@@ -129,6 +134,131 @@ static bool CandidateMayMoveWithScroller(const LayoutObject* candidate,
   LayoutObject::AncestorSkipInfo skip_info(ScrollerLayoutBox(scroller));
   candidate->Container(&skip_info);
   return !skip_info.AncestorSkipped();
+}
+
+static bool IsOnlySiblingWithTagName(Element* element) {
+  DCHECK(element);
+  return (1U == NthIndexCache::NthOfTypeIndex(*element)) &&
+         (1U == NthIndexCache::NthLastOfTypeIndex(*element));
+}
+
+static const AtomicString UniqueClassnameAmongSiblings(Element* element) {
+  DCHECK(element);
+
+  auto classname_filter = WTF::WrapUnique(new ClassnameFilter());
+
+  Element* parent_element = ElementTraversal::FirstAncestor(*element->ToNode());
+  Element* sibling_element =
+      parent_element ? ElementTraversal::FirstChild(*parent_element->ToNode())
+                     : element;
+  // Add every classname of every sibling to our bloom filter, starting from the
+  // leftmost sibling, but skipping |element|.
+  for (; sibling_element; sibling_element = ElementTraversal::NextSibling(
+                              *sibling_element->ToNode())) {
+    if (sibling_element->HasClass() && sibling_element != element) {
+      const SpaceSplitString& class_names = sibling_element->ClassNames();
+      for (size_t i = 0; i < class_names.size(); ++i) {
+        classname_filter->Add(class_names[i]);
+      }
+    }
+  }
+
+  const SpaceSplitString& class_names = element->ClassNames();
+  for (size_t i = 0; i < class_names.size(); ++i) {
+    // MayContain allows for false positives, but a false positive is relatively
+    // harmless; it just means we have to choose a different classname, or in
+    // the worst case a different selector.
+    if (!classname_filter->MayContain(class_names[i])) {
+      return class_names[i];
+    }
+  }
+
+  return AtomicString();
+}
+
+// Calculate a simple selector for |element| that uniquely identifies it among
+// its siblings. If present, the element's id will be used; otherwise, less
+// specific selectors are preferred to more specific ones. The ordering of
+// selector preference is:
+// 1. ID
+// 2. Tag name
+// 3. Class name
+// 4. nth-child
+static const String UniqueSimpleSelectorAmongSiblings(Element* element) {
+  DCHECK(element);
+
+  if (element->HasID() &&
+      !element->GetDocument().ContainsMultipleElementsWithId(
+          element->GetIdAttribute())) {
+    StringBuilder builder;
+    builder.Append("#");
+    SerializeIdentifier(element->GetIdAttribute(), builder);
+    return builder.ToAtomicString();
+  }
+
+  if (IsOnlySiblingWithTagName(element)) {
+    StringBuilder builder;
+    SerializeIdentifier(element->TagQName().ToString(), builder);
+    return builder.ToAtomicString();
+  }
+
+  if (element->HasClass()) {
+    AtomicString unique_classname = UniqueClassnameAmongSiblings(element);
+    if (!unique_classname.IsEmpty()) {
+      return AtomicString(".") + unique_classname;
+    }
+  }
+
+  return ":nth-child(" +
+         String::Number(NthIndexCache::NthChildIndex(*element)) + ")";
+}
+
+// Computes a selector that uniquely identifies |anchor_element|. This is done
+// by computing a selector that uniquely identifies each ancestor among its
+// sibling elements, terminating at a definitively unique ancestor. The
+// definitively unique ancestor is either the first ancestor with an id or
+// the root of the document. The computed selectors are chained together with
+// the child combinator(>) to produce a compound selector that is
+// effectively a path through the DOM tree to |anchor_element|.
+static const String ComputeUniqueSelector(Element* anchor_element) {
+  DCHECK(anchor_element);
+  TRACE_EVENT0("blink", "ScrollAnchor::SerializeAnchor");
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
+      "Layout.ScrollAnchor.TimeToComputeAnchorNodeSelector");
+
+  std::vector<String> selector_list;
+  for (Element* element = anchor_element; element;
+       element = ElementTraversal::FirstAncestor(*element->ToNode())) {
+    selector_list.push_back(UniqueSimpleSelectorAmongSiblings(element));
+    if (element->HasID() &&
+        !element->GetDocument().ContainsMultipleElementsWithId(
+            element->GetIdAttribute())) {
+      break;
+    }
+  }
+
+  StringBuilder builder;
+  size_t i = 0;
+  // We added the selectors tree-upward order from left to right, but css
+  // selectors are written tree-downward from left to right. We reverse the
+  // order of iteration to get a properly ordered compound selector.
+  for (auto reverse_iterator = selector_list.rbegin();
+       reverse_iterator != selector_list.rend(); ++reverse_iterator, ++i) {
+    if (i)
+      builder.Append(">");
+    builder.Append(*reverse_iterator);
+  }
+
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, selector_length_histogram,
+                      ("Layout.ScrollAnchor.SerializedAnchorSelectorLength", 1,
+                       kMaxSerializedSelectorLength, 50));
+  selector_length_histogram.Count(builder.length());
+
+  if (builder.length() > kMaxSerializedSelectorLength) {
+    return String();
+  }
+
+  return builder.ToString();
 }
 
 ScrollAnchor::ExamineResult ScrollAnchor::Examine(
@@ -328,22 +458,42 @@ void ScrollAnchor::Adjust() {
                     WebFeature::kScrollAnchored);
 }
 
-bool ScrollAnchor::RestoreAnchor(Document* document,
-                                 const SerializedAnchor& serialized_anchor) {
+bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
   NOTIMPLEMENTED();
   return false;
 }
 
-const SerializedAnchor ScrollAnchor::SerializeAnchor() {
-  // TODO(pnoland): When implementing, limit the length of the serialized
-  // anchor's selector to some constant.
-  NOTIMPLEMENTED();
-  return SerializedAnchor("", LayoutPoint());
+const SerializedAnchor ScrollAnchor::GetSerializedAnchor() {
+  // It's safe to return saved_selector_ before checking anchor_object_, since
+  // clearing anchor_object_ also clears saved_selector_.
+  if (!saved_selector_.IsEmpty()) {
+    DCHECK(anchor_object_);
+    return SerializedAnchor(
+        saved_selector_,
+        ComputeRelativeOffset(anchor_object_, scroller_, corner_));
+  }
+
+  if (!anchor_object_) {
+    FindAnchor();
+    if (!anchor_object_)
+      return SerializedAnchor();
+  }
+
+  DCHECK(anchor_object_->GetNode());
+  SerializedAnchor new_anchor(
+      ComputeUniqueSelector(ToElement(anchor_object_->GetNode())),
+      ComputeRelativeOffset(anchor_object_, scroller_, corner_));
+  if (new_anchor.IsValid()) {
+    saved_selector_ = new_anchor.selector;
+  }
+
+  return new_anchor;
 }
 
 void ScrollAnchor::ClearSelf() {
   LayoutObject* anchor_object = anchor_object_;
   anchor_object_ = nullptr;
+  saved_selector_ = String();
 
   if (anchor_object)
     anchor_object->MaybeClearIsScrollAnchorObject();

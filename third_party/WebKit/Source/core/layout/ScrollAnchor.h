@@ -12,9 +12,10 @@
 
 namespace blink {
 
-class Document;
 class LayoutObject;
 class ScrollableArea;
+
+static const int kMaxSerializedSelectorLength = 500;
 
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 class CORE_EXPORT ScrollAnchor final {
@@ -60,6 +61,7 @@ class CORE_EXPORT ScrollAnchor final {
   // Only meaningful if anchorObject() is non-null.
   Corner GetCorner() const { return corner_; }
 
+  // A set of properties used to save/restore previously used scroll anchors.
   struct SerializedAnchor {
     SerializedAnchor() : simhash(0) {}
     SerializedAnchor(const String& s, const LayoutPoint& p)
@@ -67,7 +69,7 @@ class CORE_EXPORT ScrollAnchor final {
     SerializedAnchor(const String& s, const LayoutPoint& p, uint64_t hash)
         : selector(s), relative_offset(p), simhash(hash) {}
 
-    bool IsValid() { return !selector.IsEmpty(); }
+    bool IsValid() const { return !selector.IsEmpty(); }
 
     // Used to locate an element previously used as a scroll anchor.
     const String selector;
@@ -80,10 +82,13 @@ class CORE_EXPORT ScrollAnchor final {
 
   // Attempt to restore |serialized_anchor| by scrolling to the element
   // identified by its selector, adjusting by its relative_offset.
-  bool RestoreAnchor(Document*, const SerializedAnchor&);
+  bool RestoreAnchor(const SerializedAnchor&);
 
-  // Create a serialized representation of the current anchor_object_.
-  const SerializedAnchor SerializeAnchor();
+  // Get the serialized representation of the current anchor_object_.
+  // If there is not currently an anchor_object_, this will attempt to find one.
+  // Repeated calls will re-use the previously calculated selector until the
+  // anchor_object it corresponds to is cleared.
+  const SerializedAnchor GetSerializedAnchor();
 
   // Checks if we hold any references to the specified object.
   bool RefersTo(const LayoutObject*) const;
@@ -129,6 +134,10 @@ class CORE_EXPORT ScrollAnchor final {
   // Location of m_layoutObject relative to scroller at time of
   // notifyBeforeLayout().
   LayoutPoint saved_relative_offset_;
+
+  // Previously calculated css selector that uniquely locates the current
+  // anchor_object_. Cleared when the anchor_object_ is cleared.
+  String saved_selector_;
 
   // We suppress scroll anchoring after a style change on the anchor node or
   // one of its ancestors, if that change might have caused the node to move.
