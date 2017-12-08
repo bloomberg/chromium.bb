@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GIN_MODULES_CONSOLE_H_
-#define GIN_MODULES_CONSOLE_H_
+#ifndef GIN_TEST_GTEST_H_
+#define GIN_TEST_GTEST_H_
 
-#include "gin/gin_export.h"
 #include "v8/include/v8.h"
 
 namespace gin {
 
-// The Console module provides a basic API for printing to stdout. Over time,
-// we'd like to evolve the API to match window.console in browsers.
-class GIN_EXPORT Console {
+// This module provides bindings to gtest. Most tests should use an idiomatic
+// JavaScript testing API, but this module is available for tests that need a
+// low-level integration with gtest.
+class GTest {
  public:
   static const char kModuleName[];
   static v8::Local<v8::Value> GetModule(v8::Isolate* isolate);
@@ -20,4 +20,4 @@ class GIN_EXPORT Console {
 
 }  // namespace gin
 
-#endif  // GIN_MODULES_CONSOLE_H_
+#endif  // GIN_TEST_GTEST_H_

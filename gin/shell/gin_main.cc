@@ -18,9 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/modules/console.h"
-#include "gin/object_template_builder.h"
+#include "gin/modules/module_runner_delegate.h"
 #include "gin/public/isolate_holder.h"
-#include "gin/shell_runner.h"
 #include "gin/try_catch.h"
 #include "gin/v8_initializer.h"
 
@@ -41,20 +40,20 @@ void Run(base::WeakPtr<Runner> runner, const base::FilePath& path) {
   runner->Run(Load(path), path.AsUTF8Unsafe());
 }
 
-class GinShellRunnerDelegate : public ShellRunnerDelegate {
- public:
-  GinShellRunnerDelegate() {}
+std::vector<base::FilePath> GetModuleSearchPaths() {
+  std::vector<base::FilePath> module_base(1);
+  CHECK(base::GetCurrentDirectory(&module_base[0]));
+  return module_base;
+}
 
-  v8::Local<v8::ObjectTemplate> GetGlobalTemplate(
-      ShellRunner* runner,
-      v8::Isolate* isolate) override {
-    v8::Local<v8::ObjectTemplate> templ =
-        ObjectTemplateBuilder(isolate).Build();
-    gin::Console::Register(isolate, templ);
-    return templ;
+class GinShellRunnerDelegate : public ModuleRunnerDelegate {
+ public:
+  GinShellRunnerDelegate() : ModuleRunnerDelegate(GetModuleSearchPaths()) {
+    AddBuiltinModule(Console::kModuleName, Console::GetModule);
   }
 
   void UnhandledException(ShellRunner* runner, TryCatch& try_catch) override {
+    ModuleRunnerDelegate::UnhandledException(runner, try_catch);
     LOG(ERROR) << try_catch.GetStackTrace();
   }
 

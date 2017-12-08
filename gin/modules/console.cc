@@ -9,31 +9,41 @@
 #include "base/strings/string_util.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/object_template_builder.h"
+#include "gin/per_isolate_data.h"
+#include "gin/public/wrapper_info.h"
+
+using v8::ObjectTemplate;
 
 namespace gin {
 
 namespace {
 
-void Log(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
+void Log(Arguments* args) {
   std::vector<std::string> messages;
-  if (!args.GetRemaining(&messages)) {
-    args.ThrowError();
+  if (!args->GetRemaining(&messages)) {
+    args->ThrowError();
     return;
   }
   printf("%s\n", base::JoinString(messages, " ").c_str());
 }
 
+WrapperInfo g_wrapper_info = { kEmbedderNativeGin };
+
 }  // namespace
 
-// static
-void Console::Register(v8::Isolate* isolate,
-                       v8::Local<v8::ObjectTemplate> templ) {
-  v8::Local<v8::FunctionTemplate> log_templ =
-      v8::FunctionTemplate::New(isolate, Log);
-  log_templ->RemovePrototype();
+const char Console::kModuleName[] = "console";
 
-  templ->Set(StringToSymbol(isolate, "log"), log_templ);
+v8::Local<v8::Value> Console::GetModule(v8::Isolate* isolate) {
+  PerIsolateData* data = PerIsolateData::From(isolate);
+  v8::Local<ObjectTemplate> templ = data->GetObjectTemplate(&g_wrapper_info);
+  if (templ.IsEmpty()) {
+    templ = ObjectTemplateBuilder(isolate)
+        .SetMethod("log", Log)
+        .Build();
+    data->SetObjectTemplate(&g_wrapper_info, templ);
+  }
+  return templ->NewInstance(isolate->GetCurrentContext()).ToLocalChecked();
 }
 
 }  // namespace gin
