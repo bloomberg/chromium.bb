@@ -889,13 +889,11 @@ void AudioVideoPipelineDeviceTest::StartImmediateEosTest() {
 }
 
 void AudioVideoPipelineDeviceTest::EndImmediateEosTest() {
-  EXPECT_EQ(kStartPts, backend_->GetCurrentPts());
   RunPlaybackChecks();
 
   ASSERT_TRUE(backend_->Pause());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(kStartPts, backend_->GetCurrentPts());
   RunPlaybackChecks();
 
   backend_->Stop();
