@@ -57,9 +57,9 @@ source_set("unit_tests") {
 source_set("snapshots_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "snapshot_generator.h",
+    "snapshot_generator.mm",
     "snapshot_overlay_provider.h",
-    "web_controller_snapshot_helper.h",
-    "web_controller_snapshot_helper.mm",
   ]
   deps = [
     ":snapshots",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
+#import "ios/chrome/browser/snapshots/snapshot_generator.h"
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
@@ -79,7 +79,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 @end
 
-@interface WebControllerSnapshotHelper ()
+@interface SnapshotGenerator ()
 
 // Takes a snapshot for the supplied view (which should correspond to the given
 // type of web view). Returns an autoreleased image cropped and scaled
@@ -91,7 +91,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 @end
 
-@implementation WebControllerSnapshotHelper {
+@implementation SnapshotGenerator {
   CoalescingSnapshotContext* _coalescingSnapshotContext;
   __weak Tab* _tab;
 }
@@ -211,12 +211,12 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     return nil;
   }
 
-  // -drawViewHierarchyInRect:afterScreenUpdates:YES is buggy as of iOS 8.3.
-  // Using it afterScreenUpdates:YES creates unexpected GPU glitches, screen
-  // redraws during animations, broken pinch to dismiss on tablet, etc.  For now
-  // only using this with WKWebView, which depends on -drawViewHierarchyInRect.
-  // TODO(justincohen): Remove this (and always use drawViewHierarchyInRect)
-  // once the iOS 8 bugs have been fixed.
+  // TODO(crbug.com/636188): -drawViewHierarchyInRect:afterScreenUpdates: is
+  // buggy on iOS 8/9/10 (and state is unknown for iOS 11) causing GPU glitches,
+  // screen redraws during animations, broken pinch to dismiss on tablet, etc.
+  // For the moment, only use it for WKWebView with depends on it. Remove this
+  // check and always use -drawViewHierarchyInRect:afterScreenUpdates: once it
+  // is working correctly in all version of iOS supported.
   BOOL useDrawViewHierarchy = ViewHierarchyContainsWKWebView(view);
 
   BOOL snapshotSuccess = YES;
