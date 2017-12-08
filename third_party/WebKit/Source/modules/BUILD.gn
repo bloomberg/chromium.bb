@@ -353,6 +353,7 @@ jumbo_source_set("unit_tests") {
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/WebKit/public:media_devices_mojo_bindings_blink",
     "//v8",
   ]
 }

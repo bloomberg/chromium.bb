@@ -15,7 +15,6 @@ blink_modules_sources("exported") {
     "WebIDBKey.cpp",
     "WebIDBKeyRange.cpp",
     "WebMediaDeviceChangeObserver.cpp",
-    "WebMediaDevicesRequest.cpp",
     "WebMediaStreamRegistry.cpp",
     "WebSpeechGrammar.cpp",
     "WebSpeechRecognitionHandle.cpp",

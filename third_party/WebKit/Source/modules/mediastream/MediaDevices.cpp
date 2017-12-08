@@ -11,7 +11,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/Event.h"
-#include "modules/mediastream/MediaDevicesRequest.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/mediastream/MediaErrorState.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
@@ -21,6 +21,10 @@
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/wtf/Functional.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+
+using blink::mojom::blink::MediaDeviceType;
 
 namespace blink {
 
@@ -83,19 +87,23 @@ MediaDevices::MediaDevices(ExecutionContext* context)
 MediaDevices::~MediaDevices() {}
 
 ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
-  Document* document = ToDocument(ExecutionContext::From(script_state));
-  UserMediaController* user_media =
-      UserMediaController::From(document->GetFrame());
-  if (!user_media)
+  LocalFrame* frame =
+      ToDocument(ExecutionContext::From(script_state))->GetFrame();
+  if (!frame) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kNotSupportedError,
-                             "No media device controller available; is this a "
-                             "detached window?"));
+        DOMException::Create(kNotSupportedError, "Current frame is detached."));
+  }
 
-  MediaDevicesRequest* request =
-      MediaDevicesRequest::Create(script_state, user_media);
-  return request->Start();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  requests_.insert(resolver);
+
+  GetDispatcherHost(frame)->EnumerateDevices(
+      true /* audio input */, true /* video input */, true /* audio output */,
+      WTF::Bind(&MediaDevices::DevicesEnumerated, WrapPersistent(this),
+                WrapPersistent(resolver)));
+  return promise;
 }
 
 ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
@@ -193,6 +201,8 @@ void MediaDevices::ContextDestroyed(ExecutionContext*) {
 
   stopped_ = true;
   StopObserving();
+  requests_.clear();
+  dispatcher_host_.reset();
 }
 
 void MediaDevices::Pause() {
@@ -252,9 +262,75 @@ void MediaDevices::Dispose() {
   StopObserving();
 }
 
+void MediaDevices::DevicesEnumerated(
+    ScriptPromiseResolver* resolver,
+    Vector<Vector<mojom::blink::MediaDeviceInfoPtr>> enumeration) {
+  if (!requests_.Contains(resolver))
+    return;
+
+  requests_.erase(resolver);
+
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed()) {
+    return;
+  }
+
+  DCHECK_EQ(static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES),
+            enumeration.size());
+
+  MediaDeviceInfoVector media_devices;
+  for (size_t i = 0;
+       i < static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES); ++i) {
+    for (const auto& device_info : enumeration[i]) {
+      media_devices.push_back(MediaDeviceInfo::Create(
+          device_info->device_id, device_info->label, device_info->group_id,
+          static_cast<MediaDeviceType>(i)));
+    }
+  }
+
+  if (enumerate_devices_test_callback_)
+    std::move(enumerate_devices_test_callback_).Run(media_devices);
+
+  resolver->Resolve(media_devices);
+}
+
+void MediaDevices::OnDispatcherHostConnectionError() {
+  for (ScriptPromiseResolver* resolver : requests_) {
+    resolver->Reject(
+        DOMException::Create(kAbortError, "enumerateDevices() failed."));
+  }
+  requests_.clear();
+  dispatcher_host_.reset();
+
+  if (connection_error_test_callback_)
+    std::move(connection_error_test_callback_).Run();
+}
+
+const mojom::blink::MediaDevicesDispatcherHostPtr&
+MediaDevices::GetDispatcherHost(LocalFrame* frame) {
+  if (!dispatcher_host_) {
+    frame->GetInterfaceProvider().GetInterface(
+        mojo::MakeRequest(&dispatcher_host_));
+    dispatcher_host_.set_connection_error_handler(
+        WTF::Bind(&MediaDevices::OnDispatcherHostConnectionError,
+                  WrapWeakPersistent(this)));
+  }
+
+  return dispatcher_host_;
+}
+
+void MediaDevices::SetDispatcherHostForTesting(
+    mojom::blink::MediaDevicesDispatcherHostPtr dispatcher_host) {
+  dispatcher_host_ = std::move(dispatcher_host);
+  dispatcher_host_.set_connection_error_handler(
+      WTF::Bind(&MediaDevices::OnDispatcherHostConnectionError,
+                WrapWeakPersistent(this)));
+}
+
 void MediaDevices::Trace(blink::Visitor* visitor) {
   visitor->Trace(dispatch_scheduled_event_runner_);
   visitor->Trace(scheduled_events_);
+  visitor->Trace(requests_);
   EventTargetWithInlineData::Trace(visitor);
   PausableObject::Trace(visitor);
 }

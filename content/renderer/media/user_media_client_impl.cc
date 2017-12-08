@@ -24,7 +24,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
-#include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -33,21 +32,6 @@
 
 namespace content {
 namespace {
-
-blink::WebMediaDeviceInfo::MediaDeviceKind ToMediaDeviceKind(
-    MediaDeviceType type) {
-  switch (type) {
-    case MEDIA_DEVICE_TYPE_AUDIO_INPUT:
-      return blink::WebMediaDeviceInfo::kMediaDeviceKindAudioInput;
-    case MEDIA_DEVICE_TYPE_VIDEO_INPUT:
-      return blink::WebMediaDeviceInfo::kMediaDeviceKindVideoInput;
-    case MEDIA_DEVICE_TYPE_AUDIO_OUTPUT:
-      return blink::WebMediaDeviceInfo::kMediaDeviceKindAudioOutput;
-    default:
-      NOTREACHED();
-      return blink::WebMediaDeviceInfo::kMediaDeviceKindAudioInput;
-  }
-}
 
 static int g_next_request_id = 0;
 
@@ -275,16 +259,6 @@ void UserMediaClientImpl::CancelUserMediaRequest(
   }
 }
 
-void UserMediaClientImpl::RequestMediaDevices(
-    const blink::WebMediaDevicesRequest& media_devices_request) {
-  UpdateWebRTCMethodCount(WEBKIT_GET_MEDIA_DEVICES);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetMediaDevicesDispatcher()->EnumerateDevices(
-      true /* audio input */, true /* video input */, true /* audio output */,
-      base::BindOnce(&UserMediaClientImpl::FinalizeEnumerateDevices,
-                     weak_factory_.GetWeakPtr(), media_devices_request));
-}
-
 void UserMediaClientImpl::SetMediaDeviceChangeObserver(
     const blink::WebMediaDeviceChangeObserver& observer) {
   media_device_change_observer_ = observer;
@@ -309,41 +283,11 @@ void UserMediaClientImpl::SetMediaDeviceChangeObserver(
   }
 }
 
-void UserMediaClientImpl::FinalizeEnumerateDevices(
-    blink::WebMediaDevicesRequest request,
-    const EnumerationResult& result) {
-  DCHECK_EQ(static_cast<size_t>(NUM_MEDIA_DEVICE_TYPES), result.size());
-
-  blink::WebVector<blink::WebMediaDeviceInfo> devices(
-      result[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size() +
-      result[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size() +
-      result[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
-  size_t index = 0;
-  for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
-    blink::WebMediaDeviceInfo::MediaDeviceKind device_kind =
-        ToMediaDeviceKind(static_cast<MediaDeviceType>(i));
-    for (const auto& device_info : result[i]) {
-      devices[index++].Initialize(
-          blink::WebString::FromUTF8(device_info.device_id), device_kind,
-          blink::WebString::FromUTF8(device_info.label),
-          blink::WebString::FromUTF8(device_info.group_id));
-    }
-  }
-
-  EnumerateDevicesSucceded(&request, devices);
-}
-
 void UserMediaClientImpl::DevicesChanged(
     MediaDeviceType type,
     const MediaDeviceInfoArray& device_infos) {
   if (!media_device_change_observer_.IsNull())
     media_device_change_observer_.DidChangeMediaDevices();
-}
-
-void UserMediaClientImpl::EnumerateDevicesSucceded(
-    blink::WebMediaDevicesRequest* request,
-    blink::WebVector<blink::WebMediaDeviceInfo>& devices) {
-  request->RequestSucceeded(devices);
 }
 
 void UserMediaClientImpl::DeleteAllUserMediaRequests() {

@@ -43,7 +43,6 @@ namespace blink {
 class ApplyConstraintsRequest;
 class LocalFrame;
 class MediaDevices;
-class MediaDevicesRequest;
 class MediaStreamComponent;
 class UserMediaRequest;
 class WebUserMediaClient;
@@ -56,7 +55,6 @@ class MODULES_EXPORT UserMediaClient {
 
   void RequestUserMedia(UserMediaRequest*);
   void CancelUserMediaRequest(UserMediaRequest*);
-  void RequestMediaDevices(MediaDevicesRequest*);
   void SetMediaDeviceChangeObserver(MediaDevices*);
   void ApplyConstraints(ApplyConstraintsRequest*);
   void StopTrack(MediaStreamComponent*);

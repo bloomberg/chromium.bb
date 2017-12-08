@@ -28,44 +28,53 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-MediaDeviceInfo* MediaDeviceInfo::Create(
-    const WebMediaDeviceInfo& web_media_device_info) {
-  DCHECK(!web_media_device_info.IsNull());
-  return new MediaDeviceInfo(web_media_device_info);
+MediaDeviceInfo* MediaDeviceInfo::Create(const String& device_id,
+                                         const String& label,
+                                         const String& group_id,
+                                         MediaDeviceType device_type) {
+  return new MediaDeviceInfo(device_id, label, group_id, device_type);
 }
 
-MediaDeviceInfo::MediaDeviceInfo(
-    const WebMediaDeviceInfo& web_media_device_info)
-    : web_media_device_info_(web_media_device_info) {}
+MediaDeviceInfo::MediaDeviceInfo(const String& device_id,
+                                 const String& label,
+                                 const String& group_id,
+                                 MediaDeviceType device_type)
+    : device_id_(device_id),
+      label_(label),
+      group_id_(group_id),
+      device_type_(device_type) {}
 
 String MediaDeviceInfo::deviceId() const {
-  return web_media_device_info_.DeviceId();
+  return device_id_;
 }
 
 String MediaDeviceInfo::kind() const {
-  switch (web_media_device_info_.Kind()) {
-    case WebMediaDeviceInfo::kMediaDeviceKindAudioInput:
+  switch (device_type_) {
+    case MediaDeviceType::MEDIA_AUDIO_INPUT:
       return "audioinput";
-    case WebMediaDeviceInfo::kMediaDeviceKindAudioOutput:
+    case MediaDeviceType::MEDIA_AUDIO_OUTPUT:
       return "audiooutput";
-    case WebMediaDeviceInfo::kMediaDeviceKindVideoInput:
+    case MediaDeviceType::MEDIA_VIDEO_INPUT:
       return "videoinput";
+    default:
+      NOTREACHED();
+      return String();
   }
-
-  NOTREACHED();
-  return String();
 }
 
 String MediaDeviceInfo::label() const {
-  return web_media_device_info_.Label();
+  return label_;
 }
 
 String MediaDeviceInfo::groupId() const {
-  return web_media_device_info_.GroupId();
+  return group_id_;
+}
+
+MediaDeviceType MediaDeviceInfo::DeviceType() const {
+  return device_type_;
 }
 
 ScriptValue MediaDeviceInfo::toJSONForBinding(ScriptState* script_state) {
