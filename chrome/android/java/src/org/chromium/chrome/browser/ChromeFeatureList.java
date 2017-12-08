@@ -204,6 +204,7 @@ public abstract class ChromeFeatureList {
     public static final String DONT_PREFETCH_LIBRARIES = "DontPrefetchLibraries";
     public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";
     public static final String DOWNLOADS_FOREGROUND = "DownloadsForeground";
+    public static final String DOWNLOADS_LOCATION_CHANGE = "DownloadsLocationChange";
     // When enabled, fullscreen WebContents will be moved to a new Activity. Coming soon...
     public static final String FULLSCREEN_ACTIVITY = "FullscreenActivity";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";

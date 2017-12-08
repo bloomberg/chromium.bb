@@ -25030,6 +25030,7 @@ from previous Chrome versions.
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
+  <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
   <int value="-772679248" label="MojoVideoEncodeAccelerator:enabled"/>
@@ -25629,6 +25630,7 @@ from previous Chrome versions.
   <int value="936341613" label="OfflinePagesCT:disabled"/>
   <int value="936919953" label="bypass-app-banner-engagement-checks"/>
   <int value="938191241" label="VrShell:enabled"/>
+  <int value="939366135" label="DownloadsLocationChange:disabled"/>
   <int value="939554480" label="enable-credit-card-scan"/>
   <int value="939603162" label="BackgroundLoadingForDownloads:disabled"/>
   <int value="941036016" label="ContentSuggestionsSettings:disabled"/>

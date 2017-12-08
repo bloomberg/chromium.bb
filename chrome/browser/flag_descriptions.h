@@ -1091,6 +1091,9 @@ extern const char kDontPrefetchLibrariesDescription[];
 extern const char kDownloadsForegroundName[];
 extern const char kDownloadsForegroundDescription[];
 
+extern const char kDownloadsLocationChangeName[];
+extern const char kDownloadsLocationChangeDescription[];
+
 extern const char kEnableAndroidPayIntegrationV1Name[];
 extern const char kEnableAndroidPayIntegrationV1Description[];
 

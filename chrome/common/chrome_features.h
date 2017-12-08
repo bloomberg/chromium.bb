@@ -105,6 +105,10 @@ extern const base::Feature kDoodlesOnLocalNtp;
 extern const base::Feature kDownloadsForeground;
 #endif
 
+#if defined(OS_ANDROID)
+extern const base::Feature kDownloadsLocationChange;
+#endif
+
 extern const base::Feature kExpectCTReporting;
 
 extern const base::Feature kExperimentalAppBanners;

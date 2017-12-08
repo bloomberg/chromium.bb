@@ -199,6 +199,12 @@ const base::Feature kDownloadsForeground{"DownloadsForeground",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_ANDROID)
+// Enable changing default downloads storage location on Android.
+const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",
