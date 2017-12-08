@@ -61,14 +61,12 @@ bool VpnProviderMatchesNetwork(const VPNProvider& provider,
   if (network.vpn_provider_type() == shill::kProviderArcVpn) {
     return provider.provider_type == VPNProvider::ARC_VPN &&
            network.vpn_provider_id() == provider.package_name;
+  } else if (network.vpn_provider_type() == shill::kProviderThirdPartyVpn) {
+    return provider.provider_type == VPNProvider::THIRD_PARTY_VPN &&
+           network.vpn_provider_id() == provider.app_id;
+  } else {
+    return provider.provider_type == VPNProvider::BUILT_IN_VPN;
   }
-
-  const bool network_uses_third_party_provider =
-      network.vpn_provider_type() == shill::kProviderThirdPartyVpn;
-  if (provider.provider_type != VPNProvider::THIRD_PARTY_VPN)
-    return !network_uses_third_party_provider;
-  return network_uses_third_party_provider &&
-         network.vpn_provider_id() == provider.app_id;
 }
 
 // A list entry that represents a VPN provider.
