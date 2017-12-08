@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -30,7 +31,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarViewController ()
+@interface ToolbarViewController ()<ToolbarViewFullscreenDelegate>
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 @property(nonatomic, strong) ToolbarButtonUpdater* buttonUpdater;
 
@@ -76,9 +77,12 @@
 // Top anchor at the bottom of the safeAreaLayoutGuide. Used so views don't
 // overlap with the Status Bar.
 @property(nonatomic, strong) NSLayoutYAxisAnchor* topSafeAnchor;
+
+@property(nonatomic, strong) ToolbarView* view;
 @end
 
 @implementation ToolbarViewController
+@dynamic view;
 @synthesize leadingStackViewButtons = _leadingStackViewButtons;
 @synthesize trailingStackViewButtons = _trailingStackViewButtons;
 @synthesize backgroundView = _backgroundView;
@@ -256,6 +260,11 @@
 }
 
 #pragma mark - View lifecyle
+
+- (void)loadView {
+  self.view = [[ToolbarView alloc] init];
+  self.view.delegate = self;
+}
 
 - (void)viewDidLoad {
   // The view can be obstructed by the background view.
@@ -701,13 +710,28 @@
   self.shareButton.enabled = enabled;
 }
 
+#pragma mark - ToolbarViewFullscreenDelegate
+
+- (void)toolbarViewFrameChanged {
+  CGRect frame = self.view.frame;
+  CGFloat distanceOffscreen =
+      IsIPadIdiom()
+          ? fmax((kIPadToolbarY - frame.origin.y) - kScrollFadeDistance, 0)
+          : -1 * frame.origin.y;
+  CGFloat fraction = 1 - fmin(distanceOffscreen / kScrollFadeDistance, 1);
+
+  self.leadingStackView.alpha = fraction;
+  self.locationBarContainer.alpha = fraction;
+  self.trailingStackView.alpha = fraction;
+}
+
 #pragma mark - ActivityServicePositioner
 
 - (UIView*)shareButtonView {
   return self.shareButton;
 }
 
-#pragma mark = BubbleViewAnchorPointProvider
+#pragma mark - BubbleViewAnchorPointProvider
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
   CGPoint anchorPoint =

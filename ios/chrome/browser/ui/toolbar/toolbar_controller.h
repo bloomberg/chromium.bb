@@ -10,9 +10,9 @@
 #import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
+#import "ios/chrome/browser/ui/toolbar/legacy_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_toolbar.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
@@ -31,7 +31,7 @@ class ReadingListModel;
                                                 ToolsMenuPresentationProvider>
 
 // The top-level toolbar view.
-@property(nonatomic, strong) ToolbarView* view;
+@property(nonatomic, strong) LegacyToolbarView* view;
 // The view for the toolbar shadow image.  This is a subview of |view| to
 // allow clients to alter the visibility of the shadow without affecting other
 // components of the toolbar.

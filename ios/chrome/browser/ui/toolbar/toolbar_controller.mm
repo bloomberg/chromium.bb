@@ -147,7 +147,7 @@ using ios::material::TimingFunction;
       toolsMenuButtonFrame.origin.y += statusBarOffset;
     }
 
-    self.view = [[ToolbarView alloc] initWithFrame:viewFrame];
+    self.view = [[LegacyToolbarView alloc] initWithFrame:viewFrame];
     if (IsSafeAreaCompatibleToolbarEnabled()) {
       [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
     }

@@ -7,6 +7,8 @@ source_set("toolbar") {
   sources = [
     "legacy_toolbar_coordinator.h",
     "legacy_toolbar_coordinator.mm",
+    "legacy_toolbar_view.h",
+    "legacy_toolbar_view.mm",
     "new_tab_button.h",
     "new_tab_button.mm",
     "omnibox_focuser.h",
@@ -22,8 +24,6 @@ source_set("toolbar") {
     "toolbar_model_ios.h",
     "toolbar_owner.h",
     "toolbar_snapshot_providing.h",
-    "toolbar_view.h",
-    "toolbar_view.mm",
     "toolbar_view_delegate.h",
     "tools_menu_button_observer_bridge.h",
     "tools_menu_button_observer_bridge.mm",
