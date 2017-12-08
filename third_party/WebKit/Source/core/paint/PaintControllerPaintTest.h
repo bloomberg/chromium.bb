@@ -62,6 +62,16 @@ class PaintControllerPaintTestBase : public RenderingTest {
     return true;
   }
 
+  const DisplayItemClient& ViewBackgroundClient() {
+    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+        RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+      // With SPv1* and RLS, the document background uses the scrolling contents
+      // layer as its DisplayItemClient.
+      return *GetLayoutView().Layer()->GraphicsLayerBacking();
+    }
+    return GetLayoutView();
+  }
+
   void Commit() {
     // Only root graphics layer is supported.
     RootPaintController().CommitNewDisplayItems();

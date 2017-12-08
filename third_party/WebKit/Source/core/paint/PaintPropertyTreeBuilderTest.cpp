@@ -128,7 +128,7 @@ void PaintPropertyTreeBuilderTest::SetUp() {
 INSTANTIATE_TEST_CASE_P(
     All,
     PaintPropertyTreeBuilderTest,
-    ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
+    ::testing::ValuesIn(kSlimmingPaintNonV1TestConfigurations));
 
 TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   LoadTestData("fixed-position.html");
@@ -549,7 +549,13 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
             transform_properties->Transform()->Matrix());
   // The value is zero without a transform property that needs transform-offset.
   EXPECT_EQ(FloatPoint3D(0, 0, 0), transform_properties->Transform()->Origin());
-  EXPECT_EQ(nullptr, transform_properties->PaintOffsetTranslation());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(nullptr, transform_properties->PaintOffsetTranslation());
+  } else {
+    // SPv175 creates PaintOffsetTranslation for composited layers.
+    EXPECT_EQ(TransformationMatrix().Translate(50, 100),
+              transform_properties->PaintOffsetTranslation()->Matrix());
+  }
   EXPECT_TRUE(transform_properties->Transform()->HasDirectCompositingReasons());
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 400, 300),
@@ -1575,8 +1581,14 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
   EXPECT_EQ(FrameContentClip(),
             child.FirstFragment().LocalBorderBoxProperties()->Clip());
-  EXPECT_EQ(FrameScrollTranslation(),
-            child.FirstFragment().LocalBorderBoxProperties()->Transform());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(FrameScrollTranslation(),
+              child.FirstFragment().LocalBorderBoxProperties()->Transform());
+  } else {
+    // For SPv1*, |child| is composited so we created PaintOffsetTranslation.
+    EXPECT_EQ(child.FirstFragment().PaintProperties()->PaintOffsetTranslation(),
+              child.FirstFragment().LocalBorderBoxProperties()->Transform());
+  }
   EXPECT_EQ(scroller_properties->Effect(),
             child.FirstFragment().LocalBorderBoxProperties()->Effect());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller,
@@ -3430,10 +3442,21 @@ TEST_P(PaintPropertyTreeBuilderTest,
   ASSERT_TRUE(multicol_container->FirstFragment().NextFragment());
   ASSERT_FALSE(
       multicol_container->FirstFragment().NextFragment()->NextFragment());
-  EXPECT_EQ(LayoutPoint(8, 8),
-            multicol_container->FirstFragment().PaintOffset());
-  EXPECT_EQ(LayoutPoint(59, -12),
-            multicol_container->FirstFragment().NextFragment()->PaintOffset());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    EXPECT_EQ(LayoutPoint(8, 8),
+              multicol_container->FirstFragment().PaintOffset());
+    EXPECT_EQ(
+        LayoutPoint(59, -12),
+        multicol_container->FirstFragment().NextFragment()->PaintOffset());
+  } else {
+    // TODO(crbug.com/793051): The paint offsets are incorrect.
+    EXPECT_EQ(LayoutPoint(8, 33),
+              multicol_container->FirstFragment().PaintOffset());
+    EXPECT_EQ(
+        LayoutPoint(59, 13),
+        multicol_container->FirstFragment().NextFragment()->PaintOffset());
+  }
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
@@ -3636,11 +3659,20 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
   const ObjectPaintProperties* filter_properties =
       GetLayoutObjectByElementId("filter")->FirstFragment().PaintProperties();
   EXPECT_TRUE(filter_properties->Filter()->Parent()->IsRoot());
-  EXPECT_EQ(FrameScrollTranslation(),
-            filter_properties->Filter()->LocalTransformSpace());
   EXPECT_EQ(clip_properties->OverflowClip(),
             filter_properties->Filter()->OutputClip());
-  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(FrameScrollTranslation(),
+              filter_properties->Filter()->LocalTransformSpace());
+    EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
+  } else {
+    // For SPv1*, |filter| is composited so we created PaintOffsetTranslation.
+    EXPECT_EQ(filter_properties->PaintOffsetTranslation(),
+              filter_properties->Filter()->LocalTransformSpace());
+    EXPECT_EQ(TransformationMatrix().Translate(8, 8),
+              filter_properties->PaintOffsetTranslation()->Matrix());
+    EXPECT_EQ(FloatPoint(), filter_properties->Filter()->PaintOffset());
+  }
 
   const PropertyTreeState& child_paint_state =
       *GetLayoutObjectByElementId("child")
@@ -3965,8 +3997,16 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
   EXPECT_EQ(mask_clip, target_properties->Mask()->OutputClip());
 
   const auto* absolute = GetLayoutObjectByElementId("absolute");
-  EXPECT_EQ(FramePreTranslation(),
-            absolute->FirstFragment().LocalBorderBoxProperties()->Transform());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(
+        FramePreTranslation(),
+        absolute->FirstFragment().LocalBorderBoxProperties()->Transform());
+  } else {
+    // For SPv1*, |absolute| is composited so we created PaintOffsetTranslation.
+    EXPECT_EQ(
+        absolute->FirstFragment().PaintProperties()->PaintOffsetTranslation(),
+        absolute->FirstFragment().LocalBorderBoxProperties()->Transform());
+  }
   EXPECT_EQ(mask_clip,
             absolute->FirstFragment().LocalBorderBoxProperties()->Clip());
 }
@@ -4169,11 +4209,11 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerPaintOffsetTranslation) {
   )HTML");
 
   const auto* target = GetLayoutObjectByElementId("target");
-  EXPECT_EQ(LayoutPoint(60, 50), target->FirstFragment().PaintOffset());
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(nullptr, target->FirstFragment().PaintProperties());
     EXPECT_EQ(LayoutPoint(60, 50), target->FirstFragment().PaintOffset());
   } else {
+    // For SPv1*, |target| is composited so we created PaintOffsetTranslation.
     const auto* paint_offset_translation =
         target->FirstFragment().PaintProperties()->PaintOffsetTranslation();
     ASSERT_NE(nullptr, paint_offset_translation);

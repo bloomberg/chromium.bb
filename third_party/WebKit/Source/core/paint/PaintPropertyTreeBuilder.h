@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class FragmentData;
 class LayoutObject;
 class LocalFrameView;
 class PaintLayer;
@@ -155,6 +156,8 @@ class ObjectPaintPropertyTreeBuilder {
   void UpdateForChildren();
 
  private:
+  ALWAYS_INLINE void InitFragmentPaintProperties(FragmentData&,
+                                                 bool needs_paint_properties);
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);
   ALWAYS_INLINE void UpdateFragments();
   ALWAYS_INLINE void UpdatePaintingLayer();
