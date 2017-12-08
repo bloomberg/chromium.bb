@@ -62,8 +62,8 @@
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_generator.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
-#import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
@@ -174,7 +174,7 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
   // Handles retrieving, generating and updating snapshots of CRWWebController's
   // web page.
-  WebControllerSnapshotHelper* _webControllerSnapshotHelper;
+  SnapshotGenerator* _snapshotGenerator;
 
   // WebStateImpl for this tab.
   web::WebStateImpl* _webStateImpl;
@@ -283,8 +283,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [self updateLastVisitedTimestamp];
     [[self webController] setDelegate:self];
 
-    _webControllerSnapshotHelper =
-        [[WebControllerSnapshotHelper alloc] initWithTab:self];
+    _snapshotGenerator = [[SnapshotGenerator alloc] initWithTab:self];
   }
   return self;
 }
@@ -346,9 +345,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {
-  [_webControllerSnapshotHelper
-      retrieveSnapshotWithOverlays:[self snapshotOverlays]
-                          callback:callback];
+  [_snapshotGenerator retrieveSnapshotWithOverlays:[self snapshotOverlays]
+                                          callback:callback];
 }
 
 - (NSString*)title {
@@ -896,7 +894,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     wasPost = lastCommittedItem->HasPostData();
     lastCommittedURL = lastCommittedItem->GetVirtualURL();
   }
-  [_webControllerSnapshotHelper setSnapshotCoalescingEnabled:YES];
+  [_snapshotGenerator setSnapshotCoalescingEnabled:YES];
   if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen) &&
       !loadSuccess) {
     [_legacyFullscreenController disableFullScreen];
@@ -932,7 +930,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   if (loadSuccess)
     [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-  [_webControllerSnapshotHelper setSnapshotCoalescingEnabled:NO];
+  [_snapshotGenerator setSnapshotCoalescingEnabled:NO];
 }
 
 - (void)webState:(web::WebState*)webState
@@ -1026,18 +1024,17 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         greyImageForSessionID:sessionID
                      callback:completionHandler];
   } else {
-    [_webControllerSnapshotHelper
-        retrieveGreySnapshotWithOverlays:[self snapshotOverlays]
-                                callback:completionHandler];
+    [_snapshotGenerator retrieveGreySnapshotWithOverlays:[self snapshotOverlays]
+                                                callback:completionHandler];
   }
 }
 
 - (UIImage*)updateSnapshotWithOverlay:(BOOL)shouldAddOverlay
                      visibleFrameOnly:(BOOL)visibleFrameOnly {
   NSArray* overlays = shouldAddOverlay ? [self snapshotOverlays] : nil;
-  UIImage* snapshot = [_webControllerSnapshotHelper
-      updateSnapshotWithOverlays:overlays
-                visibleFrameOnly:visibleFrameOnly];
+  UIImage* snapshot =
+      [_snapshotGenerator updateSnapshotWithOverlays:overlays
+                                    visibleFrameOnly:visibleFrameOnly];
   [_parentTabModel notifyTabSnapshotChanged:self withImage:snapshot];
   return snapshot;
 }
@@ -1045,14 +1042,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (UIImage*)generateSnapshotWithOverlay:(BOOL)shouldAddOverlay
                        visibleFrameOnly:(BOOL)visibleFrameOnly {
   NSArray* overlays = shouldAddOverlay ? [self snapshotOverlays] : nil;
-  return [_webControllerSnapshotHelper
-      generateSnapshotWithOverlays:overlays
-                  visibleFrameOnly:visibleFrameOnly];
+  return [_snapshotGenerator generateSnapshotWithOverlays:overlays
+                                         visibleFrameOnly:visibleFrameOnly];
 }
 
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled {
-  [_webControllerSnapshotHelper
-      setSnapshotCoalescingEnabled:snapshotCoalescingEnabled];
+  [_snapshotGenerator setSnapshotCoalescingEnabled:snapshotCoalescingEnabled];
 }
 
 - (CGRect)snapshotContentArea {

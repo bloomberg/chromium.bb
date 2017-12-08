@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_SNAPSHOTS_WEB_CONTROLLER_SNAPSHOT_HELPER_H_
-#define IOS_CHROME_BROWSER_SNAPSHOTS_WEB_CONTROLLER_SNAPSHOT_HELPER_H_
+#ifndef IOS_CHROME_BROWSER_SNAPSHOTS_SNAPSHOT_GENERATOR_H_
+#define IOS_CHROME_BROWSER_SNAPSHOTS_SNAPSHOT_GENERATOR_H_
 
 #import <UIKit/UIKit.h>
 
@@ -12,7 +12,7 @@
 
 // A class that takes care of creating, storing and returning snapshots of a
 // tab's web page.
-@interface WebControllerSnapshotHelper : NSObject
+@interface SnapshotGenerator : NSObject
 
 // Designated initializer. |tab| must not be nil.
 // TODO(crbug.com/380819): Replace the need to use Tab directly here by using a
@@ -56,4 +56,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_SNAPSHOTS_WEB_CONTROLLER_SNAPSHOT_HELPER_H_
+#endif  // IOS_CHROME_BROWSER_SNAPSHOTS_SNAPSHOT_GENERATOR_H_
