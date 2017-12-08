@@ -3560,6 +3560,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDownloadsForeground)},
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+    {"enable-downloads-location-change",
+     flag_descriptions::kDownloadsLocationChangeName,
+     flag_descriptions::kDownloadsLocationChangeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kDownloadsLocationChange)},
+#endif  // defined(OS_ANDROID)
+
     {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,
      flag_descriptions::kBlockTabUndersDescription, kOsAll,
      FEATURE_VALUE_TYPE(TabUnderNavigationThrottle::kBlockTabUnders)},

@@ -44,6 +44,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kClearOldBrowsingData,
     &features::kCopylessPaste,
     &features::kDownloadsForeground,
+    &features::kDownloadsLocationChange,
     &features::kImportantSitesInCbd,
     &features::kMaterialDesignIncognitoNTP,
     &features::kServiceWorkerPaymentApps,

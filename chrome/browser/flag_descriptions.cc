@@ -1767,6 +1767,10 @@ const char kDownloadsForegroundName[] = "Enable downloads foreground";
 const char kDownloadsForegroundDescription[] =
     "Enable downloads as a foreground service for all versions of Android.";
 
+const char kDownloadsLocationChangeName[] = "Enable downloads location change";
+const char kDownloadsLocationChangeDescription[] =
+    "Enable changing default downloads storage location on Android.";
+
 const char kEnableAndroidPayIntegrationV1Name[] = "Enable Android Pay v1";
 const char kEnableAndroidPayIntegrationV1Description[] =
     "Enable integration with Android Pay using the first version of the API";
