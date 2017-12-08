@@ -987,7 +987,7 @@ CPP_VALUE_TO_V8_VALUE = {
     'NodeFilter': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'Record': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'ScriptValue': '{cpp_value}.V8Value()',
-    'SerializedScriptValue': 'V8Deserialize({isolate}, {cpp_value})',
+    'SerializedScriptValue': 'V8Deserialize({isolate}, {cpp_value}.get())',
     # General
     'sequence': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'FrozenArray': 'FreezeV8Object(ToV8({cpp_value}, {creation_context}, {isolate}), {isolate})',

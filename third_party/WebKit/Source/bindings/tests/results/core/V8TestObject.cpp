@@ -864,7 +864,7 @@ static void serializedScriptValueAttributeAttributeGetter(const v8::FunctionCall
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValue(info, V8Deserialize(info.GetIsolate(), WTF::GetPtr(impl->serializedScriptValueAttribute())));
+  V8SetReturnValue(info, V8Deserialize(info.GetIsolate(), WTF::GetPtr(impl->serializedScriptValueAttribute()).get()));
 }
 
 static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -883,7 +883,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
   if (exceptionState.HadException())
     return;
 
-  impl->setSerializedScriptValueAttribute(cppValue);
+  impl->setSerializedScriptValueAttribute(std::move(cppValue));
 }
 
 static void anyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -5836,7 +5836,7 @@ static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackI
 static void serializedScriptValueMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  V8SetReturnValue(info, V8Deserialize(info.GetIsolate(), impl->serializedScriptValueMethod()));
+  V8SetReturnValue(info, V8Deserialize(info.GetIsolate(), impl->serializedScriptValueMethod().get()));
 }
 
 static void xPathNSResolverMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -5914,7 +5914,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
   if (exceptionState.HadException())
     return;
 
-  impl->voidMethodSerializedScriptValueArg(serializedScriptValueArg);
+  impl->voidMethodSerializedScriptValueArg(std::move(serializedScriptValueArg));
 }
 
 static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -8531,7 +8531,7 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
   // FIXME: Only pass scriptState/exceptionState if instance really requires it.
   ScriptState* scriptState = ScriptState::Current(info.GetIsolate());
   message->UnregisterMemoryAllocatedWithCurrentScriptContext();
-  instance->postMessage(scriptState, message.get(), transferables.message_ports, exceptionState);
+  instance->postMessage(scriptState, std::move(message), transferables.message_ports, exceptionState);
 }
 
 static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

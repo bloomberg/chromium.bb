@@ -268,8 +268,8 @@ void V8Window::postMessageMethodCustom(
     return;
 
   message->UnregisterMemoryAllocatedWithCurrentScriptContext();
-  window->postMessage(message.get(), transferables.message_ports, target_origin,
-                      source, exception_state);
+  window->postMessage(std::move(message), transferables.message_ports,
+                      target_origin, source, exception_state);
 }
 
 void V8Window::openMethodCustom(
