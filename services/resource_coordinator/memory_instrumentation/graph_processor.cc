@@ -167,6 +167,14 @@ void GraphProcessor::CalculateSizesForGraph(GlobalDumpGraph* global_graph) {
       CalculateDumpCumulativeOwnershipCoefficient(node);
     }
   }
+
+  // Twelfth pass: Calculate the effective sizes of all nodes.
+  {
+    auto it = global_graph->VisitInDepthFirstPostOrder();
+    while (Node* node = it.next()) {
+      CalculateDumpEffectiveSize(node);
+    }
+  }
 }
 
 // static
@@ -739,6 +747,35 @@ void GraphProcessor::CalculateDumpCumulativeOwnershipCoefficient(Node* node) {
   } else {
     node->set_cumulative_owning_coefficient(1);
   }
+}
+
+// static
+void GraphProcessor::CalculateDumpEffectiveSize(Node* node) {
+  // Completely skip nodes with undefined size. As a result, each node will
+  // have defined effective size if and only if it has defined size.
+  base::Optional<uint64_t> size_opt = GetSizeEntryOfNode(node);
+  if (!size_opt) {
+    node->entries()->erase(kEffectiveSizeEntryName);
+    return;
+  }
+
+  uint64_t effective_size = 0;
+  if (node->children()->empty()) {
+    // Leaf node.
+    effective_size = *size_opt * node->cumulative_owning_coefficient() *
+                     node->cumulative_owned_coefficient();
+  } else {
+    // Non-leaf node.
+    for (const auto& path_to_child : *node->children()) {
+      Node* child = path_to_child.second;
+      if (!GetSizeEntryOfNode(child))
+        continue;
+      effective_size +=
+          child->entries()->find(kEffectiveSizeEntryName)->second.value_uint64;
+    }
+  }
+  node->AddEntry(kEffectiveSizeEntryName, Node::Entry::ScalarUnits::kBytes,
+                 effective_size);
 }
 
 }  // namespace memory_instrumentation

@@ -84,6 +84,10 @@ class GraphProcessorTest : public testing::Test {
     GraphProcessor::CalculateDumpCumulativeOwnershipCoefficient(node);
   }
 
+  void CalculateDumpEffectiveSize(Node* node) {
+    GraphProcessor::CalculateDumpEffectiveSize(node);
+  }
+
  protected:
   GlobalDumpGraph graph;
 };
@@ -683,6 +687,42 @@ TEST_F(GraphProcessorTest, CalculateDumpCumulativeOwnershipCoefficient) {
   CalculateDumpCumulativeOwnershipCoefficient(c1_c2);
   ASSERT_DOUBLE_EQ(c1_c2->cumulative_owning_coefficient(), 0.135 * 0.789);
   ASSERT_DOUBLE_EQ(c1_c2->cumulative_owned_coefficient(), 0.456 * 0.246);
+}
+
+TEST_F(GraphProcessorTest, CalculateDumpEffectiveSize) {
+  Process* process = graph.CreateGraphForProcess(1);
+
+  Node* c1 = process->CreateNode(kEmptyGuid, "c1", false);
+  Node* c1_c1 = process->CreateNode(kEmptyGuid, "c1/c1", false);
+  Node* c1_c2 = process->CreateNode(kEmptyGuid, "c1/c2", false);
+
+  // Ensure all nodes have sizes otherwise calculations will not happen.
+  c1->AddEntry("size", Node::Entry::kBytes, 200);
+  c1_c1->AddEntry("size", Node::Entry::kBytes, 32);
+  c1_c2->AddEntry("size", Node::Entry::kBytes, 20);
+
+  // Setup the owned/owning cummulative coefficients.
+  c1_c1->set_cumulative_owning_coefficient(0.123);
+  c1_c1->set_cumulative_owned_coefficient(0.456);
+  c1_c2->set_cumulative_owning_coefficient(0.789);
+  c1_c2->set_cumulative_owned_coefficient(0.987);
+
+  // Perform the computation and check our answers.
+  CalculateDumpEffectiveSize(c1_c1);
+  const Node::Entry& entry_c1_c1 =
+      c1_c1->entries()->find("effective_size")->second;
+  uint64_t expected_c1_c1 = static_cast<int>(0.123 * 0.456 * 32);
+  ASSERT_EQ(entry_c1_c1.value_uint64, expected_c1_c1);
+
+  CalculateDumpEffectiveSize(c1_c2);
+  const Node::Entry& entry_c1_c2 =
+      c1_c2->entries()->find("effective_size")->second;
+  uint64_t expected_c1_c2 = static_cast<int>(0.789 * 0.987 * 20);
+  ASSERT_EQ(entry_c1_c2.value_uint64, expected_c1_c2);
+
+  CalculateDumpEffectiveSize(c1);
+  const Node::Entry& entry_c1 = c1->entries()->find("effective_size")->second;
+  ASSERT_EQ(entry_c1.value_uint64, expected_c1_c1 + expected_c1_c2);
 }
 
 }  // namespace memory_instrumentation

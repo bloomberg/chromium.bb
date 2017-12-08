@@ -206,6 +206,25 @@ class GraphProcessor {
    */
   static void CalculateDumpCumulativeOwnershipCoefficient(
       GlobalDumpGraph::Node* node);
+
+  /**
+   * Calculate the effective size of a memory allocator dump.
+   *
+   * In order to simplify the (already complex) calculation, we use the fact
+   * that effective size is cumulative (unlike regular size), i.e. the
+   * effective size of a non-leaf node is equal to the sum of effective sizes
+   * of its children. The effective size of a leaf MAD is calculated as:
+   *
+   *   effectiveSize(M) = size(M) * cumulativeOwningC(M) * cumulativeOwnedC(M)
+   *
+   * This method assumes that (1) the size of the dump and its children [see
+   * calculateSizes()] and (2) the cumulative owning and owned coefficients
+   * of the dump (if it's a leaf node) [see the third step of
+   * calculateEffectiveSizes()] or the effective sizes of its children (if
+   * it's a non-leaf node) [depth-first post-order traversal] have already
+   * been calculated.
+   */
+  static void CalculateDumpEffectiveSize(GlobalDumpGraph::Node* node);
 };
 
 }  // namespace memory_instrumentation
