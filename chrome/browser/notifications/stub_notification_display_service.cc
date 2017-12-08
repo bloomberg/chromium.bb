@@ -182,11 +182,12 @@ void StubNotificationDisplayService::Display(
     DCHECK(!handler);
   else
     handler->OnShow(profile_, notification.id());
-  if (notification_added_closure_)
-    notification_added_closure_.Run();
 
   notifications_.emplace_back(notification_type, notification,
                               std::move(metadata));
+
+  if (notification_added_closure_)
+    notification_added_closure_.Run();
 }
 
 void StubNotificationDisplayService::Close(

@@ -46,7 +46,7 @@ class NotificationDisplayServiceTester {
       const message_center::Notification& notification);
 
   base::Optional<message_center::Notification> GetNotification(
-      const std::string& notification_id);
+      const std::string& notification_id) const;
 
   // Simulates the notification identified by |notification_id| being clicked
   // on, optionally with the given |action_index| and |reply|.
