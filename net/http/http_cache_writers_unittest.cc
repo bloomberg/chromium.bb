@@ -90,7 +90,9 @@ class WritersTest : public testing::Test {
     return transaction;
   }
 
-  void CreateWritersAddTransaction(bool is_exclusive = false) {
+  void CreateWritersAddTransaction(
+      HttpCache::ParallelWritingPattern parallel_writing_pattern_ =
+          HttpCache::PARALLEL_WRITING_JOIN) {
     TestCompletionCallback callback;
 
     // Create and Start a mock network transaction.
@@ -113,7 +115,7 @@ class WritersTest : public testing::Test {
                                              *(transaction->GetResponseInfo()));
 
     info.response_info = response_info_;
-    writers_->AddTransaction(transaction.get(), is_exclusive,
+    writers_->AddTransaction(transaction.get(), parallel_writing_pattern_,
                              transaction->priority(), info);
     writers_->SetNetworkTransaction(transaction.get(),
                                     std::move(network_transaction));
@@ -121,9 +123,11 @@ class WritersTest : public testing::Test {
     transactions_.push_back(std::move(transaction));
   }
 
-  void CreateWritersAddTransactionPriority(net::RequestPriority priority,
-                                           bool is_exclusive = false) {
-    CreateWritersAddTransaction(is_exclusive);
+  void CreateWritersAddTransactionPriority(
+      net::RequestPriority priority,
+      HttpCache::ParallelWritingPattern parallel_writing_pattern_ =
+          HttpCache::PARALLEL_WRITING_JOIN) {
+    CreateWritersAddTransaction(parallel_writing_pattern_);
     TestHttpCacheTransaction* transaction = transactions_.begin()->get();
     transaction->SetPriority(priority);
   }
@@ -140,8 +144,9 @@ class WritersTest : public testing::Test {
                                              transaction->is_truncated(),
                                              *(transaction->GetResponseInfo()));
     info.response_info = response_info_;
-    writers_->AddTransaction(transaction.get(), false, transaction->priority(),
-                             info);
+    writers_->AddTransaction(transaction.get(),
+                             HttpCache::PARALLEL_WRITING_JOIN,
+                             transaction->priority(), info);
     transactions_.push_back(std::move(transaction));
   }
 
@@ -322,7 +327,7 @@ class WritersTest : public testing::Test {
     EXPECT_TRUE(writers_->IsEmpty());
 
     // Cannot add more writers while we are in truncation pending state.
-    EXPECT_FALSE(writers_->CanAddWriters());
+    EXPECT_FALSE(CanAddWriters());
 
     // Complete the Read and the entry should be truncated.
     base::RunLoop().RunUntilIdle();
@@ -341,7 +346,7 @@ class WritersTest : public testing::Test {
     writers_->StopCaching(false /* keep_entry */);
 
     // Cannot add more writers while we are in network read only state.
-    EXPECT_FALSE(writers_->CanAddWriters());
+    EXPECT_FALSE(CanAddWriters());
 
     // Complete the Read and the entry should be truncated.
     base::RunLoop().RunUntilIdle();
@@ -438,6 +443,11 @@ class WritersTest : public testing::Test {
     EXPECT_FALSE(ShouldKeepEntry());
   }
 
+  bool CanAddWriters() {
+    HttpCache::ParallelWritingPattern parallel_writing_pattern_;
+    return writers_->CanAddWriters(&parallel_writing_pattern_);
+  }
+
   MockHttpCache cache_;
   std::unique_ptr<HttpCache::Writers> writers_;
   disk_cache::Entry* disk_entry_;
@@ -476,10 +486,10 @@ TEST_F(WritersTest, AddManyTransactions) {
 
 // Tests that CanAddWriters should return false if it is writing exclusively.
 TEST_F(WritersTest, AddTransactionsExclusive) {
-  CreateWritersAddTransaction(true /* is_exclusive */);
+  CreateWritersAddTransaction(HttpCache::PARALLEL_WRITING_NOT_JOIN_RANGE);
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_FALSE(writers_->CanAddWriters());
+  EXPECT_FALSE(CanAddWriters());
 }
 
 // Tests StopCaching should not stop caching if there are multiple writers.
@@ -487,11 +497,11 @@ TEST_F(WritersTest, StopCachingMultipleWriters) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
 
   EXPECT_FALSE(StopCaching());
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
 }
 
 // Tests StopCaching should stop caching if there is a single writer.
@@ -500,7 +510,7 @@ TEST_F(WritersTest, StopCaching) {
   EXPECT_FALSE(writers_->IsEmpty());
 
   EXPECT_TRUE(StopCaching());
-  EXPECT_FALSE(writers_->CanAddWriters());
+  EXPECT_FALSE(CanAddWriters());
 }
 
 // Tests StopCaching should be successful when invoked mid-read.
@@ -545,7 +555,7 @@ TEST_F(WritersTest, ReadMultiple) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
   AddTransactionToExistingWriters();
 
@@ -557,7 +567,7 @@ TEST_F(WritersTest, ReadMultipleDifferentBufferSizes) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
 
   std::vector<int> buffer_lengths{20, 10};
@@ -570,7 +580,7 @@ TEST_F(WritersTest, ReadMultipleDifferentBufferSizes1) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
 
   std::vector<int> buffer_lengths{10, 20};
@@ -583,7 +593,7 @@ TEST_F(WritersTest, ReadMultipleDeleteActiveTransaction) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
   AddTransactionToExistingWriters();
 
@@ -596,7 +606,7 @@ TEST_F(WritersTest, ReadMultipleDeleteActiveTransaction) {
 TEST_F(WritersTest, MidReadDeleteActiveTransaction) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   MidReadDeleteActiveTransaction();
 }
 
@@ -606,7 +616,7 @@ TEST_F(WritersTest, ReadMultipleDeleteWaitingTransaction) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
   AddTransactionToExistingWriters();
   AddTransactionToExistingWriters();
@@ -620,7 +630,7 @@ TEST_F(WritersTest, ReadMultipleDeleteIdleTransaction) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
   AddTransactionToExistingWriters();
 
@@ -633,7 +643,7 @@ TEST_F(WritersTest, ReadMultipleCacheWriteFailed) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
   AddTransactionToExistingWriters();
 
@@ -658,7 +668,7 @@ TEST_F(WritersTest, ReadMultipleNetworkReadFailed) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
+  EXPECT_TRUE(CanAddWriters());
   AddTransactionToExistingWriters();
   AddTransactionToExistingWriters();
 
@@ -691,7 +701,7 @@ TEST_F(WritersTest, TruncateEntryFail) {
 
 // Set network read only.
 TEST_F(WritersTest, StopCachingWithKeepEntry) {
-  CreateWritersAddTransaction(true /* is exclusive */);
+  CreateWritersAddTransaction(HttpCache::PARALLEL_WRITING_NOT_JOIN_RANGE);
   EXPECT_FALSE(writers_->network_read_only());
 
   writers_->StopCaching(true /* keep_entry */);
@@ -700,7 +710,7 @@ TEST_F(WritersTest, StopCachingWithKeepEntry) {
 }
 
 TEST_F(WritersTest, StopCachingWithNotKeepEntry) {
-  CreateWritersAddTransaction(true /* is exclusive */);
+  CreateWritersAddTransaction(HttpCache::PARALLEL_WRITING_NOT_JOIN_RANGE);
   EXPECT_FALSE(writers_->network_read_only());
 
   writers_->StopCaching(false /* keep_entry */);

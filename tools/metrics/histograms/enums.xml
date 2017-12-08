@@ -21221,6 +21221,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="15" label="Negotiate Secure Server"/>
 </enum>
 
+<enum name="HttpCacheParallelWritingPattern">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Create Writers"/>
+  <int value="2" label="Joined Writing"/>
+  <int value="3" label="Not joined Range Request"/>
+  <int value="4" label="Not joined not GET"/>
+  <int value="5" label="Not joined read-only"/>
+</enum>
+
 <enum name="HttpCachePattern">
   <int value="0" label="Undefined"/>
   <int value="1" label="Not Covered"/>

@@ -179,6 +179,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       validation_cause_(VALIDATION_CAUSE_UNDEFINED),
       cant_conditionalize_zero_freshness_from_memhint_(false),
       recorded_histograms_(false),
+      parallel_writing_pattern_(PARALLEL_WRITING_NONE),
       moved_network_transaction_to_writers_(false),
       websocket_handshake_stream_base_create_helper_(NULL),
       in_do_loop_(false),
@@ -660,6 +661,15 @@ void HttpCache::Transaction::WriteModeTransactionAboutToBecomeReader() {
       entry_->writers->network_transaction()) {
     SaveNetworkTransactionInfo(*(entry_->writers->network_transaction()));
   }
+}
+
+void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
+    HttpCache::ParallelWritingPattern pattern) {
+  // It's possible a transaction could not join existing writers and then
+  // creates a new writers. In that case the original reason for not being able
+  // to join writers should be logged.
+  if (parallel_writing_pattern_ == PARALLEL_WRITING_NONE)
+    parallel_writing_pattern_ = pattern;
 }
 
 //-----------------------------------------------------------------------------
@@ -3238,6 +3248,9 @@ void HttpCache::Transaction::SyncCacheEntryStatusToResponse() {
 void HttpCache::Transaction::RecordHistograms() {
   DCHECK(!recorded_histograms_);
   recorded_histograms_ = true;
+
+  UMA_HISTOGRAM_ENUMERATION("HttpCache.ParallelWritingPattern",
+                            parallel_writing_pattern_, PARALLEL_WRITING_MAX);
 
   if (CacheEntryStatus::ENTRY_UNDEFINED == cache_entry_status_)
     return;

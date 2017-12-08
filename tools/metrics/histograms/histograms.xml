@@ -28766,6 +28766,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.ParallelWritingPattern"
+    enum="HttpCacheParallelWritingPattern">
+  <owner>shivanisha@chromium.org</owner>
+  <summary>
+    Records whether a transaction either created a Writers object when one
+    didn't exist, or joined an existing Writers object, or why it failed to do
+    so (e.g., it's a range request, it's not a GET request, etc.).
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.Pattern" enum="HttpCachePattern">
   <owner>morlovich@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>

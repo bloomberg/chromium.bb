@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -1721,6 +1722,8 @@ TEST(HttpCache, RangeGET_ParallelValidationNoMatchDoomEntry1) {
 
 // Tests parallel validation on range requests with non-overlapping ranges.
 TEST(HttpCache, RangeGET_ParallelValidationDifferentRanges) {
+  base::HistogramTester histograms;
+  const std::string histogram_name = "HttpCache.ParallelWritingPattern";
   MockHttpCache cache;
 
   ScopedMockTransaction transaction(kRangeGET_TransactionOK);
@@ -1815,6 +1818,12 @@ TEST(HttpCache, RangeGET_ParallelValidationDifferentRanges) {
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(HttpCache::PARALLEL_WRITING_NOT_JOIN_RANGE), 1);
+  histograms.ExpectBucketCount(
+      histogram_name, static_cast<int>(HttpCache::PARALLEL_WRITING_CREATE), 2);
 }
 
 // Tests parallel validation on range requests can be successfully restarted
@@ -2795,6 +2804,8 @@ TEST(HttpCache, SimpleGET_ParallelWritingCacheWriteFailed) {
 // like the code should disallow two POSTs without LOAD_ONLY_FROM_CACHE with the
 // same upload data identifier to map to the same entry.
 TEST(HttpCache, SimplePOST_ParallelWritingDisallowed) {
+  base::HistogramTester histograms;
+  const std::string histogram_name = "HttpCache.ParallelWritingPattern";
   MockHttpCache cache;
 
   MockTransaction transaction(kSimplePOST_Transaction);
@@ -2851,11 +2862,19 @@ TEST(HttpCache, SimplePOST_ParallelWritingDisallowed) {
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(HttpCache::PARALLEL_WRITING_NOT_JOIN_METHOD_NOT_GET), 1);
+  histograms.ExpectBucketCount(
+      histogram_name, static_cast<int>(HttpCache::PARALLEL_WRITING_CREATE), 1);
 }
 
 // Tests the case when parallel writing succeeds. Tests both idle and waiting
 // transactions.
 TEST(HttpCache, SimpleGET_ParallelWritingSuccess) {
+  base::HistogramTester histograms;
+  const std::string histogram_name = "HttpCache.ParallelWritingPattern";
   MockHttpCache cache;
 
   MockHttpRequest request(kSimpleGET_Transaction);
@@ -2930,6 +2949,15 @@ TEST(HttpCache, SimpleGET_ParallelWritingSuccess) {
     auto& c = context_list[i];
     ReadAndVerifyTransaction(c->trans.get(), kSimpleGET_Transaction);
   }
+
+  // Verify metrics.
+  histograms.ExpectBucketCount(
+      histogram_name, static_cast<int>(HttpCache::PARALLEL_WRITING_CREATE), 1);
+  histograms.ExpectBucketCount(
+      histogram_name, static_cast<int>(HttpCache::PARALLEL_WRITING_JOIN), 2);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(HttpCache::PARALLEL_WRITING_NOT_JOIN_READ_ONLY), 1);
 }
 
 // Tests that network transaction's info is saved correctly when a writer
