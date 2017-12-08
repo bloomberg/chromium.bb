@@ -637,6 +637,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };
 
+// RenderWidgetHostViewCocoa is not exported outside of content. This helper
+// method provides the tests with the class object so that they can override the
+// methods according to the tests' requirements.
+CONTENT_EXPORT Class GetRenderWidgetHostViewCocoaClassForTesting();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_

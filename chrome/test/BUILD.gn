@@ -4587,6 +4587,9 @@ if (is_android) {
       if (use_aura || is_mac) {
         deps += [ "//ui/touch_selection" ]
       }
+      if (is_mac) {
+        deps += [ "//content/test:browsertest_support" ]
+      }
     }
 
     if (is_chromeos) {

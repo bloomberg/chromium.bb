@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_UTILS_H_
 #define CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_UTILS_H_
 
+#include <map>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -14,6 +16,10 @@
 
 namespace base {
 class FilePath;
+
+namespace mac {
+class ScopedObjCClassSwizzler;
+}
 }
 
 namespace gfx {
@@ -33,6 +39,7 @@ class MessageLoopRunner;
 class RenderFrameHost;
 class RenderWidgetHost;
 class Shell;
+class WebContents;
 
 // Generate the file path for testing a particular test.
 // The file for the tests is all located in
@@ -118,6 +125,48 @@ class ShellAddedObserver {
 };
 
 #if defined OS_MACOSX
+// An observer of the RenderWidgetHostViewCocoa which is the NSView
+// corresponding to the page.
+class RenderWidgetHostViewCocoaObserver {
+ public:
+  // The method name for 'didAddSubview'.
+  static const char* kDidAddSubview;
+
+  // Returns the method swizzler for the given |method_name|. This is useful
+  // when the original implementation of the method is needed.
+  static base::mac::ScopedObjCClassSwizzler* GetSwizzler(
+      const std::string& method_name);
+
+  // Returns the unique RenderWidgetHostViewCocoaObserver instance (if any) for
+  // the given WebContents. There can be at most one observer per WebContents
+  // and to create a new observer the older one has to be deleted first.
+  static RenderWidgetHostViewCocoaObserver* GetObserver(
+      WebContents* web_contents);
+
+  explicit RenderWidgetHostViewCocoaObserver(WebContents* web_contents);
+  virtual ~RenderWidgetHostViewCocoaObserver();
+
+  // Called when a new NSView is added as a subview of RWHVCocoa.
+  // |rect_in_root_view| represents the bounds of the NSView in RWHVCocoa
+  // coordinates. The view will be dismissed shortly after this call.
+  virtual void DidAddSubviewWillBeDismissed(
+      const gfx::Rect& rect_in_root_view) {}
+
+  WebContents* web_contents() const { return web_contents_; }
+
+ private:
+  static void SetUpSwizzlers();
+
+  static std::map<std::string,
+                  std::unique_ptr<base::mac::ScopedObjCClassSwizzler>>
+      rwhvcocoa_swizzlers_;
+  static std::map<WebContents*, RenderWidgetHostViewCocoaObserver*> observers_;
+
+  WebContents* const web_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewCocoaObserver);
+};
+
 void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);
 
 // This method will request the string (word) at |point| inside the |rwh| where
