@@ -449,7 +449,7 @@ fi
 
 AM_CONDITIONAL(HAVE_PANGO, test "x$have_pango" = "xyes")
 if test "x$have_pango" = "xyes"; then
-  AC_DEFINE([HAVE_PANGO], [1], [Have pango])]
+  AC_DEFINE([HAVE_PANGO], [1], [Have pango])
 fi
 
 AM_CONDITIONAL(HAVE_CAIRO_GLESV2,
