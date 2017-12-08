@@ -43,8 +43,9 @@ void TestWindowTreeClientSetup::InitWithoutEmbed(
       .SetTree(window_tree_.get());
 }
 
-void TestWindowTreeClientSetup::NotifyClientAboutAcceleratedWidget() {
-  window_tree_->NotifyClientAboutAcceleratedWidget();
+void TestWindowTreeClientSetup::NotifyClientAboutAcceleratedWidgets(
+    display::DisplayManager* display_manager) {
+  window_tree_->NotifyClientAboutAcceleratedWidgets(display_manager);
 }
 
 std::unique_ptr<WindowTreeClient>

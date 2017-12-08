@@ -74,6 +74,12 @@ struct AURA_EXPORT WindowTreeHostMusInitParams {
   // Use classic IME (i.e. InputMethodChromeOS) instead of servicified IME
   // (i.e. InputMethodMus).
   bool use_classic_ime = false;
+
+  // Whether this client hosts a real gfx::AcceleratedWidget or not. This is set
+  // to true only when mus is not hosting viz, and instead expects the client
+  // to host viz (which is why the client would get the real
+  // gfx::AcceleratedWidget).
+  bool uses_real_accelerated_widget = false;
 };
 
 // Creates a WindowTreeHostMusInitParams that is used when creating a top-level

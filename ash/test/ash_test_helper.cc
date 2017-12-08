@@ -246,6 +246,16 @@ void AshTestHelper::RunAllPendingInMessageLoop() {
   run_loop.RunUntilIdle();
 }
 
+void AshTestHelper::NotifyClientAboutAcceleratedWidgets() {
+  if (config_ == Config::CLASSIC)
+    return;
+  if (::switches::IsMusHostingViz())
+    return;
+  Shell* shell = Shell::Get();
+  window_tree_client_setup_.NotifyClientAboutAcceleratedWidgets(
+      shell->display_manager());
+}
+
 aura::Window* AshTestHelper::CurrentContext() {
   aura::Window* root_window = Shell::GetRootWindowForNewWindows();
   if (!root_window)
@@ -287,8 +297,7 @@ void AshTestHelper::CreateMashWindowManager() {
   window_tree_client_private_ =
       std::make_unique<aura::WindowTreeClientPrivate>(window_tree_client);
   window_tree_client_private_->CallOnConnect();
-  if (!::switches::IsMusHostingViz())
-    window_tree_client_setup_.NotifyClientAboutAcceleratedWidget();
+  NotifyClientAboutAcceleratedWidgets();
 }
 
 void AshTestHelper::CreateShell() {

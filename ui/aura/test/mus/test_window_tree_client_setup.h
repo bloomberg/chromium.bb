@@ -9,6 +9,10 @@
 
 #include "base/macros.h"
 
+namespace display {
+class DisplayManager;
+}
+
 namespace aura {
 
 class TestWindowManagerClient;
@@ -36,7 +40,8 @@ class TestWindowTreeClientSetup {
 
   // Notifies the client about the accelerated widget when mus is not hosting
   // viz.
-  void NotifyClientAboutAcceleratedWidget();
+  void NotifyClientAboutAcceleratedWidgets(
+      display::DisplayManager* display_manager);
 
   // Returns ownership of WindowTreeClient to the caller.
   std::unique_ptr<WindowTreeClient> OwnWindowTreeClient();
