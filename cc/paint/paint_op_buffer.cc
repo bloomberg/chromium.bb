@@ -12,7 +12,7 @@
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
-#include "cc/paint/scoped_image_flags.h"
+#include "cc/paint/scoped_raster_flags.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -2165,18 +2165,10 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
 
     if (op->IsPaintOpWithFlags()) {
       const auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-      base::Optional<ScopedImageFlags> scoped_flags;
-      const bool needs_flag_override =
-          iter.alpha() != 255 ||
-          (flags_op->flags.HasDiscardableImages() && params.image_provider);
-      if (needs_flag_override) {
-        scoped_flags.emplace(params.image_provider, &flags_op->flags,
-                             canvas->getTotalMatrix(), iter.alpha());
-      }
-
-      const PaintFlags* raster_flags =
-          scoped_flags ? scoped_flags->flags() : &flags_op->flags;
-      if (raster_flags)
+      const ScopedRasterFlags scoped_flags(
+          &flags_op->flags, params.image_provider, canvas->getTotalMatrix(),
+          iter.alpha());
+      if (const auto* raster_flags = scoped_flags.flags())
         flags_op->RasterWithFlags(canvas, raster_flags, params);
       continue;
     }

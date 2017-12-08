@@ -1026,7 +1026,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   friend class DisplayItemList;
   friend class PaintOpBufferOffsetsTest;
   friend class SolidColorAnalyzer;
-  friend class ScopedImageFlags;
 
   // Replays the paint op buffer into the canvas. If |indices| is specified, it
   // contains indices in an increasing order and only the indices specified in
