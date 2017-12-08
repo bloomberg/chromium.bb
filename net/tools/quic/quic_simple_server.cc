@@ -146,6 +146,9 @@ void QuicSimpleServer::Shutdown() {
   // notify clients that they're closing.
   dispatcher_->Shutdown();
 
+  if (!socket_) {
+    return;
+  }
   socket_->Close();
   socket_.reset();
 }

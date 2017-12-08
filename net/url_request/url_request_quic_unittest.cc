@@ -37,7 +37,6 @@ namespace {
 
 // This must match the certificate used (quic_test.example.com.crt and
 // quic_test.example.com.key.pkcs8).
-const int kTestServerPort = 6121;
 const char kTestServerHost[] = "test.example.com";
 // Used as a simple response from the server.
 const char kHelloPath[] = "/hello.txt";
@@ -160,8 +159,8 @@ class URLRequestQuicTest : public ::testing::Test {
         test::crypto_test_utils::ProofSourceForTesting(), config,
         net::QuicCryptoServerConfig::ConfigOptions(),
         AllSupportedTransportVersions(), &response_cache_));
-    int rv = server_->Listen(
-        net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kTestServerPort));
+    int rv =
+        server_->Listen(net::IPEndPoint(net::IPAddress::IPv4AllZeros(), 0));
     EXPECT_GE(rv, 0) << "Quic server fails to start";
 
     std::unique_ptr<MockHostResolver> resolver(new MockHostResolver());
