@@ -40,7 +40,7 @@ function ProvidersMenu(model, menu) {
 /**
  * @private
  */
-ProvidersMenu.prototype.clearExtensions_ = function() {
+ProvidersMenu.prototype.clearProviders_ = function() {
   var childNode = this.menu_.firstElementChild;
   while (childNode !== this.separator_) {
     var node = childNode;
@@ -60,21 +60,26 @@ ProvidersMenu.prototype.addMenuItem_ = function() {
 };
 
 /**
- * @param {string} extensionId
- * @param {string} extensionName
+ * @param {string} providerId ID of the provider.
+ * @param {string} extensionId ID of the extension if the provider is an
+ *     extension. Otherwise empty.
+ * @param {string} name Already localized name of the provider.
  * @private
  */
-ProvidersMenu.prototype.addExtension_ = function(extensionId, extensionName) {
+ProvidersMenu.prototype.addProvider_ = function(providerId, extensionId, name) {
   var item = this.addMenuItem_();
-  item.label = extensionName;
+  item.label = name;
 
-  var iconImage = '-webkit-image-set(' +
-      'url(chrome://extension-icon/' + extensionId + '/16/1) 1x, ' +
-      'url(chrome://extension-icon/' + extensionId + '/32/1) 2x);';
-  item.iconStartImage = iconImage;
+  // TODO(mtomasz): Add icon for native providers.
+  if (extensionId) {
+    var iconImage = '-webkit-image-set(' +
+        'url(chrome://extension-icon/' + extensionId + '/16/1) 1x, ' +
+        'url(chrome://extension-icon/' + extensionId + '/32/1) 2x);';
+    item.iconStartImage = iconImage;
+  }
 
   item.addEventListener(
-      'activate', this.onItemActivate_.bind(this, extensionId));
+      'activate', this.onItemActivate_.bind(this, providerId));
 
   // Move the element before the separator.
   this.menu_.insertBefore(item, this.separator_);
@@ -85,10 +90,11 @@ ProvidersMenu.prototype.addExtension_ = function(extensionId, extensionName) {
  * @private
  */
 ProvidersMenu.prototype.onUpdate_ = function(event) {
-  this.model_.getMountableProviders().then(function(extensions) {
-    this.clearExtensions_();
-    extensions.forEach(function(extension) {
-      this.addExtension_(extension.extensionId, extension.extensionName);
+  this.model_.getMountableProviders().then(function(providers) {
+    this.clearProviders_();
+    providers.forEach(function(provider) {
+      this.addProvider_(
+          provider.providerId, provider.extensionId, provider.name);
     }.bind(this));
 
     // Reposition the menu, so all items are always visible.
@@ -98,10 +104,10 @@ ProvidersMenu.prototype.onUpdate_ = function(event) {
 };
 
 /**
- * @param {string} extensionId
+ * @param {string} providerId
  * @param {!Event} event
  * @private
  */
-ProvidersMenu.prototype.onItemActivate_ = function(extensionId, event) {
-  this.model_.requestMount(extensionId);
+ProvidersMenu.prototype.onItemActivate_ = function(providerId, event) {
+  this.model_.requestMount(providerId);
 };

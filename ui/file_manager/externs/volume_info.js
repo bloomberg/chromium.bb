@@ -74,7 +74,13 @@ VolumeInfo.prototype.profile;
 VolumeInfo.prototype.label;
 
 /**
- * ID of an extennsion providing this volume.
+ * ID of a provider for this volume.
+ * @type {(string|undefined)}
+ */
+VolumeInfo.prototype.providerId;
+
+/**
+ * ID of a providing extension for this volume.
  * @type {(string|undefined)}
  */
 VolumeInfo.prototype.extensionId;

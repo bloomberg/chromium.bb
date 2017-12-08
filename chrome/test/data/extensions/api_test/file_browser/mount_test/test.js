@@ -112,6 +112,7 @@ var expectedProvidedVolume = {
   hasMedia: false,
   configurable: true,
   watchable: false,
+  providerId: 'testing-extension-id',
   extensionId: 'testing-extension-id',
   source: 'network',
   mountContext: 'auto',

@@ -40,8 +40,8 @@ class ProviderId {
   static ProviderId CreateFromExtensionId(
       const extensions::ExtensionId& extension_id);
   static ProviderId CreateFromNativeId(const std::string& native_id);
+  static ProviderId FromString(const std::string& provider_id);
 
-  const std::string& GetIdUnsafe() const;
   const extensions::ExtensionId& GetExtensionId() const;
   const std::string& GetNativeId() const;
   std::string ToString() const;
@@ -69,6 +69,8 @@ class ProvidedFileSystemInfo {
                          bool watchable,
                          extensions::FileSystemProviderSource source);
 
+  // TODO(mtomasz): Remove this constructor. Callers should be using
+  // provider id, not extension id.
   ProvidedFileSystemInfo(const extensions::ExtensionId& extension_id,
                          const MountOptions& mount_options,
                          const base::FilePath& mount_path,

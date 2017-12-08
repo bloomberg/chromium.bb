@@ -181,18 +181,20 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
      *     argument is a list of installed item ids (null on error).
      */
     getInstalledItems: function(callback) {
-      // Return only installed providers. Returning other extensions/apps is
-      // redundant, as the suggest app for non-providers is executed only when
-      // there is no extension/app matching a file task. Hence, none of the
-      // suggested extensions/apps can be already installed.
-      this.providersModel_.getInstalledProviders().then(function(extensions) {
-        callback(extensions.map(function(extension) {
-          return extension.extensionId;
-        }));
-      }).catch(function(error) {
-        console.error(error.stack || error);
-        callback(null);
-      });
+      // Return only installed provided extensions. Returning other
+      // extensions/apps is redundant, as the suggest app for non-providers is
+      // executed only when there is no extension/app matching a file task.
+      // Hence, none of the suggested extensions/apps can be already installed.
+      this.providersModel_.getInstalledProviders()
+          .then(function(providers) {
+            callback(providers.map(function(provider) {
+              return provider.extensionId;
+            }));
+          })
+          .catch(function(error) {
+            console.error(error.stack || error);
+            callback(null);
+          });
     }.bind(this),
 
     /**

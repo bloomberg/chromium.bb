@@ -25,8 +25,10 @@
  * @param {!{displayName:string, isCurrentProfile:boolean}} profile Profile
  *     information.
  * @param {string} label Label of the volume.
- * @param {(string|undefined)} extensionId Id of the extension providing this
- *     volume. Empty for native volumes.
+ * @param {(string|undefined)} providerId Id of the provider for this volume.
+ *     Undefined for non-FSP volumes.
+ * @param {(string|undefined)} extensionId Id of the providing extension, if
+ *     the provider for this volume is an extension. Otherwise undefined.
  * @param {boolean} hasMedia When true the volume has been identified
  *     as containing media such as photos or videos.
  * @param {boolean} configurable When true, then the volume can be configured.
@@ -36,8 +38,8 @@
  */
 function VolumeInfoImpl(
     volumeType, volumeId, fileSystem, error, deviceType, devicePath, isReadOnly,
-    isReadOnlyRemovableDevice, profile, label, extensionId, hasMedia,
-    configurable, watchable, source, diskFileSystemType) {
+    isReadOnlyRemovableDevice, profile, label, providerId, extensionId,
+    hasMedia, configurable, watchable, source, diskFileSystemType) {
   this.volumeType_ = volumeType;
   this.volumeId_ = volumeId;
   this.fileSystem_ = fileSystem;
@@ -81,6 +83,7 @@ function VolumeInfoImpl(
   this.isReadOnly_ = isReadOnly;
   this.isReadOnlyRemovableDevice_ = isReadOnlyRemovableDevice;
   this.profile_ = Object.freeze(profile);
+  this.providerId_ = providerId;
   this.extensionId_ = extensionId;
   this.hasMedia_ = hasMedia;
   this.configurable_ = configurable;
@@ -172,7 +175,13 @@ VolumeInfoImpl.prototype = /** @struct */ {
     return this.label_;
   },
   /**
-   * @return {(string|undefined)} Id of an extennsion providing this volume.
+   * @return {(string|undefined)} Id of a provider for this volume.
+   */
+  get providerId() {
+    return this.providerId_;
+  },
+  /**
+   * @return {(string|undefined)} Id of a providing extension for this volume.
    */
   get extensionId() {
     return this.extensionId_;
