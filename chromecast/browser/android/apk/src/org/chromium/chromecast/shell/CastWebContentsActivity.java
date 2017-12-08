@@ -123,7 +123,8 @@ public class CastWebContentsActivity extends Activity {
     protected void handleIntent(Intent intent) {
         // Do not load the WebContents if we are simply bringing the same
         // activity to the foreground.
-        if (intent.getData() == null || mInstanceId.equals(intent.getData().getPath())) {
+        if (intent.getData() == null || intent.getData().getPath() == null
+                || (mInstanceId != null && mInstanceId.equals(intent.getData().getPath()))) {
             return;
         }
 
