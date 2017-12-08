@@ -325,6 +325,11 @@
     },
   },
   {
+    'name': 'chromium.chrome',
+    'machines': {
+    },
+  },
+  {
     'name': 'chromium.chromiumos',
     'machines': {
       'Linux ChromiumOS Builder': {
