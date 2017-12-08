@@ -53,6 +53,13 @@ macro (fix_experiment_configs)
      set(CONFIG_DAALA_TX64 1)
   endif ()
 
+  if (CONFIG_DAALA_TX_DST8)
+    if (NOT CONFIG_DAALA_TX8)
+      set(CONFIG_DAALA_TX_DST8 0)
+      message("--- DAALA_TX_DST8 requires DAALA_TX8: disabled DAALA_TX_DST8")
+    endif ()
+  endif ()
+
   if (CONFIG_DAALA_TX64)
     if (NOT CONFIG_TX64X64)
       set(CONFIG_DAALA_TX64 0)

@@ -1443,7 +1443,12 @@ static const daala_row_itx TX_ROW_MAP[TX_SIZES][TX_TYPES] = {
   { od_row_idct4_avx2, od_row_idst4_avx2, od_row_flip_idst4_avx2,
     od_row_iidtx4_avx2 },
   // 8-point transforms
-  { od_row_idct8_avx2, od_row_idst8_avx2, od_row_flip_idst8_avx2,
+  { od_row_idct8_avx2,
+#if CONFIG_DAALA_TX_DST8
+    NULL, NULL,
+#else
+    od_row_idst8_avx2, od_row_flip_idst8_avx2,
+#endif
     od_row_iidtx8_avx2 },
   // 16-point transforms
   { od_row_idct16_avx2, od_row_idst16_avx2, od_row_flip_idst16_avx2,
@@ -1478,8 +1483,13 @@ static const daala_col_itx_add TX_COL_MAP[2][TX_SIZES][TX_TYPES] = {
       { od_col_idct4_add_hbd_avx2, od_col_idst4_add_hbd_avx2,
         od_col_flip_idst4_add_hbd_avx2, od_col_iidtx4_add_hbd_avx2 },
       // 8-point transforms
-      { od_col_idct8_add_hbd_avx2, od_col_idst8_add_hbd_avx2,
-        od_col_flip_idst8_add_hbd_avx2, od_col_iidtx8_add_hbd_avx2 },
+      { od_col_idct8_add_hbd_avx2,
+#if CONFIG_DAALA_TX_DST8
+        NULL, NULL,
+#else
+        od_col_idst8_add_hbd_avx2, od_col_flip_idst8_add_hbd_avx2,
+#endif
+        od_col_iidtx8_add_hbd_avx2 },
       // 16-point transforms
       { od_col_idct16_add_hbd_avx2, od_col_idst16_add_hbd_avx2,
         od_col_flip_idst16_add_hbd_avx2, od_col_iidtx16_add_hbd_avx2 },

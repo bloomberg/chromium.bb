@@ -5854,7 +5854,7 @@ void od_bin_idct8(od_coeff *x, int xstride, const od_coeff y[8]) {
   x[7*xstride] = (od_coeff)r7;
 }
 
-#if 1
+#if !CONFIG_DAALA_TX_DST8
 void od_bin_fdst8(od_coeff y[8], const od_coeff *x, int xstride) {
   int r0;
   int r1;

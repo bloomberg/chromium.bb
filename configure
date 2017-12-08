@@ -279,6 +279,7 @@ EXPERIMENT_LIST="
     daala_tx16
     daala_tx32
     daala_tx64
+    daala_tx_dst8
     frame_size
     ext_delta_q
     adapt_scan
@@ -563,6 +564,10 @@ post_process_cmdline() {
     if enabled daala_tx64 && ! enabled tx64x64; then
       log_echo "daala_tx64 requires tx64x64, so disabling daala_tx64"
       disable_feature daala_tx64
+    fi
+    if enabled daala_tx_dst8 && ! enabled daala_tx8; then
+      log_echo "daala_tx_dst8 requires daala_tx8, so disabling daala_tx_dst8"
+      disable_feature daala_tx_dst8
     fi
     if enabled daala_tx4 || enabled daala_tx8 || enabled daala_tx16 ||
         enabled daala_tx32 || enabled daala_tx64; then
