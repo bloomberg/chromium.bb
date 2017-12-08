@@ -10,12 +10,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -25,6 +27,13 @@
 
 const bool kAsyncCall = true;
 const bool kSyncCall = false;
+const char kStartTestURL[] = "/this-should-work";
+const char kOnImageDecodedTestURL[] = "/this-should-work-as-well";
+const char kOnURLFetchFailureTestURL[] = "/this-should-be-fetch-failure";
+
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
 
 namespace chrome {
 
@@ -77,15 +86,53 @@ class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
 
 class BitmapFetcherBrowserTest : public InProcessBrowserTest {
  public:
-  void SetUp() override {
-    url_fetcher_factory_.reset(
-        new net::FakeURLFetcherFactory(&url_fetcher_impl_factory_));
-    InProcessBrowserTest::SetUp();
+  // InProcessBrowserTest overrides:
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    // Set up the test server.
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &BitmapFetcherBrowserTest::HandleRequest, base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void TearDownOnMainThread() override {
+    // Tear down the test server.
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+    InProcessBrowserTest::TearDownOnMainThread();
   }
 
  protected:
-  net::URLFetcherImplFactory url_fetcher_impl_factory_;
-  std::unique_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
+  SkBitmap test_bitmap() const {
+    // Return some realistic looking bitmap data
+    SkBitmap image;
+
+    // Put a real bitmap into "image".  2x2 bitmap of green 32 bit pixels.
+    image.allocN32Pixels(2, 2);
+    image.eraseColor(SK_ColorGREEN);
+    return image;
+  }
+
+ private:
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+    if (request.relative_url == kStartTestURL) {
+      // Encode the bits as a PNG.
+      std::vector<unsigned char> compressed;
+      gfx::PNGCodec::EncodeBGRASkBitmap(test_bitmap(), true, &compressed);
+      // Copy the bits into a string and return them through the embedded
+      // test server
+      std::string image_string(compressed.begin(), compressed.end());
+      response->set_code(net::HTTP_OK);
+      response->set_content(image_string);
+    } else if (request.relative_url == kOnImageDecodedTestURL) {
+      response->set_code(net::HTTP_INTERNAL_SERVER_ERROR);
+    } else if (request.relative_url == kOnURLFetchFailureTestURL) {
+      response->set_code(net::HTTP_OK);
+      response->set_content(std::string("Not a real bitmap"));
+    }
+    return std::move(response);
+  }
 };
 
 // WARNING:  These tests work with --single_process, but not
@@ -93,38 +140,22 @@ class BitmapFetcherBrowserTest : public InProcessBrowserTest {
 // for us by the test process if --single-process is used.
 
 IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, StartTest) {
-  GURL url("http://example.com/this-should-work");
-
-  // Put some realistic looking bitmap data into the url_fetcher.
-  SkBitmap image;
-
-  // Put a real bitmap into "image".  2x2 bitmap of green 32 bit pixels.
-  image.allocN32Pixels(2, 2);
-  image.eraseColor(SK_ColorGREEN);
-
-  // Encode the bits as a PNG.
-  std::vector<unsigned char> compressed;
-  ASSERT_TRUE(gfx::PNGCodec::EncodeBGRASkBitmap(image, true, &compressed));
-
-  // Copy the bits into the string, and put them into the FakeURLFetcher.
-  std::string image_string(compressed.begin(), compressed.end());
+  GURL url = embedded_test_server()->GetURL(kStartTestURL);
 
   // Set up a delegate to wait for the callback.
   BitmapFetcherTestDelegate delegate(kAsyncCall);
 
   BitmapFetcher fetcher(url, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  url_fetcher_factory_->SetFakeResponse(
-      url, image_string, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-
   // We expect that the image decoder will get called and return
   // an image in a callback to OnImageDecoded().
   fetcher.Init(
-      browser()->profile()->GetRequestContext(),
       std::string(),
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
       net::LOAD_NORMAL);
-  fetcher.Start();
+  fetcher.Start(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetURLLoaderFactoryForBrowserProcess());
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();
@@ -133,11 +164,11 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, StartTest) {
 
   // Make sure we get back the bitmap we expect.
   const SkBitmap& found_image = delegate.bitmap();
-  EXPECT_TRUE(gfx::BitmapsAreEqual(image, found_image));
+  EXPECT_TRUE(gfx::BitmapsAreEqual(test_bitmap(), found_image));
 }
 
 IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnImageDecodedTest) {
-  GURL url("http://example.com/this-should-work-as-well");
+  GURL url = embedded_test_server()->GetURL(kOnImageDecodedTestURL);
   SkBitmap image;
 
   // Put a real bitmap into "image".  2x2 bitmap of green 16 bit pixels.
@@ -158,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnImageDecodedTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
-  GURL url("http://example.com/this-should-be-fetch-failure");
+  GURL url = embedded_test_server()->GetURL(kOnURLFetchFailureTestURL);
 
   // We intentionally put no data into the bitmap to simulate a failure.
 
@@ -167,17 +198,13 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
 
   BitmapFetcher fetcher(url, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  url_fetcher_factory_->SetFakeResponse(url,
-                                        std::string(),
-                                        net::HTTP_INTERNAL_SERVER_ERROR,
-                                        net::URLRequestStatus::FAILED);
-
   fetcher.Init(
-      browser()->profile()->GetRequestContext(),
       std::string(),
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
       net::LOAD_NORMAL);
-  fetcher.Start();
+  fetcher.Start(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetURLLoaderFactoryForBrowserProcess());
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();
@@ -189,17 +216,14 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, HandleImageFailedTest) {
   GURL url("http://example.com/this-should-be-a-decode-failure");
   BitmapFetcherTestDelegate delegate(kAsyncCall);
   BitmapFetcher fetcher(url, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
-  url_fetcher_factory_->SetFakeResponse(url,
-                                        std::string("Not a real bitmap"),
-                                        net::HTTP_OK,
-                                        net::URLRequestStatus::SUCCESS);
 
   fetcher.Init(
-      browser()->profile()->GetRequestContext(),
       std::string(),
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
       net::LOAD_NORMAL);
-  fetcher.Start();
+  fetcher.Start(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetURLLoaderFactoryForBrowserProcess());
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();

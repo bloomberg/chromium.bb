@@ -132,12 +132,12 @@ std::unique_ptr<chrome::BitmapFetcher> BitmapFetcherService::CreateFetcher(
       new chrome::BitmapFetcher(url, this, traffic_annotation));
 
   new_fetcher->Init(
-      content::BrowserContext::GetDefaultStoragePartition(context_)->
-          GetURLRequestContext(),
       std::string(),
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
       net::LOAD_NORMAL);
-  new_fetcher->Start();
+  new_fetcher->Start(
+      content::BrowserContext::GetDefaultStoragePartition(context_)
+          ->GetURLLoaderFactoryForBrowserProcess());
   return new_fetcher;
 }
 

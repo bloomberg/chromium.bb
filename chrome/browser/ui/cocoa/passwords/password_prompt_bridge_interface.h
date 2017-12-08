@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORD_PROMPT_BRIDGE_INTERFACE_H_
 
 class PasswordDialogController;
-namespace net {
-class URLRequestContextGetter;
+namespace content {
+namespace mojom {
+class URLLoaderFactory;
+}
 }
 
 // An interface for the bridge between AccountChooserViewController and platform
@@ -20,8 +22,8 @@ class PasswordPromptBridgeInterface {
   // Returns the controller containing the data.
   virtual PasswordDialogController* GetDialogController() = 0;
 
-  // Returns the request context for fetching the avatars.
-  virtual net::URLRequestContextGetter* GetRequestContext() const = 0;
+  // Returns the URL loader factory for fetching the avatars.
+  virtual content::mojom::URLLoaderFactory* GetURLLoaderFactory() const = 0;
 
  protected:
   virtual ~PasswordPromptBridgeInterface() = default;

@@ -10,13 +10,15 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "url/gurl.h"
 
+namespace content {
+namespace mojom {
+class URLLoaderFactory;
+}
+}  // namespace content
+
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
 
 class AccountAvatarFetcherDelegate {
  public:
@@ -33,7 +35,7 @@ class AccountAvatarFetcher : public chrome::BitmapFetcherDelegate {
 
   ~AccountAvatarFetcher() override;
 
-  void Start(net::URLRequestContextGetter* request_context);
+  void Start(content::mojom::URLLoaderFactory* loader_factory);
 
  private:
   // chrome::BitmapFetcherDelegate:

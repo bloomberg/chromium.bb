@@ -19,31 +19,19 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
 using ::testing::Field;
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
 
 namespace {
-
-// A helper class that will create FakeURLFetcher and record the requested URLs.
-class TestURLFetcherCallback {
- public:
-  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcherDelegate* d,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status) {
-    OnRequestDone(url);
-    return std::unique_ptr<net::FakeURLFetcher>(
-        new net::FakeURLFetcher(url, d, response_data, response_code, status));
-  }
-
-  MOCK_METHOD1(OnRequestDone, void(const GURL&));
-};
 
 // ManagePasswordsUIController subclass to capture the dialog instance
 class TestManagePasswordsUIController : public ManagePasswordsUIController {
@@ -127,6 +115,16 @@ class PasswordDialogViewTest : public DialogBrowserTest {
   }
 
   MOCK_METHOD1(OnChooseCredential, void(const autofill::PasswordForm*));
+  MOCK_METHOD0(OnIconRequestDone, void());
+
+  // Called on the server background thread.
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+    if (request.relative_url == "/icon.png") {
+      OnIconRequestDone();
+    }
+    return std::move(response);
+  }
 
  private:
   TestManagePasswordsUIController* controller_;
@@ -172,6 +170,10 @@ content::WebContents* PasswordDialogViewTest::SetupTabWithTestController(
 
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
                        PopupAccountChooserWithMultipleCredentialsReturnEmpty) {
+  // Set up the test server to handle the form icon request.
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &PasswordDialogViewTest::HandleRequest, base::Unretained(this)));
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
@@ -180,21 +182,15 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   form.icon_url = GURL("broken url");
   local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
-  GURL icon_url("https://google.com/icon.png");
-  form.icon_url = icon_url;
+  form.icon_url = embedded_test_server()->GetURL("/icon.png");
   form.display_name = base::ASCIIToUTF16("Peter Pan");
   form.federation_origin =
       url::Origin::Create(GURL("https://google.com/federation"));
   local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
 
   // Prepare to capture the network request.
-  TestURLFetcherCallback url_callback;
-  net::FakeURLFetcherFactory factory(
-      nullptr, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                          base::Unretained(&url_callback)));
-  factory.SetFakeResponse(icon_url, std::string(), net::HTTP_OK,
-                          net::URLRequestStatus::FAILED);
-  EXPECT_CALL(url_callback, OnRequestDone(icon_url));
+  EXPECT_CALL(*this, OnIconRequestDone());
+  embedded_test_server()->StartAcceptingConnections();
 
   SetupChooseCredentials(std::move(local_credentials), origin);
   ASSERT_TRUE(controller()->current_account_chooser());

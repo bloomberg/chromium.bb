@@ -13,11 +13,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/android/compositor.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "jni/ContextualSearchSceneLayer_jni.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -193,14 +194,16 @@ void ContextualSearchSceneLayer::FetchThumbnail(
 
   GURL gurl(thumbnail_url_);
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  content::mojom::URLLoaderFactory* loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess();
   fetcher_ = base::MakeUnique<chrome::BitmapFetcher>(gurl, this,
                                                      NO_TRAFFIC_ANNOTATION_YET);
   fetcher_->Init(
-      profile->GetRequestContext(),
       std::string(),
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
       net::LOAD_NORMAL);
-  fetcher_->Start();
+  fetcher_->Start(loader_factory);
 }
 
 void ContextualSearchSceneLayer::OnFetchComplete(const GURL& url,

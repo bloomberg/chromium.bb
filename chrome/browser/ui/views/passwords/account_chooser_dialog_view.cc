@@ -14,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -51,7 +52,7 @@ Profile* GetProfileFromWebContents(content::WebContents* web_contents) {
 views::ScrollView* CreateCredentialsView(
     const PasswordDialogController::FormsVector& forms,
     views::ButtonListener* button_listener,
-    net::URLRequestContextGetter* request_context) {
+    content::mojom::URLLoaderFactory* loader_factory) {
   views::View* list_view = new views::View;
   list_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical));
@@ -59,9 +60,9 @@ views::ScrollView* CreateCredentialsView(
   for (const auto& form : forms) {
     std::pair<base::string16, base::string16> titles =
         GetCredentialLabelsForAccountChooser(*form);
-    CredentialsItemView* credential_view = new CredentialsItemView(
-        button_listener, titles.first, titles.second, kButtonHoverColor,
-        form.get(), request_context);
+    CredentialsItemView* credential_view =
+        new CredentialsItemView(button_listener, titles.first, titles.second,
+                                kButtonHoverColor, form.get(), loader_factory);
     credential_view->SetLowerLabelColor(kAutoSigninTextColor);
     ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
     gfx::Insets insets =
@@ -178,9 +179,11 @@ void AccountChooserDialogView::ButtonPressed(views::Button* sender,
 
 void AccountChooserDialogView::InitWindow() {
   SetLayoutManager(new views::FillLayout());
-  AddChildView(CreateCredentialsView(
-      controller_->GetLocalForms(), this,
-      GetProfileFromWebContents(web_contents_)->GetRequestContext()));
+  AddChildView(
+      CreateCredentialsView(controller_->GetLocalForms(), this,
+                            content::BrowserContext::GetDefaultStoragePartition(
+                                GetProfileFromWebContents(web_contents_))
+                                ->GetURLLoaderFactoryForBrowserProcess()));
 }
 
 AccountChooserPrompt* CreateAccountChooserPromptView(

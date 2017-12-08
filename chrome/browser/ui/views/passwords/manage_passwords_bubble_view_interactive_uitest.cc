@@ -26,11 +26,16 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_features.h"
 
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
 using testing::Eq;
 using testing::Field;
 using testing::_;
@@ -38,23 +43,6 @@ using testing::_;
 namespace {
 
 const char kDisplayDispositionMetric[] = "PasswordBubble.DisplayDisposition";
-
-// A helper class that will create FakeURLFetcher and record the requested URLs.
-class TestURLFetcherCallback {
- public:
-  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcherDelegate* d,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status) {
-    OnRequestDone(url);
-    return std::unique_ptr<net::FakeURLFetcher>(
-        new net::FakeURLFetcher(url, d, response_data, response_code, status));
-  }
-
-  MOCK_METHOD1(OnRequestDone, void(const GURL&));
-};
 
 bool IsBubbleShowing() {
   return ManagePasswordsBubbleView::manage_password_bubble() &&
@@ -79,6 +67,17 @@ class ManagePasswordsBubbleViewTest : public ManagePasswordsTest {
         {});
 #endif
     ManagePasswordsTest::SetUp();
+  }
+
+  MOCK_METHOD0(OnIconRequestDone, void());
+
+  // Called on the server background thread.
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+    if (request.relative_url == "/icon.png") {
+      OnIconRequestDone();
+    }
+    return std::move(response);
   }
 
  private:
@@ -349,24 +348,21 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubbleClose) {
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
+  // Set up the test server to handle the form icon request.
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &ManagePasswordsBubbleViewTest::HandleRequest, base::Unretained(this)));
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   test_form()->origin = GURL("https://example.com");
   test_form()->display_name = base::ASCIIToUTF16("Peter");
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
-  GURL icon_url("https://google.com/icon.png");
-  test_form()->icon_url = icon_url;
+  test_form()->icon_url = embedded_test_server()->GetURL("/icon.png");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.push_back(
       base::MakeUnique<autofill::PasswordForm>(*test_form()));
 
   // Prepare to capture the network request.
-  TestURLFetcherCallback url_callback;
-  net::FakeURLFetcherFactory factory(
-      NULL,
-      base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                 base::Unretained(&url_callback)));
-  factory.SetFakeResponse(icon_url, std::string(), net::HTTP_OK,
-                          net::URLRequestStatus::FAILED);
-  EXPECT_CALL(url_callback, OnRequestDone(icon_url));
+  EXPECT_CALL(*this, OnIconRequestDone());
+  embedded_test_server()->StartAcceptingConnections();
 
   SetupAutoSignin(std::move(local_credentials));
   EXPECT_TRUE(IsBubbleShowing());

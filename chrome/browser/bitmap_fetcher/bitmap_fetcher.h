@@ -7,27 +7,23 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/image_decoder.h"
+#include "content/public/common/resource_request.h"
+#include "content/public/common/simple_url_loader.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 class SkBitmap;
-
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
 
 namespace chrome {
 
 // Asynchrounously fetches an image from the given URL and returns the
 // decoded Bitmap to the provided BitmapFetcherDelegate.
-class BitmapFetcher : public net::URLFetcherDelegate,
-                      public ImageDecoder::ImageRequest {
+class BitmapFetcher : public ImageDecoder::ImageRequest {
  public:
   BitmapFetcher(const GURL& url,
                 BitmapFetcherDelegate* delegate,
@@ -35,7 +31,6 @@ class BitmapFetcher : public net::URLFetcherDelegate,
   ~BitmapFetcher() override;
 
   const GURL& url() const { return url_; }
-  net::URLFetcher* url_fetcher() { return url_fetcher_.get(); }
 
   // Initializes internal fetcher.  After this function returns url_fetcher()
   // can be accessed to configure it further (eg. add user data to request).
@@ -43,22 +38,15 @@ class BitmapFetcher : public net::URLFetcherDelegate,
   // Values for |load_flags| are defined in net/base/load_flags.h.  In general,
   // |net::LOAD_NORMAL| is appropriate.  Init may be called more than once in
   // some cases.  If so, subsequent starts will be ignored.
-  void Init(net::URLRequestContextGetter* request_context,
-            const std::string& referrer,
-            net::URLRequest::ReferrerPolicy referrer_policy,
+  void Init(const std::string& referrer,
+            blink::WebReferrerPolicy referrer_policy,
             int load_flags);
 
   // Start fetching the URL with the fetcher. The delegate is notified
   // asynchronously when done.  Start may be called more than once in some
   // cases.  If so, subsequent starts will be ignored since the operation is
   // already in progress.
-  void Start();
-
-  // Methods inherited from URLFetcherDelegate
-
-  // This will be called when the URL has been fetched, successfully or not.
-  // Use accessor methods on |source| to get the results.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void Start(content::mojom::URLLoaderFactory* loader_factory);
 
   // Methods inherited from ImageDecoder::ImageRequest
 
@@ -71,10 +59,13 @@ class BitmapFetcher : public net::URLFetcherDelegate,
   void OnDecodeImageFailed() override;
 
  private:
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+
   // Alerts the delegate that a failure occurred.
   void ReportFailure();
 
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader_;
+
   const GURL url_;
   BitmapFetcherDelegate* const delegate_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;

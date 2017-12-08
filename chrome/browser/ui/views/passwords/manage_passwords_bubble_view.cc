@@ -27,6 +27,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/storage_partition.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/combobox_model.h"
@@ -394,7 +395,9 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
   }
   credential = new CredentialsItemView(
       this, upper_text, lower_text, kButtonHoverColor, &form,
-      parent_->model()->GetProfile()->GetRequestContext());
+      content::BrowserContext::GetDefaultStoragePartition(
+          parent_->model()->GetProfile())
+          ->GetURLLoaderFactoryForBrowserProcess());
   credential->SetEnabled(false);
   AddChildView(credential);
 

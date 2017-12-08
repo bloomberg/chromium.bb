@@ -53,12 +53,12 @@ AccountAvatarFetcher::AccountAvatarFetcher(
 AccountAvatarFetcher::~AccountAvatarFetcher() = default;
 
 void AccountAvatarFetcher::Start(
-    net::URLRequestContextGetter* request_context) {
-  fetcher_.Init(request_context, std::string(),
-                net::URLRequest::NEVER_CLEAR_REFERRER,
+    content::mojom::URLLoaderFactory* loader_factory) {
+  fetcher_.Init(std::string(), blink::kWebReferrerPolicyAlways,
                 net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
-                net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_MAYBE_USER_GESTURE);
-  fetcher_.Start();
+                    net::LOAD_DO_NOT_SEND_AUTH_DATA |
+                    net::LOAD_MAYBE_USER_GESTURE);
+  fetcher_.Start(loader_factory);
 }
 
 void AccountAvatarFetcher::OnFetchComplete(const GURL& /*url*/,

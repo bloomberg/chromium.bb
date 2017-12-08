@@ -10,7 +10,9 @@
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/autosignin_prompt_view_controller.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 
 PasswordPromptViewBridge::PasswordPromptViewBridge(
     PasswordDialogController* controller,
@@ -56,10 +58,11 @@ PasswordPromptViewBridge::GetDialogController() {
   return controller_;
 }
 
-net::URLRequestContextGetter*
-PasswordPromptViewBridge::GetRequestContext() const {
-  return Profile::FromBrowserContext(web_contents_->GetBrowserContext())->
-      GetRequestContext();
+content::mojom::URLLoaderFactory*
+PasswordPromptViewBridge::GetURLLoaderFactory() const {
+  return content::BrowserContext::GetDefaultStoragePartition(
+             Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
+      ->GetURLLoaderFactoryForBrowserProcess();
 }
 
 void PasswordPromptViewBridge::ShowWindow() {
@@ -82,4 +85,3 @@ AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
     PasswordDialogController* controller, content::WebContents* web_contents) {
   return new PasswordPromptViewBridge(controller, web_contents);
 }
-

@@ -62,7 +62,7 @@ CredentialsItemView::CredentialsItemView(
     const base::string16& lower_text,
     SkColor hover_color,
     const autofill::PasswordForm* form,
-    net::URLRequestContextGetter* request_context)
+    content::mojom::URLLoaderFactory* loader_factory)
     : Button(button_listener),
       form_(form),
       upper_label_(nullptr),
@@ -84,7 +84,7 @@ CredentialsItemView::CredentialsItemView(
     // Fetch the actual avatar.
     AccountAvatarFetcher* fetcher = new AccountAvatarFetcher(
         form_->icon_url, weak_ptr_factory_.GetWeakPtr());
-    fetcher->Start(request_context);
+    fetcher->Start(loader_factory);
   }
   AddChildView(image_view_);
 
