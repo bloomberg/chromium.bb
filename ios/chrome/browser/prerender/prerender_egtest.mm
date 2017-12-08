@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -52,6 +53,15 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that tapping the prerendered suggestions opens it.
 - (void)testTapPrerenderSuggestions {
+  // TODO(crbug.com/793306): Re-enable the test on iOS 11 iPad once the
+  // alternate letters problem is fixed.
+  if (IsIPadIdiom()) {
+    if (@available(iOS 11, *)) {
+      EARL_GREY_TEST_DISABLED(
+          @"Disabled for iPad due to alternate letters educational screen.");
+    }
+  }
+
   chrome_test_util::ClearBrowsingHistory();
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   // Set server up.
