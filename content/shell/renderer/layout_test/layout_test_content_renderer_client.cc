@@ -30,7 +30,6 @@
 #include "content/shell/test_runner/web_test_runner.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/test/mock_webclipboard_impl.h"
-#include "gin/modules/module_registry.h"
 #include "media/base/audio_latency.h"
 #include "media/base/mime_util.h"
 #include "media/media_features.h"
