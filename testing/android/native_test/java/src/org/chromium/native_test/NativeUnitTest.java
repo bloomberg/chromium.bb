@@ -5,8 +5,6 @@
 package org.chromium.native_test;
 
 import android.app.Activity;
-import android.os.Build;
-import android.system.Os;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
@@ -40,17 +38,7 @@ public class NativeUnitTest extends NativeTest {
 
         // Configure ubsan using $UBSAN_OPTIONS. This needs to happen here because ubsan reads its
         // configuration from $UBSAN_OPTIONS when the native library is loaded.
-        //
-        // The setenv API was added in L. On older versions of Android, we should still see ubsan
-        // reports, but they will not have stack traces.
-        String ubsanOptions = activity.getIntent().getStringExtra(EXTRA_UBSAN_OPTIONS);
-        if (ubsanOptions != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                Os.setenv("UBSAN_OPTIONS", ubsanOptions, true);
-            } catch (Exception e) {
-                Log.w(TAG, "failed to set UBSAN_OPTIONS", e);
-            }
-        }
+        setEnvForNative(activity);
 
         // For NativeActivity based tests,
         // dependency libraries must be loaded before NativeActivity::OnCreate,
