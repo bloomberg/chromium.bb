@@ -214,16 +214,16 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
       resource = FontResource::Fetch(params, Fetcher());
       break;
     case Resource::kMedia:
-      resource = RawResource::FetchMedia(params, Fetcher());
+      resource = RawResource::FetchMedia(params, Fetcher(), nullptr);
       break;
     case Resource::kTextTrack:
-      resource = RawResource::FetchTextTrack(params, Fetcher());
+      resource = RawResource::FetchTextTrack(params, Fetcher(), nullptr);
       break;
     case Resource::kImportResource:
-      resource = RawResource::FetchImport(params, Fetcher());
+      resource = RawResource::FetchImport(params, Fetcher(), nullptr);
       break;
     case Resource::kRaw:
-      resource = RawResource::Fetch(params, Fetcher());
+      resource = RawResource::Fetch(params, Fetcher(), nullptr);
       break;
     default:
       NOTREACHED();
@@ -857,8 +857,8 @@ void DocumentLoader::StartLoading() {
   options.data_buffering_policy = kDoNotBufferData;
   options.initiator_info.name = FetchInitiatorTypeNames::document;
   FetchParameters fetch_params(request_, options);
-  SetResource(RawResource::FetchMainResource(fetch_params, Fetcher(),
-                                             substitute_data_));
+  RawResource::FetchMainResource(fetch_params, Fetcher(), this,
+                                 substitute_data_);
 
   // PlzNavigate:
   // The final access checks are still performed here, potentially rejecting

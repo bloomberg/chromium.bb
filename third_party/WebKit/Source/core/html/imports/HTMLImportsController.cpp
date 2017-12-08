@@ -110,17 +110,13 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
 
   params.SetCrossOriginAccessControl(Master()->GetSecurityOrigin(),
                                      kCrossOriginAttributeAnonymous);
-  RawResource* resource =
-      RawResource::FetchImport(params, parent->GetDocument()->Fetcher());
-  if (!resource)
-    return nullptr;
 
-  HTMLImportLoader* loader = CreateLoader();
+  HTMLImportLoader* loader = HTMLImportLoader::Create(this);
+  ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
+  if (!RawResource::FetchImport(params, fetcher, loader))
+    return nullptr;
+  loaders_.push_back(loader);
   HTMLImportChild* child = CreateChild(url, loader, parent, client);
-  // We set resource after the import tree is built since
-  // Resource::addClient() immediately calls back to feed the bytes when the
-  // resource is cached.
-  loader->StartLoading(resource);
   child->DidStartLoading();
   return child;
 }
@@ -135,11 +131,6 @@ bool HTMLImportsController::ShouldBlockScriptExecution(
   if (HTMLImportLoader* loader = LoaderFor(document))
     return loader->ShouldBlockScriptExecution();
   return root_->GetState().ShouldBlockScriptExecution();
-}
-
-HTMLImportLoader* HTMLImportsController::CreateLoader() {
-  loaders_.push_back(HTMLImportLoader::Create(this));
-  return loaders_.back().Get();
 }
 
 HTMLImportLoader* HTMLImportsController::LoaderFor(

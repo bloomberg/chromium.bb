@@ -64,8 +64,6 @@ class HTMLImportsController final
 
   Document* Master() const;
 
-  HTMLImportLoader* CreateLoader();
-
   size_t LoaderCount() const { return loaders_.size(); }
   HTMLImportLoader* LoaderAt(size_t i) const { return loaders_[i]; }
   HTMLImportLoader* LoaderFor(const Document&) const;

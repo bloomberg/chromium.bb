@@ -42,14 +42,25 @@ class SubstituteData;
 class PLATFORM_EXPORT RawResource final : public Resource {
  public:
   static RawResource* FetchSynchronously(FetchParameters&, ResourceFetcher*);
-  static RawResource* Fetch(FetchParameters&, ResourceFetcher*);
+  static RawResource* Fetch(FetchParameters&,
+                            ResourceFetcher*,
+                            RawResourceClient*);
   static RawResource* FetchMainResource(FetchParameters&,
                                         ResourceFetcher*,
+                                        RawResourceClient*,
                                         const SubstituteData&);
-  static RawResource* FetchImport(FetchParameters&, ResourceFetcher*);
-  static RawResource* FetchMedia(FetchParameters&, ResourceFetcher*);
-  static RawResource* FetchTextTrack(FetchParameters&, ResourceFetcher*);
-  static RawResource* FetchManifest(FetchParameters&, ResourceFetcher*);
+  static RawResource* FetchImport(FetchParameters&,
+                                  ResourceFetcher*,
+                                  RawResourceClient*);
+  static RawResource* FetchMedia(FetchParameters&,
+                                 ResourceFetcher*,
+                                 RawResourceClient*);
+  static RawResource* FetchTextTrack(FetchParameters&,
+                                     ResourceFetcher*,
+                                     RawResourceClient*);
+  static RawResource* FetchManifest(FetchParameters&,
+                                    ResourceFetcher*,
+                                    RawResourceClient*);
 
   // Exposed for testing
   static RawResource* CreateForTest(ResourceRequest request, Type type) {

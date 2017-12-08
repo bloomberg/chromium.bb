@@ -656,6 +656,21 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
 Resource* ResourceFetcher::RequestResource(
     FetchParameters& params,
     const ResourceFactory& factory,
+    ResourceClient* client,
+    const SubstituteData& substitute_data) {
+  // Only async requests get ResourceClient callbacks, so sync requests
+  // shouldn't provide a client.
+  DCHECK(!client ||
+         params.Options().synchronous_policy == kRequestAsynchronously);
+  Resource* resource = RequestResource(params, factory, substitute_data);
+  if (client)
+    client->SetResource(resource);
+  return resource;
+}
+
+Resource* ResourceFetcher::RequestResource(
+    FetchParameters& params,
+    const ResourceFactory& factory,
     const SubstituteData& substitute_data) {
   unsigned long identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
