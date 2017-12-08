@@ -4388,8 +4388,26 @@ static int
 drm_output_attach_head(struct weston_output *output_base,
 		       struct weston_head *head_base)
 {
+	struct drm_backend *b = to_drm_backend(output_base->compositor);
+
 	if (wl_list_length(&output_base->head_list) >= MAX_CLONED_CONNECTORS)
 		return -1;
+
+	if (!output_base->enabled)
+		return 0;
+
+	/* XXX: ensure the configuration will work.
+	 * This is actually impossible without major infrastructure
+	 * work. */
+
+	/* Need to go through modeset to add connectors. */
+	/* XXX: Ideally we'd do this per-output, not globally. */
+	/* XXX: Doing it globally, what guarantees another output's update
+	 * will not clear the flag before this output is updated?
+	 */
+	b->state_invalid = true;
+
+	weston_output_schedule_repaint(output_base);
 
 	return 0;
 }
