@@ -6,6 +6,8 @@ source_set("common") {
   sources = [
     "media_type_converters.cc",
     "media_type_converters.h",
+    "mojo_data_pipe_read_write.cc",
+    "mojo_data_pipe_read_write.h",
     "mojo_decoder_buffer_converter.cc",
     "mojo_decoder_buffer_converter.h",
   ]
@@ -45,6 +47,7 @@ source_set("unit_tests") {
 
   sources = [
     "media_type_converters_unittest.cc",
+    "mojo_data_pipe_read_write_unittest.cc",
     "mojo_decoder_buffer_converter_unittest.cc",
     "mojo_shared_buffer_video_frame_unittest.cc",
   ]
