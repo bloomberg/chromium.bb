@@ -33,6 +33,10 @@ EasyUnlockSettingsHandler* EasyUnlockSettingsHandler::Create(
     content::WebUIDataSource* html_source,
     Profile* profile) {
   EasyUnlockService* easy_unlock_service = EasyUnlockService::Get(profile);
+  // The service is not created for LockScreenApp profiles or "off the record".
+  if (!easy_unlock_service)
+    return nullptr;
+
   bool allowed = easy_unlock_service->IsAllowed();
   html_source->AddBoolean("easyUnlockAllowed", allowed);
   html_source->AddBoolean("easyUnlockEnabled",

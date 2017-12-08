@@ -100,6 +100,11 @@ std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
       Profile::FromBrowserContext(context));
 }
 
+std::unique_ptr<KeyedService> CreateNullEasyUnlockServiceForTest(
+    content::BrowserContext* context) {
+  return nullptr;
+}
+
 }  // namespace
 
 class EasyUnlockSettingsHandlerTest : public testing::Test {
@@ -118,6 +123,13 @@ class EasyUnlockSettingsHandlerTest : public testing::Test {
   FakeEasyUnlockService* fake_easy_unlock_service() {
     return static_cast<FakeEasyUnlockService*>(
         EasyUnlockService::Get(profile_.get()));
+  }
+
+  void MakeEasyUnlockServiceNull() {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(EasyUnlockServiceFactory::GetInstance(),
+                              &CreateNullEasyUnlockServiceForTest);
+    profile_ = builder.Build();
   }
 
   void VerifyEnabledStatusCallback(size_t expected_total_calls,
@@ -187,6 +199,16 @@ TEST_F(EasyUnlockSettingsHandlerTest, OnlyCreatedWhenEasyUnlockAllowed) {
   EXPECT_TRUE(handler.get());
 
   fake_easy_unlock_service()->set_is_allowed(false);
+  handler.reset(EasyUnlockSettingsHandler::Create(data_source, profile()));
+  EXPECT_FALSE(handler.get());
+}
+
+TEST_F(EasyUnlockSettingsHandlerTest, NotCreatedWhenEasyUnlockServiceNull) {
+  MakeEasyUnlockServiceNull();
+  std::unique_ptr<EasyUnlockSettingsHandler> handler;
+  content::WebUIDataSource* data_source =
+      content::WebUIDataSource::Create("test-data-source");
+  content::WebUIDataSource::Add(profile(), data_source);
   handler.reset(EasyUnlockSettingsHandler::Create(data_source, profile()));
   EXPECT_FALSE(handler.get());
 }
