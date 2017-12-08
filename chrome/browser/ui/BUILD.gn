@@ -3653,7 +3653,7 @@ split_static_library("ui") {
   }
 
   if (use_gio) {
-    deps += [ "//build/linux/libgio" ]
+    configs += [ "//build/linux:gio_config" ]
   }
 
   if (use_nss_certs) {

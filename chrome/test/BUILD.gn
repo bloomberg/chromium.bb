@@ -3449,7 +3449,7 @@ test("unit_tests") {
     ]
   }
   if (use_gio) {
-    deps += [ "//build/linux/libgio" ]
+    configs += [ "//build/linux:gio_config" ]
   }
   if (!is_chromeos && !use_ozone && is_linux) {
     deps += [ "//chrome/browser/ui/libgtkui" ]
