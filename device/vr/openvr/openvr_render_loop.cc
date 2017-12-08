@@ -105,7 +105,10 @@ void OpenVRRenderLoop::RequestPresent(
     mojom::VRPresentationProviderRequest request,
     base::Callback<void(bool)> callback) {
 #if defined(OS_WIN)
-  if (!texture_helper_.EnsureInitialized()) {
+  int32_t adapter_index;
+  vr::VRSystem()->GetDXGIOutputInfo(&adapter_index);
+  if (!texture_helper_.SetAdapterIndex(adapter_index) ||
+      !texture_helper_.EnsureInitialized()) {
     main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
     return;
   }

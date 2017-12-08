@@ -63,7 +63,9 @@ if (enable_vr) {
         "//third_party/WebKit/public:blink_headers",
       ]
       ldflags = [ "-landroid" ]
-      libs = [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
+      libs = [
+        "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
+      ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
 
@@ -88,7 +90,11 @@ if (enable_vr) {
     }
 
     if (is_win && enable_openvr) {
-      libs = [ "d3d11.lib" ]
+      libs = [
+        "d3d11.lib",
+        "DXGI.lib",
+      ]
+
       sources += [
         "windows/d3d11_texture_helper.cc",
         "windows/d3d11_texture_helper.h",
