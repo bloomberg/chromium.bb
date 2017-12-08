@@ -83,8 +83,9 @@
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"
-#include "contrib/optimizations/inffast_chunky.h"
+#include "contrib/optimizations/inffast_chunk.h"
 #include "contrib/optimizations/chunkcopy.h"
+#include "x86.h"
 
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
@@ -201,6 +202,8 @@ int stream_size;
 {
     int ret;
     struct inflate_state FAR *state;
+
+    x86_check_features();
 
     if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
         stream_size != (int)(sizeof(z_stream)))
@@ -419,7 +422,7 @@ unsigned copy;
            and is subsequently either overwritten or left deliberately
            undefined at the end of decode; so there's really no point.
          */
-        memset(state->window + wsize, 0, CHUNKCOPY_CHUNK_SIZE);
+        zmemzero(state->window + wsize, CHUNKCOPY_CHUNK_SIZE);
 #endif
     }
 
@@ -1056,7 +1059,7 @@ int flush;
         case LEN:
             if (have >= 6 && left >= 258) {
                 RESTORE();
-                inflate_fast_chunky(strm, out);
+                inflate_fast_chunk_(strm, out);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;

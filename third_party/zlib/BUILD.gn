@@ -10,11 +10,6 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
 
 config("zlib_config") {
   include_dirs = [ "." ]
-  if (current_cpu == "arm" || current_cpu == "arm64") {
-    if (arm_use_neon) {
-      include_dirs += [ "contrib/optimizations/arm" ]
-    }
-  }
 }
 
 config("zlib_adler32_simd_config") {
@@ -62,6 +57,57 @@ source_set("zlib_adler32_simd") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
   public_configs = [ ":zlib_adler32_simd_config" ]
+}
+
+config("zlib_inflate_chunk_simd_config") {
+  if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
+    defines = [ "INFLATE_CHUNK_SIMD_SSE2" ]
+  }
+
+  if (current_cpu == "arm" || current_cpu == "arm64") {
+    if (arm_use_neon) {
+      defines = [ "INFLATE_CHUNK_SIMD_NEON" ]
+    }
+  }
+}
+
+source_set("zlib_inflate_chunk_simd") {
+  visibility = [ ":*" ]
+
+  if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
+    include_dirs = [ "." ]
+
+    sources = [
+      "contrib/optimizations/chunkcopy.h",
+      "contrib/optimizations/inffast_chunk.c",
+      "contrib/optimizations/inffast_chunk.h",
+      "contrib/optimizations/inflate.c",
+    ]
+  }
+
+  if (current_cpu == "arm" || current_cpu == "arm64") {
+    if (arm_use_neon) {
+      include_dirs = [ "." ]
+
+      sources = [
+        "contrib/optimizations/chunkcopy.h",
+        "contrib/optimizations/inffast_chunk.c",
+        "contrib/optimizations/inffast_chunk.h",
+        "contrib/optimizations/inflate.c",
+      ]
+
+      if (!is_debug) {
+        # Use optimize_speed (-O3) to output the _smallest_ code.
+        configs -= [ "//build/config/compiler:default_optimization" ]
+        configs += [ "//build/config/compiler:optimize_speed" ]
+      }
+    }
+  }
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":zlib_inflate_chunk_simd_config" ]
 }
 
 static_library("zlib_x86_simd") {
@@ -129,31 +175,23 @@ static_library("zlib") {
     "zutil.h",
   ]
 
-  if (current_cpu == "arm" || current_cpu == "arm64") {
-    if (arm_use_neon) {
-      sources -= [ "inflate.c" ]
-      sources += [
-        "contrib/optimizations/arm/chunkcopy_arm.h",
-        "contrib/optimizations/chunkcopy.h",
-        "contrib/optimizations/inffast_chunky.c",
-        "contrib/optimizations/inffast_chunky.h",
-        "contrib/optimizations/inflate.c",
-      ]
-    }
-  }
-
   defines = []
   deps = []
 
   if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
+    deps += [ ":zlib_adler32_simd" ]
     sources += [ "x86.c" ]
 
-    deps += [ ":zlib_adler32_simd" ]
+    deps += [ ":zlib_inflate_chunk_simd" ]
+    sources -= [ "inflate.c" ]
   }
 
   if (current_cpu == "arm" || current_cpu == "arm64") {
     if (arm_use_neon) {
       deps += [ ":zlib_adler32_simd" ]
+
+      deps += [ ":zlib_inflate_chunk_simd" ]
+      sources -= [ "inflate.c" ]
     }
   }
 
