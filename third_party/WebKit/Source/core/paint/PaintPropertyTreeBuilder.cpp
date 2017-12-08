@@ -1455,6 +1455,7 @@ static void SetNeedsPaintPropertyUpdateIfNeeded(const LayoutObject& object) {
 
   // The filter generated for reflection depends on box size.
   if (box.HasReflection()) {
+    DCHECK(box.HasLayer());
     box.Layer()->SetFilterOnEffectNodeDirty();
     box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
   }

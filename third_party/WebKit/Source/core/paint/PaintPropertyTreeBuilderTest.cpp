@@ -4212,4 +4212,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
   EXPECT_EQ(nullptr, properties->OverflowClip());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, NoPropertyForSVGTextWithReflection) {
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <text id='target' style='-webkit-box-reflect: below 2px'>X</text>
+    </svg>
+  )HTML");
+  EXPECT_FALSE(PaintPropertiesForElement("target"));
+}
+
 }  // namespace blink

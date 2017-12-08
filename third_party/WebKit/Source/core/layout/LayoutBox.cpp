@@ -245,6 +245,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
 
   LayoutBoxModelObject::StyleDidChange(diff, old_style);
 
+  // Reflection works through PaintLayer. Some child classes e.g. LayoutSVGBlock
+  // don't create layers and ignore reflections.
+  if (HasReflection() && !HasLayer())
+    SetHasReflection(false);
+
   if (IsFloatingOrOutOfFlowPositioned() && old_style &&
       !old_style->IsFloating() && !old_style->HasOutOfFlowPosition() &&
       Parent() && Parent()->IsLayoutBlockFlow())
