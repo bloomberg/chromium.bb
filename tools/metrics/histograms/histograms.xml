@@ -54109,6 +54109,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="OfflinePages.Consistency.DeleteOrphanedArchivesResult"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 12/2017, replaced by
+    OfflinePages.ConsistencyCheck.Temporary.Result.
+  </obsolete>
   <owner>romax@chromium.org</owner>
   <summary>
     Whether an attempt to delete archive files without metadata was successful.
@@ -54117,6 +54121,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="OfflinePages.Consistency.DeletePagesMissingArchiveFileResult"
     enum="OfflinePagesDeletePageResult">
+  <obsolete>
+    Deprecated 12/2017, replaced by
+    OfflinePages.ConsistencyCheck.Temporary.Result and
+    OfflinePages.ConsistencyCheck.Persistent.Result.
+  </obsolete>
   <owner>romax@chromium.org</owner>
   <summary>
     Whether an attempt to delete pages without archives was successful.
@@ -54136,6 +54145,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.Consistency.OrphanedArchivesCount">
+  <obsolete>
+    Deprecated 12/2017, replaced by
+    OfflinePages.ConsistencyCheck.Temporary.PagesMissingDbEntryCount and
+    OfflinePages.ConsistencyCheck.Persistent.PagesMissingDbEntryCount.
+  </obsolete>
   <owner>romax@chromium.org</owner>
   <summary>
     Number of archives without metadata entry when checking consistency.
@@ -54143,10 +54157,67 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.Consistency.PagesMissingArchiveFileCount">
+  <obsolete>
+    Deprecated 12/2017, replaced by
+    OfflinePages.ConsistencyCheck.Temporary.PagesMissingArchiveFileCount and
+    OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount.
+  </obsolete>
   <owner>romax@chromium.org</owner>
   <summary>
     Number of offline pages without archive file when checking consistency.
   </summary>
+</histogram>
+
+<histogram
+    name="OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount"
+    units="pages">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Number of persistent offline pages without archive file when checking
+    consistency. It will only be reported if the number is larger than 0.
+  </summary>
+</histogram>
+
+<histogram
+    name="OfflinePages.ConsistencyCheck.Persistent.PagesMissingDbEntryCount"
+    units="pages">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Number of archives without database entry when checking persistent page
+    consistency. It will only be reported if the number is larger than 0.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.ConsistencyCheck.Persistent.Result"
+    enum="OfflinePagesSyncOperationResult">
+  <owner>romax@chromium.org</owner>
+  <summary>Result of persistent page consistency check.</summary>
+</histogram>
+
+<histogram
+    name="OfflinePages.ConsistencyCheck.Temporary.PagesMissingArchiveFileCount"
+    units="pages">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Number of temporary offline pages without archive file when checking
+    consistency. It will only be reported if the number is larger than 0.
+  </summary>
+</histogram>
+
+<histogram
+    name="OfflinePages.ConsistencyCheck.Temporary.PagesMissingDbEntryCount"
+    units="pages">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Number of archives without database entry when checking temporary page
+    consistency. It will only be reported if the number is larger than 0.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.ConsistencyCheck.Temporary.Result"
+    enum="OfflinePagesSyncOperationResult">
+  <owner>romax@chromium.org</owner>
+  <summary>Result of temporary page consistency check.</summary>
 </histogram>
 
 <histogram name="OfflinePages.DeletePage.AccessCount">

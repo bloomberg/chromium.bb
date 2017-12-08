@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -43,7 +44,7 @@ class PersistentPagesConsistencyCheckTaskTest : public testing::Test {
   ClientPolicyController* policy_controller() {
     return policy_controller_.get();
   }
-
+  base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
   const base::FilePath& persistent_dir() { return persistent_dir_.GetPath(); }
 
  private:
@@ -54,6 +55,7 @@ class PersistentPagesConsistencyCheckTaskTest : public testing::Test {
   OfflinePageItemGenerator generator_;
   TestTaskRunner runner_;
   std::unique_ptr<ClientPolicyController> policy_controller_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   base::ScopedTempDir persistent_dir_;
   bool should_create_db_entry_;
@@ -76,6 +78,7 @@ void PersistentPagesConsistencyCheckTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
   ASSERT_TRUE(persistent_dir_.CreateUniqueTempDir());
   policy_controller_ = base::MakeUnique<ClientPolicyController>();
+  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
 }
 
 void PersistentPagesConsistencyCheckTaskTest::TearDown() {
@@ -143,6 +146,15 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
   EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount",
+      0);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.PagesMissingDbEntryCount", 1,
+      1);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.Result",
+      static_cast<int>(SyncOperationResult::SUCCESS), 1);
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows
@@ -174,6 +186,14 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
   EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.PagesMissingDbEntryCount", 0);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount",
+      1, 1);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.Result",
+      static_cast<int>(SyncOperationResult::SUCCESS), 1);
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows
@@ -208,11 +228,19 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page3));
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount",
+      1, 1);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.PagesMissingDbEntryCount", 1,
+      1);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.Result",
+      static_cast<int>(SyncOperationResult::SUCCESS), 1);
 }
 
 TEST_F(PersistentPagesConsistencyCheckTaskTest, TestKeepingNonMhtmlFile) {
-  // The persistent pages will be deleted from DB if their DB entries exist but
-  // files are missing.
+  // Create an offline page with mhtml extension but has no DB entry.
   SetShouldCreateDbEntry(false);
   SetShouldCreateFile(true);
   OfflinePageItem page1 = AddPage(kDownloadNamespace, persistent_dir());
@@ -232,6 +260,15 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest, TestKeepingNonMhtmlFile) {
   EXPECT_EQ(0LL, store_test_util()->GetPageCount());
   EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir()));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page1));
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount",
+      0);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.PagesMissingDbEntryCount", 1,
+      1);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ConsistencyCheck.Persistent.Result",
+      static_cast<int>(SyncOperationResult::SUCCESS), 1);
 }
 
 }  // namespace offline_pages

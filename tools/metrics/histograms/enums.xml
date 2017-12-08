@@ -30996,6 +30996,15 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OfflinePagesSyncOperationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Invalid database connection"/>
+  <int value="2" label="Error when transaction begins"/>
+  <int value="3" label="Error when transaction commits"/>
+  <int value="4" label="Error when executing database statements"/>
+  <int value="5" label="Error when executing file operations"/>
+</enum>
+
 <enum name="OfflinePagesTabRestoreType">
   <int value="0" label="While online">
     Tab was successfully restored while the device was online. Can help assess
