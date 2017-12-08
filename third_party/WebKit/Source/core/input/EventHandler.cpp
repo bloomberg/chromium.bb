@@ -892,6 +892,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
       last_mouse_move_event_subframe_ != new_subframe) {
     last_mouse_move_event_subframe_->GetEventHandler().HandleMouseLeaveEvent(
         mev.Event());
+    last_mouse_move_event_subframe_->GetEventHandler()
+        .mouse_event_manager_->SetLastMousePositionAsUnknown();
   }
 
   if (new_subframe) {
