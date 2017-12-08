@@ -231,7 +231,7 @@ struct GPU_EXPORT ContextState {
       GLuint unit, const ContextState* prev_state) const;
   void RestoreSamplerBinding(GLuint unit, const ContextState* prev_state) const;
 
-  void PushTextureDecompressionUnpackState() const;
+  void PushTextureUnpackState() const;
   void RestoreUnpackState() const;
   void DoLineWidth(GLfloat width) const;
 
