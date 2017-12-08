@@ -293,16 +293,11 @@ std::string GetContentSecurityPolicyScriptSrcIOThread() {
       LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY);
 }
 
-std::string GetContentSecurityPolicyChildSrcIOThread(bool allow_google) {
-  if (allow_google) {
-    // Allow embedding of the most visited iframe, as well as the account
-    // switcher and the notifications dropdown from the One Google Bar, and/or
-    // the iframe for interactive Doodles.
-    return base::StringPrintf("child-src %s https://*.google.com/;",
-                              chrome::kChromeSearchMostVisitedUrl);
-  }
-  // Allow embedding of the most visited iframe.
-  return base::StringPrintf("child-src %s;",
+std::string GetContentSecurityPolicyChildSrcIOThread() {
+  // Allow embedding of the most visited iframe, as well as the account
+  // switcher and the notifications dropdown from the One Google Bar, and/or
+  // the iframe for interactive Doodles.
+  return base::StringPrintf("child-src %s https://*.google.com/;",
                             chrome::kChromeSearchMostVisitedUrl);
 }
 
@@ -623,12 +618,7 @@ std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
 std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // TODO(treib): We're on the IO thread but accessing data owned by the UI
-  // thread. Since we're only reading (not writing), and those values don't
-  // usually change after constructing this object, that's prooobably okay.
-  // It'd be even more okay to not do this. crbug.com/792490
-  bool allow_google = one_google_bar_service_ || logo_service_;
-  return GetContentSecurityPolicyChildSrcIOThread(allow_google);
+  return GetContentSecurityPolicyChildSrcIOThread();
 }
 
 void LocalNtpSource::OnOneGoogleBarDataUpdated() {
