@@ -606,6 +606,14 @@ void InProcessBrowserTest::PostRunTestOnMainThread() {
 void InProcessBrowserTest::QuitBrowsers() {
   if (chrome::GetTotalBrowserCount() == 0) {
     browser_shutdown::NotifyAppTerminating();
+
+    // Post OnAppExiting call as a task because the code path CHECKs a RunLoop
+    // runs at the current thread.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&chrome::OnAppExiting));
+    // Spin the message loop to ensure OnAppExitting finishes so that proper
+    // clean up happens before returning.
+    content::RunAllPendingInMessageLoop();
     return;
   }
 

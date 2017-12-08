@@ -270,6 +270,14 @@ void MusClient::SetMusPropertyMirror(
   mus_property_mirror_ = std::move(mirror);
 }
 
+void MusClient::CloseAllWidgets() {
+  for (aura::Window* root : window_tree_client_->GetRoots()) {
+    Widget* widget = Widget::GetWidgetForNativeView(root);
+    if (widget)
+      widget->CloseNow();
+  }
+}
+
 ui::mojom::WindowServerTest* MusClient::GetTestingInterface() const {
   // This will only be set in tests. CHECK to ensure it doesn't get used
   // elsewhere.

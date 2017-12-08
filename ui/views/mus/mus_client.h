@@ -120,6 +120,9 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     return mus_property_mirror_.get();
   }
 
+  // Close all widgets this client knows.
+  void CloseAllWidgets();
+
   // Returns an interface to test drawing in mus. Only available when created
   // with MusClientTestingState::CREATE_TESTING_STATE.
   ui::mojom::WindowServerTest* GetTestingInterface() const;
