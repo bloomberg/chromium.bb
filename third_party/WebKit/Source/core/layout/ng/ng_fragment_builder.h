@@ -18,6 +18,7 @@
 namespace blink {
 
 class NGPhysicalFragment;
+class NGPhysicalLineBoxFragment;
 
 class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   DISALLOW_NEW();
@@ -105,6 +106,30 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // This function should be called at most once for a given algorithm/baseline
   // type pair.
   void AddBaseline(NGBaselineRequest, LayoutUnit);
+
+  // Inline containing block geometry is defined by two fragments:
+  // start and end. FragmentPair holds the information needed to compute
+  // inline containing block geometry wrt enclosing container block.
+  //
+  // start_fragment is the start fragment of inline containing block.
+  // start_fragment_offset is offset wrt start_linebox_fragment
+  // start_linebox_offset is offset of linebox from inline-cb
+  // end_fragment/linebox are complementary properties for end fragment.
+  struct FragmentPair {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    const NGPhysicalLineBoxFragment* start_linebox_fragment;
+    NGLogicalOffset start_linebox_offset;
+    const NGPhysicalFragment* start_fragment;
+    NGPhysicalOffset start_fragment_offset;
+    const NGPhysicalLineBoxFragment* end_linebox_fragment;
+    NGLogicalOffset end_linebox_offset;
+    const NGPhysicalFragment* end_fragment;
+    NGPhysicalOffset end_fragment_offset;
+  };
+
+  void ComputeInlineContainerFragments(
+      HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments,
+      NGLogicalSize* container_size);
 
  private:
   NGLayoutInputNode node_;

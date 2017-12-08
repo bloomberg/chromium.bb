@@ -5,6 +5,8 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 
 #include "core/layout/LayoutObject.h"
+#include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
+#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
@@ -215,6 +217,56 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
       new NGLayoutResult(nullptr, oof_positioned_descendants, positioned_floats,
                          unpositioned_floats_, nullptr, bfc_offset_,
                          end_margin_strut_, LayoutUnit(), status));
+}
+
+// Finds FragmentPairs that define inline containing blocks.
+// inline_container_fragments is a map whose keys specify which
+// inline containing blocks are required.
+// Not finding a required block is an unexpected behavior (DCHECK).
+void NGFragmentBuilder::ComputeInlineContainerFragments(
+    HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments,
+    NGLogicalSize* container_size) {
+  // This function has detailed knowledge of inline fragment tree structure,
+  // and will break if this changes.
+  DCHECK_GE(inline_size_, LayoutUnit());
+  DCHECK_GE(block_size_, LayoutUnit());
+  container_size->inline_size = inline_size_;
+  container_size->block_size = block_size_;
+
+  for (size_t i = 0; i < children_.size(); i++) {
+    if (children_[i]->IsLineBox()) {
+      const NGPhysicalLineBoxFragment* linebox =
+          ToNGPhysicalLineBoxFragment(children_[i].get());
+      for (auto& descendant :
+           NGInlineFragmentTraversal::DescendantsOf(*linebox)) {
+        LayoutObject* key = {};
+        if (descendant.fragment->IsText()) {
+          key = descendant.fragment->GetLayoutObject();
+          DCHECK(key);
+          key = key->Parent();
+          DCHECK(key);
+        } else if (descendant.fragment->IsBox()) {
+          key = descendant.fragment->GetLayoutObject();
+        }
+        if (key && inline_container_fragments->Contains(key)) {
+          NGFragmentBuilder::FragmentPair value =
+              inline_container_fragments->at(key);
+          if (!value.start_fragment) {
+            value.start_fragment = descendant.fragment;
+            value.start_fragment_offset = descendant.offset_to_container_box;
+            value.start_linebox_fragment = linebox;
+            value.start_linebox_offset = offsets_.at(i);
+          }
+          value.end_fragment = descendant.fragment;
+          value.end_fragment_offset = descendant.offset_to_container_box;
+          value.end_linebox_fragment = linebox;
+          value.end_linebox_offset = offsets_.at(i);
+          inline_container_fragments->Set(key, value);
+        }
+      }
+    }
+  }
+  // TODO(atotic) need to implement correct RTL handling.
 }
 
 }  // namespace blink
