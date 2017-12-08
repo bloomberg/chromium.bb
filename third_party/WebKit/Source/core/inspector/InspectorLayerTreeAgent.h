@@ -30,13 +30,13 @@
 #ifndef InspectorLayerTreeAgent_h
 #define InspectorLayerTreeAgent_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/LayerTree.h"
 #include "core/page/PageOverlay.h"
 #include "platform/Timer.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -51,8 +51,6 @@ class PaintLayerCompositor;
 
 class CORE_EXPORT InspectorLayerTreeAgent final
     : public InspectorBaseAgent<protocol::LayerTree::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorLayerTreeAgent);
-
  public:
   class Client {
    public:
@@ -134,6 +132,7 @@ class CORE_EXPORT InspectorLayerTreeAgent final
   typedef HashMap<String, scoped_refptr<PictureSnapshot>> SnapshotById;
   SnapshotById snapshot_by_id_;
   bool suppress_layer_paint_events_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorLayerTreeAgent);
 };
 
 }  // namespace blink

@@ -31,13 +31,13 @@
 #ifndef WorkerInspectorController_h
 #define WorkerInspectorController_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {
@@ -50,8 +50,6 @@ class WorkerInspectorController final
     : public GarbageCollectedFinalized<WorkerInspectorController>,
       public InspectorSession::Client,
       private WebThread::TaskObserver {
-  WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
-
  public:
   static WorkerInspectorController* Create(WorkerThread*);
   ~WorkerInspectorController() override;
@@ -83,6 +81,7 @@ class WorkerInspectorController final
   WorkerThread* thread_;
   Member<CoreProbeSink> probe_sink_;
   HeapHashMap<int, Member<InspectorSession>> sessions_;
+  DISALLOW_COPY_AND_ASSIGN(WorkerInspectorController);
 };
 
 }  // namespace blink

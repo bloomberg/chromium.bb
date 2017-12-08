@@ -5,11 +5,11 @@
 #ifndef InspectorResourceContainer_h
 #define InspectorResourceContainer_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -20,8 +20,6 @@ class LocalFrame;
 
 class CORE_EXPORT InspectorResourceContainer
     : public GarbageCollectedFinalized<InspectorResourceContainer> {
-  WTF_MAKE_NONCOPYABLE(InspectorResourceContainer);
-
  public:
   explicit InspectorResourceContainer(InspectedFrames*);
   ~InspectorResourceContainer();
@@ -39,6 +37,7 @@ class CORE_EXPORT InspectorResourceContainer
   Member<InspectedFrames> inspected_frames_;
   HashMap<String, String> style_sheet_contents_;
   HashMap<int, String> style_element_contents_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorResourceContainer);
 };
 
 }  // namespace blink

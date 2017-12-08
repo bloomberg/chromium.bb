@@ -5,19 +5,18 @@
 #ifndef InspectorTaskRunner_h
 #define InspectorTaskRunner_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
 class CORE_EXPORT InspectorTaskRunner final {
-  WTF_MAKE_NONCOPYABLE(InspectorTaskRunner);
   USING_FAST_MALLOC(InspectorTaskRunner);
 
  public:
@@ -55,6 +54,7 @@ class CORE_EXPORT InspectorTaskRunner final {
   ThreadCondition condition_;
   Deque<Task> queue_;
   bool killed_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorTaskRunner);
 };
 
 }  // namespace blink

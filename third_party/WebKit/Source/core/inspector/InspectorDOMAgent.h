@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/EventListenerMap.h"
@@ -67,8 +68,6 @@ class ShadowRoot;
 
 class CORE_EXPORT InspectorDOMAgent final
     : public InspectorBaseAgent<protocol::DOM::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
-
  public:
   struct CORE_EXPORT DOMListener : public GarbageCollectedMixin {
     virtual ~DOMListener() {}
@@ -336,6 +335,7 @@ class CORE_EXPORT InspectorDOMAgent final
   Member<InspectorHistory> history_;
   Member<DOMEditor> dom_editor_;
   bool suppress_attribute_modified_event_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorDOMAgent);
 };
 
 }  // namespace blink
