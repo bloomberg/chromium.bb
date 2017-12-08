@@ -422,16 +422,6 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
     return route.is_local();
   }
 
-  static const std::string& custom_controller_path(
-      const media_router::MediaRoute& route) {
-    return route.custom_controller_path();
-  }
-
-  static bool supports_media_route_controller(
-      const media_router::MediaRoute& route) {
-    return route.supports_media_route_controller();
-  }
-
   static media_router::RouteControllerType controller_type(
       const media_router::MediaRoute& route) {
     return route.controller_type();

@@ -74,7 +74,6 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
                                        kSinkId,
                                        kDescription,
                                        false,
-                                       "",
                                        false);
   std::unique_ptr<ExtensionMediaRouteProviderProxy> provider_proxy_;
   mojom::MediaRouteProviderPtr provider_proxy_ptr_;

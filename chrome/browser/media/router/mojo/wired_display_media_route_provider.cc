@@ -88,7 +88,7 @@ void WiredDisplayMediaRouteProvider::CreateRoute(
   // Use |presentation_id| as the route ID. This MRP creates only one route per
   // presentation ID.
   MediaRoute route(presentation_id, MediaSource(media_source), sink_id, "",
-                   true, "", true);
+                   true, true);
   route.set_local_presentation(true);
 
   // TODO(crbug.com/777654): Create a presentation receiver window.

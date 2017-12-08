@@ -61,7 +61,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
         MediaRouterUIService::Get(browser()->profile())->action_controller();
 
     routes_ = {MediaRoute("routeId1", MediaSource("sourceId"), "sinkId1",
-                          "description", true, std::string(), true)};
+                          "description", true, true)};
   }
 
   void OpenMediaRouterDialogAndWaitForNewWebContents() {

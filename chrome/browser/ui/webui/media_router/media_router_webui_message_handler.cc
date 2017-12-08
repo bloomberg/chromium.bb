@@ -171,15 +171,6 @@ std::unique_ptr<base::DictionaryValue> RouteToValue(
     dictionary->SetInteger("currentCastMode", current_cast_mode);
   }
 
-  const std::string& custom_path = route.custom_controller_path();
-  if (!incognito && !custom_path.empty()) {
-    std::string full_custom_controller_path =
-        base::StringPrintf("%s://%s/%s", extensions::kExtensionScheme,
-                           extension_id.c_str(), custom_path.c_str());
-    DCHECK(GURL(full_custom_controller_path).is_valid());
-    dictionary->SetString("customControllerPath", full_custom_controller_path);
-  }
-
   return dictionary;
 }
 

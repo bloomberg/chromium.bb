@@ -119,15 +119,12 @@ class MediaRouterActionUnitTest : public MediaRouterWebUITest {
             browser(),
             browser_action_test_util_->GetToolbarActionsBar()));
 
-    local_display_route_list_.push_back(
-        media_router::MediaRoute("routeId1", fake_source1_, "sinkId1",
-                                 "description", true, std::string(), true));
-    non_local_display_route_list_.push_back(
-        media_router::MediaRoute("routeId2", fake_source1_, "sinkId2",
-                                 "description", false, std::string(), true));
-    non_local_display_route_list_.push_back(
-        media_router::MediaRoute("routeId3", fake_source2_, "sinkId3",
-                                 "description", true, std::string(), false));
+    local_display_route_list_.push_back(media_router::MediaRoute(
+        "routeId1", fake_source1_, "sinkId1", "description", true, true));
+    non_local_display_route_list_.push_back(media_router::MediaRoute(
+        "routeId2", fake_source1_, "sinkId2", "description", false, true));
+    non_local_display_route_list_.push_back(media_router::MediaRoute(
+        "routeId3", fake_source2_, "sinkId3", "description", true, false));
   }
 
   void TearDown() override {

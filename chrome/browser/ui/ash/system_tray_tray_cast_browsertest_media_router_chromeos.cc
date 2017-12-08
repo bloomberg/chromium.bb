@@ -34,7 +34,7 @@ media_router::MediaRoute MakeRoute(const std::string& route_id,
                                    bool is_local) {
   return media_router::MediaRoute(
       route_id, media_router::MediaSourceForDesktop(), sink_id, "description",
-      is_local, std::string() /*custom_controller_path*/, true /*for_display*/);
+      is_local, true /*for_display*/);
 }
 
 // Returns the cast tray instance.

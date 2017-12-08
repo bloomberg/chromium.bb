@@ -543,11 +543,9 @@ function routeToMojo_(route) {
     'description': route.description,
     'iconUrl': route.iconUrl,
     'isLocal': route.isLocal,
-    'customControllerPath': route.customControllerPath || '',
     'forDisplay': route.forDisplay,
     'isIncognito': route.offTheRecord,
     'isLocalPresentation': route.isOffscreenPresentation,
-    'supportsMediaRouteController': route.supportsMediaRouteController,
     'controllerType': route.controllerType,
     // Begin newly added properties, followed by the milestone they were
     // added.  The guard should be safe to remove N+2 milestones later.

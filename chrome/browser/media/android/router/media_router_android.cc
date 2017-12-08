@@ -239,8 +239,7 @@ void MediaRouterAndroid::OnRouteCreated(const MediaRoute::Id& route_id,
     return;
 
   MediaRoute route(route_id, request->media_source, sink_id, std::string(),
-                   is_local, std::string(),
-                   true);  // TODO(avayvod): Populate for_display.
+                   is_local, true);  // TODO(avayvod): Populate for_display.
 
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromSuccess(route, request->presentation_id);
