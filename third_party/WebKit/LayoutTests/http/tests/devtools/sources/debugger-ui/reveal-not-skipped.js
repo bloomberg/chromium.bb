@@ -28,12 +28,10 @@
             Sources.TabbedEditorContainer.prototype, 'showFile', step3);
       }
 
-      async function step3() {
+      function step3() {
         TestRunner.addResult(
             'Script source was shown for \'' +
             panel.visibleView._uiSourceCode.name() + '\'.');
-        SourcesTestRunner.resumeExecution();
-        await SourcesTestRunner.waitUntilResumedPromise();
         TestRunner.addResult('Reloading page...');
         TestRunner.reloadPage(step4);
       }
