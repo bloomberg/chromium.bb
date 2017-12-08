@@ -61,6 +61,7 @@ struct weston_desktop_xwayland_surface {
 	const struct weston_xwayland_client_interface *client_interface;
 	struct weston_geometry next_geometry;
 	bool has_next_geometry;
+	bool committed;
 	bool added;
 	enum weston_desktop_xwayland_surface_state state;
 };
@@ -99,6 +100,14 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 			weston_desktop_api_surface_added(surface->desktop,
 							 surface->surface);
 			surface->added = true;
+			if (surface->state == NONE && surface->committed)
+				/* We had a race, and wl_surface.commit() was
+				 * faster, just fake a commit to map the
+				 * surface */
+				weston_desktop_api_committed(surface->desktop,
+							     surface->surface,
+							     0, 0);
+
 		} else if (surface->added) {
 			weston_desktop_api_surface_removed(surface->desktop,
 							   surface->surface);
@@ -133,6 +142,7 @@ weston_desktop_xwayland_surface_committed(struct weston_desktop_surface *dsurfac
 	struct weston_geometry oldgeom;
 
 	assert(dsurface == surface->surface);
+	surface->committed = true;
 
 #ifdef WM_DEBUG
 	weston_log("%s: xwayland surface %p\n", __func__, surface);
