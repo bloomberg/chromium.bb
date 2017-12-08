@@ -34,6 +34,16 @@ FullscreenController::FullscreenController()
 
 FullscreenController::~FullscreenController() = default;
 
+void FullscreenController::SetWebStateList(WebStateList* web_state_list) {
+  if (web_state_list_observer_)
+    web_state_list_observer_->Disconnect();
+  web_state_list_ = web_state_list;
+  web_state_list_observer_ =
+      web_state_list_ ? base::MakeUnique<FullscreenWebStateListObserver>(
+                            model_.get(), web_state_list_)
+                      : nullptr;
+}
+
 void FullscreenController::AddObserver(FullscreenControllerObserver* observer) {
   mediator_->AddObserver(observer);
 }
@@ -57,6 +67,8 @@ void FullscreenController::DecrementDisabledCounter() {
 
 void FullscreenController::Shutdown() {
   mediator_->Disconnect();
+  if (web_state_list_observer_)
+    web_state_list_observer_->Disconnect();
   [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastContentScrollOffset:)];
   [broadcaster_ removeObserver:bridge_

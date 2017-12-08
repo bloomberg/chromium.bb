@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -165,6 +166,7 @@ using ios::material::TimingFunction;
 
     contentView_ = [[UIView alloc] initWithFrame:viewFrame];
     contentView_.translatesAutoresizingMaskIntoConstraints = NO;
+    contentView_.layer.allowsGroupOpacity = YES;
     [self.view addSubview:contentView_];
     NSLayoutConstraint* safeAreaLeading = nil;
     NSLayoutConstraint* safeAreaTrailing = nil;
@@ -755,6 +757,25 @@ using ios::material::TimingFunction;
       bubble_util::AnchorPoint(toolsMenuButton_.frame, direction);
   return [toolsMenuButton_.superview convertPoint:anchorPoint
                                            toView:toolsMenuButton_.window];
+}
+
+#pragma mark - FullscreenUIElement
+
+- (void)updateForFullscreenProgress:(CGFloat)progress {
+  self.contentView.alpha = progress;
+}
+
+- (void)updateForFullscreenEnabled:(BOOL)enabled {
+  if (!enabled)
+    [self updateForFullscreenProgress:1.0];
+}
+
+- (void)finishFullscreenScrollWithAnimator:
+    (FullscreenScrollEndAnimator*)animator {
+  CGFloat finalProgress = animator.finalProgress;
+  [animator addAnimations:^() {
+    [self updateForFullscreenProgress:finalProgress];
+  }];
 }
 
 #pragma mark - CAAnimationDelegate

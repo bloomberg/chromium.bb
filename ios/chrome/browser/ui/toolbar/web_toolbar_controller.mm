@@ -44,6 +44,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/external_search_commands.h"
 #import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
@@ -527,7 +528,8 @@ using ios::material::TimingFunction;
 
   [self startObservingTTSNotifications];
 
-  [self.view setDelegate:self];
+  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+    [self.view setDelegate:self];
 
   if (idiom == IPHONE_IDIOM) {
     [[self stackButton] addTarget:dispatcher

@@ -5,6 +5,8 @@
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 
 #import <WebKit/WebKit.h>
+#include <cmath>
+#include <limits>
 
 #include "base/logging.h"
 
@@ -116,30 +118,31 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 }
 
 - (void)setTopContentPadding:(CGFloat)newTopPadding {
-  if (!self.shouldUseInsetForTopPadding) {
-    if (_topContentPadding != newTopPadding) {
-      // Update the content offset of the scroll view to match the padding
-      // that will be included in the frame.
-      CGFloat paddingChange = newTopPadding - _topContentPadding;
-      CGPoint contentOffset = [_scrollView contentOffset];
-      contentOffset.y += paddingChange;
-      [_scrollView setContentOffset:contentOffset];
-      _topContentPadding = newTopPadding;
-      // Update web view frame immediately to make |topContentPadding|
-      // animatable.
-      [self updateWebViewFrame];
-      // Setting WKWebView frame can mistakenly reset contentOffset. Change it
-      // back to the initial value if necessary.
-      // TODO(crbug.com/645857): Remove this workaround once WebKit bug is
-      // fixed.
-      if ([_scrollView contentOffset].y != contentOffset.y) {
-        [_scrollView setContentOffset:contentOffset];
-      }
-    }
-  } else {
+  CGFloat delta = std::fabs(_topContentPadding - newTopPadding);
+  if (delta <= std::numeric_limits<CGFloat>::epsilon())
+    return;
+  if (self.shouldUseInsetForTopPadding) {
     UIEdgeInsets inset = [_scrollView contentInset];
     inset.top = newTopPadding;
     [_scrollView setContentInset:inset];
+  } else {
+    // Update the content offset of the scroll view to match the padding
+    // that will be included in the frame.
+    CGFloat paddingChange = newTopPadding - _topContentPadding;
+    CGPoint contentOffset = [_scrollView contentOffset];
+    contentOffset.y += paddingChange;
+    [_scrollView setContentOffset:contentOffset];
+    _topContentPadding = newTopPadding;
+    // Update web view frame immediately to make |topContentPadding|
+    // animatable.
+    [self updateWebViewFrame];
+    // Setting WKWebView frame can mistakenly reset contentOffset. Change it
+    // back to the initial value if necessary.
+    // TODO(crbug.com/645857): Remove this workaround once WebKit bug is
+    // fixed.
+    if ([_scrollView contentOffset].y != contentOffset.y) {
+      [_scrollView setContentOffset:contentOffset];
+    }
   }
 }
 

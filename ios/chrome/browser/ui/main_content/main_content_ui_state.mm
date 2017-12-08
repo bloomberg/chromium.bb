@@ -85,6 +85,7 @@
 - (void)scrollViewWillBeginDraggingWithGesture:
     (UIPanGestureRecognizer*)panGesture {
   self.state.dragging = YES;
+  self.state.decelerating = NO;
   self.panGesture = panGesture;
 }
 

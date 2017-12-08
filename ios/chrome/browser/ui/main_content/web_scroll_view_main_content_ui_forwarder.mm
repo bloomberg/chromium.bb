@@ -56,7 +56,9 @@
 }
 
 - (void)dealloc {
-  [self disconnect];
+  // |-disconnect| must be called before deallocation.
+  DCHECK(!_bridge);
+  DCHECK(!_proxy);
 }
 
 #pragma mark Accessors

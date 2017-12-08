@@ -104,6 +104,8 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   bool scrolling_ = false;
   // Whether the main content is being dragged.
   bool dragging_ = false;
+  // The number of FullscreenModelObserver callbacks currently being executed.
+  size_t observer_callback_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenModel);
 };

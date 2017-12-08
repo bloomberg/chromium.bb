@@ -391,9 +391,6 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
                       scrollingToOffset:0.0f];
   } else {
     if (!visible && ![webViewProxy_ shouldUseInsetForTopPadding]) {
-      // The header will be hidden, so if the content view is not using the
-      // content inset, it is necessary to decrease the top padding, so more
-      // content is visible to the user.
       CGFloat newTopContentPadding = self.headerHeight - headerPosition;
       CGFloat topContentPaddingChange =
           [webViewProxy_ topContentPadding] - newTopContentPadding;
