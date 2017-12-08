@@ -686,7 +686,7 @@ def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir):
           '--no-quickmerge',
           '-b', moblab_board,
           '--results_dir', path_util.ToChrootPath(results_dir),
-          'localhost:%s' % moblab_ip, 'moblab_DummyServerSuite',
+          'localhost:%s' % moblab_ip, 'moblab_DummyServerNoSspSuite',
           '--args', ' '.join(test_args),
       ],
       enter_chroot=True,
