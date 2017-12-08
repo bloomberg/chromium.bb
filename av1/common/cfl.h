@@ -14,12 +14,11 @@
 
 #include "av1/common/blockd.h"
 
-static INLINE int is_cfl_allowed(const MACROBLOCKD *const xd) {
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const BLOCK_SIZE plane_bsize = AOMMAX(
-      BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]));
-  assert(plane_bsize < BLOCK_SIZES_ALL);
-  return plane_bsize <= BLOCK_32X32;
+static INLINE int is_cfl_allowed(const MB_MODE_INFO *mbmi) {
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  assert(bsize >= BLOCK_4X4);  // Intra luma partitions can't be < 4X4
+  assert(bsize < BLOCK_SIZES_ALL);
+  return (bsize >= BLOCK_4X4) && (bsize <= CFL_MAX_BLOCK_SIZE);
 }
 
 static INLINE int get_scaled_luma_q0(int alpha_q3, int16_t pred_buf_q3) {

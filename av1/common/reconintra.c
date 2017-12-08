@@ -2782,7 +2782,7 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_DEBUG
     assert(blk_col == 0);
     assert(blk_row == 0);
-    assert(is_cfl_allowed(xd));
+    assert(is_cfl_allowed(mbmi));
     const BLOCK_SIZE plane_bsize =
         AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
     assert(plane_bsize < BLOCK_SIZES_ALL);

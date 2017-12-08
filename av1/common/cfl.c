@@ -189,7 +189,7 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                        TX_SIZE tx_size, int plane) {
   CFL_CTX *const cfl = &xd->cfl;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  assert(is_cfl_allowed(xd));
+  assert(is_cfl_allowed(mbmi));
 
   if (!cfl->are_parameters_computed) cfl_compute_parameters(xd, tx_size);
 
@@ -466,7 +466,7 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
   uint8_t *dst =
       &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
 
-  assert(is_cfl_allowed(xd));
+  assert(is_cfl_allowed(&xd->mi[0]->mbmi));
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     // Only dimensions of size 4 can have an odd offset.
     assert(!((col & 1) && tx_size_wide[tx_size] != 4));
@@ -487,7 +487,7 @@ void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
   int col = 0;
   bsize = AOMMAX(BLOCK_4X4, bsize);
 
-  assert(is_cfl_allowed(xd));
+  assert(is_cfl_allowed(&xd->mi[0]->mbmi));
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     sub8x8_adjust_offset(cfl, &row, &col);
 #if CONFIG_DEBUG
