@@ -347,10 +347,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {
   [_webControllerSnapshotHelper
-      retrieveSnapshotForWebController:self.webController
-                             sessionID:self.tabId
-                          withOverlays:[self snapshotOverlays]
-                              callback:callback];
+      retrieveSnapshotWithOverlays:[self snapshotOverlays]
+                          callback:callback];
 }
 
 - (NSString*)title {
@@ -1029,10 +1027,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                      callback:completionHandler];
   } else {
     [_webControllerSnapshotHelper
-        retrieveGreySnapshotForWebController:self.webController
-                                   sessionID:sessionID
-                                withOverlays:[self snapshotOverlays]
-                                    callback:completionHandler];
+        retrieveGreySnapshotWithOverlays:[self snapshotOverlays]
+                                callback:completionHandler];
   }
 }
 
@@ -1040,10 +1036,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                      visibleFrameOnly:(BOOL)visibleFrameOnly {
   NSArray* overlays = shouldAddOverlay ? [self snapshotOverlays] : nil;
   UIImage* snapshot = [_webControllerSnapshotHelper
-      updateSnapshotForWebController:self.webController
-                           sessionID:self.tabId
-                        withOverlays:overlays
-                    visibleFrameOnly:visibleFrameOnly];
+      updateSnapshotWithOverlays:overlays
+                visibleFrameOnly:visibleFrameOnly];
   [_parentTabModel notifyTabSnapshotChanged:self withImage:snapshot];
   return snapshot;
 }
@@ -1052,9 +1046,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                        visibleFrameOnly:(BOOL)visibleFrameOnly {
   NSArray* overlays = shouldAddOverlay ? [self snapshotOverlays] : nil;
   return [_webControllerSnapshotHelper
-      generateSnapshotForWebController:self.webController
-                          withOverlays:overlays
-                      visibleFrameOnly:visibleFrameOnly];
+      generateSnapshotWithOverlays:overlays
+                  visibleFrameOnly:visibleFrameOnly];
 }
 
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled {

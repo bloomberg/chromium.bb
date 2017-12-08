@@ -7,18 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-@class CRWWebController;
 @class SnapshotOverlay;
 @class Tab;
 
 // A class that takes care of creating, storing and returning snapshots of a
-// WebController's web page.
+// tab's web page.
 @interface WebControllerSnapshotHelper : NSObject
 
 // Designated initializer. |tab| must not be nil.
-// TODO(crbug.com/661641): Since we already retain a CRWWebController* and that
-// is the  same which is passed to these methods, remove the CRWWebController
-// param from the following methods.
 // TODO(crbug.com/380819): Replace the need to use Tab directly here by using a
 // delegate pattern.
 - (instancetype)initWithTab:(Tab*)tab NS_DESIGNATED_INITIALIZER;
@@ -30,45 +26,33 @@
 // with the same parameters may be coalesced.
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled;
 
-// Gets a color snapshot for the WebController's page, calling |callback| if it
-// is found. |overlays| is the array of SnapshotOverlay objects (views currently
-// overlayed), can be nil.
-- (void)retrieveSnapshotForWebController:(CRWWebController*)webController
-                               sessionID:(NSString*)sessionID
-                            withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                                callback:(void (^)(UIImage* image))callback;
+// Gets a color snapshot for the current page, calling |callback| once it has
+// been retrieved or regenerated. |overlays| is the array of SnapshotOverlay
+// objects (views currently overlayed), can be nil.
+- (void)retrieveSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                            callback:(void (^)(UIImage*))callback;
 
-// Gets a grey snapshot for the webController's current page, calling |callback|
-// if it is found. |overlays| is the array of SnapshotOverlay objects
+// Gets a grey snapshot for the current page, calling |callback| once it has
+// been retrieved or regenerated. |overlays| is the array of SnapshotOverlay
+// objects (views currently overlayed), can be nil.
+- (void)retrieveGreySnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                                callback:(void (^)(UIImage*))callback;
+
+// Invalidates the cached snapshot for the current page, generates and caches
+// a new snapshot. Returns the snapshot with or without the overlayed views
+// (e.g. infobar, voice search button, etc.), and either of the visible frame
+// or of the full screen. |overlays| is the array of SnapshotOverlay objects
 // (views currently overlayed), can be nil.
-- (void)retrieveGreySnapshotForWebController:(CRWWebController*)webController
-                                   sessionID:(NSString*)sessionID
-                                withOverlays:
-                                    (NSArray<SnapshotOverlay*>*)overlays
-                                    callback:(void (^)(UIImage* image))callback;
+- (UIImage*)updateSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                      visibleFrameOnly:(BOOL)visibleFrameOnly;
 
-// Invalidates the cached snapshot for the controller's current session and
-// forces a more recent snapshot to be generated and stored. Returns the
-// snapshot with or without the overlayed views (e.g. infobar, voice search
-// button, etc.), and either of the visible frame or of the full screen.
-// |overlays| is the array of SnapshotOverlay objects (views currently
+// Generates a new snapshot for the current page including optional infobars.
+// Returns the snapshot with or without the overlayed views (e.g. infobar,
+// voice search button, etc.), and either of the visible frame or of the full
+// screen. |overlays| is the array of SnapshotOverlay objects (views currently
 // overlayed), can be nil.
-- (UIImage*)updateSnapshotForWebController:(CRWWebController*)webController
-                                 sessionID:(NSString*)sessionID
-                              withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                          visibleFrameOnly:(BOOL)visibleFrameOnly;
-
-// Takes a snapshot image for the current page including optional infobars.
-// Returns an autoreleased image cropped and scaled appropriately, with or
-// without the overlayed views (e.g. infobar, voice search button, etc.), and
-// either of the visible frame or of the full screen.
-// Returns nil if a snapshot cannot be generated.
-// |overlays| is the array of SnapshotOverlay objects (views currently
-// overlayed), can be nil.
-- (UIImage*)generateSnapshotForWebController:(CRWWebController*)webController
-                                withOverlays:
-                                    (NSArray<SnapshotOverlay*>*)overlays
-                            visibleFrameOnly:(BOOL)visibleFrameOnly;
+- (UIImage*)generateSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                        visibleFrameOnly:(BOOL)visibleFrameOnly;
 
 @end
 
