@@ -5,42 +5,35 @@
 #include "printing/printed_document.h"
 
 #include "base/logging.h"
-#include "printing/page_number.h"
-#include "printing/printed_page.h"
 
 #if defined(USE_CUPS)
+#include "printing/metafile.h"
 #include "printing/printing_context_chromeos.h"
 #endif
 
 namespace printing {
 
-void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
-                                        PrintingContext* context) const {
+bool PrintedDocument::RenderPrintedDocument(PrintingContext* context) {
 #if defined(USE_CUPS)
-#if defined(NDEBUG)
-  {
-    // Make sure the page is from our list.
-    base::AutoLock lock(lock_);
-    DCHECK(&page == mutable_.pages_.find(page.page_number() - 1)->second.get());
-  }
-#endif  // defined(NDEBUG)
-
   DCHECK(context);
 
+  if (context->NewPage() != PrintingContext::OK)
+    return false;
   {
     base::AutoLock lock(lock_);
-    if (page.page_number() - 1 == mutable_.first_page) {
-      std::vector<char> buffer;
-
-      if (page.metafile()->GetDataAsVector(&buffer)) {
-        static_cast<PrintingContextChromeos*>(context)->StreamData(buffer);
-      } else {
-        LOG(WARNING) << "Failed to read data from metafile";
-      }
+    std::vector<char> buffer;
+    const MetafilePlayer* metafile = GetMetafile();
+    DCHECK(metafile);
+    if (metafile->GetDataAsVector(&buffer)) {
+      static_cast<PrintingContextChromeos*>(context)->StreamData(buffer);
+    } else {
+      LOG(WARNING) << "Failed to read data from metafile";
     }
   }
+  return context->PageDone() == PrintingContext::OK;
 #else
   NOTREACHED();
+  return false;
 #endif  // defined(USE_CUPS)
 }
 

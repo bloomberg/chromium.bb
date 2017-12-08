@@ -147,6 +147,12 @@ void PrintViewManagerBase::OnComposePdfDone(
 
 void PrintViewManagerBase::OnDidPrintPage(
     const PrintHostMsg_DidPrintPage_Params& params) {
+// TODO(rbpotter): Remove this check once there are no more spurious
+// DidPrintPage messages.
+#if !defined(OS_WIN)
+  if (!expecting_first_page_)
+    return;
+#endif
   // Ready to composite. Starting a print job.
   if (!OpportunisticallyCreatePrintJob(params.document_cookie))
     return;
@@ -250,8 +256,8 @@ void PrintViewManagerBase::UpdateForPrintedPage(
   }
 
   // Update the rendered document. It will send notifications to the listener.
-  document->SetPage(params.page_number, std::move(metafile), params.page_size,
-                    params.content_area);
+  document->SetDocument(std::move(metafile), params.page_size,
+                        params.content_area);
 
   ShouldQuitFromInnerMessageLoop();
 #endif

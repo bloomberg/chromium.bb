@@ -71,8 +71,6 @@ component("printing") {
     "printed_document.h",
     "printed_document_mac.cc",
     "printed_document_win.cc",
-    "printed_page.cc",
-    "printed_page.h",
     "printing_context.cc",
     "printing_context.h",
     "printing_export.h",
@@ -132,6 +130,8 @@ component("printing") {
       "backend/print_backend_win.cc",
       "backend/win_helper.cc",
       "backend/win_helper.h",
+      "printed_page_win.cc",
+      "printed_page_win.h",
       "printing_context_system_dialog_win.cc",
       "printing_context_system_dialog_win.h",
       "printing_context_win.cc",
@@ -269,7 +269,6 @@ test("printing_unittests") {
     "page_range_unittest.cc",
     "page_setup_unittest.cc",
     "pdf_metafile_cg_mac_unittest.cc",
-    "printed_page_unittest.cc",
     "printing_context_win_unittest.cc",
     "printing_test.h",
     "printing_utils_unittest.cc",
@@ -289,6 +288,14 @@ test("printing_unittests") {
 
   if (!is_android) {
     sources += [ "pdf_transform_unittest.cc" ]
+  }
+
+  if (is_win || is_mac) {
+    sources += [ "printed_document_unittest.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "printed_page_win_unittest.cc" ]
   }
 
   if (use_cups) {
