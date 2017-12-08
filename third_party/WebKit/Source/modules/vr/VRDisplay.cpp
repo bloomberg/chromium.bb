@@ -95,8 +95,6 @@ VRDisplay::VRDisplay(
     : PausableObject(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
       capabilities_(new VRDisplayCapabilities()),
-      eye_parameters_left_(new VREyeParameters()),
-      eye_parameters_right_(new VREyeParameters()),
       magic_window_provider_(std::move(magic_window_provider)),
       display_(std::move(display)),
       submit_frame_client_binding_(this),
@@ -127,15 +125,24 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
   capabilities_->SetCanPresent(display->capabilities->canPresent);
   capabilities_->SetMaxLayers(display->capabilities->canPresent ? 1 : 0);
 
-  // Ignore non presenting delegate
-  bool is_valid = display->leftEye->renderWidth > 0;
+  // Clear eye parameters to prevent them from getting stale.
+  eye_parameters_left_.Clear();
+  eye_parameters_right_.Clear();
+
+  bool is_valid = false;
+  if (capabilities_->canPresent()) {
+    DCHECK_GT(display->leftEye->renderWidth, 0u);
+    is_valid = true;
+
+    eye_parameters_left_ = new VREyeParameters(display->leftEye);
+    eye_parameters_right_ = new VREyeParameters(display->rightEye);
+  }
+
   bool need_on_present_change = false;
   if (is_presenting_ && is_valid && !is_valid_device_for_presenting_) {
     need_on_present_change = true;
   }
   is_valid_device_for_presenting_ = is_valid;
-  eye_parameters_left_->Update(display->leftEye);
-  eye_parameters_right_->Update(display->rightEye);
 
   if (!display->stageParameters.is_null()) {
     if (!stage_parameters_)
@@ -176,6 +183,9 @@ bool VRDisplay::getFrameData(VRFrameData* frame_data) {
 }
 
 VREyeParameters* VRDisplay::getEyeParameters(const String& which_eye) {
+  if (!capabilities_->canPresent())
+    return nullptr;
+
   switch (StringToVREye(which_eye)) {
     case kVREyeLeft:
       return eye_parameters_left_;

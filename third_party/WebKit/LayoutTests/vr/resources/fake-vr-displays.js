@@ -38,8 +38,8 @@ function fakeVRDisplays(){
         canPresent : false
       },
       stageParameters : null,
-      leftEye : generic_left_eye,
-      rightEye : generic_right_eye,
+      leftEye : null,
+      rightEye : null,
     },
 
     FakeRoomScale: {

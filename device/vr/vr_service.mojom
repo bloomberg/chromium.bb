@@ -31,6 +31,7 @@ struct VRPose {
 struct VRDisplayCapabilities {
   bool hasPosition;
   bool hasExternalDisplay;
+  // Indicates whether the display can actively show imagery on a headset.
   bool canPresent;
 };
 
@@ -53,8 +54,10 @@ struct VRDisplayInfo {
   string displayName;
   VRDisplayCapabilities capabilities;
   VRStageParameters? stageParameters;
-  VREyeParameters leftEye;
-  VREyeParameters rightEye;
+  // Parameters required to distort a scene for viewing in a VR headset. Only
+  // required for devices which have the canPresent capability.
+  VREyeParameters? leftEye;
+  VREyeParameters? rightEye;
 };
 
 enum VRDisplayEventReason {

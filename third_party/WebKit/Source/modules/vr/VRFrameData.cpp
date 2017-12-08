@@ -180,23 +180,36 @@ bool VRFrameData::Update(const device::mojom::blink::VRPosePtr& pose,
                          VREyeParameters* right_eye,
                          float depth_near,
                          float depth_far) {
+  VRFieldOfView* fov_left;
+  VRFieldOfView* fov_right;
+  if (left_eye && right_eye) {
+    fov_left = left_eye->FieldOfView();
+    fov_right = right_eye->FieldOfView();
+  } else {
+    DCHECK(!left_eye && !right_eye);
+    // TODO(offenwanger): Look into making the projection matrixes null instead
+    // of hard coding values. May break some apps.
+    fov_left = fov_right = new VRFieldOfView(45, 45, 45, 45);
+  }
+
   // Build the projection matrices
-  ProjectionFromFieldOfView(left_projection_matrix_, left_eye->FieldOfView(),
-                            depth_near, depth_far);
-  ProjectionFromFieldOfView(right_projection_matrix_, right_eye->FieldOfView(),
-                            depth_near, depth_far);
+  ProjectionFromFieldOfView(left_projection_matrix_, fov_left, depth_near,
+                            depth_far);
+  ProjectionFromFieldOfView(right_projection_matrix_, fov_right, depth_near,
+                            depth_far);
 
   // Build the view matrices
   MatrixfromRotationTranslation(left_view_matrix_, pose->orientation,
                                 pose->position);
-  MatrixTranslate(left_view_matrix_, left_eye->offset());
-  if (!MatrixInvert(left_view_matrix_))
-    return false;
-
   MatrixfromRotationTranslation(right_view_matrix_, pose->orientation,
                                 pose->position);
-  MatrixTranslate(right_view_matrix_, right_eye->offset());
-  if (!MatrixInvert(right_view_matrix_))
+
+  if (left_eye && right_eye) {
+    MatrixTranslate(left_view_matrix_, left_eye->offset());
+    MatrixTranslate(right_view_matrix_, right_eye->offset());
+  }
+
+  if (!MatrixInvert(left_view_matrix_) || !MatrixInvert(right_view_matrix_))
     return false;
 
   // Set the pose
