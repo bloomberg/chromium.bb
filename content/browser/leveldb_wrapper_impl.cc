@@ -366,7 +366,8 @@ void LevelDBWrapperImpl::Delete(
     storage_used_ -= key.size() + found->second;
     keys_only_map_.erase(found);
     memory_used_ -= key.size() + sizeof(size_t);
-    commit_batch_->changed_values[key] = std::vector<uint8_t>();
+    if (commit_batch_)
+      commit_batch_->changed_values[key] = std::vector<uint8_t>();
   } else {
     DCHECK_EQ(map_state_, MapState::LOADED_KEYS_AND_VALUES);
     ValueMap::iterator found = keys_values_map_.find(key);
@@ -378,7 +379,8 @@ void LevelDBWrapperImpl::Delete(
     keys_values_map_.erase(found);
     memory_used_ -= key.size() + old_value.size();
     storage_used_ -= key.size() + old_value.size();
-    commit_batch_->changed_keys.insert(key);
+    if (commit_batch_)
+      commit_batch_->changed_keys.insert(key);
   }
 
   observers_.ForAllPtrs(
