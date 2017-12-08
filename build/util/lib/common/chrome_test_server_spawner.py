@@ -115,9 +115,11 @@ class TestServerThread(threading.Thread):
     self.test_server_process = None
     self.is_ready = False
     self.host_port = self.arguments['port']
+    self.host_ocsp_port = 0
     assert isinstance(self.host_port, int)
     # The forwarder device port now is dynamically allocated.
     self.forwarder_device_port = 0
+    self.forwarder_ocsp_device_port = 0
     # Anonymous pipe in order to get port info from test server.
     self.pipe_in = None
     self.pipe_out = None
@@ -152,18 +154,29 @@ class TestServerThread(threading.Thread):
     if not data_length:
       logging.error('Failed to get length of server data.')
       return False
-    port_json = os.read(self.pipe_in, data_length)
-    if not port_json:
+    server_data_json = os.read(self.pipe_in, data_length)
+    if not server_data_json:
       logging.error('Failed to get server data.')
       return False
-    logging.info('Got port json data: %s', port_json)
-    port_json = json.loads(port_json)
+    logging.info('Got port json data: %s', server_data_json)
 
-    if not port_json.has_key('port') or not isinstance(port_json['port'], int):
+    parsed_server_data = None
+    try:
+      parsed_server_data = json.loads(server_data_json)
+    except ValueError:
+      pass
+
+    if not isinstance(parsed_server_data, dict):
+      logging.error('Failed to parse server_data: %s' % server_data_json)
+      return False
+
+    if not isinstance(parsed_server_data.get('port'), int):
       logging.error('Failed to get port information from the server data.')
       return False
 
-    self.host_port = port_json['port']
+    self.host_port = parsed_server_data['port']
+    self.host_ocsp_port = parsed_server_data.get('ocsp_port', 0)
+
     return self.port_forwarder.WaitPortNotAvailable(self.host_port)
 
   def _GenerateCommandLineArguments(self):
@@ -240,15 +253,23 @@ class TestServerThread(threading.Thread):
         self.is_ready = self._WaitToStartAndGetPortFromTestServer()
       else:
         self.is_ready = self.port_forwarder.WaitPortNotAvailable(self.host_port)
+
     if self.is_ready:
-      self.port_forwarder.Map([(0, self.host_port)])
+      port_map = [(0, self.host_port)]
+      if self.host_ocsp_port:
+        port_map.append([(0, self.host_ocsp_port)])
+      self.port_forwarder.Map(port_map)
+
+      self.forwarder_device_port = \
+          self.port_forwarder.GetDevicePortForHostPort(self.host_port)
+      if self.host_ocsp_port:
+        self.forwarder_ocsp_device_port = \
+            self.port_forwarder.GetDevicePortForHostPort(self.host_ocsp_port)
 
       # Check whether the forwarder is ready on the device.
-      self.is_ready = False
-      device_port = self.port_forwarder.GetDevicePortForHostPort(self.host_port)
-      if device_port and self.port_forwarder.WaitDevicePortReady(device_port):
-        self.is_ready = True
-        self.forwarder_device_port = device_port
+      self.is_ready = self.forwarder_device_port and \
+          self.port_forwarder.WaitDevicePortReady(self.forwarder_device_port)
+
     # Wake up the request handler thread.
     self.ready_event.set()
     # Keep thread running until Stop() gets called.
@@ -332,9 +353,11 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     new_server.start()
     ready_event.wait()
     if new_server.is_ready:
-      self._SendResponse(200, 'OK', {}, json.dumps(
-          {'port': new_server.forwarder_device_port,
-           'message': 'started'}))
+      response = {'port': new_server.forwarder_device_port,
+                  'message': 'started'};
+      if new_server.forwarder_ocsp_device_port:
+        response['ocsp_port'] = new_server.forwarder_ocsp_device_port
+      self._SendResponse(200, 'OK', {}, json.dumps(response))
       logging.info('Test server is running on port %d forwarded to %d.' %
               (new_server.forwarder_device_port, new_server.host_port))
       port = new_server.forwarder_device_port

@@ -197,10 +197,16 @@ void ConnectionProxy::Close() {
 // RemoteTestServerProxy implementation that runs on a background IO thread.
 class RemoteTestServerProxy::Core {
  public:
-  explicit Core(const IPEndPoint& remote_address);
+  Core();
   ~Core();
 
-  void Start(base::WaitableEvent* started_event);
+  // Creates local socket for accepting incoming connections and binds it to a
+  // port. local_port() comes valid after this call is complete.
+  void Initialize(base::WaitableEvent* initialized_event);
+
+  // Starts accepting incoming connections and redirecting them to
+  // remote_address. Must be called only after Initialize().
+  void Start(const IPEndPoint& remote_address);
 
   uint16_t local_port() const { return local_port_; }
 
@@ -222,10 +228,12 @@ class RemoteTestServerProxy::Core {
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-RemoteTestServerProxy::Core::Core(const IPEndPoint& remote_address)
-    : remote_address_(remote_address) {}
+RemoteTestServerProxy::Core::Core() {}
 
-void RemoteTestServerProxy::Core::Start(base::WaitableEvent* started_event) {
+void RemoteTestServerProxy::Core::Initialize(
+    base::WaitableEvent* initialized_event) {
+  CHECK(!socket_);
+
   socket_ = std::make_unique<TCPServerSocket>(nullptr, net::NetLogSource());
   int result = socket_->Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0), 5);
   CHECK_EQ(result, OK);
@@ -236,9 +244,14 @@ void RemoteTestServerProxy::Core::Start(base::WaitableEvent* started_event) {
   CHECK_EQ(result, OK);
   local_port_ = address.port();
 
-  DoAcceptLoop();
+  initialized_event->Signal();
+}
 
-  started_event->Signal();
+void RemoteTestServerProxy::Core::Start(const IPEndPoint& remote_address) {
+  CHECK(socket_);
+
+  remote_address_ = remote_address;
+  DoAcceptLoop();
 }
 
 RemoteTestServerProxy::Core::~Core() {}
@@ -294,17 +307,16 @@ void RemoteTestServerProxy::Core::OnConnectionClosed(
 }
 
 RemoteTestServerProxy::RemoteTestServerProxy(
-    const IPEndPoint& remote_address,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : io_task_runner_(io_task_runner),
-      core_(std::make_unique<Core>(remote_address)) {
-  base::WaitableEvent started_event(
+    : io_task_runner_(io_task_runner), core_(std::make_unique<Core>()) {
+  base::WaitableEvent intialized_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::Start, base::Unretained(core_.get()), &started_event));
-  started_event.Wait();
+      base::BindOnce(&Core::Initialize, base::Unretained(core_.get()),
+                     &intialized_event));
+  intialized_event.Wait();
 
   local_port_ = core_->local_port();
 }
@@ -312,6 +324,12 @@ RemoteTestServerProxy::RemoteTestServerProxy(
 RemoteTestServerProxy::~RemoteTestServerProxy() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   io_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+}
+
+void RemoteTestServerProxy::Start(const IPEndPoint& remote_address) {
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Core::Start, base::Unretained(core_.get()),
+                                remote_address));
 }
 
 }  // namespace net

@@ -93,6 +93,7 @@ class RemoteTestServer : public BaseTestServer {
   int remote_port_ = 0;
 
   std::unique_ptr<RemoteTestServerProxy> test_server_proxy_;
+  std::unique_ptr<RemoteTestServerProxy> ocsp_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteTestServer);
 };

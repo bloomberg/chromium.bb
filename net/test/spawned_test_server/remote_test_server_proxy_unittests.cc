@@ -35,10 +35,10 @@ class RemoteTestServerProxyTest : public testing::Test {
     result = listen_socket_->GetLocalAddress(&address);
     EXPECT_THAT(result, IsOk());
 
-    proxy_ = std::make_unique<RemoteTestServerProxy>(address,
-                                                     io_thread_.task_runner());
+    proxy_ = std::make_unique<RemoteTestServerProxy>(io_thread_.task_runner());
     proxy_address_ =
         IPEndPoint(IPAddress::IPv4Localhost(), proxy_->local_port());
+    proxy_->Start(address);
   }
 
   void MakeConnection(std::unique_ptr<StreamSocket>* client_socket,

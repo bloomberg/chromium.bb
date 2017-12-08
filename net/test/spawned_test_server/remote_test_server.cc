@@ -88,6 +88,20 @@ bool RemoteTestServer::StartInBackground() {
   // pass right server type to Python test server.
   arguments_dict.SetString("server-type", GetServerTypeString(type()));
 
+  // If the server is not on localhost and it's expected to start OCSP server
+  // then pass OCSP proxy port number, so the server can generate certificates
+  // for the OCSP server valid for the proxied port.
+  bool ocsp_server_enabled =
+      type() == TYPE_HTTPS && (ssl_options().server_certificate ==
+                                   SSLOptions::CERT_AUTO_AIA_INTERMEDIATE ||
+                               !ssl_options().GetOCSPArgument().empty());
+  if (config_.address() != IPAddress::IPv4Localhost() && ocsp_server_enabled) {
+    ocsp_proxy_ =
+        std::make_unique<RemoteTestServerProxy>(io_thread_.task_runner());
+    arguments_dict.SetKey("ocsp-proxy-port-number",
+                          base::Value(ocsp_proxy_->local_port()));
+  }
+
   // Generate JSON-formatted argument string.
   std::string arguments_string;
   base::JSONWriter::Write(arguments_dict, &arguments_string);
@@ -104,24 +118,36 @@ bool RemoteTestServer::StartInBackground() {
 bool RemoteTestServer::BlockUntilStarted() {
   DCHECK(start_request_);
 
-  std::string server_data;
-  bool request_result = start_request_->WaitForCompletion(&server_data);
+  std::string server_data_json;
+  bool request_result = start_request_->WaitForCompletion(&server_data_json);
   start_request_.reset();
   if (!request_result)
     return false;
 
-  // Parse server_data.
-  if (server_data.empty() ||
-      !SetAndParseServerData(server_data, &remote_port_)) {
-    LOG(ERROR) << "Could not parse server_data: " << server_data;
+  // Parse server_data_json.
+  if (server_data_json.empty() ||
+      !SetAndParseServerData(server_data_json, &remote_port_)) {
+    LOG(ERROR) << "Could not parse server_data: " << server_data_json;
     return false;
   }
 
   // If the server is not on localhost then start a proxy on localhost to
   // forward connections to the server.
   if (config_.address() != IPAddress::IPv4Localhost()) {
-    test_server_proxy_ = std::make_unique<RemoteTestServerProxy>(
-        IPEndPoint(config_.address(), remote_port_), io_thread_.task_runner());
+    test_server_proxy_ =
+        std::make_unique<RemoteTestServerProxy>(io_thread_.task_runner());
+    test_server_proxy_->Start(IPEndPoint(config_.address(), remote_port_));
+
+    if (ocsp_proxy_) {
+      const base::Value* ocsp_port_value = server_data().FindKey("ocsp_port");
+      if (ocsp_port_value && ocsp_port_value->is_int()) {
+        ocsp_proxy_->Start(
+            IPEndPoint(config_.address(), ocsp_port_value->GetInt()));
+      } else {
+        LOG(WARNING) << "testserver.py didn't return ocsp_port.";
+      }
+    }
+
     SetPort(test_server_proxy_->local_port());
   } else {
     SetPort(remote_port_);

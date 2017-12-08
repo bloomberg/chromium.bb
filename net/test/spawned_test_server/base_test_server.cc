@@ -269,8 +269,7 @@ const HostPortPair& BaseTestServer::host_port_pair() const {
 }
 
 const base::DictionaryValue& BaseTestServer::server_data() const {
-  DCHECK(started_);
-  DCHECK(server_data_.get());
+  DCHECK(server_data_);
   return *server_data_;
 }
 
