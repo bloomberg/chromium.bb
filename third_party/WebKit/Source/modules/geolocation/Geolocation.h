@@ -122,6 +122,9 @@ class MODULES_EXPORT Geolocation final : public ScriptWrappable,
   static void CopyToSet(const GeoNotifierVector& src, GeoNotifierSet& dest);
 
   static void StopTimer(GeoNotifierVector&);
+  void StopTimersForOneShots();
+  void StopTimersForWatchers();
+  void StopTimers();
 
   // Sets a fatal error on the given notifiers.
   void CancelRequests(GeoNotifierVector&);

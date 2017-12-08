@@ -25,9 +25,7 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
           geolocation->GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &GeoNotifier::TimerFired),
-      use_cached_position_(false),
-      ignore_maximum_age_(false),
-      request_time_(ConvertSecondsToDOMTimeStamp(CurrentTime())) {
+      use_cached_position_(false) {
   DCHECK(geolocation_);
   DCHECK(success_callback_);
 
@@ -122,21 +120,6 @@ void GeoNotifier::TimerFired(TimerBase*) {
   timeout_expired_histogram.Count(options_.timeout());
 
   geolocation_->RequestTimedOut(this);
-}
-
-void GeoNotifier::SetIgnoreMaximumAge() {
-  ignore_maximum_age_ = true;
-}
-
-bool GeoNotifier::CheckPositionAge(const Geoposition& position) {
-  if (ignore_maximum_age_)
-    return true;
-
-  DOMTimeStamp position_age = 0;
-  if (position.timestamp() < request_time_)
-    position_age = request_time_ - position.timestamp();
-
-  return position_age <= options_.maximumAge();
 }
 
 }  // namespace blink

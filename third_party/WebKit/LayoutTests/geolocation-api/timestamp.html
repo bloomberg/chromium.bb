@@ -40,10 +40,7 @@ function checkPosition(p) {
     finishJSTest();
 }
 
-navigator.geolocation.getCurrentPosition(
-    checkPosition,
-    function () {},
-    { maximumAge: 1000 });
+navigator.geolocation.getCurrentPosition(checkPosition);
 
 window.jsTestIsAsync = true;
 </script>
