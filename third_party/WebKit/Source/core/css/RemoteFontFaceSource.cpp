@@ -210,29 +210,29 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
 
   FontResource* font = ToFontResource(GetResource());
   if (font->StillNeedsLoad()) {
-    if (!font->Url().ProtocolIsData() && !font->IsLoaded() &&
-        display_ == kFontDisplayAuto &&
-        font->IsLowPriorityLoadingAllowedForRemoteFont()) {
-      // Set the loading priority to VeryLow since this font is not required
-      // for painting the text.
-      font->DidChangePriority(ResourceLoadPriority::kVeryLow, 0);
+    if (is_intervention_triggered_) {
+      font_selector_->GetExecutionContext()->AddConsoleMessage(
+          ConsoleMessage::Create(
+              kOtherMessageSource, kInfoMessageLevel,
+              "Slow network is detected. See "
+              "https://www.chromestatus.com/feature/5636954674692096 for more "
+              "details. Fallback font will be used while loading: " +
+                  font->Url().ElidedString()));
+
+      // Set the loading priority to VeryLow only when all other clients agreed
+      // that this font is not required for painting the text.
+      if (font->IsLowPriorityLoadingAllowedForRemoteFont())
+        font->DidChangePriority(ResourceLoadPriority::kVeryLow, 0);
     }
     if (font_selector_->GetExecutionContext()->Fetcher()->StartLoad(font)) {
       // Start timers only when load is actually started asynchronously.
-      if (!font->IsLoaded()) {
+      if (!IsLoaded()) {
         font->StartLoadLimitTimers(
             font_selector_->GetExecutionContext()
                 ->GetTaskRunner(TaskType::kUnspecedLoading)
                 .get());
       }
       histograms_.LoadStarted();
-    }
-    if (is_intervention_triggered_) {
-      font_selector_->GetExecutionContext()->AddConsoleMessage(
-          ConsoleMessage::Create(kOtherMessageSource, kInfoMessageLevel,
-                                 "Slow network is detected. Fallback font will "
-                                 "be used while loading: " +
-                                     font->Url().ElidedString()));
     }
   }
 
