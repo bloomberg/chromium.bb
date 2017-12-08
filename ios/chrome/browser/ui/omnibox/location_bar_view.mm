@@ -221,49 +221,21 @@ const CGFloat kLeadingButtonEdgeOffset = 9;
       }];
 }
 
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0)) {
-  UIView* leadingView = [self leadingButton];
-  leadingView.alpha = 1;
-  self.leadingButtonLeadingConstraint.constant = -100;
-  [animator addAnimations:^{
-    leadingView.alpha = 0;
-
-    [self setNeedsLayout];
-    [self layoutIfNeeded];
-  }];
-
-  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    [self setLeadingButtonHidden:YES];
-    [self setNeedsLayout];
-    [self layoutIfNeeded];
-  }];
-
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator {
+  // TODO(crbug.com/791455): Due to crbug.com/774121 |self.leadingButton| is
+  // hidden in line 151 before the animation starts. For this reason any
+  // animation we try doing on |self.leadingButton| will not be visible.
   [self.textField addExpandOmniboxAnimations:animator];
 }
 
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0)) {
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator {
   [self setLeadingButtonHidden:NO];
-
-  UIView* leadingView = [self leadingButton];
-
-  // Move the leadingButton outside of the bounds; this constraint will be
-  // created from scratch when the button is shown.
-  self.leadingButtonLeadingConstraint.constant = leadingView.frame.size.width;
-  leadingView.alpha = 0;
-
+  self.leadingButton.alpha = 0;
   [animator addAnimations:^{
-    // Fade out the alpha and apply the constraint change above.
-    leadingView.alpha = 1;
-    [self setNeedsLayout];
+    self.leadingButton.alpha = 1;
+    [self setLeadingButtonHidden:YES];
     [self layoutIfNeeded];
-  }
-              delayFactor:ios::material::kDuration2];
-  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    [self setLeadingButtonHidden:NO];
   }];
-
   [self.textField addContractOmniboxAnimations:animator];
 }
 
