@@ -24,7 +24,9 @@ class Notification;
 // Profile* passed when constructing an instance must outlive this class, as
 // the service (or internals of the service) may be overridden.
 //
-// This class must only be used for testing purposes.
+// This class must only be used for testing purposes. Unlike most production
+// NotificationDisplayService implementations, all operations on this tester are
+// synchronous.
 class NotificationDisplayServiceTester {
  public:
   explicit NotificationDisplayServiceTester(Profile* profile);

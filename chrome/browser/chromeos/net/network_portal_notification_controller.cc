@@ -28,6 +28,8 @@
 #include "chrome/browser/chromeos/net/network_portal_web_dialog.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -47,13 +49,10 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_id.h"
 #include "ui/views/widget/widget.h"
-
-using message_center::Notification;
 
 namespace chromeos {
 
@@ -64,17 +63,18 @@ bool IsPortalNotificationEnabled() {
       switches::kDisableNetworkPortalNotification);
 }
 
-void CloseNotification() {
-  message_center::MessageCenter::Get()->RemoveNotification(
-      NetworkPortalNotificationController::kNotificationId, false);
-}
-
 Profile* GetProfileForPrimaryUser() {
   const user_manager::User* primary_user =
       user_manager::UserManager::Get()->GetPrimaryUser();
   if (!primary_user)
     return nullptr;
   return ProfileHelper::Get()->GetProfileByUser(primary_user);
+}
+
+void CloseNotification() {
+  NotificationDisplayService::GetForSystemNotifications()->Close(
+      NotificationHandler::Type::TRANSIENT,
+      NetworkPortalNotificationController::kNotificationId);
 }
 
 // Note that NetworkingConfigService may change after login as the profile
@@ -117,7 +117,6 @@ class NetworkPortalNotificationControllerDelegate
         controller_(controller) {}
 
   // Overridden from message_center::NotificationDelegate:
-  void Display() override;
   void Close(bool by_user) override;
   void Click() override;
   void ButtonClick(int button_click) override;
@@ -138,13 +137,6 @@ class NetworkPortalNotificationControllerDelegate
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationControllerDelegate);
 };
-
-void NetworkPortalNotificationControllerDelegate::Display() {
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kNotificationMetric,
-      NetworkPortalNotificationController::NOTIFICATION_METRIC_DISPLAYED,
-      NetworkPortalNotificationController::NOTIFICATION_METRIC_COUNT);
-}
 
 void NetworkPortalNotificationControllerDelegate::Close(bool by_user) {
   if (clicked_)
@@ -306,8 +298,12 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
         network->guid());
   }
 
-  message_center::MessageCenter::Get()->AddNotification(
-      GetNotification(network, state));
+  NotificationDisplayService::GetForSystemNotifications()->Display(
+      NotificationHandler::Type::TRANSIENT, *GetNotification(network, state));
+  UMA_HISTOGRAM_ENUMERATION(
+      NetworkPortalNotificationController::kNotificationMetric,
+      NetworkPortalNotificationController::NOTIFICATION_METRIC_DISPLAYED,
+      NetworkPortalNotificationController::NOTIFICATION_METRIC_COUNT);
 }
 
 void NetworkPortalNotificationController::ShowDialog() {
@@ -339,7 +335,6 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierNetworkPortalDetector);
-  base::string16 notificationText;
   bool is_wifi = NetworkTypePattern::WiFi().MatchesType(network->type());
   std::unique_ptr<message_center::Notification> notification =
       ash::system_notifier::CreateSystemNotification(
@@ -376,11 +371,11 @@ NetworkPortalNotificationController::
   extensions::NetworkingConfigService::AuthenticationResult
       authentication_result =
           networking_config_service->GetAuthenticationResult();
-  base::string16 notificationText;
+  base::string16 notification_text;
   if (authentication_result.authentication_state ==
           extensions::NetworkingConfigService::NOTRY ||
       network->guid() != authentication_result.guid) {
-    notificationText = l10n_util::GetStringFUTF16(
+    notification_text = l10n_util::GetStringFUTF16(
         IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_ASK_WIFI,
         base::UTF8ToUTF16(network->name()));
     data.buttons.push_back(
@@ -390,7 +385,7 @@ NetworkPortalNotificationController::
     data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
         IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_PORTAL)));
   } else {
-    notificationText = l10n_util::GetStringFUTF16(
+    notification_text = l10n_util::GetStringFUTF16(
         IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_FAILED_WIFI,
         base::UTF8ToUTF16(network->name()));
     data.buttons.push_back(
@@ -405,8 +400,9 @@ NetworkPortalNotificationController::
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(
               IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI),
-          notificationText, icon, base::string16() /* display_source */, GURL(),
-          notifier_id, data, delegate.get(), kNotificationCaptivePortalIcon,
+          notification_text, icon, base::string16() /* display_source */,
+          GURL(), notifier_id, data, delegate.get(),
+          kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;
@@ -416,7 +412,6 @@ std::unique_ptr<message_center::Notification>
 NetworkPortalNotificationController::GetNotification(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  base::string16 notificationText;
   Profile* profile = GetProfileForPrimaryUser();
   extensions::NetworkingConfigService* networking_config_service =
       GetNetworkingConfigService(profile);
