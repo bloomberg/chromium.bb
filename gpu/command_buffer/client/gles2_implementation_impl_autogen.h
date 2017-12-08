@@ -3574,24 +3574,6 @@ void GLES2Implementation::EndRasterCHROMIUM() {
   CheckGLError();
 }
 
-void GLES2Implementation::DeleteTransferCacheEntryCHROMIUM(GLuint64 handle_id) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix()
-                     << "] glDeleteTransferCacheEntryCHROMIUM(" << handle_id
-                     << ")");
-  helper_->DeleteTransferCacheEntryCHROMIUM(handle_id);
-  CheckGLError();
-}
-
-void GLES2Implementation::UnlockTransferCacheEntryCHROMIUM(GLuint64 handle_id) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix()
-                     << "] glUnlockTransferCacheEntryCHROMIUM(" << handle_id
-                     << ")");
-  helper_->UnlockTransferCacheEntryCHROMIUM(handle_id);
-  CheckGLError();
-}
-
 void GLES2Implementation::TexStorage2DImageCHROMIUM(GLenum target,
                                                     GLenum internalFormat,
                                                     GLenum bufferUsage,

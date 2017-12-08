@@ -104,4 +104,23 @@ bool TestContextSupport::ThreadSafeShallowLockDiscardableTexture(
 void TestContextSupport::CompleteLockDiscardableTexureOnContextThread(
     uint32_t texture_id) {}
 
+gpu::TransferCacheEntryId TestContextSupport::CreateTransferCacheEntry(
+    const ClientTransferCacheEntry& entry) {
+  NOTIMPLEMENTED();
+  return gpu::TransferCacheEntryId();
+}
+bool TestContextSupport::ThreadsafeLockTransferCacheEntry(
+    gpu::TransferCacheEntryId id) {
+  NOTIMPLEMENTED();
+  return false;
+}
+void TestContextSupport::UnlockTransferCacheEntry(
+    gpu::TransferCacheEntryId id) {
+  NOTIMPLEMENTED();
+}
+void TestContextSupport::DeleteTransferCacheEntry(
+    gpu::TransferCacheEntryId id) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace cc

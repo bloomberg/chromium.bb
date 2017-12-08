@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/client/client_transfer_cache.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/mapped_memory.h"
 
 namespace gpu {
 
@@ -10,13 +12,25 @@ ClientTransferCache::ClientTransferCache() = default;
 ClientTransferCache::~ClientTransferCache() = default;
 
 TransferCacheEntryId ClientTransferCache::CreateCacheEntry(
-    gles2::GLES2Interface* gl,
-    CommandBuffer* command_buffer,
+    gles2::GLES2CmdHelper* helper,
+    MappedMemoryManager* mapped_memory,
     const cc::ClientTransferCacheEntry& entry) {
-  TransferCacheEntryId id = discardable_manager_.CreateHandle(command_buffer);
+  ScopedMappedMemoryPtr mapped_alloc(entry.SerializedSize(), helper,
+                                     mapped_memory);
+  DCHECK(mapped_alloc.valid());
+  bool succeeded = entry.Serialize(base::make_span(
+      reinterpret_cast<uint8_t*>(mapped_alloc.address()), mapped_alloc.size()));
+  DCHECK(succeeded);
+
+  TransferCacheEntryId id =
+      discardable_manager_.CreateHandle(helper->command_buffer());
   ClientDiscardableHandle handle = discardable_manager_.GetHandle(id);
-  gl->CreateTransferCacheEntryCHROMIUM(id.GetUnsafeValue(), handle.shm_id(),
-                                       handle.byte_offset(), entry);
+
+  helper->CreateTransferCacheEntryINTERNAL(
+      id.GetUnsafeValue(), handle.shm_id(), handle.byte_offset(),
+      static_cast<uint32_t>(entry.Type()), mapped_alloc.shm_id(),
+      mapped_alloc.offset(), mapped_alloc.size());
+
   return id;
 }
 
@@ -24,21 +38,21 @@ bool ClientTransferCache::LockTransferCacheEntry(TransferCacheEntryId id) {
   if (discardable_manager_.LockHandle(id))
     return true;
 
-  // Could not lock. Entry is already deleted service side, just free the
-  // handle.
-  discardable_manager_.FreeHandle(id);
+  // Could not lock. Entry is already deleted service side.
   return false;
 }
 
-void ClientTransferCache::UnlockTransferCacheEntry(gles2::GLES2Interface* gl,
-                                                   TransferCacheEntryId id) {
-  gl->UnlockTransferCacheEntryCHROMIUM(id.GetUnsafeValue());
+void ClientTransferCache::UnlockTransferCacheEntry(
+    gles2::GLES2CmdHelper* helper,
+    TransferCacheEntryId id) {
+  helper->UnlockTransferCacheEntryINTERNAL(id.GetUnsafeValue());
 }
 
-void ClientTransferCache::DeleteTransferCacheEntry(gles2::GLES2Interface* gl,
-                                                   TransferCacheEntryId id) {
+void ClientTransferCache::DeleteTransferCacheEntry(
+    gles2::GLES2CmdHelper* helper,
+    TransferCacheEntryId id) {
   discardable_manager_.FreeHandle(id);
-  gl->DeleteTransferCacheEntryCHROMIUM(id.GetUnsafeValue());
+  helper->DeleteTransferCacheEntryINTERNAL(id.GetUnsafeValue());
 }
 
 }  // namespace gpu

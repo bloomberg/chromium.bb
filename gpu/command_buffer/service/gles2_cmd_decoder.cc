@@ -1983,8 +1983,15 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                              GLint pixel_config);
   void DoEndRasterCHROMIUM();
 
-  void DoUnlockTransferCacheEntryCHROMIUM(GLuint64 id);
-  void DoDeleteTransferCacheEntryCHROMIUM(GLuint64 id);
+  void DoCreateTransferCacheEntryINTERNAL(GLuint64 handle_id,
+                                          GLuint handle_shm_id,
+                                          GLuint handle_shm_offset,
+                                          GLuint type,
+                                          GLuint data_shm_id,
+                                          GLuint data_shm_offset,
+                                          GLuint data_size);
+  void DoUnlockTransferCacheEntryINTERNAL(GLuint64 id);
+  void DoDeleteTransferCacheEntryINTERNAL(GLuint64 id);
 
   void DoWindowRectanglesEXT(GLenum mode, GLsizei n, const volatile GLint* box);
 
@@ -20379,67 +20386,78 @@ void GLES2DecoderImpl::DoWindowRectanglesEXT(GLenum mode,
   state_.UpdateWindowRectangles();
 }
 
-error::Error GLES2DecoderImpl::HandleCreateTransferCacheEntryCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::CreateTransferCacheEntryCHROMIUM& c =
-      *static_cast<
-          const volatile gles2::cmds::CreateTransferCacheEntryCHROMIUM*>(
-          cmd_data);
+void GLES2DecoderImpl::DoCreateTransferCacheEntryINTERNAL(
+    GLuint64 raw_handle_id,
+    GLuint handle_shm_id,
+    GLuint handle_shm_offset,
+    GLuint raw_type,
+    GLuint data_shm_id,
+    GLuint data_shm_offset,
+    GLuint data_size) {
   TransferCacheEntryId handle_id =
-      TransferCacheEntryId::FromUnsafeValue(c.handle_id());
-  GLuint handle_shm_id = c.handle_shm_id;
-  GLuint handle_shm_offset = c.handle_shm_offset;
-  GLuint data_shm_id = c.data_shm_id;
-  GLuint data_shm_offset = c.data_shm_offset;
-  GLuint data_size = c.data_size;
+      TransferCacheEntryId::FromUnsafeValue(raw_handle_id);
 
-  if (!supports_oop_raster_)
-    return error::kInvalidArguments;
+  if (!supports_oop_raster_) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache on a context without OOP raster.");
+    return;
+  }
   DCHECK(gr_context_);
 
   // Validate the type we are about to create.
   cc::TransferCacheEntryType type;
-  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(c.type, &type))
-    return error::kInvalidArguments;
+  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_type, &type)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache with an invalid cache entry type.");
+    return;
+  }
 
   uint8_t* data_memory =
       GetSharedMemoryAs<uint8_t*>(data_shm_id, data_shm_offset, data_size);
-  if (!data_memory)
-    return error::kInvalidArguments;
+  if (!data_memory) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+                       "Can not read transfer cache entry data.");
+    return;
+  }
 
   scoped_refptr<gpu::Buffer> handle_buffer =
       GetSharedMemoryBuffer(handle_shm_id);
   if (!DiscardableHandleBase::ValidateParameters(handle_buffer.get(),
-                                                 handle_shm_offset))
-    return error::kInvalidArguments;
+                                                 handle_shm_offset)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+                       "Invalid shm for discardable handle.");
+    return;
+  }
   ServiceDiscardableHandle handle(std::move(handle_buffer), handle_shm_offset,
                                   handle_shm_id);
 
   if (!GetContextGroup()->transfer_cache()->CreateLockedEntry(
           handle_id, handle, type, gr_context_.get(),
-          base::make_span(data_memory, data_size)))
-    return error::kInvalidArguments;
-
-  return error::kNoError;
+          base::make_span(data_memory, data_size))) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+                       "Failure to deserialize transfer cache entry.");
+    return;
+  }
 }
 
-void GLES2DecoderImpl::DoUnlockTransferCacheEntryCHROMIUM(
+void GLES2DecoderImpl::DoUnlockTransferCacheEntryINTERNAL(
     GLuint64 raw_handle_id) {
   TransferCacheEntryId handle_id =
       TransferCacheEntryId::FromUnsafeValue(raw_handle_id);
   if (!GetContextGroup()->transfer_cache()->UnlockEntry(handle_id)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockTransferCacheEntryCHROMIUM",
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
                        "Attempt to unlock an invalid ID");
   }
 }
 
-void GLES2DecoderImpl::DoDeleteTransferCacheEntryCHROMIUM(
+void GLES2DecoderImpl::DoDeleteTransferCacheEntryINTERNAL(
     GLuint64 raw_handle_id) {
   TransferCacheEntryId handle_id =
       TransferCacheEntryId::FromUnsafeValue(raw_handle_id);
   if (!GetContextGroup()->transfer_cache()->DeleteEntry(handle_id)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteTransferCacheEntryCHROMIUM",
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
                        "Attempt to delete an invalid ID");
   }
 }

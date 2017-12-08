@@ -2595,31 +2595,6 @@ void GLES2TraceImplementation::EndRasterCHROMIUM() {
   gl_->EndRasterCHROMIUM();
 }
 
-void GLES2TraceImplementation::CreateTransferCacheEntryCHROMIUM(
-    GLuint64 handle_id,
-    GLuint handle_shm_id,
-    GLuint handle_shm_offset,
-    const cc::ClientTransferCacheEntry& entry) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::CreateTransferCacheEntryCHROMIUM");
-  gl_->CreateTransferCacheEntryCHROMIUM(handle_id, handle_shm_id,
-                                        handle_shm_offset, entry);
-}
-
-void GLES2TraceImplementation::DeleteTransferCacheEntryCHROMIUM(
-    GLuint64 handle_id) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::DeleteTransferCacheEntryCHROMIUM");
-  gl_->DeleteTransferCacheEntryCHROMIUM(handle_id);
-}
-
-void GLES2TraceImplementation::UnlockTransferCacheEntryCHROMIUM(
-    GLuint64 handle_id) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::UnlockTransferCacheEntryCHROMIUM");
-  gl_->UnlockTransferCacheEntryCHROMIUM(handle_id);
-}
-
 void GLES2TraceImplementation::TexStorage2DImageCHROMIUM(GLenum target,
                                                          GLenum internalFormat,
                                                          GLenum bufferUsage,

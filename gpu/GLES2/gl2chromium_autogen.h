@@ -398,12 +398,6 @@
 #define glBeginRasterCHROMIUM GLES2_GET_FUN(BeginRasterCHROMIUM)
 #define glRasterCHROMIUM GLES2_GET_FUN(RasterCHROMIUM)
 #define glEndRasterCHROMIUM GLES2_GET_FUN(EndRasterCHROMIUM)
-#define glCreateTransferCacheEntryCHROMIUM \
-  GLES2_GET_FUN(CreateTransferCacheEntryCHROMIUM)
-#define glDeleteTransferCacheEntryCHROMIUM \
-  GLES2_GET_FUN(DeleteTransferCacheEntryCHROMIUM)
-#define glUnlockTransferCacheEntryCHROMIUM \
-  GLES2_GET_FUN(UnlockTransferCacheEntryCHROMIUM)
 #define glTexStorage2DImageCHROMIUM GLES2_GET_FUN(TexStorage2DImageCHROMIUM)
 #define glSetColorSpaceMetadataCHROMIUM \
   GLES2_GET_FUN(SetColorSpaceMetadataCHROMIUM)

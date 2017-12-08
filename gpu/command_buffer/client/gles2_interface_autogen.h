@@ -933,13 +933,6 @@ virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
                             GLfloat post_translate_y,
                             GLfloat post_scale) = 0;
 virtual void EndRasterCHROMIUM() = 0;
-virtual void CreateTransferCacheEntryCHROMIUM(
-    GLuint64 handle_id,
-    GLuint handle_shm_id,
-    GLuint handle_shm_offset,
-    const cc::ClientTransferCacheEntry& entry) = 0;
-virtual void DeleteTransferCacheEntryCHROMIUM(GLuint64 handle_id) = 0;
-virtual void UnlockTransferCacheEntryCHROMIUM(GLuint64 handle_id) = 0;
 virtual void TexStorage2DImageCHROMIUM(GLenum target,
                                        GLenum internalFormat,
                                        GLenum bufferUsage,

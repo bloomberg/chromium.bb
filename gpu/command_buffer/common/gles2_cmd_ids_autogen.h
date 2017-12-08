@@ -339,9 +339,9 @@
   OP(BeginRasterCHROMIUM)                                  /* 580 */ \
   OP(RasterCHROMIUM)                                       /* 581 */ \
   OP(EndRasterCHROMIUM)                                    /* 582 */ \
-  OP(CreateTransferCacheEntryCHROMIUM)                     /* 583 */ \
-  OP(DeleteTransferCacheEntryCHROMIUM)                     /* 584 */ \
-  OP(UnlockTransferCacheEntryCHROMIUM)                     /* 585 */ \
+  OP(CreateTransferCacheEntryINTERNAL)                     /* 583 */ \
+  OP(DeleteTransferCacheEntryINTERNAL)                     /* 584 */ \
+  OP(UnlockTransferCacheEntryINTERNAL)                     /* 585 */ \
   OP(TexStorage2DImageCHROMIUM)                            /* 586 */ \
   OP(SetColorSpaceMetadataCHROMIUM)                        /* 587 */ \
   OP(WindowRectanglesEXTImmediate)                         /* 588 */

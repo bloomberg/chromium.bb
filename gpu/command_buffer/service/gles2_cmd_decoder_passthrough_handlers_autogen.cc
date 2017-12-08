@@ -4565,15 +4565,23 @@ error::Error GLES2DecoderPassthroughImpl::HandleEndRasterCHROMIUM(
 }
 
 error::Error
-GLES2DecoderPassthroughImpl::HandleDeleteTransferCacheEntryCHROMIUM(
+GLES2DecoderPassthroughImpl::HandleCreateTransferCacheEntryINTERNAL(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  const volatile gles2::cmds::DeleteTransferCacheEntryCHROMIUM& c =
+  const volatile gles2::cmds::CreateTransferCacheEntryINTERNAL& c =
       *static_cast<
-          const volatile gles2::cmds::DeleteTransferCacheEntryCHROMIUM*>(
+          const volatile gles2::cmds::CreateTransferCacheEntryINTERNAL*>(
           cmd_data);
   GLuint64 handle_id = c.handle_id();
-  error::Error error = DoDeleteTransferCacheEntryCHROMIUM(handle_id);
+  GLuint handle_shm_id = static_cast<GLuint>(c.handle_shm_id);
+  GLuint handle_shm_offset = static_cast<GLuint>(c.handle_shm_offset);
+  GLuint type = static_cast<GLuint>(c.type);
+  GLuint data_shm_id = static_cast<GLuint>(c.data_shm_id);
+  GLuint data_shm_offset = static_cast<GLuint>(c.data_shm_offset);
+  GLuint data_size = static_cast<GLuint>(c.data_size);
+  error::Error error = DoCreateTransferCacheEntryINTERNAL(
+      handle_id, handle_shm_id, handle_shm_offset, type, data_shm_id,
+      data_shm_offset, data_size);
   if (error != error::kNoError) {
     return error;
   }
@@ -4581,15 +4589,31 @@ GLES2DecoderPassthroughImpl::HandleDeleteTransferCacheEntryCHROMIUM(
 }
 
 error::Error
-GLES2DecoderPassthroughImpl::HandleUnlockTransferCacheEntryCHROMIUM(
+GLES2DecoderPassthroughImpl::HandleDeleteTransferCacheEntryINTERNAL(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  const volatile gles2::cmds::UnlockTransferCacheEntryCHROMIUM& c =
+  const volatile gles2::cmds::DeleteTransferCacheEntryINTERNAL& c =
       *static_cast<
-          const volatile gles2::cmds::UnlockTransferCacheEntryCHROMIUM*>(
+          const volatile gles2::cmds::DeleteTransferCacheEntryINTERNAL*>(
           cmd_data);
   GLuint64 handle_id = c.handle_id();
-  error::Error error = DoUnlockTransferCacheEntryCHROMIUM(handle_id);
+  error::Error error = DoDeleteTransferCacheEntryINTERNAL(handle_id);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::HandleUnlockTransferCacheEntryINTERNAL(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::UnlockTransferCacheEntryINTERNAL& c =
+      *static_cast<
+          const volatile gles2::cmds::UnlockTransferCacheEntryINTERNAL*>(
+          cmd_data);
+  GLuint64 handle_id = c.handle_id();
+  error::Error error = DoUnlockTransferCacheEntryINTERNAL(handle_id);
   if (error != error::kNoError) {
     return error;
   }

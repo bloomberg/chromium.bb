@@ -3285,32 +3285,32 @@ void EndRasterCHROMIUM() {
   }
 }
 
-void CreateTransferCacheEntryCHROMIUM(GLuint64 handle_id,
+void CreateTransferCacheEntryINTERNAL(GLuint64 handle_id,
                                       GLuint handle_shm_id,
                                       GLuint handle_shm_offset,
                                       GLuint type,
                                       GLuint data_shm_id,
                                       GLuint data_shm_offset,
                                       GLuint data_size) {
-  gles2::cmds::CreateTransferCacheEntryCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::CreateTransferCacheEntryCHROMIUM>();
+  gles2::cmds::CreateTransferCacheEntryINTERNAL* c =
+      GetCmdSpace<gles2::cmds::CreateTransferCacheEntryINTERNAL>();
   if (c) {
     c->Init(handle_id, handle_shm_id, handle_shm_offset, type, data_shm_id,
             data_shm_offset, data_size);
   }
 }
 
-void DeleteTransferCacheEntryCHROMIUM(GLuint64 handle_id) {
-  gles2::cmds::DeleteTransferCacheEntryCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::DeleteTransferCacheEntryCHROMIUM>();
+void DeleteTransferCacheEntryINTERNAL(GLuint64 handle_id) {
+  gles2::cmds::DeleteTransferCacheEntryINTERNAL* c =
+      GetCmdSpace<gles2::cmds::DeleteTransferCacheEntryINTERNAL>();
   if (c) {
     c->Init(handle_id);
   }
 }
 
-void UnlockTransferCacheEntryCHROMIUM(GLuint64 handle_id) {
-  gles2::cmds::UnlockTransferCacheEntryCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::UnlockTransferCacheEntryCHROMIUM>();
+void UnlockTransferCacheEntryINTERNAL(GLuint64 handle_id) {
+  gles2::cmds::UnlockTransferCacheEntryINTERNAL* c =
+      GetCmdSpace<gles2::cmds::UnlockTransferCacheEntryINTERNAL>();
   if (c) {
     c->Init(handle_id);
   }
