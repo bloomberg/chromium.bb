@@ -20,21 +20,10 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-
-// The number of pixels which are kept free top, left and right when a window
-// gets positioned to its default location.
-// static
-const int WindowPositioner::kDesktopBorderSize = 16;
-
-// Maximum width of a window even if there is more room on the desktop.
-// static
-const int WindowPositioner::kMaximumWindowWidth = 1100;
-
 namespace {
 
 // When a window gets opened in default mode and the screen is less than or
-// equal to this width, the window will get opened in tablet mode. This value
-// can be reduced to a "tame" number if the feature is disabled.
+// equal to this width, the window opens with show state maximized.
 const int kForceMaximizeWidthLimit = 1366;
 
 // The time in milliseconds which should be used to visually move a window
@@ -394,25 +383,6 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(
 WindowPositioner::WindowPositioner() = default;
 
 WindowPositioner::~WindowPositioner() = default;
-
-gfx::Rect WindowPositioner::GetDefaultWindowBounds(
-    const display::Display& display) {
-  const gfx::Rect work_area = display.work_area();
-  // There should be a 'desktop' border around the window at the left and right
-  // side.
-  int default_width = work_area.width() - 2 * kDesktopBorderSize;
-  // There should also be a 'desktop' border around the window at the top.
-  // Since the workspace excludes the tray area we only need one border size.
-  int default_height = work_area.height() - kDesktopBorderSize;
-  int offset_x = kDesktopBorderSize;
-  if (default_width > kMaximumWindowWidth) {
-    // The window should get centered on the screen and not follow the grid.
-    offset_x = (work_area.width() - kMaximumWindowWidth) / 2;
-    default_width = kMaximumWindowWidth;
-  }
-  return gfx::Rect(work_area.x() + offset_x, work_area.y() + kDesktopBorderSize,
-                   default_width, default_height);
-}
 
 gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Size& popup_size) {
   if (!has_last_popup_position_) {
