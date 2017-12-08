@@ -43,9 +43,11 @@ std::vector<blink::WebImeTextSpan> ConvertUIImeTextSpansToBlinkImeTextSpans(
 void RunClosureIfNotSwappedOut(base::WeakPtr<RenderWidget> render_widget,
                                base::OnceClosure closure) {
   // Input messages must not be processed if the RenderWidget is in swapped out
-  // state.
-  if (!render_widget || render_widget->is_swapped_out())
+  // or closing state.
+  if (!render_widget || render_widget->is_swapped_out() ||
+      render_widget->IsClosing()) {
     return;
+  }
   std::move(closure).Run();
 }
 
