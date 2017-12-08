@@ -30,7 +30,7 @@ namespace {
 const int kMinChromeOpensRequired = 5;
 
 // The timeout for the load of the feature engagement tracker.
-const NSTimeInterval kWaitForTrackerLoadTimeout = 5.0;
+const NSTimeInterval kWaitForTrackerLoadTimeout = 10.0;
 
 // Matcher for the Reading List Text Badge.
 id<GREYMatcher> ReadingListTextBadge() {
