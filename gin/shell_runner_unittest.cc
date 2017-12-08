@@ -32,6 +32,9 @@ TEST(RunnerTest, Run) {
   gin::V8Initializer::LoadV8Snapshot();
   gin::V8Initializer::LoadV8Natives();
 #endif
+#ifdef USE_V8_CONTEXT_SNAPSHOT
+  gin::V8Initializer::LoadV8ContextSnapshot();
+#endif
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                  gin::IsolateHolder::kStableV8Extras,
