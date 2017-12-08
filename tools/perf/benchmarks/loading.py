@@ -33,15 +33,6 @@ class LoadingDesktop(_LoadingBase):
     return page_sets.LoadingDesktopStorySet(
         cache_temperatures=[cache_temperature.COLD, cache_temperature.WARM])
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory(
-            'uol.com.br', [story.expectations.ALL_LINUX], 'crbug.com/752611')
-        self.DisableStory(
-            'Orange', [story.expectations.ALL_WIN], 'crbug.com/723783')
-    return StoryExpectations()
-
   @classmethod
   def Name(cls):
     return 'loading.desktop'
