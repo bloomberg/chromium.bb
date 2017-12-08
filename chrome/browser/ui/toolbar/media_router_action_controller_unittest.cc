@@ -65,15 +65,12 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
 
     SetAlwaysShowActionPref(false);
 
-    local_display_route_list_.push_back(
-        media_router::MediaRoute("routeId1", source1_, "sinkId1", "description",
-                                 true, std::string(), true));
-    non_local_display_route_list_.push_back(
-        media_router::MediaRoute("routeId2", source1_, "sinkId2", "description",
-                                 false, std::string(), true));
-    non_local_display_route_list_.push_back(
-        media_router::MediaRoute("routeId3", source2_, "sinkId3", "description",
-                                 true, std::string(), false));
+    local_display_route_list_.push_back(media_router::MediaRoute(
+        "routeId1", source1_, "sinkId1", "description", true, true));
+    non_local_display_route_list_.push_back(media_router::MediaRoute(
+        "routeId2", source1_, "sinkId2", "description", false, true));
+    non_local_display_route_list_.push_back(media_router::MediaRoute(
+        "routeId3", source2_, "sinkId3", "description", true, false));
   }
 
   void TearDown() override {

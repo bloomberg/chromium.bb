@@ -35,7 +35,7 @@ const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 // Creates a media route whose ID is |kRouteId|.
 MediaRoute CreateMediaRoute() {
   MediaRoute route(kRouteId, MediaSource(kSource), kSinkId, kDescription, true,
-                   std::string(), true);
+                   true);
   route.set_presentation_id(kPresentationId);
   route.set_controller_type(RouteControllerType::kGeneric);
   return route;
@@ -225,8 +225,7 @@ void MediaRouterMojoTest::ProvideTestSink(MediaRouteProviderId provider_id,
 
 void MediaRouterMojoTest::TestCreateRoute() {
   MediaSource media_source(kSource);
-  MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
-                            false);
+  MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, false);
   ProvideTestSink(MediaRouteProviderId::EXTENSION, kSinkId);
 
   // Use a lambda function as an invocation target here to work around
@@ -260,8 +259,7 @@ void MediaRouterMojoTest::TestCreateRoute() {
 
 void MediaRouterMojoTest::TestJoinRoute(const std::string& presentation_id) {
   MediaSource media_source(kSource);
-  MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
-                            false);
+  MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, false);
 
   MediaRoute route = CreateMediaRoute();
   // Make sure the MR has received an update with the route, so it knows there
@@ -304,8 +302,7 @@ void MediaRouterMojoTest::TestJoinRoute(const std::string& presentation_id) {
 
 void MediaRouterMojoTest::TestConnectRouteByRouteId() {
   MediaSource media_source(kSource);
-  MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
-                            false);
+  MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, false);
   expected_route.set_incognito(false);
   MediaRoute route = CreateMediaRoute();
   ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);

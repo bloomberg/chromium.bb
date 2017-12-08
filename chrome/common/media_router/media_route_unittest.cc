@@ -22,31 +22,31 @@ namespace media_router {
 TEST(MediaRouteTest, Equals) {
   const MediaSource& media_source =
       MediaSourceForPresentationUrl(GURL(kPresentationUrl));
-  MediaRoute route1(kRouteId1, media_source, "sinkId", "Description", false, "",
+  MediaRoute route1(kRouteId1, media_source, "sinkId", "Description", false,
                     false);
 
   // Same as route1 with different sink ID.
   MediaRoute route2(kRouteId1, media_source, "differentSinkId", "Description",
-                    false, "", false);
+                    false, false);
   EXPECT_TRUE(route1.Equals(route2));
 
   // Same as route1 with different description.
   MediaRoute route3(kRouteId1, media_source, "sinkId", "differentDescription",
-                    false, "", false);
+                    false, false);
   EXPECT_TRUE(route1.Equals(route3));
 
   // Same as route1 with different is_local.
-  MediaRoute route4(kRouteId1, media_source, "sinkId", "Description", true, "",
+  MediaRoute route4(kRouteId1, media_source, "sinkId", "Description", true,
                     false);
   EXPECT_TRUE(route1.Equals(route4));
 
   // The ID is different from route1's.
-  MediaRoute route5(kRouteId2, media_source, "sinkId", "Description", false, "",
+  MediaRoute route5(kRouteId2, media_source, "sinkId", "Description", false,
                     false);
   EXPECT_FALSE(route1.Equals(route5));
 
   // Same as route1 with different incognito.
-  MediaRoute route6(kRouteId1, media_source, "sinkId", "Description", true, "",
+  MediaRoute route6(kRouteId1, media_source, "sinkId", "Description", true,
                     false);
   route6.set_incognito(true);
   EXPECT_TRUE(route1.Equals(route6));

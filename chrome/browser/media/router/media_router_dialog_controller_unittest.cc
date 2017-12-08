@@ -137,7 +137,7 @@ TEST_F(MediaRouterDialogControllerTest, StartPresentationContext) {
                      base::Unretained(this)));
 
   MediaRoute route("routeId", MediaSourceForTab(1), "sinkId", "Description",
-                   false, "", false);
+                   false, false);
   auto result = RouteRequestResult::FromSuccess(route, "presentationId");
 
   EXPECT_CALL(*this, RequestSuccess(_, _)).Times(1);

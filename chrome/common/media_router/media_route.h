@@ -34,7 +34,6 @@ class MediaRoute {
   // |media_sink|: The sink that is receiving the media.
   // |description|: Human readable description of the casting activity.
   // |is_local|: true if the route was created from this browser.
-  // |custom_controller_path|: custom controller path if it is given by route
   //     provider. empty otherwise.
   // |for_display|: Set to true if this route should be displayed for
   //     |media_sink_id| in UI.
@@ -43,7 +42,6 @@ class MediaRoute {
              const MediaSink::Id& media_sink_id,
              const std::string& description,
              bool is_local,
-             const std::string& custom_controller_path,
              bool for_display);
   MediaRoute(const MediaRoute& other);
   MediaRoute();
@@ -79,21 +77,6 @@ class MediaRoute {
 
   void set_local(bool is_local) { is_local_ = is_local; }
   bool is_local() const { return is_local_; }
-
-  void set_custom_controller_path(const std::string& custom_controller_path) {
-    custom_controller_path_ = custom_controller_path;
-  }
-  const std::string& custom_controller_path() const {
-    return custom_controller_path_;
-  }
-
-  void set_supports_media_route_controller(
-      bool supports_media_route_controller) {
-    supports_media_route_controller_ = supports_media_route_controller;
-  }
-  bool supports_media_route_controller() const {
-    return supports_media_route_controller_;
-  }
 
   void set_controller_type(RouteControllerType controller_type) {
     controller_type_ = controller_type;
@@ -133,17 +116,6 @@ class MediaRoute {
   // |true| if the route is created locally (versus discovered by a media route
   // provider.)
   bool is_local_ = false;
-
-  // The custom controller path. This allows route provider to have custom route
-  // detail as well as its own route control features route control features in
-  // the media router dialog.
-  // TODO(crbug.com/684642): Remove this field in favor of controller_type once
-  // new controller is fully rolled out.
-  std::string custom_controller_path_;
-
-  // Whether the provider for this route supports the Media Route Controller.
-  // TODO(crbug.com/684642): Remove this field in favor of controller_type.
-  bool supports_media_route_controller_ = false;
 
   // The type of MediaRouteController supported by this route.
   RouteControllerType controller_type_ = RouteControllerType::kNone;

@@ -173,7 +173,7 @@ class PresentationServiceDelegateImplTest
     content::PresentationRequest different_request(
         RenderFrameHostId(100, 200), {presentation_url2_}, frame_origin_);
     MediaRoute media_route("differentRouteId", source2_, "mediaSinkId", "",
-                           true, "", true);
+                           true, true);
     media_route.set_incognito(incognito);
     result =
         RouteRequestResult::FromSuccess(media_route, "differentPresentationId");
@@ -182,8 +182,7 @@ class PresentationServiceDelegateImplTest
 
     // Should trigger callback since request matches.
     EXPECT_CALL(*this, OnDefaultPresentationStarted(_)).Times(1);
-    MediaRoute media_route2("routeId", source1_, "mediaSinkId", "", true, "",
-                            true);
+    MediaRoute media_route2("routeId", source1_, "mediaSinkId", "", true, true);
     media_route2.set_incognito(incognito);
     result = RouteRequestResult::FromSuccess(media_route2, "presentationId");
     delegate_impl_->OnRouteResponse(request, *result);
@@ -451,8 +450,7 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionSuccess(_))
       .Times(1);
   std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
-      MediaRoute("routeId", source1_, "mediaSinkId", "description", true, "",
-                 true),
+      MediaRoute("routeId", source1_, "mediaSinkId", "description", true, true),
       kPresentationId);
   for (auto& route_response_callback : route_response_callbacks)
     std::move(route_response_callback).Run(*result);
@@ -515,7 +513,7 @@ TEST_F(PresentationServiceDelegateImplTest,
   RenderFrameHostId rfh_id(main_frame_process_id_, main_frame_routing_id_);
   MediaRoute media_route("route_id",
                          MediaSourceForPresentationUrl(presentation_url),
-                         "mediaSinkId", "", true, "", true);
+                         "mediaSinkId", "", true, true);
   media_route.set_local_presentation(true);
 
   auto& mock_local_manager = GetMockLocalPresentationManager();
@@ -541,7 +539,7 @@ TEST_F(PresentationServiceDelegateImplTest,
        TestReconnectPresentationForLocalPresentation) {
   MediaRoute media_route("route_id",
                          MediaSourceForPresentationUrl(presentation_url1_),
-                         "mediaSinkId", "", true, "", true);
+                         "mediaSinkId", "", true, true);
   media_route.set_local_presentation(true);
 
   auto& mock_local_manager = GetMockLocalPresentationManager();
@@ -571,7 +569,7 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToLocalPresentation) {
   MediaRoute media_route(
       "route_id",
       MediaSourceForPresentationUrl(presentation_info.presentation_url),
-      "mediaSinkId", "", true, "", true);
+      "mediaSinkId", "", true, true);
   media_route.set_local_presentation(true);
 
   base::MockCallback<content::PresentationConnectionCallback> success_cb;
@@ -605,7 +603,7 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToPresentation) {
   MediaRoute media_route(
       "route_id",
       MediaSourceForPresentationUrl(presentation_info.presentation_url),
-      "mediaSinkId", "", true, "", true);
+      "mediaSinkId", "", true, true);
 
   base::MockCallback<content::PresentationConnectionCallback> success_cb;
   EXPECT_CALL(success_cb, Run(_));

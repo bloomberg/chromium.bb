@@ -46,7 +46,6 @@ class LocalPresentationManagerTest : public ::testing::Test {
                "sink_1",
                "",
                false,
-               "",
                false) {}
 
   LocalPresentationManager* manager() { return &manager_; }
@@ -320,7 +319,7 @@ TEST_F(LocalPresentationManagerTest, TestIsLocalPresentation) {
 
 TEST_F(LocalPresentationManagerTest, TestRegisterAndGetRoute) {
   MediaSource source("source_1");
-  MediaRoute route("route_1", source, "sink_1", "", false, "", false);
+  MediaRoute route("route_1", source, "sink_1", "", false, false);
 
   EXPECT_FALSE(manager()->GetRoute(kPresentationId));
   content::PresentationConnectionPtr controller;

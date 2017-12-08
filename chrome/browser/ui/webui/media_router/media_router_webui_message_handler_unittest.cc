@@ -26,7 +26,6 @@ namespace media_router {
 namespace {
 
 const char kProviderExtensionIdForTesting[] = "test_id";
-const char kControllerPathForTesting[] = "test_path";
 const char kUserEmailForTesting[] = "nobody@example.com";
 const char kUserDomainForTesting[] = "example.com";
 
@@ -67,7 +66,7 @@ MediaRoute CreateRoute() {
   bool is_local = true;
   bool is_for_display = true;
   MediaRoute route(route_id, MediaSource("mediaSource"), sink_id, description,
-                   is_local, kControllerPathForTesting, is_for_display);
+                   is_local, is_for_display);
 
   return route;
 }
@@ -354,12 +353,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   EXPECT_TRUE(GetBooleanFromDict(route_value, "canJoin"));
   EXPECT_EQ(MediaCastMode::PRESENTATION,
             GetIntegerFromDict(route_value, "currentCastMode"));
-  std::string expected_path = base::StringPrintf("%s://%s/%s",
-                                  extensions::kExtensionScheme,
-                                  kProviderExtensionIdForTesting,
-                                  kControllerPathForTesting);
-  EXPECT_EQ(expected_path,
-            GetStringFromDict(route_value, "customControllerPath"));
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutesIncognito) {
@@ -382,9 +375,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutesIncognito) {
   int actual_current_cast_mode = -1;
   EXPECT_FALSE(
       route_value->GetInteger("currentCastMode", &actual_current_cast_mode));
-  std::string custom_controller_path;
-  EXPECT_FALSE(
-      route_value->GetString("customControllerPath", &custom_controller_path));
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, SetCastModesList) {
@@ -483,11 +473,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   EXPECT_EQ(route.media_sink_id(), GetStringFromDict(route_value, "sinkId"));
   EXPECT_EQ(route.description(), GetStringFromDict(route_value, "description"));
   EXPECT_EQ(route.is_local(), GetBooleanFromDict(route_value, "isLocal"));
-  std::string expected_path = base::StringPrintf(
-      "%s://%s/%s", extensions::kExtensionScheme,
-      kProviderExtensionIdForTesting, kControllerPathForTesting);
-  EXPECT_EQ(expected_path,
-            GetStringFromDict(route_value, "customControllerPath"));
 
   bool route_for_display = false;
   ASSERT_TRUE(call_data.arg3()->GetAsBoolean(&route_for_display));
@@ -518,9 +503,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest,
   EXPECT_EQ(route.media_sink_id(), GetStringFromDict(route_value, "sinkId"));
   EXPECT_EQ(route.description(), GetStringFromDict(route_value, "description"));
   EXPECT_EQ(route.is_local(), GetBooleanFromDict(route_value, "isLocal"));
-
-  std::string actual_path;
-  EXPECT_FALSE(route_value->GetString("customControllerPath", &actual_path));
 
   bool route_for_display = false;
   ASSERT_TRUE(call_data.arg3()->GetAsBoolean(&route_for_display));

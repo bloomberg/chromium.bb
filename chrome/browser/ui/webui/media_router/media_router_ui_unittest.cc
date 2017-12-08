@@ -174,7 +174,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
     auto controller = base::MakeRefCounted<MockMediaRouteController>(
         route_id, profile(), &mock_router_);
     MediaSource media_source("mediaSource");
-    MediaRoute route(route_id, media_source, "sinkId", "", true, "", true);
+    MediaRoute route(route_id, media_source, "sinkId", "", true, true);
 
     media_router_ui_->OnRoutesUpdated({route}, std::vector<MediaRoute::Id>());
     EXPECT_CALL(mock_router_, GetRouteController(route_id))
@@ -377,11 +377,11 @@ TEST_F(MediaRouterUITest, FilterNonDisplayRoutes) {
 
   MediaSource media_source("mediaSource");
   MediaRoute display_route_1("routeId1", media_source, "sinkId1", "desc 1",
-                             true, "", true);
+                             true, true);
   MediaRoute non_display_route_1("routeId2", media_source, "sinkId2", "desc 2",
-                                 true, "", false);
+                                 true, false);
   MediaRoute display_route_2("routeId3", media_source, "sinkId2", "desc 2",
-                             true, "", true);
+                             true, true);
   std::vector<MediaRoute> routes;
   routes.push_back(display_route_1);
   routes.push_back(non_display_route_1);
@@ -400,11 +400,11 @@ TEST_F(MediaRouterUITest, FilterNonDisplayJoinableRoutes) {
 
   MediaSource media_source("mediaSource");
   MediaRoute display_route_1("routeId1", media_source, "sinkId1", "desc 1",
-                             true, "", true);
+                             true, true);
   MediaRoute non_display_route_1("routeId2", media_source, "sinkId2", "desc 2",
-                                 true, "", false);
+                                 true, false);
   MediaRoute display_route_2("routeId3", media_source, "sinkId2", "desc 2",
-                             true, "", true);
+                             true, true);
   std::vector<MediaRoute> routes;
   routes.push_back(display_route_1);
   routes.push_back(non_display_route_1);
@@ -436,11 +436,11 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverAssignsCurrentCastModes) {
                      base::Unretained(media_router_ui_.get()))));
 
   MediaRoute display_route_1("routeId1", media_source_1, "sinkId1", "desc 1",
-                             true, "", true);
+                             true, true);
   MediaRoute non_display_route_1("routeId2", media_source_2, "sinkId2",
-                                 "desc 2", true, "", false);
+                                 "desc 2", true, false);
   MediaRoute display_route_2("routeId3", media_source_3, "sinkId2", "desc 2",
-                             true, "", true);
+                             true, true);
   std::vector<MediaRoute> routes;
   routes.push_back(display_route_1);
   routes.push_back(non_display_route_1);
@@ -484,11 +484,11 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverSkipsUnavailableCastModes) {
                      base::Unretained(media_router_ui_.get()))));
 
   MediaRoute display_route_1("routeId1", media_source_1, "sinkId1", "desc 1",
-                             true, "", true);
+                             true, true);
   MediaRoute non_display_route_1("routeId2", media_source_2, "sinkId2",
-                                 "desc 2", true, "", false);
+                                 "desc 2", true, false);
   MediaRoute display_route_2("routeId3", media_source_3, "sinkId2", "desc 2",
-                             true, "", true);
+                             true, true);
   std::vector<MediaRoute> routes;
   routes.push_back(display_route_1);
   routes.push_back(non_display_route_1);
@@ -730,7 +730,7 @@ TEST_F(MediaRouterUITest, SendInitialMediaStatusUpdate) {
 
   CreateMediaRouterUI(profile());
   MediaSource media_source("mediaSource");
-  MediaRoute route(route_id, media_source, "sinkId", "", true, "", true);
+  MediaRoute route(route_id, media_source, "sinkId", "", true, true);
   media_router_ui_->OnRoutesUpdated({route}, std::vector<MediaRoute::Id>());
 
   // If the controller has already received a media status update, MediaRouterUI
