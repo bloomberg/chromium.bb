@@ -3522,21 +3522,6 @@ static void init_encode_frame_mb_context(AV1_COMP *cpi) {
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 }
 
-#if !CONFIG_REF_ADAPT && !CONFIG_JNT_COMP
-static int check_dual_ref_flags(AV1_COMP *cpi) {
-  const int ref_flags = cpi->ref_frame_flags;
-
-  if (segfeature_active(&cpi->common.seg, 1, SEG_LVL_REF_FRAME)) {
-    return 0;
-  } else {
-    return (!!(ref_flags & AOM_GOLD_FLAG) + !!(ref_flags & AOM_LAST_FLAG) +
-            !!(ref_flags & AOM_LAST2_FLAG) + !!(ref_flags & AOM_LAST3_FLAG) +
-            !!(ref_flags & AOM_BWD_FLAG) + !!(ref_flags & AOM_ALT2_FLAG) +
-            !!(ref_flags & AOM_ALT_FLAG)) >= 2;
-  }
-}
-#endif  // !CONFIG_REF_ADAPT
-
 static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
   if (frame_is_intra_only(&cpi->common)) return INTRA_FRAME;
   // We will not update the golden frame with an internal overlay frame
@@ -4431,31 +4416,16 @@ void av1_encode_frame(AV1_COMP *cpi) {
     const int is_alt_ref = frame_type == ALTREF_FRAME;
 
 /* prediction (compound, single or hybrid) mode selection */
-#if CONFIG_REF_ADAPT
-    // NOTE(zoeliu): "is_alt_ref" is true only for OVERLAY/INTNL_OVERLAY frames
-    if (is_alt_ref || !cpi->allow_comp_inter_inter)
-      cm->reference_mode = SINGLE_REFERENCE;
-    else
-      cm->reference_mode = REFERENCE_MODE_SELECT;
-#else  // !CONFIG_REF_ADAPT
 #if CONFIG_BGSPRITE
     (void)is_alt_ref;
     if (!cpi->allow_comp_inter_inter)
 #else
+    // NOTE: "is_alt_ref" is true only for OVERLAY/INTNL_OVERLAY frames
     if (is_alt_ref || !cpi->allow_comp_inter_inter)
 #endif  // CONFIG_BGSPRITE
       cm->reference_mode = SINGLE_REFERENCE;
-#if !CONFIG_JNT_COMP
-    else if (mode_thrs[COMPOUND_REFERENCE] > mode_thrs[SINGLE_REFERENCE] &&
-             mode_thrs[COMPOUND_REFERENCE] > mode_thrs[REFERENCE_MODE_SELECT] &&
-             check_dual_ref_flags(cpi) && cpi->static_mb_pct == 100)
-      cm->reference_mode = COMPOUND_REFERENCE;
-    else if (mode_thrs[SINGLE_REFERENCE] > mode_thrs[REFERENCE_MODE_SELECT])
-      cm->reference_mode = SINGLE_REFERENCE;
-#endif  // CONFIG_JNT_COMP
     else
       cm->reference_mode = REFERENCE_MODE_SELECT;
-#endif  // CONFIG_REF_ADAPT
 
 #if CONFIG_DUAL_FILTER
     cm->interp_filter = SWITCHABLE;
