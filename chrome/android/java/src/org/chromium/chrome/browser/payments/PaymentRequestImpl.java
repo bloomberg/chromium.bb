@@ -664,7 +664,11 @@ public class PaymentRequestImpl
                 && mIsCurrentPaymentRequestShowing) {
             assert !mPaymentMethodsSection.isEmpty();
 
-            if (mPaymentMethodsSection.getSize() > 1) {
+            // Do not skip to payment app if it is not the only one or it's not pre-selected. Note
+            // that ServiceWorkerPaymentApp can not be pre-selected if its name and/or icon is
+            // missing.
+            if (mPaymentMethodsSection.getSize() > 1
+                    || mPaymentMethodsSection.getSelectedItem() == null) {
                 mUI.show();
             } else {
                 mDidRecordShowEvent = true;
