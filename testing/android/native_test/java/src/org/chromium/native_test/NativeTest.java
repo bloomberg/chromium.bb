@@ -7,10 +7,12 @@ package org.chromium.native_test;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Process;
+import android.system.Os;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
@@ -179,6 +181,19 @@ public class NativeTest {
     // RUNNER_FAILED build/android/test_package.py.
     private void nativeTestFailed() {
         Log.e(TAG, "[ RUNNER_FAILED ] could not load native library");
+    }
+
+    public void setEnvForNative(Activity activity) {
+        // The setenv API was added in L. On older versions of Android, we should still see ubsan
+        // reports, but they will not have stack traces.
+        String ubsanOptions = activity.getIntent().getStringExtra(EXTRA_UBSAN_OPTIONS);
+        if (ubsanOptions != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                Os.setenv("UBSAN_OPTIONS", ubsanOptions, true);
+            } catch (Exception e) {
+                Log.w(TAG, "failed to set UBSAN_OPTIONS", e);
+            }
+        }
     }
 
     private native void nativeRunTests(String commandLineFlags, String commandLineFilePath,
