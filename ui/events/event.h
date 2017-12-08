@@ -429,10 +429,10 @@ struct EVENTS_EXPORT PointerDetails {
                  float radius_x,
                  float radius_y,
                  float force,
+                 float twist = 0.0f,
                  float tilt_x = 0.0f,
                  float tilt_y = 0.0f,
-                 float tangential_pressure = 0.0f,
-                 int twist = 0);
+                 float tangential_pressure = 0.0f);
   PointerDetails(EventPointerType pointer_type,
                  const gfx::Vector2d& pointer_offset,
                  PointerId pointer_id = kUnknownPointerId);
@@ -479,7 +479,7 @@ struct EVENTS_EXPORT PointerDetails {
 
   // The clockwise rotation of a pen stylus around its own major axis, in
   // degrees in the range [0,359]. Always 0 if the device does not support it.
-  int twist = 0;
+  float twist = 0;
 
   // An identifier that uniquely identifies a pointer during its lifetime.
   PointerId id = 0;
@@ -597,7 +597,6 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   // Updates the button that changed.
   void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
 
-  // Event details common to MouseEvent and TouchEvent.
   const PointerDetails& pointer_details() const { return pointer_details_; }
 
  private:
@@ -681,7 +680,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   TouchEvent(const TouchEvent& model, T* source, T* target)
       : LocatedEvent(model, source, target),
         unique_event_id_(model.unique_event_id_),
-        rotation_angle_(model.rotation_angle_),
         may_cause_scrolling_(model.may_cause_scrolling_),
         should_remove_native_touch_id_mapping_(false),
         pointer_details_(model.pointer_details_) {}
@@ -699,8 +697,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   // A unique identifier for this event.
   uint32_t unique_event_id() const { return unique_event_id_; }
-
-  float rotation_angle() const { return rotation_angle_; }
 
   void set_may_cause_scrolling(bool causes) { may_cause_scrolling_ = causes; }
   bool may_cause_scrolling() const { return may_cause_scrolling_; }
@@ -722,22 +718,14 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
     return !!(result() & ER_DISABLE_SYNC_HANDLING);
   }
 
-  // Event details common to MouseEvent and TouchEvent.
   const PointerDetails& pointer_details() const { return pointer_details_; }
-  void set_pointer_details(const PointerDetails& pointer_details);
+  void SetPointerDetailsForTest(const PointerDetails& pointer_details);
+
+  float ComputeRotationAngle() const;
 
  private:
-  // Adjusts rotation_angle_ to within the acceptable range.
-  void FixRotationAngle();
-
   // A unique identifier for the touch event.
   uint32_t unique_event_id_;
-
-  // TODO(726824): Remove rotation_angle_ from ui::TouchEvent, just use twist
-  // in PointerDetails.
-  // Clockwise angle (in degrees) of the major axis from the X axis. Must be
-  // less than 180 and non-negative.
-  float rotation_angle_;
 
   // Whether the (unhandled) touch event will produce a scroll event (e.g., a
   // touchmove that exceeds the platform slop region, or a touchend that

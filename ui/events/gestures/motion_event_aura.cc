@@ -42,7 +42,7 @@ PointerProperties GetPointerPropertiesFromTouchEvent(const TouchEvent& touch) {
 
   pointer_properties.SetAxesAndOrientation(touch.pointer_details().radius_x,
                                            touch.pointer_details().radius_y,
-                                           touch.rotation_angle());
+                                           touch.ComputeRotationAngle());
   if (!pointer_properties.touch_major) {
     float default_size;
     switch (touch.pointer_details().pointer_type) {

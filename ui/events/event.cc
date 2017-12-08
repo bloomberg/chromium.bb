@@ -513,10 +513,10 @@ PointerDetails::PointerDetails(EventPointerType pointer_type,
                                float radius_x,
                                float radius_y,
                                float force,
+                               float twist,
                                float tilt_x,
                                float tilt_y,
-                               float tangential_pressure,
-                               int twist)
+                               float tangential_pressure)
     : pointer_type(pointer_type),
       // If we aren't provided with a radius on one axis, use the
       // information from the other axis.
@@ -826,7 +826,6 @@ const int MouseWheelEvent::kWheelDelta = 53;
 TouchEvent::TouchEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
       unique_event_id_(ui::GetNextTouchEventId()),
-      rotation_angle_(GetTouchAngle(native_event)),
       may_cause_scrolling_(false),
       should_remove_native_touch_id_mapping_(false),
       pointer_details_(GetTouchPointerDetailsFromNative(native_event)) {
@@ -834,7 +833,6 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, time_stamp(), 1);
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 
-  FixRotationAngle();
   if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
     should_remove_native_touch_id_mapping_ = true;
 }
@@ -842,7 +840,6 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
 TouchEvent::TouchEvent(const PointerEvent& pointer_event)
     : LocatedEvent(pointer_event),
       unique_event_id_(ui::GetNextTouchEventId()),
-      rotation_angle_(0.0f),
       may_cause_scrolling_(false),
       should_remove_native_touch_id_mapping_(false),
       pointer_details_(pointer_event.pointer_details()) {
@@ -882,18 +879,16 @@ TouchEvent::TouchEvent(EventType type,
                    time_stamp,
                    flags),
       unique_event_id_(ui::GetNextTouchEventId()),
-      rotation_angle_(angle),
       may_cause_scrolling_(false),
       should_remove_native_touch_id_mapping_(false),
       pointer_details_(pointer_details) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-  FixRotationAngle();
+  pointer_details_.twist = angle;
 }
 
 TouchEvent::TouchEvent(const TouchEvent& copy)
     : LocatedEvent(copy),
       unique_event_id_(copy.unique_event_id_),
-      rotation_angle_(copy.rotation_angle_),
       may_cause_scrolling_(copy.may_cause_scrolling_),
       should_remove_native_touch_id_mapping_(false),
       pointer_details_(copy.pointer_details_) {
@@ -933,16 +928,19 @@ void TouchEvent::DisableSynchronousHandling() {
       static_cast<EventResult>(result() | ER_DISABLE_SYNC_HANDLING));
 }
 
-void TouchEvent::FixRotationAngle() {
-  while (rotation_angle_ < 0)
-    rotation_angle_ += 180;
-  while (rotation_angle_ >= 180)
-    rotation_angle_ -= 180;
-}
-
-void TouchEvent::set_pointer_details(const PointerDetails& pointer_details) {
+void TouchEvent::SetPointerDetailsForTest(
+    const PointerDetails& pointer_details) {
   DCHECK_EQ(pointer_details_.id, pointer_details.id);
   pointer_details_ = pointer_details;
+}
+
+float TouchEvent::ComputeRotationAngle() const {
+  float rotation_angle = pointer_details_.twist;
+  while (rotation_angle < 0)
+    rotation_angle += 180.f;
+  while (rotation_angle >= 180)
+    rotation_angle -= 180.f;
+  return rotation_angle;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

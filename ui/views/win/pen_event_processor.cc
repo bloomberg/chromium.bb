@@ -62,7 +62,7 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateEvent(
   int tilt_y = pointer_pen_info.tiltY;
   ui::PointerDetails pointer_details(
       input_type, mapped_pointer_id, /* radius_x */ 0.0f, /* radius_y */ 0.0f,
-      pressure, tilt_x, tilt_y, /* tangential_pressure */ 0.0f, rotation);
+      pressure, rotation, tilt_x, tilt_y, /* tangential_pressure */ 0.0f);
 
   // If the flag is disabled, we send mouse events for all pen inputs.
   if (!direct_manipulation_enabled_) {

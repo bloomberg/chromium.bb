@@ -585,7 +585,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0),
                      0, angle_in_range);
-    EXPECT_FLOAT_EQ(angle_in_range, event.rotation_angle());
+    EXPECT_FLOAT_EQ(angle_in_range, event.ComputeRotationAngle());
   }
 
   {
@@ -595,7 +595,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0),
                      0, angle_in_range);
-    EXPECT_FLOAT_EQ(angle_in_range, event.rotation_angle());
+    EXPECT_FLOAT_EQ(angle_in_range, event.ComputeRotationAngle());
   }
 
   {
@@ -605,7 +605,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0),
                      0, angle_negative);
-    EXPECT_FLOAT_EQ(180 - 0.1f, event.rotation_angle());
+    EXPECT_FLOAT_EQ(180 - 0.1f, event.ComputeRotationAngle());
   }
 
   {
@@ -615,7 +615,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0),
                      0, angle_negative);
-    EXPECT_FLOAT_EQ(360 - 200, event.rotation_angle());
+    EXPECT_FLOAT_EQ(360 - 200, event.ComputeRotationAngle());
   }
 
   {
@@ -625,7 +625,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0),
                      0, angle_too_big);
-    EXPECT_FLOAT_EQ(0, event.rotation_angle());
+    EXPECT_FLOAT_EQ(0, event.ComputeRotationAngle());
   }
 
   {
@@ -635,7 +635,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0),
                      0, angle_too_big);
-    EXPECT_FLOAT_EQ(400 - 360, event.rotation_angle());
+    EXPECT_FLOAT_EQ(400 - 360, event.ComputeRotationAngle());
   }
 }
 
@@ -695,10 +695,10 @@ TEST(EventTest, PointerDetailsStylus) {
                                      /* radius_x */ 0.0f,
                                      /* radius_y */ 0.0f,
                                      /* force */ 21.0f,
+                                     /* twist */ 196,
                                      /* tilt_x */ 45.0f,
                                      /* tilt_y */ -45.0f,
-                                     /* tangential_pressure */ 0.7f,
-                                     /* twist */ 196);
+                                     /* tangential_pressure */ 0.7f);
 
   ui::MouseEvent stylus_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
                               gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0,
@@ -736,11 +736,11 @@ TEST(EventTest, PointerDetailsCustomTouch) {
                                      /* radius_x */ 5.0f,
                                      /* radius_y */ 6.0f,
                                      /* force */ 21.0f,
+                                     /* twist */ 196,
                                      /* tilt_x */ 45.0f,
                                      /* tilt_y */ -45.0f,
-                                     /* tangential_pressure */ 0.7f,
-                                     /* twist */ 196);
-  touch_event.set_pointer_details(pointer_details);
+                                     /* tangential_pressure */ 0.7f);
+  touch_event.SetPointerDetailsForTest(pointer_details);
 
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
             touch_event.pointer_details().pointer_type);

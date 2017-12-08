@@ -714,7 +714,7 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
   if (event->IsTouchEvent()) {
     ui::TouchEvent* touch_event = static_cast<ui::TouchEvent*>(event);
     touch_pointer_details_.id = touch_event->pointer_details().id;
-    touch_event->set_pointer_details(touch_pointer_details_);
+    touch_event->SetPointerDetailsForTest(touch_pointer_details_);
   }
 
   if (async) {

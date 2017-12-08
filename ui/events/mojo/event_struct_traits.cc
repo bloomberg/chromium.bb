@@ -124,8 +124,8 @@ bool ReadPointerDetails(ui::mojom::EventType event_type,
       *out = ui::PointerDetails(
           PointerTypeFromPointerKind(pointer_data.kind),
           pointer_data.pointer_id, brush_data.width, brush_data.height,
-          brush_data.pressure, brush_data.tilt_x, brush_data.tilt_y,
-          brush_data.tangential_pressure, brush_data.twist);
+          brush_data.pressure, brush_data.twist, brush_data.tilt_x,
+          brush_data.tilt_y, brush_data.tangential_pressure);
       return true;
     }
     case ui::mojom::PointerKind::ERASER:
@@ -267,7 +267,6 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
   // TODO(rjk): this is in the wrong coordinate system
   brush_data->width = pointer_details->radius_x;
   brush_data->height = pointer_details->radius_y;
-  // TODO(rjk): update for touch_event->rotation_angle();
   brush_data->pressure = pointer_details->force;
   // In theory only pen events should have tilt, tangential_pressure and twist.
   // In practive a JavaScript PointerEvent could have type touch and still have

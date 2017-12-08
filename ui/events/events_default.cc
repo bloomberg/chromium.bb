@@ -109,13 +109,6 @@ PointerDetails GetTouchPointerDetailsFromNative(
   return event->pointer_details();
 }
 
-float GetTouchAngle(const base::NativeEvent& native_event) {
-  const ui::TouchEvent* event =
-      static_cast<const ui::TouchEvent*>(native_event);
-  DCHECK(event->IsTouchEvent());
-  return event->rotation_angle();
-}
-
 bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* x_offset,
                       float* y_offset,

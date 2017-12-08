@@ -433,10 +433,10 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
                                    /* radius_x */ 0.0f,
                                    /* radius_y */ 0.0f,
                                    /* force */ 0.8f,
+                                   /* twist */ 269,
                                    /* tilt_x */ 89.5f,
                                    /* tilt_y */ -89.5f,
-                                   /* tangential_pressure */ 0.6f,
-                                   /* twist */ 269);
+                                   /* tangential_pressure */ 0.6f);
     MouseEvent ui_event(ET_MOUSE_PRESSED, gfx::Point(123, 321),
                         gfx::Point(123, 321), timestamp, EF_LEFT_MOUSE_BUTTON,
                         EF_LEFT_MOUSE_BUTTON, pointer_details);
