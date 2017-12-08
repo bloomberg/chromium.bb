@@ -100,7 +100,7 @@ class BoxReaderTest : public testing::Test {
 
     EXPECT_EQ(result, ParseResult::kOk);
     EXPECT_TRUE(reader);
-    EXPECT_EQ(fourCC, reader->type());
+    EXPECT_EQ(fourCC, static_cast<uint32_t>(reader->type()));
     EXPECT_EQ(reader->box_size(), data_size);
   }
 
