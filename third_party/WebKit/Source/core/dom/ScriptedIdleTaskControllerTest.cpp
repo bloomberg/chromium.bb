@@ -32,11 +32,11 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
   bool CanExceedIdleDeadlineIfRequired() override { return false; }
   void PostIdleTask(const WebTraceLocation&,
-                    WebThread::IdleTask* idle_task) override {
-    idle_task_.reset(idle_task);
+                    WebThread::IdleTask idle_task) override {
+    idle_task_ = std::move(idle_task);
   }
   void PostNonNestableIdleTask(const WebTraceLocation&,
-                               WebThread::IdleTask*) override {}
+                               WebThread::IdleTask) override {}
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
       InterventionReporter*,
       WebViewScheduler::WebViewSchedulerDelegate*) override {
@@ -50,15 +50,12 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   void RemovePendingNavigation(
       scheduler::RendererScheduler::NavigatingFrameType) override {}
 
-  void RunIdleTask() {
-    auto idle_task = std::move(idle_task_);
-    idle_task->Run(0);
-  }
-  bool HasIdleTask() const { return idle_task_.get(); }
+  void RunIdleTask() { std::move(idle_task_).Run(0); }
+  bool HasIdleTask() const { return !!idle_task_; }
 
  private:
   bool should_yield_;
-  std::unique_ptr<WebThread::IdleTask> idle_task_;
+  WebThread::IdleTask idle_task_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScriptedIdleTaskControllerScheduler);
 };

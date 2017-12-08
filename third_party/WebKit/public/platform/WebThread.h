@@ -26,6 +26,7 @@
 #define WebThread_h
 
 #include "WebCommon.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 
 #include <stdint.h>
@@ -53,11 +54,7 @@ class BLINK_PLATFORM_EXPORT WebThread {
  public:
   // An IdleTask is passed a deadline in CLOCK_MONOTONIC seconds and is
   // expected to complete before this deadline.
-  class IdleTask {
-   public:
-    virtual ~IdleTask() {}
-    virtual void Run(double deadline_seconds) = 0;
-  };
+  using IdleTask = base::OnceCallback<void(double deadline_seconds)>;
 
   class BLINK_PLATFORM_EXPORT TaskObserver {
    public:

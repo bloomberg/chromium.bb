@@ -483,9 +483,10 @@ class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
     base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_.get());
     for (std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>& pair : *tasks) {
       if (pair.second) {
-        idle_task_runner_->PostIdleTask(FROM_HERE, pair.first);
+        idle_task_runner_->PostIdleTask(FROM_HERE, std::move(pair.first));
       } else {
-        idle_task_runner_->PostNonNestableIdleTask(FROM_HERE, pair.first);
+        idle_task_runner_->PostNonNestableIdleTask(FROM_HERE,
+                                                   std::move(pair.first));
       }
     }
     idle_helper_->StartIdlePeriod(

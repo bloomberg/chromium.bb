@@ -38,19 +38,6 @@
 
 namespace blink {
 
-class V8IdleTaskAdapter : public WebThread::IdleTask {
-  USING_FAST_MALLOC(V8IdleTaskAdapter);
-  WTF_MAKE_NONCOPYABLE(V8IdleTaskAdapter);
-
- public:
-  V8IdleTaskAdapter(v8::IdleTask* task) : task_(WTF::WrapUnique(task)) {}
-  ~V8IdleTaskAdapter() override {}
-  void Run(double delay_seconds) override { task_->Run(delay_seconds); }
-
- private:
-  std::unique_ptr<v8::IdleTask> task_;
-};
-
 class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   USING_FAST_MALLOC(V8IdleTaskRunner);
   WTF_MAKE_NONCOPYABLE(V8IdleTaskRunner);
@@ -60,7 +47,8 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   ~V8IdleTaskRunner() override {}
   void PostIdleTask(v8::IdleTask* task) override {
     DCHECK(RuntimeEnabledFeatures::V8IdleTasksEnabled());
-    scheduler_->PostIdleTask(BLINK_FROM_HERE, new V8IdleTaskAdapter(task));
+    scheduler_->PostIdleTask(
+        BLINK_FROM_HERE, WTF::Bind(&v8::IdleTask::Run, WTF::WrapUnique(task)));
   }
 
  private:
