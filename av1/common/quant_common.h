@@ -75,7 +75,7 @@ static inline TX_SIZE get_qm_tx_size(TX_SIZE tx_size) {
 
 #if CONFIG_NEW_QUANT
 
-#define QUANT_PROFILES 4
+#define QUANT_PROFILES 5
 #define QUANT_RANGES 2
 #define NUQ_KNOTS 3
 
@@ -97,12 +97,12 @@ static INLINE int get_dq_profile(int qindex, int is_inter,
     {
         // intra
         { 2, 1 },  // Y
-        { 3, 1 },  // UV
+        { 2, 1 },  // UV
     },
     {
         // inter
-        { 2, 1 },  // Y
-        { 3, 1 },  // UV
+        { 4, 3 },  // Y
+        { 4, 3 },  // UV
     },
   };
   if (!qindex) return 0;  // lossless
