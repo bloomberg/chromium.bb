@@ -345,6 +345,39 @@ TEST_F(PrefProviderTest, Patterns) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+TEST_F(PrefProviderTest, ResourceIdentifier) {
+  TestingProfile testing_profile;
+  PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
+                                              false /* incognito */,
+                                              true /* store_last_modified */);
+
+  GURL host("http://example.com/");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("[*.]example.com");
+  std::string resource1("someplugin");
+  std::string resource2("otherplugin");
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            TestUtils::GetContentSetting(&pref_content_settings_provider, host,
+                                         host, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         resource1, false));
+  pref_content_settings_provider.SetWebsiteSetting(
+      pattern, pattern, CONTENT_SETTINGS_TYPE_PLUGINS, resource1,
+      new base::Value(CONTENT_SETTING_BLOCK));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            TestUtils::GetContentSetting(&pref_content_settings_provider, host,
+                                         host, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         resource1, false));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            TestUtils::GetContentSetting(&pref_content_settings_provider, host,
+                                         host, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         resource2, false));
+
+  pref_content_settings_provider.ShutdownOnUIThread();
+}
+#endif
+
 // http://crosbug.com/17760
 TEST_F(PrefProviderTest, Deadlock) {
   sync_preferences::TestingPrefServiceSyncable prefs;
@@ -444,6 +477,7 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
   ContentSettingsPattern wildcard =
       ContentSettingsPattern::FromString("*");
   std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_ALLOW));
+  ResourceIdentifier res_id("abcde");
 
   PrefProvider provider(&prefs, false /* incognito */,
                         true /* store_last_modified */);
@@ -460,7 +494,11 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Non-empty pattern, plugins, non-empty resource identifier.
   provider.SetWebsiteSetting(pattern, wildcard, CONTENT_SETTINGS_TYPE_PLUGINS,
-                             ResourceIdentifier(), value->DeepCopy());
+                             res_id, value->DeepCopy());
+
+  // Empty pattern, plugins, non-empty resource identifier.
+  provider.SetWebsiteSetting(wildcard, wildcard, CONTENT_SETTINGS_TYPE_PLUGINS,
+                             res_id, value->DeepCopy());
 #endif
   // Non-empty pattern, syncable, empty resource identifier.
   provider.SetWebsiteSetting(pattern, wildcard, CONTENT_SETTINGS_TYPE_COOKIES,

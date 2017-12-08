@@ -118,12 +118,8 @@ bool ContentSettingsPref::SetWebsiteSetting(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs_);
   DCHECK(primary_pattern != ContentSettingsPattern::Wildcard() ||
-         secondary_pattern != ContentSettingsPattern::Wildcard());
-
-  // Resource Identifiers have been supported by the API but never used by any
-  // users of the API.
-  // TODO(crbug.com/754178): remove |resource_identifier| from the API.
-  DCHECK(resource_identifier.empty());
+         secondary_pattern != ContentSettingsPattern::Wildcard() ||
+         !resource_identifier.empty());
 
   // At this point take the ownership of the |in_value|.
   std::unique_ptr<base::Value> value(in_value);
@@ -277,11 +273,6 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
       const base::DictionaryValue* resource_dictionary = nullptr;
       if (settings_dictionary->GetDictionary(
               kPerResourceIdentifierPrefName, &resource_dictionary)) {
-        // Resource Identifiers have been supported by the API but never used by
-        // any users of the API.
-        // TODO(crbug.com/754178): remove |resource_identifier| from the API.
-        NOTREACHED();
-
         base::Time last_modified = GetTimeStamp(settings_dictionary);
         for (base::DictionaryValue::Iterator j(*resource_dictionary);
              !j.IsAtEnd();
