@@ -82,11 +82,6 @@ int GetTouchId(const base::NativeEvent& native_event) {
   return 0;
 }
 
-float GetTouchAngle(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return 0.f;
-}
-
 PointerDetails GetTouchPointerDetailsFromNative(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
@@ -94,6 +89,7 @@ PointerDetails GetTouchPointerDetailsFromNative(
                         /* radius_x */ 1.0,
                         /* radius_y */ 1.0,
                         /* force */ 0.f,
+                        /* twist */ 0.f,
                         /* tilt_x */ 0.f,
                         /* tilt_y */ 0.f);
 }

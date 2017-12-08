@@ -519,7 +519,7 @@ void TouchEventConverterEvdev::ReportTouchEvent(
     base::TimeTicks timestamp) {
   ui::PointerDetails details(event.reported_tool_type, /* pointer_id*/ 0,
                              event.radius_x, event.radius_y, event.pressure,
-                             event.tilt_x, event.tilt_y);
+                             /* twist */ 0, event.tilt_x, event.tilt_y);
   int flags = event.btn_stylus.down ? ui::EventFlags::EF_LEFT_MOUSE_BUTTON : 0;
   dispatcher_->DispatchTouchEvent(TouchEventParams(
       input_device_.id, event.slot, event_type, gfx::PointF(event.x, event.y),

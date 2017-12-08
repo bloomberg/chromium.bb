@@ -66,6 +66,15 @@ void InitKeyEvent(Display* display,
 }
 #endif
 
+float ComputeRotationAngle(float twist) {
+  float rotation_angle = twist;
+  while (rotation_angle < 0)
+    rotation_angle += 180.f;
+  while (rotation_angle >= 180)
+    rotation_angle -= 180.f;
+  return rotation_angle;
+}
+
 }  // namespace
 
 class EventsXTest : public testing::Test {
@@ -245,9 +254,9 @@ TEST_F(EventsXTest, TouchEventBasic) {
             gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
                 .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
-  EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.15f);
   PointerDetails pointer_details =
       GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.15f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 10.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.1f);
 
@@ -262,8 +271,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
             gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
                 .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
-  EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.25f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 10.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.1f);
 
@@ -280,8 +289,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
             gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
                 .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 1);
-  EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.45f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 50.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.5f);
 
@@ -296,8 +305,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
             gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
                 .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
-  EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.25f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 10.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.f);
 
@@ -312,8 +321,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
             gfx::ToFlooredPoint(ui::EventLocationFromNative(scoped_xevent))
                 .ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 1);
-  EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(ComputeRotationAngle(pointer_details.twist), 0.45f);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 25.0f);
   EXPECT_FLOAT_EQ(pointer_details.force, 0.f);
 }

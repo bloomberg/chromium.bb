@@ -439,7 +439,7 @@ TEST(MotionEventAuraTest, ToolType) {
                                  /* radius_x */ 5.0f,
                                  /* radius_y */ 5.0f,
                                  /* force */ 1.0f);
-  touch_event.set_pointer_details(pointer_details);
+  touch_event.SetPointerDetailsForTest(pointer_details);
   EXPECT_TRUE(event.OnTouch(touch_event));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_STYLUS, event.GetToolType(0));
 }
