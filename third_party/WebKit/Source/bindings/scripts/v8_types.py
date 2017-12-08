@@ -657,7 +657,11 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     elif idl_type.is_union_type:
         nullable = 'UnionTypeConversionMode::kNullable' if idl_type.includes_nullable_type \
             else 'UnionTypeConversionMode::kNotNullable'
-        cpp_expression_format = 'V8{idl_type}::ToImpl({isolate}, {v8_value}, {variable_name}, %s, exceptionState)' % nullable
+        # We need to consider the moving of the null through the union in order
+        # to generate the correct V8* class name.
+        this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes)
+        cpp_expression_format = '%s::ToImpl({isolate}, {v8_value}, {variable_name}, %s, exceptionState)' % \
+            (v8_type(this_cpp_type), nullable)
     elif idl_type.use_output_parameter_for_result:
         cpp_expression_format = 'V8{idl_type}::ToImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
     elif idl_type.is_callback_function:
@@ -1039,7 +1043,7 @@ def union_literal_cpp_value(idl_type, idl_literal):
     else:
         raise ValueError('Unsupported literal type: ' + idl_literal.idl_type)
 
-    return '%s::From%s(%s)' % (idl_type.name, member_type.name,
+    return '%s::From%s(%s)' % (idl_type.cpp_type_args(), member_type.name,
                                member_type.literal_cpp_value(idl_literal))
 
 

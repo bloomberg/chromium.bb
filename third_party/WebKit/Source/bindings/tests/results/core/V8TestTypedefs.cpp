@@ -350,7 +350,7 @@ static void voidMethodNestedUnionTypeMethod(const v8::FunctionCallbackInfo<v8::V
   }
 
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord arg;
-  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrNullOrStringByteStringOrNodeListRecord::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNullable, exceptionState);
+  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNullable, exceptionState);
   if (exceptionState.HadException())
     return;
 
