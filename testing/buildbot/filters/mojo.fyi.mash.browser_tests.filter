@@ -23,18 +23,6 @@
 -WizardControllerKioskFlowTest.*
 -WizardControllerTest.*
 
-# Crashes in net::URLRequestContext::CreateRequest.
--AffiliationCheck/EnterpriseDeviceAttributesTest.*
--AffiliationCheck/UserAffiliationBrowserTest.*
--DefaultProfileExtensionBrowserTest.*
--ExistingUserControllerActiveDirectoryTest.*
--ExistingUserControllerPublicSessionTest.*
--ExistingUserControllerUntrustedTest.*
--PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest.*
--SigninExtensionsDeviceCloudPolicyBrowserTest.*
--SigninProfileAppsPolicyPerChannelTest.*
--SigninProfileAppsPolicyTest.*
-
 # Uses ash::Shell::GetRootWindowForNewWindows to choose a display for the app list.
 # More generally, app list needs to move into ash.
 -AppListControllerGuestModeBrowserTest.*
@@ -56,10 +44,8 @@
 -AutomationApiTestWithDeviceScaleFactor.*
 -AutomationManagerAuraBrowserTest.*
 
-# profile_destroyer.cc(57) Check failed: hosts.empty() || profile->IsOffTheRecord() || profile->HasOffTheRecordProfile() || content::RenderProcessHost::run_renderer_in_process(). Profile still has 1 hosts
--BluetoothPairingDialogTest.*
--DemoAppLauncherTest.*
--LoginWebDialogTest.*
+# Uses Shell::GetPrimaryRootWindow to create an EventGenerator
+-LoginWebDialogTest.CloseDialogByAccelerator
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -BrowserNonClientFrameViewAshBackButtonTest.*
@@ -183,10 +169,6 @@
 # Missing magnification manager and ChromeVoxPanel crashes.
 -LoginScreenDefaultPolicyInSessionBrowsertest.*
 -LoginScreenDefaultPolicyLoginScreenBrowsertest.*
-
-# Test shutdown crashes.
--LoginScreenLocalePolicyTest.*
--LoginScreenPolicyTest.*
 
 # Crashes in pre-login phase, probably MagnificationManager not created.
 -MagnificationManagerTest.*

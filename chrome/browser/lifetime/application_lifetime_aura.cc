@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
@@ -40,6 +41,10 @@ void HandleAppExitingForPlatform() {
 #endif
 
   views::Widget::CloseAllSecondaryWidgets();
+
+  views::MusClient* const mus_client = views::MusClient::Get();
+  if (mus_client)
+    mus_client->CloseAllWidgets();
 
 #if defined(OS_CHROMEOS)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

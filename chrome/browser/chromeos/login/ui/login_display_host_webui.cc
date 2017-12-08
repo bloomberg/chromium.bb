@@ -1229,6 +1229,10 @@ void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
     login_window_ = nullptr;
     login_window_delegate_ = nullptr;
   }
+
+  // Release wizard controller with the webui and hosting window so that it
+  // does not find missing webui handlers in surprise.
+  wizard_controller_.reset();
 }
 
 void LoginDisplayHostWebUI::SetOobeProgressBarVisible(bool visible) {
