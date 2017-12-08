@@ -87,6 +87,17 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
                                       std::move(callback)));
   }
 
+  void UnmountComponent(const std::string& name,
+                        DBusMethodCallback<bool> callback) override {
+    dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
+                                 imageloader::kUnmountComponent);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(name);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&ImageLoaderClientImpl::OnBoolMethod,
+                                      std::move(callback)));
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {

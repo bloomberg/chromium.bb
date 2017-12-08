@@ -36,6 +36,8 @@ class CHROMEOS_EXPORT FakeImageLoaderClient : public ImageLoaderClient {
   void RequestComponentVersion(
       const std::string& name,
       DBusMethodCallback<std::string> callback) override;
+  void UnmountComponent(const std::string& name,
+                        DBusMethodCallback<bool> callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeImageLoaderClient);

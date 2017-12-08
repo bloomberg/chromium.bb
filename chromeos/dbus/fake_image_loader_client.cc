@@ -41,4 +41,10 @@ void FakeImageLoaderClient::RequestComponentVersion(
   std::move(callback).Run(base::nullopt);
 }
 
+void FakeImageLoaderClient::UnmountComponent(
+    const std::string& name,
+    DBusMethodCallback<bool> callback) {
+  std::move(callback).Run(base::nullopt);
+}
+
 }  // namespace chromeos
