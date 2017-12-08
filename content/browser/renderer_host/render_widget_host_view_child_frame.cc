@@ -821,11 +821,6 @@ void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
 }
 
 #if defined(OS_MACOSX)
-ui::AcceleratedWidgetMac*
-RenderWidgetHostViewChildFrame::GetAcceleratedWidgetMac() const {
-  return nullptr;
-}
-
 void RenderWidgetHostViewChildFrame::SetActive(bool active) {}
 
 void RenderWidgetHostViewChildFrame::ShowDefinitionForSelection() {

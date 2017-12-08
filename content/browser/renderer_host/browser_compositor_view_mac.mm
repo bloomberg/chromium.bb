@@ -215,10 +215,12 @@ BrowserCompositorMac::~BrowserCompositorMac() {
     g_spare_recyclable_compositors.Get().clear();
 }
 
-ui::AcceleratedWidgetMac* BrowserCompositorMac::GetAcceleratedWidgetMac() {
-  if (recyclable_compositor_)
-    return recyclable_compositor_->accelerated_widget_mac();
-  return nullptr;
+gfx::AcceleratedWidget BrowserCompositorMac::GetAcceleratedWidget() {
+  if (recyclable_compositor_) {
+    return recyclable_compositor_->accelerated_widget_mac()
+        ->accelerated_widget();
+  }
+  return gfx::kNullAcceleratedWidget;
 }
 
 DelegatedFrameHost* BrowserCompositorMac::GetDelegatedFrameHost() {
@@ -348,6 +350,14 @@ void BrowserCompositorMac::WasResized() {
     recyclable_compositor_->compositor()->SetScaleAndSize(scale_factor,
                                                           pixel_size);
   }
+}
+
+bool BrowserCompositorMac::HasFrameOfSize(const gfx::Size& desired_size) {
+  if (recyclable_compositor_) {
+    return recyclable_compositor_->accelerated_widget_mac()->HasFrameOfSize(
+        desired_size);
+  }
+  return false;
 }
 
 void BrowserCompositorMac::UpdateVSyncParameters(

@@ -326,7 +326,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void BeginFrameSubscription(
       std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;
-  ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   void DidCreateNewRendererCompositorFrameSink(

@@ -172,11 +172,6 @@ bool TestRenderWidgetHostView::HasAcceleratedSurface(
 
 #if defined(OS_MACOSX)
 
-ui::AcceleratedWidgetMac* TestRenderWidgetHostView::GetAcceleratedWidgetMac()
-    const {
-  return nullptr;
-}
-
 void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
 }
