@@ -2802,13 +2802,5 @@ error::Error GLES2DecoderPassthroughImpl::HandleLockDiscardableTextureCHROMIUM(
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderPassthroughImpl::HandleCreateTransferCacheEntryCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
 }  // namespace gles2
 }  // namespace gpu

@@ -16130,9 +16130,9 @@ static_assert(sizeof(EndRasterCHROMIUM) == 4,
 static_assert(offsetof(EndRasterCHROMIUM, header) == 0,
               "offset of EndRasterCHROMIUM header should be 0");
 
-struct CreateTransferCacheEntryCHROMIUM {
-  typedef CreateTransferCacheEntryCHROMIUM ValueType;
-  static const CommandId kCmdId = kCreateTransferCacheEntryCHROMIUM;
+struct CreateTransferCacheEntryINTERNAL {
+  typedef CreateTransferCacheEntryINTERNAL ValueType;
+  static const CommandId kCmdId = kCreateTransferCacheEntryINTERNAL;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
@@ -16190,38 +16190,38 @@ struct CreateTransferCacheEntryCHROMIUM {
   uint32_t data_size;
 };
 
-static_assert(sizeof(CreateTransferCacheEntryCHROMIUM) == 36,
-              "size of CreateTransferCacheEntryCHROMIUM should be 36");
-static_assert(offsetof(CreateTransferCacheEntryCHROMIUM, header) == 0,
-              "offset of CreateTransferCacheEntryCHROMIUM header should be 0");
+static_assert(sizeof(CreateTransferCacheEntryINTERNAL) == 36,
+              "size of CreateTransferCacheEntryINTERNAL should be 36");
+static_assert(offsetof(CreateTransferCacheEntryINTERNAL, header) == 0,
+              "offset of CreateTransferCacheEntryINTERNAL header should be 0");
 static_assert(
-    offsetof(CreateTransferCacheEntryCHROMIUM, handle_id_0) == 4,
-    "offset of CreateTransferCacheEntryCHROMIUM handle_id_0 should be 4");
+    offsetof(CreateTransferCacheEntryINTERNAL, handle_id_0) == 4,
+    "offset of CreateTransferCacheEntryINTERNAL handle_id_0 should be 4");
 static_assert(
-    offsetof(CreateTransferCacheEntryCHROMIUM, handle_id_1) == 8,
-    "offset of CreateTransferCacheEntryCHROMIUM handle_id_1 should be 8");
+    offsetof(CreateTransferCacheEntryINTERNAL, handle_id_1) == 8,
+    "offset of CreateTransferCacheEntryINTERNAL handle_id_1 should be 8");
 static_assert(
-    offsetof(CreateTransferCacheEntryCHROMIUM, handle_shm_id) == 12,
-    "offset of CreateTransferCacheEntryCHROMIUM handle_shm_id should be 12");
-static_assert(offsetof(CreateTransferCacheEntryCHROMIUM, handle_shm_offset) ==
+    offsetof(CreateTransferCacheEntryINTERNAL, handle_shm_id) == 12,
+    "offset of CreateTransferCacheEntryINTERNAL handle_shm_id should be 12");
+static_assert(offsetof(CreateTransferCacheEntryINTERNAL, handle_shm_offset) ==
                   16,
-              "offset of CreateTransferCacheEntryCHROMIUM handle_shm_offset "
+              "offset of CreateTransferCacheEntryINTERNAL handle_shm_offset "
               "should be 16");
-static_assert(offsetof(CreateTransferCacheEntryCHROMIUM, type) == 20,
-              "offset of CreateTransferCacheEntryCHROMIUM type should be 20");
+static_assert(offsetof(CreateTransferCacheEntryINTERNAL, type) == 20,
+              "offset of CreateTransferCacheEntryINTERNAL type should be 20");
 static_assert(
-    offsetof(CreateTransferCacheEntryCHROMIUM, data_shm_id) == 24,
-    "offset of CreateTransferCacheEntryCHROMIUM data_shm_id should be 24");
+    offsetof(CreateTransferCacheEntryINTERNAL, data_shm_id) == 24,
+    "offset of CreateTransferCacheEntryINTERNAL data_shm_id should be 24");
 static_assert(
-    offsetof(CreateTransferCacheEntryCHROMIUM, data_shm_offset) == 28,
-    "offset of CreateTransferCacheEntryCHROMIUM data_shm_offset should be 28");
+    offsetof(CreateTransferCacheEntryINTERNAL, data_shm_offset) == 28,
+    "offset of CreateTransferCacheEntryINTERNAL data_shm_offset should be 28");
 static_assert(
-    offsetof(CreateTransferCacheEntryCHROMIUM, data_size) == 32,
-    "offset of CreateTransferCacheEntryCHROMIUM data_size should be 32");
+    offsetof(CreateTransferCacheEntryINTERNAL, data_size) == 32,
+    "offset of CreateTransferCacheEntryINTERNAL data_size should be 32");
 
-struct DeleteTransferCacheEntryCHROMIUM {
-  typedef DeleteTransferCacheEntryCHROMIUM ValueType;
-  static const CommandId kCmdId = kDeleteTransferCacheEntryCHROMIUM;
+struct DeleteTransferCacheEntryINTERNAL {
+  typedef DeleteTransferCacheEntryINTERNAL ValueType;
+  static const CommandId kCmdId = kDeleteTransferCacheEntryINTERNAL;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
@@ -16252,20 +16252,20 @@ struct DeleteTransferCacheEntryCHROMIUM {
   uint32_t handle_id_1;
 };
 
-static_assert(sizeof(DeleteTransferCacheEntryCHROMIUM) == 12,
-              "size of DeleteTransferCacheEntryCHROMIUM should be 12");
-static_assert(offsetof(DeleteTransferCacheEntryCHROMIUM, header) == 0,
-              "offset of DeleteTransferCacheEntryCHROMIUM header should be 0");
+static_assert(sizeof(DeleteTransferCacheEntryINTERNAL) == 12,
+              "size of DeleteTransferCacheEntryINTERNAL should be 12");
+static_assert(offsetof(DeleteTransferCacheEntryINTERNAL, header) == 0,
+              "offset of DeleteTransferCacheEntryINTERNAL header should be 0");
 static_assert(
-    offsetof(DeleteTransferCacheEntryCHROMIUM, handle_id_0) == 4,
-    "offset of DeleteTransferCacheEntryCHROMIUM handle_id_0 should be 4");
+    offsetof(DeleteTransferCacheEntryINTERNAL, handle_id_0) == 4,
+    "offset of DeleteTransferCacheEntryINTERNAL handle_id_0 should be 4");
 static_assert(
-    offsetof(DeleteTransferCacheEntryCHROMIUM, handle_id_1) == 8,
-    "offset of DeleteTransferCacheEntryCHROMIUM handle_id_1 should be 8");
+    offsetof(DeleteTransferCacheEntryINTERNAL, handle_id_1) == 8,
+    "offset of DeleteTransferCacheEntryINTERNAL handle_id_1 should be 8");
 
-struct UnlockTransferCacheEntryCHROMIUM {
-  typedef UnlockTransferCacheEntryCHROMIUM ValueType;
-  static const CommandId kCmdId = kUnlockTransferCacheEntryCHROMIUM;
+struct UnlockTransferCacheEntryINTERNAL {
+  typedef UnlockTransferCacheEntryINTERNAL ValueType;
+  static const CommandId kCmdId = kUnlockTransferCacheEntryINTERNAL;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
@@ -16296,16 +16296,16 @@ struct UnlockTransferCacheEntryCHROMIUM {
   uint32_t handle_id_1;
 };
 
-static_assert(sizeof(UnlockTransferCacheEntryCHROMIUM) == 12,
-              "size of UnlockTransferCacheEntryCHROMIUM should be 12");
-static_assert(offsetof(UnlockTransferCacheEntryCHROMIUM, header) == 0,
-              "offset of UnlockTransferCacheEntryCHROMIUM header should be 0");
+static_assert(sizeof(UnlockTransferCacheEntryINTERNAL) == 12,
+              "size of UnlockTransferCacheEntryINTERNAL should be 12");
+static_assert(offsetof(UnlockTransferCacheEntryINTERNAL, header) == 0,
+              "offset of UnlockTransferCacheEntryINTERNAL header should be 0");
 static_assert(
-    offsetof(UnlockTransferCacheEntryCHROMIUM, handle_id_0) == 4,
-    "offset of UnlockTransferCacheEntryCHROMIUM handle_id_0 should be 4");
+    offsetof(UnlockTransferCacheEntryINTERNAL, handle_id_0) == 4,
+    "offset of UnlockTransferCacheEntryINTERNAL handle_id_0 should be 4");
 static_assert(
-    offsetof(UnlockTransferCacheEntryCHROMIUM, handle_id_1) == 8,
-    "offset of UnlockTransferCacheEntryCHROMIUM handle_id_1 should be 8");
+    offsetof(UnlockTransferCacheEntryINTERNAL, handle_id_1) == 8,
+    "offset of UnlockTransferCacheEntryINTERNAL handle_id_1 should be 8");
 
 struct TexStorage2DImageCHROMIUM {
   typedef TexStorage2DImageCHROMIUM ValueType;

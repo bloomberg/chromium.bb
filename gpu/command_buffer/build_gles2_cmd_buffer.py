@@ -4625,26 +4625,29 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_raster_transport',
     'extension_flag': 'chromium_raster_transport',
   },
-  "CreateTransferCacheEntryCHROMIUM": {
-    'type': 'Custom',
+  "CreateTransferCacheEntryINTERNAL": {
+    'decoder_func': 'DoCreateTransferCacheEntryINTERNAL',
     'cmd_args': 'GLuint64 handle_id, GLuint handle_shm_id, '
                 'GLuint handle_shm_offset, GLuint type, '
                 'GLuint data_shm_id, GLuint data_shm_offset, '
                 'GLuint data_size',
-    'impl_func': False,
-    'client_test': False,
-    'extension': True,
-  },
-  "DeleteTransferCacheEntryCHROMIUM": {
-    'decoder_func': 'DoDeleteTransferCacheEntryCHROMIUM',
-    'cmd_args': 'GLuint64 handle_id',
+    'internal': True,
     'impl_func': True,
     'client_test': False,
     'extension': True,
   },
-  "UnlockTransferCacheEntryCHROMIUM": {
-    'decoder_func': 'DoUnlockTransferCacheEntryCHROMIUM',
+  "DeleteTransferCacheEntryINTERNAL": {
+    'decoder_func': 'DoDeleteTransferCacheEntryINTERNAL',
     'cmd_args': 'GLuint64 handle_id',
+    'internal': True,
+    'impl_func': True,
+    'client_test': False,
+    'extension': True,
+  },
+  "UnlockTransferCacheEntryINTERNAL": {
+    'decoder_func': 'DoUnlockTransferCacheEntryINTERNAL',
+    'cmd_args': 'GLuint64 handle_id',
+    'internal': True,
     'impl_func': True,
     'client_test': False,
     'extension': True,

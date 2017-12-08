@@ -5353,15 +5353,15 @@ TEST_F(GLES2FormatTest, EndRasterCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, CreateTransferCacheEntryCHROMIUM) {
-  cmds::CreateTransferCacheEntryCHROMIUM& cmd =
-      *GetBufferAs<cmds::CreateTransferCacheEntryCHROMIUM>();
+TEST_F(GLES2FormatTest, CreateTransferCacheEntryINTERNAL) {
+  cmds::CreateTransferCacheEntryINTERNAL& cmd =
+      *GetBufferAs<cmds::CreateTransferCacheEntryINTERNAL>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint64>(11),
                            static_cast<GLuint>(12), static_cast<GLuint>(13),
                            static_cast<GLuint>(14), static_cast<GLuint>(15),
                            static_cast<GLuint>(16), static_cast<GLuint>(17));
   EXPECT_EQ(
-      static_cast<uint32_t>(cmds::CreateTransferCacheEntryCHROMIUM::kCmdId),
+      static_cast<uint32_t>(cmds::CreateTransferCacheEntryINTERNAL::kCmdId),
       cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint64>(11), cmd.handle_id());
@@ -5374,24 +5374,24 @@ TEST_F(GLES2FormatTest, CreateTransferCacheEntryCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, DeleteTransferCacheEntryCHROMIUM) {
-  cmds::DeleteTransferCacheEntryCHROMIUM& cmd =
-      *GetBufferAs<cmds::DeleteTransferCacheEntryCHROMIUM>();
+TEST_F(GLES2FormatTest, DeleteTransferCacheEntryINTERNAL) {
+  cmds::DeleteTransferCacheEntryINTERNAL& cmd =
+      *GetBufferAs<cmds::DeleteTransferCacheEntryINTERNAL>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint64>(11));
   EXPECT_EQ(
-      static_cast<uint32_t>(cmds::DeleteTransferCacheEntryCHROMIUM::kCmdId),
+      static_cast<uint32_t>(cmds::DeleteTransferCacheEntryINTERNAL::kCmdId),
       cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint64>(11), cmd.handle_id());
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, UnlockTransferCacheEntryCHROMIUM) {
-  cmds::UnlockTransferCacheEntryCHROMIUM& cmd =
-      *GetBufferAs<cmds::UnlockTransferCacheEntryCHROMIUM>();
+TEST_F(GLES2FormatTest, UnlockTransferCacheEntryINTERNAL) {
+  cmds::UnlockTransferCacheEntryINTERNAL& cmd =
+      *GetBufferAs<cmds::UnlockTransferCacheEntryINTERNAL>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint64>(11));
   EXPECT_EQ(
-      static_cast<uint32_t>(cmds::UnlockTransferCacheEntryCHROMIUM::kCmdId),
+      static_cast<uint32_t>(cmds::UnlockTransferCacheEntryINTERNAL::kCmdId),
       cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint64>(11), cmd.handle_id());

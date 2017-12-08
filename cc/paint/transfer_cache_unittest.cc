@@ -65,8 +65,11 @@ class TransferCacheTest : public testing::Test {
 
   void TearDown() override { context_.reset(); }
 
-  gpu::ClientTransferCache* ClientTransferCache() {
-    return &client_transfer_cache_;
+  gpu::ClientDiscardableManager* ClientTransferCacheDiscardableManager() {
+    return context_->GetImplementation()
+        ->share_group()
+        ->transfer_cache()
+        ->DiscardableManagerForTesting();
   }
 
   gpu::ServiceTransferCache* ServiceTransferCache() {
@@ -77,8 +80,8 @@ class TransferCacheTest : public testing::Test {
     return context_->GetImplementation();
   }
 
-  gpu::CommandBuffer* CommandBuffer() {
-    return context_->GetImplementation()->helper()->command_buffer();
+  gpu::ContextSupport* ContextSupport() {
+    return context_->GetImplementation();
   }
 
   const ClientRawMemoryTransferCacheEntry& test_client_entry() const {
@@ -86,7 +89,6 @@ class TransferCacheTest : public testing::Test {
   }
 
  private:
-  gpu::ClientTransferCache client_transfer_cache_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestImageFactory image_factory_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
@@ -95,17 +97,16 @@ class TransferCacheTest : public testing::Test {
 };
 
 TEST_F(TransferCacheTest, Basic) {
-  auto* client_cache = ClientTransferCache();
   auto* service_cache = ServiceTransferCache();
   auto* gl = Gl();
-  auto* command_buffer = CommandBuffer();
+  auto* context_support = ContextSupport();
+  auto* discardable_manager = ClientTransferCacheDiscardableManager();
 
   // Create an entry and validate client-side state.
   gpu::TransferCacheEntryId id =
-      client_cache->CreateCacheEntry(gl, command_buffer, test_client_entry());
+      context_support->CreateTransferCacheEntry(test_client_entry());
   EXPECT_FALSE(id.is_null());
-  gpu::ClientDiscardableHandle handle =
-      client_cache->DiscardableManagerForTesting()->GetHandle(id);
+  gpu::ClientDiscardableHandle handle = discardable_manager->GetHandle(id);
   EXPECT_TRUE(handle.IsLockedForTesting());
   gl->Finish();
 
@@ -113,34 +114,33 @@ TEST_F(TransferCacheTest, Basic) {
   EXPECT_NE(nullptr, service_cache->GetEntry(id));
 
   // Unlock on client side and flush to service. Validate handle state.
-  client_cache->UnlockTransferCacheEntry(gl, id);
+  context_support->UnlockTransferCacheEntry(id);
   gl->Finish();
   EXPECT_FALSE(handle.IsLockedForTesting());
 
   // Re-lock on client side and validate state. Nop need to flush as lock is
   // local.
-  EXPECT_TRUE(client_cache->LockTransferCacheEntry(id));
+  EXPECT_TRUE(context_support->ThreadsafeLockTransferCacheEntry(id));
   EXPECT_TRUE(handle.IsLockedForTesting());
 
   // Delete on client side, flush, and validate that deletion reaches service.
-  client_cache->DeleteTransferCacheEntry(gl, id);
+  context_support->DeleteTransferCacheEntry(id);
   gl->Finish();
   EXPECT_TRUE(handle.IsDeletedForTesting());
   EXPECT_EQ(nullptr, service_cache->GetEntry(id));
 }
 
 TEST_F(TransferCacheTest, Eviction) {
-  auto* client_cache = ClientTransferCache();
   auto* service_cache = ServiceTransferCache();
   auto* gl = Gl();
-  auto* command_buffer = CommandBuffer();
+  auto* context_support = ContextSupport();
+  auto* discardable_manager = ClientTransferCacheDiscardableManager();
 
   // Create an entry and validate client-side state.
   gpu::TransferCacheEntryId id =
-      client_cache->CreateCacheEntry(gl, command_buffer, test_client_entry());
+      context_support->CreateTransferCacheEntry(test_client_entry());
   EXPECT_FALSE(id.is_null());
-  gpu::ClientDiscardableHandle handle =
-      client_cache->DiscardableManagerForTesting()->GetHandle(id);
+  gpu::ClientDiscardableHandle handle = discardable_manager->GetHandle(id);
   EXPECT_TRUE(handle.IsLockedForTesting());
   gl->Finish();
 
@@ -148,7 +148,7 @@ TEST_F(TransferCacheTest, Eviction) {
   EXPECT_NE(nullptr, service_cache->GetEntry(id));
 
   // Unlock on client side and flush to service. Validate handle state.
-  client_cache->UnlockTransferCacheEntry(gl, id);
+  context_support->UnlockTransferCacheEntry(id);
   gl->Finish();
   EXPECT_FALSE(handle.IsLockedForTesting());
 
@@ -158,15 +158,15 @@ TEST_F(TransferCacheTest, Eviction) {
   EXPECT_EQ(nullptr, service_cache->GetEntry(id));
 
   // Try to re-lock on the client side. This should fail.
-  EXPECT_FALSE(client_cache->LockTransferCacheEntry(id));
+  EXPECT_FALSE(context_support->ThreadsafeLockTransferCacheEntry(id));
   EXPECT_FALSE(handle.IsLockedForTesting());
 }
 
 TEST_F(TransferCacheTest, RawMemoryTransfer) {
-  auto* client_cache = ClientTransferCache();
   auto* service_cache = ServiceTransferCache();
   auto* gl = Gl();
-  auto* command_buffer = CommandBuffer();
+  auto* context_support = ContextSupport();
+  auto* discardable_manager = ClientTransferCacheDiscardableManager();
 
   // Create an entry with some initialized data.
   std::vector<uint8_t> data;
@@ -178,10 +178,9 @@ TEST_F(TransferCacheTest, RawMemoryTransfer) {
   // Add the entry to the transfer cache
   ClientRawMemoryTransferCacheEntry client_entry(data);
   gpu::TransferCacheEntryId id =
-      client_cache->CreateCacheEntry(gl, command_buffer, client_entry);
+      context_support->CreateTransferCacheEntry(client_entry);
   EXPECT_FALSE(id.is_null());
-  gpu::ClientDiscardableHandle handle =
-      client_cache->DiscardableManagerForTesting()->GetHandle(id);
+  gpu::ClientDiscardableHandle handle = discardable_manager->GetHandle(id);
   EXPECT_TRUE(handle.IsLockedForTesting());
   gl->Finish();
 
@@ -199,10 +198,10 @@ TEST_F(TransferCacheTest, ImageMemoryTransfer) {
   return;
 #endif
 
-  auto* client_cache = ClientTransferCache();
   auto* service_cache = ServiceTransferCache();
   auto* gl = Gl();
-  auto* command_buffer = CommandBuffer();
+  auto* context_support = ContextSupport();
+  auto* discardable_manager = ClientTransferCacheDiscardableManager();
 
   // Create a 10x10 image.
   SkImageInfo info = SkImageInfo::MakeN32Premul(10, 10);
@@ -216,10 +215,9 @@ TEST_F(TransferCacheTest, ImageMemoryTransfer) {
   // Add the entry to the transfer cache
   ClientImageTransferCacheEntry client_entry(&pixmap, nullptr);
   gpu::TransferCacheEntryId id =
-      client_cache->CreateCacheEntry(gl, command_buffer, client_entry);
+      context_support->CreateTransferCacheEntry(client_entry);
   EXPECT_FALSE(id.is_null());
-  gpu::ClientDiscardableHandle handle =
-      client_cache->DiscardableManagerForTesting()->GetHandle(id);
+  gpu::ClientDiscardableHandle handle = discardable_manager->GetHandle(id);
   EXPECT_TRUE(handle.IsLockedForTesting());
   gl->Finish();
 
@@ -252,17 +250,16 @@ class InvalidIdTransferCacheEntry : public ClientTransferCacheEntry {
 };
 
 TEST_F(TransferCacheTest, InvalidTypeFails) {
-  auto* client_cache = ClientTransferCache();
   auto* service_cache = ServiceTransferCache();
   auto* gl = Gl();
-  auto* command_buffer = CommandBuffer();
+  auto* context_support = ContextSupport();
+  auto* discardable_manager = ClientTransferCacheDiscardableManager();
 
   // Add the entry to the transfer cache
-  gpu::TransferCacheEntryId id = client_cache->CreateCacheEntry(
-      gl, command_buffer, InvalidIdTransferCacheEntry());
+  gpu::TransferCacheEntryId id =
+      context_support->CreateTransferCacheEntry(InvalidIdTransferCacheEntry());
   EXPECT_FALSE(id.is_null());
-  gpu::ClientDiscardableHandle handle =
-      client_cache->DiscardableManagerForTesting()->GetHandle(id);
+  gpu::ClientDiscardableHandle handle = discardable_manager->GetHandle(id);
   EXPECT_TRUE(handle.IsLockedForTesting());
   gl->Finish();
 

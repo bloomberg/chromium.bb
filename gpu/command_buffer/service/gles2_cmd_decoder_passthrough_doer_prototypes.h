@@ -1008,8 +1008,15 @@ error::Error DoBeginRasterCHROMIUM(GLuint texture_id,
                                    GLboolean use_distance_field_text,
                                    GLint pixel_config);
 error::Error DoEndRasterCHROMIUM();
-error::Error DoUnlockTransferCacheEntryCHROMIUM(GLuint64 id);
-error::Error DoDeleteTransferCacheEntryCHROMIUM(GLuint64 id);
+error::Error DoCreateTransferCacheEntryINTERNAL(GLuint64 raw_handle_id,
+                                                GLuint handle_shm_id,
+                                                GLuint handle_shm_offset,
+                                                GLuint type,
+                                                GLuint data_shm_id,
+                                                GLuint data_shm_offset,
+                                                GLuint data_size);
+error::Error DoUnlockTransferCacheEntryINTERNAL(GLuint64 id);
+error::Error DoDeleteTransferCacheEntryINTERNAL(GLuint64 id);
 error::Error DoWindowRectanglesEXT(GLenum mode,
                                    GLsizei n,
                                    const volatile GLint* box);

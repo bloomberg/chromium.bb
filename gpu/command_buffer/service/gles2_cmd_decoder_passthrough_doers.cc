@@ -4639,13 +4639,25 @@ error::Error GLES2DecoderPassthroughImpl::DoEndRasterCHROMIUM() {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUnlockTransferCacheEntryCHROMIUM(
+error::Error GLES2DecoderPassthroughImpl::DoCreateTransferCacheEntryINTERNAL(
+    GLuint64 handle_id,
+    GLuint handle_shm_id,
+    GLuint handle_shm_offset,
+    GLuint type,
+    GLuint data_shm_id,
+    GLuint data_shm_offset,
+    GLuint data_size) {
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoUnlockTransferCacheEntryINTERNAL(
     GLuint64 handle_id) {
   NOTIMPLEMENTED();
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoDeleteTransferCacheEntryCHROMIUM(
+error::Error GLES2DecoderPassthroughImpl::DoDeleteTransferCacheEntryINTERNAL(
     GLuint64 handle_id) {
   NOTIMPLEMENTED();
   return error::kNoError;

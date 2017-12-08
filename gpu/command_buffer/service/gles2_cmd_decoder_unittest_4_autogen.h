@@ -43,19 +43,28 @@ TEST_P(GLES2DecoderTest4, SetEnableDCLayersCHROMIUMValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest4, DeleteTransferCacheEntryCHROMIUMValidArgs) {
-  EXPECT_CALL(*gl_, DeleteTransferCacheEntryCHROMIUM(1));
-  SpecializedSetup<cmds::DeleteTransferCacheEntryCHROMIUM, 0>(true);
-  cmds::DeleteTransferCacheEntryCHROMIUM cmd;
+TEST_P(GLES2DecoderTest4, CreateTransferCacheEntryINTERNALValidArgs) {
+  EXPECT_CALL(*gl_, CreateTransferCacheEntryINTERNAL(1, 2, 3, 4, 5, 6, 7));
+  SpecializedSetup<cmds::CreateTransferCacheEntryINTERNAL, 0>(true);
+  cmds::CreateTransferCacheEntryINTERNAL cmd;
+  cmd.Init(1, 2, 3, 4, 5, 6, 7);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest4, DeleteTransferCacheEntryINTERNALValidArgs) {
+  EXPECT_CALL(*gl_, DeleteTransferCacheEntryINTERNAL(1));
+  SpecializedSetup<cmds::DeleteTransferCacheEntryINTERNAL, 0>(true);
+  cmds::DeleteTransferCacheEntryINTERNAL cmd;
   cmd.Init(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest4, UnlockTransferCacheEntryCHROMIUMValidArgs) {
-  EXPECT_CALL(*gl_, UnlockTransferCacheEntryCHROMIUM(1));
-  SpecializedSetup<cmds::UnlockTransferCacheEntryCHROMIUM, 0>(true);
-  cmds::UnlockTransferCacheEntryCHROMIUM cmd;
+TEST_P(GLES2DecoderTest4, UnlockTransferCacheEntryINTERNALValidArgs) {
+  EXPECT_CALL(*gl_, UnlockTransferCacheEntryINTERNAL(1));
+  SpecializedSetup<cmds::UnlockTransferCacheEntryINTERNAL, 0>(true);
+  cmds::UnlockTransferCacheEntryINTERNAL cmd;
   cmd.Init(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
