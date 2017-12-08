@@ -88,7 +88,7 @@ HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
 
 void HTMLOptionElement::AttachLayoutTree(AttachContext& context) {
   AttachContext option_context(context);
-  if (!context.resolved_style && ParentComputedStyle()) {
+  if (!GetNonAttachedStyle() && ParentComputedStyle()) {
     if (HTMLSelectElement* select = OwnerSelectElement())
       select->UpdateListOnLayoutObject();
     SetNonAttachedStyle(OriginalStyleForLayoutObject());

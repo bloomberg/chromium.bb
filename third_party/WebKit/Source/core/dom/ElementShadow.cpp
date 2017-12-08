@@ -107,7 +107,6 @@ void ElementShadow::AppendShadowRoot(ShadowRoot& shadow_root) {
 
 void ElementShadow::Attach(const Node::AttachContext& context) {
   Node::AttachContext children_context(context);
-  children_context.resolved_style = nullptr;
 
   for (ShadowRoot* root = &YoungestShadowRoot(); root;
        root = root->OlderShadowRoot()) {
@@ -118,7 +117,6 @@ void ElementShadow::Attach(const Node::AttachContext& context) {
 
 void ElementShadow::Detach(const Node::AttachContext& context) {
   Node::AttachContext children_context(context);
-  children_context.resolved_style = nullptr;
 
   for (ShadowRoot* root = &YoungestShadowRoot(); root;
        root = root->OlderShadowRoot())

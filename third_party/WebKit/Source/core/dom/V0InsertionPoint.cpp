@@ -109,7 +109,6 @@ void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
   // cause them to be inserted in the wrong place later. This also lets
   // distributed nodes benefit from the n^2 protection.
   AttachContext children_context(context);
-  children_context.resolved_style = nullptr;
 
   for (size_t i = 0; i < distributed_nodes_.size(); ++i) {
     Node* child = distributed_nodes_.at(i);

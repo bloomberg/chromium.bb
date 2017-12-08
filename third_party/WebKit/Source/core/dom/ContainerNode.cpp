@@ -954,7 +954,6 @@ void ContainerNode::AttachLayoutTree(AttachContext& context) {
 
 void ContainerNode::DetachLayoutTree(const AttachContext& context) {
   AttachContext children_context(context);
-  children_context.resolved_style = nullptr;
   children_context.clear_invalidation = true;
 
   for (Node* child = firstChild(); child; child = child->nextSibling())
