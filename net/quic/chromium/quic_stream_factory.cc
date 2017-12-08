@@ -12,8 +12,8 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -1128,7 +1128,7 @@ void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
 }
 
 void QuicStreamFactory::CloseAllSessions(int error, QuicErrorCode quic_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseAllSessionsError", -error);
+  base::UmaHistogramSparse("Net.QuicSession.CloseAllSessionsError", -error);
   while (!active_sessions_.empty()) {
     size_t initial_size = active_sessions_.size();
     active_sessions_.begin()->second->CloseSessionOnError(error, quic_error);

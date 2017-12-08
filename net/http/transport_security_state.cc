@@ -12,8 +12,8 @@
 #include "base/build_time.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -72,8 +72,7 @@ bool IsDynamicExpectCTEnabled() {
 void RecordUMAForHPKPReportFailure(const GURL& report_uri,
                                    int net_error,
                                    int http_response_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.PublicKeyPinReportSendingFailure2",
-                              -net_error);
+  base::UmaHistogramSparse("Net.PublicKeyPinReportSendingFailure2", -net_error);
 }
 
 std::string TimeToISO8601(const base::Time& t) {

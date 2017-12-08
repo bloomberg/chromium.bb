@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
@@ -271,7 +272,7 @@ void RecordTrustAnchorHistogram(const HashValueVector& spki_hashes) {
     if (id != 0)
       break;
   }
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.Certificate.TrustAnchor.Verify", id);
+  base::UmaHistogramSparse("Net.Certificate.TrustAnchor.Verify", id);
 }
 
 // Comparison functor used for binary searching whether a given HashValue,

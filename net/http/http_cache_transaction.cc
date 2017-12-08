@@ -19,8 +19,8 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"  // For HexEncode.
 #include "base/strings/string_util.h"  // For LowerCaseEqualsASCII.
@@ -3052,11 +3052,11 @@ int HttpCache::Transaction::OnCacheReadError(int result, bool restart) {
   DLOG(ERROR) << "ReadData failed: " << result;
   const int result_for_histogram = std::max(0, -result);
   if (restart) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("HttpCache.ReadErrorRestartable",
-                                result_for_histogram);
+    base::UmaHistogramSparse("HttpCache.ReadErrorRestartable",
+                             result_for_histogram);
   } else {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("HttpCache.ReadErrorNonRestartable",
-                                result_for_histogram);
+    base::UmaHistogramSparse("HttpCache.ReadErrorNonRestartable",
+                             result_for_histogram);
   }
 
   // Avoid using this entry in the future.

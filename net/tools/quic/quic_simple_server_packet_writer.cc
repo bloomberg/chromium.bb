@@ -7,7 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/udp_server_socket.h"
@@ -87,7 +87,7 @@ WriteResult QuicSimpleServerPacketWriter::WritePacket(
   WriteStatus status = WRITE_STATUS_OK;
   if (rv < 0) {
     if (rv != ERR_IO_PENDING) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -rv);
+      base::UmaHistogramSparse("Net.QuicSession.WriteError", -rv);
       status = WRITE_STATUS_ERROR;
     } else {
       status = WRITE_STATUS_BLOCKED;

@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -633,8 +633,8 @@ void NetworkQualityEstimator::RecordCorrelationMetric(const URLRequest& request,
   sample = (sample << kBitsPerMetric) | resource_load_time;
   sample = (sample << kBitsPerMetric) | resource_size;
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NQE.Correlation.ResourceLoadTime.0Kb_128Kb",
-                              sample);
+  base::UmaHistogramSparse("NQE.Correlation.ResourceLoadTime.0Kb_128Kb",
+                           sample);
 }
 
 void NetworkQualityEstimator::NotifyURLRequestDestroyed(

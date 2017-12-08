@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/crypto/crypto_utils.h"
 #include "net/quic/core/quic_session.h"
@@ -426,11 +426,11 @@ void QuicCryptoClientHandshaker::DoReceiveREJ(
     }
     DVLOG(1) << "Reasons for rejection: " << packed_error;
     if (num_client_hellos_ == QuicCryptoClientStream::kMaxClientHellos) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.TooMany",
-                                  packed_error);
+      base::UmaHistogramSparse("Net.QuicClientHelloRejectReasons.TooMany",
+                               packed_error);
     }
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.Secure",
-                                packed_error);
+    base::UmaHistogramSparse("Net.QuicClientHelloRejectReasons.Secure",
+                             packed_error);
   }
 
   // Receipt of a REJ message means that the server received the CHLO

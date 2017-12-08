@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
@@ -366,8 +366,8 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
         result == ERR_SSL_BAD_RECORD_MAC_ALERT) {
       // Report the error code for each time a version interference probe is
       // triggered.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLVersionInterferenceProbeTrigger",
-                                  std::abs(result));
+      base::UmaHistogramSparse("Net.SSLVersionInterferenceProbeTrigger",
+                               std::abs(result));
       net_log().AddEventWithNetErrorCode(
           NetLogEventType::SSL_VERSION_INTERFERENCE_PROBE, result);
       SSLErrorDetails details = ssl_socket_->GetConnectErrorDetails();
@@ -417,11 +417,11 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
 
     uint16_t cipher_suite =
         SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_CipherSuite", cipher_suite);
+    base::UmaHistogramSparse("Net.SSL_CipherSuite", cipher_suite);
 
     if (ssl_info.key_exchange_group != 0) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_KeyExchange.ECDHE",
-                                  ssl_info.key_exchange_group);
+      base::UmaHistogramSparse("Net.SSL_KeyExchange.ECDHE",
+                               ssl_info.key_exchange_group);
     }
 
     if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME) {
@@ -469,24 +469,24 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     }
   }
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_Connection_Error", std::abs(result));
+  base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
 
   if (is_google) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_Connection_Error_Google",
-                                std::abs(result));
+    base::UmaHistogramSparse("Net.SSL_Connection_Error_Google",
+                             std::abs(result));
   }
 
   if (tls13_supported) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_Connection_Error_TLS13Experiment",
-                                std::abs(result));
+    base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
+                             std::abs(result));
   }
 
   if (result == ERR_SSL_VERSION_INTERFERENCE) {
     // Record the error code version interference was detected at.
     DCHECK(version_interference_probe_);
     DCHECK_NE(OK, version_interference_error_);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLVersionInterferenceError",
-                                std::abs(version_interference_error_));
+    base::UmaHistogramSparse("Net.SSLVersionInterferenceError",
+                             std::abs(version_interference_error_));
 
     if (tls13_supported) {
       UMA_HISTOGRAM_ENUMERATION(

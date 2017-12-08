@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "crypto/signature_verifier.h"
@@ -378,8 +379,7 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
 }
 
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CertVerificationResult",
-                              -result);
+  base::UmaHistogramSparse("Net.QuicSession.CertVerificationResult", -result);
   cert_verifier_request_.reset();
 
   const CertVerifyResult& cert_verify_result =

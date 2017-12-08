@@ -17,8 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -1102,8 +1102,7 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
 
   uint16_t signature_algorithm = SSL_get_peer_signature_algorithm(ssl_.get());
   if (signature_algorithm != 0) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLSignatureAlgorithm",
-                                signature_algorithm);
+    base::UmaHistogramSparse("Net.SSLSignatureAlgorithm", signature_algorithm);
   }
 
   // Verify the certificate.
