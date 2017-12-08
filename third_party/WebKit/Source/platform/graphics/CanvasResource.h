@@ -44,7 +44,8 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   virtual void PrepareTransferableResource(
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_callback);
-  const gpu::Mailbox& GpuMailbox();
+  const gpu::Mailbox& GpuMailbox() { return gpu_mailbox_; }
+  const gpu::Mailbox& GetOrCreateGpuMailbox();
   bool HasGpuMailbox() const;
   void SetSyncTokenForRelease(const gpu::SyncToken&);
   void WaitSyncTokenBeforeRelease();

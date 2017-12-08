@@ -37,7 +37,7 @@ gpu::gles2::GLES2Interface* CanvasResource::ContextGL() const {
   return context_provider_wrapper_->ContextProvider()->ContextGL();
 }
 
-const gpu::Mailbox& CanvasResource::GpuMailbox() {
+const gpu::Mailbox& CanvasResource::GetOrCreateGpuMailbox() {
   if (gpu_mailbox_.IsZero()) {
     auto gl = ContextGL();
     DCHECK(gl);  // caller should already have early exited if !gl.
@@ -101,14 +101,14 @@ void CanvasResource::PrepareTransferableResource(
   gl->TexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  gl->ProduceTextureDirectCHROMIUM(texture_id, GpuMailbox().name);
+  gl->ProduceTextureDirectCHROMIUM(texture_id, GetOrCreateGpuMailbox().name);
   const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
   gl->ShallowFlushCHROMIUM();
   gpu::SyncToken sync_token;
   gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
   *out_resource = viz::TransferableResource::MakeGLOverlay(
-      GpuMailbox(), filter, target, sync_token, gfx::Size(Size()),
+      GetOrCreateGpuMailbox(), filter, target, sync_token, gfx::Size(Size()),
       IsOverlayCandidate());
 
   gl->BindTexture(target, 0);
