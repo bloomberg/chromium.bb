@@ -1,5 +1,30 @@
 # AV1 Codec Library
 
+## Contents
+1. [Building the lib and applications](#building-the-library-and-applications)
+    - [Prerequisites](#prerequisites)
+    - [Basics](#basic-build)
+    - [Configuration options](#configuration-options)
+    - [Dylib builds](#dylib-builds)
+    - [Debugging](#debugging)
+    - [Cross compiling](#cross-compiling)
+    - [Sanitizer support](#sanitizers)
+    - [MSVC builds](#microsoft-visual-studio-builds)
+    - [Xcode builds](#xcode-builds)
+    - [Emscripten builds](#emscripten-builds)
+2. [Testing the library](#testing-the-av1-codec)
+    - [Basics](#testing-basics)
+        - [Unit tests](#1_unit-tests)
+        - [Example tests](#2_example-tests)
+    - [IDE hosted tests](#ide-hosted-tests)
+    - [Downloading test data](#downloading-the-test-data)
+    - [Sharded testing](#sharded-testing)
+        - [Running tests directly](#1_running-test_libaom-directly)
+        - [Running tests via CMake](#2_running-the-tests-via-the-cmake-build)
+3. [Coding style](#coding-style)
+4. [Support](#support)
+5. [Bug reports](#bug-reports)
+
 ## Building the library and applications
 
 ### Prerequisites
