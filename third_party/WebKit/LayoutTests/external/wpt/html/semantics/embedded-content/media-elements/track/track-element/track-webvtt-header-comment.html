@@ -1,33 +1,30 @@
 <!DOCTYPE html>
-<title>Tests that the magic file header "WEBVTT" leads to the file properly recognized as a WebVTT file.</title>
+<title>Optional comment area under the "WEBVTT" file header is properly ignored and also, default settings and styling are currently ignored (treated as faulty cues)</title>
 <script src="track-helpers.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <video>
-    <track src="captions-webvtt/tc004-webvtt-file.vtt">
-    <track src="captions-webvtt/tc004-webvtt-rubbish.vtt">
-    <track src="captions-webvtt/tc004-no-webvtt.vtt">
+    <track src="resources/default-styles.vtt">
+    <track src="resources/metadata-area.vtt">
 </video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    
+
     var trackElements = document.querySelectorAll("track");
-    trackElements[0].onload = t.step_func(trackLoaded);
-    trackElements[1].onload = t.step_func(trackLoaded);
-    trackElements[2].onerror = t.step_func(trackLoaded);
-    
+    for (var i = 0; i < video.textTracks.length; i++)
+        trackElements[i].onload = t.step_func(trackLoaded);
+
     enableAllTextTracks(video.textTracks);
 
     var numberOfTracksLoaded = 0;
     function trackLoaded() {
         numberOfTracksLoaded++;
-        if (numberOfTracksLoaded != 3)
+        if (numberOfTracksLoaded != 2)
             return;
 
         testTrack(0);
         testTrack(1);
-        testTrackError(2);
         t.done();
     }
 
@@ -48,10 +45,6 @@ async_test(function(t) {
         ];
 
         assert_cues_equal(video.textTracks[index].cues, expected);
-    }
-
-    function testTrackError(index) {
-        assert_cues_equal(video.textTracks[index].cues, []);
     }
 });
 </script>

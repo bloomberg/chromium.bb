@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Tests that UTF-8 encoded characters are recognized properly and that different encodings (iconv) are not recognized as a WebVTT file (we do allow it, it just looks ugly).</title>
-<video>
-    <track src="captions-webvtt/tc001-utf8.vtt">
-    <track src="captions-webvtt/tc001-iso2022jp3.vtt">
-</video>
+<title>UTF-8 encoded characters are recognized properly and different encodings (iconv) are not recognized as a WebVTT file</title>
 <script src="track-helpers.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<video>
+    <track src="resources/utf8.vtt">
+    <track src="resources/iso2022jp3.vtt">
+</video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    
+
     var trackElements = document.querySelectorAll("track");
     for (var i = 0; i < video.textTracks.length; i++)
         trackElements[i].onload = t.step_func(trackLoaded);
