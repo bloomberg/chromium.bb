@@ -303,6 +303,14 @@ void ProxyMain::BeginMainFrame(
   layer_tree_host_->DidBeginMainFrame();
 }
 
+void ProxyMain::DidPresentCompositorFrame(const std::vector<int>& source_frames,
+                                          base::TimeTicks time,
+                                          base::TimeDelta refresh,
+                                          uint32_t flags) {
+  layer_tree_host_->DidPresentCompositorFrame(source_frames, time, refresh,
+                                              flags);
+}
+
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;

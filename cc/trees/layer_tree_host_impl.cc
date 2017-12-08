@@ -1632,7 +1632,25 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
 void LayerTreeHostImpl::DidPresentCompositorFrame(uint32_t presentation_token,
                                                   base::TimeTicks time,
                                                   base::TimeDelta refresh,
-                                                  uint32_t flags) {}
+                                                  uint32_t flags) {
+  std::vector<int> source_frames;
+  auto iter = presentation_token_to_frame_.begin();
+  for (; iter != presentation_token_to_frame_.end() &&
+         iter->first <= presentation_token;
+       ++iter) {
+    source_frames.push_back(iter->second);
+  }
+  presentation_token_to_frame_.erase(presentation_token_to_frame_.begin(),
+                                     iter);
+  if (presentation_token_to_frame_.empty()) {
+    DCHECK_EQ(last_presentation_token_, presentation_token);
+    last_presentation_token_ = 0u;
+  }
+
+  client_->DidPresentCompositorFrameOnImplThread(source_frames, time, refresh,
+                                                 flags);
+}
+
 void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t presentation_token) {
 }
 
@@ -1714,9 +1732,18 @@ void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
   client_->OnCanDrawStateChanged(CanDraw());
 }
 
-viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata()
-    const {
+viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   viz::CompositorFrameMetadata metadata;
+
+  if (active_tree_->request_presentation_time()) {
+    metadata.presentation_token = ++last_presentation_token_;
+    // Assume there is never a constant stream of requests that triggers
+    // overflow.
+    CHECK_NE(0u, last_presentation_token_);
+    presentation_token_to_frame_[last_presentation_token_] =
+        active_tree_->source_frame_number();
+  }
+
   metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
                                  active_tree_->device_scale_factor();
 

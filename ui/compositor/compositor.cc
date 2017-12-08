@@ -651,6 +651,11 @@ std::unique_ptr<CompositorLock> Compositor::GetCompositorLock(
   return lock;
 }
 
+void Compositor::RequestPresentationTimeForNextFrame(
+    PresentationTimeCallback callback) {
+  host_->RequestPresentationTimeForNextFrame(std::move(callback));
+}
+
 void Compositor::RemoveCompositorLock(CompositorLock* lock) {
   base::Erase(active_locks_, lock);
   if (active_locks_.empty()) {

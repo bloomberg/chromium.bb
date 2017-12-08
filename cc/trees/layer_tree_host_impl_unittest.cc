@@ -197,6 +197,11 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void NotifyImageDecodeRequestFinished() override {}
   void RequestBeginMainFrameNotExpected(bool new_state) override {}
+  void DidPresentCompositorFrameOnImplThread(
+      const std::vector<int>& source_frames,
+      base::TimeTicks time,
+      base::TimeDelta refresh,
+      uint32_t flags) override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;
