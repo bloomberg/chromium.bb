@@ -742,9 +742,7 @@ void PictureLayerImpl::DidBeginTracing() {
 }
 
 void PictureLayerImpl::ReleaseResources() {
-  // Recreate tilings with new settings, since some of those might change when
-  // we release resources.
-  tilings_ = nullptr;
+  tilings_->ReleaseAllResources();
   ResetRasterScale();
 }
 
@@ -754,6 +752,8 @@ void PictureLayerImpl::ReleaseTileResources() {
 }
 
 void PictureLayerImpl::RecreateTileResources() {
+  // Recreate tilings with new settings, since some of those might change when
+  // we release resources.
   tilings_ = CreatePictureLayerTilingSet();
 }
 

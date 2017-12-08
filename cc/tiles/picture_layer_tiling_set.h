@@ -112,6 +112,9 @@ class CC_EXPORT PictureLayerTilingSet {
   // Removes all tilings with a contents scale key > |maximum_scale_key|.
   void RemoveTilingsAboveScaleKey(float maximum_scale);
 
+  // Removes all resources (tilings, raster source).
+  void ReleaseAllResources();
+
   // Remove all tilings.
   void RemoveAllTilings();
 
