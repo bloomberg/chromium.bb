@@ -86,6 +86,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   void SetDisplayVisible(ui::Compositor* compositor, bool visible) override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
+  void SetDisplayColorMatrix(ui::Compositor* compositor,
+                             const SkMatrix44& matrix) override;
   void SetDisplayColorSpace(ui::Compositor* compositor,
                             const gfx::ColorSpace& blending_color_space,
                             const gfx::ColorSpace& output_color_space) override;

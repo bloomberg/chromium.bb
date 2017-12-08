@@ -147,6 +147,7 @@ struct InProcessContextFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source;
   std::unique_ptr<viz::Display> display;
+  SkMatrix44 output_color_matrix;
 };
 
 InProcessContextFactory::InProcessContextFactory(
@@ -352,6 +353,16 @@ void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
   per_compositor_data_[compositor]->display->Resize(size);
 }
 
+void InProcessContextFactory::SetDisplayColorMatrix(ui::Compositor* compositor,
+                                                    const SkMatrix44& matrix) {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return;
+
+  iter->second->output_color_matrix = matrix;
+  iter->second->display->SetColorMatrix(matrix);
+}
+
 const viz::ResourceSettings& InProcessContextFactory::GetResourceSettings()
     const {
   return renderer_settings_.resource_settings;
@@ -367,6 +378,24 @@ void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
 
 viz::FrameSinkManagerImpl* InProcessContextFactory::GetFrameSinkManager() {
   return frame_sink_manager_;
+}
+
+SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(
+    Compositor* compositor) const {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return SkMatrix44(SkMatrix44::kIdentity_Constructor);
+
+  return iter->second->output_color_matrix;
+}
+
+void InProcessContextFactory::ResetOutputColorMatrixToIdentity(
+    ui::Compositor* compositor) {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return;
+
+  iter->second->output_color_matrix.setIdentity();
 }
 
 InProcessContextFactory::PerCompositorData*

@@ -288,6 +288,8 @@ void Compositor::SetLayerTreeFrameSink(
     context_factory_private_->SetDisplayVisible(this, host_->IsVisible());
     context_factory_private_->SetDisplayColorSpace(this, blending_color_space_,
                                                    output_color_space_);
+    context_factory_private_->SetDisplayColorMatrix(this,
+                                                    display_color_matrix_);
   }
 }
 
@@ -313,6 +315,12 @@ void Compositor::SetRootLayer(Layer* root_layer) {
 
 cc::AnimationTimeline* Compositor::GetAnimationTimeline() const {
   return animation_timeline_.get();
+}
+
+void Compositor::SetDisplayColorMatrix(const SkMatrix44& matrix) {
+  display_color_matrix_ = matrix;
+  if (context_factory_private_)
+    context_factory_private_->SetDisplayColorMatrix(this, matrix);
 }
 
 void Compositor::ScheduleFullRedraw() {

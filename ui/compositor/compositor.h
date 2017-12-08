@@ -25,6 +25,7 @@
 #include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/compositor_lock.h"
@@ -123,6 +124,11 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   // Resize the display corresponding to this compositor to a particular size.
   virtual void ResizeDisplay(ui::Compositor* compositor,
                              const gfx::Size& size) = 0;
+
+  // Sets the color matrix used to transform how all output is drawn to the
+  // display underlying this ui::Compositor.
+  virtual void SetDisplayColorMatrix(ui::Compositor* compositor,
+                                     const SkMatrix44& matrix) = 0;
 
   // Set the output color profile into which this compositor should render.
   virtual void SetDisplayColorSpace(
@@ -238,6 +244,13 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   const gfx::ColorSpace& output_color_space() const {
     return output_color_space_;
   }
+
+  // Gets and sets the color matrix used to transform the output colors of what
+  // this compositor renders.
+  const SkMatrix44& display_color_matrix() const {
+    return display_color_matrix_;
+  }
+  void SetDisplayColorMatrix(const SkMatrix44& matrix);
 
   // Where possible, draws are scissored to a damage region calculated from
   // changes to layer properties.  This bypasses that and indicates that
@@ -478,6 +491,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   LayerAnimatorCollection layer_animator_collection_;
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;
   std::unique_ptr<ScopedAnimationDurationScaleMode> slow_animations_;
+
+  SkMatrix44 display_color_matrix_;
 
   gfx::ColorSpace output_color_space_;
   gfx::ColorSpace blending_color_space_;
