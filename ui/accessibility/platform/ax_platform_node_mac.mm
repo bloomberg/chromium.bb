@@ -630,7 +630,16 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (NSString*)AXHelp {
-  return [self getStringAttribute:ui::AX_ATTR_DESCRIPTION];
+  // TODO(aleventhal) Key shortcuts attribute should eventually get
+  // its own field. Follow what WebKit does for aria-keyshortcuts, see
+  // https://bugs.webkit.org/show_bug.cgi?id=159215 (WebKit bug).
+  NSString* desc = [self getStringAttribute:ui::AX_ATTR_DESCRIPTION];
+  NSString* key = [self getStringAttribute:ui::AX_ATTR_KEY_SHORTCUTS];
+  if (!desc.length)
+    return key.length ? key : @"";
+  if (!key.length)
+    return desc;
+  return [NSString stringWithFormat:@"%@ %@", desc, key];
 }
 
 - (id)AXValue {
