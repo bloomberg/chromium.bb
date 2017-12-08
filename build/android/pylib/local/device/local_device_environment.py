@@ -206,7 +206,9 @@ class LocalDeviceEnvironment(environment.Environment):
 
   #override
   def TearDown(self):
-    if self.trace_output:
+    if self.trace_output and self._trace_all:
+      instrumentation_tracing.stop_instrumenting()
+    elif self.trace_output:
       self.DisableTracing()
 
     if not self._devices:
