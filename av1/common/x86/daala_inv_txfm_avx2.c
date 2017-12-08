@@ -1391,6 +1391,38 @@ static void od_col_idct16_add_hbd_avx2(unsigned char *output_pixels,
                            od_idct16_kernel8_epi16, od_idct16_kernel16_epi16);
 }
 
+static void od_row_idst16_avx2(int16_t *out, int rows, const tran_low_t *in) {
+  od_row_tx16_avx2(out, rows, in,
+#if CONFIG_RECT_TX_EXT
+                   od_idst16_kernel8_epi16,
+#endif
+                   od_idst16_kernel8_epi32);
+}
+
+static void od_col_idst16_add_hbd_avx2(unsigned char *output_pixels,
+                                       int output_stride, int cols,
+                                       const int16_t *in, int bd) {
+  od_col_tx16_add_hbd_avx2(output_pixels, output_stride, cols, in, bd,
+                           od_idst16_kernel8_epi16, od_idst16_kernel16_epi16);
+}
+
+static void od_row_flip_idst16_avx2(int16_t *out, int rows,
+                                    const tran_low_t *in) {
+  od_row_tx16_avx2(out, rows, in,
+#if CONFIG_RECT_TX_EXT
+                   od_flip_idst16_kernel8_epi16,
+#endif
+                   od_flip_idst16_kernel8_epi32);
+}
+
+static void od_col_flip_idst16_add_hbd_avx2(unsigned char *output_pixels,
+                                            int output_stride, int cols,
+                                            const int16_t *in, int bd) {
+  od_col_tx16_add_hbd_avx2(output_pixels, output_stride, cols, in, bd,
+                           od_flip_idst16_kernel8_epi16,
+                           od_flip_idst16_kernel16_epi16);
+}
+
 typedef void (*daala_row_itx)(int16_t *out, int rows, const tran_low_t *in);
 typedef void (*daala_col_itx_add)(unsigned char *output_pixels,
                                   int output_stride, int cols,
@@ -1404,7 +1436,7 @@ static const daala_row_itx TX_ROW_MAP[TX_SIZES][TX_TYPES] = {
   { od_row_idct8_avx2, od_row_idst8_avx2, od_row_flip_idst8_avx2,
     od_row_iidtx8_avx2 },
   // 16-point transforms
-  { od_row_idct16_avx2, NULL, NULL, NULL },
+  { od_row_idct16_avx2, od_row_idst16_avx2, od_row_flip_idst16_avx2, NULL },
   // 32-point transforms
   { NULL, NULL, NULL, NULL },
 #if CONFIG_TX64X64
@@ -1438,7 +1470,8 @@ static const daala_col_itx_add TX_COL_MAP[2][TX_SIZES][TX_TYPES] = {
       { od_col_idct8_add_hbd_avx2, od_col_idst8_add_hbd_avx2,
         od_col_flip_idst8_add_hbd_avx2, od_col_iidtx8_add_hbd_avx2 },
       // 16-point transforms
-      { od_col_idct16_add_hbd_avx2, NULL, NULL, NULL },
+      { od_col_idct16_add_hbd_avx2, od_col_idst16_add_hbd_avx2,
+        od_col_flip_idst16_add_hbd_avx2, NULL },
       // 32-point transforms
       { NULL, NULL, NULL, NULL },
 #if CONFIG_TX64X64
