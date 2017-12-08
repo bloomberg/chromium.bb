@@ -52,11 +52,10 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 // Returns whether a snapshot should be cached in a page loaded context.
 // Note: Returns YES if |overlays| is nil or empty and if |visibleFrameOnly| is
-// YES as this is the only case when the snapshot taken by the CRWWebController
-// is reused.
+// YES as this is the only case when the snapshot taken for the page is reused.
 - (BOOL)shouldCacheSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
                        visibleFrameOnly:(BOOL)visibleFrameOnly {
-  return ![overlays count] && visibleFrameOnly;
+  return visibleFrameOnly && ![overlays count];
 }
 
 - (UIImage*)cachedSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
@@ -82,30 +81,10 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 @interface WebControllerSnapshotHelper ()
 
-// Takes a snapshot image for the WebController's current page. Returns an
-// autoreleased image cropped and scaled appropriately. Returns a default image
-// if a snapshot cannot be generated.
-- (UIImage*)
-generateSnapshotOrDefaultForWebController:(CRWWebController*)webController
-                             withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                         visibleFrameOnly:(BOOL)visibleFrameOnly;
-
-// Returns the cached snapshot if there is one matching the given parameters.
-// Returns nil otherwise or if there is no |_coalescingSnapshotContext|.
-- (UIImage*)cachedSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                      visibleFrameOnly:(BOOL)visibleFrameOnly;
-
-// Caches |snapshot| for the given |overlays| and |visibleFrameOnly|. Does
-// nothing if there is no |_coalescingSnapshotContext|.
-- (void)setCachedSnapshot:(UIImage*)snapshot
-             withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-         visibleFrameOnly:(BOOL)visibleFrameOnly;
-
 // Takes a snapshot for the supplied view (which should correspond to the given
 // type of web view). Returns an autoreleased image cropped and scaled
-// appropriately.
-// The image is not yet cached.
-// The image can also contain overlays (if |overlays| is not nil and not empty).
+// appropriately. The image can also contain overlays (if |overlays| is not
+// nil and not empty).
 - (UIImage*)generateSnapshotForView:(UIView*)view
                            withRect:(CGRect)rect
                            overlays:(NSArray<SnapshotOverlay*>*)overlays;
@@ -114,8 +93,6 @@ generateSnapshotOrDefaultForWebController:(CRWWebController*)webController
 
 @implementation WebControllerSnapshotHelper {
   CoalescingSnapshotContext* _coalescingSnapshotContext;
-  __weak CRWWebController* _webController;
-  // Owns this WebControllerSnapshotHelper.
   __weak Tab* _tab;
 }
 
@@ -123,8 +100,7 @@ generateSnapshotOrDefaultForWebController:(CRWWebController*)webController
   if ((self = [super init])) {
     DCHECK(tab);
     DCHECK(tab.tabId);
-    DCHECK([tab webController]);
-    _webController = [tab webController];
+    DCHECK(tab.webController);
     _tab = tab;
   }
   return self;
@@ -140,129 +116,83 @@ generateSnapshotOrDefaultForWebController:(CRWWebController*)webController
   }
 }
 
-- (void)retrieveSnapshotForWebController:(CRWWebController*)webController
-                               sessionID:(NSString*)sessionID
-                            withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                                callback:(void (^)(UIImage* image))callback {
-  [[self snapshotCache]
-      retrieveImageForSessionID:sessionID
-                       callback:^(UIImage* image) {
-                         if (image) {
-                           callback(image);
-                         } else {
-                           callback([self
-                               updateSnapshotForWebController:webController
-                                                    sessionID:sessionID
-                                                 withOverlays:overlays
-                                             visibleFrameOnly:YES]);
-                         }
-                       }];
+- (void)retrieveSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                            callback:(void (^)(UIImage*))callback {
+  DCHECK(callback);
+  void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
+    if (!image) {
+      image = [self updateSnapshotWithOverlays:overlays visibleFrameOnly:YES];
+    }
+    callback(image);
+  };
+
+  [[self snapshotCache] retrieveImageForSessionID:_tab.tabId
+                                         callback:wrappedCallback];
 }
 
-- (void)
-retrieveGreySnapshotForWebController:(CRWWebController*)webController
-                           sessionID:(NSString*)sessionID
-                        withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                            callback:(void (^)(UIImage* image))callback {
-  [[self snapshotCache]
-      retrieveGreyImageForSessionID:sessionID
-                           callback:^(UIImage* image) {
-                             if (image) {
-                               callback(image);
-                             } else {
-                               callback(GreyImage([self
-                                   updateSnapshotForWebController:webController
-                                                        sessionID:sessionID
-                                                     withOverlays:overlays
-                                                 visibleFrameOnly:YES]));
-                             }
-                           }];
+- (void)retrieveGreySnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                                callback:(void (^)(UIImage*))callback {
+  DCHECK(callback);
+  void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
+    if (!image) {
+      image = [self updateSnapshotWithOverlays:overlays visibleFrameOnly:YES];
+      image = GreyImage(image);
+    }
+    callback(image);
+  };
+
+  [[self snapshotCache] retrieveGreyImageForSessionID:_tab.tabId
+                                             callback:wrappedCallback];
 }
 
-- (UIImage*)updateSnapshotForWebController:(CRWWebController*)webController
-                                 sessionID:(NSString*)sessionID
-                              withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                          visibleFrameOnly:(BOOL)visibleFrameOnly {
-  // TODO(crbug.com/661641): This is a temporary solution to make sure the
-  // webController retained by us is the same being passed in in this method.
-  // Remove this when all uses of the "CRWWebController" are dropped from the
-  // methods names since it is already retained by us and not necessary to be
-  // passed in.
-  DCHECK_EQ([_tab webController], webController);
-  UIImage* snapshot =
-      [self generateSnapshotOrDefaultForWebController:webController
-                                         withOverlays:overlays
-                                     visibleFrameOnly:visibleFrameOnly];
-  // If the snapshot is the default one, return it without caching it.
-  if (snapshot == [[self class] defaultSnapshotImage])
-    return snapshot;
+- (UIImage*)updateSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                      visibleFrameOnly:(BOOL)visibleFrameOnly {
+  UIImage* snapshot = [self generateSnapshotWithOverlays:overlays
+                                        visibleFrameOnly:visibleFrameOnly];
 
-  UIImage* snapshotToCache = nil;
-  // TODO(crbug.com/370994): Remove all code that references a Tab's delegates
-  // from this file.
-  if (visibleFrameOnly || ![_tab legacyFullscreenControllerDelegate]) {
-    snapshotToCache = snapshot;
-  } else {
+  // Return default snapshot without caching it if the generation failed.
+  if (!snapshot)
+    return [CRWWebController defaultSnapshotImage];
+
+  UIImage* snapshotToCache = snapshot;
+  if (!visibleFrameOnly && [_tab legacyFullscreenControllerDelegate]) {
     // Crops the bottom of the fullscreen snapshot.
     CGRect cropRect =
         CGRectMake(0, [[_tab tabHeadersDelegate] headerHeightForTab:_tab],
                    [snapshot size].width, [snapshot size].height);
     snapshotToCache = CropImage(snapshot, cropRect);
   }
-  [[self snapshotCache] setImage:snapshotToCache withSessionID:sessionID];
+  [[self snapshotCache] setImage:snapshotToCache withSessionID:_tab.tabId];
   return snapshot;
 }
 
-- (UIImage*)generateSnapshotForWebController:(CRWWebController*)webController
-                                withOverlays:
-                                    (NSArray<SnapshotOverlay*>*)overlays
-                            visibleFrameOnly:(BOOL)visibleFrameOnly {
-  if (![webController canUseViewForGeneratingOverlayPlaceholderView])
+- (UIImage*)generateSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                        visibleFrameOnly:(BOOL)visibleFrameOnly {
+  if (![_tab.webController canUseViewForGeneratingOverlayPlaceholderView])
     return nil;
+
   CGRect visibleFrame = (visibleFrameOnly ? [_tab snapshotContentArea]
-                                          : [webController.view bounds]);
+                                          : [_tab.webController.view bounds]);
   if (CGRectIsEmpty(visibleFrame))
     return nil;
-  UIImage* snapshot = [self cachedSnapshotWithOverlays:overlays
-                                      visibleFrameOnly:visibleFrameOnly];
-  if (!snapshot) {
-    [_tab willUpdateSnapshot];
-    snapshot = [self generateSnapshotForView:webController.view
-                                    withRect:visibleFrame
-                                    overlays:overlays];
-    [self setCachedSnapshot:snapshot
-               withOverlays:overlays
-           visibleFrameOnly:visibleFrameOnly];
-  }
+
+  UIImage* snapshot =
+      [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
+                                            visibleFrameOnly:visibleFrameOnly];
+  if (snapshot)
+    return snapshot;
+
+  [_tab willUpdateSnapshot];
+  snapshot = [self generateSnapshotForView:_tab.webController.view
+                                  withRect:visibleFrame
+                                  overlays:overlays];
+  [_coalescingSnapshotContext setCachedSnapshot:snapshot
+                                   withOverlays:overlays
+                               visibleFrameOnly:visibleFrameOnly];
   return snapshot;
 }
 
 #pragma mark - Private methods
-
-- (UIImage*)
-generateSnapshotOrDefaultForWebController:(CRWWebController*)webController
-                             withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                         visibleFrameOnly:(BOOL)visibleFrameOnly {
-  UIImage* result = [self generateSnapshotForWebController:webController
-                                              withOverlays:overlays
-                                          visibleFrameOnly:visibleFrameOnly];
-  return result ? result : [[self class] defaultSnapshotImage];
-}
-
-- (UIImage*)cachedSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                      visibleFrameOnly:(BOOL)visibleFrameOnly {
-  return
-      [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
-                                            visibleFrameOnly:visibleFrameOnly];
-}
-
-- (void)setCachedSnapshot:(UIImage*)snapshot
-             withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-         visibleFrameOnly:(BOOL)visibleFrameOnly {
-  return [_coalescingSnapshotContext setCachedSnapshot:snapshot
-                                          withOverlays:overlays
-                                      visibleFrameOnly:visibleFrameOnly];
-}
 
 - (UIImage*)generateSnapshotForView:(UIView*)view
                            withRect:(CGRect)rect
@@ -322,30 +252,10 @@ generateSnapshotOrDefaultForWebController:(CRWWebController*)webController
   return image;
 }
 
-// TODO(crbug.com/661642): This code is shared with CRWWebController. Remove
-// this and add it as part of WebDelegate delegate API such that a default
-// image is returned immediately.
-+ (UIImage*)defaultSnapshotImage {
-  static UIImage* defaultImage = nil;
-
-  if (!defaultImage) {
-    CGRect frame = CGRectMake(0, 0, 2, 2);
-    UIGraphicsBeginImageContext(frame.size);
-    [[UIColor whiteColor] setFill];
-    CGContextFillRect(UIGraphicsGetCurrentContext(), frame);
-
-    UIImage* result = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-
-    defaultImage = [result stretchableImageWithLeftCapWidth:1 topCapHeight:1];
-  }
-  return defaultImage;
-}
-
 - (SnapshotCache*)snapshotCache {
   return SnapshotCacheFactory::GetForBrowserState(
       ios::ChromeBrowserState::FromBrowserState(
-          _webController.webState->GetBrowserState()));
+          _tab.webController.webState->GetBrowserState()));
 }
 
 @end
