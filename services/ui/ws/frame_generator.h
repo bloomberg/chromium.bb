@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "services/ui/ws/compositor_frame_sink_client_binding.h"
@@ -77,7 +77,7 @@ class FrameGenerator : public viz::mojom::CompositorFrameSinkClient {
   bool high_contrast_mode_enabled_ = false;
   gfx::Size last_submitted_frame_size_;
   viz::LocalSurfaceId local_surface_id_;
-  viz::LocalSurfaceIdAllocator id_allocator_;
+  viz::ParentLocalSurfaceIdAllocator id_allocator_;
   float last_device_scale_factor_ = 0.0f;
 
   viz::SurfaceInfo window_manager_surface_info_;

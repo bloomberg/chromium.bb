@@ -3066,7 +3066,7 @@ class LayerTreeHostInvalidLocalSurfaceIdDefersCommit
   bool IsCommitAllowed() const override { return local_surface_id_.is_valid(); }
 
  private:
-  viz::LocalSurfaceIdAllocator allocator_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
   viz::LocalSurfaceId local_surface_id_;
 };
 
@@ -7603,7 +7603,7 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
   void AfterTest() override {}
 
   viz::LocalSurfaceId expected_local_surface_id_;
-  viz::LocalSurfaceIdAllocator allocator_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceId);

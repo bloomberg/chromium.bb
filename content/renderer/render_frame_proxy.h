@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
 #include "ipc/ipc_listener.h"
@@ -276,7 +276,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
-  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   bool enable_surface_synchronization_ = false;
 

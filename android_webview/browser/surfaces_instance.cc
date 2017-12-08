@@ -16,7 +16,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -55,7 +55,8 @@ SurfacesInstance::SurfacesInstance()
 
   frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
       viz::SurfaceManager::LifetimeType::SEQUENCES);
-  local_surface_id_allocator_.reset(new viz::LocalSurfaceIdAllocator());
+  parent_local_surface_id_allocator_.reset(
+      new viz::ParentLocalSurfaceIdAllocator());
 
   constexpr bool is_root = true;
   constexpr bool needs_sync_points = true;
@@ -153,7 +154,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
 
   if (!root_id_.is_valid() || viewport != surface_size_ ||
       device_scale_factor != device_scale_factor_) {
-    root_id_ = local_surface_id_allocator_->GenerateId();
+    root_id_ = parent_local_surface_id_allocator_->GenerateId();
     surface_size_ = viewport;
     device_scale_factor_ = device_scale_factor;
     display_->SetLocalSurfaceId(root_id_, device_scale_factor);

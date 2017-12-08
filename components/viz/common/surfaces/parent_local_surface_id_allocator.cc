@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 
 #include <stdint.h>
 
@@ -11,11 +11,11 @@
 
 namespace viz {
 
-LocalSurfaceIdAllocator::LocalSurfaceIdAllocator() : next_id_(1u) {}
+ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator() : next_id_(1u) {}
 
-LocalSurfaceIdAllocator::~LocalSurfaceIdAllocator() {}
+ParentLocalSurfaceIdAllocator::~ParentLocalSurfaceIdAllocator() {}
 
-LocalSurfaceId LocalSurfaceIdAllocator::GenerateId() {
+LocalSurfaceId ParentLocalSurfaceIdAllocator::GenerateId() {
   LocalSurfaceId id(next_id_, base::UnguessableToken::Create());
   next_id_++;
   return id;

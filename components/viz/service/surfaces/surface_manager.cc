@@ -14,7 +14,7 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/stub_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/surfaces/direct_surface_reference_factory.h"

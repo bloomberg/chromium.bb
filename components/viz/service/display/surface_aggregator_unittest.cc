@@ -24,7 +24,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -418,9 +418,9 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
  protected:
   LocalSurfaceId root_local_surface_id_;
   Surface* root_surface_;
-  LocalSurfaceIdAllocator allocator_;
+  ParentLocalSurfaceIdAllocator allocator_;
   std::unique_ptr<CompositorFrameSinkSupport> child_support_;
-  LocalSurfaceIdAllocator child_allocator_;
+  ParentLocalSurfaceIdAllocator child_allocator_;
 };
 
 // Tests that a very simple frame containing only two solid color quads makes it

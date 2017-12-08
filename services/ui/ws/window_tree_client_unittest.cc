@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -1428,7 +1428,7 @@ TEST_F(WindowTreeClientTest, SetWindowBounds) {
 
   wt_client2_->set_track_root_bounds_changes(true);
 
-  viz::LocalSurfaceIdAllocator allocator;
+  viz::ParentLocalSurfaceIdAllocator allocator;
   viz::LocalSurfaceId local_surface_id = allocator.GenerateId();
   wt1()->SetWindowBounds(10, window_1_1, gfx::Rect(0, 0, 100, 100),
                          local_surface_id);

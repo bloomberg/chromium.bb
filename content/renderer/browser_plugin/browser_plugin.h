@@ -15,7 +15,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
@@ -247,7 +247,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
-  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   bool enable_surface_synchronization_ = false;
 

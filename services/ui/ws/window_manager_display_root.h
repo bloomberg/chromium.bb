@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 
 namespace ui {
 namespace ws {
@@ -64,7 +64,7 @@ class WindowManagerDisplayRoot {
   // the root ServerWindow of the Display.
   std::unique_ptr<ServerWindow> root_;
   WindowManagerState* window_manager_state_ = nullptr;
-  viz::LocalSurfaceIdAllocator allocator_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerDisplayRoot);
 };

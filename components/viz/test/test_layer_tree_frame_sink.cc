@@ -40,7 +40,7 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
       refresh_rate_(refresh_rate),
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kLayerTreeFrameSinkId),
-      local_surface_id_allocator_(new LocalSurfaceIdAllocator),
+      parent_local_surface_id_allocator_(new ParentLocalSurfaceIdAllocator),
       external_begin_frame_source_(this),
       weak_ptr_factory_(this) {
   // Always use sync tokens so that code paths in resource provider that deal
@@ -123,7 +123,7 @@ void TestLayerTreeFrameSink::DetachFromClient() {
   support_ = nullptr;
   display_ = nullptr;
   begin_frame_source_ = nullptr;
-  local_surface_id_allocator_ = nullptr;
+  parent_local_surface_id_allocator_ = nullptr;
   frame_sink_manager_ = nullptr;
   test_client_ = nullptr;
   LayerTreeFrameSink::DetachFromClient();
@@ -144,7 +144,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   float device_scale_factor = frame.device_scale_factor();
   if (!local_surface_id_.is_valid() || frame_size != display_size_ ||
       device_scale_factor != device_scale_factor_) {
-    local_surface_id_ = local_surface_id_allocator_->GenerateId();
+    local_surface_id_ = parent_local_surface_id_allocator_->GenerateId();
     display_->SetLocalSurfaceId(local_surface_id_, device_scale_factor);
     display_->Resize(frame_size);
     display_size_ = frame_size;

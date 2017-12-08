@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_
-#define COMPONENTS_VIZ_COMMON_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACES_PARENT_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#define COMPONENTS_VIZ_COMMON_SURFACES_PARENT_LOCAL_SURFACE_ID_ALLOCATOR_H_
 
 #include <stdint.h>
 
@@ -16,19 +16,21 @@ namespace viz {
 // This is a helper class for generating local surface IDs for a single
 // FrameSink. This is not threadsafe, to use from multiple threads wrap this
 // class in a mutex.
-class VIZ_COMMON_EXPORT LocalSurfaceIdAllocator {
+// The parent embeds a child's surface. The parent allocates a surface for the
+// child when the parent needs to change surface parameters, for example.
+class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
  public:
-  LocalSurfaceIdAllocator();
-  ~LocalSurfaceIdAllocator();
+  ParentLocalSurfaceIdAllocator();
+  ~ParentLocalSurfaceIdAllocator();
 
   LocalSurfaceId GenerateId();
 
  private:
   uint32_t next_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalSurfaceIdAllocator);
+  DISALLOW_COPY_AND_ASSIGN(ParentLocalSurfaceIdAllocator);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACES_PARENT_LOCAL_SURFACE_ID_ALLOCATOR_H_
