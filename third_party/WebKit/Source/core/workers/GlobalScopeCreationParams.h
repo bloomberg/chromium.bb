@@ -6,6 +6,7 @@
 #define GlobalScopeCreationParams_h
 
 #include <memory>
+#include "base/macros.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -16,7 +17,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAddressSpace.h"
@@ -29,7 +29,6 @@ class WorkerClients;
 // GlobalScopeCreationParams contains parameters for initializing
 // WorkerGlobalScope or WorkletGlobalScope.
 struct CORE_EXPORT GlobalScopeCreationParams final {
-  WTF_MAKE_NONCOPYABLE(GlobalScopeCreationParams);
   USING_FAST_MALLOC(GlobalScopeCreationParams);
 
  public:
@@ -99,6 +98,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   V8CacheOptions v8_cache_options;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider;
+
+  DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };
 
 }  // namespace blink

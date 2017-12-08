@@ -6,12 +6,12 @@
 #define ParentFrameTaskRunners_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/TaskTypeTraits.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -27,7 +27,6 @@ class CORE_EXPORT ParentFrameTaskRunners final
     : public GarbageCollectedFinalized<ParentFrameTaskRunners>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ParentFrameTaskRunners);
-  WTF_MAKE_NONCOPYABLE(ParentFrameTaskRunners);
 
  public:
   // Returns task runners associated with a given frame. This must be called on
@@ -60,6 +59,7 @@ class CORE_EXPORT ParentFrameTaskRunners final
 
   Mutex task_runners_mutex_;
   TaskRunnerHashMap task_runners_;
+  DISALLOW_COPY_AND_ASSIGN(ParentFrameTaskRunners);
 };
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 #define DedicatedWorkerMessagingProxy_h
 
 #include <memory>
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
@@ -13,7 +14,6 @@
 #include "core/workers/WorkerBackingThreadStartupData.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
 
 namespace v8_inspector {
@@ -32,8 +32,6 @@ class WorkerClients;
 // comments on ThreadedMessagingProxyBase for the lifetime and thread affinity.
 class CORE_EXPORT DedicatedWorkerMessagingProxy
     : public ThreadedMessagingProxyBase {
-  WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxy);
-
  public:
   DedicatedWorkerMessagingProxy(ExecutionContext*,
                                 DedicatedWorker*,
@@ -91,6 +89,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   // Tasks are queued here until there's a thread object created.
   struct QueuedTask;
   Vector<QueuedTask> queued_early_tasks_;
+  DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerMessagingProxy);
 };
 
 }  // namespace blink

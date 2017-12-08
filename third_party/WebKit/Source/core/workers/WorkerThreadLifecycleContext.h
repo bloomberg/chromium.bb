@@ -5,10 +5,10 @@
 #ifndef WorkerThreadLifecycleContext_h
 #define WorkerThreadLifecycleContext_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/LifecycleNotifier.h"
 #include "platform/heap/GarbageCollected.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -22,7 +22,6 @@ class CORE_EXPORT WorkerThreadLifecycleContext final
       public LifecycleNotifier<WorkerThreadLifecycleContext,
                                WorkerThreadLifecycleObserver> {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerThreadLifecycleContext);
-  WTF_MAKE_NONCOPYABLE(WorkerThreadLifecycleContext);
 
  public:
   WorkerThreadLifecycleContext();
@@ -32,6 +31,7 @@ class CORE_EXPORT WorkerThreadLifecycleContext final
  private:
   friend class WorkerThreadLifecycleObserver;
   bool was_context_destroyed_ = false;
+  DISALLOW_COPY_AND_ASSIGN(WorkerThreadLifecycleContext);
 };
 
 }  // namespace blink

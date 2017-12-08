@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/V8GCController.h"
@@ -43,7 +44,6 @@ class MockWorkerThreadLifecycleObserver final
     : public GarbageCollectedFinalized<MockWorkerThreadLifecycleObserver>,
       public WorkerThreadLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MockWorkerThreadLifecycleObserver);
-  WTF_MAKE_NONCOPYABLE(MockWorkerThreadLifecycleObserver);
 
  public:
   explicit MockWorkerThreadLifecycleObserver(
@@ -51,6 +51,9 @@ class MockWorkerThreadLifecycleObserver final
       : WorkerThreadLifecycleObserver(context) {}
 
   MOCK_METHOD1(ContextDestroyed, void(WorkerThreadLifecycleContext*));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockWorkerThreadLifecycleObserver);
 };
 
 class FakeWorkerGlobalScope : public WorkerGlobalScope {
