@@ -185,10 +185,17 @@ class SingleProcessMemoryTracingTest : public MemoryTracingTest {
   }
 };
 
+// https://crbug.com/788788
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_BrowserInitiatedSingleDump DISABLED_BrowserInitiatedSingleDump
+#else
+#define MAYBE_BrowserInitiatedSingleDump BrowserInitiatedSingleDump
+#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+
 // Checks that a memory dump initiated from a the main browser thread ends up in
 // a single dump even in single process mode.
 IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
-                       BrowserInitiatedSingleDump) {
+                       MAYBE_BrowserInitiatedSingleDump) {
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_)).WillOnce(Return(true));
