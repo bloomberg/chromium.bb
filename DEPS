@@ -609,7 +609,7 @@ deps = {
   },
 
   'src/third_party/usrsctp/usrsctplib':
-    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'f4819e1b177f7bfdd761c147f5a649b9f1a78c06',
+    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '0e076261b832121cf120ddc04aaff87ac3a34d30',
 
   'src/third_party/visualmetrics/src':
     Var('chromium_git') + '/external/github.com/WPO-Foundation/visualmetrics.git' + '@' +  '1edde9d2fe203229c895b648fdec355917200ad6',
