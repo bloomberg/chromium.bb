@@ -541,6 +541,7 @@
     },
     {
       name: "LoadingWithMojo",
+      status: "stable",
     },
     {
       name: "LocksAPI",
