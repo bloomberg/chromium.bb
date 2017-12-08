@@ -695,14 +695,31 @@ LocalCaretRect LocalCaretRectOfPositionTemplate(
   if (!layout_object)
     return LocalCaretRect();
 
-  const InlineBoxPosition& box_position = ComputeInlineBoxPosition(position);
+  const PositionWithAffinityTemplate<Strategy>& adjusted =
+      ComputeInlineAdjustedPosition(position);
 
-  if (box_position.inline_box) {
-    return ComputeLocalCaretRect(
-        LineLayoutAPIShim::LayoutObjectFrom(
-            box_position.inline_box->GetLineLayoutItem()),
-        box_position);
+  if (adjusted.IsNotNull()) {
+    // TODO(xiaochengh): Plug in NG implementation here.
+
+    // TODO(editing-dev): This DCHECK is for ensuring the correctness of
+    // breaking |ComputeInlineBoxPosition| into |ComputeInlineAdjustedPosition|
+    // and |ComputeInlineBoxPositionForInlineAdjustedPosition|. If there is any
+    // DCHECK hit, we should pass primary direction to the latter function.
+    // TODO(crbug.com/793098): Fix it so that we don't need to bother about
+    // primary direction.
+    DCHECK_EQ(PrimaryDirectionOf(*position.AnchorNode()),
+              PrimaryDirectionOf(*adjusted.AnchorNode()));
+    const InlineBoxPosition& box_position =
+        ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
+
+    if (box_position.inline_box) {
+      return ComputeLocalCaretRect(
+          LineLayoutAPIShim::LayoutObjectFrom(
+              box_position.inline_box->GetLineLayoutItem()),
+          box_position);
+    }
   }
+
   // DeleteSelectionCommandTest.deleteListFromTable goes here.
   return LocalCaretRect(
       layout_object,
@@ -721,7 +738,23 @@ LocalCaretRect LocalSelectionRectOfPositionTemplate(
   if (!node->GetLayoutObject())
     return LocalCaretRect();
 
-  const InlineBoxPosition& box_position = ComputeInlineBoxPosition(position);
+  const PositionWithAffinityTemplate<Strategy>& adjusted =
+      ComputeInlineAdjustedPosition(position);
+  if (adjusted.IsNull())
+    return LocalCaretRect();
+
+  // TODO(xiaochengh): Plug in NG implementation here.
+
+  // TODO(editing-dev): This DCHECK is for ensuring the correctness of
+  // breaking |ComputeInlineBoxPosition| into |ComputeInlineAdjustedPosition|
+  // and |ComputeInlineBoxPositionForInlineAdjustedPosition|. If there is any
+  // DCHECK hit, we should pass primary direction to the latter function.
+  // TODO(crbug.com/793098): Fix it so that we don't need to bother about
+  // primary direction.
+  DCHECK_EQ(PrimaryDirectionOf(*position.AnchorNode()),
+            PrimaryDirectionOf(*adjusted.AnchorNode()));
+  const InlineBoxPosition& box_position =
+      ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
 
   if (!box_position.inline_box)
     return LocalCaretRect();
