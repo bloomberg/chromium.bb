@@ -1793,9 +1793,6 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
                          ui::MenuSourceType source_type,
                          views::InkDrop* ink_drop) {
   menu_model_ = std::move(menu_model);
-  menu_model_adapter_.reset(new views::MenuModelAdapter(
-      menu_model_.get(),
-      base::Bind(&ShelfView::OnMenuClosed, base::Unretained(this), ink_drop)));
 
   closing_event_time_ = base::TimeTicks();
   int run_types = 0;
@@ -1810,8 +1807,9 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
   }
 
-  launcher_menu_runner_.reset(
-      new views::MenuRunner(menu_model_adapter_->CreateMenu(), run_types));
+  launcher_menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_.get(), run_types,
+      base::Bind(&ShelfView::OnMenuClosed, base::Unretained(this), ink_drop));
 
   views::MenuAnchorPosition menu_alignment = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor = gfx::Rect(click_point, gfx::Size());
@@ -1865,7 +1863,6 @@ void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
     ink_drop->AnimateToState(views::InkDropState::DEACTIVATED);
 
   launcher_menu_runner_.reset();
-  menu_model_adapter_.reset();
   menu_model_.reset();
 
   // Auto-hide or alignment might have changed, but only for this shelf.
