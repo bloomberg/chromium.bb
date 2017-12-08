@@ -46,11 +46,8 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
   params.SetRequestContext(WebURLRequest::kRequestContextScript);
-  ScriptResource* resource = ToScriptResource(
+  return ToScriptResource(
       fetcher->RequestResource(params, ScriptResourceFactory()));
-  if (resource && !params.IntegrityMetadata().IsEmpty())
-    resource->SetIntegrityMetadata(params.IntegrityMetadata());
-  return resource;
 }
 
 ScriptResource::ScriptResource(
