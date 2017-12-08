@@ -939,22 +939,6 @@ TEST_F(AudioVideoPipelineDeviceTest, VorbisPlayback) {
 
 // TODO(kmackay) FFmpegDemuxForTest can't handle AC3 or EAC3.
 
-TEST_F(AudioVideoPipelineDeviceTest, OpusPlayback_Optional) {
-  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
-  ConfigureForAudioOnly("bear-opus.ogg");
-  PauseBeforeEos();
-  Start();
-  base::RunLoop().Run();
-}
-
-TEST_F(AudioVideoPipelineDeviceTest, FlacPlayback_Optional) {
-  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
-  ConfigureForAudioOnly("bear.flac");
-  PauseBeforeEos();
-  Start();
-  base::RunLoop().Run();
-}
-
 TEST_F(AudioVideoPipelineDeviceTest, H264Playback) {
   set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   ConfigureForVideoOnly("bear.h264", true /* raw_h264 */);
@@ -1106,24 +1090,6 @@ TEST_F(AudioVideoPipelineDeviceTest, VorbisPlayback_WithEffectsStreams) {
 }
 
 // TODO(kmackay) FFmpegDemuxForTest can't handle AC3 or EAC3.
-
-TEST_F(AudioVideoPipelineDeviceTest, OpusPlayback_WithEffectsStreams_Optional) {
-  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
-  ConfigureForAudioOnly("bear-opus.ogg");
-  PauseBeforeEos();
-  AddEffectsStreams();
-  Start();
-  base::RunLoop().Run();
-}
-
-TEST_F(AudioVideoPipelineDeviceTest, FlacPlayback_WithEffectsStreams_Optional) {
-  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
-  ConfigureForAudioOnly("bear.flac");
-  PauseBeforeEos();
-  AddEffectsStreams();
-  Start();
-  base::RunLoop().Run();
-}
 
 TEST_F(AudioVideoPipelineDeviceTest, H264Playback_WithEffectsStreams) {
   set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
