@@ -86,7 +86,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void SetBackgroundColor(SkColor color) override;
   SkColor background_color() const override;
 #if defined(OS_MACOSX)
-  ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const override;
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override {}
   bool SupportsSpeech() const override;

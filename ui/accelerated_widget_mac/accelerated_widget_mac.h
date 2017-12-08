@@ -26,9 +26,20 @@ namespace ui {
 // throughout its lifetime (one at a time, though).
 class AcceleratedWidgetMacNSView {
  public:
+  // The CALayer tree provided by the CALayerParams sent to the
+  // AcceleratedWidgetMac will be installed under the -[NSView layer] of this
+  // NSView.
   virtual NSView* AcceleratedWidgetGetNSView() const = 0;
+
+  // Retrieve the vsync parameters for the monitor on which the NSView currently
+  // is being displayed.
+  // TODO(ccameron): This is not the appropriate place for this function. A
+  // helper library to query monitor vsync parameters should be added.
   virtual void AcceleratedWidgetGetVSyncParameters(
     base::TimeTicks* timebase, base::TimeDelta* interval) const = 0;
+
+  // Called on swap completion. This is used to update background colors and to
+  // suppressing drawing of blank windows until content is available.
   virtual void AcceleratedWidgetSwapCompleted() = 0;
 };
 

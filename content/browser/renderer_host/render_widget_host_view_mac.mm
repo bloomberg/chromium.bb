@@ -1210,11 +1210,6 @@ void RenderWidgetHostViewMac::EndFrameSubscription() {
   browser_compositor_->GetDelegatedFrameHost()->EndFrameSubscription();
 }
 
-ui::AcceleratedWidgetMac* RenderWidgetHostViewMac::GetAcceleratedWidgetMac()
-    const {
-  return browser_compositor_->GetAcceleratedWidgetMac();
-}
-
 void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
   if (render_widget_host_)
     render_widget_host_->ForwardMouseEvent(event);
@@ -1414,11 +1409,7 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
-  ui::AcceleratedWidgetMac* accelerated_widget_mac =
-      browser_compositor_->GetAcceleratedWidgetMac();
-  if (accelerated_widget_mac)
-    return accelerated_widget_mac->HasFrameOfSize(desired_size);
-  return false;
+  return browser_compositor_->HasFrameOfSize(desired_size);
 }
 
 void RenderWidgetHostViewMac::FocusedNodeChanged(
@@ -1731,12 +1722,8 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
 
 gfx::AcceleratedWidget
 RenderWidgetHostViewMac::AccessibilityGetAcceleratedWidget() {
-  if (browser_compositor_) {
-    ui::AcceleratedWidgetMac* accelerated_widget_mac =
-        browser_compositor_->GetAcceleratedWidgetMac();
-    if (accelerated_widget_mac)
-      return accelerated_widget_mac->accelerated_widget();
-  }
+  if (browser_compositor_)
+    return browser_compositor_->GetAcceleratedWidget();
   return gfx::kNullAcceleratedWidget;
 }
 

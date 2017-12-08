@@ -15,7 +15,6 @@
 #include "ui/compositor/compositor_observer.h"
 
 namespace ui {
-class AcceleratedWidgetMac;
 class AcceleratedWidgetMacNSView;
 }
 
@@ -57,10 +56,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   // potentially visible).
   void ClearCompositorFrame();
 
-  // This may return nullptr, if this has detached itself from its
-  // ui::Compositor.
-  ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac();
-
+  gfx::AcceleratedWidget GetAcceleratedWidget();
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
@@ -69,6 +65,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   void SetBackgroundColor(SkColor background_color);
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
   void WasResized();
+  bool HasFrameOfSize(const gfx::Size& desired_size);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
   void SetNeedsBeginFrames(bool needs_begin_frames);
