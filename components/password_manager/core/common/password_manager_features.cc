@@ -84,7 +84,7 @@ const base::Feature kPasswordImport = {"password-import",
 // Control whether users can view and copy passwords. This is only used for
 // mobile, the desktop version of Chrome always allows users to view
 // passwords.
-const base::Feature kViewPasswords = {"view-passwords",
+const base::Feature kViewPasswords = {"ViewPasswords",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the experiment for the password manager to only fill on account
