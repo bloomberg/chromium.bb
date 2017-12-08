@@ -229,7 +229,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   bool LaunchGpuProcess();
 
-  void SendOutstandingReplies();
+  void SendOutstandingReplies(EstablishChannelStatus failure_status);
 
   void RunRequestGPUInfoCallbacks(const gpu::GPUInfo& gpu_info);
 

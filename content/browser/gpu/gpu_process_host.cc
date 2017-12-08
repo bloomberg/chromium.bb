@@ -490,7 +490,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 GpuProcessHost::~GpuProcessHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  SendOutstandingReplies();
+  SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
 
   if (status_ == UNKNOWN) {
     RunRequestGPUInfoCallbacks(gpu::GPUInfo());
@@ -681,7 +681,7 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
     // Channel is hosed, but we may not get destroyed for a while. Send
     // outstanding channel creation failures now so that the caller can restart
     // with a new process/channel without waiting.
-    SendOutstandingReplies();
+    SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
   }
   return result;
 }
@@ -875,7 +875,7 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
           cache_key.first, base::Time(), base::Time::Max(), base::Bind([] {}));
     }
   }
-  SendOutstandingReplies();
+  SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
   RecordProcessCrash();
   GpuDataManagerImpl::GetInstance()->ProcessCrashed(
       process_->GetTerminationStatus(true /* known_dead */, nullptr));
@@ -1111,7 +1111,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
   bool current_gpu_type_enabled =
       swiftshader_rendering_ ? gpu_enabled_ : hardware_gpu_enabled_;
   if (!current_gpu_type_enabled) {
-    SendOutstandingReplies();
+    SendOutstandingReplies(EstablishChannelStatus::GPU_ACCESS_DENIED);
     return false;
   }
 
@@ -1132,7 +1132,9 @@ bool GpuProcessHost::LaunchGpuProcess() {
   return true;
 }
 
-void GpuProcessHost::SendOutstandingReplies() {
+void GpuProcessHost::SendOutstandingReplies(
+    EstablishChannelStatus failure_status) {
+  DCHECK_NE(failure_status, EstablishChannelStatus::SUCCESS);
   valid_ = false;
 
   // First send empty channel handles for all EstablishChannel requests.
@@ -1140,8 +1142,7 @@ void GpuProcessHost::SendOutstandingReplies() {
     auto callback = channel_requests_.front();
     channel_requests_.pop();
     callback.Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
-                 gpu::GpuFeatureInfo(),
-                 EstablishChannelStatus::GPU_HOST_INVALID);
+                 gpu::GpuFeatureInfo(), failure_status);
   }
 
   while (!create_gpu_memory_buffer_requests_.empty()) {
