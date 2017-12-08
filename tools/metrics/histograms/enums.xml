@@ -24999,6 +24999,7 @@ from previous Chrome versions.
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-793921836" label="ShowAllDialogsWithViewsToolkit:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
+  <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
@@ -25493,6 +25494,7 @@ from previous Chrome versions.
   <int value="635971109" label="PrintPdfAsImage:disabled"/>
   <int value="636425179" label="mhtml-generator-option"/>
   <int value="637396292" label="AllBookmarks:enabled"/>
+  <int value="637452937" label="ChromeHomeSurvey:enabled"/>
   <int value="643725031" label="disable-touch-feedback"/>
   <int value="644189071" label="PermissionsBlacklist:enabled"/>
   <int value="644674603" label="DataReductionProxySiteBreakdown:disabled"/>

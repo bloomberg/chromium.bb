@@ -74,6 +74,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomePromoOnStartup,
     &kChromeHomeOptOutSnackbar,
     &kChromeHomeShowGoogleGWhenUrlCleared,
+    &kChromeHomeSurvey,
     &kChromeHomeSwipeLogic,
     &kChromeHomeSwipeLogicVelocity,
     &kChromeSmartSelection,
@@ -217,6 +218,9 @@ const base::Feature kChromeHomeOptOutSnackbar{
 
 const base::Feature kChromeHomeShowGoogleGWhenUrlCleared{
     "ChromeHomeShowGoogleGWhenUrlCleared", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kChromeHomeSurvey{"ChromeHomeSurvey",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeHomeSwipeLogic{"ChromeHomeSwipeLogic",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
