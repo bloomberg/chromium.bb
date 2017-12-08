@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell.keyboard;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -33,6 +34,7 @@ public class GvrKeyboardLoaderClient {
     // GVR doesn't support setting the context twice in the application's lifetime and crashes if we
     // do so. Setting the same context wrapper is a no-op, so we keep a reference to the one we
     // create and use it across re-initialization of the keyboard api.
+    @SuppressLint("StaticFieldLeak")
     private static KeyboardContextWrapper sContextWrapper = null;
 
     @CalledByNative
