@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
@@ -167,6 +168,7 @@ public class QuicTest {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     @SuppressWarnings("deprecation")
+    @DisabledTest(message = "crbug.com/793154")
     public void testNQEWithQuic() throws Exception {
         ExperimentalCronetEngine cronetEngine = mBuilder.build();
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
