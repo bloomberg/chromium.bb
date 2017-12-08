@@ -266,6 +266,44 @@ TEST_F(ShelfControllerPrefsTest, ShelfRespectsPerDisplayPrefs) {
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf2->auto_hide_behavior());
 }
 
+// Ensures that pre-Unified Mode per-display shelf settings don't prevent us
+// from changing the shelf settings in unified mode.
+TEST_F(ShelfControllerPrefsTest, ShelfRespectsPerDisplayPrefsUnified) {
+  UpdateDisplay("1024x768,800x600");
+
+  // Before enabling Unified Mode, set the shelf alignment for one of the two
+  // displays, so that we have a per-display shelf alignment setting.
+  ASSERT_FALSE(display_manager()->IsInUnifiedMode());
+  const int64_t non_unified_primary_id = GetPrimaryDisplay().id();
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  Shelf* shelf = GetShelfForDisplay(non_unified_primary_id);
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  SetShelfAlignmentPref(prefs, non_unified_primary_id, SHELF_ALIGNMENT_LEFT);
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, shelf->alignment());
+
+  // Switch to Unified Mode, and expect to be able to change the shelf
+  // alignment.
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  ASSERT_TRUE(display_manager()->IsInUnifiedMode());
+  const int64_t unified_id = display::kUnifiedDisplayId;
+  ASSERT_EQ(unified_id, GetPrimaryDisplay().id());
+
+  shelf = GetShelfForDisplay(unified_id);
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  SetShelfAlignmentPref(prefs, unified_id, SHELF_ALIGNMENT_LEFT);
+  SetShelfAutoHideBehaviorPref(prefs, unified_id,
+                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  SetShelfAlignmentPref(prefs, unified_id, SHELF_ALIGNMENT_RIGHT);
+  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, shelf->alignment());
+}
+
 // Ensure shelf settings are correct after display swap, see crbug.com/748291
 TEST_F(ShelfControllerPrefsTest, ShelfSettingsValidAfterDisplaySwap) {
   // Simulate adding an external display at the lock screen.

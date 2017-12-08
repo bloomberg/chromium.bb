@@ -34,7 +34,7 @@ namespace {
 //    displays.
 //  * A user-set value for the specified display.
 //  * A user-set value in |local_path| or |path|, if no per-display settings are
-//    ever specified (see http://crbug.com/173719 for why). |local_path| is
+//    ever specified (see http://crbug.com/173719 for why), |local_path| is
 //    preferred. See comment in |kShelfAlignment| as to why we consider two
 //    prefs and why |local_path| is preferred.
 //  * A value recommended by policy. This is a single value that applies to all
@@ -88,7 +88,7 @@ void SetPerDisplayPref(PrefService* prefs,
                        int64_t display_id,
                        const char* pref_key,
                        const std::string& value) {
-  if (display_id < 0)
+  if (display_id == display::kInvalidDisplayId)
     return;
 
   // Avoid DictionaryPrefUpdate's notifications for read but unmodified prefs.
