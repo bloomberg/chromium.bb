@@ -18,6 +18,7 @@
 #include "content/common/media/media_devices.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/media_stream_device_observer.h"
@@ -540,6 +541,31 @@ class UserMediaClientImplTest : public ::testing::Test {
     EXPECT_EQ(video_tracks.size(), 1U);
 
     return video_tracks[0];
+  }
+
+  blink::WebMediaStreamTrack RequestLocalAudioTrackWithAssociatedSink(
+      bool render_to_associated_sink) {
+    MockConstraintFactory constraint_factory;
+    constraint_factory.basic().render_to_associated_sink.SetExact(
+        render_to_associated_sink);
+    blink::WebUserMediaRequest user_media_request =
+        blink::WebUserMediaRequest::CreateForTesting(
+            constraint_factory.CreateWebMediaConstraints(),
+            blink::WebMediaConstraints());
+    user_media_client_impl_->RequestUserMediaForTest(user_media_request);
+
+    EXPECT_EQ(REQUEST_SUCCEEDED, request_state());
+
+    blink::WebMediaStream desc = user_media_processor_->last_generated_stream();
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+    desc.AudioTracks(audio_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+    desc.VideoTracks(video_tracks);
+
+    EXPECT_EQ(audio_tracks.size(), 1u);
+    EXPECT_TRUE(video_tracks.empty());
+
+    return audio_tracks[0];
   }
 
   void StartMockedVideoSource() {
@@ -1432,6 +1458,26 @@ TEST_F(UserMediaClientImplTest, ApplyConstraintsVideoDeviceStopped) {
     EXPECT_EQ(settings.height, -1);
     EXPECT_EQ(settings.frame_rate, -1.0);
   }
+}
+
+// These tests check that audio parameters for the associated output device are
+// set according to the renderToAssociatedSink constrainable property.
+TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkTrueAudioParams) {
+  EXPECT_CALL(mock_dispatcher_host_, OnStreamStarted(_));
+  blink::WebMediaStreamTrack web_track =
+      RequestLocalAudioTrackWithAssociatedSink(true);
+  MediaStreamAudioSource* source =
+      MediaStreamAudioSource::From(web_track.Source());
+  EXPECT_TRUE(source->device().matched_output.IsValid());
+}
+
+TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkFalseAudioParams) {
+  EXPECT_CALL(mock_dispatcher_host_, OnStreamStarted(_));
+  blink::WebMediaStreamTrack web_track =
+      RequestLocalAudioTrackWithAssociatedSink(false);
+  MediaStreamAudioSource* source =
+      MediaStreamAudioSource::From(web_track.Source());
+  EXPECT_FALSE(source->device().matched_output.IsValid());
 }
 
 }  // namespace content
