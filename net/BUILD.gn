@@ -2306,9 +2306,7 @@ static_library("http_server") {
     "server/web_socket_encoder.cc",
     "server/web_socket_encoder.h",
   ]
-  configs += [
-    "//build/config/compiler:wexit_time_destructors",
-  ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
   deps = [
     ":net",
     "//base",
@@ -2660,9 +2658,7 @@ static_library("test_support") {
     "url_request/url_request_test_util.h",
   ]
 
-  configs += [
-    "//build/config:precompiled_headers",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
     ":traffic_annotation",
@@ -2769,6 +2765,7 @@ if (use_v8_in_net) {
 
     configs += [
       "//build/config/compiler:wexit_time_destructors",
+      "//tools/v8_context_snapshot:use_v8_context_snapshot",
       "//v8:external_startup_data",
     ]
 
@@ -2779,6 +2776,7 @@ if (use_v8_in_net) {
     deps = [
       "//base",
       "//gin",
+      "//tools/v8_context_snapshot",
       "//url",
       "//v8",
     ]
@@ -5307,9 +5305,7 @@ test("net_unittests") {
   ]
   net_unfiltered_sources = []
 
-  configs += [
-    "//build/config:precompiled_headers",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
   defines = []
 
   deps = [
