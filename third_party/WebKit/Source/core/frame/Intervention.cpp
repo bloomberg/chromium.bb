@@ -11,8 +11,9 @@
 #include "core/frame/Report.h"
 #include "core/frame/ReportingContext.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "public/platform/Platform.h"
 #include "public/platform/reporting.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace blink {
 
@@ -44,7 +45,9 @@ void Intervention::GenerateReport(const LocalFrame* frame,
 
   // Send the intervention report to the Reporting API.
   mojom::blink::ReportingServiceProxyPtr service;
-  frame->Client()->GetInterfaceProvider()->GetInterface(&service);
+  Platform* platform = Platform::Current();
+  platform->GetConnector()->BindInterface(platform->GetBrowserServiceName(),
+                                          &service);
   service->QueueInterventionReport(document->Url(), message, body->sourceFile(),
                                    body->lineNumber(), body->columnNumber());
 }
