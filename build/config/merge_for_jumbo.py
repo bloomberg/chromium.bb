@@ -19,9 +19,11 @@ import os
 # ignored by the build system. We warn for unexpected files in the
 # sources list, but these are ok.
 NOOP_FILE_SUFFIXES = (
+  ".css",
   ".g",
   ".idl",
   ".inc",
+  ".js",
   ".json",
   ".py",
 )
