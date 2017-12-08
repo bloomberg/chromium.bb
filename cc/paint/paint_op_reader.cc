@@ -10,6 +10,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_shader.h"
+#include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -19,8 +20,6 @@ namespace cc {
 namespace {
 
 uint32_t kMaxTypefacesCount = 128;
-size_t kMaxFilenameSize = 1024;
-size_t kMaxFamilyNameSize = 128;
 
 // If we have more than this many colors, abort deserialization.
 const size_t kMaxShaderColorsSupported = 10000;
@@ -276,79 +275,20 @@ void PaintOpReader::Read(std::vector<PaintTypeface>* typefaces) {
   }
   typefaces->reserve(typefaces_count);
   for (uint32_t i = 0; i < typefaces_count; ++i) {
-    SkFontID id;
-    uint8_t type;
-    PaintTypeface typeface;
-    ReadSimple(&id);
-    ReadSimple(&type);
-    if (!valid_)
+    // TODO(vmpstr): This is meant to be transferred via a transfer cache, but
+    // for now just utilize the deserialization that the cache entry provides.
+    ServicePaintTypefaceTransferCacheEntry entry;
+    bool success = entry.Deserialize(
+        nullptr,
+        base::make_span(reinterpret_cast<uint8_t*>(const_cast<char*>(memory_)),
+                        remaining_bytes_));
+    if (!success) {
+      valid_ = false;
       return;
-    switch (static_cast<PaintTypeface::Type>(type)) {
-      case PaintTypeface::Type::kTestTypeface:
-        typeface = PaintTypeface::TestTypeface();
-        break;
-      case PaintTypeface::Type::kSkTypeface:
-        // TODO(vmpstr): This shouldn't ever happen once everything is
-        // implemented. So this should be a failure (ie |valid_| = false).
-        break;
-      case PaintTypeface::Type::kFontConfigInterfaceIdAndTtcIndex: {
-        int font_config_interface_id = 0;
-        int ttc_index = 0;
-        ReadSimple(&font_config_interface_id);
-        ReadSimple(&ttc_index);
-        if (!valid_)
-          return;
-        typeface = PaintTypeface::FromFontConfigInterfaceIdAndTtcIndex(
-            font_config_interface_id, ttc_index);
-        break;
-      }
-      case PaintTypeface::Type::kFilenameAndTtcIndex: {
-        size_t size;
-        ReadSimple(&size);
-        if (!valid_ || size > kMaxFilenameSize) {
-          SetInvalid();
-          return;
-        }
-
-        std::unique_ptr<char[]> buffer(new char[size]);
-        ReadData(size, buffer.get());
-        std::string filename(buffer.get(), size);
-
-        int ttc_index = 0;
-        ReadSimple(&ttc_index);
-        if (!valid_)
-          return;
-        typeface = PaintTypeface::FromFilenameAndTtcIndex(filename, ttc_index);
-        break;
-      }
-      case PaintTypeface::Type::kFamilyNameAndFontStyle: {
-        size_t size;
-        ReadSimple(&size);
-        if (!valid_ || size > kMaxFamilyNameSize) {
-          SetInvalid();
-          return;
-        }
-
-        std::unique_ptr<char[]> buffer(new char[size]);
-        ReadData(size, buffer.get());
-        std::string family_name(buffer.get(), size);
-
-        int weight = 0;
-        int width = 0;
-        SkFontStyle::Slant slant = SkFontStyle::kUpright_Slant;
-        ReadSimple(&weight);
-        ReadSimple(&width);
-        ReadSimple(&slant);
-        if (!valid_)
-          return;
-
-        typeface = PaintTypeface::FromFamilyNameAndFontStyle(
-            family_name, SkFontStyle(weight, width, slant));
-        break;
-      }
     }
-    typeface.SetSkId(id);
-    typefaces->emplace_back(std::move(typeface));
+    typefaces->emplace_back(entry.typeface());
+    memory_ += entry.CachedSize();
+    remaining_bytes_ -= entry.CachedSize();
   }
 }
 
