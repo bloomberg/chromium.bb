@@ -11,13 +11,11 @@
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
 #include "ui/aura/window.h"
 
-// The tests in this file are in all configs of ash, where as those in
-// window_manager_unittest.cc is only run in Config::MASH.
-
 namespace ash {
 
 using WindowManagerCommonTest = AshTestBase;
 
+// TODO(jamescook): Move into one of the existing WindowManager test suites.
 TEST_F(WindowManagerCommonTest, Focus) {
   if (Shell::GetAshConfig() == Config::CLASSIC)
     return;

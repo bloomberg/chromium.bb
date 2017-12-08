@@ -45,20 +45,12 @@ TEST_F(StickyKeysOverlayTest, ModifierKeyState) {
 // This test addresses the crash report at crbug.com/435600, speculated to be
 // caused by using sticky keys with multiple displays.
 TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
-  // TODO: investigate failure in mash, http://crbug.com/696006.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Add a secondary display to the left of the primary one.
   UpdateDisplay("1280x1024,1980x1080");
   display::DisplayIdList display_ids =
       display_manager()->GetCurrentDisplayIdList();
   int64_t primary_display_id = display_ids[0];
   int64_t secondary_display_id = display_ids[1];
-  // TODO: disabled as ScreenRotationAnimator does not work in mash,
-  // http://crbug.com/696754.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::LEFT, 0));

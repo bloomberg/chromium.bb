@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -508,10 +507,6 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
 }
 
 TEST_F(WindowManagerTest, MouseEventCursors) {
-  // TODO: investigate failure in mash. http://crbug.com/698895.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   // Create a window.
@@ -751,10 +746,6 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 
 // Touch visually hides the cursor.
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
-  // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 
@@ -774,10 +765,6 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 
 // Tests cursor visibility on key pressed event.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
-  // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 
@@ -806,10 +793,6 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
 
 // Test that pressing an accelerator does not hide the cursor.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
-  // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
@@ -831,10 +814,6 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
 }
 
 TEST_F(WindowManagerTest, TestCursorClientObserver) {
-  // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 

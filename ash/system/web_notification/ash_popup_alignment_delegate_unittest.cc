@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -166,10 +165,6 @@ TEST_F(AshPopupAlignmentDelegateTest, DisplayResize) {
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
-  // TODO: needs unified mode. http://crbug.com/698024.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
@@ -220,10 +215,6 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, Unified) {
-  // TODO: needs unified mode. http://crbug.com/698024.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Reset the delegate as the primary display's shelf will be destroyed during

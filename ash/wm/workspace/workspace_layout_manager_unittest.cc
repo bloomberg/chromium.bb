@@ -191,11 +191,6 @@ TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
   UpdateDisplay("300x400,400x500");
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
 
-  if (Shell::GetAshConfig() != Config::CLASSIC) {
-    // TODO(sky): should work for mus/mash once http://crbug.com/706589 is
-    // fixed.
-    return;
-  }
   Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(Shell::Get()->display_manager(),
                                          display::DisplayPlacement::TOP, 0));

@@ -6,7 +6,6 @@
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/login_status.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
@@ -167,10 +166,6 @@ TEST_F(OverviewButtonTrayTest, PerformDoubleTapAction) {
 
 // Tests that tapping on the control will record the user action Tray_Overview.
 TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
-  // TODO: investigate failure in mash, http://crbug.com/698129.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
 
   // Tapping on the control when there are no windows (and thus the user cannot

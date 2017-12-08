@@ -300,11 +300,6 @@ TEST_P(PanelLayoutManagerTextDirectionTest, AddOnePanel) {
 // Tests for crashes during undocking.
 // See https://crbug.com/632755
 TEST_F(PanelLayoutManagerTest, UndockTest) {
-  // TODO: mash doesn't support SetFirstDisplayAsInternalDisplay().
-  // http://crbug.com/698091.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   std::vector<display::ManagedDisplayInfo> info_list;
 
   const int64_t internal_display_id =
@@ -336,11 +331,6 @@ TEST_F(PanelLayoutManagerTest, UndockTest) {
 // Tests for any crash during docking and then undocking.
 // See https://crbug.com/632755
 TEST_F(PanelLayoutManagerTest, DockUndockTest) {
-  // TODO: mash doesn't support SetFirstDisplayAsInternalDisplay().
-  // http://crbug.com/698091.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   std::vector<display::ManagedDisplayInfo> info_list;
 
   const int64_t internal_display_id =

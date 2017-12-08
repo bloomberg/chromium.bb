@@ -250,10 +250,6 @@ TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
 
 // Verifies if the notification appears on both displays when extended mode.
 TEST_F(WebNotificationTrayTest, PopupShownOnBothDisplays) {
-  // TODO: needs ScreenLayoutObserver, http://crbug.com/696752.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
       true);
   UpdateDisplay("400x400,200x200");

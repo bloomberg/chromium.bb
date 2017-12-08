@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -721,10 +720,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // a display which has touch capability.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardOnTouchableDisplayOnly) {
-  // TODO: investigate failure in mash. http://crbug.com/695640.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   UpdateDisplay("500x500,500x500");
   display::Display secondary_display =
       Shell::Get()->display_manager()->GetSecondaryDisplay();
@@ -777,10 +772,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // Test for http://crbug.com/303429. If both of displays have touch capability,
 // virtual keyboard follows the input focus.
 TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
-  // TODO: investigate failure in mash. http://crbug.com/695640.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   UpdateDisplay("500x500,500x500");
   const int64_t primary_display_id =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -849,10 +840,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
 // capability, the virtual keyboard shows up on the specified display.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardShowOnSpecifiedDisplay) {
-  // TODO: fails in mash. http://crbug.com/695640.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   UpdateDisplay("500x500,500x500");
   display::Display secondary_display = GetSecondaryDisplay();
 
@@ -1043,10 +1030,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
 
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        EnsureCaretInWorkAreaWithMultipleDisplays) {
-  // TODO: fails in mash. http://crbug.com/695640.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   UpdateDisplay("500x500,600x600");
   const int64_t primary_display_id =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
