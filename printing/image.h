@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -25,7 +24,7 @@ class Metafile;
 
 // Lightweight raw-bitmap management. The image, once initialized, is immutable.
 // The main purpose is testing image contents.
-class PRINTING_EXPORT Image {
+class Image {
  public:
   // Creates the image from the metafile.  Deduces bounds based on bounds in
   // metafile.  If loading fails size().IsEmpty() will be true.

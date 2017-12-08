@@ -33,12 +33,6 @@ component("printing") {
     "backend/printing_info_win.h",
     "emf_win.cc",
     "emf_win.h",
-    "image.cc",
-    "image.h",
-    "image_android.cc",
-    "image_linux.cc",
-    "image_mac.cc",
-    "image_win.cc",
     "metafile.cc",
     "metafile.h",
     "metafile_skia_wrapper.cc",
@@ -242,10 +236,6 @@ component("printing") {
       "pdf_transform.h",
     ]
   }
-
-  if (is_fuchsia) {
-    sources += [ "image_fuchsia.cc" ]
-  }
 }
 
 static_library("test_support") {
@@ -253,12 +243,25 @@ static_library("test_support") {
   sources = [
     "backend/test_print_backend.cc",
     "backend/test_print_backend.h",
+    "image.cc",
+    "image.h",
+    "image_android.cc",
+    "image_linux.cc",
+    "image_mac.cc",
+    "image_win.cc",
   ]
+  if (is_fuchsia) {
+    sources += [ "image_fuchsia.cc" ]
+  }
+
   public_deps = [
     "//printing",
+    "//ui/gfx/geometry",
   ]
   deps = [
     "//base",
+    "//skia",
+    "//ui/gfx",
   ]
 }
 
