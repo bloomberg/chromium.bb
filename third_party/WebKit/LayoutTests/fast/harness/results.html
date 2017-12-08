@@ -527,7 +527,7 @@ const Report = {
     }
     let html = `
       <div class='expect' tabindex='0' data-id='${test.expectId}'><div class='details'></div>${Report.printFlag(test)}${bug}
-        ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
+        ${pathParser.dir}<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
         [ ${status} ]
     </div>
     `;
