@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -16,7 +15,6 @@ class GURL;
 
 namespace net {
 
-class ProxyServer;
 class URLFetcher;
 class URLRequestContextGetter;
 
@@ -27,14 +25,8 @@ namespace data_reduction_proxy {
 // URLFetcherDelegate for fetching the warmup URL.
 class WarmupURLFetcher : public net::URLFetcherDelegate {
  public:
-  // The proxy server that was used to fetch the request, and whether the fetch
-  // was successful.
-  typedef base::RepeatingCallback<void(const net::ProxyServer&, bool)>
-      WarmupURLFetcherCallback;
-
-  WarmupURLFetcher(const scoped_refptr<net::URLRequestContextGetter>&
-                       url_request_context_getter,
-                   WarmupURLFetcherCallback callback);
+  explicit WarmupURLFetcher(const scoped_refptr<net::URLRequestContextGetter>&
+                                url_request_context_getter);
 
   ~WarmupURLFetcher() override;
 
@@ -53,10 +45,6 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
 
   // The URLFetcher being used for fetching the warmup URL.
   std::unique_ptr<net::URLFetcher> fetcher_;
-
-  // Callback that should be executed when the fetching of the warmup URL is
-  // completed.
-  WarmupURLFetcherCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WarmupURLFetcher);
 };

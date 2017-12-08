@@ -50,10 +50,6 @@ DataReductionProxyServer::ConvertToNetProxyServers(
   return net_proxy_servers;
 }
 
-bool DataReductionProxyServer::IsCoreProxy() const {
-  return proxy_type_ == ProxyServer_ProxyType_CORE;
-}
-
 ProxyServer_ProxyType DataReductionProxyServer::GetProxyTypeForTesting() const {
   return proxy_type_;
 }
