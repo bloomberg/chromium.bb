@@ -20,3 +20,6 @@ harfbuzz.gyp accordingly, update the NEWS file from HarfBuzz' release notes, and
 bump the version numbers in README.chromium.
 
 Locally patch hb-private.hh to silence unusued variable warnings in MSVC.
+
+Locally patching hb_set implementation back to the pre 1.6.1 implemention as we
+observe a set of timeToFirst*Paint performance regressions in issue 781794.
