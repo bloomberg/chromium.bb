@@ -42,6 +42,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/metrics/arc_metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/display/types/display_constants.h"
@@ -539,8 +540,14 @@ void ArcSessionManager::CancelAuthCode() {
 void ArcSessionManager::RecordArcState() {
   // Only record Enabled state if ARC is allowed in the first place, so we do
   // not split the ARC population by devices that cannot run ARC.
-  if (IsAllowed())
-    UpdateEnabledStateUMA(enable_requested_);
+  if (!IsAllowed())
+    return;
+
+  UpdateEnabledStateUMA(enable_requested_);
+
+  ArcMetricsService* service =
+      ArcMetricsService::GetForBrowserContext(profile_);
+  service->RecordNativeBridgeUMA();
 }
 
 void ArcSessionManager::RequestEnable() {

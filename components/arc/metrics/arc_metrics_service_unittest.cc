@@ -239,5 +239,35 @@ TEST_F(ArcMetricsServiceTest, ReportNativeBridge) {
             ArcMetricsService::NativeBridgeType::NDK_TRANSLATION);
 }
 
+TEST_F(ArcMetricsServiceTest, RecordNativeBridgeUMA) {
+  base::HistogramTester tester;
+  metrics_service()->RecordNativeBridgeUMA();
+  tester.ExpectUniqueSample(
+      "Arc.NativeBridge",
+      static_cast<int>(ArcMetricsService::NativeBridgeType::UNKNOWN), 1);
+  metrics_service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
+  // Check that ReportNativeBridge doesn't record histograms.
+  tester.ExpectTotalCount("Arc.NativeBridge", 1);
+  metrics_service()->RecordNativeBridgeUMA();
+  tester.ExpectBucketCount(
+      "Arc.NativeBridge",
+      static_cast<int>(ArcMetricsService::NativeBridgeType::NONE), 1);
+  metrics_service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
+  tester.ExpectTotalCount("Arc.NativeBridge", 2);
+  metrics_service()->RecordNativeBridgeUMA();
+  tester.ExpectBucketCount(
+      "Arc.NativeBridge",
+      static_cast<int>(ArcMetricsService::NativeBridgeType::HOUDINI), 1);
+  metrics_service()->ReportNativeBridge(
+      mojom::NativeBridgeType::NDK_TRANSLATION);
+  tester.ExpectTotalCount("Arc.NativeBridge", 3);
+  metrics_service()->RecordNativeBridgeUMA();
+  tester.ExpectBucketCount(
+      "Arc.NativeBridge",
+      static_cast<int>(ArcMetricsService::NativeBridgeType::NDK_TRANSLATION),
+      1);
+  tester.ExpectTotalCount("Arc.NativeBridge", 4);
+}
+
 }  // namespace
 }  // namespace arc

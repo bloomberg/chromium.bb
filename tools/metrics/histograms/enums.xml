@@ -1338,6 +1338,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Chrome"/>
 </enum>
 
+<enum name="ArcNativeBridgeType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="None"/>
+  <int value="2" label="Houdini"/>
+  <int value="3" label="Ndk-translation"/>
+</enum>
+
 <enum name="ArcOptInAction">
   <summary>Defines Arc OptIn actions</summary>
   <int value="0" label="Opted Out"/>
