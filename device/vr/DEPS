@@ -2,8 +2,10 @@ include_rules = [
   "+device/gamepad/public/cpp/gamepads.h",
   "+gpu/command_buffer/common/mailbox_holder.h",
   "+jni",
+  "+services/device/public",
   "+third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h",
   "+third_party/gvr-android-sdk/src",
   "+third_party/openvr/src/headers/openvr.h",
+  "+ui/display",
   "+ui/gfx",
 ]
