@@ -15,7 +15,7 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "ui/gfx/transform.h"
@@ -28,8 +28,8 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       last_egl_context_(eglGetCurrentContext()),
       surfaces_(SurfacesInstance::GetOrCreateInstance()),
       frame_sink_id_(surfaces_->AllocateFrameSinkId()),
-      local_surface_id_allocator_(
-          std::make_unique<viz::LocalSurfaceIdAllocator>()),
+      parent_local_surface_id_allocator_(
+          std::make_unique<viz::ParentLocalSurfaceIdAllocator>()),
       last_committed_layer_tree_frame_sink_id_(0u),
       last_submitted_layer_tree_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
@@ -168,7 +168,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 
 void HardwareRenderer::AllocateSurface() {
   DCHECK(!child_id_.is_valid());
-  child_id_ = local_surface_id_allocator_->GenerateId();
+  child_id_ = parent_local_surface_id_allocator_->GenerateId();
   surfaces_->AddChildId(viz::SurfaceId(frame_sink_id_, child_id_));
 }
 

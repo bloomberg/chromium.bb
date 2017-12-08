@@ -7,7 +7,7 @@
 
 #include "components/viz/client/viz_client_export.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -37,7 +37,7 @@ class VIZ_CLIENT_EXPORT DefaultLocalSurfaceIdProvider
   LocalSurfaceId local_surface_id_;
   gfx::Size surface_size_;
   float device_scale_factor_ = 0;
-  LocalSurfaceIdAllocator local_surface_id_allocator_;
+  ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultLocalSurfaceIdProvider);
 };

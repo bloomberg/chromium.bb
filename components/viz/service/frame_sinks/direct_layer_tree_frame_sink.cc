@@ -8,7 +8,7 @@
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -98,7 +98,7 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   if (!local_surface_id_.is_valid() ||
       frame.size_in_pixels() != last_swap_frame_size_ ||
       frame.device_scale_factor() != device_scale_factor_) {
-    local_surface_id_ = local_surface_id_allocator_.GenerateId();
+    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
     last_swap_frame_size_ = frame.size_in_pixels();
     device_scale_factor_ = frame.device_scale_factor();
     display_->SetLocalSurfaceId(local_surface_id_, device_scale_factor_);

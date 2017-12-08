@@ -294,7 +294,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::SurfaceInfo fallback_surface_info_;
 
   viz::LocalSurfaceId local_surface_id_;
-  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   gfx::Size last_surface_size_in_pixels_;
 
   ui::CursorData cursor_;

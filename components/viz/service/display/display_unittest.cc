@@ -23,7 +23,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -170,7 +170,7 @@ class DisplayTest : public testing::Test {
 
   FrameSinkManagerImpl manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
-  LocalSurfaceIdAllocator id_allocator_;
+  ParentLocalSurfaceIdAllocator id_allocator_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
   cc::TestSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<BeginFrameSource> begin_frame_source_;

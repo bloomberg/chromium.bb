@@ -19,7 +19,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -130,7 +130,8 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
       sender_(RenderThreadImpl::current()->sync_compositor_message_filter()),
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
-      local_surface_id_allocator_(new viz::LocalSurfaceIdAllocator),
+      parent_local_surface_id_allocator_(
+          new viz::ParentLocalSurfaceIdAllocator),
       begin_frame_source_(std::move(begin_frame_source)) {
   DCHECK(registry_);
   DCHECK(sender_);
@@ -222,7 +223,7 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
   child_support_.reset();
   software_output_surface_ = nullptr;
   display_ = nullptr;
-  local_surface_id_allocator_ = nullptr;
+  parent_local_surface_id_allocator_ = nullptr;
   frame_sink_manager_ = nullptr;
   cc::LayerTreeFrameSink::DetachFromClient();
   CancelFallbackTick();
@@ -261,14 +262,15 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
 
     if (!root_local_surface_id_.is_valid() || display_size_ != display_size ||
         device_scale_factor_ != frame.metadata.device_scale_factor) {
-      root_local_surface_id_ = local_surface_id_allocator_->GenerateId();
+      root_local_surface_id_ = parent_local_surface_id_allocator_->GenerateId();
       display_size_ = display_size;
       device_scale_factor_ = frame.metadata.device_scale_factor;
     }
 
     if (!child_local_surface_id_.is_valid() || child_size_ != child_size ||
         device_scale_factor_ != frame.metadata.device_scale_factor) {
-      child_local_surface_id_ = local_surface_id_allocator_->GenerateId();
+      child_local_surface_id_ =
+          parent_local_surface_id_allocator_->GenerateId();
       child_size_ = child_size;
       device_scale_factor_ = frame.metadata.device_scale_factor;
     }

@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/graphics/OffscreenCanvasResourceProvider.h"
@@ -69,7 +69,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
   friend class OffscreenCanvasFrameDispatcherImplTest;
 
   // Surface-related
-  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   const viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId current_local_surface_id_;
 

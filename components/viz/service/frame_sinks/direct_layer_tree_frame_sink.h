@@ -9,7 +9,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/viz_service_export.h"
@@ -95,7 +95,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   LocalSurfaceId local_surface_id_;
   CompositorFrameSinkSupportManager* const support_manager_;
   FrameSinkManagerImpl* frame_sink_manager_;
-  LocalSurfaceIdAllocator local_surface_id_allocator_;
+  ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   Display* display_;
   gfx::Size last_swap_frame_size_;
   float device_scale_factor_ = 1.f;

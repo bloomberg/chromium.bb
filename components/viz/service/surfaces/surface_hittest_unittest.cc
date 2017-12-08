@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -117,7 +117,7 @@ TEST_F(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
                         child_surface_id);
 
   // Submit the root frame.
-  LocalSurfaceIdAllocator root_allocator;
+  ParentLocalSurfaceIdAllocator root_allocator;
   LocalSurfaceId root_local_surface_id = root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink, root_local_surface_id);
   root_support().SubmitCompositorFrame(root_local_surface_id,
@@ -142,7 +142,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface) {
   CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Submit the root frame.
-  LocalSurfaceIdAllocator root_allocator;
+  ParentLocalSurfaceIdAllocator root_allocator;
   LocalSurfaceId root_local_surface_id = root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink, root_local_surface_id);
   root_support().SubmitCompositorFrame(root_local_surface_id,
@@ -164,7 +164,7 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
   CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Add a reference to the child surface on the root surface.
-  LocalSurfaceIdAllocator child_allocator;
+  ParentLocalSurfaceIdAllocator child_allocator;
   LocalSurfaceId child_local_surface_id = child_allocator.GenerateId();
   SurfaceId child_surface_id(kChildFrameSink, child_local_surface_id);
   gfx::Rect child_rect(200, 200);
@@ -175,7 +175,7 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
       root_rect, child_rect, child_surface_id);
 
   // Submit the root frame.
-  LocalSurfaceIdAllocator root_allocator;
+  ParentLocalSurfaceIdAllocator root_allocator;
   LocalSurfaceId root_local_surface_id = root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink, root_local_surface_id);
   root_support().SubmitCompositorFrame(root_local_surface_id,
@@ -261,7 +261,7 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
                            invalid_render_pass_id);
 
   // Add a reference to the child surface on the root surface.
-  LocalSurfaceIdAllocator child_allocator;
+  ParentLocalSurfaceIdAllocator child_allocator;
   LocalSurfaceId child_local_surface_id = child_allocator.GenerateId();
   SurfaceId child_surface_id(kChildFrameSink, child_local_surface_id);
   gfx::Rect child_rect(200, 200);
@@ -272,7 +272,7 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
       root_rect, child_rect, child_surface_id);
 
   // Submit the root frame.
-  LocalSurfaceIdAllocator root_allocator;
+  ParentLocalSurfaceIdAllocator root_allocator;
   LocalSurfaceId root_local_surface_id = root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink, root_local_surface_id);
   root_support().SubmitCompositorFrame(root_local_surface_id,
@@ -347,7 +347,7 @@ TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
                            gfx::Rect(100, 100), child_solid_quad_rect);
 
   // Submit the root frame.
-  LocalSurfaceIdAllocator root_allocator;
+  ParentLocalSurfaceIdAllocator root_allocator;
   LocalSurfaceId root_local_surface_id = root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink, root_local_surface_id);
   root_support().SubmitCompositorFrame(root_local_surface_id,
@@ -383,7 +383,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Add a reference to the child surface on the root surface.
-  LocalSurfaceIdAllocator child_allocator;
+  ParentLocalSurfaceIdAllocator child_allocator;
   LocalSurfaceId child_local_surface_id = child_allocator.GenerateId();
   SurfaceId child_surface_id(kChildFrameSink, child_local_surface_id);
   gfx::Rect child_rect(200, 200);
@@ -394,7 +394,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
       root_rect, child_rect, child_surface_id);
 
   // Submit the root frame.
-  LocalSurfaceIdAllocator root_allocator;
+  ParentLocalSurfaceIdAllocator root_allocator;
   LocalSurfaceId root_local_surface_id = root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink, root_local_surface_id);
   root_support().SubmitCompositorFrame(root_local_surface_id,

@@ -45,7 +45,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
   if (frame_sink_id_.is_valid()) {
     // Only frameless canvas pass an invalid frame sink id; we don't create
     // mojo channel for this special case.
-    current_local_surface_id_ = local_surface_id_allocator_.GenerateId();
+    current_local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
     DCHECK(!sink_.is_bound());
     mojom::blink::OffscreenCanvasProviderPtr provider;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
@@ -337,7 +337,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   }
 
   if (change_size_for_next_commit_) {
-    current_local_surface_id_ = local_surface_id_allocator_.GenerateId();
+    current_local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
     change_size_for_next_commit_ = false;
   }
 

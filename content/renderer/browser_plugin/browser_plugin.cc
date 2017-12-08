@@ -268,7 +268,7 @@ void BrowserPlugin::WasResized() {
       sent_resize_params_->screen_info != pending_resize_params_.screen_info;
 
   if (synchronized_params_changed)
-    local_surface_id_ = local_surface_id_allocator_.GenerateId();
+    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
 
   if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
     compositing_helper_->SetPrimarySurfaceId(
