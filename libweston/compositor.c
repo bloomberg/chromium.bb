@@ -76,6 +76,9 @@ weston_output_transform_scale_init(struct weston_output *output,
 static void
 weston_compositor_build_view_list(struct weston_compositor *compositor);
 
+static char *
+weston_output_create_heads_string(struct weston_output *output);
+
 /** Send wl_output events for mode and scale changes
  *
  * \param head Send on all resources bound to this head.
@@ -4387,6 +4390,14 @@ bind_output(struct wl_client *client,
 		wl_output_send_done(resource);
 }
 
+static void
+weston_head_add_global(struct weston_head *head)
+{
+	head->global = wl_global_create(head->compositor->wl_display,
+					&wl_output_interface, 3,
+					head, bind_output);
+}
+
 /** Remove the global wl_output protocol object
  *
  * \param head The head whose global to remove.
@@ -4621,7 +4632,7 @@ weston_output_iterate_heads(struct weston_output *output,
 	return container_of(node, struct weston_head, output_link);
 }
 
-/** Attach a head to an inactive output
+/** Attach a head to an output
  *
  * \param output The output to attach to.
  * \param head The head that is not yet attached.
@@ -4636,7 +4647,7 @@ weston_output_iterate_heads(struct weston_output *output,
  *
  * On failure, the head remains unattached. Success of this function does not
  * guarantee the output configuration is actually valid. The final checks are
- * made on weston_output_enable().
+ * made on weston_output_enable() unless the output was already enabled.
  *
  * \memberof weston_output
  */
@@ -4644,8 +4655,7 @@ WL_EXPORT int
 weston_output_attach_head(struct weston_output *output,
 			  struct weston_head *head)
 {
-	if (output->enabled)
-		return -1;
+	char *head_names;
 
 	if (!wl_list_empty(&head->output_link))
 		return -1;
@@ -4660,6 +4670,15 @@ weston_output_attach_head(struct weston_output *output,
 
 	head->output = output;
 	wl_list_insert(output->head_list.prev, &head->output_link);
+
+	if (output->enabled) {
+		weston_head_add_global(head);
+
+		head_names = weston_output_create_heads_string(output);
+		weston_log("Output '%s' updated to have head(s) %s\n",
+			   output->name, head_names);
+		free(head_names);
+	}
 
 	return 0;
 }
@@ -5219,11 +5238,8 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 	wl_list_insert(compositor->output_list.prev, &output->link);
 	output->enabled = true;
 
-	wl_list_for_each(head, &output->head_list, output_link) {
-		head->global = wl_global_create(compositor->wl_display,
-						&wl_output_interface, 3,
-						head, bind_output);
-	}
+	wl_list_for_each(head, &output->head_list, output_link)
+		weston_head_add_global(head);
 
 	wl_signal_emit(&compositor->output_created_signal, output);
 
