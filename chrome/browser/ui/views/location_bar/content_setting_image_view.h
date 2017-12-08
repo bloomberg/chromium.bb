@@ -45,6 +45,10 @@ class ContentSettingImageView : public IconLabelBubbleView {
     virtual ContentSettingBubbleModelDelegate*
     GetContentSettingBubbleModelDelegate() = 0;
 
+    // Invoked when a bubble is shown.
+    virtual void OnContentSettingImageBubbleShown(
+        ContentSettingImageModel::ImageType type) const {}
+
    protected:
     virtual ~Delegate() {}
   };

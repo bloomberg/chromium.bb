@@ -6372,6 +6372,24 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="DETECT_IMPORTANT_CONTENT"/>
 </enum>
 
+<enum name="ContentSettingImageType">
+  <int value="0" label="COOKIES"/>
+  <int value="1" label="IMAGES"/>
+  <int value="2" label="JAVASCRIPT"/>
+  <int value="3" label="PPAPI_BROKER"/>
+  <int value="4" label="PLUGINS"/>
+  <int value="5" label="POPUPS"/>
+  <int value="6" label="GEOLOCATION"/>
+  <int value="7" label="MIXEDSCRIPT"/>
+  <int value="8" label="PROTOCOL_HANDLERS"/>
+  <int value="9" label="MEDIASTREAM"/>
+  <int value="10" label="ADS"/>
+  <int value="11" label="AUTOMATIC_DOWNLOADS"/>
+  <int value="12" label="MIDI_SYSEX"/>
+  <int value="13" label="SOUND"/>
+  <int value="14" label="FRAMEBUST"/>
+</enum>
+
 <enum name="ContentSettingMixedScriptAction">
   <int value="0" label="Displayed shield"/>
   <int value="1" label="Displayed bubble"/>

@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -49,7 +50,8 @@ using content::WebContents;
 
 class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
  public:
-  explicit ContentSettingBlockedImageModel(ContentSettingsType content_type);
+  ContentSettingBlockedImageModel(ImageType image_type,
+                                  ContentSettingsType content_type);
 
   void UpdateFromWebContents(WebContents* web_contents) override;
 
@@ -106,7 +108,7 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
 
   void UpdateFromWebContents(WebContents* web_contents) override;
 
-  ContentSettingBubbleModel* CreateBubbleModel(
+  ContentSettingBubbleModel* CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
       WebContents* web_contents,
       Profile* profile) override;
@@ -121,7 +123,7 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
 namespace {
 
 struct ContentSettingsImageDetails {
-  ContentSettingsType type;
+  ContentSettingsType content_type;
   const gfx::VectorIcon& icon;
   int blocked_tooltip_id;
   int blocked_explanatory_text_id;
@@ -146,28 +148,9 @@ const ContentSettingsImageDetails kImageDetails[] = {
     {CONTENT_SETTINGS_TYPE_SOUND, kTabAudioIcon, IDS_BLOCKED_SOUND_TITLE, 0, 0},
 };
 
-// The ordering of the models here influences the order in which icons are
-// shown in the omnibox.
-constexpr ContentSettingsType kContentTypeIconOrder[] = {
-    CONTENT_SETTINGS_TYPE_COOKIES,
-    CONTENT_SETTINGS_TYPE_IMAGES,
-    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-    CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-    CONTENT_SETTINGS_TYPE_PLUGINS,
-    CONTENT_SETTINGS_TYPE_POPUPS,
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-    CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,  // Note: also handles mic.
-    CONTENT_SETTINGS_TYPE_ADS,
-    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-    CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-    CONTENT_SETTINGS_TYPE_SOUND,
-};
-
 const ContentSettingsImageDetails* GetImageDetails(ContentSettingsType type) {
   for (const ContentSettingsImageDetails& image_details : kImageDetails) {
-    if (image_details.type == type)
+    if (image_details.content_type == type)
       return &image_details;
   }
   return nullptr;
@@ -178,12 +161,12 @@ const ContentSettingsImageDetails* GetImageDetails(ContentSettingsType type) {
 // Single content setting ------------------------------------------------------
 
 ContentSettingSimpleImageModel::ContentSettingSimpleImageModel(
+    ImageType image_type,
     ContentSettingsType content_type)
-    : ContentSettingImageModel(),
-      content_type_(content_type) {
-}
+    : ContentSettingImageModel(image_type), content_type_(content_type) {}
 
-ContentSettingBubbleModel* ContentSettingSimpleImageModel::CreateBubbleModel(
+ContentSettingBubbleModel*
+ContentSettingSimpleImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
     WebContents* web_contents,
     Profile* profile) {
@@ -219,30 +202,59 @@ void ContentSettingSimpleImageModel::SetAnimationHasRun(
 
 // static
 std::unique_ptr<ContentSettingImageModel>
-ContentSettingSimpleImageModel::CreateForContentTypeForTesting(
-    ContentSettingsType content_settings_type) {
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
-    return base::MakeUnique<ContentSettingGeolocationImageModel>();
-
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
-    return base::MakeUnique<ContentSettingRPHImageModel>();
-
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX)
-    return base::MakeUnique<ContentSettingMIDISysExImageModel>();
-
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS)
-    return base::MakeUnique<ContentSettingDownloadsImageModel>();
-
-  return base::MakeUnique<ContentSettingBlockedImageModel>(
-      content_settings_type);
+ContentSettingImageModel::CreateForContentType(ImageType image_type) {
+  switch (image_type) {
+    case ImageType::COOKIES:
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::COOKIES, CONTENT_SETTINGS_TYPE_COOKIES);
+    case ImageType::IMAGES:
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::IMAGES, CONTENT_SETTINGS_TYPE_IMAGES);
+    case ImageType::JAVASCRIPT:
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::JAVASCRIPT, CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+    case ImageType::PPAPI_BROKER:
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::PPAPI_BROKER, CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
+    case ImageType::PLUGINS:
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::PLUGINS, CONTENT_SETTINGS_TYPE_PLUGINS);
+    case ImageType::POPUPS:
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::POPUPS, CONTENT_SETTINGS_TYPE_POPUPS);
+    case ImageType::GEOLOCATION:
+      return std::make_unique<ContentSettingGeolocationImageModel>();
+    case ImageType::MIXEDSCRIPT:
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::MIXEDSCRIPT, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+    case ImageType::PROTOCOL_HANDLERS:
+      return std::make_unique<ContentSettingRPHImageModel>();
+    case ImageType::MEDIASTREAM:
+      return std::make_unique<ContentSettingMediaImageModel>();
+    case ImageType::ADS:
+      return std::make_unique<ContentSettingSubresourceFilterImageModel>();
+    case ImageType::AUTOMATIC_DOWNLOADS:
+      return std::make_unique<ContentSettingDownloadsImageModel>();
+    case ImageType::MIDI_SYSEX:
+      return std::make_unique<ContentSettingMIDISysExImageModel>();
+    case ImageType::SOUND:
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::SOUND, CONTENT_SETTINGS_TYPE_SOUND);
+    case ImageType::FRAMEBUST:
+      return std::make_unique<ContentSettingFramebustBlockImageModel>();
+    case ImageType::NUM_IMAGE_TYPES:
+      break;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 // Generic blocked content settings --------------------------------------------
 
 ContentSettingBlockedImageModel::ContentSettingBlockedImageModel(
+    ImageType image_type,
     ContentSettingsType content_type)
-    : ContentSettingSimpleImageModel(content_type) {
-}
+    : ContentSettingSimpleImageModel(image_type, content_type) {}
 
 void ContentSettingBlockedImageModel::UpdateFromWebContents(
     WebContents* web_contents) {
@@ -311,8 +323,8 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
 // Geolocation -----------------------------------------------------------------
 
 ContentSettingGeolocationImageModel::ContentSettingGeolocationImageModel()
-    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-}
+    : ContentSettingSimpleImageModel(ImageType::GEOLOCATION,
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION) {}
 
 void ContentSettingGeolocationImageModel::UpdateFromWebContents(
     WebContents* web_contents) {
@@ -344,7 +356,8 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
 // Protocol handlers -----------------------------------------------------------
 
 ContentSettingRPHImageModel::ContentSettingRPHImageModel()
-    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+    : ContentSettingSimpleImageModel(ImageType::PROTOCOL_HANDLERS,
+                                     CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
   set_icon(vector_icons::kProtocolHandlerIcon, gfx::kNoneIcon);
   set_tooltip(l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
 }
@@ -368,7 +381,8 @@ void ContentSettingRPHImageModel::UpdateFromWebContents(
 // MIDI SysEx ------------------------------------------------------------------
 
 ContentSettingMIDISysExImageModel::ContentSettingMIDISysExImageModel()
-    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {}
+    : ContentSettingSimpleImageModel(ImageType::MIDI_SYSEX,
+                                     CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {}
 
 void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
     WebContents* web_contents) {
@@ -402,6 +416,7 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
 
 ContentSettingDownloadsImageModel::ContentSettingDownloadsImageModel()
     : ContentSettingSimpleImageModel(
+          ImageType::AUTOMATIC_DOWNLOADS,
           CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {}
 
 void ContentSettingDownloadsImageModel::UpdateFromWebContents(
@@ -439,8 +454,7 @@ void ContentSettingDownloadsImageModel::UpdateFromWebContents(
 // Media -----------------------------------------------------------------------
 
 ContentSettingMediaImageModel::ContentSettingMediaImageModel()
-    : ContentSettingImageModel() {
-}
+    : ContentSettingImageModel(ImageType::MEDIASTREAM) {}
 
 void ContentSettingMediaImageModel::UpdateFromWebContents(
     WebContents* web_contents) {
@@ -481,7 +495,7 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
   set_visible(true);
 }
 
-ContentSettingBubbleModel* ContentSettingMediaImageModel::CreateBubbleModel(
+ContentSettingBubbleModel* ContentSettingMediaImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
     WebContents* web_contents,
     Profile* profile) {
@@ -522,7 +536,7 @@ void ContentSettingMediaImageModel::SetAnimationHasRun(
 
 ContentSettingSubresourceFilterImageModel::
     ContentSettingSubresourceFilterImageModel()
-    : ContentSettingImageModel() {}
+    : ContentSettingImageModel(ImageType::ADS) {}
 
 void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
     WebContents* web_contents) {
@@ -545,7 +559,7 @@ void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
 }
 
 ContentSettingBubbleModel*
-ContentSettingSubresourceFilterImageModel::CreateBubbleModel(
+ContentSettingSubresourceFilterImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
     WebContents* web_contents,
     Profile* profile) {
@@ -576,7 +590,7 @@ void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
 
 // Blocked Framebust -----------------------------------------------------------
 ContentSettingFramebustBlockImageModel::ContentSettingFramebustBlockImageModel()
-    : ContentSettingImageModel() {}
+    : ContentSettingImageModel(ImageType::FRAMEBUST) {}
 
 void ContentSettingFramebustBlockImageModel::UpdateFromWebContents(
     WebContents* web_contents) {
@@ -596,7 +610,7 @@ void ContentSettingFramebustBlockImageModel::UpdateFromWebContents(
 }
 
 ContentSettingBubbleModel*
-ContentSettingFramebustBlockImageModel::CreateBubbleModel(
+ContentSettingFramebustBlockImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
     WebContents* web_contents,
     Profile* profile) {
@@ -625,65 +639,64 @@ gfx::Image ContentSettingImageModel::GetIcon(SkColor icon_color) const {
       gfx::CreateVectorIconWithBadge(*icon_, 16, icon_color, *icon_badge_));
 }
 
-ContentSettingImageModel::ContentSettingImageModel()
+ContentSettingImageModel::ContentSettingImageModel(ImageType image_type)
     : is_visible_(false),
       icon_(&gfx::kNoneIcon),
       icon_badge_(&gfx::kNoneIcon),
-      explanatory_string_id_(0) {}
+      explanatory_string_id_(0),
+      image_type_(image_type) {}
+
+ContentSettingBubbleModel* ContentSettingImageModel::CreateBubbleModel(
+    ContentSettingBubbleModel::Delegate* delegate,
+    content::WebContents* web_contents,
+    Profile* profile) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.ImagePressed", image_type(),
+      ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
+  return CreateBubbleModelImpl(delegate, web_contents, profile);
+}
 
 // static
 std::vector<std::unique_ptr<ContentSettingImageModel>>
 ContentSettingImageModel::GenerateContentSettingImageModels() {
+  // The ordering of the models here influences the order in which icons are
+  // shown in the omnibox.
+  constexpr ImageType kContentSettingImageOrder[] = {
+      ImageType::COOKIES,
+      ImageType::IMAGES,
+      ImageType::JAVASCRIPT,
+      ImageType::PPAPI_BROKER,
+      ImageType::PLUGINS,
+      ImageType::POPUPS,
+      ImageType::GEOLOCATION,
+      ImageType::MIXEDSCRIPT,
+      ImageType::PROTOCOL_HANDLERS,
+      ImageType::MEDIASTREAM,
+      ImageType::ADS,
+      ImageType::AUTOMATIC_DOWNLOADS,
+      ImageType::MIDI_SYSEX,
+      ImageType::SOUND,
+      ImageType::FRAMEBUST,
+  };
+
   std::vector<std::unique_ptr<ContentSettingImageModel>> result;
-  std::unique_ptr<ContentSettingImageModel> model;
-
-  for (auto icon : kContentTypeIconOrder) {
-    switch (icon) {
-      case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-        model = base::MakeUnique<ContentSettingGeolocationImageModel>();
-        break;
-      case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
-        model = base::MakeUnique<ContentSettingRPHImageModel>();
-        break;
-      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-        model = base::MakeUnique<ContentSettingMediaImageModel>();
-        break;
-      case CONTENT_SETTINGS_TYPE_ADS:
-        model = base::MakeUnique<ContentSettingSubresourceFilterImageModel>();
-        break;
-      case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-        model = base::MakeUnique<ContentSettingMIDISysExImageModel>();
-        break;
-      case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-        model = base::MakeUnique<ContentSettingDownloadsImageModel>();
-        break;
-      default:
-        // All other content settings types use ContentSettingBlockedImageModel.
-        model = base::MakeUnique<ContentSettingBlockedImageModel>(icon);
-        break;
-    }
-    result.push_back(std::move(model));
-  }
-
-  // The framebust blocking UI reuses the code for displaying an icon with
-  // ContentSettingImageModel and ContentSettingBubbleModel, even though
-  // framebust blocking is not a content setting.
-  result.push_back(base::MakeUnique<ContentSettingFramebustBlockImageModel>());
+  for (auto type : kContentSettingImageOrder)
+    result.push_back(CreateForContentType(type));
 
   return result;
 }
 
 // static
 size_t ContentSettingImageModel::GetContentSettingImageModelIndexForTesting(
-    ContentSettingsType content_type) {
-  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
-    content_type = CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
-  for (size_t i = 0; i < arraysize(kContentTypeIconOrder); ++i) {
-    if (content_type == kContentTypeIconOrder[i])
+    ImageType image_type) {
+  std::vector<std::unique_ptr<ContentSettingImageModel>> models =
+      GenerateContentSettingImageModels();
+  for (size_t i = 0; i < models.size(); ++i) {
+    if (image_type == models[i]->image_type())
       return i;
   }
   NOTREACHED();
-  return arraysize(kContentTypeIconOrder);
+  return models.size();
 }
 
 #if defined(OS_MACOSX)

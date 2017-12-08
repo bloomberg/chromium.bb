@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -95,6 +96,13 @@ content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
 ContentSettingBubbleModelDelegate*
 HostedAppButtonContainer::GetContentSettingBubbleModelDelegate() {
   return browser_view_->browser()->content_setting_bubble_model_delegate();
+}
+
+void HostedAppButtonContainer::OnContentSettingImageBubbleShown(
+    ContentSettingImageModel::ImageType type) const {
+  UMA_HISTOGRAM_ENUMERATION(
+      "HostedAppFrame.ContentSettings.ImagePressed", type,
+      ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
 }
 
 void HostedAppButtonContainer::RefreshContentSettingViews() {

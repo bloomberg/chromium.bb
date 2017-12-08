@@ -71,6 +71,8 @@ class HostedAppButtonContainer : public views::View,
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
+  void OnContentSettingImageBubbleShown(
+      ContentSettingImageModel::ImageType type) const override;
 
   // views::View:
   void ChildVisibilityChanged(views::View* child) override;
