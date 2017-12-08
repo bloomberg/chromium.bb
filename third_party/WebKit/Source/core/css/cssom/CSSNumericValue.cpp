@@ -213,10 +213,8 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
 }
 
 CSSNumericValue* CSSNumericValue::FromCSSValue(const CSSPrimitiveValue& value) {
-  if (value.IsCalculated()) {
-    // TODO(meade): Implement this case.
-    return nullptr;
-  }
+  if (value.IsCalculated())
+    return CalcToNumericValue(*value.CssCalcValue()->ExpressionNode());
   return CSSUnitValue::FromCSSValue(value);
 }
 

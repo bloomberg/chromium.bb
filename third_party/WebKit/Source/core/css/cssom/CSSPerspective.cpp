@@ -41,6 +41,10 @@ void CSSPerspective::setLength(CSSNumericValue* length,
 CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_EQ(value.FunctionType(), CSSValuePerspective);
   DCHECK_EQ(value.length(), 1U);
+  if (!value.Item(0).IsPrimitiveValue() ||
+      !ToCSSPrimitiveValue(value.Item(0)).IsLength() ||
+      ToCSSPrimitiveValue(value.Item(0)).IsCalculated())
+    return nullptr;
   CSSNumericValue* length =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
   // TODO(meade): This shouldn't happen once CSSNumericValue is fully

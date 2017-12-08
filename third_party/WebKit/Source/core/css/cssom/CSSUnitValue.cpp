@@ -49,12 +49,14 @@ CSSUnitValue* CSSUnitValue::Create(double value,
   return new CSSUnitValue(value, unit);
 }
 
-CSSUnitValue* CSSUnitValue::FromCSSValue(
-    const CSSPrimitiveValue& css_primitive_value) {
-  if (!IsValidUnit(css_primitive_value.TypeWithCalcResolved()))
+CSSUnitValue* CSSUnitValue::FromCSSValue(const CSSPrimitiveValue& value) {
+  CSSPrimitiveValue::UnitType unit = value.TypeWithCalcResolved();
+  if (unit == CSSPrimitiveValue::UnitType::kInteger)
+    unit = CSSPrimitiveValue::UnitType::kNumber;
+
+  if (!IsValidUnit(unit))
     return nullptr;
-  return new CSSUnitValue(css_primitive_value.GetDoubleValue(),
-                          css_primitive_value.TypeWithCalcResolved());
+  return new CSSUnitValue(value.GetDoubleValue(), unit);
 }
 
 void CSSUnitValue::setUnit(const String& unit_name,
