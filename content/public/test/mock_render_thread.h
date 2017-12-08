@@ -93,25 +93,9 @@ class MockRenderThread : public RenderThread {
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
 
-  //////////////////////////////////////////////////////////////////////////
-  // The following functions are called by the test itself.
-
-  void set_routing_id(int32_t id) { routing_id_ = id; }
-
-  int32_t opener_id() const { return opener_id_; }
-
-  void set_new_window_routing_id(int32_t id) { new_window_routing_id_ = id; }
-
-  void set_new_window_main_frame_widget_routing_id(int32_t id) {
-    new_window_main_frame_widget_routing_id_ = id;
-  }
-
-  void set_new_frame_routing_id(int32_t id) { new_frame_routing_id_ = id; }
-
-  // Simulates the Widget receiving a close message. This should result
-  // on releasing the internal reference counts and destroying the internal
-  // state.
-  void SendCloseMessage();
+  // Returns a new, unique routing ID that can be assigned to the next view,
+  // widget, or frame.
+  int32_t GetNextRoutingID();
 
   // Dispatches control messages to observers.
   bool OnControlMessageReceived(const IPC::Message& msg);
@@ -162,17 +146,8 @@ class MockRenderThread : public RenderThread {
 
   IPC::TestSink sink_;
 
-  // Routing id what will be assigned to the Widget.
-  int32_t routing_id_;
-
-  // Opener id reported by the Widget.
-  int32_t opener_id_;
-
-  // Routing id that will be assigned to a CreateWindow Widget and/or child
-  // frames.
-  int32_t new_window_routing_id_;
-  int32_t new_window_main_frame_widget_routing_id_;
-  int32_t new_frame_routing_id_;
+  // Routing ID what will be assigned to the next view, widget, or frame.
+  int32_t next_routing_id_;
 
   std::map<int32_t, service_manager::mojom::InterfaceProviderRequest>
       frame_routing_id_to_initial_interface_provider_requests_;

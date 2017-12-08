@@ -75,16 +75,6 @@ using blink::WebURLRequest;
 
 namespace {
 
-const int32_t kRouteId = 101;
-const int32_t kMainFrameRouteId = 201;
-// TODO(avi): Widget routing IDs should be distinct from the view routing IDs,
-// once RenderWidgetHost is distilled from RenderViewHostImpl.
-// https://crbug.com/545684
-const int32_t kMainFrameWidgetRouteId = 101;
-
-const int32_t kNewWindowRouteId = 211;
-const int32_t kNewFrameRouteId = 111;
-const int32_t kNewFrameWidgetRouteId = 211;
 
 // Converts |ascii_character| into |key_code| and returns true on success.
 // Handles only the characters needed by tests.
@@ -239,11 +229,6 @@ void RenderViewTest::SetUp() {
   // the order on Chromium initialization.
   if (!render_thread_)
     render_thread_ = std::make_unique<MockRenderThread>();
-  render_thread_->set_routing_id(kRouteId);
-  render_thread_->set_new_window_routing_id(kNewWindowRouteId);
-  render_thread_->set_new_window_main_frame_widget_routing_id(
-      kNewFrameWidgetRouteId);
-  render_thread_->set_new_frame_routing_id(kNewFrameRouteId);
 
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
@@ -309,12 +294,13 @@ void RenderViewTest::SetUp() {
   view_params->window_was_created_with_opener = false;
   view_params->renderer_preferences = RendererPreferences();
   view_params->web_preferences = WebPreferences();
-  view_params->view_id = kRouteId;
+  view_params->view_id = render_thread_->GetNextRoutingID();
+  // For now these two must be equal. See: https://crbug.com/545684.
+  view_params->main_frame_widget_routing_id = view_params->view_id;
+  view_params->main_frame_routing_id = render_thread_->GetNextRoutingID();
   render_thread_->PassInitialInterfaceProviderRequestForFrame(
-      kMainFrameRouteId,
+      view_params->main_frame_routing_id,
       mojo::MakeRequest(&view_params->main_frame_interface_provider));
-  view_params->main_frame_routing_id = kMainFrameRouteId;
-  view_params->main_frame_widget_routing_id = kMainFrameWidgetRouteId;
   view_params->session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
   view_params->swapped_out = false;
   view_params->replicated_frame_state = FrameReplicationState();
@@ -335,7 +321,10 @@ void RenderViewTest::TearDown() {
   // Run the loop so the release task from the renderwidget executes.
   base::RunLoop().RunUntilIdle();
 
-  render_thread_->SendCloseMessage();
+  // Simulate the Widget receiving a close message. This should result on
+  // releasing the internal reference counts and destroying the internal state.
+  ViewMsg_Close msg(view_->GetRoutingID());
+  static_cast<RenderViewImpl*>(view_)->OnMessageReceived(msg);
 
   std::unique_ptr<blink::WebLeakDetector> leak_detector =
       base::WrapUnique(blink::WebLeakDetector::Create(this));
