@@ -82,7 +82,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   virtual void ScheduleInitiateEncoding(double quality);
   virtual void IdleEncodeRows(double deadline_seconds);
   virtual void PostDelayedTaskToCurrentThread(const WebTraceLocation&,
-                                              WTF::Closure,
+                                              base::OnceClosure,
                                               double delay_ms);
   virtual void SignalAlternativeCodePathFinishedForTesting() {}
   virtual void CreateBlobAndReturnResult();

@@ -95,8 +95,8 @@ void WorkerScriptLoader::LoadAsynchronously(
     network::mojom::FetchRequestMode fetch_request_mode,
     network::mojom::FetchCredentialsMode fetch_credentials_mode,
     WebAddressSpace creation_address_space,
-    WTF::Closure response_callback,
-    WTF::Closure finished_callback) {
+    base::OnceClosure response_callback,
+    base::OnceClosure finished_callback) {
   DCHECK(response_callback || finished_callback);
   response_callback_ = std::move(response_callback);
   finished_callback_ = std::move(finished_callback);

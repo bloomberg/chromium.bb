@@ -30,7 +30,7 @@ class CORE_EXPORT InspectorResourceContentLoader final
   void Trace(blink::Visitor*);
 
   int CreateClientId();
-  void EnsureResourcesContentLoaded(int client_id, WTF::Closure callback);
+  void EnsureResourcesContentLoaded(int client_id, base::OnceClosure callback);
   void Cancel(int client_id);
   void DidCommitLoadForLocalFrame(LocalFrame*);
 
@@ -46,7 +46,7 @@ class CORE_EXPORT InspectorResourceContentLoader final
   void Stop();
   bool HasFinished();
 
-  using Callbacks = Vector<WTF::Closure>;
+  using Callbacks = Vector<base::OnceClosure>;
   HashMap<int, Callbacks> callbacks_;
   bool all_requests_started_;
   bool started_;

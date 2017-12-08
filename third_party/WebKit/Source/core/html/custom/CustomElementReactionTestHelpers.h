@@ -34,7 +34,7 @@ class Command : public GarbageCollectedFinalized<Command> {
 
 class Call : public Command {
  public:
-  using Callback = WTF::Function<void(Element*)>;
+  using Callback = base::OnceCallback<void(Element*)>;
   Call(Callback callback) : callback_(std::move(callback)) {}
   ~Call() override = default;
   void Run(Element* element) override { std::move(callback_).Run(element); }
