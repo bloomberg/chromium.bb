@@ -96,7 +96,7 @@ class ImportNotifier(object):
             gerrit_url_with_ps: Gerrit URL of this CL with the patchset number.
         """
         for test_name, changed_baselines in changed_test_baselines.iteritems():
-            directory = self._find_owned_directory(test_name)
+            directory = self.find_owned_directory(test_name)
             if not directory:
                 _log.warning('Cannot find OWNERS of %s', test_name)
                 continue
@@ -126,7 +126,7 @@ class ImportNotifier(object):
                 be rebaselined to a list of new test expectation lines.
         """
         for test_name, expectation_lines in test_expectations.iteritems():
-            directory = self._find_owned_directory(test_name)
+            directory = self.find_owned_directory(test_name)
             if not directory:
                 _log.warning('Cannot find OWNERS of %s', test_name)
                 continue
@@ -157,8 +157,15 @@ class ImportNotifier(object):
 
             full_directory = self.host.filesystem.join(self.finder.layout_tests_dir(), directory)
             owners_file = self.host.filesystem.join(full_directory, 'OWNERS')
+            is_wpt_notify_enabled = self.owners_extractor.is_wpt_notify_enabled(owners_file)
+            _log.info("WPT-NOTIFY: %s", str(is_wpt_notify_enabled))
+
             owners = self.owners_extractor.extract_owners(owners_file)
             _log.info("Owners: %s", ' '.join(owners))
+
+            component = self.owners_extractor.extract_component(owners_file)
+            # component could be None.
+            _log.info("Component: %s", str(component))
 
             prologue = ('WPT import {} introduced new failures in {}:\n\n'
                         'List of new failures:\n'.format(gerrit_url, directory))
@@ -195,7 +202,7 @@ class ImportNotifier(object):
             commit_list += line + '\n'
         return commit_list
 
-    def _find_owned_directory(self, test_name):
+    def find_owned_directory(self, test_name):
         """Finds the lowest directory that contains the test and has OWNERS.
 
         Args:
@@ -204,6 +211,11 @@ class ImportNotifier(object):
         Returns:
             The path of the found directory relative to LayoutTests.
         """
+        # Always use non-virtual test names when looking up OWNERS.
+        if self.default_port.lookup_virtual_test_base(test_name):
+            test_name = self.default_port.lookup_virtual_test_base(test_name)
+        # find_owners_file takes either a relative path from the *root* of the
+        # repository, or an absolute path.
         abs_test_path = self.finder.path_from_layout_tests(test_name)
         owners_file = self.owners_extractor.find_owners_file(self.host.filesystem.dirname(abs_test_path))
         if not owners_file:

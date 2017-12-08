@@ -100,3 +100,35 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
         }
         self.assertEqual(self.extractor.extract_owners(ABS_WPT_BASE + '/foo/OWNERS'),
                          ['foo@chromium.org', 'bar@chromium.org'])
+
+    def test_extract_component(self):
+        self.filesystem.files = {
+            ABS_WPT_BASE + '/foo/OWNERS':
+            '# TEAM: some-team@chromium.org\n'
+            '# COMPONENT: Blink>Layout\n'
+        }
+        self.assertEqual(self.extractor.extract_component(ABS_WPT_BASE + '/foo/OWNERS'), 'Blink>Layout')
+
+    def test_is_wpt_notify_enabled_true(self):
+        self.filesystem.files = {
+            ABS_WPT_BASE + '/foo/OWNERS':
+            '# COMPONENT: Blink>Layout\n'
+            '# WPT-NOTIFY: true\n'
+        }
+        self.assertTrue(self.extractor.is_wpt_notify_enabled(ABS_WPT_BASE + '/foo/OWNERS'))
+
+    def test_is_wpt_notify_enabled_false(self):
+        self.filesystem.files = {
+            ABS_WPT_BASE + '/foo/OWNERS':
+            '# COMPONENT: Blink>Layout\n'
+            '# WPT-NOTIFY: false\n'
+        }
+        self.assertFalse(self.extractor.is_wpt_notify_enabled(ABS_WPT_BASE + '/foo/OWNERS'))
+
+    def test_is_wpt_notify_enabled_absence_is_false(self):
+        self.filesystem.files = {
+            ABS_WPT_BASE + '/foo/OWNERS':
+            '# TEAM: some-team@chromium.org\n'
+            '# COMPONENT: Blink>Layout\n'
+        }
+        self.assertFalse(self.extractor.is_wpt_notify_enabled(ABS_WPT_BASE + '/foo/OWNERS'))

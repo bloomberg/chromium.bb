@@ -5,6 +5,7 @@
 import collections
 import re
 
+from webkitpy.common.memoized import memoized
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.filesystem import FileSystem
 
@@ -16,6 +17,8 @@ from webkitpy.common.system.filesystem import FileSystem
 
 # Recognizes 'X@Y' email addresses. Very simplistic. (from owners.py)
 BASIC_EMAIL_REGEXP = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
+WPT_NOTIFY_REGEXP = r'^# *WPT-NOTIFY: *true$'
+COMPONENT_REGEXP = r'^# *COMPONENT: *(.+)$'
 
 
 class DirectoryOwnersExtractor(object):
@@ -97,7 +100,7 @@ class DirectoryOwnersExtractor(object):
         Returns:
             A list of valid owners (email addresses).
         """
-        contents = self.filesystem.read_text_file(owners_file)
+        contents = self._read_text_file(owners_file)
         email_regexp = re.compile(BASIC_EMAIL_REGEXP)
         addresses = []
         for line in contents.splitlines():
@@ -105,3 +108,34 @@ class DirectoryOwnersExtractor(object):
             if email_regexp.match(line):
                 addresses.append(line)
         return addresses
+
+    def extract_component(self, owners_file):
+        """Extract the component from an OWNERS file.
+
+        Args:
+            owners_file: An absolute path to an OWNERS file.
+
+        Returns:
+            A string, or None if not found.
+        """
+        contents = self._read_text_file(owners_file)
+        search = re.search(COMPONENT_REGEXP, contents, re.MULTILINE)
+        if search:
+            return search.group(1)
+        return None
+
+    def is_wpt_notify_enabled(self, owners_file):
+        """Checks if the OWNERS file enables WPT-NOTIFY.
+
+        Args:
+            owners_file: An absolute path to an OWNERS file.
+
+        Returns:
+            A boolean.
+        """
+        contents = self._read_text_file(owners_file)
+        return bool(re.search(WPT_NOTIFY_REGEXP, contents, re.MULTILINE))
+
+    @memoized
+    def _read_text_file(self, path):
+        return self.filesystem.read_text_file(path)
