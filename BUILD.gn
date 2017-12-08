@@ -267,6 +267,10 @@ group("gn_all") {
         "//ui/ozone/gl:ozone_gl_unittests",
       ]
     }
+
+    if (ozone_platform_x11) {
+      deps += [ "//ui/ozone:ozone_x11_unittests" ]
+    }
   }
 
   if (use_x11 || ozone_platform_x11) {

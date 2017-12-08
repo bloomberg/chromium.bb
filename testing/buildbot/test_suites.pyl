@@ -477,6 +477,7 @@
       ],
     },
     'ozone_unittests': {},
+    'ozone_x11_unittests': {},
     'views_mus_unittests': {},
     'views_mus_interactive_ui_tests': {},
     'viz_content_browsertests': {
