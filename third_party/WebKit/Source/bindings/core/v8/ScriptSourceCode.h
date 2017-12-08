@@ -83,6 +83,7 @@ class CORE_EXPORT ScriptSourceCode final {
   Member<ScriptResource> resource_;
   Member<ScriptStreamer> streamer_;
   const KURL url_;
+  const String source_map_url_;
   const TextPosition start_position_;
   const ScriptSourceLocationType source_location_type_;
 };

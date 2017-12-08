@@ -35,6 +35,15 @@ KURL StripFragmentIdentifier(const KURL& url) {
   return copy;
 }
 
+String SourceMapUrlFromResponse(const ResourceResponse& response) {
+  String source_map_url = response.HttpHeaderField(HTTPNames::SourceMap);
+  if (!source_map_url.IsEmpty())
+    return source_map_url;
+
+  // Try to get deprecated header.
+  return response.HttpHeaderField(HTTPNames::X_SourceMap);
+}
+
 }  // namespace
 
 ScriptSourceCode::ScriptSourceCode(
@@ -55,6 +64,8 @@ ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
     : source_(TreatNullSourceAsEmpty(resource->SourceText())),
       resource_(resource),
       streamer_(streamer),
+      url_(StripFragmentIdentifier(resource->GetResponse().Url())),
+      source_map_url_(SourceMapUrlFromResponse(resource->GetResponse())),
       start_position_(TextPosition::MinimumPosition()),
       source_location_type_(ScriptSourceLocationType::kExternalFile) {}
 
@@ -66,25 +77,11 @@ void ScriptSourceCode::Trace(blink::Visitor* visitor) {
 }
 
 KURL ScriptSourceCode::Url() const {
-  if (!url_.IsEmpty())
-    return url_;
-
-  if (resource_)
-    return StripFragmentIdentifier(resource_->GetResponse().Url());
-
-  return KURL();
+  return url_;
 }
 
 String ScriptSourceCode::SourceMapUrl() const {
-  if (!resource_)
-    return String();
-  const ResourceResponse& response = resource_->GetResponse();
-  String source_map_url = response.HttpHeaderField(HTTPNames::SourceMap);
-  if (source_map_url.IsEmpty()) {
-    // Try to get deprecated header.
-    source_map_url = response.HttpHeaderField(HTTPNames::X_SourceMap);
-  }
-  return source_map_url;
+  return source_map_url_;
 }
 
 }  // namespace blink
