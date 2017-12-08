@@ -7060,7 +7060,8 @@ std::unique_ptr<test_server::HttpResponse> SendReportToHeader(
 }  // namespace
 
 TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderNoService) {
-  http_test_server()->RegisterRequestHandler(base::Bind(&SendReportToHeader));
+  http_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&SendReportToHeader));
   ASSERT_TRUE(http_test_server()->Start());
   GURL request_url = http_test_server()->GetURL("/");
 
@@ -7077,7 +7078,8 @@ TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderNoService) {
 }
 
 TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderHTTP) {
-  http_test_server()->RegisterRequestHandler(base::Bind(&SendReportToHeader));
+  http_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&SendReportToHeader));
   ASSERT_TRUE(http_test_server()->Start());
   GURL request_url = http_test_server()->GetURL("/");
 
@@ -7099,7 +7101,8 @@ TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderHTTP) {
 
 TEST_F(URLRequestTestHTTP, ProcessReportToHeaderHTTPS) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.RegisterRequestHandler(base::Bind(&SendReportToHeader));
+  https_test_server.RegisterRequestHandler(
+      base::BindRepeating(&SendReportToHeader));
   ASSERT_TRUE(https_test_server.Start());
   GURL request_url = https_test_server.GetURL("/");
 
@@ -7124,7 +7127,8 @@ TEST_F(URLRequestTestHTTP, ProcessReportToHeaderHTTPS) {
 TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderInvalidHttps) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_test_server.RegisterRequestHandler(base::Bind(&SendReportToHeader));
+  https_test_server.RegisterRequestHandler(
+      base::BindRepeating(&SendReportToHeader));
   ASSERT_TRUE(https_test_server.Start());
   GURL request_url = https_test_server.GetURL("/");
 
@@ -7199,10 +7203,16 @@ std::unique_ptr<test_server::HttpResponse> SendNelHeader(
   return std::move(http_response);
 }
 
+std::unique_ptr<test_server::HttpResponse> SendEmptyResponse(
+    const test_server::HttpRequest& request) {
+  return base::MakeUnique<test_server::RawHttpResponse>("", "");
+}
+
 }  // namespace
 
 TEST_F(URLRequestTestHTTP, DontProcessNelHeaderNoDelegate) {
-  http_test_server()->RegisterRequestHandler(base::Bind(&SendNelHeader));
+  http_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&SendNelHeader));
   ASSERT_TRUE(http_test_server()->Start());
   GURL request_url = http_test_server()->GetURL("/");
 
@@ -7219,7 +7229,8 @@ TEST_F(URLRequestTestHTTP, DontProcessNelHeaderNoDelegate) {
 }
 
 TEST_F(URLRequestTestHTTP, DontProcessNelHeaderHttp) {
-  http_test_server()->RegisterRequestHandler(base::Bind(&SendNelHeader));
+  http_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&SendNelHeader));
   ASSERT_TRUE(http_test_server()->Start());
   GURL request_url = http_test_server()->GetURL("/");
 
@@ -7241,7 +7252,7 @@ TEST_F(URLRequestTestHTTP, DontProcessNelHeaderHttp) {
 
 TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.RegisterRequestHandler(base::Bind(&SendNelHeader));
+  https_test_server.RegisterRequestHandler(base::BindRepeating(&SendNelHeader));
   ASSERT_TRUE(https_test_server.Start());
   GURL request_url = https_test_server.GetURL("/");
 
@@ -7266,7 +7277,7 @@ TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
 TEST_F(URLRequestTestHTTP, DontProcessNelHeaderInvalidHttps) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_test_server.RegisterRequestHandler(base::Bind(&SendNelHeader));
+  https_test_server.RegisterRequestHandler(base::BindRepeating(&SendNelHeader));
   ASSERT_TRUE(https_test_server.Start());
   GURL request_url = https_test_server.GetURL("/");
 
@@ -7335,7 +7346,7 @@ TEST_F(URLRequestTestHTTP, DISABLED_DontForwardErrorToNelHttp) {
   URLRequestFilter::GetInstance()->ClearHandlers();
 }
 
-TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps) {
+TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps_Mock) {
   URLRequestFailedJob::AddUrlHandler();
 
   GURL request_url =
@@ -7360,6 +7371,34 @@ TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps) {
   EXPECT_EQ(ERR_CONNECTION_REFUSED, nel_delegate.errors()[0].type);
 
   URLRequestFilter::GetInstance()->ClearHandlers();
+}
+
+// Also test with a real server, to exercise interactions with
+// URLRequestHttpJob.
+TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps_Real) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.RegisterRequestHandler(
+      base::BindRepeating(&SendEmptyResponse));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_delegate(&nel_delegate);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  base::RunLoop().Run();
+
+  ASSERT_EQ(1u, nel_delegate.errors().size());
+  EXPECT_EQ(request_url, nel_delegate.errors()[0].uri);
+  EXPECT_EQ(0, nel_delegate.errors()[0].status_code);
+  EXPECT_EQ(ERR_EMPTY_RESPONSE, nel_delegate.errors()[0].type);
 }
 
 #endif  // BUILDFLAG(ENABLE_REPORTING)

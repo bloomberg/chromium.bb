@@ -1183,9 +1183,13 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
     details.server_ip = endpoint.address();
   // TODO(juliatuttle): Plumb this.
   details.protocol = kProtoUnknown;
-  details.status_code = GetResponseCode();
-  if (details.status_code == -1)
+  if (response_headers()) {
+    // HttpResponseHeaders::response_code() returns 0 if response code couldn't
+    // be parsed, which is also how NEL represents the same.
+    details.status_code = response_headers()->response_code();
+  } else {
     details.status_code = 0;
+  }
   details.elapsed_time =
       base::TimeTicks::Now() - load_timing_info_.request_start;
   details.type = status().ToNetError();
