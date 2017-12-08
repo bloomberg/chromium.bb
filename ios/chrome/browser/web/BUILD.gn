@@ -156,6 +156,7 @@ source_set("web_internal") {
     "//components/strings",
     "//components/task_scheduler_util/browser",
     "//components/version_info",
+    "//ios/chrome/app/resources:ios_resources",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser:browser_impl",

@@ -23,9 +23,21 @@ group("resources") {
 grit("ios_resources") {
   source = "ios_resources.grd"
   output_dir = "$root_gen_dir/ios/chrome"
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
   outputs = [
     "grit/ios_resources.h",
     "ios_resources.pak",
+  ]
+  deps = [
+    "//ios/chrome/app:chrome_browser_manifest_overlay",
   ]
 }
 

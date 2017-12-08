@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/ios/ios_util.h"
+#include "base/json/json_reader.h"
 #include "base/mac/bundle_locations.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -27,10 +28,12 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
+#include "ios/chrome/grit/ios_resources.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #include "ios/web/public/browser_url_rewriter.h"
+#include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/user_agent.h"
 #include "net/http/http_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -151,6 +154,21 @@ base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
     int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
+}
+
+std::unique_ptr<base::Value> ChromeWebClient::GetServiceManifestOverlay(
+    base::StringPiece name) {
+  int identifier = -1;
+  if (name == web::mojom::kBrowserServiceName)
+    identifier = IDR_CHROME_BROWSER_MANIFEST_OVERLAY;
+
+  if (identifier == -1)
+    return nullptr;
+
+  base::StringPiece manifest_contents =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+          identifier, ui::ScaleFactor::SCALE_FACTOR_NONE);
+  return base::JSONReader::Read(manifest_contents);
 }
 
 void ChromeWebClient::GetAdditionalWebUISchemes(
