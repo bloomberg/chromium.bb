@@ -44,6 +44,8 @@ _EXTRA_TEST = (
 _EXTRA_TEST_LIST = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
         '.TestList')
+_EXTRA_UBSAN_OPTIONS = (
+    'org.chromium.native_test.NativeTest.UBSAN_OPTIONS')
 
 _MAX_SHARD_SIZE = 256
 _SECONDS_TO_NANOS = int(1e9)
@@ -108,7 +110,7 @@ def _ExtractTestsFromFilter(gtest_filter):
 
 
 class _ApkDelegate(object):
-  def __init__(self, test_instance):
+  def __init__(self, test_instance, tool):
     self._activity = test_instance.activity
     self._apk_helper = test_instance.apk_helper
     self._test_apk_incremental_install_json = (
@@ -120,6 +122,7 @@ class _ApkDelegate(object):
     self._component = '%s/%s' % (self._package, self._runner)
     self._extras = test_instance.extras
     self._wait_for_java_debugger = test_instance.wait_for_java_debugger
+    self._tool = tool
 
   def GetTestDataRoot(self, device):
     # pylint: disable=no-self-use
@@ -171,6 +174,9 @@ class _ApkDelegate(object):
         device.adb, dir=device.GetExternalStoragePath(), suffix='.gtest_out')
     extras[_EXTRA_STDOUT_FILE] = stdout_file.name
 
+    if self._tool != 'asan':
+      extras[_EXTRA_UBSAN_OPTIONS] = constants.UBSAN_OPTIONS
+
     if self._wait_for_java_debugger:
       cmd = ['am', 'set-debug-app', '-w', self._package]
       device.RunShellCommand(cmd, check_return=True)
@@ -206,12 +212,13 @@ class _ApkDelegate(object):
 
 
 class _ExeDelegate(object):
-  def __init__(self, tr, dist_dir):
+  def __init__(self, tr, dist_dir, tool):
     self._host_dist_dir = dist_dir
     self._exe_file_name = os.path.basename(dist_dir)[:-len('__dist')]
     self._device_dist_dir = posixpath.join(
         constants.TEST_EXECUTABLE_DIR, os.path.basename(dist_dir))
     self._test_run = tr
+    self._tool = tool
 
   def GetTestDataRoot(self, device):
     # pylint: disable=no-self-use
@@ -247,6 +254,10 @@ class _ExeDelegate(object):
     env = {
       'LD_LIBRARY_PATH': self._device_dist_dir
     }
+
+    if self._tool != 'asan':
+      env['UBSAN_OPTIONS'] = constants.UBSAN_OPTIONS
+
     try:
       gcov_strip_depth = os.environ['NATIVE_COVERAGE_DEPTH_STRIP']
       external = device.GetExternalStoragePath()
@@ -276,9 +287,10 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     super(LocalDeviceGtestRun, self).__init__(env, test_instance)
 
     if self._test_instance.apk:
-      self._delegate = _ApkDelegate(self._test_instance)
+      self._delegate = _ApkDelegate(self._test_instance, env.tool)
     elif self._test_instance.exe_dist_dir:
-      self._delegate = _ExeDelegate(self, self._test_instance.exe_dist_dir)
+      self._delegate = _ExeDelegate(self, self._test_instance.exe_dist_dir,
+                                    self._env.tool)
     self._crashes = set()
     self._servers = collections.defaultdict(list)
 
