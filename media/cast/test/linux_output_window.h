@@ -5,9 +5,6 @@
 #ifndef MEDIA_CAST_TEST_LINUX_OUTPUT_WINDOW_H_
 #define MEDIA_CAST_TEST_LINUX_OUTPUT_WINDOW_H_
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/XShm.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
@@ -15,6 +12,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/x/x11.h"
 
 namespace media {
 class VideoFrame;

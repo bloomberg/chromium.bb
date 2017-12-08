@@ -29,11 +29,6 @@
 #include "media/base/limits.h"
 #include "media/base/localized_strings.h"
 
-// cras_util.h headers pull in min/max macros...
-// TODO(dgreid): Fix headers such that these aren't imported.
-#undef min
-#undef max
-
 namespace media {
 namespace {
 
