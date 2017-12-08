@@ -100,7 +100,9 @@ void WorkerThread::Start(
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     std::unique_ptr<GlobalScopeInspectorCreationParams>
         global_scope_inspector_creation_params,
-    ParentFrameTaskRunners* parent_frame_task_runners) {
+    ParentFrameTaskRunners* parent_frame_task_runners,
+    const String& source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsMainThread());
   DCHECK(!parent_frame_task_runners_);
   parent_frame_task_runners_ = parent_frame_task_runners;
@@ -121,7 +123,8 @@ void WorkerThread::Start(
           &WorkerThread::InitializeOnWorkerThread, CrossThreadUnretained(this),
           WTF::Passed(std::move(global_scope_creation_params)),
           thread_startup_data,
-          WTF::Passed(std::move(global_scope_inspector_creation_params))));
+          WTF::Passed(std::move(global_scope_inspector_creation_params)),
+          source_code, WTF::Passed(std::move(cached_meta_data))));
 }
 
 void WorkerThread::Terminate() {
@@ -384,17 +387,13 @@ void WorkerThread::InitializeOnWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     std::unique_ptr<GlobalScopeInspectorCreationParams>
-        global_scope_inspector_creation_params) {
+        global_scope_inspector_creation_params,
+    String source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsCurrentThread());
   DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
 
   KURL script_url = global_scope_creation_params->script_url;
-
-  // TODO(nhiroki): Separate these fields from GlobalScopeCreationParams because
-  // these are used not for creating a global scope but for evaluating a script.
-  String source_code = std::move(global_scope_creation_params->source_code);
-  std::unique_ptr<Vector<char>> cached_meta_data =
-      std::move(global_scope_creation_params->cached_meta_data);
 
   {
     MutexLocker lock(thread_state_mutex_);

@@ -59,8 +59,7 @@ class MainThreadWorkletTest : public ::testing::Test {
     reporting_proxy_ =
         std::make_unique<MainThreadWorkletReportingProxyForTest>(document);
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        document->Url(), document->UserAgent(), String() /* source_code */,
-        nullptr /* cached_meta_data */,
+        document->Url(), document->UserAgent(),
         document->GetContentSecurityPolicy()->Headers().get(),
         document->GetReferrerPolicy(), document->GetSecurityOrigin(),
         nullptr /* worker_clients */, document->AddressSpace(),

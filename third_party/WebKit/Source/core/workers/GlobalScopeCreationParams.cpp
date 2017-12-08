@@ -13,8 +13,6 @@ namespace blink {
 GlobalScopeCreationParams::GlobalScopeCreationParams(
     const KURL& script_url,
     const String& user_agent,
-    const String& source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data,
     const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
     ReferrerPolicy referrer_policy,
     const SecurityOrigin* starter_origin,
@@ -27,8 +25,6 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
         interface_provider_info)
     : script_url(script_url.Copy()),
       user_agent(user_agent.IsolatedCopy()),
-      source_code(source_code.IsolatedCopy()),
-      cached_meta_data(std::move(cached_meta_data)),
       referrer_policy(referrer_policy),
       starter_origin(starter_origin ? starter_origin->IsolatedCopy() : nullptr),
       worker_clients(worker_clients),

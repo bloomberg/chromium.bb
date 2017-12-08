@@ -76,7 +76,8 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     const KURL& script_url,
-    const v8_inspector::V8StackTraceId& stack_id) {
+    const v8_inspector::V8StackTraceId& stack_id,
+    const String& source_code) {
   DCHECK(IsParentContextThread());
 
   Document* document = ToDocument(GetExecutionContext());
@@ -87,7 +88,7 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
       std::make_unique<GlobalScopeInspectorCreationParams>(
           GetWorkerInspectorProxy()->ShouldPauseOnWorkerStart(document),
           stack_id),
-      GetParentFrameTaskRunners());
+      GetParentFrameTaskRunners(), source_code);
   WorkerThreadCreated();
   GetWorkerInspectorProxy()->WorkerThreadCreated(document, GetWorkerThread(),
                                                  script_url);

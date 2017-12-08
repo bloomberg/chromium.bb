@@ -100,8 +100,8 @@ class WorkerThreadForTest : public WorkerThread {
     headers->push_back(header_and_type);
 
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        KURL("http://fake.url/"), "fake user agent", source, nullptr,
-        headers.get(), kReferrerPolicyDefault, security_origin, worker_clients,
+        KURL("http://fake.url/"), "fake user agent", headers.get(),
+        kReferrerPolicyDefault, security_origin, worker_clients,
         kWebAddressSpaceLocal, nullptr,
         std::make_unique<WorkerSettings>(Settings::Create().get()),
         kV8CacheOptionsDefault);
@@ -110,7 +110,7 @@ class WorkerThreadForTest : public WorkerThread {
           WorkerBackingThreadStartupData::CreateDefault(),
           std::make_unique<GlobalScopeInspectorCreationParams>(
               WorkerInspectorProxy::PauseOnWorkerStart::kDontPause),
-          parent_frame_task_runners);
+          parent_frame_task_runners, source);
   }
 
   void WaitForInit() {

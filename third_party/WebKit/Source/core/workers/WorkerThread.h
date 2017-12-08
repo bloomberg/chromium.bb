@@ -88,8 +88,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   // Starts the underlying thread and creates the global scope. Called on the
   // main thread.
-  // Startup data for WorkerBackingThread must be WTF::nullopt if |this| doesn't
-  // own the underlying WorkerBackingThread.
+  // Startup data for WorkerBackingThread is WTF::nullopt if |this| doesn't own
+  // the underlying WorkerBackingThread. |source_code| is empty for module
+  // scripts or installed scripts. |cached_meta_data| is nullptr if the global
+  // scope to be created doesn't use V8 code caching.
   // TODO(nhiroki): We could separate WorkerBackingThread initialization from
   // GlobalScope initialization sequence, that is, InitializeOnWorkerThread().
   // After that, we could remove this startup data for WorkerBackingThread.
@@ -97,7 +99,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
              const WTF::Optional<WorkerBackingThreadStartupData>&,
              std::unique_ptr<GlobalScopeInspectorCreationParams>,
-             ParentFrameTaskRunners*);
+             ParentFrameTaskRunners*,
+             const String& source_code = String(),
+             std::unique_ptr<Vector<char>> cached_meta_data = nullptr);
 
   // Closes the global scope and terminates the underlying thread. Called on the
   // main thread.
@@ -237,7 +241,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const WTF::Optional<WorkerBackingThreadStartupData>&,
-      std::unique_ptr<GlobalScopeInspectorCreationParams>);
+      std::unique_ptr<GlobalScopeInspectorCreationParams>,
+      String source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data);
 
   // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread();

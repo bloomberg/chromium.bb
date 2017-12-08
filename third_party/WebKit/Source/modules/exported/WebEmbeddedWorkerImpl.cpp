@@ -385,6 +385,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       std::make_unique<WorkerSettings>(document->GetSettings());
 
   std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params;
+  String source_code;
+  std::unique_ptr<Vector<char>> cached_meta_data;
+
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.
   if (main_script_loader_) {
@@ -395,14 +398,14 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         main_script_loader_->GetReferrerPolicy());
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
-        main_script_loader_->SourceText(),
-        main_script_loader_->ReleaseCachedMetadata(),
         document->GetContentSecurityPolicy()->Headers().get(),
         document->GetReferrerPolicy(), starter_origin, worker_clients,
         main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         std::move(interface_provider_info_));
+    source_code = main_script_loader_->SourceText();
+    cached_meta_data = main_script_loader_->ReleaseCachedMetadata();
     main_script_loader_ = nullptr;
   } else {
     // ContentSecurityPolicy and ReferrerPolicy are applied to |document| at
@@ -410,7 +413,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // script.
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
-        "" /* SourceText */, nullptr /* CachedMetadata */,
         nullptr /* ContentSecurityPolicy */, kReferrerPolicyDefault,
         starter_origin, worker_clients, worker_start_data_.address_space,
         nullptr /* OriginTrialTokens */, std::move(worker_settings),
@@ -436,7 +438,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       WorkerBackingThreadStartupData::CreateDefault(),
       std::make_unique<GlobalScopeInspectorCreationParams>(
           worker_inspector_proxy_->ShouldPauseOnWorkerStart(document)),
-      ParentFrameTaskRunners::Create());
+      ParentFrameTaskRunners::Create(), source_code,
+      std::move(cached_meta_data));
 
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
                                                worker_start_data_.script_url);
