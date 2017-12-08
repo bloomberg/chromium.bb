@@ -887,7 +887,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     bool is_guest) {
   if (!avatar_item.signed_in &&
       signin::IsDiceEnabledForProfile(browser_->profile()->GetPrefs()))
-    return CreateDiceTurnOnSyncView();
+    return CreateDiceSigninView();
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -989,7 +989,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   return view;
 }
 
-views::View* ProfileChooserView::CreateDiceTurnOnSyncView() {
+views::View* ProfileChooserView::CreateDiceSigninView() {
   // Creates a view that holds an illustration and a promo, which includes a
   // button. The illustration should slightly overlap with the promo at the
   // bottom, therefore between_child_spacing of |view| is set to negative
@@ -1013,7 +1013,7 @@ views::View* ProfileChooserView::CreateDiceTurnOnSyncView() {
       gfx::Insets(0, kMenuEdgeMargin, kMenuEdgeMargin, kMenuEdgeMargin),
       kMenuEdgeMargin));
   views::Label* promo = new views::Label(
-      l10n_util::GetStringUTF16(IDS_PROFILES_TURN_ON_SYNC_PROMO));
+      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_PROMO));
   promo->SetMultiLine(true);
   promo->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   promo->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
@@ -1021,7 +1021,7 @@ views::View* ProfileChooserView::CreateDiceTurnOnSyncView() {
 
   signin_current_profile_button_ =
       views::MdTextButton::CreateSecondaryUiBlueButton(
-          this, l10n_util::GetStringUTF16(IDS_PROFILES_TURN_ON_SYNC_BUTTON));
+          this, l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON));
   promo_button_view->AddChildView(signin_current_profile_button_);
   view->AddChildView(promo_button_view);
   return view;

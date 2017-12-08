@@ -149,9 +149,9 @@ class ProfileChooserView : public content::WebContentsDelegate,
                            bool reauth_required,
                            int width);
 
-  // Creates the DICE UI view to turn on sync. It includes an illustration, a
-  // promo and a button.
-  views::View* CreateDiceTurnOnSyncView();
+  // Creates the DICE UI view to sign in and turn on sync. It includes an
+  // illustration, a promo and a button.
+  views::View* CreateDiceSigninView();
 
   // Creates a view to confirm account removal for |account_id_to_remove_|.
   views::View* CreateAccountRemovalView();

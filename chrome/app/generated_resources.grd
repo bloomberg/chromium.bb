@@ -7527,11 +7527,11 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_SYNC_SETTINGS_LINK" desc="The link text to the Chrome sync settings page in the avatar menu tutorial card.">
         Settings
       </message>
-      <message name="IDS_PROFILES_TURN_ON_SYNC_BUTTON" desc="Button in the profile user menu to turn on Sync.">
-        Turn on Sync
+      <message name="IDS_PROFILES_DICE_SIGNIN_BUTTON" desc="Button in the profile user menu to sign in and turn on Sync.">
+        Sign in
       </message>
-      <message name="IDS_PROFILES_TURN_ON_SYNC_PROMO" desc="Text describing the benefits of turning on Sync.">
-        Turn on Sync to get your bookmarks, history, passwords, and other settings on all your devices.
+      <message name="IDS_PROFILES_DICE_SIGNIN_PROMO" desc="Text describing the benefits of signing in and turning on Sync.">
+        Sign in for a personalized browsing experience, synced across your devices
       </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON" desc="Text of the ok button on the account removal view in the avatar menu bubble.">
         Remove account
