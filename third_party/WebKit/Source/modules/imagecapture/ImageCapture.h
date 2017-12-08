@@ -76,7 +76,8 @@ class MODULES_EXPORT ImageCapture final
   void Trace(blink::Visitor*) override;
 
  private:
-  using PromiseResolverFunction = Function<void(ScriptPromiseResolver*)>;
+  using PromiseResolverFunction =
+      base::OnceCallback<void(ScriptPromiseResolver*)>;
 
   ImageCapture(ExecutionContext*, MediaStreamTrack*);
 

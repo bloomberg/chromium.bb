@@ -81,8 +81,8 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   void FileSystemNotAvailable(ExecutionContext*, CallbackWrapper*);
 
   void RequestFileSystemAccessInternal(ExecutionContext*,
-                                       WTF::Closure allowed,
-                                       WTF::Closure denied);
+                                       base::OnceClosure allowed,
+                                       base::OnceClosure denied);
   void FileSystemNotAllowedInternal(ExecutionContext*, CallbackWrapper*);
   void FileSystemAllowedInternal(ExecutionContext*,
                                  FileSystemType,

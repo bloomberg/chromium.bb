@@ -32,7 +32,7 @@ class MODULES_EXPORT NotificationImageLoader final
 
   // The bitmap may be empty if the request failed or the image data could not
   // be decoded.
-  using ImageCallback = Function<void(const SkBitmap&)>;
+  using ImageCallback = base::OnceCallback<void(const SkBitmap&)>;
 
   explicit NotificationImageLoader(Type);
   ~NotificationImageLoader() override;

@@ -86,7 +86,7 @@ class MODULES_EXPORT DOMFileSystem final
   // Schedule a callback. This should not cross threads (should be called on the
   // same context thread).
   static void ScheduleCallback(ExecutionContext* execution_context,
-                               WTF::Closure task);
+                               base::OnceClosure task);
 
   void Trace(blink::Visitor*) override;
 

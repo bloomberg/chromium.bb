@@ -57,7 +57,7 @@ namespace blink {
 namespace {
 
 void RunCallback(ExecutionContext* execution_context,
-                 WTF::Closure task,
+                 base::OnceClosure task,
                  std::unique_ptr<int> identifier) {
   if (!execution_context)
     return;
@@ -207,7 +207,7 @@ void DOMFileSystem::CreateFile(const FileEntry* file_entry,
 }
 
 void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
-                                     WTF::Closure task) {
+                                     base::OnceClosure task) {
   DCHECK(execution_context->IsContextThread());
 
   std::unique_ptr<int> identifier = std::make_unique<int>(0);

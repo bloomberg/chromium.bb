@@ -32,7 +32,8 @@ class MODULES_EXPORT NotificationResourcesLoader final
   // Called when all fetches have finished. Passes a pointer to the
   // NotificationResourcesLoader so callers that use multiple loaders can use
   // the same function to handle the callbacks.
-  using CompletionCallback = Function<void(NotificationResourcesLoader*)>;
+  using CompletionCallback =
+      base::OnceCallback<void(NotificationResourcesLoader*)>;
 
   explicit NotificationResourcesLoader(CompletionCallback);
   ~NotificationResourcesLoader();

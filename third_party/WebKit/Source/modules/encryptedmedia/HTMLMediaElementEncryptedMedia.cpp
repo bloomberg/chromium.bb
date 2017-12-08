@@ -57,8 +57,8 @@ class SetMediaKeysHandler : public ScriptPromiseResolver {
   TaskRunnerTimer<SetMediaKeysHandler> timer_;
 };
 
-typedef Function<void()> SuccessCallback;
-typedef Function<void(ExceptionCode, const String&)> FailureCallback;
+typedef base::OnceCallback<void()> SuccessCallback;
+typedef base::OnceCallback<void(ExceptionCode, const String&)> FailureCallback;
 
 // Represents the result used when setContentDecryptionModule() is called.
 // Calls |success| if result is resolved, |failure| if result is rejected.

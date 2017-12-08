@@ -70,7 +70,7 @@ void SensorProxy::Initialize() {
 }
 
 void SensorProxy::AddConfiguration(SensorConfigurationPtr configuration,
-                                   Function<void(bool)> callback) {
+                                   base::OnceCallback<void(bool)> callback) {
   DCHECK(IsInitialized());
   AddActiveFrequency(configuration->frequency);
   sensor_->AddConfiguration(std::move(configuration), std::move(callback));

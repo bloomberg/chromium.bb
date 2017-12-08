@@ -229,7 +229,7 @@ class MODULES_EXPORT RTCPeerConnection final
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest,
                            GetTrackRemoveStreamAndGCWithPersistentStream);
 
-  typedef Function<bool()> BoolFunction;
+  typedef base::OnceCallback<bool()> BoolFunction;
   class EventWrapper : public GarbageCollectedFinalized<EventWrapper> {
    public:
     EventWrapper(Event*, BoolFunction);
