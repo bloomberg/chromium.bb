@@ -462,7 +462,7 @@ bool Resource::MustRefetchDueToIntegrityMetadata(
   if (params.IntegrityMetadata().IsEmpty())
     return false;
 
-  return !IntegrityMetadata::SetsEqual(integrity_metadata_,
+  return !IntegrityMetadata::SetsEqual(IntegrityMetadata(),
                                        params.IntegrityMetadata());
 }
 

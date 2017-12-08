@@ -254,11 +254,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool HasCacheControlNoStoreHeader() const;
   bool MustReloadDueToVaryHeader(const ResourceRequest& new_request) const;
 
-  void SetIntegrityMetadata(const IntegrityMetadataSet& metadata) {
-    integrity_metadata_ = metadata;
-  }
   const IntegrityMetadataSet& IntegrityMetadata() const {
-    return integrity_metadata_;
+    return options_.integrity_metadata;
   }
   ResourceIntegrityDisposition IntegrityDisposition() const {
     return integrity_disposition_;
@@ -473,7 +470,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool detachable_ = false;
 
   ResourceIntegrityDisposition integrity_disposition_;
-  IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::ReportInfo integrity_report_info_;
 
   // Ordered list of all redirects followed while fetching this resource.

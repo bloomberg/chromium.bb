@@ -48,9 +48,6 @@ CSSStyleSheetResource* CSSStyleSheetResource::Fetch(FetchParameters& params,
   params.SetRequestContext(WebURLRequest::kRequestContextStyle);
   CSSStyleSheetResource* resource = ToCSSStyleSheetResource(
       fetcher->RequestResource(params, CSSStyleSheetResourceFactory()));
-  // TODO(kouhei): Dedupe this logic w/ ScriptResource::fetch
-  if (resource && !params.IntegrityMetadata().IsEmpty())
-    resource->SetIntegrityMetadata(params.IntegrityMetadata());
   return resource;
 }
 
