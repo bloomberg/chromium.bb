@@ -5,7 +5,6 @@
 #include "chromecast/crash/cast_crash_keys.h"
 
 #include "components/crash/core/common/crash_keys.h"
-#include "gpu/config/gpu_crash_keys.h"
 
 namespace chromecast {
 namespace crash_keys {
@@ -32,14 +31,6 @@ size_t RegisterCastCrashKeys() {
       {"num-extensions", ::crash_keys::kSmallSize},
       {"shutdown-type", ::crash_keys::kSmallSize},
       {"browser-unpin-trace", ::crash_keys::kMediumSize},
-
-      // gpu
-      {gpu::crash_keys::kGPUDriverVersion, ::crash_keys::kSmallSize},
-      {gpu::crash_keys::kGPUPixelShaderVersion, ::crash_keys::kSmallSize},
-      {gpu::crash_keys::kGPUVertexShaderVersion, ::crash_keys::kSmallSize},
-      {gpu::crash_keys::kGPUVendor, ::crash_keys::kSmallSize},
-      {gpu::crash_keys::kGPURenderer, ::crash_keys::kSmallSize},
-      {gpu::crash_keys::kGPUGLContextIsVirtual, ::crash_keys::kSmallSize},
 
       // content/:
       {"discardable-memory-allocated", ::crash_keys::kSmallSize},

@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/config/gpu_crash_keys.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/chrome_switches.h"
@@ -76,22 +75,6 @@ size_t RegisterChromeCrashKeys() {
     {kApValue, kSmallSize},
     {kCohortName, kSmallSize},
 #endif  // defined(OS_WIN)
-
-// gpu
-#if !defined(OS_ANDROID)
-    {gpu::crash_keys::kGPUVendorID, kSmallSize},
-    {gpu::crash_keys::kGPUDeviceID, kSmallSize},
-#endif
-    {gpu::crash_keys::kGPUDriverVersion, kSmallSize},
-    {gpu::crash_keys::kGPUPixelShaderVersion, kSmallSize},
-    {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
-#if defined(OS_MACOSX)
-    {gpu::crash_keys::kGPUGLVersion, kSmallSize},
-#elif defined(OS_POSIX)
-    {gpu::crash_keys::kGPUVendor, kSmallSize},
-    {gpu::crash_keys::kGPURenderer, kSmallSize},
-#endif
-    {gpu::crash_keys::kGPUGLContextIsVirtual, kSmallSize},
 
     // content/:
     {"discardable-memory-allocated", kSmallSize},

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -406,24 +405,19 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
 
 void SetKeysForCrashLogging(const GPUInfo& gpu_info) {
 #if !defined(OS_ANDROID)
-  base::debug::SetCrashKeyValue(
-      crash_keys::kGPUVendorID,
+  crash_keys::gpu_vendor_id.Set(
       base::StringPrintf("0x%04x", gpu_info.gpu.vendor_id));
-  base::debug::SetCrashKeyValue(
-      crash_keys::kGPUDeviceID,
+  crash_keys::gpu_device_id.Set(
       base::StringPrintf("0x%04x", gpu_info.gpu.device_id));
 #endif
-  base::debug::SetCrashKeyValue(crash_keys::kGPUDriverVersion,
-                                gpu_info.driver_version);
-  base::debug::SetCrashKeyValue(crash_keys::kGPUPixelShaderVersion,
-                                gpu_info.pixel_shader_version);
-  base::debug::SetCrashKeyValue(crash_keys::kGPUVertexShaderVersion,
-                                gpu_info.vertex_shader_version);
+  crash_keys::gpu_driver_version.Set(gpu_info.driver_version);
+  crash_keys::gpu_pixel_shader_version.Set(gpu_info.pixel_shader_version);
+  crash_keys::gpu_vertex_shader_version.Set(gpu_info.vertex_shader_version);
 #if defined(OS_MACOSX)
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLVersion, gpu_info.gl_version);
+  crash_keys::gpu_gl_version.Set(gpu_info.gl_version);
 #elif defined(OS_POSIX)
-  base::debug::SetCrashKeyValue(crash_keys::kGPUVendor, gpu_info.gl_vendor);
-  base::debug::SetCrashKeyValue(crash_keys::kGPURenderer, gpu_info.gl_renderer);
+  crash_keys::gpu_vendor.Set(gpu_info.gl_vendor);
+  crash_keys::gpu_renderer.Set(gpu_info.gl_renderer);
 #endif
 }
 

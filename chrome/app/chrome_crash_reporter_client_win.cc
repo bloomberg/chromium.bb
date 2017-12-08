@@ -27,7 +27,6 @@
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/version_info/channel.h"
-#include "gpu/config/gpu_crash_keys.h"
 
 namespace {
 
@@ -92,14 +91,6 @@ size_t RegisterCrashKeysHelper() {
       {kBrowserUnpinTrace, kMediumSize},
       {kApValue, kSmallSize},
       {kCohortName, kSmallSize},
-
-      // gpu
-      {gpu::crash_keys::kGPUVendorID, kSmallSize},
-      {gpu::crash_keys::kGPUDeviceID, kSmallSize},
-      {gpu::crash_keys::kGPUDriverVersion, kSmallSize},
-      {gpu::crash_keys::kGPUPixelShaderVersion, kSmallSize},
-      {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
-      {gpu::crash_keys::kGPUGLContextIsVirtual, kSmallSize},
 
       // browser/:
       {kIsEnterpriseManaged, kSmallSize},

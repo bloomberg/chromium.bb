@@ -7,7 +7,6 @@
 #include "base/debug/crash_logging.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_keys.h"
-#include "gpu/config/gpu_crash_keys.h"
 
 using namespace crash_keys;
 
@@ -42,14 +41,6 @@ size_t RegisterWebViewCrashKeys() {
       {kAppPackageName, kSmallSize},
       {kAppPackageVersionCode, kSmallSize},
       {kAndroidSdkInt, kSmallSize},
-
-      // gpu
-      {gpu::crash_keys::kGPUDriverVersion, kSmallSize},
-      {gpu::crash_keys::kGPUPixelShaderVersion, kSmallSize},
-      {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
-      {gpu::crash_keys::kGPUVendor, kSmallSize},
-      {gpu::crash_keys::kGPURenderer, kSmallSize},
-      {gpu::crash_keys::kGPUGLContextIsVirtual, kSmallSize},
 
       // content/:
       {"discardable-memory-allocated", kSmallSize},
@@ -96,11 +87,11 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     kAndroidSdkInt,
 
     // gpu
-    gpu::crash_keys::kGPUDriverVersion,
-    gpu::crash_keys::kGPUPixelShaderVersion,
-    gpu::crash_keys::kGPUVertexShaderVersion,
-    gpu::crash_keys::kGPUVendor,
-    gpu::crash_keys::kGPURenderer,
+    "gpu-driver",
+    "gpu-psver",
+    "gpu-vsver",
+    "gpu-gl-vendor",
+    "gpu-gl-renderer",
 
     // content/:
     "bad_message_reason",

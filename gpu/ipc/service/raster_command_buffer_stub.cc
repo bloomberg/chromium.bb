@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/debug/crash_logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
@@ -153,8 +152,8 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   }
 
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
+  crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
+                                                                        : "0");
 
   scoped_refptr<gl::GLContext> context;
   if (use_virtualized_gl_context_) {

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/debug/crash_logging.h"
 #include "base/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -257,8 +256,8 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                "data", DevToolsChannelData::CreateForChannel(channel()));
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
+  crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
+                                                                        : "0");
   bool have_context = false;
   // Ensure the appropriate GL context is current before handling any IPC
   // messages directed at the command buffer. This ensures that the message
@@ -346,8 +345,8 @@ void CommandBufferStub::PerformWork() {
   TRACE_EVENT0("gpu", "CommandBufferStub::PerformWork");
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
+  crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
+                                                                        : "0");
   if (decoder_.get() && !MakeCurrent())
     return;
 
@@ -440,8 +439,8 @@ bool CommandBufferStub::MakeCurrent() {
 void CommandBufferStub::Destroy() {
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
+  crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
+                                                                        : "0");
   if (wait_for_token_) {
     Send(wait_for_token_->reply.release());
     wait_for_token_.reset();
