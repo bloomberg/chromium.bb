@@ -138,7 +138,7 @@
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
-#import "ios/chrome/browser/ui/download/download_manager_controller.h"
+#import "ios/chrome/browser/ui/download/legacy_download_manager_controller.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
 #import "ios/chrome/browser/ui/external_search/external_search_coordinator.h"
@@ -3579,8 +3579,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)URL
                                                   webState:
                                                       (web::WebState*)webState {
-  DownloadManagerController* downloadController =
-      [[DownloadManagerController alloc] initWithWebState:webState
+  LegacyDownloadManagerController* downloadController =
+      [[LegacyDownloadManagerController alloc] initWithWebState:webState
                                               downloadURL:URL
                                        baseViewController:self];
   [downloadController start];
