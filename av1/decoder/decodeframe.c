@@ -3614,7 +3614,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_INTRABC
       !(cm->allow_intrabc && NO_FILTER_FOR_IBC) &&
 #endif  // CONFIG_INTRABC
-      !cm->all_lossless) {
+      !cm->all_lossless &&
+      (cm->cdef_bits || cm->cdef_strengths[0] || cm->cdef_uv_strengths[0])) {
     av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
   }
 
