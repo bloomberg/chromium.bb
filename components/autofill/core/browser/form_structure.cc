@@ -507,9 +507,6 @@ void FormStructure::ParseQueryResponse(
           current_field->overall_type_prediction());
       query_response_has_no_server_data &= field_type == NO_SERVER_DATA;
 
-      // UNKNOWN_TYPE is reserved for use by the client.
-      DCHECK_NE(field_type, UNKNOWN_TYPE);
-
       ServerFieldType heuristic_type = field->heuristic_type();
       if (heuristic_type != UNKNOWN_TYPE)
         heuristics_detected_fillable_field = true;

@@ -3921,6 +3921,62 @@ TEST_F(FormStructureTest, PossibleValues) {
   EXPECT_EQ(0U, form_structure2.PossibleValues(ADDRESS_BILLING_COUNTRY).size());
 }
 
+// Tests proper resolution heuristic, server and html field types when the
+// server returns NO_SERVER_DATA, UNKNOWN_TYPE, and a valid type.
+TEST_F(FormStructureTest, ParseQueryResponse_UnknownType) {
+  FormData form_data;
+  FormFieldData field;
+  form_data.origin = GURL("http://foo.com");
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("fname");
+  form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lname");
+  form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  field.autocomplete_attribute = "address-level2";
+  form_data.fields.push_back(field);
+
+  FormStructure form(form_data);
+  form.DetermineHeuristicTypes(nullptr /* ukm_service */);
+
+  // Setup the query response.
+  AutofillQueryResponseContents response;
+  std::string response_string;
+  response.add_field()->set_overall_type_prediction(UNKNOWN_TYPE);
+  response.add_field()->set_overall_type_prediction(NO_SERVER_DATA);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_LINE1);
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Parse the response and update the field type predictions.
+  std::vector<FormStructure*> forms{&form};
+  FormStructure::ParseQueryResponse(response_string, forms);
+  ASSERT_EQ(form.field_count(), 3U);
+
+  // Validate field 0.
+  EXPECT_EQ(NAME_FIRST, form.field(0)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form.field(0)->overall_server_type());
+  EXPECT_EQ(HTML_TYPE_UNSPECIFIED, form.field(0)->html_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form.field(0)->Type().GetStorableType());
+
+  // Validate field 1.
+  EXPECT_EQ(NAME_LAST, form.field(1)->heuristic_type());
+  EXPECT_EQ(NO_SERVER_DATA, form.field(1)->overall_server_type());
+  EXPECT_EQ(HTML_TYPE_UNSPECIFIED, form.field(1)->html_type());
+  EXPECT_EQ(NAME_LAST, form.field(1)->Type().GetStorableType());
+
+  // Validate field 2. Note: HTML_TYPE_ADDRESS_LEVEL2 -> City
+  EXPECT_EQ(EMAIL_ADDRESS, form.field(2)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form.field(2)->overall_server_type());
+  EXPECT_EQ(HTML_TYPE_ADDRESS_LEVEL2, form.field(2)->html_type());
+  EXPECT_EQ(ADDRESS_HOME_CITY, form.field(2)->Type().GetStorableType());
+}
+
 // TODO(crbug.com/578257): Add more tests for the AutofillQueryResponseContents
 // proto.
 TEST_F(FormStructureTest, ParseQueryResponse) {
@@ -3994,7 +4050,7 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
   EXPECT_EQ(0U, forms[1]->field(1)->server_predictions()[0].type());
 }
 
-TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
+TEST_F(FormStructureTest, ParseQueryResponse_AuthorDefinedTypes) {
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
