@@ -1050,6 +1050,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)setWebUsageEnabled:(BOOL)enabled {
   if (_webUsageEnabled == enabled)
     return;
+  // WKWebView autoreleases its WKProcessPool on removal from superview.
+  // Deferring WKProcessPool deallocation may lead to issues with cookie
+  // clearing and and Browsing Data Partitioning implementation.
+  @autoreleasepool {
+    if (!enabled) {
+      [self removeWebView];
+    }
+  }
+
   _webUsageEnabled = enabled;
 
   // WKWebView autoreleases its WKProcessPool on removal from superview.
@@ -1061,7 +1070,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // Don't create the web view; let it be lazy created as needed.
     } else {
       _webStateImpl->ClearTransientContent();
-      [self removeWebView];
       _touchTrackingRecognizer.touchTrackingDelegate = nil;
       _touchTrackingRecognizer = nil;
       [self resetContainerView];
