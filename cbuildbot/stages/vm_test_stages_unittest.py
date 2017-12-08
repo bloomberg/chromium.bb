@@ -186,7 +186,11 @@ class MoblabVMTestStageTestCase(
     self._run.config['moblab_vm_tests'] = [
         config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE),
     ]
-    return vm_test_stages.MoblabVMTestStage(self._run, self._current_board)
+    stage = vm_test_stages.MoblabVMTestStage(self._run, self._current_board)
+    # Unblock stage from dependencies on other stages.
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallelDefault('test_artifacts_uploaded', True)
+    return stage
 
   def _temp_chroot_path(self, suffix):
     return os.path.join(self._temp_chroot_prefix, suffix)

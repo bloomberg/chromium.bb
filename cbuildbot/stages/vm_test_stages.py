@@ -338,6 +338,22 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
   def __str__(self):
     return type(self).__name__
 
+  def WaitUntilReady(self):
+    """Wait for the test artifacts to be uploaded.
+
+    These artifacts are needed for sub-DUT provision.
+    """
+    if not self.GetParallel('test_artifacts_uploaded',
+                            pretty_name='test artifacts'):
+      logging.PrintBuildbotStepWarnings()
+      logging.warning('Missing test artifacts')
+      logging.warning(
+          'We need the test artifacts to be uploaded so that the sub-DUT can '
+          'be provisioned with the image from this build.'
+      )
+      return False
+    return True
+
   def PerformStage(self):
     test_root_in_chroot = commands.CreateTestRoot(self._build_root)
     test_root = path_util.FromChrootPath(test_root_in_chroot)
@@ -429,19 +445,12 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     # looks different from when ctest is used.
 
   def _SubDutTargetImage(self):
-    """Return a "good" image of the DUT VM board from GS.
-
-    This image will be used to provision the DUT VM. The two requirements here
-    are:
-    - The image should be good enough to pass the tests moblab runs against it.
-      (mostly, should pass provision, and boot otherwise consistently).
-    - The image should exist in GS, for the provision flow to work.
-    """
-    # TODO(pprabhu) This hard-coded version information corresponds to a
-    # manually vetted recent build. This will stop working once R66 goes to
-    # stable (~ July 2018). This should be replaced with a canary channel image
-    # for the same board before that.
-    return 'moblab-generic-vm-paladin/R65-10178.0.0-rc1'
+    """Return a "good" image for the sub-DUT."""
+    # We use the image built by for the current bot. This ensures that
+    # (1) Provided the moblab VM image boots, this image also boots (so the
+    #     sub-DUT can only be bad, if the main moblab VM image is also bad).
+    # (2) This image is available on GS for provision flow.
+    return '%s/%s' % (self._run.bot_id, self._run.GetVersion())
 
   def _Upload(self, path, prefix):
     """Upload |path| to GS and print a link to it on the log."""
