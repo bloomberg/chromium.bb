@@ -47,3 +47,17 @@ source_set("x11") {
 
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 }
+
+source_set("x11_unittests") {
+  testonly = true
+  sources = [
+    "x11_cursor_factory_ozone_unittest.cc",
+  ]
+
+  deps = [
+    ":x11",
+    "//testing/gtest",
+    "//ui/ozone:platform",
+    "//ui/ozone/common",
+  ]
+}
