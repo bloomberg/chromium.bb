@@ -16,8 +16,9 @@
 #include "core/page/Page.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/runtime_enabled_features.h"
+#include "public/platform/Platform.h"
 #include "public/platform/reporting.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 using blink::WebFeature;
@@ -795,7 +796,9 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
 
   // Send the deprecation report to the Reporting API.
   mojom::blink::ReportingServiceProxyPtr service;
-  frame->Client()->GetInterfaceProvider()->GetInterface(&service);
+  Platform* platform = Platform::Current();
+  platform->GetConnector()->BindInterface(platform->GetBrowserServiceName(),
+                                          &service);
   service->QueueDeprecationReport(document->Url(), info.id,
                                   WTF::Time::FromDoubleT(removalDate),
                                   info.message, body->sourceFile(),
