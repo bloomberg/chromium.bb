@@ -317,9 +317,11 @@ void WidgetInputHandlerManager::HandleInputEvent(
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
   if (!render_widget_ || render_widget_->is_swapped_out() ||
       render_widget_->IsClosing()) {
-    std::move(callback).Run(InputEventAckSource::MAIN_THREAD, latency,
-                            INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
-                            base::nullopt);
+    if (callback) {
+      std::move(callback).Run(InputEventAckSource::MAIN_THREAD, latency,
+                              INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
+                              base::nullopt);
+    }
     return;
   }
   auto send_callback = base::BindOnce(
