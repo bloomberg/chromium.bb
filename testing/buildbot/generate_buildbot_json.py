@@ -295,6 +295,9 @@ class BBJSONGenerator(object):
     if 'shards' in swarming_dict:
       if swarming_dict['shards'] == 1: # pragma: no cover
         del swarming_dict['shards'] # pragma: no cover
+    if 'hard_timeout' in swarming_dict:
+      if swarming_dict['hard_timeout'] == 0: # pragma: no cover
+        del swarming_dict['hard_timeout'] # pragma: no cover
     if not swarming_dict['can_use_on_swarming_builders']:
       # Remove all other keys.
       for k in swarming_dict.keys(): # pragma: no cover
