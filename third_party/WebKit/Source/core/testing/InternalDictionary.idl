@@ -34,4 +34,5 @@ dictionary InternalDictionary {
     sequence<(double or DOMString)> doubleOrStringSequenceMember;
     EventTarget? eventTargetOrNullMember = null;
     Dictionary dictionaryMember;
+    (InternalEnum or sequence<InternalEnum>) internalEnumOrInternalEnumSequenceMember;
 };

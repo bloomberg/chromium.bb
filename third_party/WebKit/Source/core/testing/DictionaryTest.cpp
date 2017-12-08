@@ -73,6 +73,10 @@ void DictionaryTest::set(const InternalDictionary& testing_dictionary) {
         testing_dictionary.dictionaryMember().GetOwnPropertiesAsStringHashMap(
             exception_state);
   }
+  if (testing_dictionary.hasInternalEnumOrInternalEnumSequenceMember()) {
+    internal_enum_or_internal_enum_sequence_ =
+        testing_dictionary.internalEnumOrInternalEnumSequenceMember();
+  }
 }
 
 void DictionaryTest::get(InternalDictionary& result) {
@@ -119,6 +123,8 @@ void DictionaryTest::get(InternalDictionary& result) {
     result.setDoubleOrStringSequenceMember(
         double_or_string_sequence_member_.Get());
   result.setEventTargetOrNullMember(event_target_or_null_member_);
+  result.setInternalEnumOrInternalEnumSequenceMember(
+      internal_enum_or_internal_enum_sequence_);
 }
 
 ScriptValue DictionaryTest::getDictionaryMemberProperties(
@@ -219,6 +225,8 @@ void DictionaryTest::Reset() {
   derived_string_member_with_default_ = String();
   required_boolean_member_ = false;
   dictionary_member_properties_ = nullptr;
+  internal_enum_or_internal_enum_sequence_ =
+      InternalEnumOrInternalEnumSequence();
 }
 
 void DictionaryTest::Trace(blink::Visitor* visitor) {
