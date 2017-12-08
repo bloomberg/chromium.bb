@@ -54,22 +54,14 @@ class SVGPathBlender::BlendState {
   FloatPoint to_sub_path_point_;
   FloatPoint to_current_point_;
 
-  float progress_;
-  unsigned add_types_count_;
+  double progress_;
+  float add_types_count_;
   bool is_in_first_half_of_animation_;
   // This is per-segment blend state corresponding to the 'from' and 'to'
   // segments currently being blended, and only used within blendSegments().
   bool types_are_equal_;
   bool from_is_absolute_;
 };
-
-// Helper functions
-static inline FloatPoint BlendFloatPoint(const FloatPoint& a,
-                                         const FloatPoint& b,
-                                         float progress) {
-  return FloatPoint(Blend(a.X(), b.X(), progress),
-                    Blend(a.Y(), b.Y(), progress));
-}
 
 float SVGPathBlender::BlendState::BlendAnimatedDimensonalFloat(
     float from,
@@ -112,7 +104,7 @@ FloatPoint SVGPathBlender::BlendState::BlendAnimatedFloatPointSameCoordinates(
     repeated_to_point.Scale(add_types_count_, add_types_count_);
     return from_point + repeated_to_point;
   }
-  return BlendFloatPoint(from_point, to_point, progress_);
+  return Blend(from_point, to_point, progress_);
 }
 
 FloatPoint SVGPathBlender::BlendState::BlendAnimatedFloatPoint(
@@ -128,7 +120,7 @@ FloatPoint SVGPathBlender::BlendState::BlendAnimatedFloatPoint(
   else
     animated_point.Move(-to_current_point_.X(), -to_current_point_.Y());
 
-  animated_point = BlendFloatPoint(from_point, animated_point, progress_);
+  animated_point = Blend(from_point, animated_point, progress_);
 
   // If we're in the first half of the animation, we should use the type of the
   // from segment.
@@ -138,7 +130,7 @@ FloatPoint SVGPathBlender::BlendState::BlendAnimatedFloatPoint(
   // Transform the animated point to the coordinate mode, needed for the current
   // progress.
   FloatPoint current_point =
-      BlendFloatPoint(from_current_point_, to_current_point_, progress_);
+      Blend(from_current_point_, to_current_point_, progress_);
   if (!from_is_absolute_)
     return animated_point + current_point;
 
