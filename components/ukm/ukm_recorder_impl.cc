@@ -18,6 +18,7 @@
 #include "third_party/metrics_proto/ukm/entry.pb.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 #include "third_party/metrics_proto/ukm/source.pb.h"
+#include "url/gurl.h"
 
 namespace ukm {
 
@@ -112,6 +113,13 @@ void StoreEntryProto(const mojom::UkmEntry& in, Entry* out) {
   }
 }
 
+GURL SanitizeURL(const GURL& url) {
+  GURL::Replacements remove_params;
+  remove_params.ClearUsername();
+  remove_params.ClearPassword();
+  return url.ReplaceComponents(remove_params);
+}
+
 }  // namespace
 
 UkmRecorderImpl::UkmRecorderImpl() : recording_enabled_(false) {}
@@ -193,7 +201,8 @@ bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
       kUkmFeature, "RestrictToWhitelistedSourceIds", true);
 }
 
-void UkmRecorderImpl::UpdateSourceURL(SourceId source_id, const GURL& url) {
+void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
+                                      const GURL& unsanitized_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!recording_enabled_) {
@@ -206,6 +215,8 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id, const GURL& url) {
     RecordDroppedSource(DroppedDataReason::NOT_WHITELISTED);
     return;
   }
+
+  GURL url = SanitizeURL(unsanitized_url);
 
   if (!HasSupportedScheme(url)) {
     RecordDroppedSource(DroppedDataReason::UNSUPPORTED_URL_SCHEME);
