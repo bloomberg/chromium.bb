@@ -4602,7 +4602,7 @@
     Google Assistant
   </message>
   <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_MESSAGE" desc="Load error message of the voice interaction value prop dialog.">
-    Google Assistant was unable to load, please retry.
+    Google Assistant was unable to load, please check your network connection and retry.
   </message>
   <message name="IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON" desc="Button label for skipping voice interaction value prop upon error.">
     Skip
