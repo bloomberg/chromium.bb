@@ -6,6 +6,7 @@
 #define DEVICE_VR_WINDOWS_D3D11_TEXTURE_HELPER_H
 
 #include <D3D11_1.h>
+#include <DXGI1_4.h>
 #include <wrl.h>
 
 #include "base/win/scoped_handle.h"
@@ -19,6 +20,8 @@ class D3D11TextureHelper {
   ~D3D11TextureHelper();
 
   bool EnsureInitialized();
+  bool SetAdapterIndex(int32_t index);
+  bool SetAdapterLUID(const LUID& luid);
 
   bool CopyTextureToBackBuffer(bool flipY);  // Return true on success.
   void SetSourceTexture(base::win::ScopedHandle texture_handle);
@@ -34,6 +37,7 @@ class D3D11TextureHelper {
   bool EnsureInputLayout();
   bool EnsureVertexBuffer();
   bool EnsureSampler();
+  Microsoft::WRL::ComPtr<IDXGIAdapter> GetAdapter();
 
   struct RenderState {
     RenderState();
@@ -56,6 +60,8 @@ class D3D11TextureHelper {
   };
 
   RenderState render_state_;
+  int32_t adapter_index_ = -1;
+  LUID adapter_luid_ = {};
 
   base::win::ScopedHandle texture_handle_;  // do we need to store this?
 };
