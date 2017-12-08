@@ -513,6 +513,49 @@
     },
   },
   {
+    'name': 'chromium.sandbox',
+    'machines': {
+      'Fuchsia x64 SANDBOX': {
+        # TODO(dpranke): This should mirror 'Fuchsia x64' on chromium.linux,
+        # but currently doesn't quite do so; we should sync up the
+        # compile targets and tests, and remove the exceptions.
+        'additional_compile_targets': [
+          'base_unittests',
+          'content_unittests',
+          'crypto_unittests',
+          'gl_unittests',
+          'headless_shell',
+          'ipc_tests',
+          'media_unittests',
+          'mojo_common_unittests',
+          'mojo_public_bindings_unittests',
+          'mojo_public_system_unittests',
+          'mojo_system_unittests',
+          'net_unittests',
+          'skia_unittests',
+          'service_manager_unittests',
+          'ui_base_unittests',
+        ],
+      },
+      'Linux Builder SANDBOX': {
+        # This should mirror the 'Linux Builder' builder on chromium.linux.
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Linux Tests SANDBOX': {
+        # TODO(dpranke): This should mirror 'Linux Tests' on chromium.linux,
+        # but currently doesn't quite do so; we should remove the
+        # exceptions that Linux Tests doesn't also have.
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_isolated_scripts',
+          'scripts': 'chromium_linux_scripts',
+        },
+      },
+    },
+  },
+  {
     'name': 'chromium.win',
     'machines': {
       'Win Builder': {
