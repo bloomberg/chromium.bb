@@ -89,6 +89,7 @@
 #include "url/url_util.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
@@ -667,6 +668,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       previews_service->previews_ui_service()->ClearBlackList(delete_begin_,
                                                               delete_end_);
     }
+
+#if defined(OS_ANDROID)
+    OomInterventionDecider* oom_intervention_decider =
+        OomInterventionDecider::GetForBrowserContext(profile_);
+    if (oom_intervention_decider)
+      oom_intervention_decider->ClearData();
+#endif
 
     // The SSL Host State that tracks SSL interstitial "proceed" decisions may
     // include origins that the user has visited, so it must be cleared.
