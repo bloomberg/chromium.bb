@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -421,8 +421,7 @@ File::Error File::OSErrorToFileError(int saved_errno) {
       return FILE_ERROR_NOT_A_DIRECTORY;
     default:
 #if !defined(OS_NACL)  // NaCl build has no metrics code.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Posix",
-                                  saved_errno);
+      UmaHistogramSparse("PlatformFile.UnknownErrors.Posix", saved_errno);
 #endif
       // This function should only be called for errors.
       DCHECK_NE(0, saved_errno);

@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
@@ -258,8 +259,8 @@ void HistogramSamples::RecordNegativeSample(NegativeSampleReason reason,
                             MAX_NEGATIVE_SAMPLE_REASONS);
   UMA_HISTOGRAM_CUSTOM_COUNTS("UMA.NegativeSamples.Increment", increment, 1,
                               1 << 30, 100);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.NegativeSamples.Histogram",
-                              static_cast<int32_t>(id()));
+  UmaHistogramSparse("UMA.NegativeSamples.Histogram",
+                     static_cast<int32_t>(id()));
 }
 
 SampleCountIterator::~SampleCountIterator() = default;

@@ -6,13 +6,14 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/time/time.h"
 
 namespace base {
 
 void UmaHistogramBoolean(const std::string& name, bool sample) {
   HistogramBase* histogram = BooleanHistogram::FactoryGet(
-      name, base::HistogramBase::kUmaTargetedHistogramFlag);
+      name, HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(sample);
 }
 
@@ -98,6 +99,12 @@ void UmaHistogramMemoryMB(const std::string& name, int sample) {
 
 void UmaHistogramMemoryLargeMB(const std::string& name, int sample) {
   UmaHistogramCustomCounts(name, sample, 1, 64000, 100);
+}
+
+void UmaHistogramSparse(const std::string& name, int sample) {
+  HistogramBase* histogram = SparseHistogram::FactoryGet(
+      name, HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(sample);
 }
 
 }  // namespace base

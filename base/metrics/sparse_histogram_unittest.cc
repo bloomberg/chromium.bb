@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -172,9 +172,9 @@ TEST_P(SparseHistogramTest, AddCount_LargeCountsDontOverflow) {
 }
 
 TEST_P(SparseHistogramTest, MacroBasicTest) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Sparse", 200);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
+  UmaHistogramSparse("Sparse", 100);
+  UmaHistogramSparse("Sparse", 200);
+  UmaHistogramSparse("Sparse", 100);
 
   StatisticsRecorder::Histograms histograms;
   StatisticsRecorder::GetHistograms(&histograms);
@@ -202,7 +202,7 @@ TEST_P(SparseHistogramTest, MacroInLoopTest) {
   // variable as histogram name.
   for (int i = 0; i < 2; i++) {
     std::string name = StringPrintf("Sparse%d", i + 1);
-    UMA_HISTOGRAM_SPARSE_SLOWLY(name, 100);
+    UmaHistogramSparse(name, 100);
   }
 
   StatisticsRecorder::Histograms histograms;
