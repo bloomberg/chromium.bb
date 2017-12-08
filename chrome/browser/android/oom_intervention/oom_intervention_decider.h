@@ -32,6 +32,13 @@ class PrefService;
 // GetForBrowserContext() will return nullptr when in incognito mode.
 class OomInterventionDecider : public base::SupportsUserData::Data {
  public:
+  // This delegate is a testing seam.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual bool WasLastShutdownClean() = 0;
+  };
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static OomInterventionDecider* GetForBrowserContext(
@@ -47,21 +54,30 @@ class OomInterventionDecider : public base::SupportsUserData::Data {
   void ClearData();
 
  private:
-  explicit OomInterventionDecider(PrefService* prefs);
+  OomInterventionDecider(std::unique_ptr<Delegate> delegate,
+                         PrefService* prefs);
 
   friend class OomInterventionDeciderTest;
   FRIEND_TEST_ALL_PREFIXES(OomInterventionDeciderTest, OptOutSingleHost);
   FRIEND_TEST_ALL_PREFIXES(OomInterventionDeciderTest, ParmanentlyOptOut);
+  FRIEND_TEST_ALL_PREFIXES(OomInterventionDeciderTest, WasLastShutdownClean);
 
   // These constants are declared here for testing.
   static const size_t kMaxListSize;
   static const size_t kMaxBlacklistSize;
+
+  // Called when |prefs_| is ready to use. When the last shutdown wasn't clean,
+  // this method adds the last entry of the declined list to the OOM detected
+  // list, assuming that the site caused the crash and the crash was due to
+  // OOM.
+  void OnPrefInitialized(bool success);
 
   bool IsOptedOut(const std::string& host) const;
 
   bool IsInList(const char* list_name, const std::string& host) const;
   void AddToList(const char* list_name, const std::string& host);
 
+  std::unique_ptr<Delegate> delegate_;
   PrefService* prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(OomInterventionDecider);

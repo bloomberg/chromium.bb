@@ -4,7 +4,9 @@
 
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/metrics/metrics_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
@@ -21,6 +23,15 @@ const char kDeclinedHostList[] = "oom_intervention.declined_host_list";
 // Pref path for OOM detected host list. When an OOM crash is observed on
 // a host the hostname is added to the list.
 const char kOomDetectedHostList[] = "oom_intervention.oom_detected_host_list";
+
+class DelegateImpl : public OomInterventionDecider::Delegate {
+ public:
+  bool WasLastShutdownClean() override {
+    if (!g_browser_process || !g_browser_process->metrics_service())
+      return true;
+    return g_browser_process->metrics_service()->WasLastShutdownClean();
+  }
+};
 
 }  // namespace
 
@@ -47,14 +58,29 @@ OomInterventionDecider* OomInterventionDecider::GetForBrowserContext(
   if (!context->GetUserData(kOomInterventionDecider)) {
     PrefService* prefs = Profile::FromBrowserContext(context)->GetPrefs();
     context->SetUserData(kOomInterventionDecider,
-                         base::WrapUnique(new OomInterventionDecider(prefs)));
+                         base::WrapUnique(new OomInterventionDecider(
+                             std::make_unique<DelegateImpl>(), prefs)));
   }
   return static_cast<OomInterventionDecider*>(
       context->GetUserData(kOomInterventionDecider));
 }
 
-OomInterventionDecider::OomInterventionDecider(PrefService* prefs)
-    : prefs_(prefs) {}
+OomInterventionDecider::OomInterventionDecider(
+    std::unique_ptr<Delegate> delegate,
+    PrefService* prefs)
+    : delegate_(std::move(delegate)), prefs_(prefs) {
+  DCHECK(delegate_);
+
+  PrefService::PrefInitializationStatus pref_status =
+      prefs_->GetInitializationStatus();
+  if (pref_status == PrefService::INITIALIZATION_STATUS_WAITING) {
+    prefs_->AddPrefInitObserver(base::BindRepeating(
+        &OomInterventionDecider::OnPrefInitialized, base::Unretained(this)));
+  } else {
+    OnPrefInitialized(pref_status ==
+                      PrefService::INITIALIZATION_STATUS_SUCCESS);
+  }
+}
 
 OomInterventionDecider::~OomInterventionDecider() = default;
 
@@ -97,6 +123,23 @@ void OomInterventionDecider::ClearData() {
   prefs_->ClearPref(kOomDetectedHostList);
 }
 
+void OomInterventionDecider::OnPrefInitialized(bool success) {
+  if (!success)
+    return;
+
+  if (delegate_->WasLastShutdownClean())
+    return;
+
+  const base::Value::ListStorage& declined_list =
+      prefs_->GetList(kDeclinedHostList)->GetList();
+  if (declined_list.size() > 0) {
+    const std::string& last_declined =
+        declined_list[declined_list.size() - 1].GetString();
+    if (!IsInList(kBlacklist, last_declined))
+      AddToList(kOomDetectedHostList, last_declined);
+  }
+}
+
 bool OomInterventionDecider::IsOptedOut(const std::string& host) const {
   const base::Value::ListStorage& blacklist =
       prefs_->GetList(kBlacklist)->GetList();
@@ -124,4 +167,9 @@ void OomInterventionDecider::AddToList(const char* list_name,
   list.push_back(base::Value(host));
   if (list.size() > kMaxListSize)
     list.erase(list.begin());
+
+  // Save the list immediately because we typically modify lists under high
+  // memory pressure, in which the browser process can be killed by the OS
+  // soon.
+  prefs_->CommitPendingWrite();
 }
