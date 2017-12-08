@@ -575,6 +575,21 @@ TEST(SecurityStateContentUtilsTest, SubjectAltNameWarning) {
   EXPECT_EQ(0u, explanations.insecure_explanations.size());
 }
 
+// Tests that malicious safe browsing data in SecurityInfo causes an insecure
+// explanation to be set.
+TEST(SecurityStateContentUtilsTest, SafeBrowsingExplanation) {
+  security_state::SecurityInfo security_info;
+  security_info.cert_status = 0;
+  security_info.scheme_is_cryptographic = true;
+  security_info.malicious_content_status =
+      security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
+  security_info.content_with_cert_errors_status =
+      security_state::CONTENT_STATUS_NONE;
+  content::SecurityStyleExplanations explanations;
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_EQ(1u, explanations.insecure_explanations.size());
+}
+
 // Tests that an explanation using the shorter constructor sets the correct
 // default values for other fields.
 TEST(SecurityStateContentUtilsTest, DefaultSecurityStyleExplanation) {

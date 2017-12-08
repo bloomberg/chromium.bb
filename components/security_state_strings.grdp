@@ -19,8 +19,14 @@
   <message name="IDS_EDITED_NONSECURE_DESCRIPTION" desc="Description of a security problem where the site is non-secure (HTTP) and user has entered data in a form field." translateable="false">
     Data was entered in a text field on a non-secure page. A warning has been added to the URL bar.
   </message>
-  <message name="IDS_SAFEBROWSING_WARNING" desc="Summary phrase for a security problem where the site is deemed unsafe by the SafeBrowsing service." translateable="false">
+  <message name="IDS_SAFEBROWSING_WARNING" desc="Main summary for page when it has been deemed unsafe by the SafeBrowsing service." translateable="false">
     This page is dangerous (flagged by Google Safe Browsing).
+  </message>
+  <message name="IDS_SAFEBROWSING_WARNING_SUMMARY" desc="Summary phrase for a security problem where the site is deemed unsafe by the SafeBrowsing service." translateable="false">
+    Flagged by Google Safe Browsing
+  </message>
+  <message name="IDS_SAFEBROWSING_WARNING_DESCRIPTION" desc="Description of a security problem where the site is deemed unsafe by the SafeBrowsing service." translateable="false">
+    To check this page's status, visit g.co/safebrowsingstatus.
   </message>
   <message name="IDS_SHA1" desc="Summary phrase for a security problem where the site's certificate chain contains a SHA1 signature." translateable="false">
     SHA-1 certificate
