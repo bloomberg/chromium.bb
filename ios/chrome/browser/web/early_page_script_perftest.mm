@@ -29,7 +29,7 @@ class EarlyPageScriptPerfTest : public PerfTest {
     web_view_ = [[WKWebView alloc] init];
     WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state.get());
     NSArray* scripts = web_view.configuration.userContentController.userScripts;
-    EXPECT_EQ(1U, scripts.count);
+    EXPECT_EQ(2U, scripts.count);
     script_ = [scripts.firstObject source];
   }
 
