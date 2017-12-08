@@ -52,9 +52,7 @@ public class CastWebContentsComponent {
             Intent intent = new Intent(Intent.ACTION_VIEW, getInstanceUri(mInstanceId), context,
                     CastWebContentsActivity.class);
             intent.putExtra(ACTION_EXTRA_WEB_CONTENTS, webContents);
-            // FLAG_ACTIVITY_SINGLE_TOP will try to reuse existing activity.
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-                    | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             context.startActivity(intent);
         }
 
