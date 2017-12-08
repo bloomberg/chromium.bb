@@ -352,7 +352,8 @@ def AddGTestOptions(parser):
   filter_group.add_argument(
       '-f', '--gtest_filter', '--gtest-filter',
       dest='test_filter',
-      help='googletest-style filter string.')
+      help='googletest-style filter string.',
+      default=os.environ.get('GTEST_FILTER'))
   filter_group.add_argument(
       '--gtest-filter-file',
       dest='test_filter_file', type=os.path.realpath,
@@ -413,7 +414,8 @@ def AddInstrumentationTestOptions(parser):
   parser.add_argument(
       '-f', '--test-filter', '--gtest_filter', '--gtest-filter',
       dest='test_filter',
-      help='Test filter (if not fully qualified, will run all matches).')
+      help='Test filter (if not fully qualified, will run all matches).',
+      default=os.environ.get('GTEST_FILTER'))
   parser.add_argument(
       '--gtest_also_run_disabled_tests', '--gtest-also-run-disabled-tests',
       dest='run_disabled', action='store_true',
@@ -559,7 +561,8 @@ def AddLinkerTestOptions(parser):
   parser.add_argument(
       '-f', '--gtest-filter',
       dest='test_filter',
-      help='googletest-style filter string.')
+      help='googletest-style filter string.',
+      default=os.environ.get('GTEST_FILTER'))
   parser.add_argument(
       '--test-apk',
       type=os.path.realpath,
