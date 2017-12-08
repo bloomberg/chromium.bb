@@ -513,15 +513,6 @@
       'filepath': 'third_party/WebKit/LayoutTests/external/' \
                   '|third_party/WebKit/Tools/Scripts/webkitpy/w3c/'
     },
-    'blink_webcomponents': {
-      'filepath': 'third_party/WebKit/Source/core/dom/.*Shadow' \
-                  '|third_party/WebKit/Source/core/dom/.*Slot' \
-                  '|third_party/WebKit/Source/core/dom/.*InsertionPoint' \
-                  '|third_party/WebKit/Source/core/dom/.*FlatTree' \
-                  '|third_party/WebKit/Source/core/html/custom/' \
-                  '|third_party/WebKit/Source/core/html/imports/' \
-                  '|third_party/WebKit/Source/bindings/core/v8/.*CustomElement'
-    },
     'blink_webp': {
       'filepath': 'third_party/WebKit/Source/platform/image-decoders/webp' \
                   '|third_party/WebKit/Source/platform/image-encoders/skia/WEBP'
@@ -1724,15 +1715,13 @@
     'blink_css': ['alexis.menard@intel.com',
                   'apavlov+blink@chromium.org',
                   'blink-reviews-css@chromium.org',
-                  'dglazkov+blink@chromium.org',
                   'rob.buis@samsung.com'],
     'blink_css_flexbox': ['cbiesinger@chromium.org'],
     'blink_css_fragmentation_tests': ['mstensho@chromium.org'],
     'blink_css_grid_layout': ['jfernandez@igalia.com',
                               'rego@igalia.com',
                               'svillar@igalia.com'],
-    'blink_custom_elements': ['dglazkov+blink@chromium.org',
-                              'dominicc+watchlist@chromium.org'],
+    'blink_custom_elements': ['dominicc+watchlist@chromium.org'],
     'blink_device_orientation': ['mlamouri+watch-blink@chromium.org',
                                  'timvolodine@chromium.org'],
     'blink_devtools': ['apavlov+blink@chromium.org',
@@ -1742,12 +1731,10 @@
                        'lushnikov+blink@chromium.org',
                        'pfeldman+blink@chromium.org'],
     'blink_dom': ['blink-reviews-dom@chromium.org',
-                  'dglazkov+blink@chromium.org',
                   'eae+blinkwatch@chromium.org',
                   'rob.buis@samsung.com'],
     'blink_dom_events': ['hayato@chromium.org'],
     'blink_events': ['blink-reviews-events@chromium.org',
-                     'dglazkov+blink@chromium.org',
                      'dtapuska+blinkwatch@chromium.org',
                      'eae+blinkwatch@chromium.org'],
     'blink_fetch': ['gavinp+loader@chromium.org',
@@ -1764,8 +1751,7 @@
                    'haraken@chromium.org',
                    'kouhei+heap@chromium.org',
                    'oilpan-reviews@chromium.org'],
-    'blink_html': ['blink-reviews-html@chromium.org',
-                   'dglazkov+blink@chromium.org'],
+    'blink_html': ['blink-reviews-html@chromium.org'],
     'blink_htmlparser': ['kinuko+watch@chromium.org',
                          'loading-reviews+parser@chromium.org'],
     'blink_indexed_db': ['cmumford@chromium.org',
@@ -1818,8 +1804,7 @@
     'blink_preloadScanner': ['yoav@yoav.ws'],
     'blink_prerender': ['gavinp+prerender@chromium.org',
                         'yoav@yoav.ws'],
-    'blink_public_api': ['blink-reviews-api@chromium.org',
-                         'dglazkov+blink@chromium.org'],
+    'blink_public_api': ['blink-reviews-api@chromium.org'],
     'blink_quota': ['kinuko+fileapi@chromium.org',
                     'nhiroki@chromium.org',
                     'tzik@chromium.org'],
@@ -1861,7 +1846,6 @@
     'blink_vibration': ['mlamouri+watch-blink@chromium.org'],
     'blink_viewport_interaction': ['kenneth.christiansen@gmail.com'],
     'blink_w3ctests': ['blink-reviews-w3ctests@chromium.org'],
-    'blink_webcomponents': ['dglazkov+blink@chromium.org'],
     'blink_webp': ['jzern@chromium.org',
                    'skal@google.com',
                    'urvang@chromium.org'],
