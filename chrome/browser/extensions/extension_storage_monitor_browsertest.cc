@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_storage_monitor.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,8 +30,7 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/notification.h"
 
 namespace extensions {
 
@@ -39,20 +40,23 @@ const int kInitialUsageThreshold = 500;
 
 const char kWriteDataApp[] = "storage_monitor/write_data";
 
-class NotificationObserver : public message_center::MessageCenterObserver {
+class NotificationObserver {
  public:
-  explicit NotificationObserver(const std::string& target_notification)
-      : message_center_(message_center::MessageCenter::Get()),
-        target_notification_id_(target_notification),
-        waiting_(false) {
-    message_center_->AddObserver(this);
+  NotificationObserver(NotificationDisplayServiceTester* display_service,
+                       const std::string& target_notification)
+      : display_service_(display_service),
+        target_notification_id_(target_notification) {
+    // Don't count old notifications.
+    display_service_->RemoveAllNotifications(
+        NotificationHandler::Type::TRANSIENT, false);
   }
 
-  ~NotificationObserver() override { message_center_->RemoveObserver(this); }
+  ~NotificationObserver() {
+    display_service_->SetNotificationAddedClosure(base::RepeatingClosure());
+  }
 
   bool HasReceivedNotification() const {
-    return received_notifications_.find(target_notification_id_) !=
-      received_notifications_.end();
+    return !!display_service_->GetNotification(target_notification_id_);
   }
 
   // Runs the message loop and returns true if a notification is received.
@@ -62,24 +66,22 @@ class NotificationObserver : public message_center::MessageCenterObserver {
       return true;
 
     waiting_ = true;
+    display_service_->SetNotificationAddedClosure(base::BindRepeating(
+        &NotificationObserver::OnNotificationAdded, base::Unretained(this)));
     content::RunMessageLoop();
     waiting_ = false;
     return HasReceivedNotification();
   }
 
  private:
-  // MessageCenterObserver implementation:
-  void OnNotificationAdded(const std::string& notification_id) override {
-    received_notifications_.insert(notification_id);
-
+  void OnNotificationAdded() {
     if (waiting_ && HasReceivedNotification())
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
-  message_center::MessageCenter* message_center_;
-  std::set<std::string> received_notifications_;
+  NotificationDisplayServiceTester* display_service_;
   std::string target_notification_id_;
-  bool waiting_;
+  bool waiting_ = false;
 };
 
 }  // namespace
@@ -92,6 +94,9 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
   // ExtensionBrowserTest overrides:
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
+
+    display_service_ =
+        std::make_unique<NotificationDisplayServiceTester>(profile());
 
     host_resolver()->AddRule("*", "127.0.0.1");
 
@@ -183,7 +188,6 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
 
   void SimulateProfileShutdown() { storage_monitor_->StopMonitoringAll(); }
 
- private:
   void InitStorageMonitor() {
     storage_monitor_ = ExtensionStorageMonitor::Get(profile());
     ASSERT_TRUE(storage_monitor_);
@@ -243,7 +247,7 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
                   const std::string& filesystem,
                   bool expected_notification) {
     NotificationObserver notification_observer(
-        GetNotificationId(extension->id()));
+        display_service_.get(), GetNotificationId(extension->id()));
 
     if (extension->is_hosted_app()) {
       WriteBytesForHostedApp(extension, num_bytes, filesystem);
@@ -261,6 +265,7 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
   }
 
   ExtensionStorageMonitor* storage_monitor_;
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
 };
 
@@ -311,9 +316,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UserDisabledNotifications) {
   EXPECT_TRUE(IsStorageNotificationEnabled(extension->id()));
 
   // Fake clicking the notification button to disable notifications.
-  message_center::MessageCenter::Get()->ClickOnNotificationButton(
-      GetNotificationId(extension->id()),
-      ExtensionStorageMonitor::BUTTON_DISABLE_NOTIFICATION);
+  display_service_->GetNotification(GetNotificationId(extension->id()))
+      ->delegate()
+      ->ButtonClick(ExtensionStorageMonitor::BUTTON_DISABLE_NOTIFICATION);
 
   EXPECT_FALSE(IsStorageNotificationEnabled(extension->id()));
 
@@ -414,9 +419,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest,
       ScopedTestDialogAutoConfirm::ACCEPT);
   TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()),
                                          extension->id());
-  message_center::MessageCenter::Get()->ClickOnNotificationButton(
-      GetNotificationId(extension->id()),
-      ExtensionStorageMonitor::BUTTON_UNINSTALL);
+  display_service_->GetNotification(GetNotificationId(extension->id()))
+      ->delegate()
+      ->ButtonClick(ExtensionStorageMonitor::BUTTON_UNINSTALL);
   observer.WaitForExtensionUninstalled();
 }
 

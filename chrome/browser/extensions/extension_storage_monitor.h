@@ -20,13 +20,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace gfx {
 class Image;
 }
+
+class Profile;
 
 namespace extensions {
 
@@ -43,7 +41,7 @@ class ExtensionStorageMonitor : public KeyedService,
                                 public ExtensionRegistryObserver,
                                 public ExtensionUninstallDialog::Delegate {
  public:
-  static ExtensionStorageMonitor* Get(content::BrowserContext* context);
+  static ExtensionStorageMonitor* Get(Profile* profile);
 
   // Indices of buttons in the notification. Exposed for testing.
   enum ButtonIndex {
@@ -51,7 +49,7 @@ class ExtensionStorageMonitor : public KeyedService,
     BUTTON_UNINSTALL
   };
 
-  explicit ExtensionStorageMonitor(content::BrowserContext* context);
+  explicit ExtensionStorageMonitor(Profile* profile);
   ~ExtensionStorageMonitor() override;
 
  private:
@@ -132,7 +130,7 @@ class ExtensionStorageMonitor : public KeyedService,
   // IDs of extensions that notifications were shown for.
   std::set<std::string> notified_extension_ids_;
 
-  content::BrowserContext* context_;
+  Profile* profile_;
   extensions::ExtensionPrefs* extension_prefs_;
 
   content::NotificationRegistrar registrar_;
