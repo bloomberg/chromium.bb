@@ -46,7 +46,7 @@ Google naming. Be sure to use the base namespace.
   * **base::small\_map** has better runtime memory usage without the poor
     mutation performance of large containers that base::flat\_map has. But this
     advantage is partially offset by additional code size. Prefer in cases
-    where you make many objects so that the code/heap tradeoff is good.
+    where you make many objects so that the code/heap tradeoff is good.
 
   * Use **std::map** and **std::set** if you can't decide. Even if they're not
     great, they're unlikely to be bad or surprising.
@@ -136,31 +136,10 @@ http://en.cppreference.com/w/cpp/utility/functional/less_void
 Example, smart pointer set:
 
 ```cpp
-// Define a custom comparator.
-struct UniquePtrComparator {
-  // Mark your comparison as transparent.
-  using is_transparent = int;
-
-  template <typename T>
-  bool operator()(const std::unique_ptr<T>& lhs,
-                  const std::unique_ptr<T>& rhs) const {
-    return lhs < rhs;
-  }
-
-  template <typename T>
-  bool operator()(const T* lhs, const std::unique_ptr<T>& rhs) const {
-    return lhs < rhs.get();
-  }
-
-  template <typename T>
-  bool operator()(const std::unique_ptr<T>& lhs, const T* rhs) const {
-    return lhs.get() < rhs;
-  }
-};
-
-// Declare a typedef.
+// Declare a type alias using base::UniquePtrComparator.
 template <typename T>
-using UniquePtrSet = base::flat_set<std::unique_ptr<T>, UniquePtrComparator>;
+using UniquePtrSet = base::flat_set<std::unique_ptr<T>,
+                                    base::UniquePtrComparator>;
 
 // ...
 // Collect data.
