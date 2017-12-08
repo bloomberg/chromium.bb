@@ -31,7 +31,8 @@ class ArcBridgeService;
 class ArcMetricsService : public KeyedService,
                           public mojom::MetricsHost {
  public:
-  // This is public for testing only.
+  // These values are persisted to logs, and should therefore never be
+  // renumbered nor reused. They are public for testing only.
   enum class NativeBridgeType {
     // Native bridge value has not been received from the container yet.
     UNKNOWN = 0,
@@ -64,6 +65,10 @@ class ArcMetricsService : public KeyedService,
   void ReportBootProgress(std::vector<mojom::BootProgressEventPtr> events,
                           mojom::BootType boot_type) override;
   void ReportNativeBridge(mojom::NativeBridgeType native_bridge_type) override;
+
+  // Records native bridge UMA according to value received from the
+  // container or as UNKNOWN if the value has not been recieved yet.
+  void RecordNativeBridgeUMA();
 
   NativeBridgeType native_bridge_type_for_testing() const {
     return native_bridge_type_;

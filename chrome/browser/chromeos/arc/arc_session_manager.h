@@ -194,8 +194,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // this.
   void RequestArcDataRemoval();
 
-  // Called from the Chrome OS metrics provider to record Arc.State
-  // periodically.
+  // Called from the Chrome OS metrics provider to record Arc.State and similar
+  // values strictly once per every metrics recording interval. This way they
+  // are in every record uploaded to the server and therefore can be used to
+  // split and compare analysis data for all other metrics.
   void RecordArcState();
 
   // ArcSupportHost:::ErrorDelegate:
