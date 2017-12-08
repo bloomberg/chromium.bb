@@ -41,13 +41,13 @@ navigator.geolocation.getCurrentPosition(function(p) {
 }, function(e) {
     testFailed('Error callback invoked unexpectedly');
     finishJSTest();
-}, { maximumAge: 1000 });
+});
 
 function continueTest() {
-    // Ensure we get the new position estimate. Passing zero for maximumAge
-    // indicates we don't want a cached estimate, and setting the new position
-    // estimate after calling getCurrentPosition ensures the timestamp of the
-    // new estimate is recent.
+    mock.setGeolocationPosition(++mockLatitude,
+                                ++mockLongitude,
+                                ++mockAccuracy);
+
     navigator.geolocation.getCurrentPosition(function(p) {
         position = p;
         shouldBe('position.coords.latitude', 'mockLatitude');
@@ -57,11 +57,7 @@ function continueTest() {
     }, function(e) {
         testFailed('Error callback invoked unexpectedly');
         finishJSTest();
-    }, { maximumAge: 0 });
-
-    mock.setGeolocationPosition(++mockLatitude,
-                                ++mockLongitude,
-                                ++mockAccuracy);
+    });
 }
 
 window.jsTestIsAsync = true;

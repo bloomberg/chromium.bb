@@ -33,7 +33,7 @@ navigator.geolocation.getCurrentPosition(function() {
 }, function() {
     testFailed('Error callback invoked unexpectedly');
     finishJSTest();
-}, { maximumAge: 1000 });
+});
 window.setTimeout(allowPermission, 100);
 
 window.jsTestIsAsync = true;

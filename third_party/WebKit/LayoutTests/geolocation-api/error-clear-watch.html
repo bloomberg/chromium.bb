@@ -17,7 +17,7 @@ mock.setGeolocationPermission(true);
 mock.setGeolocationPositionUnavailableError("debug");
 
 var watchId = navigator.geolocation.watchPosition(function() {
-    testFailed('Success callback invoked unexpectedly');
+    navigator.geolocation.clearWatch(watchId);
     finishJSTest();
 }, function(e) {
     navigator.geolocation.clearWatch(watchId);

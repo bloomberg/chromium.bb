@@ -41,7 +41,7 @@ navigator.geolocation.watchPosition(function() {
     }
     testFailed('Error callback invoked unexpectedly');
     finishJSTest();
-}, { maximumAge: 1000 });
+});
 
 navigator.geolocation.getCurrentPosition(function() {
     testFailed('Success callback invoked unexpectedly');
@@ -57,7 +57,7 @@ navigator.geolocation.getCurrentPosition(function() {
     }
     testFailed('Error callback invoked unexpectedly');
     finishJSTest();
-}, { maximumAge: 1000 });
+});
 window.setTimeout(denyPermission, 100);
 
 function maybeFinishTest() {

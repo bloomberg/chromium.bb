@@ -27,7 +27,7 @@ function onIframeUnloaded() {
     }, function(e) {
         testFailed('Error callback invoked unexpectedly');
         finishJSTest();
-    }, { maximumAge: 1000 });
+    });
     setTimeout(function() {
         testPassed('No callbacks invoked');
         finishJSTest();
