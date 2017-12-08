@@ -70,7 +70,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(_))
       .WillOnce(SetArrayArgument<0>(
           test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
-  resource->GpuMailbox();
+  resource->GetOrCreateGpuMailbox();
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
