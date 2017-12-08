@@ -99,6 +99,13 @@ WMEventType WMEventTypeFromWindowPinType(ash::mojom::WindowPinType type) {
   return WM_EVENT_NORMAL;
 }
 
+float GetCurrentSnappedWidthRatio(aura::Window* window) {
+  gfx::Rect maximized_bounds =
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window);
+  return static_cast<float>(window->bounds().width()) /
+         static_cast<float>(maximized_bounds.width());
+}
+
 }  // namespace
 
 WindowState::~WindowState() {
@@ -273,6 +280,8 @@ void WindowState::RestoreAlwaysOnTop() {
 
 void WindowState::OnWMEvent(const WMEvent* event) {
   current_state_->OnWMEvent(this, event);
+
+  UpdateSnappedWidthRatio(event);
 }
 
 void WindowState::SaveCurrentBoundsForRestore() {
@@ -315,6 +324,25 @@ std::unique_ptr<WindowState::State> WindowState::SetStateObject(
   current_state_ = std::move(new_state);
   current_state_->AttachState(this, old_object.get());
   return old_object;
+}
+
+void WindowState::UpdateSnappedWidthRatio(const WMEvent* event) {
+  if (!IsSnapped())
+    return;
+
+  const WMEventType type = event->type();
+  // Initializes |snapped_width_ratio_| whenever |event| is snapping event.
+  if (type == WM_EVENT_SNAP_LEFT || type == WM_EVENT_SNAP_RIGHT ||
+      type == WM_EVENT_CYCLE_SNAP_LEFT || type == WM_EVENT_CYCLE_SNAP_RIGHT) {
+    // Since |UpdateSnappedWidthRatio()| is called post WMEvent taking effect,
+    // |window_|'s bounds is in a correct state for ratio update.
+    snapped_width_ratio_ = GetCurrentSnappedWidthRatio(window_);
+    return;
+  }
+
+  // |snapped_width_ratio_| under snapped state may change due to bounds event.
+  if (event->IsBoundsEvent())
+    snapped_width_ratio_ = GetCurrentSnappedWidthRatio(window_);
 }
 
 void WindowState::SetPreAutoManageWindowBounds(const gfx::Rect& bounds) {
@@ -431,6 +459,8 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
     return;
   gfx::Rect maximized_bounds =
       ScreenUtil::GetMaximizedWindowBoundsInParent(window_);
+  bounds->set_width(
+      static_cast<int>(snapped_width_ratio_ * maximized_bounds.width()));
   if (GetStateType() == mojom::WindowStateType::LEFT_SNAPPED)
     bounds->set_x(maximized_bounds.x());
   else if (GetStateType() == mojom::WindowStateType::RIGHT_SNAPPED)

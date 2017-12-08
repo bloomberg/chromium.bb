@@ -605,6 +605,54 @@ TEST_F(WorkspaceLayoutManagerTest,
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
 }
 
+// Tests that under the case of two snapped windows, if there is a display work
+// area width change, the snapped window width is updated upon snapped width
+// ratio (crbug.com/688583).
+TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
+  UpdateDisplay("300x400");
+  // Create two snapped windows, one left snapped, one right snapped.
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
+  wm::WindowState* window1_state = wm::GetWindowState(window1.get());
+  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  window1_state->OnWMEvent(&snap_left);
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  const gfx::Rect expected_left_snapped_bounds = gfx::Rect(
+      work_area.x(), work_area.y(), work_area.width() / 2, work_area.height());
+  EXPECT_EQ(expected_left_snapped_bounds, window1->bounds());
+
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
+  wm::WindowState* window2_state = wm::GetWindowState(window2.get());
+  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  window2_state->OnWMEvent(&snap_right);
+  const gfx::Rect expected_right_snapped_bounds =
+      gfx::Rect(work_area.right() - work_area.width() / 2, work_area.y(),
+                work_area.width() / 2, work_area.height());
+  EXPECT_EQ(expected_right_snapped_bounds, window2->bounds());
+
+  // Set shelf alignment to left, which will change display work area.
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  const gfx::Rect new_work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  EXPECT_NE(work_area, new_work_area);
+  const gfx::Rect new_expected_left_snapped_bounds =
+      gfx::Rect(new_work_area.x(), new_work_area.y(), new_work_area.width() / 2,
+                new_work_area.height());
+  EXPECT_EQ(new_expected_left_snapped_bounds, window1->bounds());
+  const gfx::Rect new_expected_right_snapped_bounds = gfx::Rect(
+      new_work_area.right() - new_work_area.width() / 2, new_work_area.y(),
+      new_work_area.width() / 2, new_work_area.height());
+  EXPECT_EQ(new_expected_right_snapped_bounds, window2->bounds());
+
+  // Set shelf alignment to bottom again.
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  EXPECT_EQ(expected_left_snapped_bounds, window1->bounds());
+  EXPECT_EQ(expected_right_snapped_bounds, window2->bounds());
+}
+
 // Do not adjust window bounds to ensure minimum visibility for transient
 // windows (crbug.com/624806).
 TEST_F(WorkspaceLayoutManagerTest,

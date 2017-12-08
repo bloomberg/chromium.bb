@@ -6,11 +6,13 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/macros.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/display/display.h"
@@ -22,6 +24,18 @@
 #include "ui/display/test/display_manager_test_api.h"
 
 namespace ash {
+
+namespace {
+
+// Get the default left snapped window bounds which has snapped width ratio 0.5.
+gfx::Rect GetDefaultLeftSnappedBoundsInDisplay(
+    const display::Display& display) {
+  auto work_area = display.work_area();
+  work_area.set_width(work_area.width() / 2);
+  return work_area;
+}
+
+}  // namespace
 
 using DisplayMoveWindowUtilTest = AshTestBase;
 
@@ -35,6 +49,70 @@ TEST_F(DisplayMoveWindowUtilTest, WindowBounds) {
   wm::ActivateWindow(window);
   HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kRight);
   EXPECT_EQ(gfx::Rect(410, 20, 200, 100), window->GetBoundsInScreen());
+}
+
+// Tests window state (maximized/fullscreen/snapped) and its bounds.
+TEST_F(DisplayMoveWindowUtilTest, WindowState) {
+  // Layout: [p][ 1 ]
+  UpdateDisplay("400x300,800x300");
+
+  aura::Window* window =
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 200, 100));
+  wm::ActivateWindow(window);
+  display::Screen* screen = display::Screen::GetScreen();
+  ASSERT_EQ(display_manager()->GetDisplayAt(0).id(),
+            screen->GetDisplayNearestWindow(window).id());
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  // Set window to maximized state.
+  window_state->Maximize();
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(window),
+            window->bounds());
+  HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kRight);
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
+            screen->GetDisplayNearestWindow(window).id());
+  // Check that window state is maximized and has updated maximized bounds.
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(window),
+            window->bounds());
+
+  // Set window to fullscreen state.
+  HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kLeft);
+  const wm::WMEvent fullscreen(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&fullscreen);
+  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),
+            screen->GetDisplayNearestWindow(window).id());
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_EQ(display_manager()->GetDisplayAt(0).bounds(),
+            window->GetBoundsInScreen());
+  HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kRight);
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
+            screen->GetDisplayNearestWindow(window).id());
+  // Check that window state is fullscreen and has updated fullscreen bounds.
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).bounds(),
+            window->GetBoundsInScreen());
+
+  // Set window to left snapped state.
+  HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kLeft);
+  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&snap_left);
+  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),
+            screen->GetDisplayNearestWindow(window).id());
+  EXPECT_TRUE(window_state->IsSnapped());
+  EXPECT_EQ(GetDefaultLeftSnappedBoundsInDisplay(
+                screen->GetDisplayNearestWindow(window)),
+            window->GetBoundsInScreen());
+  EXPECT_EQ(0.5f, window_state->snapped_width_ratio());
+  HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kRight);
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
+            screen->GetDisplayNearestWindow(window).id());
+  // Check that window state is snapped and has updated snapped bounds.
+  EXPECT_TRUE(window_state->IsSnapped());
+  EXPECT_EQ(GetDefaultLeftSnappedBoundsInDisplay(
+                screen->GetDisplayNearestWindow(window)),
+            window->GetBoundsInScreen());
+  EXPECT_EQ(0.5f, window_state->snapped_width_ratio());
 }
 
 // A horizontal layout for three displays. They are perfectly horizontally

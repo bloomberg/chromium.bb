@@ -409,13 +409,6 @@ void DefaultState::SetBounds(WindowState* window_state,
   if (window_state->is_dragged() || window_state->allow_set_bounds_direct()) {
     // TODO(oshima|varkha): Is this still needed? crbug.com/485612.
     window_state->SetBoundsDirect(event->requested_bounds());
-  } else if (window_state->IsSnapped()) {
-    gfx::Rect work_area_in_parent =
-        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
-    gfx::Rect child_bounds(event->requested_bounds());
-    wm::AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
-    window_state->AdjustSnappedBounds(&child_bounds);
-    window_state->SetBoundsDirect(child_bounds);
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
     window_state->SetBoundsConstrained(event->requested_bounds());
   }
