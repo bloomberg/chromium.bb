@@ -318,7 +318,9 @@ void FrameLoader::SetDefersLoading(bool defers) {
 }
 
 bool FrameLoader::ShouldSerializeScrollAnchor() {
-  return RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled();
+  return frame_ && frame_->View() &&
+         RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled() &&
+         frame_->View()->ShouldPerformScrollAnchoring();
 }
 
 void FrameLoader::SaveScrollAnchor() {
@@ -340,8 +342,8 @@ void FrameLoader::SaveScrollAnchor() {
     ScrollAnchor* scroll_anchor = layout_scrollable_area->GetScrollAnchor();
     DCHECK(scroll_anchor);
 
-    ScrollAnchor::SerializedAnchor serialized_anchor =
-        scroll_anchor->SerializeAnchor();
+    const ScrollAnchor::SerializedAnchor& serialized_anchor =
+        scroll_anchor->GetSerializedAnchor();
     if (serialized_anchor.IsValid()) {
       history_item->SetScrollAnchorData(
           {serialized_anchor.selector,
@@ -382,9 +384,6 @@ void FrameLoader::DispatchUnloadEvent() {
   // protected. It will be detached soon.
   protect_provisional_loader_ = false;
   SaveScrollState();
-  // TODO(pnoland): move this SaveScrollAnchorCall to where we fire the
-  // visibilitychange event with value 'hidden.'
-  SaveScrollAnchor();
 
   if (frame_->GetDocument() && !SVGImage::IsInSVGImage(frame_->GetDocument()))
     frame_->GetDocument()->DispatchUnloadEvents();
