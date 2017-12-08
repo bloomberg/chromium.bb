@@ -14,7 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/simple_test_clock.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +35,7 @@ extern const int kPrefetchStoreCommandFailed;
 class PrefetchStoreTestUtil {
  public:
   explicit PrefetchStoreTestUtil(
-      scoped_refptr<base::TestSimpleTaskRunner> task_runner);
+      scoped_refptr<base::TestMockTimeTaskRunner> task_runner);
   ~PrefetchStoreTestUtil();
 
   // Builds a new store in a temporary directory.
@@ -86,7 +86,7 @@ class PrefetchStoreTestUtil {
  private:
   void RunUntilIdle();
 
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ScopedTempDir temp_directory_;
   // TODO(jianli): Refactor this class to avoid owning the store.
   std::unique_ptr<PrefetchStore> owned_store_;

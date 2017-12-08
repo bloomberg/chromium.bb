@@ -30944,10 +30944,16 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OfflinePagesStoreEvent">
-  <int value="0" label="Store opened for the first time"/>
-  <int value="1" label="Store reopened"/>
-  <int value="2" label="Store closed"/>
-  <int value="3" label="Store closing skipped"/>
+  <int value="0" label="Store opened first time">
+    Store was opened for this first time during this session.
+  </int>
+  <int value="1" label="Store reopened">
+    Store was opened after closing at least once during this session.
+  </int>
+  <int value="2" label="Store closed">Store was closed.</int>
+  <int value="3" label="Store closing skipped">
+    Store closing was skipped, because it was not opened at the time of closing.
+  </int>
 </enum>
 
 <enum name="OfflinePagesTabRestoreType">

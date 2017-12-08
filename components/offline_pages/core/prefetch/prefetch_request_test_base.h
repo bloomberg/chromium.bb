@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -39,15 +39,16 @@ class PrefetchRequestTestBase : public testing::Test {
   }
 
   void RunUntilIdle();
+  void FastForwardUntilNoTasksRemain();
 
  protected:
   // Derived classes may need these to construct other members.
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner() {
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner() {
     return task_runner_;
   }
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;

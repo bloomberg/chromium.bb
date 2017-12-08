@@ -181,7 +181,7 @@ bool SetPrefetchQuotaSync(int64_t available_quota,
 }  // namespace
 
 PrefetchStoreTestUtil::PrefetchStoreTestUtil(
-    scoped_refptr<base::TestSimpleTaskRunner> task_runner)
+    scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
     : task_runner_(task_runner) {}
 
 PrefetchStoreTestUtil::~PrefetchStoreTestUtil() = default;
@@ -210,7 +210,7 @@ void PrefetchStoreTestUtil::DeleteStore() {
     if (!temp_directory_.Delete())
       DVLOG(1) << "temp_directory_ not created";
   }
-  task_runner_->RunUntilIdle();
+  task_runner_->FastForwardUntilNoTasksRemain();
 }
 
 bool PrefetchStoreTestUtil::InsertPrefetchItem(const PrefetchItem& item) {

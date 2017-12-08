@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/offline_pages/core/offline_page_item.h"
+#include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -21,19 +22,6 @@
 
 namespace offline_pages {
 namespace {
-
-// This enum is backed by a UMA histogram therefore its entries should not be
-// deleted or re-ordered and new ones should only be appended.
-// See enum definition with the same name in tools/metrics/histograms/enum.xml.
-enum OfflinePagesStoreEvent {
-  STORE_OPENED_FIRST_TIME = 0,
-  STORE_REOPENED = 1,
-  STORE_CLOSED = 2,
-  STORE_CLOSE_SKIPPED = 3,
-
-  // NOTE: always keep this entry at the end.
-  STORE_EVENT_COUNT
-};
 
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
