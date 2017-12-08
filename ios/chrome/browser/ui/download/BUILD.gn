@@ -5,8 +5,8 @@
 source_set("download") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "download_manager_controller.h",
-    "download_manager_controller.mm",
+    "legacy_download_manager_controller.h",
+    "legacy_download_manager_controller.mm",
   ]
   deps = [
     "resources:download_manager_controller_xib",
@@ -38,7 +38,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "download_manager_controller_unittest.mm",
+    "legacy_download_manager_controller_unittest.mm",
   ]
   deps = [
     ":download",

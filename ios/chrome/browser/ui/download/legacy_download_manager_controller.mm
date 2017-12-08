@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/download/download_manager_controller.h"
+#import "ios/chrome/browser/ui/download/legacy_download_manager_controller.h"
 
 #include <stdint.h>
 #include <memory>
@@ -55,7 +55,7 @@ using net::URLFetcherDelegate;
 using net::URLRequestContextGetter;
 using net::URLRequestStatus;
 
-@interface DownloadManagerController ()
+@interface LegacyDownloadManagerController ()
 
 // Creates the portrait and landscape mode constraints that are switched every
 // time the interface is rotated.
@@ -190,7 +190,7 @@ using net::URLRequestStatus;
 // Calls -openGoogleDriveInAppStore to allow the user to install Google Drive.
 - (IBAction)googleDriveButtonTapped:(id)sender;
 
-// Cleans up this DownloadManagerController, and deletes its file from the
+// Cleans up this LegacyDownloadManagerController, and deletes its file from the
 // downloads directory if it has been created there.
 - (void)dealloc;
 
@@ -331,14 +331,14 @@ const CGFloat kActivityIndicatorWidth = 30;
 // request to get information about the file.
 class DownloadHeadDelegate : public URLFetcherDelegate {
  public:
-  explicit DownloadHeadDelegate(DownloadManagerController* owner)
+  explicit DownloadHeadDelegate(LegacyDownloadManagerController* owner)
       : owner_(owner) {}
   void OnURLFetchComplete(const URLFetcher* source) override {
     [owner_ onHeadFetchComplete];
   };
 
  private:
-  __weak DownloadManagerController* owner_;
+  __weak LegacyDownloadManagerController* owner_;
   DISALLOW_COPY_AND_ASSIGN(DownloadHeadDelegate);
 };
 
@@ -346,7 +346,7 @@ class DownloadHeadDelegate : public URLFetcherDelegate {
 // request to download the contents of the file.
 class DownloadContentDelegate : public URLFetcherDelegate {
  public:
-  explicit DownloadContentDelegate(DownloadManagerController* owner)
+  explicit DownloadContentDelegate(LegacyDownloadManagerController* owner)
       : owner_(owner) {}
   void OnURLFetchDownloadProgress(const URLFetcher* source,
                                   int64_t current,
@@ -359,13 +359,13 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   };
 
  private:
-  __weak DownloadManagerController* owner_;
+  __weak LegacyDownloadManagerController* owner_;
   DISALLOW_COPY_AND_ASSIGN(DownloadContentDelegate);
 };
 
 }  // namespace
 
-@interface DownloadManagerController () {
+@interface LegacyDownloadManagerController () {
   int _downloadManagerId;
 
   // Coordinator for displaying the alert informing the user that no application
@@ -495,7 +495,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 
 @end
 
-@implementation DownloadManagerController
+@implementation LegacyDownloadManagerController
 
 @synthesize documentContainer = _documentContainer;
 @synthesize progressBar = _progressBar;
@@ -1057,7 +1057,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   if (tabHelper) {
     NSString* googleDriveButtonTitle =
         l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UPLOAD_TO_GOOGLE_DRIVE);
-    __weak DownloadManagerController* weakSelf = self;
+    __weak LegacyDownloadManagerController* weakSelf = self;
     [_alertCoordinator addItemWithTitle:googleDriveButtonTitle
                                  action:^{
                                    [weakSelf openGoogleDriveInAppStore];
@@ -1206,12 +1206,12 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 - (void)beginStartingContentDownload {
   // Ensure the directory that downloaded files are saved to exists.
   base::FilePath downloadsDirectoryPath;
-  if (![DownloadManagerController
+  if (![LegacyDownloadManagerController
           fetchDownloadsDirectoryFilePath:&downloadsDirectoryPath]) {
     [self displayError];
     return;
   }
-  __weak DownloadManagerController* weakSelf = self;
+  __weak LegacyDownloadManagerController* weakSelf = self;
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindBlockArc(^{
@@ -1228,7 +1228,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     return;
   }
   base::FilePath downloadsDirectoryPath;
-  if (![DownloadManagerController
+  if (![LegacyDownloadManagerController
           fetchDownloadsDirectoryFilePath:&downloadsDirectoryPath]) {
     [self displayError];
     return;
@@ -1270,7 +1270,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
       newProgressFrame.size.height - oldProgressFrame.size.height > 1) {
     __weak UIView* weakProgressBar = _progressBar;
     if (completionAnimation) {
-      __weak DownloadManagerController* weakSelf = self;
+      __weak LegacyDownloadManagerController* weakSelf = self;
       [UIView animateWithDuration:kProgressBarAnimationDuration
           animations:^{
             [weakProgressBar setFrame:newProgressFrame];
@@ -1557,10 +1557,10 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 }
 
 - (NSString*)getNetworkActivityKey {
-  return
-      [NSString stringWithFormat:
-                    @"DownloadManagerController.NetworkActivityIndicatorKey.%d",
-                    _downloadManagerId];
+  return [NSString
+      stringWithFormat:
+          @"LegacyDownloadManagerController.NetworkActivityIndicatorKey.%d",
+          _downloadManagerId];
 }
 
 + (BOOL)fetchDownloadsDirectoryFilePath:(base::FilePath*)path {
@@ -1576,7 +1576,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindBlockArc(^{
         base::FilePath downloadsDirectory;
-        if (![DownloadManagerController
+        if (![LegacyDownloadManagerController
                 fetchDownloadsDirectoryFilePath:&downloadsDirectory]) {
           return;
         }

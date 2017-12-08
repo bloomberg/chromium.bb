@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_DOWNLOAD_DOWNLOAD_MANAGER_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_DOWNLOAD_DOWNLOAD_MANAGER_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_DOWNLOAD_LEGACY_DOWNLOAD_MANAGER_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_DOWNLOAD_LEGACY_DOWNLOAD_MANAGER_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
@@ -18,7 +18,7 @@ class WebState;
 // the option to download it and open it in another app. This controller is
 // displayed when a URL is loaded that contains a file type that UIWebView
 // cannot display itself.
-@interface DownloadManagerController
+@interface LegacyDownloadManagerController
     : NativeContentController<UIDocumentInteractionControllerDelegate>
 
 // Initializes a controller for content from |url| using |webState| to provide
@@ -39,4 +39,4 @@ class WebState;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_DOWNLOAD_DOWNLOAD_MANAGER_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_DOWNLOAD_LEGACY_DOWNLOAD_MANAGER_CONTROLLER_H_
