@@ -50,10 +50,7 @@ class GPU_EXPORT GpuChannelEstablishFactory {
 
   virtual void EstablishGpuChannel(
       const GpuChannelEstablishedCallback& callback) = 0;
-  // If the connection to the host process fails so the channel can not be
-  // established, then |connection_error| is set to true (if it's not null).
-  virtual scoped_refptr<GpuChannelHost> EstablishGpuChannelSync(
-      bool* connection_error) = 0;
+  virtual scoped_refptr<GpuChannelHost> EstablishGpuChannelSync() = 0;
   virtual GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 };
 

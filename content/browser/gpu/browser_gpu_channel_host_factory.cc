@@ -283,13 +283,11 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
 // (Opening the initial channel to a child process involves handling a reply
 // task on the UI thread first, so we cannot block here.)
 scoped_refptr<gpu::GpuChannelHost>
-BrowserGpuChannelHostFactory::EstablishGpuChannelSync(bool* connection_error) {
+BrowserGpuChannelHostFactory::EstablishGpuChannelSync() {
 #if defined(OS_ANDROID)
   NOTREACHED();
   return nullptr;
 #endif
-  if (connection_error)
-    *connection_error = false;
   EstablishGpuChannel(gpu::GpuChannelEstablishedCallback());
 
   if (pending_request_.get())

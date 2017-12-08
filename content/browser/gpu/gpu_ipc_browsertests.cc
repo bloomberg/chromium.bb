@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                        MAYBE_AlreadyEstablished) {
   DCHECK(!IsChannelEstablished());
   scoped_refptr<gpu::GpuChannelHost> gpu_channel =
-      GetFactory()->EstablishGpuChannelSync(nullptr);
+      GetFactory()->EstablishGpuChannelSync();
 
   // Expect established callback immediately.
   bool event = false;
