@@ -53,8 +53,8 @@ TEST(SearchURLsTest, MatchesOriginAndPath) {
                                     GURL("http://example.com/path")));
   EXPECT_FALSE(MatchesOriginAndPath(GURL("http://example.com/path"),
                                     GURL("https://example.com/path")));
-  EXPECT_TRUE(MatchesOriginAndPath(GURL("https://example.com/path"),
-                                   GURL("http://example.com/path")));
+  EXPECT_FALSE(MatchesOriginAndPath(GURL("https://example.com/path"),
+                                    GURL("http://example.com/path")));
   EXPECT_FALSE(MatchesOriginAndPath(GURL("http://example.com/path"),
                                     GURL("http://example.com/another-path")));
 }

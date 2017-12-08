@@ -48,20 +48,15 @@ namespace {
 const char kServiceWorkerFileName[] = "newtab-serviceworker.js";
 
 bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
-  return my_url.host_piece() == other_url.host_piece() &&
-         my_url.port() == other_url.port() &&
-         (my_url.scheme_piece() == other_url.scheme_piece() ||
-          (my_url.SchemeIs(url::kHttpsScheme) &&
-           other_url.SchemeIs(url::kHttpScheme)));
+  return my_url.scheme_piece() == other_url.scheme_piece() &&
+         my_url.host_piece() == other_url.host_piece() &&
+         my_url.port() == other_url.port();
 }
 
 }  // namespace
 
 // Returns true if |my_url| matches |other_url| in terms of origin (i.e. host,
-// port, and scheme) and path. As a special case, this also matches if |my_url|
-// is "https://" and |other_url| is "http://" (and host, port, and path match).
-// This is so that "https://" URLs will be considered "Instant URLs" even if the
-// default search provider URL is "http://".
+// port, and scheme) and path.
 // Defined outside of the anonymous namespace so that it's accessible to unit
 // tests.
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
