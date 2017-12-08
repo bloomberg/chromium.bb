@@ -277,9 +277,9 @@ TEST(TimeTicks, FromQPCValue) {
 
   // Test that the conversions using FromQPCValue() match those computed here
   // using simple floating-point arithmetic.  The floating-point math provides
-  // enough precision to confirm the implementation is correct to the
-  // microsecond for all |test_cases| (though it would be insufficient to
-  // confirm many "very large" tick values which are not being tested here).
+  // enough precision for all reasonable values to confirm that the
+  // implementation is correct to the microsecond, and for "very large" values
+  // it confirms that the answer is very close to correct.
   for (int64_t ticks : test_cases) {
     const double expected_microseconds_since_origin =
         (static_cast<double>(ticks) * Time::kMicrosecondsPerSecond) /
@@ -287,9 +287,18 @@ TEST(TimeTicks, FromQPCValue) {
     const TimeTicks converted_value = TimeTicks::FromQPCValue(ticks);
     const double converted_microseconds_since_origin =
         static_cast<double>((converted_value - TimeTicks()).InMicroseconds());
+    // When we test with very large numbers we end up in a range where adjacent
+    // double values are far apart - 512.0 apart in one test failure. In that
+    // situation it makes no sense for our epsilon to be 1.0 - it should be
+    // the difference between adjacent doubles.
+    double epsilon = nextafter(expected_microseconds_since_origin, INFINITY) -
+                     expected_microseconds_since_origin;
+    // Epsilon must be at least 1.0 because converted_microseconds_since_origin
+    // comes from an integral value and the rounding is not perfect.
+    if (epsilon < 1.0)
+      epsilon = 1.0;
     EXPECT_NEAR(expected_microseconds_since_origin,
-                converted_microseconds_since_origin,
-                1.0)
+                converted_microseconds_since_origin, epsilon)
         << "ticks=" << ticks << ", to be converted via logic path: "
         << (ticks < Time::kQPCOverflowThreshold ? "FAST" : "SAFE");
   }
