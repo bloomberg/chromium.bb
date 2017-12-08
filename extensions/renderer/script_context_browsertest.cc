@@ -6,6 +6,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
@@ -92,6 +93,17 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   EXPECT_EQ(GetEffectiveDocumentURL(frame3), different_url);
   // top -> different origin -> about:blank = inherit
   EXPECT_EQ(GetEffectiveDocumentURL(frame3_1), different_url);
+}
+
+TEST_F(ScriptContextTest, GetMainWorldContextForFrame) {
+  // ScriptContextSet::GetMainWorldContextForFrame should work, even without an
+  // existing v8::HandleScope.
+  content::RenderFrame* render_frame =
+      content::RenderFrame::FromWebFrame(GetMainFrame());
+  ScriptContext* script_context =
+      ScriptContextSet::GetMainWorldContextForFrame(render_frame);
+  ASSERT_TRUE(script_context);
+  EXPECT_EQ(render_frame, script_context->GetRenderFrame());
 }
 
 }  // namespace
