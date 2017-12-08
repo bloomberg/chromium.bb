@@ -87,7 +87,7 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
     ResourceRequest resource_request{KURL(kResourceURL)};
     resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
     FetchParameters fetch_params(resource_request);
-    return RawResource::Fetch(fetch_params, Fetcher());
+    return RawResource::Fetch(fetch_params, Fetcher(), nullptr);
   }
   MockResource* FetchMockResource() {
     ResourceRequest resource_request{KURL(kResourceURL)};

@@ -96,13 +96,13 @@ void InspectorResourceContentLoader::Start() {
       ResourceLoaderOptions options;
       options.initiator_info.name = FetchInitiatorTypeNames::internal;
       FetchParameters params(resource_request, options);
-      Resource* resource = RawResource::Fetch(params, document->Fetcher());
+      ResourceClient* resource_client = new ResourceClient(this);
+      Resource* resource =
+          RawResource::Fetch(params, document->Fetcher(), resource_client);
       if (resource) {
         // Prevent garbage collection by holding a reference to this resource.
         resources_.push_back(resource);
-        ResourceClient* resource_client = new ResourceClient(this);
         pending_resource_clients_.insert(resource_client);
-        resource_client->WaitForResource(resource);
       }
     }
 

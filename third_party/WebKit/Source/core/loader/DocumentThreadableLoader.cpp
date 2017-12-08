@@ -1203,12 +1203,12 @@ void DocumentThreadableLoader::LoadRequestAsync(
   ResourceFetcher* fetcher = loading_context_->GetResourceFetcher();
   if (request.GetRequestContext() == WebURLRequest::kRequestContextVideo ||
       request.GetRequestContext() == WebURLRequest::kRequestContextAudio) {
-    SetResource(RawResource::FetchMedia(new_params, fetcher));
+    RawResource::FetchMedia(new_params, fetcher, this);
   } else if (request.GetRequestContext() ==
              WebURLRequest::kRequestContextManifest) {
-    SetResource(RawResource::FetchManifest(new_params, fetcher));
+    RawResource::FetchManifest(new_params, fetcher, this);
   } else {
-    SetResource(RawResource::Fetch(new_params, fetcher));
+    RawResource::Fetch(new_params, fetcher, this);
   }
   if (GetResource())
     checker_.WillAddClient();

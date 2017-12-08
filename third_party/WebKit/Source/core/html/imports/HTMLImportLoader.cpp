@@ -60,10 +60,6 @@ void HTMLImportLoader::Dispose() {
   ClearResource();
 }
 
-void HTMLImportLoader::StartLoading(RawResource* resource) {
-  SetResource(resource);
-}
-
 void HTMLImportLoader::ResponseReceived(
     Resource* resource,
     const ResourceResponse& response,

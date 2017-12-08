@@ -222,7 +222,7 @@ bool SendBeaconCommon(LocalFrame* frame,
   params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::beacon;
 
   Resource* resource =
-      RawResource::Fetch(params, frame->GetDocument()->Fetcher());
+      RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
   if (resource && resource->GetStatus() != ResourceStatus::kLoadError) {
     frame->Client()->DidDispatchPingLoader(request.Url());
     return true;
@@ -244,7 +244,7 @@ void PingLoader::LoadImage(LocalFrame* frame, const KURL& url) {
   params.SetContentSecurityCheck(kDoNotCheckContentSecurityPolicy);
 
   Resource* resource =
-      RawResource::Fetch(params, frame->GetDocument()->Fetcher());
+      RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
   if (resource && resource->GetStatus() != ResourceStatus::kLoadError)
     frame->Client()->DidDispatchPingLoader(request.Url());
 }
@@ -280,7 +280,7 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::ping;
 
   Resource* resource =
-      RawResource::Fetch(params, frame->GetDocument()->Fetcher());
+      RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
   if (resource && resource->GetStatus() != ResourceStatus::kLoadError)
     frame->Client()->DidDispatchPingLoader(request.Url());
 }
@@ -312,7 +312,7 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
       frame->GetDocument()->GetSecurityOrigin();
 
   Resource* resource =
-      RawResource::Fetch(params, frame->GetDocument()->Fetcher());
+      RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
   if (resource && resource->GetStatus() != ResourceStatus::kLoadError)
     frame->Client()->DidDispatchPingLoader(request.Url());
 }

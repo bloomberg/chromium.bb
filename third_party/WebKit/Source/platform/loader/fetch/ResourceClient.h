@@ -74,6 +74,11 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
  protected:
   ResourceClient() {}
 
+  // TODO(japhet): Eventually, ResourceFetcher will hopefully be the only caller
+  // of SetResource(), at which point SetResource() can be private and
+  // ResourceFetcher will be the only friend. In the meantime, SetResource() is
+  // protected so that subclasses can use it as needed.
+  friend class ResourceFetcher;
   // TODO(japhet): There isn't a clean way for SVGResourceClients to determine
   // whether SVGElementProxy is holding a Resource that it should register with,
   // so SVGElementProxy handles it for those clients. SVGResourceClients should
