@@ -254,6 +254,58 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   return result;
 }
 
+// Note: Code that runs on the IO thread is implemented as non-member functions,
+// to avoid accidentally accessing member data that's owned by the UI thread.
+
+bool ShouldServiceRequestIOThread(const GURL& url,
+                                  content::ResourceContext* resource_context,
+                                  int render_process_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  DCHECK(url.host_piece() == chrome::kChromeSearchLocalNtpHost);
+  if (!InstantIOContext::ShouldServiceRequest(url, resource_context,
+                                              render_process_id)) {
+    return false;
+  }
+
+  if (url.SchemeIs(chrome::kChromeSearchScheme)) {
+    std::string filename;
+    webui::ParsePathAndScale(url, &filename, nullptr);
+    for (size_t i = 0; i < arraysize(kResources); ++i) {
+      if (filename == kResources[i].filename)
+        return true;
+    }
+  }
+  return false;
+}
+
+std::string GetContentSecurityPolicyScriptSrcIOThread() {
+#if !defined(GOOGLE_CHROME_BUILD)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
+    // While live-editing the local NTP files, turn off CSP.
+    return "script-src * 'unsafe-inline';";
+  }
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+
+  return base::StringPrintf(
+      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s';",
+      LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY);
+}
+
+std::string GetContentSecurityPolicyChildSrcIOThread(bool allow_google) {
+  if (allow_google) {
+    // Allow embedding of the most visited iframe, as well as the account
+    // switcher and the notifications dropdown from the One Google Bar, and/or
+    // the iframe for interactive Doodles.
+    return base::StringPrintf("child-src %s https://*.google.com/;",
+                              chrome::kChromeSearchMostVisitedUrl);
+  }
+  // Allow embedding of the most visited iframe.
+  return base::StringPrintf("child-src %s;",
+                            chrome::kChromeSearchMostVisitedUrl);
+}
+
 }  // namespace
 
 class LocalNtpSource::GoogleSearchProviderTracker
@@ -559,59 +611,35 @@ bool LocalNtpSource::ShouldServiceRequest(
     int render_process_id) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  DCHECK(url.host_piece() == chrome::kChromeSearchLocalNtpHost);
-  if (!InstantIOContext::ShouldServiceRequest(url, resource_context,
-                                              render_process_id)) {
-    return false;
-  }
-
-  if (url.SchemeIs(chrome::kChromeSearchScheme)) {
-    std::string filename;
-    webui::ParsePathAndScale(url, &filename, nullptr);
-    for (size_t i = 0; i < arraysize(kResources); ++i) {
-      if (filename == kResources[i].filename)
-        return true;
-    }
-  }
-  return false;
+  return ShouldServiceRequestIOThread(url, resource_context, render_process_id);
 }
 
 std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-#if !defined(GOOGLE_CHROME_BUILD)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
-    // While live-editing the local NTP files, turn off CSP.
-    return "script-src * 'unsafe-inline';";
-  }
-#endif  // !defined(GOOGLE_CHROME_BUILD)
-
-  return base::StringPrintf(
-      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s';",
-      LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY);
+  return GetContentSecurityPolicyScriptSrcIOThread();
 }
 
 std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (one_google_bar_service_ || logo_service_) {
-    // Allow embedding of the most visited iframe, as well as the account
-    // switcher and the notifications dropdown from the One Google Bar, and/or
-    // the iframe for interactive Doodles.
-    return base::StringPrintf("child-src %s https://*.google.com/;",
-                              chrome::kChromeSearchMostVisitedUrl);
-  }
-  // Allow embedding of the most visited iframe.
-  return base::StringPrintf("child-src %s;",
-                            chrome::kChromeSearchMostVisitedUrl);
+  // TODO(treib): We're on the IO thread but accessing data owned by the UI
+  // thread. Since we're only reading (not writing), and those values don't
+  // usually change after constructing this object, that's prooobably okay.
+  // It'd be even more okay to not do this. crbug.com/792490
+  bool allow_google = one_google_bar_service_ || logo_service_;
+  return GetContentSecurityPolicyChildSrcIOThread(allow_google);
 }
 
 void LocalNtpSource::OnOneGoogleBarDataUpdated() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   ServeOneGoogleBar(one_google_bar_service_->one_google_bar_data());
 }
 
 void LocalNtpSource::OnOneGoogleBarServiceShuttingDown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   one_google_bar_service_observer_.RemoveAll();
   one_google_bar_service_ = nullptr;
 }
