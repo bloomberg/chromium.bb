@@ -83,11 +83,18 @@ void ExplainHTTPSecurity(
 void ExplainSafeBrowsingSecurity(
     const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
-  if (security_info.malicious_content_status !=
+  if (security_info.malicious_content_status ==
       security_state::MALICIOUS_CONTENT_STATUS_NONE) {
-    security_style_explanations->summary =
-        l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING);
+    return;
   }
+  // Override the main summary for the page.
+  security_style_explanations->summary =
+      l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING);
+  // Add a bullet describing the issue.
+  content::SecurityStyleExplanation explanation(
+      l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING_SUMMARY),
+      l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING_DESCRIPTION));
+  security_style_explanations->insecure_explanations.push_back(explanation);
 }
 
 void ExplainCertificateSecurity(
