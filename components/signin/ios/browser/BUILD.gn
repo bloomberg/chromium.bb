@@ -18,6 +18,8 @@ source_set("browser") {
     "profile_oauth2_token_service_ios_delegate.mm",
     "profile_oauth2_token_service_ios_provider.h",
     "profile_oauth2_token_service_ios_provider.mm",
+    "wait_for_network_callback_helper.cc",
+    "wait_for_network_callback_helper.h",
   ]
 
   deps = [
@@ -71,6 +73,7 @@ source_set("unit_tests") {
     "account_consistency_service_unittest.mm",
     "active_state_manager_impl_unittest.mm",
     "profile_oauth2_token_service_ios_delegate_unittest.mm",
+    "wait_for_network_callback_helper_unittest.cc",
   ]
 
   deps = [

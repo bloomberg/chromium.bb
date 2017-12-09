@@ -12,13 +12,12 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "components/signin/ios/browser/wait_for_network_callback_helper.h"
 
 // iOS specific signin client.
 class IOSSigninClient
     : public SigninClient,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
       public SigninErrorController::Observer {
  public:
   IOSSigninClient(
@@ -57,10 +56,6 @@ class IOSSigninClient
   // KeyedService implementation.
   void Shutdown() override;
 
-  // net::NetworkChangeController::NetworkChangeObserver implementation.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
-
  private:
   PrefService* pref_service_;
   net::URLRequestContextGetter* url_request_context_;
@@ -68,7 +63,7 @@ class IOSSigninClient
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<TokenWebData> token_web_data_;
-  std::list<base::Closure> delayed_callbacks_;
+  std::unique_ptr<WaitForNetworkCallbackHelper> callback_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSSigninClient);
 };

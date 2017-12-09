@@ -19,9 +19,9 @@ IOSSigninClient::IOSSigninClient(
       signin_error_controller_(signin_error_controller),
       cookie_settings_(cookie_settings),
       host_content_settings_map_(host_content_settings_map),
-      token_web_data_(token_web_data) {
+      token_web_data_(token_web_data),
+      callback_helper_(std::make_unique<WaitForNetworkCallbackHelper>()) {
   signin_error_controller_->AddObserver(this);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 IOSSigninClient::~IOSSigninClient() {
@@ -29,7 +29,7 @@ IOSSigninClient::~IOSSigninClient() {
 }
 
 void IOSSigninClient::Shutdown() {
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  callback_helper_.reset();
 }
 
 scoped_refptr<TokenWebData> IOSSigninClient::GetDatabase() {
@@ -89,24 +89,8 @@ IOSSigninClient::AddCookieChangedCallback(
   return subscription;
 }
 
-void IOSSigninClient::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  if (type >= net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE)
-    return;
-
-  for (const base::Closure& callback : delayed_callbacks_)
-    callback.Run();
-
-  delayed_callbacks_.clear();
-}
-
 void IOSSigninClient::DelayNetworkCall(const base::Closure& callback) {
-  // Don't bother if we don't have any kind of network connection.
-  if (net::NetworkChangeNotifier::IsOffline()) {
-    delayed_callbacks_.push_back(callback);
-  } else {
-    callback.Run();
-  }
+  callback_helper_->HandleCallback(callback);
 }
 
 std::unique_ptr<GaiaAuthFetcher> IOSSigninClient::CreateGaiaAuthFetcher(
