@@ -18,8 +18,7 @@ namespace cc {
 //  - Add a type name to the TransferCacheEntryType enum.
 //  - Implement a ClientTransferCacheEntry and ServiceTransferCacheEntry for
 //    your new type.
-//  - Update ServiceTransferCacheEntry::Create and ServiceTransferCacheEntry::
-//    DeduceType in transfer_cache_entry.cc.
+//  - Update ServiceTransferCacheEntry::Create in transfer_cache_entry.cc.
 enum class TransferCacheEntryType {
   kRawMemory,
   kImage,
@@ -75,6 +74,22 @@ class CC_PAINT_EXPORT ServiceTransferCacheEntry {
   // context.
   virtual bool Deserialize(GrContext* context, base::span<uint8_t> data) = 0;
 };
+
+// Helpers to simplify subclassing.
+template <class Base, TransferCacheEntryType EntryType>
+class TransferCacheEntryBase : public Base {
+ public:
+  static constexpr TransferCacheEntryType kType = EntryType;
+  TransferCacheEntryType Type() const final { return kType; }
+};
+
+template <TransferCacheEntryType EntryType>
+using ClientTransferCacheEntryBase =
+    TransferCacheEntryBase<ClientTransferCacheEntry, EntryType>;
+
+template <TransferCacheEntryType EntryType>
+using ServiceTransferCacheEntryBase =
+    TransferCacheEntryBase<ServiceTransferCacheEntry, EntryType>;
 
 };  // namespace cc
 

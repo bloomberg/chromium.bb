@@ -34,10 +34,6 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
 }
 ClientImageTransferCacheEntry::~ClientImageTransferCacheEntry() = default;
 
-TransferCacheEntryType ClientImageTransferCacheEntry::Type() const {
-  return TransferCacheEntryType::kImage;
-}
-
 size_t ClientImageTransferCacheEntry::SerializedSize() const {
   return size_;
 }
@@ -62,10 +58,6 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
 
 ServiceImageTransferCacheEntry::ServiceImageTransferCacheEntry() = default;
 ServiceImageTransferCacheEntry::~ServiceImageTransferCacheEntry() = default;
-
-TransferCacheEntryType ServiceImageTransferCacheEntry::Type() const {
-  return TransferCacheEntryType::kImage;
-}
 
 size_t ServiceImageTransferCacheEntry::CachedSize() const {
   return size_;
