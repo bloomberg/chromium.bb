@@ -14,10 +14,6 @@ ClientRawMemoryTransferCacheEntry::ClientRawMemoryTransferCacheEntry(
 ClientRawMemoryTransferCacheEntry::~ClientRawMemoryTransferCacheEntry() =
     default;
 
-TransferCacheEntryType ClientRawMemoryTransferCacheEntry::Type() const {
-  return TransferCacheEntryType::kRawMemory;
-}
-
 size_t ClientRawMemoryTransferCacheEntry::SerializedSize() const {
   return data_.size();
 }
@@ -35,10 +31,6 @@ ServiceRawMemoryTransferCacheEntry::ServiceRawMemoryTransferCacheEntry() =
     default;
 ServiceRawMemoryTransferCacheEntry::~ServiceRawMemoryTransferCacheEntry() =
     default;
-
-TransferCacheEntryType ServiceRawMemoryTransferCacheEntry::Type() const {
-  return TransferCacheEntryType::kRawMemory;
-}
 
 size_t ServiceRawMemoryTransferCacheEntry::CachedSize() const {
   return data_.size();
