@@ -4232,6 +4232,18 @@
   <message name="IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH_ERROR" desc="Error message in case new password fields does not match on the Active Directory password change dialog.">
     Passwords do not match.
   </message>
+  <message name="IDS_AD_MORE_OPTIONS_BUTTON" desc="Text on the 'More options' button on the Active Directory domain join screen.">
+    More options
+  </message>
+  <message name="IDS_AD_ORG_UNIT_HINT" desc="Hint for the Active Directory Organizational units input on the 'More options' dialog.">
+    Computer OU (e.g. OU=Chromebooks,DC=example,DC=com)
+  </message>
+  <message name="IDS_AD_CONFIRM_BUTTON" desc="Text on the 'Confirm' button on the 'More options' dialog.">
+    Confirm
+  </message>
+  <message name="IDS_AD_CANCEL_BUTTON" desc="Text on the 'Cancel' button on the 'More options' dialog.">
+    Cancel
+  </message>
   <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Default error text on the Active Directory join screen">
     Oops!  Something went wrong when trying to join the domain. Please try again.
   </message>
@@ -4255,6 +4267,18 @@
   </message>
   <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Alert message that user can't add more machines to the domain">
     Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.
+  </message>
+  <message name="IDS_AD_OU_DOES_NOT_EXIST" desc="Alert message that user joins the machine to non-existing organizational unit.">
+    Failed to join the machine to the domain. Organizational unit does not exist.
+  </message>
+  <message name="IDS_AD_OU_INVALID" desc="Alert message that user joins the machine to invalid organizational unit.">
+    Failed to join the machine to the domain. Organizational unit is invalid.
+  </message>
+  <message name="IDS_AD_OU_ACCESS_DENIED" desc="Alert message that user does not have rights to join the machine to specified organizational unit.">
+    Failed to join the machine to the domain. This might be due to insufficient privileges for your account for the organizational unit.
+  </message>
+  <message name="IDS_AD_OU_SETTING_FAILED" desc="Alert message that user could not join the machine to specified organizational unit due to unknown reason.">
+    Failed to join the machine to the domain. This might be due to issues with the organizational unit.
   </message>
   <message name="IDS_AD_BOARD_NOT_SUPPORTED" desc="Alert message that the Chromebook model is not supported for Active Directory">
     Chrome <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> integration is only supported on x86_64 platforms. Chromebooks built on top of an ARM or x86 platform do not support this functionality.

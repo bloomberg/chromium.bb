@@ -47,10 +47,14 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
   // Packs arguments and calls AuthPolicyClient::JoinAdDomain. Joins machine to
   // Active directory domain. Then it calls RefreshDevicePolicy to cache the
   // policy on the authpolicyd side. |machine_name| is a name for a local
-  // machine. |username|, |password| are credentials of the Active directory
-  // account which has right to join the machine to the domain. |callback| is
-  // called after getting (or failing to get) D-BUS response.
+  // machine. If |distinguished_name| is not empty |machine| would be put into
+  // that domain or/and organizational unit structure. Otherwise |machine| would
+  // be joined to domain of the |username|. |username|, |password| are
+  // credentials of the Active directory account which has right to join the
+  // machine to the domain. |callback| is called after getting (or failing to
+  // get) D-BUS response.
   void JoinAdDomain(const std::string& machine_name,
+                    const std::string& distinguished_name,
                     const std::string& username,
                     const std::string& password,
                     JoinCallback callback);
@@ -71,11 +75,14 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
 
  private:
   // Called from AuthPolicyClient::JoinAdDomain.
-  void OnJoinCallback(JoinCallback callback, authpolicy::ErrorType error);
+  void OnJoinCallback(JoinCallback callback,
+                      authpolicy::ErrorType error,
+                      const std::string& machine_domain);
 
   // Called from AuthPolicyClient::RefreshDevicePolicy. This is used only once
   // during device enrollment with the first device policy refresh.
   void OnFirstPolicyRefreshCallback(JoinCallback callback,
+                                    const std::string& machine_domain,
                                     authpolicy::ErrorType error);
 
   // Called from AuthPolicyClient::AuthenticateUser.

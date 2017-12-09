@@ -50,6 +50,9 @@ Polymer({
     machineNameError: String,
   },
 
+  /** @private Used for 'More options' dialog. */
+  storedOrgUnit: String,
+
   /** @private */
   realmChanged_: function() {
     this.adWelcomeMessage =
@@ -127,10 +130,40 @@ Polymer({
       user += this.userRealm;
     var msg = {
       'machinename': this.$.machineNameInput.value,
+      'distinguished_name': this.$.orgUnitInput.value,
       'username': user,
       'password': this.$.passwordInput.value
     };
     this.$.passwordInput.value = '';
     this.fire('authCompleted', msg);
+  },
+
+  /** @private */
+  onMoreOptionsClicked_: function() {
+    this.disabled = true;
+    this.fire('dialogShown');
+    this.storedOrgUnit = this.$.orgUnitInput.value;
+    this.$$('#moreOptionsDlg').showModal();
+    this.$$('#gaiaCard').classList.add('full-disabled');
+  },
+
+  /** @private */
+  onMoreOptionsConfirmTap_: function() {
+    this.storedOrgUnit = null;
+    this.$$('#moreOptionsDlg').close();
+  },
+
+  /** @private */
+  onMoreOptionsCancelTap_: function() {
+    this.$$('#moreOptionsDlg').close();
+  },
+
+  /** @private */
+  onMoreOptionsClosed_: function() {
+    if (this.storedOrgUnit)
+      this.$.orgUnitInput.value = this.storedOrgUnit;
+    this.fire('dialogHidden');
+    this.disabled = false;
+    this.$$('#gaiaCard').classList.remove('full-disabled');
   },
 });
