@@ -325,6 +325,51 @@
     },
   },
   {
+    'name': 'chromium.angle',
+    'machines': {
+      'Linux Tests (ANGLE)': {
+        'test_suites': {
+          'gtest_tests': 'angle_gtests',
+        },
+      },
+      'Linux Tests (dbg) (ANGLE)': {
+        'test_suites': {
+          'gtest_tests': 'angle_gtests',
+        },
+      },
+      'Mac10.8 Tests (ANGLE)': {
+        'test_suites': {
+          'gtest_tests': 'angle_gtests',
+        },
+      },
+      'Mac10.8 Tests (dbg) (ANGLE)': {
+        'test_suites': {
+          'gtest_tests': 'angle_gtests',
+        },
+      },
+      'Win7 Tests (ANGLE)': {
+        'test_suites': {
+          'gtest_tests': 'angle_gtests',
+        },
+      },
+      'Win7 Tests (dbg) (ANGLE)': {
+        'test_suites': {
+          'gtest_tests': 'angle_gtests',
+        },
+      },
+      'Win7 Tests x64 (ANGLE)': {
+        'test_suites': {
+          'gtest_tests': 'angle_gtests',
+        },
+      },
+      'Win7 Tests x64 (dbg) (ANGLE)': {
+        'test_suites': {
+          'gtest_tests': 'angle_gtests',
+        },
+      },
+    },
+  },
+  {
     'name': 'chromium.chrome',
     'machines': {
     },
@@ -976,6 +1021,113 @@
     },
   },
   {
+    'name': 'chromium.webrtc',
+    'machines': {
+      'Linux Builder': {
+        'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'Mac Builder': {
+        'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'Win Builder': {
+        'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+    },
+  },
+  {
+    'name': 'chromium.webrtc.fyi',
+    'machines': {
+      'Android Builder': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Android Builder (dbg)': {
+        'additional_compile_targets': [
+          'content_browsertests',
+        ],
+      },
+      'Android Builder ARM64 (dbg)': {
+        'additional_compile_targets': [
+          'content_browsertests',
+        ],
+      },
+      'Linux Builder': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Linux Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+          # TODO(dpranke): Specifying these additional targets is pointless :).
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'Mac Builder': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Mac Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'Win Builder': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Win Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+    },
+  },
+  {
     'name': 'chromium.win',
     'machines': {
       'Win Builder': {
@@ -1024,7 +1176,11 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_isolated_scripts',
         },
-      }
+      },
     },
+  },
+  {
+    'name': 'client.v8.branches',
+    'machines': {},
   },
 ]
