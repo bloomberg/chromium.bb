@@ -2123,6 +2123,12 @@ be describing additional metrics about the same event.
       Number of mouse events that were sent to the page.
     </summary>
   </metric>
+  <metric name="SequenceId">
+    <summary>
+      The sequence of this event in the current session. Incremented by 1 each
+      time this event is logged to provide an ordering of events.
+    </summary>
+  </metric>
   <metric name="SiteEngagementScore">
     <summary>
       Site engagement score in the range [0, 100], rounded down to a multiple of

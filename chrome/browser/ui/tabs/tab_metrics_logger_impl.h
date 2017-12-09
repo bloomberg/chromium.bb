@@ -21,6 +21,10 @@ class TabMetricsLoggerImpl : public TabMetricsLogger {
                         const TabMetrics& tab_metrics) override;
 
  private:
+  // A counter to be incremented and logged with each UKM entry, used to
+  // indicate the order that events within the same report were logged.
+  int sequence_id_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(TabMetricsLoggerImpl);
 };
 

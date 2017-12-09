@@ -29,9 +29,6 @@ class TabActivityWatcher : public TabStripModelObserver,
 
   // TODO(michaelpg): Track more events.
 
-  // Forces logging even when a timeout would have prevented it.
-  void DisableLogTimeoutForTest();
-
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();
 
@@ -40,6 +37,8 @@ class TabActivityWatcher : public TabStripModelObserver,
   static void WatchWebContents(content::WebContents* web_contents);
 
  private:
+  friend class TabActivityWatcherTest;
+
   // TabStripModelObserver:
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
@@ -56,6 +55,12 @@ class TabActivityWatcher : public TabStripModelObserver,
   // Logs the tab with |web_contents| if the tab hasn't been logged for the same
   // source ID within a timeout window.
   void MaybeLogTab(content::WebContents* web_contents);
+
+  // Forces logging even when a timeout would have prevented it.
+  void DisableLogTimeoutForTesting();
+
+  // Resets internal state.
+  void ResetForTesting();
 
   std::unique_ptr<TabMetricsLogger> tab_metrics_logger_;
 
