@@ -260,9 +260,15 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   const ComputedStyle* container_style = snap_container.Style();
   const ComputedStyle* area_style = snap_area.Style();
   SnapAreaData snap_area_data;
-  LayoutRect container(
-      LayoutPoint(),
-      LayoutSize(snap_container.OffsetWidth(), snap_container.OffsetHeight()));
+
+  // Scroll-padding represents inward offsets from the corresponding edge of the
+  // scrollport. https://drafts.csswg.org/css-scroll-snap-1/#scroll-padding
+  // Scrollport is the visual vieport of the scroll container (through which the
+  // scrollable overflow region can be viewed) coincides with its padding box.
+  // https://drafts.csswg.org/css-scroll-snap-1/#scroll-padding
+  // So we use the size of the padding box here.
+  LayoutRect container(LayoutPoint(), snap_container.PaddingBoxRect().Size());
+
   // We assume that the snap_container is the snap_area's ancestor in layout
   // tree, as the snap_container is found by walking up the layout tree in
   // FindSnapContainer(). Under this assumption,
