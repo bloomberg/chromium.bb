@@ -1364,4 +1364,19 @@ TEST_F(WebPluginContainerTest, NeedsWheelEvents) {
       EventHandlerRegistry::kWheelEventBlocking));
 }
 
+TEST_F(WebPluginContainerTest, IFramePluginDocumentDisplayNone) {
+  RegisterMockedURL("test.pdf", "application/pdf");
+  RegisterMockedURL("iframe_pdf_display_none.html", "text/html");
+
+  TestPluginWebFrameClient plugin_web_frame_client;
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "iframe_pdf_display_none.html", &plugin_web_frame_client);
+  web_view->UpdateAllLifecyclePhases();
+
+  WebFrame* web_iframe = web_view->MainFrame()->FirstChild();
+  LocalFrame* iframe = ToLocalFrame(WebFrame::ToCoreFrame(*web_iframe));
+  EXPECT_TRUE(iframe->GetWebPluginContainer());
+}
+
 }  // namespace blink

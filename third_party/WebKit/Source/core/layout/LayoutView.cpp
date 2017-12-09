@@ -215,6 +215,13 @@ bool LayoutView::CanHaveChildren() const {
     return true;
   if (!RuntimeEnabledFeatures::DisplayNoneIFrameCreatesNoLayoutObjectEnabled())
     return true;
+  // A PluginDocument needs a layout tree during loading, even if it is inside a
+  // display: none iframe.  This is because WebLocalFrameImpl::DidFinish expects
+  // the PluginDocument's <embed> element to have an EmbeddedContentView, which
+  // it acquires during LocalFrameView::UpdatePlugins, which operates on the
+  // <embed> element's layout object (LayoutEmbeddedObject).
+  if (GetDocument().IsPluginDocument())
+    return true;
   return !owner->IsDisplayNone();
 }
 
