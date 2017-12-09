@@ -89,9 +89,12 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // Returns selected view in this container view.
   virtual views::View* GetSelectedView() const = 0;
 
-  // Sets the first result in this container view selected/unselected. Returns
-  // the result's view.
-  virtual views::View* SetFirstResultSelected(bool selected) = 0;
+  // Returns the first result in the container view. Returns NULL if it does not
+  // exist.
+  virtual views::View* GetFirstResultView() = 0;
+
+  // Sets the first result in this container view selected/unselected.
+  virtual void SetFirstResultSelected(bool selected) = 0;
 
  private:
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
