@@ -2268,6 +2268,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)presentNewTabTipBubble {
   DCHECK(self.browserState);
+  // If the BVC is not visible, do not present the bubble.
+  if (!self.viewVisible)
+    return;
+  // Do not present the bubble if there is no current or if the current tab is
+  // the NTP.
+  Tab* currentTab = [self.tabModel currentTab];
+  if (!currentTab)
+    return;
+  if (currentTab.webState->GetVisibleURL() == kChromeUINewTabURL)
+    return;
+
   NSString* text =
       l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
   CGPoint tabSwitcherAnchor;
@@ -2317,6 +2328,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   DCHECK(self.browserState);
   DCHECK([_toolbarCoordinator
       respondsToSelector:@selector(anchorPointForToolsMenuButton:)]);
+  // If the BVC is not visible, do not present the bubble.
+  if (!self.viewVisible)
+    return;
+
   NSString* text = l10n_util::GetNSStringWithFixup(
       IDS_IOS_NEW_INCOGNITO_TAB_IPH_PROMOTION_TEXT);
   CGPoint toolsButtonAnchor = [_toolbarCoordinator
