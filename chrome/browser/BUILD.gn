@@ -1748,7 +1748,6 @@ split_static_library("browser") {
     "//services/data_decoder/public/cpp",
     "//services/device/public/cpp:device_features",
     "//services/identity:lib",
-    "//services/metrics",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/interfaces",
     "//services/preferences/public/cpp",

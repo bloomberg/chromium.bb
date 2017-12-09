@@ -226,8 +226,6 @@
 #include "ppapi/features/features.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
-#include "services/metrics/metrics_mojo_service.h"
-#include "services/metrics/public/interfaces/constants.mojom.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
@@ -3215,8 +3213,6 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
         std::make_pair(prefs::mojom::kLocalStateServiceName, info));
   }
   service_manager::EmbeddedServiceInfo info;
-  info.factory = base::Bind(&metrics::CreateMetricsService);
-  services->emplace(metrics::mojom::kMetricsServiceName, info);
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   {
     service_manager::EmbeddedServiceInfo info;

@@ -50,6 +50,8 @@
 #include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/metrics/metrics_mojo_service.h"
+#include "services/metrics/public/interfaces/constants.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
@@ -473,6 +475,13 @@ ServiceManagerContext::ServiceManagerContext() {
         base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
     packaged_services_connection_->AddEmbeddedService(
         resource_coordinator::mojom::kServiceName, resource_coordinator_info);
+  }
+
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::BindRepeating(&metrics::CreateMetricsService);
+    packaged_services_connection_->AddEmbeddedService(
+        metrics::mojom::kMetricsServiceName, info);
   }
 
   ContentBrowserClient::StaticServiceMap services;
