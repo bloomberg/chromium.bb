@@ -232,6 +232,32 @@
           'hard_timeout': 960,
         },
       },
+      # chromium.webkit
+      'WebKit Mac10.10': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (dbg)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (retina)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.12': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
     },
   },
   'blink_platform_unittests': {
@@ -254,6 +280,34 @@
       'Win10 Tests x64',
       'Win7 Tests (dbg)(1)',
     ],
+    'modifications': {
+      # on chromium.webkit
+      'WebKit Mac10.10': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (dbg)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (retina)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.12': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+    }
   },
   'boringssl_crypto_tests': {
     'remove_from': [
@@ -422,6 +476,32 @@
       'Mac ASan 64 Tests (1)': {
         'swarming': {
           'shards': 20,
+        },
+      },
+      # on chromium.webkit
+      'WebKit Mac10.10': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (dbg)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (retina)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.12': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
         },
       },
     },
@@ -3023,6 +3103,177 @@
           'shards': 12,
         },
       },
+
+      # TODO(dpranke): Clean up all of the unneeded exceptions on
+      # chromium.webkit.
+      'WebKit Linux Trusty': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+        },
+      },
+      'WebKit Linux Trusty (dbg)': {
+        'args': [
+          '--debug',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+          'shards': 20,
+        },
+      },
+      'WebKit Linux Trusty ASAN': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/WebKit/LayoutTests/ASANExpectations',
+          '--time-out-ms',
+          '48000',
+          '--enable-sanitizer',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+          'shards': 20,
+        },
+      },
+      'WebKit Linux Trusty Leak': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/WebKit/LayoutTests/LeakExpectations',
+          '--time-out-ms',
+          '48000',
+          '--enable-leak-detection',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+          'shards': 10,
+        },
+      },
+      'WebKit Linux Trusty MSAN': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/WebKit/LayoutTests/MSANExpectations',
+          '--time-out-ms',
+          '66000',
+          '--enable-sanitizer',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+          'expiration': 36000,
+          'hard_timeout': 10800,
+          'io_timeout': 3600,
+          'shards': 20,
+        },
+      },
+      'WebKit Mac10.10': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.10.5',
+            }
+          ],
+          'shards': 4,
+        },
+      },
+      'WebKit Mac10.11': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.11.6',
+            }
+          ],
+          'shards': 4,
+        },
+      },
+      'WebKit Mac10.11 (dbg)': {
+        'args': [
+          '--debug',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.11.6',
+            }
+          ],
+          'shards': 4,
+        },
+      },
+      'WebKit Mac10.11 (retina)': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.12.6',
+              'pool': 'Chrome-GPU',
+            }
+          ],
+          'shards': 4,
+        },
+      },
+      'WebKit Mac10.12': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '8086:0a2e',
+              'hidpi': '0',
+              'os': 'Mac-10.12.6',
+            },
+          ],
+          'shards': 4,
+        },
+      },
+      'WebKit Win10': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10-14393',
+            },
+          ],
+          'shards': 5,
+        },
+      },
+      'WebKit Win7': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-7-SP1',
+            },
+          ],
+          'shards': 2,
+        },
+      },
+      'WebKit Win7 (dbg)': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-7-SP1',
+            },
+          ]
+        },
+        'shards': 2,
+      },
+
       'Win7 Tests (dbg)(1)': {
         'args': [
           '--debug',
@@ -3103,6 +3354,33 @@
       'Win10 Tests x64',
       'Win7 Tests (dbg)(1)',
     ],
+    'modifications': {
+      'WebKit Mac10.10': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (dbg)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (retina)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.12': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+    },
   },
   'webview_instrumentation_test_apk': {
     'remove_from': [
@@ -3230,6 +3508,33 @@
       'Win10 Tests x64',
       'Win7 Tests (dbg)(1)',
     ],
+    'modifications': {
+      'WebKit Mac10.10': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (dbg)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.11 (retina)': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+      'WebKit Mac10.12': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+    },
   },
   'zucchini_unittests': {
     'remove_from': [

@@ -315,11 +315,40 @@
     }
   },
 
+  'chromium_webkit_gtests': {
+    'blink_heap_unittests': {},
+    'blink_platform_unittests': {},
+    'webkit_unit_tests': {},
+    'wtf_unittests': {},
+  },
+  'chromium_webkit_isolated_scripts': {
+    'webkit_layout_tests': {
+      'isolate_name': 'webkit_layout_tests_exparchive',
+      'merge': {
+        'args': [
+          '--verbose',
+        ],
+        'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
+      },
+      'results_handler': 'layout tests',
+      'swarming': {
+        'shards': 6,
+      }
+    },
+  },
+  'chromium_webkit_scripts': {
+    'webkit_lint': {
+      'script': 'webkit_lint.py',
+    },
+    'webkit_python_tests': {
+      'script': 'webkit_python_tests.py',
+    },
+  },
+
   'clang_gl_gtests': {
     'gl_tests': {},
     'gl_unittests': {},
   },
-
   'clang_linux_and_mac_gtests': {
     # TODO: merge back into non_android_chromium_gtests.
     'interactive_ui_tests': {},
