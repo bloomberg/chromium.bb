@@ -4280,8 +4280,7 @@
       },
       {
         "args": [
-          "--mus",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.mus.content_browsertests.filter"
+          "--mus"
         ],
         "name": "mus_content_browsertests",
         "override_isolate_target": "content_browsertests",

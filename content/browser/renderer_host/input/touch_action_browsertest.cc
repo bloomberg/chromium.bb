@@ -134,9 +134,9 @@ class TouchActionBrowserTest : public ContentBrowserTest {
                      bool wait_until_scrolled) {
     EXPECT_EQ(0, GetScrollTop());
 
-    int scrollHeight = ExecuteScriptAndExtractInt(
-        "document.documentElement.scrollHeight");
-    EXPECT_EQ(10200, scrollHeight);
+    int scroll_height =
+        ExecuteScriptAndExtractInt("document.documentElement.scrollHeight");
+    EXPECT_EQ(10200, scroll_height);
 
     FrameWatcher frame_watcher(shell()->web_contents());
 
@@ -167,12 +167,12 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     }
 
     // Check the scroll offset
-    int scrollTop = GetScrollTop();
-    if (scrollTop == 0)
+    int scroll_top = GetScrollTop();
+    if (scroll_top == 0)
       return false;
 
     // Allow for 1px rounding inaccuracies for some screen sizes.
-    EXPECT_LT(distance.y() / 2, scrollTop);
+    EXPECT_LT(distance.y() / 2, scroll_top);
     return true;
   }
 
