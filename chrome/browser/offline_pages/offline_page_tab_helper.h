@@ -43,8 +43,9 @@ class OfflinePageTabHelper :
     return offline_info_.offline_header;
   }
 
-  // Whether the page is an offline preview.
-  bool IsShowingOfflinePreview() const;
+  // Returns nullptr if the page is not an offline preview. Returns the
+  // OfflinePageItem related to the page if the page is an offline preview.
+  const OfflinePageItem* GetOfflinePreviewItem() const;
 
   // Returns provisional offline page since actual navigation does not happen
   // during unit tests.
