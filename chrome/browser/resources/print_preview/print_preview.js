@@ -574,10 +574,10 @@ cr.define('print_preview', function() {
         whenPrintDone.then(boundHideDialog, boundHideDialog);
       } else if (!destination.isLocal) {
         // Cloud print resolves when print data is returned to submit to cloud
-        // print, or if setings are invalid.
+        // print, or if print ticket cannot be read, no PDF data is found, or
+        // PDF is oversized.
         whenPrintDone.then(
-            this.onPrintToCloud_.bind(this),
-            this.onSettingsInvalid_.bind(this));
+            this.onPrintToCloud_.bind(this), this.onPrintFailed_.bind(this));
       } else if (destination.isPrivet || destination.isExtension) {
         // Privet and extension resolve when printing is complete or if there
         // is an error printing.
@@ -1126,13 +1126,13 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when printing to a privet or extension printer fails.
+     * Called when printing to a privet, cloud, or extension printer fails.
      * @param {*} httpError The HTTP error code, or -1 or a string describing
      *     the error, if not an HTTP error.
      * @private
      */
     onPrintFailed_: function(httpError) {
-      console.error('Privet printing failed with error code ' + httpError);
+      console.error('Printing failed with error code ' + httpError);
       this.printHeader_.setErrorMessage(
           loadTimeData.getString('couldNotPrint'));
     },
