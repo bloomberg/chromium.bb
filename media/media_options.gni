@@ -81,9 +81,7 @@ declare_args() {
   enable_webrtc = !is_cast_audio_only && !is_fuchsia
 
   # Enable HLS with SAMPLE-AES decryption.
-  # Enabled by default on the cast desktop implementation to allow unit tests of
-  # MP2TS parsing support.
-  enable_hls_sample_aes = proprietary_codecs && is_cast_desktop_build
+  enable_hls_sample_aes = proprietary_codecs && is_chromecast
 
   # If true, use cast CMA backend instead of default chromium media pipeline.
   is_cast_using_cma_backend = is_cast_audio_only || !is_android
