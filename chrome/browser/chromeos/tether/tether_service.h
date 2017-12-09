@@ -83,6 +83,10 @@ class TetherService : public KeyedService,
 
   // chromeos::NetworkStateHandlerObserver:
   void DeviceListChanged() override;
+  void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
+
+  // Helper method called from NetworkStateHandlerObserver methods.
+  void UpdateEnabledState();
 
   // chromeos::tether::TetherComponent::Observer:
   void OnShutdownComplete() override;

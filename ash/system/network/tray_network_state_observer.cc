@@ -78,6 +78,11 @@ void TrayNetworkStateObserver::NetworkPropertiesUpdated(
   SignalUpdate(false /* notify_a11y */);
 }
 
+void TrayNetworkStateObserver::DevicePropertiesUpdated(
+    const chromeos::DeviceState* device) {
+  SignalUpdate(false /* notify_a11y */);
+}
+
 void TrayNetworkStateObserver::SignalUpdate(bool notify_a11y) {
   if (timer_.IsRunning())
     return;

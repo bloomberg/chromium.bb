@@ -39,10 +39,18 @@ namespace {
 bool ConnectionStateChanged(NetworkState* network,
                             const std::string& prev_connection_state,
                             bool prev_is_captive_portal) {
-  return ((network->connection_state() != prev_connection_state) &&
-          !((network->connection_state() == shill::kStateIdle) &&
-            prev_connection_state.empty())) ||
-         (network->is_captive_portal() != prev_is_captive_portal);
+  if (network->is_captive_portal() != prev_is_captive_portal)
+    return true;
+  std::string connection_state = network->connection_state();
+  // Treat 'idle' and 'discoonect' the same.
+  bool prev_idle = prev_connection_state.empty() ||
+                   prev_connection_state == shill::kStateIdle ||
+                   prev_connection_state == shill::kStateDisconnect;
+  bool cur_idle = connection_state == shill::kStateIdle ||
+                  connection_state == shill::kStateDisconnect;
+  if (prev_idle || cur_idle)
+    return prev_idle != cur_idle;
+  return connection_state != prev_connection_state;
 }
 
 std::string GetManagedStateLogType(const ManagedState* state) {
@@ -1136,7 +1144,6 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
                                prev_is_captive_portal)) {
       OnNetworkConnectionStateChanged(network);
     }
-    NET_LOG_EVENT("NetworkPropertiesUpdated", GetLogName(network));
     NotifyNetworkPropertiesUpdated(network);
   }
 }
@@ -1211,7 +1218,6 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
     return;
 
   LogPropertyUpdated(device, key, value);
-  NotifyDeviceListChanged();
   NotifyDevicePropertiesUpdated(device);
 
   if (key == shill::kScanningProperty && device->scanning() == false) {
@@ -1628,7 +1634,7 @@ void NetworkStateHandler::NotifyDefaultNetworkChanged(
 void NetworkStateHandler::NotifyNetworkPropertiesUpdated(
     const NetworkState* network) {
   SCOPED_NET_LOG_IF_SLOW();
-  NET_LOG_DEBUG("NOTIFY:NetworkPropertiesUpdated", GetLogName(network));
+  NET_LOG_EVENT("NOTIFY:NetworkPropertiesUpdated", GetLogName(network));
   notifying_network_observers_ = true;
   for (auto& observer : observers_)
     observer.NetworkPropertiesUpdated(network);
@@ -1638,21 +1644,21 @@ void NetworkStateHandler::NotifyNetworkPropertiesUpdated(
 void NetworkStateHandler::NotifyDevicePropertiesUpdated(
     const DeviceState* device) {
   SCOPED_NET_LOG_IF_SLOW();
-  NET_LOG_DEBUG("NOTIFY:DevicePropertiesUpdated", GetLogName(device));
+  NET_LOG_EVENT("NOTIFY:DevicePropertiesUpdated", GetLogName(device));
   for (auto& observer : observers_)
     observer.DevicePropertiesUpdated(device);
 }
 
 void NetworkStateHandler::NotifyScanRequested() {
   SCOPED_NET_LOG_IF_SLOW();
-  NET_LOG_DEBUG("NOTIFY:ScanRequested", "");
+  NET_LOG_EVENT("NOTIFY:ScanRequested", "");
   for (auto& observer : observers_)
     observer.ScanRequested();
 }
 
 void NetworkStateHandler::NotifyScanCompleted(const DeviceState* device) {
   SCOPED_NET_LOG_IF_SLOW();
-  NET_LOG_DEBUG("NOTIFY:ScanCompleted", GetLogName(device));
+  NET_LOG_EVENT("NOTIFY:ScanCompleted", GetLogName(device));
   for (auto& observer : observers_)
     observer.ScanCompleted(device);
 }
@@ -1670,8 +1676,8 @@ void NetworkStateHandler::LogPropertyUpdated(const ManagedState* state,
           ? device_event_log::LOG_LEVEL_ERROR
           : device_event_log::LOG_LEVEL_EVENT;
   DEVICE_LOG(::device_event_log::LOG_TYPE_NETWORK, log_level)
-      << type_str << "PropertyUpdated: " << state->name() << "." << key << " = "
-      << value;
+      << type_str << "PropertyUpdated: " << state->path() << " ("
+      << state->name() << ") " << key << " = " << value;
 }
 
 std::string NetworkStateHandler::GetTechnologyForType(

@@ -50,12 +50,14 @@ class WifiHotspotConnector : public NetworkStateHandlerObserver {
   // NetworkStateHandlerObserver:
   void DeviceListChanged() override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void DevicePropertiesUpdated(const DeviceState* device) override;
 
  private:
   friend class WifiHotspotConnectorTest;
 
   static const int64_t kConnectionTimeoutSeconds = 20;
 
+  void UpdateWaitingForWifi();
   void CompleteActiveConnectionAttempt(bool success);
   void CreateWifiConfiguration();
   base::DictionaryValue CreateWifiPropertyDictionary(
