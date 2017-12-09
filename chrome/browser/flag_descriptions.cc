@@ -2013,6 +2013,13 @@ const char kOfflinePagesCtV2Description[] =
     "V2 features include attributing pages to the app that initiated the "
     "custom tabs, and being able to query for pages by page attribution.";
 
+const char kOfflinePagesLimitlessPrefetchingName[] =
+    "Removes resource usage limits for the prefetching of offline pages.";
+const char kOfflinePagesLimitlessPrefetchingDescription[] =
+    "Allows the prefetching of suggested offline pages to ignore resource "
+    "usage limits. This allows it to completely ignore data usage limitations "
+    "and allows downloads to happen with any kind of connection.";
+
 const char kOfflinePagesLoadSignalCollectingName[] =
     "Enables collecting load timing data for offline page snapshots.";
 const char kOfflinePagesLoadSignalCollectingDescription[] =
