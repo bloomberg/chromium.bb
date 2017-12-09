@@ -61,6 +61,10 @@ class PaymentsClientTest : public testing::Test,
         kAutofillSendBillingCustomerNumber);
   }
 
+  void EnableAutofillUpstreamSendPanFirstSixExperiment() {
+    scoped_feature_list_.InitAndEnableFeature(kAutofillUpstreamSendPanFirstSix);
+  }
+
   // PaymentsClientUnmaskDelegate:
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) override {
@@ -99,8 +103,8 @@ class PaymentsClientTest : public testing::Test,
   void StartGettingUploadDetails() {
     token_service_->AddAccount("example@gmail.com");
     identity_provider_->LogIn("example@gmail.com");
-    client_->GetUploadDetails(BuildTestProfiles(), std::vector<const char*>(),
-                              "language-LOCALE");
+    client_->GetUploadDetails(BuildTestProfiles(), /*pan_first_six=*/"411111",
+                              std::vector<const char*>(), "language-LOCALE");
   }
 
   void StartUploading(bool include_cvc) {
@@ -262,6 +266,26 @@ TEST_F(PaymentsClientTest, GetDetailsRemovesNonLocationData) {
   EXPECT_TRUE(GetUploadData().find("0162") == std::string::npos);
   EXPECT_TRUE(GetUploadData().find("834") == std::string::npos);
   EXPECT_TRUE(GetUploadData().find("0090") == std::string::npos);
+}
+
+TEST_F(PaymentsClientTest,
+       GetDetailsIncludesPanFirstSixInRequestIfExperimentOn) {
+  EnableAutofillUpstreamSendPanFirstSixExperiment();
+
+  StartGettingUploadDetails();
+
+  // Verify that the value of pan_first_six was included in the request.
+  EXPECT_TRUE(GetUploadData().find("\"pan_first6\":\"411111\"") !=
+              std::string::npos);
+}
+
+TEST_F(PaymentsClientTest,
+       GetDetailsDoesNotIncludePanFirstSixInRequestIfExperimentOff) {
+  StartGettingUploadDetails();
+
+  // Verify that the value of pan_first_six was left out of the request.
+  EXPECT_TRUE(GetUploadData().find("\"pan_first6\":\"411111\"") ==
+              std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, UploadSuccessWithoutServerId) {

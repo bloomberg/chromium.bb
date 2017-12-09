@@ -25030,6 +25030,7 @@ from previous Chrome versions.
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
+  <int value="-780599934" label="AutofillUpstreamSendPanFirstSix:enabled"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
@@ -25296,6 +25297,7 @@ from previous Chrome versions.
   <int value="-29847483" label="MemoryAblation:enabled"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>
   <int value="-22544408" label="enable-video-player-chromecast-support"/>
+  <int value="-19354048" label="AutofillUpstreamSendPanFirstSix:disabled"/>
   <int value="-16824589" label="ash-shelf-color"/>
   <int value="-13918890" label="disable-download-notification"/>
   <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
