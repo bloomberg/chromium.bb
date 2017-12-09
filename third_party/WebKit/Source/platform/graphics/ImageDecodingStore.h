@@ -197,12 +197,10 @@ struct HashTraits<blink::DecoderCacheKey>
   static void ConstructDeletedValue(blink::DecoderCacheKey& slot, bool) {
     slot = blink::DecoderCacheEntry::MakeCacheKey(
         nullptr, SkISize::Make(-1, -1),
-        static_cast<blink::ImageDecoder::AlphaOption>(-1));
+        static_cast<blink::ImageDecoder::AlphaOption>(0));
   }
   static bool IsDeletedValue(const blink::DecoderCacheKey& value) {
-    return !value.gen_ && value.size_ == SkISize::Make(-1, -1) &&
-           value.alpha_option_ ==
-               static_cast<blink::ImageDecoder::AlphaOption>(-1);
+    return value.size_ == SkISize::Make(-1, -1);
   }
 };
 
