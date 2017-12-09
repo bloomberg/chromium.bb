@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_VALUES_H_
 #define CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_VALUES_H_
 
-#include <stdint.h>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -60,12 +59,12 @@ class CONTENT_EXPORT CBORValue {
   using MapValue = base::flat_map<std::string, CBORValue, CTAPLess>;
 
   enum class Type {
-    NONE,
-    UNSIGNED,
-    BYTESTRING,
-    STRING,
-    ARRAY,
-    MAP,
+    UNSIGNED = 0,
+    BYTE_STRING = 2,
+    STRING = 3,
+    ARRAY = 4,
+    MAP = 5,
+    NONE = -1,
   };
 
   CBORValue(CBORValue&& that) noexcept;
@@ -102,7 +101,7 @@ class CONTENT_EXPORT CBORValue {
   bool is_type(Type type) const { return type == type_; }
   bool is_none() const { return type() == Type::NONE; }
   bool is_unsigned() const { return type() == Type::UNSIGNED; }
-  bool is_bytestring() const { return type() == Type::BYTESTRING; }
+  bool is_bytestring() const { return type() == Type::BYTE_STRING; }
   bool is_string() const { return type() == Type::STRING; }
   bool is_array() const { return type() == Type::ARRAY; }
   bool is_map() const { return type() == Type::MAP; }
