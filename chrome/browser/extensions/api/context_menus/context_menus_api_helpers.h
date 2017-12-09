@@ -211,11 +211,16 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
       *error = kCheckedError;
       return false;
     }
-    // If the item was not checked and it is updated to be checked, set it to be
-    // checked. If the radio item was unchecked, nothing should happen. The
-    // radio item should remain checked because there should always be one item
-    // checked in the radio list.
-    if (checked && !item->checked()) {
+
+    const bool should_toggle_checked =
+        // If radio item was unchecked nothing should happen. The radio item
+        // should remain checked because there should always be one item checked
+        // in the radio list.
+        (item->type() == MenuItem::RADIO && checked) ||
+        // Checkboxes are always updated.
+        item->type() == MenuItem::CHECKBOX;
+
+    if (should_toggle_checked) {
       if (!item->SetChecked(checked)) {
         *error = kCheckedError;
         return false;
