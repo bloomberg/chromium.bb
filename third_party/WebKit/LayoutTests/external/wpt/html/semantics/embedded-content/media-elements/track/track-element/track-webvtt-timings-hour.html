@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<title>Tests cue timings that contain hours (they are optional), and tests various syntax errors in timings with hours.</title>
+<title>Cue timings and various syntax errors in timings, with hours</title>
 <script src="track-helpers.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <video>
-    <track src="captions-webvtt/tc009-timings-hour.vtt">
-    <track src="captions-webvtt/tc009-timings-hour-error.vtt">
+    <track src="resources/timings-hour.vtt">
+    <track src="resources/timings-hour-error.vtt">
 </video>
 <script>
 async_test(function(t) {

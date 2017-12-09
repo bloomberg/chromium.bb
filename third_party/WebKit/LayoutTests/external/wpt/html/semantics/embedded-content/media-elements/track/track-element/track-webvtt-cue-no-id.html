@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<title>Tests empty cue identifiers (they are optional), but makes sure "-->" found leads to discarded cue.</title>
+<title>Empty cue identifiers, but having "-->" leads to discarded cue</title>
 <script src="track-helpers.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
-check_cues_from_track("captions-webvtt/tc007-cue-no-id.vtt", testTrack);
-check_cues_from_track("captions-webvtt/tc007-cue-no-id-error.vtt", testTrack);
+check_cues_from_track("resources/cue-no-id.vtt", testTrack);
+check_cues_from_track("resources/cue-no-id-error.vtt", testTrack);
 
 function testTrack(track) {
     var expected = [
