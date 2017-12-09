@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -12,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
@@ -154,7 +154,7 @@ TEST_F(FileDataPipeProducerTest, WriteFromFile) {
 
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   WriteFromFileThenCloseWriter(
-      base::MakeUnique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
       std::move(file));
   loop.Run();
 
@@ -173,7 +173,7 @@ TEST_F(FileDataPipeProducerTest, WriteFromFilePartial) {
 
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   WriteFromFileThenCloseWriter(
-      base::MakeUnique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
       std::move(file), kBytesToWrite);
   loop.Run();
 
@@ -191,7 +191,7 @@ TEST_F(FileDataPipeProducerTest, WriteFromInvalidFile) {
 
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   WriteFromFileThenCloseWriter(
-      base::MakeUnique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
       std::move(file), kBytesToWrite);
   loop.Run();
 
@@ -213,7 +213,7 @@ TEST_F(FileDataPipeProducerTest, WriteFromPath) {
                         loop.QuitClosure());
 
   WriteFromPathThenCloseWriter(
-      base::MakeUnique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
       path);
   loop.Run();
 
@@ -228,7 +228,7 @@ TEST_F(FileDataPipeProducerTest, TinyFile) {
   DataPipeReader reader(std::move(pipe.consumer_handle), 16,
                         loop.QuitClosure());
   WriteFromPathThenCloseWriter(
-      base::MakeUnique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
       path);
   loop.Run();
 
@@ -255,7 +255,7 @@ TEST_F(FileDataPipeProducerTest, HugeFile) {
                         loop.QuitClosure());
 
   WriteFromPathThenCloseWriter(
-      base::MakeUnique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
       path);
   loop.Run();
 

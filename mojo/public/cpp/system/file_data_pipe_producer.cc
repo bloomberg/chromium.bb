@@ -6,11 +6,11 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
@@ -103,7 +103,7 @@ class FileDataPipeProducer::FileSequenceState
     if (producer_handle_.is_valid()) {
       // If we didn't nail it all on the first transaction attempt, setup a
       // watcher and complete the read asynchronously.
-      watcher_ = base::MakeUnique<SimpleWatcher>(
+      watcher_ = std::make_unique<SimpleWatcher>(
           FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC);
       watcher_->Watch(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                       MOJO_WATCH_CONDITION_SATISFIED,

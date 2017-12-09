@@ -4,12 +4,12 @@
 
 #include <algorithm>
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_task_environment.h"
@@ -119,7 +119,7 @@ TEST_F(StringDataPipeProducerTest, EqualCapacity) {
   mojo::DataPipe pipe(static_cast<uint32_t>(kTestString.size()));
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
   WriteStringThenCloseProducer(
-      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       kTestString);
   loop.Run();
 
@@ -133,7 +133,7 @@ TEST_F(StringDataPipeProducerTest, UnderCapacity) {
   mojo::DataPipe pipe(static_cast<uint32_t>(kTestString.size() * 2));
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
   WriteStringThenCloseProducer(
-      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       kTestString);
   loop.Run();
 
@@ -147,7 +147,7 @@ TEST_F(StringDataPipeProducerTest, OverCapacity) {
   mojo::DataPipe pipe(static_cast<uint32_t>(kTestString.size() / 2));
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
   WriteStringThenCloseProducer(
-      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       kTestString);
   loop.Run();
 
@@ -161,7 +161,7 @@ TEST_F(StringDataPipeProducerTest, TinyPipe) {
   mojo::DataPipe pipe(1);
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
   WriteStringThenCloseProducer(
-      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       kTestString);
   loop.Run();
 
@@ -178,7 +178,7 @@ TEST_F(StringDataPipeProducerTest, MultipleWrites) {
   mojo::DataPipe pipe(4);
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
   WriteStringsThenCloseProducer(
-      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::make_unique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       {kTestString1, kTestString2, kTestString3, kTestString4});
   loop.Run();
 
