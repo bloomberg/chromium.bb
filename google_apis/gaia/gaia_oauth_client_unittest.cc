@@ -394,7 +394,7 @@ TEST_F(GaiaOAuthClientTest, GetUserInfo) {
   std::unique_ptr<base::Value> value =
       base::JSONReader::Read(kDummyFullUserInfoResult);
   DCHECK(value);
-  ASSERT_TRUE(value->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(value->is_dict());
   base::DictionaryValue* expected_result;
   value->GetAsDictionary(&expected_result);
 

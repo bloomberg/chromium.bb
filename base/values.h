@@ -150,7 +150,6 @@ class BASE_EXPORT Value {
   Type type() const { return type_; }
 
   // Returns true if the current object represents a given type.
-  bool IsType(Type type) const { return type == type_; }
   bool is_none() const { return type() == Type::NONE; }
   bool is_bool() const { return type() == Type::BOOLEAN; }
   bool is_int() const { return type() == Type::INTEGER; }

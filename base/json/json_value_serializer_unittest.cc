@@ -224,7 +224,7 @@ TEST(JSONValueSerializerTest, Roundtrip) {
   Value* null_value = nullptr;
   ASSERT_TRUE(root_dict->Get("null", &null_value));
   ASSERT_TRUE(null_value);
-  ASSERT_TRUE(null_value->IsType(Value::Type::NONE));
+  ASSERT_TRUE(null_value->is_none());
 
   bool bool_value = false;
   ASSERT_TRUE(root_dict->GetBoolean("bool", &bool_value));
@@ -417,7 +417,7 @@ TEST_F(JSONFileValueSerializerTest, Roundtrip) {
   Value* null_value = nullptr;
   ASSERT_TRUE(root_dict->Get("null", &null_value));
   ASSERT_TRUE(null_value);
-  ASSERT_TRUE(null_value->IsType(Value::Type::NONE));
+  ASSERT_TRUE(null_value->is_none());
 
   bool bool_value = false;
   ASSERT_TRUE(root_dict->GetBoolean("bool", &bool_value));

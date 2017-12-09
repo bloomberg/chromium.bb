@@ -19,7 +19,7 @@ void MergeDictionary(base::DictionaryValue* target,
        it.Advance()) {
     const base::Value* merge_value = &it.value();
     // Check whether we have to merge dictionaries.
-    if (merge_value->IsType(base::Value::Type::DICTIONARY)) {
+    if (merge_value->is_dict()) {
       base::DictionaryValue* sub_dict;
       if (target->GetDictionaryWithoutPathExpansion(it.key(), &sub_dict)) {
         MergeDictionary(sub_dict,
@@ -27,7 +27,7 @@ void MergeDictionary(base::DictionaryValue* target,
         continue;
       }
     }
-    if (merge_value->IsType(base::Value::Type::LIST)) {
+    if (merge_value->is_list()) {
       const base::ListValue* merge_list = nullptr;
       if (merge_value->GetAsList(&merge_list)) {
         base::ListValue* target_list = nullptr;

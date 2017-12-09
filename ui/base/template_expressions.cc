@@ -50,7 +50,7 @@ void TemplateReplacementsFromDictionaryValue(
     TemplateReplacements* replacements) {
   for (base::DictionaryValue::Iterator it(dictionary); !it.IsAtEnd();
        it.Advance()) {
-    if (it.value().IsType(base::Value::Type::STRING)) {
+    if (it.value().is_string()) {
       std::string str_value;
       if (it.value().GetAsString(&str_value))
         (*replacements)[it.key()] = str_value;

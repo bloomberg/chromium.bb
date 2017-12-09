@@ -55,7 +55,7 @@ void SendRequestNatives::StartRequest(
 
   std::unique_ptr<base::Value> value_args(
       converter->FromV8Value(args[1], context()->v8_context()));
-  if (!value_args.get() || !value_args->IsType(base::Value::Type::LIST)) {
+  if (!value_args.get() || !value_args->is_list()) {
     NOTREACHED() << "Unable to convert args passed to StartRequest";
     return;
   }

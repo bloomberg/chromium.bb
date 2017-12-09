@@ -55,7 +55,7 @@ std::unique_ptr<base::Value> GinJavaBridgeValue::CreateObjectIDValue(
 
 // static
 bool GinJavaBridgeValue::ContainsGinJavaBridgeValue(const base::Value* value) {
-  if (!value->IsType(base::Value::Type::BINARY))
+  if (!value->is_blob())
     return false;
   if (value->GetBlob().size() < sizeof(Header))
     return false;
@@ -72,8 +72,7 @@ bool GinJavaBridgeValue::ContainsGinJavaBridgeValue(const base::Value* value) {
 std::unique_ptr<const GinJavaBridgeValue> GinJavaBridgeValue::FromValue(
     const base::Value* value) {
   return std::unique_ptr<const GinJavaBridgeValue>(
-      value->IsType(base::Value::Type::BINARY) ? new GinJavaBridgeValue(value)
-                                               : NULL);
+      value->is_blob() ? new GinJavaBridgeValue(value) : NULL);
 }
 
 GinJavaBridgeValue::Type GinJavaBridgeValue::GetType() const {

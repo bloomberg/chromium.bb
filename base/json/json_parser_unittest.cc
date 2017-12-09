@@ -137,7 +137,7 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
   TestLastThree(parser.get());
 
   ASSERT_TRUE(value.get());
-  EXPECT_TRUE(value->IsType(Value::Type::NONE));
+  EXPECT_TRUE(value->is_none());
 }
 
 TEST_F(JSONParserTest, ConsumeNumbers) {

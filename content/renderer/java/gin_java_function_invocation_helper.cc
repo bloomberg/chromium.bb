@@ -81,7 +81,7 @@ v8::Local<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
         args->isolate(), GinJavaBridgeErrorToString(error))));
     return v8::Undefined(args->isolate());
   }
-  if (!result->IsType(base::Value::Type::BINARY)) {
+  if (!result->is_blob()) {
     return converter_->ToV8Value(result.get(),
                                  args->isolate()->GetCurrentContext());
   }

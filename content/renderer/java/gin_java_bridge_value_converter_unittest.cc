@@ -128,8 +128,7 @@ TEST_F(GinJavaBridgeValueConverterTest, TypedArrays) {
     std::unique_ptr<base::Value> list_value(
         converter->FromV8Value(v8_typed_array, context));
     ASSERT_TRUE(list_value.get()) << typed_array_type;
-    EXPECT_TRUE(list_value->IsType(base::Value::Type::LIST))
-        << typed_array_type;
+    EXPECT_TRUE(list_value->is_list()) << typed_array_type;
     base::ListValue* list;
     ASSERT_TRUE(list_value->GetAsList(&list)) << typed_array_type;
     EXPECT_EQ(1u, list->GetSize()) << typed_array_type;

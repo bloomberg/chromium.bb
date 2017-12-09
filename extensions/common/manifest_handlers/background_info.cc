@@ -233,7 +233,7 @@ bool BackgroundInfo::LoadAllowJSAccess(const Extension* extension,
                                   &allow_js_access))
     return true;
 
-  if (!allow_js_access->IsType(base::Value::Type::BOOLEAN) ||
+  if (!allow_js_access->is_bool() ||
       !allow_js_access->GetAsBoolean(&allow_js_access_)) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundAllowJsAccess);
     return false;

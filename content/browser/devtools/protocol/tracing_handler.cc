@@ -312,7 +312,7 @@ void TracingHandler::Start(Maybe<std::string> categories,
   if (config.isJust()) {
     std::unique_ptr<base::Value> value =
         protocol::toBaseValue(config.fromJust()->toValue().get(), 1000);
-    if (value && value->IsType(base::Value::Type::DICTIONARY)) {
+    if (value && value->is_dict()) {
       trace_config = GetTraceConfigFromDevToolsConfig(
           *static_cast<base::DictionaryValue*>(value.get()));
     }
@@ -470,7 +470,7 @@ bool TracingHandler::IsStartupTracingActive() {
 base::trace_event::TraceConfig TracingHandler::GetTraceConfigFromDevToolsConfig(
     const base::DictionaryValue& devtools_config) {
   std::unique_ptr<base::Value> value = ConvertDictKeyStyle(devtools_config);
-  DCHECK(value && value->IsType(base::Value::Type::DICTIONARY));
+  DCHECK(value && value->is_dict());
   std::unique_ptr<base::DictionaryValue> tracing_dict(
       static_cast<base::DictionaryValue*>(value.release()));
 

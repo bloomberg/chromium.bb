@@ -64,7 +64,7 @@ void DecodeSearchTermsFromJsonResponse(const std::string& response,
   JSONStringValueDeserializer deserializer(proper_json);
   std::unique_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
 
-  if (root.get() != NULL && root->IsType(base::Value::Type::DICTIONARY)) {
+  if (root.get() != NULL && root->is_dict()) {
     base::DictionaryValue* dict =
         static_cast<base::DictionaryValue*>(root.get());
     dict->GetString(kContextualSearchPreventPreload, prevent_preload);

@@ -91,8 +91,7 @@ bool HostListFetcher::ProcessResponse(
 
   std::unique_ptr<base::Value> response_value(
       base::JSONReader::Read(response_string));
-  if (!response_value ||
-      !response_value->IsType(base::Value::Type::DICTIONARY)) {
+  if (!response_value || !response_value->is_dict()) {
     LOG(ERROR) << "Failed to parse response string to JSON";
     return false;
   }

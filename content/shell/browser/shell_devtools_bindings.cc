@@ -183,7 +183,7 @@ void ShellDevToolsBindings::SetPreferences(const std::string& json) {
   if (!parsed || !parsed->GetAsDictionary(&dict))
     return;
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().IsType(base::Value::Type::STRING))
+    if (!it.value().is_string())
       continue;
     preferences_.SetWithoutPathExpansion(it.key(), it.value().CreateDeepCopy());
   }

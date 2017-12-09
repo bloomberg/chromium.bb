@@ -63,7 +63,7 @@ std::unique_ptr<base::DictionaryValue> ReadValue(const base::win::RegKey& key,
     return nullptr;
   }
 
-  if (!value->IsType(base::Value::Type::DICTIONARY)) {
+  if (!value->is_dict()) {
     LOG(ERROR) << "Failed to parse '" << value_name << "': not a dictionary.";
     return nullptr;
   }

@@ -953,7 +953,7 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> debug_info_value(json_reader.ReadToValue(json));
   EXPECT_TRUE(debug_info_value);
-  EXPECT_TRUE(debug_info_value->IsType(base::Value::Type::DICTIONARY));
+  EXPECT_TRUE(debug_info_value->is_dict());
   base::DictionaryValue* dictionary = 0;
   EXPECT_TRUE(debug_info_value->GetAsDictionary(&dictionary));
   std::string roundtrip;

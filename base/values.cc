@@ -356,7 +356,7 @@ const Value* Value::FindPathOfType(std::initializer_list<StringPiece> path,
 const Value* Value::FindPathOfType(span<const StringPiece> path,
                                    Type type) const {
   const Value* result = FindPath(path);
-  if (!result || !result->IsType(type))
+  if (!result || result->type() != type)
     return nullptr;
   return result;
 }
@@ -877,7 +877,7 @@ bool DictionaryValue::GetBinary(StringPiece path,
                                 const Value** out_value) const {
   const Value* value;
   bool result = Get(path, &value);
-  if (!result || !value->IsType(Type::BINARY))
+  if (!result || !value->is_blob())
     return false;
 
   if (out_value)
@@ -895,7 +895,7 @@ bool DictionaryValue::GetDictionary(StringPiece path,
                                     const DictionaryValue** out_value) const {
   const Value* value;
   bool result = Get(path, &value);
-  if (!result || !value->IsType(Type::DICTIONARY))
+  if (!result || !value->is_dict())
     return false;
 
   if (out_value)
@@ -915,7 +915,7 @@ bool DictionaryValue::GetList(StringPiece path,
                               const ListValue** out_value) const {
   const Value* value;
   bool result = Get(path, &value);
-  if (!result || !value->IsType(Type::LIST))
+  if (!result || !value->is_list())
     return false;
 
   if (out_value)
@@ -1000,7 +1000,7 @@ bool DictionaryValue::GetDictionaryWithoutPathExpansion(
     const DictionaryValue** out_value) const {
   const Value* value;
   bool result = GetWithoutPathExpansion(key, &value);
-  if (!result || !value->IsType(Type::DICTIONARY))
+  if (!result || !value->is_dict())
     return false;
 
   if (out_value)
@@ -1024,7 +1024,7 @@ bool DictionaryValue::GetListWithoutPathExpansion(
     const ListValue** out_value) const {
   const Value* value;
   bool result = GetWithoutPathExpansion(key, &value);
-  if (!result || !value->IsType(Type::LIST))
+  if (!result || !value->is_list())
     return false;
 
   if (out_value)
@@ -1106,7 +1106,7 @@ void DictionaryValue::MergeDictionary(const DictionaryValue* dictionary) {
   for (DictionaryValue::Iterator it(*dictionary); !it.IsAtEnd(); it.Advance()) {
     const Value* merge_value = &it.value();
     // Check whether we have to merge dictionaries.
-    if (merge_value->IsType(Value::Type::DICTIONARY)) {
+    if (merge_value->is_dict()) {
       DictionaryValue* sub_dict;
       if (GetDictionaryWithoutPathExpansion(it.key(), &sub_dict)) {
         sub_dict->MergeDictionary(
@@ -1235,7 +1235,7 @@ bool ListValue::GetDictionary(size_t index,
                               const DictionaryValue** out_value) const {
   const Value* value;
   bool result = Get(index, &value);
-  if (!result || !value->IsType(Type::DICTIONARY))
+  if (!result || !value->is_dict())
     return false;
 
   if (out_value)
@@ -1253,7 +1253,7 @@ bool ListValue::GetDictionary(size_t index, DictionaryValue** out_value) {
 bool ListValue::GetList(size_t index, const ListValue** out_value) const {
   const Value* value;
   bool result = Get(index, &value);
-  if (!result || !value->IsType(Type::LIST))
+  if (!result || !value->is_list())
     return false;
 
   if (out_value)

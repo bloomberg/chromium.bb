@@ -133,7 +133,7 @@ static base::DictionaryValue* ReadHeader(base::StringPiece* data) {
   if (header.get() == NULL)
     return NULL;
 
-  if (!header->IsType(base::Value::Type::DICTIONARY))
+  if (!header->is_dict())
     return NULL;
   return static_cast<base::DictionaryValue*>(header.release());
 }

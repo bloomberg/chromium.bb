@@ -31,7 +31,7 @@ std::unique_ptr<base::DictionaryValue> HostConfigFromJson(
     const std::string& json) {
   std::unique_ptr<base::Value> value =
       base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
-  if (!value || !value->IsType(base::Value::Type::DICTIONARY)) {
+  if (!value || !value->is_dict()) {
     LOG(WARNING) << "Failed to parse host config from JSON";
     return nullptr;
   }

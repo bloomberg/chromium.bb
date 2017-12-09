@@ -104,7 +104,7 @@ void Domain::Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{
   if (callback.is_null())
     return;
   // This is an error response.
-  if (response.IsType(base::Value::Type::NONE)) {
+  if (response.is_none()) {
     callback.Run(nullptr);
     return;
   }

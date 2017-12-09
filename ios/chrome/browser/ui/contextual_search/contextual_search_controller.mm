@@ -718,8 +718,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
     const std::string json = base::SysNSStringToUTF8(result);
     std::unique_ptr<base::Value> parsedResult(
         base::JSONReader::Read(json, false));
-    if (!parsedResult.get() ||
-        !parsedResult->IsType(base::Value::Type::DICTIONARY)) {
+    if (!parsedResult.get() || !parsedResult->is_dict()) {
       return;
     }
 
@@ -838,8 +837,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 
   std::unique_ptr<base::Value> parsedResult(
       base::JSONReader::Read(JSON, false));
-  if (!parsedResult.get() ||
-      !parsedResult->IsType(base::Value::Type::DICTIONARY)) {
+  if (!parsedResult.get() || !parsedResult->is_dict()) {
     return;
   }
   base::DictionaryValue* resultDict =

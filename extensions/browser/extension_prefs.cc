@@ -801,7 +801,7 @@ std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() const {
 
   for (base::DictionaryValue::Iterator it(*extensions);
        !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().IsType(base::Value::Type::DICTIONARY)) {
+    if (!it.value().is_dict()) {
       NOTREACHED() << "Invalid pref for extension " << it.key();
       continue;
     }

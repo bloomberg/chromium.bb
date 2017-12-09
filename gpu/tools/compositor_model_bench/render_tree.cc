@@ -151,7 +151,7 @@ bool VerifyDictionaryEntry(const base::DictionaryValue& node,
 
   const Value* child;
   node.Get(key, &child);
-  if (!child->IsType(type)) {
+  if (child->type() != type) {
     LOG(ERROR) << key << " did not have the expected type "
       "(expected " << ValueTypeAsString(type) << ")";
     return false;
@@ -169,7 +169,7 @@ bool VerifyListEntry(const base::ListValue& l,
   // error message for this elsewhere.)
   const Value* el;
   l.Get(idx, &el);
-  if (!el->IsType(type)) {
+  if (el->type() != type) {
     LOG(ERROR) << (listName ? listName : "List") << "element " << idx
                << " did not have the expected type (expected "
                << ValueTypeAsString(type) << ")\n";
