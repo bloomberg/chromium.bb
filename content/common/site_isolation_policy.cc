@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -44,8 +45,13 @@ std::vector<url::Origin> SiteIsolationPolicy::GetIsolatedOrigins() {
   std::string cmdline_arg =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kIsolateOrigins);
-  if (!cmdline_arg.empty())
-    return ParseIsolatedOrigins(cmdline_arg);
+  if (!cmdline_arg.empty()) {
+    std::vector<url::Origin> cmdline_origins =
+        ParseIsolatedOrigins(cmdline_arg);
+    UMA_HISTOGRAM_COUNTS_1000("SiteIsolation.IsolateOrigins.Size",
+                              cmdline_origins.size());
+    return cmdline_origins;
+  }
 
   if (base::FeatureList::IsEnabled(features::kIsolateOrigins)) {
     std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(

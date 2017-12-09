@@ -81669,6 +81669,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteIsolation.IsolateOrigins.Size" units="origins">
+  <owner>alexmos@chromium.org</owner>
+  <summary>
+    The number of currently enabled isolated origins.  This includes origins
+    specified via the --isolate-origins command-line flag as well as those
+    configured via enterprise policy.  Recorded on browser startup.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.OutOfProcessIframes">
   <owner>nasko@chromium.org</owner>
   <summary>
