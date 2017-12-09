@@ -70,12 +70,14 @@
             hidden$="[[!settings.color.available]]">
         </print-preview-color-settings>
         <print-preview-media-size-settings settings="{{settings}}"
+            capability="[[destination.capabilities.printer.media_size]]"
             hidden$="[[!settings.mediaSize.available]]">
         </print-preview-media-size-settings>
         <print-preview-margins-settings settings="{{settings}}"
             hidden$="[[!settings.margins.available]]">
         </print-preview-margins-settings>
         <print-preview-dpi-settings settings="{{settings}}"
+            capability="[[destination.capabilities.printer.dpi]]"
             hidden$="[[!settings.dpi.available]]">
         </print-preview-dpi-settings>
         <print-preview-scaling-settings settings="{{settings}}"

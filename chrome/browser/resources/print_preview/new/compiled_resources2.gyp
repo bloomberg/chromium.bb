@@ -71,6 +71,7 @@
     {
       'target_name': 'media_size_settings',
       'dependencies': [
+        'settings_select',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -83,6 +84,8 @@
     {
       'target_name': 'dpi_settings',
       'dependencies': [
+        'settings_select',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -111,6 +114,14 @@
     {
       'target_name': 'number_settings_section',
       'dependencies': [
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'settings_select',
+      'dependencies': [
+        '../compiled_resources2.gyp:print_preview_utils',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
