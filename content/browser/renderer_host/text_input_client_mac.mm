@@ -99,14 +99,16 @@ void TextInputClientMac::GetStringFromRangeReply(NSAttributedString* string,
 
 NSUInteger TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
     gfx::Point point) {
-  base::TimeTicks start = base::TimeTicks::Now();
-
-  BeforeRequest();
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   if (!SendMessageToRenderWidget(rwhi,
                                  new TextInputClientMsg_CharacterIndexForPoint(
-                                     rwhi->GetRoutingID(), point)))
+                                     rwhi->GetRoutingID(), point))) {
     return NSNotFound;
+  }
+
+  base::TimeTicks start = base::TimeTicks::Now();
+
+  BeforeRequest();
 
   // http://crbug.com/121917
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
@@ -122,14 +124,16 @@ NSUInteger TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
 
 NSRect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
     NSRange range) {
-  base::TimeTicks start = base::TimeTicks::Now();
-
-  BeforeRequest();
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   if (!SendMessageToRenderWidget(
           rwhi, new TextInputClientMsg_FirstRectForCharacterRange(
-                    rwhi->GetRoutingID(), gfx::Range(range))))
+                    rwhi->GetRoutingID(), gfx::Range(range)))) {
     return NSRect();
+  }
+
+  base::TimeTicks start = base::TimeTicks::Now();
+
+  BeforeRequest();
 
   // http://crbug.com/121917
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
