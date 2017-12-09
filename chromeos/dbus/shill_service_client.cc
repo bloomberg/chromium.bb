@@ -230,7 +230,6 @@ class ShillServiceClientImpl : public ShillServiceClient {
       return it->second;
 
     // There is no helper for the profile, create it.
-    NET_LOG_DEBUG("AddShillClientHelper", service_path.value());
     dbus::ObjectProxy* object_proxy =
         bus_->GetObjectProxy(shill::kFlimflamServiceName, service_path);
     ShillClientHelper* helper = new ShillClientHelper(object_proxy);
@@ -257,7 +256,6 @@ class ShillServiceClientImpl : public ShillServiceClient {
                     shill::kFlimflamServicePath);
       return;
     }
-    NET_LOG_DEBUG("RemoveShillClientHelper", object_path.value());
     bus_->RemoveObjectProxy(shill::kFlimflamServiceName,
                             object_path, base::Bind(&base::DoNothing));
     helpers_.erase(object_path.value());

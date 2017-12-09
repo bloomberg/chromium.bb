@@ -34,6 +34,7 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
   void NetworkConnectionStateChanged(
       const chromeos::NetworkState* network) override;
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
+  void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
 
  private:
   void SignalUpdate(bool notify_a11y);

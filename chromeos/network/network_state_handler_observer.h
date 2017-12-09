@@ -26,7 +26,8 @@ class CHROMEOS_EXPORT NetworkStateHandlerObserver {
   // The list of networks changed.
   virtual void NetworkListChanged();
 
-  // The list of devices changed, or a property changed (e.g. scanning).
+  // The list of devices changed. Use DevicePropertiesUpdated to be notified
+  // when a Device property changes.
   virtual void DeviceListChanged();
 
   // The default network changed (includes VPNs) or one of its properties

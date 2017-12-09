@@ -19,6 +19,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/tether/tether_component_impl.h"
 #include "chromeos/components/tether/tether_host_fetcher_impl.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
@@ -263,6 +264,18 @@ void TetherService::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
 }
 
 void TetherService::DeviceListChanged() {
+  UpdateEnabledState();
+}
+
+void TetherService::DevicePropertiesUpdated(
+    const chromeos::DeviceState* device) {
+  if (device->Matches(chromeos::NetworkTypePattern::Tether()) ||
+      device->Matches(chromeos::NetworkTypePattern::WiFi())) {
+    UpdateEnabledState();
+  }
+}
+
+void TetherService::UpdateEnabledState() {
   bool was_pref_enabled = IsEnabledbyPreference();
   chromeos::NetworkStateHandler::TechnologyState tether_technology_state =
       network_state_handler_->GetTechnologyState(
