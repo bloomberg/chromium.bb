@@ -74,8 +74,7 @@
     [CrossOrigin, Custom=Setter] attribute Window opener;
     [Replaceable, CrossOrigin] readonly attribute Window? parent;
     [CheckSecurity=ReturnValue, Custom=Getter] readonly attribute Element? frameElement;
-    // FIXME: open() should have 4 optional arguments with defaults.
-    [Custom, RaisesException] Window? open(DOMString url, DOMString target, optional DOMString features);
+    [CallWith=(ExecutionContext,CurrentWindow,EnteredWindow), RaisesException] Window? open(optional [TreatNullAs=EmptyString] DOMString url="", optional DOMString target = "_blank", optional [TreatNullAs=EmptyString] DOMString features = "");
 
     // indexed properties
     // https://html.spec.whatwg.org/C/browsers.html#windowproxy-getownproperty

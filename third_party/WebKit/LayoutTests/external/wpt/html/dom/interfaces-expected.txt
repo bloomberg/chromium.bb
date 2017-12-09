@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5284 tests; 5164 PASS, 120 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5284 tests; 5165 PASS, 119 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -4476,7 +4476,7 @@ FAIL Window interface: attribute length assert_equals: "length" must have a gett
 FAIL Window interface: attribute opener assert_equals: "opener" must have a getter expected "function" but got "undefined"
 FAIL Window interface: attribute parent assert_equals: "parent" must have a getter expected "function" but got "undefined"
 PASS Window interface: attribute frameElement
-FAIL Window interface: operation open(USVString, DOMString, DOMString) assert_equals: property has wrong .length expected 0 but got 2
+PASS Window interface: operation open(USVString, DOMString, DOMString)
 PASS Window interface: attribute navigator
 PASS Window interface: attribute applicationCache
 PASS Window interface: operation alert()

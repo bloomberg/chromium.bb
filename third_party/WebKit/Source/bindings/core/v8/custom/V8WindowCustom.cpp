@@ -272,56 +272,6 @@ void V8Window::postMessageMethodCustom(
                       target_origin, source, exception_state);
 }
 
-void V8Window::openMethodCustom(
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
-  DOMWindow* impl = V8Window::ToImpl(info.Holder());
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kExecutionContext, "Window", "open");
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()),
-                                            impl, exception_state)) {
-    return;
-  }
-
-  // If the bindings implementation is 100% correct, the current realm and the
-  // entered realm should be same origin-domain. However, to be on the safe
-  // side and add some defense in depth, we'll check against the entered realm
-  // as well here.
-  if (!BindingSecurity::ShouldAllowAccessTo(EnteredDOMWindow(info.GetIsolate()),
-                                            impl, exception_state)) {
-    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      WebFeature::kWindowOpenRealmMismatch);
-    return;
-  }
-
-  TOSTRING_VOID(V8StringResource<kTreatNullAndUndefinedAsNullString>,
-                url_string, info[0]);
-  AtomicString frame_name;
-  if (info[1]->IsUndefined() || info[1]->IsNull()) {
-    frame_name = "_blank";
-  } else {
-    TOSTRING_VOID(V8StringResource<>, frame_name_resource, info[1]);
-    frame_name = frame_name_resource;
-  }
-  TOSTRING_VOID(V8StringResource<kTreatNullAndUndefinedAsNullString>,
-                window_features_string, info[2]);
-
-  // |impl| has to be a LocalDOMWindow, since RemoteDOMWindows wouldn't have
-  // passed the BindingSecurity check above.
-  DOMWindow* opened_window = ToLocalDOMWindow(impl)->open(
-      url_string, frame_name, window_features_string,
-      CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()),
-      exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-  if (!opened_window) {
-    V8SetReturnValueNull(info);
-    return;
-  }
-
-  V8SetReturnValueFast(info, opened_window, impl);
-}
-
 void V8Window::namedPropertyGetterCustom(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
