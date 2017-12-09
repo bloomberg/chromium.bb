@@ -63,6 +63,7 @@
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/BrowserControls.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -9196,6 +9197,28 @@ void WebFrameTest::SwapAndVerifySubframeConsistency(const char* const message,
 
   EXPECT_FALSE(new_frame->FirstChild());
   EXPECT_FALSE(new_frame->last_child_);
+}
+
+TEST_P(WebFrameSwapTest, EventsOnDisconnectedSubDocumentSkipped) {
+  WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
+  WebFrame* target_frame = MainFrame()->FirstChild()->NextSibling();
+  EXPECT_TRUE(target_frame);
+  SwapAndVerifySubframeConsistency("local->remote", target_frame, remote_frame);
+
+  WebLocalFrameImpl* local_child =
+      FrameTestHelpers::CreateLocalChild(*remote_frame, "local-inside-remote");
+
+  Document* main_document =
+      WebView()->MainFrameImpl()->GetFrame()->GetDocument();
+  Document* child_document = local_child->GetFrame()->GetDocument();
+  EventHandlerRegistry& event_registry =
+      main_document->GetPage()->GetEventHandlerRegistry();
+
+  // Add the non-connected, but local, child document as having an event.
+  event_registry.DidAddEventHandler(
+      *child_document, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+  // Passes if this does not crash or DCHECK.
+  main_document->View()->UpdateAllLifecyclePhases();
 }
 
 TEST_P(WebFrameSwapTest, SwapParentShouldDetachChildren) {
