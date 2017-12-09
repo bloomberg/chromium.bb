@@ -3351,4 +3351,28 @@ void WindowRectanglesEXTImmediate(GLenum mode,
   }
 }
 
+void CreateGpuFenceINTERNAL(GLuint gpu_fence_id) {
+  gles2::cmds::CreateGpuFenceINTERNAL* c =
+      GetCmdSpace<gles2::cmds::CreateGpuFenceINTERNAL>();
+  if (c) {
+    c->Init(gpu_fence_id);
+  }
+}
+
+void WaitGpuFenceCHROMIUM(GLuint gpu_fence_id) {
+  gles2::cmds::WaitGpuFenceCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::WaitGpuFenceCHROMIUM>();
+  if (c) {
+    c->Init(gpu_fence_id);
+  }
+}
+
+void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) {
+  gles2::cmds::DestroyGpuFenceCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::DestroyGpuFenceCHROMIUM>();
+  if (c) {
+    c->Init(gpu_fence_id);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

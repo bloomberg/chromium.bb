@@ -1266,4 +1266,12 @@ void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
 
 void WindowRectanglesEXT(GLenum mode, GLsizei count, const GLint* box) override;
 
+GLuint CreateGpuFenceCHROMIUM() override;
+
+GLuint CreateClientGpuFenceCHROMIUM(ClientGpuFence source) override;
+
+void WaitGpuFenceCHROMIUM(GLuint gpu_fence_id) override;
+
+void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) override;
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

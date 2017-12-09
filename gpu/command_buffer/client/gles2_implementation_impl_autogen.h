@@ -3625,4 +3625,20 @@ void GLES2Implementation::WindowRectanglesEXT(GLenum mode,
   CheckGLError();
 }
 
+void GLES2Implementation::WaitGpuFenceCHROMIUM(GLuint gpu_fence_id) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glWaitGpuFenceCHROMIUM("
+                     << gpu_fence_id << ")");
+  helper_->WaitGpuFenceCHROMIUM(gpu_fence_id);
+  CheckGLError();
+}
+
+void GLES2Implementation::DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDestroyGpuFenceCHROMIUM("
+                     << gpu_fence_id << ")");
+  helper_->DestroyGpuFenceCHROMIUM(gpu_fence_id);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

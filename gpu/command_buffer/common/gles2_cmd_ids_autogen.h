@@ -344,7 +344,10 @@
   OP(UnlockTransferCacheEntryINTERNAL)                     /* 585 */ \
   OP(TexStorage2DImageCHROMIUM)                            /* 586 */ \
   OP(SetColorSpaceMetadataCHROMIUM)                        /* 587 */ \
-  OP(WindowRectanglesEXTImmediate)                         /* 588 */
+  OP(WindowRectanglesEXTImmediate)                         /* 588 */ \
+  OP(CreateGpuFenceINTERNAL)                               /* 589 */ \
+  OP(WaitGpuFenceCHROMIUM)                                 /* 590 */ \
+  OP(DestroyGpuFenceCHROMIUM)                              /* 591 */
 
 enum CommandId {
   kOneBeforeStartPoint =

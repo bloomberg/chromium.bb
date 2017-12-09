@@ -645,7 +645,7 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
   // present and we're on Android N or newer, assume that it's usable even if
   // the extension wasn't reported.
   g_egl_android_native_fence_sync_supported =
-      g_driver_egl.ext.b_EGL_ANDROID_native_fence_sync;
+      HasEGLExtension("EGL_ANDROID_native_fence_sync");
 #if defined(OS_ANDROID)
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
           base::android::SDK_VERSION_NOUGAT &&

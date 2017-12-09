@@ -177,6 +177,8 @@ struct GPU_EXPORT Capabilities {
 
   bool supports_oop_raster = false;
 
+  bool chromium_gpu_fence = false;
+
   int major_version = 2;
   int minor_version = 0;
 };

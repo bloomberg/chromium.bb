@@ -392,3 +392,10 @@ GL_APICALL void         GL_APIENTRY glSetColorSpaceMetadataCHROMIUM (GLuint text
 
 // Extension EXT_window_rectangles
 GL_APICALL void         GL_APIENTRY glWindowRectanglesEXT (GLenumWindowRectanglesMode mode, GLsizeiNotNegative count, const GLint* box);
+
+// Extension CHROMIUM_gpu_fence
+GL_APICALL GLuint       GL_APIENTRY glCreateGpuFenceCHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glCreateGpuFenceINTERNAL (GLuint gpu_fence_id);
+GL_APICALL GLuint       GL_APIENTRY glCreateClientGpuFenceCHROMIUM (ClientGpuFence source);
+GL_APICALL void         GL_APIENTRY glWaitGpuFenceCHROMIUM (GLuint gpu_fence_id);
+GL_APICALL void         GL_APIENTRY glDestroyGpuFenceCHROMIUM (GLuint gpu_fence_id);

@@ -3139,4 +3139,26 @@ TEST_F(GLES2ImplementationTest, WindowRectanglesEXT) {
   gl_->WindowRectanglesEXT(GL_INCLUSIVE_EXT, 2, &data[0][0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, WaitGpuFenceCHROMIUM) {
+  struct Cmds {
+    cmds::WaitGpuFenceCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->WaitGpuFenceCHROMIUM(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, DestroyGpuFenceCHROMIUM) {
+  struct Cmds {
+    cmds::DestroyGpuFenceCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->DestroyGpuFenceCHROMIUM(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

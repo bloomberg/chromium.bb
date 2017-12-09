@@ -31,6 +31,7 @@ namespace gles2 {
 
 class ContextGroup;
 class ErrorState;
+class GpuFenceManager;
 class QueryManager;
 struct ContextState;
 
@@ -94,6 +95,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_CONST_METHOD0(ClearAllAttributes, void());
   MOCK_CONST_METHOD0(RestoreAllAttributes, void());
   MOCK_METHOD0(GetQueryManager, gpu::gles2::QueryManager*());
+  MOCK_METHOD0(GetGpuFenceManager, gpu::gles2::GpuFenceManager*());
   MOCK_METHOD0(GetFramebufferManager, gpu::gles2::FramebufferManager*());
   MOCK_METHOD0(
       GetTransformFeedbackManager, gpu::gles2::TransformFeedbackManager*());

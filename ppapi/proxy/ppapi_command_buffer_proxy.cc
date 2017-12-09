@@ -238,6 +238,17 @@ void PpapiCommandBufferProxy::SignalQuery(uint32_t query,
   NOTREACHED();
 }
 
+void PpapiCommandBufferProxy::CreateGpuFence(uint32_t gpu_fence_id,
+                                             ClientGpuFence source) {
+  NOTIMPLEMENTED();
+}
+
+void PpapiCommandBufferProxy::GetGpuFence(
+    uint32_t gpu_fence_id,
+    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
+  NOTIMPLEMENTED();
+}
+
 void PpapiCommandBufferProxy::SetGpuControlClient(gpu::GpuControlClient*) {
   // TODO(piman): The lost context callback skips past here and goes directly
   // to the plugin instance. Make it more uniform and use the GpuControlClient.
