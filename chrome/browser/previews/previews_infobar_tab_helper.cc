@@ -13,8 +13,10 @@
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/features/features.h"
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/content/previews_ui_service.h"
@@ -97,7 +99,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   offline_pages::OfflinePageTabHelper* tab_helper =
       offline_pages::OfflinePageTabHelper::FromWebContents(web_contents());
 
-  if (tab_helper && tab_helper->IsShowingOfflinePreview()) {
+  if (tab_helper && tab_helper->GetOfflinePreviewItem()) {
     if (navigation_handle->IsErrorPage()) {
       // TODO(ryansturm): Add UMA for errors.
       return;
@@ -106,11 +108,25 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
         data_reduction_proxy_settings =
             DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
                 web_contents()->GetBrowserContext());
+
+    const offline_pages::OfflinePageItem* offline_page =
+        tab_helper->GetOfflinePreviewItem();
+    // From UMA, the median percent of network body bytes loaded out of total
+    // body bytes on a page load. See PageLoad.Experimental.Bytes.Network and
+    // PageLoad.Experimental.Bytes.Total.
+    int64_t uncached_size = offline_page->file_size * 0.55;
+
+    bool data_saver_enabled =
+        data_reduction_proxy_settings->IsDataReductionProxyEnabled();
+    data_reduction_proxy_settings->data_reduction_proxy_service()
+        ->UpdateContentLengths(0, uncached_size, data_saver_enabled,
+                               data_reduction_proxy::HTTPS,
+                               "multipart/related");
+
     PreviewsInfoBarDelegate::Create(
         web_contents(), previews::PreviewsType::OFFLINE,
         base::Time() /* previews_freshness */, false /* is_reload */,
-        data_reduction_proxy_settings &&
-            data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
+        data_reduction_proxy_settings && data_saver_enabled,
         base::Bind(&AddPreviewNavigationCallback,
                    web_contents()->GetBrowserContext(),
                    navigation_handle->GetRedirectChain()[0],

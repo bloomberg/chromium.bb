@@ -125,7 +125,7 @@ bool OfflinePagePreviewsPageLoadMetricsObserver::IsOfflinePreview(
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageTabHelper* tab_helper =
       offline_pages::OfflinePageTabHelper::FromWebContents(web_contents);
-  return tab_helper && tab_helper->IsShowingOfflinePreview();
+  return tab_helper && tab_helper->GetOfflinePreviewItem();
 #else
   return false;
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
