@@ -2747,6 +2747,18 @@
       "features": [
         "depth_stencil_renderbuffer_resize_emulation"
       ]
+    },
+    {
+      "id": 251,
+      "description": "Vivante GPUs shader cache breaks rendering",
+      "cr_bugs": [780498],
+      "os": {
+        "type": "android"
+      },
+      "gl_extensions": ".*GL_VIV_shader_binary.*",
+      "features": [
+        "disable_program_cache"
+      ]
     }
   ]
 }
