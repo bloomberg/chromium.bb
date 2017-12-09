@@ -50,6 +50,7 @@ constexpr char kAdOfflineAuthId[] = "offline-ad-auth";
 constexpr char kAdMachineName[] = "machine_name";
 constexpr char kTestActiveDirectoryUser[] = "test-user";
 constexpr char kAdMachineInput[] = "machineNameInput";
+constexpr char kAdMoreOptionsButton[] = "moreOptionsBtn";
 constexpr char kAdUserInput[] = "userInput";
 constexpr char kAdPasswordInput[] = "passwordInput";
 constexpr char kAdButton[] = "button";
@@ -65,18 +66,6 @@ constexpr char kNewPassword[] = "new_password";
 constexpr char kDifferentNewPassword[] = "different_new_password";
 
 constexpr char kCloseButtonId[] = "closeButton";
-
-// Used for the callback from FakeAuthPolicy::JoinAdDomain.
-void OnJoinedDomain(base::OnceClosure closure, authpolicy::ErrorType error) {
-  EXPECT_EQ(authpolicy::ERROR_NONE, error);
-  std::move(closure).Run();
-}
-
-// Used for the callback from FakeAuthPolicy::RefreshDevicePolicy.
-void OnRefreshedPolicy(base::OnceClosure closure, authpolicy::ErrorType error) {
-  EXPECT_EQ(authpolicy::ERROR_NONE, error);
-  std::move(closure).Run();
-}
 
 class TestAuthPolicyClient : public FakeAuthPolicyClient {
  public:
@@ -149,18 +138,29 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     AuthPolicyLoginHelper helper;
     {
       base::RunLoop loop;
-      helper.JoinAdDomain(kAdMachineName,
-                          kTestActiveDirectoryUser + ("@" + test_realm_),
-                          "" /* password */,
-                          base::BindOnce(&OnJoinedDomain, loop.QuitClosure()));
+      helper.JoinAdDomain(
+          kAdMachineName, "" /* distinguished_name */,
+          kTestActiveDirectoryUser + ("@" + test_realm_), "" /* password */,
+          base::BindOnce(
+              [](base::OnceClosure closure, const std::string& expected_domain,
+                 authpolicy::ErrorType error, const std::string& domain) {
+                EXPECT_EQ(authpolicy::ERROR_NONE, error);
+                EXPECT_EQ(expected_domain, domain);
+                std::move(closure).Run();
+              },
+              loop.QuitClosure(), test_realm_));
       loop.Run();
     }
     ASSERT_TRUE(AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
         test_realm_));
     {
       base::RunLoop loop;
-      fake_auth_policy_client()->RefreshDevicePolicy(
-          base::BindOnce(&OnRefreshedPolicy, loop.QuitClosure()));
+      fake_auth_policy_client()->RefreshDevicePolicy(base::BindOnce(
+          [](base::OnceClosure closure, authpolicy::ErrorType error) {
+            EXPECT_EQ(authpolicy::ERROR_NONE, error);
+            std::move(closure).Run();
+          },
+          loop.QuitClosure()));
       loop.Run();
     }
   }
@@ -198,6 +198,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     // Checks if Active Directory signin is visible.
     JSExpect("!document.querySelector('#offline-ad-auth').hidden");
     JSExpect(JSElement(kAdOfflineAuthId, kAdMachineInput) + ".hidden");
+    JSExpect(JSElement(kAdOfflineAuthId, kAdMoreOptionsButton) + ".hidden");
     JSExpect("!" + JSElement(kAdOfflineAuthId, kAdUserInput) + ".hidden");
     JSExpect("!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".hidden");
 

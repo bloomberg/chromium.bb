@@ -24,6 +24,8 @@
     'authCompleted' - Fired when user enters login and password. Fires with an
                       argument |credentials| which contains:
                       |credentials| = { 'machineName': <machine name input>,
+                                        'distinguished_name': <orgUnitInput>,
+                                        (e.g. "OU=Computers,DC=example,DC=com")
                                         'username': <username> (UPN),
                                         'password': <typed password> }
   Methods:
@@ -57,8 +59,32 @@
               i18n-values="error:adLoginInvalidPassword;
                            label:adLoginPassword">
           </gaia-input>
+          <gaia-button id="moreOptionsBtn" type="link"
+              on-tap="onMoreOptionsClicked_" hidden="[[!showMachineInput]]">
+            $i18n{adJoinMoreOptions}
+          </gaia-button>
         </gaia-input-form>
       </div>
     </gaia-card>
+
+    <dialog is="cr-dialog" id="moreOptionsDlg" on-close="onMoreOptionsClosed_">
+      <div slot="title">
+        $i18n{adJoinMoreOptions}
+      </div>
+      <div slot="body">
+        <gaia-input id="orgUnitInput" label="$i18n{adJoinOrgUnit}" required>
+        </gaia-input>
+      </div>
+      <div slot="button-container">
+        <paper-button autofocus on-tap="onMoreOptionsCancelTap_"
+            class="action-button">
+          $i18n{adJoinCancel}
+        </paper-button>
+        <paper-button autofocus on-tap="onMoreOptionsConfirmTap_"
+            class="action-button">
+          $i18n{adJoinConfirm}
+        </paper-button>
+      </div>
+    </dialog>
   </template>
 </dom-module>

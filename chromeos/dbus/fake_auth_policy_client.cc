@@ -95,7 +95,9 @@ void FakeAuthPolicyClient::JoinAdDomain(
     const authpolicy::JoinDomainRequest& request,
     int password_fd,
     JoinCallback callback) {
+  DCHECK(!AuthPolicyLoginHelper::IsAdLocked());
   authpolicy::ErrorType error = authpolicy::ERROR_NONE;
+  std::string machine_domain;
   if (!started_) {
     LOG(ERROR) << "authpolicyd not started";
     error = authpolicy::ERROR_DBUS_FAILURE;
@@ -111,11 +113,18 @@ void FakeAuthPolicyClient::JoinAdDomain(
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (parts.size() != 2 || parts[0].empty() || parts[1].empty()) {
       error = authpolicy::ERROR_PARSE_UPN_FAILED;
+    } else {
+      machine_domain = parts[1];
     }
   }
+
   if (error == authpolicy::ERROR_NONE)
     machine_name_ = request.machine_name();
-  PostDelayedClosure(base::BindOnce(std::move(callback), error),
+  if (error != authpolicy::ERROR_NONE)
+    machine_domain.clear();
+  else if (request.has_machine_domain() && !request.machine_domain().empty())
+    machine_domain = request.machine_domain();
+  PostDelayedClosure(base::BindOnce(std::move(callback), error, machine_domain),
                      dbus_operation_delay_);
 }
 
@@ -123,6 +132,7 @@ void FakeAuthPolicyClient::AuthenticateUser(
     const authpolicy::AuthenticateUserRequest& request,
     int password_fd,
     AuthCallback callback) {
+  DCHECK(AuthPolicyLoginHelper::IsAdLocked());
   authpolicy::ErrorType error = authpolicy::ERROR_NONE;
   authpolicy::ActiveDirectoryAccountInfo account_info;
   if (!started_) {

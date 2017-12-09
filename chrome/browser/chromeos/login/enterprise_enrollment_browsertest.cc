@@ -28,15 +28,47 @@ namespace chromeos {
 
 namespace {
 
-const char kAdMachineNameInput[] =
+constexpr char kAdMachineNameInput[] =
     "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
     "#machineNameInput')";
-const char kAdUsernameInput[] =
+constexpr char kAdMachineOrgUnitInput[] =
+    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
+    "#orgUnitInput')";
+constexpr char kAdUsernameInput[] =
     "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #userInput')";
-const char kAdPasswordInput[] =
+constexpr char kAdPasswordInput[] =
     "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #passwordInput')";
-const char kAdTestRealm[] = "test_realm.com";
-const char kAdTestUser[] = "test_user@test_realm.com";
+constexpr char kAdUserDomain[] = "user.domain.com";
+constexpr char kAdMachineDomain[] = "machine.domain.com";
+constexpr char kAdMachineDomainDN[] =
+    "OU=leaf,OU=root,DC=machine,DC=domain,DC=com";
+constexpr const char* kAdOrganizationlUnit[] = {"leaf", "root"};
+constexpr char kAdTestUser[] = "test_user@user.domain.com";
+
+class MockAuthPolicyClient : public FakeAuthPolicyClient {
+ public:
+  MockAuthPolicyClient() = default;
+  ~MockAuthPolicyClient() override = default;
+  void JoinAdDomain(const authpolicy::JoinDomainRequest& request,
+                    int password_fd,
+                    JoinCallback callback) override {
+    if (expected_request_) {
+      ASSERT_EQ(expected_request_->SerializeAsString(),
+                request.SerializeAsString());
+      expected_request_.reset();
+    }
+    FakeAuthPolicyClient::JoinAdDomain(request, password_fd,
+                                       std::move(callback));
+  }
+
+  void set_expected_request(
+      std::unique_ptr<authpolicy::JoinDomainRequest> expected_request) {
+    expected_request_ = std::move(expected_request);
+  }
+
+ private:
+  std::unique_ptr<authpolicy::JoinDomainRequest> expected_request_;
+};
 
 }  // namespace
 
@@ -99,6 +131,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
 
   // Submits Active Directory domain join credentials.
   void SubmitActiveDirectoryCredentials(const std::string& machine_name,
+                                        const std::string& machine_ou,
                                         const std::string& username,
                                         const std::string& password) {
     EXPECT_TRUE(IsStepDisplayed("ad-join"));
@@ -111,13 +144,32 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
         std::string(kAdUsernameInput) + ".value = '" + username + "'";
     const std::string set_password =
         std::string(kAdPasswordInput) + ".value = '" + password + "'";
+    const std::string set_machine_ou =
+        std::string(kAdMachineOrgUnitInput) + ".value = '" + machine_ou + "'";
     js_checker().ExecuteAsync(set_machine_name);
     js_checker().ExecuteAsync(set_username);
     js_checker().ExecuteAsync(set_password);
+    js_checker().ExecuteAsync(set_machine_ou);
     js_checker().ExecuteAsync(
         "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
         "#button').fire('tap')");
     ExecutePendingJavaScript();
+  }
+
+  void SetExpectedJoinRequest(const std::string& machine_name,
+                              const std::string& machine_domain,
+                              std::vector<std::string> organizational_unit,
+                              const std::string& username) {
+    auto request = std::make_unique<authpolicy::JoinDomainRequest>();
+    if (!machine_name.empty())
+      request->set_machine_name(machine_name);
+    if (!machine_domain.empty())
+      request->set_machine_domain(machine_domain);
+    for (std::string& it : organizational_unit)
+      request->add_machine_ou()->swap(it);
+    if (!username.empty())
+      request->set_user_principal_name(username);
+    mock_auth_policy_client()->set_expected_request(std::move(request));
   }
 
   void DisableAttributePromptUpdate() {
@@ -149,22 +201,34 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
   }
 
   // Forces the Active Directory domain join flow during enterprise enrollment.
-  void SetupActiveDirectoryJoin() {
+  void SetupActiveDirectoryJoin(const std::string& expected_domain) {
     AddEnrollmentSetupFunction(
-        [this](EnterpriseEnrollmentHelperMock* enrollment_helper) {
+        [this,
+         expected_domain](EnterpriseEnrollmentHelperMock* enrollment_helper) {
           // Causes the attribute-prompt flow to activate.
           EXPECT_CALL(*enrollment_helper,
                       EnrollUsingAuthCode("test_auth_code", _))
-              .WillOnce(InvokeWithoutArgs([this]() {
-                this->enrollment_screen()->JoinDomain(
-                    base::BindOnce([](const std::string& realm) {
-                      EXPECT_EQ(kAdTestRealm, realm);
-                    }));
+              .WillOnce(InvokeWithoutArgs([this, expected_domain]() {
+                this->enrollment_screen()->JoinDomain(base::BindOnce(
+                    [](const std::string& expected_domain,
+                       const std::string& domain) {
+                      ASSERT_EQ(expected_domain, domain);
+                    },
+                    expected_domain));
               }));
         });
-    static_cast<FakeAuthPolicyClient*>(
-        DBusThreadManager::Get()->GetAuthPolicyClient())
-        ->DisableOperationDelayForTesting();
+  }
+
+  void SetUp() override {
+    DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
+        std::make_unique<MockAuthPolicyClient>());
+    mock_auth_policy_client()->DisableOperationDelayForTesting();
+    LoginManagerTest::SetUp();
+  }
+
+  MockAuthPolicyClient* mock_auth_policy_client() {
+    return static_cast<MockAuthPolicyClient*>(
+        DBusThreadManager::Get()->GetAuthPolicyClient());
   }
 
   void SetupActiveDirectoryJSNotifications() {
@@ -328,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
                        TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
-  SetupActiveDirectoryJoin();
+  SetupActiveDirectoryJoin(kAdUserDomain);
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -337,7 +401,43 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
-  SubmitActiveDirectoryCredentials("machine_name", kAdTestUser, "password");
+  SetExpectedJoinRequest("machine_name", "", {}, kAdTestUser);
+  SubmitActiveDirectoryCredentials("machine_name", "", kAdTestUser, "password");
+  WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
+  EXPECT_FALSE(IsStepDisplayed("ad-join"));
+
+  CompleteEnrollment();
+  // Verify that the success page is displayed.
+  EXPECT_TRUE(IsStepDisplayed("success"));
+  EXPECT_FALSE(IsStepDisplayed("error"));
+
+  // We have to remove the enrollment_helper before the dtor gets called.
+  enrollment_screen()->enrollment_helper_.reset();
+}
+
+// Verifies that the distinguished name specified on the Active Directory join
+// domain screen correctly parsed and passed into AuthPolicyClient.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
+                       TestActiveDirectoryEnrollment_DistinguishedName) {
+  ShowEnrollmentScreen();
+  DisableAttributePromptUpdate();
+  SetupActiveDirectoryJoin(kAdMachineDomain);
+  SubmitEnrollmentCredentials();
+
+  chromeos::DBusThreadManager::Get()
+      ->GetUpstartClient()
+      ->StartAuthPolicyService();
+
+  content::DOMMessageQueue message_queue;
+  SetupActiveDirectoryJSNotifications();
+  SetExpectedJoinRequest(
+      "machine_name", kAdMachineDomain,
+      std::vector<std::string>(
+          kAdOrganizationlUnit,
+          kAdOrganizationlUnit + arraysize(kAdOrganizationlUnit)),
+      kAdTestUser);
+  SubmitActiveDirectoryCredentials("machine_name", kAdMachineDomainDN,
+                                   kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
   EXPECT_FALSE(IsStepDisplayed("ad-join"));
 
@@ -357,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
                        TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
-  SetupActiveDirectoryJoin();
+  SetupActiveDirectoryJoin(kAdUserDomain);
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -369,14 +469,15 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   // being checked in the UI. Machine name length is checked after that in the
   // authpolicyd.
   SetupActiveDirectoryJSNotifications();
-  SubmitActiveDirectoryCredentials("too_long_machine_name", kAdTestUser, "");
+  SubmitActiveDirectoryCredentials("too_long_machine_name", "", kAdTestUser,
+                                   "");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
   js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".isInvalid");
   js_checker().ExpectFalse(std::string(kAdUsernameInput) + ".isInvalid");
   js_checker().ExpectTrue(std::string(kAdPasswordInput) + ".isInvalid");
 
   // Checking error in case of too long machine name.
-  SubmitActiveDirectoryCredentials("too_long_machine_name", kAdTestUser,
+  SubmitActiveDirectoryCredentials("too_long_machine_name", "", kAdTestUser,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
@@ -385,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   js_checker().ExpectFalse(std::string(kAdPasswordInput) + ".isInvalid");
 
   // Checking error in case of bad username (without realm).
-  SubmitActiveDirectoryCredentials("machine_name", "test_user", "password");
+  SubmitActiveDirectoryCredentials("machine_name", "", "test_user", "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
   js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".isInvalid");
