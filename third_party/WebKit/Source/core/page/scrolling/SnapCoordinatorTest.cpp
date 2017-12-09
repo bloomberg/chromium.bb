@@ -418,10 +418,12 @@ TEST_P(SnapCoordinatorTest, CenterAlignmentCalculation) {
                             ->MaximumScrollOffset()
                             .Height();
 
-  // (#area.left + #area.right) / 2 - (#scroller.left + #scroller.right) / 2
-  double snap_offset_x = (200 + (200 + 100)) / 2 - 140 / 2;
-  // (#area.top + #area.bottom) / 2 - (#scroller.top + #scroller.bottom) / 2
-  double snap_offset_y = (200 + (200 + 100)) / 2 - 160 / 2;
+  // (#area.left + #area.right) / 2 - #scroller.width / 2
+  double snap_offset_x =
+      (200 + (200 + 100)) / 2 - float(scroller_element->clientWidth()) / 2;
+  // (#area.top + #area.bottom) / 2 - #scroller.height / 2
+  double snap_offset_y =
+      (200 + (200 + 100)) / 2 - float(scroller_element->clientHeight()) / 2;
 
   bool must_snap = false;
 
@@ -475,14 +477,16 @@ TEST_P(SnapCoordinatorTest, AsymmetricalCenterAlignmentCalculation) {
   // (#scroller.left + #scroller.scroll-padding-left +
   //  #scroller.right - #scroller.scroll-padding-right) / 2
   double snap_offset_x =
-      (200 - 8 + (200 + 100 + 4)) / 2 - (0 + 16 + 140 - 12) / 2;
+      (200 - 8 + (200 + 100 + 4)) / 2 -
+      (0 + 16 + float(scroller_element->clientWidth()) - 12) / 2;
 
   // (#area.top - #area.scroll-snap-margin-top +
   //  #area.bottom + #area.scroll-snap-margin-bottom) / 2 -
   // (#scroller.top + #scroller.scroll-padding-top +
   //  #scroller.bottom - #scroller.scroll-padding-bottom) / 2
   double snap_offset_y =
-      (200 - 2 + (200 + 100 + 6)) / 2 - (0 + 10 + 160 - 14) / 2;
+      (200 - 2 + (200 + 100 + 6)) / 2 -
+      (0 + 10 + float(scroller_element->clientHeight()) - 14) / 2;
 
   bool must_snap = false;
 
@@ -519,11 +523,13 @@ TEST_P(SnapCoordinatorTest, EndAlignmentCalculation) {
 
   // (#area.right + #area.scroll-snap-margin)
   // - (#scroller.right - #scroller.scroll-padding)
-  double snap_offset_x = (200 + 100 + 8) - (140 - 10);
+  double snap_offset_x =
+      (200 + 100 + 8) - (scroller_element->clientWidth() - 10);
 
   // (#area.bottom + #area.scroll-snap-margin)
   // - (#scroller.bottom - #scroller.scroll-padding)
-  double snap_offset_y = (200 + 100 + 8) - (160 - 10);
+  double snap_offset_y =
+      (200 + 100 + 8) - (scroller_element->clientHeight() - 10);
 
   bool must_snap = false;
 
@@ -561,14 +567,14 @@ TEST_P(SnapCoordinatorTest, OverflowedSnapPositionCalculation) {
 
   // (#area.right + #area.scroll-snap-margin)
   //  - (#scroller.right - #scroller.scroll-padding)
-  // = (100 + 8) - (140 - 10)
-  // As scrollOffset cannot be set to -22, we set it to 0.
+  // = (100 + 8) - (clientWidth - 10) < 0
+  // As scrollOffset cannot be set to a negative number, we set it to 0.
   double snap_offset_x = 0;
 
   // (#area.bottom + #area.scroll-snap-margin)
   //  - (#scroller.bottom - #scroller.scroll-padding)
-  // = (100 + 8) - (160 - 10)
-  // As scrollOffset cannot be set to -42, we set it to 0.
+  // = (100 + 8) - (clientHeight - 10) < 0
+  // As scrollOffset cannot be set to a negative number, we set it to 0.
   double snap_offset_y = 0;
 
   bool must_snap = false;
