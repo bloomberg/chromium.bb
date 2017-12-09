@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "mojo/public/cpp/bindings/sync_handle_registry.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,7 +97,7 @@ TEST_F(SyncHandleRegistryTest, UnregisterDuplicateEventInNestedWait) {
 }
 
 TEST_F(SyncHandleRegistryTest, UnregisterAndRegisterForNewEventInCallback) {
-  auto e = base::MakeUnique<base::WaitableEvent>(
+  auto e = std::make_unique<base::WaitableEvent>(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::SIGNALED);
   bool called = false;
@@ -204,7 +205,7 @@ TEST_F(SyncHandleRegistryTest, RegisterDuplicateEventFromWithinCallback) {
 }
 
 TEST_F(SyncHandleRegistryTest, UnregisterUniqueEventInNestedWait) {
-  auto e1 = base::MakeUnique<base::WaitableEvent>(
+  auto e1 = std::make_unique<base::WaitableEvent>(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::WaitableEvent e2(base::WaitableEvent::ResetPolicy::MANUAL,
