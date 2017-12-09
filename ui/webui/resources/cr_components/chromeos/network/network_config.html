@@ -52,11 +52,11 @@
           value="{{configProperties_.VPN.Host}}">
       </network-config-input>
       <network-config-input label="[[i18n('OncName')]]"
-          value="{{configProperties_.Name}}">
+          value="{{configProperties_.Name}}" disabled="[[hasGuid_(guid)]]">
       </network-config-input>
       <network-config-select id="outer" label="[[i18n('OncVPN-Type')]]"
           value="{{vpnType_}}" items="[[vpnTypeItems_]]"
-          onc-prefix="VPN.Type">
+          onc-prefix="VPN.Type" disabled="[[hasGuid_(guid)]]">
       </network-config-select>
       <template is="dom-if" if="[[!showVpn_.OpenVPN]]">
         <network-config-input label="[[i18n('OncVPN-Username')]]"

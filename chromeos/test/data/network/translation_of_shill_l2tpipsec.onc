@@ -6,6 +6,7 @@
     "Host": "some.host.org",
     "IPsec": {
       "AuthenticationType": "PSK",
+      "Group": "my_group",
       // This field is part of ONC (and is required). However, it does not
       // exist explicitly in the Shill dictionary. As there is no use-case yet
       // that requires reconstructing this field from a Shill dictionary, we
