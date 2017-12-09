@@ -16,6 +16,7 @@
 #include "extensions/features/features.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -221,22 +222,16 @@ ProcessMemoryMetricsEmitter::ProcessMemoryMetricsEmitter() {}
 void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   MarkServiceRequestsInProgress();
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                           mojo::MakeRequest(&coordinator_));
-
-  // The callback keeps this object alive until the callback is invoked..
+  // The callback keeps this object alive until the callback is invoked.
   auto callback =
       base::Bind(&ProcessMemoryMetricsEmitter::ReceivedMemoryDump, this);
-
-  base::trace_event::GlobalMemoryDumpRequestArgs args = {
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
-  coordinator_->RequestGlobalMemoryDump(args, callback);
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestGlobalDump(callback);
 
   // The callback keeps this object alive until the callback is invoked.
   if (IsResourceCoordinatorEnabled()) {
+    service_manager::Connector* connector =
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
     connector->BindInterface(resource_coordinator::mojom::kServiceName,
                              mojo::MakeRequest(&introspector_));
     auto callback2 =

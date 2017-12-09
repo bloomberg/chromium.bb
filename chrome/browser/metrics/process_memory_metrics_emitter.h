@@ -74,7 +74,6 @@ class ProcessMemoryMetricsEmitter
   // be collated.
   void CollateResults();
 
-  memory_instrumentation::mojom::CoordinatorPtr coordinator_;
   resource_coordinator::mojom::CoordinationUnitIntrospectorPtr introspector_;
 
   // The results of each request are cached. When both requests are finished,
