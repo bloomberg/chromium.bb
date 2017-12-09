@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_test.mojom.h"
@@ -43,6 +44,9 @@ class ChromeNetworkServiceRestartBrowserTest : public InProcessBrowserTest {
 
     network_service_test->SimulateCrash();
     run_loop.Run();
+
+    // Make sure the cached NetworkServicePtr receives error notification.
+    FlushNetworkServiceInstanceForTesting();
   }
 
   int LoadBasicRequest(mojom::NetworkContext* network_context) {
