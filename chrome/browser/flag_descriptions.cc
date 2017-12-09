@@ -299,6 +299,14 @@ const char kEnableAutofillCreditCardUploadNewUiDescription[] =
     "If enabled, displays a new save card bubble/infobar design when offering "
     "to upload credit cards to Google Payments.";
 
+const char kEnableAutofillCreditCardUploadSendPanFirstSixName[] =
+    "Send first six digits of PAN when deciding whether to offer Autofill "
+    "credit card upload";
+const char kEnableAutofillCreditCardUploadSendPanFirstSixDescription[] =
+    "If enabled, when deciding whether to offer credit card upload to Google "
+    "Payments, sends the first six digits of the card number to avoid cases "
+    "where card upload is likely to fail.";
+
 const char kEnableAutofillSendBillingCustomerNumberName[] =
     "Enable autofill sending billing customer number when calling Google "
     "Payments";
