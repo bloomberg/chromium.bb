@@ -270,9 +270,10 @@ class BBJSONGenerator(object):
                                               tester_config):
     if 'swarming' not in generated_test:
       generated_test['swarming'] = {}
-    generated_test['swarming'].update({
-      'can_use_on_swarming_builders': tester_config.get('use_swarming', True)
-    })
+    if not 'can_use_on_swarming_builders' in generated_test['swarming']:
+      generated_test['swarming'].update({
+        'can_use_on_swarming_builders': tester_config.get('use_swarming', True)
+      })
     if 'swarming' in tester_config:
       if 'dimension_sets' not in generated_test['swarming']:
         generated_test['swarming']['dimension_sets'] = copy.deepcopy(

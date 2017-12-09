@@ -875,6 +875,107 @@
     },
   },
   {
+    'name': 'chromium.webkit',
+    'machines': {
+      'WebKit Linux Trusty': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Linux Trusty (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Linux Trusty ASAN': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'WebKit Linux Trusty Leak': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'WebKit Linux Trusty MSAN': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'WebKit Mac10.10': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Mac10.11': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Mac10.11 (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Mac10.11 (retina)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Mac10.12': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Win x64 Builder': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+        },
+      },
+      'WebKit Win x64 Builder (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+        },
+      },
+      'WebKit Win10': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Win7': {
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+      'WebKit Win7 (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_webkit_gtests',
+          'scripts': 'chromium_webkit_scripts',
+        },
+      },
+    },
+  },
+  {
     'name': 'chromium.win',
     'machines': {
       'Win Builder': {
