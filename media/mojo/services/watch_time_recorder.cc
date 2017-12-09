@@ -237,12 +237,15 @@ void WatchTimeRecorder::FinalizeWatchTime(
     }
   }
 
+  // Ensure values are cleared in case the reporter is reused.
+  pipeline_status_ = PIPELINE_OK;
   underflow_count_ = 0;
   watch_time_info_.clear();
 }
 
 void WatchTimeRecorder::OnError(PipelineStatus status) {
   pipeline_status_ = status;
+  needs_ukm_report_ = true;
 }
 
 void WatchTimeRecorder::UpdateUnderflowCount(int32_t count) {
@@ -262,6 +265,23 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
   if (!ukm_recorder)
     return;
 
+  // Ensure we have an "All" watch time entry or we haven't issued an up to date
+  // UKM report; otherwise skip reporting.
+  if (!needs_ukm_report_ &&
+      !std::any_of(
+          aggregate_watch_time_info_.begin(), aggregate_watch_time_info_.end(),
+          [](const std::pair<WatchTimeKey, base::TimeDelta>& kv) {
+            return kv.first == WatchTimeKey::kAudioAll ||
+                   kv.first == WatchTimeKey::kAudioBackgroundAll ||
+                   kv.first == WatchTimeKey::kAudioVideoAll ||
+                   kv.first == WatchTimeKey::kAudioVideoBackgroundAll ||
+                   kv.first == WatchTimeKey::kVideoAll ||
+                   kv.first == WatchTimeKey::kVideoBackgroundAll;
+          })) {
+    return;
+  }
+
+  needs_ukm_report_ = false;
   const int32_t source_id = ukm_recorder->GetNewSourceID();
 
   // TODO(crbug.com/787209): Stop getting origin from the renderer.

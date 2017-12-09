@@ -71,6 +71,10 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
   int underflow_count_ = 0;
   PipelineStatus pipeline_status_ = PIPELINE_OK;
 
+  // False if all data has been reported to UKM. Set to false by important
+  // property updates; e.g., OnError().
+  bool needs_ukm_report_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(WatchTimeRecorder);
 };
 
