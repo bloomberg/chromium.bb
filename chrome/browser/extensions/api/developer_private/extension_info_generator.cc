@@ -139,6 +139,7 @@ developer::RuntimeError ConstructRuntimeError(const RuntimeError& error) {
     default:
       NOTREACHED();
   }
+  result.context_url = error.context_url().spec();
   result.occurrences = error.occurrences();
   // NOTE(devlin): This is called "render_view_id" in the api for legacy
   // reasons, but it's not a high priority to change.
