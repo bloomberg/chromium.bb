@@ -1,4 +1,4 @@
-pre-text after-text	Something
+pre-text  after-text	Something
 Tests for hitTest of element
 bug 45164: REGRESSION:  Clickable area too large
 
