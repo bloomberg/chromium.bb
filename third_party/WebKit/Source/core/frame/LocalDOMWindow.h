@@ -267,6 +267,14 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   Element* frameElement() const;
 
+  DOMWindow* open(ExecutionContext*,
+                  LocalDOMWindow* current_window,
+                  LocalDOMWindow* entered_window,
+                  const String& url,
+                  const AtomicString& target,
+                  const String& features,
+                  ExceptionState&);
+
   DOMWindow* open(const String& url_string,
                   const AtomicString& frame_name,
                   const String& window_features_string,
