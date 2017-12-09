@@ -18,8 +18,6 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   }
   new_response->head.mime_type = head.mime_type;
   new_response->head.charset = head.charset;
-  new_response->head.has_major_certificate_errors =
-      head.has_major_certificate_errors;
   new_response->head.is_legacy_symantec_cert = head.is_legacy_symantec_cert;
   new_response->head.cert_validity_start = head.cert_validity_start;
   new_response->head.content_length = head.content_length;

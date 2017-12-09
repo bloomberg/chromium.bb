@@ -102,15 +102,13 @@ void PopulateResourceResponse(
     request->GetLoadTimingInfo(&response->head.load_timing);
 
   if (request->ssl_info().cert.get()) {
-    response->head.has_major_certificate_errors =
-        net::IsCertStatusError(request->ssl_info().cert_status) &&
-        !net::IsCertStatusMinorError(request->ssl_info().cert_status);
+    response->head.cert_status = request->ssl_info().cert_status;
     response->head.is_legacy_symantec_cert =
-        !response->head.has_major_certificate_errors &&
+        (!net::IsCertStatusError(response->head.cert_status) ||
+         net::IsCertStatusMinorError(response->head.cert_status)) &&
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
     response->head.cert_validity_start =
         request->ssl_info().cert->valid_start();
-    response->head.cert_status = request->ssl_info().cert_status;
     if (info->ShouldReportRawHeaders()) {
       // Only pass these members when the network panel of the DevTools is open,
       // i.e. ShouldReportRawHeaders() is set. These data are used to populate
