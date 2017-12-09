@@ -25,6 +25,21 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
 }
 
 // static
+SiteIsolationPolicy::CrossSiteDocumentBlockingEnabledState
+SiteIsolationPolicy::IsCrossSiteDocumentBlockingEnabled() {
+  if (base::FeatureList::IsEnabled(
+          ::features::kCrossSiteDocumentBlockingAlways))
+    return XSDB_ENABLED_UNCONDITIONALLY;
+
+  if (base::FeatureList::IsEnabled(
+          ::features::kCrossSiteDocumentBlockingIfIsolating)) {
+    return XSDB_ENABLED_IF_ISOLATED;
+  }
+
+  return XSDB_DISABLED;
+}
+
+// static
 bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
   // --site-per-process trumps --top-document-isolation.
   if (UseDedicatedProcessesForAllSites())

@@ -8,6 +8,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/browser_test_utils.h"
@@ -293,6 +295,36 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockForVariousTargets) {
 
   // TODO(creis): Wait for all the subresources to load and ensure renderer
   // process is still alive.
+}
+
+class CrossSiteDocumentBlockingKillSwitchTest
+    : public CrossSiteDocumentBlockingTest {
+ public:
+  CrossSiteDocumentBlockingKillSwitchTest() {
+    // Simulate flipping the kill switch.
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kCrossSiteDocumentBlockingIfIsolating);
+  }
+
+  ~CrossSiteDocumentBlockingKillSwitchTest() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingKillSwitchTest);
+};
+
+// After the kill switch is flipped, there should be no document blocking.
+IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingKillSwitchTest,
+                       NoBlockingWithKillSwitch) {
+  // Load a page that issues illegal cross-site document requests to bar.com.
+  GURL foo_url("http://foo.com/cross_site_document_request.html");
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  bool was_blocked;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      shell(), "sendRequest(\"valid.html\");", &was_blocked));
+  EXPECT_FALSE(was_blocked);
 }
 
 // Without any Site Isolation (in the base test class), there should be no
