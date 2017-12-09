@@ -325,6 +325,58 @@
     'interactive_ui_tests': {},
   },
 
+  'chromium_swarm_android_gtests': {
+    'base_unittests': {},
+    'chrome_public_test_apk': {
+      'swarming': {
+        'shards': 14,
+       },
+    },
+    'content_browsertests': {
+      'swarming': {
+        'shards': 10,
+      },
+    },
+    'content_unittests': {
+      'swarming': {
+        'shards': 3,
+      },
+    },
+    'content_shell_test_apk': {
+      'swarming': {
+        'shards': 3,
+       },
+    },
+    'net_unittests': {
+      'swarming': {
+        'shards': 4,
+      },
+    },
+    'unit_tests': {
+      'swarming': {
+        'shards': 5,
+      },
+    },
+    'webview_instrumentation_test_apk': {
+      'swarming': {
+        'shards': 7,
+      },
+    },
+  },
+  'chromium_swarm_desktop_gtests': {
+    'base_unittests': {},
+    'browser_tests': {
+      'swarming': {
+        'shards': 2,
+      },
+    },
+    'content_browsertests': {},
+    'content_unittests': {},
+    'interactive_ui_tests': {},
+    'net_unittests': {},
+    'unit_tests': {},
+  },
+
   'cronet_gtests': {
     'cronet_sample_test_apk': {
       'swarming': {
