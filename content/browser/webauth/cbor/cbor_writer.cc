@@ -8,24 +8,9 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
+#include "content/browser/webauth/cbor/cbor_binary.h"
 
 namespace content {
-
-namespace {
-
-// Mask selecting the last 5 bits  of the "initial byte" where
-// 'additional information is encoded.
-constexpr uint8_t kAdditionalInformationDataMask = 0x1F;
-// Indicates the integer is in the following byte.
-constexpr uint8_t kAdditionalInformation1Byte = 24u;
-// Indicates the integer is in the next 2 bytes.
-constexpr uint8_t kAdditionalInformation2Bytes = 25u;
-// Indicates the integer is in the next 4 bytes.
-constexpr uint8_t kAdditionalInformation4Bytes = 26u;
-// Indicates the integer is in the next 8 bytes.
-constexpr uint8_t kAdditionalInformation8Bytes = 27u;
-
-}  // namespace
 
 CBORWriter::~CBORWriter() {}
 
@@ -48,21 +33,21 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
 
   switch (node.type()) {
     case CBORValue::Type::NONE: {
-      StartItem(CborMajorType::kByteString, 0);
+      StartItem(CBORValue::Type::BYTE_STRING, 0);
       return true;
     }
 
     // Represents unsigned integers.
     case CBORValue::Type::UNSIGNED: {
       uint64_t value = node.GetUnsigned();
-      StartItem(CborMajorType::kUnsigned, value);
+      StartItem(CBORValue::Type::UNSIGNED, value);
       return true;
     }
 
     // Represents a byte string.
-    case CBORValue::Type::BYTESTRING: {
+    case CBORValue::Type::BYTE_STRING: {
       const CBORValue::BinaryValue& bytes = node.GetBytestring();
-      StartItem(CborMajorType::kByteString,
+      StartItem(CBORValue::Type::BYTE_STRING,
                 base::strict_cast<uint64_t>(bytes.size()));
       // Add the bytes.
       encoded_cbor_->insert(encoded_cbor_->end(), bytes.begin(), bytes.end());
@@ -71,7 +56,7 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
 
     case CBORValue::Type::STRING: {
       base::StringPiece string = node.GetString();
-      StartItem(CborMajorType::kString,
+      StartItem(CBORValue::Type::STRING,
                 base::strict_cast<uint64_t>(string.size()));
 
       // Add the characters.
@@ -82,7 +67,7 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
     // Represents an array.
     case CBORValue::Type::ARRAY: {
       const CBORValue::ArrayValue& array = node.GetArray();
-      StartItem(CborMajorType::kArray, array.size());
+      StartItem(CBORValue::Type::ARRAY, array.size());
       for (const auto& value : array) {
         if (!EncodeCBOR(value, max_nesting_level - 1))
           return false;
@@ -93,7 +78,7 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
     // Represents a map.
     case CBORValue::Type::MAP: {
       const CBORValue::MapValue& map = node.GetMap();
-      StartItem(CborMajorType::kMap, map.size());
+      StartItem(CBORValue::Type::MAP, map.size());
 
       for (const auto& value : map) {
         if (!EncodeCBOR(CBORValue(value.first), max_nesting_level - 1))
@@ -103,23 +88,25 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
       }
       return true;
     }
+    default:
+      break;
   }
   NOTREACHED();
-  return true;
+  return false;
 }
 
-void CBORWriter::StartItem(CborMajorType type, uint64_t size) {
-  encoded_cbor_->push_back(
-      base::checked_cast<uint8_t>(static_cast<unsigned>(type) << 5));
+void CBORWriter::StartItem(CBORValue::Type type, uint64_t size) {
+  encoded_cbor_->push_back(base::checked_cast<uint8_t>(
+      static_cast<unsigned>(type) << impl::kMajorTypeBitShift));
   SetUint(size);
 }
 
 void CBORWriter::SetAdditionalInformation(uint8_t additional_information) {
   DCHECK(!encoded_cbor_->empty());
-  DCHECK_EQ(additional_information & kAdditionalInformationDataMask,
+  DCHECK_EQ(additional_information & impl::kAdditionalInformationMask,
             additional_information);
   encoded_cbor_->back() |=
-      (additional_information & kAdditionalInformationDataMask);
+      (additional_information & impl::kAdditionalInformationMask);
 }
 
 void CBORWriter::SetUint(uint64_t value) {
@@ -133,19 +120,19 @@ void CBORWriter::SetUint(uint64_t value) {
       SetAdditionalInformation(base::checked_cast<uint8_t>(value));
       break;
     case 1:
-      SetAdditionalInformation(kAdditionalInformation1Byte);
+      SetAdditionalInformation(impl::kAdditionalInformation1Byte);
       shift = 0;
       break;
     case 2:
-      SetAdditionalInformation(kAdditionalInformation2Bytes);
+      SetAdditionalInformation(impl::kAdditionalInformation2Bytes);
       shift = 1;
       break;
     case 4:
-      SetAdditionalInformation(kAdditionalInformation4Bytes);
+      SetAdditionalInformation(impl::kAdditionalInformation4Bytes);
       shift = 3;
       break;
     case 8:
-      SetAdditionalInformation(kAdditionalInformation8Bytes);
+      SetAdditionalInformation(impl::kAdditionalInformation8Bytes);
       shift = 7;
       break;
     default:

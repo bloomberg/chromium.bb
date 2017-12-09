@@ -59,7 +59,7 @@ TEST(CBORValuesTest, ConstructStringFromStdStringRefRef) {
 
 TEST(CBORValuesTest, ConstructBytestring) {
   CBORValue value(CBORValue::BinaryValue({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
-  EXPECT_EQ(CBORValue::Type::BYTESTRING, value.type());
+  EXPECT_EQ(CBORValue::Type::BYTE_STRING, value.type());
   EXPECT_EQ(CBORValue::BinaryValue({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}),
             value.GetBytestring());
 }
@@ -215,13 +215,13 @@ TEST(CBORValuesTest, MoveBytestring) {
   const CBORValue::BinaryValue bytes({0xF, 0x0, 0x0, 0xB, 0xA, 0x2});
   CBORValue value(bytes);
   CBORValue moved_value(std::move(value));
-  EXPECT_EQ(CBORValue::Type::BYTESTRING, moved_value.type());
+  EXPECT_EQ(CBORValue::Type::BYTE_STRING, moved_value.type());
   EXPECT_EQ(bytes, moved_value.GetBytestring());
 
   CBORValue blank;
 
   blank = CBORValue(bytes);
-  EXPECT_EQ(CBORValue::Type::BYTESTRING, blank.type());
+  EXPECT_EQ(CBORValue::Type::BYTE_STRING, blank.type());
   EXPECT_EQ(bytes, blank.GetBytestring());
 }
 

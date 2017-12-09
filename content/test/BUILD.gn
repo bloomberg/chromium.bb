@@ -1452,6 +1452,7 @@ test("content_unittests") {
     "../browser/web_contents/web_contents_view_mac_unittest.mm",
     "../browser/web_contents/web_drag_dest_mac_unittest.mm",
     "../browser/web_contents/web_drag_source_mac_unittest.mm",
+    "../browser/webauth/cbor/cbor_reader_unittest.cc",
     "../browser/webauth/cbor/cbor_values_unittest.cc",
     "../browser/webauth/cbor/cbor_writer_unittest.cc",
     "../browser/websockets/websocket_manager_unittest.cc",

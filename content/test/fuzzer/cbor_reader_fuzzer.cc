@@ -1,0 +1,32 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <stdint.h>
+#include <algorithm>
+
+#include "content/browser/webauth/cbor/cbor_reader.h"  // nogncheck
+#include "content/browser/webauth/cbor/cbor_writer.h"  // nogncheck
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace content {
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  std::vector<uint8_t> input(data, data + size);
+  base::Optional<CBORValue> cbor = CBORReader::Read(input);
+
+  if (cbor.has_value()) {
+    base::Optional<std::vector<uint8_t>> serialized_cbor =
+        CBORWriter::Write(cbor.value());
+    CHECK(serialized_cbor.has_value());
+    if (serialized_cbor.has_value()) {
+      CHECK(serialized_cbor.value().size() == input.size());
+      CHECK(memcmp(serialized_cbor.value().data(), input.data(),
+                   input.size()) == 0);
+    }
+  }
+  return 0;
+}
+
+}  // namespace content
