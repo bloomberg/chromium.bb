@@ -1475,6 +1475,14 @@ LayoutUnit LayoutTable::FirstLineBoxBaseline() const {
 LayoutRect LayoutTable::OverflowClipRect(
     const LayoutPoint& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
+  if (ShouldCollapseBorders()) {
+    // Though the outer halves of the collapsed borders are considered as the
+    // the border area of the table by means of the box model, they are actually
+    // contents of the table and should not be clipped off. The overflow clip
+    // rect is BorderBoxRect() + location.
+    return LayoutRect(location, Size());
+  }
+
   LayoutRect rect =
       LayoutBlock::OverflowClipRect(location, overlay_scrollbar_clip_behavior);
 
