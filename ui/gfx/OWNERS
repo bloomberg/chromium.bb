@@ -18,7 +18,8 @@ per-file font_render_params*=derat@chromium.org
 per-file transform*=vollick@chromium.org
 per-file interpolated_transform*=vollick@chromium.org
 
-# GPU memory buffer interface.
+# GPU memory buffer and GpuFence interfaces.
+per-file gpu_fence*=reveman@chromium.org
 per-file gpu_memory_buffer*=reveman@chromium.org
 per-file buffer_format*=reveman@chromium.org
 per-file *buffer_types.*=reveman@chromium.org
