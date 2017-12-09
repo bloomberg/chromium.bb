@@ -290,8 +290,11 @@
   [self setUpToolbarStackView];
   [self setUpLocationBarContainerView];
   [self.view addSubview:self.leadingStackView];
-  [self.view addSubview:self.locationBarContainer];
   [self.view addSubview:self.trailingStackView];
+  // Since the |_locationBarContainer| will expand and cover the stackViews, its
+  // important to add it after them so the |_locationBarContainer| has a higher
+  // Z order.
+  [self.view addSubview:self.locationBarContainer];
   [self.view addSubview:self.shadowView];
   [self.view addSubview:self.progressBar];
   [self setConstraints];
