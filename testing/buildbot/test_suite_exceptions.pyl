@@ -16,6 +16,11 @@
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {
+  'accessibility_unittests': {
+    'remove_from': [
+      'Mac ASan 64 Tests (1)',
+    ],
+  },
   'android_webview_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
@@ -50,6 +55,13 @@
       'ToTAndroidCFI',
       'ToTLinuxMSan',
     ],
+    'modifications': {
+      'Linux ASan LSan Tests (1)': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
+    },
   },
   'app_shell_unittests': {
     'remove_from': [
@@ -79,6 +91,18 @@
       'ToTWinCFI',
       'ToTWinCFI64',
       'ToTWinThinLTO64',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
+    ],
+  },
+  'ash_unittests-mash': {
+    'remove_from': [
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
     ],
   },
   'aura_unittests': {
@@ -108,6 +132,8 @@
       'ToTWinCFI',
       'ToTWinCFI64',
       'ToTWinThinLTO64',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
     ],
   },
   'base_unittests': {
@@ -146,6 +172,139 @@
       },
     },
   },
+  'battor_agent_unittests': {
+    'remove_from': [
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+    ],
+  },
+  'blink_heap_unittests': {
+    'remove_from': [
+      # On chromium.android, unclear why these aren't run on all bots.
+      'KitKat Tablet Tester',
+      'Lollipop Phone Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
+      'Nougat Phone Tester',
+      # chromium.chromiumos
+      'Linux ChromiumOS Tests (dbg)(1)',
+      'linux-chromeos-dbg',
+      'linux-chromeos-rel',
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'ToTLinuxMSan',
+      # On chromium.linux, unclear why these only run on "Linux Tests".
+      'Cast Audio Linux',
+      'Cast Linux',
+      'Linux Tests (dbg)(1)',
+      'Linux Tests (dbg)(1)(32)',
+      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+      'Mac10.12 Tests',
+      'Mac10.9 Tests (dbg)',
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
+      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
+      'Win 7 Tests x64 (1)',
+      'Win10 Tests x64',
+      'Win7 Tests (dbg)(1)',
+    ],
+    'modifications': {
+      'KitKat Phone Tester (dbg)': {
+        'swarming': {
+          'hard_timeout': 180,
+        },
+      },
+      'KitKat Phone Tester (rel)': {
+        'swarming': {
+          'hard_timeout': 180,
+        },
+      },
+      'Marshmallow Phone Tester (rel)': {
+        'swarming': {
+          'hard_timeout': 960,
+        },
+      },
+    },
+  },
+  'blink_platform_unittests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'ToTLinuxMSan',
+      # On chromium.linux, unclear why these only run on "Linux Tests".
+      'Linux Tests (dbg)(1)',
+      'Linux Tests (dbg)(1)(32)',
+      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+      'Mac10.12 Tests',
+      'Mac10.9 Tests (dbg)',
+      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
+      'Win 7 Tests x64 (1)',
+      'Win10 Tests x64',
+      'Win7 Tests (dbg)(1)',
+    ],
+  },
+  'boringssl_crypto_tests': {
+    'remove_from': [
+      # On chromium.android, unclear why these aren't run on all bots.
+      'KitKat Tablet Tester',
+      'Lollipop Phone Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow 64 bit Tester',
+      'Marshmallow Phone Tester (rel)',
+      'Marshmallow Tablet Tester',
+      'Nougat Phone Tester',
+      # chromium.chromiumos
+      'Linux ChromiumOS Tests (dbg)(1)',
+      'linux-chromeos-dbg',
+      'linux-chromeos-rel',
+      # On chromium.mac, unclear why these aren't run on "Mac10.12 Tests".
+      'Mac10.12 Tests',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
+    ],
+  },
+  'boringssl_ssl_tests': {
+    'remove_from': [
+      # On chromium.android, unclear why these aren't run on all bots.
+      'KitKat Tablet Tester',
+      'Lollipop Phone Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow 64 bit Tester',
+      'Marshmallow Phone Tester (rel)',
+      'Marshmallow Tablet Tester',
+      'Nougat Phone Tester',
+      # chromium.chromiumos
+      'Linux ChromiumOS Tests (dbg)(1)',
+      'linux-chromeos-dbg',
+      'linux-chromeos-rel',
+      # On chromium.mac, unclear why these aren't run on "Mac10.12 Tests".
+      'Mac10.12 Tests',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
+    ],
+  },
   'breakpad_unittests': {
     'modifications': {
       'KitKat Tablet Tester': {
@@ -170,6 +329,8 @@
       # chromium.clang
       'CrWinAsanCov',
       'ToTLinuxUBSanVptr',
+      # chromium.memory
+      'Linux TSan Tests',
     ],
     'modifications': {
       'Win7 Tests (dbg)(1)': {
@@ -252,114 +413,18 @@
           'shards': 10,
         },
       },
-    },
-  },
-  'blink_heap_unittests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'ToTLinuxMSan',
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Cast Audio Linux',
-      'Cast Linux',
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
-      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (dbg)(1)',
-    ],
-    'modifications': {
-      'KitKat Phone Tester (dbg)': {
-        'swarming': {
-          'hard_timeout': 180,
-        },
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/browser_tests_cros_asan.filter',
+        ],
       },
-      'KitKat Phone Tester (rel)': {
+      'Mac ASan 64 Tests (1)': {
         'swarming': {
-          'hard_timeout': 180,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
+          'shards': 20,
         },
       },
     },
-  },
-  'blink_platform_unittests': {
-    'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'ToTLinuxMSan',
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
-      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (dbg)(1)',
-    ],
-  },
-  'boringssl_crypto_tests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Phone Tester (rel)',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-      # On chromium.mac, unclear why these aren't run on "Mac10.12 Tests".
-      'Mac10.12 Tests',
-    ],
-  },
-  'boringssl_ssl_tests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Phone Tester (rel)',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-      # On chromium.mac, unclear why these aren't run on "Mac10.12 Tests".
-      'Mac10.12 Tests',
-    ],
   },
   'cacheinvalidation_unittests': {
     'remove_from': [
@@ -435,6 +500,8 @@
       # chromium.clang
       'ToTAndroidCFI',
       'ToTLinuxThinLTO',
+      # chromium.memory
+      'Mac ASan 64 Tests (1)',
     ],
   },
   'cc_unittests': {
@@ -472,6 +539,8 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
     ],
   },
   'checkbins': {
@@ -507,7 +576,7 @@
   },
   'chrome_public_test_apk': {
     'remove_from': [
-      # TODO(kbr): on chromium.android this removal looks like an accident.
+      # TODO(crbug.com/731759): Enable this once we're confident that it passes.
       'Marshmallow Phone Tester (rel)',
       # chromium.clang
       'ToTAndroidCFI',
@@ -655,6 +724,9 @@
       # chromium.clang
       'ToTLinuxASan',
       'ToTLinuxUBSanVptr',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux Chromium OS ASan LSan Tests (1)',
     ],
   },
   'components_background_task_scheduler_junit_tests': {
@@ -690,6 +762,13 @@
       'Linux Tests (dbg)(1)(32)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux ASan Tests (sandboxed)',
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
     ],
     'modifications': {
       'KitKat Tablet Tester': {
@@ -782,6 +861,9 @@
       'ToTWinCFI',
       'ToTWinCFI64',
       'ToTWinThinLTO64',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux TSan Tests',
     ],
   },
   'content_browsertests': {
@@ -796,6 +878,11 @@
       'Linux ChromiumOS Tests (dbg)(1)': {
         'swarming': {
           'shards': 2,
+        },
+      },
+      'Linux TSan Tests': {
+        'swarming': {
+          'shards': 5,
         },
       },
       'linux-chromeos-dbg': {
@@ -866,7 +953,19 @@
           'can_use_on_swarming_builders': False,
         },
       },
+      # chromium.memory
+      'Mac ASan 64 Tests (1)': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
     },
+  },
+  'content_browsertests --mus': {
+    'remove_from': [
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
+    ],
   },
   'content_shell_crash_test': {
     'remove_from': [
@@ -998,6 +1097,8 @@
       'ToTLinuxUBSanVptr',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
     ],
   },
   'device_unittests': {
@@ -1005,6 +1106,8 @@
       # chromium.clang
       'ToTMac',
       'ToTMacASan',
+      # chromium.memory
+      'Mac ASan 64 Tests (1)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -1054,6 +1157,8 @@
       'Nougat Phone Tester',
       # chromium.clang
       'ToTAndroidCFI',
+      # chromium.memory
+      'Mac ASan 64 Tests (1)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -1063,6 +1168,8 @@
       # chromium.clang
       'ToTLinuxASan',
       'ToTLinuxUBSanVptr',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
     ],
     'modifications': {
       'KitKat Tablet Tester': {
@@ -1095,11 +1202,28 @@
       'Mac10.12 Tests',
       'Mac10.9 Tests',
       'Mac10.9 Tests (dbg)',
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux TSan Tests',
+      'Mac ASan 64 Tests (1)',
+    ],
+  },
+  'extensions_unittests': {
+    'remove_from': [
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Mac ASan 64 Tests (1)',
     ],
   },
   'filesystem_service_unittests': {
     'remove_from': [
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
     ],
   },
   'gcm_unit_tests': {
@@ -1114,6 +1238,9 @@
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'Nougat Phone Tester',
+      # chromium.memory
+      'Linux ChromiumOS MSan Tests',
+      'Mac ASan 64 Tests (1)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -1172,6 +1299,8 @@
       'Mac10.12 Tests',
       'Mac10.9 Tests',
       'Mac10.9 Tests (dbg)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
       # On chromium.win, unclear why these only run on "Win7 Tests (1)".
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
@@ -1179,6 +1308,15 @@
     ],
   },
   'gl_tests': {
+    'remove_from': [
+      # chromium.clang
+      'CFI Linux (icall)',
+      'CFI Linux ToT',
+      'ToTLinuxThinLTO',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
@@ -1193,6 +1331,10 @@
     },
   },
   'gl_unittests': {
+    'remove_from': [
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+    ],
     'modifications': {
       'CFI Linux (icall)': {
         'args': [
@@ -1251,6 +1393,22 @@
           'hard_timeout': 120,
         },
       },
+      'Linux CFI': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
     },
   },
   'gn_unittests': {
@@ -1261,6 +1419,8 @@
       'ToTLinuxLLD',
       'ToTLinuxMSan',
       'ToTLinuxUBSanVptr',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
     ],
   },
   'google_apis_unittests': {
@@ -1280,6 +1440,8 @@
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
+      # chromium.memory
+      'Mac ASan 64 Tests (1)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -1373,6 +1535,8 @@
     'remove_from': [
       # chromium.clang
       'ToTLinuxUBSanVptr',
+      # chromium.memory
+      'Linux TSan Tests',
     ],
     'modifications': {
       'CFI Linux (icall)': {
@@ -1437,6 +1601,17 @@
       'Win7 Tests (dbg)(1)': {
         'swarming': {
           'shards': 4,
+        },
+      },
+      # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
+      'Linux CFI': {
+        'swarming': {
+          'shards': 1,
         },
       },
     },
@@ -1509,6 +1684,9 @@
       'Linux Tests',
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux TSan Tests',
     ],
     'modifications': {
       'KitKat Tablet Tester': {
@@ -1532,6 +1710,12 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
+    ],
+  },
+  'mash_browser_tests': {
+    'remove_from': [
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
     ],
   },
   'mac_installer_unittests': {
@@ -1618,6 +1802,13 @@
       # On chromium.linux, unclear why these aren't run.
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
+      'Mac ASan 64 Tests (1)',
     ],
   },
   'metrics_python_tests': {
@@ -1671,6 +1862,9 @@
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux Chromium OS ASan LSan Tests (1)',
     ],
     'modifications': {
       'Marshmallow Phone Tester (rel)': {
@@ -1699,6 +1893,10 @@
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux TSan Tests',
     ],
     'modifications': {
       'Marshmallow Phone Tester (rel)': {
@@ -1727,6 +1925,10 @@
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux TSan Tests',
     ],
     'modifications': {
       'Marshmallow Phone Tester (rel)': {
@@ -1755,6 +1957,10 @@
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux TSan Tests',
     ],
     'modifications': {
       'Marshmallow Phone Tester (rel)': {
@@ -1801,6 +2007,12 @@
       },
     },
   },
+  'mus_browser_tests': {
+    'remove_from': [
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
+    ]
+  },
   'nacl_helper_nonsfi_unittests': {
     'remove_from': [
       # chromium.clang
@@ -1811,6 +2023,8 @@
       'ToTLinuxMSan',
       'ToTLinuxThinLTO',
       'ToTLinuxUBSanVptr',
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
     ],
   },
   'nacl_loader_unittests': {
@@ -1818,6 +2032,8 @@
       # chromium.clang
       'ToTLinuxASan',
       'ToTLinuxUBSanVptr',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
     ],
   },
   'native_theme_unittests': {
@@ -1827,6 +2043,8 @@
       'ToTMacASan',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
     ],
   },
   'net_unittests': {
@@ -1873,6 +2091,22 @@
         'swarming': {
           'shards': 4,
         },
+      },
+      # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        'swarming': {
+          'shards': 4,
+        }
+      },
+      'Linux TSan Tests': {
+        'swarming': {
+          'shards': 4,
+        }
       },
     },
   },
@@ -2102,6 +2336,12 @@
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
+      # chromium.memory
+      'Linux CFI',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
+      'Mac ASan 64 Tests (1)',
     ],
     'key_removals': {
       'Marshmallow Phone Tester (rel)': [
@@ -2281,6 +2521,15 @@
         },
       },
     },
+    'remove_from': [
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
+    ],
   },
   'telemetry_perf_unittests': {
     'modifications': {
@@ -2446,6 +2695,9 @@
       # chromium.clang
       'ToTLinuxASan',
       'ToTLinuxUBSanVptr',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
     ],
     'modifications': {
       'KitKat Tablet Tester': {
@@ -2511,7 +2763,23 @@
         'swarming': {
           'shards': 2,
         },
-      }
+      },
+      # chromium.android
+      'Linux ASan LSan Tests (1)': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/unit_tests_cros_asan.filter',
+        ],
+      },
+      'Linux TSan Tests': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
     },
   },
   'url_unittests': {
@@ -2537,6 +2805,8 @@
       'ToTMacASan',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
     ],
   },
   'viz_content_browsertests': {
@@ -2565,6 +2835,8 @@
       'ToTLinuxUBSanVptr',
       # chromium.win
       'Win10 Tests x64',
+      # chromium.memory
+      'Linux CFI',
     ],
     'key_removals': {
       # TODO(kbr): on Android, it looks like the absence of the
@@ -2808,6 +3080,11 @@
       'Mac10.11 Tests',
       'Mac10.12 Tests',
       'Mac10.9 Tests (dbg)',
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
       'Win7 Tests (dbg)(1)',
@@ -2889,6 +3166,9 @@
       'ToTWinCFI',
       'ToTWinCFI64',
       'ToTWinThinLTO64',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',
+      'Linux Chromium OS ASan LSan Tests (1)',
     ],
   },
   'wtf_unittests': {
@@ -2923,6 +3203,11 @@
       'Mac10.11 Tests',
       'Mac10.12 Tests',
       'Mac10.9 Tests (dbg)',
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',
+      'Linux MSan Tests',
+      'Linux TSan Tests',
       # On chromium.win, unclear why these only run on "Win7 Tests (1)".
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',

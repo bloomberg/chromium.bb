@@ -737,6 +737,51 @@
     },
   },
   {
+    'name': 'chromium.memory',
+    'machines': {
+      'Linux ASan LSan Tests (1)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_memory_linux_asan_gtests',
+        },
+      },
+      'Linux ASan Tests (sandboxed)': {
+        'test_suites': {
+          'gtest_tests': 'sandboxed_chromium_memory_linux_gtests',
+        },
+      },
+      'Linux CFI': {
+        'test_suites': {
+          'gtest_tests': 'chromium_memory_linux_asan_gtests',
+        },
+      },
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_memory_chromiumos_asan_gtests',
+        },
+      },
+      'Linux ChromiumOS MSan Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_memory_chromiumos_msan_gtests',
+        },
+      },
+      'Linux MSan Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_memory_linux_msan_gtests',
+        },
+      },
+      'Linux TSan Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_memory_linux_tsan_gtests',
+        },
+      },
+      'Mac ASan 64 Tests (1)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_memory_mac_gtests',
+        },
+      },
+    },
+  },
+  {
     'name': 'chromium.sandbox',
     'machines': {
       'Fuchsia x64 SANDBOX': {
