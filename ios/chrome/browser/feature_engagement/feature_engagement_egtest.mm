@@ -10,9 +10,9 @@
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/feature_engagement/test/test_tracker.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#include "ios/chrome/browser/feature_engagement/tracker_factory_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -29,12 +29,15 @@ namespace {
 // Help feature to be shown.
 const int kMinChromeOpensRequired = 5;
 
-// The timeout for the load of the feature engagement tracker.
-const NSTimeInterval kWaitForTrackerLoadTimeout = 10.0;
-
 // Matcher for the Reading List Text Badge.
 id<GREYMatcher> ReadingListTextBadge() {
   return grey_accessibilityID(@"kReadingListTextBadgeAccessibilityIdentifier");
+}
+
+// Create a test FeatureEngagementTracker.
+std::unique_ptr<KeyedService> CreateTestFeatureEngagementTracker(
+    web::BrowserState* context) {
+  return feature_engagement::CreateTestTracker();
 }
 
 // Simulate a Chrome Opened event for the Feature Engagement Tracker.
@@ -50,16 +53,7 @@ void LoadFeatureEngagementTracker() {
       chrome_test_util::GetOriginalBrowserState();
 
   feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(
-      browserState, feature_engagement::CreateFeatureEngagementTracker);
-
-  feature_engagement::Tracker* tracker =
-      feature_engagement::TrackerFactory::GetForBrowserState(browserState);
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kWaitForTrackerLoadTimeout,
-                                           ^{
-                                             return tracker->IsInitialized();
-                                           }),
-      @"Engagement Tracker did not load before timeout.");
+      browserState, CreateTestFeatureEngagementTracker);
 }
 
 // Enables the Badged Reading List help to be triggered for |feature_list|.
