@@ -235,8 +235,8 @@ void RuntimeAPI::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UninstallReason reason) {
-  RuntimeEventRouter::OnExtensionUninstalled(
-      browser_context_, extension->id(), reason);
+  RuntimeEventRouter::OnExtensionUninstalled(browser_context_, extension->id(),
+                                             reason);
 }
 
 void RuntimeAPI::Shutdown() {
@@ -569,6 +569,12 @@ void RuntimeEventRouter::OnExtensionUninstalled(
   if (!uninstall_url.SchemeIsHTTPOrHTTPS()) {
     // Previous versions of Chrome allowed non-http(s) URLs to be stored in the
     // prefs. Now they're disallowed, but the old data may still exist.
+    return;
+  }
+
+  // Blacklisted extensions should not open uninstall_url.
+  if (extensions::ExtensionPrefs::Get(context)->IsExtensionBlacklisted(
+          extension_id)) {
     return;
   }
 
