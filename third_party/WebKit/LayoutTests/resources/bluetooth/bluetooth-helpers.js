@@ -36,8 +36,8 @@ function loadChromiumResources() {
 function bluetooth_test(func, name, properties) {
   Promise.resolve()
     .then(() => {
-      // Chromium Testing API
-      if (window.chrome !== undefined) return loadChromiumResources();
+      // Load Chromium specific resources when Mojo bindings are detected.
+      if (Mojo) return loadChromiumResources();
     })
     .then(() => promise_test(func, name, properties));
 }
