@@ -172,6 +172,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
   // a simple placeholder for now.
   source->AddLocalizedString("itemInspectViewsExtra",
                              IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS_EXTRA);
+  source->AddLocalizedString("noActiveViews",
+                             IDS_MD_EXTENSIONS_ITEM_NO_ACTIVE_VIEWS);
   source->AddLocalizedString("itemAllowIncognito",
                              IDS_MD_EXTENSIONS_ITEM_ALLOW_INCOGNITO);
   source->AddLocalizedString("itemDescriptionLabel",

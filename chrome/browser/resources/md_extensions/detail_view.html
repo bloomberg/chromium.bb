@@ -270,11 +270,13 @@
           <div class="section-content">[[data.id]]</div>
         </div>
         <template is="dom-if" if="[[inDevMode]]">
-          <div class="section block" id="inspectable-views"
-              hidden="[[!data.views.length]]">
+          <div class="section block" id="inspectable-views">
             <div class="section-title">$i18n{itemInspectViews}</div>
             <div class="section-content">
               <ul id="inspect-views">
+                <li hidden="[[data.views.length]]">
+                  $i18n{noActiveViews}
+                </li>
                 <template is="dom-repeat" items="[[data.views]]">
                   <li>
                     <a is="action-link" class="inspectable-view"

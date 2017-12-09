@@ -40,6 +40,9 @@
   <message name="IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS_EXTRA" desc="The text to indicate there are additional inspectable views that aren't listed.">
     <ph name="NUMBER_OF_VIEWS">$1<ex>2</ex></ph> more...
   </message>
+  <message name="IDS_MD_EXTENSIONS_ITEM_NO_ACTIVE_VIEWS" desc="Placeholder text when the extension Inspect Views list is empty.">
+    No active views
+  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_ALLOW_INCOGNITO" desc="The text next to the checkbox to enable an extension in incognito mode.">
     Allow in incognito
   </message>
