@@ -13,4 +13,5 @@ typemaps = [
   "//services/viz/public/cpp/compositing/surface_id.typemap",
   "//services/viz/public/cpp/compositing/surface_info.typemap",
   "//services/viz/public/cpp/compositing/surface_sequence.typemap",
+  "//ui/gfx/mojo/gpu_fence_handle_for_blink.typemap",
 ]
