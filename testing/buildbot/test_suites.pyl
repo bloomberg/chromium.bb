@@ -481,6 +481,11 @@
     'sql_unittests': {},
   },
 
+  'goma_gtests': {
+    'base_unittests': {},
+    'content_unittests': {},
+  },
+
   'linux_and_android_specific_chromium_gtests': {
     'renderer_side_navigation_content_browsertests': {
       'args': [
