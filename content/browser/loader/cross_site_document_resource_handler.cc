@@ -326,10 +326,18 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   // TODO(creis): This check can go away once the logic here is made fully
   // backward compatible and we can enforce it always, regardless of Site
   // Isolation policy.
-  if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->IsIsolatedOrigin(
-          url::Origin::Create(url))) {
-    return false;
+  switch (SiteIsolationPolicy::IsCrossSiteDocumentBlockingEnabled()) {
+    case SiteIsolationPolicy::XSDB_ENABLED_UNCONDITIONALLY:
+      break;
+    case SiteIsolationPolicy::XSDB_ENABLED_IF_ISOLATED:
+      if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
+          !ChildProcessSecurityPolicyImpl::GetInstance()->IsIsolatedOrigin(
+              url::Origin::Create(url))) {
+        return false;
+      }
+      break;
+    case SiteIsolationPolicy::XSDB_DISABLED:
+      return false;
   }
 
   // Look up MIME type.  If it doesn't claim to be a blockable type (i.e., HTML,
