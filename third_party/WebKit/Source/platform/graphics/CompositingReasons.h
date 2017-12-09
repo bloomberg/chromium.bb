@@ -22,7 +22,10 @@ using CompositingReasons = uint64_t;
   V(Plugin)                                                                   \
   V(IFrame)                                                                   \
   V(BackfaceVisibilityHidden)                                                 \
-  V(ActiveAnimation)                                                          \
+  V(ActiveTransformAnimation)                                                 \
+  V(ActiveOpacityAnimation)                                                   \
+  V(ActiveFilterAnimation)                                                    \
+  V(ActiveBackdropFilterAnimation)                                            \
   V(TransitionProperty)                                                       \
   V(ScrollDependentPosition)                                                  \
   V(OverflowScrollingTouch)                                                   \
@@ -112,16 +115,19 @@ class PLATFORM_EXPORT CompositingReason {
 
     // Various combinations of compositing reasons are defined here also, for
     // more intuitive and faster bitwise logic.
-    kComboAllDirectReasons =
-        k3DTransform | kVideo | kCanvas | kPlugin | kIFrame |
-        kBackfaceVisibilityHidden | kActiveAnimation | kTransitionProperty |
-        kScrollDependentPosition | kOverflowScrollingTouch |
-        kOverflowScrollingParent | kOutOfFlowClipping | kVideoOverlay |
-        kWillChangeCompositingHint | kBackdropFilter | kRootScroller,
+    kComboActiveAnimation =
+        kActiveTransformAnimation | kActiveOpacityAnimation |
+        kActiveFilterAnimation | kActiveBackdropFilterAnimation,
 
     kComboAllDirectStyleDeterminedReasons =
-        k3DTransform | kBackfaceVisibilityHidden | kActiveAnimation |
+        k3DTransform | kBackfaceVisibilityHidden | kComboActiveAnimation |
         kTransitionProperty | kWillChangeCompositingHint | kBackdropFilter,
+
+    kComboAllDirectReasons =
+        kComboAllDirectStyleDeterminedReasons | kVideo | kCanvas | kPlugin |
+        kIFrame | kScrollDependentPosition | kOverflowScrollingTouch |
+        kOverflowScrollingParent | kOutOfFlowClipping | kVideoOverlay |
+        kRootScroller,
 
     kComboCompositedDescendants =
         kTransformWithCompositedDescendants | kIsolateCompositedDescendants |

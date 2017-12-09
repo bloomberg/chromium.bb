@@ -266,64 +266,40 @@ TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
       *style));
 }
 
-TEST_F(CompositingReasonFinderTest, RequiresCompositingForEffectAnimation) {
+TEST_F(CompositingReasonFinderTest, CompositingReasonsForAnimation) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
 
   style->SetSubtreeWillChangeContents(false);
-
-  // In the interest of brevity, for each side of subtreeWillChangeContents()
-  // code path we only check that any one of the effect related animation flags
-  // being set produces true, rather than every permutation.
-
+  style->SetHasCurrentTransformAnimation(false);
   style->SetHasCurrentOpacityAnimation(false);
   style->SetHasCurrentFilterAnimation(false);
   style->SetHasCurrentBackdropFilterAnimation(false);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
+  EXPECT_EQ(CompositingReason::kNone,
+            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
+
+  style->SetHasCurrentTransformAnimation(true);
+  EXPECT_EQ(CompositingReason::kActiveTransformAnimation,
+            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
 
   style->SetHasCurrentOpacityAnimation(true);
-  style->SetHasCurrentFilterAnimation(false);
-  style->SetHasCurrentBackdropFilterAnimation(false);
-  EXPECT_TRUE(
-      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
+  EXPECT_EQ(CompositingReason::kActiveTransformAnimation |
+                CompositingReason::kActiveOpacityAnimation,
+            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
 
-  style->SetHasCurrentOpacityAnimation(false);
   style->SetHasCurrentFilterAnimation(true);
-  style->SetHasCurrentBackdropFilterAnimation(false);
-  EXPECT_TRUE(
-      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
+  EXPECT_EQ(CompositingReason::kActiveTransformAnimation |
+                CompositingReason::kActiveOpacityAnimation |
+                CompositingReason::kActiveFilterAnimation,
+            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
 
-  style->SetHasCurrentOpacityAnimation(false);
-  style->SetHasCurrentFilterAnimation(false);
   style->SetHasCurrentBackdropFilterAnimation(true);
-  EXPECT_TRUE(
-      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
-
-  // Check the other side of subtreeWillChangeContents.
-  style->SetSubtreeWillChangeContents(true);
-  style->SetHasCurrentOpacityAnimation(false);
-  style->SetHasCurrentFilterAnimation(false);
-  style->SetHasCurrentBackdropFilterAnimation(false);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
-
-  style->SetIsRunningOpacityAnimationOnCompositor(true);
-  style->SetIsRunningFilterAnimationOnCompositor(false);
-  style->SetIsRunningBackdropFilterAnimationOnCompositor(false);
-  EXPECT_TRUE(
-      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
-
-  style->SetIsRunningOpacityAnimationOnCompositor(false);
-  style->SetIsRunningFilterAnimationOnCompositor(true);
-  style->SetIsRunningBackdropFilterAnimationOnCompositor(false);
-  EXPECT_TRUE(
-      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
-
-  style->SetIsRunningOpacityAnimationOnCompositor(false);
-  style->SetIsRunningFilterAnimationOnCompositor(false);
-  style->SetIsRunningBackdropFilterAnimationOnCompositor(true);
-  EXPECT_TRUE(
-      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
+  EXPECT_EQ(CompositingReason::kActiveTransformAnimation |
+                CompositingReason::kActiveOpacityAnimation |
+                CompositingReason::kActiveFilterAnimation |
+                CompositingReason::kActiveBackdropFilterAnimation,
+            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
+  EXPECT_EQ(CompositingReason::kComboActiveAnimation,
+            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
 }
 
 TEST_F(CompositingReasonFinderTest, CompositeNestedSticky) {

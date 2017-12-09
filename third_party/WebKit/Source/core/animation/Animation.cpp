@@ -339,7 +339,7 @@ bool Animation::PreCommit(
         // to that function for more details.
         //
         // In the CompositingRequirementsUpdater::UpdateRecursive, the
-        // (direct_reasons & CompositingReason::kActiveAnimation) can be
+        // (direct_reasons & CompositingReason::kComboActiveAnimation) can be
         // non-zero which indicates that there is a compositor animation.
         // However, the PaintLayerCompositor::CanBeComposited could still return
         // false because the LocalFrameView is not visible. And in that case,
