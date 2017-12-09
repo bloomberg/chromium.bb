@@ -1542,7 +1542,7 @@ TraceEvent* TraceLog::GetEventByHandleInternal(TraceEventHandle handle,
 
   DCHECK(handle.chunk_seq);
   DCHECK(handle.chunk_index <= TraceBufferChunk::kMaxChunkIndex);
-  DCHECK(handle.event_index < TraceBufferChunk::kTraceBufferChunkSize);
+  DCHECK(handle.event_index <= TraceBufferChunk::kTraceBufferChunkSize - 1);
 
   if (thread_local_event_buffer_.Get()) {
     TraceEvent* trace_event =
