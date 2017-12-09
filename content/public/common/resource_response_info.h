@@ -51,9 +51,6 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // response's mime type.  This may be a derived value.
   std::string charset;
 
-  // True if the resource was loaded in spite of certificate errors.
-  bool has_major_certificate_errors;
-
   // True if the resource was loaded with an otherwise-valid legacy Symantec
   // certificate which will be distrusted in future.
   bool is_legacy_symantec_cert;

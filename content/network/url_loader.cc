@@ -60,11 +60,9 @@ void PopulateResourceResponse(net::URLRequest* request,
     request->GetLoadTimingInfo(&response->head.load_timing);
 
   if (request->ssl_info().cert.get()) {
-    response->head.has_major_certificate_errors =
-        net::IsCertStatusError(request->ssl_info().cert_status) &&
-        !net::IsCertStatusMinorError(request->ssl_info().cert_status);
     response->head.is_legacy_symantec_cert =
-        !response->head.has_major_certificate_errors &&
+        (!net::IsCertStatusError(response->head.cert_status) ||
+         net::IsCertStatusMinorError(response->head.cert_status)) &&
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
     response->head.cert_validity_start =
         request->ssl_info().cert->valid_start();
