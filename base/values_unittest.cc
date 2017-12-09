@@ -811,10 +811,10 @@ TEST(ValuesTest, StringValue) {
   // Test overloaded StringValue constructor.
   std::unique_ptr<Value> narrow_value(new Value("narrow"));
   ASSERT_TRUE(narrow_value.get());
-  ASSERT_TRUE(narrow_value->IsType(Value::Type::STRING));
+  ASSERT_TRUE(narrow_value->is_string());
   std::unique_ptr<Value> utf16_value(new Value(ASCIIToUTF16("utf16")));
   ASSERT_TRUE(utf16_value.get());
-  ASSERT_TRUE(utf16_value->IsType(Value::Type::STRING));
+  ASSERT_TRUE(utf16_value->is_string());
 
   // Test overloaded GetAsString.
   std::string narrow = "http://google.com";
@@ -1026,7 +1026,7 @@ TEST(ValuesTest, DictionaryRemovePath) {
   std::unique_ptr<Value> removed_item;
   EXPECT_TRUE(dict.RemovePath("a.long.way.down", &removed_item));
   ASSERT_TRUE(removed_item);
-  EXPECT_TRUE(removed_item->IsType(base::Value::Type::INTEGER));
+  EXPECT_TRUE(removed_item->is_int());
   EXPECT_FALSE(dict.HasKey("a.long.way.down"));
   EXPECT_FALSE(dict.HasKey("a.long.way"));
   EXPECT_TRUE(dict.Get("a.long.key.path", nullptr));
@@ -1039,7 +1039,7 @@ TEST(ValuesTest, DictionaryRemovePath) {
   removed_item.reset();
   EXPECT_TRUE(dict.RemovePath("a.long.key.path", &removed_item));
   ASSERT_TRUE(removed_item);
-  EXPECT_TRUE(removed_item->IsType(base::Value::Type::BOOLEAN));
+  EXPECT_TRUE(removed_item->is_bool());
   EXPECT_TRUE(dict.empty());
 }
 
@@ -1078,13 +1078,13 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict->Get("null", &copy_null));
   ASSERT_TRUE(copy_null);
   ASSERT_NE(copy_null, null_weak);
-  ASSERT_TRUE(copy_null->IsType(Value::Type::NONE));
+  ASSERT_TRUE(copy_null->is_none());
 
   Value* copy_bool = nullptr;
   ASSERT_TRUE(copy_dict->Get("bool", &copy_bool));
   ASSERT_TRUE(copy_bool);
   ASSERT_NE(copy_bool, bool_weak);
-  ASSERT_TRUE(copy_bool->IsType(Value::Type::BOOLEAN));
+  ASSERT_TRUE(copy_bool->is_bool());
   bool copy_bool_value = false;
   ASSERT_TRUE(copy_bool->GetAsBoolean(&copy_bool_value));
   ASSERT_TRUE(copy_bool_value);
@@ -1093,7 +1093,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict->Get("int", &copy_int));
   ASSERT_TRUE(copy_int);
   ASSERT_NE(copy_int, int_weak);
-  ASSERT_TRUE(copy_int->IsType(Value::Type::INTEGER));
+  ASSERT_TRUE(copy_int->is_int());
   int copy_int_value = 0;
   ASSERT_TRUE(copy_int->GetAsInteger(&copy_int_value));
   ASSERT_EQ(42, copy_int_value);
@@ -1102,7 +1102,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict->Get("double", &copy_double));
   ASSERT_TRUE(copy_double);
   ASSERT_NE(copy_double, double_weak);
-  ASSERT_TRUE(copy_double->IsType(Value::Type::DOUBLE));
+  ASSERT_TRUE(copy_double->is_double());
   double copy_double_value = 0;
   ASSERT_TRUE(copy_double->GetAsDouble(&copy_double_value));
   ASSERT_EQ(3.14, copy_double_value);
@@ -1111,7 +1111,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict->Get("string", &copy_string));
   ASSERT_TRUE(copy_string);
   ASSERT_NE(copy_string, string_weak);
-  ASSERT_TRUE(copy_string->IsType(Value::Type::STRING));
+  ASSERT_TRUE(copy_string->is_string());
   std::string copy_string_value;
   string16 copy_string16_value;
   ASSERT_TRUE(copy_string->GetAsString(&copy_string_value));
@@ -1123,7 +1123,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict->Get("string16", &copy_string16));
   ASSERT_TRUE(copy_string16);
   ASSERT_NE(copy_string16, string16_weak);
-  ASSERT_TRUE(copy_string16->IsType(Value::Type::STRING));
+  ASSERT_TRUE(copy_string16->is_string());
   ASSERT_TRUE(copy_string16->GetAsString(&copy_string_value));
   ASSERT_TRUE(copy_string16->GetAsString(&copy_string16_value));
   ASSERT_EQ(std::string("hello16"), copy_string_value);
@@ -1133,7 +1133,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict->Get("binary", &copy_binary));
   ASSERT_TRUE(copy_binary);
   ASSERT_NE(copy_binary, binary_weak);
-  ASSERT_TRUE(copy_binary->IsType(Value::Type::BINARY));
+  ASSERT_TRUE(copy_binary->is_blob());
   ASSERT_NE(binary_weak->GetBlob().data(), copy_binary->GetBlob().data());
   ASSERT_EQ(binary_weak->GetBlob(), copy_binary->GetBlob());
 
@@ -1141,7 +1141,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict->Get("list", &copy_value));
   ASSERT_TRUE(copy_value);
   ASSERT_NE(copy_value, list_weak);
-  ASSERT_TRUE(copy_value->IsType(Value::Type::LIST));
+  ASSERT_TRUE(copy_value->is_list());
   ListValue* copy_list = nullptr;
   ASSERT_TRUE(copy_value->GetAsList(&copy_list));
   ASSERT_TRUE(copy_list);
@@ -1167,7 +1167,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict->Get("dictionary", &copy_value));
   ASSERT_TRUE(copy_value);
   ASSERT_NE(copy_value, dict_weak);
-  ASSERT_TRUE(copy_value->IsType(Value::Type::DICTIONARY));
+  ASSERT_TRUE(copy_value->is_dict());
   DictionaryValue* copy_nested_dictionary = nullptr;
   ASSERT_TRUE(copy_value->GetAsDictionary(&copy_nested_dictionary));
   ASSERT_TRUE(copy_nested_dictionary);

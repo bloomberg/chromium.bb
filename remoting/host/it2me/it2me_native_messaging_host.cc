@@ -124,7 +124,7 @@ void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
 
   std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
   std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
-  if (!message_value->IsType(base::Value::Type::DICTIONARY)) {
+  if (!message_value->is_dict()) {
     LOG(ERROR) << "Received a message that's not a dictionary.";
     client_->CloseChannel(std::string());
     return;

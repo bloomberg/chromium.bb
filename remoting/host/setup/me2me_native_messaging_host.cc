@@ -98,7 +98,7 @@ void Me2MeNativeMessagingHost::OnMessage(const std::string& message) {
 
   auto response = base::MakeUnique<base::DictionaryValue>();
   std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
-  if (!message_value->IsType(base::Value::Type::DICTIONARY)) {
+  if (!message_value->is_dict()) {
     OnError("Received a message that's not a dictionary.");
     return;
   }

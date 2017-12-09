@@ -97,7 +97,7 @@ bool VerifiedContents::InitFrom(const base::FilePath& path) {
     return false;
 
   std::unique_ptr<base::Value> value(base::JSONReader::Read(payload));
-  if (!value.get() || !value->IsType(Value::Type::DICTIONARY))
+  if (!value.get() || !value->is_dict())
     return false;
   DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.get());
 
@@ -236,7 +236,7 @@ bool VerifiedContents::GetPayload(const base::FilePath& path,
   if (!base::ReadFileToString(path, &contents))
     return false;
   std::unique_ptr<base::Value> value(base::JSONReader::Read(contents));
-  if (!value.get() || !value->IsType(Value::Type::LIST))
+  if (!value.get() || !value->is_list())
     return false;
   ListValue* top_list = static_cast<ListValue*>(value.get());
 

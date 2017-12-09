@@ -53,7 +53,7 @@ base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
 
 // Removes the log entry associated with a given record.
 void FreeLogList(base::Value* value) {
-  DCHECK(value->IsType(base::Value::Type::DICTIONARY));
+  DCHECK(value->is_dict());
   auto* dict = static_cast<base::DictionaryValue*>(value);
   dict->Remove("log", nullptr);
 }

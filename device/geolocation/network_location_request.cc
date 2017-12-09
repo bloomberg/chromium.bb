@@ -378,7 +378,7 @@ bool ParseServerResponse(const std::string& response_body,
     return false;
   }
 
-  if (!response_value->IsType(base::Value::Type::DICTIONARY)) {
+  if (!response_value->is_dict()) {
     VLOG(1) << "ParseServerResponse() : Unexpected response type "
             << response_value->type();
     return false;
@@ -396,8 +396,8 @@ bool ParseServerResponse(const std::string& response_body,
   }
   DCHECK(location_value);
 
-  if (!location_value->IsType(base::Value::Type::DICTIONARY)) {
-    if (!location_value->IsType(base::Value::Type::NONE)) {
+  if (!location_value->is_dict()) {
+    if (!location_value->is_none()) {
       VLOG(1) << "ParseServerResponse() : Unexpected location type "
               << location_value->type();
       // If the network provider was unable to provide a position fix, it should

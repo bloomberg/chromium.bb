@@ -307,7 +307,7 @@ class _Generator(object):
               self._util_cc_helper.GetValueTypeString('value'))))
         .Append('return false;'))
     elif type_.property_type == PropertyType.OBJECT:
-      (c.Sblock('if (!value.IsType(base::Value::Type::DICTIONARY)) {')
+      (c.Sblock('if (!value.is_dict()) {')
         .Concat(self._GenerateError(
           '"expected dictionary, got " + ' +
           self._util_cc_helper.GetValueTypeString('value')))
@@ -363,7 +363,7 @@ class _Generator(object):
       return '(%s)' % ' || '.join(self._GenerateValueIsTypeExpression(var,
                                                                       choice)
                                   for choice in real_type.choices)
-    return '%s.IsType(%s)' % (var, cpp_util.GetValueType(real_type))
+    return '%s.type() == %s' % (var, cpp_util.GetValueType(real_type))
 
   def _GenerateTypePopulateProperty(self, prop, src, dst):
     """Generate the code to populate a single property in a type.
@@ -710,7 +710,7 @@ class _Generator(object):
       value_var = param.unix_name + '_value'
       (c.Append('const base::Value* %(value_var)s = NULL;')
         .Append('if (args.Get(%(i)s, &%(value_var)s) &&')
-        .Sblock('    !%(value_var)s->IsType(base::Value::Type::NONE)) {')
+        .Sblock('    !%(value_var)s->is_none()) {')
         .Concat(self._GeneratePopulatePropertyFromValue(
             param, value_var, 'params', failure_value))
         .Eblock('}')
@@ -884,7 +884,7 @@ class _Generator(object):
                                                     dst_var,
                                                     failure_value))
     elif underlying_type.property_type == PropertyType.BINARY:
-      (c.Sblock('if (!%(src_var)s->IsType(base::Value::Type::BINARY)) {')
+      (c.Sblock('if (!%(src_var)s->is_blob()) {')
         .Concat(self._GenerateError(
           '"\'%%(key)s\': expected binary, got " + ' +
           self._util_cc_helper.GetValueTypeString('%%(src_var)s', True)))

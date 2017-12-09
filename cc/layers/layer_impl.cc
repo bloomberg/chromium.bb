@@ -779,7 +779,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     base::JSONReader json_reader;
     std::unique_ptr<base::Value> debug_info_value(json_reader.ReadToValue(str));
 
-    if (debug_info_value->IsType(base::Value::Type::DICTIONARY)) {
+    if (debug_info_value->is_dict()) {
       base::DictionaryValue* dictionary_value = nullptr;
       bool converted_to_dictionary =
           debug_info_value->GetAsDictionary(&dictionary_value);

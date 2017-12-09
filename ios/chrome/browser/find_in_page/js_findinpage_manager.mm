@@ -177,7 +177,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
   std::unique_ptr<base::Value> root(base::JSONReader::Read(json, false));
   if (!root.get())
     return YES;
-  if (!root->IsType(base::Value::Type::LIST))
+  if (!root->is_list())
     return YES;
 
   base::ListValue* resultList = static_cast<base::ListValue*>(root.get());
@@ -224,7 +224,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
   if (!root.get())
     return kFindInPageEntryZero;
 
-  if (!root->IsType(base::Value::Type::LIST))
+  if (!root->is_list())
     return kFindInPageEntryZero;
 
   base::ListValue* position = static_cast<base::ListValue*>(root.get());

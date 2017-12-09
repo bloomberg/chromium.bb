@@ -227,7 +227,7 @@ void EventBindings::AttachFilteredEvent(
     std::unique_ptr<base::Value> filter_value =
         content::V8ValueConverter::Create()->FromV8Value(
             v8::Local<v8::Object>::Cast(args[1]), context()->v8_context());
-    if (!filter_value || !filter_value->IsType(base::Value::Type::DICTIONARY)) {
+    if (!filter_value || !filter_value->is_dict()) {
       args.GetReturnValue().Set(static_cast<int32_t>(-1));
       return;
     }

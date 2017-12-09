@@ -516,13 +516,13 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   // If the length property does not have numeric type, or is outside the valid
   // range for a Java array length, return null.
   jsize length = -1;
-  if (length_value->IsType(base::Value::Type::INTEGER)) {
+  if (length_value->is_int()) {
     int int_length;
     length_value->GetAsInteger(&int_length);
     if (int_length >= 0 && int_length <= std::numeric_limits<int32_t>::max()) {
       length = static_cast<jsize>(int_length);
     }
-  } else if (length_value->IsType(base::Value::Type::DOUBLE)) {
+  } else if (length_value->is_double()) {
     double double_length;
     length_value->GetAsDouble(&double_length);
     if (double_length >= 0.0 &&
@@ -630,10 +630,10 @@ jvalue CoerceJavaScriptObjectToJavaValue(JNIEnv* env,
       result.z = JNI_FALSE;
       break;
     case JavaType::TypeArray:
-      if (value->IsType(base::Value::Type::DICTIONARY)) {
+      if (value->is_dict()) {
         result.l = CoerceJavaScriptDictionaryToArray(
             env, value, target_type, object_refs, error);
-      } else if (value->IsType(base::Value::Type::LIST)) {
+      } else if (value->is_list()) {
         result.l = CoerceJavaScriptListToArray(
             env, value, target_type, object_refs, error);
       } else {

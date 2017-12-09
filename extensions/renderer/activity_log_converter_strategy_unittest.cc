@@ -31,7 +31,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   testing::AssertionResult VerifyNull(v8::Local<v8::Value> v8_value) {
     std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
-    if (value->IsType(base::Value::Type::NONE))
+    if (value->is_none())
       return testing::AssertionSuccess();
     return testing::AssertionFailure();
   }
@@ -41,9 +41,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
     bool out;
     std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
-    if (value->IsType(base::Value::Type::BOOLEAN)
-        && value->GetAsBoolean(&out)
-        && out == expected)
+    if (value->is_bool() && value->GetAsBoolean(&out) && out == expected)
       return testing::AssertionSuccess();
     return testing::AssertionFailure();
   }
@@ -53,9 +51,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
     int out;
     std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
-    if (value->IsType(base::Value::Type::INTEGER)
-        && value->GetAsInteger(&out)
-        && out == expected)
+    if (value->is_int() && value->GetAsInteger(&out) && out == expected)
       return testing::AssertionSuccess();
     return testing::AssertionFailure();
   }
@@ -65,9 +61,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
     double out;
     std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
-    if (value->IsType(base::Value::Type::DOUBLE)
-        && value->GetAsDouble(&out)
-        && out == expected)
+    if (value->is_double() && value->GetAsDouble(&out) && out == expected)
       return testing::AssertionSuccess();
     return testing::AssertionFailure();
   }
@@ -77,9 +71,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
     std::string out;
     std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
-    if (value->IsType(base::Value::Type::STRING)
-        && value->GetAsString(&out)
-        && out == expected)
+    if (value->is_string() && value->GetAsString(&out) && out == expected)
       return testing::AssertionSuccess();
     return testing::AssertionFailure();
   }

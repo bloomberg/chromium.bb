@@ -146,8 +146,7 @@ class ContextualSearchJsTest : public ChromeWebTest {
     const std::string json = base::SysNSStringToUTF8(javaScriptResult);
     std::unique_ptr<base::Value> parsedResult(
         base::JSONReader::Read(json, false));
-    if (!parsedResult.get() ||
-        !parsedResult->IsType(base::Value::Type::DICTIONARY)) {
+    if (!parsedResult.get() || !parsedResult->is_dict()) {
       return false;
     }
 

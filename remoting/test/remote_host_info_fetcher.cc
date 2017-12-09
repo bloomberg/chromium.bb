@@ -88,8 +88,7 @@ void RemoteHostInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   std::unique_ptr<base::Value> response_value(
       base::JSONReader::Read(response_string));
-  if (!response_value ||
-      !response_value->IsType(base::Value::Type::DICTIONARY)) {
+  if (!response_value || !response_value->is_dict()) {
     LOG(ERROR) << "Failed to parse response string to JSON";
     base::ResetAndReturn(&remote_host_info_callback_).Run(remote_host_info);
     return;
