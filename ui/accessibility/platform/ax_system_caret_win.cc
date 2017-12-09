@@ -18,18 +18,29 @@ namespace ui {
 AXSystemCaretWin::AXSystemCaretWin(gfx::AcceleratedWidget event_target)
     : event_target_(event_target) {
   caret_ = static_cast<AXPlatformNodeWin*>(AXPlatformNodeWin::Create(this));
-  data_.id = GetNextAXPlatformNodeUniqueId();
+  // The caret object is not part of the accessibility tree and so doesn't need
+  // a node ID. A globally unique ID is used when firing Win events, retrieved
+  // via |unique_id|.
+  data_.id = -1;
   data_.role = AX_ROLE_CARET;
   // |get_accState| should return 0 which means that the caret is visible.
   data_.state = 0;
   // According to MSDN, "Edit" should be the name of the caret object.
   data_.SetName(L"Edit");
   data_.offset_container_id = -1;
+
+  if (event_target_) {
+    ::NotifyWinEvent(EVENT_OBJECT_CREATE, event_target_, OBJID_CARET,
+                     -caret_->unique_id());
+  }
 }
 
 AXSystemCaretWin::~AXSystemCaretWin() {
+  if (event_target_) {
+    ::NotifyWinEvent(EVENT_OBJECT_DESTROY, event_target_, OBJID_CARET,
+                     -caret_->unique_id());
+  }
   caret_->Destroy();
-  caret_ = nullptr;
 }
 
 Microsoft::WRL::ComPtr<IAccessible> AXSystemCaretWin::GetCaret() const {
@@ -47,7 +58,7 @@ void AXSystemCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
   data_.location = gfx::RectF(bounds);
   if (event_target_) {
     ::NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, event_target_, OBJID_CARET,
-                     -data_.id);
+                     -caret_->unique_id());
   }
 }
 
