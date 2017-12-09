@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -745,6 +746,103 @@ TEST_F(HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {
   input.set_from_omnibox_focus(true);
   provider().Start(input, false);
   EXPECT_TRUE(provider().matches().empty());
+}
+
+ScoredHistoryMatch BuildScoredHistoryMatch(const std::string& url_text) {
+  return ScoredHistoryMatch(
+      history::URLRow(GURL(url_text)), VisitInfoVector(), ASCIIToUTF16(""),
+      String16Vector(1, ASCIIToUTF16("")), WordStarts(1, 0), RowWordStarts(),
+      false, 0, base::Time());
+}
+
+// Trim the http:// scheme from the contents in the general case.
+TEST_F(HistoryQuickProviderTest, DoTrimHttpScheme) {
+  AutocompleteInput input(ASCIIToUTF16("face"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  provider().Start(input, false);
+  ScoredHistoryMatch history_match =
+      BuildScoredHistoryMatch("http://www.facebook.com");
+
+  AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
+  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), match.contents);
+}
+
+// Don't trim the http:// scheme from the match contents if
+// the user input included a scheme.
+TEST_F(HistoryQuickProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
+  AutocompleteInput input(ASCIIToUTF16("http://face"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  provider().Start(input, false);
+  ScoredHistoryMatch history_match =
+      BuildScoredHistoryMatch("http://www.facebook.com");
+
+  AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
+  EXPECT_EQ(ASCIIToUTF16("http://www.facebook.com"), match.contents);
+}
+
+// Don't trim the http:// scheme from the match contents if
+// the user input matched it.
+TEST_F(HistoryQuickProviderTest, DontTrimHttpSchemeIfInputMatches) {
+  AutocompleteInput input(ASCIIToUTF16("ht"), metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  provider().Start(input, false);
+  ScoredHistoryMatch history_match =
+      BuildScoredHistoryMatch("http://www.facebook.com");
+  history_match.match_in_scheme = true;
+
+  AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
+  EXPECT_EQ(ASCIIToUTF16("http://www.facebook.com"), match.contents);
+}
+
+// Don't trim the https:// scheme from the match contents in the general case.
+TEST_F(HistoryQuickProviderTest, DontTrimHttpsScheme) {
+  AutocompleteInput input(ASCIIToUTF16("face"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  provider().Start(input, false);
+  ScoredHistoryMatch history_match =
+      BuildScoredHistoryMatch("https://www.facebook.com");
+
+  AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
+  EXPECT_EQ(ASCIIToUTF16("https://www.facebook.com"), match.contents);
+}
+
+// Don't trim the https:// scheme from the match contents, if the feature
+// to do so is enabled, if the user input included a scheme.
+TEST_F(HistoryQuickProviderTest, DontTrimHttpsSchemeDespiteFlag) {
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentHideSuggestionUrlScheme);
+
+  AutocompleteInput input(ASCIIToUTF16("https://face"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  provider().Start(input, false);
+  ScoredHistoryMatch history_match =
+      BuildScoredHistoryMatch("https://www.facebook.com");
+
+  AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
+  EXPECT_EQ(ASCIIToUTF16("https://www.facebook.com"), match.contents);
+}
+
+// Trim the https:// scheme from the match contents, if the feature
+// to do so is enabled, and nothing else prevents it.
+TEST_F(HistoryQuickProviderTest, DoTrimHttpsSchemeIfFlag) {
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentHideSuggestionUrlScheme);
+
+  AutocompleteInput input(ASCIIToUTF16("face"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  provider().Start(input, false);
+  ScoredHistoryMatch history_match =
+      BuildScoredHistoryMatch("https://www.facebook.com");
+
+  AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
+  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), match.contents);
 }
 
 // HQPOrderingTest -------------------------------------------------------------
