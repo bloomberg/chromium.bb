@@ -367,9 +367,20 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
     SearchResultContainerView* old_first_container_view =
         result_container_views_[0];
     ReorderSearchResultContainers();
-    old_first_container_view->SetFirstResultSelected(false);
-    first_result_view_ =
-        result_container_views_[0]->SetFirstResultSelected(true);
+
+    views::View* focused_view = GetFocusManager()->GetFocusedView();
+    if (first_result_view_ != focused_view) {
+      // If the old first result is focused, do not clear the selection. (This
+      // happens when the user moved the focus before search results are
+      // updated.)
+      old_first_container_view->SetFirstResultSelected(false);
+    }
+    first_result_view_ = result_container_views_[0]->GetFirstResultView();
+    if (!Contains(focused_view)) {
+      // If one of the search result is focused, do not set the first result
+      // selected.
+      result_container_views_[0]->SetFirstResultSelected(true);
+    }
     return;
   }
 

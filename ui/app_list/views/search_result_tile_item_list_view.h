@@ -36,7 +36,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
   views::View* GetSelectedView() const override;
-  views::View* SetFirstResultSelected(bool selected) override;
+  views::View* GetFirstResultView() override;
+  void SetFirstResultSelected(bool selected) override;
 
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;

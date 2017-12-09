@@ -102,13 +102,16 @@ views::View* SearchResultTileItemListView::GetSelectedView() const {
                                                  : nullptr;
 }
 
-views::View* SearchResultTileItemListView::SetFirstResultSelected(
-    bool selected) {
+views::View* SearchResultTileItemListView::GetFirstResultView() {
+  DCHECK(!tile_views_.empty());
+  return num_results() <= 0 ? nullptr : tile_views_[0];
+}
+
+void SearchResultTileItemListView::SetFirstResultSelected(bool selected) {
   DCHECK(!tile_views_.empty());
   if (num_results() <= 0)
-    return nullptr;
+    return;
   tile_views_[0]->SetSelected(selected);
-  return tile_views_[0];
 }
 
 int SearchResultTileItemListView::DoUpdate() {
