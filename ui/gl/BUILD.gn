@@ -324,10 +324,15 @@ component("gl") {
 static_library("gl_unittest_utils") {
   testonly = true
   sources = [
+    "egl_bindings_autogen_mock.cc",
+    "egl_bindings_autogen_mock.h",
+    "egl_mock.cc",
+    "egl_mock.h",
     "gl_bindings_autogen_mock.cc",
     "gl_bindings_autogen_mock.h",
     "gl_mock.cc",
     "gl_mock.h",
+    "gl_mock_autogen_egl.h",
     "gl_mock_autogen_gl.h",
     "gpu_timing_fake.cc",
     "gpu_timing_fake.h",

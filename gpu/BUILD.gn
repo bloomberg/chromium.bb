@@ -355,7 +355,13 @@ test("gpu_unittests") {
   }
 
   if (is_android) {
-    sources += [ "ipc/client/gpu_memory_buffer_impl_android_hardware_buffer_unittest.cc" ]
+    sources += [
+      "ipc/client/gpu_memory_buffer_impl_android_hardware_buffer_unittest.cc",
+    ]
+  }
+
+  if (is_posix && !is_mac) {
+    sources += [ "command_buffer/service/gpu_fence_manager_unittest.cc" ]
   }
 
   # TODO(geofflang): Run passthrough command decoder unittests on more platforms
