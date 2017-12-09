@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
+#include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -44,6 +45,8 @@
 #include "gpu/ipc/service/gpu_memory_tracking.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -301,6 +304,10 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyImage, OnDestroyImage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateStreamTexture,
                         OnCreateStreamTexture)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateGpuFenceFromHandle,
+                        OnCreateGpuFenceFromHandle)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetGpuFenceHandle,
+                        OnGetGpuFenceHandle)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -709,6 +716,49 @@ void CommandBufferStub::OnSignalQuery(uint32_t query_id, uint32_t id) {
   }
   // Something went wrong, run callback immediately.
   OnSignalAck(id);
+}
+
+void CommandBufferStub::OnCreateGpuFenceFromHandle(
+    uint32_t gpu_fence_id,
+    const gfx::GpuFenceHandle& handle) {
+  if (!context_group_->feature_info()->feature_flags().chromium_gpu_fence) {
+    DLOG(ERROR) << "CHROMIUM_gpu_fence unavailable";
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
+  }
+
+  if (decoder_->GetGpuFenceManager()->CreateGpuFenceFromHandle(gpu_fence_id,
+                                                               handle))
+    return;
+
+  // The insertion failed. This shouldn't happen, force context loss to avoid
+  // inconsistent state.
+  command_buffer_->SetParseError(error::kLostContext);
+  CheckContextLost();
+}
+
+void CommandBufferStub::OnGetGpuFenceHandle(uint32_t gpu_fence_id) {
+  if (!context_group_->feature_info()->feature_flags().chromium_gpu_fence) {
+    DLOG(ERROR) << "CHROMIUM_gpu_fence unavailable";
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
+  }
+
+  auto* manager = decoder_->GetGpuFenceManager();
+  gfx::GpuFenceHandle handle;
+  if (manager->IsValidGpuFence(gpu_fence_id)) {
+    std::unique_ptr<gfx::GpuFence> gpu_fence =
+        manager->GetGpuFence(gpu_fence_id);
+    handle = gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
+  } else {
+    // Retrieval failed. This shouldn't happen, force context loss to avoid
+    // inconsistent state.
+    DLOG(ERROR) << "GpuFence not found";
+    command_buffer_->SetParseError(error::kLostContext);
+    CheckContextLost();
+  }
+  Send(new GpuCommandBufferMsg_GetGpuFenceHandleComplete(route_id_,
+                                                         gpu_fence_id, handle));
 }
 
 void CommandBufferStub::OnFenceSyncRelease(uint64_t release) {

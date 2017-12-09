@@ -15,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -43,6 +44,7 @@ class SharedMemory;
 }
 
 namespace gfx {
+struct GpuFenceHandle;
 struct PresentationFeedback;
 }
 
@@ -117,6 +119,11 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
                       unsigned internal_format) override;
   void DestroyImage(int32_t id) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
+  void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override;
+  void GetGpuFence(uint32_t gpu_fence_id,
+                   base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
+                       callback) override;
+
   void SetLock(base::Lock* lock) override;
   void EnsureWorkVisible() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
@@ -199,6 +206,8 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
                                base::TimeDelta interval);
   void OnBufferPresented(uint64_t swap_id,
                          const gfx::PresentationFeedback& feedback);
+  void OnGetGpuFenceHandleComplete(uint32_t gpu_fence_id,
+                                   const gfx::GpuFenceHandle&);
 
   // Try to read an updated copy of the state from shared memory, and calls
   // OnGpuStateError() if the new state has an error.
@@ -292,6 +301,11 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
   PresentationCallback presentation_callback_;
+
+  using GetGpuFenceTaskMap =
+      base::flat_map<uint32_t,
+                     base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>>;
+  GetGpuFenceTaskMap get_gpu_fence_tasks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> callback_thread_;
   base::WeakPtrFactory<CommandBufferProxyImpl> weak_ptr_factory_;

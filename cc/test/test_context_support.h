@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 
 namespace gfx {
+class GpuFence;
 class Rect;
 class RectF;
 }
@@ -32,6 +33,9 @@ class TestContextSupport : public gpu::ContextSupport {
                        base::OnceClosure callback) override;
   bool IsSyncTokenSignaled(const gpu::SyncToken& sync_token) override;
   void SignalQuery(uint32_t query, base::OnceClosure callback) override;
+  void GetGpuFence(uint32_t gpu_fence_id,
+                   base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
+                       callback) override;
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
   void Swap() override;
   void SwapWithBounds(const std::vector<gfx::Rect>& rects) override;

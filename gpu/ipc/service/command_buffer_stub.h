@@ -30,6 +30,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_share_group.h"
@@ -198,6 +199,9 @@ class GPU_EXPORT CommandBufferStub
   void OnSignalSyncToken(const SyncToken& sync_token, uint32_t id);
   void OnSignalAck(uint32_t id);
   void OnSignalQuery(uint32_t query, uint32_t id);
+  void OnCreateGpuFenceFromHandle(uint32_t gpu_fence_id,
+                                  const gfx::GpuFenceHandle& handle);
+  void OnGetGpuFenceHandle(uint32_t gpu_fence_id);
 
   void OnWaitSyncTokenCompleted(const SyncToken& sync_token);
 

@@ -52,6 +52,7 @@ class GLSurface;
 }
 
 namespace gfx {
+struct GpuFenceHandle;
 class Size;
 }
 
@@ -130,6 +131,10 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                       unsigned internalformat) override;
   void DestroyImage(int32_t id) override;
   void SignalQuery(uint32_t query_id, const base::Closure& callback) override;
+  void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override;
+  void GetGpuFence(uint32_t gpu_fence_id,
+                   base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
+                       callback) override;
   void SetLock(base::Lock*) override;
   void EnsureWorkVisible() override;
   CommandBufferNamespace GetNamespaceID() const override;
@@ -321,6 +326,12 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                               uint64_t fence_sync);
   void DestroyImageOnGpuThread(int32_t id);
   void SetGetBufferOnGpuThread(int32_t shm_id, base::WaitableEvent* completion);
+  void CreateGpuFenceOnGpuThread(uint32_t gpu_fence_id,
+                                 const gfx::GpuFenceHandle& handle);
+  void GetGpuFenceOnGpuThread(
+      uint32_t gpu_fence_id,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback);
 
   // Callbacks on the gpu thread.
   void PerformDelayedWorkOnGpuThread();

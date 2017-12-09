@@ -17,3 +17,5 @@ As of this writing, the vast majority of docs have not been imported yet.
   platforms.
 * [Threading](threading.md) - Preferred ways to use threading, and library
   support for concurrency.
+* [GPU Synchronization](gpu_synchronization.md) - Mechanisms for sequencing
+  GPU drawing operations across contexts or processes.

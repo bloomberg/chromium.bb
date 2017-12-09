@@ -4675,6 +4675,40 @@ _FUNCTION_INFO = {
     'extension_flag': 'ext_window_rectangles',
     'es3': True,
   },
+  'CreateGpuFenceCHROMIUM': {
+    'type': 'NoCommand',
+    'impl_func': False,
+    'cmd_args': 'void',
+    'result': ['GLuint'],
+    'extension': 'CHROMIUM_gpu_fence',
+  },
+  'CreateGpuFenceINTERNAL': {
+    'type': 'Custom',
+    'cmd_args': 'GLuint gpu_fence_id',
+    'extension': 'CHROMIUM_gpu_fence',
+    'extension_flag': 'chromium_gpu_fence',
+    'internal': True,
+  },
+  'CreateClientGpuFenceCHROMIUM': {
+    'type': 'NoCommand',
+    'impl_func': False,
+    'cmd_args': 'ClientGpuFence source',
+    'result': ['GLuint'],
+    'extension': 'CHROMIUM_gpu_fence',
+    'extension_flag': 'chromium_gpu_fence',
+  },
+  'WaitGpuFenceCHROMIUM': {
+    'type': 'Custom',
+    'cmd_args': 'GLuint gpu_fence_id',
+    'extension': 'CHROMIUM_gpu_fence',
+    'extension_flag': 'chromium_gpu_fence',
+  },
+  'DestroyGpuFenceCHROMIUM': {
+    'type': 'Custom',
+    'cmd_args': 'GLuint gpu_fence_id',
+    'extension': 'CHROMIUM_gpu_fence',
+    'extension_flag': 'chromium_gpu_fence',
+  },
 }
 
 

@@ -20,11 +20,31 @@ void GLFenceEGL::SetIgnoreFailures() {
   g_ignore_egl_sync_failures = true;
 }
 
-GLFenceEGL::GLFenceEGL() {
+GLFenceEGL::GLFenceEGL() = default;
+
+// static
+std::unique_ptr<GLFenceEGL> GLFenceEGL::Create() {
+  auto fence = Create(EGL_SYNC_FENCE_KHR, nullptr);
+  // Default creation isn't supposed to fail.
+  DCHECK(fence);
+  return fence;
+}
+
+// static
+std::unique_ptr<GLFenceEGL> GLFenceEGL::Create(EGLenum type, EGLint* attribs) {
+  // Can't use MakeUnique, the no-args constructor is private.
+  auto fence = base::WrapUnique(new GLFenceEGL());
+
+  if (!fence->InitializeInternal(type, attribs))
+    return nullptr;
+  return fence;
+}
+
+bool GLFenceEGL::InitializeInternal(EGLenum type, EGLint* attribs) {
   display_ = eglGetCurrentDisplay();
-  sync_ = eglCreateSyncKHR(display_, EGL_SYNC_FENCE_KHR, NULL);
-  DCHECK(sync_ != EGL_NO_SYNC_KHR);
+  sync_ = eglCreateSyncKHR(display_, type, attribs);
   glFlush();
+  return sync_ != EGL_NO_SYNC_KHR;
 }
 
 bool GLFenceEGL::HasCompleted() {
@@ -67,6 +87,12 @@ void GLFenceEGL::ServerWait() {
                << ui::GetLastEGLErrorString();
     CHECK(g_ignore_egl_sync_failures);
   }
+}
+
+void GLFenceEGL::Invalidate() {
+  // Do nothing. We want the destructor to destroy the EGL fence even if the GL
+  // context was lost. The EGLDisplay may still be valid, and this helps avoid
+  // leaks.
 }
 
 GLFenceEGL::~GLFenceEGL() {

@@ -1396,6 +1396,10 @@ void FeatureInfo::InitializeFeatures() {
                              gl_version_info_->IsAtLeastGLES(3, 2) ||
                              gl::HasExtension(extensions, "GL_KHR_debug");
 
+  feature_flags_.chromium_gpu_fence = gl::GLFence::IsGpuFenceSupported();
+  if (feature_flags_.chromium_gpu_fence)
+    AddExtensionString("GL_CHROMIUM_gpu_fence");
+
   feature_flags_.chromium_bind_generates_resource =
       gl::HasExtension(extensions, "GL_CHROMIUM_bind_generates_resource");
   feature_flags_.angle_webgl_compatibility = is_webgl_compatbility_context;

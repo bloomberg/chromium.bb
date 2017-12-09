@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
+#include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_factory.h"
@@ -49,6 +50,8 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
@@ -960,6 +963,94 @@ void InProcessCommandBuffer::SignalQueryOnGpuThread(
     callback.Run();
   else
     query->AddCallback(callback);
+}
+
+void InProcessCommandBuffer::CreateGpuFence(uint32_t gpu_fence_id,
+                                            ClientGpuFence source) {
+  CheckSequencedThread();
+
+  // Pass a cloned handle to the GPU process since the source ClientGpuFence
+  // may go out of scope before the queued task runs.
+  gfx::GpuFence* gpu_fence = gfx::GpuFence::FromClientGpuFence(source);
+  gfx::GpuFenceHandle handle =
+      gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
+
+  // TODO(crbug.com/789349): Should be base::BindOnce, but QueueTask requires a
+  // RepeatingClosure.
+  QueueTask(false, base::BindRepeating(
+                       &InProcessCommandBuffer::CreateGpuFenceOnGpuThread,
+                       base::Unretained(this), gpu_fence_id, handle));
+}
+
+void InProcessCommandBuffer::CreateGpuFenceOnGpuThread(
+    uint32_t gpu_fence_id,
+    const gfx::GpuFenceHandle& handle) {
+  if (!GetFeatureInfo()->feature_flags().chromium_gpu_fence) {
+    DLOG(ERROR) << "CHROMIUM_gpu_fence unavailable";
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
+  }
+
+  gles2::GpuFenceManager* gpu_fence_manager = decoder_->GetGpuFenceManager();
+  DCHECK(gpu_fence_manager);
+
+  if (gpu_fence_manager->CreateGpuFenceFromHandle(gpu_fence_id, handle))
+    return;
+
+  // The insertion failed. This shouldn't happen, force context loss to avoid
+  // inconsistent state.
+  command_buffer_->SetParseError(error::kLostContext);
+}
+
+void InProcessCommandBuffer::GetGpuFence(
+    uint32_t gpu_fence_id,
+    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
+  CheckSequencedThread();
+  // TODO(crbug.com/789349): QueueTask requires a RepeatingClosure,
+  // but it's actually single use, hence AdaptCallbackForRepeating.
+  // Cf. WrapCallback, which we can't use directly since our callback
+  // still needs an argument, so it's not a Closure.
+  auto task_runner = base::ThreadTaskRunnerHandle::IsSet()
+                         ? base::ThreadTaskRunnerHandle::Get()
+                         : nullptr;
+  QueueTask(false, base::AdaptCallbackForRepeating(base::BindOnce(
+                       &InProcessCommandBuffer::GetGpuFenceOnGpuThread,
+                       base::Unretained(this), gpu_fence_id, task_runner,
+                       std::move(callback))));
+}
+
+void InProcessCommandBuffer::GetGpuFenceOnGpuThread(
+    uint32_t gpu_fence_id,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
+  if (!GetFeatureInfo()->feature_flags().chromium_gpu_fence) {
+    DLOG(ERROR) << "CHROMIUM_gpu_fence unavailable";
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
+  }
+
+  gles2::GpuFenceManager* manager = decoder_->GetGpuFenceManager();
+  DCHECK(manager);
+
+  std::unique_ptr<gfx::GpuFence> gpu_fence;
+  if (manager->IsValidGpuFence(gpu_fence_id)) {
+    gpu_fence = manager->GetGpuFence(gpu_fence_id);
+  } else {
+    // Retrieval failed. This shouldn't happen, force context loss to avoid
+    // inconsistent state.
+    DLOG(ERROR) << "GpuFence not found";
+    command_buffer_->SetParseError(error::kLostContext);
+  }
+
+  // Execute callback on client thread using the supplied task_runner where
+  // available, cf. WrapCallback and PostCallback.
+  base::OnceClosure callback_closure =
+      base::BindOnce(std::move(callback), std::move(gpu_fence));
+  if (task_runner.get() && !task_runner->BelongsToCurrentThread()) {
+    task_runner->PostTask(FROM_HERE, std::move(callback_closure));
+  } else {
+    std::move(callback_closure).Run();
+  }
 }
 
 void InProcessCommandBuffer::SetLock(base::Lock*) {

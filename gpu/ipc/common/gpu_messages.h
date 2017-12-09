@@ -30,6 +30,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -234,5 +235,19 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
 
 // Start or stop VSync sygnal production on GPU side (Windows only).
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetNeedsVSync, bool /* needs_vsync */)
+
+// Send a GPU fence handle and store it for the specified gpu fence ID.
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_CreateGpuFenceFromHandle,
+                    uint32_t /* gpu_fence_id */,
+                    gfx::GpuFenceHandle)
+
+// Request retrieval of a GpuFenceHandle by ID.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_GetGpuFenceHandle,
+                    uint32_t /* gpu_fence_id */)
+
+// Response to GetGpuFenceHandle.
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_GetGpuFenceHandleComplete,
+                    uint32_t /* gpu_fence_id */,
+                    gfx::GpuFenceHandle)
 
 #endif  // GPU_IPC_COMMON_GPU_MESSAGES_H_

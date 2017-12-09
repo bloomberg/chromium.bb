@@ -521,6 +521,16 @@ void GLManager::SignalQuery(uint32_t query, const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 
+void GLManager::CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) {
+  NOTIMPLEMENTED();
+}
+
+void GLManager::GetGpuFence(
+    uint32_t gpu_fence_id,
+    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
+  NOTIMPLEMENTED();
+}
+
 void GLManager::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }

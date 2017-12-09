@@ -197,6 +197,14 @@ component("gl") {
         "gl_image_ahardwarebuffer.h",
       ]
     }
+
+    if (is_posix) {
+      # Windows has USE_EGL but doesn't support base::FileDescriptor
+      sources += [
+        "gl_fence_android_native_fence_sync.cc",
+        "gl_fence_android_native_fence_sync.h",
+      ]
+    }
   }
   if (is_android || is_linux) {
     sources += [

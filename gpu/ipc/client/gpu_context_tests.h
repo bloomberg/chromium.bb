@@ -8,10 +8,13 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "ui/gfx/gpu_fence.h"
+#include "ui/gl/gl_fence.h"
 
 namespace {
 
@@ -135,4 +138,65 @@ CONTEXT_TEST_F(SignalTest, InvalidSignalQueryUnboundTest) {
   TestSignalQuery(928729082);
   TestSignalQuery(928729081);
 };
+
+// The GpuFenceTest doesn't currently work on ChromeOS, apparently
+// due to inconsistent initialization of InProcessCommandBuffer which
+// isn't used on that platform. Restrict it to Android for now.
+
+#if defined(OS_ANDROID)
+
+class GpuFenceTest : public ContextTestBase {
+ public:
+  GpuFenceTest();
+  ~GpuFenceTest() override;
+
+  void TestReceive(base::OnceClosure quit_cb,
+                   std::unique_ptr<gfx::GpuFence> gpu_fence) {
+    EXPECT_TRUE(gpu_fence);
+    received_gpu_fence_ = std::move(gpu_fence);
+    std::move(quit_cb).Run();
+  }
+
+  std::unique_ptr<gfx::GpuFence> received_gpu_fence_;
 };
+
+GpuFenceTest::GpuFenceTest() = default;
+GpuFenceTest::~GpuFenceTest() = default;
+
+CONTEXT_TEST_F(GpuFenceTest, BasicGpuFenceTest) {
+  // Skip test if GpuFence is not supported.
+  if (!gl::GLFence::IsGpuFenceSupported())
+    return;
+
+  GLuint id1 = gl_->CreateGpuFenceCHROMIUM();
+  EXPECT_NE(id1, 0U);
+
+  // These tests should time out if the callback doesn't get called.
+  base::RunLoop run_loop;
+
+  base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback =
+      base::BindOnce(&GpuFenceTest::TestReceive, base::Unretained(this),
+                     run_loop.QuitClosure());
+
+  // Receive and store a local GpuFence.
+  context_support_->GetGpuFence(id1, std::move(callback));
+  run_loop.Run();
+
+  gl_->DestroyGpuFenceCHROMIUM(id1);
+
+  // GPU fence should be valid.
+  EXPECT_TRUE(received_gpu_fence_);
+
+  // Send a copy of this fence back via command buffer GL.
+  GLuint id2 = gl_->CreateClientGpuFenceCHROMIUM(
+      received_gpu_fence_->AsClientGpuFence());
+  gl_->ShallowFlushCHROMIUM();
+  EXPECT_NE(id2, 0U);
+  EXPECT_NE(id2, id1);
+  gl_->WaitGpuFenceCHROMIUM(id2);
+  gl_->DestroyGpuFenceCHROMIUM(id2);
+}
+
+#endif  // defined(OS_ANDROID)
+
+};  // namespace
