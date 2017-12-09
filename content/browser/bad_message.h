@@ -240,6 +240,13 @@ void ReceivedBadMessage(BrowserMessageFilter* filter, BadMessageReason reason);
 // messages.
 base::debug::CrashKeyString* GetMojoErrorCrashKey();
 
+// Site isolation. These keys help debug renderer kills such as
+// https://crbug.com/773140.
+// Returns a key named "killed_process_origin_lock".
+base::debug::CrashKeyString* GetKilledProcessOriginLockKey();
+// Retuns a key named "requested_site_url".
+base::debug::CrashKeyString* GetRequestedSiteURLKey();
+
 }  // namespace bad_message
 }  // namespace content
 
