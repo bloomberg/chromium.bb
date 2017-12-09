@@ -105,14 +105,25 @@ void GestureInterpreter::Drag(float x, float y, GestureState state) {
   }
   ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
 
-  if (state == GESTURE_BEGAN) {
-    StartInputFeedback(cursor_position.x, cursor_position.y,
-                       TouchInputStrategy::DRAG_FEEDBACK);
+  switch (state) {
+    case GESTURE_BEGAN:
+      StartInputFeedback(cursor_position.x, cursor_position.y,
+                         TouchInputStrategy::DRAG_FEEDBACK);
+      input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y,
+                                  protocol::MouseEvent_MouseButton_BUTTON_LEFT,
+                                  true);
+      break;
+    case GESTURE_CHANGED:
+      InjectCursorPosition(cursor_position.x, cursor_position.y);
+      break;
+    case GESTURE_ENDED:
+      input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y,
+                                  protocol::MouseEvent_MouseButton_BUTTON_LEFT,
+                                  false);
+      break;
+    default:
+      NOTREACHED();
   }
-
-  input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y,
-                              protocol::MouseEvent_MouseButton_BUTTON_LEFT,
-                              is_dragging_mode);
 }
 
 void GestureInterpreter::OneFingerFling(float velocity_x, float velocity_y) {
