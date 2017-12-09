@@ -15,12 +15,14 @@
 
 namespace content {
 
+static mojom::NetworkServicePtr* g_network_service = nullptr;
+
 mojom::NetworkService* GetNetworkService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
 
-  static mojom::NetworkServicePtr* g_network_service =
-      new mojom::NetworkServicePtr;
+  if (!g_network_service)
+    g_network_service = new mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
   if (!g_network_service->is_bound() ||
       g_network_service->encountered_error()) {
@@ -33,6 +35,14 @@ mojom::NetworkService* GetNetworkService() {
     g_network_service->get()->SetClient(std::move(client_ptr));
   }
   return g_network_service->get();
+}
+
+void FlushNetworkServiceInstanceForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+
+  if (g_network_service)
+    g_network_service->FlushForTesting();
 }
 
 }  // namespace content

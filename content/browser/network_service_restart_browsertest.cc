@@ -54,6 +54,9 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
 
     network_service_test->SimulateCrash();
     run_loop.Run();
+
+    // Make sure the cached NetworkServicePtr receives error notification.
+    FlushNetworkServiceInstanceForTesting();
   }
 
   int LoadBasicRequest(mojom::NetworkContext* network_context) {
@@ -114,18 +117,10 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   EXPECT_FALSE(network_context2.encountered_error());
 }
 
-// Flaky on Mac bots. crbug.com/793296
-#if defined(OS_MACOSX)
-#define MAYBE_StoragePartitionImplGetNetworkContext \
-  DISABLED_StoragePartitionImplGetNetworkContext
-#else
-#define MAYBE_StoragePartitionImplGetNetworkContext \
-  StoragePartitionImplGetNetworkContext
-#endif
 // Make sure |StoragePartitionImpl::GetNetworkContext()| returns valid interface
 // after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       MAYBE_StoragePartitionImplGetNetworkContext) {
+                       StoragePartitionImplGetNetworkContext) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(
           shell()->web_contents()->GetBrowserContext()));
