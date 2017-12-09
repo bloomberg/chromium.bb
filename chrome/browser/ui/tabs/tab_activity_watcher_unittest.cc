@@ -95,11 +95,13 @@ blink::WebMouseEvent CreateMouseEvent(WebInputEvent::Type event_type) {
 class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
  protected:
   TabActivityWatcherTest() {
-    TabActivityWatcher::GetInstance()->DisableLogTimeoutForTest();
+    TabActivityWatcher::GetInstance()->DisableLogTimeoutForTesting();
+    TabActivityWatcher::GetInstance()->ResetForTesting();
   }
 
   void TearDown() override {
     EXPECT_FALSE(WasNewEntryRecorded());
+    TabActivityWatcher::GetInstance()->ResetForTesting();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -159,6 +161,10 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
     // Verify the entry is associated with the correct URL.
     const ukm::mojom::UkmEntry* entry = entries.back();
     ukm_recorder()->ExpectEntrySourceHasUrl(entry, source_url);
+
+    // Verify the entry's SequenceId, which should increment for each event.
+    ukm::TestUkmRecorder::ExpectEntryMetric(
+        entry, TabManager_TabMetrics::kSequenceIdName, num_entries_);
 
     // Each expected metric should match a named value in the UKM entry.
     for (const std::pair<const char*, uint64_t>& pair : expected_metrics)

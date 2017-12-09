@@ -121,5 +121,6 @@ void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
       // resource_coordinator refactor: crbug.com/775644.
       .SetIsExtensionProtected(!tab_manager->IsTabAutoDiscardable(web_contents))
       .SetIsPinned(tab_strip_model->IsTabPinned(index))
+      .SetSequenceId(++sequence_id_)
       .Record(ukm_recorder);
 }

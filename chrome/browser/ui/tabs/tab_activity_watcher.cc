@@ -142,10 +142,6 @@ TabActivityWatcher::TabActivityWatcher()
 
 TabActivityWatcher::~TabActivityWatcher() = default;
 
-void TabActivityWatcher::DisableLogTimeoutForTest() {
-  per_source_log_timeout_ = base::TimeDelta();
-}
-
 void TabActivityWatcher::TabPinnedStateChanged(TabStripModel* tab_strip_model,
                                                content::WebContents* contents,
                                                int index) {
@@ -196,6 +192,14 @@ void TabActivityWatcher::MaybeLogTab(content::WebContents* web_contents) {
   tab_metrics_logger_->LogBackgroundTab(ukm_source_id,
                                         web_contents_data->tab_metrics());
   web_contents_data->DidLog(now);
+}
+
+void TabActivityWatcher::DisableLogTimeoutForTesting() {
+  per_source_log_timeout_ = base::TimeDelta();
+}
+
+void TabActivityWatcher::ResetForTesting() {
+  tab_metrics_logger_ = std::make_unique<TabMetricsLoggerImpl>();
 }
 
 // static
