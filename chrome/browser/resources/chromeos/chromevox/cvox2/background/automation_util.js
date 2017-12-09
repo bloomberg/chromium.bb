@@ -263,7 +263,6 @@ AutomationUtil.isDescendantOf = function(node, ancestor) {
  * @return {AutomationNode}
  */
 AutomationUtil.hitTest = function(node, point) {
-  var loc = node.location;
   var child = node.firstChild;
   while (child) {
     var hit = AutomationUtil.hitTest(child, point);
@@ -271,6 +270,12 @@ AutomationUtil.hitTest = function(node, point) {
       return hit;
     child = child.nextSibling;
   }
+
+  var loc = node.unclippedLocation;
+
+  // When |node| is partially or fully offscreen, try to find a better match.
+  if (loc.left < 0 || loc.top < 0)
+    return null;
 
   if (point.x <= (loc.left + loc.width) && point.x >= loc.left &&
       point.y <= (loc.top + loc.height) && point.y >= loc.top)
