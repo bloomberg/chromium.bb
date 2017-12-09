@@ -1099,8 +1099,7 @@ TEST_F(RenderWidgetHostTest, Background) {
   std::unique_ptr<RenderWidgetHostViewBase> view;
 #if defined(USE_AURA)
   view.reset(new RenderWidgetHostViewAura(
-      host_.get(), false, false /* enable_surface_synchronization */,
-      false /* is_mus_browser_plugin_guest */));
+      host_.get(), false, false /* is_mus_browser_plugin_guest */));
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
   view->InitAsChild(nullptr);
 #elif defined(OS_ANDROID)

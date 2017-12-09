@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -20,6 +21,7 @@
 #include "build/build_config.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/gl_helper.h"
@@ -389,10 +391,8 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(
     RenderWidgetHost* host,
     bool is_guest_view_hack,
-    bool enable_surface_synchronization,
     bool is_mus_browser_plugin_guest)
     : host_(RenderWidgetHostImpl::From(host)),
-      enable_surface_synchronization_(enable_surface_synchronization),
       is_mus_browser_plugin_guest_(is_mus_browser_plugin_guest),
       window_(nullptr),
       in_shutdown_(false),
@@ -1988,7 +1988,7 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
   delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
       frame_sink_id_, delegated_frame_host_client_.get(),
-      enable_surface_synchronization_, enable_viz);
+      features::IsSurfaceSynchronizationEnabled(), enable_viz);
 
   if (renderer_compositor_frame_sink_) {
     delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
