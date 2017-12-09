@@ -12,14 +12,16 @@
 
 #include "ui/gl/gl_mock.h"
 
-namespace gl {
-
+namespace {
 // This is called mainly to prevent the compiler combining the code of mock
 // functions with identical contents, so that their function pointers will be
 // different.
 void MakeFunctionUnique(const char* func_name) {
   VLOG(2) << "Calling mock " << func_name;
 }
+}  // namespace
+
+namespace gl {
 
 void GL_BINDING_CALL MockGLInterface::Mock_glActiveTexture(GLenum texture) {
   MakeFunctionUnique("glActiveTexture");

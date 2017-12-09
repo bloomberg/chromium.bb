@@ -62,6 +62,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   GLSurfaceFormat GetFormat() override;
 
   static bool InitializeOneOff(EGLNativeDisplayType native_display);
+  static bool InitializeOneOffForTesting();
   static bool InitializeExtensionSettingsOneOff();
   static void ShutdownOneOff();
   static EGLDisplay GetHardwareDisplay();
@@ -92,6 +93,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
+  static bool InitializeOneOffCommon();
   static bool initialized_;
 };
 
