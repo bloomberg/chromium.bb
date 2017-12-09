@@ -776,6 +776,8 @@ void BrowserPlugin::OnMusEmbeddedFrameSurfaceChanged(
 
 void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
+  // RendererWindowTreeClient should only call this when mus is hosting viz.
+  DCHECK(switches::IsMusHostingViz());
   OnGuestReady(browser_plugin_instance_id_, frame_sink_id);
 }
 #endif
