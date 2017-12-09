@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/site_isolation_policy.h"
@@ -1059,10 +1060,15 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
   if (!can_access) {
     // Returning false here will result in a renderer kill.  Set some crash
     // keys that will help understand the circumstances of that kill.
-    base::debug::SetCrashKeyValue("requested_site_url", site_url.spec());
-    base::debug::SetCrashKeyValue("requested_origin", url.GetOrigin().spec());
-    base::debug::SetCrashKeyValue("killed_process_origin_lock",
-                                  state->second->origin_lock().spec());
+    base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
+                                   site_url.spec());
+    base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
+                                   state->second->origin_lock().spec());
+
+    static auto* requested_origin_key = base::debug::AllocateCrashKeyString(
+        "requested_origin", base::debug::CrashKeySize::Size64);
+    base::debug::SetCrashKeyString(requested_origin_key,
+                                   url.GetOrigin().spec());
   }
   return can_access;
 }
