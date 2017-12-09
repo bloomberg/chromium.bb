@@ -144,7 +144,7 @@ typedef struct {
 typedef struct {
   int64_t dist;
   int rate;
-  uint8_t skip;
+  uint16_t eob;
   uint8_t entropy_context;
   uint8_t valid;
   uint8_t fast;
