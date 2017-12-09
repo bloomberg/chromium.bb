@@ -607,7 +607,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   layer->SetCompositingReasons(reasons_to_composite);
   if (reasons_to_composite & CompositingReason::kOverlap)
     compositing_reasons_stats.overlap_layers++;
-  if (reasons_to_composite & CompositingReason::kActiveAnimation)
+  if (reasons_to_composite & CompositingReason::kComboActiveAnimation)
     compositing_reasons_stats.active_animation_layers++;
   if (reasons_to_composite & CompositingReason::kAssumedOverlap)
     compositing_reasons_stats.assumed_overlap_layers++;

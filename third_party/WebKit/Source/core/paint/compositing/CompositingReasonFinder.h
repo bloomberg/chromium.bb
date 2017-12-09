@@ -36,12 +36,12 @@ class CORE_EXPORT CompositingReasonFinder {
   void UpdateTriggers();
 
   bool RequiresCompositingForScrollableFrame() const;
-  static bool RequiresCompositingForAnimation(const ComputedStyle&);
+  static CompositingReasons CompositingReasonsForAnimation(
+      const ComputedStyle&);
   static bool RequiresCompositingForOpacityAnimation(const ComputedStyle&);
   static bool RequiresCompositingForFilterAnimation(const ComputedStyle&);
   static bool RequiresCompositingForBackdropFilterAnimation(
       const ComputedStyle&);
-  static bool RequiresCompositingForEffectAnimation(const ComputedStyle&);
   static bool RequiresCompositingForTransformAnimation(const ComputedStyle&);
   static bool RequiresCompositingForTransform(const LayoutObject&);
 

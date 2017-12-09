@@ -1291,7 +1291,8 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   // Add a transform with a compositing reason, which should allow starting
   // animation.
-  UpdateDummyTransformNode(properties, CompositingReason::kActiveAnimation);
+  UpdateDummyTransformNode(properties,
+                           CompositingReason::kActiveTransformAnimation);
   EXPECT_TRUE(
       CompositorAnimations::CheckCanStartElementOnCompositor(*element).Ok());
 
@@ -1323,7 +1324,8 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   // Add an effect with a compositing reason, which should allow starting
   // animation.
-  UpdateDummyEffectNode(properties, CompositingReason::kActiveAnimation);
+  UpdateDummyEffectNode(properties,
+                        CompositingReason::kActiveTransformAnimation);
   EXPECT_TRUE(
       CompositorAnimations::CheckCanStartElementOnCompositor(*element).Ok());
 

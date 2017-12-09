@@ -914,8 +914,8 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
     return false;
 
   const bool has_compositor_animation =
-      compositing_reason_finder_.RequiresCompositingForAnimation(
-          *layer->GetLayoutObject().Style());
+      compositing_reason_finder_.CompositingReasonsForAnimation(
+          *layer->GetLayoutObject().Style()) != CompositingReason::kNone;
   return has_accelerated_compositing_ &&
          (has_compositor_animation || !layer->SubtreeIsInvisible()) &&
          layer->IsSelfPaintingLayer() &&

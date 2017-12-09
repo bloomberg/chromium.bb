@@ -1023,4 +1023,46 @@ TEST_P(PaintPropertyTreeUpdateTest, WillTransformChangeAboveFixed) {
             fixed->FirstFragment().LocalBorderBoxProperties()->Transform());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        transition: 100s;
+        filter: opacity(30%);
+        transform: translateX(10px);
+        position: relative;
+      }
+    </style>
+    <div id='target'>TARGET</div>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  auto* transform =
+      target->GetLayoutObject()->FirstFragment().PaintProperties()->Transform();
+  ASSERT_TRUE(transform);
+  EXPECT_FALSE(transform->HasDirectCompositingReasons());
+
+  auto* filter =
+      target->GetLayoutObject()->FirstFragment().PaintProperties()->Filter();
+  ASSERT_TRUE(filter);
+  EXPECT_FALSE(filter->HasDirectCompositingReasons());
+
+  target->setAttribute(HTMLNames::styleAttr, "transform: translateX(11px)");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(transform->HasDirectCompositingReasons());
+  EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+  EXPECT_FALSE(filter->HasDirectCompositingReasons());
+
+  target->setAttribute(HTMLNames::styleAttr,
+                       "transform: translateX(11px); filter: opacity(40%)");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  // The transform animation still continues.
+  EXPECT_TRUE(transform->HasDirectCompositingReasons());
+  EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+  // The filter node should have correct direct compositing reasons, not
+  // shadowed by the transform animation.
+  EXPECT_TRUE(filter->HasDirectCompositingReasons());
+  EXPECT_TRUE(filter->RequiresCompositingForAnimation());
+}
+
 }  // namespace blink
