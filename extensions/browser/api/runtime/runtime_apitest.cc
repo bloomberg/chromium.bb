@@ -6,15 +6,19 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
+#include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "url/url_constants.h"
 
 // Tests the privileged components of chrome.runtime.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimePrivileged) {
@@ -47,6 +51,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
 namespace extensions {
 
 namespace {
+
+const char kUninstallUrl[] = "http://www.google.com/";
+
+std::string GetActiveUrl(Browser* browser) {
+  return browser->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetLastCommittedURL()
+      .spec();
+}
 
 class RuntimeAPIUpdateTest : public ExtensionApiTest {
  public:
@@ -212,6 +225,58 @@ IN_PROC_BROWSER_TEST_F(RuntimeAPIUpdateTest,
     ASSERT_TRUE(extension_v2);
     EXPECT_TRUE(catcher.GetNextResult());
   }
+}
+
+// Tests that when a blacklisted extension with a set uninstall url is
+// uninstalled, its uninstall url does not open.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       DoNotOpenUninstallUrlForBlacklistedExtensions) {
+  // Load an extension that has set an uninstall url.
+  scoped_refptr<const extensions::Extension> extension =
+      LoadExtension(test_data_dir_.AppendASCII("runtime")
+                        .AppendASCII("uninstall_url")
+                        .AppendASCII("sets_uninstall_url"));
+
+  ASSERT_TRUE(extension.get());
+  extension_service()->AddExtension(extension.get());
+  ASSERT_TRUE(extension_service()->IsExtensionEnabled(extension->id()));
+
+  // Uninstall the extension and expect its uninstall url to open.
+  extension_service()->UninstallExtension(
+      extension->id(), extensions::UNINSTALL_REASON_USER_INITIATED, NULL);
+  TabStripModel* tabs = browser()->tab_strip_model();
+
+  EXPECT_EQ(2, tabs->count());
+  content::WaitForLoadStop(tabs->GetActiveWebContents());
+  // Verify the uninstall url
+  EXPECT_EQ(kUninstallUrl, GetActiveUrl(browser()));
+
+  // Close the tab pointing to the uninstall url.
+  tabs->CloseWebContentsAt(tabs->active_index(), 0);
+  EXPECT_EQ(1, tabs->count());
+  EXPECT_EQ("about:blank", GetActiveUrl(browser()));
+
+  // Load the same extension again, except blacklist it after installation.
+  extension = LoadExtension(test_data_dir_.AppendASCII("runtime")
+                                .AppendASCII("uninstall_url")
+                                .AppendASCII("sets_uninstall_url"));
+  extension_service()->AddExtension(extension.get());
+  ASSERT_TRUE(extension_service()->IsExtensionEnabled(extension->id()));
+
+  // Blacklist extension.
+  extensions::ExtensionPrefs::Get(profile())->SetExtensionBlacklistState(
+      extension->id(), extensions::BlacklistState::BLACKLISTED_MALWARE);
+
+  // Uninstalling a blacklisted extension should not open its uninstall url.
+  TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()),
+                                         extension->id());
+  extension_service()->UninstallExtension(
+      extension->id(), extensions::UNINSTALL_REASON_USER_INITIATED, NULL);
+  observer.WaitForExtensionUninstalled();
+
+  EXPECT_EQ(1, tabs->count());
+  content::WaitForLoadStop(tabs->GetActiveWebContents());
+  EXPECT_EQ(url::kAboutBlankURL, GetActiveUrl(browser()));
 }
 
 }  // namespace extensions
