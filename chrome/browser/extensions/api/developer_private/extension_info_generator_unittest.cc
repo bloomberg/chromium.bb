@@ -244,12 +244,13 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
           .Build();
   service()->AddExtension(extension.get());
   ErrorConsole* error_console = ErrorConsole::Get(profile());
+  const GURL kContextUrl("http://example.com");
   error_console->ReportError(base::WrapUnique(new RuntimeError(
       extension->id(), false, base::UTF8ToUTF16("source"),
       base::UTF8ToUTF16("message"),
       StackTrace(1, StackFrame(1, 1, base::UTF8ToUTF16("source"),
                                base::UTF8ToUTF16("function"))),
-      GURL("url"), logging::LOG_ERROR, 1, 1)));
+      kContextUrl, logging::LOG_ERROR, 1, 1)));
   error_console->ReportError(base::WrapUnique(
       new ManifestError(extension->id(), base::UTF8ToUTF16("message"),
                         base::UTF8ToUTF16("key"), base::string16())));
@@ -258,7 +259,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
       base::UTF8ToUTF16("message"),
       StackTrace(1, StackFrame(1, 1, base::UTF8ToUTF16("source"),
                                base::UTF8ToUTF16("function"))),
-      GURL("url"), logging::LOG_VERBOSE, 1, 1)));
+      kContextUrl, logging::LOG_VERBOSE, 1, 1)));
 
   // It's not feasible to validate every field here, because that would be
   // a duplication of the logic in the method itself. Instead, test a handful
@@ -301,6 +302,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_EQ(api::developer_private::ERROR_TYPE_RUNTIME, runtime_error.type);
   EXPECT_EQ(api::developer_private::ERROR_LEVEL_ERROR,
             runtime_error.severity);
+  EXPECT_EQ(kContextUrl, GURL(runtime_error.context_url));
   EXPECT_EQ(1u, runtime_error.stack_trace.size());
   ASSERT_EQ(1u, info->manifest_errors.size());
   const api::developer_private::RuntimeError& runtime_error_verbose =
