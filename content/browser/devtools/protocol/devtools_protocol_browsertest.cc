@@ -892,6 +892,46 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
   PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 1.0, 0.);
 }
 
+// Verifies that setDefaultBackgroundColorOverride changes the background color
+// of a page that does not specify one.
+IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
+                       SetDefaultBackgroundColorOverride) {
+  if (base::SysInfo::IsLowEndDevice())
+    return;
+
+  shell()->LoadURL(GURL("about:blank"));
+  WaitForLoadStop(shell()->web_contents());
+  Attach();
+
+  // Override background to blue.
+  std::unique_ptr<base::DictionaryValue> color(new base::DictionaryValue());
+  color->SetInteger("r", 0x00);
+  color->SetInteger("g", 0x00);
+  color->SetInteger("b", 0xff);
+  color->SetDouble("a", 1.0);
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->Set("color", std::move(color));
+  SendCommand("Emulation.setDefaultBackgroundColorOverride", std::move(params));
+
+  SkBitmap expected_bitmap;
+  // We compare against the actual physical backing size rather than the
+  // view size, because the view size is stored adjusted for DPI and only in
+  // integer precision.
+  gfx::Size view_size = static_cast<RenderWidgetHostViewBase*>(
+                            shell()->web_contents()->GetRenderWidgetHostView())
+                            ->GetPhysicalBackingSize();
+  expected_bitmap.allocN32Pixels(view_size.width(), view_size.height());
+  expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+
+  // Tests that resetting Emulation.setDefaultBackgroundColorOverride
+  // clears the background color override.
+  SendCommand("Emulation.setDefaultBackgroundColorOverride",
+              std::make_unique<base::DictionaryValue>());
+  expected_bitmap.eraseColor(SK_ColorWHITE);
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+}
+
 // Verifies that setDefaultBackgroundColor and captureScreenshot support a
 // transparent background, and that setDeviceMetricsOverride doesn't affect it.
 
