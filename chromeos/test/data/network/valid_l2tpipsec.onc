@@ -6,6 +6,7 @@
     "Host": "some.host.org",
     "IPsec": {
       "AuthenticationType": "PSK",
+      "Group": "my_group",
       "IKEVersion": 1,
       "PSK": "some_preshared_key",
       "SaveCredentials": true,

@@ -5,6 +5,7 @@
     "Host": "some.host.org",
     "L2TPIPsec.LCPEchoDisabled": true,
     "L2TPIPsec.PSK": "some_preshared_key",
+    "L2TPIPsec.TunnelGroup": "my_group",
     "L2TPIPsec.User": "some username",
     "L2TPIPsec.XauthPassword": "some xauth password",
     "L2TPIPsec.XauthUser": "some xauth username",
