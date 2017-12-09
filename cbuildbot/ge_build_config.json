@@ -566,18 +566,6 @@
       ]
     },
     {
-      "name": "grunt",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "guado",
       "configs": [
         {
@@ -1830,6 +1818,21 @@
         {
           "board_name": "fizz",
           "name": "wukong",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "grunt",
+      "reference_board_name": "grunt",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "grunt",
+          "name": "grunt",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
