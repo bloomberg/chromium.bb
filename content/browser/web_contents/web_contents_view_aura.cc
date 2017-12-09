@@ -545,7 +545,6 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       completed_overscroll_gesture_(OVERSCROLL_NONE),
       navigation_overlay_(nullptr),
       init_rwhv_with_null_parent_for_testing_(false) {
-  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
 }
 
 void WebContentsViewAura::SetDelegateForTesting(
@@ -905,7 +904,6 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
           ? g_create_render_widget_host_view(render_widget_host,
                                              is_guest_view_hack)
           : new RenderWidgetHostViewAura(render_widget_host, is_guest_view_hack,
-                                         enable_surface_synchronization_,
                                          is_mus_browser_plugin_guest_);
   view->InitAsChild(GetRenderWidgetHostViewParent());
 
@@ -936,7 +934,6 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
   // |is_mus_browser_plugin_guest| is always false for them.
   const bool is_mus_browser_plugin_guest = false;
   return new RenderWidgetHostViewAura(render_widget_host, false,
-                                      enable_surface_synchronization_,
                                       is_mus_browser_plugin_guest);
 }
 

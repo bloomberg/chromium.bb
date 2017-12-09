@@ -97,7 +97,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // |is_mus_browser_plugin_guest| can be removed at the same time.
   RenderWidgetHostViewAura(RenderWidgetHost* host,
                            bool is_guest_view_hack,
-                           bool enable_surface_synchronization,
                            bool is_mus_browser_plugin_guest);
 
   // RenderWidgetHostView implementation.
@@ -511,8 +510,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // The model object.
   RenderWidgetHostImpl* const host_;
-
-  const bool enable_surface_synchronization_;
 
   const bool is_mus_browser_plugin_guest_;
 

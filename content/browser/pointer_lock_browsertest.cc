@@ -33,7 +33,6 @@ class MockRenderWidgetHostView : public RenderWidgetHostViewAura {
   MockRenderWidgetHostView(RenderWidgetHost* host, bool is_guest_view_hack)
       : RenderWidgetHostViewAura(host,
                                  is_guest_view_hack,
-                                 false /* enable_surface_synchronization */,
                                  false /* is_mus_browser_plugin_guest */),
         host_(RenderWidgetHostImpl::From(host)) {}
   ~MockRenderWidgetHostView() override {

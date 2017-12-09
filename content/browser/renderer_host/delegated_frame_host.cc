@@ -86,7 +86,8 @@ DelegatedFrameHost::~DelegatedFrameHost() {
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
   frame_evictor_->SetVisible(true);
 
-  if (!has_primary_surface_ && !released_front_lock_.get()) {
+  if (!enable_surface_synchronization_ && !HasFallbackSurface() &&
+      !released_front_lock_.get()) {
     if (compositor_)
       released_front_lock_ = compositor_->GetCompositorLock(nullptr);
   }
@@ -116,7 +117,7 @@ void DelegatedFrameHost::MaybeCreateResizeLock() {
           switches::kDisableResizeLock))
     return;
 
-  if (!has_primary_surface_)
+  if (!HasFallbackSurface())
     return;
 
   if (!client_->DelegatedFrameCanCreateResizeLock())
@@ -237,7 +238,7 @@ bool DelegatedFrameHost::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
     gfx::PointF* transformed_point) {
-  if (!has_primary_surface_)
+  if (!HasFallbackSurface())
     return false;
 
   return target_view->TransformPointToLocalCoordSpace(
@@ -265,6 +266,18 @@ void DelegatedFrameHost::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   support_->DidNotProduceFrame(ack);
 }
 
+bool DelegatedFrameHost::HasPrimarySurface() const {
+  const viz::SurfaceId* primary_surface_id =
+      client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
+  return primary_surface_id && primary_surface_id->is_valid();
+}
+
+bool DelegatedFrameHost::HasFallbackSurface() const {
+  const viz::SurfaceId* fallback_surface_id =
+      client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
+  return fallback_surface_id && fallback_surface_id->is_valid();
+}
+
 bool DelegatedFrameHost::ShouldSkipFrame(const gfx::Size& size_in_dip) {
   if (!resize_lock_)
     return false;
@@ -286,25 +299,24 @@ void DelegatedFrameHost::OnAggregatedSurfaceDamage(
 }
 
 void DelegatedFrameHost::WasResized() {
-  if (client_->DelegatedFrameHostDesiredSizeInDIP() !=
-          current_frame_size_in_dip_ &&
-      !client_->DelegatedFrameHostIsVisible()) {
-    EvictDelegatedFrame();
-  }
-
-  if (enable_surface_synchronization_) {
+  if (enable_surface_synchronization_ &&
+      client_->DelegatedFrameHostIsVisible()) {
     current_frame_size_in_dip_ = client_->DelegatedFrameHostDesiredSizeInDIP();
 
     viz::SurfaceId surface_id(frame_sink_id_, client_->GetLocalSurfaceId());
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
         surface_id, current_frame_size_in_dip_, GetSurfaceReferenceFactory());
-    has_primary_surface_ = true;
-    frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
     if (compositor_)
       compositor_->OnChildResizing();
     // Input throttling and guttering are handled differently when surface
     // synchronization is enabled so exit early here.
     return;
+  }
+
+  if (client_->DelegatedFrameHostDesiredSizeInDIP() !=
+          current_frame_size_in_dip_ &&
+      !client_->DelegatedFrameHostIsVisible()) {
+    EvictDelegatedFrame();
   }
 
   // If |create_resize_lock_after_commit_| is true, we're waiting to recreate
@@ -323,7 +335,7 @@ SkColor DelegatedFrameHost::GetGutterColor() const {
 }
 
 void DelegatedFrameHost::UpdateGutters() {
-  if (!has_primary_surface_ || enable_surface_synchronization_) {
+  if (!HasFallbackSurface() || enable_surface_synchronization_) {
     right_gutter_.reset();
     bottom_gutter_.reset();
     return;
@@ -429,7 +441,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
 
   // To avoid unnecessary browser composites, try to go directly to the Surface
   // rather than through the Layer (which goes through the browser compositor).
-  if (has_primary_surface_ &&
+  if (HasFallbackSurface() &&
       request_copy_of_output_callback_for_testing_.is_null()) {
     support_->RequestCopyOfSurface(std::move(request));
   } else {
@@ -508,15 +520,8 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     bool result = support_->SubmitCompositorFrame(
         local_surface_id, std::move(frame), std::move(hit_test_region_list));
     DCHECK(result);
-
-    DCHECK(enable_surface_synchronization_ || has_primary_surface_);
   }
 
-  if (!enable_surface_synchronization_) {
-    if (has_primary_surface_)
-      frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
-    // Note: the frame may have been evicted immediately.
-  }
 }
 
 void DelegatedFrameHost::ClearDelegatedFrame() {
@@ -565,27 +570,24 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   if (!enable_surface_synchronization_) {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
         surface_info.id(), frame_size_in_dip, GetSurfaceReferenceFactory());
-    has_primary_surface_ = true;
   }
-
-  // If surface synchronization is enabled, and we don't have a primary surface
-  // then that means it has been evicted, and so we have nothing to do here.
-  if (!has_primary_surface_)
-    return;
 
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
       surface_info.id());
   local_surface_id_ = surface_info.id().local_surface_id();
 
   // Surface synchronization deals with resizes in WasResized().
-  if (enable_surface_synchronization_)
-    return;
+  if (!enable_surface_synchronization_) {
+    released_front_lock_ = nullptr;
+    current_frame_size_in_dip_ = frame_size_in_dip;
+    CheckResizeLock();
 
-  released_front_lock_ = nullptr;
-  current_frame_size_in_dip_ = frame_size_in_dip;
-  CheckResizeLock();
+    UpdateGutters();
+  }
 
-  UpdateGutters();
+  if (HasFallbackSurface())
+    frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
+  // Note: the frame may have been evicted immediately.
 }
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
@@ -604,11 +606,19 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
     return;
   }
 
-  if (!has_primary_surface_)
+  if (!HasFallbackSurface())
     return;
+
+  if (enable_surface_synchronization_) {
+    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+        viz::SurfaceId());
+    support_->EvictCurrentSurface();
+    frame_evictor_->DiscardedFrame();
+    return;
+  }
+
   client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
   support_->EvictCurrentSurface();
-  has_primary_surface_ = false;
   resize_lock_.reset();
   frame_evictor_->DiscardedFrame();
   UpdateGutters();
