@@ -1,5 +1,8 @@
-# For Chrome OS apps APIs.
-tbarzic@chromium.org
+per-file *.json=set noparent
+per-file *.idl=set noparent
+
+per-file *.json=file://extensions/common/api/API_OWNERS
+per-file *.idl=file://extensions/common/api/API_OWNERS
 
 per-file *view*.json=fsamuel@chromium.org
 per-file *view*.json=lazyboy@chromium.org
