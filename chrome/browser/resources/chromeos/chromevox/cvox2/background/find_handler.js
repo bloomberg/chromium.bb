@@ -30,7 +30,7 @@ FindHandler.onModeChanged = function(newMode, oldMode) {
  */
 FindHandler.init_ = function() {
   chrome.automation.addTreeChangeObserver(
-      TreeChangeObserverFilter.NO_TREE_CHANGES, FindHandler.onTextMatch_);
+      TreeChangeObserverFilter.TEXT_MARKER_CHANGES, FindHandler.onTextMatch_);
 };
 
 /**
