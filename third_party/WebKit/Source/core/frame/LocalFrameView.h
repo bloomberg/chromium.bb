@@ -870,7 +870,7 @@ class CORE_EXPORT LocalFrameView final
   // scrolled on main thread as its ancestor B.
   void UpdateSubFrameScrollOnMainReason(const Frame&,
                                         MainThreadScrollingReasons);
-  String MainThreadScrollingReasonsAsText() const;
+  String MainThreadScrollingReasonsAsText();
   // Main thread scrolling reasons including reasons from ancestors.
   MainThreadScrollingReasons GetMainThreadScrollingReasons() const;
   // Main thread scrolling reasons for this object only. For all reasons,
