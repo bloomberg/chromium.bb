@@ -20,6 +20,8 @@ const char kAtkBridgePath[] = "gtk-2.0/modules/libatk-bridge.so";
 const char kAtkBridgeSymbolName[] = "gnome_accessibility_module_init";
 const char kGtkModules[] = "GTK_MODULES";
 
+namespace ui {
+
 // Returns a function pointer to be invoked on the main thread to init
 // the gnome accessibility module if it's enabled (nullptr otherwise).
 GnomeAccessibilityModuleInitFunc GetAccessibilityModuleInitFunc() {
@@ -78,3 +80,5 @@ void AtkUtilAuraLinux::PlatformInitializeAsync() {
       base::Bind(&GetAccessibilityModuleInitFunc),
       base::Bind(&FinishAccessibilityInitOnMainThread));
 }
+
+}  // namespace ui
