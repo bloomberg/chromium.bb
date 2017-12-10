@@ -5,6 +5,7 @@
 #include "components/url_formatter/idn_spoof_checker.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_local_storage.h"
@@ -27,6 +28,8 @@ void OnThreadTermination(void* regex_matcher) {
 #include "components/url_formatter/top_domains/alexa_skeletons-inc.cc"
 // All the domains in the above file have 3 or fewer labels.
 const size_t kNumberOfLabelsToCheck = 3;
+const unsigned char* g_graph = kDafsa;
+size_t g_graph_length = sizeof(kDafsa);
 
 bool LookupMatchInTopDomains(base::StringPiece skeleton) {
   DCHECK_NE(skeleton.back(), '.');
@@ -41,7 +44,7 @@ bool LookupMatchInTopDomains(base::StringPiece skeleton) {
   while (labels.size() > 1) {
     std::string partial_skeleton = base::JoinString(labels, ".");
     if (net::LookupStringInFixedSet(
-            kDafsa, arraysize(kDafsa), partial_skeleton.data(),
+            g_graph, g_graph_length, partial_skeleton.data(),
             partial_skeleton.length()) != net::kDafsaNotFound)
       return true;
     labels.erase(labels.begin());
@@ -394,6 +397,17 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   allowed_set.remove(0xA720u, 0xA7FFu);  // Latin Extended-D
 
   uspoof_setAllowedUnicodeSet(checker_, &allowed_set, status);
+}
+
+void IDNSpoofChecker::RestoreTopDomainGraphToDefault() {
+  g_graph = kDafsa;
+  g_graph_length = sizeof(kDafsa);
+}
+
+void IDNSpoofChecker::SetTopDomainGraph(base::StringPiece domain_graph) {
+  DCHECK_NE(0u, domain_graph.length());
+  g_graph = reinterpret_cast<const unsigned char*>(domain_graph.data());
+  g_graph_length = domain_graph.length();
 }
 
 }  // namespace url_formatter

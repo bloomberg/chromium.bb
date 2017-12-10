@@ -49,8 +49,3 @@ with open(alexa_out, 'w') as outfile, open(alexa10k_path, 'r') as infile:
                  "uber.com", "lyft.com", "ok.ru", "stripe.com"]:
     if domain not in domains:
       outfile.write(domain + "\n")
-
-  # Add a few made-up domains for testing.
-  outfile.write("# for testing\ndigklmo68.com\ndigklmo68.co.uk\n")
-  outfile.write("islkpx123.com\n")
-  outfile.write("os345.com\nwoder.com\nwmhtb.com\n")

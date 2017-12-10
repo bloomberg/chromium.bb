@@ -6,6 +6,7 @@ action_foreach("top_domains") {
   script = "//net/tools/dafsa/make_dafsa.py"
   sources = [
     "alexa_skeletons.gperf",
+    "test_skeletons.gperf",
   ]
   outputs = [
     "${target_gen_dir}/{{source_name_part}}-inc.cc",

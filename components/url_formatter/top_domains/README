@@ -14,3 +14,11 @@
 
   $ ninja -C $build_outdir make_top_domain_gperf
   $ $build_outdir/make_top_domain_gperf
+
+* test_domains.list
+  A list of domains to use in IDNToUnicode test instead of the actual
+  alexa top dmain. Manually edited to match what's in IDNToUnicode test.
+
+* test_skeletons.gperf
+  Generated out of test_domains.list along with alexa_skeletons.gperf
+  by make_top_domain_gperf.
