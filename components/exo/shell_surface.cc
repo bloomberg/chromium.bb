@@ -38,6 +38,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -1304,12 +1305,16 @@ void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 }
 
 void ShellSurface::UpdateSurfaceBounds() {
-  gfx::Rect client_view_bounds =
-      widget_->non_client_view()->frame_view()->GetBoundsForClientView();
+  gfx::Point origin = widget_->non_client_view()
+                          ->frame_view()
+                          ->GetBoundsForClientView()
+                          .origin();
 
-  host_window()->SetBounds(
-      gfx::Rect(GetSurfaceOrigin() + client_view_bounds.OffsetFromOrigin(),
-                host_window()->bounds().size()));
+  origin += GetSurfaceOrigin().OffsetFromOrigin();
+  origin -= ToFlooredVector2d(ScaleVector2d(
+      root_surface_origin().OffsetFromOrigin(), 1.f / GetScale()));
+
+  host_window()->SetBounds(gfx::Rect(origin, host_window()->bounds().size()));
 }
 
 void ShellSurface::UpdateShadow() {

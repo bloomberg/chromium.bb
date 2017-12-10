@@ -287,8 +287,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   float device_scale_factor = host_window()->layer()->device_scale_factor();
   frame.metadata.device_scale_factor = device_scale_factor;
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
-      gfx::Point(), device_scale_factor, layer_tree_frame_sink_holder_.get(),
-      &frame);
+      root_surface_origin_, device_scale_factor,
+      layer_tree_frame_sink_holder_.get(), &frame);
 
   if (WMHelper::GetInstance()->AreVerifiedSyncTokensNeeded()) {
     std::vector<GLbyte*> sync_tokens;
@@ -326,6 +326,10 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
   host_window_->layer()->SetFillsBoundsOpaquely(
       bounds.size() == root_surface_->content_size() &&
       root_surface_->FillsBoundsOpaquely());
+
+  root_surface_origin_ = gfx::Point() - bounds.OffsetFromOrigin();
+  root_surface_->window()->SetBounds(gfx::Rect(
+      root_surface_origin_, root_surface_->window()->bounds().size()));
 }
 
 }  // namespace exo

@@ -81,6 +81,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   Surface* root_surface() { return root_surface_; }
   const Surface* root_surface() const { return root_surface_; }
 
+  const gfx::Point& root_surface_origin() const { return root_surface_origin_; }
+
   LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder() {
     return layer_tree_frame_sink_holder_.get();
   }
@@ -106,6 +108,11 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void UpdateHostWindowBounds();
 
   Surface* root_surface_ = nullptr;
+
+  // Position of root surface relative to topmost, leftmost sub-surface. The
+  // host window should be translated by the negation of this vector.
+  gfx::Point root_surface_origin_;
+
   std::unique_ptr<aura::Window> host_window_;
   std::unique_ptr<LayerTreeFrameSinkHolder> layer_tree_frame_sink_holder_;
 
