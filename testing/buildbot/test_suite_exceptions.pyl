@@ -378,6 +378,28 @@
       },
     },
   },
+  # TODO(dpranke): browser_side_navigation is the default now; we should
+  # not run these at all, or flip them to renderer_side_navigation.
+  'browser_side_navigation_browser_tests': {
+    'modifications': {
+      # client.v8.chromium
+      'Linux - Future (dbg)': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
+    },
+  },
+  'browser_side_navigation_interactive_ui_tests': {
+    'modifications': {
+      # client.v8.chromium
+      'Linux - Future (dbg)': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
+    },
+  },
   'browser_tests': {
     'remove_from': [
       # chromium.clang
@@ -502,6 +524,12 @@
       'WebKit Mac10.12': {
         'swarming': {
           'can_use_on_swarming_builders': False,
+        },
+      },
+      # client.v8.chromium
+      'Linux - Future (dbg)': {
+        'swarming': {
+          'shards':  10,
         },
       },
     },
@@ -1065,6 +1093,8 @@
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
       'Win7 Tests (dbg)(1)',
+      # client.v8.chromium
+      'Linux - Future (dbg)',
     ],
   },
   'content_shell_test_apk': {
@@ -1222,6 +1252,8 @@
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
+      # client.v8.chromium
+      'Linux - Future (dbg)',
     ],
   },
   'devtools_eslint': {
@@ -1229,6 +1261,8 @@
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
+      # client.v8.chromium
+      'Linux - Future (dbg)',
     ],
   },
   'display_unittests': {
@@ -1393,6 +1427,8 @@
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
       'Win7 Tests (dbg)(1)',
+      # client.v8.chromium
+      'Linux - Future (dbg)',
     ],
   },
   'gl_tests': {
@@ -1584,6 +1620,8 @@
       'Linux Tests (dbg)(1)(32)',
       # On chromium.mac, unclear why these aren't run on "Mac10.11 Tests".
       'Mac10.11 Tests',
+      # client.v8.chromium
+      'Linux - Future (dbg)',
     ],
   },
   'headless_unittests': {
@@ -1591,6 +1629,8 @@
       'Linux Tests (dbg)(1)(32)',
       # On chromium.mac, unclear why these aren't run on "Mac10.11 Tests".
       'Mac10.11 Tests',
+      # client.v8.chromium
+      'Linux - Future (dbg)'
     ],
   },
   'install_static_unittests': {
@@ -1700,6 +1740,12 @@
       'Linux CFI': {
         'swarming': {
           'shards': 1,
+        },
+      },
+      # client.v8.chromium
+      'Linux - Future (dbg)': {
+        'swarming': {
+          'shards': 3,
         },
       },
     },
@@ -2460,6 +2506,12 @@
           'shards': 10,
         },
       },
+      # client.v8.chromium
+      'Linux - Future (dbg)': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
     },
   },
   'site_per_process_content_browsertests': {
@@ -2476,6 +2528,19 @@
     'remove_from': [
       'Linux Tests (dbg)(1)(32)',
     ],
+    'modifications': {
+      'Linux - Future': {
+        'args': [
+          '--site-per-process',
+        ],
+      },
+      'Linux - Future (dbg)': {
+        # TODO(dpranke): this should be --site-per-process.
+        'args': [
+          '--site_per_process',
+        ],
+      },
+    },
   },
   'sizes': {
     'remove_from': [
@@ -2684,6 +2749,8 @@
       'Mac10.9 Tests',
       'Mac10.9 Tests (dbg)',
       'Win7 Tests (dbg)(1)',
+      # client.v8.chromium
+      'Linux - Future (dbg)',
     ],
   },
   'telemetry_unittests': {
