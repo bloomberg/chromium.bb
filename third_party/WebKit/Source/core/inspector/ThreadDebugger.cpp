@@ -5,6 +5,7 @@
 #include "core/inspector/ThreadDebugger.h"
 
 #include <memory>
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Blob.h"
@@ -278,8 +279,9 @@ void ThreadDebugger::installAdditionalCommandLineAPI(
   bool success =
       V8ScriptRunner::CompileAndRunInternalScript(
           ScriptState::From(context),
-
-          V8String(isolate_, "(function(e) { console.log(e.type, e); })"),
+          ScriptSourceCode("(function(e) { console.log(e.type, e); })",
+                           ScriptSourceLocationType::kInternal, nullptr, KURL(),
+                           TextPosition()),
           isolate_)
           .ToLocal(&function_value) &&
       function_value->IsFunction();

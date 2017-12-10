@@ -29,6 +29,7 @@
 
 #include "core/inspector/DevToolsHost.h"
 
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/clipboard/Pasteboard.h"
@@ -137,11 +138,10 @@ void DevToolsHost::EvaluateScript(const String& expression) {
       Frame::NotifyUserActivation(frontend_frame_);
   v8::MicrotasksScope microtasks(script_state->GetIsolate(),
                                  v8::MicrotasksScope::kRunMicrotasks);
-  v8::Local<v8::String> source =
-      V8AtomicString(script_state->GetIsolate(), expression.Utf8().data());
-  V8ScriptRunner::CompileAndRunInternalScript(script_state, source,
-                                              script_state->GetIsolate(),
-                                              String(), TextPosition());
+  ScriptSourceCode source_code(expression, ScriptSourceLocationType::kInternal,
+                               nullptr, KURL(), TextPosition());
+  V8ScriptRunner::CompileAndRunInternalScript(script_state, source_code,
+                                              script_state->GetIsolate());
 }
 
 void DevToolsHost::DisconnectClient() {

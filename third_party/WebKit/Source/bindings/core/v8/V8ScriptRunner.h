@@ -51,7 +51,6 @@ class CachedMetadata;
 class CachedMetadataHandler;
 class ExecutionContext;
 class ScriptSourceCode;
-class ScriptStreamer;
 
 class CORE_EXPORT V8ScriptRunner final {
   STATIC_ONLY(V8ScriptRunner);
@@ -70,17 +69,6 @@ class CORE_EXPORT V8ScriptRunner final {
                                                   AccessControlStatus,
                                                   V8CacheOptions,
                                                   const ReferrerScriptInfo&);
-  static v8::MaybeLocal<v8::Script> CompileScript(ScriptState*,
-                                                  v8::Local<v8::String>,
-                                                  const String& file_name,
-                                                  const String& source_map_url,
-                                                  const TextPosition&,
-                                                  ScriptSourceLocationType,
-                                                  ScriptStreamer*,
-                                                  CachedMetadataHandler*,
-                                                  AccessControlStatus,
-                                                  V8CacheOptions,
-                                                  const ReferrerScriptInfo&);
   static v8::MaybeLocal<v8::Module> CompileModule(v8::Isolate*,
                                                   const String& source,
                                                   const String& file_name,
@@ -92,10 +80,8 @@ class CORE_EXPORT V8ScriptRunner final {
                                                      ExecutionContext*);
   static v8::MaybeLocal<v8::Value> CompileAndRunInternalScript(
       ScriptState*,
-      v8::Local<v8::String>,
-      v8::Isolate*,
-      const String& = String(),
-      const TextPosition& = TextPosition());
+      const ScriptSourceCode&,
+      v8::Isolate*);
   static v8::MaybeLocal<v8::Value> RunCompiledInternalScript(
       v8::Isolate*,
       v8::Local<v8::Script>);
