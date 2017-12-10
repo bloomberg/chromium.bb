@@ -60,6 +60,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -67,7 +68,12 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/network_service.mojom.h"
+#include "content/public/common/network_service_test.mojom.h"
+#include "content/public/common/service_names.mojom.h"
+#include "content/public/common/simple_url_loader.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -83,7 +89,11 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/python_utils.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/interfaces/cookie_manager.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -2349,6 +2359,45 @@ void ContextMenuFilter::OnContextMenu(
 WebContents* GetEmbedderForGuest(content::WebContents* guest) {
   CHECK(guest);
   return static_cast<content::WebContentsImpl*>(guest)->GetOuterWebContents();
+}
+
+void SimulateNetworkServiceCrash() {
+  CHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  mojom::NetworkServiceTestPtr network_service_test;
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+
+  base::RunLoop run_loop;
+  network_service_test.set_connection_error_handler(run_loop.QuitClosure());
+
+  network_service_test->SimulateCrash();
+  run_loop.Run();
+
+  // Make sure the cached NetworkServicePtr receives error notification.
+  FlushNetworkServiceInstanceForTesting();
+}
+
+int LoadBasicRequest(mojom::NetworkContext* network_context, const GURL& url) {
+  mojom::URLLoaderFactoryPtr url_loader_factory;
+  network_context->CreateURLLoaderFactory(MakeRequest(&url_loader_factory), 0);
+  // |url_loader_factory| will receive error notification asynchronously if
+  // |network_context| has already encountered error. However it's still false
+  // at this point.
+  EXPECT_FALSE(url_loader_factory.encountered_error());
+
+  auto request = std::make_unique<ResourceRequest>();
+  request->url = url;
+
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory.get(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  return simple_loader->NetError();
 }
 
 }  // namespace content

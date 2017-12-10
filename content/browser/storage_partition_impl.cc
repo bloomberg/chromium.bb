@@ -613,7 +613,8 @@ mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
 mojom::URLLoaderFactory*
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   // Create the URLLoaderFactory as needed.
-  if (!url_loader_factory_for_browser_process_) {
+  if (!url_loader_factory_for_browser_process_ ||
+      url_loader_factory_for_browser_process_.encountered_error()) {
     GetNetworkContext()->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_for_browser_process_), 0);
   }
@@ -1030,7 +1031,10 @@ void StoragePartitionImpl::ClearBluetoothAllowedDevicesMapForTesting() {
 }
 
 void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
+  DCHECK(network_context_);
   network_context_.FlushForTesting();
+  if (url_loader_factory_for_browser_process_)
+    url_loader_factory_for_browser_process_.FlushForTesting();
 }
 
 BrowserContext* StoragePartitionImpl::browser_context() const {
