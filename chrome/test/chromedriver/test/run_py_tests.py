@@ -200,6 +200,8 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2108
         'ChromeLoggingCapabilityTest.testPerformanceLogger',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2164
+        'ChromeDriverTest.testSendTextToAlert',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
