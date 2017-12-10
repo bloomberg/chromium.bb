@@ -4659,10 +4659,6 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
 
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
-    const int bsl = tx_size_wide_unit[sub_txs];
-    int i;
-
     if (tx_size == TX_8X8) {
       mbmi->inter_tx_size[tx_row][tx_col] = TX_4X4;
       mbmi->tx_size = TX_4X4;
@@ -4670,12 +4666,16 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
                             xd->left_txfm_context + blk_row, TX_4X4, tx_size);
       return;
     }
-
-    assert(bsl > 0);
-    for (i = 0; i < 4; ++i) {
-      int offsetr = (i >> 1) * bsl;
-      int offsetc = (i & 0x01) * bsl;
-      set_txfm_context(xd, sub_txs, blk_row + offsetr, blk_col + offsetc);
+    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
+    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
+      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
+        const int offsetr = blk_row + row;
+        const int offsetc = blk_col + col;
+        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
+        set_txfm_context(xd, sub_txs, blk_row + offsetr, blk_col + offsetc);
+      }
     }
   }
 }
