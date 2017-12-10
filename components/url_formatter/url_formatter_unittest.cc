@@ -11,8 +11,10 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/idn_spoof_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -264,13 +266,22 @@ const IDNTestCase idn_cases[] = {
     // U+0131 (dotless i) followed by U+0307
     {"xn--pxel-lza43z.com", L"p\x0131\x0307xel.com", false},
     // j followed by U+0307 (combining dot above)
-    {"xn--jack-qwc.com", L"j\x0307" L"ack.com", false},
+    {"xn--jack-qwc.com",
+     L"j\x0307"
+     L"ack.com",
+     false},
     // l followed by U+0307
-    {"xn--lace-qwc.com", L"l\x0307" L"ace.com", false},
+    {"xn--lace-qwc.com",
+     L"l\x0307"
+     L"ace.com",
+     false},
 
     // Do not allow a combining mark after dotless i/j.
     {"xn--pxel-lza29y.com", L"p\x0131\x0300xel.com", false},
-    {"xn--ack-gpb42h.com", L"\x0237\x0301" L"ack.com", false},
+    {"xn--ack-gpb42h.com",
+     L"\x0237\x0301"
+     L"ack.com",
+     false},
 
     // Mixed script confusable
     // google with Armenian Small Letter Oh(U+0585)
@@ -399,7 +410,7 @@ const IDNTestCase idn_cases[] = {
      false},                                                 // digklmoб8.com
     {"xn--digklmo6-7yr.com", L"digklmo6\x09ea.com", false},  // digklmo6৪.com
 
-    // 'islkpx123.com' is listed for unitest in the top domain list.
+    // 'islkpx123.com' is in the test domain list.
     // 'іѕӏкрх123' can look like 'islkpx123' in some fonts.
     {"xn--123-bed4a4a6hh40i.com",
      L"\x0456\x0455\x04cf\x043a\x0440\x0445"
@@ -413,11 +424,17 @@ const IDNTestCase idn_cases[] = {
     // шмнтв.com
     {"xn--b1atdu1a.com", L"\x0448\x043c\x043d\x0442\x0432.com", false},
     // ഠട345.com
-    {"xn--345-jtke.com", L"\x0d20\x0d1f" L"345.com", false},
+    {"xn--345-jtke.com",
+     L"\x0d20\x0d1f"
+     L"345.com",
+     false},
 
     // At one point the skeleton of 'w' was 'vv', ensure that
     // that it's treated as 'w'.
-    {"xn--wder-qqa.com", L"w\x00f3" L"der.com", false},
+    {"xn--wder-qqa.com",
+     L"w\x00f3"
+     L"der.com",
+     false},
 
     // Mixed digits: the first two will also fail mixed script test
     // Latin + ASCII digit + Deva digit
@@ -714,7 +731,10 @@ const IDNTestCase idn_cases[] = {
     // Latin Ext B - Pinyin: ǔnion.com
     {"xn--nion-unb.com", L"\x01d4nion.com", false},
     // Latin Ext C: ⱴase.com
-    {"xn--ase-7z0b.com", L"\x2c74" L"ase.com", false},
+    {"xn--ase-7z0b.com",
+     L"\x2c74"
+     L"ase.com",
+     false},
     // Latin Ext D: ꝴode.com
     {"xn--ode-ut3l.com", L"\xa774ode.com", false},
     // Latin Ext Additional: ḷily.com
@@ -778,7 +798,15 @@ void CheckAdjustedOffsets(const std::string& url_string,
                 std::string::npos, formatted_url);
 }
 
+namespace test {
+#include "components/url_formatter/top_domains/test_skeletons-inc.cc"
+}
+
+}  // namespace
+
 TEST(UrlFormatterTest, IDNToUnicode) {
+  IDNSpoofChecker::SetTopDomainGraph(base::StringPiece(
+      reinterpret_cast<const char*>(test::kDafsa), sizeof(test::kDafsa)));
   for (size_t i = 0; i < arraysize(idn_cases); i++) {
     base::string16 output(IDNToUnicode(idn_cases[i].input));
     base::string16 expected(idn_cases[i].unicode_allowed
@@ -787,6 +815,7 @@ TEST(UrlFormatterTest, IDNToUnicode) {
     EXPECT_EQ(expected, output) << "input # " << i << ": \""
                                 << idn_cases[i].input << "\"";
   }
+  IDNSpoofChecker::RestoreTopDomainGraphToDefault();
 }
 
 TEST(UrlFormatterTest, FormatUrl) {
@@ -1456,7 +1485,5 @@ TEST(UrlFormatterTest, FormatUrlWithOffsets) {
                        net::UnescapeRule::NORMAL,
                        strip_trivial_subdomains_from_idn_offsets);
 }
-
-}  // namespace
 
 }  // namespace url_formatter

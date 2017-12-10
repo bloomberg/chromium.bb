@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -49,28 +50,13 @@ bool WriteToFile(const std::string& content, base::StringPiece basename) {
   return succeeded;
 }
 
-int main(int argc, const char** argv) {
-  if (argc != 1) {
-    std::cerr << "Generates the list of top domain skeletons to use as input to"
-                 "\nbase/dafsa/make_dafsa.py.\nUsage: "
-              << argv[0] << '\n';
-    return 1;
-  }
-
-  base::i18n::InitializeICU();
-  base::FilePath input_file = GetPath("alexa_domains.list");
+int GenerateDasfa(const char* input_file_name,
+                  const USpoofChecker* spoof_checker) {
+  base::FilePath input_file = GetPath(input_file_name);
   std::string input_content;
   if (!base::ReadFileToString(input_file, &input_content)) {
     std::cerr << "Failed to read the input file " << input_file.AsUTF8Unsafe()
               << '\n';
-    return 1;
-  }
-
-  UErrorCode status = U_ZERO_ERROR;
-  USpoofChecker* spoof_checker = uspoof_open(&status);
-  if (U_FAILURE(status)) {
-    std::cerr << "Failed to create an ICU uspoof_checker due to "
-              << u_errorName(status) << ".\n";
     return 1;
   }
 
@@ -111,7 +97,12 @@ int main(int argc, const char** argv) {
 
   output += "%%\n";
 
-  if (!WriteToFile(output, "alexa_skeletons.gperf"))
+  std::string output_file_name(input_file_name);
+  base::ReplaceSubstringsAfterOffset(&output_file_name, 0, "domain",
+                                     "skeleton");
+  base::ReplaceSubstringsAfterOffset(&output_file_name, 0, "list", "gperf");
+
+  if (!WriteToFile(output, output_file_name))
     return 1;
 
   std::cout << "The first domain with the largest number of labels is "
@@ -119,4 +110,25 @@ int main(int argc, const char** argv) {
             << " labels.\n";
 
   return 0;
+}
+
+int main(int argc, const char** argv) {
+  if (argc != 1) {
+    std::cerr << "Generates the list of top domain skeletons to use as input to"
+                 "\nbase/dafsa/make_dafsa.py.\nUsage: "
+              << argv[0] << '\n';
+    return 1;
+  }
+
+  base::i18n::InitializeICU();
+  UErrorCode status = U_ZERO_ERROR;
+  std::unique_ptr<USpoofChecker, decltype(&uspoof_close)> spoof_checker(
+      uspoof_open(&status), &uspoof_close);
+  if (U_FAILURE(status)) {
+    std::cerr << "Failed to create an ICU uspoof_checker due to "
+              << u_errorName(status) << ".\n";
+    return 1;
+  }
+  GenerateDasfa("alexa_domains.list", spoof_checker.get());
+  GenerateDasfa("test_domains.list", spoof_checker.get());
 }
