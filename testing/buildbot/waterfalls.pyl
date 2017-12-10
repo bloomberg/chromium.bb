@@ -1249,6 +1249,23 @@
     },
   },
   {
+    'name': 'client.v8.chromium',
+    'machines': {
+      'Linux - Future': {
+        'test_suites': {
+          'gtest_tests': 'client_v8_chromium_gtests',
+          'isolated_scripts': 'client_v8_chromium_isolated_scripts',
+        },
+      },
+      'Linux - Future (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'client_v8_chromium_gtests',
+          'isolated_scripts': 'client_v8_chromium_isolated_scripts',
+        },
+      },
+    },
+  },
+  {
     'name': 'client.v8.branches',
     'machines': {},
   },

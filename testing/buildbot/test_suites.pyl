@@ -406,6 +406,146 @@
     'unit_tests': {},
   },
 
+  'client_v8_chromium_gtests': {
+    'app_shell_unittests': {},
+    'browser_tests': {
+      'swarming': {
+        'shards': 5,
+      },
+    },
+    # TODO(dpranke): browser_side_navigation is the default now; we should
+    # either not run these at all, or flip them to renderer_side_navigation.
+    'browser_side_navigation_browser_tests': {
+      'args': [
+        '--enable-browser-side-navigation',
+      ],
+      'swarming': {
+        'shards': 5,
+      },
+      'test': 'browser_tests',
+    },
+    'browser_side_navigation_components_browsertests': {
+      'args': [
+        '--enable-browser-side-navigation',
+      ],
+      'test': 'components_browsertests',
+    },
+    'browser_side_navigation_components_unittests': {
+      'args': [
+        '--enable-browser-side-navigation',
+      ],
+      'test': 'components_unittests',
+    },
+    'browser_side_navigation_content_browsertests': {
+      'args': [
+        '--enable-browser-side-navigation',
+      ],
+      'test': 'content_browsertests',
+    },
+    'browser_side_navigation_content_unittests': {
+      'args': [
+        '--enable-browser-side-navigation',
+      ],
+      'test': 'content_unittests',
+    },
+    'browser_side_navigation_extensions_browsertests': {
+      'args': [
+        '--enable-browser-side-navigation',
+      ],
+      'test': 'extensions_browsertests',
+    },
+    'browser_side_navigation_interactive_ui_tests': {
+      'args': [
+        '--enable-browser-side-navigation',
+      ],
+      'test': 'interactive_ui_tests',
+    },
+    'browser_side_navigation_unit_tests': {
+      'args': [
+        '--enable-browser-side-navigation',
+      ],
+      'test': 'unit_tests',
+    },
+    'chrome_app_unittests': {},
+    'chromedriver_unittests': {},
+    'components_browsertests': {},
+    'components_unittests': {},
+    'compositor_unittests': {},
+    'content_browsertests': {},
+    'content_unittests': {},
+    'device_unittests': {},
+    'extensions_browsertests': {},
+    'extensions_unittests': {},
+    'gcm_unit_tests': {},
+    'gin_unittests': {},
+    'google_apis_unittests': {},
+    'gpu_unittests': {},
+    'headless_browsertests': {},
+    'headless_unittests': {},
+    'interactive_ui_tests': {},
+    'jingle_unittests': {},
+    'media_blink_unittests': {},
+    'nacl_loader_unittests': {},
+    'net_unittests': {},
+    'pdf_unittests': {},
+    'ppapi_unittests': {},
+    'remoting_unittests': {},
+    'services_unittests': {},
+
+    'site_per_process_browser_tests': {
+      'args': [
+        '--site-per-process',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter'
+      ],
+      'swarming': {
+        'shards': 5,
+      },
+      'test': 'browser_tests',
+    },
+    'site_per_process_content_browsertests': {
+      'args': [
+        '--site-per-process',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter'
+      ],
+      'test': 'content_browsertests',
+    },
+    'site_per_process_content_unittests': {
+      'args': [
+        '--site-per-process',
+      ],
+      'test': 'content_unittests',
+    },
+    'site_per_process_unit_tests': {
+      'test': 'unit_tests',
+    },
+    'sync_integration_tests': {},
+    'unit_tests': {},
+  },
+
+  'client_v8_chromium_isolated_scripts': {
+    'content_shell_crash_test': {},
+    'devtools_closure_compile': {},
+    'devtools_eslint': {},
+    'telemetry_gpu_unittests': {},
+    'telemetry_perf_unittests': {
+      'args': [
+        '--xvfb',
+      ],
+      'swarming': {
+        'hard_timeout': 960,
+        'shards': 12,
+      },
+    },
+    'telemetry_unittests': {
+      'args': [
+        '--jobs=1',
+      ],
+      'swarming': {
+        'shards': 4,
+      },
+    },
+  },
+
   'cronet_gtests': {
     'cronet_sample_test_apk': {
       'swarming': {
