@@ -31,7 +31,6 @@
         "device": [
           "device:power_monitor",
           "device:screen_orientation",
-          "device:sensors",
           "device:time_zone_monitor"
         ],
         "ui": [

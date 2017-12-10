@@ -13,12 +13,6 @@
         "device:nfc": [ "device::mojom::NFCProvider" ],
         "device:power_monitor": [ "device::mojom::PowerMonitor" ],
         "device:screen_orientation": [ "device::mojom::ScreenOrientationListener" ],
-        "device:sensors": [
-          "device::mojom::LightSensor",
-          "device::mojom::MotionSensor",
-          "device::mojom::OrientationAbsoluteSensor",
-          "device::mojom::OrientationSensor"
-        ],
         "device:serial": [
           "device::mojom::SerialDeviceEnumerator",
           "device::mojom::SerialIoHandler"
