@@ -35,6 +35,7 @@
 #include <unordered_set>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Node.h"
@@ -458,7 +459,10 @@ void V8GCController::CollectGarbage(v8::Isolate* isolate, bool only_minor_gc) {
   builder.Append(only_minor_gc ? "true" : "false");
   builder.Append(")");
   V8ScriptRunner::CompileAndRunInternalScript(
-      script_state.get(), V8String(isolate, builder.ToString()), isolate);
+      script_state.get(),
+      ScriptSourceCode(builder.ToString(), ScriptSourceLocationType::kInternal,
+                       nullptr, KURL(), TextPosition()),
+      isolate);
   script_state->DisposePerContextData();
 }
 

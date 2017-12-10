@@ -390,7 +390,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     ScriptState* script_state,
     const ScriptSourceCode& source,
     AccessControlStatus access_control_status,
-    V8CacheOptions v8_cache_options,
+    V8CacheOptions cache_options,
     const ReferrerScriptInfo& referrer_info) {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (source.Source().length() >= v8::String::kMaxLength) {
@@ -398,25 +398,12 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     return v8::Local<v8::Script>();
   }
 
-  return CompileScript(script_state, V8String(isolate, source.Source()),
-                       source.Url(), source.SourceMapUrl(),
-                       source.StartPosition(), source.SourceLocationType(),
-                       source.Streamer(), source.CacheHandler(),
-                       access_control_status, v8_cache_options, referrer_info);
-}
+  v8::Local<v8::String> code = V8String(isolate, source.Source());
+  const String& file_name = source.Url();
+  const TextPosition& script_start_position = source.StartPosition();
+  ScriptStreamer* streamer = source.Streamer();
+  CachedMetadataHandler* cache_handler = source.CacheHandler();
 
-v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
-    ScriptState* script_state,
-    v8::Local<v8::String> code,
-    const String& file_name,
-    const String& source_map_url,
-    const TextPosition& script_start_position,
-    ScriptSourceLocationType source_location_type,
-    ScriptStreamer* streamer,
-    CachedMetadataHandler* cache_handler,
-    AccessControlStatus access_control_status,
-    V8CacheOptions cache_options,
-    const ReferrerScriptInfo& referrer_info) {
   constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
   TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, "v8.compile", "fileName",
                      file_name.Utf8());
@@ -426,21 +413,19 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
 
   // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
   // 1, whereas v8 starts at 0.
-  v8::Isolate* isolate = script_state->GetIsolate();
-
   v8::ScriptOrigin origin(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, script_start_position.line_.ZeroBasedInt()),
       v8::Integer::New(isolate, script_start_position.column_.ZeroBasedInt()),
       v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
-      v8::Local<v8::Integer>(), V8String(isolate, source_map_url),
+      v8::Local<v8::Integer>(), V8String(isolate, source.SourceMapUrl()),
       v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
       v8::False(isolate),  // is_wasm
       v8::False(isolate),  // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
 
   v8::ScriptCompiler::NoCacheReason no_handler_reason;
-  switch (source_location_type) {
+  switch (source.SourceLocationType()) {
     case ScriptSourceLocationType::kInline:
       no_handler_reason = v8::ScriptCompiler::kNoCacheBecauseInlineScript;
       break;
@@ -539,18 +524,17 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
     ScriptState* script_state,
-    v8::Local<v8::String> source,
-    v8::Isolate* isolate,
-    const String& file_name,
-    const TextPosition& script_start_position) {
+    const ScriptSourceCode& source_code,
+    v8::Isolate* isolate) {
+  DCHECK_EQ(isolate, script_state->GetIsolate());
+
   v8::Local<v8::Script> script;
   // Use default ScriptReferrerInfo here:
   // - nonce: empty for internal script, and
   // - parser_state: always "not parser inserted" for internal scripts.
   if (!V8ScriptRunner::CompileScript(
-           script_state, source, file_name, String(), script_start_position,
-           ScriptSourceLocationType::kInternal, nullptr, nullptr,
-           kSharableCrossOrigin, kV8CacheOptionsDefault, ReferrerScriptInfo())
+           script_state, source_code, kSharableCrossOrigin,
+           kV8CacheOptionsDefault, ReferrerScriptInfo())
            .ToLocal(&script))
     return v8::MaybeLocal<v8::Value>();
 
