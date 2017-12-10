@@ -251,6 +251,8 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
 
   if (paint_phase == PaintPhase::kClippingMask &&
       layout_block_.Style()->Visibility() == EVisibility::kVisible) {
+    // SPv175 always paints clipping mask in PaintLayerPainter.
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
     BoxPainter(layout_block_).PaintClippingMask(paint_info, paint_offset);
     return;
   }

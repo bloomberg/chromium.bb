@@ -571,13 +571,12 @@ void CompositedLayerMapping::UpdateCompositingReasons() {
 }
 
 bool CompositedLayerMapping::AncestorRoundedCornersWillClip(
-    const FloatRect& bounds_in_ancestor_space,
-    const PaintLayer* clip_inheritance_ancestor) {
+    const FloatRect& bounds_in_ancestor_space) const {
   // Collect all border-radius clips between us and the state we inherited.
   LayoutPoint zero_offset;
   Vector<FloatRoundedRect> rounded_rect_clips;
   LayerClipRecorder::CollectRoundedRectClips(
-      owning_layer_, clip_inheritance_ancestor, zero_offset, true,
+      owning_layer_, clip_inheritance_ancestor_, zero_offset, true,
       LayerClipRecorder::kDoNotIncludeSelfForBorderRadius, rounded_rect_clips);
 
   for (auto clip_rect : rounded_rect_clips) {
@@ -598,13 +597,12 @@ bool CompositedLayerMapping::AncestorRoundedCornersWillClip(
 
 void CompositedLayerMapping::
     OwningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
-        const PaintLayer* scroll_parent,
         bool& owning_layer_is_clipped,
-        bool& owning_layer_is_masked) {
+        bool& owning_layer_is_masked) const {
   owning_layer_is_clipped = false;
   owning_layer_is_masked = false;
 
-  if (!owning_layer_.Parent())
+  if (!clip_inheritance_ancestor_)
     return;
 
   // Compute the clips below the layer we inherit clip state from.
@@ -612,9 +610,7 @@ void CompositedLayerMapping::
   // of the inherited state.
   // FIXME: this should use cached clip rects, but this sometimes give
   // inaccurate results (and trips the ASSERTS in PaintLayerClipper).
-  const PaintLayer* clip_inheritance_ancestor = ClipInheritanceAncestor(
-      owning_layer_.EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
-  ClipRectsContext clip_rects_context(clip_inheritance_ancestor,
+  ClipRectsContext clip_rects_context(clip_inheritance_ancestor_,
                                       kUncachedClipRects,
                                       kIgnorePlatformOverlayScrollbarSize);
   clip_rects_context.SetIgnoreOverflowClip();
@@ -647,11 +643,11 @@ void CompositedLayerMapping::
   FloatRect bounds_in_ancestor_space =
       GetLayoutObject()
           .LocalToAncestorQuad(FloatRect(composited_bounds_),
-                               &clip_inheritance_ancestor->GetLayoutObject(),
+                               &clip_inheritance_ancestor_->GetLayoutObject(),
                                kUseTransforms)
           .BoundingBox();
-  owning_layer_is_masked = AncestorRoundedCornersWillClip(
-      bounds_in_ancestor_space, clip_inheritance_ancestor);
+  owning_layer_is_masked =
+      AncestorRoundedCornersWillClip(bounds_in_ancestor_space);
 }
 
 const PaintLayer* CompositedLayerMapping::ScrollParent() const {
@@ -668,8 +664,8 @@ const PaintLayer* CompositedLayerMapping::CompositedClipParent() const {
                      : nullptr;
 }
 
-const PaintLayer* CompositedLayerMapping::ClipInheritanceAncestor(
-    const PaintLayer* compositing_container) const {
+void CompositedLayerMapping::UpdateClipInheritanceAncestor(
+    const PaintLayer* compositing_container) {
   // Determine the clip state we are going to inherit.
   // There are three sources a layer inherits its clip state from, in the
   // order of priority (see cc/trees/property_tree_builder.cc):
@@ -677,13 +673,15 @@ const PaintLayer* CompositedLayerMapping::ClipInheritanceAncestor(
   // 2. Scroll parent
   // 3. Parent layer
   if (const PaintLayer* clip_parent = CompositedClipParent())
-    return clip_parent;
-  if (const PaintLayer* scroll_parent = ScrollParent())
-    return scroll_parent;
-  return compositing_container;
+    clip_inheritance_ancestor_ = clip_parent;
+  else if (const PaintLayer* scroll_parent = ScrollParent())
+    clip_inheritance_ancestor_ = scroll_parent;
+  else
+    clip_inheritance_ancestor_ = compositing_container;
 }
 
-bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
+bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
+    const PaintLayer* compositing_container) {
   DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),
             DocumentLifecycle::kInCompositingUpdate);
 
@@ -726,8 +724,9 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
   // clipping layer is necessary to apply the composited clip for this layer.
   bool needs_ancestor_clip = false;
   bool needs_ancestor_clipping_mask = false;
+  UpdateClipInheritanceAncestor(compositing_container);
   OwningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
-      scroll_parent, needs_ancestor_clip, needs_ancestor_clipping_mask);
+      needs_ancestor_clip, needs_ancestor_clipping_mask);
   if (UpdateClippingLayers(needs_ancestor_clip, needs_ancestor_clipping_mask,
                            needs_descendants_clipping_layer))
     layer_config_changed = true;
@@ -1351,9 +1350,7 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
   if (!compositing_container || !ancestor_clipping_layer_)
     return;
 
-  const PaintLayer* clip_inheritance_ancestor =
-      ClipInheritanceAncestor(compositing_container);
-  ClipRectsContext clip_rects_context(clip_inheritance_ancestor,
+  ClipRectsContext clip_rects_context(clip_inheritance_ancestor_,
                                       kPaintingClipRectsIgnoringOverflowClip,
                                       kIgnorePlatformOverlayScrollbarSize);
   // Note: kPaintingClipRectsIgnoringOverflowClip implies SetIgnoreOverflowClip.
@@ -1363,7 +1360,7 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
       .CalculateBackgroundClipRect(clip_rects_context, clip_rect);
   DCHECK(clip_rect.Rect() != LayoutRect(LayoutRect::InfiniteIntRect()));
 
-  // The accumulated clip rect is in the space of clip_inheritance_ancestor.
+  // The accumulated clip rect is in the space of clip_inheritance_ancestor_.
   // It needs to be converted to the space of our compositing container because
   // our layer position is based on that.
   LayoutRect clip_rect_in_compositing_container_space = clip_rect.Rect();
@@ -1371,26 +1368,26 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
   // ConvertToLayerCoords can only handle descendant-to-ancestor conversion.
   // Inversion needs to be done manually if clip_inheritance_container is not
   // a descendant of compositing_container.
-  if (clip_inheritance_ancestor == compositing_container) {
+  if (clip_inheritance_ancestor_ == compositing_container) {
     // No needs to convert.
-  } else if (clip_inheritance_ancestor == ScrollParent()) {
+  } else if (clip_inheritance_ancestor_ == ScrollParent()) {
     // Having a scroll parent implies that the inherited clip is a sibling to
     // us in paint order, thus our compositing container must be an ancestor
     // of the scroll parent.
     // See CompositingInputsUpdater::UpdateRecursive().
-    DCHECK(clip_inheritance_ancestor->GetLayoutObject().IsDescendantOf(
+    DCHECK(clip_inheritance_ancestor_->GetLayoutObject().IsDescendantOf(
         &compositing_container->GetLayoutObject()));
-    clip_inheritance_ancestor->ConvertToLayerCoords(
+    clip_inheritance_ancestor_->ConvertToLayerCoords(
         compositing_container, clip_rect_in_compositing_container_space);
   } else {
     // Inherits from clip parent. The clip parent is set only when we need to
     // escape some clip that was applied to our compositing container. As such,
     // the clip parent must be some ancestor of our compositing container.
     DCHECK(compositing_container->GetLayoutObject().IsDescendantOf(
-        &clip_inheritance_ancestor->GetLayoutObject()));
+        &clip_inheritance_ancestor_->GetLayoutObject()));
     LayoutPoint compositing_container_origin_in_clip_ancestor_space;
     compositing_container->ConvertToLayerCoords(
-        clip_inheritance_ancestor,
+        clip_inheritance_ancestor_,
         compositing_container_origin_in_clip_ancestor_space);
     clip_rect_in_compositing_container_space.MoveBy(
         -compositing_container_origin_in_clip_ancestor_space);

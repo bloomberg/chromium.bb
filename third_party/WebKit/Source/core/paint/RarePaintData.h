@@ -87,13 +87,14 @@ class CORE_EXPORT RarePaintData {
     pagination_offset_ = pagination_offset;
   }
 
- private:
   const TransformPaintPropertyNode* GetPreTransform() const;
   const TransformPaintPropertyNode* GetPostScrollTranslation() const;
   const ClipPaintPropertyNode* GetPreCssClip() const;
   const ClipPaintPropertyNode* GetPostOverflowClip() const;
   const EffectPaintPropertyNode* GetPreEffect() const;
+  const EffectPaintPropertyNode* GetPreFilter() const;
 
+ private:
   // The PaintLayer associated with this LayoutBoxModelObject. This can be null
   // depending on the return value of LayoutBoxModelObject::layerTypeRequired().
   std::unique_ptr<PaintLayer> layer_;
