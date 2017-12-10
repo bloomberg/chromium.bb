@@ -365,6 +365,9 @@ Output.RULES = {
     },
     inlineTextBox: {speak: `$name=`},
     inputTime: {enter: `$nameFromNode $role $state $restriction $description`},
+    labelText: {
+      speak: `$name $value $state $restriction $description`,
+    },
     lineBreak: {speak: `$name=`},
     link: {
       enter: `$nameFromNode= $role $state $restriction`,
