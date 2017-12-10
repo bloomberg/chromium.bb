@@ -36,6 +36,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -55,6 +56,9 @@ namespace {
 enum class NetworkServiceState {
   kDisabled,
   kEnabled,
+  // Similar to |kEnabled|, but will simulate a crash and run tests again the
+  // restarted Network Service process.
+  kRestarted,
 };
 
 enum class NetworkContextType {
@@ -88,39 +92,16 @@ class NetworkContextConfigurationBrowserTest
   ~NetworkContextConfigurationBrowserTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    if (GetParam().network_service_state == NetworkServiceState::kEnabled)
+    if (GetParam().network_service_state != NetworkServiceState::kDisabled)
       feature_list_.InitAndEnableFeature(features::kNetworkService);
   }
 
   void SetUpOnMainThread() override {
-    switch (GetParam().network_context_type) {
-      case NetworkContextType::kSystem: {
-        SystemNetworkContextManager* system_network_context_manager =
-            g_browser_process->system_network_context_manager();
-        network_context_ = system_network_context_manager->GetContext();
-        loader_factory_ = system_network_context_manager->GetURLLoaderFactory();
-        break;
-      }
-      case NetworkContextType::kProfile: {
-        content::StoragePartition* storage_partition =
-            content::BrowserContext::GetDefaultStoragePartition(
-                browser()->profile());
-        network_context_ = storage_partition->GetNetworkContext();
-        loader_factory_ =
-            storage_partition->GetURLLoaderFactoryForBrowserProcess();
-        break;
-      }
-      case NetworkContextType::kIncognitoProfile: {
-        Browser* incognito = CreateIncognitoBrowser();
-        content::StoragePartition* storage_partition =
-            content::BrowserContext::GetDefaultStoragePartition(
-                incognito->profile());
-        network_context_ = storage_partition->GetNetworkContext();
-        loader_factory_ =
-            storage_partition->GetURLLoaderFactoryForBrowserProcess();
-        break;
-      }
+    if (GetParam().network_context_type ==
+        NetworkContextType::kIncognitoProfile) {
+      incognito_ = CreateIncognitoBrowser();
     }
+    SimulateNetworkServiceCrashIfNecessary();
   }
 
   // Returns, as a string, a PAC script that will use the EmbeddedTestServer as
@@ -134,11 +115,41 @@ class NetworkContextConfigurationBrowserTest
   }
 
   content::mojom::URLLoaderFactory* loader_factory() const {
-    return loader_factory_;
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+        return g_browser_process->system_network_context_manager()
+            ->GetURLLoaderFactory();
+      case NetworkContextType::kProfile:
+        return content::BrowserContext::GetDefaultStoragePartition(
+                   browser()->profile())
+            ->GetURLLoaderFactoryForBrowserProcess();
+      case NetworkContextType::kIncognitoProfile:
+        DCHECK(incognito_);
+        return content::BrowserContext::GetDefaultStoragePartition(
+                   incognito_->profile())
+            ->GetURLLoaderFactoryForBrowserProcess();
+    }
+    NOTREACHED();
+    return nullptr;
   }
 
   content::mojom::NetworkContext* network_context() const {
-    return network_context_;
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+        return g_browser_process->system_network_context_manager()
+            ->GetContext();
+      case NetworkContextType::kProfile:
+        return content::BrowserContext::GetDefaultStoragePartition(
+                   browser()->profile())
+            ->GetNetworkContext();
+      case NetworkContextType::kIncognitoProfile:
+        DCHECK(incognito_);
+        return content::BrowserContext::GetDefaultStoragePartition(
+                   incognito_->profile())
+            ->GetNetworkContext();
+    }
+    NOTREACHED();
+    return nullptr;
   }
 
   StorageType GetHttpCacheType() const {
@@ -220,8 +231,48 @@ class NetworkContextConfigurationBrowserTest
   }
 
  private:
-  content::mojom::NetworkContext* network_context_ = nullptr;
-  content::mojom::URLLoaderFactory* loader_factory_ = nullptr;
+  void SimulateNetworkServiceCrashIfNecessary() {
+    if (GetParam().network_service_state != NetworkServiceState::kRestarted)
+      return;
+
+    // Make sure |network_context()| is working as expected. Use '/echoheader'
+    // instead of '/echo' to avoid a disk_cache bug.
+    // See https://crbug.com/792255.
+    int net_error = content::LoadBasicRequest(
+        network_context(), embedded_test_server()->GetURL("/echoheader"));
+    // The error code could be |net::ERR_PROXY_CONNECTION_FAILED| if the test is
+    // using 'bad_server.pac'.
+    EXPECT_TRUE(net_error == net::OK ||
+                net_error == net::ERR_PROXY_CONNECTION_FAILED);
+
+    // Crash the NetworkService process. Existing interfaces should receive
+    // error notifications at some point.
+    content::SimulateNetworkServiceCrash();
+    // Flush the interface to make sure the error notification was received.
+    FlushNetworkInterface();
+  }
+
+  void FlushNetworkInterface() {
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+        g_browser_process->system_network_context_manager()
+            ->FlushNetworkInterfaceForTesting();
+        break;
+      case NetworkContextType::kProfile:
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile())
+            ->FlushNetworkInterfaceForTesting();
+        break;
+      case NetworkContextType::kIncognitoProfile:
+        DCHECK(incognito_);
+        content::BrowserContext::GetDefaultStoragePartition(
+            incognito_->profile())
+            ->FlushNetworkInterfaceForTesting();
+        break;
+    }
+  }
+
+  Browser* incognito_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationBrowserTest);
@@ -625,6 +676,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFtpPacBrowserTest, FtpPac) {
   EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED, simple_loader->NetError());
 }
 
+// |NetworkServiceTestHelper| doesn't work on browser_tests on OSX.
+#if defined(OS_MACOSX)
 // Instiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled and "/1" if
 // it's enabled.
@@ -649,6 +702,39 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFtpPacBrowserTest, FtpPac) {
                                   NetworkContextType::kIncognitoProfile}), \
                         TestCase({NetworkServiceState::kEnabled,           \
                                   NetworkContextType::kIncognitoProfile})))
+
+#else  // !defined(OS_MACOSX)
+// Instiates tests with a prefix indicating which NetworkContext is being
+// tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
+// enabled, and "/2" if it's enabled and restarted.
+#define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      SystemNetworkContext, TestFixture,                                   \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
+                                  NetworkContextType::kSystem}),           \
+                        TestCase({NetworkServiceState::kEnabled,           \
+                                  NetworkContextType::kSystem}),           \
+                        TestCase({NetworkServiceState::kRestarted,         \
+                                  NetworkContextType::kSystem})));         \
+                                                                           \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      ProfileMainNetworkContext, TestFixture,                              \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
+                                  NetworkContextType::kProfile}),          \
+                        TestCase({NetworkServiceState::kEnabled,           \
+                                  NetworkContextType::kProfile}),          \
+                        TestCase({NetworkServiceState::kRestarted,         \
+                                  NetworkContextType::kProfile})));        \
+                                                                           \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      IncognitoProfileMainNetworkContext, TestFixture,                     \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
+                                  NetworkContextType::kIncognitoProfile}), \
+                        TestCase({NetworkServiceState::kEnabled,           \
+                                  NetworkContextType::kIncognitoProfile}), \
+                        TestCase({NetworkServiceState::kRestarted,         \
+                                  NetworkContextType::kIncognitoProfile})))
+#endif  // !defined(OS_MACOSX)
 
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(

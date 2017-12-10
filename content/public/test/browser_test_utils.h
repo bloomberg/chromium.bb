@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/page_type.h"
 #include "ipc/message_filter.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -1065,6 +1066,13 @@ class ContextMenuFilter : public content::BrowserMessageFilter {
 };
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest);
+
+// Crash the Network Service process. Should only be called when out-of-process
+// Network Service is enabled.
+void SimulateNetworkServiceCrash();
+
+// Load the given |url| with |network_context| and return the |net::Error| code.
+int LoadBasicRequest(mojom::NetworkContext* network_context, const GURL& url);
 
 }  // namespace content
 

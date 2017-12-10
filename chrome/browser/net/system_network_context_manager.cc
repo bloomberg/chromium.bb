@@ -71,7 +71,7 @@ content::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
 
 content::mojom::URLLoaderFactory*
 SystemNetworkContextManager::GetURLLoaderFactory() {
-  if (!url_loader_factory_) {
+  if (!url_loader_factory_ || url_loader_factory_.encountered_error()) {
     GetContext()->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_), 0);
   }
@@ -134,7 +134,10 @@ void SystemNetworkContextManager::FlushProxyConfigMonitorForTesting() {
 }
 
 void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
+  DCHECK(network_service_network_context_);
   network_service_network_context_.FlushForTesting();
+  if (url_loader_factory_)
+    url_loader_factory_.FlushForTesting();
 }
 
 content::mojom::NetworkContextParamsPtr
