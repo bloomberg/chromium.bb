@@ -36,7 +36,7 @@ bool ClipRect::Intersects(const HitTestLocation& hit_test_location) const {
 }
 
 String ClipRect::ToString() const {
-  return rect_.ToString();
+  return rect_.ToString() + (has_radius_ ? " hasRadius" : " noRadius");
 }
 
 }  // namespace blink

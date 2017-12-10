@@ -320,9 +320,9 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
 
   GetPaintController().CommitNewDisplayItems();
 
-  if (layer_state_) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     // Generate raster invalidations for SPv175 (but not SPv2).
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
     IntRect layer_bounds(layer_state_->offset, ExpandedIntSize(Size()));
     EnsureRasterInvalidator().Generate(layer_bounds, AllChunkPointers(),
                                        layer_state_->state, this);
@@ -370,7 +370,8 @@ bool GraphicsLayer::PaintWithoutCommit(
   }
 
   GraphicsContext context(GetPaintController(), disabled_mode, nullptr);
-  if (layer_state_) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     GetPaintController().UpdateCurrentPaintChunkProperties(WTF::nullopt,
                                                            layer_state_->state);
   }
@@ -1301,14 +1302,8 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   FloatRect bounds(IntRect(IntPoint(0, 0), ExpandedIntSize(Size())));
   GraphicsContext graphics_context(GetPaintController());
   graphics_context.BeginRecording(bounds);
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && !layer_state_) {
-    LOG(WARNING) << "No layer state for GraphicsLayer: " << DebugName();
-    // TODO(wangxianzhu): Remove this condition when all drawable layers have
-    // layer_state_ for SPv175.
-    for (const auto& display_item :
-         GetPaintController().GetPaintArtifact().GetDisplayItemList())
-      display_item.Replay(graphics_context);
-  } else if (layer_state_) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     GetPaintController().GetPaintArtifact().Replay(
         graphics_context, layer_state_->state, layer_state_->offset);
   } else {
@@ -1374,8 +1369,8 @@ void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
   if (painting_control != kPaintDefaultBehavior)
     Paint(nullptr, disabled_mode);
 
-  if (layer_state_) {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     PaintChunksToCcLayer::ConvertInto(
         AllChunkPointers(), layer_state_->state,
         gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),

@@ -85,6 +85,8 @@ enum class PaintPhase {
   kSelection = 8,
   kTextClip = 9,
   kMask = 10,
+  // TODO(wangxianzhu): Remove this phase for SPv175+. Use a dedicated display
+  // item type for the drawings.
   kClippingMask = 11,
 
   kMax = kClippingMask,

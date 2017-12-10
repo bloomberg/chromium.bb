@@ -76,6 +76,14 @@ const EffectPaintPropertyNode* RarePaintData::GetPreEffect() const {
   return local_border_box_properties_->Effect();
 }
 
+const EffectPaintPropertyNode* RarePaintData::GetPreFilter() const {
+  if (!paint_properties_)
+    return local_border_box_properties_->Effect();
+  if (paint_properties_->Filter())
+    return paint_properties_->Filter()->Parent();
+  return local_border_box_properties_->Effect();
+}
+
 PropertyTreeState RarePaintData::PreEffectProperties() const {
   DCHECK(local_border_box_properties_);
   return PropertyTreeState(GetPreTransform(), GetPreCssClip(), GetPreEffect());
@@ -89,7 +97,7 @@ PropertyTreeState RarePaintData::ContentsProperties() const {
       contents.SetTransform(properties->ScrollTranslation());
     if (properties->OverflowClip())
       contents.SetClip(properties->OverflowClip());
-    if (properties->InnerBorderRadiusClip())
+    else if (properties->InnerBorderRadiusClip())
       contents.SetClip(properties->InnerBorderRadiusClip());
     else if (properties->CssClip())
       contents.SetClip(properties->CssClip());
