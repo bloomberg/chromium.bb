@@ -1700,9 +1700,9 @@ content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager(
 }
 
 content::ColorChooser* Browser::OpenColorChooser(
-      WebContents* web_contents,
-      SkColor initial_color,
-      const std::vector<content::ColorSuggestion>& suggestions) {
+    WebContents* web_contents,
+    SkColor initial_color,
+    const std::vector<content::mojom::ColorSuggestionPtr>& suggestions) {
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 

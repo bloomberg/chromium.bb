@@ -54,9 +54,9 @@ WebContentsDelegateAndroid::GetJavaDelegate(JNIEnv* env) const {
 // ----------------------------------------------------------------------------
 
 ColorChooser* WebContentsDelegateAndroid::OpenColorChooser(
-      WebContents* source,
-      SkColor color,
-      const std::vector<content::ColorSuggestion>& suggestions)  {
+    WebContents* source,
+    SkColor color,
+    const std::vector<content::mojom::ColorSuggestionPtr>& suggestions) {
   return new ColorChooserAndroid(source, color, suggestions);
 }
 

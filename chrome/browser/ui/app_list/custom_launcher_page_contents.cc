@@ -93,7 +93,7 @@ bool CustomLauncherPageContents::PreHandleGestureEvent(
 content::ColorChooser* CustomLauncherPageContents::OpenColorChooser(
     content::WebContents* web_contents,
     SkColor initial_color,
-    const std::vector<content::ColorSuggestion>& suggestionss) {
+    const std::vector<content::mojom::ColorSuggestionPtr>& suggestionss) {
   return app_delegate_->ShowColorChooser(web_contents, initial_color);
 }
 

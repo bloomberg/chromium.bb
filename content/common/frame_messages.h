@@ -32,7 +32,6 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
 #include "content/common/savable_subframe.h"
-#include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/context_menu_params.h"
@@ -149,11 +148,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebRemoteScrollProperties)
   IPC_STRUCT_TRAITS_MEMBER(make_visible_in_visual_viewport)
   IPC_STRUCT_TRAITS_MEMBER(behavior)
   IPC_STRUCT_TRAITS_MEMBER(is_for_scroll_sequence)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::ColorSuggestion)
-  IPC_STRUCT_TRAITS_MEMBER(color)
-  IPC_STRUCT_TRAITS_MEMBER(label)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
@@ -830,12 +824,6 @@ IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestInIsolatedWorld,
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
                     bool /* bypass_cache */)
 
-// Notifies the color chooser client that the user selected a color.
-IPC_MESSAGE_ROUTED2(FrameMsg_DidChooseColorResponse, unsigned, SkColor)
-
-// Notifies the color chooser client that the color chooser has ended.
-IPC_MESSAGE_ROUTED1(FrameMsg_DidEndColorChooser, unsigned)
-
 // Requests the corresponding RenderFrameProxy to be deleted and removed from
 // the frame tree.
 IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
@@ -1507,20 +1495,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(FrameHostMsg_RunBeforeUnloadConfirm,
                            bool            /* in - is a reload */,
                            bool            /* out - success */,
                            base::string16  /* out - This is ignored.*/)
-
-// Asks the browser to open the color chooser.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_OpenColorChooser,
-                    int /* id */,
-                    SkColor /* color */,
-                    std::vector<content::ColorSuggestion> /* suggestions */)
-
-// Asks the browser to end the color chooser.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_EndColorChooser, int /* id */)
-
-// Change the selected color in the color chooser.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_SetSelectedColorInColorChooser,
-                    int /* id */,
-                    SkColor /* color */)
 
 // Notify browser the theme color has been changed.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeThemeColor,

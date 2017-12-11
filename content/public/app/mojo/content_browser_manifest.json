@@ -141,6 +141,8 @@
           // TODO(beng): figure out how to overlay test interfaces like this.
           "content::mojom::BrowserTarget",
 
+          "content::mojom::ColorChooserFactory",
+
           // InputInjector is only exposed when gpu benchmarking is enabled.
           "content::mojom::InputInjector",
 

@@ -642,7 +642,7 @@ void GuestViewBase::LoadingStateChanged(WebContents* source,
 content::ColorChooser* GuestViewBase::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,
-    const std::vector<content::ColorSuggestion>& suggestions) {
+    const std::vector<content::mojom::ColorSuggestionPtr>& suggestions) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return nullptr;
 
