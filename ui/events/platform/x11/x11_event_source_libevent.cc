@@ -97,6 +97,11 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
   switch (xev.type) {
     case LeaveNotify:
     case EnterNotify:
+      // Don't generate synthetic mouse move events for EnterNotify/LeaveNotify
+      // from nested XWindows. https://crbug.com/792322
+      if (xev.xcrossing.detail == NotifyInferior)
+        return nullptr;
+
       return std::make_unique<MouseEvent>(EventTypeFromXEvent(xev),
                                           EventLocationFromXEvent(xev),
                                           EventSystemLocationFromXEvent(xev),
