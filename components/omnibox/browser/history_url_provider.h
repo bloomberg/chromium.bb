@@ -221,15 +221,6 @@ class HistoryURLProvider : public HistoryProvider {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, HUPScoringExperiment);
-  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, DoTrimHttpScheme);
-  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest,
-                           DontTrimHttpSchemeIfInputHasScheme);
-  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest,
-                           DontTrimHttpSchemeIfInputMatchesInScheme);
-  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, DontTrimHttpsScheme);
-  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest,
-                           DontTrimHttpsSchemeDespiteFlag);
-  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, DoTrimHttpsSchemeIfFlag);
 
   enum MatchType {
     NORMAL,

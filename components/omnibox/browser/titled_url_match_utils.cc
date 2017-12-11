@@ -79,8 +79,7 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
       url, titled_url_match.url_match_positions, &match_in_scheme,
       &match_in_subdomain, &match_after_host);
   auto format_types = AutocompleteMatch::GetFormatTypes(
-      input.parts().scheme.len > 0 || match_in_scheme, match_in_subdomain,
-      match_after_host);
+      match_in_scheme, match_in_subdomain, match_after_host);
 
   std::vector<size_t> offsets = TitledUrlMatch::OffsetsFromMatchPositions(
       titled_url_match.url_match_positions);
