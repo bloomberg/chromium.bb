@@ -41,8 +41,8 @@ import java.util.concurrent.TimeoutException;
  * Tests for FullscreenActivity.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS,
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY,
         "enable-features=" + ChromeFeatureList.FULLSCREEN_ACTIVITY})
 public class FullscreenActivityTest {
     private static final String TEST_PATH = "/content/test/data/media/video-player.html";

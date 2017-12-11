@@ -82,8 +82,6 @@ MEDIA_EXPORT extern const char kForceVideoOverlays[];
 MEDIA_EXPORT extern const char kMSEAudioBufferSizeLimit[];
 MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimit[];
 
-MEDIA_EXPORT extern const char kIgnoreAutoplayRestrictionsForTests[];
-
 MEDIA_EXPORT extern const char kClearKeyCdmPathForTesting[];
 
 #if !defined(OS_ANDROID)

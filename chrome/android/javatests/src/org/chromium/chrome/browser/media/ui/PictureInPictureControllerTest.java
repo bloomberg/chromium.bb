@@ -39,7 +39,7 @@ import org.chromium.net.test.EmbeddedTestServer;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS})
+        MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
 @TargetApi(Build.VERSION_CODES.O)
 public class PictureInPictureControllerTest {
     // TODO(peconn): Add a test for exit on Tab Reparenting.

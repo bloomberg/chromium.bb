@@ -39,7 +39,7 @@ import java.util.concurrent.Callable;
  */
 @RunWith(ContentJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add(MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS)
+@CommandLineFlags.Add(MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY)
 public class MediaSessionTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();

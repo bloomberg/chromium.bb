@@ -34,8 +34,8 @@ import java.util.concurrent.TimeoutException;
  * is rotated whilst watching a video.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"enable-features=VideoRotateToFullscreen",
-        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS})
+@CommandLineFlags.
+Add({"enable-features=VideoRotateToFullscreen", MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
 public class VideoRotateToFullscreenTest {
     @Rule
     public ContentShellActivityTestRule mRule = new ContentShellActivityTestRule();

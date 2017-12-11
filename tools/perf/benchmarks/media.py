@@ -107,11 +107,5 @@ class MediaMobile(_MediaBenchmark):
     # By default, Chrome on Android does not allow autoplay
     # of media: it requires a user gesture event to start a video.
     # The following option works around that.
-    # Note that both of these flags should be used until every build from
-    # ToT to Stable switches over to one flag or another. This is to support
-    # reference builds.
-    # --disable-gesture-requirement-for-media-playback is the old one and can be
-    # removed after M60 goes to stable.
     options.AppendExtraBrowserArgs(
-        ['--ignore-autoplay-restrictions',
-         '--disable-gesture-requirement-for-media-playback'])
+        ['--autoplay-policy=no-user-gesture-required'])
