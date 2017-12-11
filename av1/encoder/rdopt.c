@@ -10447,7 +10447,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             args.left_pred_buf, args.left_pred_stride);
       }
       av1_subtract_plane(x, bsize, 0);
-      if (cm->tx_mode == TX_MODE_SELECT || xd->lossless[mbmi->segment_id]) {
+      if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
         // av1_rd_pick_inter_mode_sb
         select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col,
                            INT64_MAX);
