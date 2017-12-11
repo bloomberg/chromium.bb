@@ -226,8 +226,7 @@ SelectionState InlineTextBox::GetSelectionState() const {
   }
 
   // If there are ellipsis following, make sure their selection is updated.
-  if (truncation_ != kCNoTruncation && Root().GetEllipsisBox()) {
-    EllipsisBox* ellipsis = Root().GetEllipsisBox();
+  if (EllipsisBox* ellipsis = Root().GetEllipsisBox()) {
     if (state != SelectionState::kNone) {
       int start, end;
       SelectionStartEnd(start, end);
