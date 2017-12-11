@@ -99,7 +99,9 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   String code_;
   String key_;
   unsigned location_;
-  bool is_composing_;
+  bool is_composing_ = false;
+  unsigned char_code_ = 0;
+  unsigned key_code_ = 0;
 };
 
 DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);

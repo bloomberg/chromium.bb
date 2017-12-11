@@ -109,6 +109,23 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
       location_(GetKeyLocationCode(key)),
       is_composing_(HasCurrentComposition(dom_window)) {
   InitLocationModifiers(location_);
+
+  // Firefox: 0 for keydown/keyup events, character code for keypress
+  // We match Firefox
+  if (type() == EventTypeNames::keypress)
+    char_code_ = key.text[0];
+
+  if (type() == EventTypeNames::keydown || type() == EventTypeNames::keyup)
+    key_code_ = key.windows_key_code;
+  else
+    key_code_ = char_code_;
+
+#if defined(OS_ANDROID)
+  // FIXME: Check to see if this applies to other OS.
+  // If the key event belongs to IME composition then propagate to JS.
+  if (key.native_key_code == 0xE5)  // VKEY_PROCESSKEY
+    key_code_ = 0xE5;
+#endif
 }
 
 KeyboardEvent::KeyboardEvent(const AtomicString& event_type,
@@ -117,7 +134,9 @@ KeyboardEvent::KeyboardEvent(const AtomicString& event_type,
       code_(initializer.code()),
       key_(initializer.key()),
       location_(initializer.location()),
-      is_composing_(initializer.isComposing()) {
+      is_composing_(initializer.isComposing()),
+      char_code_(initializer.charCode()),
+      key_code_(initializer.keyCode()) {
   if (initializer.repeat())
     modifiers_ |= WebInputEvent::kIsAutoRepeat;
   InitLocationModifiers(initializer.location());
@@ -151,33 +170,11 @@ void KeyboardEvent::initKeyboardEvent(ScriptState* script_state,
 }
 
 int KeyboardEvent::keyCode() const {
-  // IE: virtual key code for keyup/keydown, character code for keypress
-  // Firefox: virtual key code for keyup/keydown, zero for keypress
-  // We match IE.
-  if (!key_event_)
-    return 0;
-
-#if defined(OS_ANDROID)
-  // FIXME: Check to see if this applies to other OS.
-  // If the key event belongs to IME composition then propagate to JS.
-  if (key_event_->native_key_code == 0xE5)  // VKEY_PROCESSKEY
-    return key_event_->native_key_code;
-#endif
-
-  if (type() == EventTypeNames::keydown || type() == EventTypeNames::keyup)
-    return key_event_->windows_key_code;
-
-  return charCode();
+  return key_code_;
 }
 
 int KeyboardEvent::charCode() const {
-  // IE: not supported
-  // Firefox: 0 for keydown/keyup events, character code for keypress
-  // We match Firefox
-
-  if (!key_event_ || (type() != EventTypeNames::keypress))
-    return 0;
-  return key_event_->text[0];
+  return char_code_;
 }
 
 const AtomicString& KeyboardEvent::InterfaceName() const {
