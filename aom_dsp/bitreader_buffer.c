@@ -35,11 +35,6 @@ int aom_rb_read_literal(struct aom_read_bit_buffer *rb, int bits) {
   return value;
 }
 
-int aom_rb_read_signed_literal(struct aom_read_bit_buffer *rb, int bits) {
-  const int value = aom_rb_read_literal(rb, bits);
-  return aom_rb_read_bit(rb) ? -value : value;
-}
-
 int aom_rb_read_inv_signed_literal(struct aom_read_bit_buffer *rb, int bits) {
   const int nbits = sizeof(unsigned) * 8 - bits - 1;
   const unsigned value = (unsigned)aom_rb_read_literal(rb, bits + 1) << nbits;
