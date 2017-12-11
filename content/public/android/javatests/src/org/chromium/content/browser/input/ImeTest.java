@@ -1410,10 +1410,9 @@ public class ImeTest {
 
         mRule.setComposingText("a", 1);
         mRule.waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);
-        // TODO(changwan): reduce the number of selection changes.
         mRule.waitForEventLogs(
                 "keydown(229),compositionstart(),compositionupdate(a),input(a),keyup(229),"
-                + "selectionchange,selectionchange");
+                + "selectionchange");
         mRule.clearEventLogs();
 
         mRule.finishComposingText();
@@ -1427,9 +1426,8 @@ public class ImeTest {
     public void testInputTextEvents_ComposingText() throws Throwable {
         mRule.setComposingText("a", 1);
         mRule.waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);
-        // TODO(changwan): reduce the number of selection changes.
         mRule.waitForEventLogs("keydown(229),compositionstart(),compositionupdate(a),"
-                + "input(a),keyup(229),selectionchange,selectionchange");
+                + "input(a),keyup(229),selectionchange");
         mRule.clearEventLogs();
 
         mRule.finishComposingText();

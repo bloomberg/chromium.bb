@@ -2497,4 +2497,15 @@ TEST_F(
                               Vector<ImeTextSpan>(), 1, 1);
 }
 
+TEST_F(InputMethodControllerTest, SetCompositionContainingNewline) {
+  Element* div =
+      InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+  Controller().SetComposition("Hello", Vector<ImeTextSpan>(), 5, 5);
+  Controller().SetComposition("Hello\n", Vector<ImeTextSpan>(), 6, 6);
+
+  EXPECT_EQ("Hello\n\n", PlainText(EphemeralRange(
+                             Position(div, PositionAnchorType::kBeforeAnchor),
+                             Position(div, PositionAnchorType::kAfterAnchor))));
+}
+
 }  // namespace blink
