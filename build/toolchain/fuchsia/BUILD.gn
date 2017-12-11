@@ -13,7 +13,10 @@ template("fuchsia_clang_toolchain") {
     assert(defined(invoker.toolchain_args),
            "toolchain_args must be defined for fuchsia_clang_toolchain()")
 
-    strip = rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir)
+    # TODO(fuchsia): eu-strip defaults to removing all symbols, preventing back-
+    # traces from being symbolized. Reinstate this for production builds, or
+    # perhaps configure it to only strip debug symbols (crbug.com/792521).
+    #strip = rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir)
 
     toolchain_args = invoker.toolchain_args
     toolchain_args.current_os = "fuchsia"
