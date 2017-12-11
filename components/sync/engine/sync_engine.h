@@ -177,9 +177,6 @@ class SyncEngine : public ModelTypeConfigurer {
   // Disables the sending of directory type debug counters.
   virtual void DisableDirectoryTypeDebugInfoForwarding() = 0;
 
-  // Triggers sync cycle to update |types|.
-  virtual void RefreshTypesForTest(ModelTypeSet types) = 0;
-
   // See SyncManager::ClearServerData.
   virtual void ClearServerData(const base::Closure& callback) = 0;
 

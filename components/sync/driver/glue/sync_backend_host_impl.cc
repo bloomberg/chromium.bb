@@ -416,13 +416,6 @@ void SyncBackendHostImpl::UpdateInvalidationVersions(
   sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
 }
 
-void SyncBackendHostImpl::RefreshTypesForTest(ModelTypeSet types) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DoRefreshTypes, core_, types));
-}
-
 void SyncBackendHostImpl::ClearServerData(const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_task_runner_->PostTask(
