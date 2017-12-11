@@ -68,6 +68,7 @@ void MediaPermissionDispatcher::OnNavigation() {
   OnConnectionError();
 }
 
+// TODO(crbug.com/793684): |security_origin| is no longer used; remove it.
 void MediaPermissionDispatcher::HasPermission(
     Type type,
     const GURL& security_origin,
@@ -88,11 +89,11 @@ void MediaPermissionDispatcher::HasPermission(
 
   GetPermissionService()->HasPermission(
       MediaPermissionTypeToPermissionDescriptor(type),
-      url::Origin::Create(security_origin),
       base::BindOnce(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
                      request_id));
 }
 
+// TODO(crbug.com/793684): |security_origin| is no longer used; remove it.
 void MediaPermissionDispatcher::RequestPermission(
     Type type,
     const GURL& security_origin,
@@ -113,7 +114,6 @@ void MediaPermissionDispatcher::RequestPermission(
 
   GetPermissionService()->RequestPermission(
       MediaPermissionTypeToPermissionDescriptor(type),
-      url::Origin::Create(security_origin),
       blink::WebUserGestureIndicator::IsProcessingUserGesture(),
       base::BindOnce(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
                      request_id));

@@ -33,6 +33,8 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
   ~PermissionServiceContext() override;
 
   void CreateService(blink::mojom::PermissionServiceRequest request);
+  void CreateServiceForWorker(blink::mojom::PermissionServiceRequest request,
+                              const url::Origin& origin);
 
   void CreateSubscription(PermissionType permission_type,
                           const url::Origin& origin,
@@ -50,6 +52,10 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
 
  private:
   class PermissionSubscription;
+
+  void CreateServiceForWorkerImpl(
+      blink::mojom::PermissionServiceRequest request,
+      const url::Origin& origin);
 
   // WebContentsObserver
   void RenderFrameHostChanged(RenderFrameHost* old_host,

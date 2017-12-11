@@ -171,7 +171,6 @@ ScriptPromise Permissions::query(ScriptState* script_state,
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   GetService(ExecutionContext::From(script_state))
       .HasPermission(std::move(descriptor),
-                     ExecutionContext::From(script_state)->GetSecurityOrigin(),
                      WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
                                WrapPersistent(resolver),
                                WTF::Passed(std::move(descriptor_copy))));
@@ -198,7 +197,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   Frame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
       .RequestPermission(
-          std::move(descriptor), context->GetSecurityOrigin(),
+          std::move(descriptor),
           Frame::HasTransientUserActivation(frame,
                                             true /* checkIfMainThread */),
           WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
@@ -224,7 +223,6 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
   GetService(ExecutionContext::From(script_state))
       .RevokePermission(
           std::move(descriptor),
-          ExecutionContext::From(script_state)->GetSecurityOrigin(),
           WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
                     WrapPersistent(resolver),
                     WTF::Passed(std::move(descriptor_copy))));
@@ -277,7 +275,7 @@ ScriptPromise Permissions::requestAll(
   Frame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
       .RequestPermissions(
-          std::move(internal_permissions), context->GetSecurityOrigin(),
+          std::move(internal_permissions),
           Frame::HasTransientUserActivation(frame,
                                             true /* checkIfMainThread */),
           WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),
