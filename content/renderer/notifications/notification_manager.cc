@@ -26,7 +26,7 @@ using blink::WebString;
 namespace content {
 namespace {
 
-int CurrentWorkerId() {
+int NotificationWorkerId() {
   return WorkerThread::GetCurrentId();
 }
 
@@ -74,7 +74,7 @@ NotificationManager* NotificationManager::ThreadSpecificInstance(
 
   NotificationManager* manager =
       new NotificationManager(thread_safe_sender, notification_dispatcher);
-  if (CurrentWorkerId())
+  if (NotificationWorkerId())
     WorkerThread::AddObserver(manager);
   return manager;
 }
@@ -94,7 +94,7 @@ void NotificationManager::Show(
   GURL origin_gurl = url::Origin(origin).GetURL();
 
   int notification_id =
-      notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
+      notification_dispatcher_->GenerateNotificationId(NotificationWorkerId());
 
   active_page_notifications_[notification_id] = ActiveNotificationData(
       delegate, origin_gurl,
@@ -145,7 +145,7 @@ void NotificationManager::ShowPersistent(
   // TODO(peter): GenerateNotificationId is more of a request id. Consider
   // renaming the method in the NotificationDispatcher if this makes sense.
   int request_id =
-      notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
+      notification_dispatcher_->GenerateNotificationId(NotificationWorkerId());
 
   pending_show_notification_requests_.AddWithID(std::move(callbacks),
                                                 request_id);
@@ -177,7 +177,7 @@ void NotificationManager::GetNotifications(
   // TODO(peter): GenerateNotificationId is more of a request id. Consider
   // renaming the method in the NotificationDispatcher if this makes sense.
   int request_id =
-      notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
+      notification_dispatcher_->GenerateNotificationId(NotificationWorkerId());
 
   pending_get_notification_requests_.AddWithID(std::move(callbacks),
                                                request_id);

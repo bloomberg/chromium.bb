@@ -69,8 +69,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
       std::unordered_map<blink::WebIDBDatabaseCallbacks*,
                          std::unique_ptr<blink::WebIDBDatabaseCallbacks>>;
 
-  static int32_t CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
-
   std::unordered_set<WebIDBCursorImpl*> cursors_;
 
   // Holds pointers to the worker-thread owned state of IndexedDBCallbacksImpl
