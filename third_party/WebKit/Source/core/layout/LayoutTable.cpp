@@ -215,7 +215,8 @@ void LayoutTable::AddChild(LayoutObject* child, LayoutObject* before_child) {
   while (last_box && last_box->Parent()->IsAnonymous() &&
          !last_box->IsTableSection() && NeedsTableSection(last_box))
     last_box = last_box->Parent();
-  if (last_box && last_box->IsAnonymous() && !IsAfterContent(last_box)) {
+  if (last_box && last_box->IsAnonymous() && last_box->IsTablePart() &&
+      !IsAfterContent(last_box)) {
     if (before_child == last_box)
       before_child = last_box->SlowFirstChild();
     last_box->AddChild(child, before_child);
