@@ -117,7 +117,6 @@ EGLConfig GLSurfaceCast::GetConfig() {
 
 GLSurfaceCast::~GLSurfaceCast() {
   Destroy();
-  parent_->ChildDestroyed();
 }
 
 }  // namespace ui

@@ -16,20 +16,16 @@ class EglPlatformDefault : public CastEglPlatform {
     return desired;
   }
   bool InitializeHardware() override { return true; }
-  void ShutdownHardware() override {}
   void* GetEglLibrary() override { return nullptr; }
   void* GetGles2Library() override { return nullptr; }
   GLGetProcAddressProc GetGLProcAddressProc() override { return nullptr; }
   NativeDisplayType CreateDisplayType(const Size& size) override {
     return nullptr;
   }
-  void DestroyDisplayType(NativeDisplayType display_type) override {}
   NativeWindowType CreateWindow(NativeDisplayType display_type,
                                 const Size& size) override {
     return nullptr;
   }
-  void DestroyWindow(NativeWindowType window) override {}
-  bool MultipleSurfaceUnsupported() override { return false; }
 };
 
 }  // namespace
