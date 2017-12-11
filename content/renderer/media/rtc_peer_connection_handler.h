@@ -99,9 +99,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~RTCPeerConnectionHandler() override;
 
-  // Destroy all existing RTCPeerConnectionHandler objects.
-  static void DestructAllHandlers();
-
   void associateWithFrame(blink::WebLocalFrame* frame);
 
   // Initialize method only used for unit test.
