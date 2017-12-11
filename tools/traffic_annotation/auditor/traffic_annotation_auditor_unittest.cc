@@ -823,14 +823,10 @@ TEST_F(TrafficAnnotationAuditorTest, CheckCompleteAnnotations) {
   }
 
   // Check All.
-  unsigned int tests_count = annotations.size();
   auditor().SetExtractedAnnotationsForTesting(annotations);
   auditor().ClearErrorsForTesting();
   auditor().CheckAnnotationsContents();
   EXPECT_EQ(auditor().errors().size(), expected_errors_count);
-  // All annotations with errors should be purged.
-  EXPECT_EQ(auditor().extracted_annotations().size(),
-            tests_count - expected_errors_count);
 }
 
 // Tests if AnnotationInstance::IsCompletableWith works as expected.
@@ -920,7 +916,7 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationsXML) {
   TrafficAnnotationExporter exporter(source_path());
 
   EXPECT_TRUE(exporter.LoadAnnotationsXML());
-  EXPECT_TRUE(exporter.CheckReportItems());
+  EXPECT_TRUE(exporter.CheckAnnotationItems());
 }
 
 // Tests if downstream files depending on of Annotations.xml are updated.

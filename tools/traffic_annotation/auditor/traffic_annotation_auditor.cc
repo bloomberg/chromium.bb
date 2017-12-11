@@ -409,18 +409,6 @@ std::set<int> TrafficAnnotationAuditor::GetReservedIDsSet() {
   return reserved_ids;
 }
 
-void TrafficAnnotationAuditor::PurgeAnnotations(
-    const std::set<int>& hash_codes) {
-  extracted_annotations_.erase(
-      std::remove_if(extracted_annotations_.begin(),
-                     extracted_annotations_.end(),
-                     [&hash_codes](AnnotationInstance& annotation) {
-                       return base::ContainsKey(hash_codes,
-                                                annotation.unique_id_hash_code);
-                     }),
-      extracted_annotations_.end());
-}
-
 void TrafficAnnotationAuditor::CheckAllRequiredFunctionsAreAnnotated() {
   for (const CallInstance& call : extracted_calls_) {
     if (!call.is_annotated && !CheckIfCallCanBeUnannotated(call)) {
@@ -499,19 +487,15 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
   std::vector<AnnotationInstance*> partial_annotations;
   std::vector<AnnotationInstance*> completing_annotations;
   std::vector<AnnotationInstance> new_annotations;
-  std::set<int> to_be_purged;
 
   // Process complete annotations and separate the others.
   for (AnnotationInstance& instance : extracted_annotations_) {
-    bool keep_annotation = false;
     switch (instance.type) {
       case AnnotationInstance::Type::ANNOTATION_COMPLETE: {
         AuditorResult result = instance.IsComplete();
         if (result.IsOK())
           result = instance.IsConsistent();
-        if (result.IsOK())
-          keep_annotation = true;
-        else
+        if (!result.IsOK())
           errors_.push_back(result);
         break;
       }
@@ -521,8 +505,6 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
       default:
         completing_annotations.push_back(&instance);
     }
-    if (!keep_annotation)
-      to_be_purged.insert(instance.unique_id_hash_code);
   }
 
   std::set<AnnotationInstance*> used_completing_annotations;
@@ -571,7 +553,6 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
     }
   }
 
-  PurgeAnnotations(to_be_purged);
   if (new_annotations.size())
     extracted_annotations_.insert(extracted_annotations_.end(),
                                   new_annotations.begin(),
@@ -580,6 +561,7 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
 
 bool TrafficAnnotationAuditor::RunAllChecks() {
   std::set<int> deprecated_ids;
+
   if (!TrafficAnnotationExporter(source_path_)
            .GetDeprecatedHashCodes(&deprecated_ids)) {
     return false;
@@ -595,5 +577,6 @@ bool TrafficAnnotationAuditor::RunAllChecks() {
     CheckAnnotationsContents();
 
   CheckAllRequiredFunctionsAreAnnotated();
+
   return true;
 }
