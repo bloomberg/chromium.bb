@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -82,9 +83,16 @@ LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}
 
 void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason) {
   if (reason == USER_GESTURE) {
+#if defined(OS_MACOSX)
     // In the USER_GESTURE case, the icon will be in an active state so the
-    // bubble doesn't need an arrow.
-    SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
+    // bubble doesn't need an arrow (except on non-MD MacViews).
+    const bool hide_arrow =
+        ui::MaterialDesignController::IsSecondaryUiMaterial();
+#else
+    const bool hide_arrow = true;
+#endif
+    if (hide_arrow)
+      SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     GetWidget()->Show();
   } else {
     GetWidget()->ShowInactive();
