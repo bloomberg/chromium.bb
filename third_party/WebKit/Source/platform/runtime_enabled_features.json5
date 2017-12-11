@@ -315,11 +315,6 @@
       name: "DecodeToYUV",
       status: "experimental",
     },
-    // Remove this flag once we can remove /deep/ at M63.
-    {
-      name: "DeepCombinatorInCSSDynamicProfile",
-      status: "test",
-    },
     {
       name: "DeprecationReporting",
       status: "experimental",
@@ -955,11 +950,6 @@
     {
       name: "ShadowPiercingDescendantCombinator",
       status: "experimental",
-    },
-    // Remove this flag once we can remove ::shadow at M63.
-    {
-      name: "ShadowPseudoElementInCSSDynamicProfile",
-      status: "test",
     },
     {
       name: "ShapeDetection",
