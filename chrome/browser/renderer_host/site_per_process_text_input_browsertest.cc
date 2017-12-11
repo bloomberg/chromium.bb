@@ -434,7 +434,7 @@ class SitePerProcessTextInputManagerTest : public InProcessBrowserTest {
 // TextInputState.value reflects that of the focused input, i.e., the
 // TextInputManager is correctly tracking TextInputState across frames.
 // Flaky on chromeOS; https://crbug.com/704994.
-#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 #define MAYBE_TrackStateWhenSwitchingFocusedFrames \
   DISABLED_TrackStateWhenSwitchingFocusedFrames
 #else
@@ -883,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // This test makes sure browser correctly tracks focused editable element inside
 // each RenderFrameHost.
 // Test is flaky on chromeOS; https://crbug.com/705203.
-#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 #define MAYBE_TrackingFocusedElementForAllFrames \
   DISABLED_TrackingFocusedElementForAllFrames
 #else
@@ -974,7 +974,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // WebContents to clear focused element and verifies that there is no longer
 // a focused editable element on the page.
 // Test is flaky on ChromeOS; https://crbug.com/705203.
-#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 #define MAYBE_ClearFocusedElementOnPage DISABLED_ClearFocusedElementOnPage
 #else
 #define MAYBE_ClearFocusedElementOnPage ClearFocusedElementOnPage
