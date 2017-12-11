@@ -156,6 +156,7 @@ dev_list="\
   fakeroot
   flex
   fonts-ipafont
+  fonts-tlwg-garuda
   g++
   git-core
   git-svn
