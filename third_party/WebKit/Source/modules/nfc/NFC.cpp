@@ -744,7 +744,7 @@ ScriptPromise NFC::cancelPush(ScriptState* script_state, const String& target) {
 // https://w3c.github.io/web-nfc/#watching-for-content
 // https://w3c.github.io/web-nfc/#dom-nfc-watch
 ScriptPromise NFC::watch(ScriptState* script_state,
-                         MessageCallback* callback,
+                         V8MessageCallback* callback,
                          const NFCWatchOptions& options) {
   ScriptPromise promise = RejectIfNotSupported(script_state);
   if (!promise.IsEmpty())
@@ -759,7 +759,6 @@ ScriptPromise NFC::watch(ScriptState* script_state,
     }
   }
 
-  callback->SetScriptState(script_state);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   requests_.insert(resolver);
   auto watch_callback =
@@ -847,15 +846,18 @@ void NFC::OnConnectionError() {
 
 void NFC::OnWatch(const Vector<uint32_t>& ids,
                   device::mojom::blink::NFCMessagePtr message) {
+  if (!GetExecutionContext())
+    return;
+
   for (const auto& id : ids) {
     auto it = callbacks_.find(id);
     if (it != callbacks_.end()) {
-      MessageCallback* callback = it->value;
-      ScriptState* script_state = callback->GetScriptState();
+      V8MessageCallback* callback = it->value;
+      ScriptState* script_state = callback->CallbackRelevantScriptState();
       DCHECK(script_state);
       ScriptState::Scope scope(script_state);
       NFCMessage nfc_message = ToNFCMessage(script_state, message);
-      callback->handleMessage(nfc_message);
+      callback->InvokeAndReportException(nullptr, nfc_message);
     }
   }
 }
@@ -892,7 +894,7 @@ ScriptPromise NFC::RejectIfNotSupported(ScriptState* script_state) {
   return ScriptPromise();
 }
 
-void NFC::OnWatchRegistered(MessageCallback* callback,
+void NFC::OnWatchRegistered(V8MessageCallback* callback,
                             ScriptPromiseResolver* resolver,
                             uint32_t id,
                             device::mojom::blink::NFCErrorPtr error) {
@@ -922,6 +924,11 @@ void NFC::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+}
+
+void NFC::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  for (const auto& callback : callbacks_.Values())
+    visitor->TraceWrappers(callback);
 }
 
 }  // namespace blink

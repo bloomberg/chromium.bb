@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/modules/v8/string_or_array_buffer_or_nfc_message.h"
+#include "bindings/modules/v8/v8_message_callback.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
-#include "modules/nfc/MessageCallback.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/HashMap.h"
@@ -17,7 +17,6 @@
 
 namespace blink {
 
-class MessageCallback;
 class NFCPushOptions;
 using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
 class NFCWatchOptions;
@@ -49,7 +48,7 @@ class NFC final : public ScriptWrappable,
   ScriptPromise cancelPush(ScriptState*, const String&);
 
   // Starts watching for NFC messages that match NFCWatchOptions criteria.
-  ScriptPromise watch(ScriptState*, MessageCallback*, const NFCWatchOptions&);
+  ScriptPromise watch(ScriptState*, V8MessageCallback*, const NFCWatchOptions&);
 
   // Cancels watch operation with id.
   ScriptPromise cancelWatch(ScriptState*, long id);
@@ -62,6 +61,7 @@ class NFC final : public ScriptWrappable,
 
   // Interface required by garbage collection.
   void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   // Returns boolean indicating whether NFC is supported in this context. If
@@ -75,7 +75,7 @@ class NFC final : public ScriptWrappable,
   void OnRequestCompleted(ScriptPromiseResolver*,
                           device::mojom::blink::NFCErrorPtr);
   void OnConnectionError();
-  void OnWatchRegistered(MessageCallback*,
+  void OnWatchRegistered(V8MessageCallback*,
                          ScriptPromiseResolver*,
                          uint32_t id,
                          device::mojom::blink::NFCErrorPtr);
@@ -89,7 +89,8 @@ class NFC final : public ScriptWrappable,
   device::mojom::blink::NFCPtr nfc_;
   mojo::Binding<device::mojom::blink::NFCClient> client_binding_;
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
-  using WatchCallbacksMap = HeapHashMap<uint32_t, Member<MessageCallback>>;
+  using WatchCallbacksMap =
+      HeapHashMap<uint32_t, TraceWrapperMember<V8MessageCallback>>;
   WatchCallbacksMap callbacks_;
 };
 

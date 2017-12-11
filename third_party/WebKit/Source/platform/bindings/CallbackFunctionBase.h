@@ -38,15 +38,15 @@ class PLATFORM_EXPORT CallbackFunctionBase
   v8::Isolate* GetIsolate() {
     return callback_relevant_script_state_->GetIsolate();
   }
+  ScriptState* CallbackRelevantScriptState() {
+    return callback_relevant_script_state_.get();
+  }
 
  protected:
   explicit CallbackFunctionBase(v8::Local<v8::Function>);
 
   v8::Local<v8::Function> CallbackFunction() {
     return callback_function_.NewLocal(GetIsolate());
-  }
-  ScriptState* CallbackRelevantScriptState() {
-    return callback_relevant_script_state_.get();
   }
   ScriptState* IncumbentScriptState() { return incumbent_script_state_.get(); }
 

@@ -24,13 +24,14 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
 
   static NFC* nfc(Navigator&);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   explicit NavigatorNFC(Navigator&);
   static const char* SupplementName();
 
-  Member<NFC> nfc_;
+  TraceWrapperMember<NFC> nfc_;
 };
 
 }  // namespace blink
