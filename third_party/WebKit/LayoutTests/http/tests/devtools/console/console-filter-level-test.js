@@ -21,7 +21,10 @@
     console.warn("abc warn");
     console.warn("def warn");
   `);
-  Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
+  var consoleView = Console.ConsoleView.instance();
+  consoleView._setImmediatelyFilterMessagesForTest();
+  if (consoleView._isSidebarOpen)
+    consoleView._splitWidget._showHideSidebarButton.element.click();
 
   function dumpVisibleMessages() {
     var menuText = Console.ConsoleView.instance()._filter._levelMenuButton._text;
