@@ -14,3 +14,6 @@ typedef (DOMString or ArrayBuffer or NFCMessage) NFCPushMessage;
     [CallWith=ScriptState, MeasureAs=WebNFCWatch] Promise<long> watch (MessageCallback callback, optional NFCWatchOptions options);
     [CallWith=ScriptState, MeasureAs=WebNFCCancelWatch] Promise<void> cancelWatch (optional long id);
 };
+
+// https://w3c.github.io/web-nfc/#dom-messagecallback
+callback MessageCallback = void (NFCMessage message);

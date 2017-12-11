@@ -35,6 +35,9 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
   v8::Isolate* GetIsolate() {
     return callback_relevant_script_state_->GetIsolate();
   }
+  ScriptState* CallbackRelevantScriptState() {
+    return callback_relevant_script_state_.get();
+  }
 
  protected:
   CallbackInterfaceBase(v8::Local<v8::Object> callback_object,
@@ -46,9 +49,6 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
   // Returns true iff the callback interface is a single operation callback
   // interface and the callback interface type value is callable.
   bool IsCallbackObjectCallable() const { return is_callback_object_callable_; }
-  ScriptState* CallbackRelevantScriptState() {
-    return callback_relevant_script_state_.get();
-  }
   ScriptState* IncumbentScriptState() { return incumbent_script_state_.get(); }
 
  private:

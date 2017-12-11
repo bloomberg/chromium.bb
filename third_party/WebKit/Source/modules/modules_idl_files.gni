@@ -192,7 +192,6 @@ modules_idl_files =
           "mediastream/MediaStreamTrackEvent.idl",
           "mediastream/OverconstrainedError.idl",
           "netinfo/NetworkInformation.idl",
-          "nfc/MessageCallback.idl",
           "nfc/NFC.idl",
           "notifications/Notification.idl",
           "notifications/NotificationEvent.idl",
