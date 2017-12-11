@@ -1719,6 +1719,7 @@ if (enable_java_templates) {
             "--apk-pak-info-path",
             _apk_pak_info_path,
           ]
+          outputs += [ "$root_build_dir/$_apk_pak_info_path" ]
         }
       }
       if (defined(invoker.write_asset_list) && invoker.write_asset_list) {
