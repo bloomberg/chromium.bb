@@ -164,8 +164,8 @@ PP_VideoProfileDescription PP_FromVideoEncodeAcceleratorSupportedProfile(
   return pp_profile;
 }
 
-bool PP_HardwareAccelerationCompatible(bool accelerated,
-                                       PP_HardwareAcceleration requested) {
+bool PP_HardwareAccelerationCompatibleVideo(bool accelerated,
+                                            PP_HardwareAcceleration requested) {
   switch (requested) {
     case PP_HARDWAREACCELERATION_ONLY:
       return accelerated;
@@ -509,7 +509,7 @@ bool PepperVideoEncoderHost::IsInitializationValid(
     if (output_profile == profile.profile &&
         input_size.width <= profile.max_resolution.width &&
         input_size.height <= profile.max_resolution.height &&
-        PP_HardwareAccelerationCompatible(
+        PP_HardwareAccelerationCompatibleVideo(
             profile.hardware_accelerated == PP_TRUE, acceleration))
       return true;
   }
