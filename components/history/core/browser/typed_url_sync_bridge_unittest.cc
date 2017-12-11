@@ -455,7 +455,7 @@ class TypedURLSyncBridgeTest : public testing::Test {
     return bridge()->sync_metadata_database_;
   }
 
-  const RecordingModelTypeChangeProcessor& processor() { return *processor_; }
+  RecordingModelTypeChangeProcessor& processor() { return *processor_; }
 
  protected:
   base::MessageLoop message_loop_;
@@ -1564,6 +1564,12 @@ TEST_F(TypedURLSyncBridgeTest, LocalExpiredTypedUrlDoNotSync) {
   EXPECT_EQ(visits[1].visit_time.ToInternalValue(), url_specifics.visits(0));
   EXPECT_EQ(static_cast<const int>(visits[1].transition),
             url_specifics.visit_transitions(0));
+}
+
+// Tests that database error gets reported to processor as model type error.
+TEST_F(TypedURLSyncBridgeTest, DatabaseError) {
+  processor().ExpectError();
+  bridge()->OnDatabaseError();
 }
 
 }  // namespace history
