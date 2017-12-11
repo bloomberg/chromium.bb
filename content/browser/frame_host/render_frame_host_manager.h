@@ -765,6 +765,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // after reload.
   void EnsureRenderFrameHostVisibilityConsistent();
 
+  // Similarly to visibility, we need to ensure RenderWidgetHost and
+  // RenderWidget know about page focus.
+  void EnsureRenderFrameHostPageFocusConsistent();
+
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;
 
