@@ -22,7 +22,7 @@
 #include "base/win/scoped_hstring.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_image_retainer.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
@@ -74,8 +74,8 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
   if (!profile)
     return;
 
-  auto* display_service =
-      NotificationDisplayServiceFactory::GetForProfile(profile);
+  NotificationDisplayServiceImpl* display_service =
+      NotificationDisplayServiceImpl::GetForProfile(profile);
   display_service->ProcessNotificationOperation(operation, notification_type,
                                                 origin, notification_id,
                                                 action_index, reply, by_user);

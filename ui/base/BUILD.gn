@@ -53,6 +53,7 @@ buildflag_header("ui_features") {
   header = "ui_features.h"
   flags = [
     "ENABLE_HIDPI=$enable_hidpi",
+    "ENABLE_MESSAGE_CENTER=$enable_message_center",
     "ENABLE_MUS=$enable_mus",
     "USE_XKBCOMMON=$use_xkbcommon",
     "MAC_VIEWS_BROWSER=$mac_views_browser",

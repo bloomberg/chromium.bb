@@ -810,14 +810,10 @@ split_static_library("browser") {
     "notifications/alert_dispatcher_mac.h",
     "notifications/desktop_notification_profile_util.cc",
     "notifications/desktop_notification_profile_util.h",
-    "notifications/message_center_display_service.cc",
-    "notifications/message_center_display_service.h",
     "notifications/metrics/notification_metrics_logger.cc",
     "notifications/metrics/notification_metrics_logger.h",
     "notifications/metrics/notification_metrics_logger_factory.cc",
     "notifications/metrics/notification_metrics_logger_factory.h",
-    "notifications/native_notification_display_service.cc",
-    "notifications/native_notification_display_service.h",
     "notifications/non_persistent_notification_handler.cc",
     "notifications/non_persistent_notification_handler.h",
     "notifications/notification_channels_provider_android.cc",
@@ -828,6 +824,8 @@ split_static_library("browser") {
     "notifications/notification_display_service.h",
     "notifications/notification_display_service_factory.cc",
     "notifications/notification_display_service_factory.h",
+    "notifications/notification_display_service_impl.cc",
+    "notifications/notification_display_service_impl.h",
     "notifications/notification_handler.cc",
     "notifications/notification_handler.h",
     "notifications/notification_permission_context.cc",
@@ -3563,6 +3561,13 @@ split_static_library("browser") {
       "local_discovery/service_discovery_client_mdns.h",
       "printing/cloud_print/privet_traffic_detector.cc",
       "printing/cloud_print/privet_traffic_detector.h",
+    ]
+  }
+
+  if (enable_message_center) {
+    sources += [
+      "notifications/notification_platform_bridge_message_center.cc",
+      "notifications/notification_platform_bridge_message_center.h",
     ]
   }
 
