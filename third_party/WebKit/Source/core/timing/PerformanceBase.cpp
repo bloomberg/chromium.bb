@@ -568,7 +568,7 @@ void PerformanceBase::ResumeSuspendedObservers() {
 }
 
 void PerformanceBase::DeliverObservationsTimerFired(TimerBase*) {
-  PerformanceObservers observers;
+  decltype(active_observers_) observers;
   active_observers_.Swap(observers);
   for (const auto& observer : observers) {
     if (observer->ShouldBeSuspended())
@@ -621,6 +621,13 @@ void PerformanceBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(active_observers_);
   visitor->Trace(suspended_observers_);
   EventTargetWithInlineData::Trace(visitor);
+}
+
+void PerformanceBase::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
+  for (const auto& observer : observers_)
+    visitor->TraceWrappers(observer);
+  EventTargetWithInlineData::TraceWrappers(visitor);
 }
 
 }  // namespace blink

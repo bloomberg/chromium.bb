@@ -51,7 +51,8 @@ class CORE_EXPORT WorkerGlobalScopePerformance final
 
   static WorkerPerformance* performance(WorkerGlobalScope&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*);
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   explicit WorkerGlobalScopePerformance(WorkerGlobalScope&);
@@ -59,7 +60,7 @@ class CORE_EXPORT WorkerGlobalScopePerformance final
   WorkerPerformance* performance(WorkerGlobalScope*);
   static const char* SupplementName();
 
-  Member<WorkerPerformance> performance_;
+  TraceWrapperMember<WorkerPerformance> performance_;
 };
 
 }  // namespace blink
