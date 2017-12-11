@@ -85,6 +85,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   ExecutionContext* GetExecutionContext() const;
   ParentFrameTaskRunners* GetParentFrameTaskRunners() const;
   WorkerInspectorProxy* GetWorkerInspectorProxy() const;
+
+  // May return nullptr after termination is requested.
   WorkerThread* GetWorkerThread() const;
 
   bool AskedToTerminate() const { return asked_to_terminate_; }
