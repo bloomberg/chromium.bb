@@ -507,8 +507,14 @@ void ResourceLoader::DidReceiveResponse(
   StringBuilder cors_error_msg;
   resource_->SetCORSStatus(DetermineCORSStatus(response, cors_error_msg));
 
+  // Perform 'nosniff' checks against the original response instead of the 304
+  // response for a successful revalidation.
+  const ResourceResponse& nosniffed_response =
+      (resource_->IsCacheValidator() && response.HttpStatusCode() == 304)
+          ? resource_->GetResponse()
+          : response;
   ResourceRequestBlockedReason blocked_reason =
-      Context().CheckResponseNosniff(request_context, response);
+      Context().CheckResponseNosniff(request_context, nosniffed_response);
   if (blocked_reason != ResourceRequestBlockedReason::kNone) {
     HandleError(ResourceError::CancelledDueToAccessCheckError(response.Url(),
                                                               blocked_reason));
