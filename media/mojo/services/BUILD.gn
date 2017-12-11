@@ -224,6 +224,7 @@ source_set("unit_tests") {
 
   sources = [
     "mojo_audio_input_stream_unittest.cc",
+    "mojo_audio_output_stream_provider_unittest.cc",
     "mojo_audio_output_stream_unittest.cc",
     "mojo_jpeg_decode_accelerator_service_unittest.cc",
     "mojo_video_encode_accelerator_service_unittest.cc",
@@ -237,6 +238,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//media:test_support",
     "//media/mojo:test_support",
+    "//mojo/edk/system",
     "//services/metrics/public/cpp:ukm_builders",
     "//testing/gmock",
     "//testing/gtest",
