@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -165,6 +166,16 @@ using bookmarks::BookmarkNode;
 
 - (BOOL)prefersStatusBarHidden {
   return NO;
+}
+
+- (NSArray*)keyCommands {
+  __weak BookmarkHomeHandsetViewController* weakSelf = self;
+  return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
+                                   modifierFlags:Cr_UIKeyModifierNone
+                                           title:nil
+                                          action:^{
+                                            [weakSelf navigationBarCancel:nil];
+                                          }] ];
 }
 
 #pragma mark - Superclass overrides
