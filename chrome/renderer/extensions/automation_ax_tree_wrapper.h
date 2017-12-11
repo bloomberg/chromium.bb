@@ -5,7 +5,10 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_AUTOMATION_AX_TREE_WRAPPER_H_
 #define CHROME_RENDERER_EXTENSIONS_AUTOMATION_AX_TREE_WRAPPER_H_
 
+#include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_tree.h"
+
+struct ExtensionMsg_AccessibilityEventParams;
 
 namespace extensions {
 
@@ -13,10 +16,10 @@ class AutomationInternalCustomBindings;
 
 // A class that wraps one AXTree and all of the additional state
 // and helper methods needed to use it for the automation API.
-class AutomationAXTreeWrapper {
+class AutomationAXTreeWrapper : public ui::AXEventGenerator {
  public:
   AutomationAXTreeWrapper(int tree_id, AutomationInternalCustomBindings* owner);
-  ~AutomationAXTreeWrapper();
+  ~AutomationAXTreeWrapper() override;
 
   int32_t tree_id() const { return tree_id_; }
   ui::AXTree* tree() { return &tree_; }
@@ -28,11 +31,34 @@ class AutomationAXTreeWrapper {
   int32_t host_node_id() const { return host_node_id_; }
   void set_host_node_id(int32_t id) { host_node_id_ = id; }
 
+  // Called by AutomationInternalCustomBindings::OnAccessibilityEvent on
+  // the AutomationAXTreeWrapper instance for the correct tree corresponding
+  // to this event. Unserializes the tree update and calls back to
+  // AutomationInternalCustomBindings to fire any automation events needed.
+  bool OnAccessibilityEvent(const ExtensionMsg_AccessibilityEventParams& params,
+                            bool is_active_profile);
+
  private:
+  // AXEventGenerator overrides.
+  void OnNodeDataWillChange(ui::AXTree* tree,
+                            const ui::AXNodeData& old_node_data,
+                            const ui::AXNodeData& new_node_data) override;
+  void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
+  void OnAtomicUpdateFinished(ui::AXTree* tree,
+                              bool root_changed,
+                              const std::vector<Change>& changes) override;
+
+  // Given an event, return true if the event is handled by
+  // AXEventGenerator, and false if it's not. Temporary, this will be
+  // removed with the AXEventGenerator refactoring is complete.
+  bool IsEventTypeHandledByAXEventGenerator(api::automation::EventType) const;
+
   int32_t tree_id_;
   int32_t host_node_id_;
   ui::AXTree tree_;
   AutomationInternalCustomBindings* owner_;
+  std::vector<int> deleted_node_ids_;
+  std::vector<int> text_changed_node_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationAXTreeWrapper);
 };
