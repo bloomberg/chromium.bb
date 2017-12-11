@@ -851,3 +851,7 @@
 -PPAPINaClPNaClNonSfiTest.FileRef1
 -PPAPINaClPNaClNonSfiTest.FileRef2
 -PPAPINaClPNaClNonSfiTest.URLLoader1
+
+# Prevent tests from making real network requests.
+# https://crbug.com/793899
+-ExtensionApiTest.DoNotOpenUninstallUrlForBlacklistedExtensions
