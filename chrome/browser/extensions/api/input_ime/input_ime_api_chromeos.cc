@@ -25,6 +25,8 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace input_ime = extensions::api::input_ime;
 namespace DeleteSurroundingText =
@@ -627,7 +629,23 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context));
   if (input_components && event_router) {
-    event_router->RegisterImeExtension(extension->id(), *input_components);
+    if (extension->id() == event_router->GetUnloadedExtensionId()) {
+      // After the 1st-party IME extension being unloaded unexpectedly,
+      // we don't unregister the IME entries so after the extension being
+      // reloaded we should reactivate the engine so that the IME extension
+      // can receive the onActivate event to recover itself upon the
+      // unexpected unload.
+      InputMethodEngineBase* engine =
+          event_router->GetActiveEngine(extension->id());
+      // When extension is unloaded unexpectedly and reloaded, OS doesn't pass
+      // details.browser_context value in OnListenerAdded callback. So we need
+      // to reactivate engine here.
+      if (engine)
+        engine->Enable(engine->GetActiveComponentId());
+      event_router->SetUnloadedExtensionId("");
+    } else {
+      event_router->RegisterImeExtension(extension->id(), *input_components);
+    }
   }
 }
 
@@ -640,7 +658,34 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
     return;
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context));
-  if (event_router) {
+  if (!event_router)
+    return;
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  chromeos::ComponentExtensionIMEManager* comp_ext_ime_manager =
+      manager->GetComponentExtensionIMEManager();
+
+  if (comp_ext_ime_manager->IsWhitelistedExtension(extension->id())) {
+    // Since the first party ime is not allow to uninstall, and when it's
+    // unloaded unexpectedly, OS will recover the extension at once.
+    // So should not unregister the IMEs. Otherwise the IME icons on the
+    // desktop shelf will disappear. see bugs: 775507,788247,786273,761714.
+    // But still need to unload keyboard container document. Since ime extension
+    // need to re-render the document when it's recovered.
+    keyboard::KeyboardController* keyboard_controller =
+        keyboard::KeyboardController::GetInstance();
+    if (keyboard_controller) {
+      // Keyboard controller "Reload" method only reload current page when the
+      // url is changed. So we need unload the current page first. Then next
+      // engine->Enable() can refresh the inputview page correctly.
+      // Empties the content url and reload the controller to unload the
+      // current page.
+      // TODO(wuyingbing): Should add a new method to unload the document.
+      keyboard::SetOverrideContentUrl(GURL());
+      keyboard_controller->Reload();
+    }
+    event_router->SetUnloadedExtensionId(extension->id());
+  } else {
     event_router->UnregisterAllImes(extension->id());
   }
 }
