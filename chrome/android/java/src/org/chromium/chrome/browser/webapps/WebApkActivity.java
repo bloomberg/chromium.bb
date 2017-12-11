@@ -38,6 +38,20 @@ public class WebApkActivity extends WebappActivity {
 
     private static final String TAG = "cr_WebApkActivity";
 
+    /**
+     * Tries extracting the WebAPK short name from the passed in intent. Returns null if the intent
+     * does not launch a WebApkActivity. This method is slow. It makes several PackageManager calls.
+     */
+    public static String slowExtractNameFromIntentIfTargetIsWebApk(Intent intent) {
+        // Check for intents targetted at WebApkActivity and WebApkActivity0-9.
+        if (!intent.getComponent().getClassName().startsWith(WebApkActivity.class.getName())) {
+            return null;
+        }
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        return (info != null) ? info.shortName() : null;
+    }
+
     @Override
     protected boolean isVerified() {
         return true;
