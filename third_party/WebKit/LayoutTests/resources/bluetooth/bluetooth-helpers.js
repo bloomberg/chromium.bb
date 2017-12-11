@@ -27,6 +27,7 @@ function loadChromiumResources() {
     `${gen_prefix}/device/bluetooth/public/interfaces/uuid.mojom.js`,
     `${gen_prefix}/device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.js`,
     `${resource_prefix}/bluetooth/web-bluetooth-test.js`,
+    `${resource_prefix}/bluetooth/bluetooth-fake-adapter.js`,
   ]);
 }
 
@@ -215,46 +216,6 @@ function requestDeviceWithTrustedClick() {
       () => navigator.bluetooth.requestDevice.apply(navigator.bluetooth, args));
 }
 
-function assert_testRunner() {
-  assert_true(window.testRunner instanceof Object,
-    "window.testRunner is required for this test, it will not work manually.");
-}
-
-function setBluetoothManualChooser(enable) {
-  assert_testRunner();
-  testRunner.setBluetoothManualChooser(enable);
-}
-
-// Calls testRunner.getBluetoothManualChooserEvents() until it's returned
-// |expected_count| events. Or just once if |expected_count| is undefined.
-function getBluetoothManualChooserEvents(expected_count) {
-  assert_testRunner();
-  return new Promise((resolve, reject) => {
-    let events = [];
-    let accumulate_events = new_events => {
-      events.push(...new_events);
-      if (events.length >= expected_count) {
-        resolve(events);
-      } else {
-        testRunner.getBluetoothManualChooserEvents(accumulate_events);
-      }
-    };
-    testRunner.getBluetoothManualChooserEvents(accumulate_events);
-  });
-}
-
-function sendBluetoothManualChooserEvent(event, argument) {
-  assert_testRunner();
-  testRunner.sendBluetoothManualChooserEvent(event, argument);
-}
-
-function setBluetoothFakeAdapter(adapter_name) {
-  assert_testRunner();
-  return new Promise(resolve => {
-    testRunner.setBluetoothFakeAdapter(adapter_name, resolve);
-  });
-}
-
 // errorUUID(alias) returns a UUID with the top 32 bits of
 // '00000000-97e5-4cd7-b9f1-f5a427670c59' replaced with the bits of |alias|.
 // For example, errorUUID(0xDEADBEEF) returns
@@ -284,27 +245,6 @@ function assert_promise_rejects_with_message(promise, expected, description) {
   });
 }
 
-// Parses add-device(name)=id lines in
-// testRunner.getBluetoothManualChooserEvents() output, and exposes the name->id
-// mapping.
-class AddDeviceEventSet {
-  constructor() {
-    this._idsByName = new Map();
-    this._addDeviceRegex = /^add-device\(([^)]+)\)=(.+)$/;
-  }
-  assert_add_device_event(event, description) {
-    let match = this._addDeviceRegex.exec(event);
-    assert_true(!!match, event + " isn't an add-device event: " + description);
-    this._idsByName.set(match[1], match[2]);
-  }
-  has(name) {
-    return this._idsByName.has(name);
-  }
-  get(name) {
-    return this._idsByName.get(name);
-  }
-}
-
 function runGarbageCollection()
 {
   // Run gc() as a promise.
@@ -324,8 +264,6 @@ function eventPromise(target, type, options) {
     target.addEventListener(type, wrapper, options);
   });
 }
-
-
 
 // Helper function to assert that events are fired and a promise resolved
 // in the correct order.
