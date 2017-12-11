@@ -14,8 +14,8 @@ namespace gin {
 // we'd like to evolve the API to match window.console in browsers.
 class GIN_EXPORT Console {
  public:
-  static const char kModuleName[];
-  static v8::Local<v8::Value> GetModule(v8::Isolate* isolate);
+  static void Register(v8::Isolate* isolate,
+                       v8::Local<v8::ObjectTemplate> templ);
 };
 
 }  // namespace gin
