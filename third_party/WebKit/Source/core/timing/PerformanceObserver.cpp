@@ -113,6 +113,9 @@ bool PerformanceObserver::ShouldBeSuspended() const {
 void PerformanceObserver::Deliver() {
   DCHECK(!ShouldBeSuspended());
 
+  if (!GetExecutionContext())
+    return;
+
   if (performance_entries_.IsEmpty())
     return;
 

@@ -59,7 +59,6 @@ class UserTiming;
 class SubTaskAttribution;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
-using PerformanceObservers = HeapLinkedHashSet<Member<PerformanceObserver>>;
 
 class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
@@ -188,7 +187,8 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
                                    const SecurityOrigin&,
                                    ExecutionContext*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   static bool PassesTimingAllowCheck(const ResourceResponse&,
@@ -199,7 +199,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   void AddPaintTiming(PerformancePaintTiming::PaintType, double start_time);
 
  protected:
-  explicit PerformanceBase(double time_origin, scoped_refptr<WebTaskRunner>);
+  PerformanceBase(double time_origin, scoped_refptr<WebTaskRunner>);
 
   // Expect Performance to override this method,
   // WorkerPerformance doesn't have to override this.
@@ -228,9 +228,9 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   double time_origin_;
 
   PerformanceEntryTypeMask observer_filter_options_;
-  PerformanceObservers observers_;
-  PerformanceObservers active_observers_;
-  PerformanceObservers suspended_observers_;
+  HeapLinkedHashSet<TraceWrapperMember<PerformanceObserver>> observers_;
+  HeapLinkedHashSet<Member<PerformanceObserver>> active_observers_;
+  HeapLinkedHashSet<Member<PerformanceObserver>> suspended_observers_;
   TaskRunnerTimer<PerformanceBase> deliver_observations_timer_;
 };
 

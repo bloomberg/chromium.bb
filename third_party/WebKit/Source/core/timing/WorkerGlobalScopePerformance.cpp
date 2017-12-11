@@ -73,4 +73,10 @@ void WorkerGlobalScopePerformance::Trace(blink::Visitor* visitor) {
   Supplement<WorkerGlobalScope>::Trace(visitor);
 }
 
+void WorkerGlobalScopePerformance::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
+  visitor->TraceWrappers(performance_);
+  Supplement<WorkerGlobalScope>::TraceWrappers(visitor);
+}
+
 }  // namespace blink

@@ -25,6 +25,7 @@ class CORE_EXPORT DOMWindowPerformance final
   static Performance* performance(LocalDOMWindow&);
 
   void Trace(blink::Visitor*);
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   explicit DOMWindowPerformance(LocalDOMWindow&);
@@ -32,7 +33,7 @@ class CORE_EXPORT DOMWindowPerformance final
 
   Performance* performance();
 
-  Member<Performance> performance_;
+  TraceWrapperMember<Performance> performance_;
   DISALLOW_COPY_AND_ASSIGN(DOMWindowPerformance);
 };
 
