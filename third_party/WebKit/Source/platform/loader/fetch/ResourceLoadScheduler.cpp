@@ -331,12 +331,6 @@ void ResourceLoadScheduler::TrafficMonitor::ReportAll() {
   throttling_state_change_count.Count(throttling_state_change_count_);
 }
 
-ResourceLoadScheduler::TrafficReportHints&
-ResourceLoadScheduler::TrafficReportHints::InvalidInstance() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(TrafficReportHints, instance, ());
-  return instance;
-}
-
 constexpr ResourceLoadScheduler::ClientId
     ResourceLoadScheduler::kInvalidClientId;
 

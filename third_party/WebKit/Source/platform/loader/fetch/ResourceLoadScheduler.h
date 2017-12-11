@@ -28,16 +28,53 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
   void Trace(blink::Visitor* visitor) override {}
 };
 
-// The ResourceLoadScheduler provides a unified per-frame infrastructure to
-// schedule loading requests. It receives resource requests as
-// ResourceLoadSchedulerClient instances and calls Run() on them to dispatch
-// them possibly with additional throttling/scheduling. This also keeps track of
-// in-flight requests that are granted but are not released (by Release()) yet.
-// Note: If FetchContext can not provide a WebFrameScheduler, throttling and
-// scheduling functionalities will be completely disabled.
+// ResourceLoadScheduler provides a unified per-frame infrastructure to schedule
+// loading requests. When Request() is called with a
+// ResourceLoadSchedulerClient |client|, it calls |client|'s Run() method
+// synchronously or asynchronously to notify that |client| can start loading.
 //
-// TODO(yhirano): Provide the general algorithm and running experiments
-// information.
+// A ResourceLoadScheduler may initiate a new resource loading in the following
+// cases:
+// - When Request() is called
+// - When LoosenThrottlingPolicy() is called
+// - When SetPriority() is called
+// - When Release() is called with kReleaseAndSchedule
+// - When OnThrottlingStateChanged() is called
+//
+// A ResourceLoadScheduler determines if a request can be throttable or not, and
+// keeps track of pending throttable requests with priority information (i.e.,
+// ResourceLoadPriority accompanied with an integer called "intra-priority").
+// Here are the general principles:
+//  - A ResourceLoadScheduler does not throttle requests that cannot be
+//    throttable. It will call client's Run() method as soon as possible.
+//  - A ResourceLoadScheduler determines whether a request can be throttable by
+//    seeing Request()'s ThrottleOption argument and requests' priority
+//    information. Requests' priority information can be modified via
+//    SetPriority().
+//  - A ResourceLoadScheulder won't initiate a new resource loading which can
+//    be throttable when there are active resource loading activities more than
+//    its internal threshold.
+//
+// By default, ResourceLoadScheduler is disabled, which means it doesn't
+// throttle any resource loading requests.
+//
+// Here are running experiments (as of M65):
+//  - "ResourceLoadScheduler"
+//   - Resource loading requests are not at throttled when the frame is in
+//     the foreground tab.
+//   - Resource loading requests are throttled when the frame is in a
+//     background tab. It has different thresholds for the main frame
+//     and sub frames. When the frame has been background for more than five
+//     minutes, all throttable resource loading requests are throttled
+//     indefinitely (i.e., threshold is zero in such a circumstance).
+//  - RendererSideResourceScheduler
+//    ResourceLoadScheduler has two modes each of which has its own threshold.
+//    - Tight mode (used until the frame sees a <body> element):
+//      ResourceLoadScheduler considers a request throttable if its priority
+//      is less than |kHigh|.
+//    - Normal mode:
+//      ResourceLoadScheduler considers a request throttable if its priority
+//      is less than |kMedium|.
 class PLATFORM_EXPORT ResourceLoadScheduler final
     : public GarbageCollectedFinalized<ResourceLoadScheduler>,
       public WebFrameScheduler::Observer {
@@ -65,9 +102,11 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
           encoded_data_length_(encoded_data_length),
           decoded_body_length_(decoded_body_length) {}
 
-    // Takes a shared instance to represent an invalid instance that will be
+    // Returns the instance that represents an invalid report, which can be
     // used when a caller don't want to report traffic, i.e. on a failure.
-    static PLATFORM_EXPORT TrafficReportHints& InvalidInstance();
+    static PLATFORM_EXPORT TrafficReportHints InvalidInstance() {
+      return TrafficReportHints();
+    }
 
     bool IsValid() const { return valid_; }
 
