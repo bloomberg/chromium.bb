@@ -118,8 +118,6 @@ jumbo_source_set("common_sources") {
     "child_process_host.h",
     "child_process_host_delegate.cc",
     "child_process_host_delegate.h",
-    "color_suggestion.cc",
-    "color_suggestion.h",
     "common_param_traits.cc",
     "common_param_traits.h",
     "common_param_traits_macros.h",
@@ -359,6 +357,7 @@ mojom("interfaces") {
 
   sources = [
     "appcache_info.mojom",
+    "color_suggestion.mojom",
     "download_stream.mojom",
     "network_service.mojom",
     "network_service_test.mojom",

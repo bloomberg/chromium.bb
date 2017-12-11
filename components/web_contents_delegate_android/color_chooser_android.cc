@@ -9,11 +9,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/color_suggestion.h"
 #include "jni/ColorChooserAndroid_jni.h"
 #include "ui/android/window_android.h"
 
-using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 
 namespace web_contents_delegate_android {
@@ -21,7 +20,7 @@ namespace web_contents_delegate_android {
 ColorChooserAndroid::ColorChooserAndroid(
     content::WebContents* web_contents,
     SkColor initial_color,
-    const std::vector<content::ColorSuggestion>& suggestions)
+    const std::vector<content::mojom::ColorSuggestionPtr>& suggestions)
     : web_contents_(web_contents) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> suggestions_array;
@@ -31,9 +30,9 @@ ColorChooserAndroid::ColorChooserAndroid(
         env, suggestions.size());
 
     for (size_t i = 0; i < suggestions.size(); ++i) {
-      const content::ColorSuggestion& suggestion = suggestions[i];
-      ScopedJavaLocalRef<jstring> label = ConvertUTF16ToJavaString(
-          env, suggestion.label);
+      const auto& suggestion = *suggestions[i];
+      ScopedJavaLocalRef<jstring> label =
+          ConvertUTF8ToJavaString(env, suggestion.label);
       Java_ColorChooserAndroid_addToColorSuggestionArray(
           env, suggestions_array, i, suggestion.color, label);
     }

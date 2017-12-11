@@ -1128,7 +1128,7 @@ content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager(
 content::ColorChooser* DevToolsWindow::OpenColorChooser(
     WebContents* web_contents,
     SkColor initial_color,
-    const std::vector<content::ColorSuggestion>& suggestions) {
+    const std::vector<content::mojom::ColorSuggestionPtr>& suggestions) {
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 

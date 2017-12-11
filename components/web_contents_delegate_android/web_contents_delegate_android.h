@@ -53,7 +53,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   content::ColorChooser* OpenColorChooser(
       content::WebContents* source,
       SkColor color,
-      const std::vector<content::ColorSuggestion>& suggestions) override;
+      const std::vector<content::mojom::ColorSuggestionPtr>& suggestions)
+      override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
   void VisibleSecurityStateChanged(content::WebContents* source) override;
