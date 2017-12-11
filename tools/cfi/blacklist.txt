@@ -20,6 +20,7 @@ type:*BlockIUnknownMethods*
 type:*BlockRefType*
 type:*SkAutoTUnref*
 type:*SkBlockComRef*
+src:*atlcomcli.h
 
 # invalid downcasts for IPC messages
 # https://crbug.com/520760
@@ -30,6 +31,9 @@ type:*EtwTraceProvider*
 
 # b/64003142
 fun:*internal_default_instance*
+
+# CAtlArray<T> casts to uninitialized T*.
+src:*atlcoll.h
 
 #############################################################################
 # Base class's constructor accesses a derived class.
