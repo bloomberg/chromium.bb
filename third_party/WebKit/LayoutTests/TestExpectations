@@ -1373,6 +1373,8 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/text-baseline-vrl-006.xht [ Failure ]
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/text-baseline-vlr-007.xht [ Failure ]
 
+crbug.com/793792 [ Linux ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Pass Timeout ]
+
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
 crbug.com/443615 [ Linux Win ] external/wpt/css/css-shapes/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ Failure ]
 
