@@ -62,6 +62,7 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
       controller_(controller) {
   DCHECK(controller);
+  mouse_handler_ = std::make_unique<WebContentMouseHandler>(this, web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);
 }
 
@@ -71,6 +72,7 @@ void SaveCardBubbleViews::Show(DisplayReason reason) {
 
 void SaveCardBubbleViews::Hide() {
   controller_ = nullptr;
+  mouse_handler_ = nullptr;
   CloseBubble();
 }
 
@@ -226,8 +228,11 @@ bool SaveCardBubbleViews::ShouldShowWindowIcon() const {
 }
 
 void SaveCardBubbleViews::WindowClosing() {
-  if (controller_)
+  if (controller_) {
     controller_->OnBubbleClosed();
+    controller_ = nullptr;
+    mouse_handler_ = nullptr;
+  }
 }
 
 void SaveCardBubbleViews::LinkClicked(views::Link* source, int event_flags) {
