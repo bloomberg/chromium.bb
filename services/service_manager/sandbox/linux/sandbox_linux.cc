@@ -49,7 +49,7 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 
-#if defined(ANY_OF_AMTLU_SANITIZER)
+#if BUILDFLAG(USING_SANITIZER)
 #include <sanitizer/common_interface_defs.h>
 #endif
 
@@ -136,7 +136,7 @@ SandboxLinux::SandboxLinux()
   if (!setuid_sandbox_client_) {
     LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
   }
-#if defined(ANY_OF_AMTLU_SANITIZER)
+#if BUILDFLAG(USING_SANITIZER)
   sanitizer_args_ = std::make_unique<__sanitizer_sandbox_arguments>();
   *sanitizer_args_ = {0};
 #endif
@@ -157,7 +157,7 @@ SandboxLinux* SandboxLinux::GetInstance() {
 void SandboxLinux::PreinitializeSandbox() {
   CHECK(!pre_initialized_);
   seccomp_bpf_supported_ = false;
-#if defined(ANY_OF_AMTLU_SANITIZER)
+#if BUILDFLAG(USING_SANITIZER)
   // Sanitizers need to open some resources before the sandbox is enabled.
   // This should not fork, not launch threads, not open a directory.
   __sanitizer_sandbox_on_notify(sanitizer_args());
@@ -411,7 +411,8 @@ bool SandboxLinux::seccomp_bpf_with_tsync_supported() const {
 
 bool SandboxLinux::LimitAddressSpace(const std::string& process_type,
                                      const Options& options) {
-#if !defined(ANY_OF_AMTLU_SANITIZER)
+#if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(THREAD_SANITIZER) && !defined(LEAK_SANITIZER)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (SandboxTypeFromCommandLine(*command_line) == SANDBOX_TYPE_NO_SANDBOX) {
     return false;
@@ -475,7 +476,7 @@ bool SandboxLinux::LimitAddressSpace(const std::string& process_type,
   base::SysInfo::AmountOfVirtualMemory();
   return false;
 #endif  // !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) &&
-        // !defined(THREAD_SANITIZER)
+        // !defined(THREAD_SANITIZER) && !defined(LEAK_SANITIZER)
 }
 
 void SandboxLinux::StartBrokerProcess(
