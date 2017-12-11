@@ -31,13 +31,6 @@ class CastEglPlatform {
   // and must return false on failure.
   virtual bool InitializeHardware() = 0;
 
-  // DEPRECATED - ShutdownHardware may not be called in practice (helps speed
-  // up GPU process shutdown).  Implementations must handle cleanup/shutdown
-  // without an explicit cleanup API (this was already required anyway to handle
-  // GPU process crash scenarios correctly).
-  // TODO(halliwell): remove this API in next system update.
-  virtual void ShutdownHardware() = 0;
-
   // These three are called once after hardware is successfully initialized.
   // The implementation must load the libraries containing EGL and GLES2
   // bindings (return the pointer obtained from dlopen).  It must also supply
@@ -49,25 +42,10 @@ class CastEglPlatform {
   // Creates an EGLNativeDisplayType.  Called once when initializing display.
   virtual NativeDisplayType CreateDisplayType(const Size& size) = 0;
 
-  // DEPRECATED - destroys display type.  Currently not called, see notes on
-  // ShutdownHardware above.
-  // TODO(halliwell): remove if no longer needed.
-  virtual void DestroyDisplayType(NativeDisplayType display_type) = 0;
-
   // Creates an EGLNativeWindow using previously-created DisplayType.  Called
   // once when initializing display.
   virtual NativeWindowType CreateWindow(NativeDisplayType display_type,
                                         const Size& size) = 0;
-
-  // DEPRECATED - destroys window.  Currently not called, see notes on
-  // ShutdownHardware above.
-  // TODO(halliwell): remove if no longer needed.
-  virtual void DestroyWindow(NativeWindowType window) = 0;
-
-  // Specifies if creating multiple surfaces on a window is broken on this
-  // platform and a new window is required. This should return false on most
-  // implementations.
-  virtual bool MultipleSurfaceUnsupported() = 0;
 };
 
 }  // namespace chromecast
