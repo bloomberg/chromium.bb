@@ -4,6 +4,7 @@
 
 #include "pdf/document_loader.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -155,9 +156,8 @@ class TestURLLoader : public URLLoaderWrapper {
 
   bool IsMultipart() const override { return data_->is_multipart(); }
 
-  bool GetByteRange(int* start, int* end) const override {
+  bool GetByteRangeStart(int* start) const override {
     *start = data_->byte_range().start();
-    *end = data_->byte_range().end();
     return data_->byte_range().IsValid();
   }
 
