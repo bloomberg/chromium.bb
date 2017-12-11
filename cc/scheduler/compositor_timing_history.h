@@ -88,6 +88,10 @@ class CC_EXPORT CompositorTimingHistory {
   void WillInvalidateOnImplSide();
   void SetTreePriority(TreePriority priority);
 
+  base::TimeTicks begin_main_frame_sent_time() const {
+    return begin_main_frame_sent_time_;
+  }
+
  protected:
   void DidBeginMainFrame(base::TimeTicks begin_main_frame_end_time);
 
