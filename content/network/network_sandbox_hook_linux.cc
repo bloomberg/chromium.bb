@@ -9,23 +9,24 @@
 #include "base/sys_info.h"
 
 using sandbox::syscall_broker::BrokerFilePermission;
+using sandbox::syscall_broker::MakeBrokerCommandSet;
 
 namespace content {
 
 bool NetworkPreSandboxHook(service_manager::SandboxLinux::Options options) {
-  sandbox::syscall_broker::BrokerCommandSet command_set;
-  command_set.set(sandbox::syscall_broker::COMMAND_ACCESS);
-  command_set.set(sandbox::syscall_broker::COMMAND_OPEN);
-  command_set.set(sandbox::syscall_broker::COMMAND_READLINK);
-  command_set.set(sandbox::syscall_broker::COMMAND_RENAME);
-  command_set.set(sandbox::syscall_broker::COMMAND_STAT);
-
-  // TODO(tsepez): FIX THIS.
-  std::vector<BrokerFilePermission> file_permissions = {
-      BrokerFilePermission::ReadWriteCreateRecursive("/")};
-
+  // TODO(tsepez): remove universal permission under filesytem root.
   service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
-      command_set, std::move(file_permissions),
+      MakeBrokerCommandSet({
+          sandbox::syscall_broker::COMMAND_ACCESS,
+          sandbox::syscall_broker::COMMAND_MKDIR,
+          sandbox::syscall_broker::COMMAND_OPEN,
+          sandbox::syscall_broker::COMMAND_READLINK,
+          sandbox::syscall_broker::COMMAND_RENAME,
+          sandbox::syscall_broker::COMMAND_RMDIR,
+          sandbox::syscall_broker::COMMAND_STAT,
+          sandbox::syscall_broker::COMMAND_UNLINK,
+      }),
+      {BrokerFilePermission::ReadWriteCreateRecursive("/")},
       service_manager::SandboxLinux::PreSandboxHook(), options);
 
   return true;

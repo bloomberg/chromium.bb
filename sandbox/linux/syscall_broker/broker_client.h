@@ -10,11 +10,11 @@
 #include <unistd.h>
 
 #include "base/macros.h"
+#include "base/pickle.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 
 namespace sandbox {
-
 namespace syscall_broker {
 
 class BrokerPermissionList;
@@ -53,30 +53,51 @@ class BrokerClient {
   // doesn't support execute permissions.
   int Access(const char* pathname, int mode) const;
 
+  // Can be used in place of mkdir().
+  int Mkdir(const char* path, int mode) const;
+
   // Can be used in place of open().
   // The implementation only supports certain white listed flags and will
   // return -EPERM on other flags.
   int Open(const char* pathname, int flags) const;
 
-  // Can be used in place of stat()/stat64().
-  int Stat(const char* pathname, struct stat* sb);
-  int Stat64(const char* pathname, struct stat64* sb);
+  // Can be used in place of Readlink().
+  int Readlink(const char* path, char* buf, size_t bufsize) const;
 
   // Can be used in place of rename().
-  int Rename(const char* oldpath, const char* newpath);
+  int Rename(const char* oldpath, const char* newpath) const;
 
-  // Can be used in place of Readlink().
-  int Readlink(const char* path, char* buf, size_t bufsize);
+  // Can be used in place of rmdir().
+  int Rmdir(const char* path) const;
+
+  // Can be used in place of stat()/stat64().
+  int Stat(const char* pathname, struct stat* sb) const;
+  int Stat64(const char* pathname, struct stat64* sb) const;
+
+  // Can be used in place of rmdir().
+  int Unlink(const char* unlink) const;
 
  private:
+  int PathOnlySyscall(BrokerCommand syscall_type, const char* pathname) const;
+
   int PathAndFlagsSyscall(BrokerCommand syscall_type,
                           const char* pathname,
                           int flags) const;
+
+  int PathAndFlagsSyscallReturningFD(BrokerCommand syscall_type,
+                                     const char* pathname,
+                                     int flags) const;
 
   int StatFamilySyscall(BrokerCommand syscall_type,
                         const char* pathname,
                         void* result_ptr,
                         size_t expected_result_size) const;
+
+  ssize_t SendRecvRequest(const base::Pickle& request_pickle,
+                          int recvmsg_flags,
+                          uint8_t* reply_buf,
+                          size_t reply_buf_size,
+                          int* returned_fd) const;
 
   const BrokerPermissionList& broker_permission_list_;
   const BrokerChannel::EndPoint ipc_channel_;
