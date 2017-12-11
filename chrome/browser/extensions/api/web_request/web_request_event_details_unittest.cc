@@ -92,8 +92,9 @@ TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
     std::unique_ptr<net::URLRequest> request = context.CreateRequest(
         GURL("http://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
         TRAFFIC_ANNOTATION_FOR_TESTS);
-    WebRequestEventDetails details(request.get(), kFilter);
-    details.SetResponseHeaders(request.get(), headers.get());
+    WebRequestInfo request_info(request.get());
+    WebRequestEventDetails details(request_info, kFilter);
+    details.SetResponseHeaders(request_info, headers.get());
     std::unique_ptr<base::DictionaryValue> dict =
         details.GetFilteredDict(kFilter, nullptr, std::string(), false);
     base::Value* filtered_headers = dict->FindKey("responseHeaders");
@@ -114,8 +115,9 @@ TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
     std::unique_ptr<net::URLRequest> gaia_request = context.CreateRequest(
         GaiaUrls::GetInstance()->gaia_url(), net::DEFAULT_PRIORITY, nullptr,
         TRAFFIC_ANNOTATION_FOR_TESTS);
-    WebRequestEventDetails gaia_details(gaia_request.get(), kFilter);
-    gaia_details.SetResponseHeaders(gaia_request.get(), headers.get());
+    WebRequestInfo gaia_request_info(gaia_request.get());
+    WebRequestEventDetails gaia_details(gaia_request_info, kFilter);
+    gaia_details.SetResponseHeaders(gaia_request_info, headers.get());
     std::unique_ptr<base::DictionaryValue> dict =
         gaia_details.GetFilteredDict(kFilter, nullptr, std::string(), false);
     base::Value* filtered_headers = dict->FindKey("responseHeaders");

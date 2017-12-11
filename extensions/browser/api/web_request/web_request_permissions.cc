@@ -11,14 +11,13 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
-#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -103,39 +102,35 @@ bool IsSensitiveURL(const GURL& url,
 // static
 bool WebRequestPermissions::HideRequest(
     const extensions::InfoMap* extension_info_map,
-    const net::URLRequest* request,
-    extensions::ExtensionNavigationUIData* navigation_ui_data) {
-  // Hide requests from the Chrome WebStore App, signin process and WebUI.
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+    const extensions::WebRequestInfo& request) {
+  // Requests from <webview> are never hidden.
+  if (request.is_web_view)
+    return false;
 
   // Requests from the browser and webui get special protection for
   // clients*.google.com URLs.
-  bool is_request_from_browser = true;
+  bool is_request_from_browser = request.render_process_id == -1;
   bool is_request_from_webui_renderer = false;
-  if (info) {
-    int process_id = info->GetChildID();
-    // Never hide requests from guest processes.
-    if (extensions::WebViewRendererState::GetInstance()->IsGuest(process_id) ||
-        (navigation_ui_data && navigation_ui_data->is_web_view())) {
+  if (!is_request_from_browser) {
+    // Requests from guest processes are never hidden.
+    if (request.is_web_view)
       return false;
-    }
 
+    // Hide requests from the Chrome WebStore App, signin process, and WebUI.
     if (extension_info_map &&
         extension_info_map->process_map().Contains(extensions::kWebStoreAppId,
-                                                   process_id)) {
+                                                   request.render_process_id)) {
       return true;
     }
 
-    is_request_from_browser = false;
     is_request_from_webui_renderer =
         content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-            process_id);
+            request.render_process_id);
   }
 
-  const GURL& url = request->url();
-  return IsSensitiveURL(
-             url, is_request_from_browser || is_request_from_webui_renderer) ||
-         !HasWebRequestScheme(url);
+  return IsSensitiveURL(request.url, is_request_from_browser ||
+                                         is_request_from_webui_renderer) ||
+         !HasWebRequestScheme(request.url);
 }
 
 // static

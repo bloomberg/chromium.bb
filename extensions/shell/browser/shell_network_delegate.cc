@@ -4,9 +4,13 @@
 
 #include "extensions/shell/browser/shell_network_delegate.h"
 
+#include <map>
+
+#include "base/lazy_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
@@ -15,8 +19,17 @@
 namespace extensions {
 
 namespace {
+
 bool g_accept_all_cookies = true;
+
+using RequestMap = std::map<net::URLRequest*, std::unique_ptr<WebRequestInfo>>;
+base::LazyInstance<RequestMap>::Leaky g_requests = LAZY_INSTANCE_INITIALIZER;
+
+WebRequestInfo* GetWebRequestInfo(net::URLRequest* request) {
+  return g_requests.Get()[request].get();
 }
+
+}  // namespace
 
 ShellNetworkDelegate::ShellNetworkDelegate(
       void* browser_context, InfoMap* extension_info_map) {
@@ -34,8 +47,11 @@ int ShellNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
+  auto info = std::make_unique<WebRequestInfo>(request);
+  auto* raw_info = info.get();
+  g_requests.Get().emplace(request, std::move(info));
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      browser_context_, extension_info_map_.get(), request, callback, new_url);
+      browser_context_, extension_info_map_.get(), raw_info, callback, new_url);
 }
 
 int ShellNetworkDelegate::OnBeforeStartTransaction(
@@ -43,14 +59,16 @@ int ShellNetworkDelegate::OnBeforeStartTransaction(
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-      browser_context_, extension_info_map_.get(), request, callback, headers);
+      browser_context_, extension_info_map_.get(), GetWebRequestInfo(request),
+      callback, headers);
 }
 
 void ShellNetworkDelegate::OnStartTransaction(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
-      browser_context_, extension_info_map_.get(), request, headers);
+      browser_context_, extension_info_map_.get(), GetWebRequestInfo(request),
+      headers);
 }
 
 int ShellNetworkDelegate::OnHeadersReceived(
@@ -60,22 +78,26 @@ int ShellNetworkDelegate::OnHeadersReceived(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      browser_context_, extension_info_map_.get(), request, callback,
-      original_response_headers, override_response_headers,
+      browser_context_, extension_info_map_.get(), GetWebRequestInfo(request),
+      callback, original_response_headers, override_response_headers,
       allowed_unsafe_redirect_url);
 }
 
 void ShellNetworkDelegate::OnBeforeRedirect(
     net::URLRequest* request,
     const GURL& new_location) {
+  auto* info = GetWebRequestInfo(request);
+  info->AddResponseInfoFromURLRequest(request);
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
-      browser_context_, extension_info_map_.get(), request, new_location);
+      browser_context_, extension_info_map_.get(), info, new_location);
 }
 
 void ShellNetworkDelegate::OnResponseStarted(net::URLRequest* request,
                                              int net_error) {
+  auto* info = GetWebRequestInfo(request);
+  info->AddResponseInfoFromURLRequest(request);
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
-      browser_context_, extension_info_map_.get(), request, net_error);
+      browser_context_, extension_info_map_.get(), info, net_error);
 }
 
 void ShellNetworkDelegate::OnCompleted(net::URLRequest* request,
@@ -89,19 +111,22 @@ void ShellNetworkDelegate::OnCompleted(net::URLRequest* request,
             request->response_headers()->response_code());
     if (!is_redirect) {
       ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
-          browser_context_, extension_info_map_.get(), request, net_error);
+          browser_context_, extension_info_map_.get(),
+          GetWebRequestInfo(request), net_error);
     }
   } else {
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-        browser_context_, extension_info_map_.get(), request, started,
-        net_error);
+        browser_context_, extension_info_map_.get(), GetWebRequestInfo(request),
+        started, net_error);
   }
 }
 
 void ShellNetworkDelegate::OnURLRequestDestroyed(
     net::URLRequest* request) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnURLRequestDestroyed(
-      browser_context_, request);
+  auto it = g_requests.Get().find(request);
+  ExtensionWebRequestEventRouter::GetInstance()->OnRequestWillBeDestroyed(
+      browser_context_, it->second.get());
+  g_requests.Get().erase(it);
 }
 
 void ShellNetworkDelegate::OnPACScriptError(
@@ -115,8 +140,10 @@ ShellNetworkDelegate::OnAuthRequired(
     const net::AuthChallengeInfo& auth_info,
     const AuthCallback& callback,
     net::AuthCredentials* credentials) {
+  auto* info = GetWebRequestInfo(request);
+  info->AddResponseInfoFromURLRequest(request);
   return ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
-      browser_context_, extension_info_map_.get(), request, auth_info, callback,
+      browser_context_, extension_info_map_.get(), info, auth_info, callback,
       credentials);
 }
 

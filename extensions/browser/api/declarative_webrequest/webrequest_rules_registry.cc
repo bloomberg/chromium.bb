@@ -55,10 +55,10 @@ std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
   RuleSet result;
 
   WebRequestDataWithMatchIds request_data(&request_data_without_ids);
-  request_data.url_match_ids = url_matcher_.MatchURL(
-      request_data.data->request->url());
+  request_data.url_match_ids =
+      url_matcher_.MatchURL(request_data.data->request->url);
   request_data.first_party_url_match_ids =
-      url_matcher_.MatchURL(request_data.data->request->site_for_cookies());
+      url_matcher_.MatchURL(request_data.data->request->site_for_cookies);
 
   // 1st phase -- add all rules with some conditions without UrlFilter
   // attributes.

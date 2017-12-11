@@ -14,6 +14,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -83,10 +84,6 @@ TEST(WebRequestConditionTest, CreateCondition) {
   const GURL http_url("http://www.example.com");
   std::unique_ptr<net::URLRequest> match_request(context.CreateRequest(
       http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestData data(match_request.get(), ON_BEFORE_REQUEST);
-  WebRequestDataWithMatchIds request_data(&data);
-  request_data.url_match_ids = matcher.MatchURL(http_url);
-  EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
       match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
       NULL,   // context
@@ -98,15 +95,16 @@ TEST(WebRequestConditionTest, CreateCondition) {
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data
+  WebRequestInfo match_request_info(match_request.get());
+  WebRequestData data(&match_request_info, ON_BEFORE_REQUEST);
+  WebRequestDataWithMatchIds request_data(&data);
+  request_data.url_match_ids = matcher.MatchURL(http_url);
+  EXPECT_EQ(1u, request_data.url_match_ids.size());
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
   const GURL https_url("https://www.example.com");
   std::unique_ptr<net::URLRequest> wrong_resource_type(context.CreateRequest(
       https_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-  data.request = wrong_resource_type.get();
-  request_data.url_match_ids = matcher.MatchURL(http_url);
-  // Make sure IsFulfilled does not fail because of URL matching.
-  EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
       wrong_resource_type.get(), content::RESOURCE_TYPE_SUB_FRAME,
       NULL,   // context
@@ -118,6 +116,11 @@ TEST(WebRequestConditionTest, CreateCondition) {
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data
+  WebRequestInfo wrong_resource_type_request_info(wrong_resource_type.get());
+  data.request = &wrong_resource_type_request_info;
+  request_data.url_match_ids = matcher.MatchURL(http_url);
+  // Make sure IsFulfilled does not fail because of URL matching.
+  EXPECT_EQ(1u, request_data.url_match_ids.size());
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
 
@@ -150,7 +153,8 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   const GURL first_party_url("http://fpfc.example.com");
   std::unique_ptr<net::URLRequest> match_request(context.CreateRequest(
       http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestData data(match_request.get(), ON_BEFORE_REQUEST);
+  WebRequestInfo match_request_info(match_request.get());
+  WebRequestData data(&match_request_info, ON_BEFORE_REQUEST);
   WebRequestDataWithMatchIds request_data(&data);
   request_data.url_match_ids = matcher.MatchURL(http_url);
   EXPECT_EQ(0u, request_data.url_match_ids.size());
@@ -231,20 +235,21 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   std::unique_ptr<net::URLRequest> https_request(context.CreateRequest(
       GURL("https://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
+  WebRequestInfo https_request_info(https_request.get());
 
   // 1. A non-empty condition without UrlFilter attributes is fulfilled iff its
   //    attributes are fulfilled.
-  WebRequestData data(https_request.get(), ON_BEFORE_REQUEST);
+  WebRequestData data(&https_request_info, ON_BEFORE_REQUEST);
   EXPECT_FALSE(
       condition_no_url_false->IsFulfilled(WebRequestDataWithMatchIds(&data)));
 
-  data = WebRequestData(https_request.get(), ON_BEFORE_REQUEST);
+  data = WebRequestData(&https_request_info, ON_BEFORE_REQUEST);
   EXPECT_TRUE(
       condition_no_url_true->IsFulfilled(WebRequestDataWithMatchIds(&data)));
 
   // 2. An empty condition (in particular, without UrlFilter attributes) is
   //    always fulfilled.
-  data = WebRequestData(https_request.get(), ON_BEFORE_REQUEST);
+  data = WebRequestData(&https_request_info, ON_BEFORE_REQUEST);
   EXPECT_TRUE(condition_empty->IsFulfilled(WebRequestDataWithMatchIds(&data)));
 }
 
@@ -292,7 +297,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   net::TestURLRequestContext context;
   std::unique_ptr<net::URLRequest> http_request(context.CreateRequest(
       http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestData data(http_request.get(), ON_BEFORE_REQUEST);
+  WebRequestInfo http_request_info(http_request.get());
+  WebRequestData data(&http_request_info, ON_BEFORE_REQUEST);
   WebRequestDataWithMatchIds request_data(&data);
   request_data.url_match_ids = matcher.MatchURL(http_url);
   EXPECT_EQ(1u, request_data.url_match_ids.size());
@@ -304,7 +310,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   EXPECT_EQ(1u, request_data.url_match_ids.size());
   std::unique_ptr<net::URLRequest> https_request(context.CreateRequest(
       https_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-  data.request = https_request.get();
+  WebRequestInfo https_request_info(https_request.get());
+  data.request = &https_request_info;
   EXPECT_TRUE(result->IsFulfilled(*(request_data.url_match_ids.begin()),
                                   request_data));
 
@@ -315,7 +322,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   std::unique_ptr<net::URLRequest> https_foo_request(
       context.CreateRequest(https_foo_url, net::DEFAULT_PRIORITY, nullptr,
                             TRAFFIC_ANNOTATION_FOR_TESTS));
-  data.request = https_foo_request.get();
+  WebRequestInfo https_foo_request_info(https_foo_request.get());
+  data.request = &https_foo_request_info;
   EXPECT_FALSE(result->IsFulfilled(-1, request_data));
 }
 

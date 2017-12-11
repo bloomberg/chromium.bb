@@ -15,10 +15,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/url_request/url_request.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -66,13 +66,12 @@ flat_rule::ElementType GetElementType(content::ResourceType type) {
 }
 
 // Returns the flat_rule::ElementType for the given |request|.
-flat_rule::ElementType GetElementType(const net::URLRequest& request) {
-  if (request.url().SchemeIsWSOrWSS())
+flat_rule::ElementType GetElementType(const WebRequestInfo& request) {
+  if (request.url.SchemeIsWSOrWSS())
     return flat_rule::ElementType_WEBSOCKET;
 
-  const auto* info = content::ResourceRequestInfo::ForRequest(&request);
-  return info ? GetElementType(info->GetResourceType())
-              : flat_rule::ElementType_OTHER;
+  return request.type.has_value() ? GetElementType(request.type.value())
+                                  : flat_rule::ElementType_OTHER;
 }
 
 // Returns whether the request to |url| is third party to its |document_origin|.
@@ -151,7 +150,7 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
   ClearRendererCacheOnNavigation();
 }
 
-bool RulesetManager::ShouldBlockRequest(const net::URLRequest& request,
+bool RulesetManager::ShouldBlockRequest(const WebRequestInfo& request,
                                         bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -165,11 +164,11 @@ bool RulesetManager::ShouldBlockRequest(const net::URLRequest& request,
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Extensions.DeclarativeNetRequest.ShouldBlockRequestTime.AllExtensions");
 
-  const GURL& url = request.url();
   const url::Origin first_party_origin =
-      request.initiator().value_or(url::Origin());
+      request.initiator.value_or(url::Origin());
   const flat_rule::ElementType element_type = GetElementType(request);
-  const bool is_third_party = IsThirdPartyRequest(url, first_party_origin);
+  const bool is_third_party =
+      IsThirdPartyRequest(request.url, first_party_origin);
 
   for (const auto& ruleset_data : rulesets_) {
     const bool evaluate_ruleset =
@@ -179,14 +178,14 @@ bool RulesetManager::ShouldBlockRequest(const net::URLRequest& request,
     // TODO(crbug.com/777714): Check host permissions etc.
     if (evaluate_ruleset &&
         ruleset_data.matcher->ShouldBlockRequest(
-            url, first_party_origin, element_type, is_third_party)) {
+            request.url, first_party_origin, element_type, is_third_party)) {
       return true;
     }
   }
   return false;
 }
 
-bool RulesetManager::ShouldRedirectRequest(const net::URLRequest& request,
+bool RulesetManager::ShouldRedirectRequest(const WebRequestInfo& request,
                                            bool is_incognito_context,
                                            GURL* redirect_url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -205,9 +204,9 @@ bool RulesetManager::ShouldRedirectRequest(const net::URLRequest& request,
       "Extensions.DeclarativeNetRequest.ShouldRedirectRequestTime."
       "AllExtensions");
 
-  const GURL& url = request.url();
+  const GURL& url = request.url;
   const url::Origin first_party_origin =
-      request.initiator().value_or(url::Origin());
+      request.initiator.value_or(url::Origin());
   const bool is_third_party = IsThirdPartyRequest(url, first_party_origin);
 
   // This iterates in decreasing order of extension installation time. Hence

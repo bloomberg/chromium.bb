@@ -25127,6 +25127,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.WebRequestEventFoundFrame" units="boolean">
+  <obsolete>
+    Deprecated as of 11/2017. No longer relevant after refactoring.
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Whether or not the render frame lookup for a given webRequest event

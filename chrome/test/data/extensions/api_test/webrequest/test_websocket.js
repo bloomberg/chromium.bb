@@ -63,6 +63,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              ip: '127.0.0.1',
               fromCache: false,
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
@@ -179,6 +180,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              ip: '127.0.0.1',
               fromCache: false,
               initiator: getDomain(initiators.WEB_INITIATED),
               statusCode: 101,

@@ -26,6 +26,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
@@ -70,9 +71,9 @@ class URLRequestMonitor : public RulesetManager::TestObserver {
 
  private:
   // RulesetManager::TestObserver implementation.
-  void OnShouldBlockRequest(const net::URLRequest& request,
+  void OnShouldBlockRequest(const WebRequestInfo& request,
                             bool is_incognito_context) override {
-    if (request.url() == url_)
+    if (request.url == url_)
       GetAndResetRequestSeen(true);
   }
 
