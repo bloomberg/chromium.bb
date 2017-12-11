@@ -1195,6 +1195,24 @@ static void JNI_PrefServiceBridge_UpdateUserAcceptLanguages(
   }
 }
 
+static ScopedJavaLocalRef<jstring>
+JNI_PrefServiceBridge_GetDownloadDefaultDirectory(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return ConvertUTF8ToJavaString(
+      env, GetPrefService()->GetString(prefs::kDownloadDefaultDirectory));
+}
+
+static void JNI_PrefServiceBridge_SetDownloadDefaultDirectory(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& directory) {
+  std::string path(ConvertJavaStringToUTF8(env, directory));
+  base::FilePath file_path;
+  GetPrefService()->SetFilePath(prefs::kDownloadDefaultDirectory,
+                                file_path.Append(FILE_PATH_LITERAL(path)));
+}
+
 const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
   DCHECK_GE(pref_index, 0);
   DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);
