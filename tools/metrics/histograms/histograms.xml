@@ -1340,6 +1340,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.PhotoPicker.ExifOrientation" enum="ExifOrientation">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    Records whether the EXIF orientation directive is present and what it is set
+    to. Collected once per decoded image, but only on Android N and above (and
+    when no IO error occurs).
+  </summary>
+</histogram>
+
 <histogram name="Android.PhotoPicker.ImageByteCount" units="KB">
   <owner>finnur@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
