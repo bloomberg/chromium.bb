@@ -20,7 +20,7 @@ template <typename T>
 struct CloneTraits<WTF::Vector<T>, false> {
   static WTF::Vector<T> Clone(const WTF::Vector<T>& input) {
     WTF::Vector<T> result;
-    result.reserveCapacity(input.size());
+    result.ReserveCapacity(input.size());
     for (const auto& element : input)
       result.push_back(mojo::Clone(element));
 
@@ -32,9 +32,9 @@ template <typename K, typename V>
 struct CloneTraits<WTF::HashMap<K, V>, false> {
   static WTF::HashMap<K, V> Clone(const WTF::HashMap<K, V>& input) {
     WTF::HashMap<K, V> result;
-    auto input_end = input.end();
-    for (auto it = input.begin(); it != input_end; ++it)
-      result.add(mojo::Clone(it->key), mojo::Clone(it->value));
+    for (const auto& element : input)
+      result.insert(mojo::Clone(element.key), mojo::Clone(element.value));
+
     return result;
   }
 };
@@ -45,7 +45,7 @@ struct EqualsTraits<WTF::Vector<T>, false> {
     if (a.size() != b.size())
       return false;
     for (size_t i = 0; i < a.size(); ++i) {
-      if (!Equals(a[i], b[i]))
+      if (!mojo::Equals(a[i], b[i]))
         return false;
     }
     return true;
@@ -63,7 +63,7 @@ struct EqualsTraits<WTF::HashMap<K, V>, false> {
 
     for (auto iter = a.begin(); iter != a_end; ++iter) {
       auto b_iter = b.find(iter->key);
-      if (b_iter == b_end || !Equals(iter->value, b_iter->value))
+      if (b_iter == b_end || !mojo::Equals(iter->value, b_iter->value))
         return false;
     }
     return true;

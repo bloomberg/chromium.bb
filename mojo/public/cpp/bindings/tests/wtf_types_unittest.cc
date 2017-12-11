@@ -237,5 +237,20 @@ TEST_F(WTFTypesTest, SendStringMap) {
   }
 }
 
+TEST_F(WTFTypesTest, NestedStruct_CloneAndEquals) {
+  auto a = blink::TestWTFStructWrapper::New();
+  a->nested_struct = blink::TestWTFStruct::New("foo", 1);
+  a->array_struct.push_back(blink::TestWTFStruct::New("bar", 2));
+  a->array_struct.push_back(blink::TestWTFStruct::New("bar", 3));
+  a->map_struct.insert(blink::TestWTFStruct::New("baz", 4),
+                       blink::TestWTFStruct::New("baz", 5));
+  auto b = a.Clone();
+  EXPECT_EQ(a, b);
+  EXPECT_EQ(2u, b->array_struct.size());
+  EXPECT_EQ(1u, b->map_struct.size());
+  EXPECT_NE(blink::TestWTFStructWrapper::New(), a);
+  EXPECT_NE(blink::TestWTFStructWrapper::New(), b);
+}
+
 }  // namespace test
 }  // namespace mojo

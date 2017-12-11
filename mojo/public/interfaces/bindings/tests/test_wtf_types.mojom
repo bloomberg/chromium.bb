@@ -33,6 +33,12 @@ struct TestWTFStruct {
   int32 integer;
 };
 
+struct TestWTFStructWrapper {
+  TestWTFStruct nested_struct;
+  array<TestWTFStruct> array_struct;
+  map<TestWTFStruct, TestWTFStruct> map_struct;
+};
+
 interface TestWTF {
   enum NestedEnum {
     E0,
