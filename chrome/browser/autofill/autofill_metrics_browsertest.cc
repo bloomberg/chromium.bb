@@ -255,8 +255,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
   }
 }
 
+// Flaky test, see crbug.com/793578
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
-                       CorrectSourceForUnownedAddressCheckout) {
+                       DISABLED_CorrectSourceForUnownedAddressCheckout) {
   GURL main_frame_url =
       https_server_->GetURL("a.com", "/autofill_unowned_address_checkout.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
