@@ -289,10 +289,7 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentAppInfo(
   StoredPaymentAppProto payment_app_proto;
   payment_app_proto.set_registration_id(registration->id());
   payment_app_proto.set_scope(registration->pattern().spec());
-  payment_app_proto.set_name(
-      app_info->name.empty()
-          ? GURL(payment_app_proto.scope()).GetOrigin().spec()
-          : app_info->name);
+  payment_app_proto.set_name(app_info->name);
   payment_app_proto.set_icon(app_info->icon);
   payment_app_proto.set_prefer_related_applications(
       app_info->prefer_related_applications);
