@@ -276,8 +276,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     test_args = None
     if config_lib.IsCQType(self._run.config.build_type):
-      # TODO (xixuan): Turn it on for CQ later.
-      test_args = {'fast': 'False'}
+      test_args = {'fast': 'True'}
 
     cmd_result = commands.RunHWTestSuite(
         build, self.suite_config.suite, self._board_name,
