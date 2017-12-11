@@ -796,10 +796,6 @@ void AutomationInternalCustomBindings::Invalidate() {
   if (message_filter_)
     message_filter_->Detach();
 
-  // Delete the tree wrappers quickly by first clearing their delegates so
-  // we don't get a callback for every node being deleted.
-  for (auto& iter : tree_id_to_tree_wrapper_map_)
-    iter.second->tree()->SetDelegate(nullptr);
   tree_id_to_tree_wrapper_map_.clear();
 }
 
@@ -1209,9 +1205,7 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
     tree_wrapper = iter->second.get();
   }
 
-  // Update the internal state whether it's the active profile or not.
-  deleted_node_ids_.clear();
-  if (!tree_wrapper->tree()->Unserialize(params.update)) {
+  if (!tree_wrapper->OnAccessibilityEvent(params, is_active_profile)) {
     LOG(ERROR) << tree_wrapper->tree()->error();
     base::ListValue args;
     args.AppendInteger(tree_id);
@@ -1219,27 +1213,6 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
         "automationInternal.onAccessibilityTreeSerializationError", &args,
         nullptr, context());
     return;
-  }
-
-  // Don't send any events if it's not the active profile.
-  if (!is_active_profile)
-    return;
-
-  SendNodesRemovedEvent(tree_wrapper->tree(), deleted_node_ids_);
-  deleted_node_ids_.clear();
-
-  {
-    auto event_params = base::MakeUnique<base::DictionaryValue>();
-    event_params->SetInteger("treeID", params.tree_id);
-    event_params->SetInteger("targetID", params.id);
-    event_params->SetString("eventType", ToString(params.event_type));
-    event_params->SetString("eventFrom", ToString(params.event_from));
-    event_params->SetInteger("mouseX", params.mouse_location.x());
-    event_params->SetInteger("mouseY", params.mouse_location.y());
-    base::ListValue args;
-    args.Append(std::move(event_params));
-    bindings_system_->DispatchEventInContext(
-        "automationInternal.onAccessibilityEvent", &args, nullptr, context());
   }
 }
 
@@ -1256,109 +1229,6 @@ void AutomationInternalCustomBindings::OnAccessibilityLocationChange(
   node->SetLocation(params.new_location.offset_container_id,
                     params.new_location.bounds,
                     params.new_location.transform.get());
-}
-
-void AutomationInternalCustomBindings::OnNodeDataWillChange(
-    ui::AXTree* tree,
-    const ui::AXNodeData& old_node_data,
-    const ui::AXNodeData& new_node_data) {
-  if (old_node_data.GetStringAttribute(ui::AX_ATTR_NAME) !=
-      new_node_data.GetStringAttribute(ui::AX_ATTR_NAME))
-    text_changed_node_ids_.push_back(new_node_data.id);
-}
-
-void AutomationInternalCustomBindings::OnTreeDataChanged(
-    ui::AXTree* tree,
-    const ui::AXTreeData& old_tree_data,
-    const ui::AXTreeData& new_tree_data) {}
-
-void AutomationInternalCustomBindings::OnNodeWillBeDeleted(ui::AXTree* tree,
-                                                           ui::AXNode* node) {
-  SendTreeChangeEvent(
-      api::automation::TREE_CHANGE_TYPE_NODEREMOVED,
-      tree, node);
-  deleted_node_ids_.push_back(node->id());
-}
-
-void AutomationInternalCustomBindings::OnSubtreeWillBeDeleted(
-    ui::AXTree* tree,
-    ui::AXNode* node) {
-  // This isn't strictly needed, as OnNodeWillBeDeleted will already be
-  // called. We could send a JS event for this only if it turns out to
-  // be needed for something.
-}
-
-void AutomationInternalCustomBindings::OnNodeWillBeReparented(
-    ui::AXTree* tree,
-    ui::AXNode* node) {
-  // Don't do anything here since the node will soon go away and be re-created.
-}
-
-void AutomationInternalCustomBindings::OnSubtreeWillBeReparented(
-    ui::AXTree* tree,
-    ui::AXNode* node) {
-  // Don't do anything here since the node will soon go away and be re-created.
-}
-
-void AutomationInternalCustomBindings::OnNodeCreated(ui::AXTree* tree,
-                                                     ui::AXNode* node) {
-  // Not needed, this is called in the middle of an update so it's not
-  // safe to trigger JS from here. Wait for the notification in
-  // OnAtomicUpdateFinished instead.
-}
-
-void AutomationInternalCustomBindings::OnNodeReparented(ui::AXTree* tree,
-                                                        ui::AXNode* node) {
-  // Not needed, this is called in the middle of an update so it's not
-  // safe to trigger JS from here. Wait for the notification in
-  // OnAtomicUpdateFinished instead.
-}
-
-void AutomationInternalCustomBindings::OnNodeChanged(ui::AXTree* tree,
-                                                     ui::AXNode* node) {
-  // Not needed, this is called in the middle of an update so it's not
-  // safe to trigger JS from here. Wait for the notification in
-  // OnAtomicUpdateFinished instead.
-}
-
-void AutomationInternalCustomBindings::OnAtomicUpdateFinished(
-    ui::AXTree* tree,
-    bool root_changed,
-    const std::vector<ui::AXTreeDelegate::Change>& changes) {
-  auto iter = axtree_to_tree_wrapper_map_.find(tree);
-  if (iter == axtree_to_tree_wrapper_map_.end())
-    return;
-
-  for (const auto change : changes) {
-    ui::AXNode* node = change.node;
-    switch (change.type) {
-      case NODE_CREATED:
-        SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_NODECREATED,
-            tree, node);
-        break;
-      case SUBTREE_CREATED:
-        SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_SUBTREECREATED,
-            tree, node);
-        break;
-      case NODE_CHANGED:
-        SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_NODECHANGED,
-            tree, node);
-        break;
-      // Unhandled.
-      case NODE_REPARENTED:
-      case SUBTREE_REPARENTED:
-        break;
-    }
-  }
-
-  for (int id : text_changed_node_ids_) {
-    SendTreeChangeEvent(api::automation::TREE_CHANGE_TYPE_TEXTCHANGED, tree,
-                        tree->GetFromId(id));
-  }
-  text_changed_node_ids_.clear();
 }
 
 void AutomationInternalCustomBindings::SendTreeChangeEvent(
@@ -1431,6 +1301,23 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
     bindings_system_->DispatchEventInContext("automationInternal.onTreeChange",
                                              &args, nullptr, context());
   }
+}
+
+void AutomationInternalCustomBindings::SendAutomationEvent(
+    const ExtensionMsg_AccessibilityEventParams& params,
+    int target_id,
+    api::automation::EventType event_type) {
+  auto event_params = base::MakeUnique<base::DictionaryValue>();
+  event_params->SetInteger("treeID", params.tree_id);
+  event_params->SetInteger("targetID", target_id);
+  event_params->SetString("eventType", api::automation::ToString(event_type));
+  event_params->SetString("eventFrom", ToString(params.event_from));
+  event_params->SetInteger("mouseX", params.mouse_location.x());
+  event_params->SetInteger("mouseY", params.mouse_location.y());
+  base::ListValue args;
+  args.Append(std::move(event_params));
+  bindings_system_->DispatchEventInContext(
+      "automationInternal.onAccessibilityEvent", &args, nullptr, context());
 }
 
 void AutomationInternalCustomBindings::SendChildTreeIDEvent(ui::AXTree* tree,
