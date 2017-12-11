@@ -190,8 +190,6 @@ modules_idl_files =
           "mediastream/MediaStreamEvent.idl",
           "mediastream/MediaStreamTrack.idl",
           "mediastream/MediaStreamTrackEvent.idl",
-          "mediastream/NavigatorUserMediaErrorCallback.idl",
-          "mediastream/NavigatorUserMediaSuccessCallback.idl",
           "mediastream/OverconstrainedError.idl",
           "netinfo/NetworkInformation.idl",
           "nfc/MessageCallback.idl",

@@ -16,8 +16,6 @@
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
 #include "modules/mediastream/NavigatorMediaStream.h"
-#include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
-#include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/bindings/ScriptState.h"
@@ -30,41 +28,32 @@ namespace blink {
 
 namespace {
 
-class PromiseSuccessCallback final : public NavigatorUserMediaSuccessCallback {
+class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  public:
-  explicit PromiseSuccessCallback(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
-  ~PromiseSuccessCallback() {}
-
-  void handleEvent(MediaStream* stream) { resolver_->Resolve(stream); }
-
-  virtual void Trace(blink::Visitor* visitor) {
-    visitor->Trace(resolver_);
-    NavigatorUserMediaSuccessCallback::Trace(visitor);
+  static PromiseResolverCallbacks* Create(ScriptPromiseResolver* resolver) {
+    return new PromiseResolverCallbacks(resolver);
   }
 
- private:
-  Member<ScriptPromiseResolver> resolver_;
-};
+  ~PromiseResolverCallbacks() override = default;
 
-class PromiseErrorCallback final : public NavigatorUserMediaErrorCallback {
- public:
-  explicit PromiseErrorCallback(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
-  ~PromiseErrorCallback() {}
-
-  void handleEvent(DOMExceptionOrOverconstrainedError error) {
+  void OnSuccess(ScriptWrappable* callback_this_value,
+                 MediaStream* stream) override {
+    resolver_->Resolve(stream);
+  }
+  void OnError(ScriptWrappable* callback_this_value,
+               DOMExceptionOrOverconstrainedError error) override {
     resolver_->Reject(error);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(resolver_);
-    NavigatorUserMediaErrorCallback::Trace(visitor);
+    UserMediaRequest::Callbacks::Trace(visitor);
   }
 
  private:
+  explicit PromiseResolverCallbacks(ScriptPromiseResolver* resolver)
+      : resolver_(resolver) {}
+
   Member<ScriptPromiseResolver> resolver_;
 };
 
@@ -110,11 +99,8 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
                                          const MediaStreamConstraints& options,
                                          ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-
-  NavigatorUserMediaSuccessCallback* success_callback =
-      new PromiseSuccessCallback(resolver);
-  NavigatorUserMediaErrorCallback* error_callback =
-      new PromiseErrorCallback(resolver);
+  PromiseResolverCallbacks* callbacks =
+      PromiseResolverCallbacks::Create(resolver);
 
   Document* document = ToDocument(ExecutionContext::From(script_state));
   UserMediaController* user_media =
@@ -127,9 +113,8 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
                              "detached window?"));
 
   MediaErrorState error_state;
-  UserMediaRequest* request =
-      UserMediaRequest::Create(document, user_media, options, success_callback,
-                               error_callback, error_state);
+  UserMediaRequest* request = UserMediaRequest::Create(
+      document, user_media, options, callbacks, error_state);
   if (!request) {
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {
