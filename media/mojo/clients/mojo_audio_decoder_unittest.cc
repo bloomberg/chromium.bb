@@ -142,13 +142,23 @@ class MojoAudioDecoderTest : public ::testing::Test {
 
   void Initialize() { InitializeAndExpect(true); }
 
+  void Decode() {
+    scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
+    mojo_audio_decoder_->Decode(
+        buffer,
+        base::Bind(&MojoAudioDecoderTest::OnDecoded, base::Unretained(this)));
+  }
+
   void Reset() {
+    mojo_audio_decoder_->Reset(
+        base::Bind(&MojoAudioDecoderTest::OnReset, base::Unretained(this)));
+  }
+
+  void ResetAndWaitUntilFinish() {
     DVLOG(1) << __func__;
     EXPECT_CALL(*this, OnReset())
         .WillOnce(InvokeWithoutArgs(this, &MojoAudioDecoderTest::QuitLoop));
-
-    mojo_audio_decoder_->Reset(
-        base::Bind(&MojoAudioDecoderTest::OnReset, base::Unretained(this)));
+    Reset();
     RunLoop();
   }
 
@@ -184,11 +194,15 @@ class MojoAudioDecoderTest : public ::testing::Test {
     Decode();
   }
 
-  void Decode() {
-    scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
-    mojo_audio_decoder_->Decode(
-        buffer,
-        base::Bind(&MojoAudioDecoderTest::OnDecoded, base::Unretained(this)));
+  void DecodeAndReset() {
+    InSequence s;  // Make sure all callbacks are fired in order.
+    EXPECT_CALL(*this, OnOutput(_)).Times(kOutputPerDecode);
+    EXPECT_CALL(*this, OnDecoded(DecodeStatus::OK));
+    EXPECT_CALL(*this, OnReset())
+        .WillOnce(InvokeWithoutArgs(this, &MojoAudioDecoderTest::QuitLoop));
+    Decode();
+    Reset();
+    RunLoop();
   }
 
   base::MessageLoop message_loop_;
@@ -227,7 +241,7 @@ TEST_F(MojoAudioDecoderTest, Initialize_Success) {
 TEST_F(MojoAudioDecoderTest, Reinitialize_Success) {
   Initialize();
   DecodeMultipleTimes(10);
-  Reset();
+  ResetAndWaitUntilFinish();
 
   // Reinitialize MojoAudioDecoder.
   Initialize();
@@ -241,6 +255,12 @@ TEST_F(MojoAudioDecoderTest, Decode_MultipleTimes) {
   // Choose a large number of decodes per test on purpose to expose potential
   // out of order delivery of mojo messages. See http://crbug.com/646054
   DecodeMultipleTimes(100);
+}
+
+TEST_F(MojoAudioDecoderTest, Reset_DuringDecode) {
+  Initialize();
+
+  DecodeAndReset();
 }
 
 // TODO(xhwang): Add more tests.

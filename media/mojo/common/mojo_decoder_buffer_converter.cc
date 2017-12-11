@@ -80,47 +80,50 @@ MojoDecoderBufferReader::MojoDecoderBufferReader(
 
 MojoDecoderBufferReader::~MojoDecoderBufferReader() {
   DVLOG(1) << __func__;
+  CancelAllPendingReadCBs();
 }
 
 void MojoDecoderBufferReader::CancelReadCB(ReadCB read_cb) {
-  DVLOG(1) << "Failed to read DecoderBuffer becuase the pipe is already closed";
+  DVLOG(1) << "Failed to read DecoderBuffer because the pipe is already closed";
   std::move(read_cb).Run(nullptr);
+}
+
+void MojoDecoderBufferReader::CancelAllPendingReadCBs() {
+  while (!pending_read_cbs_.empty()) {
+    ReadCB read_cb = std::move(pending_read_cbs_.front());
+    pending_read_cbs_.pop_front();
+    // TODO(sandersd): Make sure there are no possible re-entrancy issues
+    // here. Perhaps these should be posted, or merged into a single error
+    // callback?
+    CancelReadCB(std::move(read_cb));
+  }
 }
 
 void MojoDecoderBufferReader::CompleteCurrentRead() {
   DVLOG(4) << __func__;
-  bytes_read_ = 0;
+
   ReadCB read_cb = std::move(pending_read_cbs_.front());
   pending_read_cbs_.pop_front();
+
   scoped_refptr<DecoderBuffer> buffer = std::move(pending_buffers_.front());
   pending_buffers_.pop_front();
+
+  DCHECK(buffer->end_of_stream() || buffer->data_size() == bytes_read_);
+  bytes_read_ = 0;
+
   std::move(read_cb).Run(std::move(buffer));
 }
 
 void MojoDecoderBufferReader::ScheduleNextRead() {
   DVLOG(4) << __func__;
+  DCHECK(!armed_);
+  DCHECK(!pending_buffers_.empty());
 
-  // Do nothing if a read is already scheduled.
-  if (armed_)
-    return;
-
-  // Immediately complete empty reads.
-  // A non-EOS buffer can have zero size. See http://crbug.com/663438
-  while (!pending_buffers_.empty() &&
-         (pending_buffers_.front()->end_of_stream() ||
-          pending_buffers_.front()->data_size() == 0)) {
-    // TODO(sandersd): Make sure there are no possible re-entrancy issues here.
-    // Perhaps read callbacks should be posted?
-    CompleteCurrentRead();
-  }
-
-  // Request a callback to issue the DataPipe read.
-  if (!pending_buffers_.empty()) {
-    armed_ = true;
-    pipe_watcher_.ArmOrNotify();
-  }
+  armed_ = true;
+  pipe_watcher_.ArmOrNotify();
 }
 
+// TODO(xhwang): Move this up to match declaration order.
 void MojoDecoderBufferReader::ReadDecoderBuffer(
     mojom::DecoderBufferPtr mojo_buffer,
     ReadCB read_cb) {
@@ -140,13 +143,23 @@ void MojoDecoderBufferReader::ReadDecoderBuffer(
   // are zero-sized.
   pending_read_cbs_.push_back(std::move(read_cb));
   pending_buffers_.push_back(std::move(media_buffer));
-  ScheduleNextRead();
+
+  // Do nothing if a read is already scheduled.
+  if (armed_)
+    return;
+
+  // To reduce latency, always process pending reads immediately.
+  ProcessPendingReads();
 }
 
 void MojoDecoderBufferReader::OnPipeReadable(
     MojoResult result,
     const mojo::HandleSignalsState& state) {
   DVLOG(4) << __func__ << "(" << result << ", " << state.readable() << ")";
+
+  // |MOJO_RESULT_CANCELLED| may be dispatched even while the SimpleWatcher
+  // is disarmed, and no further notifications will be dispatched after that.
+  DCHECK(armed_ || result == MOJO_RESULT_CANCELLED);
 
   armed_ = false;
 
@@ -156,36 +169,59 @@ void MojoDecoderBufferReader::OnPipeReadable(
   }
 
   DCHECK(state.readable());
-  ReadDecoderBufferData();
+  ProcessPendingReads();
 }
 
-void MojoDecoderBufferReader::ReadDecoderBufferData() {
+void MojoDecoderBufferReader::ProcessPendingReads() {
   DVLOG(4) << __func__;
-
+  DCHECK(!armed_);
   DCHECK(!pending_buffers_.empty());
-  DecoderBuffer* buffer = pending_buffers_.front().get();
-  uint32_t buffer_size = base::checked_cast<uint32_t>(buffer->data_size());
-  DCHECK_GT(buffer_size, 0u);
 
-  uint32_t num_bytes = buffer_size - bytes_read_;
-  DCHECK_GT(num_bytes, 0u);
+  while (!pending_buffers_.empty()) {
+    DecoderBuffer* buffer = pending_buffers_.front().get();
 
-  MojoResult result =
-      consumer_handle_->ReadData(buffer->writable_data() + bytes_read_,
-                                 &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    uint32_t buffer_size = 0u;
+    if (!pending_buffers_.front()->end_of_stream())
+      buffer_size = base::checked_cast<uint32_t>(buffer->data_size());
 
-  if (IsPipeReadWriteError(result)) {
-    OnPipeError(result);
-  } else {
-    if (result == MOJO_RESULT_OK) {
-      DCHECK_GT(num_bytes, 0u);
-      bytes_read_ += num_bytes;
+    // Immediately complete empty reads.
+    // A non-EOS buffer can have zero size. See http://crbug.com/663438
+    if (buffer_size == 0) {
       // TODO(sandersd): Make sure there are no possible re-entrancy issues
-      // here.
-      if (bytes_read_ == buffer_size)
-        CompleteCurrentRead();
+      // here. Perhaps read callbacks should be posted?
+      CompleteCurrentRead();
+      continue;
     }
-    ScheduleNextRead();
+
+    // We may be starting to read a new buffer (|bytes_read_| == 0), or
+    // recovering from a previous partial read (|bytes_read_| > 0).
+    DCHECK_GT(buffer_size, bytes_read_);
+    uint32_t num_bytes = buffer_size - bytes_read_;
+
+    MojoResult result =
+        consumer_handle_->ReadData(buffer->writable_data() + bytes_read_,
+                                   &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+
+    if (IsPipeReadWriteError(result)) {
+      OnPipeError(result);
+      return;
+    }
+
+    if (result == MOJO_RESULT_SHOULD_WAIT) {
+      ScheduleNextRead();
+      return;
+    }
+
+    DCHECK_EQ(result, MOJO_RESULT_OK);
+    DCHECK_GT(num_bytes, 0u);
+    bytes_read_ += num_bytes;
+
+    // TODO(sandersd): Make sure there are no possible re-entrancy issues
+    // here.
+    if (bytes_read_ == buffer_size)
+      CompleteCurrentRead();
+
+    // Since we can still read, try to read more.
   }
 }
 
@@ -201,14 +237,7 @@ void MojoDecoderBufferReader::OnPipeError(MojoResult result) {
              << ", num_bytes(read)=" << bytes_read_;
     bytes_read_ = 0;
     pending_buffers_.clear();
-    while (!pending_read_cbs_.empty()) {
-      ReadCB read_cb = std::move(pending_read_cbs_.front());
-      pending_read_cbs_.pop_front();
-      // TODO(sandersd): Make sure there are no possible re-entrancy issues
-      // here. Perhaps these should be posted, or merged into a single error
-      // callback?
-      CancelReadCB(std::move(read_cb));
-    }
+    CancelAllPendingReadCBs();
   }
 }
 
@@ -251,16 +280,11 @@ MojoDecoderBufferWriter::~MojoDecoderBufferWriter() {
 
 void MojoDecoderBufferWriter::ScheduleNextWrite() {
   DVLOG(4) << __func__;
+  DCHECK(!armed_);
+  DCHECK(!pending_buffers_.empty());
 
-  // Do nothing if a write is already scheduled.
-  if (armed_)
-    return;
-
-  // Request a callback to issue the DataPipe write.
-  if (!pending_buffers_.empty()) {
-    armed_ = true;
-    pipe_watcher_.ArmOrNotify();
-  }
+  armed_ = true;
+  pipe_watcher_.ArmOrNotify();
 }
 
 mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
@@ -271,7 +295,7 @@ mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
   if (!producer_handle_.is_valid()) {
     DVLOG(1)
         << __func__
-        << ": Failed to write DecoderBuffer becuase the pipe is already closed";
+        << ": Failed to write DecoderBuffer because the pipe is already closed";
     return nullptr;
   }
 
@@ -284,7 +308,12 @@ mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
 
   // Queue writing the buffer's data into our DataPipe.
   pending_buffers_.push_back(media_buffer);
-  ScheduleNextWrite();
+
+  // Do nothing if a write is already scheduled. Otherwise, to reduce latency,
+  // always try to write data to the pipe first.
+  if (!armed_)
+    ProcessPendingWrites();
+
   return mojo_buffer;
 }
 
@@ -292,6 +321,10 @@ void MojoDecoderBufferWriter::OnPipeWritable(
     MojoResult result,
     const mojo::HandleSignalsState& state) {
   DVLOG(4) << __func__ << "(" << result << ", " << state.writable() << ")";
+
+  // |MOJO_RESULT_CANCELLED| may be dispatched even while the SimpleWatcher
+  // is disarmed, and no further notifications will be dispatched after that.
+  DCHECK(armed_ || result == MOJO_RESULT_CANCELLED);
 
   armed_ = false;
 
@@ -301,35 +334,47 @@ void MojoDecoderBufferWriter::OnPipeWritable(
   }
 
   DCHECK(state.writable());
-  WriteDecoderBufferData();
+  ProcessPendingWrites();
 }
 
-void MojoDecoderBufferWriter::WriteDecoderBufferData() {
+void MojoDecoderBufferWriter::ProcessPendingWrites() {
   DVLOG(4) << __func__;
-
+  DCHECK(!armed_);
   DCHECK(!pending_buffers_.empty());
-  DecoderBuffer* buffer = pending_buffers_.front().get();
-  uint32_t buffer_size = base::checked_cast<uint32_t>(buffer->data_size());
-  DCHECK_GT(buffer_size, 0u);
 
-  uint32_t num_bytes = buffer_size - bytes_written_;
-  DCHECK_GT(num_bytes, 0u);
+  while (!pending_buffers_.empty()) {
+    DecoderBuffer* buffer = pending_buffers_.front().get();
 
-  MojoResult result = producer_handle_->WriteData(
-      buffer->data() + bytes_written_, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    uint32_t buffer_size = base::checked_cast<uint32_t>(buffer->data_size());
+    DCHECK_GT(buffer_size, 0u) << "Unexpected EOS or empty buffer";
 
-  if (IsPipeReadWriteError(result)) {
-    OnPipeError(result);
-  } else {
-    if (result == MOJO_RESULT_OK) {
-      DCHECK_GT(num_bytes, 0u);
-      bytes_written_ += num_bytes;
-      if (bytes_written_ == buffer_size) {
-        pending_buffers_.pop_front();
-        bytes_written_ = 0;
-      }
+    // We may be starting to write a new buffer (|bytes_written_| == 0), or
+    // recovering from a previous partial write (|bytes_written_| > 0).
+    uint32_t num_bytes = buffer_size - bytes_written_;
+    DCHECK_GT(num_bytes, 0u);
+
+    MojoResult result = producer_handle_->WriteData(
+        buffer->data() + bytes_written_, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+
+    if (IsPipeReadWriteError(result)) {
+      OnPipeError(result);
+      return;
     }
-    ScheduleNextWrite();
+
+    if (result == MOJO_RESULT_SHOULD_WAIT) {
+      ScheduleNextWrite();
+      return;
+    }
+
+    DCHECK_EQ(MOJO_RESULT_OK, result);
+    DCHECK_GT(num_bytes, 0u);
+    bytes_written_ += num_bytes;
+    if (bytes_written_ == buffer_size) {
+      pending_buffers_.pop_front();
+      bytes_written_ = 0;
+    }
+
+    // Since we can still write, try to write more.
   }
 }
 
