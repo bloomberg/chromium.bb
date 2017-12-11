@@ -26,18 +26,38 @@ smbprovider::ErrorType GetErrorFromReader(dbus::MessageReader* reader) {
   return static_cast<smbprovider::ErrorType>(int_error);
 }
 
+smbprovider::ErrorType GetErrorAndProto(
+    dbus::Response* response,
+    google::protobuf::MessageLite* protobuf_out) {
+  if (!response) {
+    DLOG(ERROR) << "Failed to call smbprovider";
+    return smbprovider::ERROR_DBUS_PARSE_FAILED;
+  }
+  dbus::MessageReader reader(response);
+  smbprovider::ErrorType error(GetErrorFromReader(&reader));
+  if (error != smbprovider::ERROR_OK) {
+    return error;
+  }
+  if (!reader.PopArrayOfBytesAsProto(protobuf_out)) {
+    DLOG(ERROR) << "Failed to parse protobuf.";
+    return smbprovider::ERROR_DBUS_PARSE_FAILED;
+  }
+  return smbprovider::ERROR_OK;
+}
+
 class SmbProviderClientImpl : public SmbProviderClient {
  public:
   SmbProviderClientImpl() : weak_ptr_factory_(this) {}
 
   ~SmbProviderClientImpl() override {}
 
-  void Mount(const std::string& share_path, MountCallback callback) override {
+  void Mount(const base::FilePath& share_path,
+             MountCallback callback) override {
     dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
                                  smbprovider::kMountMethod);
     dbus::MessageWriter writer(&method_call);
     smbprovider::MountOptions mount_options;
-    mount_options.set_path(share_path);
+    mount_options.set_path(share_path.value());
     writer.AppendProtoAsArrayOfBytes(mount_options);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -56,6 +76,42 @@ class SmbProviderClientImpl : public SmbProviderClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SmbProviderClientImpl::HandleUnmountCallback,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+  }
+
+  void ReadDirectory(int32_t mount_id,
+                     const base::FilePath& directory_path,
+                     ReadDirectoryCallback callback) override {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kReadDirectoryMethod);
+    dbus::MessageWriter writer(&method_call);
+    smbprovider::ReadDirectoryOptions read_directory_options;
+    read_directory_options.set_mount_id(mount_id);
+    read_directory_options.set_directory_path(directory_path.value());
+    writer.AppendProtoAsArrayOfBytes(read_directory_options);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SmbProviderClientImpl::HandleProtoCallback<
+                           smbprovider::DirectoryEntryList>,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Passed(&callback)));
+  }
+
+  void GetMetadataEntry(int32_t mount_id,
+                        const base::FilePath& entry_path,
+                        GetMetdataEntryCallback callback) override {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kGetMetadataEntryMethod);
+    dbus::MessageWriter writer(&method_call);
+    smbprovider::GetMetadataEntryOptions get_metadata_entry_options;
+    get_metadata_entry_options.set_mount_id(mount_id);
+    get_metadata_entry_options.set_entry_path(entry_path.value());
+    writer.AppendProtoAsArrayOfBytes(get_metadata_entry_options);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SmbProviderClientImpl::HandleProtoCallback<
+                           smbprovider::DirectoryEntry>,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Passed(&callback)));
   }
 
  protected:
@@ -99,6 +155,17 @@ class SmbProviderClientImpl : public SmbProviderClient {
     }
     dbus::MessageReader reader(response);
     std::move(callback).Run(GetErrorFromReader(&reader));
+  }
+
+  // Handles D-Bus responses for methods that return an error and a protobuf
+  // object.
+  template <class T>
+  void HandleProtoCallback(base::OnceCallback<void(smbprovider::ErrorType error,
+                                                   const T& response)> callback,
+                           dbus::Response* response) {
+    T proto;
+    smbprovider::ErrorType error(GetErrorAndProto(response, &proto));
+    std::move(callback).Run(error, proto);
   }
 
   dbus::ObjectProxy* proxy_ = nullptr;

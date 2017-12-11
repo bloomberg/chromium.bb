@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 
+#include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
@@ -35,7 +36,7 @@ SmbService* SmbService::Get(content::BrowserContext* context) {
 }
 
 void SmbService::Mount(const file_system_provider::MountOptions& options,
-                       const std::string& share_path,
+                       const base::FilePath& share_path,
                        MountResponse callback) {
   chromeos::DBusThreadManager::Get()->GetSmbProviderClient()->Mount(
       share_path, base::BindOnce(&SmbService::OnMountResponse,
