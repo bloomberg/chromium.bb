@@ -3,12 +3,46 @@ Tests that the security details for an origin are updated if its security state 
 Sidebar Origins --------------------------------
 Group: Main origin
 Group: Secure origins
-<SPAN class=title >
-https://foo.test
+<SPAN is=url-text >
+    <SPAN class=url-scheme-unknown >
+https
+    </SPAN>
+    <SPAN class=url-scheme-separator >
+://
+    </SPAN>
+    <SPAN >
+foo.test
+    </SPAN>
+</SPAN>
+<SPAN class=url-scheme-unknown >
+https
+</SPAN>
+<SPAN class=url-scheme-separator >
+://
+</SPAN>
+<SPAN >
+foo.test
 </SPAN>
 Group: Unknown / canceled
-<SPAN class=title >
-https://bar.test
+<SPAN is=url-text >
+    <SPAN class=url-scheme-unknown >
+https
+    </SPAN>
+    <SPAN class=url-scheme-separator >
+://
+    </SPAN>
+    <SPAN >
+bar.test
+    </SPAN>
+</SPAN>
+<SPAN class=url-scheme-unknown >
+https
+</SPAN>
+<SPAN class=url-scheme-separator >
+://
+</SPAN>
+<SPAN >
+bar.test
 </SPAN>
 Origin view ------------------------------------
 <DIV class=widget vbox security-origin-view insertion-point-main >

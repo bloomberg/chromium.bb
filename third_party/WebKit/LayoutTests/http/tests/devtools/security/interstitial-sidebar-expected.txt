@@ -66,8 +66,16 @@ Secure origins
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN class=title >
-https://foo.test
+                        <SPAN is=url-text >
+                            <SPAN class=url-scheme-secure >
+https
+                            </SPAN>
+                            <SPAN class=url-scheme-separator >
+://
+                            </SPAN>
+                            <SPAN >
+foo.test
+                            </SPAN>
                         </SPAN>
                     </LI>
                     <OL class=children role=group >
@@ -79,8 +87,16 @@ https://foo.test
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN class=title >
-https://bar.test
+                        <SPAN is=url-text >
+                            <SPAN class=url-scheme-secure >
+https
+                            </SPAN>
+                            <SPAN class=url-scheme-separator >
+://
+                            </SPAN>
+                            <SPAN >
+bar.test
+                            </SPAN>
                         </SPAN>
                     </LI>
                     <OL class=children role=group >
@@ -169,8 +185,16 @@ Secure origins
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN class=title >
-https://foo.test
+                        <SPAN is=url-text >
+                            <SPAN class=url-scheme-secure >
+https
+                            </SPAN>
+                            <SPAN class=url-scheme-separator >
+://
+                            </SPAN>
+                            <SPAN >
+foo.test
+                            </SPAN>
                         </SPAN>
                     </LI>
                     <OL class=children role=group >
@@ -182,8 +206,16 @@ https://foo.test
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN class=title >
-https://bar.test
+                        <SPAN is=url-text >
+                            <SPAN class=url-scheme-secure >
+https
+                            </SPAN>
+                            <SPAN class=url-scheme-separator >
+://
+                            </SPAN>
+                            <SPAN >
+bar.test
+                            </SPAN>
                         </SPAN>
                     </LI>
                     <OL class=children role=group >
@@ -272,8 +304,16 @@ Secure origins
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN class=title >
-https://foo.test
+                        <SPAN is=url-text >
+                            <SPAN class=url-scheme-secure >
+https
+                            </SPAN>
+                            <SPAN class=url-scheme-separator >
+://
+                            </SPAN>
+                            <SPAN >
+foo.test
+                            </SPAN>
                         </SPAN>
                     </LI>
                     <OL class=children role=group >
@@ -285,8 +325,16 @@ https://foo.test
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN class=title >
-https://bar.test
+                        <SPAN is=url-text >
+                            <SPAN class=url-scheme-secure >
+https
+                            </SPAN>
+                            <SPAN class=url-scheme-separator >
+://
+                            </SPAN>
+                            <SPAN >
+bar.test
+                            </SPAN>
                         </SPAN>
                     </LI>
                     <OL class=children role=group >
