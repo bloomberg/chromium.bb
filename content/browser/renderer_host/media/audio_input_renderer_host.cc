@@ -138,6 +138,13 @@ void AudioInputRendererHost::OnCreateStream(
     const AudioInputHostMsg_CreateStream_Config& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (config.params.IsBitstreamFormat()) {
+    // Bitstream formats are only supported for output.
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::AIRH_UNEXPECTED_BITSTREAM);
+    return;
+  }
+
 #if defined(OS_CHROMEOS)
   if (config.params.channel_layout() ==
       media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {

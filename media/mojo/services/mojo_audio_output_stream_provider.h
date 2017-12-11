@@ -50,6 +50,9 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
   // Called when |audio_output_| had an error.
   void OnError();
 
+  // Closes mojo connections, reports a bad message, and self-destructs.
+  void BadMessage(const std::string& error);
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::Optional<MojoAudioOutputStream> audio_output_;
