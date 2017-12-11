@@ -93,8 +93,8 @@ InputScrollElasticityController::InputScrollElasticityController(
     : helper_(helper),
       state_(kStateInactive),
       momentum_animation_reset_at_next_frame_(false),
-      weak_factory_(this) {
-}
+      received_overscroll_update_(false),
+      weak_factory_(this) {}
 
 InputScrollElasticityController::~InputScrollElasticityController() {
 }
@@ -115,6 +115,8 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
 
   switch (gesture_event.GetType()) {
     case blink::WebInputEvent::kGestureScrollBegin: {
+      received_overscroll_update_ = false;
+      overscroll_behavior_ = cc::OverscrollBehavior();
       if (gesture_event.data.scroll_begin.synthetic)
         return;
       if (gesture_event.data.scroll_begin.inertial_phase ==
@@ -141,6 +143,11 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
           break;
         case kStateActiveScroll:
         case kStateMomentumScroll:
+          if (!received_overscroll_update_ &&
+              !scroll_result.unused_scroll_delta.IsZero()) {
+            overscroll_behavior_ = scroll_result.overscroll_behavior;
+            received_overscroll_update_ = true;
+          }
           UpdateVelocity(event_delta, event_timestamp);
           Overscroll(event_delta, scroll_result.unused_scroll_delta);
           if (gesture_event.data.scroll_update.inertial_phase ==
@@ -212,9 +219,17 @@ void InputScrollElasticityController::Overscroll(
   // Don't allow overscrolling in a direction where scrolling is possible.
   if (!PinnedHorizontally(adjusted_overscroll_delta.x()))
     adjusted_overscroll_delta.set_x(0);
-  if (!PinnedVertically(adjusted_overscroll_delta.y())) {
+  if (!PinnedVertically(adjusted_overscroll_delta.y()))
     adjusted_overscroll_delta.set_y(0);
-  }
+
+  // Don't allow overscrolling in a direction that has
+  // OverscrollBehaviorTypeNone.
+  if (overscroll_behavior_.x ==
+      cc::OverscrollBehavior::kOverscrollBehaviorTypeNone)
+    adjusted_overscroll_delta.set_x(0);
+  if (overscroll_behavior_.y ==
+      cc::OverscrollBehavior::kOverscrollBehaviorTypeNone)
+    adjusted_overscroll_delta.set_y(0);
 
   // Require a minimum of 10 units of overscroll before starting the rubber-band
   // stretch effect, so that small stray motions don't trigger it. If that
