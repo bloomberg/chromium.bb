@@ -3111,8 +3111,33 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->RunOnCompositingDidCommit();
 }
 
-// This test verifies that the primary SurfaceInfo is populated on resize and
-// the fallback SurfaceInfo is populated on SubmitCompositorFrame.
+// This test verifies that if a fallback surface activates on a hidden view
+// then the fallback is dropped.
+TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+       DropFallbackWhenHidden) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+
+  EXPECT_FALSE(view_->HasPrimarySurface());
+  ASSERT_TRUE(view_->delegated_frame_host_);
+
+  view_->Hide();
+  view_->SetSize(gfx::Size(300, 300));
+  EXPECT_FALSE(view_->HasPrimarySurface());
+
+  // Submitting a CompositorFrame should not update the fallback SurfaceId
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, gfx::Size(400, 400), gfx::Rect(400, 400)),
+      nullptr);
+  EXPECT_FALSE(view_->HasPrimarySurface());
+  EXPECT_FALSE(view_->HasFallbackSurface());
+}
+
+// This test verifies that the primary SurfaceId is populated on resize and
+// the fallback SurfaceId is populated on SubmitCompositorFrame.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3131,7 +3156,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   EXPECT_EQ(gfx::Size(300, 300),
             view_->delegated_frame_host_->CurrentFrameSizeInDipForTesting());
 
-  // Resizing should update the primary SurfaceInfo.
+  // Resizing should update the primary SurfaceId.
   view_->SetSize(gfx::Size(400, 400));
   EXPECT_EQ(gfx::Size(400, 400), view_->window_->layer()->size());
   EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
@@ -3146,7 +3171,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   EXPECT_EQ(gfx::Size(400, 400), view_->window_->layer()->size());
 }
 
-// This test verifies that the primary SurfaceInfo is updated on device scale
+// This test verifies that the primary SurfaceId is updated on device scale
 // factor changes.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DeviceScaleFactorChanges) {
@@ -3166,7 +3191,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
       *view_->window_->layer()->GetPrimarySurfaceId();
   EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
 
-  // Resizing should update the primary SurfaceInfo.
+  // Resizing should update the primary SurfaceId.
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
   viz::SurfaceId new_surface_id =
       *view_->window_->layer()->GetPrimarySurfaceId();

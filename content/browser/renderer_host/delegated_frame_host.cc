@@ -567,7 +567,19 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   gfx::Size frame_size_in_dip = gfx::ConvertSizeToDIP(
       surface_info.device_scale_factor(), surface_info.size_in_pixels());
 
-  if (!enable_surface_synchronization_) {
+  if (enable_surface_synchronization_) {
+    // If there's no primary surface, then we don't wish to display content at
+    // this time (e.g. the view is hidden) and so we don't need a fallback
+    // surface either. Since we won't use the fallback surface, we drop the
+    // temporary reference here to save resources.
+    if (!HasPrimarySurface()) {
+      ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+      viz::HostFrameSinkManager* host_frame_sink_manager =
+          factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
+      host_frame_sink_manager->DropTemporaryReference(surface_info.id());
+      return;
+    }
+  } else {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
         surface_info.id(), frame_size_in_dip, GetSurfaceReferenceFactory());
   }

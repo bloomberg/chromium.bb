@@ -182,6 +182,10 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
     frame_sink_data_map_.erase(parent_frame_sink_id);
 }
 
+void HostFrameSinkManager::DropTemporaryReference(const SurfaceId& surface_id) {
+  frame_sink_manager_->DropTemporaryReference(surface_id);
+}
+
 void HostFrameSinkManager::WillAssignTemporaryReferencesExternally() {
   assign_temporary_references_ = false;
 }
@@ -191,11 +195,6 @@ void HostFrameSinkManager::AssignTemporaryReference(
     const FrameSinkId& frame_sink_id) {
   DCHECK(!assign_temporary_references_);
   frame_sink_manager_->AssignTemporaryReference(surface_id, frame_sink_id);
-}
-
-void HostFrameSinkManager::DropTemporaryReference(const SurfaceId& surface_id) {
-  DCHECK(!assign_temporary_references_);
-  frame_sink_manager_->DropTemporaryReference(surface_id);
 }
 
 std::unique_ptr<CompositorFrameSinkSupport>
