@@ -321,13 +321,7 @@ C = Conditions
 _COPY_PATHS_COMMON = (
     Path('chrome_sandbox', mode=0o4755, dest=_CHROME_SANDBOX_DEST),
     Path('icudtl.dat'),
-    Path('libffmpegsumo.so', exe=True, optional=True),
     Path('libosmesa.so', exe=True, optional=True),
-    Path('libpdf.so', exe=True, optional=True),
-    Path('libppGoogleNaClPluginChrome.so',
-         exe=True,
-         cond=C.GnSetTo(_ENABLE_NACL, True),
-         optional=True),
     Path('mojo_shell', exe=True, optional=True),
     # Do not strip the nacl_helper_bootstrap binary because the binutils
     # objcopy/strip mangles the ELF program headers.
