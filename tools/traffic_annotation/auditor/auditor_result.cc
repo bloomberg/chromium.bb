@@ -19,14 +19,15 @@ AuditorResult::AuditorResult(Type type,
          type == AuditorResult::Type::RESULT_OK ||
          type == AuditorResult::Type::RESULT_IGNORE ||
          type == AuditorResult::Type::ERROR_FATAL ||
-         type == AuditorResult::Type::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE ||
+         type == AuditorResult::Type::ERROR_HASH_CODE_COLLISION ||
+         type == AuditorResult::Type::ERROR_REPEATED_ID ||
          type == AuditorResult::Type::ERROR_MERGE_FAILED ||
          type == AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE);
   DCHECK(!message.empty() || type == AuditorResult::Type::RESULT_OK ||
          type == AuditorResult::Type::RESULT_IGNORE ||
          type == AuditorResult::Type::ERROR_MISSING_TAG_USED ||
          type == AuditorResult::Type::ERROR_NO_ANNOTATION ||
-         type == AuditorResult::Type::ERROR_MISSING_EXTRA_ID ||
+         type == AuditorResult::Type::ERROR_MISSING_SECOND_ID ||
          type == AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION ||
          type == AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT);
   if (!message.empty())
@@ -77,31 +78,38 @@ std::string AuditorResult::ToText() const {
                                 flat_message.c_str());
     }
 
-    case AuditorResult::Type::ERROR_RESERVED_UNIQUE_ID_HASH_CODE:
+    case AuditorResult::Type::ERROR_RESERVED_ID_HASH_CODE:
       DCHECK(details_.size());
       return base::StringPrintf(
-          "Unique id '%s' in '%s:%i' has a hash code similar to a reserved "
-          "word and should be changed.",
+          "Id '%s' in '%s:%i' has a hash code equal to a reserved word and "
+          "should be changed.",
           details_[0].c_str(), file_path_.c_str(), line_);
 
-    case AuditorResult::Type::ERROR_DEPRECATED_UNIQUE_ID_HASH_CODE:
+    case AuditorResult::Type::ERROR_DEPRECATED_ID_HASH_CODE:
       DCHECK(details_.size());
       return base::StringPrintf(
-          "Unique id '%s' in '%s:%i' has a hash code similar to a deprecated "
-          "unique id and should be changed.",
+          "Id '%s' in '%s:%i' has a hash code equal to a deprecated id and "
+          "should be changed.",
           details_[0].c_str(), file_path_.c_str(), line_);
 
-    case AuditorResult::Type::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE:
+    case AuditorResult::Type::ERROR_HASH_CODE_COLLISION:
       DCHECK_EQ(details_.size(), 2u);
       return base::StringPrintf(
-          "The following annotations have similar unique id "
-          "hash codes and should be updated: %s, %s.",
+          "The following annotations have colliding hash codes and should be "
+          "updated: %s, %s.",
           details_[0].c_str(), details_[1].c_str());
 
-    case AuditorResult::Type::ERROR_UNIQUE_ID_INVALID_CHARACTER:
+    case AuditorResult::Type::ERROR_REPEATED_ID:
+      DCHECK_EQ(details_.size(), 2u);
+      return base::StringPrintf(
+          "The following annotations have equal ids and should be updated: "
+          "%s, %s.",
+          details_[0].c_str(), details_[1].c_str());
+
+    case AuditorResult::Type::ERROR_ID_INVALID_CHARACTER:
       DCHECK(details_.size());
       return base::StringPrintf(
-          "Unique id '%s' in '%s:%i' contains an invalid character.",
+          "Id '%s' in '%s:%i' contains an invalid character.",
           details_[0].c_str(), file_path_.c_str(), line_);
 
     case AuditorResult::Type::ERROR_MISSING_ANNOTATION:
@@ -115,7 +123,7 @@ std::string AuditorResult::ToText() const {
           "Annotation at '%s:%i' has the following missing fields: %s",
           file_path_.c_str(), line_, details_[0].c_str());
 
-    case AuditorResult::Type::ERROR_MISSING_EXTRA_ID:
+    case AuditorResult::Type::ERROR_MISSING_SECOND_ID:
       return base::StringPrintf(
           "Second id of annotation at '%s:%i' should be updated as it has the "
           "same hash code as the first one.",

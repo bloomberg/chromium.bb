@@ -70,9 +70,9 @@ AnnotationInstance::AnnotationInstance() : type(Type::ANNOTATION_COMPLETE) {}
 AnnotationInstance::AnnotationInstance(const AnnotationInstance& other)
     : proto(other.proto),
       type(other.type),
-      extra_id(other.extra_id),
+      second_id(other.second_id),
       unique_id_hash_code(other.unique_id_hash_code),
-      extra_id_hash_code(other.extra_id_hash_code){};
+      second_id_hash_code(other.second_id_hash_code){};
 
 AuditorResult AnnotationInstance::Deserialize(
     const std::vector<std::string>& serialized_lines,
@@ -90,7 +90,7 @@ AuditorResult AnnotationInstance::Deserialize(
   base::StringToInt(serialized_lines[start_line++], &line_number);
   std::string function_type = serialized_lines[start_line++];
   const std::string& unique_id = serialized_lines[start_line++];
-  extra_id = serialized_lines[start_line++];
+  second_id = serialized_lines[start_line++];
 
   // Decode function type.
   if (function_type == "Definition") {
@@ -158,7 +158,7 @@ AuditorResult AnnotationInstance::Deserialize(
   src->set_function(function_context);
   src->set_line(line_number);
   proto.set_unique_id(unique_id);
-  extra_id_hash_code = TrafficAnnotationAuditor::ComputeHashValue(extra_id);
+  second_id_hash_code = TrafficAnnotationAuditor::ComputeHashValue(second_id);
 
   return AuditorResult(AuditorResult::Type::RESULT_OK);
 }
@@ -247,13 +247,13 @@ AuditorResult AnnotationInstance::IsConsistent() const {
 
 bool AnnotationInstance::IsCompletableWith(
     const AnnotationInstance& other) const {
-  if (type != AnnotationInstance::Type::ANNOTATION_PARTIAL || extra_id.empty())
+  if (type != AnnotationInstance::Type::ANNOTATION_PARTIAL || second_id.empty())
     return false;
   if (other.type == AnnotationInstance::Type::ANNOTATION_COMPLETING) {
-    return extra_id_hash_code == other.unique_id_hash_code;
+    return second_id_hash_code == other.unique_id_hash_code;
   } else if (other.type ==
              AnnotationInstance::Type::ANNOTATION_BRANCHED_COMPLETING) {
-    return extra_id_hash_code == other.extra_id_hash_code;
+    return second_id_hash_code == other.second_id_hash_code;
   } else {
     return false;
   }
@@ -279,8 +279,8 @@ AuditorResult AnnotationInstance::CreateCompleteAnnotation(
   }
 
   combination->type = AnnotationInstance::Type::ANNOTATION_COMPLETE;
-  combination->extra_id.clear();
-  combination->extra_id_hash_code = 0;
+  combination->second_id.clear();
+  combination->second_id_hash_code = 0;
   combination->comments = base::StringPrintf(
       "This annotation is a merge of the following two annotations:\n"
       "'%s' in '%s:%i' and '%s' in '%s:%i'.",
