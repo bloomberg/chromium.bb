@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/translate_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
-#import "ios/chrome/browser/web/nullable_mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -60,7 +60,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // This object contains the list of available Mail client apps that can
   // handle mailto: URLs.
-  MailtoURLRewriter* _mailtoURLRewriter;
+  MailtoHandlerManager* _mailtoHandlerManager;
 
   // Updatable Items
   CollectionViewDetailItem* _blockPopupsDetailItem;
@@ -106,9 +106,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                               inverted:YES];
     [_disablePopupsSetting setObserver:self];
 
-    _mailtoURLRewriter =
-        [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
-    [_mailtoURLRewriter setObserver:self];
+    _mailtoHandlerManager =
+        [MailtoHandlerManager mailtoHandlerManagerWithStandardHandlers];
+    [_mailtoHandlerManager setObserver:self];
 
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.
@@ -173,7 +173,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       initWithType:ItemTypeSettingsComposeEmail];
   _composeEmailDetailItem.text =
       l10n_util::GetNSString(IDS_IOS_COMPOSE_EMAIL_SETTING);
-  _composeEmailDetailItem.detailText = [_mailtoURLRewriter defaultHandlerName];
+  _composeEmailDetailItem.detailText =
+      [_mailtoHandlerManager defaultHandlerName];
   _composeEmailDetailItem.accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
   _composeEmailDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -212,7 +213,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeSettingsComposeEmail: {
       UIViewController* controller =
           [[ComposeEmailHandlerCollectionViewController alloc]
-              initWithRewriter:_mailtoURLRewriter];
+              initWithManager:_mailtoHandlerManager];
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }
@@ -246,12 +247,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self reconfigureCellsForItems:@[ _blockPopupsDetailItem ]];
 }
 
-#pragma mark - MailtoURLRewriterObserver
+#pragma mark - MailtoHandlerManagerObserver
 
-- (void)rewriterDidChange:(MailtoURLRewriter*)rewriter {
-  if (rewriter != _mailtoURLRewriter)
+- (void)handlerDidChangeForMailtoHandlerManager:(MailtoHandlerManager*)manager {
+  if (manager != _mailtoHandlerManager)
     return;
-  _composeEmailDetailItem.detailText = [rewriter defaultHandlerName];
+  _composeEmailDetailItem.detailText = [manager defaultHandlerName];
   [self reconfigureCellsForItems:@[ _composeEmailDetailItem ]];
 }
 

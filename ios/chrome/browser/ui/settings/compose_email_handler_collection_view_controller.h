@@ -7,7 +7,7 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 
-@class MailtoURLRewriter;
+@class MailtoHandlerManager;
 
 // UI for Compose Email settings to specify which installed Mail client app to
 // use for handling mailto: URLs. There must be at least 2 Mail client apps
@@ -16,7 +16,7 @@
 @interface ComposeEmailHandlerCollectionViewController
     : SettingsRootCollectionViewController
 
-- (instancetype)initWithRewriter:(MailtoURLRewriter*)rewriter
+- (instancetype)initWithManager:(MailtoHandlerManager*)manager
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout

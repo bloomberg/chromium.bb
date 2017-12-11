@@ -9,8 +9,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/web/fake_mailto_handler_helpers.h"
+#import "ios/chrome/browser/web/mailto_handler_manager.h"
 #import "ios/chrome/browser/web/mailto_handler_system_mail.h"
-#import "ios/chrome/browser/web/nullable_mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MDCPalettes.h"
 #include "testing/gtest_mac.h"
@@ -19,8 +19,6 @@
 #error "This file requires ARC support."
 #endif
 
-#pragma mark - MailtoURLRewriter private interface for testing.
-
 #pragma mark - ComposeEmailHandlerCollectionViewControllerTest
 
 class ComposeEmailHandlerCollectionViewControllerTest
@@ -28,26 +26,25 @@ class ComposeEmailHandlerCollectionViewControllerTest
  protected:
   // Before CreateController() is called, set |handers_| and optionally
   // |default_handler_id_| ivars. They will be used to seed the construction of
-  // a MailtoURLRewriter which in turn used for the construction of the
+  // a MailtoHandlerManager which in turn used for the construction of the
   // CollectionViewController.
   CollectionViewController* InstantiateController() override {
-    rewriter_ =
-        [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
+    manager_ = [MailtoHandlerManager mailtoHandlerManagerWithStandardHandlers];
     // Clears the state so unit tests start from a known state.
     [[NSUserDefaults standardUserDefaults]
-        removeObjectForKey:[[rewriter_ class] userDefaultsKey]];
-    [rewriter_ setDefaultHandlers:handlers_];
+        removeObjectForKey:kMailtoHandlerManagerUserDefaultsKey];
+    [manager_ setDefaultHandlers:handlers_];
     if (default_handler_id_)
-      [rewriter_ setDefaultHandlerID:default_handler_id_];
+      [manager_ setDefaultHandlerID:default_handler_id_];
     return [[ComposeEmailHandlerCollectionViewController alloc]
-        initWithRewriter:rewriter_];
+        initWithManager:manager_];
   }
 
   // |handlers_| and |default_handler_id_| must be set before first call to
   // CreateController().
   NSArray<MailtoHandler*>* handlers_;
   NSString* default_handler_id_;
-  MailtoURLRewriter* rewriter_;
+  MailtoHandlerManager* manager_;
 };
 
 TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
@@ -65,7 +62,7 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
   ASSERT_EQ(2, NumberOfSections());
   // Array returned by -defaultHandlers is sorted by the name of the Mail app
   // and may not be in the same order as |handlers_|.
-  NSArray<MailtoHandler*>* handlers = [rewriter_ defaultHandlers];
+  NSArray<MailtoHandler*>* handlers = [manager_ defaultHandlers];
   int number_of_handlers = [handlers count];
   EXPECT_EQ(number_of_handlers, NumberOfItemsInSection(0));
   for (int index = 0; index < number_of_handlers; ++index) {
@@ -77,7 +74,7 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
     // The enable/disable state of each Mail client app depends on the state
     // of the "Always Ask" toggle. All rows should be disabled if user has
     // not selected a default Mail client app.
-    BOOL is_enabled = [rewriter_ defaultHandlerID] != nil;
+    BOOL is_enabled = [manager_ defaultHandlerID] != nil;
     // Checks that text cells are displayed differently depending on the
     // availability of the handlers.
     UIColor* darkest_tint = [[MDCPalette greyPalette] tint900];
@@ -89,9 +86,9 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
       EXPECT_EQ(UIAccessibilityTraitNotEnabled, item.accessibilityTraits);
     }
   }
-    bool is_on = [rewriter_ defaultHandlerID] == nil;
-    CheckSwitchCellStateAndTitleWithId(is_on, IDS_IOS_CHOOSE_EMAIL_ASK_TOGGLE,
-                                       1, 0);
+  bool is_on = [manager_ defaultHandlerID] == nil;
+  CheckSwitchCellStateAndTitleWithId(is_on, IDS_IOS_CHOOSE_EMAIL_ASK_TOGGLE, 1,
+                                     0);
 }
 
 TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSelection) {
@@ -107,16 +104,16 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSelection) {
 
   // Have an observer to make sure that selecting in the UI causes the
   // observer to be called.
-  CountingMailtoURLRewriterObserver* observer =
-      [[CountingMailtoURLRewriterObserver alloc] init];
-  [rewriter_ setObserver:observer];
+  CountingMailtoHandlerManagerObserver* observer =
+      [[CountingMailtoHandlerManagerObserver alloc] init];
+  [manager_ setObserver:observer];
 
   // The array of |handlers| here is sorted for display and may not be in the
   // same order as |handlers_|. Finds another entry in the |handlers| that is
   // not currently selected and use that as the new selection. This test
   // must set up at least two handlers in |handlers_| which guarantees that
   // a new |selection| must be found, thus the DCHECK_GE.
-  NSArray<MailtoHandler*>* handlers = [rewriter_ defaultHandlers];
+  NSArray<MailtoHandler*>* handlers = [manager_ defaultHandlers];
   int selection = -1;
   int number_of_handlers = [handlers count];
   for (int index = 0; index < number_of_handlers; ++index) {
@@ -132,7 +129,7 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSelection) {
                                                   inSection:0]];
   // Verify that the observer has been called and new selection has been set.
   EXPECT_EQ(1, [observer changeCount]);
-  EXPECT_NSEQ([handlers[selection] appStoreID], [rewriter_ defaultHandlerID]);
+  EXPECT_NSEQ([handlers[selection] appStoreID], [manager_ defaultHandlerID]);
 }
 
 // Tests the state of the mailto:// handler apps and as the "Always ask"
@@ -167,7 +164,7 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSwitchChanged) {
   [switch_cell.switchView
       sendActionsForControlEvents:UIControlEventValueChanged];
   EXPECT_FALSE(switch_cell.switchView.on);
-  NSArray<MailtoHandler*>* handlers = [rewriter_ defaultHandlers];
+  NSArray<MailtoHandler*>* handlers = [manager_ defaultHandlers];
   UIColor* darkest_tint = [[MDCPalette greyPalette] tint900];
   for (NSUInteger index = 0U; index < [handlers count]; ++index) {
     CollectionViewTextItem* item = GetCollectionViewItem(0, index);
@@ -185,7 +182,7 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSwitchChanged) {
   [switch_cell.switchView
       sendActionsForControlEvents:UIControlEventValueChanged];
   EXPECT_TRUE(switch_cell.switchView.on);
-  handlers = [rewriter_ defaultHandlers];
+  handlers = [manager_ defaultHandlers];
   for (NSUInteger index = 0U; index < [handlers count]; ++index) {
     CollectionViewTextItem* item = GetCollectionViewItem(0, index);
     EXPECT_EQ(MDCCollectionViewCellAccessoryNone, item.accessoryType);

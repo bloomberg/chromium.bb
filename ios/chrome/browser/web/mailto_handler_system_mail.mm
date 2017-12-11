@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/web/mailto_handler_system_mail.h"
 
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/web/mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -18,7 +18,8 @@
 
 - (instancetype)init {
   NSString* name = l10n_util::GetNSString(IDS_IOS_SYSTEM_MAIL_APP);
-  self = [super initWithName:name appStoreID:[MailtoURLRewriter systemMailApp]];
+  self =
+      [super initWithName:name appStoreID:[MailtoHandlerManager systemMailApp]];
   return self;
 }
 

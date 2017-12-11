@@ -8,7 +8,7 @@
 #include "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
 @class MailtoHandler;
-@class MailtoURLRewriter;
+@class MailtoHandlerManager;
 
 // Type of callback block when user selects a mailto:// handler.
 typedef void (^OpenMailtoHandlerSelectedHandler)(
@@ -18,12 +18,12 @@ typedef void (^OpenMailtoHandlerSelectedHandler)(
 // to use to handle a tap on mailto:// URL.
 @interface OpenMailHandlerViewController : CollectionViewController
 
-// Initializes the view controller with the |rewriter| object which supplies
+// Initializes the view controller with the |manager| object which supplies
 // the list of supported apps that can handle a mailto:// URL. When the user
-// selects a mail client app, the |selectedCallback| block is called.
+// selects a mail client app, the |selectedHandler| block is called.
 - (nonnull instancetype)
-initWithRewriter:(nullable MailtoURLRewriter*)rewriter
- selectedHandler:(nullable OpenMailtoHandlerSelectedHandler)selectedHandler
+initWithManager:(nullable MailtoHandlerManager*)manager
+selectedHandler:(nullable OpenMailtoHandlerSelectedHandler)selectedHandler
     NS_DESIGNATED_INITIALIZER;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
