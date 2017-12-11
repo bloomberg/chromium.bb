@@ -258,6 +258,24 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_GROUP_DEFAULT_NAME));
   _editingFolderNode = self.bookmarkModel->AddFolder(
       _currentRootNode, _currentRootNode->child_count(), folderTitle);
+
+  _bookmarkItems.push_back(_editingFolderNode);
+
+  // Insert the new folder cell at the end of the table.
+  NSIndexPath* newRowIndexPath =
+      [NSIndexPath indexPathForRow:_bookmarkItems.size() - 1
+                         inSection:self.bookmarksSection];
+  NSMutableArray* newRowIndexPaths =
+      [[NSMutableArray alloc] initWithObjects:newRowIndexPath, nil];
+  [self.tableView beginUpdates];
+  [self.tableView insertRowsAtIndexPaths:newRowIndexPaths
+                        withRowAnimation:UITableViewRowAnimationNone];
+  [self.tableView endUpdates];
+
+  // Scroll to the end of the table
+  [self.tableView scrollToRowAtIndexPath:newRowIndexPath
+                        atScrollPosition:UITableViewScrollPositionBottom
+                                animated:YES];
 }
 
 - (void)setEditing:(BOOL)editing {
@@ -518,7 +536,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 // The node has not changed, but its children have.
 - (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
   // The current root folder's children changed. Reload everything.
-  if (bookmarkNode == _currentRootNode) {
+  // (When adding new folder, table is already been updated. So no need to
+  // reload here.)
+  if (bookmarkNode == _currentRootNode && !self.addingNewFolder) {
     [self refreshContents];
     return;
   }
@@ -668,20 +688,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self.tableView reloadData];
   if (self.editing && !_editNodes.empty()) {
     [self restoreRowSelection];
-  }
-  if (self.addingNewFolder) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      // Scroll to the end of the table if a new folder is being added.
-      NSIndexPath* indexPath =
-          [NSIndexPath indexPathForRow:_bookmarkItems.size() - 1
-                             inSection:self.bookmarksSection];
-
-      if (indexPath) {
-        [self.tableView scrollToRowAtIndexPath:indexPath
-                              atScrollPosition:UITableViewScrollPositionBottom
-                                      animated:YES];
-      }
-    });
   }
 }
 
