@@ -46,13 +46,6 @@ constexpr char kExtensionID[] = "extension-%" PRIuS;
 constexpr char kShutdownType[] = "shutdown-type";
 constexpr char kBrowserUnpinTrace[] = "browser-unpin-trace";
 
-// Registry values used to determine Chrome's update channel; see
-// https://crbug.com/579504.
-constexpr char kApValue[] = "ap";
-constexpr char kCohortName[] = "cohort-name";
-
-constexpr char kIsEnterpriseManaged[] = "is-enterprise-managed";
-
 constexpr char kViewCount[] = "view-count";
 constexpr char kZeroEncodeDetails[] = "zero-encode-details";
 
@@ -89,11 +82,6 @@ size_t RegisterCrashKeysHelper() {
       {kNumExtensionsCount, kSmallSize},
       {kShutdownType, kSmallSize},
       {kBrowserUnpinTrace, kMediumSize},
-      {kApValue, kSmallSize},
-      {kCohortName, kSmallSize},
-
-      // browser/:
-      {kIsEnterpriseManaged, kSmallSize},
 
       // content/:
       {"discardable-memory-allocated", kSmallSize},
