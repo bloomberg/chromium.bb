@@ -192,6 +192,7 @@
                                  completion:nil];
   }];
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    self.locationBarContainer.layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
     CGFloat borderWidth = (finalPosition == UIViewAnimatingPositionEnd)
                               ? 0
                               : kLocationBarBorderWidth;
@@ -211,6 +212,8 @@
   [self setAllVisibleToolbarButtonsOpacity:0];
   [animator addAnimations:^{
     self.locationBarContainer.layer.borderWidth = kLocationBarBorderWidth;
+    self.locationBarContainer.layer.shadowOffset =
+        CGSizeMake(0.0f, kLocationBarShadowYOffset);
     [self.view layoutIfNeeded];
     self.contractButton.hidden = YES;
     self.contractButton.alpha = 0;
@@ -622,7 +625,8 @@
       [self.buttonFactory.toolbarConfiguration omniboxBorderColor].CGColor;
   locationBarContainer.layer.shadowRadius = kLocationBarShadowRadius;
   locationBarContainer.layer.shadowOpacity = kLocationBarShadowOpacity;
-  locationBarContainer.layer.shadowOffset = CGSizeMake(0.0f, 0.5f);
+  locationBarContainer.layer.shadowOffset =
+      CGSizeMake(0.0f, kLocationBarShadowYOffset);
 
   [locationBarContainer
       setContentHuggingPriority:UILayoutPriorityDefaultLow

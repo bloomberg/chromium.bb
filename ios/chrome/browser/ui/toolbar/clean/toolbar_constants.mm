@@ -21,6 +21,7 @@ const CGFloat kLocationBarBorderWidth = 1.0f;
 const CGFloat kLocationBarBorderColor = 0xD0D0D0;
 const CGFloat kLocationBarShadowRadius = 0.0f;
 const CGFloat kLocationBarShadowOpacity = 0.2f;
+const CGFloat kLocationBarShadowYOffset = 0.5f;
 const CGFloat kIcongnitoLocationBackgroundColor = 0x737373;
 
 const CGFloat kProgressBarHeight = 2.0f;
