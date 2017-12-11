@@ -193,10 +193,6 @@ def _MergePakInfoFiles(pak_info_path, asset_list):
     if src.endswith('.pak'):
       with open(src + '.info', 'r') as src_info_file:
         lines.update(src_info_file.readlines())
-  # Ensure that parent dirs exist before writing new files.
-  info_dir = os.path.dirname(pak_info_path)
-  if not os.path.exists(info_dir):
-    os.makedirs(info_dir)
   with open(pak_info_path, 'w') as merged_info_file:
     merged_info_file.writelines(sorted(lines))
 
