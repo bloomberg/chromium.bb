@@ -1363,12 +1363,6 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
   static const copy_fun copy_funs[3] = { aom_yv12_copy_y, aom_yv12_copy_u,
                                          aom_yv12_copy_v };
 
-  if (rsi[0].frame_restoration_type == RESTORE_NONE &&
-      rsi[1].frame_restoration_type == RESTORE_NONE &&
-      rsi[2].frame_restoration_type == RESTORE_NONE) {
-    return;
-  }
-
   YV12_BUFFER_CONFIG dst;
   memset(&dst, 0, sizeof(dst));
   const int frame_width = frame->crop_widths[0];
