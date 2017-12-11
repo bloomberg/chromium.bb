@@ -2229,11 +2229,9 @@ void LayoutText::InvalidateDisplayItemClients(
 
   for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
     paint_invalidator.InvalidateDisplayItemClient(*box, invalidation_reason);
-    if (box->Truncation() != kCNoTruncation) {
-      if (EllipsisBox* ellipsis_box = box->Root().GetEllipsisBox()) {
-        paint_invalidator.InvalidateDisplayItemClient(*ellipsis_box,
-                                                      invalidation_reason);
-      }
+    if (EllipsisBox* ellipsis_box = box->Root().GetEllipsisBox()) {
+      paint_invalidator.InvalidateDisplayItemClient(*ellipsis_box,
+                                                    invalidation_reason);
     }
   }
 }
