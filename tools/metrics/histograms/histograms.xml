@@ -60379,6 +60379,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PDF.Actions" enum="ChromePDFViewerActions">
+  <owner>hnakashima@chromium.org</owner>
+  <summary>
+    Tracks user actions in the PDF viewer. Logged when the document is opened
+    and when one of the relevant user actions is taken, such as opening the
+    bookmarks bar or setting the zoom mode to fit-to-page. The enum values that
+    are named &quot;First&quot; are logged only once per document, so that we
+    can measure in what percentage of documents a given action was performed at
+    least once.
+  </summary>
+</histogram>
+
 <histogram name="PDF.AnnotationType" enum="ChromePDFViewerAnnotationType">
   <owner>hnakashima@chromium.org</owner>
   <summary>

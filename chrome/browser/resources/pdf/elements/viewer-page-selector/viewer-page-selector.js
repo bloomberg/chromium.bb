@@ -25,7 +25,7 @@ Polymer({
     var page = parseInt(this.$.input.value, 10);
 
     if (!isNaN(page) && page <= this.docLength && page > 0)
-      this.fire('change-page', {page: page - 1});
+      this.fire('change-page', {page: page - 1, origin: 'pageselector'});
     else
       this.$.input.value = this.pageNo;
     this.$.input.blur();

@@ -442,6 +442,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PageChange) {
   RunTestsInFile("page_change_test.js", "test-bookmarks.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Metrics) {
+  RunTestsInFile("metrics_test.js", "test.pdf");
+}
+
 // Ensure that the internal PDF plugin application/x-google-chrome-pdf won't be
 // loaded if it's not loaded in the chrome extension page.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureInternalPluginDisabled) {
