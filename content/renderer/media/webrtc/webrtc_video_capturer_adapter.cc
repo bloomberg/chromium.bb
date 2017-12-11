@@ -29,8 +29,8 @@ namespace {
 
 // Empty method used for keeping a reference to the original media::VideoFrame.
 // The reference to |frame| is kept in the closure that calls this method.
-void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {
-}
+void CapturerReleaseOriginalFrame(
+    const scoped_refptr<media::VideoFrame>& frame) {}
 
 // Helper class that signals a WaitableEvent when it goes out of scope.
 class ScopedWaitableEvent {
@@ -229,7 +229,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
     return;
 
   video_frame->AddDestructionObserver(
-      base::BindOnce(&ReleaseOriginalFrame, frame));
+      base::BindOnce(&CapturerReleaseOriginalFrame, frame));
 
   // If no scaling is needed, return a wrapped version of |frame| directly.
   if (video_frame->natural_size() == video_frame->visible_rect().size()) {

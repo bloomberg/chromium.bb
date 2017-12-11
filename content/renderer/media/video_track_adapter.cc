@@ -45,8 +45,7 @@ const double kMaxTimeInMsBetweenFrames = 1000;
 // Empty method used for keeping a reference to the original media::VideoFrame
 // in VideoFrameResolutionAdapter::DeliverFrame if cropping is needed.
 // The reference to |frame| is kept in the closure that calls this method.
-void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {
-}
+void TrackReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
 
 void ResetCallbackOnMainRenderThread(
     std::unique_ptr<VideoCaptureDeliverFrameCB> callback) {
@@ -260,7 +259,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     if (!video_frame)
       return;
     video_frame->AddDestructionObserver(
-        base::BindOnce(&ReleaseOriginalFrame, frame));
+        base::BindOnce(&TrackReleaseOriginalFrame, frame));
 
     DVLOG(3) << "desired size  " << desired_size.ToString()
              << " output natural size "
