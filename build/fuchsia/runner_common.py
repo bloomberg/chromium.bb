@@ -158,6 +158,7 @@ def _GetSymbolsMapping(dry_run, file_mapping, output_directory):
     elif os.path.exists(lib_unstripped_path):
       # TODO(wez): libraries are named by basename in stacks, not by path.
       symbols_mapping[binary_name] = lib_unstripped_path
+      symbols_mapping[target] = lib_unstripped_path
     else:
       symbols_mapping[target] = source
 
