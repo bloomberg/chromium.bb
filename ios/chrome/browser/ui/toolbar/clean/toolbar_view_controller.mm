@@ -60,8 +60,11 @@
 @property(nonatomic, assign) BOOL voiceSearchEnabled;
 @property(nonatomic, strong) MDCProgressView* progressBar;
 @property(nonatomic, strong) UIStackView* locationBarContainerStackView;
-// The shadow below the toolbar. Lazily instantiated.
+// The shadow below the toolbar when the omnibox is contracted. Lazily
+// instantiated.
 @property(nonatomic, strong) UIImageView* shadowView;
+// The shadow below the expanded omnibox. Lazily instantiated.
+@property(nonatomic, strong) UIImageView* fullBleedShadowView;
 // Background view, used to display the incognito NTP background color on the
 // toolbar.
 @property(nonatomic, strong) UIView* backgroundView;
@@ -110,6 +113,7 @@
 @synthesize progressBar = _progressBar;
 @synthesize locationBarContainerStackView = _locationBarContainerStackView;
 @synthesize shadowView = _shadowView;
+@synthesize fullBleedShadowView = _fullBleedShadowView;
 @synthesize expandedToolbarConstraints = _expandedToolbarConstraints;
 @synthesize topSafeAnchor = _topSafeAnchor;
 @synthesize regularToolbarConstraints = _regularToolbarConstraints;
@@ -164,6 +168,8 @@
 
   [animator addAnimations:^{
     [self.view layoutIfNeeded];
+    self.shadowView.alpha = 0;
+    self.fullBleedShadowView.alpha = 1;
   }];
   // When the locationBarContainer has been expanded the Contract button will
   // fade in.
@@ -208,6 +214,8 @@
     [self.view layoutIfNeeded];
     self.contractButton.hidden = YES;
     self.contractButton.alpha = 0;
+    self.shadowView.alpha = 1;
+    self.fullBleedShadowView.alpha = 0;
   }];
   // Once the locationBarContainer has been contracted fade in ToolbarButtons.
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
@@ -254,6 +262,7 @@
 
 - (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
   self.backgroundView.alpha = alpha;
+  self.shadowView.alpha = 1 - alpha;
 }
 
 - (void)showPrerenderingAnimation {
@@ -296,6 +305,7 @@
   // Z order.
   [self.view addSubview:self.locationBarContainer];
   [self.view addSubview:self.shadowView];
+  [self.view addSubview:self.fullBleedShadowView];
   [self.view addSubview:self.progressBar];
   [self setConstraints];
 }
@@ -364,7 +374,7 @@
         constraintEqualToConstant:kProgressBarHeight],
   ]];
 
-  // Shadow constraints.
+  // Shadows constraints.
   [NSLayoutConstraint activateConstraints:@[
     [self.shadowView.topAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     [self.shadowView.leadingAnchor
@@ -373,6 +383,14 @@
         constraintEqualToAnchor:self.view.trailingAnchor],
     [self.shadowView.heightAnchor
         constraintEqualToConstant:kToolbarShadowHeight],
+    [self.fullBleedShadowView.topAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
+    [self.fullBleedShadowView.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.fullBleedShadowView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [self.fullBleedShadowView.heightAnchor
+        constraintEqualToConstant:kToolbarFullBleedShadowHeight],
   ]];
 
   // Stack views constraints.
@@ -915,6 +933,17 @@
     _shadowView.image = NativeImage(IDR_IOS_TOOLBAR_SHADOW);
   }
   return _shadowView;
+}
+
+- (UIImageView*)fullBleedShadowView {
+  if (!_fullBleedShadowView) {
+    _fullBleedShadowView = [[UIImageView alloc] init];
+    _fullBleedShadowView.translatesAutoresizingMaskIntoConstraints = NO;
+    _fullBleedShadowView.userInteractionEnabled = NO;
+    _fullBleedShadowView.alpha = 0;
+    _fullBleedShadowView.image = NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED);
+  }
+  return _fullBleedShadowView;
 }
 
 #pragma mark - Private

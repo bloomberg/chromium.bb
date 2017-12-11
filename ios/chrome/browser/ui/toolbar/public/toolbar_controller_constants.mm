@@ -29,6 +29,7 @@ const NSInteger kFontSizeTenTabsOrMore = 9;
 const NSUInteger kTransitionLayerCapacity = 11;
 
 const CGFloat kToolbarShadowHeight = 2;
+const CGFloat kToolbarFullBleedShadowHeight = 10;
 
 // Macros for creating CGRects of height H, origin (0,0), with the portrait
 // width of phone/pad devices.
