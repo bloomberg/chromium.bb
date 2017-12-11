@@ -329,7 +329,7 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
 }
 
 TEST_F(FrameSelectionTest, BoldCommandPreservesHandle) {
-  SetBodyContent("<div id=sample>abc</div>");
+  SetBodyContent("<div id=sample contenteditable>abc</div>");
   Element* sample = GetDocument().getElementById("sample");
   const Position end_of_text(sample->firstChild(), 3);
   Selection().SetSelection(SelectionInDOMTree::Builder()

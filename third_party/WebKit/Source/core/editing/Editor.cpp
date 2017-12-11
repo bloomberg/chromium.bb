@@ -1500,8 +1500,7 @@ void Editor::ChangeSelectionAfterCommand(
   bool selection_did_not_change_dom_position =
       new_selection == GetFrameSelection().GetSelectionInDOMTree();
   const bool handle_visible =
-      GetFrameSelection().IsHandleVisible() &&
-      GetFrameSelection().GetSelectionInDOMTree().IsRange();
+      GetFrameSelection().IsHandleVisible() && new_selection.IsRange();
   GetFrameSelection().SetSelection(new_selection,
                                    SetSelectionOptions::Builder(options)
                                        .SetShouldShowHandle(handle_visible)
