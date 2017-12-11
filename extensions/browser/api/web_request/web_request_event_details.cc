@@ -13,12 +13,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/websocket_handshake_request_info.h"
 #include "content/public/common/child_process_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -27,7 +27,6 @@
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
 
 using extension_web_request_api_helpers::ExtraInfoSpec;
 
@@ -36,85 +35,28 @@ namespace keys = extension_web_request_api_constants;
 
 namespace extensions {
 
-WebRequestEventDetails::WebRequestEventDetails(const net::URLRequest* request,
+WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
                                                int extra_info_spec)
     : extra_info_spec_(extra_info_spec),
       render_process_id_(content::ChildProcessHost::kInvalidUniqueID),
       render_frame_id_(MSG_ROUTING_NONE) {
-  auto resource_type = GetWebRequestResourceType(request);
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (info) {
-    render_process_id_ = info->GetChildID();
-    render_frame_id_ = info->GetRenderFrameID();
-  } else if (resource_type == WebRequestResourceType::WEB_SOCKET) {
-    // TODO(pkalinnikov): Consider embedding WebSocketHandshakeRequestInfo into
-    // UrlRequestUserData.
-    const content::WebSocketHandshakeRequestInfo* ws_info =
-        content::WebSocketHandshakeRequestInfo::ForRequest(request);
-    if (ws_info) {
-      render_process_id_ = ws_info->GetChildId();
-      render_frame_id_ = ws_info->GetRenderFrameId();
-    }
-  } else {
-    // Fallback for requests that are not allocated by a
-    // ResourceDispatcherHost, such as the TemplateURLFetcher.
-    content::ResourceRequestInfo::GetRenderFrameForRequest(
-        request, &render_process_id_, &render_frame_id_);
-  }
-
-  dict_.SetString(keys::kMethodKey, request->method());
-  dict_.SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
+  dict_.SetString(keys::kMethodKey, request.method);
+  dict_.SetString(keys::kRequestIdKey, base::Uint64ToString(request.id));
   dict_.SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   dict_.SetString(keys::kTypeKey,
-                  WebRequestResourceTypeToString(resource_type));
-  dict_.SetString(keys::kUrlKey, request->url().spec());
-  if (request->initiator())
-    initiator_ = request->initiator();
+                  WebRequestResourceTypeToString(request.web_request_type));
+  dict_.SetString(keys::kUrlKey, request.url.spec());
+  initiator_ = request.initiator;
+  render_process_id_ = request.render_process_id;
+  render_frame_id_ = request.frame_id;
 }
 
-WebRequestEventDetails::~WebRequestEventDetails() {}
+WebRequestEventDetails::~WebRequestEventDetails() = default;
 
-void WebRequestEventDetails::SetRequestBody(const net::URLRequest* request) {
+void WebRequestEventDetails::SetRequestBody(WebRequestInfo* request) {
   if (!(extra_info_spec_ & ExtraInfoSpec::REQUEST_BODY))
     return;
-
-  const net::UploadDataStream* upload_data = request->get_upload();
-  if (!upload_data ||
-      (request->method() != "POST" && request->method() != "PUT"))
-    return;
-
-  base::DictionaryValue* request_body = new base::DictionaryValue();
-  request_body_.reset(request_body);
-
-  // Get the data presenters, ordered by how specific they are.
-  ParsedDataPresenter parsed_data_presenter(*request);
-  RawDataPresenter raw_data_presenter;
-  UploadDataPresenter* const presenters[] = {
-      &parsed_data_presenter,  // 1: any parseable forms? (Specific to forms.)
-      &raw_data_presenter      // 2: any data at all? (Non-specific.)
-  };
-  // Keys for the results of the corresponding presenters.
-  static const char* const kKeys[] = {keys::kRequestBodyFormDataKey,
-                                      keys::kRequestBodyRawKey};
-
-  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
-      upload_data->GetElementReaders();
-  bool some_succeeded = false;
-  if (readers) {
-    for (size_t i = 0; i < arraysize(presenters); ++i) {
-      for (const auto& reader : *readers)
-        presenters[i]->FeedNext(*reader);
-      if (presenters[i]->Succeeded()) {
-        request_body->Set(kKeys[i], presenters[i]->Result());
-        some_succeeded = true;
-        break;
-      }
-    }
-  }
-  if (!some_succeeded)
-    request_body->SetString(keys::kRequestBodyErrorKey, "Unknown error.");
+  request_body_ = std::move(request->request_body_data);
 }
 
 void WebRequestEventDetails::SetRequestHeaders(
@@ -142,12 +84,12 @@ void WebRequestEventDetails::SetAuthInfo(
 }
 
 void WebRequestEventDetails::SetResponseHeaders(
-    const net::URLRequest* request,
+    const WebRequestInfo& request,
     const net::HttpResponseHeaders* response_headers) {
   if (!response_headers) {
     // Not all URLRequestJobs specify response headers. E.g. URLRequestFTPJob,
     // URLRequestFileJob and some redirects.
-    dict_.SetInteger(keys::kStatusCodeKey, request->GetResponseCode());
+    dict_.SetInteger(keys::kStatusCodeKey, request.response_code);
     dict_.SetString(keys::kStatusLineKey, "");
   } else {
     dict_.SetInteger(keys::kStatusCodeKey, response_headers->response_code());
@@ -161,7 +103,7 @@ void WebRequestEventDetails::SetResponseHeaders(
       std::string name;
       std::string value;
       while (response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
-        if (ExtensionsAPIClient::Get()->ShouldHideResponseHeader(request->url(),
+        if (ExtensionsAPIClient::Get()->ShouldHideResponseHeader(request.url,
                                                                  name)) {
           continue;
         }
@@ -172,11 +114,10 @@ void WebRequestEventDetails::SetResponseHeaders(
   }
 }
 
-void WebRequestEventDetails::SetResponseSource(const net::URLRequest* request) {
-  dict_.SetBoolean(keys::kFromCache, request->was_cached());
-  const std::string response_ip = request->GetSocketAddress().host();
-  if (!response_ip.empty())
-    dict_.SetString(keys::kIpKey, response_ip);
+void WebRequestEventDetails::SetResponseSource(const WebRequestInfo& request) {
+  dict_.SetBoolean(keys::kFromCache, request.response_from_cache);
+  if (!request.response_ip.empty())
+    dict_.SetString(keys::kIpKey, request.response_ip);
 }
 
 void WebRequestEventDetails::SetFrameData(

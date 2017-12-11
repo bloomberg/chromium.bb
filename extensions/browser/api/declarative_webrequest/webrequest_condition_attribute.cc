@@ -182,8 +182,7 @@ bool WebRequestConditionAttributeResourceType::IsFulfilled(
     const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
-  const auto resource_type = GetWebRequestResourceType(request_data.request);
-  return base::ContainsValue(types_, resource_type);
+  return base::ContainsValue(types_, request_data.request->web_request_type);
 }
 
 WebRequestConditionAttribute::Type
@@ -611,7 +610,7 @@ bool WebRequestConditionAttributeRequestHeaders::IsFulfilled(
     return false;
 
   const net::HttpRequestHeaders& headers =
-      request_data.request->extra_request_headers();
+      request_data.request->extra_request_headers;
 
   bool passed = false;  // Did some header pass TestNameValue?
   net::HttpRequestHeaders::Iterator it(headers);
@@ -693,7 +692,7 @@ bool WebRequestConditionAttributeResponseHeaders::IsFulfilled(
   size_t iter = 0;
   while (!passed && headers->EnumerateHeaderLines(&iter, &name, &value)) {
     if (ExtensionsAPIClient::Get()->ShouldHideResponseHeader(
-            request_data.request->url(), name))
+            request_data.request->url, name))
       continue;
     passed |= header_matcher_->TestNameValue(name, value);
   }
@@ -762,7 +761,7 @@ bool WebRequestConditionAttributeThirdParty::IsFulfilled(
   const net::StaticCookiePolicy block_third_party_policy(
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
   const int can_get_cookies = block_third_party_policy.CanAccessCookies(
-      request_data.request->url(), request_data.request->site_for_cookies());
+      request_data.request->url, request_data.request->site_for_cookies);
   const bool is_first_party = (can_get_cookies == net::OK);
 
   return match_third_party_ ? !is_first_party : is_first_party;

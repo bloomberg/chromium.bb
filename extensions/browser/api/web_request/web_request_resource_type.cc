@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/public/browser/resource_request_info.h"
-#include "net/url_request/url_request.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 
 namespace extensions {
 
@@ -82,16 +82,6 @@ WebRequestResourceType ToWebRequestResourceType(content::ResourceType type) {
   }
   NOTREACHED();
   return WebRequestResourceType::OTHER;
-}
-
-WebRequestResourceType GetWebRequestResourceType(
-    const net::URLRequest* request) {
-  DCHECK(request);
-  if (request->url().SchemeIsWSOrWSS())
-    return WebRequestResourceType::WEB_SOCKET;
-  const auto* info = content::ResourceRequestInfo::ForRequest(request);
-  return info ? ToWebRequestResourceType(info->GetResourceType())
-              : WebRequestResourceType::OTHER;
 }
 
 const char* WebRequestResourceTypeToString(WebRequestResourceType type) {

@@ -1,0 +1,193 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "extensions/browser/api/web_request/web_request_info.h"
+
+#include <memory>
+#include <string>
+
+#include "base/values.h"
+#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/websocket_handshake_request_info.h"
+#include "extensions/browser/api/web_request/upload_data_presenter.h"
+#include "extensions/browser/api/web_request/web_request_api_constants.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
+#include "extensions/browser/extension_navigation_ui_data.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "net/base/upload_data_stream.h"
+#include "net/log/net_log_with_source.h"
+#include "net/url_request/url_request.h"
+
+namespace keys = extension_web_request_api_constants;
+
+namespace extensions {
+
+namespace {
+
+std::unique_ptr<base::Value> NetLogExtensionIdCallback(
+    const std::string& extension_id,
+    net::NetLogCaptureMode capture_mode) {
+  auto params = std::make_unique<base::DictionaryValue>();
+  params->SetString("extension_id", extension_id);
+  return params;
+}
+
+// Implements Logger using NetLog, mirroring the logging facilities used prior
+// to the introduction of WebRequestInfo.
+// TODO(crbug.com/721414): Transition away from using NetLog.
+class NetLogLogger : public WebRequestInfo::Logger {
+ public:
+  explicit NetLogLogger(net::URLRequest* request) : request_(request) {}
+  ~NetLogLogger() override = default;
+
+  // WebRequestInfo::Logger:
+  void LogEvent(net::NetLogEventType event_type,
+                const std::string& extension_id) override {
+    request_->net_log().AddEvent(
+        event_type,
+        base::BindRepeating(&NetLogExtensionIdCallback, extension_id));
+  }
+
+  void LogBlockedBy(const std::string& blocker_info) override {
+    // LogAndReport allows extensions that block requests to be displayed in the
+    // load status bar.
+    request_->LogAndReportBlockedBy(blocker_info.c_str());
+  }
+
+  void LogUnblocked() override { request_->LogUnblocked(); }
+
+ private:
+  net::URLRequest* const request_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetLogLogger);
+};
+
+std::unique_ptr<base::DictionaryValue> ExtractRequestBodyData(
+    net::URLRequest* url_request) {
+  const net::UploadDataStream* upload_data = url_request->get_upload();
+  if (!upload_data ||
+      (url_request->method() != "POST" && url_request->method() != "PUT")) {
+    return nullptr;
+  }
+
+  auto request_body_data = std::make_unique<base::DictionaryValue>();
+
+  // Get the data presenters, ordered by how specific they are.
+  ParsedDataPresenter parsed_data_presenter(*url_request);
+  RawDataPresenter raw_data_presenter;
+  UploadDataPresenter* const presenters[] = {
+      &parsed_data_presenter,  // 1: any parseable forms? (Specific to forms.)
+      &raw_data_presenter      // 2: any data at all? (Non-specific.)
+  };
+  // Keys for the results of the corresponding presenters.
+  static const char* const kKeys[] = {keys::kRequestBodyFormDataKey,
+                                      keys::kRequestBodyRawKey};
+  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
+      upload_data->GetElementReaders();
+  bool some_succeeded = false;
+  if (readers) {
+    for (size_t i = 0; i < arraysize(presenters); ++i) {
+      for (const auto& reader : *readers)
+        presenters[i]->FeedNext(*reader);
+      if (presenters[i]->Succeeded()) {
+        request_body_data->Set(kKeys[i], presenters[i]->Result());
+        some_succeeded = true;
+        break;
+      }
+    }
+  }
+  if (!some_succeeded) {
+    request_body_data->SetString(keys::kRequestBodyErrorKey, "Unknown error.");
+  }
+
+  return request_body_data;
+}
+
+}  // namespace
+
+WebRequestInfo::WebRequestInfo() = default;
+
+WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
+    : id(url_request->identifier()),
+      url(url_request->url()),
+      site_for_cookies(url_request->site_for_cookies()),
+      method(url_request->method()),
+      initiator(url_request->initiator()),
+      extra_request_headers(url_request->extra_request_headers()),
+      request_body_data(ExtractRequestBodyData(url_request)),
+      logger(std::make_unique<NetLogLogger>(url_request)) {
+  if (url.SchemeIsWSOrWSS()) {
+    web_request_type = WebRequestResourceType::WEB_SOCKET;
+
+    // TODO(pkalinnikov): Consider embedding WebSocketHandshakeRequestInfo into
+    // UrlRequestUserData.
+    const content::WebSocketHandshakeRequestInfo* ws_info =
+        content::WebSocketHandshakeRequestInfo::ForRequest(url_request);
+    if (ws_info) {
+      render_process_id = ws_info->GetChildId();
+      frame_id = ws_info->GetRenderFrameId();
+    }
+  } else if (auto* info =
+                 content::ResourceRequestInfo::ForRequest(url_request)) {
+    render_process_id = info->GetChildID();
+    routing_id = info->GetRouteID();
+    frame_id = info->GetRenderFrameID();
+    type = info->GetResourceType();
+    web_request_type = ToWebRequestResourceType(type.value());
+    is_async = info->IsAsync();
+  } else {
+    // There may be basic process and frame info associated with the request
+    // even when |info| is null. Attempt to grab it as a last ditch effort. If
+    // this fails, we have no frame info.
+    content::ResourceRequestInfo::GetRenderFrameForRequest(
+        url_request, &render_process_id, &frame_id);
+  }
+
+  ExtensionsBrowserClient* browser_client = ExtensionsBrowserClient::Get();
+  ExtensionNavigationUIData* navigation_ui_data =
+      browser_client ? browser_client->GetExtensionNavigationUIData(url_request)
+                     : nullptr;
+  if (navigation_ui_data) {
+    is_browser_side_navigation = true;
+    is_web_view = navigation_ui_data->is_web_view();
+    web_view_instance_id = navigation_ui_data->web_view_instance_id();
+    web_view_rules_registry_id =
+        navigation_ui_data->web_view_rules_registry_id();
+
+    // PlzNavigate: if this request corresponds to a navigation, we always have
+    // FrameData available from the ExtensionNavigationUIData. Use that.
+    frame_data = navigation_ui_data->frame_data();
+  } else if (frame_id >= 0) {
+    // Grab any WebView-related information if relevant.
+    WebViewRendererState::WebViewInfo web_view_info;
+    if (WebViewRendererState::GetInstance()->GetInfo(
+            render_process_id, routing_id, &web_view_info)) {
+      is_web_view = true;
+      web_view_instance_id = web_view_info.instance_id;
+      web_view_rules_registry_id = web_view_info.rules_registry_id;
+      web_view_embedder_process_id = web_view_info.embedder_process_id;
+    }
+
+    // For subresource loads or non-browser-side navigation requests, attempt to
+    // resolve the FrameData immediately anyway using cached information.
+    ExtensionApiFrameIdMap::FrameData data;
+    bool was_cached = ExtensionApiFrameIdMap::Get()->GetCachedFrameDataOnIO(
+        render_process_id, frame_id, &data);
+    if (was_cached)
+      frame_data = data;
+  }
+}
+
+WebRequestInfo::~WebRequestInfo() = default;
+
+void WebRequestInfo::AddResponseInfoFromURLRequest(
+    net::URLRequest* url_request) {
+  response_code = url_request->GetResponseCode();
+  response_headers = url_request->response_headers();
+  response_ip = url_request->GetSocketAddress().host();
+  response_from_cache = url_request->was_cached();
+}
+
+}  // namespace extensions

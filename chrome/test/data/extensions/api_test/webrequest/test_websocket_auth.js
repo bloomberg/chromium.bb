@@ -78,6 +78,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              ip: '127.0.0.1',
               fromCache: false,
               error: 'net::ERR_ABORTED',
               initiator: getDomain(initiators.WEB_INITIATED)
@@ -166,6 +167,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              ip: '127.0.0.1',
               fromCache: false,
               error: 'net::ERR_ABORTED',
               initiator: getDomain(initiators.WEB_INITIATED)
@@ -253,6 +255,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              ip: '127.0.0.1',
               fromCache: false,
               error: 'net::ERR_ABORTED',
               initiator: getDomain(initiators.WEB_INITIATED)
@@ -341,6 +344,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              ip: '127.0.0.1',
               fromCache: false,
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',

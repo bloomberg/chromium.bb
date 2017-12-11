@@ -28,7 +28,6 @@
 #include "extensions/common/extension.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request.h"
 #include "third_party/re2/src/re2/re2.h"
 
 using content::ResourceRequestInfo;
@@ -479,26 +478,18 @@ bool WebRequestAction::Equals(const WebRequestAction* other) const {
 bool WebRequestAction::HasPermission(ApplyInfo* apply_info,
                                      const std::string& extension_id) const {
   const InfoMap* extension_info_map = apply_info->extension_info_map;
-  const net::URLRequest* request = apply_info->request_data.request;
-  ExtensionNavigationUIData* navigation_ui_data =
-      apply_info->request_data.navigation_ui_data;
-  if (WebRequestPermissions::HideRequest(extension_info_map, request,
-                                         navigation_ui_data)) {
+  const WebRequestInfo* request = apply_info->request_data.request;
+  if (WebRequestPermissions::HideRequest(extension_info_map, *request))
     return false;
-  }
 
   // In unit tests we don't have an extension_info_map object here and skip host
   // permission checks.
   if (!extension_info_map)
     return true;
 
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  int process_id = info ? info->GetChildID() : 0;
-
   // The embedder can always access all hosts from within a <webview>.
   // The same is not true of extensions.
-  if (WebViewRendererState::GetInstance()->IsGuest(process_id) ||
-      (navigation_ui_data && navigation_ui_data->is_web_view()))
+  if (request->is_web_view)
     return true;
 
   WebRequestPermissions::HostPermissionsCheck permission_check =
@@ -515,9 +506,9 @@ bool WebRequestAction::HasPermission(ApplyInfo* apply_info,
   }
   // TODO(devlin): Pass in the real tab id here.
   return WebRequestPermissions::CanExtensionAccessURL(
-             extension_info_map, extension_id, request->url(), -1,
+             extension_info_map, extension_id, request->url, -1,
              apply_info->crosses_incognito, permission_check,
-             request->initiator()) == PermissionsData::ACCESS_ALLOWED;
+             request->initiator) == PermissionsData::ACCESS_ALLOWED;
 }
 
 // static
@@ -626,7 +617,7 @@ LinkedPtrEventResponseDelta WebRequestRedirectAction::CreateDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_data.stage & stages());
-  if (request_data.request->url() == redirect_url_)
+  if (request_data.request->url == redirect_url_)
     return LinkedPtrEventResponseDelta(NULL);
   LinkedPtrEventResponseDelta result(
       new helpers::EventResponseDelta(extension_id, extension_install_time));
@@ -784,7 +775,7 @@ LinkedPtrEventResponseDelta WebRequestRedirectByRegExAction::CreateDelta(
   CHECK(request_data.stage & stages());
   CHECK(from_pattern_.get());
 
-  const std::string& old_url = request_data.request->url().spec();
+  const std::string& old_url = request_data.request->url.spec();
   std::string new_url = old_url;
   if (!RE2::Replace(&new_url, *from_pattern_, to_pattern_) ||
       new_url == old_url) {

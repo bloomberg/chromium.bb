@@ -7,12 +7,9 @@
 
 #include <stdint.h>
 
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "content/public/common/resource_type.h"
-
-namespace net {
-class URLRequest;
-}  // namespace net
 
 namespace extensions {
 
@@ -37,9 +34,6 @@ enum class WebRequestResourceType : uint8_t {
 // Multiple content::ResourceTypes may map to the same WebRequestResourceType,
 // but the converse is not possible.
 WebRequestResourceType ToWebRequestResourceType(content::ResourceType type);
-
-// Returns a type for a non-empty URLRequest.
-WebRequestResourceType GetWebRequestResourceType(const net::URLRequest*);
 
 // Returns a string representation of |type|.
 const char* WebRequestResourceTypeToString(WebRequestResourceType type);

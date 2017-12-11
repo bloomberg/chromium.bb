@@ -20,6 +20,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "net/base/request_priority.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -118,8 +119,9 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data
+  WebRequestInfo request_ok_info(url_request_ok.get());
   EXPECT_TRUE(attribute->IsFulfilled(
-      WebRequestData(url_request_ok.get(), ON_BEFORE_REQUEST)));
+      WebRequestData(&request_ok_info, ON_BEFORE_REQUEST)));
 
   std::unique_ptr<net::URLRequest> url_request_fail(context.CreateRequest(
       GURL("http://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
@@ -135,8 +137,9 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data
-  EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(url_request_fail.get(),
-                                                     ON_BEFORE_REQUEST)));
+  WebRequestInfo request_fail_info(url_request_fail.get());
+  EXPECT_FALSE(attribute->IsFulfilled(
+      WebRequestData(&request_fail_info, ON_BEFORE_REQUEST)));
 }
 
 TEST(WebRequestConditionAttributeTest, ContentType) {
@@ -157,6 +160,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
       test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   url_request->Start();
+  WebRequestInfo request_info(url_request.get());
   base::RunLoop().Run();
 
   base::ListValue content_types;
@@ -166,12 +170,10 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
           keys::kContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_include.get());
-  EXPECT_FALSE(attribute_include->IsFulfilled(
-      WebRequestData(url_request.get(), ON_BEFORE_REQUEST, nullptr,
-                     url_request->response_headers())));
-  EXPECT_TRUE(attribute_include->IsFulfilled(
-      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED, nullptr,
-                     url_request->response_headers())));
+  EXPECT_FALSE(attribute_include->IsFulfilled(WebRequestData(
+      &request_info, ON_BEFORE_REQUEST, url_request->response_headers())));
+  EXPECT_TRUE(attribute_include->IsFulfilled(WebRequestData(
+      &request_info, ON_HEADERS_RECEIVED, url_request->response_headers())));
   EXPECT_EQ(std::string(keys::kContentTypeKey), attribute_include->GetName());
 
   scoped_refptr<const WebRequestConditionAttribute> attribute_exclude =
@@ -179,9 +181,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
           keys::kExcludeContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_exclude.get());
-  EXPECT_FALSE(attribute_exclude->IsFulfilled(
-      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED, nullptr,
-                     url_request->response_headers())));
+  EXPECT_FALSE(attribute_exclude->IsFulfilled(WebRequestData(
+      &request_info, ON_HEADERS_RECEIVED, url_request->response_headers())));
 
   content_types.Clear();
   content_types.AppendString("something/invalid");
@@ -190,18 +191,16 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
           keys::kContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_unincluded.get());
-  EXPECT_FALSE(attribute_unincluded->IsFulfilled(
-      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED, nullptr,
-                     url_request->response_headers())));
+  EXPECT_FALSE(attribute_unincluded->IsFulfilled(WebRequestData(
+      &request_info, ON_HEADERS_RECEIVED, url_request->response_headers())));
 
   scoped_refptr<const WebRequestConditionAttribute> attribute_unexcluded =
       WebRequestConditionAttribute::Create(
           keys::kExcludeContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_unexcluded.get());
-  EXPECT_TRUE(attribute_unexcluded->IsFulfilled(
-      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED, nullptr,
-                     url_request->response_headers())));
+  EXPECT_TRUE(attribute_unexcluded->IsFulfilled(WebRequestData(
+      &request_info, ON_HEADERS_RECEIVED, url_request->response_headers())));
   EXPECT_EQ(std::string(keys::kExcludeContentTypeKey),
             attribute_unexcluded->GetName());
 }
@@ -246,22 +245,25 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
       continue;
     const RequestStage stage = static_cast<RequestStage>(i);
     url_request->set_site_for_cookies(url_empty);
+    WebRequestInfo request_info1(url_request.get());
     EXPECT_FALSE(third_party_attribute->IsFulfilled(
-        WebRequestData(url_request.get(), stage)));
+        WebRequestData(&request_info1, stage)));
     EXPECT_TRUE(first_party_attribute->IsFulfilled(
-        WebRequestData(url_request.get(), stage)));
+        WebRequestData(&request_info1, stage)));
 
     url_request->set_site_for_cookies(url_b);
+    WebRequestInfo request_info2(url_request.get());
     EXPECT_TRUE(third_party_attribute->IsFulfilled(
-        WebRequestData(url_request.get(), stage)));
+        WebRequestData(&request_info2, stage)));
     EXPECT_FALSE(first_party_attribute->IsFulfilled(
-        WebRequestData(url_request.get(), stage)));
+        WebRequestData(&request_info2, stage)));
 
     url_request->set_site_for_cookies(url_a);
+    WebRequestInfo request_info3(url_request.get());
     EXPECT_FALSE(third_party_attribute->IsFulfilled(
-        WebRequestData(url_request.get(), stage)));
+        WebRequestData(&request_info3, stage)));
     EXPECT_TRUE(first_party_attribute->IsFulfilled(
-        WebRequestData(url_request.get(), stage)));
+        WebRequestData(&request_info3, stage)));
   }
 }
 
@@ -332,19 +334,19 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   std::unique_ptr<net::URLRequest> url_request(
       context.CreateRequest(url_empty, net::DEFAULT_PRIORITY, &delegate,
                             TRAFFIC_ANNOTATION_FOR_TESTS));
+  WebRequestInfo request_info(url_request.get());
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
     EXPECT_FALSE(empty_attribute->IsFulfilled(
-        WebRequestData(url_request.get(), active_stages[i].first)));
+        WebRequestData(&request_info, active_stages[i].first)));
 
     for (size_t j = 0; j < one_stage_attributes.size(); ++j) {
-      EXPECT_EQ(i == j,
-                one_stage_attributes[j]->IsFulfilled(
-                    WebRequestData(url_request.get(), active_stages[i].first)));
+      EXPECT_EQ(i == j, one_stage_attributes[j]->IsFulfilled(WebRequestData(
+                            &request_info, active_stages[i].first)));
     }
 
     EXPECT_TRUE(attribute_with_all->IsFulfilled(
-        WebRequestData(url_request.get(), active_stages[i].first)));
+        WebRequestData(&request_info, active_stages[i].first)));
   }
 }
 
@@ -439,8 +441,9 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
   ASSERT_TRUE(attribute.get());
   EXPECT_EQ(key, attribute->GetName());
 
-  *result = attribute->IsFulfilled(WebRequestData(
-      url_request, stage, nullptr, url_request->response_headers()));
+  WebRequestInfo request_info(url_request);
+  *result = attribute->IsFulfilled(
+      WebRequestData(&request_info, stage, url_request->response_headers()));
 }
 
 }  // namespace
