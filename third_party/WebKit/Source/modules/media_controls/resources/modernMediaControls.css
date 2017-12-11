@@ -212,7 +212,7 @@ video::-webkit-media-controls-overlay-play-button {
   -webkit-appearance: -internal-media-control;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
   flex: 1;
   min-height: 0;
   width: 100%;
@@ -220,6 +220,7 @@ video::-webkit-media-controls-overlay-play-button {
   overflow: hidden;
   background: transparent;
   margin-bottom: -40px;
+  position: relative;
 }
 
 input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
