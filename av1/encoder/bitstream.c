@@ -193,11 +193,6 @@ static void write_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                    INTER_COMPOUND_MODES);
 }
 
-static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
-                                int max) {
-  aom_wb_write_literal(wb, data, get_unsigned_bits(max));
-}
-
 static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 const MB_MODE_INFO *mbmi, TX_SIZE tx_size,
                                 int depth, int blk_row, int blk_col,
@@ -2784,18 +2779,19 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
         const int active = segfeature_active(seg, i, j);
         aom_wb_write_bit(wb, active);
         if (active) {
-          const int data = get_segdata(seg, i, j);
-          const int data_max = av1_seg_feature_data_max(j);
 #if CONFIG_SPATIAL_SEGMENTATION
           cm->preskip_segid |= j >= SEG_LVL_REF_FRAME;
           cm->last_active_segid = i;
 #endif
+          const int data_max = av1_seg_feature_data_max(j);
+          const int data_min = -data_max;
+          const int ubits = get_unsigned_bits(data_max);
+          const int data = clamp(get_segdata(seg, i, j), data_min, data_max);
 
           if (av1_is_segfeature_signed(j)) {
-            encode_unsigned_max(wb, abs(data), data_max);
-            aom_wb_write_bit(wb, data < 0);
+            aom_wb_write_inv_signed_literal(wb, data, ubits);
           } else {
-            encode_unsigned_max(wb, data, data_max);
+            aom_wb_write_literal(wb, data, ubits);
           }
         }
       }

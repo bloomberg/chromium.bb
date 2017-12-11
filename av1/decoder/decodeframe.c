@@ -111,11 +111,6 @@ static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
   return len != 0 && len <= (size_t)(end - start);
 }
 
-static int decode_unsigned_max(struct aom_read_bit_buffer *rb, int max) {
-  const int data = aom_rb_read_literal(rb, get_unsigned_bits(max));
-  return data > max ? max : data;
-}
-
 #if CONFIG_SIMPLIFY_TX_MODE
 static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (cm->all_lossless) return ONLY_4X4;
@@ -998,9 +993,18 @@ static void setup_segmentation(AV1_COMMON *const cm,
           cm->last_active_segid = i;
 #endif
           av1_enable_segfeature(seg, i, j);
-          data = decode_unsigned_max(rb, av1_seg_feature_data_max(j));
-          if (av1_is_segfeature_signed(j))
-            data = aom_rb_read_bit(rb) ? -data : data;
+
+          const int data_max = av1_seg_feature_data_max(j);
+          const int data_min = -data_max;
+          const int ubits = get_unsigned_bits(data_max);
+
+          if (av1_is_segfeature_signed(j)) {
+            data = aom_rb_read_inv_signed_literal(rb, ubits);
+          } else {
+            data = aom_rb_read_literal(rb, ubits);
+          }
+
+          data = clamp(data, data_min, data_max);
         }
         av1_set_segdata(seg, i, j, data);
       }
