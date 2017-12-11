@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
+import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 
@@ -276,10 +277,16 @@ public abstract class FirstRunFlowSequencer  {
         return intent;
     }
 
-    /** Returns an intent to show lightweight first run activity. */
-    public static Intent createLightweightFirstRunIntent(Context context) {
+    /**
+     * Returns an intent to show the lightweight first run activity.
+     * @param context        The context.
+     * @param fromIntent     The intent that was used to launch Chrome.
+     */
+    private static Intent createLightweightFirstRunIntent(Context context, Intent fromIntent) {
         Intent intent = new Intent();
         intent.setClassName(context, LightweightFirstRunActivity.class.getName());
+        String appName = WebApkActivity.slowExtractNameFromIntentIfTargetIsWebApk(fromIntent);
+        intent.putExtra(LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, appName);
         return intent;
     }
 
@@ -354,7 +361,7 @@ public abstract class FirstRunFlowSequencer  {
             // Launch the Generic First Run Experience if it was previously active.
             Intent freIntent = null;
             if (preferLightweightFre && !isGenericFreActive) {
-                freIntent = createLightweightFirstRunIntent(caller);
+                freIntent = createLightweightFirstRunIntent(caller, intent);
             } else {
                 freIntent = createGenericFirstRunIntent(
                         caller, TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN));
