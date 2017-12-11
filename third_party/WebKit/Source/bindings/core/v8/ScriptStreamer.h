@@ -18,7 +18,6 @@ namespace blink {
 
 class ClassicPendingScript;
 class Resource;
-class ScriptResource;
 class ScriptState;
 class Settings;
 class SourceStream;
@@ -56,7 +55,6 @@ class CORE_EXPORT ScriptStreamer final
   bool IsStreamingFinished() const;  // Has streaming finished?
 
   v8::ScriptCompiler::StreamedSource* Source() { return source_.get(); }
-  ScriptResource* GetResource() const { return resource_; }
 
   // Called when the script is not needed any more (e.g., loading was
   // cancelled). After calling cancel, ClassicPendingScript can drop its
@@ -74,8 +72,8 @@ class CORE_EXPORT ScriptStreamer final
   bool StreamingSuppressed() const { return streaming_suppressed_; }
 
   // Called by ClassicPendingScript when data arrives from the network.
-  void NotifyAppendData(ScriptResource*);
-  void NotifyFinished(Resource*);
+  void NotifyAppendData(Resource*);
+  void NotifyFinished();
 
   // Called by ScriptStreamingTask when it has streamed all data to V8 and V8
   // has processed it.
@@ -105,10 +103,6 @@ class CORE_EXPORT ScriptStreamer final
   void NotifyFinishedToClient();
 
   Member<ClassicPendingScript> pending_script_;
-  // This pointer is weak. If ClassicPendingScript and its Resource are deleted
-  // before ScriptStreamer, ClassicPendingScript will notify ScriptStreamer of
-  // its deletion by calling cancel().
-  Member<ScriptResource> resource_;
   // Whether ScriptStreamer is detached from the Resource. In those cases, the
   // script data is not needed any more, and the client won't get notified
   // when the loading and streaming are done.
