@@ -87,11 +87,6 @@ gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) const {
       resource_id);
 }
 
-bool ShellContentClient::IsSupplementarySiteIsolationModeEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIsolateSitesForTesting);
-}
-
 OriginTrialPolicy* ShellContentClient::GetOriginTrialPolicy() {
   return &origin_trial_policy_;
 }

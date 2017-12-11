@@ -228,13 +228,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if site isolation should be enabled for |effective_site_url|.
   // This call allows the embedder to supplement the site isolation policy
-  // enforced by the content layer.
-  //
-  // Will only be called if both of the following happen:
-  //   1. The embedder asked to be consulted, by returning true from
-  //      ContentClient::IsSupplementarySiteIsolationModeEnabled().
-  //   2. The content layer didn't decide to isolate |effective_site_url|
-  //      according to its internal policy (e.g. because of --site-per-process).
+  // enforced by the content layer. Will only be called if the content layer
+  // didn't decide to isolate |effective_site_url| according to its internal
+  // policy (e.g. because of --site-per-process).
   virtual bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                                const GURL& effective_site_url);
 
