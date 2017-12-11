@@ -551,6 +551,60 @@ var tests = [
     chrome.test.succeed();
   },
 
+  function testGoToPageAndXY() {
+    var mockWindow = new MockWindow(100, 100);
+    var mockSizer = new MockSizer();
+    var mockCallback = new MockViewportChangedCallback();
+    var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
+                                function() {}, function() {}, function() {},
+                                0, 1, 0);
+    var documentDimensions = new MockDocumentDimensions();
+
+    documentDimensions.addPage(100, 100);
+    documentDimensions.addPage(200, 200);
+    documentDimensions.addPage(100, 400);
+    viewport.setDocumentDimensions(documentDimensions);
+    viewport.setZoom(1);
+
+    mockCallback.reset();
+    viewport.goToPageAndXY(0, 0, 0);
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(0, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.goToPageAndXY(1, 0, 0);
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(100, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.goToPageAndXY(2, 42, 46);
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0 + 42, viewport.position.x);
+    chrome.test.assertEq(300 + 46, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.goToPageAndXY(2, 42, 0);
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0 + 42, viewport.position.x);
+    chrome.test.assertEq(300, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.goToPageAndXY(2, 0, 46);
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(300 + 46, viewport.position.y);
+
+    viewport.setZoom(0.5);
+    mockCallback.reset();
+    viewport.goToPageAndXY(2, 42, 46);
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0 + 21, viewport.position.x);
+    chrome.test.assertEq(150 + 23, viewport.position.y);
+    chrome.test.succeed();
+  },
+
   function testGetPageScreenRect() {
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();

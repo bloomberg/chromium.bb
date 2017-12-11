@@ -70,37 +70,43 @@ var tests = [
     chrome.test.assertEq(1, subBookmarks.length, "one sub bookmark");
 
     var lastPageChange;
+    var lastXChange;
     var lastYChange;
     var lastUriNavigation;
     bookmarkContent.addEventListener('change-page', function(e) {
       lastPageChange = e.detail.page;
+      lastXChange = undefined;
       lastYChange = undefined;
       lastUriNavigation = undefined;
     });
-    bookmarkContent.addEventListener('change-page-and-y', function(e) {
+    bookmarkContent.addEventListener('change-page-and-xy', function(e) {
       lastPageChange = e.detail.page;
+      lastXChange = e.detail.x;
       lastYChange = e.detail.y;
       lastUriNavigation = undefined;
     });
     bookmarkContent.addEventListener('navigate', function(e) {
       lastPageChange = undefined;
+      lastXChange = undefined;
       lastYChange = undefined;
       lastUriNavigation = e.detail.uri;
     });
 
     function testTapTarget(tapTarget, expectedEvent) {
       lastPageChange = undefined;
+      lastXChange = undefined;
       lastYChange = undefined;
       lastUriNavigation = undefined;
       MockInteractions.tap(tapTarget);
       chrome.test.assertEq(expectedEvent.page, lastPageChange);
+      chrome.test.assertEq(expectedEvent.x, lastXChange);
       chrome.test.assertEq(expectedEvent.y, lastYChange);
       chrome.test.assertEq(expectedEvent.uri, lastUriNavigation);
     }
 
-    testTapTarget(rootBookmarks[0].$.item, {page: 0, y: 166})
-    testTapTarget(subBookmarks[0].$.item, {page: 1, y: 166})
-    testTapTarget(rootBookmarks[1].$.item, {page: 2, y: 166})
+    testTapTarget(rootBookmarks[0].$.item, {page: 0, x: 0, y: 166})
+    testTapTarget(subBookmarks[0].$.item, {page: 1, x: 0, y: 166})
+    testTapTarget(rootBookmarks[1].$.item, {page: 2, x: 0, y: 166})
     testTapTarget(rootBookmarks[2].$.item, {uri: "http://www.chromium.org"})
 
     chrome.test.succeed();

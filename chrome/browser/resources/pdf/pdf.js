@@ -232,8 +232,8 @@ function PDFViewer(browserApi) {
       this.metrics.onPageSelectorNavigation();
   });
 
-  document.body.addEventListener('change-page-and-y', e => {
-    this.viewport_.goToPageAndY(e.detail.page, e.detail.y);
+  document.body.addEventListener('change-page-and-xy', e => {
+    this.viewport_.goToPageAndXY(e.detail.page, e.detail.x, e.detail.y);
     if (e.detail.origin == 'bookmark')
       this.metrics.onFollowBookmark();
   });
@@ -526,19 +526,15 @@ PDFViewer.prototype = {
    * @param {Object} params The open params passed in the URL.
    */
   handleURLParams_: function(params) {
-    if (params.page != undefined)
-      this.viewport_.goToPage(params.page);
-
-    if (params.position) {
-      // Make sure we don't cancel effect of page parameter.
-      this.viewport_.position = {
-        x: this.viewport_.position.x + params.position.x,
-        y: this.viewport_.position.y + params.position.y
-      };
-    }
-
     if (params.zoom)
       this.viewport_.setZoom(params.zoom);
+
+    if (params.position) {
+      this.viewport_.goToPageAndXY(
+          params.page ? params.page : 0, params.position.x, params.position.y);
+    } else if (params.page) {
+      this.viewport_.goToPage(params.page);
+    }
 
     if (params.view) {
       this.isUserInitiatedEvent_ = false;

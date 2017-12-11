@@ -66,9 +66,12 @@ Polymer({
   onClick: function() {
     if (this.bookmark.hasOwnProperty('page')) {
       if (this.bookmark.hasOwnProperty('y')) {
-        this.fire(
-            'change-page-and-y',
-            {page: this.bookmark.page, y: this.bookmark.y, origin: 'bookmark'});
+        this.fire('change-page-and-xy', {
+          page: this.bookmark.page,
+          x: 0,
+          y: this.bookmark.y,
+          origin: 'bookmark'
+        });
       } else {
         this.fire(
             'change-page', {page: this.bookmark.page, origin: 'bookmark'});
