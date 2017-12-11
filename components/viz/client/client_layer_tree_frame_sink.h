@@ -75,6 +75,8 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
     return hit_test_data_provider_.get();
   }
 
+  const LocalSurfaceId& local_surface_id() const { return local_surface_id_; }
+
   // cc::LayerTreeFrameSink implementation.
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;

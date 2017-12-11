@@ -301,13 +301,11 @@ void WindowPortMus::SetFrameSinkIdFromServer(
 
 const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
     const gfx::Size& surface_size_in_pixels) {
-  if (last_surface_size_in_pixels_ == surface_size_in_pixels &&
-      local_surface_id_.is_valid()) {
-    return local_surface_id_;
+  if (last_surface_size_in_pixels_ != surface_size_in_pixels ||
+      !local_surface_id_.is_valid()) {
+    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+    last_surface_size_in_pixels_ = surface_size_in_pixels;
   }
-
-  local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
-  last_surface_size_in_pixels_ = surface_size_in_pixels;
 
   // If the FrameSinkId is available, then immediately embed the SurfaceId.
   // The newly generated frame by the embedder will block in the display

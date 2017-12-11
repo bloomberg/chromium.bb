@@ -37,7 +37,7 @@ namespace aura {
 class ClientSurfaceEmbedder;
 class PropertyConverter;
 class Window;
-class WindowPortMusTestApi;
+class WindowPortMusTest;
 class WindowTreeClient;
 class WindowTreeClientPrivate;
 class WindowTreeHostMus;
@@ -99,7 +99,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::FrameSinkId GetFrameSinkId() const override;
 
  private:
-  friend class WindowPortMusTestApi;
+  friend class WindowPortMusTest;
   friend class WindowTreeClient;
   friend class WindowTreeClientPrivate;
   friend class WindowTreeHostMus;
