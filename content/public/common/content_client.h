@@ -165,13 +165,6 @@ class CONTENT_EXPORT ContentClient {
   // service worker.
   virtual bool AllowScriptExtensionForServiceWorker(const GURL& script_url);
 
-  // Returns true if the embedder wishes to supplement the site isolation policy
-  // used by the content layer. Returning true enables the infrastructure for
-  // out-of-process iframes, and causes the content layer to consult
-  // ContentBrowserClient::DoesSiteRequireDedicatedProcess() when making process
-  // model decisions.
-  virtual bool IsSupplementarySiteIsolationModeEnabled();
-
   // Returns the origin trial policy, or nullptr if origin trials are not
   // supported by the embedder.
   virtual OriginTrialPolicy* GetOriginTrialPolicy();

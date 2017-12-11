@@ -30,7 +30,6 @@ class ShellContentClient : public ContentClient {
   base::RefCountedMemory* GetDataResourceBytes(
       int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
-  bool IsSupplementarySiteIsolationModeEnabled() override;
   OriginTrialPolicy* GetOriginTrialPolicy() override;
 
  private:

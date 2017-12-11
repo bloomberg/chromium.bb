@@ -740,14 +740,6 @@ bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
 #endif
 }
 
-bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return true;
-#else
-  return false;
-#endif
-}
-
 content::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
   // Prevent initialization race (see crbug.com/721144). There may be a
   // race when the policy is needed for worker startup (which happens on a

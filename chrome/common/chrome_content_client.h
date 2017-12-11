@@ -90,7 +90,6 @@ class ChromeContentClient : public content::ContentClient {
   std::string GetProcessTypeNameInEnglish(int type) override;
 
   bool AllowScriptExtensionForServiceWorker(const GURL& script_url) override;
-  bool IsSupplementarySiteIsolationModeEnabled() override;
 
   content::OriginTrialPolicy* GetOriginTrialPolicy() override;
 

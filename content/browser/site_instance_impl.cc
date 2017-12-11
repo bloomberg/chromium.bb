@@ -463,8 +463,7 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
   // Let the content embedder enable site isolation for specific URLs. Use the
   // canonical site url for this check, so that schemes with nested origins
   // (blob and filesystem) work properly.
-  if (GetContentClient()->IsSupplementarySiteIsolationModeEnabled() &&
-      GetContentClient()->browser()->DoesSiteRequireDedicatedProcess(
+  if (GetContentClient()->browser()->DoesSiteRequireDedicatedProcess(
           browser_context, site_url)) {
     return true;
   }
