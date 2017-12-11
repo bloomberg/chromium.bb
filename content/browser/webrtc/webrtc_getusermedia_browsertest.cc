@@ -791,4 +791,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("concurrentGetUserMediaStop()");
 }
 
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, DisabledTrackVideoSize) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("disabledTrackVideoSize()");
+}
+
 }  // namespace content

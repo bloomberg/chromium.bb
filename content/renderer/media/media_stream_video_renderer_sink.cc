@@ -200,8 +200,7 @@ void MediaStreamVideoRendererSink::Start() {
       true);
 
   if (video_track_.Source().GetReadyState() ==
-          blink::WebMediaStreamSource::kReadyStateEnded ||
-      !video_track_.IsEnabled()) {
+      blink::WebMediaStreamSource::kReadyStateEnded) {
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&FrameDeliverer::RenderEndOfStream,
                                   base::Unretained(frame_deliverer_.get())));
