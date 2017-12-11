@@ -1754,13 +1754,13 @@ inline CSSIdentifierValue::CSSIdentifierValue(
     OverflowAlignment overflow_alignment)
     : CSSValue(kIdentifierClass) {
   switch (overflow_alignment) {
-    case kOverflowAlignmentDefault:
+    case OverflowAlignment::kDefault:
       value_id_ = CSSValueDefault;
       break;
-    case kOverflowAlignmentUnsafe:
+    case OverflowAlignment::kUnsafe:
       value_id_ = CSSValueUnsafe;
       break;
-    case kOverflowAlignmentSafe:
+    case OverflowAlignment::kSafe:
       value_id_ = CSSValueSafe;
       break;
   }
@@ -1770,14 +1770,14 @@ template <>
 inline OverflowAlignment CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueUnsafe:
-      return kOverflowAlignmentUnsafe;
+      return OverflowAlignment::kUnsafe;
     case CSSValueSafe:
-      return kOverflowAlignmentSafe;
+      return OverflowAlignment::kSafe;
     default:
       break;
   }
   NOTREACHED();
-  return kOverflowAlignmentUnsafe;
+  return OverflowAlignment::kUnsafe;
 }
 
 template <>

@@ -517,7 +517,7 @@ static CSSValueList* ValueForItemPositionWithOverflowAlignment(
     result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
   }
   if (data.GetPosition() >= kItemPositionCenter &&
-      data.Overflow() != kOverflowAlignmentDefault)
+      data.Overflow() != OverflowAlignment::kDefault)
     result->Append(*CSSIdentifierValue::Create(data.Overflow()));
   DCHECK_LE(result->length(), 2u);
   return result;
@@ -687,7 +687,7 @@ ValueForContentPositionAndDistributionWithOverflowAlignment(
   // Handle overflow-alignment (only allowed for content-position values)
   if ((data.GetPosition() >= ContentPosition::kCenter ||
        data.Distribution() != ContentDistributionType::kDefault) &&
-      data.Overflow() != kOverflowAlignmentDefault)
+      data.Overflow() != OverflowAlignment::kDefault)
     result->Append(*CSSIdentifierValue::Create(data.Overflow()));
   DCHECK_GT(result->length(), 0u);
   DCHECK_LE(result->length(), 3u);

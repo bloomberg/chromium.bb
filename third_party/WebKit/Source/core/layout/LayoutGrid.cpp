@@ -1375,13 +1375,13 @@ static LayoutUnit ComputeOverflowAlignmentOffset(OverflowAlignment overflow,
                                                  LayoutUnit child_size) {
   LayoutUnit offset = track_size - child_size;
   switch (overflow) {
-    case kOverflowAlignmentSafe:
+    case OverflowAlignment::kSafe:
       // If overflow is 'safe', we have to make sure we don't overflow the
       // 'start' edge (potentially cause some data loss as the overflow is
       // unreachable).
       return offset.ClampNegativeToZero();
-    case kOverflowAlignmentUnsafe:
-    case kOverflowAlignmentDefault:
+    case OverflowAlignment::kUnsafe:
+    case OverflowAlignment::kDefault:
       // If we overflow our alignment container and overflow is 'true'
       // (default), we ignore the overflow and just return the value regardless
       // (which may cause data loss as we overflow the 'start' edge).
@@ -2305,7 +2305,7 @@ ContentAlignmentData LayoutGrid::ComputeContentPositionAndDistributionOffset(
   // https://drafts.csswg.org/css-align/#overflow-values
   if (available_free_space == 0 ||
       (available_free_space < 0 &&
-       content_alignment_data.Overflow() == kOverflowAlignmentSafe))
+       content_alignment_data.Overflow() == OverflowAlignment::kSafe))
     return {LayoutUnit(), LayoutUnit()};
 
   bool is_row_axis = direction == kForColumns;
