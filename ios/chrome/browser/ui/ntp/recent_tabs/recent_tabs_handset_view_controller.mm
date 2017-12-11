@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/panel_bar_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -81,6 +82,16 @@
 
 - (BOOL)prefersStatusBarHidden {
   return NO;
+}
+
+- (NSArray*)keyCommands {
+  __weak RecentTabsHandsetViewController* weakSelf = self;
+  return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
+                                   modifierFlags:Cr_UIKeyModifierNone
+                                           title:nil
+                                          action:^{
+                                            [weakSelf didFinish];
+                                          }] ];
 }
 
 #pragma mark Accessibility
