@@ -16,9 +16,7 @@ import("//testing/test.gni")
 
 if (is_mac) {
   import("//build/config/sysroot.gni")
-}
 
-if (is_mac) {
   action_foreach("mig") {
     script = "mach/mig.py"
 
@@ -46,7 +44,7 @@ if (is_mac) {
     }
     args += [
       "--sdk",
-      mac_sdk_path,
+      sysroot,
       "--include",
       rebase_path("../compat/mac", root_build_dir),
     ]
@@ -58,10 +56,8 @@ static_library("util") {
     "file/delimited_file_reader.cc",
     "file/delimited_file_reader.h",
     "file/directory_reader.h",
-    "file/directory_reader_posix.cc",
     "file/file_io.cc",
     "file/file_io.h",
-    "file/file_io_posix.cc",
     "file/file_reader.cc",
     "file/file_reader.h",
     "file/file_seeker.cc",
@@ -69,7 +65,6 @@ static_library("util") {
     "file/file_writer.cc",
     "file/file_writer.h",
     "file/filesystem.h",
-    "file/filesystem_posix.cc",
     "file/scoped_remove_file.cc",
     "file/scoped_remove_file.h",
     "file/string_file.cc",
@@ -79,7 +74,6 @@ static_library("util") {
     "misc/arraysize_unsafe.h",
     "misc/as_underlying_type.h",
     "misc/clock.h",
-    "misc/clock_posix.cc",
     "misc/from_pointer_cast.h",
     "misc/implicit_cast.h",
     "misc/initialization_state.h",
@@ -124,23 +118,6 @@ static_library("util") {
     "numeric/in_range_cast.h",
     "numeric/int128.h",
     "numeric/safe_assignment.h",
-    "posix/close_multiple.cc",
-    "posix/close_multiple.h",
-    "posix/close_stdio.cc",
-    "posix/close_stdio.h",
-    "posix/double_fork_and_exec.cc",
-    "posix/double_fork_and_exec.h",
-    "posix/drop_privileges.cc",
-    "posix/drop_privileges.h",
-    "posix/process_info.h",
-    "posix/scoped_dir.cc",
-    "posix/scoped_dir.h",
-    "posix/scoped_mmap.cc",
-    "posix/scoped_mmap.h",
-    "posix/signals.cc",
-    "posix/signals.h",
-    "posix/symbolic_constants_posix.cc",
-    "posix/symbolic_constants_posix.h",
     "stdlib/aligned_allocator.cc",
     "stdlib/aligned_allocator.h",
     "stdlib/map_insert.h",
@@ -155,15 +132,50 @@ static_library("util") {
     "string/split_string.cc",
     "string/split_string.h",
     "synchronization/semaphore.h",
-    "synchronization/semaphore_posix.cc",
     "thread/thread.cc",
     "thread/thread.h",
     "thread/thread_log_messages.cc",
     "thread/thread_log_messages.h",
-    "thread/thread_posix.cc",
     "thread/worker_thread.cc",
     "thread/worker_thread.h",
   ]
+
+  if (is_posix) {
+    sources += [
+      "file/directory_reader_posix.cc",
+      "file/file_io_posix.cc",
+      "file/filesystem_posix.cc",
+      "misc/clock_posix.cc",
+      "posix/close_stdio.cc",
+      "posix/close_stdio.h",
+      "posix/scoped_dir.cc",
+      "posix/scoped_dir.h",
+      "posix/scoped_mmap.cc",
+      "posix/scoped_mmap.h",
+      "posix/signals.cc",
+      "posix/signals.h",
+      "synchronization/semaphore_posix.cc",
+      "thread/thread_posix.cc",
+    ]
+
+    if (!is_fuchsia) {
+      sources += [
+        "posix/close_multiple.cc",
+        "posix/close_multiple.h",
+        "posix/double_fork_and_exec.cc",
+        "posix/double_fork_and_exec.h",
+        "posix/drop_privileges.cc",
+        "posix/drop_privileges.h",
+        "posix/process_info.h",
+
+        # These map signals to and from strings. While Fuchsia defines some of
+        # the common SIGx defines, signals are never raised on Fuchsia, so
+        # there's need to include this mapping code.
+        "posix/symbolic_constants_posix.cc",
+        "posix/symbolic_constants_posix.h",
+      ]
+    }
+  }
 
   if (is_mac) {
     sources += [
@@ -295,9 +307,16 @@ static_library("util") {
     }
   }
 
+  if (is_fuchsia) {
+    sources += [
+      "misc/paths_fuchsia.cc",
+      "net/http_transport_fuchsia.cc",
+    ]
+  }
+
   public_configs = [ "..:crashpad_config" ]
 
-  # Include files from here and generated files starting with "util".
+  # Include generated files starting with "util".
   include_dirs = [ "$root_gen_dir/third_party/crashpad/crashpad" ]
 
   public_deps = [
@@ -305,10 +324,8 @@ static_library("util") {
   ]
 
   deps = [
-    "//base",
-
-    # TODO(GN): Should this point at Chromium's zlib when in Chromium?
     "../third_party/zlib",
+    "//base",
   ]
 
   if (is_mac) {
@@ -319,6 +336,7 @@ static_library("util") {
       "IOKit.framework",
     ]
     deps += [ ":mig" ]
+    include_dirs += [ "$root_build_dir/gen" ]
   }
 
   if (is_win) {
@@ -360,16 +378,11 @@ source_set("util_test") {
     "net/http_body_test_util.cc",
     "net/http_body_test_util.h",
     "net/http_multipart_builder_test.cc",
-    "net/http_transport_test.cc",
     "net/url_test.cc",
     "numeric/checked_address_range_test.cc",
     "numeric/checked_range_test.cc",
     "numeric/in_range_cast_test.cc",
     "numeric/int128_test.cc",
-    "posix/process_info_test.cc",
-    "posix/scoped_mmap_test.cc",
-    "posix/signals_test.cc",
-    "posix/symbolic_constants_posix_test.cc",
     "stdlib/aligned_allocator_test.cc",
     "stdlib/map_insert_test.cc",
     "stdlib/string_number_conversion_test.cc",
@@ -382,6 +395,25 @@ source_set("util_test") {
     "thread/thread_test.cc",
     "thread/worker_thread_test.cc",
   ]
+
+  if (!is_fuchsia) {
+    # TODO(scottmg): This requires an implementation of MultiprocessExec for
+    # testing, and a solution to http_transport_test_server.py -- either a port
+    # to non-Python, or method of forwarding those requests back to the builder
+    # host.
+    sources += [ "net/http_transport_test.cc" ]
+  }
+
+  if (is_posix) {
+    if (!is_fuchsia) {
+      sources += [
+        "posix/process_info_test.cc",
+        "posix/signals_test.cc",
+        "posix/symbolic_constants_posix_test.cc",
+      ]
+    }
+    sources += [ "posix/scoped_mmap_test.cc" ]
+  }
 
   if (is_mac) {
     sources += [
