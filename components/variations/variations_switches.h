@@ -18,6 +18,7 @@ extern const char kForceFieldTrialParams[];
 extern const char kForceVariationIds[];
 extern const char kVariationsOverrideCountry[];
 extern const char kVariationsServerURL[];
+extern const char kVariationsInsecureServerURL[];
 
 }  // namespace switches
 }  // namespace variations

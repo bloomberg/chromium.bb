@@ -47,5 +47,10 @@ const char kVariationsOverrideCountry[] = "variations-override-country";
 // unofficial builds. See variations_service.cc.
 const char kVariationsServerURL[] = "variations-server-url";
 
+// Specifies a custom URL for the server to use as an insecure fallback when
+// requests to |kVariationsServerURL| fail. Requests to this URL will be
+// encrypted.
+const char kVariationsInsecureServerURL[] = "variations-insecure-server-url";
+
 }  // namespace switches
 }  // namespace variations
