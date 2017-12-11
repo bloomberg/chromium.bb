@@ -40,6 +40,8 @@ class ImportNotifierTest(unittest.TestCase):
                              'third_party/WebKit/LayoutTests/platform/linux/external/wpt/foo/bar-expected.txt',
                          ]})
 
+        self.assertEqual(self.notifier.find_changed_baselines_of_tests(set()), {})
+
     def test_more_failures_in_baseline_more_fails(self):
         # Replacing self.host.executive won't work here, because ImportNotifier
         # has been instantiated with a MockGit backed by an empty MockExecutive.
@@ -122,6 +124,10 @@ class ImportNotifierTest(unittest.TestCase):
                             expectation_line='crbug.com/12345 [ Win ] external/wpt/foo/bar.html [ Timeout ]'),
             ]}
         )
+
+        self.notifier.new_failures_by_directory = {}
+        self.notifier.examine_new_test_expectations({})
+        self.assertEqual(self.notifier.new_failures_by_directory, {})
 
     def test_format_commit_list(self):
         imported_commits = ['SHA1', 'SHA2']

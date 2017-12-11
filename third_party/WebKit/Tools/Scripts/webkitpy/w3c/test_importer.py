@@ -63,11 +63,11 @@ class TestImporter(object):
         # The WPT revision we are importing and the one imported last time.
         self.wpt_revision = None
         self.last_wpt_revision = None
-        # A list of rebaselined tests and a dictionary of new test expectations
+        # A set of rebaselined tests and a dictionary of new test expectations
         # mapping failing tests to platforms to
         # wpt_expectations_updater.SimpleTestResult.
-        self.rebaselined_tests = None
-        self.new_test_expectations = None
+        self.rebaselined_tests = set()
+        self.new_test_expectations = {}
         self.verbose = False
 
     def main(self, argv=None):

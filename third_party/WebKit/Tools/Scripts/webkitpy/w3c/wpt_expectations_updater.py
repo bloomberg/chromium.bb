@@ -79,8 +79,6 @@ class WPTExpectationsUpdater(object):
         for build, job_status in build_to_status.iteritems():
             if job_status.result == 'SUCCESS':
                 self.ports_with_all_pass.add(self.port_name(build))
-
-
             port_results = self.get_failing_results_dict(build)
             test_expectations = self.merge_dicts(test_expectations, port_results)
 
