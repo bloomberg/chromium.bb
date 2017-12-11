@@ -49,44 +49,24 @@ namespace WTF {
 // arguments together into a function object that can be stored, copied and
 // invoked, similar to boost::bind and std::bind in C++11.
 
-// ***************************************************************************
-// ** NOTICE: same-thread WTF::Function is being migrated to base::Callback **
-// ***************************************************************************
+// To create a same-thread callback, use WTF::Bind() or WTF::BindRepeating().
+// Use the former to create a callback that's called only once, and use the
+// latter for a callback that may be called multiple times.
 //
-// We are in the process of replace same-thread WTF::Function with
-// base::{Once,Repeating}Callback (crbug.com/771087).
-//
-// One of the most important implications of this is that we'll need to
-// distinguish a callback function that's only used once from one that may be
-// called multiple times.
-//
-// Use the following guide to determine the correct usage for your use case
-// (note this guideline may change as the migration effort progresses):
-//
-// 1. To create a callback that may be used or destructed in another thread
-//
-// Use CrossThreadBind() (defined in platform/CrossThreadFunctional.h), and
-// receive the returned callback as WTF::CrossThreadFunction. There is no
-// distinction of Once and Repeating for cross-thread usage for now.
-//
-// 2. To create a same-thread callback that's called only once
-//
-// Use WTF::Bind(), and receive the returned callback as base::OnceCallback
-// or base::OnceClosure. Read //docs/callback.md for how to use them.
-//
-// 3. To create a same-thread callback that may be called multiple times
-//
-// Use WTF::BindRepeating(), and receive the returned callback as
-// base::RepeatingCallback or base::RepeatingClosure (WTF::RepeatingFunction
-// is gone).
+// WTF::Bind() and WTF::BindRepeating() returns base::OnceCallback and
+// base::RepeatingCallback respectively. See //docs/callback.md for how to use
+// those types.
 
 // Thread Safety:
 //
-// WTF::Bind() and WTF::Closure should be used for same-thread closures
-// only, i.e. the closures must be created, executed and destructed on
-// the same thread.
+// WTF::Bind(), WTF::BindRepeating and base::{Once,Repeating}Callback should
+// be used for same-thread closures only, i.e. the closures must be created,
+// executed and destructed on the same thread.
 // Use crossThreadBind() and CrossThreadClosure if the function/task is called
 // or destructed on a (potentially) different thread from the current thread.
+//
+// Currently, WTF::CrossThreadClosure does not distinguish Once and Repeating
+// usage.
 
 // WTF::Bind() / WTF::BindRepeating() and move semantics
 // =====================================================
@@ -96,12 +76,13 @@ namespace WTF {
 //     1) Pass by rvalue reference.
 //
 //            void YourFunction(Argument&& argument) { ... }
-//            Function<void(Argument&&)> functor = Bind(&YourFunction);
+//            base::OnceCallback<void(Argument&&)> functor =
+//                Bind(&YourFunction);
 //
 //     2) Pass by value.
 //
 //            void YourFunction(Argument argument) { ... }
-//            Function<void(Argument)> functor = Bind(&YourFunction);
+//            base::OnceCallback<void(Argument)> functor = Bind(&YourFunction);
 //
 // Note that with the latter there will be *two* move constructions happening,
 // because there needs to be at least one intermediary function call taking an
@@ -124,7 +105,7 @@ namespace WTF {
 //     }
 //
 //     ...
-//     Function<void()> functor = Bind(&YourFunction, WTF::Passed(Argument()));
+//     base::OnceClosure functor = Bind(&YourFunction, WTF::Passed(Argument()));
 //     ...
 //     std::move(functor).Run();
 //
@@ -313,9 +294,6 @@ namespace WTF {
 #endif
 
 template <typename Signature>
-using Function = base::OnceCallback<Signature>;
-
-template <typename Signature>
 class CrossThreadFunction;
 
 template <typename R, typename... Args>
@@ -358,9 +336,8 @@ class CrossThreadFunction<R(Args...)> {
 // Note: now there is WTF::Bind()and WTF::BindRepeating(). See the comment block
 // above for the correct usage of those.
 template <typename FunctionType, typename... BoundParameters>
-Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>> Bind(
-    FunctionType function,
-    BoundParameters&&... bound_parameters) {
+base::OnceCallback<base::MakeUnboundRunType<FunctionType, BoundParameters...>>
+Bind(FunctionType function, BoundParameters&&... bound_parameters) {
   static_assert(internal::CheckGCedTypeRestrictions<
                     std::index_sequence_for<BoundParameters...>,
                     std::decay_t<BoundParameters>...>::ok,
@@ -398,9 +375,6 @@ BindRepeating(FunctionType function, BoundParameters&&... bound_parameters) {
 #endif
   return cb;
 }
-
-// TODO(yutak): Replace WTF::Function with base::OnceCallback.
-using Closure = Function<void()>;
 
 template <typename T>
 using CrossThreadRepeatingFunction = CrossThreadFunction<T>;
@@ -443,7 +417,6 @@ struct BindUnwrapTraits<WTF::CrossThreadUnretainedWrapper<T>> {
 
 using WTF::CrossThreadUnretained;
 
-using WTF::Function;
 using WTF::CrossThreadFunction;
 using WTF::CrossThreadClosure;
 
