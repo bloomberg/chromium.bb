@@ -31,8 +31,8 @@ using ppapi::MediaStreamVideoTrackShared;
 
 namespace {
 
-const int32_t kDefaultNumberOfBuffers = 4;
-const int32_t kMaxNumberOfBuffers = 8;
+const int32_t kDefaultNumberOfVideoBuffers = 4;
+const int32_t kMaxNumberOfVideoBuffers = 8;
 // Filter mode for scaling frames.
 const libyuv::FilterMode kFilterMode = libyuv::kFilterBox;
 
@@ -228,7 +228,7 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
     const blink::WebMediaStreamTrack& track)
     : PepperMediaStreamTrackHostBase(host, instance, resource),
       track_(track),
-      number_of_buffers_(kDefaultNumberOfBuffers),
+      number_of_buffers_(kDefaultNumberOfVideoBuffers),
       source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       frame_data_size_(0),
@@ -242,7 +242,7 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
     PP_Instance instance,
     PP_Resource resource)
     : PepperMediaStreamTrackHostBase(host, instance, resource),
-      number_of_buffers_(kDefaultNumberOfBuffers),
+      number_of_buffers_(kDefaultNumberOfVideoBuffers),
       source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       frame_data_size_(0),
@@ -479,8 +479,8 @@ int32_t PepperMediaStreamVideoTrackHost::OnHostMsgConfigure(
   plugin_frame_size_ = new_size;
 
   int32_t buffers = attributes.buffers
-                        ? std::min(kMaxNumberOfBuffers, attributes.buffers)
-                        : kDefaultNumberOfBuffers;
+                        ? std::min(kMaxNumberOfVideoBuffers, attributes.buffers)
+                        : kDefaultNumberOfVideoBuffers;
   if (buffers != number_of_buffers_)
     changed = true;
   number_of_buffers_ = buffers;
