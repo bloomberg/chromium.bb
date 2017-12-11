@@ -56,6 +56,8 @@ class ArcFileSystemBridge : public KeyedService, public mojom::FileSystemHost {
   // browser |context| is not allowed to use ARC.
   static ArcFileSystemBridge* GetForBrowserContext(
       content::BrowserContext* context);
+  static ArcFileSystemBridge* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   // Handles a read request.
   bool HandleReadRequest(const std::string& id,

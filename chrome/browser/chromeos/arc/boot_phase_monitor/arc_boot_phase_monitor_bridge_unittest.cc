@@ -49,14 +49,9 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
-    ArcBootPhaseMonitorBridge::GetFactory()->SetTestingFactoryAndUse(
-        testing_profile_.get(),
-        [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
-          return std::make_unique<ArcBootPhaseMonitorBridge>(
-              context, ArcServiceManager::Get()->arc_bridge_service());
-        });
     boot_phase_monitor_bridge_ =
-        ArcBootPhaseMonitorBridge::GetForBrowserContext(testing_profile_.get());
+        ArcBootPhaseMonitorBridge::GetForBrowserContextForTesting(
+            testing_profile_.get());
     boot_phase_monitor_bridge_->SetDelegateForTesting(
         std::make_unique<TestDelegateImpl>(this));
   }

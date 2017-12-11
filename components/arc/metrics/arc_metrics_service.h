@@ -17,8 +17,6 @@
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class BrowserContextKeyedServiceFactory;
-
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -45,12 +43,11 @@ class ArcMetricsService : public KeyedService,
     COUNT
   };
 
-  // Returns the factory instance for this class.
-  static BrowserContextKeyedServiceFactory* GetFactory();
-
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcMetricsService* GetForBrowserContext(
+      content::BrowserContext* context);
+  static ArcMetricsService* GetForBrowserContextForTesting(
       content::BrowserContext* context);
 
   ArcMetricsService(content::BrowserContext* context,

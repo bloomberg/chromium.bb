@@ -20,16 +20,6 @@ namespace arc {
 
 namespace {
 
-ArcTtsService* GetArcTtsService(content::BrowserContext* context) {
-  ArcTtsService::GetFactory()->SetTestingFactoryAndUse(
-      context,
-      [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
-        return std::make_unique<ArcTtsService>(
-            context, ArcServiceManager::Get()->arc_bridge_service());
-      });
-  return ArcTtsService::GetForBrowserContext(context);
-}
-
 class TestableTtsController : public TtsControllerImpl {
  public:
   TestableTtsController() = default;
@@ -60,7 +50,8 @@ class ArcTtsServiceTest : public testing::Test {
       : arc_service_manager_(std::make_unique<ArcServiceManager>()),
         testing_profile_(std::make_unique<TestingProfile>()),
         tts_controller_(std::make_unique<TestableTtsController>()),
-        tts_service_(GetArcTtsService(testing_profile_.get())) {
+        tts_service_(ArcTtsService::GetForBrowserContextForTesting(
+            testing_profile_.get())) {
     tts_service_->set_tts_controller_for_testing(tts_controller_.get());
   }
 
