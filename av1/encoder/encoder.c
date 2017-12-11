@@ -270,19 +270,14 @@ static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv
   cpi->common.allow_high_precision_mv = allow_high_precision_mv;
 
 #if CONFIG_AMVR
-  if (cpi->common.allow_high_precision_mv && cur_frame_force_integer_mv == 0) {
+  const int copy_hp =
+      cpi->common.allow_high_precision_mv && cur_frame_force_integer_mv == 0;
 #else
-  if (cpi->common.allow_high_precision_mv) {
+  const int copy_hp = cpi->common.allow_high_precision_mv;
 #endif
-    int i;
-    for (i = 0; i < NMV_CONTEXTS; ++i) {
-      mb->mv_cost_stack[i] = mb->nmvcost_hp[i];
-    }
-  } else {
-    int i;
-    for (i = 0; i < NMV_CONTEXTS; ++i) {
-      mb->mv_cost_stack[i] = mb->nmvcost[i];
-    }
+  int *(*src)[2] = copy_hp ? mb->nmvcost_hp : mb->nmvcost;
+  for (int i = 0; i < NMV_CONTEXTS; ++i) {
+    mb->mv_cost_stack[i] = src[i];
   }
 }
 
@@ -4619,7 +4614,6 @@ static void scale_references(AV1_COMP *cpi) {
         continue;
       }
 
-#if CONFIG_HIGHBITDEPTH
       if (ref->y_crop_width != cm->width || ref->y_crop_height != cm->height) {
         RefCntBuffer *new_fb_ptr = NULL;
         int force_scaling = 0;
@@ -4632,6 +4626,7 @@ static void scale_references(AV1_COMP *cpi) {
         new_fb_ptr = &pool->frame_bufs[new_fb];
         if (force_scaling || new_fb_ptr->buf.y_crop_width != cm->width ||
             new_fb_ptr->buf.y_crop_height != cm->height) {
+#if CONFIG_HIGHBITDEPTH
           if (aom_realloc_frame_buffer(
                   &new_fb_ptr->buf, cm->width, cm->height, cm->subsampling_x,
                   cm->subsampling_y, cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
@@ -4640,25 +4635,7 @@ static void scale_references(AV1_COMP *cpi) {
                                "Failed to allocate frame buffer");
           av1_resize_and_extend_frame(ref, &new_fb_ptr->buf,
                                       (int)cm->bit_depth);
-          cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
-          alloc_frame_mvs(cm, new_fb);
-#if CONFIG_SEGMENT_PRED_LAST
-          alloc_frame_segmap(cm, new_fb);
-#endif
-        }
 #else
-      if (ref->y_crop_width != cm->width || ref->y_crop_height != cm->height) {
-        RefCntBuffer *new_fb_ptr = NULL;
-        int force_scaling = 0;
-        int new_fb = cpi->scaled_ref_idx[ref_frame - 1];
-        if (new_fb == INVALID_IDX) {
-          new_fb = get_free_fb(cm);
-          force_scaling = 1;
-        }
-        if (new_fb == INVALID_IDX) return;
-        new_fb_ptr = &pool->frame_bufs[new_fb];
-        if (force_scaling || new_fb_ptr->buf.y_crop_width != cm->width ||
-            new_fb_ptr->buf.y_crop_height != cm->height) {
           if (aom_realloc_frame_buffer(&new_fb_ptr->buf, cm->width, cm->height,
                                        cm->subsampling_x, cm->subsampling_y,
                                        AOM_BORDER_IN_PIXELS, cm->byte_alignment,
@@ -4666,13 +4643,13 @@ static void scale_references(AV1_COMP *cpi) {
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
           av1_resize_and_extend_frame(ref, &new_fb_ptr->buf);
+#endif
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
           alloc_frame_mvs(cm, new_fb);
 #if CONFIG_SEGMENT_PRED_LAST
           alloc_frame_segmap(cm, new_fb);
 #endif
         }
-#endif  // CONFIG_HIGHBITDEPTH
       } else {
         const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
         RefCntBuffer *const buf = &pool->frame_bufs[buf_idx];
