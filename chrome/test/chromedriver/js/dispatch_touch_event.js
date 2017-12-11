@@ -14,7 +14,7 @@
 function dispatchTouchEvent(x, y, type) {
   var element = window.document.elementFromPoint(x, y);
   var inputDeviceCapabilities =
-    new InputDeviceCapabilities({fireTouchEvents: true});
+    new InputDeviceCapabilities({firesTouchEvents: true});
   var touch = new Touch({
     identifier: 0,
     target: element,
