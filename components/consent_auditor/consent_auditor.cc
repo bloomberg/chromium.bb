@@ -13,6 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/user_events/user_event_service.h"
 
 using UserEventSpecifics = sync_pb::UserEventSpecifics;
@@ -27,11 +28,11 @@ const char kLocalConsentVersionKey[] = "version";
 const char kLocalConsentLocaleKey[] = "locale";
 
 UserEventSpecifics::UserConsent::ConsentStatus ToProtoEnum(
-    ConsentAuditor::ConsentStatus status) {
+    consent_auditor::ConsentStatus status) {
   switch (status) {
-    case ConsentAuditor::ConsentStatus::REVOKED:
+    case consent_auditor::ConsentStatus::REVOKED:
       return UserEventSpecifics::UserConsent::REVOKED;
-    case ConsentAuditor::ConsentStatus::GIVEN:
+    case consent_auditor::ConsentStatus::GIVEN:
       return UserEventSpecifics::UserConsent::GIVEN;
   }
   NOTREACHED();
@@ -72,6 +73,15 @@ void ConsentAuditor::RecordGaiaConsent(
     return;
   std::unique_ptr<sync_pb::UserEventSpecifics> specifics = ConstructUserConsent(
       feature, consent_grd_ids, placeholder_replacements, status);
+  // For real usage, UserEventSyncBridge should always be ready to receive
+  // events when a consent gets recorded.
+  // FakeUserEventService doesn't have a sync bridge.
+  // TODO(crbug.com/709094, crbug.com/761485): Remove this check when the store
+  // initializes synchronously and is instantly ready to receive data.
+  DCHECK(!user_event_service_->GetSyncBridge() ||
+         user_event_service_->GetSyncBridge()
+             ->change_processor()
+             ->IsTrackingMetadata());
   user_event_service_->RecordUserEvent(std::move(specifics));
 }
 
