@@ -184,7 +184,7 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
             << "WebContents should have a fullscreen RenderWidgetHostView.";
         return false;
       }
-      EXPECT_EQ(GetActiveWebContents()->GetCapturerCount() > 0,
+      EXPECT_EQ(GetActiveWebContents()->IsBeingCaptured(),
                 !browser()
                      ->exclusive_access_manager()
                      ->fullscreen_controller()

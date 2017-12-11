@@ -221,7 +221,7 @@ void FullscreenController::OnTabDetachedFromView(WebContents* old_contents) {
 
   // Do nothing if tab capture ended after toggling fullscreen, or a preferred
   // size was never specified by the capturer.
-  if (old_contents->GetCapturerCount() == 0 ||
+  if (!old_contents->IsBeingCaptured() ||
       old_contents->GetPreferredSize().IsEmpty()) {
     return;
   }
@@ -422,7 +422,7 @@ bool FullscreenController::MaybeToggleFullscreenWithinTab(
     WebContents* web_contents,
     bool enter_fullscreen) {
   if (enter_fullscreen) {
-    if (web_contents->GetCapturerCount() > 0
+    if (web_contents->IsBeingCaptured()
 #if defined(OS_MACOSX)
         || base::FeatureList::IsEnabled(features::kContentFullscreen)
 #endif

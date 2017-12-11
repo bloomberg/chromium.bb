@@ -315,10 +315,8 @@ void OffscreenTab::EnterFullscreenModeForTab(WebContents* contents,
 
   non_fullscreen_size_ =
       contents->GetRenderWidgetHostView()->GetViewBounds().size();
-  if (contents->GetCapturerCount() >= 0 &&
-      !contents->GetPreferredSize().IsEmpty()) {
+  if (contents->IsBeingCaptured() && !contents->GetPreferredSize().IsEmpty())
     ResizeWebContents(contents, gfx::Rect(contents->GetPreferredSize()));
-  }
 }
 
 void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
@@ -401,7 +399,7 @@ bool OffscreenTab::CheckMediaAccessPermission(
 }
 
 void OffscreenTab::DidShowFullscreenWidget() {
-  if (offscreen_tab_web_contents_->GetCapturerCount() == 0 ||
+  if (!offscreen_tab_web_contents_->IsBeingCaptured() ||
       offscreen_tab_web_contents_->GetPreferredSize().IsEmpty())
     return;  // Do nothing, since no preferred size is specified.
   content::RenderWidgetHostView* const current_fs_view =
@@ -433,7 +431,7 @@ void OffscreenTab::DieIfContentCaptureEnded() {
   DCHECK(offscreen_tab_web_contents_.get());
 
   if (content_capture_was_detected_) {
-    if (offscreen_tab_web_contents_->GetCapturerCount() == 0) {
+    if (!offscreen_tab_web_contents_->IsBeingCaptured()) {
       DVLOG(2) << "Capture of OffscreenTab content has stopped for start_url="
                << start_url_.spec();
       owner_->DestroyTab(this);
@@ -442,7 +440,7 @@ void OffscreenTab::DieIfContentCaptureEnded() {
       DVLOG(3) << "Capture of OffscreenTab content continues for start_url="
                << start_url_.spec();
     }
-  } else if (offscreen_tab_web_contents_->GetCapturerCount() > 0) {
+  } else if (offscreen_tab_web_contents_->IsBeingCaptured()) {
     DVLOG(2) << "Capture of OffscreenTab content has started for start_url="
              << start_url_.spec();
     content_capture_was_detected_ = true;

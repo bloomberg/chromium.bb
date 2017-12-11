@@ -270,7 +270,7 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
 
       // Activating/Deactivating tab fullscreen on a captured tab should not
       // evoke a state change in the browser window.
-      if (active_tab->GetCapturerCount() > 0)
+      if (active_tab->IsBeingCaptured())
         state_ = source_state;
       break;
     }

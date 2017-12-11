@@ -387,7 +387,7 @@ std::unique_ptr<WebContents> PrerenderManager::SwapInternal(
   }
 
   // Do not swap in the prerender if the current WebContents is being captured.
-  if (web_contents->GetCapturerCount() > 0) {
+  if (web_contents->IsBeingCaptured()) {
     prerender_data->contents()->Destroy(FINAL_STATUS_PAGE_BEING_CAPTURED);
     return nullptr;
   }

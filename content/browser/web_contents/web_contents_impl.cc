@@ -1379,7 +1379,7 @@ void WebContentsImpl::DecrementCapturerCount() {
   if (is_being_destroyed_)
     return;
 
-  if (capturer_count_ == 0) {
+  if (!IsBeingCaptured()) {
     const gfx::Size old_size = preferred_size_for_capture_;
     preferred_size_for_capture_ = gfx::Size();
     OnPreferredSizeChanged(old_size);
@@ -1394,8 +1394,8 @@ void WebContentsImpl::DecrementCapturerCount() {
   }
 }
 
-int WebContentsImpl::GetCapturerCount() const {
-  return capturer_count_;
+bool WebContentsImpl::IsBeingCaptured() const {
+  return capturer_count_ > 0;
 }
 
 bool WebContentsImpl::IsAudioMuted() const {
@@ -1530,7 +1530,7 @@ void WebContentsImpl::WasShown() {
 void WebContentsImpl::WasHidden() {
   // If there are entities capturing screenshots or video (e.g., mirroring),
   // don't activate the "disable rendering" optimization.
-  if (capturer_count_ == 0) {
+  if (!IsBeingCaptured()) {
     // |GetRenderViewHost()| can be NULL if the user middle clicks a link to
     // open a tab in the background, then closes the tab before selecting it.
     // This is because closing the tab calls WebContentsImpl::Destroy(), which
@@ -1588,7 +1588,7 @@ bool WebContentsImpl::IsVisible() const {
 }
 
 void WebContentsImpl::WasOccluded() {
-  if (capturer_count_ == 0) {
+  if (!IsBeingCaptured()) {
     for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
       view->WasOccluded();
   }
@@ -1597,7 +1597,7 @@ void WebContentsImpl::WasOccluded() {
 }
 
 void WebContentsImpl::WasUnOccluded() {
-  if (capturer_count_ == 0)
+  if (!IsBeingCaptured())
     DoWasUnOccluded();
 
   should_normally_be_occluded_ = false;
@@ -3479,7 +3479,7 @@ void WebContentsImpl::SetPageScale(float page_scale_factor) {
 }
 
 gfx::Size WebContentsImpl::GetPreferredSize() const {
-  return capturer_count_ == 0 ? preferred_size_ : preferred_size_for_capture_;
+  return IsBeingCaptured() ? preferred_size_for_capture_ : preferred_size_;
 }
 
 bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
@@ -5728,7 +5728,7 @@ void WebContentsImpl::SetEncoding(const std::string& encoding) {
 }
 
 bool WebContentsImpl::IsHidden() {
-  return capturer_count_ == 0 && !should_normally_be_visible_;
+  return !IsBeingCaptured() && !should_normally_be_visible_;
 }
 
 int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {

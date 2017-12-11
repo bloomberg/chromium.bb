@@ -2720,40 +2720,40 @@ TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {
 
   // With no capturers, expect the preferred size to be the one propagated into
   // WebContentsImpl via the RenderViewHostDelegate interface.
-  EXPECT_EQ(contents()->GetCapturerCount(), 0);
+  EXPECT_FALSE(contents()->IsBeingCaptured());
   EXPECT_EQ(original_preferred_size, contents()->GetPreferredSize());
 
   // Increment capturer count, but without specifying a capture size.  Expect
   // a "not set" preferred size.
   contents()->IncrementCapturerCount(gfx::Size());
-  EXPECT_EQ(1, contents()->GetCapturerCount());
+  EXPECT_TRUE(contents()->IsBeingCaptured());
   EXPECT_EQ(gfx::Size(), contents()->GetPreferredSize());
 
   // Increment capturer count again, but with an overriding capture size.
   // Expect preferred size to now be overridden to the capture size.
   const gfx::Size capture_size(1280, 720);
   contents()->IncrementCapturerCount(capture_size);
-  EXPECT_EQ(2, contents()->GetCapturerCount());
+  EXPECT_TRUE(contents()->IsBeingCaptured());
   EXPECT_EQ(capture_size, contents()->GetPreferredSize());
 
   // Increment capturer count a third time, but the expect that the preferred
   // size is still the first capture size.
   const gfx::Size another_capture_size(720, 480);
   contents()->IncrementCapturerCount(another_capture_size);
-  EXPECT_EQ(3, contents()->GetCapturerCount());
+  EXPECT_TRUE(contents()->IsBeingCaptured());
   EXPECT_EQ(capture_size, contents()->GetPreferredSize());
 
   // Decrement capturer count twice, but expect the preferred size to still be
   // overridden.
   contents()->DecrementCapturerCount();
   contents()->DecrementCapturerCount();
-  EXPECT_EQ(1, contents()->GetCapturerCount());
+  EXPECT_TRUE(contents()->IsBeingCaptured());
   EXPECT_EQ(capture_size, contents()->GetPreferredSize());
 
   // Decrement capturer count, and since the count has dropped to zero, the
   // original preferred size should be restored.
   contents()->DecrementCapturerCount();
-  EXPECT_EQ(0, contents()->GetCapturerCount());
+  EXPECT_FALSE(contents()->IsBeingCaptured());
   EXPECT_EQ(original_preferred_size, contents()->GetPreferredSize());
 }
 

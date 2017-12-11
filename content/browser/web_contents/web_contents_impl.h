@@ -339,7 +339,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   const std::string& GetEncoding() const override;
   void IncrementCapturerCount(const gfx::Size& capture_size) override;
   void DecrementCapturerCount() override;
-  int GetCapturerCount() const override;
+  bool IsBeingCaptured() const override;
   bool IsAudioMuted() const override;
   void SetAudioMuted(bool mute) override;
   bool IsCurrentlyAudible() override;
