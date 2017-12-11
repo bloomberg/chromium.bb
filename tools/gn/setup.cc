@@ -325,7 +325,7 @@ bool Setup::DoSetup(const std::string& build_dir, bool force_create) {
   if (default_args_) {
     Scope::KeyValueMap overrides;
     default_args_->GetCurrentScopeValues(&overrides);
-    build_settings_.build_args().AddArgOverrides(overrides);
+    build_settings_.build_args().AddDefaultArgOverrides(overrides);
   }
 
   if (fill_arguments_) {
