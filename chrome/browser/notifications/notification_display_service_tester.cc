@@ -51,7 +51,7 @@ NotificationDisplayServiceTester::GetDisplayedNotificationsForType(
 
 base::Optional<message_center::Notification>
 NotificationDisplayServiceTester::GetNotification(
-    const std::string& notification_id) const {
+    const std::string& notification_id) {
   return display_service_->GetNotification(notification_id);
 }
 
