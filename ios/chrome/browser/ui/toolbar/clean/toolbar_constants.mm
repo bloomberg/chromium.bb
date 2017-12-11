@@ -12,6 +12,7 @@ const CGFloat kToolbarBackgroundColor = 0xF2F2F2;
 const CGFloat kIncognitoToolbarBackgroundColor = 0x505050;
 
 const CGFloat kLocationBarVerticalMargin = 7.0f;
+const CGFloat kExpandedLocationBarVerticalMargin = 2.0f;
 const CGFloat kButtonVerticalMargin = 4.0f;
 const CGFloat kLeadingMarginIPad = 4.0f;
 const CGFloat kHorizontalMargin = 1.0f;
