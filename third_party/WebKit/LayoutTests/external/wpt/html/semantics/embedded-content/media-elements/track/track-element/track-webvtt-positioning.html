@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<title>Tests cue text position from settings.</title>
+<title>Cue text position from settings</title>
 <script src="track-helpers.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
-check_cues_from_track("captions-webvtt/tc015-positioning.vtt", testTrack);
-check_cues_from_track("captions-webvtt/tc015-positioning-ltr.vtt", testTrack);
+check_cues_from_track("resources/positioning.vtt", testTrack);
+check_cues_from_track("resources/positioning-ltr.vtt", testTrack);
 
-check_cues_from_track("captions-webvtt/tc015-positioning-bad.vtt", function(track) {
+check_cues_from_track("resources/positioning-bad.vtt", function(track) {
     var expected = [
         { position: "auto" },
         { position: "auto" },
@@ -17,7 +17,7 @@ check_cues_from_track("captions-webvtt/tc015-positioning-bad.vtt", function(trac
         { position: "auto" },
         { position: "auto" },
         { position: "auto" }
-    ];    
+    ];
 
     assert_cues_match(track.cues, expected);
 });
