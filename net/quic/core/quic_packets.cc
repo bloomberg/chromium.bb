@@ -54,7 +54,8 @@ QuicPacketHeader::QuicPacketHeader()
       reset_flag(false),
       version_flag(false),
       packet_number_length(PACKET_6BYTE_PACKET_NUMBER),
-      version(QUIC_VERSION_UNSUPPORTED),
+      version(
+          ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED)),
       nonce(nullptr),
       packet_number(0) {}
 
@@ -87,7 +88,7 @@ std::ostream& operator<<(std::ostream& os, const QuicPacketHeader& header) {
      << ", reset_flag: " << header.reset_flag
      << ", version_flag: " << header.version_flag;
   if (header.version_flag) {
-    os << ", version: " << QuicVersionToString(header.version);
+    os << ", version: " << ParsedQuicVersionToString(header.version);
   }
   if (header.nonce != nullptr) {
     os << ", diversification_nonce: "

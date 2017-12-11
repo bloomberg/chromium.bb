@@ -40,16 +40,8 @@ const float kBetaLastMax = 0.85f;
 CubicBytes::CubicBytes(const QuicClock* clock)
     : clock_(clock),
       num_connections_(kDefaultNumConnections),
-      epoch_(QuicTime::Zero()),
-      last_update_time_(QuicTime::Zero()),
-      fix_convex_mode_(FLAGS_quic_reloadable_flag_quic_enable_cubic_fixes),
-      fix_cubic_quantization_(fix_convex_mode_),
-      fix_beta_last_max_(fix_convex_mode_),
-      allow_per_ack_updates_(fix_convex_mode_) {
+      epoch_(QuicTime::Zero()) {
   ResetCubicState();
-  if (fix_convex_mode_) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_cubic_fixes, 2, 2);
-  }
 }
 
 void CubicBytes::SetNumConnections(int num_connections) {
@@ -77,37 +69,17 @@ float CubicBytes::BetaLastMax() const {
   // N-connection emulation, which emulates the additional backoff of
   // an ensemble of N TCP-Reno connections on a single loss event. The
   // effective multiplier is computed as:
-  return fix_beta_last_max_
-             ? (num_connections_ - 1 + kBetaLastMax) / num_connections_
-             : kBetaLastMax;
+  return (num_connections_ - 1 + kBetaLastMax) / num_connections_;
 }
 
 void CubicBytes::ResetCubicState() {
   epoch_ = QuicTime::Zero();             // Reset time.
-  last_update_time_ = QuicTime::Zero();  // Reset time.
-  last_congestion_window_ = 0;
   last_max_congestion_window_ = 0;
   acked_bytes_count_ = 0;
   estimated_tcp_congestion_window_ = 0;
   origin_point_congestion_window_ = 0;
   time_to_origin_point_ = 0;
   last_target_congestion_window_ = 0;
-}
-
-void CubicBytes::SetFixConvexMode(bool fix_convex_mode) {
-  fix_convex_mode_ = fix_convex_mode;
-}
-
-void CubicBytes::SetFixCubicQuantization(bool fix_cubic_quantization) {
-  fix_cubic_quantization_ = fix_cubic_quantization;
-}
-
-void CubicBytes::SetFixBetaLastMax(bool fix_beta_last_max) {
-  fix_beta_last_max_ = fix_beta_last_max;
-}
-
-void CubicBytes::SetAllowPerAckUpdates(bool allow_per_ack_updates) {
-  allow_per_ack_updates_ = allow_per_ack_updates;
 }
 
 void CubicBytes::OnApplicationLimited() {
@@ -127,9 +99,7 @@ QuicByteCount CubicBytes::CongestionWindowAfterPacketLoss(
   // Since bytes-mode Reno mode slightly under-estimates the cwnd, we
   // may never reach precisely the last cwnd over the course of an
   // RTT.  Do not interpret a slight under-estimation as competing traffic.
-  const QuicByteCount last_window_delta =
-      fix_beta_last_max_ ? kDefaultTCPMSS : 0;
-  if (current_congestion_window + last_window_delta <
+  if (current_congestion_window + kDefaultTCPMSS <
       last_max_congestion_window_) {
     // We never reached the old max, so assume we are competing with
     // another flow. Use our extra back off factor to allow the other
@@ -149,15 +119,6 @@ QuicByteCount CubicBytes::CongestionWindowAfterAck(
     QuicTime::Delta delay_min,
     QuicTime event_time) {
   acked_bytes_count_ += acked_bytes;
-  // Cubic is "independent" of RTT, the update is limited by the time elapsed.
-  if (!allow_per_ack_updates_ &&
-      (last_congestion_window_ == current_congestion_window &&
-       (event_time - last_update_time_ <= MaxCubicTimeInterval()))) {
-    return std::max(last_target_congestion_window_,
-                    estimated_tcp_congestion_window_);
-  }
-  last_congestion_window_ = current_congestion_window;
-  last_update_time_ = event_time;
 
   if (!epoch_.IsInitialized()) {
     // First ACK after a loss event.
@@ -183,32 +144,20 @@ QuicByteCount CubicBytes::CongestionWindowAfterAck(
       ((event_time + delay_min - epoch_).ToMicroseconds() << 10) /
       kNumMicrosPerSecond;
 
-  // TODO(ianswett): Change to uint64_t once fix_convex_mode_ is always enabled.
-  int64_t offset = time_to_origin_point_ - elapsed_time;
-  if (fix_convex_mode_) {
-    // Right-shifts of negative, signed numbers have
-    // implementation-dependent behavior.  In the fix, force the
-    // offset to be positive, as is done in the kernel.
-    const int64_t positive_offset =
-        std::abs(time_to_origin_point_ - elapsed_time);
-    offset = positive_offset;
-  }
-  QuicByteCount delta_congestion_window =
-      fix_cubic_quantization_
-          ? (kCubeCongestionWindowScale * offset * offset * offset *
-             kDefaultTCPMSS) >>
-                kCubeScale
-          : ((kCubeCongestionWindowScale * offset * offset * offset) >>
-             kCubeScale) *
-                kDefaultTCPMSS;
+  // Right-shifts of negative, signed numbers have implementation-dependent
+  // behavior, so force the offset to be positive, as is done in the kernel.
+  uint64_t offset = std::abs(time_to_origin_point_ - elapsed_time);
+
+  QuicByteCount delta_congestion_window = (kCubeCongestionWindowScale * offset *
+                                           offset * offset * kDefaultTCPMSS) >>
+                                          kCubeScale;
 
   const bool add_delta = elapsed_time > time_to_origin_point_;
   DCHECK(add_delta ||
          (origin_point_congestion_window_ > delta_congestion_window));
   QuicByteCount target_congestion_window =
-      (fix_convex_mode_ && add_delta)
-          ? origin_point_congestion_window_ + delta_congestion_window
-          : origin_point_congestion_window_ - delta_congestion_window;
+      add_delta ? origin_point_congestion_window_ + delta_congestion_window
+                : origin_point_congestion_window_ - delta_congestion_window;
   // Limit the CWND increase to half the acked bytes.
   target_congestion_window =
       std::min(target_congestion_window,

@@ -4,8 +4,6 @@
 
 #include "net/quic/core/crypto/aes_128_gcm_12_decrypter.h"
 
-#include "net/quic/platform/api/quic_flag_utils.h"
-#include "net/quic/platform/api/quic_flags.h"
 #include "third_party/boringssl/src/include/openssl/aead.h"
 #include "third_party/boringssl/src/include/openssl/tls1.h"
 
@@ -31,11 +29,7 @@ Aes128Gcm12Decrypter::Aes128Gcm12Decrypter()
 Aes128Gcm12Decrypter::~Aes128Gcm12Decrypter() {}
 
 uint32_t Aes128Gcm12Decrypter::cipher_id() const {
-  if (FLAGS_quic_reloadable_flag_quic_use_tls13_cipher_suites) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_tls13_cipher_suites);
-    return TLS1_CK_AES_128_GCM_SHA256;
-  }
-  return TLS1_CK_ECDHE_RSA_WITH_AES_128_GCM_SHA256;
+  return TLS1_CK_AES_128_GCM_SHA256;
 }
 
 }  // namespace net

@@ -169,7 +169,9 @@ class QuicProxyClientSocketTest
     QuicConnection* connection = new QuicConnection(
         connection_id_, QuicSocketAddress(QuicSocketAddressImpl(peer_addr_)),
         helper_.get(), alarm_factory_.get(), writer, true /* owns_writer */,
-        Perspective::IS_CLIENT, SupportedTransportVersions(GetParam()));
+        Perspective::IS_CLIENT,
+        SupportedVersions(
+            net::ParsedQuicVersion(net::PROTOCOL_QUIC_CRYPTO, GetParam())));
     connection->set_visitor(&visitor_);
     QuicConnectionPeer::SetSendAlgorithm(connection, send_algorithm_);
 

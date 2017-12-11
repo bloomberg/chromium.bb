@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "net/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -44,7 +43,7 @@ QuicSimpleServerSession::CreateQuicCryptoServerStream(
     QuicCompressedCertsCache* compressed_certs_cache) {
   return new QuicCryptoServerStream(
       crypto_config, compressed_certs_cache,
-      FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support, this,
+      GetQuicReloadableFlag(enable_quic_stateless_reject_support), this,
       stream_helper());
 }
 

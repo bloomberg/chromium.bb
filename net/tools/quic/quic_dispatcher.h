@@ -121,8 +121,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // destined for the time wait manager.
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   void OnError(QuicFramer* framer) override;
-  bool OnProtocolVersionMismatch(
-      QuicTransportVersion received_version) override;
+  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version) override;
 
   // The following methods should never get called because
   // OnUnauthenticatedPublicHeader() or OnUnauthenticatedHeader() (whichever
@@ -219,6 +218,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   const QuicTransportVersionVector& GetSupportedTransportVersions();
 
+  const ParsedQuicVersionVector& GetSupportedVersions();
+
   QuicConnectionId current_connection_id() { return current_connection_id_; }
   const QuicSocketAddress& current_server_address() {
     return current_server_address_;
@@ -307,7 +308,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // fate which describes what subsequent processing should be performed on the
   // packets, like ValidityChecks, and invokes ProcessUnauthenticatedHeaderFate.
   void MaybeRejectStatelessly(QuicConnectionId connection_id,
-                              QuicTransportVersion version);
+                              ParsedQuicVersion version);
 
   // Deliver |packets| to |session| for further processing.
   void DeliverPacketsToSession(
@@ -326,7 +327,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
       const QuicSocketAddress& current_client_address,
       const QuicSocketAddress& current_server_address,
       std::unique_ptr<QuicReceivedPacket> current_packet,
-      QuicTransportVersion first_version);
+      ParsedQuicVersion first_version);
 
   // Examine the state of the rejector and decide what to do with the current
   // packet.

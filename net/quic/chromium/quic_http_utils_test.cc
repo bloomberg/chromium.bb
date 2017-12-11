@@ -48,12 +48,6 @@ TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
       QuicVersionToQuicVersionLabel(QUIC_VERSION_41),
       QuicVersionToQuicVersionLabel(QUIC_VERSION_42)};
 
-  if (!FLAGS_quic_reloadable_flag_quic_use_net_byte_order_version_label) {
-    for (uint32_t& version_label : alt_svc_versions_ietf) {
-      version_label = QuicEndian::HostToNet32(version_label);
-    }
-  }
-
   QuicTransportVersionVector supported_alt_svc_versions = {QUIC_VERSION_38,
                                                            QUIC_VERSION_41};
   SpdyAltSvcWireFormat::AlternativeService altsvc;

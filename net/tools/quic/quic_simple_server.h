@@ -39,7 +39,7 @@ class QuicSimpleServer {
       std::unique_ptr<ProofSource> proof_source,
       const QuicConfig& config,
       const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
-      const QuicTransportVersionVector& supported_versions,
+      const ParsedQuicVersionVector& supported_versions,
       QuicHttpResponseCache* response_cache);
 
   virtual ~QuicSimpleServer();

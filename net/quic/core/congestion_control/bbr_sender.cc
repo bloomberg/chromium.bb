@@ -9,7 +9,6 @@
 
 #include "net/quic/core/congestion_control/rtt_stats.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
-#include "net/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
@@ -211,7 +210,7 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
   if (config.HasClientRequestedIndependentOption(k2RTT, perspective)) {
     num_startup_rtts_ = 2;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_rate_recovery &&
+  if (GetQuicReloadableFlag(quic_bbr_rate_recovery) &&
       config.HasClientRequestedIndependentOption(kBBRR, perspective)) {
     rate_based_recovery_ = true;
   }
@@ -221,57 +220,57 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
   if (config.HasClientRequestedIndependentOption(kBBR2, perspective)) {
     max_aggregation_bytes_multiplier_ = 2;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_slower_startup &&
+  if (GetQuicReloadableFlag(quic_bbr_slower_startup) &&
       config.HasClientRequestedIndependentOption(kBBRS, perspective)) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_slower_startup);
     slower_startup_ = true;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_fully_drain_queue &&
+  if (GetQuicReloadableFlag(quic_bbr_fully_drain_queue) &&
       config.HasClientRequestedIndependentOption(kBBR3, perspective)) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_fully_drain_queue);
     fully_drain_queue_ = true;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup &&
+  if (GetQuicReloadableFlag(quic_bbr_conservation_in_startup) &&
       config.HasClientRequestedIndependentOption(kBBS1, perspective)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_conservation_in_startup, 1,
                       3);
     rate_based_startup_ = true;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup &&
+  if (GetQuicReloadableFlag(quic_bbr_conservation_in_startup) &&
       config.HasClientRequestedIndependentOption(kBBS2, perspective)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_conservation_in_startup, 2,
                       3);
     initial_conservation_in_startup_ = MEDIUM_GROWTH;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup &&
+  if (GetQuicReloadableFlag(quic_bbr_conservation_in_startup) &&
       config.HasClientRequestedIndependentOption(kBBS3, perspective)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_conservation_in_startup, 3,
                       3);
     initial_conservation_in_startup_ = GROWTH;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window &&
+  if (GetQuicReloadableFlag(quic_bbr_ack_aggregation_window) &&
       config.HasClientRequestedIndependentOption(kBBR4, perspective)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_aggregation_window, 1,
                       2);
     max_ack_height_.SetWindowLength(2 * kBandwidthWindowSize);
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window &&
+  if (GetQuicReloadableFlag(quic_bbr_ack_aggregation_window) &&
       config.HasClientRequestedIndependentOption(kBBR5, perspective)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_aggregation_window, 2,
                       2);
     max_ack_height_.SetWindowLength(4 * kBandwidthWindowSize);
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt &&
+  if (GetQuicReloadableFlag(quic_bbr_less_probe_rtt) &&
       config.HasClientRequestedIndependentOption(kBBR6, perspective)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_less_probe_rtt, 1, 3);
     probe_rtt_based_on_bdp_ = true;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt &&
+  if (GetQuicReloadableFlag(quic_bbr_less_probe_rtt) &&
       config.HasClientRequestedIndependentOption(kBBR7, perspective)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_less_probe_rtt, 2, 3);
     probe_rtt_skipped_if_similar_rtt_ = true;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt &&
+  if (GetQuicReloadableFlag(quic_bbr_less_probe_rtt) &&
       config.HasClientRequestedIndependentOption(kBBR8, perspective)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_less_probe_rtt, 3, 3);
     probe_rtt_disabled_if_app_limited_ = true;
@@ -719,7 +718,7 @@ void BbrSender::CalculateCongestionWindow(QuicByteCount bytes_acked) {
     target_window += max_ack_height_.GetBest();
   }
 
-  if (FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd) {
+  if (GetQuicReloadableFlag(quic_bbr_add_tso_cwnd)) {
     // QUIC doesn't have TSO, but it does have similarly quantized pacing, so
     // allow extra CWND to make QUIC's BBR CWND identical to TCP's.
     QuicByteCount tso_segs_goal = 0;

@@ -54,9 +54,9 @@ QuicSession::QuicSession(QuicConnection* connection,
                        perspective() == Perspective::IS_SERVER,
                        nullptr),
       currently_writing_stream_id_(0),
-      can_use_slices_(FLAGS_quic_reloadable_flag_quic_use_mem_slices),
+      can_use_slices_(GetQuicReloadableFlag(quic_use_mem_slices)),
       allow_multiple_acks_for_data_(
-          FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
+          GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
   if (allow_multiple_acks_for_data_) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_allow_multiple_acks_for_data2);
   }
@@ -526,10 +526,7 @@ void QuicSession::OnConfigNegotiated() {
       }
     }
 
-    if (FLAGS_quic_reloadable_flag_quic_send_reset_token_in_shlo) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_send_reset_token_in_shlo);
-      config_.SetStatelessResetTokenToSend(GetStatelessResetToken());
-    }
+    config_.SetStatelessResetTokenToSend(GetStatelessResetToken());
   }
 
   // A small number of additional incoming streams beyond the limit should be

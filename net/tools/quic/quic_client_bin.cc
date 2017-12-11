@@ -255,12 +255,12 @@ int main(int argc, char* argv[]) {
   net::EpollServer epoll_server;
   net::QuicServerId server_id(url.host(), url.port(),
                               net::PRIVACY_MODE_DISABLED);
-  net::QuicTransportVersionVector versions =
-      net::AllSupportedTransportVersions();
+  net::ParsedQuicVersionVector versions = net::AllSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
-    versions.push_back(
-        static_cast<net::QuicTransportVersion>(FLAGS_quic_version));
+    versions.push_back(net::ParsedQuicVersion(
+        net::PROTOCOL_QUIC_CRYPTO,
+        static_cast<net::QuicTransportVersion>(FLAGS_quic_version)));
   }
   // For secure QUIC we need to verify the cert chain.
   std::unique_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
@@ -289,7 +289,7 @@ int main(int argc, char* argv[]) {
     net::QuicErrorCode error = client.session()->error();
     if (FLAGS_version_mismatch_ok && error == net::QUIC_INVALID_VERSION) {
       cout << "Server talks QUIC, but none of the versions supported by "
-           << "this client: " << QuicTransportVersionVectorToString(versions)
+           << "this client: " << ParsedQuicVersionVectorToString(versions)
            << endl;
       // Version mismatch is not deemed a failure.
       return 0;

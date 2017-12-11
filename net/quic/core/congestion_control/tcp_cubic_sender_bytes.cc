@@ -48,22 +48,6 @@ TcpCubicSenderBytes::~TcpCubicSenderBytes() {}
 void TcpCubicSenderBytes::SetFromConfig(const QuicConfig& config,
                                         Perspective perspective) {
   TcpCubicSenderBase::SetFromConfig(config, perspective);
-  if (config.HasReceivedConnectionOptions() &&
-      ContainsQuicTag(config.ReceivedConnectionOptions(), kCCVX)) {
-    cubic_.SetFixConvexMode(true);
-  }
-  if (config.HasReceivedConnectionOptions() &&
-      ContainsQuicTag(config.ReceivedConnectionOptions(), kCBQT)) {
-    cubic_.SetFixCubicQuantization(true);
-  }
-  if (config.HasReceivedConnectionOptions() &&
-      ContainsQuicTag(config.ReceivedConnectionOptions(), kBLMX)) {
-    cubic_.SetFixBetaLastMax(true);
-  }
-  if (config.HasReceivedConnectionOptions() &&
-      ContainsQuicTag(config.ReceivedConnectionOptions(), kCPAU)) {
-    cubic_.SetAllowPerAckUpdates(true);
-  }
 }
 
 void TcpCubicSenderBytes::SetCongestionWindowFromBandwidthAndRtt(

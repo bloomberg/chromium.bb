@@ -195,6 +195,9 @@ const QuicPacketNumber kMaxRandomInitialPacketNumber = 0x7fffffff;
 // Used to represent an invalid or no control frame id.
 const QuicControlFrameId kInvalidControlFrameId = 0;
 
+// The max length a stream can have.
+const QuicByteCount kMaxStreamLength = (UINT64_C(1) << 62) - 1;
+
 }  // namespace net
 
 #endif  // NET_QUIC_CORE_QUIC_CONSTANTS_H_

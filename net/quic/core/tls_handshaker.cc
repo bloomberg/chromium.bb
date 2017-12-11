@@ -6,7 +6,8 @@
 
 #include "base/memory/singleton.h"
 #include "net/quic/core/quic_crypto_stream.h"
-#include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "net/quic/core/tls_client_handshaker.h"
+#include "net/quic/core/tls_server_handshaker.h"
 
 namespace net {
 
@@ -16,29 +17,6 @@ const char kClientLabel[] = "EXPORTER-QUIC client 1-RTT Secret";
 const char kServerLabel[] = "EXPORTER-QUIC server 1-RTT Secret";
 
 }  // namespace
-
-// static
-bool TlsHandshaker::DeriveSecrets(SSL* ssl,
-                                  std::vector<uint8_t>* client_secret_out,
-                                  std::vector<uint8_t>* server_secret_out) {
-  const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl);
-  if (cipher == nullptr) {
-    return false;
-  }
-  const EVP_MD* prf = EVP_get_digestbynid(SSL_CIPHER_get_prf_nid(cipher));
-  if (prf == nullptr) {
-    return false;
-  }
-  size_t hash_len = EVP_MD_size(prf);
-  client_secret_out->resize(hash_len);
-  server_secret_out->resize(hash_len);
-  return SSL_export_keying_material(ssl, client_secret_out->data(), hash_len,
-                                    kClientLabel, arraysize(kClientLabel),
-                                    nullptr, 0, 0) &&
-         SSL_export_keying_material(ssl, server_secret_out->data(), hash_len,
-                                    kServerLabel, arraysize(kServerLabel),
-                                    nullptr, 0, 0);
-}
 
 namespace {
 
@@ -70,6 +48,66 @@ class SslIndexSingleton {
 TlsHandshaker* TlsHandshaker::HandshakerFromSsl(const SSL* ssl) {
   return reinterpret_cast<TlsHandshaker*>(SSL_get_ex_data(
       ssl, SslIndexSingleton::GetInstance()->HandshakerIndex()));
+}
+
+const EVP_MD* TlsHandshaker::Prf() {
+  return EVP_get_digestbynid(
+      SSL_CIPHER_get_prf_nid(SSL_get_current_cipher(ssl())));
+}
+
+bool TlsHandshaker::DeriveSecrets(std::vector<uint8_t>* client_secret_out,
+                                  std::vector<uint8_t>* server_secret_out) {
+  size_t hash_len = EVP_MD_size(Prf());
+  client_secret_out->resize(hash_len);
+  server_secret_out->resize(hash_len);
+  return (SSL_export_keying_material(ssl(), client_secret_out->data(), hash_len,
+                                     kClientLabel, arraysize(kClientLabel) - 1,
+                                     nullptr, 0, 0) == 1) &&
+         (SSL_export_keying_material(ssl(), server_secret_out->data(), hash_len,
+                                     kServerLabel, arraysize(kServerLabel) - 1,
+                                     nullptr, 0, 0) == 1);
+}
+
+namespace {
+
+template <class QuicCrypter>
+void SetKeyAndIV(const EVP_MD* prf,
+                 const std::vector<uint8_t>& pp_secret,
+                 QuicCrypter* crypter) {
+  std::vector<uint8_t> key = CryptoUtils::HkdfExpandLabel(
+      prf, pp_secret, "key", crypter->GetKeySize());
+  std::vector<uint8_t> iv =
+      CryptoUtils::HkdfExpandLabel(prf, pp_secret, "iv", crypter->GetIVSize());
+  crypter->SetKey(
+      QuicStringPiece(reinterpret_cast<char*>(key.data()), key.size()));
+  crypter->SetIV(
+      QuicStringPiece(reinterpret_cast<char*>(iv.data()), iv.size()));
+}
+
+}  // namespace
+
+QuicEncrypter* TlsHandshaker::CreateEncrypter(
+    const std::vector<uint8_t>& pp_secret) {
+  QuicEncrypter* encrypter = QuicEncrypter::CreateFromCipherSuite(
+      SSL_CIPHER_get_id(SSL_get_current_cipher(ssl())));
+  SetKeyAndIV(Prf(), pp_secret, encrypter);
+  return encrypter;
+}
+
+QuicDecrypter* TlsHandshaker::CreateDecrypter(
+    const std::vector<uint8_t>& pp_secret) {
+  QuicDecrypter* decrypter = QuicDecrypter::CreateFromCipherSuite(
+      SSL_CIPHER_get_id(SSL_get_current_cipher(ssl())));
+  SetKeyAndIV(Prf(), pp_secret, decrypter);
+  return decrypter;
+}
+
+// static
+bssl::UniquePtr<SSL_CTX> TlsHandshaker::CreateSslCtx() {
+  bssl::UniquePtr<SSL_CTX> ssl_ctx(SSL_CTX_new(TLS_with_buffers_method()));
+  SSL_CTX_set_min_proto_version(ssl_ctx.get(), TLS1_3_VERSION);
+  SSL_CTX_set_max_proto_version(ssl_ctx.get(), TLS1_3_VERSION);
+  return ssl_ctx;
 }
 
 TlsHandshaker::TlsHandshaker(QuicCryptoStream* stream,

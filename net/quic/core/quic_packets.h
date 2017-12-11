@@ -72,7 +72,7 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   bool reset_flag;
   bool version_flag;
   QuicPacketNumberLength packet_number_length;
-  QuicTransportVersion version;
+  ParsedQuicVersion version;
   // nonce contains an optional, 32-byte nonce value. If not included in the
   // packet, |nonce| will be empty.
   DiversificationNonce* nonce;
@@ -95,7 +95,7 @@ struct QUIC_EXPORT_PRIVATE QuicVersionNegotiationPacket {
   ~QuicVersionNegotiationPacket();
 
   QuicConnectionId connection_id;
-  QuicTransportVersionVector versions;
+  ParsedQuicVersionVector versions;
 };
 
 class QUIC_EXPORT_PRIVATE QuicData {

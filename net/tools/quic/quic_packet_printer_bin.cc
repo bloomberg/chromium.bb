@@ -67,11 +67,10 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnError: " << QuicErrorCodeToString(framer->error())
               << " detail: " << framer->detailed_error() << "\n";
   }
-  bool OnProtocolVersionMismatch(
-      QuicTransportVersion received_version) override {
+  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version) override {
     framer_->set_version(received_version);
     std::cerr << "OnProtocolVersionMismatch: "
-              << QuicVersionToString(received_version) << "\n";
+              << ParsedQuicVersionToString(received_version) << "\n";
     return true;
   }
   void OnPacket() override { std::cerr << "OnPacket\n"; }
@@ -177,14 +176,14 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   string hex = net::QuicTextUtils::HexDecode(argv[2]);
-  net::QuicTransportVersionVector versions =
-      net::AllSupportedTransportVersions();
+  net::ParsedQuicVersionVector versions = net::AllSupportedVersions();
   // Fake a time since we're not actually generating acks.
   net::QuicTime start(net::QuicTime::Zero());
   net::QuicFramer framer(versions, start, perspective);
   if (!FLAGS_quic_version.empty()) {
-    for (net::QuicTransportVersion version : versions) {
-      if (net::QuicVersionToString(version) == FLAGS_quic_version) {
+    for (net::ParsedQuicVersion version : versions) {
+      if (net::QuicVersionToString(version.transport_version) ==
+          FLAGS_quic_version) {
         framer.set_version(version);
       }
     }

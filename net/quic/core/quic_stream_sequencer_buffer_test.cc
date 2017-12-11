@@ -84,7 +84,7 @@ class QuicStreamSequencerBufferTest : public testing::Test {
 };
 
 TEST_F(QuicStreamSequencerBufferTest, InitializeWithMaxRecvWindowSize) {
-  if (!FLAGS_quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2) {
+  if (!GetQuicReloadableFlag(quic_fix_sequencer_buffer_block_count2)) {
     return;
   }
   ResetMaxCapacityBytes(16 * 1024 * 1024);  // 16MB

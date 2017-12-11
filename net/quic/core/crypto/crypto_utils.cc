@@ -16,11 +16,46 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 using std::string;
 
 namespace net {
+
+// static
+std::vector<uint8_t> CryptoUtils::HkdfExpandLabel(
+    const EVP_MD* prf,
+    const std::vector<uint8_t>& secret,
+    const string& label,
+    size_t out_len) {
+  CBB hkdf_label, inner_label;
+  const char label_prefix[] = "tls13 ";
+  if (!CBB_init(&hkdf_label, 1) || !CBB_add_u16(&hkdf_label, out_len) ||
+      !CBB_add_u8_length_prefixed(&hkdf_label, &inner_label) ||
+      !CBB_add_bytes(&inner_label,
+                     reinterpret_cast<const uint8_t*>(label_prefix),
+                     arraysize(label_prefix) - 1) ||
+      !CBB_add_bytes(&inner_label,
+                     reinterpret_cast<const uint8_t*>(label.data()),
+                     label.size()) ||
+      !CBB_add_u8(&hkdf_label, 0) || !CBB_flush(&hkdf_label)) {
+    QUIC_LOG(ERROR) << "Building HKDF label failed";
+    CBB_cleanup(&hkdf_label);
+    std::vector<uint8_t>();
+  }
+  std::vector<uint8_t> out;
+  out.resize(out_len);
+  if (!HKDF_expand(out.data(), out_len, prf, secret.data(), secret.size(),
+                   CBB_data(&hkdf_label), CBB_len(&hkdf_label))) {
+    QUIC_LOG(ERROR) << "Running HKDF-Expand-Label failed";
+    CBB_cleanup(&hkdf_label);
+    std::vector<uint8_t>();
+  }
+  CBB_cleanup(&hkdf_label);
+  return out;
+}
 
 // static
 void CryptoUtils::GenerateNonce(QuicWallTime now,

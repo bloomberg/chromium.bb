@@ -318,7 +318,8 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
 
   if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
     crypto_config_->FillInchoateClientHello(
-        server_id_, session()->connection()->supported_versions().front(),
+        server_id_,
+        session()->connection()->supported_versions().front().transport_version,
         cached, session()->connection()->random_generator(),
         /* demand_x509_proof= */ true, crypto_negotiated_params_, &out);
     // Pad the inchoate client hello to fill up a packet.
@@ -350,7 +351,7 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
 
   // If the server nonce is empty, copy over the server nonce from a previous
   // SREJ, if there is one.
-  if (FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support &&
+  if (GetQuicReloadableFlag(enable_quic_stateless_reject_support) &&
       crypto_negotiated_params_->server_nonce.empty() &&
       cached->has_server_nonce()) {
     crypto_negotiated_params_->server_nonce = cached->GetNextServerNonce();
@@ -360,8 +361,8 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
   string error_details;
   QuicErrorCode error = crypto_config_->FillClientHello(
       server_id_, session()->connection()->connection_id(),
-      session()->connection()->supported_versions().front(), cached,
-      session()->connection()->clock()->WallNow(),
+      session()->connection()->supported_versions().front().transport_version,
+      cached, session()->connection()->clock()->WallNow(),
       session()->connection()->random_generator(), channel_id_key_.get(),
       crypto_negotiated_params_, &out, &error_details);
   if (error != QUIC_NO_ERROR) {
@@ -619,8 +620,9 @@ void QuicCryptoClientHandshaker::DoReceiveSHLO(
   QuicErrorCode error = crypto_config_->ProcessServerHello(
       *in, session()->connection()->connection_id(),
       session()->connection()->transport_version(),
-      session()->connection()->server_supported_versions(), cached,
-      crypto_negotiated_params_, &error_details);
+      ParsedVersionsToTransportVersions(
+          session()->connection()->server_supported_versions()),
+      cached, crypto_negotiated_params_, &error_details);
 
   if (error != QUIC_NO_ERROR) {
     stream_->CloseConnectionWithDetails(

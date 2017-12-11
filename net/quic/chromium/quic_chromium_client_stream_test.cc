@@ -155,10 +155,12 @@ class QuicChromiumClientStreamTest
  public:
   QuicChromiumClientStreamTest()
       : crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
-        session_(new MockQuicConnection(&helper_,
-                                        &alarm_factory_,
-                                        Perspective::IS_CLIENT,
-                                        SupportedTransportVersions(GetParam())),
+        session_(new MockQuicConnection(
+                     &helper_,
+                     &alarm_factory_,
+                     Perspective::IS_CLIENT,
+                     SupportedVersions(
+                         ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, GetParam()))),
                  &push_promise_index_) {
     stream_ = new QuicChromiumClientStream(kTestStreamId, &session_,
                                            NetLogWithSource());

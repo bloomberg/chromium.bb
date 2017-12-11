@@ -77,7 +77,7 @@ const uint16_t kDefaultServerPort = 443;
 
 class TestQuicConnection : public QuicConnection {
  public:
-  TestQuicConnection(const QuicTransportVersionVector& versions,
+  TestQuicConnection(const ParsedQuicVersionVector& versions,
                      QuicConnectionId connection_id,
                      IPEndPoint address,
                      QuicChromiumConnectionHelper* helper,
@@ -276,8 +276,9 @@ class QuicHttpStreamTest
     alarm_factory_.reset(new QuicChromiumAlarmFactory(runner_.get(), &clock_));
 
     connection_ = new TestQuicConnection(
-        SupportedTransportVersions(GetParam()), connection_id_, peer_addr_,
-        helper_.get(), alarm_factory_.get(),
+        SupportedVersions(
+            net::ParsedQuicVersion(net::PROTOCOL_QUIC_CRYPTO, GetParam())),
+        connection_id_, peer_addr_, helper_.get(), alarm_factory_.get(),
         new QuicChromiumPacketWriter(
             socket.get(), base::ThreadTaskRunnerHandle::Get().get()));
     connection_->set_visitor(&visitor_);

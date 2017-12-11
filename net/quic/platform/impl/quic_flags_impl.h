@@ -61,5 +61,18 @@ inline void SetQuicFlagImpl(std::string* f, const std::string& v) {
   *f = v;
 }
 
+// ------------------------------------------------------------------------
+// // QUIC feature flags implementation.
+// // ------------------------------------------------------------------------
+#define RELOADABLE_FLAG(flag) FLAGS_quic_reloadable_flag_##flag
+#define RESTART_FLAG(flag) FLAGS_quic_restart_flag_##flag
+
+#define GetQuicReloadableFlagImpl(flag) GetQuicFlag(RELOADABLE_FLAG(flag))
+#define SetQuicReloadableFlagImpl(flag, value) \
+  SetQuicFlag(&RELOADABLE_FLAG(flag), value)
+#define GetQuicRestartFlagImpl(flag) GetQuicFlag(RESTART_FLAG(flag))
+#define SetQuicRestartFlagImpl(flag, value) \
+  SetQuicFlag(&RESTART_FLAG(flag), value)
+
 }  // namespace net
 #endif  // NET_QUIC_PLATFORM_IMPL_QUIC_FLAGS_IMPL_H_

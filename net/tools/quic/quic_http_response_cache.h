@@ -95,10 +95,8 @@ class QuicHttpResponseCache {
     const std::string& file_name() { return file_name_string_; }
 
     QuicStringPiece host() { return host_; }
-    void set_host(QuicStringPiece host) { host_ = host; }
 
     QuicStringPiece path() { return path_; }
-    void set_path(QuicStringPiece path) { path_ = path; }
 
     const SpdyHeaderBlock& spdy_headers() { return spdy_headers_; }
 

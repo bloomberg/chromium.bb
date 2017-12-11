@@ -121,7 +121,7 @@ class QuicSpdySession::SpdyFramerVisitor
   }
 
   void OnSetting(SpdySettingsIds id, uint32_t value) override {
-    if (!FLAGS_quic_reloadable_flag_quic_respect_http2_settings_frame) {
+    if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
       CloseConnection("SPDY SETTINGS frame received.",
                       QUIC_INVALID_HEADERS_STREAM_DATA);
       return;
@@ -150,7 +150,7 @@ class QuicSpdySession::SpdyFramerVisitor
       // TODO(fayang): Need to support SETTINGS_MAX_HEADER_LIST_SIZE when
       // clients are actually sending it.
       case SETTINGS_MAX_HEADER_LIST_SIZE:
-        if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size) {
+        if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
           break;
         }
       default:
@@ -161,14 +161,14 @@ class QuicSpdySession::SpdyFramerVisitor
   }
 
   void OnSettingsAck() override {
-    if (!FLAGS_quic_reloadable_flag_quic_respect_http2_settings_frame) {
+    if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
       CloseConnection("SPDY SETTINGS frame received.",
                       QUIC_INVALID_HEADERS_STREAM_DATA);
     }
   }
 
   void OnSettingsEnd() override {
-    if (!FLAGS_quic_reloadable_flag_quic_respect_http2_settings_frame) {
+    if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
       CloseConnection("SPDY SETTINGS frame received.",
                       QUIC_INVALID_HEADERS_STREAM_DATA);
     }
@@ -296,10 +296,11 @@ QuicSpdySession::QuicSpdySession(QuicConnection* connection,
       supports_push_promise_(perspective() == Perspective::IS_CLIENT),
       cur_max_timestamp_(QuicTime::Zero()),
       prev_max_timestamp_(QuicTime::Zero()),
-      use_hq_deframer_(FLAGS_quic_reloadable_flag_quic_enable_hq_deframer),
+      use_hq_deframer_(GetQuicReloadableFlag(quic_enable_hq_deframer)),
       spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
       spdy_framer_visitor_(new SpdyFramerVisitor(this)) {
   if (use_hq_deframer_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_hq_deframer);
     hq_deframer_.set_visitor(spdy_framer_visitor_.get());
     hq_deframer_.set_debug_visitor(spdy_framer_visitor_.get());
   } else {
@@ -480,7 +481,7 @@ QuicSpdyStream* QuicSpdySession::GetSpdyDataStream(
 
 void QuicSpdySession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   QuicSession::OnCryptoHandshakeEvent(event);
-  if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size &&
+  if (GetQuicReloadableFlag(quic_send_max_header_list_size) &&
       event == HANDSHAKE_CONFIRMED && config()->SupportMaxHeaderListSize()) {
     SendMaxHeaderListSize(max_inbound_header_list_size_);
   }

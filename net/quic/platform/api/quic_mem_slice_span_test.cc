@@ -29,8 +29,7 @@ class QuicMemSliceSpanImplTest : public QuicTest {
 TEST_F(QuicMemSliceSpanImplTest, SaveDataInSendBuffer) {
   SimpleBufferAllocator allocator;
   QuicStreamSendBuffer send_buffer(
-      &allocator,
-      FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2);
+      &allocator, GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2));
   QuicTestMemSliceVector vector(buffers_);
 
   EXPECT_EQ(10 * 1024u, vector.span().SaveMemSlicesInSendBuffer(&send_buffer));
@@ -40,8 +39,7 @@ TEST_F(QuicMemSliceSpanImplTest, SaveDataInSendBuffer) {
 TEST_F(QuicMemSliceSpanImplTest, SaveEmptyMemSliceInSendBuffer) {
   SimpleBufferAllocator allocator;
   QuicStreamSendBuffer send_buffer(
-      &allocator,
-      FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2);
+      &allocator, GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2));
   buffers_.push_back(std::make_pair(nullptr, 0));
   QuicTestMemSliceVector vector(buffers_);
   EXPECT_EQ(10 * 1024u, vector.span().SaveMemSlicesInSendBuffer(&send_buffer));

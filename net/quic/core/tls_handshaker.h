@@ -6,6 +6,8 @@
 #define NET_QUIC_CORE_TLS_HANDSHAKER_H_
 
 #include "net/quic/core/crypto/crypto_handshake.h"
+#include "net/quic/core/crypto/quic_decrypter.h"
+#include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/crypto/quic_tls_adapter.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
@@ -29,14 +31,6 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public QuicTlsAdapter::Visitor {
 
   ~TlsHandshaker() override;
 
-  // Computes the 1-RTT secrets client_pp_secret_0 and server_pp_secret_0 from
-  // which the packet protection keys are derived, as defined in
-  // draft-ietf-quic-tls section 5.2.2. Returns true on success and false if
-  // |ssl| is not in a state to export secrets.
-  static bool DeriveSecrets(SSL* ssl,
-                            std::vector<uint8_t>* client_secret_out,
-                            std::vector<uint8_t>* server_secret_out);
-
   // From QuicTlsAdapter::Visitor
   void OnDataAvailableForBIO() override;
   void OnDataReceivedFromBIO(const QuicStringPiece& data) override;
@@ -51,11 +45,28 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public QuicTlsAdapter::Visitor {
  protected:
   virtual void AdvanceHandshake() = 0;
 
+  // Creates an SSL_CTX and configures it with the options that are appropriate
+  // for both client and server. The caller is responsible for ownership of the
+  // newly created struct.
+  static bssl::UniquePtr<SSL_CTX> CreateSslCtx();
+
   // From a given SSL* |ssl|, returns a pointer to the TlsHandshaker that it
   // belongs to. This is a helper method for implementing callbacks set on an
   // SSL, as it allows the callback function to find the TlsHandshaker instance
   // and call an instance method.
   static TlsHandshaker* HandshakerFromSsl(const SSL* ssl);
+
+  // Returns the PRF used by the cipher suite negotiated in the TLS handshake.
+  const EVP_MD* Prf();
+
+  // Computes the 1-RTT secrets client_pp_secret_0 and server_pp_secret_0 from
+  // which the packet protection keys are derived, as defined in
+  // draft-ietf-quic-tls section 5.2.2.
+  bool DeriveSecrets(std::vector<uint8_t>* client_secret_out,
+                     std::vector<uint8_t>* server_secret_out);
+
+  QuicEncrypter* CreateEncrypter(const std::vector<uint8_t>& pp_secret);
+  QuicDecrypter* CreateDecrypter(const std::vector<uint8_t>& pp_secret);
 
   SSL* ssl() { return ssl_.get(); }
   QuicCryptoStream* stream() { return stream_; }

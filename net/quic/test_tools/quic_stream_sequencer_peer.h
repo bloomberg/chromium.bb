@@ -22,6 +22,9 @@ class QuicStreamSequencerPeer {
 
   static bool IsUnderlyingBufferAllocated(QuicStreamSequencer* sequencer);
 
+  static void SetFrameBufferTotalBytesRead(QuicStreamSequencer* sequencer,
+                                           QuicStreamOffset total_bytes_read);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencerPeer);
 };

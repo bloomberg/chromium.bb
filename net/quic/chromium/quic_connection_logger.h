@@ -58,7 +58,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnIncorrectConnectionId(QuicConnectionId connection_id) override;
   void OnUndecryptablePacket() override;
   void OnDuplicatePacket(QuicPacketNumber packet_number) override;
-  void OnProtocolVersionMismatch(QuicTransportVersion version) override;
+  void OnProtocolVersionMismatch(ParsedQuicVersion version) override;
   void OnPacketHeader(const QuicPacketHeader& header) override;
   void OnStreamFrame(const QuicStreamFrame& frame) override;
   void OnAckFrame(const QuicAckFrame& frame) override;

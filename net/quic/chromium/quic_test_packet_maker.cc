@@ -137,8 +137,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   frames.push_back(QuicFrame(&rst));
   DVLOG(1) << "Adding frame: " << frames[2];
 
-  QuicFramer framer(SupportedTransportVersions(version_), clock_->Now(),
-                    perspective_);
+  QuicFramer framer(
+      SupportedVersions(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version_)),
+      clock_->Now(), perspective_);
   std::unique_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
@@ -190,8 +191,10 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   frames.push_back(QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames[2];
 
-  QuicFramer framer(SupportedTransportVersions(version_), clock_->Now(),
-                    perspective_);
+  QuicFramer framer(
+      SupportedVersions(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version_)),
+      clock_->Now(), perspective_);
+
   std::unique_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
@@ -269,9 +272,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   if (largest_received > 0) {
     ack.packets.AddRange(1, largest_received + 1);
   }
-
-  QuicFramer framer(SupportedTransportVersions(version_), clock_->Now(),
-                    perspective_);
+  QuicFramer framer(
+      SupportedVersions(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version_)),
+      clock_->Now(), perspective_);
   QuicFrames frames;
   QuicFrame ack_frame(&ack);
   DVLOG(1) << "Adding frame: " << ack_frame;
@@ -657,8 +660,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakePacket(
 std::unique_ptr<QuicReceivedPacket>
 QuicTestPacketMaker::MakeMultipleFramesPacket(const QuicPacketHeader& header,
                                               const QuicFrames& frames) {
-  QuicFramer framer(SupportedTransportVersions(version_), clock_->Now(),
-                    perspective_);
+  QuicFramer framer(
+      SupportedVersions(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version_)),
+      clock_->Now(), perspective_);
   std::unique_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];

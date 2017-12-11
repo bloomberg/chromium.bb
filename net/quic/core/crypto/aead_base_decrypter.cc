@@ -175,6 +175,14 @@ bool AeadBaseDecrypter::DecryptPacket(QuicTransportVersion /*version*/,
   return true;
 }
 
+size_t AeadBaseDecrypter::GetKeySize() const {
+  return key_size_;
+}
+
+size_t AeadBaseDecrypter::GetIVSize() const {
+  return nonce_size_;
+}
+
 QuicStringPiece AeadBaseDecrypter::GetKey() const {
   return QuicStringPiece(reinterpret_cast<const char*>(key_), key_size_);
 }

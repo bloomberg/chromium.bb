@@ -101,12 +101,12 @@ TEST_F(ChaCha20Poly1305EncrypterTest, EncryptThenDecrypt) {
   string plaintext = "plaintext";
   char encrypted[1024];
   size_t len;
-  ASSERT_TRUE(encrypter.EncryptPacket(QuicVersionMax(), packet_number,
+  ASSERT_TRUE(encrypter.EncryptPacket(QuicTransportVersionMax(), packet_number,
                                       associated_data, plaintext, encrypted,
                                       &len, arraysize(encrypted)));
   QuicStringPiece ciphertext(encrypted, len);
   char decrypted[1024];
-  ASSERT_TRUE(decrypter.DecryptPacket(QuicVersionMax(), packet_number,
+  ASSERT_TRUE(decrypter.DecryptPacket(QuicTransportVersionMax(), packet_number,
                                       associated_data, ciphertext, decrypted,
                                       &len, arraysize(decrypted)));
 }

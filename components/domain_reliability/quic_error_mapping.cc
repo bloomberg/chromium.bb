@@ -245,6 +245,8 @@ const struct QuicErrorMapping {
     {net::QUIC_TOO_MANY_SESSIONS_ON_SERVER, "quic.too_many_sessions_on_server"},
     // There was an error decompressing data.
     {net::QUIC_DECOMPRESSION_FAILURE, "quic.decompression_failure"},
+    // Receive a RST_STREAM with offset larger than kMaxStreamLength.
+    {net::QUIC_STREAM_LENGTH_OVERFLOW, "quic.stream_length_overflow"},
 
     // No error. Used as bound while iterating.
     {net::QUIC_LAST_ERROR, "quic.last_error"}};

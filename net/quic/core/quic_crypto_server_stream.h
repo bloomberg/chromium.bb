@@ -13,7 +13,6 @@
 #include "net/quic/core/crypto/crypto_handshake.h"
 #include "net/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/quic/core/crypto/quic_crypto_server_config.h"
-#include "net/quic/core/proto/source_address_token.pb.h"
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_crypto_handshaker.h"
 #include "net/quic/core/quic_crypto_stream.h"

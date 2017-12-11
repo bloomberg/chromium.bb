@@ -7,6 +7,11 @@
 
 #include "net/quic/platform/impl/quic_flags_impl.h"
 
+#define GetQuicReloadableFlag(flag) GetQuicReloadableFlagImpl(flag)
+#define SetQuicReloadableFlag(flag, value) \
+  SetQuicReloadableFlagImpl(flag, value)
+#define GetQuicRestartFlag(flag) GetQuicRestartFlagImpl(flag)
+#define SetQuicRestartFlag(flag, value) SetQuicRestartFlagImpl(flag, value)
 #define GetQuicFlag(flag) GetQuicFlagImpl(flag)
 #define SetQuicFlag(flag, value) SetQuicFlagImpl(flag, value)
 
