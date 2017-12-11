@@ -68,6 +68,8 @@ public class ChromePreferenceManager {
 
     public static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
 
+    public static final String CHROME_HOME_INFO_PROMO_SHOWN_KEY = "chrome_home_info_promo_shown";
+
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }
@@ -429,6 +431,20 @@ public class ChromePreferenceManager {
      */
     public void clearChromeHomeUserPreference() {
         mSharedPreferences.edit().remove(CHROME_HOME_USER_ENABLED_KEY).apply();
+    }
+
+    /**
+     * Set that the Chrome Home info-promo has been shown.
+     */
+    public void setChromeHomeInfoPromoShown() {
+        writeBoolean(CHROME_HOME_INFO_PROMO_SHOWN_KEY, true);
+    }
+
+    /**
+     * @return Whether the info-only version of the Chrome Home promo has been shown.
+     */
+    public boolean hasChromeHomeInfoPromoShown() {
+        return mSharedPreferences.getBoolean(CHROME_HOME_INFO_PROMO_SHOWN_KEY, false);
     }
 
     /**
