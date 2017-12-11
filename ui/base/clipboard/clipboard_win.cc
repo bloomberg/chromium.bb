@@ -207,6 +207,15 @@ void FreeData(unsigned int format, HANDLE data) {
     ::GlobalFree(data);
 }
 
+template <typename StringType>
+void TrimTrailingNulls(StringType* result) {
+  // Text copied to the clipboard may explicitly contain trailing null
+  // characters that should be ignored, depending on the application that does
+  // the copying.
+  while (!result->empty() && result->back() == 0)
+    result->pop_back();
+}
+
 }  // namespace
 
 // Clipboard::FormatType implementation.
@@ -493,8 +502,10 @@ void ClipboardWin::ReadText(ClipboardType type, base::string16* result) const {
   if (!data)
     return;
 
-  result->assign(static_cast<const base::char16*>(::GlobalLock(data)));
+  result->assign(static_cast<const base::char16*>(::GlobalLock(data)),
+                 ::GlobalSize(data) / sizeof(base::char16));
   ::GlobalUnlock(data);
+  TrimTrailingNulls(result);
 }
 
 void ClipboardWin::ReadAsciiText(ClipboardType type,
@@ -516,8 +527,10 @@ void ClipboardWin::ReadAsciiText(ClipboardType type,
   if (!data)
     return;
 
-  result->assign(static_cast<const char*>(::GlobalLock(data)));
+  result->assign(static_cast<const char*>(::GlobalLock(data)),
+                 ::GlobalSize(data));
   ::GlobalUnlock(data);
+  TrimTrailingNulls(result);
 }
 
 void ClipboardWin::ReadHTML(ClipboardType type,
@@ -544,8 +557,10 @@ void ClipboardWin::ReadHTML(ClipboardType type,
   if (!data)
     return;
 
-  std::string cf_html(static_cast<const char*>(::GlobalLock(data)));
+  std::string cf_html(static_cast<const char*>(::GlobalLock(data)),
+                      ::GlobalSize(data));
   ::GlobalUnlock(data);
+  TrimTrailingNulls(&cf_html);
 
   size_t html_start = std::string::npos;
   size_t start_index = std::string::npos;
@@ -578,6 +593,7 @@ void ClipboardWin::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
   ReadData(GetRtfFormatType(), result);
+  TrimTrailingNulls(result);
 }
 
 SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
@@ -697,8 +713,10 @@ void ClipboardWin::ReadBookmark(base::string16* title, std::string* url) const {
   if (!data)
     return;
 
-  base::string16 bookmark(static_cast<const base::char16*>(::GlobalLock(data)));
+  base::string16 bookmark(static_cast<const base::char16*>(::GlobalLock(data)),
+                          ::GlobalSize(data) / sizeof(base::char16));
   ::GlobalUnlock(data);
+  TrimTrailingNulls(&bookmark);
 
   ParseBookmarkClipboardFormat(bookmark, title, url);
 }
