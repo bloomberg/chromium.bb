@@ -52,8 +52,8 @@
 #include "ui/gl/gl_surface.h"
 
 #if defined(USE_X11)
-#include <X11/Xlib.h>
 #include "ui/base/x/x11_util.h"  // nogncheck
+#include "ui/gfx/x/x11.h"
 #include "ui/platform_window/x11/x11_window.h"
 #elif defined(USE_OZONE)
 #include "services/ui/display/screen_manager_forwarding.h"
