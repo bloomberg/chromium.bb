@@ -231,10 +231,10 @@ UIColor* BackgroundColorIncognito() {
   [detailTextLabel setTextAlignment:_alignment];
 
   // The width must be positive for CGContextRef to be valid.
-  UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(row);
-  CGFloat labelWidth = MAX(
-      40, floorf(UIEdgeInsetsInsetRect(row.bounds, safeAreaInsets).size.width) -
-              kTextCellLeadingPadding);
+  UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(self.view);
+  CGRect rowBounds = UIEdgeInsetsInsetRect(self.view.bounds, safeAreaInsets);
+  CGFloat labelWidth =
+      MAX(40, floorf(rowBounds.size.width) - kTextCellLeadingPadding);
   CGFloat labelHeight =
       match.hasAnswer ? kAnswerLabelHeight : kTextDetailLabelHeight;
   CGFloat answerImagePadding = kAnswerImageWidth + kAnswerImageRightPadding;
@@ -243,7 +243,7 @@ UIColor* BackgroundColorIncognito() {
       kTextCellLeadingPadding;
 
   LayoutRect detailTextLabelLayout =
-      LayoutRectMake(leadingPadding, CGRectGetWidth(self.view.bounds),
+      LayoutRectMake(leadingPadding, CGRectGetWidth(rowBounds),
                      kDetailCellTopPadding, labelWidth, labelHeight);
   detailTextLabel.frame = LayoutRectGetRect(detailTextLabelLayout);
 
@@ -259,8 +259,8 @@ UIColor* BackgroundColorIncognito() {
   OmniboxPopupTruncatingLabel* textLabel = row.textTruncatingLabel;
   [textLabel setTextAlignment:_alignment];
   LayoutRect textLabelLayout =
-      LayoutRectMake(kTextCellLeadingPadding, CGRectGetWidth(self.view.bounds),
-                     0, labelWidth, kTextLabelHeight);
+      LayoutRectMake(kTextCellLeadingPadding, CGRectGetWidth(rowBounds), 0,
+                     labelWidth, kTextLabelHeight);
   textLabel.frame = LayoutRectGetRect(textLabelLayout);
 
   // Set the text.
