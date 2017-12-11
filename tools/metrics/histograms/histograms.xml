@@ -70591,6 +70591,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ResourceCoordinator.IPCPerMinute.Frame" units="count/m">
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    The number of IPCs from frame to GRC. Recorded every 1 minute.
+  </summary>
+</histogram>
+
+<histogram name="ResourceCoordinator.IPCPerMinute.Page" units="count/m">
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    The number of IPCs from page to GRC. Recorded every 1 minute.
+  </summary>
+</histogram>
+
+<histogram name="ResourceCoordinator.IPCPerMinute.Process" units="count/m">
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    The number of IPCs from process to GRC. Recorded every 1 minute.
+  </summary>
+</histogram>
+
 <histogram name="ResourcePrefetchPredictor.CachePattern"
     enum="HttpCachePattern">
   <owner>alexilin@chromium.org</owner>

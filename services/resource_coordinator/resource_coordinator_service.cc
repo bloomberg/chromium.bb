@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/timer/timer.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
+#include "services/resource_coordinator/observers/ipc_volume_reporter.h"
 #include "services/resource_coordinator/observers/metrics_collector.h"
 #include "services/resource_coordinator/observers/page_signal_generator_impl.h"
 #include "services/resource_coordinator/tracing/agent_registry.h"
@@ -51,6 +53,10 @@ void ResourceCoordinatorService::OnStart() {
 
   coordination_unit_manager_.RegisterObserver(
       std::make_unique<MetricsCollector>());
+
+  coordination_unit_manager_.RegisterObserver(
+      std::make_unique<IPCVolumeReporter>(
+          std::make_unique<base::OneShotTimer>()));
 
   coordination_unit_manager_.OnStart(&registry_, ref_factory_.get());
   coordination_unit_manager_.set_ukm_recorder(ukm_recorder_.get());
