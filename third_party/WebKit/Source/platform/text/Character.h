@@ -122,6 +122,7 @@ class PLATFORM_EXPORT Character {
            c == kZeroWidthNoBreakSpaceCharacter ||
            c == kObjectReplacementCharacter;
   }
+  static bool CanTextDecorationSkipInk(UChar32);
   static bool CanReceiveTextEmphasis(UChar32);
 
   static bool IsGraphemeExtended(UChar32 c) {
