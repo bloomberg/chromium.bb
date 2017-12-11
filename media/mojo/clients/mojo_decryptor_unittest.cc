@@ -13,6 +13,8 @@
 #include "base/test/test_message_loop.h"
 #include "media/base/decryptor.h"
 #include "media/base/mock_filters.h"
+#include "media/base/test_helpers.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
@@ -58,8 +60,9 @@ class MojoDecryptorTest : public ::testing::Test {
     mojo_decryptor_service_.reset();
   }
 
-  void ReturnSimpleVideoFrame(const scoped_refptr<DecoderBuffer>& encrypted,
-                              const Decryptor::VideoDecodeCB& video_decode_cb) {
+  void ReturnSharedBufferVideoFrame(
+      const scoped_refptr<DecoderBuffer>& encrypted,
+      const Decryptor::VideoDecodeCB& video_decode_cb) {
     // We don't care about the encrypted data, just create a simple VideoFrame.
     scoped_refptr<VideoFrame> frame(
         MojoSharedBufferVideoFrame::CreateDefaultI420(
@@ -73,12 +76,28 @@ class MojoDecryptorTest : public ::testing::Test {
     video_decode_cb.Run(Decryptor::kSuccess, std::move(frame));
   }
 
+  void ReturnAudioFrames(const scoped_refptr<DecoderBuffer>& encrypted,
+                         const Decryptor::AudioDecodeCB& audio_decode_cb) {
+    const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_4_0;
+    const int kSampleRate = 48000;
+    const base::TimeDelta start_time = base::TimeDelta::FromSecondsD(1000.0);
+    auto audio_buffer = MakeAudioBuffer<float>(
+        kSampleFormatPlanarF32, kChannelLayout,
+        ChannelLayoutToChannelCount(kChannelLayout), kSampleRate, 0.0f, 1.0f,
+        kSampleRate / 10, start_time);
+    Decryptor::AudioFrames audio_frames = {audio_buffer};
+    audio_decode_cb.Run(Decryptor::kSuccess, audio_frames);
+  }
+
   void ReturnEOSVideoFrame(const scoped_refptr<DecoderBuffer>& encrypted,
                            const Decryptor::VideoDecodeCB& video_decode_cb) {
     // Simply create and return an End-Of-Stream VideoFrame.
     video_decode_cb.Run(Decryptor::kSuccess, VideoFrame::CreateEOSFrame());
   }
 
+  MOCK_METHOD2(AudioDecoded,
+               void(Decryptor::Status status,
+                    const Decryptor::AudioFrames& frames));
   MOCK_METHOD2(VideoDecoded,
                void(Decryptor::Status status,
                     const scoped_refptr<VideoFrame>& frame));
@@ -102,6 +121,48 @@ class MojoDecryptorTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MojoDecryptorTest);
 };
 
+// DecryptAndDecodeAudio() and ResetDecoder(kAudio) immediately.
+TEST_F(MojoDecryptorTest, ResetDuringDecryptAndDecodeAudio) {
+  {
+    // Make sure calls are made in order.
+    InSequence seq;
+    EXPECT_CALL(*decryptor_, DecryptAndDecodeAudio(_, _))
+        .WillOnce(Invoke(this, &MojoDecryptorTest::ReturnAudioFrames));
+    EXPECT_CALL(*decryptor_, ResetDecoder(Decryptor::kAudio));
+    // The returned status could be success or aborted.
+    EXPECT_CALL(*this, AudioDecoded(_, _));
+  }
+
+  scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
+  mojo_decryptor_->DecryptAndDecodeAudio(
+      std::move(buffer),
+      base::Bind(&MojoDecryptorTest::AudioDecoded, base::Unretained(this)));
+  mojo_decryptor_->ResetDecoder(Decryptor::kAudio);
+  base::RunLoop().RunUntilIdle();
+}
+
+// DecryptAndDecodeVideo() and ResetDecoder(kVideo) immediately.
+TEST_F(MojoDecryptorTest, ResetDuringDecryptAndDecodeVideo) {
+  {
+    // Make sure calls are made in order.
+    InSequence seq;
+    EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
+        .WillOnce(
+            Invoke(this, &MojoDecryptorTest::ReturnSharedBufferVideoFrame));
+    EXPECT_CALL(*decryptor_, ResetDecoder(Decryptor::kVideo));
+    // The returned status could be success or aborted.
+    EXPECT_CALL(*this, VideoDecoded(_, _));
+    EXPECT_CALL(*this, OnFrameDestroyed());
+  }
+
+  scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
+  mojo_decryptor_->DecryptAndDecodeVideo(
+      std::move(buffer),
+      base::Bind(&MojoDecryptorTest::VideoDecoded, base::Unretained(this)));
+  mojo_decryptor_->ResetDecoder(Decryptor::kVideo);
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(MojoDecryptorTest, VideoDecodeFreesBuffer) {
   // Call DecryptAndDecodeVideo(). Once the callback VideoDecoded() completes,
   // the frame will be destroyed, and the buffer will be released.
@@ -111,7 +172,7 @@ TEST_F(MojoDecryptorTest, VideoDecodeFreesBuffer) {
     EXPECT_CALL(*this, OnFrameDestroyed());
   }
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
-      .WillOnce(Invoke(this, &MojoDecryptorTest::ReturnSimpleVideoFrame));
+      .WillOnce(Invoke(this, &MojoDecryptorTest::ReturnSharedBufferVideoFrame));
 
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
   mojo_decryptor_->DecryptAndDecodeVideo(
@@ -127,7 +188,8 @@ TEST_F(MojoDecryptorTest, VideoDecodeFreesMultipleBuffers) {
       .Times(TIMES);
   EXPECT_CALL(*this, OnFrameDestroyed()).Times(TIMES);
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
-      .WillRepeatedly(Invoke(this, &MojoDecryptorTest::ReturnSimpleVideoFrame));
+      .WillRepeatedly(
+          Invoke(this, &MojoDecryptorTest::ReturnSharedBufferVideoFrame));
 
   for (int i = 0; i < TIMES; ++i) {
     scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
@@ -148,7 +210,8 @@ TEST_F(MojoDecryptorTest, VideoDecodeHoldThenFreeBuffers) {
       .WillOnce(SaveArg<1>(&saved_frame1))
       .WillOnce(SaveArg<1>(&saved_frame2));
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
-      .WillRepeatedly(Invoke(this, &MojoDecryptorTest::ReturnSimpleVideoFrame));
+      .WillRepeatedly(
+          Invoke(this, &MojoDecryptorTest::ReturnSharedBufferVideoFrame));
 
   for (int i = 0; i < 2; ++i) {
     scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));

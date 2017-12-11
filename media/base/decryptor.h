@@ -130,6 +130,9 @@ class MEDIA_EXPORT Decryptor {
   // end-of-stream DecoderBuffer until no frame/buffer can be produced.
   // These methods can only be called after the corresponding decoder has
   // been successfully initialized.
+  // DecryptAndDecodeAudio() should not be called until any previous
+  // AudioDecodeCB has completed. Thus, only one AudioDecodeCB may be pending at
+  // any time. Same for DecryptAndDecodeVideo();
   virtual void DecryptAndDecodeAudio(
       const scoped_refptr<DecoderBuffer>& encrypted,
       const AudioDecodeCB& audio_decode_cb) = 0;

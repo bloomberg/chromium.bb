@@ -35,6 +35,7 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -43,6 +44,8 @@ using ::testing::StrictMock;
 namespace media {
 
 namespace {
+
+const int kMaxDecodeRequests = 4;
 
 // A mock VideoDecoder with helpful default functionality.
 // TODO(sandersd): Determine how best to merge this with MockVideoDecoder
@@ -56,13 +59,15 @@ class MockVideoDecoder : public VideoDecoder {
     EXPECT_CALL(*this, NeedsBitstreamConversion())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*this, CanReadWithoutStalling()).WillRepeatedly(Return(true));
-    EXPECT_CALL(*this, GetMaxDecodeRequests()).WillRepeatedly(Return(1));
+    EXPECT_CALL(*this, GetMaxDecodeRequests())
+        .WillRepeatedly(Return(kMaxDecodeRequests));
 
     // For regular methods, only configure a default action.
     ON_CALL(*this, DoInitialize(_)).WillByDefault(RunCallback<0>(true));
     ON_CALL(*this, Decode(_, _))
         .WillByDefault(Invoke(this, &MockVideoDecoder::DoDecode));
-    ON_CALL(*this, Reset(_)).WillByDefault(RunCallback<0>());
+    ON_CALL(*this, Reset(_))
+        .WillByDefault(Invoke(this, &MockVideoDecoder::DoReset));
   }
 
   // Re-declare as public.
@@ -109,6 +114,11 @@ class MockVideoDecoder : public VideoDecoder {
     // |decode_cb| must not be called from the same stack.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(decode_cb, DecodeStatus::OK));
+  }
+
+  void DoReset(const base::Closure& reset_cb) {
+    // |reset_cb| must not be called from the same stack.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
   }
 
  private:
@@ -266,7 +276,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, Initialize) {
   EXPECT_EQ(client_->GetDisplayName(), "MojoVideoDecoder");
   EXPECT_EQ(client_->NeedsBitstreamConversion(), false);
   EXPECT_EQ(client_->CanReadWithoutStalling(), true);
-  EXPECT_EQ(client_->GetMaxDecodeRequests(), 1);
+  EXPECT_EQ(client_->GetMaxDecodeRequests(), kMaxDecodeRequests);
 }
 
 TEST_F(MojoVideoDecoderIntegrationTest, Decode) {
@@ -309,6 +319,33 @@ TEST_F(MojoVideoDecoderIntegrationTest, ReleaseAfterShutdown) {
 
   EXPECT_CALL(release_cb, Run(_));
   frame = nullptr;
+  RunUntilIdle();
+}
+
+TEST_F(MojoVideoDecoderIntegrationTest, ResetDuringDecode) {
+  ASSERT_TRUE(Initialize());
+
+  VideoFrame::ReleaseMailboxCB release_cb = VideoFrame::ReleaseMailboxCB();
+  StrictMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb;
+  StrictMock<base::MockCallback<base::Closure>> reset_cb;
+
+  EXPECT_CALL(*decoder_, GetReleaseMailboxCB())
+      .WillRepeatedly(Return(release_cb));
+  EXPECT_CALL(output_cb_, Run(_)).Times(kMaxDecodeRequests);
+  EXPECT_CALL(*decoder_, Decode(_, _)).Times(kMaxDecodeRequests);
+  EXPECT_CALL(*decoder_, Reset(_)).Times(1);
+
+  InSequence s;  // Make sure all callbacks are fired in order.
+  EXPECT_CALL(decode_cb, Run(_)).Times(kMaxDecodeRequests);
+  EXPECT_CALL(reset_cb, Run());
+
+  int64_t timestamp_ms = 0;
+  for (int j = 0; j < kMaxDecodeRequests; ++j) {
+    client_->Decode(CreateKeyframe(timestamp_ms++), decode_cb.Get());
+  }
+
+  client_->Reset(reset_cb.Get());
+
   RunUntilIdle();
 }
 

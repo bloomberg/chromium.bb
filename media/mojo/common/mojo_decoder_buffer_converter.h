@@ -51,10 +51,11 @@ class MojoDecoderBufferReader {
 
  private:
   void CancelReadCB(ReadCB read_cb);
+  void CancelAllPendingReadCBs();
   void CompleteCurrentRead();
   void ScheduleNextRead();
   void OnPipeReadable(MojoResult result, const mojo::HandleSignalsState& state);
-  void ReadDecoderBufferData();
+  void ProcessPendingReads();
   void OnPipeError(MojoResult result);
 
   // Read side of the DataPipe for receiving DecoderBuffer data.
@@ -109,7 +110,7 @@ class MojoDecoderBufferWriter {
  private:
   void ScheduleNextWrite();
   void OnPipeWritable(MojoResult result, const mojo::HandleSignalsState& state);
-  void WriteDecoderBufferData();
+  void ProcessPendingWrites();
   void OnPipeError(MojoResult result);
 
   // Write side of the DataPipe for sending DecoderBuffer data.
