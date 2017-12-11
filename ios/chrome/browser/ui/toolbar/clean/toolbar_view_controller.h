@@ -65,6 +65,9 @@
 // TODO(crbug.com/789583):Use named layout guide instead of frame.
 // Returns visible omnibox frame in Toolbar's superview coordinate system.
 - (CGRect)visibleOmniboxFrame;
+// IPad only function. iPad doesn't animate when locationBar is first responder,
+// but there are small UI changes to the locationBarContainer.
+- (void)locationBarIsFirstResonderOnIPad:(BOOL)isFirstResponder;
 
 @end
 

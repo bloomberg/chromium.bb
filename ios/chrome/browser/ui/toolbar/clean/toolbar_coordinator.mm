@@ -368,14 +368,20 @@
 
 - (void)locationBarHasBecomeFirstResponder {
   [self.delegate locationBarDidBecomeFirstResponder];
-  if (!self.toolbarViewController.expanded)
+  if (IsIPadIdiom()) {
+    [self.toolbarViewController locationBarIsFirstResonderOnIPad:YES];
+  } else if (!self.toolbarViewController.expanded) {
     [self expandOmniboxAnimated:YES];
+  }
 }
 
 - (void)locationBarHasResignedFirstResponder {
   [self.delegate locationBarDidResignFirstResponder];
-  if (self.toolbarViewController.expanded)
+  if (IsIPadIdiom()) {
+    [self.toolbarViewController locationBarIsFirstResonderOnIPad:NO];
+  } else if (self.toolbarViewController.expanded) {
     [self contractOmnibox];
+  }
 }
 
 - (void)locationBarBeganEdit {
@@ -559,9 +565,8 @@
 // Animates |_toolbar| and |_locationBarView| for omnibox expansion. If
 // |animated| is NO the animation will happen instantly.
 - (void)expandOmniboxAnimated:(BOOL)animated {
-  // There's no Toolbar expanding on iPad.
-  if (IsIPadIdiom())
-    return;
+  // iPad should never try to expand.
+  DCHECK(!IsIPadIdiom());
 
   UIViewPropertyAnimator* animator = [[UIViewPropertyAnimator alloc]
       initWithDuration:ios::material::kDuration1
@@ -581,9 +586,9 @@
 
 // Animates |_toolbar| and |_locationBarView| for omnibox contraction.
 - (void)contractOmnibox {
-  // There's no Toolbar expanding on iPad, thus no need to contract.
-  if (IsIPadIdiom())
-    return;
+  // iPad should never try to contract.
+  DCHECK(!IsIPadIdiom());
+
   UIViewPropertyAnimator* animator = [[UIViewPropertyAnimator alloc]
       initWithDuration:ios::material::kDuration1
                  curve:UIViewAnimationCurveEaseInOut

@@ -287,6 +287,12 @@
   return CGRectInset(frame, -kBackgroundImageVisibleRectOffset, 0);
 }
 
+- (void)locationBarIsFirstResonderOnIPad:(BOOL)isFirstResponder {
+  // This is an iPad only function.
+  DCHECK(IsIPadIdiom());
+  self.bookmarkButton.hiddenInCurrentState = isFirstResponder;
+}
+
 #pragma mark - View lifecyle
 
 - (void)loadView {
