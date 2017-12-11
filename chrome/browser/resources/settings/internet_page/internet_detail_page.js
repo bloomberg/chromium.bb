@@ -191,10 +191,9 @@ Polymer({
 
   /** @private */
   close_: function() {
+    this.guid = '';
     // Delay navigating to allow other subpages to load first.
-    requestAnimationFrame(function() {
-      settings.navigateToPreviousRoute();
-    });
+    requestAnimationFrame(() => settings.navigateToPreviousRoute());
   },
 
   /** @private */
