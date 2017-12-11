@@ -264,8 +264,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
-    private static void onPaymentAppCreated(long registrationId, String scope, String label,
-            @Nullable String sublabel, @Nullable String tertiarylabel, @Nullable Bitmap icon,
+    private static void onPaymentAppCreated(long registrationId, String scope,
+            @Nullable String name, @Nullable String userHint, String origin, @Nullable Bitmap icon,
             String[] methodNameArray, Object[] capabilities, String[] preferredRelatedApplications,
             WebContents webContents, Object callback) {
         ThreadUtils.assertOnUiThread();
@@ -279,7 +279,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         }
         ((PaymentAppFactory.PaymentAppCreatedCallback) callback)
                 .onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, registrationId,
-                        scopeUri, label, sublabel, tertiarylabel,
+                        scopeUri, name, userHint, origin,
                         icon == null ? null : new BitmapDrawable(context.getResources(), icon),
                         methodNameArray, (ServiceWorkerPaymentApp.Capabilities[]) capabilities,
                         preferredRelatedApplications));

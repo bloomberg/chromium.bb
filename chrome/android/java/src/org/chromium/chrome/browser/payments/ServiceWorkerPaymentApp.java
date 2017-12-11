@@ -95,9 +95,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      *                                       payment app.
      * @param scope                          The registration scope of the corresponding service
      *                                       worker.
-     * @param label                          The label of the payment app.
-     * @param sublabel                       The sublabel of the payment app.
-     * @param tertiarylabel                  The tertiary label of the payment app.
+     * @param name                           The name of the payment app.
+     * @param userHint                       The user hint of the payment app.
+     * @param origin                         The origin of the payment app.
      * @param icon                           The drawable icon of the payment app.
      * @param methodNames                    A set of payment method names supported by the payment
      *                                       app.
@@ -107,16 +107,18 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      * @param preferredRelatedApplicationIds A set of preferred related application Ids.
      */
     public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, URI scope,
-            String label, @Nullable String sublabel, @Nullable String tertiarylabel,
+            @Nullable String name, @Nullable String userHint, String origin,
             @Nullable Drawable icon, String[] methodNames, Capabilities[] capabilities,
             String[] preferredRelatedApplicationIds) {
-        super(scope.toString(), label, sublabel, tertiarylabel, icon);
+        // Do not display duplicate information.
+        super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, userHint,
+                TextUtils.isEmpty(name) ? null : origin, icon);
         mWebContents = webContents;
         mRegistrationId = registrationId;
 
-        // Sublabel and/or icon are set to null if fetching or processing the corresponding web app
-        // manifest failed. Then do not preselect this payment app.
-        mCanPreselect = !TextUtils.isEmpty(sublabel) && icon != null;
+        // Name and/or icon are set to null if fetching or processing the corresponding web
+        // app manifest failed. Then do not preselect this payment app.
+        mCanPreselect = !TextUtils.isEmpty(name) && icon != null;
 
         mMethodNames = new HashSet<>();
         for (int i = 0; i < methodNames.length; i++) {
