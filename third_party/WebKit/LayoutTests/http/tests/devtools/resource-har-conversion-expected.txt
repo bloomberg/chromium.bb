@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 12: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 Tests conversion of Inspector's resource representation into HAR format.
 
 Page reloaded.
@@ -8,45 +7,6 @@ Page reloaded.
         version : <string>
     }
     entries : [
-        {
-            cache : {
-            }
-            connection : <string>
-            pageref : "page_1"
-            request : {
-                bodySize : <number>
-                cookies : [
-                ]
-                headers : <object>
-                headersSize : <number>
-                httpVersion : "HTTP/1.1"
-                method : "GET"
-                queryString : [
-                ]
-                url : "http://127.0.0.1:8000/devtools/resource-har-conversion.html"
-            }
-            response : {
-                _transferSize : <number>
-                bodySize : <number>
-                content : {
-                    compression : <number>
-                    mimeType : "text/html"
-                    size : <number>
-                }
-                cookies : [
-                ]
-                headers : <object>
-                headersSize : <number>
-                httpVersion : "HTTP/1.1"
-                redirectURL : ""
-                status : 200
-                statusText : "OK"
-            }
-            serverIPAddress : "127.0.0.1"
-            startedDateTime : <plausible>
-            time : <number>
-            timings : <object>
-        }
         {
             cache : {
             }
@@ -89,14 +49,14 @@ Page reloaded.
                 method : "GET"
                 queryString : [
                 ]
-                url : "http://127.0.0.1:8000/inspector/inspector-test.js"
+                url : "http://127.0.0.1:8000/devtools/resources/inspected-page.html"
             }
             response : {
                 _transferSize : <number>
                 bodySize : <number>
                 content : {
                     compression : <number>
-                    mimeType : "application/x-javascript"
+                    mimeType : "text/html"
                     size : <number>
                 }
                 cookies : [
@@ -129,45 +89,6 @@ Page reloaded.
                         secure : false
                         value : "y2"
                     }
-                ]
-                headers : <object>
-                headersSize : <number>
-                httpVersion : "HTTP/1.1"
-                redirectURL : ""
-                status : 200
-                statusText : "OK"
-            }
-            serverIPAddress : "127.0.0.1"
-            startedDateTime : <plausible>
-            time : <number>
-            timings : <object>
-        }
-        {
-            cache : {
-            }
-            connection : <string>
-            pageref : "page_1"
-            request : {
-                bodySize : <number>
-                cookies : [
-                ]
-                headers : <object>
-                headersSize : <number>
-                httpVersion : "HTTP/1.1"
-                method : "GET"
-                queryString : [
-                ]
-                url : "http://127.0.0.1:8000/inspector/network-test.js"
-            }
-            response : {
-                _transferSize : <number>
-                bodySize : <number>
-                content : {
-                    compression : <number>
-                    mimeType : "application/x-javascript"
-                    size : <number>
-                }
-                cookies : [
                 ]
                 headers : <object>
                 headersSize : <number>
@@ -233,7 +154,7 @@ Page reloaded.
                 onLoad : <number>
             }
             startedDateTime : <plausible>
-            title : "http://127.0.0.1:8000/devtools/resource-har-conversion.html"
+            title : "http://127.0.0.1:8000/devtools/resources/inspected-page.html"
         }
     ]
     version : <string>
