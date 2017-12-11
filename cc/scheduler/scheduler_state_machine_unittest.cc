@@ -2181,7 +2181,6 @@ TEST(SchedulerStateMachineTest, NoImplSideInvalidationsWhileInvisible) {
   bool needs_first_draw_on_activation = true;
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
-  state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 }
 
@@ -2197,7 +2196,6 @@ TEST(SchedulerStateMachineTest,
   bool needs_first_draw_on_activation = true;
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
-  state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 }
 
@@ -2217,28 +2215,27 @@ TEST(SchedulerStateMachineTest,
 }
 
 TEST(SchedulerStateMachineTest,
-     ImplSideInvalidationAndMainFrame_MainFrameRequest) {
-  // Main frame request and no abort history from the last frame, invalidation
-  // waits until deadline.
+     ImplSideInvalidationAndMainFrame_MainFrameRequest_FastMainThread) {
+  // Main frame request, no abort history and the main thread is fast,
+  // invalidation waits for main frame.
   SchedulerSettings settings;
   StateMachine state(settings);
   SET_UP_STATE(state);
 
   bool needs_first_draw_on_activation = true;
+  state.set_should_defer_invalidation_for_fast_main_frame(true);
   state.SetNeedsBeginMainFrame();
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 }
 
 TEST(SchedulerStateMachineTest,
      ImplSideInvalidationAndMainFrame_LastFrameCommit) {
-  // Main frame committed in the last impl frame, invalidation waits until the
-  // deadline.
+  // Main frame committed in the last impl frame and is fast, invalidation waits
+  // for main frame request.
   SchedulerSettings settings;
   StateMachine state(settings);
   SET_UP_STATE(state);
@@ -2257,12 +2254,10 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 
   bool needs_first_draw_on_activation = true;
+  state.set_should_defer_invalidation_for_fast_main_frame(true);
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
 }
 
 TEST(SchedulerStateMachineTest,
@@ -2284,9 +2279,31 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 
   bool needs_first_draw_on_activation = true;
+  state.set_should_defer_invalidation_for_fast_main_frame(true);
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.SetNeedsBeginMainFrame();
   state.IssueNextBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest,
+     ImplSideInvalidationAndMainFrame_MainFrameRequest_SlowMainThread) {
+  // Main frame request but the main thread is slow, invalidation runs
+  // immediately.
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  bool needs_first_draw_on_activation = true;
+  state.set_should_defer_invalidation_for_fast_main_frame(false);
+  state.SetNeedsBeginMainFrame();
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+  state.IssueNextBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
 }
@@ -2308,20 +2325,7 @@ TEST(SchedulerStateMachineTest,
   bool needs_first_draw_on_activation = true;
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
-  state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
-
-  // Initializing the LayerTreeFrameSink puts us in a state waiting for the
-  // first commit.
-  state.DidCreateAndInitializeLayerTreeFrameSink();
-  state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
-  state.NotifyBeginMainFrameStarted();
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
 }
 
 TEST(SchedulerStateMachineTest, ImplSideInvalidationWhenPendingTreeExists) {
@@ -2356,7 +2360,6 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationWhenPendingTreeExists) {
   // Since there is no main frame request, this should perform impl-side
   // invalidations.
   state.IssueNextBeginImplFrame();
-  state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
 }
@@ -2366,31 +2369,24 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationWhileReadyToCommit) {
   StateMachine state(settings);
   SET_UP_STATE(state);
 
-  // Set up request for the main frame.
+  // Set up request for the main frame with a slow main thread.
+  state.set_should_defer_invalidation_for_fast_main_frame(false);
   state.SetNeedsBeginMainFrame();
   state.IssueNextBeginImplFrame();
 
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
 
-  // Request an impl-side invalidation. The request should wait till a response
-  // is received from the main thread.
+  // Request an impl-side invalidation after we are ready to commit. The
+  // invalidations are merged.
   bool needs_first_draw_on_activation = true;
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   EXPECT_TRUE(state.needs_impl_side_invalidation());
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
-
-  // Perform a commit, the impl-side invalidation request should be reset since
-  // they will be merged with the commit.
-  state.NotifyBeginMainFrameStarted();
-  state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::COMMIT);
   EXPECT_FALSE(state.needs_impl_side_invalidation());
-
-  // Deadline.
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 }
 
 TEST(SchedulerStateMachineTest,
@@ -2461,29 +2457,6 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationsThrottledOnDraw) {
   // invalidation now.
   state.DidReceiveCompositorFrameAck();
   state.IssueNextBeginImplFrame();
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
-}
-
-TEST(SchedulerStateMachineTest,
-     ImplSideInvalidationsWhenMainFrameRequestIsPending) {
-  SchedulerSettings settings;
-  StateMachine state(settings);
-  SET_UP_STATE(state);
-
-  // Set up request for the main frame.
-  state.SetNeedsBeginMainFrame();
-  state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
-
-  // Request an impl-side invalidation and trigger the deadline, the
-  // invalidation should run if the request is still pending when we enter the
-  // deadline.
-  bool needs_first_draw_on_activation = true;
-  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);

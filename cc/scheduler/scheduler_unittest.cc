@@ -447,6 +447,21 @@ class SchedulerTest : public testing::Test {
     return fake_external_begin_frame_source_.get();
   }
 
+  void SetShouldDeferInvalidationForMainFrame(bool defer) {
+    // Set the CompositorTimingHistory so that main thread is identified to be
+    // fast or slow.
+    base::TimeDelta delta;
+    if (!defer)
+      delta = base::TimeDelta::FromSeconds(1);
+    fake_compositor_timing_history_
+        ->SetBeginMainFrameStartToReadyToCommitDurationEstimate(delta);
+    fake_compositor_timing_history_
+        ->SetBeginMainFrameQueueDurationCriticalEstimate(delta);
+    fake_compositor_timing_history_
+        ->SetBeginMainFrameQueueDurationNotCriticalEstimate(delta);
+    fake_compositor_timing_history_->SetDrawDurationEstimate(base::TimeDelta());
+  }
+
   void AdvanceAndMissOneFrame();
   void CheckMainFrameSkippedAfterLateCommit(bool expect_send_begin_main_frame);
   void ImplFrameSkippedAfterLateAck(bool receive_ack_before_deadline);
@@ -3237,6 +3252,7 @@ TEST_F(SchedulerTest, ImplSideInvalidationsMergedWithCommit) {
 
   // Request a main frame and invalidation, the only action run should be
   // sending the main frame.
+  SetShouldDeferInvalidationForMainFrame(true);
   scheduler_->SetNeedsBeginMainFrame();
   bool needs_first_draw_on_activation = true;
   scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
@@ -3252,17 +3268,14 @@ TEST_F(SchedulerTest, ImplSideInvalidationsMergedWithCommit) {
   scheduler_->NotifyReadyToCommit();
   EXPECT_ACTIONS("ScheduledActionCommit");
   EXPECT_FALSE(scheduler_->needs_impl_side_invalidation());
-
-  // Deadline.
-  client_->Reset();
-  task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_NO_ACTION();
 }
 
 TEST_F(SchedulerTest, AbortedCommitsTriggerImplSideInvalidations) {
   SetUpScheduler(EXTERNAL_BFS);
 
-  // Request a main frame and invalidation.
+  // Request a main frame and invalidation, with a fast main thread so we wait
+  // for it to respond.
+  SetShouldDeferInvalidationForMainFrame(true);
   scheduler_->SetNeedsBeginMainFrame();
   bool needs_first_draw_on_activation = true;
   scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
@@ -3276,23 +3289,22 @@ TEST_F(SchedulerTest, AbortedCommitsTriggerImplSideInvalidations) {
   scheduler_->SetNeedsBeginMainFrame();
   scheduler_->NotifyBeginMainFrameStarted(now_src()->NowTicks());
   scheduler_->BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
-  task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_ACTIONS("ScheduledActionPerformImplSideInvalidation");
+}
 
-  // Activate the sync tree.
-  client_->Reset();
-  scheduler_->NotifyReadyToActivate();
-  EXPECT_ACTIONS("ScheduledActionActivateSyncTree");
+TEST_F(SchedulerTest, InvalidationNotBlockedOnMainFrame) {
+  SetUpScheduler(EXTERNAL_BFS);
 
-  // Second impl frame.
+  // Request a main frame and invalidation, with a slow main thread so the
+  // invalidation is not blocked on a commit.
+  SetShouldDeferInvalidationForMainFrame(false);
+  scheduler_->SetNeedsBeginMainFrame();
+  bool needs_first_draw_on_activation = true;
+  scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   client_->Reset();
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
-
-  // Deadline.
-  client_->Reset();
-  task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame",
+                 "ScheduledActionPerformImplSideInvalidation");
 }
 
 // The three letters appeneded to each version of this test mean the following:s
@@ -3721,6 +3733,103 @@ TEST_F(SchedulerTest, CriticalBeginMainFrameIsFast_CommitEstimateFast) {
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_TRUE(scheduler_->state_machine()
                   .critical_begin_main_frame_to_activate_is_fast());
+}
+
+TEST_F(SchedulerTest, ShouldDeferInvalidation_AllEstimatesFast) {
+  SetUpScheduler(EXTERNAL_BFS);
+  scheduler_->SetNeedsBeginMainFrame();
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->state_machine()
+                  .should_defer_invalidation_for_fast_main_frame());
+}
+
+TEST_F(SchedulerTest, ShouldDeferInvalidation_BMFStartToReadyToCommitSlow) {
+  SetUpScheduler(EXTERNAL_BFS);
+  scheduler_->SetNeedsBeginMainFrame();
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+  fake_compositor_timing_history_
+      ->SetBeginMainFrameStartToReadyToCommitDurationEstimate(kSlowDuration);
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_FALSE(scheduler_->state_machine()
+                   .should_defer_invalidation_for_fast_main_frame());
+}
+
+TEST_F(SchedulerTest, ShouldDeferInvalidation_BMFQueueDurationCriticalSlow) {
+  SetUpScheduler(EXTERNAL_BFS);
+  scheduler_->SetNeedsBeginMainFrame();
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+  fake_compositor_timing_history_
+      ->SetBeginMainFrameQueueDurationCriticalEstimate(kSlowDuration);
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_FALSE(scheduler_->state_machine()
+                   .should_defer_invalidation_for_fast_main_frame());
+}
+
+TEST_F(SchedulerTest, ShouldDeferInvalidation_BMFQueueDurationNotCriticalSlow) {
+  SetUpScheduler(EXTERNAL_BFS);
+  scheduler_->SetNeedsBeginMainFrame();
+  scheduler_->SetTreePrioritiesAndScrollState(
+      TreePriority::SMOOTHNESS_TAKES_PRIORITY,
+      ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER);
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+  fake_compositor_timing_history_
+      ->SetBeginMainFrameQueueDurationNotCriticalEstimate(kSlowDuration);
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_FALSE(scheduler_->state_machine()
+                   .should_defer_invalidation_for_fast_main_frame());
+}
+
+TEST_F(SchedulerTest, SlowMainThreadButEstimatedFastTriggersInvalidations) {
+  SetUpScheduler(EXTERNAL_BFS);
+  scheduler_->SetNeedsBeginMainFrame();
+  scheduler_->SetNeedsImplSideInvalidation(true);
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+
+  // Main thread is estimated fast, invalidation will be deferred.
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
+
+  // Draw deadline.
+  client_->Reset();
+  task_runner().RunPendingTasks();
+  EXPECT_ACTIONS();
+
+  // Next frame. The invalidation should not be throttled.
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame",
+                 "ScheduledActionPerformImplSideInvalidation");
+}
+
+TEST_F(SchedulerTest,
+       SlowMainThreadRasterButEstimatedFastDoesNotTriggersInvalidations) {
+  SetUpScheduler(EXTERNAL_BFS);
+  scheduler_->SetNeedsBeginMainFrame();
+  scheduler_->SetNeedsImplSideInvalidation(true);
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+
+  // Main thread is estimated fast, invalidation will be deferred.
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
+
+  // Commit before deadline but not ready to activate.
+  client_->Reset();
+  scheduler_->NotifyBeginMainFrameStarted(now_src_->NowTicks());
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_ACTIONS("ScheduledActionCommit");
+
+  // Draw deadline.
+  client_->Reset();
+  task_runner().RunPendingTasks();
+  EXPECT_ACTIONS();
+
+  // Next frame. The invalidation should still be throttled.
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame");
 }
 
 }  // namespace

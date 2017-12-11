@@ -448,8 +448,12 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (begin_main_frame_state_ != BeginMainFrameState::IDLE)
     return false;
 
-  // MFBA is disabled and we are waiting for previous activation.
-  if (!settings_.main_frame_before_activation_enabled && has_pending_tree_)
+  // MFBA is disabled and we are waiting for previous activation, or the current
+  // pending tree is impl-side.
+  bool can_send_main_frame_with_pending_tree =
+      settings_.main_frame_before_activation_enabled ||
+      current_pending_tree_is_impl_side_;
+  if (has_pending_tree_ && !can_send_main_frame_with_pending_tree)
     return false;
 
   // We are waiting for previous frame to be drawn, submitted and acked.
@@ -577,12 +581,12 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     else
       return Action::DRAW_IF_POSSIBLE;
   }
+  if (ShouldSendBeginMainFrame())
+    return Action::SEND_BEGIN_MAIN_FRAME;
   if (ShouldPerformImplSideInvalidation())
     return Action::PERFORM_IMPL_SIDE_INVALIDATION;
   if (ShouldPrepareTiles())
     return Action::PREPARE_TILES;
-  if (ShouldSendBeginMainFrame())
-    return Action::SEND_BEGIN_MAIN_FRAME;
   if (ShouldInvalidateLayerTreeFrameSink())
     return Action::INVALIDATE_LAYER_TREE_FRAME_SINK;
   if (ShouldBeginLayerTreeFrameSinkCreation())
@@ -632,22 +636,14 @@ bool SchedulerStateMachine::ShouldDeferInvalidatingForMainFrame() const {
   if (begin_main_frame_state_ == BeginMainFrameState::READY_TO_COMMIT)
     return true;
 
-  // If we are inside the deadline, and haven't performed an invalidation yet,
-  // do it now.
-  // TODO(khushalsagar): We could do better by scheduling a deadline for
-  // invalidating prior to the draw deadline. Since invalidating now implies
-  // this pending tree will miss the draw for this frame. And scheduling this
-  // deadline should only be required if:
-  // a) There is a request for impl-side invalidation.
-  // b) We have to wait on the main thread to respond to a main frame.
-  // In addition, the deadline task can be cancelled if the main thread
-  // responds before it runs.
-  if (begin_impl_frame_state_ == BeginImplFrameState::INSIDE_DEADLINE)
-    return false;
-
   // If commits are being aborted (which would be the common case for a
   // compositor scroll), don't defer the invalidation.
-  if (last_frame_events_.commit_had_no_updates)
+  if (last_frame_events_.commit_had_no_updates || last_commit_had_no_updates_)
+    return false;
+
+  // If we prefer to invalidate over waiting on the main frame, do the
+  // invalidation now.
+  if (!should_defer_invalidation_for_fast_main_frame_)
     return false;
 
   // If there is a request for a main frame, then this could either be a
@@ -717,7 +713,8 @@ bool SchedulerStateMachine::CouldCreatePendingTree() const {
 }
 
 void SchedulerStateMachine::WillSendBeginMainFrame() {
-  DCHECK(!has_pending_tree_ || settings_.main_frame_before_activation_enabled);
+  DCHECK(!has_pending_tree_ || settings_.main_frame_before_activation_enabled ||
+         current_pending_tree_is_impl_side_);
   DCHECK(visible_);
   DCHECK(!begin_frame_source_paused_);
   DCHECK(!did_send_begin_main_frame_for_current_frame_);
@@ -806,7 +803,9 @@ void SchedulerStateMachine::WillDrawInternal() {
   // main_thread_missed_last_deadline_ is here in addition to
   // OnBeginImplFrameIdle for cases where the scheduler aborts draws outside
   // of the deadline.
-  main_thread_missed_last_deadline_ = CommitPending() || has_pending_tree_;
+  main_thread_missed_last_deadline_ =
+      CommitPending() ||
+      (has_pending_tree_ && !current_pending_tree_is_impl_side_);
 
   // We need to reset needs_redraw_ before we draw since the
   // draw itself might request another draw.
@@ -1049,6 +1048,9 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
   // then the main thread is in a high latency mode.
   main_thread_missed_last_deadline_ =
       CommitPending() || has_pending_tree_ || active_tree_needs_first_draw_;
+  main_thread_failed_to_respond_last_deadline_ =
+      begin_main_frame_state_ == BeginMainFrameState::SENT ||
+      begin_main_frame_state_ == BeginMainFrameState::STARTED;
 
   // If we're entering a state where we won't get BeginFrames set all the
   // funnels so that we don't perform any actions that we shouldn't.

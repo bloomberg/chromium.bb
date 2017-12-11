@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/base/base_export.h"
@@ -35,9 +36,13 @@ class CC_BASE_EXPORT RollingTimeDeltaHistory {
  private:
   typedef std::multiset<base::TimeDelta> TimeDeltaMultiset;
 
+  base::TimeDelta ComputePercentile(double percent) const;
+
   TimeDeltaMultiset sample_set_;
   base::circular_deque<TimeDeltaMultiset::iterator> chronological_sample_deque_;
   size_t max_size_;
+
+  mutable base::flat_map<double, base::TimeDelta> percentile_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(RollingTimeDeltaHistory);
 };
