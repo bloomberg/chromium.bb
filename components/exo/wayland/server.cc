@@ -1870,7 +1870,7 @@ void remote_surface_destroy(wl_client* client, wl_resource* resource) {
 void remote_surface_set_app_id(wl_client* client,
                                wl_resource* resource,
                                const char* app_id) {
-  GetUserDataAs<ShellSurface>(resource)->SetApplicationId(app_id);
+  GetUserDataAs<ShellSurfaceBase>(resource)->SetApplicationId(app_id);
 }
 
 void remote_surface_set_window_geometry(wl_client* client,
@@ -1879,7 +1879,7 @@ void remote_surface_set_window_geometry(wl_client* client,
                                         int32_t y,
                                         int32_t width,
                                         int32_t height) {
-  GetUserDataAs<ShellSurface>(resource)->SetGeometry(
+  GetUserDataAs<ShellSurfaceBase>(resource)->SetGeometry(
       gfx::Rect(x, y, width, height));
 }
 
@@ -1918,7 +1918,7 @@ void remote_surface_set_rectangular_shadow_background_opacity_DEPRECATED(
 void remote_surface_set_title(wl_client* client,
                               wl_resource* resource,
                               const char* title) {
-  GetUserDataAs<ShellSurface>(resource)->SetTitle(
+  GetUserDataAs<ShellSurfaceBase>(resource)->SetTitle(
       base::string16(base::UTF8ToUTF16(title)));
 }
 
@@ -1931,28 +1931,28 @@ void remote_surface_set_top_inset(wl_client* client,
 void remote_surface_activate(wl_client* client,
                              wl_resource* resource,
                              uint32_t serial) {
-  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  ShellSurfaceBase* shell_surface = GetUserDataAs<ShellSurfaceBase>(resource);
   shell_surface->Activate();
 }
 
 void remote_surface_maximize(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Maximize();
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetMaximized();
 }
 
 void remote_surface_minimize(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Minimize();
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetMinimized();
 }
 
 void remote_surface_restore(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Restore();
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetRestored();
 }
 
 void remote_surface_fullscreen(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFullscreen(true);
 }
 
 void remote_surface_unfullscreen(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(false);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFullscreen(false);
 }
 
 void remote_surface_pin(wl_client* client,
@@ -2008,18 +2008,18 @@ void remote_surface_unset_always_on_top(wl_client* client,
 void remote_surface_ack_configure(wl_client* client,
                                   wl_resource* resource,
                                   uint32_t serial) {
-  GetUserDataAs<ShellSurface>(resource)->AcknowledgeConfigure(serial);
+  GetUserDataAs<ShellSurfaceBase>(resource)->AcknowledgeConfigure(serial);
 }
 
 void remote_surface_move(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Move();
+  GetUserDataAs<ClientControlledShellSurface>(resource)->Move();
 }
 
 void remote_surface_set_window_type(wl_client* client,
                                     wl_resource* resource,
                                     uint32_t type) {
   if (type == ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI) {
-    auto* widget = GetUserDataAs<ShellSurface>(resource)->GetWidget();
+    auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
     if (widget) {
       widget->GetNativeWindow()->SetProperty(ash::kShowInOverviewKey, false);
 
@@ -2109,7 +2109,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     display::Screen::GetScreen()->RemoveObserver(this);
   }
 
-  std::unique_ptr<ShellSurface> CreateShellSurface(
+  std::unique_ptr<ClientControlledShellSurface> CreateShellSurface(
       Surface* surface,
       int container,
       double default_device_scale_factor) {
@@ -2344,9 +2344,10 @@ void remote_shell_get_remote_surface(wl_client* client,
                                     ? GetDefaultDeviceScaleFactor()
                                     : 1.0;
 
-  std::unique_ptr<ShellSurface> shell_surface = shell->CreateShellSurface(
-      GetUserDataAs<Surface>(surface), RemoteSurfaceContainer(container),
-      default_scale_factor);
+  std::unique_ptr<ClientControlledShellSurface> shell_surface =
+      shell->CreateShellSurface(GetUserDataAs<Surface>(surface),
+                                RemoteSurfaceContainer(container),
+                                default_scale_factor);
   if (!shell_surface) {
     wl_resource_post_error(resource, ZCR_REMOTE_SHELL_V1_ERROR_ROLE,
                            "surface has already been assigned a role");
