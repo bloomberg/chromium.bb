@@ -62,6 +62,10 @@ default_args = {
   # TODO(bugs.webrtc.org/8396): Once WebRTC gets rid of its internal
   # deps on codecs, we can remove this.
   rtc_include_ilbc = false
+
+  # Changes some setup for the Crashpad build to set them to build against
+  # Chromium's zlib, base, etc.
+  crashpad_in_chromium = true
 }
 
 # These are the targets to check headers for by default. The files in targets

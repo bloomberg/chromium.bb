@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-@Subdir clang
-fuchsia/clang/${os}-${arch} latest
+# In Crashpad, sysroot.gni is in mini_chromium, forward to that one.
+import("//third_party/mini_chromium/mini_chromium/build/sysroot.gni")
 
-@Subdir sdk
-fuchsia/sdk/${os=linux}-${arch} latest
+# To avoid Chromium Mac hermetic toolchain paths without explicitly checking
+# whether building in Chromium mode.
+if (is_mac) {
+  use_system_xcode = true
+}

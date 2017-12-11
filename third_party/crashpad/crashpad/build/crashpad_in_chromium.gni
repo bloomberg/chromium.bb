@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This is a forwarding target to match the location that Chromium uses.
-
-group("gmock") {
-  public_configs = [ "//third_party/gtest:gmock_public_config" ]
-  public_deps = [
-    "//third_party/gtest:gmock",
-  ]
+declare_args() {
+  crashpad_in_chromium = false
 }
