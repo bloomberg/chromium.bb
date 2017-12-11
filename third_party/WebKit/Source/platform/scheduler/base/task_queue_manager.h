@@ -310,6 +310,16 @@ class PLATFORM_EXPORT TaskQueueManager
                                              LazyNow time_before_task,
                                              base::TimeTicks* time_after_task);
 
+  void NotifyWillProcessTaskObservers(const internal::TaskQueueImpl::Task& task,
+                                      internal::TaskQueueImpl* queue,
+                                      LazyNow time_before_task,
+                                      base::TimeTicks* task_start_time);
+
+  void NotifyDidProcessTaskObservers(const internal::TaskQueueImpl::Task& task,
+                                     internal::TaskQueueImpl* queue,
+                                     base::TimeTicks task_start_time,
+                                     base::TimeTicks* time_after_task);
+
   bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay);
