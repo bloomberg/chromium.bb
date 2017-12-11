@@ -525,4 +525,102 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperPerTextNode) {
             text2->GetLayoutObject()->Parent());
 }
 
+TEST_F(LayoutObjectTest, DisplayContentsWrapperInTable) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='table' style='display:table'>
+      <div id='none' style='display:none'></div>
+      <div id='contents' style='display:contents;color:green'>Green</div>
+    </div>
+  )HTML");
+
+  Element* none = GetDocument().getElementById("none");
+  Element* contents = GetDocument().getElementById("contents");
+
+  ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
+
+  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(none->GetLayoutObject());
+  LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
+  ASSERT_TRUE(inline_parent);
+  LayoutObject* wrapper_parent =
+      contents->firstChild()->GetLayoutObject()->Parent()->Parent();
+  ASSERT_TRUE(wrapper_parent);
+  EXPECT_EQ(wrapper_parent, inline_parent);
+  EXPECT_TRUE(inline_parent->IsTableCell());
+  EXPECT_TRUE(inline_parent->IsAnonymous());
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableSection) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='section' style='display:table-row-group'>
+      <div id='none' style='display:none'></div>
+      <div id='contents' style='display:contents;color:green'>Green</div>
+    </div>
+  )HTML");
+
+  Element* none = GetDocument().getElementById("none");
+  Element* contents = GetDocument().getElementById("contents");
+
+  ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
+
+  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(none->GetLayoutObject());
+  LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
+  ASSERT_TRUE(inline_parent);
+  LayoutObject* wrapper_parent =
+      contents->firstChild()->GetLayoutObject()->Parent()->Parent();
+  ASSERT_TRUE(wrapper_parent);
+  EXPECT_EQ(wrapper_parent, inline_parent);
+  EXPECT_TRUE(inline_parent->IsTableCell());
+  EXPECT_TRUE(inline_parent->IsAnonymous());
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableRow) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='row' style='display:table-row'>
+      <div id='none' style='display:none'></div>
+      <div id='contents' style='display:contents;color:green'>Green</div>
+    </div>
+  )HTML");
+
+  Element* none = GetDocument().getElementById("none");
+  Element* contents = GetDocument().getElementById("contents");
+
+  ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
+
+  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(none->GetLayoutObject());
+  LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
+  ASSERT_TRUE(inline_parent);
+  LayoutObject* wrapper_parent =
+      contents->firstChild()->GetLayoutObject()->Parent()->Parent();
+  ASSERT_TRUE(wrapper_parent);
+  EXPECT_EQ(wrapper_parent, inline_parent);
+  EXPECT_TRUE(inline_parent->IsTableCell());
+  EXPECT_TRUE(inline_parent->IsAnonymous());
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableCell) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='cell' style='display:table-cell'>
+      <div id='none' style='display:none'></div>
+      <div id='contents' style='display:contents;color:green'>Green</div>
+    </div>
+  )HTML");
+
+  Element* cell = GetDocument().getElementById("cell");
+  Element* none = GetDocument().getElementById("none");
+  Element* contents = GetDocument().getElementById("contents");
+
+  ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
+
+  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(none->GetLayoutObject());
+  EXPECT_EQ(cell->GetLayoutObject(), none->GetLayoutObject()->Parent());
+}
+
 }  // namespace blink
