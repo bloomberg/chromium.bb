@@ -7,6 +7,8 @@ source_set("download") {
   sources = [
     "legacy_download_manager_controller.h",
     "legacy_download_manager_controller.mm",
+    "pass_kit_coordinator.h",
+    "pass_kit_coordinator.mm",
   ]
   deps = [
     "resources:download_manager_controller_xib",
@@ -15,9 +17,12 @@ source_set("download") {
     "resources:file_icon_fold",
     "resources:file_icon_fold_complete",
     "//base",
+    "//components/infobars/core",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/download",
+    "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
@@ -39,17 +44,27 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "legacy_download_manager_controller_unittest.mm",
+    "pass_kit_coordinator_unittest.mm",
   ]
   deps = [
     ":download",
     "//base",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/download",
+    "//ios/chrome/browser/download:test_support",
+    "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/web:test_support",
+    "//ios/chrome/test:test_support",
+    "//ios/chrome/test/fakes",
+    "//ios/testing:ios_test_support",
     "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/ocmock:ocmock",
+    "//ui/base",
   ]
 }
 

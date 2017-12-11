@@ -63,6 +63,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -139,6 +140,7 @@
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/download/legacy_download_manager_controller.h"
+#import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
 #import "ios/chrome/browser/ui/external_search/external_search_coordinator.h"
@@ -601,6 +603,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for the language selection UI.
   LanguageSelectionCoordinator* _languageSelectionCoordinator;
 
+  // Coordinator for the PassKit UI presentation.
+  PassKitCoordinator* _passKitCoordinator;
+
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
 
@@ -986,6 +991,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         [[LanguageSelectionCoordinator alloc] initWithBaseViewController:self];
     _languageSelectionCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
+
+    _passKitCoordinator =
+        [[PassKitCoordinator alloc] initWithBaseViewController:self];
 
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));
@@ -2567,6 +2575,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   RepostFormTabHelper::CreateForWebState(tab.webState, self);
   NetExportTabHelper::CreateForWebState(tab.webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
+  PassKitTabHelper::CreateForWebState(tab.webState, _passKitCoordinator);
 
   // The language detection helper accepts a callback from the translate
   // client, so must be created after it.
