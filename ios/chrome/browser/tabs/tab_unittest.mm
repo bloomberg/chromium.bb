@@ -33,7 +33,6 @@
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/ui/open_in_controller.h"
 #import "ios/chrome/browser/ui/open_in_controller_testing.h"
-#import "ios/chrome/browser/web/external_app_launcher.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
@@ -112,20 +111,6 @@ const char kValidFilenameUrl[] = "http://www.hostname.com/filename.pdf";
 
 - (void)closeTabAtIndex:(NSUInteger)index {
   [_tabsForTesting removeObjectAtIndex:index];
-}
-@end
-
-@interface ExternalAppLauncherMock : OCMockComplexTypeHelper
-@end
-
-@implementation ExternalAppLauncherMock
-typedef BOOL (^openURLBlockType)(const GURL&, const GURL&, BOOL);
-
-- (BOOL)requestToOpenURL:(const GURL&)url
-           sourcePageURL:(const GURL&)sourceURL
-             linkClicked:(BOOL)linkClicked {
-  return static_cast<openURLBlockType>([self blockForSelector:_cmd])(
-      url, sourceURL, linkClicked);
 }
 @end
 
@@ -211,10 +196,6 @@ class TabTest : public BlockCleanupTest {
     history::QueryResults results;
     QueryAllHistory(&results);
     EXPECT_EQ(0UL, results.size());
-    mock_external_app_launcher_ = [[ExternalAppLauncherMock alloc]
-        initWithRepresentedObject:
-            [OCMockObject mockForClass:[ExternalAppLauncher class]]];
-    [tab_ replaceExternalAppLauncher:mock_external_app_launcher_];
   }
 
   void TearDown() override {
@@ -324,7 +305,6 @@ class TabTest : public BlockCleanupTest {
   __weak CRWWebController* mock_web_controller_;
   UIView* web_controller_view_;
   ArrayTabModel* tabModel_;
-  id mock_external_app_launcher_;
   __weak Tab* tab_;
 };
 
