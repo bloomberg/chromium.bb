@@ -88,16 +88,16 @@ bool IsNotCancellation(const ResourceError& error) {
 }
 
 KURL SuccessURL() {
-  return KURL(NullURL(), "http://example.com/success");
+  return KURL("http://example.com/success");
 }
 KURL ErrorURL() {
-  return KURL(NullURL(), "http://example.com/error");
+  return KURL("http://example.com/error");
 }
 KURL RedirectURL() {
-  return KURL(NullURL(), "http://example.com/redirect");
+  return KURL("http://example.com/redirect");
 }
 KURL RedirectLoopURL() {
-  return KURL(NullURL(), "http://example.com/loop");
+  return KURL("http://example.com/loop");
 }
 
 enum ThreadableLoaderToTest {
@@ -826,8 +826,7 @@ TEST_P(ThreadableLoaderTest, GetResponseSynchronously) {
   // test is not saying that didFailAccessControlCheck should be dispatched
   // synchronously, but is saying that even when a response is served
   // synchronously it should not lead to a crash.
-  StartLoader(KURL(NullURL(), "about:blank"),
-              network::mojom::FetchRequestMode::kCORS);
+  StartLoader(KURL("about:blank"), network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);
 }
 

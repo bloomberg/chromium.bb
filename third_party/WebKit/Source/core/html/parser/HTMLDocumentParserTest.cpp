@@ -31,8 +31,7 @@ class TestPrerendererClient : public PrerendererClient {
 class HTMLDocumentParserTest : public ::testing::Test {
  protected:
   HTMLDocumentParserTest() : dummy_page_holder_(DummyPageHolder::Create()) {
-    dummy_page_holder_->GetDocument().SetURL(
-        KURL(NullURL(), "https://example.test"));
+    dummy_page_holder_->GetDocument().SetURL(KURL("https://example.test"));
   }
 
   HTMLDocumentParser* CreateParser(HTMLDocument& document) {

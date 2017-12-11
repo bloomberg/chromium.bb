@@ -164,12 +164,12 @@ class DocumentWebSocketChannelTest : public ::testing::Test {
     {
       InSequence s;
       EXPECT_CALL(*Handle(), DoInitialize(_));
-      EXPECT_CALL(*Handle(), Connect(KURL(NullURL(), "ws://localhost/"), _, _,
-                                     _, _, HandleClient(), _));
+      EXPECT_CALL(*Handle(), Connect(KURL("ws://localhost/"), _, _, _, _,
+                                     HandleClient(), _));
       EXPECT_CALL(*Handle(), FlowControl(65536));
       EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
     }
-    EXPECT_TRUE(Channel()->Connect(KURL(NullURL(), "ws://localhost/"), "x"));
+    EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
     HandleClient()->DidConnect(Handle(), String("a"), String("b"));
     ::testing::Mock::VerifyAndClearExpectations(this);
   }
@@ -200,7 +200,7 @@ MATCHER_P(KURLEq,
           std::string(negation ? "doesn't equal" : "equals") + " to \"" +
               url_string +
               "\"") {
-  KURL url(NullURL(), url_string);
+  const KURL url(NullURL(), url_string);
   *result_listener << "where the url is \"" << arg.GetString().Utf8().data()
                    << "\"";
   return arg == url;
@@ -223,7 +223,7 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
 
-  KURL page_url(NullURL(), "http://example.com/");
+  const KURL page_url("http://example.com/");
   page_holder_->GetFrame().GetSecurityContext()->SetSecurityOrigin(
       SecurityOrigin::Create(page_url));
   Document& document = page_holder_->GetDocument();
@@ -232,7 +232,7 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
   EXPECT_STREQ("http://example.com/",
                document.SiteForCookies().GetString().Utf8().data());
 
-  EXPECT_TRUE(Channel()->Connect(KURL(NullURL(), "ws://localhost/"), "x"));
+  EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
 
   EXPECT_EQ(1U, protocols.size());
   EXPECT_STREQ("x", protocols[0].Utf8().data());
@@ -830,7 +830,7 @@ class DocumentWebSocketChannelHandshakeThrottleTest
     EXPECT_CALL(*handshake_throttle_, ThrottleHandshake(_, _, _));
   }
 
-  static KURL url() { return KURL(NullURL(), "ws://localhost/"); }
+  static KURL url() { return KURL("ws://localhost/"); }
 };
 
 TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {

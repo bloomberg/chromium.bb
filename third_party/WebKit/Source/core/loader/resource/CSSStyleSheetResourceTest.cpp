@@ -56,12 +56,12 @@ class CSSStyleSheetResourceTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    GetDocument().SetURL(KURL(NullURL(), "https://localhost/"));
+    GetDocument().SetURL(KURL("https://localhost/"));
   }
 
   CSSStyleSheetResource* CreateAndSaveTestStyleSheetResource() {
     const char kUrl[] = "https://localhost/style.css";
-    KURL css_url(NullURL(), kUrl);
+    const KURL css_url(kUrl);
 
     CSSStyleSheetResource* css_resource =
         CSSStyleSheetResource::CreateForTest(css_url, UTF8Encoding());
@@ -77,8 +77,8 @@ class CSSStyleSheetResourceTest : public PageTestBase {
 
 TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
   const char kUrl[] = "https://localhost/style.css";
-  KURL image_url(NullURL(), kUrl);
-  KURL css_url(NullURL(), kUrl);
+  const KURL image_url(kUrl);
+  const KURL css_url(kUrl);
 
   // Emulate using <img> to do async stylesheet preloads.
 

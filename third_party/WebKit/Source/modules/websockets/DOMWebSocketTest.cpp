@@ -209,9 +209,8 @@ TEST(DOMWebSocketTest, insecureRequestsUpgrade) {
   DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(
-        web_socket_scope.Channel(),
-        Connect(KURL(NullURL(), "wss://example.com/endpoint"), String()))
+    EXPECT_CALL(web_socket_scope.Channel(),
+                Connect(KURL("wss://example.com/endpoint"), String()))
         .WillOnce(Return(true));
   }
 
@@ -221,7 +220,7 @@ TEST(DOMWebSocketTest, insecureRequestsUpgrade) {
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
-  EXPECT_EQ(KURL(NullURL(), "wss://example.com/endpoint"),
+  EXPECT_EQ(KURL("wss://example.com/endpoint"),
             web_socket_scope.Socket().url());
 }
 
@@ -231,7 +230,7 @@ TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/endpoint"), String()))
+                Connect(KURL("ws://example.com/endpoint"), String()))
         .WillOnce(Return(true));
   }
 
@@ -241,8 +240,7 @@ TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
-  EXPECT_EQ(KURL(NullURL(), "ws://example.com/endpoint"),
-            web_socket_scope.Socket().url());
+  EXPECT_EQ(KURL("ws://example.com/endpoint"), web_socket_scope.Socket().url());
 }
 
 TEST(DOMWebSocketTest, channelConnectSuccess) {
@@ -254,9 +252,8 @@ TEST(DOMWebSocketTest, channelConnectSuccess) {
 
   {
     InSequence s;
-    EXPECT_CALL(
-        web_socket_scope.Channel(),
-        Connect(KURL(NullURL(), "ws://example.com/hoge"), String("aa, bb")))
+    EXPECT_CALL(web_socket_scope.Channel(),
+                Connect(KURL("ws://example.com/hoge"), String("aa, bb")))
         .WillOnce(Return(true));
   }
 
@@ -266,8 +263,7 @@ TEST(DOMWebSocketTest, channelConnectSuccess) {
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
-  EXPECT_EQ(KURL(NullURL(), "ws://example.com/hoge"),
-            web_socket_scope.Socket().url());
+  EXPECT_EQ(KURL("ws://example.com/hoge"), web_socket_scope.Socket().url());
 }
 
 TEST(DOMWebSocketTest, channelConnectFail) {
@@ -280,7 +276,7 @@ TEST(DOMWebSocketTest, channelConnectFail) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String("aa, bb")))
+                Connect(KURL("ws://example.com/"), String("aa, bb")))
         .WillOnce(Return(false));
     EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
   }
@@ -333,7 +329,7 @@ TEST(DOMWebSocketTest, connectSuccess) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String("aa, bb")))
+                Connect(KURL("ws://example.com/"), String("aa, bb")))
         .WillOnce(Return(true));
   }
   web_socket_scope.Socket().Connect("ws://example.com/", subprotocols,
@@ -355,7 +351,7 @@ TEST(DOMWebSocketTest, didClose) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
   }
@@ -377,7 +373,7 @@ TEST(DOMWebSocketTest, maximumReasonSize) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), FailMock(_, _, _));
   }
@@ -403,7 +399,7 @@ TEST(DOMWebSocketTest, reasonSizeExceeding) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
   }
   StringBuilder reason;
@@ -431,7 +427,7 @@ TEST(DOMWebSocketTest, closeWhenConnecting) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(
         web_socket_scope.Channel(),
@@ -457,7 +453,7 @@ TEST(DOMWebSocketTest, close) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Close(3005, String("bye")));
   }
@@ -481,7 +477,7 @@ TEST(DOMWebSocketTest, closeWithoutReason) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Close(3005, String()));
   }
@@ -505,7 +501,7 @@ TEST(DOMWebSocketTest, closeWithoutCodeAndReason) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Close(-1, String()));
   }
@@ -529,7 +525,7 @@ TEST(DOMWebSocketTest, closeWhenClosing) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Close(-1, String()));
   }
@@ -557,7 +553,7 @@ TEST(DOMWebSocketTest, closeWhenClosed) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Close(-1, String()));
     EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
@@ -589,7 +585,7 @@ TEST(DOMWebSocketTest, sendStringWhenConnecting) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
   }
   web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
@@ -612,7 +608,7 @@ TEST(DOMWebSocketTest, sendStringWhenClosing) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), FailMock(_, _, _));
   }
@@ -637,7 +633,7 @@ TEST(DOMWebSocketTest, sendStringWhenClosed) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
     EXPECT_CALL(checkpoint, Call(1));
@@ -663,7 +659,7 @@ TEST(DOMWebSocketTest, sendStringSuccess) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Send(CString("hello")));
   }
@@ -685,7 +681,7 @@ TEST(DOMWebSocketTest, sendNonLatin1String) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(),
                 Send(CString("\xe7\x8b\x90\xe0\xa4\x94")));
@@ -710,7 +706,7 @@ TEST(DOMWebSocketTest, sendArrayBufferWhenConnecting) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
   }
   web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
@@ -733,7 +729,7 @@ TEST(DOMWebSocketTest, sendArrayBufferWhenClosing) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), FailMock(_, _, _));
   }
@@ -759,7 +755,7 @@ TEST(DOMWebSocketTest, sendArrayBufferWhenClosed) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
     EXPECT_CALL(checkpoint, Call(1));
@@ -786,7 +782,7 @@ TEST(DOMWebSocketTest, sendArrayBufferSuccess) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), Send(Ref(*view->buffer()), 0, 8));
   }
@@ -834,7 +830,7 @@ TEST_P(DOMWebSocketValidClosingTest, test) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(web_socket_scope.Channel(), FailMock(_, _, _));
   }
@@ -863,7 +859,7 @@ TEST_P(DOMWebSocketInvalidClosingCodeTest, test) {
   {
     InSequence s;
     EXPECT_CALL(web_socket_scope.Channel(),
-                Connect(KURL(NullURL(), "ws://example.com/"), String()))
+                Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
   }
   web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),

@@ -16,7 +16,7 @@ class HTMLFrameElementTest : public ::testing::Test {};
 // fullscreen feature should be unconditionally disabled.
 TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
   Document* document = Document::CreateForTest();
-  KURL document_url = KURL(NullURL(), "http://example.com");
+  const KURL document_url("http://example.com");
   document->SetURL(document_url);
   document->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));
 

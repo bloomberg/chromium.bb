@@ -83,9 +83,9 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEventInSecureContext) {
   std::unique_ptr<DummyPageHolder> page_holder =
       DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
   MockInsecureInputService mock_service(page_holder->GetFrame());
-  page_holder->GetDocument().SetURL(KURL(NullURL(), "https://example.test"));
+  page_holder->GetDocument().SetURL(KURL("https://example.test"));
   page_holder->GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL(NullURL(), "https://example.test")));
+      SecurityOrigin::Create(KURL("https://example.test")));
   page_holder->GetDocument().SetSecureContextStateForTesting(
       SecureContextState::kSecure);
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
@@ -335,9 +335,9 @@ TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
   std::unique_ptr<DummyPageHolder> page_holder =
       DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
   MockInsecureInputService mock_service(page_holder->GetFrame());
-  page_holder->GetDocument().SetURL(KURL(NullURL(), "https://example.test"));
+  page_holder->GetDocument().SetURL(KURL("https://example.test"));
   page_holder->GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL(NullURL(), "https://example.test")));
+      SecurityOrigin::Create(KURL("https://example.test")));
   page_holder->GetDocument().SetSecureContextStateForTesting(
       SecureContextState::kSecure);
   page_holder->GetDocument().body()->SetInnerHTMLFromString(

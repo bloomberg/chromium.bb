@@ -37,7 +37,7 @@ class MockEventListenerForPresentationReceiver : public EventListener {
 class PresentationReceiverTest : public ::testing::Test {
  public:
   PresentationReceiverTest()
-      : connection_info_(KURL(NullURL(), "http://example.com"), "id") {}
+      : connection_info_(KURL("http://example.com"), "id") {}
   void AddConnectionavailableEventListener(EventListener*,
                                            const PresentationReceiver*);
   void VerifyConnectionListPropertyState(ScriptPromisePropertyBase::State,

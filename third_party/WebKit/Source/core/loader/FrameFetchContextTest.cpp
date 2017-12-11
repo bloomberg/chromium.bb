@@ -201,7 +201,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
  private:
   ResourceRequestBlockedReason CanRequestInternal(
       SecurityViolationReportingPolicy reporting_policy) {
-    KURL input_url("http://example.com/");
+    const KURL input_url("http://example.com/");
     ResourceRequest resource_request(input_url);
     resource_request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
@@ -220,9 +220,9 @@ class FrameFetchContextMockedLocalFrameClientTest
     : public FrameFetchContextTest {
  protected:
   void SetUp() override {
-    url = KURL(NullURL(), "https://example.test/foo");
-    http_url = KURL(NullURL(), "http://example.test/foo");
-    main_resource_url = KURL(NullURL(), "https://www.example.test");
+    url = KURL("https://example.test/foo");
+    http_url = KURL("http://example.test/foo");
+    main_resource_url = KURL("https://www.example.test");
     client = new ::testing::NiceMock<FrameFetchContextMockLocalFrameClient>();
     dummy_page_holder =
         DummyPageHolder::Create(IntSize(500, 500), nullptr, client);
@@ -259,8 +259,8 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
                      WebURLRequest::RequestContext request_context,
                      WebURLRequest::FrameType frame_type,
                      const char* expected) {
-    KURL input_url(input);
-    KURL expected_url(expected);
+    const KURL input_url(input);
+    const KURL expected_url(expected);
 
     ResourceRequest resource_request(input_url);
     resource_request.SetRequestContext(request_context);
@@ -279,7 +279,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
   void ExpectUpgradeInsecureRequestHeader(const char* input,
                                           WebURLRequest::FrameType frame_type,
                                           bool should_prefer) {
-    KURL input_url(input);
+    const KURL input_url(input);
 
     ResourceRequest resource_request(input_url);
     resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
@@ -304,7 +304,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
       const char* input,
       WebURLRequest::FrameType frame_type,
       const AtomicString& expected_required_csp) {
-    KURL input_url(input);
+    const KURL input_url(input);
     ResourceRequest resource_request(input_url);
     resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
     resource_request.SetFrameType(frame_type);
@@ -510,7 +510,7 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
       resource_width.is_set = true;
     }
 
-    KURL input_url(input);
+    const KURL input_url(input);
     ResourceRequest resource_request(input_url);
 
     fetch_context->AddClientHintsIfNecessary(hints_preferences, resource_width,
@@ -1040,13 +1040,13 @@ TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
 }
 
 TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
-  const KURL document_url(NullURL(), "https://www2.example.com/fuga/hoge.html");
+  const KURL document_url("https://www2.example.com/fuga/hoge.html");
   const String origin = "https://www2.example.com";
-  ResourceRequest request(KURL(NullURL(), "https://localhost/"));
+  ResourceRequest request(KURL("https://localhost/"));
   request.SetHTTPMethod("PUT");
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
-  document->SetSecurityOrigin(SecurityOrigin::Create(KURL(NullURL(), origin)));
+  document->SetSecurityOrigin(SecurityOrigin::Create(KURL(origin)));
   document->SetURL(document_url);
   document->SetReferrerPolicy(kReferrerPolicyOrigin);
   document->SetAddressSpace(kWebAddressSpacePublic);
@@ -1061,7 +1061,7 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, ResourceRequestCachePolicyWhenDetached) {
-  ResourceRequest request(KURL(NullURL(), "https://localhost/"));
+  ResourceRequest request(KURL("https://localhost/"));
 
   dummy_page_holder = nullptr;
 
@@ -1090,7 +1090,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   dummy_page_holder = nullptr;
   checkpoint.Call(2);
 
-  ResourceRequest request(KURL(NullURL(), "https://localhost/"));
+  ResourceRequest request(KURL("https://localhost/"));
   fetch_context->PrepareRequest(request,
                                 FetchContext::RedirectType::kNotForRedirect);
 
@@ -1098,7 +1098,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 }
 
 TEST_F(FrameFetchContextTest, DispatchWillSendRequestWhenDetached) {
-  ResourceRequest request(KURL(NullURL(), "https://www.example.com/"));
+  ResourceRequest request(KURL("https://www.example.com/"));
   ResourceResponse response;
   FetchInitiatorInfo initiator_info;
 
@@ -1111,7 +1111,7 @@ TEST_F(FrameFetchContextTest, DispatchWillSendRequestWhenDetached) {
 
 TEST_F(FrameFetchContextTest,
        DispatchDidLoadResourceFromMemoryCacheWhenDetached) {
-  ResourceRequest request(KURL(NullURL(), "https://www.example.com/"));
+  ResourceRequest request(KURL("https://www.example.com/"));
   ResourceResponse response;
   FetchInitiatorInfo initiator_info;
 
@@ -1122,7 +1122,7 @@ TEST_F(FrameFetchContextTest,
 }
 
 TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
-  ResourceRequest request(KURL(NullURL(), "https://www.example.com/"));
+  ResourceRequest request(KURL("https://www.example.com/"));
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(request);
   ResourceResponse response;
@@ -1182,7 +1182,7 @@ TEST_F(FrameFetchContextTest, ShouldLoadNewResourceWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
-  ResourceRequest request(KURL(NullURL(), "https://www.example.com/"));
+  ResourceRequest request(KURL("https://www.example.com/"));
 
   dummy_page_holder = nullptr;
 
@@ -1196,7 +1196,7 @@ TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, DidLoadResourceWhenDetached) {
-  ResourceRequest request(KURL(NullURL(), "https://www.example.com/"));
+  ResourceRequest request(KURL("https://www.example.com/"));
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(request);
 
@@ -1217,7 +1217,7 @@ TEST_F(FrameFetchContextTest, AddResourceTimingWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, AllowImageWhenDetached) {
-  KURL url(NullURL(), "https://www.example.com/");
+  const KURL url("https://www.example.com/");
 
   dummy_page_holder = nullptr;
 
@@ -1281,7 +1281,7 @@ TEST_F(FrameFetchContextTest, UpdateTimingInfoForIFrameNavigationWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, SendImagePingWhenDetached) {
-  KURL url(NullURL(), "https://www.example.com/");
+  const KURL url("https://www.example.com/");
 
   dummy_page_holder = nullptr;
 
@@ -1298,7 +1298,7 @@ TEST_F(FrameFetchContextTest, AddConsoleMessageWhenDetached) {
 
 TEST_F(FrameFetchContextTest, GetSecurityOriginWhenDetached) {
   scoped_refptr<SecurityOrigin> origin =
-      SecurityOrigin::Create(KURL(NullURL(), "https://www.example.com"));
+      SecurityOrigin::Create(KURL("https://www.example.com"));
   document->SetSecurityOrigin(origin);
 
   dummy_page_holder = nullptr;
@@ -1306,7 +1306,7 @@ TEST_F(FrameFetchContextTest, GetSecurityOriginWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
-  KURL url(NullURL(), "https://www.example.com/");
+  const KURL url("https://www.example.com/");
   ResourceRequest request(url);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
@@ -1341,9 +1341,9 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
 
 TEST_F(FrameFetchContextTest,
        SetFirstPartyCookieAndRequestorOriginWhenDetached) {
-  KURL url(NullURL(), "https://www.example.com/hoge/fuga");
+  const KURL url("https://www.example.com/hoge/fuga");
   ResourceRequest request(url);
-  KURL document_url(NullURL(), "https://www2.example.com/foo/bar");
+  const KURL document_url("https://www2.example.com/foo/bar");
   scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(document_url);
 
   document->SetSecurityOrigin(origin);
