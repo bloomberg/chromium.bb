@@ -3658,9 +3658,15 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   assert(tx_size < TX_SIZES_ALL);
 
+#if CONFIG_LV_MAP
+  TXB_CTX txb_ctx;
+  get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
+  uint16_t cur_joint_ctx = (txb_ctx.dc_sign_ctx << 8) + txb_ctx.txb_skip_ctx;
+#else
   const int coeff_ctx = get_entropy_context(tx_size, a, l);
   const int coeff_ctx_one_byte = combine_entropy_contexts(*a, *l);
   const uint8_t cur_joint_ctx = (coeff_ctx << 2) + coeff_ctx_one_byte;
+#endif
 
   // Note: tmp below is pixel distortion, not TX domain
   tmp = pixel_diff_dist(x, plane, diff, diff_stride, blk_row, blk_col,

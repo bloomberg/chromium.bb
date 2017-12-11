@@ -145,7 +145,11 @@ typedef struct {
   int64_t dist;
   int rate;
   uint16_t eob;
+#if CONFIG_LV_MAP
+  uint16_t entropy_context;
+#else
   uint8_t entropy_context;
+#endif
   uint8_t valid;
   uint8_t fast;
 } TX_SIZE_RD_INFO;
