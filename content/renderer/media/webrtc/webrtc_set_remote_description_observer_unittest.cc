@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
@@ -96,9 +96,9 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
     run_loop->Quit();
   }
 
-  // Message loop and child process are needed for task queues and threading to
-  // work, as is necessary to create tracks and adapters.
-  base::MessageLoop message_loop_;
+  // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
+  // TaskScheduler.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 
   scoped_refptr<webrtc::MockPeerConnection> pc_;

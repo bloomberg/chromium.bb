@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
@@ -92,9 +92,9 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   }
 
  protected:
-  // Message loop and child processes is needed for task queues and threading to
-  // work, as is necessary to create tracks and adapters.
-  base::MessageLoop message_loop_;
+  // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
+  // TaskScheduler.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
