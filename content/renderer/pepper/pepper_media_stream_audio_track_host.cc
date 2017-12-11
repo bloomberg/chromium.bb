@@ -33,8 +33,8 @@ namespace {
 const uint32_t kMinDuration = 10;
 const uint32_t kDefaultDuration = 10;
 
-const int32_t kDefaultNumberOfBuffers = 4;
-const int32_t kMaxNumberOfBuffers = 1000;  // 10 sec
+const int32_t kDefaultNumberOfAudioBuffers = 4;
+const int32_t kMaxNumberOfAudioBuffers = 1000;  // 10 sec
 
 // Returns true if the |sample_rate| is supported in
 // |PP_AudioBuffer_SampleRate|, otherwise false.
@@ -73,12 +73,11 @@ PepperMediaStreamAudioTrackHost::AudioSink::AudioSink(
       active_buffer_frame_offset_(0),
       buffers_generation_(0),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      number_of_buffers_(kDefaultNumberOfBuffers),
+      number_of_buffers_(kDefaultNumberOfAudioBuffers),
       bytes_per_second_(0),
       bytes_per_frame_(0),
       user_buffer_duration_(kDefaultDuration),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 PepperMediaStreamAudioTrackHost::AudioSink::~AudioSink() {
   DCHECK_EQ(main_task_runner_, base::ThreadTaskRunnerHandle::Get());
@@ -342,8 +341,8 @@ int32_t PepperMediaStreamAudioTrackHost::OnHostMsgConfigure(
     return PP_ERROR_BADARGUMENT;
 
   int32_t buffers = attributes.buffers
-                        ? std::min(kMaxNumberOfBuffers, attributes.buffers)
-                        : kDefaultNumberOfBuffers;
+                        ? std::min(kMaxNumberOfAudioBuffers, attributes.buffers)
+                        : kDefaultNumberOfAudioBuffers;
   return audio_sink_.Configure(buffers, attributes.duration,
                                context->MakeReplyMessageContext());
 }
