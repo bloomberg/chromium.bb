@@ -76,6 +76,7 @@ namespace {{variant}} {
 {%- else %}
 {# hash_util.h includes template specializations that should be present for
    every use of {Inlined}StructPtr. #}
+#include "mojo/public/cpp/bindings/lib/wtf_clone_equals_util.h"
 #include "mojo/public/cpp/bindings/lib/wtf_hash_util.h"
 #include "third_party/WebKit/Source/platform/wtf/HashFunctions.h"
 #include "third_party/WebKit/Source/platform/wtf/Optional.h"
