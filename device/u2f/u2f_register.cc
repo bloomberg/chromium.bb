@@ -16,7 +16,7 @@ U2fRegister::U2fRegister(
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
-    std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
+    std::vector<U2fDiscovery*> discoveries,
     const ResponseCallback& cb)
     : U2fRequest(std::move(discoveries), cb),
       challenge_hash_(challenge_hash),
@@ -31,7 +31,7 @@ std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
-    std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
+    std::vector<U2fDiscovery*> discoveries,
     const ResponseCallback& cb) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fRegister>(
       registered_keys, challenge_hash, app_param, std::move(discoveries), cb);

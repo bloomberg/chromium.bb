@@ -15,28 +15,22 @@
 
 namespace device {
 
-class U2fRequest : public U2fDiscovery::Delegate {
+class U2fRequest : public U2fDiscovery::Observer {
  public:
   // Response and key_handle are optional, depending on the status and
   // the type of request being served.
   using ResponseCallback =
-      base::Callback<void(U2fReturnCode status_code,
-                          const std::vector<uint8_t>& response,
-                          const std::vector<uint8_t>& key_handle)>;
+      base::RepeatingCallback<void(U2fReturnCode status_code,
+                                   const std::vector<uint8_t>& response,
+                                   const std::vector<uint8_t>& key_handle)>;
 
-  U2fRequest(std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
-             ResponseCallback callback);
-  virtual ~U2fRequest();
+  // U2fRequest will register itself as an observer for each entry in
+  // |discoveries|. Clients need to ensure that each discovery outlives this
+  // request.
+  U2fRequest(std::vector<U2fDiscovery*> discoveries, ResponseCallback callback);
+  ~U2fRequest() override;
 
   void Start();
-
-  std::vector<std::unique_ptr<U2fDiscovery>>& discoveries() {
-    return discoveries_;
-  }
-
-  const std::vector<std::unique_ptr<U2fDiscovery>>& discoveries() const {
-    return discoveries_;
-  }
 
  protected:
   enum class State {
@@ -56,23 +50,24 @@ class U2fRequest : public U2fDiscovery::Delegate {
   void Transition();
   virtual void TryDevice() = 0;
 
-  std::unique_ptr<U2fDevice> current_device_;
-  std::list<std::unique_ptr<U2fDevice>> devices_;
-  std::list<std::unique_ptr<U2fDevice>> attempted_devices_;
+  U2fDevice* current_device_ = nullptr;
+  std::list<U2fDevice*> devices_;
+  std::list<U2fDevice*> attempted_devices_;
 
   State state_;
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries_;
+  std::vector<U2fDiscovery*> discoveries_;
   ResponseCallback cb_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestIterateDevice);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestBasicMachine);
+  FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestAlreadyPresentDevice);
 
-  // U2fDiscovery::Delegate
-  void OnStarted(bool success) override;
-  void OnStopped(bool success) override;
-  void OnDeviceAdded(std::unique_ptr<U2fDevice> device) override;
-  void OnDeviceRemoved(base::StringPiece device_id) override;
+  // U2fDiscovery::Observer
+  void DiscoveryStarted(U2fDiscovery* discovery, bool success) override;
+  void DiscoveryStopped(U2fDiscovery* discovery, bool success) override;
+  void DeviceAdded(U2fDiscovery* discovery, U2fDevice* device) override;
+  void DeviceRemoved(U2fDiscovery* discovery, U2fDevice* device) override;
 
   void IterateDevice();
   void OnWaitComplete();

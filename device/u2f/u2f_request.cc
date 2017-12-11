@@ -4,6 +4,7 @@
 
 #include "device/u2f/u2f_request.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -11,25 +12,26 @@
 
 namespace device {
 
-U2fRequest::U2fRequest(std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
+U2fRequest::U2fRequest(std::vector<U2fDiscovery*> discoveries,
                        ResponseCallback cb)
     : state_(State::INIT),
       discoveries_(std::move(discoveries)),
       cb_(std::move(cb)),
       weak_factory_(this) {
-  for (auto& discovery : discoveries_) {
-    discovery->SetDelegate(weak_factory_.GetWeakPtr());
-  }
+  for (auto* discovery : discoveries_)
+    discovery->AddObserver(this);
 }
 
-U2fRequest::~U2fRequest() = default;
+U2fRequest::~U2fRequest() {
+  for (auto* discovery : discoveries_)
+    discovery->RemoveObserver(this);
+}
 
 void U2fRequest::Start() {
   if (state_ == State::INIT) {
     state_ = State::BUSY;
-    for (auto& discovery : discoveries_) {
+    for (auto* discovery : discoveries_)
       discovery->Start();
-    }
   }
 }
 
@@ -54,7 +56,12 @@ void U2fRequest::Transition() {
   }
 }
 
-void U2fRequest::OnStarted(bool success) {
+void U2fRequest::DiscoveryStarted(U2fDiscovery* discovery, bool success) {
+  // The discovery might know about devices that have already been added to the
+  // system. Add them to the |devices_| list.
+  auto devices = discovery->GetDevices();
+  std::move(devices.begin(), devices.end(), std::back_inserter(devices_));
+
   if (++started_count_ < discoveries_.size())
     return;
 
@@ -62,10 +69,10 @@ void U2fRequest::OnStarted(bool success) {
   Transition();
 }
 
-void U2fRequest::OnStopped(bool success) {}
+void U2fRequest::DiscoveryStopped(U2fDiscovery* discovery, bool success) {}
 
-void U2fRequest::OnDeviceAdded(std::unique_ptr<U2fDevice> device) {
-  devices_.push_back(std::move(device));
+void U2fRequest::DeviceAdded(U2fDiscovery* discovery, U2fDevice* device) {
+  devices_.push_back(device);
 
   // Start the state machine if this is the only device
   if (state_ == State::OFF) {
@@ -75,11 +82,11 @@ void U2fRequest::OnDeviceAdded(std::unique_ptr<U2fDevice> device) {
   }
 }
 
-void U2fRequest::OnDeviceRemoved(base::StringPiece device_id) {
-  auto device_id_eq =
-      [&device_id](const std::unique_ptr<U2fDevice>& this_device) {
-        return device_id == this_device->GetId();
-      };
+void U2fRequest::DeviceRemoved(U2fDiscovery* discovery, U2fDevice* device) {
+  const std::string device_id = device->GetId();
+  auto device_id_eq = [&device_id](const U2fDevice* this_device) {
+    return device_id == this_device->GetId();
+  };
 
   // Check if the active device was removed
   if (current_device_ && device_id_eq(current_device_)) {
@@ -96,14 +103,16 @@ void U2fRequest::OnDeviceRemoved(base::StringPiece device_id) {
 
 void U2fRequest::IterateDevice() {
   // Move active device to attempted device list
-  if (current_device_)
-    attempted_devices_.push_back(std::move(current_device_));
+  if (current_device_) {
+    attempted_devices_.push_back(current_device_);
+    current_device_ = nullptr;
+  }
 
   // If there is an additional device on device list, make it active.
   // Otherwise, if all devices have been tried, move attempted devices back to
   // the main device list.
   if (devices_.size() > 0) {
-    current_device_ = std::move(devices_.front());
+    current_device_ = devices_.front();
     devices_.pop_front();
   } else if (attempted_devices_.size() > 0) {
     devices_ = std::move(attempted_devices_);
