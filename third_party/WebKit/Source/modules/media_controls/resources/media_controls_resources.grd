@@ -16,6 +16,8 @@
     <includes>
       <include name="IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS" file="legacyMediaControlsAndroid.css" type="BINDATA" compress="gzip" />
       <include name="IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_TIMELINE_CSS" file="modernMediaControls_timeline.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_OVERLAY_PLAY_CSS" file="modernMediaControls_overlay_play.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_MODERN_MEDIA_CONTROLS_JUMP_SVG" file="jump_image.svg" type="BINDATA" compress="gzip" />
     </includes>
   </release>
 </grit>
