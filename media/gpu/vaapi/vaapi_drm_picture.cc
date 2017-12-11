@@ -49,21 +49,23 @@ VaapiDrmPicture::VaapiDrmPicture(
     int32_t picture_buffer_id,
     const gfx::Size& size,
     uint32_t texture_id,
-    uint32_t client_texture_id)
+    uint32_t client_texture_id,
+    uint32_t texture_target)
     : VaapiPicture(vaapi_wrapper,
                    make_context_current_cb,
                    bind_image_cb,
                    picture_buffer_id,
                    size,
                    texture_id,
-                   client_texture_id) {
+                   client_texture_id,
+                   texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 VaapiDrmPicture::~VaapiDrmPicture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (gl_image_ && make_context_current_cb_.Run()) {
-    gl_image_->ReleaseTexImage(GL_TEXTURE_EXTERNAL_OES);
+    gl_image_->ReleaseTexImage(texture_target_);
     DCHECK_EQ(glGetError(), static_cast<GLenum>(GL_NO_ERROR));
   }
 }
@@ -82,8 +84,7 @@ bool VaapiDrmPicture::Initialize() {
     if (!make_context_current_cb_.Run())
       return false;
 
-    gl::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
-                                           texture_id_);
+    gl::ScopedTextureBinder texture_binder(texture_target_, texture_id_);
 
     gfx::BufferFormat format = pixmap_->GetBufferFormat();
 
@@ -94,15 +95,15 @@ bool VaapiDrmPicture::Initialize() {
       return false;
     }
     gl_image_ = image;
-    if (!gl_image_->BindTexImage(GL_TEXTURE_EXTERNAL_OES)) {
+    if (!gl_image_->BindTexImage(texture_target_)) {
       LOG(ERROR) << "Failed to bind texture to GLImage";
       return false;
     }
   }
 
   if (client_texture_id_ != 0 && !bind_image_cb_.is_null()) {
-    if (!bind_image_cb_.Run(client_texture_id_, GL_TEXTURE_EXTERNAL_OES,
-                            gl_image_, true)) {
+    if (!bind_image_cb_.Run(client_texture_id_, texture_target_, gl_image_,
+                            true)) {
       LOG(ERROR) << "Failed to bind client_texture_id";
       return false;
     }

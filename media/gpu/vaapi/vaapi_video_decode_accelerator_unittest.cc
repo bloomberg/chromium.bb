@@ -72,14 +72,16 @@ class MockVaapiPicture : public VaapiPicture {
                    int32_t picture_buffer_id,
                    const gfx::Size& size,
                    uint32_t texture_id,
-                   uint32_t client_texture_id)
+                   uint32_t client_texture_id,
+                   uint32_t texture_target)
       : VaapiPicture(vaapi_wrapper,
                      make_context_current_cb,
                      bind_image_cb,
                      picture_buffer_id,
                      size,
                      texture_id,
-                     client_texture_id) {}
+                     client_texture_id,
+                     texture_target) {}
   ~MockVaapiPicture() override = default;
 
   // VaapiPicture implementation.
@@ -109,11 +111,12 @@ class MockVaapiPictureFactory : public VaapiPictureFactory {
       int32_t picture_buffer_id,
       const gfx::Size& size,
       uint32_t texture_id,
-      uint32_t client_texture_id) override {
+      uint32_t client_texture_id,
+      uint32_t texture_target) override {
     MockCreateVaapiPicture(vaapi_wrapper.get(), size);
     return std::make_unique<MockVaapiPicture>(
         vaapi_wrapper, make_context_current_cb, bind_image_cb,
-        picture_buffer_id, size, texture_id, client_texture_id);
+        picture_buffer_id, size, texture_id, client_texture_id, texture_target);
   }
 };
 
@@ -273,8 +276,15 @@ TEST_P(VaapiVideoDecodeAcceleratorTest,
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
 
+    const uint32_t tex_target =
+        mock_vaapi_picture_factory_->GetGLTextureTarget();
+
+    // These client and service texture ids are arbitrarily chosen.
     const std::vector<PictureBuffer> kPictureBuffers(
-        {{2, kPictureSize}, {3, kPictureSize}});
+        {{2, kPictureSize, PictureBuffer::TextureIds{0},
+          PictureBuffer::TextureIds{1}, tex_target, PIXEL_FORMAT_XRGB},
+         {3, kPictureSize, PictureBuffer::TextureIds{2},
+          PictureBuffer::TextureIds{3}, tex_target, PIXEL_FORMAT_XRGB}});
     EXPECT_EQ(kPictureBuffers.size(), kNumPictures);
 
     EXPECT_CALL(*mock_vaapi_wrapper_,

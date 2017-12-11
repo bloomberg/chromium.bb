@@ -795,9 +795,13 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
                               ? buffers[i].service_texture_ids()[0]
                               : 0;
 
+    DCHECK_EQ(buffers[i].texture_target(),
+              vaapi_picture_factory_->GetGLTextureTarget());
+
     std::unique_ptr<VaapiPicture> picture(vaapi_picture_factory_->Create(
         vaapi_wrapper_, make_context_current_cb_, bind_image_cb_,
-        buffers[i].id(), requested_pic_size_, service_id, client_id));
+        buffers[i].id(), requested_pic_size_, service_id, client_id,
+        buffers[i].texture_target()));
     RETURN_AND_NOTIFY_ON_FAILURE(
         picture.get(), "Failed creating a VaapiPicture", PLATFORM_FAILURE, );
 
