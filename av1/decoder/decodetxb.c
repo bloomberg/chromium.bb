@@ -224,7 +224,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       is_nz = 1;
     }
 
-#if USE_CAUSAL_BASE_CTX
     if (is_nz) {
       int k;
       for (k = 0; k < NUM_BASE_LEVELS; ++k) {
@@ -247,46 +246,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         update_pos[num_updates++] = pos;
       }
     }
-#else
-    // set non-zero coefficient map.
-    unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =
-        (counts) ? &counts->nz_map[txs_ctx][plane_type] : NULL;
-    levels[get_padded_idx(pos, bwl)] = is_nz;
-    if (counts) ++(*nz_map_count)[coeff_ctx][is_nz];
-#endif
 #endif
   }
-
-#if !USE_CAUSAL_BASE_CTX
-  int i;
-  for (i = 0; i < NUM_BASE_LEVELS; ++i) {
-    av1_get_base_level_counts(levels, i, width, height, level_counts);
-    for (c = *eob - 1; c >= 0; --c) {
-      const int pos = scan[c];
-      uint8_t *const level = &levels[get_padded_idx(pos, bwl)];
-      int ctx;
-
-      if (*level <= i) continue;
-
-      ctx = get_base_ctx(levels, pos, bwl, i, level_counts[pos]);
-
-      if (av1_read_record_bin(
-              counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx], 2,
-              ACCT_STR)) {
-        assert(*level == i + 1);
-        cul_level += i + 1;
-
-        if (counts) ++counts->coeff_base[txs_ctx][plane_type][i][ctx][1];
-
-        continue;
-      }
-      *level = i + 2;
-      if (counts) ++counts->coeff_base[txs_ctx][plane_type][i][ctx][0];
-
-      update_pos[num_updates++] = pos;
-    }
-  }
-#endif
 
   // Loop to decode all signs in the transform block,
   // starting with the sign of the DC (if applicable)
@@ -320,11 +281,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       int idx;
       int ctx;
 
-#if USE_CAUSAL_BASE_CTX
       assert(*level > NUM_BASE_LEVELS);
-#else
-      if (*level <= NUM_BASE_LEVELS) continue;
-#endif
 
 #if !CONFIG_LV_MAP_MULTI
       ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);

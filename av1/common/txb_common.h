@@ -442,7 +442,6 @@ static const int sig_ref_diff_offset_horiz[SIG_REF_DIFF_OFFSET_NUM][2] = {
   { 0, 2 }, { 0, 3 }, { 0, 4 }
 };
 
-#if USE_CAUSAL_BASE_CTX
 static INLINE int get_nz_mag(const uint8_t *const levels, const int bwl,
                              const TX_CLASS tx_class) {
   int mag;
@@ -468,7 +467,6 @@ static INLINE int get_nz_mag(const uint8_t *const levels, const int bwl,
   }
   return mag;
 }
-#endif
 
 static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
                                const TX_CLASS tx_class) {
@@ -502,9 +500,7 @@ static INLINE int get_nz_map_ctx_from_stats(
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
   int ctx = (stats + 1) >> 1;
-#if USE_CAUSAL_BASE_CTX
   ctx = AOMMIN(ctx, 4);
-#endif
 
   if (tx_class == TX_CLASS_2D) {
     if (row == 0 && col == 0) return 0;
@@ -531,16 +527,6 @@ static INLINE int get_nz_map_ctx_from_stats(
     };
     const int idx = (tx_class == TX_CLASS_VERT) ? row : col;
     const int *map = pos_to_offset;
-#if !USE_CAUSAL_BASE_CTX
-    static const int col_to_offset[3] = {
-      SIG_COEF_CONTEXTS_2D + SIG_COEF_CONTEXTS_1D,
-      SIG_COEF_CONTEXTS_2D + SIG_COEF_CONTEXTS_1D + 5,
-      SIG_COEF_CONTEXTS_2D + SIG_COEF_CONTEXTS_1D + 10
-    };
-    if (tx_class == TX_CLASS_HORIZ) {
-      map = col_to_offset;
-    }
-#endif
     return ctx + map[AOMMIN(idx, 2)];
   }
 }
@@ -562,11 +548,7 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
 #endif
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const int stats =
-#if USE_CAUSAL_BASE_CTX
       get_nz_mag(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
-#else
-      get_nz_count(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
-#endif
   return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, tx_size, tx_class);
 }
 
