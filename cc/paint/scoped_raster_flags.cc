@@ -8,28 +8,6 @@
 #include "cc/paint/paint_image_builder.h"
 
 namespace cc {
-ScopedRasterFlags::DecodeStashingImageProvider::DecodeStashingImageProvider(
-    ImageProvider* source_provider)
-    : source_provider_(source_provider) {
-  DCHECK(source_provider_);
-}
-ScopedRasterFlags::DecodeStashingImageProvider::~DecodeStashingImageProvider() =
-    default;
-
-ImageProvider::ScopedDecodedDrawImage
-ScopedRasterFlags::DecodeStashingImageProvider::GetDecodedDrawImage(
-    const DrawImage& draw_image) {
-  auto decode = source_provider_->GetDecodedDrawImage(draw_image);
-  if (!decode)
-    return ScopedDecodedDrawImage();
-
-  // No need to add any destruction callback to the returned image. The images
-  // decoded here match the lifetime of this provider.
-  auto image_to_return = ScopedDecodedDrawImage(decode.decoded_image());
-  decoded_images_->push_back(std::move(decode));
-  return image_to_return;
-}
-
 ScopedRasterFlags::ScopedRasterFlags(const PaintFlags* flags,
                                      ImageProvider* image_provider,
                                      const SkMatrix& ctm,
