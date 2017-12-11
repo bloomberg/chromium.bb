@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_ARC_ARC_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_BASE_H_
 #define COMPONENTS_ARC_ARC_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_BASE_H_
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/arc/arc_service_manager.h"
@@ -84,6 +86,22 @@ class ArcBrowserContextKeyedServiceFactoryBase
     return static_cast<Service*>(
         Factory::GetInstance()->GetServiceForBrowserContext(context,
                                                             true /* create */));
+  }
+
+  // Does the same as GetForBrowserContext() but for testing. This should be
+  // called from the |Service|'s unit test's fixture to instantiate the service.
+  // Note that this function does not check whether or not |context| is for the
+  // primary user. Also, ArcServiceManager has to be instantiated before calling
+  // this function.
+  static Service* GetForBrowserContextForTesting(
+      content::BrowserContext* context) {
+    Factory::GetInstance()->SetTestingFactoryAndUse(
+        context,
+        [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
+          return std::make_unique<Service>(
+              context, ArcServiceManager::Get()->arc_bridge_service());
+        });
+    return GetForBrowserContext(context);
   }
 
  protected:

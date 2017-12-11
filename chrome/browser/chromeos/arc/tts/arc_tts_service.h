@@ -11,7 +11,6 @@
 #include "components/arc/common/tts.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class BrowserContextKeyedServiceFactory;
 class TtsController;
 
 namespace content {
@@ -27,12 +26,11 @@ class ArcBridgeService;
 class ArcTtsService : public KeyedService,
                       public mojom::TtsHost {
  public:
-  // Returns the factory instance for this class.
-  static BrowserContextKeyedServiceFactory* GetFactory();
-
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcTtsService* GetForBrowserContext(content::BrowserContext* context);
+  static ArcTtsService* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   ArcTtsService(content::BrowserContext* context,
                 ArcBridgeService* bridge_service);

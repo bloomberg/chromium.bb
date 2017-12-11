@@ -15,11 +15,8 @@
 #include "base/test/histogram_tester.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_arc_session.h"
 #include "components/arc/test/test_browser_context.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,35 +37,25 @@ constexpr std::array<const char*, 11> kBootEvents{
     "boot_progress_ams_ready",
     "boot_progress_enable_screen"};
 
-ArcMetricsService* GetArcMetricsService(content::BrowserContext* context) {
-  ArcMetricsService::GetFactory()->SetTestingFactoryAndUse(
-      context,
-      [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
-        return std::make_unique<ArcMetricsService>(
-            context, ArcServiceManager::Get()->arc_bridge_service());
-      });
-  return ArcMetricsService::GetForBrowserContext(context);
-}
-
 class ArcMetricsServiceTest : public testing::Test {
- public:
+ protected:
   ArcMetricsServiceTest()
       : arc_service_manager_(std::make_unique<ArcServiceManager>()),
         context_(std::make_unique<TestBrowserContext>()),
-        metrics_service_(GetArcMetricsService(context_.get())) {
+        service_(
+            ArcMetricsService::GetForBrowserContextForTesting(context_.get())) {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::make_unique<chromeos::FakeSessionManagerClient>());
     GetSessionManagerClient()->set_arc_available(true);
   }
 
   ~ArcMetricsServiceTest() override {
-    metrics_service_->Shutdown();
+    service_->Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
-  ArcMetricsService* metrics_service() { return metrics_service_; }
+  ArcMetricsService* service() { return service_; }
 
- protected:
   void SetArcStartTimeInMs(uint64_t arc_start_time_in_ms) {
     const base::TimeTicks arc_start_time =
         base::TimeDelta::FromMilliseconds(arc_start_time_in_ms) +
@@ -97,7 +84,7 @@ class ArcMetricsServiceTest : public testing::Test {
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestBrowserContext> context_;
 
-  ArcMetricsService* const metrics_service_;
+  ArcMetricsService* const service_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcMetricsServiceTest);
 };
@@ -115,8 +102,7 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_FirstBoot) {
   // Arc.boot_progress_start.FirstBoot is recorded with 0 (ms),
   // Arc.boot_progress_preload_start.FirstBoot is with 1 (ms), etc.
   base::HistogramTester tester;
-  metrics_service()->ReportBootProgress(std::move(events),
-                                        mojom::BootType::FIRST_BOOT);
+  service()->ReportBootProgress(std::move(events), mojom::BootType::FIRST_BOOT);
   base::RunLoop().RunUntilIdle();
   for (size_t i = 0; i < kBootEvents.size(); ++i) {
     tester.ExpectUniqueSample(
@@ -150,8 +136,8 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_FirstBootAfterUpdate) {
   // UMA treats them as zeros.
   base::HistogramTester tester;
   // This time, use mojom::BootType::FIRST_BOOT_AFTER_UPDATE.
-  metrics_service()->ReportBootProgress(
-      std::move(events), mojom::BootType::FIRST_BOOT_AFTER_UPDATE);
+  service()->ReportBootProgress(std::move(events),
+                                mojom::BootType::FIRST_BOOT_AFTER_UPDATE);
   base::RunLoop().RunUntilIdle();
   for (size_t i = 0; i < kBootEvents.size(); ++i) {
     const int expected = std::max<int>(0, i * 2 - 5);
@@ -175,8 +161,8 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_RegularBoot) {
       GetBootProgressEvents(kArcStartTimeMs - 5, 2 /* step_in_ms */));
 
   base::HistogramTester tester;
-  metrics_service()->ReportBootProgress(std::move(events),
-                                        mojom::BootType::REGULAR_BOOT);
+  service()->ReportBootProgress(std::move(events),
+                                mojom::BootType::REGULAR_BOOT);
   base::RunLoop().RunUntilIdle();
   for (size_t i = 0; i < kBootEvents.size(); ++i) {
     const int expected = std::max<int>(0, i * 2 - 5);
@@ -197,8 +183,7 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_EmptyResults) {
   std::vector<mojom::BootProgressEventPtr> events;  // empty
 
   base::HistogramTester tester;
-  metrics_service()->ReportBootProgress(std::move(events),
-                                        mojom::BootType::FIRST_BOOT);
+  service()->ReportBootProgress(std::move(events), mojom::BootType::FIRST_BOOT);
   base::RunLoop().RunUntilIdle();
   for (size_t i = 0; i < kBootEvents.size(); ++i) {
     tester.ExpectTotalCount(std::string("Arc.") + kBootEvents[i] + ".FirstBoot",
@@ -213,8 +198,7 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_InvalidBootType) {
   std::vector<mojom::BootProgressEventPtr> events(
       GetBootProgressEvents(123, 456));
   base::HistogramTester tester;
-  metrics_service()->ReportBootProgress(std::move(events),
-                                        mojom::BootType::UNKNOWN);
+  service()->ReportBootProgress(std::move(events), mojom::BootType::UNKNOWN);
   base::RunLoop().RunUntilIdle();
   for (const std::string& suffix :
        {".FirstBoot", ".FirstBootAfterUpdate", ".RegularBoot"}) {
@@ -225,43 +209,41 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_InvalidBootType) {
 }
 
 TEST_F(ArcMetricsServiceTest, ReportNativeBridge) {
-  EXPECT_EQ(metrics_service()->native_bridge_type_for_testing(),
+  EXPECT_EQ(service()->native_bridge_type_for_testing(),
             ArcMetricsService::NativeBridgeType::UNKNOWN);
-  metrics_service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
-  EXPECT_EQ(metrics_service()->native_bridge_type_for_testing(),
+  service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
+  EXPECT_EQ(service()->native_bridge_type_for_testing(),
             ArcMetricsService::NativeBridgeType::NONE);
-  metrics_service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
-  EXPECT_EQ(metrics_service()->native_bridge_type_for_testing(),
+  service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
+  EXPECT_EQ(service()->native_bridge_type_for_testing(),
             ArcMetricsService::NativeBridgeType::HOUDINI);
-  metrics_service()->ReportNativeBridge(
-      mojom::NativeBridgeType::NDK_TRANSLATION);
-  EXPECT_EQ(metrics_service()->native_bridge_type_for_testing(),
+  service()->ReportNativeBridge(mojom::NativeBridgeType::NDK_TRANSLATION);
+  EXPECT_EQ(service()->native_bridge_type_for_testing(),
             ArcMetricsService::NativeBridgeType::NDK_TRANSLATION);
 }
 
 TEST_F(ArcMetricsServiceTest, RecordNativeBridgeUMA) {
   base::HistogramTester tester;
-  metrics_service()->RecordNativeBridgeUMA();
+  service()->RecordNativeBridgeUMA();
   tester.ExpectUniqueSample(
       "Arc.NativeBridge",
       static_cast<int>(ArcMetricsService::NativeBridgeType::UNKNOWN), 1);
-  metrics_service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
+  service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
   // Check that ReportNativeBridge doesn't record histograms.
   tester.ExpectTotalCount("Arc.NativeBridge", 1);
-  metrics_service()->RecordNativeBridgeUMA();
+  service()->RecordNativeBridgeUMA();
   tester.ExpectBucketCount(
       "Arc.NativeBridge",
       static_cast<int>(ArcMetricsService::NativeBridgeType::NONE), 1);
-  metrics_service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
+  service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
   tester.ExpectTotalCount("Arc.NativeBridge", 2);
-  metrics_service()->RecordNativeBridgeUMA();
+  service()->RecordNativeBridgeUMA();
   tester.ExpectBucketCount(
       "Arc.NativeBridge",
       static_cast<int>(ArcMetricsService::NativeBridgeType::HOUDINI), 1);
-  metrics_service()->ReportNativeBridge(
-      mojom::NativeBridgeType::NDK_TRANSLATION);
+  service()->ReportNativeBridge(mojom::NativeBridgeType::NDK_TRANSLATION);
   tester.ExpectTotalCount("Arc.NativeBridge", 3);
-  metrics_service()->RecordNativeBridgeUMA();
+  service()->RecordNativeBridgeUMA();
   tester.ExpectBucketCount(
       "Arc.NativeBridge",
       static_cast<int>(ArcMetricsService::NativeBridgeType::NDK_TRANSLATION),

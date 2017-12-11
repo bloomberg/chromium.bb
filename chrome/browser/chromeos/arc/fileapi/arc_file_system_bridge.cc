@@ -126,6 +126,13 @@ ArcFileSystemBridge* ArcFileSystemBridge::GetForBrowserContext(
   return ArcFileSystemBridgeFactory::GetForBrowserContext(context);
 }
 
+// static
+ArcFileSystemBridge* ArcFileSystemBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return ArcFileSystemBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
 void ArcFileSystemBridge::AddObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observer_list_.AddObserver(observer);

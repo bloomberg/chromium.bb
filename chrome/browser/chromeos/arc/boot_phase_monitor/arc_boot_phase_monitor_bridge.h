@@ -17,8 +17,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/account_id/account_id.h"
 
-class BrowserContextKeyedServiceFactory;
-
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -45,12 +43,11 @@ class ArcBootPhaseMonitorBridge
     virtual void RecordFirstAppLaunchDelayUMA(base::TimeDelta delta) = 0;
   };
 
-  // Returns the factory instance for this class.
-  static BrowserContextKeyedServiceFactory* GetFactory();
-
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcBootPhaseMonitorBridge* GetForBrowserContext(
+      content::BrowserContext* context);
+  static ArcBootPhaseMonitorBridge* GetForBrowserContextForTesting(
       content::BrowserContext* context);
 
   // Records Arc.FirstAppLaunchDelay.TimeDelta UMA in the following way:

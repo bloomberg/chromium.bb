@@ -39,12 +39,7 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
   void SetUp() override {
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     profile_ = std::make_unique<TestingProfile>();
-    ArcFileSystemBridge::GetFactory()->SetTestingFactoryAndUse(
-        profile_.get(),
-        [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
-          return std::make_unique<ArcFileSystemBridge>(
-              context, ArcServiceManager::Get()->arc_bridge_service());
-        });
+    ArcFileSystemBridge::GetForBrowserContextForTesting(profile_.get());
     runner_ = ArcFileSystemOperationRunner::CreateForTesting(
         profile_.get(), arc_service_manager_->arc_bridge_service());
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
