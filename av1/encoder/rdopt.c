@@ -2381,7 +2381,7 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   int s0, s1;
   const int is_inter = is_inter_block(mbmi);
   const int tx_select =
-      cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type >= BLOCK_8X8;
+      cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type);
 
   const int r_tx_size = tx_size_cost(cm, x, bs, tx_size);
 

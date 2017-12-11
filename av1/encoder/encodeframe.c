@@ -4785,8 +4785,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
   }
 
-  if (cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type > BLOCK_4X4 && is_inter &&
-      !(mbmi->skip || seg_skip) && !xd->lossless[mbmi->segment_id]) {
+  if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type) &&
+      is_inter && !(mbmi->skip || seg_skip) &&
+      !xd->lossless[mbmi->segment_id]) {
     if (dry_run) tx_partition_set_contexts(cm, xd, bsize, mi_row, mi_col);
   } else {
     TX_SIZE tx_size = mbmi->tx_size;
