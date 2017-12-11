@@ -2327,21 +2327,6 @@
             ]
         }
     ],
-    "OfflinePages": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledAsBookmarks",
-                    "enable_features": [
-                        "NTPOfflinePages"
-                    ]
-                }
-            ]
-        }
-    ],
     "OfflinePagesAsyncLoading": [
         {
             "platforms": [

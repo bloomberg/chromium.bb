@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.test.util.browser.ChromeHome;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -65,7 +64,6 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@EnableFeatures(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)
 @DisableFeatures({ChromeFeatureList.NTP_MODERN_LAYOUT})
 @ChromeHome.Enable
 public class TileGroupUnitTest {
