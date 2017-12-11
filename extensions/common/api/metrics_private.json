@@ -178,6 +178,25 @@
           {"name": "metric", "$ref": "MetricType"},
           {"name": "value", "type": "integer"}
         ]
+      },
+      {
+        "name": "recordBoolean",
+        "type": "function",
+        "description": "Records a boolean value to the given metric. Analogous to base::UmaHistogramBoolean().",
+        "parameters": [
+          {"name": "metricName", "type": "string"},
+          {"name": "value", "type": "boolean"}
+        ]
+      },
+      {
+        "name": "recordEnumerationValue",
+        "type": "function",
+        "description": "Records an enumeration value to the given metric. Analogous to base::UmaHistogramEnumeration(). Use recordSparseValue for sparse enums or enums not starting at 0.",
+        "parameters": [
+          {"name": "metricName", "type": "string"},
+          {"name": "value", "type": "integer"},
+          {"name": "enumSize", "type": "integer"}
+        ]
       }
     ],
     "events": []

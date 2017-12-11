@@ -89,6 +89,32 @@ class MetricsPrivateRecordValueFunction
   ResponseAction Run() override;
 };
 
+class MetricsPrivateRecordBooleanFunction
+    : public MetricsHistogramHelperFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordBoolean",
+                             METRICSPRIVATE_RECORDBOOLEAN)
+
+ protected:
+  ~MetricsPrivateRecordBooleanFunction() override {}
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
+class MetricsPrivateRecordEnumerationValueFunction
+    : public MetricsHistogramHelperFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordEnumerationValue",
+                             METRICSPRIVATE_RECORDENUMERATIONVALUE)
+
+ protected:
+  ~MetricsPrivateRecordEnumerationValueFunction() override {}
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class MetricsPrivateRecordSparseHashableFunction
     : public MetricsHistogramHelperFunction {
  public:
