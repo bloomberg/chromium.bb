@@ -5704,6 +5704,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.RationalizationQuality.PhoneNumber"
+    enum="AutofillRationalizationQualityMetric">
+  <owner>wuandy@chromium.org</owner>
+  <summary>
+    The quality of fields rationalization, putting rationalization result into
+    good/ok/bad categories.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.SaveCreditCardPrompt"
     enum="AutofillSaveCreditCardPrompt">
   <owner>jdonnelly@chromium.org</owner>
