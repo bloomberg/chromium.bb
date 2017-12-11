@@ -93318,7 +93318,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asvitkine@chromium.org</owner>
   <summary>
     HTTP response codes and network error encountered by VariationsService when
-    attempting to fetch a variations seed from the server.
+    attempting to fetch a variations seed from the server over an HTTPS
+    connection.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedFetchResponseOrErrorCode.HTTP"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    HTTP response codes and network error encountered by VariationsService when
+    attempting to fetch a variations seed from the server over an HTTP
+    connection.
   </summary>
 </histogram>
 
