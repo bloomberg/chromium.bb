@@ -101,7 +101,7 @@ def _Run(java_tests_src_dir, test_filter,
   sys_props = ['selenium.browser=chrome',
                'webdriver.chrome.driver=' + os.path.abspath(chromedriver_path)]
   if chrome_path:
-    if util.IsLinux() and not util.Is64Bit():
+    if util.IsLinux() and android_package_key is None:
       # Workaround for crbug.com/611886 and
       # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
       chrome_wrapper_path = os.path.join(test_dir, 'chrome-wrapper-no-sandbox')
