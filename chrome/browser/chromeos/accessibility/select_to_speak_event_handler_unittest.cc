@@ -183,6 +183,18 @@ TEST_F(SelectToSpeakEventHandlerTest, RepeatSearchKey) {
   EXPECT_FALSE(event_capturer_.last_key_event());
 }
 
+TEST_F(SelectToSpeakEventHandlerTest, TapSearchKey) {
+  // Tapping the search key should not steal future events.
+
+  event_capturer_.Reset();
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  generator_->PressLeftButton();
+  EXPECT_FALSE(event_capturer_.last_mouse_event()->handled());
+  generator_->ReleaseLeftButton();
+  EXPECT_FALSE(event_capturer_.last_mouse_event()->handled());
+}
+
 TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClickTwice) {
   // Same as SearchPlusClick, above, but test that the user can keep
   // holding down Search and click again.
