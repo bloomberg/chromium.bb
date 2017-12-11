@@ -1143,11 +1143,6 @@
       status: "test",
     },
     {
-      name: "WebVR2",
-      depends_on: ["WebVR"],
-      status: "test",
-    },
-    {
       name: "WebVRExperimentalRendering",
       // Don't mark this as depends_on: ["WebVR"], we want to be able to turn
       // it on for just origin trial sites where the dependency is unset.
@@ -1158,6 +1153,10 @@
     {
       name: "WebVTTRegions",
       status: "experimental",
+    },
+    {
+      name: "WebXR",
+      status: "test",
     },
     {
       name: "Worklet",

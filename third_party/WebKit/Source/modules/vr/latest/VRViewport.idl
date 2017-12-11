@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrviewport-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRViewport {
   readonly attribute long x;
   readonly attribute long y;

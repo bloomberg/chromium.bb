@@ -7,7 +7,7 @@ typedef (WebGLRenderingContext or WebGL2RenderingContext) VRWebGLRenderingContex
 // https://w3c.github.io/webvr/spec/latest/#vrwebgllayer-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2,
+    RuntimeEnabled=WebXR,
     Constructor(VRSession session, VRWebGLRenderingContext context, optional VRWebGLLayerInit layerInit)
 ] interface VRWebGLLayer : VRLayer {
   [ImplementedAs=getVRWebGLRenderingContext] readonly attribute VRWebGLRenderingContext context;

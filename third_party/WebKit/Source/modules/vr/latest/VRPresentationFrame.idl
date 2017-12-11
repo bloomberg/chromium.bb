@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrpresentationframe-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRPresentationFrame {
   readonly attribute VRSession session;
   readonly attribute FrozenArray<VRView> views;

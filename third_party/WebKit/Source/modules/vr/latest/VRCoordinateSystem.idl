@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrcoordinatesystem-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRCoordinateSystem {
   Float32Array? getTransformTo(VRCoordinateSystem other);
 };

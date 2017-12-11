@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vr-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VR : EventTarget {
   attribute EventHandler ondeviceconnect;
   attribute EventHandler ondevicedisconnect;
