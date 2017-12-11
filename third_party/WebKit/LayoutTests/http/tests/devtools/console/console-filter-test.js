@@ -45,7 +45,10 @@
 
     console.log("end");
   `);
-  Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
+  var consoleView = Console.ConsoleView.instance();
+  consoleView._setImmediatelyFilterMessagesForTest();
+  if (consoleView._isSidebarOpen)
+    consoleView._splitWidget._showHideSidebarButton.element.click();
 
   // Add Violation-source message.
   var violationMessage = new ConsoleModel.ConsoleMessage(
