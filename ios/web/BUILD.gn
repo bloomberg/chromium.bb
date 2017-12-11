@@ -658,6 +658,6 @@ grit("resources") {
   deps = [
     "//ios/web/public/app:browser_manifest",
     "//ios/web/public/app:packaged_services_manifest",
-    "//mojo/public/js:new_bindings",
+    "//mojo/public/js:bindings",
   ]
 }
