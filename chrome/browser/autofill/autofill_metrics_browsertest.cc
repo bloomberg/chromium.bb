@@ -114,8 +114,9 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
   }
 }
 
+// Flaky test, see crbug.com/793672
 IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
-                       CorrectSourceForUnownedAddressCheckout) {
+                       DISABLED_CorrectSourceForUnownedAddressCheckout) {
   GURL main_frame_url =
       https_server_->GetURL("a.com", "/autofill_unowned_address_checkout.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
@@ -126,8 +127,9 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
   }
 }
 
+// Flaky test, see crbug.com/793638
 IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
-                       CorrectSourceForUnownedCreditCardCheckout) {
+                       DISABLED_CorrectSourceForUnownedCreditCardCheckout) {
   GURL main_frame_url = https_server_->GetURL(
       "a.com", "/autofill_unowned_credit_card_checkout.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
@@ -265,8 +267,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
   }
 }
 
+// Flaky test, see crbug.com/793634
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
-                       CorrectSourceForUnownedCreditCardCheckout) {
+                       DISABLED_CorrectSourceForUnownedCreditCardCheckout) {
   GURL main_frame_url = https_server_->GetURL(
       "a.com", "/autofill_unowned_credit_card_checkout.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
