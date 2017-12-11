@@ -4,8 +4,6 @@
 
 module blink.mojom;
 
-import "url/mojo/origin.mojom";
-
 enum BudgetOperationType {
   SILENT_PUSH,
   INVALID_OPERATION
@@ -34,7 +32,8 @@ struct BudgetState {
 // for the budget available for an origin.
 interface BudgetService {
   GetCost(BudgetOperationType operation) => (double cost);
-  GetBudget(url.mojom.Origin origin) => (BudgetServiceErrorType error_type, array<BudgetState> budget);
-  Reserve(url.mojom.Origin origin, BudgetOperationType operation) => (BudgetServiceErrorType error_type, bool success);
+  GetBudget() => (BudgetServiceErrorType error_type, array<BudgetState> budget);
+  Reserve(BudgetOperationType operation)
+      => (BudgetServiceErrorType error_type, bool success);
 };
 
