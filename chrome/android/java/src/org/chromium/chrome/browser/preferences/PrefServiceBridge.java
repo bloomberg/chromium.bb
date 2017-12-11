@@ -1012,6 +1012,20 @@ public final class PrefServiceBridge {
         nativeSetSupervisedUserId(supervisedUserId);
     }
 
+    /**
+     * @return The stored download default directory.
+     */
+    public String getDownloadDefaultDirectory() {
+        return nativeGetDownloadDefaultDirectory();
+    }
+
+    /**
+     * @param directory New directory to set as the download default directory.
+     */
+    public void setDownloadDefaultDirectory(String directory) {
+        nativeSetDownloadDefaultDirectory(directory);
+    }
+
     private native boolean nativeGetBoolean(int preference);
     private native void nativeSetBoolean(int preference, boolean value);
     private native boolean nativeGetAcceptCookiesEnabled();
@@ -1121,4 +1135,6 @@ public final class PrefServiceBridge {
     private native void nativeGetChromeAcceptLanguages(List<LanguageItem> list);
     private native void nativeGetUserAcceptLanguages(List<String> list);
     private native void nativeUpdateUserAcceptLanguages(String language, boolean add);
+    private native String nativeGetDownloadDefaultDirectory();
+    private native void nativeSetDownloadDefaultDirectory(String directory);
 }
