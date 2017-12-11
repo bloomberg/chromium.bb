@@ -93,6 +93,10 @@ class AddressNormalizerTest : public testing::Test {
 
   ~AddressNormalizerTest() override {}
 
+  void WaitForAddressValidatorInitialization() {
+    scoped_task_environment_.RunUntilIdle();
+  }
+
   bool normalization_successful() const { return success_; }
 
   const AutofillProfile& result_profile() const { return profile_; }
@@ -115,6 +119,8 @@ class AddressNormalizerTest : public testing::Test {
 
 // Tests that the rules are loaded correctly for regions that are available.
 TEST_F(AddressNormalizerTest, AreRulesLoadedForRegion_Loaded) {
+  WaitForAddressValidatorInitialization();
+
   EXPECT_FALSE(AreRulesLoadedForRegion("US"));
 
   normalizer()->LoadRulesForRegion("US");
@@ -124,6 +130,8 @@ TEST_F(AddressNormalizerTest, AreRulesLoadedForRegion_Loaded) {
 
 // Tests that the rules are not loaded for regions that are not available.
 TEST_F(AddressNormalizerTest, AreRulesLoadedForRegion_NotAvailable) {
+  WaitForAddressValidatorInitialization();
+
   EXPECT_FALSE(AreRulesLoadedForRegion("CA"));
 
   normalizer()->LoadRulesForRegion("CA");
@@ -134,6 +142,8 @@ TEST_F(AddressNormalizerTest, AreRulesLoadedForRegion_NotAvailable) {
 // Tests that if the rules are loaded before the normalization is started, the
 // normalized profile will be returned synchronously.
 TEST_F(AddressNormalizerTest, NormalizeAddressAsync_RulesLoaded) {
+  WaitForAddressValidatorInitialization();
+
   AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("California"));
   const std::string kCountryCode =
@@ -145,7 +155,7 @@ TEST_F(AddressNormalizerTest, NormalizeAddressAsync_RulesLoaded) {
 
   // Do the normalization.
   normalizer()->NormalizeAddressAsync(
-      profile, 0,
+      profile, /*timeout_seconds=*/5,
       base::BindOnce(&AddressNormalizerTest::OnAddressNormalized,
                      base::Unretained(this)));
 
@@ -161,6 +171,8 @@ TEST_F(AddressNormalizerTest, NormalizeAddressAsync_RulesLoaded) {
 // notified.
 TEST_F(AddressNormalizerTest,
        NormalizeAddressAsync_RulesNotLoaded_WillNotLoad) {
+  WaitForAddressValidatorInitialization();
+
   AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("California"));
 
@@ -170,7 +182,7 @@ TEST_F(AddressNormalizerTest,
 
   // Do the normalization.
   normalizer()->NormalizeAddressAsync(
-      profile, 0,
+      profile, /*timeout_seconds=*/0,
       base::BindOnce(&AddressNormalizerTest::OnAddressNormalized,
                      base::Unretained(this)));
 
@@ -187,6 +199,8 @@ TEST_F(AddressNormalizerTest,
 // Tests that if the rules are not available for a given profile's region,
 // the address is not normalized.
 TEST_F(AddressNormalizerTest, NormalizeAddressAsync_RulesNotAvailable) {
+  WaitForAddressValidatorInitialization();
+
   // Rules are not available for Canada.
   AutofillProfile profile = autofill::test::GetFullCanadianProfile();
   // Verify the pre-condition.
@@ -195,7 +209,7 @@ TEST_F(AddressNormalizerTest, NormalizeAddressAsync_RulesNotAvailable) {
 
   // Do the normalization.
   normalizer()->NormalizeAddressAsync(
-      profile, 0,
+      profile, /*timeout_seconds=*/5,
       base::BindOnce(&AddressNormalizerTest::OnAddressNormalized,
                      base::Unretained(this)));
 
@@ -217,12 +231,14 @@ TEST_F(AddressNormalizerTest, NormalizeAddressAsync_RulesNotAvailable) {
 // Tests that if the rules are not loaded before the call to
 // NormalizeAddressAsync, they will be loaded in the call.
 TEST_F(AddressNormalizerTest, NormalizeAddressAsync_RulesNotLoaded_WillLoad) {
+  WaitForAddressValidatorInitialization();
+
   AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("California"));
 
   // Do the normalization.
   normalizer()->NormalizeAddressAsync(
-      profile, 0,
+      profile, /*timeout_seconds=*/5,
       base::BindOnce(&AddressNormalizerTest::OnAddressNormalized,
                      base::Unretained(this)));
 
@@ -240,6 +256,8 @@ TEST_F(AddressNormalizerTest, NormalizeAddressAsync_RulesNotLoaded_WillLoad) {
 
 // Tests that the phone number is formatted when the address is normalized.
 TEST_F(AddressNormalizerTest, FormatPhone_AddressNormalizedAsync) {
+  WaitForAddressValidatorInitialization();
+
   AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                      base::UTF8ToUTF16("(515) 123-1234"));
@@ -253,7 +271,7 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNormalizedAsync) {
 
   // Do the normalization.
   normalizer()->NormalizeAddressAsync(
-      profile, 0,
+      profile, /*timeout_seconds=*/5,
       base::BindOnce(&AddressNormalizerTest::OnAddressNormalized,
                      base::Unretained(this)));
 
@@ -269,6 +287,8 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNormalizedAsync) {
 // Tests that the phone number is formatted even when the address is not
 // normalized.
 TEST_F(AddressNormalizerTest, FormatPhone_AddressNotNormalizedAsync) {
+  WaitForAddressValidatorInitialization();
+
   AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("California"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
@@ -280,7 +300,7 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNotNormalizedAsync) {
 
   // Do the normalization.
   normalizer()->NormalizeAddressAsync(
-      profile, 0,
+      profile, /*timeout_seconds=*/0,
       base::BindOnce(&AddressNormalizerTest::OnAddressNormalized,
                      base::Unretained(this)));
 
@@ -301,6 +321,8 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNotNormalizedAsync) {
 // Tests that if the rules are not loaded before the call to
 // NormalizeAddressSync, normalization will fail.
 TEST_F(AddressNormalizerTest, NormalizeAddressSync_RulesNotLoaded) {
+  WaitForAddressValidatorInitialization();
+
   AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("California"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
@@ -321,6 +343,8 @@ TEST_F(AddressNormalizerTest, NormalizeAddressSync_RulesNotLoaded) {
 // Tests that if the rules are not loaded before the call to
 // NormalizeAddressSync, normalization will fail.
 TEST_F(AddressNormalizerTest, NormalizeAddressSync_RulesLoaded) {
+  WaitForAddressValidatorInitialization();
+
   AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("California"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
@@ -340,6 +364,58 @@ TEST_F(AddressNormalizerTest, NormalizeAddressSync_RulesLoaded) {
   EXPECT_EQ("CA", base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE)));
   EXPECT_EQ("+15151231234",
             base::UTF16ToUTF8(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)));
+}
+
+// Tests that if the validator is not initialized before the call to
+// NormalizeAddressSync, normalization will fail but rules will be loaded after
+// the validator is initialized.
+TEST_F(AddressNormalizerTest, NormalizeAddressSync_UninitializedValidator) {
+  AutofillProfile profile = autofill::test::GetFullProfile();
+  profile.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("California"));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                     base::UTF8ToUTF16("515-123-1234"));
+  const std::string kCountryCode =
+      base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+
+  // Normalization will fail because the validator is not initialized.
+  EXPECT_FALSE(normalizer()->NormalizeAddressSync(&profile));
+
+  // Once the validator is initialized, it should load the rules for the region.
+  WaitForAddressValidatorInitialization();
+  EXPECT_TRUE(AreRulesLoadedForRegion(kCountryCode));
+
+  // Normalization will succeed the next time.
+  EXPECT_TRUE(normalizer()->NormalizeAddressSync(&profile));
+  EXPECT_EQ("CA", base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE)));
+  EXPECT_EQ("+15151231234",
+            base::UTF16ToUTF8(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)));
+}
+
+// Tests that if the validator is not initialized before the call to
+// NormalizeAddressAsync, normalization will succeed once the validator is
+// initialized.
+TEST_F(AddressNormalizerTest, NormalizeAddressAsync_UninitializedValidator) {
+  AutofillProfile profile = autofill::test::GetFullProfile();
+  profile.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("California"));
+
+  // Do the normalization.
+  normalizer()->NormalizeAddressAsync(
+      profile, /*timeout_seconds=*/5,
+      base::BindOnce(&AddressNormalizerTest::OnAddressNormalized,
+                     base::Unretained(this)));
+
+  // Even if the rules are not loaded before the call to
+  // NormalizeAddressAsync, they should get loaded once the validator is
+  // initialized.
+  EXPECT_FALSE(normalization_successful());
+
+  WaitForAddressValidatorInitialization();
+  const std::string kCountryCode =
+      base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_TRUE(AreRulesLoadedForRegion(kCountryCode));
+  EXPECT_TRUE(normalization_successful());
+  EXPECT_EQ("CA",
+            base::UTF16ToUTF8(result_profile().GetRawInfo(ADDRESS_HOME_STATE)));
 }
 
 }  // namespace autofill
