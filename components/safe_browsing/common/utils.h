@@ -16,13 +16,6 @@ namespace safe_browsing {
 // scheme.
 std::string ShortURLForReporting(const GURL& url);
 
-// UMA histogram helper for logging "SB2.Delay".
-// Logs the user perceived delay caused by SafeBrowsing. This delay is the time
-// delta starting from when we would have started reading data from the network,
-// and ending when the SafeBrowsing check completes indicating that the current
-// page is 'safe'.
-void LogDelay(base::TimeDelta time);
-
 // UMA histogram helper for logging "SB2.NoUserActionResourceLoadingDelay".
 // Logs the total delay caused by SafeBrowsing for a resource load, if the
 // SafeBrowsing interstitial page is not showed. At most one value is reported
