@@ -10,7 +10,6 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
@@ -195,7 +194,8 @@
         </div>
         <div class="section continuation control-line" id="enable-section">
           <span class$="{{computeEnabledStyle_(data.state)}}">
-            [[computeEnabledText_(data.state)]]
+            [[computeEnabledText_(data.state, '$i18nPolymer{itemOn}',
+                '$i18nPolymer{itemOff}')]]
           </span>
           <div class="layout horizontal">
             <cr-tooltip-icon hidden$="[[!data.controlledInfo]]"
