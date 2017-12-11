@@ -1033,6 +1033,9 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
 
   blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
       event, result.moved_beyond_slop_region);
+  if (web_event.GetType() == blink::WebInputEvent::kUndefined)
+    return false;
+
   ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (host_->delegate()->GetInputEventRouter()) {
@@ -1911,6 +1914,9 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
   blink::WebInputEvent::Type webMouseEventType =
       ui::ToWebMouseEventType(motion_event.GetAction());
 
+  if (webMouseEventType == blink::WebInputEvent::kUndefined)
+    return;
+
   if (webMouseEventType == blink::WebInputEvent::kMouseDown)
     UpdateMouseState(action_button, motion_event.GetX(0), motion_event.GetY(0));
 
@@ -1987,8 +1993,10 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
   if (overscroll_controller_)
     overscroll_controller_->Enable();
 
-  if (!host_ || !host_->delegate())
+  if (!host_ || !host_->delegate() ||
+      event.GetType() == blink::WebInputEvent::kUndefined) {
     return;
+  }
 
   // We let the touch selection controller see gesture events here, since they
   // may be routed and not make it to FilterInputEvent().
