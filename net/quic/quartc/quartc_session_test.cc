@@ -481,7 +481,7 @@ class QuartcSessionTest : public ::testing::Test,
     return std::unique_ptr<QuicConnection>(new QuicConnection(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
         alarm_factory_.get(), writer, owns_writer, perspective,
-        AllSupportedTransportVersions()));
+        AllSupportedVersions()));
   }
 
   // Runs all tasks scheduled in the next 200 ms.

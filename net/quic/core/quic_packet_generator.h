@@ -137,7 +137,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
 
   // Creates a version negotiation packet which supports |supported_versions|.
   std::unique_ptr<QuicEncryptedPacket> SerializeVersionNegotiationPacket(
-      const QuicTransportVersionVector& supported_versions);
+      const ParsedQuicVersionVector& supported_versions);
 
   // Creates a connectivity probing packet.
   std::unique_ptr<QuicEncryptedPacket> SerializeConnectivityProbingPacket();

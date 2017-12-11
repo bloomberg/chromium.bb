@@ -26,8 +26,7 @@ void SimpleDataProducer::SaveStreamData(QuicStreamId id,
   }
   if (!QuicContainsKey(send_buffer_map_, id)) {
     send_buffer_map_[id] = QuicMakeUnique<QuicStreamSendBuffer>(
-        &allocator_,
-        FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2);
+        &allocator_, GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2));
   }
   send_buffer_map_[id]->SaveStreamData(iov, iov_count, iov_offset, data_length);
 }

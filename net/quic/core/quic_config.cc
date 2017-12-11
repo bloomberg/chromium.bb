@@ -668,7 +668,7 @@ void QuicConfig::SetDefaults() {
 
   SetInitialStreamFlowControlWindowToSend(kMinimumFlowControlSendWindow);
   SetInitialSessionFlowControlWindowToSend(kMinimumFlowControlSendWindow);
-  if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size) {
+  if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
     SetSupportMaxHeaderListSize();
   }
 }

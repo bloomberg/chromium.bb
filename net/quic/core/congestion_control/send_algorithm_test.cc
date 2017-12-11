@@ -120,42 +120,22 @@ const char* CongestionControlTypeToString(CongestionControlType cc_type) {
 }
 
 struct TestParams {
-  explicit TestParams(CongestionControlType congestion_control_type,
-                      bool fix_convex_mode,
-                      bool fix_cubic_quantization,
-                      bool fix_beta_last_max,
-                      bool allow_per_ack_updates)
-      : congestion_control_type(congestion_control_type),
-        fix_convex_mode(fix_convex_mode),
-        fix_cubic_quantization(fix_cubic_quantization),
-        fix_beta_last_max(fix_beta_last_max),
-        allow_per_ack_updates(allow_per_ack_updates) {}
+  explicit TestParams(CongestionControlType congestion_control_type)
+      : congestion_control_type(congestion_control_type) {}
 
   friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
     os << "{ congestion_control_type: "
        << CongestionControlTypeToString(p.congestion_control_type);
-    os << "  fix_convex_mode: " << p.fix_convex_mode
-       << "  fix_cubic_quantization: " << p.fix_cubic_quantization
-       << "  fix_beta_last_max: " << p.fix_beta_last_max;
-    os << "  allow_per_ack_updates: " << p.allow_per_ack_updates;
     os << " }";
     return os;
   }
 
-  CongestionControlType congestion_control_type;
-  bool fix_convex_mode;
-  bool fix_cubic_quantization;
-  bool fix_beta_last_max;
-  bool allow_per_ack_updates;
+  const CongestionControlType congestion_control_type;
 };
 
 string TestParamToString(const testing::TestParamInfo<TestParams>& params) {
   return QuicStrCat(
-      CongestionControlTypeToString(params.param.congestion_control_type), "_",
-      "convex_mode_", params.param.fix_convex_mode, "_", "cubic_quantization_",
-      params.param.fix_cubic_quantization, "_", "beta_last_max_",
-      params.param.fix_beta_last_max, "_", "allow_per_ack_updates_",
-      params.param.allow_per_ack_updates);
+      CongestionControlTypeToString(params.param.congestion_control_type), "_");
 }
 
 // Constructs various test permutations.
@@ -163,13 +143,7 @@ std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   for (const CongestionControlType congestion_control_type :
        {kBBR, kCubicBytes, kRenoBytes, kPCC}) {
-    params.push_back(
-        TestParams(congestion_control_type, false, false, false, false));
-    if (congestion_control_type != kCubicBytes) {
-      continue;
-    }
-    params.push_back(
-        TestParams(congestion_control_type, true, true, true, true));
+    params.push_back(TestParams(congestion_control_type));
   }
   return params;
 }
@@ -199,8 +173,6 @@ class SendAlgorithmTest : public QuicTestWithParam<TestParams> {
         GetParam().congestion_control_type, &random_, &stats_,
         kInitialCongestionWindowPackets);
 
-    SetExperimentalOptionsInServerConfig();
-
     QuicConnectionPeer::SetSendAlgorithm(quic_sender_.connection(), sender_);
     // TODO(jokulik):  Remove once b/38032710 is fixed.
     // Disable pacing for PCC.
@@ -215,30 +187,6 @@ class SendAlgorithmTest : public QuicTestWithParam<TestParams> {
     uint64_t seed = QuicRandom::GetInstance()->RandUint64();
     random_.set_seed(seed);
     QUIC_LOG(INFO) << "SendAlgorithmTest simulator set up.  Seed: " << seed;
-  }
-
-  // Sets experimental options in the server config, as if they had
-  // been sent by the client.
-  void SetExperimentalOptionsInServerConfig() {
-    QuicConfig client_config;
-    QuicTagVector options;
-    if (GetParam().fix_convex_mode) {
-      options.push_back(kCCVX);
-    }
-    if (GetParam().fix_cubic_quantization) {
-      options.push_back(kCBQT);
-    }
-    if (GetParam().fix_beta_last_max) {
-      options.push_back(kBLMX);
-    }
-    if (GetParam().allow_per_ack_updates) {
-      options.push_back(kCPAU);
-    }
-
-    if (!options.empty()) {
-      client_config.SetInitialReceivedConnectionOptions(options);
-      sender_->SetFromConfig(client_config, Perspective::IS_SERVER);
-    }
   }
 
   // Creates a simulated network, with default settings between the

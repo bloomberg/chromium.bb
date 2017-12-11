@@ -273,8 +273,11 @@ enum QuicErrorCode {
   // Connection closed because of server hits max number of sessions allowed.
   QUIC_TOO_MANY_SESSIONS_ON_SERVER = 96,
 
+  // Receive a RST_STREAM with offset larger than kMaxStreamLength.
+  QUIC_STREAM_LENGTH_OVERFLOW = 98,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 98,
+  QUIC_LAST_ERROR = 99,
 };
 // QuicErrorCodes is encoded as a single octet on-the-wire.
 static_assert(static_cast<int>(QUIC_LAST_ERROR) <=

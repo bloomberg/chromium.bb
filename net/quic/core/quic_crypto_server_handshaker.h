@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_CORE_QUIC_CRYPTO_SERVER_HANDSHAKER_H_
 #define NET_QUIC_CORE_QUIC_CRYPTO_SERVER_HANDSHAKER_H_
 
+#include "net/quic/core/proto/cached_network_parameters.pb.h"
+#include "net/quic/core/proto/source_address_token.pb.h"
 #include "net/quic/core/quic_crypto_handshaker.h"
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/core/quic_session.h"

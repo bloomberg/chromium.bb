@@ -168,7 +168,7 @@ class QuartcStreamTest : public ::testing::Test,
     connection_.reset(new QuicConnection(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
         alarm_factory_.get(), new DummyPacketWriter(), owns_writer, perspective,
-        AllSupportedTransportVersions()));
+        AllSupportedVersions()));
 
     session_.reset(
         new MockQuicSession(connection_.get(), QuicConfig(), &write_buffer_));

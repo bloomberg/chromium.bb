@@ -49,6 +49,14 @@ bool MockDecrypter::DecryptPacket(QuicTransportVersion version,
   return true;
 }
 
+size_t MockDecrypter::GetKeySize() const {
+  return 0;
+}
+
+size_t MockDecrypter::GetIVSize() const {
+  return 0;
+}
+
 QuicStringPiece MockDecrypter::GetKey() const {
   return QuicStringPiece();
 }

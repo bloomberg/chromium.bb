@@ -76,28 +76,16 @@ void CryptoHandshakeMessage::SetVersionVector(
     QuicTransportVersionVector versions) {
   QuicVersionLabelVector version_labels;
   for (QuicTransportVersion version : versions) {
-    if (!FLAGS_quic_reloadable_flag_quic_use_net_byte_order_version_label) {
-      version_labels.push_back(QuicVersionToQuicVersionLabel(version));
-    } else {
-      QUIC_FLAG_COUNT_N(
-          quic_reloadable_flag_quic_use_net_byte_order_version_label, 7, 10);
-      version_labels.push_back(
-          QuicEndian::HostToNet32(QuicVersionToQuicVersionLabel(version)));
-    }
+    version_labels.push_back(
+        QuicEndian::HostToNet32(QuicVersionToQuicVersionLabel(version)));
   }
   SetVector(tag, version_labels);
 }
 
 void CryptoHandshakeMessage::SetVersion(QuicTag tag,
                                         QuicTransportVersion version) {
-  if (!FLAGS_quic_reloadable_flag_quic_use_net_byte_order_version_label) {
-    SetValue(tag, QuicVersionToQuicVersionLabel(version));
-  } else {
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_use_net_byte_order_version_label, 8, 10);
-    SetValue(tag,
-             QuicEndian::HostToNet32(QuicVersionToQuicVersionLabel(version)));
-  }
+  SetValue(tag,
+           QuicEndian::HostToNet32(QuicVersionToQuicVersionLabel(version)));
 }
 
 void CryptoHandshakeMessage::SetStringPiece(QuicTag tag,
@@ -139,12 +127,6 @@ QuicErrorCode CryptoHandshakeMessage::GetTaglist(
 QuicErrorCode CryptoHandshakeMessage::GetVersionLabelList(
     QuicTag tag,
     QuicVersionLabelVector* out) const {
-  if (!FLAGS_quic_reloadable_flag_quic_use_net_byte_order_version_label) {
-    return GetTaglist(tag, out);
-  }
-
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_net_byte_order_version_label,
-                    9, 10);
   QuicErrorCode error = GetTaglist(tag, out);
   if (error != QUIC_NO_ERROR) {
     return error;
@@ -160,12 +142,6 @@ QuicErrorCode CryptoHandshakeMessage::GetVersionLabelList(
 QuicErrorCode CryptoHandshakeMessage::GetVersionLabel(
     QuicTag tag,
     QuicVersionLabel* out) const {
-  if (!FLAGS_quic_reloadable_flag_quic_use_net_byte_order_version_label) {
-    return GetUint32(tag, out);
-  }
-
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_net_byte_order_version_label,
-                    10, 10);
   QuicErrorCode error = GetUint32(tag, out);
   if (error != QUIC_NO_ERROR) {
     return error;

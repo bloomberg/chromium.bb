@@ -24,9 +24,8 @@ class SimpleFramerVisitor;
 class SimpleQuicFramer {
  public:
   SimpleQuicFramer();
-  explicit SimpleQuicFramer(
-      const QuicTransportVersionVector& supported_versions);
-  SimpleQuicFramer(const QuicTransportVersionVector& supported_versions,
+  explicit SimpleQuicFramer(const ParsedQuicVersionVector& supported_versions);
+  SimpleQuicFramer(const ParsedQuicVersionVector& supported_versions,
                    Perspective perspective);
   ~SimpleQuicFramer();
 
@@ -48,9 +47,8 @@ class SimpleQuicFramer {
 
   QuicFramer* framer();
 
-  void SetSupportedTransportVersions(
-      const QuicTransportVersionVector& versions) {
-    framer_.SetSupportedTransportVersions(versions);
+  void SetSupportedVersions(const ParsedQuicVersionVector& versions) {
+    framer_.SetSupportedVersions(versions);
   }
 
  private:

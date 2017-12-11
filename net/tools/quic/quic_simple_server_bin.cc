@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
       CreateProofSource(line->GetSwitchValuePath("certificate_file"),
                         line->GetSwitchValuePath("key_file")),
       config, net::QuicCryptoServerConfig::ConfigOptions(),
-      net::AllSupportedTransportVersions(), &response_cache);
+      net::AllSupportedVersions(), &response_cache);
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {

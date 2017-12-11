@@ -19,6 +19,7 @@
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace net {
 
@@ -67,6 +68,22 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
     Mode mode_;
     DiversificationNonce* nonce_;
   };
+
+  // Implements the HKDF-Expand-Label function as defined in section 7.1 of TLS
+  // 1.3. The HKDF-Expand-Label definition assumes that the TLS connection's PRF
+  // will be used as the Hash function for HKDF; in this function it is
+  // explicitly passed in as |prf|. The inputs to HKDF-Expand-Label are as
+  // follows:
+  //
+  // Secret: |secret|
+  // Label: |label|
+  // Context: zero-length context
+  // Length: |out_len|
+  static std::vector<uint8_t> HkdfExpandLabel(
+      const EVP_MD* prf,
+      const std::vector<uint8_t>& secret,
+      const std::string& label,
+      size_t out_len);
 
   // Generates the connection nonce. The nonce is formed as:
   //   <4 bytes> current time

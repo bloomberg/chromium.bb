@@ -201,9 +201,9 @@ std::unique_ptr<base::Value> NetLogQuicVersionNegotiationPacketCallback(
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   auto versions = std::make_unique<base::ListValue>();
-  for (QuicTransportVersionVector::const_iterator it = packet->versions.begin();
+  for (ParsedQuicVersionVector::const_iterator it = packet->versions.begin();
        it != packet->versions.end(); ++it) {
-    versions->AppendString(QuicVersionToString(*it));
+    versions->AppendString(ParsedQuicVersionToString(*it));
   }
   dict->Set("versions", std::move(versions));
   return std::move(dict);
@@ -522,7 +522,7 @@ void QuicConnectionLogger::OnDuplicatePacket(QuicPacketNumber packet_number) {
 }
 
 void QuicConnectionLogger::OnProtocolVersionMismatch(
-    QuicTransportVersion received_version) {
+    ParsedQuicVersion received_version) {
   // TODO(rtenneti): Add logging.
 }
 

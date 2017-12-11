@@ -11,7 +11,6 @@
 #include "net/quic/core/congestion_control/rtt_stats.h"
 #include "net/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
-#include "net/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -805,13 +804,9 @@ TEST_F(TcpCubicSenderBytesTest, LimitCwndIncreaseInCongestionAvoidance) {
     AckNPackets(1);
     SendAvailableSendWindow();
   }
-  if (FLAGS_quic_reloadable_flag_quic_enable_cubic_fixes) {
-    // Bytes in flight may be larger than the CWND if the CWND isn't an exact
-    // multiple of the packet sizes being sent.
-    EXPECT_GE(bytes_in_flight_, sender_->GetCongestionWindow());
-  } else {
-    EXPECT_EQ(bytes_in_flight_, sender_->GetCongestionWindow());
-  }
+  // Bytes in flight may be larger than the CWND if the CWND isn't an exact
+  // multiple of the packet sizes being sent.
+  EXPECT_GE(bytes_in_flight_, sender_->GetCongestionWindow());
   saved_cwnd = sender_->GetCongestionWindow();
 
   // Advance time 2 seconds waiting for an ack.

@@ -131,6 +131,7 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_TOO_MANY_FRAME_GAPS);
     RETURN_STRING_LITERAL(QUIC_STREAM_SEQUENCER_INVALID_STATE);
     RETURN_STRING_LITERAL(QUIC_TOO_MANY_SESSIONS_ON_SERVER);
+    RETURN_STRING_LITERAL(QUIC_STREAM_LENGTH_OVERFLOW);
     RETURN_STRING_LITERAL(QUIC_LAST_ERROR);
     // Intentionally have no default case, so we'll break the build
     // if we add errors and don't put them here.

@@ -157,6 +157,10 @@ size_t AeadBaseEncrypter::GetNoncePrefixSize() const {
   return nonce_size_ - sizeof(QuicPacketNumber);
 }
 
+size_t AeadBaseEncrypter::GetIVSize() const {
+  return nonce_size_;
+}
+
 size_t AeadBaseEncrypter::GetMaxPlaintextSize(size_t ciphertext_size) const {
   return ciphertext_size - auth_tag_size_;
 }

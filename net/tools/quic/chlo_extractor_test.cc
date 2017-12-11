@@ -46,7 +46,7 @@ class ChloExtractorTest : public QuicTest {
     header_.connection_id = 42;
     header_.connection_id_length = PACKET_8BYTE_CONNECTION_ID;
     header_.version_flag = true;
-    header_.version = AllSupportedTransportVersions().front();
+    header_.version = AllSupportedVersions().front();
     header_.reset_flag = false;
     header_.packet_number_length = PACKET_6BYTE_PACKET_NUMBER;
     header_.packet_number = 1;
@@ -56,8 +56,8 @@ class ChloExtractorTest : public QuicTest {
     QuicFrame frame(stream_frame);
     QuicFrames frames;
     frames.push_back(frame);
-    QuicFramer framer(SupportedTransportVersions(header_.version),
-                      QuicTime::Zero(), Perspective::IS_CLIENT);
+    QuicFramer framer(SupportedVersions(header_.version), QuicTime::Zero(),
+                      Perspective::IS_CLIENT);
     std::unique_ptr<QuicPacket> packet(
         BuildUnsizedDataPacket(&framer, header_, frames));
     EXPECT_TRUE(packet != nullptr);
@@ -85,18 +85,18 @@ TEST_F(ChloExtractorTest, FindsValidChlo) {
                               .AsStringPiece()
                               .as_string());
   // Construct a CHLO with each supported version
-  for (QuicTransportVersion version : AllSupportedTransportVersions()) {
-    QuicTransportVersionVector versions(SupportedTransportVersions(version));
+  for (ParsedQuicVersion version : AllSupportedVersions()) {
+    ParsedQuicVersionVector versions(SupportedVersions(version));
     header_.version = version;
     MakePacket(
         new QuicStreamFrame(kCryptoStreamId, false, 0, client_hello_str));
     EXPECT_TRUE(ChloExtractor::Extract(*packet_, versions, &delegate_))
-        << QuicVersionToString(version);
-    EXPECT_EQ(version, delegate_.transport_version());
+        << ParsedQuicVersionToString(version);
+    EXPECT_EQ(version.transport_version, delegate_.transport_version());
     EXPECT_EQ(header_.connection_id, delegate_.connection_id());
     EXPECT_EQ(client_hello.DebugString(Perspective::IS_SERVER),
               delegate_.chlo())
-        << QuicVersionToString(version);
+        << ParsedQuicVersionToString(version);
   }
 }
 
@@ -109,8 +109,8 @@ TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongStream) {
                               .as_string());
   MakePacket(
       new QuicStreamFrame(kCryptoStreamId + 1, false, 0, client_hello_str));
-  EXPECT_FALSE(ChloExtractor::Extract(*packet_, AllSupportedTransportVersions(),
-                                      &delegate_));
+  EXPECT_FALSE(
+      ChloExtractor::Extract(*packet_, AllSupportedVersions(), &delegate_));
 }
 
 TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongOffset) {
@@ -121,14 +121,14 @@ TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongOffset) {
                               .AsStringPiece()
                               .as_string());
   MakePacket(new QuicStreamFrame(kCryptoStreamId, false, 1, client_hello_str));
-  EXPECT_FALSE(ChloExtractor::Extract(*packet_, AllSupportedTransportVersions(),
-                                      &delegate_));
+  EXPECT_FALSE(
+      ChloExtractor::Extract(*packet_, AllSupportedVersions(), &delegate_));
 }
 
 TEST_F(ChloExtractorTest, DoesNotFindInvalidChlo) {
   MakePacket(new QuicStreamFrame(kCryptoStreamId, false, 0, "foo"));
-  EXPECT_FALSE(ChloExtractor::Extract(*packet_, AllSupportedTransportVersions(),
-                                      &delegate_));
+  EXPECT_FALSE(
+      ChloExtractor::Extract(*packet_, AllSupportedVersions(), &delegate_));
 }
 
 }  // namespace

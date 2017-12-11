@@ -26,7 +26,7 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
 
   // QuicFramerVisitorInterface implementation
   void OnError(QuicFramer* framer) override {}
-  bool OnProtocolVersionMismatch(QuicTransportVersion version) override;
+  bool OnProtocolVersionMismatch(ParsedQuicVersion version) override;
   void OnPacket() override {}
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {}
   void OnVersionNegotiationPacket(
@@ -67,8 +67,7 @@ ChloFramerVisitor::ChloFramerVisitor(QuicFramer* framer,
       found_chlo_(false),
       connection_id_(0) {}
 
-bool ChloFramerVisitor::OnProtocolVersionMismatch(
-    QuicTransportVersion version) {
+bool ChloFramerVisitor::OnProtocolVersionMismatch(ParsedQuicVersion version) {
   if (!framer_->IsSupportedVersion(version)) {
     return false;
   }
@@ -153,7 +152,7 @@ void ChloFramerVisitor::OnHandshakeMessage(
 
 // static
 bool ChloExtractor::Extract(const QuicEncryptedPacket& packet,
-                            const QuicTransportVersionVector& versions,
+                            const ParsedQuicVersionVector& versions,
                             Delegate* delegate) {
   QuicFramer framer(versions, QuicTime::Zero(), Perspective::IS_SERVER);
   ChloFramerVisitor visitor(&framer, delegate);

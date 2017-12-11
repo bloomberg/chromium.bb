@@ -475,7 +475,8 @@ class BidirectionalStreamQuicImplTest
         helper_.get(), alarm_factory_.get(),
         new QuicChromiumPacketWriter(socket.get(), runner_.get()),
         true /* owns_writer */, Perspective::IS_CLIENT,
-        SupportedTransportVersions(GetParam()));
+        SupportedVersions(
+            net::ParsedQuicVersion(net::PROTOCOL_QUIC_CRYPTO, GetParam())));
     base::TimeTicks dns_end = base::TimeTicks::Now();
     base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
 

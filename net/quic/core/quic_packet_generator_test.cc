@@ -149,14 +149,10 @@ class TestPacketGenerator : public QuicPacketGenerator {
 class QuicPacketGeneratorTest : public QuicTest {
  public:
   QuicPacketGeneratorTest()
-      : framer_(AllSupportedTransportVersions(),
+      : framer_(AllSupportedVersions(),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
-        generator_(42,
-                   &framer_,
-                   &random_generator_,
-                   &delegate_,
-                   &producer_),
+        generator_(42, &framer_, &random_generator_, &delegate_, &producer_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
     creator_->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
                            new NullEncrypter(Perspective::IS_CLIENT));
@@ -1074,14 +1070,7 @@ TEST_F(QuicPacketGeneratorTest, ConnectionCloseFrameLargerThanPacketSize) {
   char buf[2000] = {};
   QuicStringPiece error_details(buf, 2000);
   frame->error_details = error_details.as_string();
-  if (FLAGS_quic_reloadable_flag_quic_truncate_long_details) {
-    generator_.AddControlFrame(QuicFrame(frame));
-  } else {
-    EXPECT_CALL(delegate_, OnUnrecoverableError(
-                               QUIC_FAILED_TO_SERIALIZE_PACKET,
-                               "Single frame cannot fit into a packet", _));
-    EXPECT_QUIC_BUG(generator_.AddControlFrame(QuicFrame(frame)), "");
-  }
+  generator_.AddControlFrame(QuicFrame(frame));
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 }

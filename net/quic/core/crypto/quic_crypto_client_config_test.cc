@@ -181,12 +181,13 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
+  config.FillInchoateClientHello(server_id, QuicTransportVersionMax(), &state,
+                                 &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
   QuicVersionLabel cver;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetVersionLabel(kVER, &cver));
-  EXPECT_EQ(QuicVersionToQuicVersionLabel(QuicVersionMax()), cver);
+  EXPECT_EQ(QuicVersionToQuicVersionLabel(QuicTransportVersionMax()), cver);
   QuicStringPiece proof_nonce;
   EXPECT_TRUE(msg.GetStringPiece(kNONP, &proof_nonce));
   EXPECT_EQ(string(32, 'r'), proof_nonce);
@@ -214,7 +215,8 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecure) {
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
+  config.FillInchoateClientHello(server_id, QuicTransportVersionMax(), &state,
+                                 &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
   QuicTag pdmd;
@@ -244,7 +246,8 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCIDNoEXPY) {
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
+  config.FillInchoateClientHello(server_id, QuicTransportVersionMax(), &state,
+                                 &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
   QuicStringPiece scid;
@@ -271,7 +274,8 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
+  config.FillInchoateClientHello(server_id, QuicTransportVersionMax(), &state,
+                                 &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
   QuicStringPiece scid;
@@ -289,15 +293,15 @@ TEST_F(QuicCryptoClientConfigTest, FillClientHello) {
   MockRandom rand;
   CryptoHandshakeMessage chlo;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  config.FillClientHello(server_id, kConnectionId, QuicVersionMax(), &state,
-                         QuicWallTime::Zero(), &rand,
+  config.FillClientHello(server_id, kConnectionId, QuicTransportVersionMax(),
+                         &state, QuicWallTime::Zero(), &rand,
                          nullptr,  // channel_id_key
                          params, &chlo, &error_details);
 
   // Verify that the version label has been set correctly in the CHLO.
   QuicVersionLabel cver;
   EXPECT_EQ(QUIC_NO_ERROR, chlo.GetVersionLabel(kVER, &cver));
-  EXPECT_EQ(QuicVersionToQuicVersionLabel(QuicVersionMax()), cver);
+  EXPECT_EQ(QuicVersionToQuicVersionLabel(QuicTransportVersionMax()), cver);
 }
 
 TEST_F(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {

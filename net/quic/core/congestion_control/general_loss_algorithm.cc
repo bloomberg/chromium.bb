@@ -144,7 +144,7 @@ void GeneralLossAlgorithm::SpuriousRetransmitDetected(
   // Increase the reordering fraction until enough time would be allowed.
   QuicTime::Delta max_rtt =
       std::max(rtt_stats.previous_srtt(), rtt_stats.latest_rtt());
-  if (FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss) {
+  if (GetQuicReloadableFlag(quic_fix_adaptive_time_loss)) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_adaptive_time_loss);
     while ((max_rtt >> reordering_shift_) <= extra_time_needed &&
            reordering_shift_ > 0) {

@@ -420,7 +420,7 @@ TEST_F(GeneralLossAlgorithmTest, IncreaseThresholdUponSpuriousLoss) {
   // Advance the time 1/4 RTT and indicate the loss was spurious.
   // The new threshold should be 1/2 RTT.
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt() * (1.0f / 4));
-  if (FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss) {
+  if (GetQuicReloadableFlag(quic_fix_adaptive_time_loss)) {
     // The flag fixes an issue where adaptive time loss would increase the
     // reordering threshold by an extra factor of two.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));

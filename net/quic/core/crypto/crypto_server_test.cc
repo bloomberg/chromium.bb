@@ -122,8 +122,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     client_version_string_ = QuicVersionLabelToString(
         QuicVersionToQuicVersionLabel(client_version_));
 
-    FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support =
-        GetParam().enable_stateless_rejects;
+    SetQuicReloadableFlag(enable_quic_stateless_reject_support,
+                          GetParam().enable_stateless_rejects);
     use_stateless_rejects_ = GetParam().use_stateless_rejects;
   }
 
@@ -941,6 +941,57 @@ TEST_P(CryptoServerTest, ProofSourceFailure) {
 
   // Just ensure that we don't crash as occurred in b/33916924.
   ShouldFailMentioning("", msg);
+}
+
+// Regression test for crbug.com/723604
+// For 2RTT, if the first CHLO from the client contains hashes of cached
+// certs (stored in CCRT tag) but the second CHLO does not, then the second REJ
+// from the server should not contain hashes of cached certs.
+TEST_P(CryptoServerTest, TwoRttServerDropCachedCerts) {
+  // Send inchoate CHLO to get cert chain from server. This CHLO is only for
+  // the purpose of getting the server's certs; it is not part of the 2RTT
+  // handshake.
+  CryptoHandshakeMessage msg = crypto_test_utils::CreateCHLO(
+      {{"PDMD", "X509"}, {"VER\0", client_version_string_}},
+      kClientHelloMinimumSize);
+  ShouldSucceed(msg);
+
+  // Decompress cert chain from server to individual certs.
+  QuicStringPiece certs_compressed;
+  ASSERT_TRUE(out_.GetStringPiece(kCertificateTag, &certs_compressed));
+  ASSERT_NE(0u, certs_compressed.size());
+  std::vector<string> certs;
+  ASSERT_TRUE(CertCompressor::DecompressChain(
+      certs_compressed, /*cached_certs=*/{}, /*common_sets=*/nullptr, &certs));
+
+  // Start 2-RTT. Client sends CHLO with bad source-address token and hashes of
+  // the certs, which tells the server that the client has cached those certs.
+  config_.set_chlo_multiplier(1);
+  const char kBadSourceAddressToken[] = "";
+  msg.SetStringPiece(kSourceAddressTokenTag, kBadSourceAddressToken);
+  std::vector<uint64_t> hashes(certs.size());
+  for (size_t i = 0; i < certs.size(); ++i) {
+    hashes[i] = QuicUtils::QuicUtils::FNV1a_64_Hash(certs[i]);
+  }
+  msg.SetVector(kCCRT, hashes);
+  ShouldSucceed(msg);
+
+  // Server responds with inchoate REJ containing valid source-address token.
+  QuicStringPiece srct;
+  ASSERT_TRUE(out_.GetStringPiece(kSourceAddressTokenTag, &srct));
+
+  // Client now drops cached certs; sends CHLO with updated source-address
+  // token but no hashes of certs.
+  msg.SetStringPiece(kSourceAddressTokenTag, srct);
+  msg.Erase(kCCRT);
+  ShouldSucceed(msg);
+
+  // Server response's cert chain should not contain hashes of
+  // previously-cached certs.
+  ASSERT_TRUE(out_.GetStringPiece(kCertificateTag, &certs_compressed));
+  ASSERT_NE(0u, certs_compressed.size());
+  ASSERT_TRUE(CertCompressor::DecompressChain(
+      certs_compressed, /*cached_certs=*/{}, /*common_sets=*/nullptr, &certs));
 }
 
 class CryptoServerConfigGenerationTest : public QuicTest {};

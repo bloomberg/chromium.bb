@@ -266,7 +266,7 @@ TEST_F(QuicFramesTest, AddInterval) {
 
   EXPECT_EQ(expected_intervals, actual_intervals);
 
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque3) {
+  if (GetQuicReloadableFlag(quic_frames_deque3)) {
     // Ensure adding a range within the existing ranges fails.
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(20, 30), "");
   } else {
@@ -278,7 +278,7 @@ TEST_F(QuicFramesTest, AddInterval) {
 
   std::vector<Interval<QuicPacketNumber>> expected_intervals2;
   expected_intervals2.emplace_back(Interval<QuicPacketNumber>(1, 10));
-  if (!FLAGS_quic_reloadable_flag_quic_frames_deque3) {
+  if (!GetQuicReloadableFlag(quic_frames_deque3)) {
     expected_intervals2.emplace_back(Interval<QuicPacketNumber>(20, 30));
   }
   expected_intervals2.emplace_back(Interval<QuicPacketNumber>(50, 100));
@@ -286,7 +286,7 @@ TEST_F(QuicFramesTest, AddInterval) {
   EXPECT_EQ(expected_intervals2.size(), ack_frame1.packets.NumIntervals());
   EXPECT_EQ(expected_intervals2, actual_intervals2);
 
-  if (!FLAGS_quic_reloadable_flag_quic_frames_deque3) {
+  if (!GetQuicReloadableFlag(quic_frames_deque3)) {
     ack_frame1.packets.AddRange(15, 20);
     ack_frame1.packets.AddRange(30, 35);
 
@@ -392,7 +392,7 @@ TEST_F(QuicFramesTest, AddAdjacentReverse) {
 }
 
 TEST_F(QuicFramesTest, AddMerges) {
-  FLAGS_quic_reloadable_flag_quic_frames_deque3 = false;
+  SetQuicReloadableFlag(quic_frames_deque3, false);
   QuicAckFrame ack_frame1;
   ack_frame1.packets.AddRange(110, 112);
   ack_frame1.packets.AddRange(106, 108);
@@ -419,7 +419,7 @@ TEST_F(QuicFramesTest, AddMerges) {
 }
 
 TEST_F(QuicFramesTest, AddIntervalBig) {
-  FLAGS_quic_reloadable_flag_quic_frames_deque3 = false;
+  SetQuicReloadableFlag(quic_frames_deque3, false);
   QuicAckFrame ack_frame1;
   ack_frame1.packets.AddRange(20, 30);
   ack_frame1.packets.AddRange(70, 100);

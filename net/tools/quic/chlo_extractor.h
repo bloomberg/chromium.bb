@@ -28,7 +28,7 @@ class ChloExtractor {
   // of |delegate|. Return true if a CHLO message was found, and false
   // otherwise.
   static bool Extract(const QuicEncryptedPacket& packet,
-                      const QuicTransportVersionVector& versions,
+                      const ParsedQuicVersionVector& versions,
                       Delegate* delegate);
 
   ChloExtractor(const ChloExtractor&) = delete;

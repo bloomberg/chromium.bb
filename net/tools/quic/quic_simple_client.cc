@@ -36,7 +36,7 @@ namespace net {
 QuicSimpleClient::QuicSimpleClient(
     QuicSocketAddress server_address,
     const QuicServerId& server_id,
-    const QuicTransportVersionVector& supported_versions,
+    const ParsedQuicVersionVector& supported_versions,
     std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicSpdyClientBase(
           server_id,

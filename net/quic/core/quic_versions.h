@@ -59,11 +59,33 @@ struct ParsedQuicVersion {
       : handshake_protocol(handshake_protocol),
         transport_version(transport_version) {}
 
+  ParsedQuicVersion(const ParsedQuicVersion& other)
+      : handshake_protocol(other.handshake_protocol),
+        transport_version(other.transport_version) {}
+
+  ParsedQuicVersion& operator=(const ParsedQuicVersion& other) {
+    if (this != &other) {
+      handshake_protocol = other.handshake_protocol;
+      transport_version = other.transport_version;
+    }
+    return *this;
+  }
+
   bool operator==(const ParsedQuicVersion& other) const {
     return handshake_protocol == other.handshake_protocol &&
            transport_version == other.transport_version;
   }
+
+  bool operator!=(const ParsedQuicVersion& other) const {
+    return handshake_protocol != other.handshake_protocol ||
+           transport_version != other.transport_version;
+  }
 };
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                             const ParsedQuicVersion& version);
+
+using ParsedQuicVersionVector = std::vector<ParsedQuicVersion>;
 
 // Representation of the on-the-wire QUIC version number. Will be written/read
 // to the wire in network-byte-order.
@@ -81,25 +103,56 @@ static const QuicTransportVersion kSupportedTransportVersions[] = {
     QUIC_VERSION_43, QUIC_VERSION_42, QUIC_VERSION_41, QUIC_VERSION_39,
     QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35};
 
+// This vector contains all crypto handshake protocols that are supported.
+static const HandshakeProtocol kSupportedHandshakeProtocols[] = {
+    PROTOCOL_QUIC_CRYPTO, PROTOCOL_TLS1_3};
+
 typedef std::vector<QuicTransportVersion> QuicTransportVersionVector;
 
 // Returns a vector of QUIC versions in kSupportedTransportVersions.
 QUIC_EXPORT_PRIVATE QuicTransportVersionVector AllSupportedTransportVersions();
+
+// Returns a vector of QUIC versions that is the cartesian product of
+// kSupportedTransportVersions and kSupportedHandshakeProtocols.
+QUIC_EXPORT_PRIVATE ParsedQuicVersionVector AllSupportedVersions();
 
 // Returns a vector of QUIC versions from kSupportedTransportVersions which
 // exclude any versions which are disabled by flags.
 QUIC_EXPORT_PRIVATE QuicTransportVersionVector
 CurrentSupportedTransportVersions();
 
+// Returns a vector of QUIC versions that is the cartesian product of
+// kSupportedTransportVersions and kSupportedHandshakeProtocols, with any
+// versions disabled by flags excluded.
+QUIC_EXPORT_PRIVATE ParsedQuicVersionVector CurrentSupportedVersions();
+
 // Returns a vector of QUIC versions from |versions| which exclude any versions
 // which are disabled by flags.
 QUIC_EXPORT_PRIVATE QuicTransportVersionVector
 FilterSupportedTransportVersions(QuicTransportVersionVector versions);
 
+// Returns a vector of QUIC versions from |versions| which exclude any versions
+// which are disabled by flags.
+QUIC_EXPORT_PRIVATE ParsedQuicVersionVector
+FilterSupportedVersions(ParsedQuicVersionVector versions);
+
 // Returns QUIC version of |index| in result of |versions|. Returns
 // QUIC_VERSION_UNSUPPORTED if |index| is out of bounds.
 QUIC_EXPORT_PRIVATE QuicTransportVersionVector
 VersionOfIndex(const QuicTransportVersionVector& versions, int index);
+
+// Returns QUIC version of |index| in result of |versions|. Returns
+// ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED) if |index|
+// is out of bounds.
+QUIC_EXPORT_PRIVATE ParsedQuicVersionVector
+ParsedVersionOfIndex(const ParsedQuicVersionVector& versions, int index);
+
+// Returns a vector of QuicTransportVersions corresponding to just the transport
+// versions in |versions|. If the input vector contains multiple parsed versions
+// with different handshake protocols (but the same transport version), that
+// transport version will appear in the resulting vector multiple times.
+QUIC_EXPORT_PRIVATE QuicTransportVersionVector
+ParsedVersionsToTransportVersions(const ParsedQuicVersionVector& versions);
 
 // QuicVersionLabel is written to and read from the wire, but we prefer to use
 // the more readable ParsedQuicVersion at other levels.
@@ -138,10 +191,20 @@ QuicVersionLabelToHandshakeProtocol(QuicVersionLabel version_label);
 QUIC_EXPORT_PRIVATE std::string QuicVersionToString(
     QuicTransportVersion transport_version);
 
+// Helper function which translates from a ParsedQuicVersion to a std::string.
+// Returns std::strings corresponding to the on-the-wire tag.
+QUIC_EXPORT_PRIVATE std::string ParsedQuicVersionToString(
+    ParsedQuicVersion version);
+
 // Returns comma separated list of string representations of QuicVersion enum
 // values in the supplied |versions| vector.
 QUIC_EXPORT_PRIVATE std::string QuicTransportVersionVectorToString(
     const QuicTransportVersionVector& versions);
+
+// Returns comma separated list of std::string representations of
+// ParsedQuicVersion values in the supplied |versions| vector.
+QUIC_EXPORT_PRIVATE std::string ParsedQuicVersionVectorToString(
+    const ParsedQuicVersionVector& versions);
 
 }  // namespace net
 

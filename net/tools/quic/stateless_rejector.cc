@@ -68,8 +68,8 @@ void StatelessRejector::OnChlo(QuicTransportVersion version,
   DCHECK_NE(connection_id, server_designated_connection_id);
   DCHECK_EQ(state_, UNKNOWN);
 
-  if (!FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support ||
-      !FLAGS_quic_reloadable_flag_quic_use_cheap_stateless_rejects ||
+  if (!GetQuicReloadableFlag(enable_quic_stateless_reject_support) ||
+      !GetQuicReloadableFlag(quic_use_cheap_stateless_rejects) ||
       !QuicCryptoServerStream::DoesPeerSupportStatelessRejects(message)) {
     state_ = UNSUPPORTED;
     return;

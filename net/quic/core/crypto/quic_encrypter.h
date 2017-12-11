@@ -19,6 +19,11 @@ class QUIC_EXPORT_PRIVATE QuicEncrypter {
 
   static QuicEncrypter* Create(QuicTag algorithm);
 
+  // Creates an IETF QuicEncrypter based on |cipher_suite| which must be an id
+  // returned by SSL_CIPHER_get_id. The caller is responsible for taking
+  // ownership of the new QuicEncrypter.
+  static QuicEncrypter* CreateFromCipherSuite(uint32_t cipher_suite);
+
   // Sets the encryption key. Returns true on success, false on failure.
   //
   // NOTE: The key is the client_write_key or server_write_key derived from
@@ -94,6 +99,9 @@ class QUIC_EXPORT_PRIVATE QuicEncrypter {
   virtual size_t GetKeySize() const = 0;
   // Returns the size in bytes of the fixed initial part of the nonce.
   virtual size_t GetNoncePrefixSize() const = 0;
+
+  // Returns the size in bytes of an IV to use with the algorithm.
+  virtual size_t GetIVSize() const = 0;
 
   // Returns the maximum length of plaintext that can be encrypted
   // to ciphertext no larger than |ciphertext_size|.

@@ -92,7 +92,7 @@ class BbrSenderTest : public QuicTest {
         receiver_multiplexer_("Receiver multiplexer",
                               {&receiver_, &competing_receiver_}) {
     // These will be changed by the appropriate tests as necessary.
-    FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+    SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
 
     rtt_stats_ = bbr_sender_.connection()->sent_packet_manager().GetRttStats();
     sender_ = SetupBbrSender(&bbr_sender_);
@@ -253,7 +253,7 @@ class BbrSenderTest : public QuicTest {
 // Test a simple long data transfer in the default setup.
 TEST_F(BbrSenderTest, SimpleTransfer) {
   // Adding TSO CWND causes packet loss before exiting startup.
-  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   CreateDefaultSetup();
 
   // At startup make sure we are at the default.
@@ -301,7 +301,7 @@ TEST_F(BbrSenderTest, SimpleTransferSmallBuffer) {
 
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes) {
-  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   CreateDefaultSetup();
   // 2 RTTs of aggregation, with a max of 10kb.
   EnableAggregation(10 * 1024, 2 * kTestRtt);
@@ -361,7 +361,7 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation) {
 
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes4) {
-  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
 
   CreateDefaultSetup();
   // Enable ack aggregation that forces the queue to be drained.
@@ -427,8 +427,8 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation4) {
 
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
-  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
-  FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window = true;
+  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
+  SetQuicReloadableFlag(quic_bbr_ack_aggregation_window, true);
   CreateDefaultSetup();
   SetConnectionOption(kBBR4);
   // 2 RTTs of aggregation, with a max of 10kb.
@@ -454,8 +454,8 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
 
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes40RTTWindow) {
-  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
-  FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window = true;
+  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
+  SetQuicReloadableFlag(quic_bbr_ack_aggregation_window, true);
   CreateDefaultSetup();
   SetConnectionOption(kBBR5);
   // 2 RTTs of aggregation, with a max of 10kb.
@@ -552,7 +552,7 @@ TEST_F(BbrSenderTest, StartupMediumRecoveryStates) {
   const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(10);
   bool simulator_result;
   CreateSmallBufferSetup();
-  FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup = true;
+  SetQuicReloadableFlag(quic_bbr_conservation_in_startup, true);
   SetConnectionOption(kBBS2);
 
   bbr_sender_.AddBytesToTransfer(100 * 1024 * 1024);
@@ -603,7 +603,7 @@ TEST_F(BbrSenderTest, StartupGrowthRecoveryStates) {
   const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(10);
   bool simulator_result;
   CreateSmallBufferSetup();
-  FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup = true;
+  SetQuicReloadableFlag(quic_bbr_conservation_in_startup, true);
   SetConnectionOption(kBBS3);
 
   bbr_sender_.AddBytesToTransfer(100 * 1024 * 1024);
@@ -748,7 +748,7 @@ TEST_F(BbrSenderTest, ProbeRtt) {
 // Verify that the connection enters and exits PROBE_RTT correctly.
 TEST_F(BbrSenderTest, ProbeRttBDPBasedCWNDTarget) {
   CreateDefaultSetup();
-  FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt = true;
+  SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);
   SetConnectionOption(kBBR6);
   DriveOutOfStartup();
 
@@ -777,7 +777,7 @@ TEST_F(BbrSenderTest, ProbeRttBDPBasedCWNDTarget) {
 // Verify that the connection enters does not enter PROBE_RTT.
 TEST_F(BbrSenderTest, ProbeRttSkippedAfterAppLimitedAndStableRtt) {
   CreateDefaultSetup();
-  FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt = true;
+  SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);
   SetConnectionOption(kBBR7);
   DriveOutOfStartup();
 
@@ -798,7 +798,7 @@ TEST_F(BbrSenderTest, ProbeRttSkippedAfterAppLimitedAndStableRtt) {
 // Verify that the connection enters does not enter PROBE_RTT.
 TEST_F(BbrSenderTest, ProbeRttSkippedAfterAppLimited) {
   CreateDefaultSetup();
-  FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt = true;
+  SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);
   SetConnectionOption(kBBR8);
   DriveOutOfStartup();
 
@@ -919,7 +919,7 @@ TEST_F(BbrSenderTest, SimpleTransfer1RTTStartup) {
 // Test exiting STARTUP earlier due to the 2RTT connection option.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTStartup) {
   // Adding TSO CWND causes packet loss before exiting startup.
-  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   CreateDefaultSetup();
 
   SetConnectionOption(k2RTT);
@@ -1005,8 +1005,8 @@ TEST_F(BbrSenderTest, SimpleTransferLRTTStartupSmallBuffer) {
 // Test slower pacing after loss in STARTUP due to the BBRS connection option.
 TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
   // Adding TSO CWND causes packet loss before exiting startup.
-  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
-  FLAGS_quic_reloadable_flag_quic_bbr_slower_startup = true;
+  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
+  SetQuicReloadableFlag(quic_bbr_slower_startup, true);
   CreateSmallBufferSetup();
 
   SetConnectionOption(kBBRS);
@@ -1042,8 +1042,8 @@ TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
 // Ensures no change in congestion window in STARTUP after loss.
 TEST_F(BbrSenderTest, SimpleTransferNoConservationInStartup) {
   // Adding TSO CWND causes packet loss before exiting startup.
-  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
-  FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup = true;
+  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
+  SetQuicReloadableFlag(quic_bbr_conservation_in_startup, true);
   CreateSmallBufferSetup();
 
   SetConnectionOption(kBBS1);

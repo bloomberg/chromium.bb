@@ -28,7 +28,7 @@ class QuicStreamSendBufferTest : public QuicTest {
   QuicStreamSendBufferTest()
       : send_buffer_(
             &allocator_,
-            FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
+            GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
     EXPECT_EQ(0u, send_buffer_.size());
     EXPECT_EQ(0u, send_buffer_.stream_bytes_written());
     EXPECT_EQ(0u, send_buffer_.stream_bytes_outstanding());
@@ -138,7 +138,7 @@ TEST_F(QuicStreamSendBufferTest, RemoveStreamFrameAcrossBoundries) {
 }
 
 TEST_F(QuicStreamSendBufferTest, AckStreamDataMultipleTimes) {
-  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
+  if (!GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
     return;
   }
   QuicByteCount newly_acked_length;

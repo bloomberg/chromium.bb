@@ -39,6 +39,7 @@ class QUIC_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
                      size_t max_output_length) override;
   size_t GetKeySize() const override;
   size_t GetNoncePrefixSize() const override;
+  size_t GetIVSize() const override;
   size_t GetMaxPlaintextSize(size_t ciphertext_size) const override;
   size_t GetCiphertextSize(size_t plaintext_size) const override;
   QuicStringPiece GetKey() const override;

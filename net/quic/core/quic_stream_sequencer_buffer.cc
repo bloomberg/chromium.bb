@@ -18,7 +18,7 @@ namespace net {
 namespace {
 
 size_t CalculateBlockCount(size_t max_capacity_bytes) {
-  if (FLAGS_quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2) {
+  if (GetQuicReloadableFlag(quic_fix_sequencer_buffer_block_count2)) {
     QUIC_FLAG_COUNT(
         quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2);
     return (max_capacity_bytes + QuicStreamSequencerBuffer::kBlockSizeBytes -

@@ -39,27 +39,26 @@ namespace {
 
 const QuicStreamId kGetNthClientInitiatedStreamId1 = kHeadersStreamId + 2;
 
-// Run tests with combinations of {QuicTransportVersion,
+// Run tests with combinations of {ParsedQuicVersion,
 // ToggleVersionSerialization}.
 struct TestParams {
-  TestParams(QuicTransportVersion version, bool version_serialization)
+  TestParams(ParsedQuicVersion version, bool version_serialization)
       : version(version), version_serialization(version_serialization) {}
 
   friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
-    os << "{ version: " << QuicVersionToString(p.version)
+    os << "{ version: " << ParsedQuicVersionToString(p.version)
        << " include version: " << p.version_serialization << " }";
     return os;
   }
 
-  QuicTransportVersion version;
+  ParsedQuicVersion version;
   bool version_serialization;
 };
 
 // Constructs various test permutations.
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
-  QuicTransportVersionVector all_supported_versions =
-      AllSupportedTransportVersions();
+  ParsedQuicVersionVector all_supported_versions = AllSupportedVersions();
   for (size_t i = 0; i < all_supported_versions.size(); ++i) {
     params.push_back(TestParams(all_supported_versions[i], true));
     params.push_back(TestParams(all_supported_versions[i], false));
@@ -127,18 +126,15 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
 
  protected:
   QuicPacketCreatorTest()
-      : server_framer_(SupportedTransportVersions(GetParam().version),
+      : server_framer_(SupportedVersions(GetParam().version),
                        QuicTime::Zero(),
                        Perspective::IS_SERVER),
-        client_framer_(SupportedTransportVersions(GetParam().version),
+        client_framer_(SupportedVersions(GetParam().version),
                        QuicTime::Zero(),
                        Perspective::IS_CLIENT),
         connection_id_(2),
         data_("foo"),
-        creator_(connection_id_,
-                 &client_framer_,
-                 &delegate_,
-                 &producer_),
+        creator_(connection_id_, &client_framer_, &delegate_, &producer_),
         serialized_packet_(creator_.NoPacket()) {
     creator_.SetEncrypter(ENCRYPTION_INITIAL,
                           new NullEncrypter(Perspective::IS_CLIENT));
@@ -663,7 +659,7 @@ TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
 
 TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_SERVER);
-  QuicTransportVersionVector versions;
+  ParsedQuicVersionVector versions;
   versions.push_back(test::QuicVersionMax());
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       creator_.SerializeVersionNegotiationPacket(versions));
@@ -724,7 +720,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
   QuicPacketCreatorPeer::SetPacketNumber(&creator_,
                                          UINT64_C(64) * 256 * 256 * 256 * 256);
   creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
-  if (GetParam().version <= QUIC_VERSION_39) {
+  if (GetParam().version.transport_version <= QUIC_VERSION_39) {
     EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
   } else {
@@ -752,7 +748,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
 
   creator_.UpdatePacketNumberLength(
       1, UINT64_C(1000) * 256 * 256 * 256 * 256 / kDefaultMaxPacketSize);
-  if (GetParam().version <= QUIC_VERSION_39) {
+  if (GetParam().version.transport_version <= QUIC_VERSION_39) {
     EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
   } else {

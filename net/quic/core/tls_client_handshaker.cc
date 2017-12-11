@@ -54,6 +54,11 @@ TlsClientHandshaker::~TlsClientHandshaker() {
   }
 }
 
+// static
+bssl::UniquePtr<SSL_CTX> TlsClientHandshaker::CreateSslCtx() {
+  return TlsHandshaker::CreateSslCtx();
+}
+
 bool TlsClientHandshaker::CryptoConnect() {
   state_ = STATE_HANDSHAKE_RUNNING;
   // Configure certificate verification.
@@ -169,25 +174,35 @@ void TlsClientHandshaker::FinishHandshake() {
   QUIC_LOG(INFO) << "Client: handshake finished";
   state_ = STATE_HANDSHAKE_COMPLETE;
   std::vector<uint8_t> client_secret, server_secret;
-  if (!DeriveSecrets(ssl(), &client_secret, &server_secret)) {
+  if (!DeriveSecrets(&client_secret, &server_secret)) {
     CloseConnection();
     return;
   }
 
-  // TODO(nharper): Use |client_secret| and |server_secret| to set the
-  // appropriate crypters on the connection, and set |encryption_established_|
-  // to true. Whenever encryption keys are set, call
-  // session()->connection()->NeuterUnencryptedPackets().
+  QuicEncrypter* encrypter = CreateEncrypter(client_secret);
+  session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE, encrypter);
+
+  QuicDecrypter* decrypter = CreateDecrypter(server_secret);
+  session()->connection()->SetDecrypter(ENCRYPTION_FORWARD_SECURE, decrypter);
+
+  session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+
+  session()->connection()->NeuterUnencryptedPackets();
+  encryption_established_ = true;
   handshake_confirmed_ = true;
+}
+
+// static
+TlsClientHandshaker* TlsClientHandshaker::HandshakerFromSsl(SSL* ssl) {
+  return static_cast<TlsClientHandshaker*>(
+      TlsHandshaker::HandshakerFromSsl(ssl));
 }
 
 // static
 enum ssl_verify_result_t TlsClientHandshaker::VerifyCallback(
     SSL* ssl,
     uint8_t* out_alert) {
-  return static_cast<TlsClientHandshaker*>(
-             TlsHandshaker::HandshakerFromSsl(ssl))
-      ->VerifyCert(out_alert);
+  return HandshakerFromSsl(ssl)->VerifyCert(out_alert);
 }
 
 enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {

@@ -462,7 +462,7 @@ void QuicPacketCreator::SerializePacket(char* encrypted_buffer,
 
 std::unique_ptr<QuicEncryptedPacket>
 QuicPacketCreator::SerializeVersionNegotiationPacket(
-    const QuicTransportVersionVector& supported_versions) {
+    const ParsedQuicVersionVector& supported_versions) {
   DCHECK_EQ(Perspective::IS_SERVER, framer_->perspective());
   std::unique_ptr<QuicEncryptedPacket> encrypted =
       QuicFramer::BuildVersionNegotiationPacket(connection_id_,

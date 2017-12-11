@@ -94,10 +94,12 @@ class StatelessRejectorTest : public QuicTestWithParam<TestParams> {
             kDefaultMaxPacketSize,
             QuicSocketAddress(QuicIpAddress::Loopback4(), 12345),
             QuicSocketAddress(QuicIpAddress::Loopback4(), 443))) {
-    FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support =
-        GetParam().flags == ENABLED || GetParam().flags == CHEAP_DISABLED;
-    FLAGS_quic_reloadable_flag_quic_use_cheap_stateless_rejects =
-        GetParam().flags == ENABLED || GetParam().flags == STATELESS_DISABLED;
+    SetQuicReloadableFlag(
+        enable_quic_stateless_reject_support,
+        GetParam().flags == ENABLED || GetParam().flags == CHEAP_DISABLED);
+    SetQuicReloadableFlag(
+        quic_use_cheap_stateless_rejects,
+        GetParam().flags == ENABLED || GetParam().flags == STATELESS_DISABLED);
 
     // Add a new primary config.
     std::unique_ptr<CryptoHandshakeMessage> msg(config_.AddDefaultConfig(

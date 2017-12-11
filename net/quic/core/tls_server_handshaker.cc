@@ -45,6 +45,14 @@ const SSL_PRIVATE_KEY_METHOD TlsServerHandshaker::kPrivateKeyMethod{
     &TlsServerHandshaker::PrivateKeyComplete,
 };
 
+// static
+bssl::UniquePtr<SSL_CTX> TlsServerHandshaker::CreateSslCtx() {
+  bssl::UniquePtr<SSL_CTX> ssl_ctx = TlsHandshaker::CreateSslCtx();
+  SSL_CTX_set_tlsext_servername_callback(
+      ssl_ctx.get(), TlsServerHandshaker::SelectCertificateCallback);
+  return ssl_ctx;
+}
+
 TlsServerHandshaker::TlsServerHandshaker(QuicCryptoStream* stream,
                                          QuicSession* session,
                                          SSL_CTX* ssl_ctx,
@@ -188,14 +196,21 @@ void TlsServerHandshaker::FinishHandshake() {
   QUIC_LOG(INFO) << "Server: handshake finished";
   state_ = STATE_HANDSHAKE_COMPLETE;
   std::vector<uint8_t> client_secret, server_secret;
-  if (!DeriveSecrets(ssl(), &client_secret, &server_secret)) {
+  if (!DeriveSecrets(&client_secret, &server_secret)) {
     CloseConnection();
     return;
   }
 
-  // TODO(nharper): Use |client_secret| and |server_secret| to set the
-  // appropriate crypters on the connection, and set |encryption_established_|
-  // to true. Also call session()->connection()->NeuterUnencryptedPackets().
+  QuicEncrypter* encrypter = CreateEncrypter(server_secret);
+  session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE, encrypter);
+
+  QuicDecrypter* decrypter = CreateDecrypter(client_secret);
+  session()->connection()->SetDecrypter(ENCRYPTION_FORWARD_SECURE, decrypter);
+
+  session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+
+  session()->connection()->NeuterUnencryptedPackets();
+  encryption_established_ = true;
   handshake_confirmed_ = true;
 }
 

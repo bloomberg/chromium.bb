@@ -10,6 +10,7 @@
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 
 using std::string;
 
@@ -73,7 +74,7 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
           session->allow_multiple_acks_for_data()),
       buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
       remove_on_stream_frame_discarded_(
-          FLAGS_quic_reloadable_flag_quic_remove_on_stream_frame_discarded) {
+          GetQuicReloadableFlag(quic_remove_on_stream_frame_discarded)) {
   SetFromConfig();
 }
 
@@ -94,6 +95,20 @@ void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
 
   DCHECK(!(read_side_closed_ && write_side_closed_));
 
+  bool is_stream_too_long =
+      (frame.offset > kMaxStreamLength) ||
+      (kMaxStreamLength - frame.offset < frame.data_length);
+  if (GetQuicReloadableFlag(quic_stream_too_long) && is_stream_too_long) {
+    // Close connection if stream becomes too long.
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 4, 5);
+    QUIC_PEER_BUG
+        << "Receive stream frame reaches max stream length. frame offset "
+        << frame.offset << " length " << frame.data_length;
+    CloseConnectionWithDetails(
+        QUIC_STREAM_LENGTH_OVERFLOW,
+        "Peer sends more data than allowed on this stream.");
+    return;
+  }
   if (frame.fin) {
     fin_received_ = true;
     if (fin_sent_) {
@@ -141,6 +156,14 @@ int QuicStream::num_duplicate_frames_received() const {
 
 void QuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   rst_received_ = true;
+  if (GetQuicReloadableFlag(quic_stream_too_long) &&
+      frame.byte_offset > kMaxStreamLength) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 5, 5);
+    // Peer are not suppose to write bytes more than maxium allowed.
+    CloseConnectionWithDetails(QUIC_STREAM_LENGTH_OVERFLOW,
+                               "Reset frame stream offset overflow.");
+    return;
+  }
   MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
   if (flow_controller_.FlowControlViolation() ||
       connection_flow_controller_->FlowControlViolation()) {
@@ -221,6 +244,15 @@ void QuicStream::WriteOrBufferData(
   if (data.length() > 0) {
     struct iovec iov(MakeIovec(data));
     QuicStreamOffset offset = send_buffer_.stream_offset();
+    if (GetQuicReloadableFlag(quic_stream_too_long) &&
+        kMaxStreamLength - offset < data.length()) {
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 1, 5);
+      QUIC_BUG << "Write too many data via stream " << id_;
+      CloseConnectionWithDetails(
+          QUIC_STREAM_LENGTH_OVERFLOW,
+          QuicStrCat("Write too many data via stream ", id_));
+      return;
+    }
     send_buffer_.SaveStreamData(&iov, 1, 0, data.length());
     OnDataBuffered(offset, data.length(), ack_listener);
   }
@@ -285,6 +317,16 @@ QuicConsumedData QuicStream::WritevData(const struct iovec* iov,
     return consumed_data;
   }
 
+  if (GetQuicReloadableFlag(quic_stream_too_long) &&
+      kMaxStreamLength - send_buffer_.stream_offset() < write_length) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 2, 5);
+    QUIC_BUG << "Write too many data via stream " << id_;
+    CloseConnectionWithDetails(
+        QUIC_STREAM_LENGTH_OVERFLOW,
+        QuicStrCat("Write too many data via stream ", id_));
+    return consumed_data;
+  }
+
   bool had_buffered_data = HasBufferedData();
   if (CanWriteNewData()) {
     // Save all data if buffered data size is below low water mark.
@@ -334,6 +376,16 @@ QuicConsumedData QuicStream::WriteMemSlices(QuicMemSliceSpan span, bool fin) {
       QuicStreamOffset offset = send_buffer_.stream_offset();
       consumed_data.bytes_consumed =
           span.SaveMemSlicesInSendBuffer(&send_buffer_);
+      if (GetQuicReloadableFlag(quic_stream_too_long) &&
+          (offset > send_buffer_.stream_offset() ||
+           kMaxStreamLength < send_buffer_.stream_offset())) {
+        QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 3, 5);
+        QUIC_BUG << "Write too many data via stream " << id_;
+        CloseConnectionWithDetails(
+            QUIC_STREAM_LENGTH_OVERFLOW,
+            QuicStrCat("Write too many data via stream ", id_));
+        return consumed_data;
+      }
       OnDataBuffered(offset, consumed_data.bytes_consumed, nullptr);
     }
   }
