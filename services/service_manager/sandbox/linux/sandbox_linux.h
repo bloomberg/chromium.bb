@@ -17,12 +17,10 @@
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/sanitizer_flags.h"
 
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) ||    \
-    defined(UNDEFINED_SANITIZER) || defined(SANITIZER_COVERAGE)
+#if BUILDFLAG(USING_SANITIZER)
 #include <sanitizer/common_interface_defs.h>
-#define ANY_OF_AMTLU_SANITIZER 1
 #endif
 
 namespace base {
@@ -189,7 +187,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
     return proc_fd_;
   }
 
-#if defined(ANY_OF_AMTLU_SANITIZER)
+#if BUILDFLAG(USING_SANITIZER)
   __sanitizer_sandbox_arguments* sanitizer_args() const {
     return sanitizer_args_.get();
   };
@@ -260,7 +258,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   bool yama_is_enforcing_;                 // Accurate if pre_initialized_.
   bool initialize_sandbox_ran_;            // InitializeSandbox() was called.
   std::unique_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
-#if defined(ANY_OF_AMTLU_SANITIZER)
+#if BUILDFLAG(USING_SANITIZER)
   std::unique_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;
 #endif
   sandbox::syscall_broker::BrokerProcess* broker_process_;  // Leaked as global.
