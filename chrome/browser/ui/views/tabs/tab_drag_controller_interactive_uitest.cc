@@ -1986,6 +1986,60 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   EXPECT_FALSE(browser2->window()->IsMaximized());
 }
 
+IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
+                       DragBrowserWindowWhenMajorityOfBoundsInSecondDisplay) {
+  // Set the browser's window bounds such that the majority of its bounds
+  // resides in the second display.
+  aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+  gfx::Rect browser_bounds =
+      browser()->window()->GetNativeWindow()->GetBoundsInScreen();
+  browser_bounds.set_x(roots[0]->GetBoundsInScreen().right() -
+                       (browser_bounds.width() / 2) + 20);
+  browser()->window()->GetNativeWindow()->SetBounds(browser_bounds);
+  EXPECT_EQ(roots[0], browser()->window()->GetNativeWindow()->GetRootWindow());
+
+  // Start dragging the window by the tab strip, and move it only to the edge
+  // of the first display. Expect at that point mouse would warp and the window
+  // will therefore reside in the second display when mouse is released.
+  TabStripImpl* tab_strip = GetTabStripForBrowser(browser());
+  const gfx::Point tab_0_center =
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0));
+  gfx::Point target_point = tab_0_center;
+  target_point.Offset(0, GetDetachY(tab_strip));
+  const int first_display_warp_edge_x =
+      roots[0]->GetBoundsInScreen().right() - 1;
+  target_point.set_x(first_display_warp_edge_x);
+
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::Bind(&DragSingleTabToSeparateWindowInSecondDisplayStep2, this,
+                 target_point)));
+
+  QuitWhenNotDragging();
+
+  // Should no longer be dragging.
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+
+  // There should only be a single browser.
+  ASSERT_EQ(1u, browser_list->size());
+  ASSERT_EQ(browser(), browser_list->get(0));
+  ASSERT_TRUE(browser()->window()->IsActive());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+
+  // Browser now resides in display 2.
+  EXPECT_EQ(roots[1], browser()->window()->GetNativeWindow()->GetRootWindow());
+  display::Screen* screen = display::Screen::GetScreen();
+  const int64_t second_display_id =
+      screen->GetDisplayNearestWindow(roots[1]).id();
+  const int64_t current_browser_display_id =
+      screen->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
+          .id();
+  EXPECT_EQ(second_display_id, current_browser_display_id);
+}
+
 // Drags from browser to another browser on a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
                        DragTabToWindowOnSecondDisplay) {
@@ -2377,7 +2431,7 @@ void CancelDragTabToWindowInSeparateDisplayStep2(
 // Drags from browser to a second display and releases input.
 IN_PROC_BROWSER_TEST_F(
     DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
-    DISABLED_CancelDragTabToWindowIn2ndDisplay) {
+    CancelDragTabToWindowIn2ndDisplay) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStripImpl* tab_strip = GetTabStripForBrowser(browser());

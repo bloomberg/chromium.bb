@@ -477,6 +477,29 @@ void Window::ConvertRectToTarget(const Window* source,
   rect->set_origin(origin);
 }
 
+// static
+void Window::ConvertNativePointToTargetHost(const Window* source,
+                                            const Window* target,
+                                            gfx::PointF* point) {
+  if (!source || !target)
+    return;
+
+  if (source->GetHost() == target->GetHost())
+    return;
+
+  point->Offset(-target->GetHost()->GetBoundsInPixels().x(),
+                -target->GetHost()->GetBoundsInPixels().y());
+}
+
+// static
+void Window::ConvertNativePointToTargetHost(const Window* source,
+                                            const Window* target,
+                                            gfx::Point* point) {
+  gfx::PointF point_float(*point);
+  ConvertNativePointToTargetHost(source, target, &point_float);
+  *point = gfx::ToFlooredPoint(point_float);
+}
+
 void Window::MoveCursorTo(const gfx::Point& point_in_window) {
   Window* root_window = GetRootWindow();
   DCHECK(root_window);
