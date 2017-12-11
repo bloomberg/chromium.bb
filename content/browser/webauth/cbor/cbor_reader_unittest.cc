@@ -370,7 +370,7 @@ TEST(CBORReaderTest, TestTooMuchNestingError) {
     base::Optional<CBORValue> cbor =
         CBORReader::Read(zero_depth_data, &error_code, 0);
     EXPECT_TRUE(cbor.has_value());
-    EXPECT_EQ(error_code, CBORReader::DecoderError::NO_ERROR);
+    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
   }
 
   // Corresponds to a CBOR structure with a nesting depth of 2:
@@ -398,7 +398,7 @@ TEST(CBORReaderTest, TestTooMuchNestingError) {
   base::Optional<CBORValue> cbor_double_layer_max =
       CBORReader::Read(kNestedCBORData, &error_code, 2);
   EXPECT_TRUE(cbor_double_layer_max.has_value());
-  EXPECT_EQ(error_code, CBORReader::DecoderError::NO_ERROR);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
 }
 
 TEST(CBORReaderTest, TestOutOfOrderKeyError) {
@@ -488,7 +488,7 @@ TEST(CBORReaderTest, TestIncorrectStringEncodingError) {
     base::Optional<CBORValue> correctly_encoded_cbor =
         CBORReader::Read(cbor_byte, &error_code);
     EXPECT_TRUE(correctly_encoded_cbor.has_value());
-    EXPECT_EQ(error_code, CBORReader::DecoderError::NO_ERROR);
+    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
   }
 
   // Incorrect UTF8 encoding referenced by section 3.5.3 of the stress test.
