@@ -133,8 +133,8 @@ using ios::material::TimingFunction;
   // If set to |YES|, disables animations that tests would otherwise trigger.
   BOOL _unitTesting;
 
-  // Keeps track of the last known toolbar frame.
-  CGRect _lastKnownToolbarFrame;
+  // Keeps track of the last known toolbar Y origin.
+  CGFloat _lastKnownToolbarYOrigin;
 
   // Keeps track of last known trait collection used by the subviews.
   UITraitCollection* _lastKnownTraitCollection;
@@ -999,10 +999,10 @@ using ios::material::TimingFunction;
 
 - (void)toolbarDidLayout {
   CGRect frame = self.view.frame;
-  if (CGRectEqualToRect(_lastKnownToolbarFrame, frame))
+  if (frame.origin.y == _lastKnownToolbarYOrigin)
     return;
   [self updateToolbarAlphaForFrame:frame];
-  _lastKnownToolbarFrame = frame;
+  _lastKnownToolbarYOrigin = frame.origin.y;
 }
 
 - (void)windowDidChange {
