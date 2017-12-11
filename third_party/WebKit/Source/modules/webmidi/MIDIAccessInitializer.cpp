@@ -44,7 +44,6 @@ ScriptPromise MIDIAccessInitializer::Start() {
   Document* doc = ToDocumentOrNull(GetExecutionContext());
   permission_service_->RequestPermission(
       CreateMidiPermissionDescriptor(options_.hasSysex() && options_.sysex()),
-      GetExecutionContext()->GetSecurityOrigin(),
       Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
       WTF::Bind(&MIDIAccessInitializer::OnPermissionsUpdated,
                 WrapPersistent(this)));

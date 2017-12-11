@@ -80,7 +80,6 @@ ScriptPromise NotificationManager::RequestPermission(
   Document* doc = ToDocumentOrNull(context);
   permission_service_->RequestPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
-      context->GetSecurityOrigin(),
       Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
       WTF::Bind(&NotificationManager::OnPermissionRequestComplete,
                 WrapPersistent(this), WrapPersistent(resolver),

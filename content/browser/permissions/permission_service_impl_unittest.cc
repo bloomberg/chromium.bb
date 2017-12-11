@@ -68,7 +68,8 @@ class PermissionServiceImplTest : public RenderViewHostTestHarness {
         ->SetPermissionManager(std::make_unique<TestPermissionManager>());
     NavigateAndCommit(origin_.GetURL());
     service_context_.reset(new PermissionServiceContext(main_rfh()));
-    service_impl_.reset(new PermissionServiceImpl(service_context_.get()));
+    service_impl_.reset(
+        new PermissionServiceImpl(service_context_.get(), origin_));
   }
 
   void TearDown() override {
@@ -95,7 +96,7 @@ class PermissionServiceImplTest : public RenderViewHostTestHarness {
         base::Bind(&PermissionServiceImplTest::PermissionStatusCallback,
                    base::Unretained(this));
     service_impl_->HasPermission(CreatePermissionDescriptor(permission),
-                                 origin_, callback);
+                                 callback);
     EXPECT_EQ(1u, last_permission_statuses_.size());
     return last_permission_statuses_[0];
   }
@@ -108,7 +109,7 @@ class PermissionServiceImplTest : public RenderViewHostTestHarness {
     base::Callback<void(const std::vector<PermissionStatus>&)> callback =
         base::Bind(&PermissionServiceImplTest::RequestPermissionsCallback,
                    base::Unretained(this));
-    service_impl_->RequestPermissions(std::move(descriptors), origin_,
+    service_impl_->RequestPermissions(std::move(descriptors),
                                       /*user_gesture=*/false, callback);
     EXPECT_EQ(permissions.size(), last_permission_statuses_.size());
     return last_permission_statuses_;
