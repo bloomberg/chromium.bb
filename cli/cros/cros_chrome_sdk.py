@@ -876,10 +876,10 @@ class ChromeSDKCommand(command.CliCommand):
     # The format of ld flags is something like
     # '-Wl,-O1 -Wl,-O2 -Wl,--as-needed -stdlib=libc++'
     extra_thinlto_flag = '-Wl,-plugin-opt,-import-instr-limit=30'
-    if 'cros_target_extra_ldflags' in gn_args:
-      if extra_thinlto_flag in gn_args['cros_target_extra_ldflags']:
-        gn_args['cros_target_extra_ldflags'] = \
-          gn_args['cros_target_extra_ldflags'].replace(extra_thinlto_flag, '')
+    extra_ldflags = gn_args.get('cros_target_extra_ldflags', '')
+    if extra_thinlto_flag in extra_ldflags:
+      gn_args['cros_target_extra_ldflags'] = extra_ldflags.replace(
+          extra_thinlto_flag, '')
 
     if options.gn_extra_args:
       gn_args.update(gn_helpers.FromGNArgs(options.gn_extra_args))
