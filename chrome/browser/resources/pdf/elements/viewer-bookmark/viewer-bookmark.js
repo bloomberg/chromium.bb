@@ -68,9 +68,10 @@ Polymer({
       if (this.bookmark.hasOwnProperty('y')) {
         this.fire(
             'change-page-and-y',
-            {page: this.bookmark.page, y: this.bookmark.y});
+            {page: this.bookmark.page, y: this.bookmark.y, origin: 'bookmark'});
       } else {
-        this.fire('change-page', {page: this.bookmark.page});
+        this.fire(
+            'change-page', {page: this.bookmark.page, origin: 'bookmark'});
       }
     } else if (this.bookmark.hasOwnProperty('uri')) {
       this.fire('navigate', {uri: this.bookmark.uri, newtab: true});

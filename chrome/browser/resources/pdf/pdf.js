@@ -105,6 +105,13 @@ function PDFViewer(browserApi) {
   this.isPrintPreviewLoaded_ = false;
   this.isUserInitiatedEvent_ = true;
 
+  /**
+   * @type {PDFMetrics}
+   */
+  this.metrics =
+      (chrome.metricsPrivate ? new PDFMetricsImpl() : new PDFMetricsDummy());
+  this.metrics.onDocumentOpened();
+
   // Parse open pdf parameters.
   this.paramsParser_ =
       new OpenPDFParamsParser(this.getNamedDestination_.bind(this));
@@ -219,10 +226,16 @@ function PDFViewer(browserApi) {
 
   document.body.addEventListener('change-page', e => {
     this.viewport_.goToPage(e.detail.page);
+    if (e.detail.origin == 'bookmark')
+      this.metrics.onBookmarkFollowed();
+    else if (e.detail.origin == 'pageselector')
+      this.metrics.onPageSelectorNavigation();
   });
 
   document.body.addEventListener('change-page-and-y', e => {
     this.viewport_.goToPageAndY(e.detail.page, e.detail.y);
+    if (e.detail.origin == 'bookmark')
+      this.metrics.onFollowBookmark();
   });
 
   document.body.addEventListener('navigate', e => {
@@ -230,6 +243,11 @@ function PDFViewer(browserApi) {
         Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB :
         Navigator.WindowOpenDisposition.CURRENT_TAB;
     this.navigator_.navigate(e.detail.uri, disposition);
+  });
+
+  document.body.addEventListener('dropdown-opened', e => {
+    if (e.detail == 'bookmarks')
+      this.metrics.onOpenBookmarksPanel();
   });
 
   this.toolbarManager_ =
@@ -427,6 +445,7 @@ PDFViewer.prototype = {
    * Rotate the plugin clockwise.
    */
   rotateClockwise_: function() {
+    this.metrics.onRotation();
     this.plugin_.postMessage({type: 'rotateClockwise'});
   },
 
@@ -435,6 +454,7 @@ PDFViewer.prototype = {
    * Rotate the plugin counter-clockwise.
    */
   rotateCounterClockwise_: function() {
+    this.metrics.onRotation();
     this.plugin_.postMessage({type: 'rotateCounterclockwise'});
   },
 
@@ -444,15 +464,18 @@ PDFViewer.prototype = {
    * @param {CustomEvent} e Event received with the new FittingType as detail.
    */
   fitToChanged_: function(e) {
-    if (e.detail == FittingType.FIT_TO_PAGE) {
+    if (e.detail.fittingType == FittingType.FIT_TO_PAGE) {
       this.viewport_.fitToPage();
       this.toolbarManager_.forceHideTopToolbar();
-    } else if (e.detail == FittingType.FIT_TO_WIDTH) {
+    } else if (e.detail.fittingType == FittingType.FIT_TO_WIDTH) {
       this.viewport_.fitToWidth();
-    } else if (e.detail == FittingType.FIT_TO_HEIGHT) {
+    } else if (e.detail.fittingType == FittingType.FIT_TO_HEIGHT) {
       this.viewport_.fitToHeight();
       this.toolbarManager_.forceHideTopToolbar();
     }
+
+    if (e.detail.userInitiated)
+      this.metrics.onFitTo(e.detail.fittingType);
   },
 
   /**
