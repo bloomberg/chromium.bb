@@ -595,7 +595,7 @@ void TypingCommand::InsertText(const String& text,
   text_to_insert_ = text;
 
   if (text.IsEmpty()) {
-    InsertTextRunWithoutNewlines(text, false, editing_state);
+    InsertTextRunWithoutNewlines(text, editing_state);
     return;
   }
   size_t selection_start = selection_start_;
@@ -605,7 +605,7 @@ void TypingCommand::InsertText(const String& text,
     if (newline > offset) {
       const size_t insertion_length = newline - offset;
       InsertTextRunWithoutNewlines(text.Substring(offset, insertion_length),
-                                   false, editing_state);
+                                   editing_state);
       if (editing_state->IsAborted())
         return;
 
@@ -626,7 +626,7 @@ void TypingCommand::InsertText(const String& text,
   if (text.length() > offset) {
     const size_t insertion_length = text.length() - offset;
     InsertTextRunWithoutNewlines(text.Substring(offset, insertion_length),
-                                 false, editing_state);
+                                 editing_state);
     if (editing_state->IsAborted())
       return;
 
@@ -659,7 +659,6 @@ void TypingCommand::InsertText(const String& text,
 }
 
 void TypingCommand::InsertTextRunWithoutNewlines(const String& text,
-                                                 bool select_inserted_text,
                                                  EditingState* editing_state) {
   CompositeEditCommand* command;
   if (IsIncrementalInsertion()) {
