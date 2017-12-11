@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/phone_number.h"
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -105,8 +106,7 @@ TEST(PhoneNumberTest, SetInfo) {
   EXPECT_EQ(ASCIIToUTF16("(888) 777-6666"),
             phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   EXPECT_TRUE(phone.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
-                            ASCIIToUTF16("+18887776666"),
-                            "US"));
+                            ASCIIToUTF16("+18887776666"), "US"));
   EXPECT_EQ(ASCIIToUTF16("1 888-777-6666"),
             phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
@@ -126,6 +126,16 @@ TEST(PhoneNumberTest, SetInfo) {
   EXPECT_FALSE(phone.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
                              ASCIIToUTF16("650111111"), "US"));
   EXPECT_EQ(base::string16(), phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+
+  // If the stored number is invalid, we still try to respond to queries
+  // for a complete number with what user has entered.
+  EXPECT_FALSE(phone.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
+                             ASCIIToUTF16("5141231234"), "US"));
+  EXPECT_EQ(ASCIIToUTF16("5141231234"),
+            phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, "CA"));
+  EXPECT_EQ(ASCIIToUTF16("5141231234"),
+            phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, "CA"));
+  EXPECT_EQ(base::string16(), phone.GetInfo(PHONE_HOME_CITY_CODE, "CA"));
 }
 
 // Test that cached phone numbers are correctly invalidated and updated.
@@ -162,12 +172,12 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
   PhoneNumber::PhoneCombineHelper number1;
-  EXPECT_FALSE(number1.SetInfo(AutofillType(ADDRESS_BILLING_CITY),
-                               ASCIIToUTF16("1")));
+  EXPECT_FALSE(
+      number1.SetInfo(AutofillType(ADDRESS_BILLING_CITY), ASCIIToUTF16("1")));
   EXPECT_TRUE(number1.SetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE),
                               ASCIIToUTF16("1")));
-  EXPECT_TRUE(number1.SetInfo(AutofillType(PHONE_HOME_CITY_CODE),
-                              ASCIIToUTF16("650")));
+  EXPECT_TRUE(
+      number1.SetInfo(AutofillType(PHONE_HOME_CITY_CODE), ASCIIToUTF16("650")));
   EXPECT_TRUE(number1.SetInfo(AutofillType(PHONE_HOME_NUMBER),
                               ASCIIToUTF16("2345678")));
   base::string16 parsed_phone;
@@ -176,8 +186,8 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
   EXPECT_EQ(ASCIIToUTF16("1 650-234-5678"), parsed_phone);
 
   PhoneNumber::PhoneCombineHelper number3;
-  EXPECT_TRUE(number3.SetInfo(AutofillType(PHONE_HOME_CITY_CODE),
-                              ASCIIToUTF16("650")));
+  EXPECT_TRUE(
+      number3.SetInfo(AutofillType(PHONE_HOME_CITY_CODE), ASCIIToUTF16("650")));
   EXPECT_TRUE(number3.SetInfo(AutofillType(PHONE_HOME_NUMBER),
                               ASCIIToUTF16("2345680")));
   EXPECT_TRUE(number3.ParseNumber(profile, "en-US", &parsed_phone));
@@ -199,24 +209,24 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
   EXPECT_EQ(ASCIIToUTF16("(650) 234-5681"), parsed_phone);
 
   PhoneNumber::PhoneCombineHelper number6;
-  EXPECT_TRUE(number6.SetInfo(AutofillType(PHONE_HOME_CITY_CODE),
-                              ASCIIToUTF16("650")));
-  EXPECT_TRUE(number6.SetInfo(AutofillType(PHONE_HOME_NUMBER),
-                              ASCIIToUTF16("234")));
-  EXPECT_TRUE(number6.SetInfo(AutofillType(PHONE_HOME_NUMBER),
-                              ASCIIToUTF16("5682")));
+  EXPECT_TRUE(
+      number6.SetInfo(AutofillType(PHONE_HOME_CITY_CODE), ASCIIToUTF16("650")));
+  EXPECT_TRUE(
+      number6.SetInfo(AutofillType(PHONE_HOME_NUMBER), ASCIIToUTF16("234")));
+  EXPECT_TRUE(
+      number6.SetInfo(AutofillType(PHONE_HOME_NUMBER), ASCIIToUTF16("5682")));
   EXPECT_TRUE(number6.ParseNumber(profile, "en-US", &parsed_phone));
   EXPECT_EQ(ASCIIToUTF16("(650) 234-5682"), parsed_phone);
 
   // Ensure parsing is possible when falling back to detecting the country code
   // based on the app locale.
   PhoneNumber::PhoneCombineHelper number7;
-  EXPECT_TRUE(number7.SetInfo(AutofillType(PHONE_HOME_CITY_CODE),
-                              ASCIIToUTF16("650")));
-  EXPECT_TRUE(number7.SetInfo(AutofillType(PHONE_HOME_NUMBER),
-                              ASCIIToUTF16("234")));
-  EXPECT_TRUE(number7.SetInfo(AutofillType(PHONE_HOME_NUMBER),
-                              ASCIIToUTF16("5682")));
+  EXPECT_TRUE(
+      number7.SetInfo(AutofillType(PHONE_HOME_CITY_CODE), ASCIIToUTF16("650")));
+  EXPECT_TRUE(
+      number7.SetInfo(AutofillType(PHONE_HOME_NUMBER), ASCIIToUTF16("234")));
+  EXPECT_TRUE(
+      number7.SetInfo(AutofillType(PHONE_HOME_NUMBER), ASCIIToUTF16("5682")));
   EXPECT_TRUE(number7.ParseNumber(AutofillProfile(), "en-US", &parsed_phone));
   EXPECT_EQ(ASCIIToUTF16("(650) 234-5682"), parsed_phone);
 }
