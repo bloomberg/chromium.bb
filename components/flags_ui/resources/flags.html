@@ -177,9 +177,11 @@
       <div class="flex-container">
         <div class="flex restart-notice" jstcache="0">$i18n{flagsRestartNotice}</div>
         <div class="flex">
+<if expr="not is_ios">
           <button class="experiment-restart-button" type="button" tabindex="8">
             $i18n{flagsRestartButton}
           </button>
+</if>
         </div>
       </div>
     </div>
