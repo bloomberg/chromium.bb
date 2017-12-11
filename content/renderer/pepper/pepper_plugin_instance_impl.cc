@@ -284,12 +284,16 @@ STATIC_ASSERT_MATCHING_ENUM(kTypeGrabbing, PP_MOUSECURSOR_TYPE_GRABBING);
 // Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
 // PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
 
+#undef STATIC_ASSERT_MATCHING_ENUM
+
 STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionNone,
                    PP_PRINTSCALINGOPTION_NONE);
 STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionFitToPrintableArea,
                    PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA);
 STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionSourceSize,
                    PP_PRINTSCALINGOPTION_SOURCE_SIZE);
+
+#undef STATIC_ASSERT_ENUM
 
 // Sets |*security_origin| to be the WebKit security origin associated with the
 // document containing the given plugin instance. On success, returns true. If

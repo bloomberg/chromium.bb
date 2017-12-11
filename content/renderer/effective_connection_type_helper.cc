@@ -23,6 +23,8 @@ STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_3G,
 STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_4G,
                    blink::WebEffectiveConnectionType::kType4G);
 
+#undef STATIC_ASSERT_ENUM
+
 blink::WebEffectiveConnectionType
 EffectiveConnectionTypeToWebEffectiveConnectionType(
     net::EffectiveConnectionType net_type) {
