@@ -112,9 +112,29 @@ int BrokerProcess::Access(const char* pathname, int mode) const {
   return broker_client_->Access(pathname, mode);
 }
 
+int BrokerProcess::Mkdir(const char* path, int mode) const {
+  RAW_CHECK(initialized_);
+  return broker_client_->Mkdir(path, mode);
+}
+
 int BrokerProcess::Open(const char* pathname, int flags) const {
   RAW_CHECK(initialized_);
   return broker_client_->Open(pathname, flags);
+}
+
+int BrokerProcess::Readlink(const char* path, char* buf, size_t bufsize) const {
+  RAW_CHECK(initialized_);
+  return broker_client_->Readlink(path, buf, bufsize);
+}
+
+int BrokerProcess::Rename(const char* oldpath, const char* newpath) const {
+  RAW_CHECK(initialized_);
+  return broker_client_->Rename(oldpath, newpath);
+}
+
+int BrokerProcess::Rmdir(const char* pathname) const {
+  RAW_CHECK(initialized_);
+  return broker_client_->Rmdir(pathname);
 }
 
 int BrokerProcess::Stat(const char* pathname, struct stat* sb) const {
@@ -127,14 +147,9 @@ int BrokerProcess::Stat64(const char* pathname, struct stat64* sb) const {
   return broker_client_->Stat64(pathname, sb);
 }
 
-int BrokerProcess::Rename(const char* oldpath, const char* newpath) const {
+int BrokerProcess::Unlink(const char* pathname) const {
   RAW_CHECK(initialized_);
-  return broker_client_->Rename(oldpath, newpath);
-}
-
-int BrokerProcess::Readlink(const char* path, char* buf, size_t bufsize) const {
-  RAW_CHECK(initialized_);
-  return broker_client_->Readlink(path, buf, bufsize);
+  return broker_client_->Unlink(pathname);
 }
 
 #if defined(MEMORY_SANITIZER)
@@ -154,24 +169,6 @@ intptr_t BrokerProcess::SIGSYS_Handler(const sandbox::arch_seccomp_data& args,
       return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
                                     static_cast<int>(args.args[1]));
 #endif
-#if defined(__NR_open)
-    case __NR_open:
-      // http://crbug.com/372840
-      BROKER_UNPOISON_STRING(reinterpret_cast<const char*>(args.args[0]));
-      return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
-                                  static_cast<int>(args.args[1]));
-#endif
-#if defined(__NR_stat)
-    case __NR_stat:
-      return broker_process->Stat(reinterpret_cast<const char*>(args.args[0]),
-                                  reinterpret_cast<struct stat*>(args.args[1]));
-#endif
-#if defined(__NR_stat64)
-    case __NR_stat64:
-      return broker_process->Stat64(
-          reinterpret_cast<const char*>(args.args[0]),
-          reinterpret_cast<struct stat64*>(args.args[1]));
-#endif
 #if defined(__NR_faccessat)
     case __NR_faccessat:
       if (static_cast<int>(args.args[0]) != AT_FDCWD)
@@ -179,30 +176,33 @@ intptr_t BrokerProcess::SIGSYS_Handler(const sandbox::arch_seccomp_data& args,
       return broker_process->Access(reinterpret_cast<const char*>(args.args[1]),
                                     static_cast<int>(args.args[2]));
 #endif
+#if defined(__NR_mkdir)
+    case __NR_mkdir:
+      return broker_process->Mkdir(reinterpret_cast<const char*>(args.args[0]),
+                                   static_cast<int>(args.args[1]));
+#endif
+#if defined(__NR_mkdirat)
+    case __NR_mkdirat:
+      if (static_cast<int>(args.args[0]) != AT_FDCWD)
+        return -EPERM;
+      return broker_process->Mkdir(reinterpret_cast<const char*>(args.args[1]),
+                                   static_cast<int>(args.args[2]));
+#endif
+#if defined(__NR_open)
+    case __NR_open:
+      // http://crbug.com/372840
+      BROKER_UNPOISON_STRING(reinterpret_cast<const char*>(args.args[0]));
+      return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
+                                  static_cast<int>(args.args[1]));
+#endif
 #if defined(__NR_openat)
     case __NR_openat:
       if (static_cast<int>(args.args[0]) != AT_FDCWD)
         return -EPERM;
+      // http://crbug.com/372840
+      BROKER_UNPOISON_STRING(reinterpret_cast<const char*>(args.args[1]));
       return broker_process->Open(reinterpret_cast<const char*>(args.args[1]),
                                   static_cast<int>(args.args[2]));
-#endif
-#if defined(__NR_fstatat)
-    case __NR_fstatat:
-      if (static_cast<int>(args.args[0]) != AT_FDCWD)
-        return -EPERM;
-      if (static_cast<int>(args.args[3]) != 0)
-        return -EINVAL;
-      return broker_process->Stat(reinterpret_cast<const char*>(args.args[1]),
-                                  reinterpret_cast<struct stat*>(args.args[2]));
-#endif
-#if defined(__NR_newfstatat)
-    case __NR_newfstatat:
-      if (static_cast<int>(args.args[0]) != AT_FDCWD)
-        return -EPERM;
-      if (static_cast<int>(args.args[3]) != 0)
-        return -EINVAL;
-      return broker_process->Stat(reinterpret_cast<const char*>(args.args[1]),
-                                  reinterpret_cast<struct stat*>(args.args[2]));
 #endif
 #if defined(__NR_readlink)
     case __NR_readlink:
@@ -247,6 +247,52 @@ intptr_t BrokerProcess::SIGSYS_Handler(const sandbox::arch_seccomp_data& args,
       return broker_process->Rename(
           reinterpret_cast<const char*>(args.args[1]),
           reinterpret_cast<const char*>(args.args[3]));
+#endif
+#if defined(__NR_rmdir)
+    case __NR_rmdir:
+      return broker_process->Rmdir(reinterpret_cast<const char*>(args.args[0]));
+#endif
+#if defined(__NR_stat)
+    case __NR_stat:
+      return broker_process->Stat(reinterpret_cast<const char*>(args.args[0]),
+                                  reinterpret_cast<struct stat*>(args.args[1]));
+#endif
+#if defined(__NR_stat64)
+    case __NR_stat64:
+      return broker_process->Stat64(
+          reinterpret_cast<const char*>(args.args[0]),
+          reinterpret_cast<struct stat64*>(args.args[1]));
+#endif
+#if defined(__NR_fstatat)
+    case __NR_fstatat:
+      if (static_cast<int>(args.args[0]) != AT_FDCWD)
+        return -EPERM;
+      if (static_cast<int>(args.args[3]) != 0)
+        return -EINVAL;
+      return broker_process->Stat(reinterpret_cast<const char*>(args.args[1]),
+                                  reinterpret_cast<struct stat*>(args.args[2]));
+#endif
+#if defined(__NR_newfstatat)
+    case __NR_newfstatat:
+      if (static_cast<int>(args.args[0]) != AT_FDCWD)
+        return -EPERM;
+      if (static_cast<int>(args.args[3]) != 0)
+        return -EINVAL;
+      return broker_process->Stat(reinterpret_cast<const char*>(args.args[1]),
+                                  reinterpret_cast<struct stat*>(args.args[2]));
+#endif
+#if defined(__NR_unlink)
+    case __NR_unlink:
+      return broker_process->Unlink(
+          reinterpret_cast<const char*>(args.args[0]));
+#endif
+#if defined(__NR_unlinkat)
+    case __NR_unlinkat:
+      // TODO(tsepez): does not support AT_REMOVEDIR flag.
+      if (static_cast<int>(args.args[0]) != AT_FDCWD)
+        return -EPERM;
+      return broker_process->Unlink(
+          reinterpret_cast<const char*>(args.args[1]));
 #endif
     default:
       RAW_CHECK(false);

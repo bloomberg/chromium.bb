@@ -84,20 +84,29 @@ class SANDBOX_EXPORT BrokerProcess {
   // doesn't support execute permissions.
   int Access(const char* pathname, int mode) const;
 
+  // Can be used in place of mkdir().
+  int Mkdir(const char* path, int mode) const;
+
   // Can be used in place of open()
   // The implementation only supports certain white listed flags and will
   // return -EPERM on other flags.
   int Open(const char* pathname, int flags) const;
 
-  // Can be used in place of stat()/stat64().
-  int Stat(const char* pathname, struct stat* sb) const;
-  int Stat64(const char* pathname, struct stat64* sb) const;
+  // Can be used in place of readlink().
+  int Readlink(const char* path, char* buf, size_t bufsize) const;
 
   // Can be used in place of rename().
   int Rename(const char* oldpath, const char* newpath) const;
 
-  // Can be used in place of readlink().
-  int Readlink(const char* path, char* buf, size_t bufsize) const;
+  // Can be used in place of rmdir().
+  int Rmdir(const char* path) const;
+
+  // Can be used in place of stat()/stat64().
+  int Stat(const char* pathname, struct stat* sb) const;
+  int Stat64(const char* pathname, struct stat64* sb) const;
+
+  // Can be used in place of unlink().
+  int Unlink(const char* path) const;
 
  private:
   friend class BrokerProcessTestHelper;

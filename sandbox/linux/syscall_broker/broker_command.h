@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <bitset>
+#include <initializer_list>
 
 namespace sandbox {
 namespace syscall_broker {
@@ -35,17 +36,29 @@ constexpr int kCurrentProcessOpenFlagsMask = O_CLOEXEC;
 enum BrokerCommand {
   COMMAND_INVALID = 0,
   COMMAND_ACCESS,
+  COMMAND_MKDIR,
   COMMAND_OPEN,
   COMMAND_READLINK,
   COMMAND_RENAME,
+  COMMAND_RMDIR,
   COMMAND_STAT,
   COMMAND_STAT64,
+  COMMAND_UNLINK,
 
   // NOTE: update when adding new commands.
-  COMMAND_MAX = COMMAND_STAT64
+  COMMAND_MAX = COMMAND_UNLINK
 };
 
 using BrokerCommandSet = std::bitset<COMMAND_MAX + 1>;
+
+// Helper function since std::bitset lacks an initializer list constructor.
+inline BrokerCommandSet MakeBrokerCommandSet(
+    const std::initializer_list<BrokerCommand>& args) {
+  BrokerCommandSet result;
+  for (const auto& arg : args)
+    result.set(arg);
+  return result;
+}
 
 // Helper functions to perform the same permissions test on either side
 // (client or broker process) of a broker IPC command. The implementations
@@ -55,6 +68,11 @@ bool CommandAccessIsSafe(const BrokerCommandSet& command_set,
                          const char* requested_filename,
                          int requested_mode,  // e.g. F_OK, R_OK, W_OK.
                          const char** filename_to_use);
+
+bool CommandMkdirIsSafe(const BrokerCommandSet& command_set,
+                        const BrokerPermissionList& policy,
+                        const char* requested_filename,
+                        const char** filename_to_use);
 
 bool CommandOpenIsSafe(const BrokerCommandSet& command_set,
                        const BrokerPermissionList& policy,
@@ -75,10 +93,20 @@ bool CommandRenameIsSafe(const BrokerCommandSet& command_set,
                          const char** old_filename_to_use,
                          const char** new_filename_to_use);
 
+bool CommandRmdirIsSafe(const BrokerCommandSet& command_set,
+                        const BrokerPermissionList& policy,
+                        const char* requested_filename,
+                        const char** filename_to_use);
+
 bool CommandStatIsSafe(const BrokerCommandSet& command_set,
                        const BrokerPermissionList& policy,
                        const char* requested_filename,
                        const char** filename_to_use);
+
+bool CommandUnlinkIsSafe(const BrokerCommandSet& command_set,
+                         const BrokerPermissionList& policy,
+                         const char* requested_filename,
+                         const char** filename_to_use);
 
 }  // namespace syscall_broker
 }  // namespace sandbox
