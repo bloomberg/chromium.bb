@@ -55,28 +55,22 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
 
   for (const auto& http_proxy : proxies_for_http) {
     if (!network_properties_manager.IsSecureProxyAllowed(true) &&
-        (http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_HTTPS ||
-         http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_QUIC) &&
-        http_proxy.GetProxyTypeForTesting() == ProxyServer_ProxyType_CORE) {
+        http_proxy.IsSecureProxy() && http_proxy.IsCoreProxy()) {
       continue;
     }
 
     if (!network_properties_manager.IsInsecureProxyAllowed(true) &&
-        http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_HTTP &&
-        http_proxy.GetProxyTypeForTesting() == ProxyServer_ProxyType_CORE) {
+        !http_proxy.IsSecureProxy() && http_proxy.IsCoreProxy()) {
       continue;
     }
 
     if (!network_properties_manager.IsSecureProxyAllowed(false) &&
-        (http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_HTTPS ||
-         http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_QUIC) &&
-        http_proxy.GetProxyTypeForTesting() != ProxyServer_ProxyType_CORE) {
+        http_proxy.IsSecureProxy() && !http_proxy.IsCoreProxy()) {
       continue;
     }
 
     if (!network_properties_manager.IsInsecureProxyAllowed(false) &&
-        http_proxy.proxy_server().scheme() == net::ProxyServer::SCHEME_HTTP &&
-        http_proxy.GetProxyTypeForTesting() != ProxyServer_ProxyType_CORE) {
+        !http_proxy.IsSecureProxy() && !http_proxy.IsCoreProxy()) {
       continue;
     }
 

@@ -277,15 +277,22 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     // configs.
     ASSERT_EQ(
         2U, test_context_->mutable_config_values()->proxies_for_http().size());
-    EXPECT_EQ(ProxyServer::CORE, test_context_->mutable_config_values()
-                                     ->proxies_for_http()
-                                     .at(0)
-                                     .GetProxyTypeForTesting());
-    EXPECT_EQ(ProxyServer::UNSPECIFIED_TYPE,
-              test_context_->mutable_config_values()
-                  ->proxies_for_http()
-                  .at(1)
-                  .GetProxyTypeForTesting());
+    EXPECT_TRUE(test_context_->mutable_config_values()
+                    ->proxies_for_http()
+                    .at(0)
+                    .IsCoreProxy());
+    EXPECT_FALSE(test_context_->mutable_config_values()
+                     ->proxies_for_http()
+                     .at(1)
+                     .IsCoreProxy());
+    EXPECT_TRUE(test_context_->mutable_config_values()
+                    ->proxies_for_http()
+                    .at(0)
+                    .IsSecureProxy());
+    EXPECT_FALSE(test_context_->mutable_config_values()
+                     ->proxies_for_http()
+                     .at(1)
+                     .IsSecureProxy());
   }
 
   void VerifyRemoteSuccessWithOldConfig() {
@@ -312,15 +319,14 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     // configs.
     ASSERT_EQ(
         2U, test_context_->mutable_config_values()->proxies_for_http().size());
-    EXPECT_EQ(ProxyServer::CORE, test_context_->mutable_config_values()
-                                     ->proxies_for_http()
-                                     .at(0)
-                                     .GetProxyTypeForTesting());
-    EXPECT_EQ(ProxyServer::UNSPECIFIED_TYPE,
-              test_context_->mutable_config_values()
-                  ->proxies_for_http()
-                  .at(1)
-                  .GetProxyTypeForTesting());
+    EXPECT_TRUE(test_context_->mutable_config_values()
+                    ->proxies_for_http()
+                    .at(0)
+                    .IsCoreProxy());
+    EXPECT_FALSE(test_context_->mutable_config_values()
+                     ->proxies_for_http()
+                     .at(1)
+                     .IsCoreProxy());
   }
 
   void VerifySuccessWithLoadedConfig(bool expect_secure_proxies) {
@@ -346,15 +352,14 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     // configs.
     ASSERT_EQ(
         2U, test_context_->mutable_config_values()->proxies_for_http().size());
-    EXPECT_EQ(ProxyServer::CORE, test_context_->mutable_config_values()
-                                     ->proxies_for_http()
-                                     .at(0)
-                                     .GetProxyTypeForTesting());
-    EXPECT_EQ(ProxyServer::UNSPECIFIED_TYPE,
-              test_context_->mutable_config_values()
-                  ->proxies_for_http()
-                  .at(1)
-                  .GetProxyTypeForTesting());
+    EXPECT_TRUE(test_context_->mutable_config_values()
+                    ->proxies_for_http()
+                    .at(0)
+                    .IsCoreProxy());
+    EXPECT_FALSE(test_context_->mutable_config_values()
+                     ->proxies_for_http()
+                     .at(1)
+                     .IsCoreProxy());
   }
 
   TestDataReductionProxyConfigServiceClient* config_client() {
