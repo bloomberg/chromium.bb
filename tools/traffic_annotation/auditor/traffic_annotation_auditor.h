@@ -75,17 +75,6 @@ class TrafficAnnotationAuditor {
   bool IsSafeListed(const std::string& file_path,
                     AuditorException::ExceptionType exception_type);
 
-  // Checks to see if any unique id or extra id or their hash code are
-  // duplicated, either in currently existing annotations, or in deprecated
-  // ones. Adds errors to |errors_| and purges annotations with duplicate ids.
-  // Returns false if any errors happen while checking.
-  bool CheckDuplicateHashes();
-
-  // Checks to see if unique ids only include alphanumeric characters and
-  // underline. Adds errors to |errors_| and purges annotations with
-  // incorrect ids.
-  void CheckUniqueIDsFormat();
-
   // Checks to see if annotation contents are valid. Complete annotations should
   // have all required fields and be consistent, and incomplete annotations
   // should be completed with each other. Merges all matching incomplete
@@ -106,7 +95,13 @@ class TrafficAnnotationAuditor {
   // texts. This list includes all unique ids that are defined in
   // net/traffic_annotation/network_traffic_annotation.h and
   // net/traffic_annotation/network_traffic_annotation_test_helper.h
-  static const std::map<int, std::string>& GetReservedUniqueIDs();
+  static const std::map<int, std::string>& GetReservedIDsMap();
+
+  // Returns a set of reserved unique ids' hash codes. This set includes all
+  // unique ids that are defined in
+  // net/traffic_annotation/network_traffic_annotation.h and
+  // net/traffic_annotation/network_traffic_annotation_test_helper.h
+  static std::set<int> GetReservedIDsSet();
 
   // Removes annotations whose unique id hash code are given.
   void PurgeAnnotations(const std::set<int>& hash_codes);

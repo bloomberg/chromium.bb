@@ -36,15 +36,9 @@ const char* kRelevantKeywords[] = {
     "MISSING_TRAFFIC_ANNOTATION",
     "TRAFFIC_ANNOTATION_FOR_TESTS",
     "PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS",
-    "SSLClientSocket",     // SSLClientSocket::
-    "TCPClientSocket",     // TCPClientSocket::
-    "UDPClientSocket",     // UDPClientSocket::
     "URLFetcher::Create",  // This one is used with class as it's too generic.
-    "CreateDatagramClientSocket",   // ClientSocketFactory::
-    "CreateSSLClientSocket",        // ClientSocketFactory::
-    "CreateTransportClientSocket",  // ClientSocketFactory::
-    "CreateRequest",                // URLRequestContext::
-    nullptr                         // End Marker
+    "CreateRequest",       // URLRequestContext::
+    nullptr                // End Marker
 };
 
 }  // namespace
@@ -98,6 +92,14 @@ bool TrafficAnnotationFileFilter::IsFileRelevant(const std::string& file_path) {
 
   if (pos < 0 || (strcmp(".mm", file_path.c_str() + pos) &&
                   strcmp(".cc", file_path.c_str() + pos))) {
+    return false;
+  }
+
+  // Ignore unittest files to speed up the tests. They would be only tested when
+  // filters are disabled.
+  pos = file_path.length() - 12;
+  if (pos >= 0 && (!strcmp("_unittest.cc", file_path.c_str() + pos) ||
+                   !strcmp("_unittest.mm", file_path.c_str() + pos))) {
     return false;
   }
 

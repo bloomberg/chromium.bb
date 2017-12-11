@@ -20,6 +20,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
+#include "tools/traffic_annotation/auditor/traffic_annotation_id_checker.h"
 
 namespace {
 
@@ -114,7 +115,7 @@ bool TrafficAnnotationAuditor::RunClangTool(
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
 
-  // Create a file to pass options to clang scripts.
+  // Create a file to pass options to the clang tool running script.
   base::FilePath options_filepath;
   if (!base::CreateTemporaryFile(&options_filepath)) {
     LOG(ERROR) << "Could not create temporary options file.";
@@ -152,10 +153,26 @@ bool TrafficAnnotationAuditor::RunClangTool(
 
     if (path_filters.size()) {
       for (const auto& path_filter : path_filters) {
-        filter.GetRelevantFiles(
-            source_path_,
-            safe_list_[static_cast<int>(AuditorException::ExceptionType::ALL)],
-            path_filter, &file_paths);
+// If path filter is a directory, search and add its contents.
+// Otherwise add it if it is a relevant file which is not safe listed.
+#if defined(OS_WIN)
+        base::FilePath current_path = base::FilePath(
+            base::FilePath::StringPieceType((base::UTF8ToWide(path_filter))));
+#else
+        base::FilePath current_path = base::FilePath(path_filter);
+#endif
+        if (base::DirectoryExists(current_path)) {
+          filter.GetRelevantFiles(source_path_,
+                                  safe_list_[static_cast<int>(
+                                      AuditorException::ExceptionType::ALL)],
+                                  path_filter, &file_paths);
+        } else {
+          if (!TrafficAnnotationAuditor::IsSafeListed(
+                  path_filter, AuditorException::ExceptionType::ALL) &&
+              filter.IsFileRelevant(path_filter)) {
+            file_paths.push_back(path_filter);
+          }
+        }
       }
     } else {
       filter.GetRelevantFiles(
@@ -380,8 +397,16 @@ bool TrafficAnnotationAuditor::LoadSafeList() {
 
 // static
 const std::map<int, std::string>&
-TrafficAnnotationAuditor::GetReservedUniqueIDs() {
+TrafficAnnotationAuditor::GetReservedIDsMap() {
   return kReservedAnnotations;
+}
+
+// static
+std::set<int> TrafficAnnotationAuditor::GetReservedIDsSet() {
+  std::set<int> reserved_ids;
+  for (const auto& item : kReservedAnnotations)
+    reserved_ids.insert(item.first);
+  return reserved_ids;
 }
 
 void TrafficAnnotationAuditor::PurgeAnnotations(
@@ -394,150 +419,6 @@ void TrafficAnnotationAuditor::PurgeAnnotations(
                                                 annotation.unique_id_hash_code);
                      }),
       extracted_annotations_.end());
-}
-
-bool TrafficAnnotationAuditor::CheckDuplicateHashes() {
-  const std::map<int, std::string> reserved_ids = GetReservedUniqueIDs();
-
-  std::map<int, std::vector<AnnotationID>> collisions;
-  std::set<int> to_be_purged;
-  std::set<int> deprecated_ids;
-
-  // Load deprecated Hashcodes.
-  if (!TrafficAnnotationExporter(source_path_)
-           .GetDeprecatedHashCodes(&deprecated_ids)) {
-    return false;
-  }
-
-  for (AnnotationInstance& instance : extracted_annotations_) {
-    // Check if partial and branched completing annotation have an extra id
-    // which is different from their unique id.
-    if ((instance.type == AnnotationInstance::Type::ANNOTATION_PARTIAL ||
-         instance.type ==
-             AnnotationInstance::Type::ANNOTATION_BRANCHED_COMPLETING) &&
-        (instance.unique_id_hash_code == instance.extra_id_hash_code)) {
-      errors_.push_back(AuditorResult(
-          AuditorResult::Type::ERROR_MISSING_EXTRA_ID, std::string(),
-          instance.proto.source().file(), instance.proto.source().line()));
-      continue;
-    }
-
-    AnnotationID current;
-    current.instance = &instance;
-    // Iterate over unique id and extra id.
-    for (int id = 0; id < 2; id++) {
-      if (id) {
-        // If it's an empty extra id, no further check is required.
-        if (instance.extra_id.empty()) {
-          continue;
-        } else {
-          current.text = instance.extra_id;
-          current.hash = instance.extra_id_hash_code;
-          if (instance.type == AnnotationInstance::Type::ANNOTATION_PARTIAL) {
-            current.type = AnnotationID::Type::kPatrialExtra;
-          } else if (instance.type ==
-                     AnnotationInstance::Type::ANNOTATION_BRANCHED_COMPLETING) {
-            current.type = AnnotationID::Type::kBranchedExtra;
-          } else {
-            current.type = AnnotationID::Type::kOther;
-          }
-        }
-      } else {
-        current.text = instance.proto.unique_id();
-        current.hash = instance.unique_id_hash_code;
-        current.type =
-            instance.type == AnnotationInstance::Type::ANNOTATION_COMPLETING
-                ? AnnotationID::Type::kCompletingMain
-                : AnnotationID::Type::kOther;
-      }
-
-      // If the id's hash code is the same as a reserved id, add an error.
-      if (base::ContainsKey(reserved_ids, current.hash)) {
-        errors_.push_back(AuditorResult(
-            AuditorResult::Type::ERROR_RESERVED_UNIQUE_ID_HASH_CODE,
-            current.text, instance.proto.source().file(),
-            instance.proto.source().line()));
-        continue;
-      }
-
-      // If the id's hash code was formerly used by a deprecated annotation,
-      // add an error.
-      if (base::ContainsKey(deprecated_ids, current.hash)) {
-        errors_.push_back(AuditorResult(
-            AuditorResult::Type::ERROR_DEPRECATED_UNIQUE_ID_HASH_CODE,
-            current.text, instance.proto.source().file(),
-            instance.proto.source().line()));
-        continue;
-      }
-
-      // Check for collisions.
-      if (!base::ContainsKey(collisions, current.hash)) {
-        collisions[current.hash] = std::vector<AnnotationID>();
-      } else {
-        // Add error for ids with the same hash codes. If the texts are really
-        // different, there is a hash collision and should be corrected in any
-        // case. Otherwise, it's an error if it doesn't match the criteria that
-        // are previously spcified in definition of AnnotationID struct.
-        for (const auto& other : collisions[current.hash]) {
-          if (current.text == other.text &&
-              ((current.type == AnnotationID::Type::kPatrialExtra &&
-                (other.type == AnnotationID::Type::kPatrialExtra ||
-                 other.type == AnnotationID::Type::kCompletingMain ||
-                 other.type == AnnotationID::Type::kBranchedExtra)) ||
-               (other.type == AnnotationID::Type::kPatrialExtra &&
-                (current.type == AnnotationID::Type::kCompletingMain ||
-                 current.type == AnnotationID::Type::kBranchedExtra)) ||
-               (current.type == AnnotationID::Type::kBranchedExtra &&
-                other.type == AnnotationID::Type::kBranchedExtra))) {
-            continue;
-          }
-
-          AuditorResult error(
-              AuditorResult::Type::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE,
-              base::StringPrintf(
-                  "%s in '%s:%i'", current.text.c_str(),
-                  current.instance->proto.source().file().c_str(),
-                  current.instance->proto.source().line()));
-          error.AddDetail(
-              base::StringPrintf("%s in '%s:%i'", other.text.c_str(),
-                                 other.instance->proto.source().file().c_str(),
-                                 other.instance->proto.source().line()));
-
-          errors_.push_back(error);
-          to_be_purged.insert(current.hash);
-          to_be_purged.insert(other.hash);
-        }
-      }
-      collisions[current.hash].push_back(current);
-    }
-  }
-
-  PurgeAnnotations(to_be_purged);
-  return true;
-}
-
-void TrafficAnnotationAuditor::CheckUniqueIDsFormat() {
-  std::set<int> to_be_purged;
-  for (const AnnotationInstance& instance : extracted_annotations_) {
-    if (!base::ContainsOnlyChars(base::ToLowerASCII(instance.proto.unique_id()),
-                                 "0123456789_abcdefghijklmnopqrstuvwxyz")) {
-      errors_.push_back(AuditorResult(
-          AuditorResult::Type::ERROR_UNIQUE_ID_INVALID_CHARACTER,
-          instance.proto.unique_id(), instance.proto.source().file(),
-          instance.proto.source().line()));
-      to_be_purged.insert(instance.unique_id_hash_code);
-    }
-    if (!instance.extra_id.empty() &&
-        !base::ContainsOnlyChars(base::ToLowerASCII(instance.extra_id),
-                                 "0123456789_abcdefghijklmnopqrstuvwxyz")) {
-      errors_.push_back(
-          AuditorResult(AuditorResult::Type::ERROR_UNIQUE_ID_INVALID_CHARACTER,
-                        instance.extra_id, instance.proto.source().file(),
-                        instance.proto.source().line()));
-      to_be_purged.insert(instance.unique_id_hash_code);
-    }
-  }
-  PurgeAnnotations(to_be_purged);
 }
 
 void TrafficAnnotationAuditor::CheckAllRequiredFunctionsAreAnnotated() {
@@ -698,10 +579,20 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
 }
 
 bool TrafficAnnotationAuditor::RunAllChecks() {
-  if (!CheckDuplicateHashes())
+  std::set<int> deprecated_ids;
+  if (!TrafficAnnotationExporter(source_path_)
+           .GetDeprecatedHashCodes(&deprecated_ids)) {
     return false;
-  CheckUniqueIDsFormat();
-  CheckAnnotationsContents();
+  }
+  TrafficAnnotationIDChecker id_checker(GetReservedIDsSet(), deprecated_ids);
+  id_checker.Load(extracted_annotations_);
+  id_checker.CheckIDs(&errors_);
+
+  // Only check annotation contents if IDs are all OK, because if there are
+  // id errors, there might be some mismatching annotations and irrelevant
+  // content errors.
+  if (errors_.empty())
+    CheckAnnotationsContents();
 
   CheckAllRequiredFunctionsAreAnnotated();
   return true;

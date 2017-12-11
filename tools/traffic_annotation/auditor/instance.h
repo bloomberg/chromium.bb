@@ -63,6 +63,14 @@ class AnnotationInstance : public InstanceBase {
   // type.
   bool IsCompletableWith(const AnnotationInstance& other) const;
 
+  // Tells if annotation requires two ids. All annotations have the unique id,
+  // but partial annotations also require the completing id, and branched
+  // completing annotations require the group id.
+  bool NeedsTwoIDs() const {
+    return type == Type::ANNOTATION_PARTIAL ||
+           type == Type::ANNOTATION_BRANCHED_COMPLETING;
+  }
+
   // Combines |*this| partial annotation with a completing/branched_completing
   // annotation and returns the combined complete annotation.
   AuditorResult CreateCompleteAnnotation(
@@ -75,12 +83,13 @@ class AnnotationInstance : public InstanceBase {
   // Type of the annotation.
   Type type;
 
-  // Extra id of the annotation (if available).
-  std::string extra_id;
+  // Extra id of the annotation (if available). This can be the completing id
+  // for partial annotations, or group id for branched completing annotations.
+  std::string second_id;
 
   // Hash codes of unique id and extra id (if available).
   int unique_id_hash_code;
-  int extra_id_hash_code;
+  int second_id_hash_code;
 
   std::string comments;
 };
