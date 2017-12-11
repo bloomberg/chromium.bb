@@ -103,9 +103,6 @@ class TrafficAnnotationAuditor {
   // net/traffic_annotation/network_traffic_annotation_test_helper.h
   static std::set<int> GetReservedIDsSet();
 
-  // Removes annotations whose unique id hash code are given.
-  void PurgeAnnotations(const std::set<int>& hash_codes);
-
   std::string clang_tool_raw_output() const { return clang_tool_raw_output_; };
 
   void set_clang_tool_raw_output(const std::string& raw_output) {
