@@ -4648,7 +4648,7 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
         const int offsetr = blk_row + row;
         const int offsetc = blk_col + col;
         if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
-        set_txfm_context(xd, sub_txs, blk_row + offsetr, blk_col + offsetc);
+        set_txfm_context(xd, sub_txs, offsetr, offsetc);
       }
     }
   }
