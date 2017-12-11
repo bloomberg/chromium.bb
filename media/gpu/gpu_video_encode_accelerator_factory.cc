@@ -10,7 +10,7 @@
 #include "media/gpu/gpu_video_accelerator_util.h"
 
 #if BUILDFLAG(USE_V4L2_CODEC)
-#include "media/gpu/v4l2_video_encode_accelerator.h"
+#include "media/gpu/v4l2/v4l2_video_encode_accelerator.h"
 #endif
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_WEBRTC)
 #include "media/gpu/android/android_video_encode_accelerator.h"

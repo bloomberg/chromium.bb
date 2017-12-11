@@ -5,14 +5,14 @@
 // This file contains the implementation of TegraV4L2Device used on
 // Tegra platform.
 
-#ifndef MEDIA_GPU_TEGRA_V4L2_DEVICE_H_
-#define MEDIA_GPU_TEGRA_V4L2_DEVICE_H_
+#ifndef MEDIA_GPU_V4L2_TEGRA_V4L2_DEVICE_H_
+#define MEDIA_GPU_V4L2_TEGRA_V4L2_DEVICE_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "media/gpu/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_device.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace media {
@@ -88,4 +88,4 @@ class TegraV4L2Device : public V4L2Device {
 
 }  //  namespace media
 
-#endif  // MEDIA_GPU_TEGRA_V4L2_DEVICE_H_
+#endif  // MEDIA_GPU_V4L2_TEGRA_V4L2_DEVICE_H_

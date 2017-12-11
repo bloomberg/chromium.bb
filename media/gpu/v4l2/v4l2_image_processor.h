@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_V4L2_IMAGE_PROCESSOR_H_
-#define MEDIA_GPU_V4L2_IMAGE_PROCESSOR_H_
+#ifndef MEDIA_GPU_V4L2_V4L2_IMAGE_PROCESSOR_H_
+#define MEDIA_GPU_V4L2_V4L2_IMAGE_PROCESSOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,7 +19,7 @@
 #include "base/threading/thread.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_device.h"
 
 namespace media {
 
@@ -238,4 +238,4 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_V4L2_IMAGE_PROCESSOR_H_
+#endif  // MEDIA_GPU_V4L2_V4L2_IMAGE_PROCESSOR_H_

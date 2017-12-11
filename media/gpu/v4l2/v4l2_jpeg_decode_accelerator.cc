@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/v4l2_jpeg_decode_accelerator.h"
+#include "media/gpu/v4l2/v4l2_jpeg_decode_accelerator.h"
 
 #include <errno.h>
 #include <linux/videodev2.h>
@@ -16,7 +16,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/filters/jpeg_parser.h"
-#include "media/gpu/v4l2_jpeg_decode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)      \

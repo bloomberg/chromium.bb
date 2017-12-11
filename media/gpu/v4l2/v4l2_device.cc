@@ -8,9 +8,9 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
-#include "media/gpu/generic_v4l2_device.h"
+#include "media/gpu/v4l2/generic_v4l2_device.h"
 #if defined(ARCH_CPU_ARMEL)
-#include "media/gpu/tegra_v4l2_device.h"
+#include "media/gpu/v4l2/tegra_v4l2_device.h"
 #endif
 
 namespace media {

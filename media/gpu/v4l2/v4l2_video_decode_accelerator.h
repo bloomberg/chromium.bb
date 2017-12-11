@@ -6,8 +6,8 @@
 // that utilizes hardware video decoders, which expose Video4Linux 2 API
 // (http://linuxtv.org/downloads/v4l-dvb-apis/).
 
-#ifndef MEDIA_GPU_V4L2_VIDEO_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_V4L2_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_V4L2_V4L2_VIDEO_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_V4L2_V4L2_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -27,8 +27,8 @@
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/v4l2_device.h"
-#include "media/gpu/v4l2_image_processor.h"
+#include "media/gpu/v4l2/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -590,4 +590,4 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_V4L2_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_V4L2_V4L2_VIDEO_DECODE_ACCELERATOR_H_

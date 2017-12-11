@@ -8,7 +8,7 @@
 
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
-#include "media/gpu/tegra_v4l2_device.h"
+#include "media/gpu/v4l2/tegra_v4l2_device.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace media {
