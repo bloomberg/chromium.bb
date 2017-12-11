@@ -37,7 +37,7 @@ namespace test {
 
 class AuraTestContextFactory;
 
-enum class BackendType { CLASSIC, MUS };
+enum class BackendType { CLASSIC, MUS, MUS_HOSTING_VIZ };
 
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
