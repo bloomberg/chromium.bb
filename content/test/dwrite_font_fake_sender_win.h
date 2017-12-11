@@ -78,7 +78,7 @@ class FakeFont {
 //         added. The collection will not sort or reorder fonts in any way.
 //   Call GetSender()/GetTrackingSender() to obtain an IPC::Sender.
 //   Call Send() with DWriteFontProxyMsg_* to interact with the collection.
-//   Call MessageCount()/GetMessage() to inspect the messages that were sent.
+//   Call MessageCount()/GetIpcMessage() to inspect sent messages.
 //
 // The internal code flow for GetSender()/Send() is as follows:
 //   GetSender() returns a new FakeSender, pointing back to the collection.
@@ -96,7 +96,7 @@ class FakeFontCollection : public base::RefCounted<FakeFontCollection> {
 
   size_t MessageCount();
 
-  IPC::Message* GetMessage(size_t index);
+  IPC::Message* GetIpcMessage(size_t index);
 
   IPC::Sender* GetSender();
 

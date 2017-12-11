@@ -54,7 +54,7 @@ size_t FakeFontCollection::MessageCount() {
   return messages_.size();
 }
 
-IPC::Message* FakeFontCollection::GetMessage(size_t index) {
+IPC::Message* FakeFontCollection::GetIpcMessage(size_t index) {
   return messages_[index].get();
 }
 
