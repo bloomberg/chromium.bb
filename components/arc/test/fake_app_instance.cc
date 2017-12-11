@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "components/arc/app/arc_playstore_search_request_state.h"
 
 namespace mojo {
 
@@ -336,7 +337,7 @@ void FakeAppInstance::GetRecentAndSuggestedAppsFromPlayStore(
         fake_icon_png_data,                             // icon_png_data
         base::StringPrintf("test.package.%d", i)));     // package_name
   }
-  std::move(callback).Run(arc::mojom::AppDiscoveryRequestState::SUCCESS,
+  std::move(callback).Run(ArcPlayStoreSearchRequestState::SUCCESS,
                           std::move(fake_apps));
 }
 

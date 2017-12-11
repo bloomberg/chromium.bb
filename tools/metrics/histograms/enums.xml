@@ -1216,6 +1216,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="14" label="PHONESKY_MALFORMED_QUERY"/>
   <int value="15" label="PHONESKY_INTERNAL_ERROR"/>
   <int value="16" label="PHONESKY_RESULT_INVALID_DATA"/>
+  <int value="17" label="CHROME_GOT_INVALID_RESULT"/>
 </enum>
 
 <enum name="AppListSearchResult">
