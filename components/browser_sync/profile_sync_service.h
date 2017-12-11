@@ -571,9 +571,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Some tests rely on injecting calls to the encryption observer.
   syncer::SyncEncryptionHandler::Observer* GetEncryptionObserverForTest() const;
 
-  // Triggers sync cycle with request to update specified |types|.
-  void RefreshTypesForTest(syncer::ModelTypeSet types);
-
   // Calls sync engine to send ClearServerDataMessage to server. This is used
   // to start accounts with a clean slate when performing end to end testing.
   void ClearServerDataForTest(const base::Closure& callback);
