@@ -7,13 +7,10 @@
 
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 class RenderProcessHost;
-}
-
-namespace url {
-class Origin;
 }
 
 // Implementation of the BudgetService Mojo service provided by the browser
@@ -21,7 +18,7 @@ class Origin;
 // BudgetManager.
 class BudgetServiceImpl : public blink::mojom::BudgetService {
  public:
-  explicit BudgetServiceImpl(int render_process_id);
+  BudgetServiceImpl(int render_process_id, const url::Origin& origin);
   ~BudgetServiceImpl() override;
 
   static void Create(blink::mojom::BudgetServiceRequest request,
@@ -31,15 +28,15 @@ class BudgetServiceImpl : public blink::mojom::BudgetService {
   // blink::mojom::BudgetService implementation.
   void GetCost(blink::mojom::BudgetOperationType operation,
                GetCostCallback callback) override;
-  void GetBudget(const url::Origin& origin,
-                 GetBudgetCallback callback) override;
-  void Reserve(const url::Origin& origin,
-               blink::mojom::BudgetOperationType operation,
+  void GetBudget(GetBudgetCallback callback) override;
+  void Reserve(blink::mojom::BudgetOperationType operation,
                ReserveCallback callback) override;
 
  private:
   // Render process ID is used to get the browser context.
-  int render_process_id_;
+  const int render_process_id_;
+
+  const url::Origin origin_;
 
   DISALLOW_COPY_AND_ASSIGN(BudgetServiceImpl);
 };
