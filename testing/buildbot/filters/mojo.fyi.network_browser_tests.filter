@@ -582,6 +582,7 @@
 -PDFExtensionTest.EnsureSameOriginRepliesAllowed
 -PDFExtensionTest.GestureDetector
 -PDFExtensionTest.LinkPermissions
+-PDFExtensionTest.Metrics
 -PDFExtensionTest.NavigationOnCorrectTab
 -PDFExtensionTest.Navigator
 -PDFExtensionTest.OpenFromFTP
