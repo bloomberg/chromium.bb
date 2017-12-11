@@ -1106,28 +1106,26 @@ void DrawingBuffer::Bind(GLenum target) {
   gl_->BindFramebuffer(target, WantExplicitResolve() ? multisample_fbo_ : fbo_);
 }
 
-scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
-    SourceDrawingBuffer source_buffer) {
+bool DrawingBuffer::PaintRenderingResultsToImageData(
+    int& width,
+    int& height,
+    SourceDrawingBuffer source_buffer,
+    WTF::ArrayBufferContents& contents) {
   ScopedStateRestorer scoped_state_restorer(this);
 
-  int width = Size().Width();
-  int height = Size().Height();
+  DCHECK(!premultiplied_alpha_);
+  width = Size().Width();
+  height = Size().Height();
 
   CheckedNumeric<int> data_size = 4;
   data_size *= width;
   data_size *= height;
   if (!data_size.IsValid())
-    return nullptr;
+    return false;
 
-  unsigned byte_length = width * height * 4;
-  scoped_refptr<ArrayBuffer> dst_buffer =
-      ArrayBuffer::CreateOrNull(byte_length, 1);
-  if (!dst_buffer)
-    return nullptr;
-  scoped_refptr<Uint8Array> data_array =
-      Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
-  if (!data_array)
-    return nullptr;
+  WTF::ArrayBufferContents pixels(width * height, 4,
+                                  WTF::ArrayBufferContents::kNotShared,
+                                  WTF::ArrayBufferContents::kDontInitialize);
 
   GLuint fbo = 0;
   state_restorer_->SetFramebufferBindingDirty();
@@ -1141,10 +1139,9 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
     gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
   }
 
-  ReadBackFramebuffer(static_cast<unsigned char*>(data_array->Data()), width,
-                      height, kReadbackRGBA,
-                      WebGLImageConversion::kAlphaDoNothing);
-  FlipVertically(static_cast<uint8_t*>(data_array->Data()), width, height);
+  ReadBackFramebuffer(static_cast<unsigned char*>(pixels.Data()), width, height,
+                      kReadbackRGBA, WebGLImageConversion::kAlphaDoNothing);
+  FlipVertically(static_cast<uint8_t*>(pixels.Data()), width, height);
 
   if (fbo) {
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -1152,7 +1149,8 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
     gl_->DeleteFramebuffers(1, &fbo);
   }
 
-  return data_array;
+  pixels.Transfer(contents);
+  return true;
 }
 
 void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,
