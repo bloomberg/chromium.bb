@@ -49,9 +49,8 @@ DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderStreamTraits(
 void DecoderStreamTraits<DemuxerStream::AUDIO>::ReportStatistics(
     const StatisticsCB& statistics_cb,
     int bytes_decoded) {
-  PipelineStatistics statistics;
-  statistics.audio_bytes_decoded = bytes_decoded;
-  statistics_cb.Run(statistics);
+  stats_.audio_bytes_decoded = bytes_decoded;
+  statistics_cb.Run(stats_);
 }
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
@@ -126,19 +125,18 @@ DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderStreamTraits(
 void DecoderStreamTraits<DemuxerStream::VIDEO>::ReportStatistics(
     const StatisticsCB& statistics_cb,
     int bytes_decoded) {
-  PipelineStatistics statistics;
-  statistics.video_bytes_decoded = bytes_decoded;
+  stats_.video_bytes_decoded = bytes_decoded;
 
   if (keyframe_distance_average_.count()) {
-    statistics.video_keyframe_distance_average =
+    stats_.video_keyframe_distance_average =
         keyframe_distance_average_.Average();
   } else {
     // Before we have enough keyframes to calculate the average distance, we
     // will assume the average keyframe distance is infinitely large.
-    statistics.video_keyframe_distance_average = base::TimeDelta::Max();
+    stats_.video_keyframe_distance_average = base::TimeDelta::Max();
   }
 
-  statistics_cb.Run(statistics);
+  statistics_cb.Run(stats_);
 }
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::InitializeDecoder(
