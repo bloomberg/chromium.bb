@@ -619,7 +619,7 @@ void BrowserView::Show() {
 
   browser()->OnWindowDidShow();
 
-  chrome::MaybeShowInvertBubbleView(this);
+  MaybeShowInvertBubbleView(this);
 }
 
 void BrowserView::ShowInactive() {
@@ -1625,7 +1625,7 @@ void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
   // Don't infinitely recurse.
   if (!handling_theme_changed_)
     UserChangedTheme();
-  chrome::MaybeShowInvertBubbleView(this);
+  MaybeShowInvertBubbleView(this);
 }
 
 FullscreenControlHost* BrowserView::GetFullscreenControlHost() {
