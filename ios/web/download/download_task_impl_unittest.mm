@@ -197,6 +197,7 @@ TEST_F(DownloadTaskImplTest, DefaultState) {
   EXPECT_EQ(kUrl, task_->GetOriginalUrl());
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
+  EXPECT_EQ(-1, task_->GetHttpCode());
   EXPECT_EQ(-1, task_->GetTotalBytes());
   EXPECT_EQ(-1, task_->GetPercentComplete());
   EXPECT_EQ(kContentDisposition, task_->GetContentDisposition());
@@ -482,6 +483,32 @@ TEST_F(DownloadTaskImplTest, MimeTypeChange) {
     return task_->IsDone();
   }));
   EXPECT_EQ(kOtherMimeType, task_->GetMimeType());
+
+  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
+}
+
+// Tests updating HTTP response code.
+TEST_F(DownloadTaskImplTest, HttpResponseCode) {
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  CRWFakeNSURLSessionTask* session_task = Start();
+  ASSERT_TRUE(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+
+  // Download has finished with a different MIME type.
+  ASSERT_EQ(kMimeType, task_->GetMimeType());
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  int kHttpCode = 303;
+  session_task.response =
+      [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@(kUrl)]
+                                  statusCode:303
+                                 HTTPVersion:nil
+                                headerFields:nil];
+  SimulateDownloadCompletion(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    return task_->IsDone();
+  }));
+  EXPECT_EQ(kHttpCode, task_->GetHttpCode());
 
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }

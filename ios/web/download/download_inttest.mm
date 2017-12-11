@@ -98,6 +98,7 @@ TEST_F(DownloadTest, SucessfullDownload) {
   EXPECT_EQ(0, task->GetErrorCode());
   EXPECT_EQ(static_cast<int64_t>(strlen(kContent)), task->GetTotalBytes());
   EXPECT_EQ(100, task->GetPercentComplete());
+  EXPECT_EQ(200, task->GetHttpCode());
   EXPECT_EQ(kContent, task->GetResponseWriter()->AsStringWriter()->data());
 }
 

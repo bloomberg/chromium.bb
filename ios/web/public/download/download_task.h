@@ -54,6 +54,10 @@ class DownloadTask {
   // possible error codes.
   virtual int GetErrorCode() const = 0;
 
+  // HTTP response code for this download task. -1 the response has not been
+  // received yet or the response not an HTTP response.
+  virtual int GetHttpCode() const = 0;
+
   // Total number of expected bytes (a best-guess upper-bound). Returns -1 if
   // the total size is unknown.
   virtual int64_t GetTotalBytes() const = 0;
