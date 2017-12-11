@@ -3638,6 +3638,11 @@
           '--xvfb',
         ],
       },
+      'Linux Tests (dbg)(1)': {
+        'args': [
+          '--xvfb',
+        ],
+      },
       # chromium.mac
       # Disable parallelism on all Mac bots.
       'Mac10.10 Tests': {
@@ -3663,7 +3668,6 @@
       },
     },
     'remove_from': [
-      'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
       'Mac10.9 Tests',
       'Mac10.9 Tests (dbg)',
