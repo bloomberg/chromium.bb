@@ -1625,7 +1625,6 @@
 <translation id="3564334271939054422">Ενδέχεται να ζητηθεί από το Wi-Fi που χρησιμοποιείτε (<ph name="NETWORK_ID" />) να επισκεφτείτε τη σελίδα σύνδεσής του.</translation>
 <translation id="3564708465992574908">Επίπεδα εστίασης</translation>
 <translation id="3566721612727112615">Δεν προστέθηκαν ιστότοποι</translation>
-<translation id="3566866560249787686">Δεν ήταν δυνατή η φόρτωση του Βοηθού Google. Δοκιμάστε ξανά.</translation>
 <translation id="3569382839528428029">Θέλετε να μοιράζεστε την οθόνη σας με την εφαρμογή <ph name="APP_NAME" />;</translation>
 <translation id="3570985609317741174">Περιεχόμενο ιστού</translation>
 <translation id="3571734092741541777">Ρύθμιση</translation>
@@ -2840,6 +2839,7 @@
 <translation id="5592595402373377407">Δεν υπάρχουν ακόμη αρκετά διαθέσιμα στοιχεία.</translation>
 <translation id="5595152862129936745">Πολύ μακριά</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
+<translation id="5596627076506792578">Περισσότερες επιλογές</translation>
 <translation id="5600706100022181951">Η λήψη της ενημέρωσης απαιτεί <ph name="UPDATE_SIZE_MB" /> MB δεδομένων κινητής τηλεφωνίας. Θέλετε να συνεχίσετε;</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Άλλες μηχανές αναζήτησης</translation>
@@ -4021,7 +4021,6 @@
 <translation id="7576690715254076113">Συρραφή</translation>
 <translation id="7579149537961810247">Σίγαση Ιστοτόπων</translation>
 <translation id="7580671184200851182">Αναπαραγωγή του ίδιου ήχου μέσω όλων των ηχείων (μονοφωνικός ήχος)</translation>
-<translation id="7581273696622423628">Συμμετοχή σε έρευνα</translation>
 <translation id="7581462281756524039">Ένα εργαλείο καθαρισμού</translation>
 <translation id="7582582252461552277">Προτίμηση αυτού του δικτύου</translation>
 <translation id="7586312264284919041">Θα θέλατε να μεταφραστεί αυτή η σελίδα;</translation>

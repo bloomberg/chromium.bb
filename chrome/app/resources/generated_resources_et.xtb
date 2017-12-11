@@ -1624,7 +1624,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Teie kasutatav WiFi-võrk (<ph name="NETWORK_ID" />) võib nõuda sisselogimislehe külastamist.</translation>
 <translation id="3564708465992574908">Suumitasemed</translation>
 <translation id="3566721612727112615">Ühtegi saiti ei lisatud</translation>
-<translation id="3566866560249787686">Google'i assistendi laadimine nurjus, proovige uuesti.</translation>
 <translation id="3569382839528428029">Kas soovite, et rakendus <ph name="APP_NAME" /> jagaks teie ekraani?</translation>
 <translation id="3570985609317741174">Veebisisu</translation>
 <translation id="3571734092741541777">Seadista</translation>
@@ -2839,6 +2838,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5592595402373377407">Praegu pole veel saadaval piisavalt andmeid.</translation>
 <translation id="5595152862129936745">Väga kaugel</translation>
 <translation id="5595485650161345191">Muuda aadressi</translation>
+<translation id="5596627076506792578">Rohkem valikuid</translation>
 <translation id="5600706100022181951">Värskenduse allalaadimiseks kulub <ph name="UPDATE_SIZE_MB" /> MB mobiilset andmesidet. Kas soovite jätkata?</translation>
 <translation id="5601503069213153581">PIN-kood</translation>
 <translation id="5605623530403479164">Muud otsingumootorid</translation>
@@ -4019,7 +4019,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7576690715254076113">Eksemplarhaaval</translation>
 <translation id="7579149537961810247">Vaigista saidid</translation>
 <translation id="7580671184200851182">Esita sama heli kõigist kõlaritest (monoheli)</translation>
-<translation id="7581273696622423628">Osalege küsitluses</translation>
 <translation id="7581462281756524039">Puhastustööriist</translation>
 <translation id="7582582252461552277">Eelista seda võrku</translation>
 <translation id="7586312264284919041">Kas sooviksite seda lehte tõlkida?</translation>

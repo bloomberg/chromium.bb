@@ -302,7 +302,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Об’єднати мої дані</translation>
 <translation id="393697183122708255">Голосовий пошук вимкнено</translation>
-<translation id="3946611741043634542">Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="3950820424414687140">Увійти</translation>
 <translation id="395206256282351086">Пропозиції термінів і сайтів вимкнено</translation>
 <translation id="395922942268463099">Сторінки регулярно оновлюються</translation>
@@ -384,7 +383,6 @@
 <translation id="4699172675775169585">Кешовані зображення та файли</translation>
 <translation id="4714588616299687897">Заощаджуйте до 60% трафіку</translation>
 <translation id="4720023427747327413">Відкрити в <ph name="PRODUCT_NAME" /></translation>
-<translation id="472631402238783923">Допоможіть покращити Chrome. <ph name="BEGIN_LINK" />Візьміть участь в опитуванні.<ph name="END_LINK" /></translation>
 <translation id="4730876730346568982">Ви переходите з облікового запису для синхронізації <ph name="ACCOUNT_EMAIL_OLD" /> на <ph name="ACCOUNT_EMAIL_NEW" />. Ваші наявні дані Chrome збережено в домені <ph name="MANAGED_DOMAIN" />. Дані буде видалено з цього пристрою, але вони залишаться в обліковому записі <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Оновити</translation>
 <translation id="4738836084190194332">Востаннє синхронізовано: <ph name="WHEN" /></translation>
@@ -735,7 +733,6 @@
 <translation id="7876243839304621966">Видалити все</translation>
 <translation id="7882131421121961860">Історії не знайдено</translation>
 <translation id="7882806643839505685">Увімкнути звук для певного сайту.</translation>
-<translation id="7889523183926868857">Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="7929962904089429003">Відкрити меню</translation>
 <translation id="7942131818088350342">Застаріла версія <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>

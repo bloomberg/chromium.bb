@@ -11,7 +11,7 @@
 <translation id="1208421848177517699">Transliterasi (namaste → નમસ્તે)</translation>
 <translation id="1278813325885878377">Keyboard QWERTY Magyar</translation>
 <translation id="1310751437842832374">Transliterasi (mausam → ନମସ୍ତେ)</translation>
-<translation id="1337036551624197047">Keyboard untuk bahasa Cheska</translation>
+<translation id="1337036551624197047">Keyboard untuk bahasa Ceko</translation>
 <translation id="1352103415082130575">Keyboard Thai (Pattachote)</translation>
 <translation id="1358032944105037487">Keyboard untuk bahasa Jepang</translation>
 <translation id="1399648040768741453">Keyboard Telugu (Fonetik)</translation>
@@ -48,13 +48,12 @@
 <translation id="255937426064304553">Internasional AS</translation>
 <translation id="2563185590376525700">Katak</translation>
 <translation id="2649120831653069427">Ikan Pelangi</translation>
-<translation id="2656923396825879524">Bentuk geometri 3</translation>
 <translation id="2735698359135166290">Keyboard standar Rumania</translation>
 <translation id="2771816809568414714">Keju</translation>
 <translation id="2781645665747935084">Belgia</translation>
 <translation id="2790805296069989825">Keyboard untuk bahasa Rusia</translation>
 <translation id="2870836398458454343">Transliterasi (marhaban ← مرحبا)</translation>
-<translation id="288024221176729610">Cheska</translation>
+<translation id="288024221176729610">Ceko</translation>
 <translation id="2894654529758326923">Informasi</translation>
 <translation id="2902734494705624966">Extended AS</translation>
 <translation id="2923240520113693977">Esti</translation>
@@ -85,8 +84,6 @@
 <translation id="3606220979431771195">Turki-F</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3678559383040232393">Keyboard Malta</translation>
-<translation id="3728399474846997774">Bentuk geometri 2</translation>
-<translation id="3734201824773416162">Bentuk geometri 1</translation>
 <translation id="3801082500826908679">Faeroe</translation>
 <translation id="3809272675881623365">Kelinci</translation>
 <translation id="3815016854028376614">Metode masukan Zhuyin</translation>
@@ -97,7 +94,6 @@
 <translation id="3858678421048828670">Keyboard untuk bahasa Italia</translation>
 <translation id="3910699493603749297">Keyboard Khmer</translation>
 <translation id="391445228316373457">Keyboard Nepali (Fonetik)</translation>
-<translation id="3947050919258841761">Bentuk geometri 5</translation>
 <translation id="3958548648197196644">Burung Kiwi</translation>
 <translation id="4070370845051020638">Metode masukan Kanton</translation>
 <translation id="4072248638558688893">Keyboard Tamil (Fonetik)</translation>
@@ -166,7 +162,7 @@
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Keyboard untuk wilayah Amerika Latin</translation>
 <translation id="6012987430370760224">Keyboard Marathi (Fonetik)</translation>
-<translation id="60357267506638014">QWERTY Cheska</translation>
+<translation id="60357267506638014">QWERTY Ceko</translation>
 <translation id="6054173164583630569">Keyboard untuk bahasa Prancis</translation>
 <translation id="6111770213269631447">Transliterasi (namaskar → নমস্কার)</translation>
 <translation id="6164412158936057769">Kupu-kupu</translation>
@@ -217,7 +213,6 @@
 <translation id="7774365994322694683">Burung</translation>
 <translation id="7825423931463735974">Keyboard Tamil (Tamil99)</translation>
 <translation id="7853966320808728790">BÉPO Prancis</translation>
-<translation id="7872088194351932564">Bentuk geometri 4</translation>
 <translation id="7896906914454843592">Keyboard Perluasan AS</translation>
 <translation id="7898607018410277265">Keyboard Gujarati (Fonetik Baru)</translation>
 <translation id="7917972308273378936">Keyboard untuk bahasa Lituavi</translation>
@@ -254,7 +249,7 @@
 <translation id="8808686172382650546">Kucing</translation>
 <translation id="885381502874625531">Keyboard Belarusia</translation>
 <translation id="8900820606136623064">Magyar</translation>
-<translation id="8901822611024316615">Keyboard QWERTY Cheska</translation>
+<translation id="8901822611024316615">Keyboard QWERTY Ceko</translation>
 <translation id="8919081441417203123">Dansk</translation>
 <translation id="8960999352790021682">Keyboard Bengali (Fonetik)</translation>
 <translation id="9017798300203431059">Fonetik Rusia</translation>

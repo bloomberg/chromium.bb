@@ -1620,7 +1620,6 @@
 <translation id="3564334271939054422">Wi-Fi мрежа коју користите (<ph name="NETWORK_ID" />) ће можда захтевати да посетите страницу за пријављивање.</translation>
 <translation id="3564708465992574908">Нивои зумирања</translation>
 <translation id="3566721612727112615">Ниједан сајт није додат</translation>
-<translation id="3566866560249787686">Google помоћник није успео да се учита. Покушајте поново.</translation>
 <translation id="3569382839528428029">Да ли желите да <ph name="APP_NAME" /> дели екран?</translation>
 <translation id="3570985609317741174">Веб-садржај</translation>
 <translation id="3571734092741541777">Подеси</translation>
@@ -2835,6 +2834,7 @@
 <translation id="5592595402373377407">Још увек није доступна довољна количина података.</translation>
 <translation id="5595152862129936745">Врло далеко</translation>
 <translation id="5595485650161345191">Измена адресе</translation>
+<translation id="5596627076506792578">Још опција</translation>
 <translation id="5600706100022181951">Ажурирање ће се преузети уз употребу <ph name="UPDATE_SIZE_MB" /> MB мобилних података. Желите ли да наставите?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Остали претраживачи</translation>
@@ -4010,7 +4010,6 @@
 <translation id="7576690715254076113">Упари</translation>
 <translation id="7579149537961810247">Искључи звук сајтова</translation>
 <translation id="7580671184200851182">Пуштај исти звук на свим звучницима (моно звук)</translation>
-<translation id="7581273696622423628">Прикажи анкету</translation>
 <translation id="7581462281756524039">Алатка за чишћење</translation>
 <translation id="7582582252461552277">Подеси као приоритетну мрежу</translation>
 <translation id="7586312264284919041">Желите ли да преведете ову страницу?</translation>

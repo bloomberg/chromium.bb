@@ -1624,7 +1624,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Wi-Fi mreža koju upotrebljavate (<ph name="NETWORK_ID" />) može tražiti da otvorite njezinu stranicu za prijavu.</translation>
 <translation id="3564708465992574908">Razine zumiranja</translation>
 <translation id="3566721612727112615">Nema dodanih web-lokacija</translation>
-<translation id="3566866560249787686">Učitavanje Google asistenta nije uspjelo, pokušajte ponovo.</translation>
 <translation id="3569382839528428029">Želite li da <ph name="APP_NAME" /> dijeli vaš zaslon?</translation>
 <translation id="3570985609317741174">Web-sadržaj</translation>
 <translation id="3571734092741541777">Postavi</translation>
@@ -2839,6 +2838,7 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Još nije dostupno dovoljno podataka.</translation>
 <translation id="5595152862129936745">Vrlo daleko</translation>
 <translation id="5595485650161345191">Uređivanje adrese</translation>
+<translation id="5596627076506792578">Više opcija</translation>
 <translation id="5600706100022181951">Za preuzimanje ažuriranja iskoristit će se <ph name="UPDATE_SIZE_MB" /> MB mobilnih podataka. Želite li nastaviti?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Ostale tražilice</translation>
@@ -4018,7 +4018,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7576690715254076113">Spari</translation>
 <translation id="7579149537961810247">Zanemari web-lokacije</translation>
 <translation id="7580671184200851182">Reprodukcija istog zvuka na svim zvučnicima (mono audio)</translation>
-<translation id="7581273696622423628">Ispunite anketu</translation>
 <translation id="7581462281756524039">Alat za čišćenje</translation>
 <translation id="7582582252461552277">Preferiraj ovu mrežu</translation>
 <translation id="7586312264284919041">Želite li prevesti ovu stranicu?</translation>

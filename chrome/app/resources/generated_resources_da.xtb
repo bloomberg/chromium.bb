@@ -1624,7 +1624,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Det Wi-Fi-netværk, du bruger (<ph name="NETWORK_ID" />), kan kræve, at du går til netværkets loginside.</translation>
 <translation id="3564708465992574908">Zoomniveauer</translation>
 <translation id="3566721612727112615">Der er ikke tilføjet nogen websites</translation>
-<translation id="3566866560249787686">Google Assistent kunne ikke indlæses. Prøv igen.</translation>
 <translation id="3569382839528428029">Vil du acceptere, at <ph name="APP_NAME" /> deler din skærm?</translation>
 <translation id="3570985609317741174">Webindhold</translation>
 <translation id="3571734092741541777">Konfigurer</translation>
@@ -2839,6 +2838,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5592595402373377407">Der er ikke nok data til rådighed endnu.</translation>
 <translation id="5595152862129936745">Meget langt væk</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
+<translation id="5596627076506792578">Flere valgmuligheder</translation>
 <translation id="5600706100022181951">Opdateringen downloades ved brug af <ph name="UPDATE_SIZE_MB" /> MB mobildata. Vil du fortsætte?</translation>
 <translation id="5601503069213153581">Pinkode</translation>
 <translation id="5605623530403479164">Andre søgemaskiner</translation>
@@ -4020,7 +4020,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7576690715254076113">Saml</translation>
 <translation id="7579149537961810247">Slå lyden fra på websites</translation>
 <translation id="7580671184200851182">Afspil den samme lyd via alle højttalere (monolyd)</translation>
-<translation id="7581273696622423628">Deltag i undersøgelsen</translation>
 <translation id="7581462281756524039">Et oprydningsværktøj</translation>
 <translation id="7582582252461552277">Foretræk dette netværk</translation>
 <translation id="7586312264284919041">Vil du oversætte denne side?</translation>

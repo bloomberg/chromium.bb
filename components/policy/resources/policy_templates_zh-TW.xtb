@@ -46,39 +46,6 @@
 
       應以毫秒數指定政策值。</translation>
 <translation id="1151353063931113432">允許這些網站的圖片</translation>
-<translation id="1151545095291359187">配置 <ph name="PRODUCT_NAME" /> 的擴充功能管理設定。
-
-          這項政策可控制多項設定 (包括由任何現有的擴充功能相關政策控制的設定)，效力優先於任何先前設定的既有政策。
-
-          這項政策可為擴充功能 ID 或更新網址與其設定建立對應關係。有了擴充功能 ID，系統就只會將設定套用到指定的擴充功能。你可以針對特殊的 ID <ph name="DEFAULT_SCOPE" /> 指定預設設定，讓沒有透過這項政策指定自訂設定的擴充功能全部套用預設設定。此外，系統會比對這個擴充功能的資訊清單提供的更新網址，將設定套用到所有更新網址相符的擴充功能 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。
-
-          每個擴充功能 (或更新網址相同的擴充功能) 的設定也會記錄以下列載的這些欄位。
-
-          <ph name="INSTALLATION_MODE" />：對應到指示擴充功能安裝模式的字串。有效的字串如下：
-          * <ph name="ALLOWED" />：允許使用者安裝這個擴充功能 (這是預設的行為)。
-          * <ph name="BLOCKED" />：禁止安裝這個擴充功能。
-          * <ph name="FORCE_INSTALLED" />：自動安裝這個擴充功能，且使用者無法移除。
-          * <ph name="NORMAL_INSTALLED" />：自動安裝這個擴充功能，但使用者可以停用。
-
-          你也可以為多個擴充功能設定 <ph name="INSTALLATION_MODE" />，包括 <ph name="DEFAULT_SCOPE" /> 擴充功能 (做為預設設定) 和更新網址相同的擴充功能。在這種情況下，只能使用 <ph name="ALLOWED" /> 和 <ph name="BLOCKED" /> 這兩個值。
-
-          如果將模式設為 <ph name="FORCE_INSTALLED" /> 或 <ph name="NORMAL_INSTALLED" />，則必須一併設定 <ph name="UPDATE_URL" />。請注意，系統只會在初次安裝擴充功能時使用你在這項政策中設定的更新網址，後續更新擴充功能時則會使用擴充功能的資訊清單指示的更新網址。更新網址應指向前述更新資訊清單 XML 檔案。
-
-          <ph name="BLOCKED_PERMISSIONS" />：對應到字串清單，指示擴充功能的封鎖 API 權限。權限名稱與擴充功能資訊清單宣告的權限字串相同 (如 <ph name="LINK_TO_EXTENSION_DOC3" /> 所述)。你也可以針對 <ph name="DEFAULT_SCOPE" /> 擴充功能配置這項設定。如果擴充功能要求封鎖清單中的權限，則無法載入。如果擴充功能含有封鎖的權限，但屬於選擇性要求，系統會以一般方式進行處理。不過，一旦要求的權限發生衝突，系統會自動在執行階段拒絕要求。
-
-          <ph name="ALLOWED_PERMISSIONS" />：與 <ph name="BLOCKED_PERMISSIONS" /> 相似，但明確允許部分可能遭到全域封鎖權限清單封鎖的權限，因此無法針對 <ph name="DEFAULT_SCOPE" /> 擴充功能進行設定。請注意，這項設定不會自動將權限授予擴充功能。
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />：對應到版本字串。版本字串的格式與擴充功能資訊清單中使用的格式相同 (如 <ph name="LINK_TO_EXTENSION_DOC4" /> 所述)。如果擴充功能的版本比指定的最低版本更舊，便會遭到停用。這項設定也適用於強制安裝的擴充功能。
-
-          下列設定僅適用於預設的 <ph name="DEFAULT_SCOPE" /> 設定：
-
-          <ph name="INSTALL_SOURCES" />：這份清單中的每個項目都是擴充功能樣式比對模式 (<ph name="LINK_TO_MATCH_PATTERNS" />)。使用者可以透過任何與這份清單中的項目相符的網址輕鬆安裝各種項目。<ph name="EXTENSION_SUFFIX_WILDCARD" /> 檔案的位置和下載來源網頁 (亦即參照網址) 都必須與這些模式相符。
-
-          <ph name="ALLOWED_TYPES" />：這項設定會將可以在 <ph name="PRODUCT_NAME" /> 中安裝的擴充功能/應用程式類型加入許可清單。設定值為字串清單，系統接受的字串如下：<ph name="VALID_ALLOWED_TYPES" />。如要進一步瞭解這些類型，請參閱 <ph name="PRODUCT_NAME" /> 擴充功能說明文件。
-          <ph name="BLOCKED_INSTALL_MESSAGE" />：如果使用者要安裝的擴充功能遭到政策封鎖，Chrome 線上應用程式商店會顯示一般錯誤訊息。這項設定可讓你在錯誤訊息中附加文字，藉此將使用者導向服務中心，說明特定擴充功能遭到封鎖的原因，或提供其他資訊。錯誤訊息的長度上限為 1000 個字元，多餘的字元會遭到截斷。
-          <ph name="RUNTIME_BLOCKED_HOSTS" />：接受擴充功能禁止進行互動的主機清單。互動行為包括植入 JavaScript、修改及查看 webRequests/webNavigation、查看及修改 Cookie。格式與比對模式 <ph name="LINK_TO_MATCH_PATTERNS" /> 類似，但不可定義路徑，例如「*://*.example.com」。這項設定也支援有效的 TLD 萬用字元，例如「*://example.*」。
-          <ph name="RUNTIME_ALLOWED_HOSTS" />：接受擴充功能可進行互動的主機清單 (無論是否為 <ph name="RUNTIME_BLOCKED_HOSTS" /> 列出的主機)。格式與 <ph name="RUNTIME_BLOCKED_HOSTS" /> 相同。
-          </translation>
 <translation id="1152117524387175066">回報裝置的開發人員模式切換設定在開機時的狀態。
 
       如果這項政策設為 False，則不會回報開發人員模式切換設定的狀態。</translation>

@@ -1624,7 +1624,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3564334271939054422">Kullandığınız Kablosuz ağ (<ph name="NETWORK_ID" />) kendi giriş sayfasını ziyaret etmenizi gerektiriyor olabilir.</translation>
 <translation id="3564708465992574908">Yakınlaştırma Seviyeleri</translation>
 <translation id="3566721612727112615">Site eklenmedi</translation>
-<translation id="3566866560249787686">Google Asistan yüklenemedi, lütfen tekrar deneyin.</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> uygulamasının ekranınızı paylaşmasını istiyor musunuz?</translation>
 <translation id="3570985609317741174">Web içeriği</translation>
 <translation id="3571734092741541777">Kur</translation>
@@ -2839,6 +2838,7 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="5592595402373377407">Henüz yeterli veri yok.</translation>
 <translation id="5595152862129936745">Çok uzak</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
+<translation id="5596627076506792578">Diğer seçenekler</translation>
 <translation id="5600706100022181951">Güncellemeyi indirmek için <ph name="UPDATE_SIZE_MB" /> MB mobil veri kullanılacak. Devam etmek istiyor musunuz?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Diğer arama motorları</translation>
@@ -4020,7 +4020,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7576690715254076113">Harmanla</translation>
 <translation id="7579149537961810247">Sitelerin Sesini Kapat</translation>
 <translation id="7580671184200851182">Tüm hoparlörlerden aynı sesi çal (mono ses)</translation>
-<translation id="7581273696622423628">Ankete katıl</translation>
 <translation id="7581462281756524039">Temizleme aracı</translation>
 <translation id="7582582252461552277">Bu ağı tercih et</translation>
 <translation id="7586312264284919041">Bu sayfayı çevirmek ister misiniz?</translation>

@@ -453,7 +453,7 @@
 <translation id="1701062906490865540">حذف این شخص</translation>
 <translation id="1706586824377653884">افزوده‌شده توسط سرپرست سیستم</translation>
 <translation id="1706625117072057435">سطوح بزرگ‌نمایی</translation>
-<translation id="1707463636381878959">به اشتراک گذاشتن این شبکه با سایر کاربران</translation>
+<translation id="1707463636381878959">هم‌رسانی این شبکه با سایر کاربران</translation>
 <translation id="1708338024780164500">(غیرفعال)</translation>
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (شناسه: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (اصلی)</translation>
@@ -898,7 +898,7 @@
 <translation id="2475982808118771221">یک خطا روی داد</translation>
 <translation id="2476578072172137802">تنظیمات سایت</translation>
 <translation id="2478176599153288112">مجوزهای فایل رسانه‌ای برای «<ph name="EXTENSION" />»</translation>
-<translation id="247949520305900375">به اشتراک گذاشتن صوت</translation>
+<translation id="247949520305900375">هم‌رسانی صوت</translation>
 <translation id="2480868415629598489">اصلاح داده‌هایی که کپی و جای‌گذاری می‌کنید</translation>
 <translation id="2481332092278989943">افزودن به قفسه</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
@@ -1620,7 +1620,6 @@
 <translation id="3564334271939054422">‏احتمالاً شبکه‌ Wi-Fi مورد استفاده‌تان (<ph name="NETWORK_ID" />) نیاز دارد که به یک صفحه ورود به سیستم بروید.</translation>
 <translation id="3564708465992574908">سطوح بزرگ‌نمایی</translation>
 <translation id="3566721612727112615">سایتی اضافه نشد</translation>
-<translation id="3566866560249787686">‏«دستیار Google» بارگیری نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3569382839528428029">آیا می‌خواهید <ph name="APP_NAME" /> صفحه شما را به اشتراک بگذارد؟</translation>
 <translation id="3570985609317741174">محتوای وب</translation>
 <translation id="3571734092741541777">تنظیم</translation>
@@ -2835,6 +2834,7 @@
 <translation id="5592595402373377407">هنوز داده کافی در دسترس نیست.</translation>
 <translation id="5595152862129936745">خیلی دور</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
+<translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5600706100022181951">به‌روزرسانی با مصرف <ph name="UPDATE_SIZE_MB" /> مگابایت داده تلفن همراه بارگیری می‌شود. ادامه می‌دهید؟</translation>
 <translation id="5601503069213153581">پین</translation>
 <translation id="5605623530403479164">موتورهای جستجوی دیگر</translation>
@@ -4017,7 +4017,6 @@
 <translation id="7576690715254076113">تلفیق کردن</translation>
 <translation id="7579149537961810247">بی‌صدا کردن سایت‌ها</translation>
 <translation id="7580671184200851182">یک صدا را از طریق همه بلندگوها پخش کنید (تک صوتی)</translation>
-<translation id="7581273696622423628">در نظرسنجی شرکت کنید</translation>
 <translation id="7581462281756524039">یک ابزار پاکسازی</translation>
 <translation id="7582582252461552277">این شبکه ارجحیت دارد</translation>
 <translation id="7586312264284919041">مایلید این صفحه ترجمه شود؟</translation>

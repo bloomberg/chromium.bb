@@ -46,39 +46,6 @@
 
       Retningslinjeverdien må angis i millisekunder.</translation>
 <translation id="1151353063931113432">Tillat bilder på disse nettstedene</translation>
-<translation id="1151545095291359187">Konfigurerer innstillingene for administrasjon av utvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne regelen kontrollerer flere innstillinger, deriblant innstillinger som kontrolleres av eventuelle eksisterende utvidelsesrelaterte regler. Denne regelen overstyrer eventuelle eldre regler hvis begge er angitt.
-
-          Denne regelen tilordner en utvidelses-ID eller en nettadresse for oppdatering til den tilhørende konfigurasjonen. Med en utvidelses-ID blir konfigurasjonen bare brukt for den angitte utvidelsen. En standardkonfigurasjon kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som brukes for alle utvidelser som ikke har noen tilpasset konfigurasjon angitt i denne regelen. Med en nettadresse for oppdatering blir konfigurasjonen brukt for alle utvidelser med den eksakte nettadressen for oppdatering oppgitt i manifestet til utvidelsen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurasjonen for hver enkelt utvidelse (eller utvidelser med samme nettadresse for oppdatering) er en annen oppslagsliste som kan inneholde feltene dokumentert nedenfor.
-
-          <ph name="INSTALLATION_MODE" />: knyttes til en streng som indikerer installasjonsmodusen for utvidelsen. De gyldige strengene er:
-          * <ph name="ALLOWED" />: gjør det mulig for utvidelsen å installeres av brukeren. Denne funksjonaliteten brukes som standard. 
-          * <ph name="BLOCKED" />: blokkerer installasjon av utvidelsen.
-          * <ph name="FORCE_INSTALLED" />: gjør at utvidelsen installeres automatisk, men kan ikke fjernes av brukeren
-          * <ph name="NORMAL_INSTALLED" />: gjør at utvidelsen installeres automatisk, men brukeren kan slå den av
-
-          <ph name="INSTALLATION_MODE" /> kan også konfigureres for flere utvidelser, inkludert ved bruk av <ph name="DEFAULT_SCOPE" />-utvidelsen (som standardinnstillinger) samt utvidelser med samme nettadresse for oppdatering. Bare verdiene <ph name="ALLOWED" /> og <ph name="BLOCKED" /> kan brukes i dette tilfellet.
-
-          Hvis modusen er angitt som <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" />, må en <ph name="UPDATE_URL" /> konfigureres også. Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – påfølgende oppdateringer av utvidelsen bruker nettadressen for oppdatering oppgitt i utvidelsens manifest. Nettadressen for oppdatering skal peke til et oppdateringsmanifest i XML-format som som nevnt ovenfor.
-
-          <ph name="BLOCKED_PERMISSIONS" />: knyttes til en liste over strenger som indikerer hvilke API-tillatelser som er blokkert for utvidelsen. Tillatelsesnavnene er de samme som tillatelsesstrengene som oppgis i manifestet til utvidelsen, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC3" />. Denne innstillingen kan også konfigureres for <ph name="DEFAULT_SCOPE" />-utvidelser. Hvis utvidelsen krever en tillatelse som er på blokkeringslisten, får den ikke tillatelse til å kjøre. Hvis utvidelsen inneholder en blokkert tillatelse som et valgfritt krav, behandles den som vanlig, men forespørsler om motstridende tillatelser blir avvist automatisk under kjøring.
-
-          <ph name="ALLOWED_PERMISSIONS" />: ligner på <ph name="BLOCKED_PERMISSIONS" />, men tillater i stedet uttrykkelig noen tillatelser som kan være blokkert i listen over globalt blokkerte tillatelser. Denne innstillingen kan derfor ikke konfigureres for <ph name="DEFAULT_SCOPE" />-utvidelser. Merk at denne innstillingen ikke gir innvilgede tillatelser til utvidelser automatisk.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: knyttes til en versjonsstreng. Formatet for versjonsstrengen er det samme som det som er brukt i utvidelsens manifest, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC4" />. Utvidelser med en versjon som er eldre enn den spesifiserte minimumsversjonen, blir deaktivert. Dette gjelder også for utvidelser med tvungen installering (FORCE_INSTALLED).
-
-          Følgende innstillinger kan bare bruker for standardkonfigurasjonen <ph name="DEFAULT_SCOPE" />:
- 
-          <ph name="INSTALL_SOURCES" />: Hvert element i denne listen er et samsvarsmønster av typen som brukes for utvidelser (<ph name="LINK_TO_MATCH_PATTERNS" />). Brukere kan enkelt installere elementer fra alle nettadresser som samsvarer med et element på denne listen. Både plasseringen av <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen og siden der nedlastingen startes fra (dvs. henvisningsadressen), må tillates av disse mønstrene.
-
-          <ph name="ALLOWED_TYPES" />: Denne innstillingen godkjenner de tillatte typene av utvidelser/apper som kan installeres i <ph name="PRODUCT_NAME" />. Verdien er en liste over strenger, der hver streng skal tilhøre én av følgende: <ph name="VALID_ALLOWED_TYPES" />. Se i utvidelsesdokumentasjonen for <ph name="PRODUCT_NAME" /> for å få mer informasjon om disse typene.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Hvis en bruker prøver å installere en utvidelse, men forsøket blir blokkert i henhold til en regel, viser Chrome Nettmarked en generisk feilmelding. Denne innstillingen har støtte for å legge til egendefinert tekst i feilmeldingen. Dette kan brukes til å henvise brukere til brukerstøtten din, forklare hvorfor en bestemt utvidelse er blokkert, eller noe annet. Feilmeldingen blir avkortet hvis den er lengre enn 1000 tegn.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Godtar en liste over verter som en utvidelse blir blokkert fra å interagere med. Dette omfatter injisering av JavaScript-kode, endring og åpning av webRequests/webNavigation samt endring og åpning av informasjonskapsler. Dette formatet ligner på Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, bortsett fra at ingen baner kan defineres – for eksempel «*://*.example.com». Formatet støtter også effektive TLD-jokertegn, for eksempel «*://example.*».
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Godtar en liste over verter som utvidelsen kan interagere med, uansett om de er oppført i <ph name="RUNTIME_BLOCKED_HOSTS" /> eller ikke. Dette er det samme formatet som <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">Rapportér tilstanden til enhetens utviklerbryter ved oppstart.
 
       Hvis innstillingen angis som «true», rapporteres ikke tilstanden til utviklerbryteren.</translation>

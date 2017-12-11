@@ -1625,7 +1625,6 @@
 <translation id="3564334271939054422">사용 중인 Wi-Fi 네트워크(<ph name="NETWORK_ID" />)에서 로그인 페이지 방문을 요청할 수 있습니다.</translation>
 <translation id="3564708465992574908">확대/축소 수준</translation>
 <translation id="3566721612727112615">추가된 사이트 없음</translation>
-<translation id="3566866560249787686">Google 어시스턴트를 로드할 수 없습니다. 다시 시도해 주세요.</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" />에서 내 화면을 공유하도록 허용하시겠습니까?</translation>
 <translation id="3570985609317741174">웹 콘텐츠</translation>
 <translation id="3571734092741541777">설정</translation>
@@ -2839,6 +2838,7 @@
 <translation id="5592595402373377407">아직 데이터가 충분하지 않습니다.</translation>
 <translation id="5595152862129936745">매우 멀리 있음</translation>
 <translation id="5595485650161345191">주소 수정</translation>
+<translation id="5596627076506792578">옵션 더보기</translation>
 <translation id="5600706100022181951"><ph name="UPDATE_SIZE_MB" />MB의 모바일 데이터를 사용하여 업데이트를 다운로드합니다. 계속하시겠습니까?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">기타 검색엔진</translation>
@@ -4019,7 +4019,6 @@
 <translation id="7576690715254076113">한 부씩 인쇄</translation>
 <translation id="7579149537961810247">사이트 음소거</translation>
 <translation id="7580671184200851182">모든 스피커에서 동일한 오디오 실행(모노 오디오)</translation>
-<translation id="7581273696622423628">설문조사 참여</translation>
 <translation id="7581462281756524039">정리도구</translation>
 <translation id="7582582252461552277">이 네트워크를 사용</translation>
 <translation id="7586312264284919041">이 페이지를 번역하시겠습니까?</translation>

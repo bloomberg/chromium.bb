@@ -95,6 +95,11 @@
 <translation id="1145292499998999162">Plug-in blocked</translation>
 <translation id="1145532888383813076">Search your device, apps and web.</translation>
 <translation id="1146204723345436916">Import bookmarks from HTML file...</translation>
+<translation id="1148097584170732637"><ph name="FILE_COUNT" /> found.
+    <ph name="LINE_BREAK1" />
+    Not enough space available in local storage. Additional <ph name="FILE_SIZE" /> needed.
+    <ph name="LINE_BREAK2" />
+    Try selecting fewer photos.</translation>
 <translation id="1149401351239820326">Expiry month</translation>
 <translation id="1153356358378277386">Paired devices</translation>
 <translation id="1156488781945104845">Current time</translation>
@@ -476,6 +481,7 @@
 <translation id="1732215134274276513">Unpin Tabs</translation>
 <translation id="1737968601308870607">File bug</translation>
 <translation id="1743570585616704562">Not recognised</translation>
+<translation id="1743970419083351269">Close Downloads Bar</translation>
 <translation id="1744108098763830590">background page</translation>
 <translation id="1745520510852184940">Always Do This</translation>
 <translation id="174937106936716857">Total file count</translation>
@@ -564,10 +570,12 @@
 <translation id="1871615898038944731">Your <ph name="DEVICE_TYPE" /> is up to date</translation>
 <translation id="1877520246462554164">Failed to get authentication token. Please sign out then sign in again to try again.</translation>
 <translation id="1878524442024357078">Do not allow any sites to use a plug-in to access your computer</translation>
+<translation id="1879449842763884566">Install to Applications…</translation>
 <translation id="1880905663253319515">Delete certificate "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Allow sites to ask to become default handlers for protocols (recommended)</translation>
 <translation id="1887850431809612466">Hardware revision</translation>
 <translation id="1889984860246851556">Open proxy settings</translation>
+<translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Open full screen</translation>
 <translation id="189358972401248634">Other languages</translation>
 <translation id="1895658205118569222">Shutdown</translation>
@@ -693,6 +701,7 @@
 <translation id="2115946962706216358">Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.</translation>
 <translation id="2116673936380190819">the past hour</translation>
 <translation id="2121825465123208577">Re-size</translation>
+<translation id="2124930039827422115">{1,plural, =1{Rated <ph name="AVERAGE_RATING" /> by one user.}other{Rated <ph name="AVERAGE_RATING" /> by # users.}}</translation>
 <translation id="2126167708562367080">Sync is disabled by your administrator.</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -843,6 +852,7 @@
 <translation id="2350796302381711542">Allow <ph name="HANDLER_HOSTNAME" /> to open all <ph name="PROTOCOL" /> links instead of <ph name="REPLACED_HANDLER_TITLE" />?</translation>
 <translation id="2351266942280602854">Language and input</translation>
 <translation id="2352662711729498748">&lt; 1 MB</translation>
+<translation id="2352947182261340447">Not enough space available in local storage.</translation>
 <translation id="2353297238722298836">Camera and microphone allowed</translation>
 <translation id="2356070529366658676">Ask</translation>
 <translation id="2357949918965361754">You can use this feature to display content from Chrome on your TV or other devices.</translation>
@@ -972,6 +982,9 @@ I don't think this site should be blocked!</translation>
 <translation id="2575268751393592580">Can’t find your phone. Make sure that your <ph name="DEVICE_TYPE" /> is connected to Wi-Fi or a mobile network. &lt;a&gt;Learn more&lt;/a&gt;</translation>
 <translation id="2576842806987913196">There is already a CRX file present with this name.</translation>
 <translation id="257779572837908839">Set up as Chromebox for meetings</translation>
+<translation id="257811358971247368"><ph name="BEGIN_BOLD" />Cannot unmount volume<ph name="END_BOLD" />
+   <ph name="LINE_BREAKS" />
+   The volume is busy. Please close all the opened files from it, then try again later.</translation>
 <translation id="2579575372772932244">Re-creating profile, please wait...</translation>
 <translation id="2580889980133367162">Always allow <ph name="HOST" /> to download multiple files</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1007,7 +1020,9 @@ I don't think this site should be blocked!</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> is using <ph name="USAGE" /> MB of disk space.</translation>
 <translation id="2633212996805280240">Remove "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> couldn't complete installation, but will continue to run from its disk image.</translation>
+<translation id="2635176084534510129">Get more personalised experiences, such as better content suggestions and smarter Translate</translation>
 <translation id="2635276683026132559">Signing</translation>
+<translation id="2635926034288331400">Install to Applications</translation>
 <translation id="2636625531157955190">Chrome cannot access the image.</translation>
 <translation id="2638087589890736295">Passphrase required to start sync</translation>
 <translation id="2638286699381354126">Update...</translation>
@@ -1252,6 +1267,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2989474696604907455">not attached</translation>
 <translation id="2989786307324390836">DER-encoded binary, single certificate</translation>
 <translation id="2993517869960930405">App Info</translation>
+<translation id="2994669386200004489">Couldn't back up <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Installed by your parent.</translation>
 <translation id="3002017044809397427">Found your <ph name="PHONE_TYPE" />. But Smart Lock only works on devices with Android 5.0 and up. &lt;a&gt;Learn more&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Preferred networks</translation>
@@ -1307,6 +1323,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3064410671692449875">Insufficient data</translation>
 <translation id="3065041951436100775">Tab killed feedback.</translation>
 <translation id="3065140616557457172">Type to search or enter a URL to navigate - everything just works.</translation>
+<translation id="3066642396596108483">Sync your bookmarks, passwords and history on all your devices</translation>
 <translation id="3067198360141518313">Run this plug-in</translation>
 <translation id="3071624960923923138">You can click here to open a new tab</translation>
 <translation id="3074037959626057712">You've signed in and turned on Sync</translation>
@@ -1430,6 +1447,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="327444463633065042">Invalid machine name</translation>
 <translation id="3274763671541996799">You have gone full screen.</translation>
 <translation id="3275778913554317645">Open as window</translation>
+<translation id="3279741024917655738">Show full screen videos on</translation>
 <translation id="3280237271814976245">Save &amp;as...</translation>
 <translation id="3280243678470289153">Stay in Chrome</translation>
 <translation id="3280431534455935878">Preparing</translation>
@@ -1459,6 +1477,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3308852433423051161">Loading Google Assistant...</translation>
 <translation id="3309747692199697901">Always Run on All Sites</translation>
 <translation id="3312424061798279731">Enabled languages</translation>
+<translation id="3312903956926554846">Install to desktop</translation>
 <translation id="3313080019966590424"><ph name="DOWNLOAD_RECEIVED_AND_TOTAL" />, <ph name="SUB_STATUS_TEXT" />
 From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3313473140726597081">Your start-up page was changed to <ph name="URL" />. To disable extensions that change your start-up page, click Restore.</translation>
@@ -1572,6 +1591,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347670947055184738">Oops!  The system failed to fetch policy for your device.</translation>
 <translation id="347785443197175480">Continue allowing <ph name="HOST" /> to access your camera and microphone</translation>
 <translation id="3478685642445675458">Please unlock your profile before removing a person.</translation>
+<translation id="347919930506963698">Get even more from Chrome</translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3480892288821151001">Dock window left</translation>
 <translation id="3481915276125965083">The following pop-ups were blocked on this page:</translation>
@@ -1598,6 +1618,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancel Download}other{Cancel Downloads}}</translation>
 <translation id="3514373592552233661">Preferred networks will be preferred over other known networks if more than one is available</translation>
 <translation id="3523642406908660543">Ask when a site wants to use a plug-in to access your computer (recommended)</translation>
+<translation id="3525897975040424366">Install to shelf</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3527276236624876118">A supervised user named <ph name="USER_DISPLAY_NAME" /> has been created.</translation>
 <translation id="3528033729920178817">This page is tracking your location.</translation>
@@ -1616,6 +1637,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3549797760399244642">Go to drive.google.com...</translation>
 <translation id="3550915441744863158">Chrome updates automatically so you always have the freshest version</translation>
 <translation id="3551320343578183772">Close Tab</translation>
+<translation id="3552780134252864554">Cleared on Exit</translation>
 <translation id="355298399003313926"><ph name="URL" /> wants to respond to accessibility events.</translation>
 <translation id="3555812735919707620">Remove extension</translation>
 <translation id="3556000484321257665">Your search engine was changed to <ph name="URL" />.</translation>
@@ -1624,7 +1646,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">The Wi-Fi network that you are using (<ph name="NETWORK_ID" />) may require you to visit its login page.</translation>
 <translation id="3564708465992574908">Zoom Levels</translation>
 <translation id="3566721612727112615">No sites added</translation>
-<translation id="3566866560249787686">Google Assistant was unable to load, please retry.</translation>
 <translation id="3569382839528428029">Do you want <ph name="APP_NAME" /> to share your screen?</translation>
 <translation id="3570985609317741174">Web content</translation>
 <translation id="3571734092741541777">Set up</translation>
@@ -1652,6 +1673,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">User image preview</translation>
 <translation id="3609785682760573515">Syncing...</translation>
+<translation id="3609895557594655134">Add Android VPN…</translation>
 <translation id="361106536627977100">Flash data</translation>
 <translation id="3612070600336666959">Disabling</translation>
 <translation id="3612628222817739505">(<ph name="ACCELERATOR" />)</translation>
@@ -1755,6 +1777,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764314093345384080">Detailed build information</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communicate with a USB device}other{Communicate with # USB devices}}</translation>
 <translation id="3764986667044728669">Unable to enroll</translation>
+<translation id="3766223500670287046">Remote screen</translation>
 <translation id="3768037234834996183">Syncing your preferences...</translation>
 <translation id="3771294271822695279">Video Files</translation>
 <translation id="3775432569830822555">SSL Server Certificate</translation>
@@ -1890,6 +1913,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3968261067169026421">Could not set up network</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Calculating...</translation>
+<translation id="3972711570620097483">Install to shelf…</translation>
 <translation id="3974195870082915331">Click to show password</translation>
 <translation id="3975222297214566386">Input options bubble</translation>
 <translation id="397703832102027365">Finalising...</translation>
@@ -2017,6 +2041,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="42126664696688958">Export</translation>
 <translation id="42137655013211669">Access to this resource was forbidden by the server.</translation>
 <translation id="4215350869199060536">Oops, illegal symbols in name!</translation>
+<translation id="4215448920900139318">Backing up <ph name="FILE_COUNT" /></translation>
 <translation id="4235200303672858594">Entire screen</translation>
 <translation id="4235813040357936597">Add Account for <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Cancel sign in</translation>
@@ -2056,6 +2081,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4289540628985791613">Overview</translation>
 <translation id="4296575653627536209">Add Supervised User</translation>
+<translation id="4299141727003252811">Google may use your browsing activity, content on some sites that you visit and other browser interactions to personalise Chrome and other Google services such as Translate, Search and ads.</translation>
 <translation id="4300305918532693141">To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="430303754419731728">You've got a new OS update. Sign in to get started.</translation>
 <translation id="4305227814872083840">long (2s)</translation>
@@ -2311,6 +2337,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4763408175235639573">The following cookies were set when you viewed this page</translation>
 <translation id="4763830802490665879">Cookies from multiple sites will be cleared on exit.</translation>
 <translation id="4768332406694066911">You have certificates from these organisations that identify you</translation>
+<translation id="4772404146526168240">Both screens</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4779083564647765204">Zoom</translation>
@@ -2322,6 +2349,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="479285515899735347">Oops!  Looks like your password expired. Please renew it on another machine and try again.</translation>
 <translation id="479536056609751218">Web Page, HTML Only</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4800109022693378315">Synced to</translation>
 <translation id="4801257000660565496">Create Application Shortcuts</translation>
 <translation id="4801448226354548035">Hide accounts</translation>
 <translation id="4801512016965057443">Allow mobile data roaming</translation>
@@ -2400,6 +2428,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4900392736118574277">Your start-up page was changed to <ph name="URL" />.</translation>
 <translation id="490074449735753175">Use a web service to help resolve spelling errors</translation>
 <translation id="49027928311173603">The policy downloaded from the server is invalid: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4905417359854579806">Ready to backup <ph name="FILE_COUNT" /></translation>
 <translation id="4907161631261076876">This file is not commonly downloaded and may be dangerous.</translation>
 <translation id="4907306957610201395">Permission Category</translation>
 <translation id="4908811072292128752">Open a new tab to browse two sites at once</translation>
@@ -2438,6 +2467,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4967749818080339523">Select an account</translation>
 <translation id="496888482094675990">The Files app provides quick access to files that you've saved on Google Drive, external storage or your Chrome OS device.</translation>
 <translation id="4969785127455456148">Album</translation>
+<translation id="4970738541803285369">Install to desktop…</translation>
 <translation id="4971412780836297815">Open when done</translation>
 <translation id="4972129977812092092">Edit printer</translation>
 <translation id="4973307593867026061">Add printers</translation>
@@ -2463,6 +2493,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4998873842614926205">Confirm Changes</translation>
 <translation id="499955951116857523">File manager</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
+<translation id="5004584466530475658"><ph name="FILE_COUNT" /> new photos</translation>
 <translation id="5010043101506446253">Certificate authority</translation>
 <translation id="5010929733229908807">All data was encrypted with your sync passphrase on
           <ph name="TIME" /></translation>
@@ -2666,6 +2697,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5334142896108694079">Script Cache</translation>
 <translation id="533433379391851622">Expected version "<ph name="EXPECTED_VERSION" />", but version was "<ph name="NEW_ID" />".</translation>
 <translation id="5334844597069022743">View source</translation>
+<translation id="5335458522276292100">Backing up <ph name="FILE_COUNT" /> to <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5337771866151525739">Installed by a third party.</translation>
 <translation id="5338503421962489998">Local storage</translation>
 <translation id="5340217413897845242">Shelf item 6</translation>
@@ -2839,6 +2871,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Not enough data available yet.</translation>
 <translation id="5595152862129936745">Very far</translation>
 <translation id="5595485650161345191">Edit address</translation>
+<translation id="5596627076506792578">More options</translation>
 <translation id="5600706100022181951">Update will be downloaded using <ph name="UPDATE_SIZE_MB" /> MB of mobile data. Would you like to continue?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Other search engines</translation>
@@ -2908,6 +2941,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5729712731028706266">&amp;View</translation>
 <translation id="5729996640881880439">Sorry, we can't show the code for this error.</translation>
 <translation id="5731247495086897348">Pa&amp;ste and Go</translation>
+<translation id="5731409020711461763">One new photo</translation>
 <translation id="5734362860645681824">Communications</translation>
 <translation id="5735973442555172575">To use Android apps, sign in again and update.</translation>
 <translation id="5736796278325406685">Please enter a valid username</translation>
@@ -2975,6 +3009,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5835754902560991078">extremely short (0.6s)</translation>
 <translation id="5838456317242088717">Current incognito session</translation>
 <translation id="5842497610951477805">Bluetooth enable</translation>
+<translation id="5843250171025351504">Your device is no longer compliant with the minimum client version specified by your admin. Please update to log in.</translation>
 <translation id="5846929185714966548">Tab 4</translation>
 <translation id="5848924408752252705">Touch to go back.</translation>
 <translation id="5849570051105887917">Home provider code</translation>
@@ -3153,6 +3188,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6132383530370527946">The small print</translation>
 <translation id="6133173853026656527">Moving <ph name="FILE_NAME" />...</translation>
 <translation id="6135622770221372891">Channel IDs</translation>
+<translation id="6136114942382973861">Close downloads bar</translation>
 <translation id="6136285399872347291">backspace</translation>
 <translation id="6137767437444130246">User certificate</translation>
 <translation id="6138680304137685902">X9.62 ECDSA Signature with SHA-384</translation>
@@ -3197,6 +3233,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6207937957461833379">Country/Region</translation>
 <translation id="6212039847102026977">Show advanced network properties</translation>
 <translation id="6212168817037875041">Turn off display</translation>
+<translation id="6212752530110374741">Email Link</translation>
 <translation id="6220413761270491930">Error Loading Extension</translation>
 <translation id="6223447490656896591">Custom Image:</translation>
 <translation id="62243461820985415">Chrome cannot download this wallpaper.</translation>
@@ -3450,6 +3487,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6597017209724497268">Samples</translation>
 <translation id="6602956230557165253">Use left and right arrow keys to navigate.</translation>
 <translation id="660380282187945520">F9</translation>
+<translation id="6605847144724004692">Not yet rated by any users.</translation>
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">File info</translation>
 <translation id="6607831829715835317">More too&amp;ls</translation>
@@ -3622,6 +3660,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6898699227549475383">Organisation (O)</translation>
 <translation id="6900284862687837908">Background App: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902837902700739466">Join device to domain</translation>
+<translation id="6903534926908201625">You can customise what information Google collects in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /> any time.</translation>
 <translation id="6904344821472985372">Revoke file access</translation>
 <translation id="6904655473976120856">Press App button to exit</translation>
 <translation id="6904713658985136356"><ph name="HOST" /> wants to share your screen.</translation>
@@ -3636,6 +3675,9 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6922128026973287222">Save data and browse faster using Google Data Saver. Click to learn more.</translation>
 <translation id="6929555043669117778">Continue blocking pop-ups</translation>
 <translation id="6930242544192836755">Duration</translation>
+<translation id="6934241953272494177">Scanning your media device…
+    <ph name="LINE_BREAK1" />
+    <ph name="FILE_COUNT" /> found</translation>
 <translation id="693807610556624488">Write operation exceeds the maximum length of the attribute to: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6941937518557314510">Please sign in to <ph name="TOKEN_NAME" /> to authenticate to <ph name="HOST_NAME" /> with your certificate.</translation>
 <translation id="6943176775188458830">Cancel printing</translation>
@@ -3833,12 +3875,14 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7268365133021434339">Close Tabs</translation>
 <translation id="7268659760406822741">Available services</translation>
 <translation id="7270858098575133036">Ask when a site wants to use system exclusive messages to access MIDI devices</translation>
+<translation id="7272674038937250585">No description provided</translation>
 <translation id="7273110280511444812">last attached on <ph name="DATE" /></translation>
 <translation id="727441411541283857"><ph name="PERCENTAGE" />% - <ph name="TIME" /> until full</translation>
 <translation id="7278870042769914968">Use GTK+ Theme</translation>
 <translation id="727952162645687754">Download error</translation>
 <translation id="7279701417129455881">Manage cookie blocking...</translation>
 <translation id="7280877790564589615">Permission requested</translation>
+<translation id="7283041136720745563">Your Google Drive quota isn't large enough.</translation>
 <translation id="7287143125007575591">Access denied</translation>
 <translation id="7288676996127329262"><ph name="HORIZONTAL_DPI" />x<ph name="VERTICAL_DPI" /> dpi</translation>
 <translation id="7289225569524511578">Open the wallpaper app</translation>
@@ -3915,6 +3959,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7409233648990234464">Relaunch and Powerwash</translation>
 <translation id="7409836189476010449">Run Flash</translation>
 <translation id="7410344089573941623">Ask if <ph name="HOST" /> wants to access your camera and microphone</translation>
+<translation id="741204030948306876">Yes, I'm in</translation>
 <translation id="7412226954991670867">GPU Memory</translation>
 <translation id="7416362041876611053">Unknown network error</translation>
 <translation id="7417705661718309329">Google map</translation>
@@ -3959,6 +4004,9 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7487067081878637334">Technology</translation>
 <translation id="7487099628810939106">Delay before click:</translation>
 <translation id="7487969577036436319">No components are installed</translation>
+<translation id="7489215562877293245"><ph name="FILE_COUNT" /> found
+    <ph name="LINE_BREAK1" />
+    Ready to back up to <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Open all}=1{&amp;Open bookmark}other{&amp;Open all (#)}}</translation>
 <translation id="7489605380874780575">Check eligibility</translation>
 <translation id="749028671485790643">Person <ph name="VALUE" /></translation>
@@ -3986,6 +4034,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7520821146909122639">This Page Is Being Translated...</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Create</translation>
+<translation id="7526413953848747421">Bring powerful Google services such as spell check and tap to search to Chrome</translation>
 <translation id="7529411698175791732">Check your Internet connection. If the problem continues, try signing out and signing in again.</translation>
 <translation id="7530016656428373557">Discharge Rate in Watts</translation>
 <translation id="7536709149194614609">Please restart the device and try again later.</translation>
@@ -4019,7 +4068,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7576690715254076113">Collate</translation>
 <translation id="7579149537961810247">Mute Sites</translation>
 <translation id="7580671184200851182">Play the same audio through all speakers (mono audio)</translation>
-<translation id="7581273696622423628">Take survey</translation>
 <translation id="7581462281756524039">A cleanup tool</translation>
 <translation id="7582582252461552277">Prefer this network</translation>
 <translation id="7586312264284919041">Would you like to translate this page?</translation>
@@ -4157,6 +4205,11 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7818135753970109980">New theme added (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA or RSN)</translation>
 <translation id="782057141565633384">C&amp;opy video address</translation>
+<translation id="7821462174190887129"><ph name="FILE_COUNT" /> found.
+    <ph name="LINE_BREAK1" />
+    Your Google Drive quota isn't large enough. Additional <ph name="FILE_SIZE" /> needed.
+    <ph name="LINE_BREAK2" />
+    Try selecting fewer photos.</translation>
 <translation id="782590969421016895">Use current pages</translation>
 <translation id="7829298379596169484">Accessing audio input</translation>
 <translation id="7831368056091621108">to get this extension, your history, and other Chrome settings on all your devices.</translation>
@@ -4603,6 +4656,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8584280235376696778">&amp;Open video in new tab</translation>
 <translation id="8588866096426746242">Show profile stats</translation>
 <translation id="8590375307970699841">Set up automatic updates</translation>
+<translation id="8594908476761052472">Capture video</translation>
 <translation id="8595925260712451473">Please enter your feedback here.</translation>
 <translation id="8596540852772265699">Customised Files</translation>
 <translation id="8597845839771543242">Property format:</translation>

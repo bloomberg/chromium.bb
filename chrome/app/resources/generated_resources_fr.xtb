@@ -1624,7 +1624,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Pour utiliser ce réseau Wi-Fi (<ph name="NETWORK_ID" />), vous devrez peut-être vous rendre sur la page de connexion correspondante.</translation>
 <translation id="3564708465992574908">Niveaux de zoom</translation>
 <translation id="3566721612727112615">Aucun site ajouté</translation>
-<translation id="3566866560249787686">Impossible de charger l'Assistant Google. Veuillez réessayer.</translation>
 <translation id="3569382839528428029">Voulez-vous que l'application <ph name="APP_NAME" /> partage votre écran ?</translation>
 <translation id="3570985609317741174">Contenu Web</translation>
 <translation id="3571734092741541777">Configurer</translation>
@@ -2839,6 +2838,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5592595402373377407">Les données disponibles sont insuffisantes pour le moment.</translation>
 <translation id="5595152862129936745">Très éloigné</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
+<translation id="5596627076506792578">Plus d'options</translation>
 <translation id="5600706100022181951">Le téléchargement de la mise à jour utilisera <ph name="UPDATE_SIZE_MB" /> Mo de données mobiles. Voulez-vous continuer ?</translation>
 <translation id="5601503069213153581">Code d'accès</translation>
 <translation id="5605623530403479164">Autres moteurs de recherche</translation>
@@ -3930,7 +3930,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7436921188514130341">Aïe, aïe, aïe ! Une erreur s'est produite lors du changement du nom.</translation>
 <translation id="7439964298085099379">Le mode contraste élevé est activé. Voulez-vous installer notre extension "Contraste élevé" ou un thème sombre ?</translation>
 <translation id="7441830548568730290">Autres utilisateurs</translation>
-<translation id="7442465037756169001">Votre Hangouts Meet hardware est prêt à être configuré.</translation>
+<translation id="7442465037756169001">Votre matériel Hangouts Meet est prêt à être configuré.</translation>
 <translation id="744341768939279100">Créer un profil</translation>
 <translation id="7444726222535375658">Accéder à Hangouts Meet</translation>
 <translation id="7444983668544353857">Désactiver <ph name="NETWORKDEVICE" /></translation>
@@ -4020,7 +4020,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7576690715254076113">Assembler</translation>
 <translation id="7579149537961810247">Couper le son des sites</translation>
 <translation id="7580671184200851182">Lire le même contenu audio sur toutes les enceintes (son mono)</translation>
-<translation id="7581273696622423628">Participer à l'enquête</translation>
 <translation id="7581462281756524039">Un outil de nettoyage</translation>
 <translation id="7582582252461552277">Préférer ce réseau</translation>
 <translation id="7586312264284919041">Voulez-vous traduire cette page ?</translation>

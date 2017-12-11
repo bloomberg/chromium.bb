@@ -1624,7 +1624,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3564334271939054422">La red Wi-Fi que estás utilizando (<ph name="NETWORK_ID" />) puede requerir que accedas a su página de inicio de sesión.</translation>
 <translation id="3564708465992574908">Niveles de zoom</translation>
 <translation id="3566721612727112615">No se ha añadido ningún sitio web</translation>
-<translation id="3566866560249787686">No se ha podido cargar el Asistente de Google. Vuelve a intentarlo.</translation>
 <translation id="3569382839528428029">¿Quieres que <ph name="APP_NAME" /> comparta tu pantalla?</translation>
 <translation id="3570985609317741174">Contenido web</translation>
 <translation id="3571734092741541777">Configurar</translation>
@@ -2837,6 +2836,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5592595402373377407">Todavía no hay suficientes datos disponibles.</translation>
 <translation id="5595152862129936745">Muy lejos</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
+<translation id="5596627076506792578">Más opciones</translation>
 <translation id="5600706100022181951">Para descargar la actualización se necesitan <ph name="UPDATE_SIZE_MB" /> MB de datos móviles. ¿Quieres continuar?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Otros motores de búsqueda</translation>
@@ -4015,7 +4015,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7576690715254076113">Intercalar</translation>
 <translation id="7579149537961810247">Silenciar sitios web</translation>
 <translation id="7580671184200851182">Reproducir el mismo audio en todos los altavoces (audio mono)</translation>
-<translation id="7581273696622423628">Responder encuesta</translation>
 <translation id="7581462281756524039">Una herramienta de limpieza</translation>
 <translation id="7582582252461552277">Establecer esta red como preferida</translation>
 <translation id="7586312264284919041">¿Quieres traducir esta página?</translation>

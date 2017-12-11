@@ -1621,7 +1621,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">La red Wi-Fi que estás usando (<ph name="NETWORK_ID" />) podría exigir que visites la página de acceso.</translation>
 <translation id="3564708465992574908">Niveles de zoom</translation>
 <translation id="3566721612727112615">No se agregaron sitios</translation>
-<translation id="3566866560249787686">No se pudo cargar el Asistente de Google. Vuelve a intentarlo.</translation>
 <translation id="3569382839528428029">¿Quieres que <ph name="APP_NAME" /> comparta tu pantalla?</translation>
 <translation id="3570985609317741174">Contenido web</translation>
 <translation id="3571734092741541777">Configurar</translation>
@@ -2836,6 +2835,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Aún no hay suficientes datos disponibles.</translation>
 <translation id="5595152862129936745">Demasiado lejos</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
+<translation id="5596627076506792578">Más opciones</translation>
 <translation id="5600706100022181951">Para descargar la actualización, se usarán <ph name="UPDATE_SIZE_MB" /> MB de datos móviles. ¿Deseas continuar?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Otros motores de búsqueda</translation>
@@ -4016,7 +4016,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7576690715254076113">Intercalar</translation>
 <translation id="7579149537961810247">Silenciar los sitios</translation>
 <translation id="7580671184200851182">Reproducir el mismo audio en todos los altavoces (sonido mono)</translation>
-<translation id="7581273696622423628">Responder encuesta</translation>
 <translation id="7581462281756524039">Una herramienta de limpieza</translation>
 <translation id="7582582252461552277">Preferir esta red</translation>
 <translation id="7586312264284919041">¿Quieres traducir esta página?</translation>

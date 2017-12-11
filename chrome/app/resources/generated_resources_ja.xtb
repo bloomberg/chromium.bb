@@ -1625,7 +1625,6 @@
 <translation id="3564334271939054422">ご利用の Wi-Fi（<ph name="NETWORK_ID" />）では、ログインページへのアクセスが必要になる可能性があります。</translation>
 <translation id="3564708465992574908">ズーム レベル</translation>
 <translation id="3566721612727112615">サイトが追加されていません</translation>
-<translation id="3566866560249787686">Google アシスタントを読み込めませんでした。もう一度お試しください。</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> と画面を共有しますか？</translation>
 <translation id="3570985609317741174">ウェブ コンテンツ</translation>
 <translation id="3571734092741541777">設定</translation>
@@ -2840,6 +2839,7 @@
 <translation id="5592595402373377407">利用可能なデータがまだ十分にありません。</translation>
 <translation id="5595152862129936745">非常に遠い</translation>
 <translation id="5595485650161345191">住所の編集</translation>
+<translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5600706100022181951">アップデートをダウンロードすると、<ph name="UPDATE_SIZE_MB" /> MB のモバイルデータを使用することになります。続行してもよろしいですか？</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">その他の検索エンジン</translation>
@@ -4022,7 +4022,6 @@
 <translation id="7576690715254076113">部単位で印刷</translation>
 <translation id="7579149537961810247">複数のサイトをミュート</translation>
 <translation id="7580671184200851182">すべてのスピーカーで同じオーディオを再生（モノラル オーディオ）</translation>
-<translation id="7581273696622423628">アンケートに答える</translation>
 <translation id="7581462281756524039">クリーンアップ ツール</translation>
 <translation id="7582582252461552277">このネットワークを優先する</translation>
 <translation id="7586312264284919041">このページを翻訳しますか？</translation>

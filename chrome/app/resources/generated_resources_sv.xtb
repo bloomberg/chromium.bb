@@ -1623,7 +1623,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Wi-Fi-nätverket du använder (<ph name="NETWORK_ID" />) kanske kräver att du besöker dess inloggningssida.</translation>
 <translation id="3564708465992574908">Zoomnivåer</translation>
 <translation id="3566721612727112615">Inga webbplatser har lagts till</translation>
-<translation id="3566866560249787686">Det gick inte att läsa in Google Assistent. Försök igen.</translation>
 <translation id="3569382839528428029">Vill du att <ph name="APP_NAME" /> ska dela din skärm?</translation>
 <translation id="3570985609317741174">Webbinnehåll</translation>
 <translation id="3571734092741541777">Konfigurera</translation>
@@ -2838,6 +2837,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Det finns inte tillräckligt mycket data ännu.</translation>
 <translation id="5595152862129936745">Mycket långt</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
+<translation id="5596627076506792578">Fler alternativ</translation>
 <translation id="5600706100022181951">Nedladdningen av uppdateringen förbrukar <ph name="UPDATE_SIZE_MB" /> MB mobildata. Vill du fortsätta?</translation>
 <translation id="5601503069213153581">PIN-kod</translation>
 <translation id="5605623530403479164">Andra sökmotorer</translation>
@@ -4017,7 +4017,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7576690715254076113">Jämför</translation>
 <translation id="7579149537961810247">Dölj webbplatser</translation>
 <translation id="7580671184200851182">Spela samma ljud i alla högtalare (monoljud)</translation>
-<translation id="7581273696622423628">Svara på enkäten</translation>
 <translation id="7581462281756524039">Ett rensningsverktyg</translation>
 <translation id="7582582252461552277">Föredra det här nätverket</translation>
 <translation id="7586312264284919041">Vill du översätta sidan?</translation>

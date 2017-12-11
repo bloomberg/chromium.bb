@@ -1619,7 +1619,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Det kan hende at Wi-Fi-nettverket du bruker (<ph name="NETWORK_ID" />), krever at du besøker en påloggingsside.</translation>
 <translation id="3564708465992574908">Zoomnivåer</translation>
 <translation id="3566721612727112615">Ingen nettsteder er lagt til</translation>
-<translation id="3566866560249787686">Google-assistenten kunne ikke lastes inn. Prøv på nytt.</translation>
 <translation id="3569382839528428029">Vil du la <ph name="APP_NAME" /> dele skjermen din?</translation>
 <translation id="3570985609317741174">Nettinnhold</translation>
 <translation id="3571734092741541777">Konfigurer</translation>
@@ -2831,6 +2830,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Nok data er ikke tilgjengelig ennå.</translation>
 <translation id="5595152862129936745">Veldig langt unna</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
+<translation id="5596627076506792578">Flere alternativer</translation>
 <translation id="5600706100022181951"><ph name="UPDATE_SIZE_MB" /> MB mobildata blir brukt under nedlastingen av oppdateringen. Vil du fortsette?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Andre søkemotorer</translation>
@@ -4002,7 +4002,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7576690715254076113">I rekkefølge</translation>
 <translation id="7579149537961810247">Kutt lyden for nettsteder</translation>
 <translation id="7580671184200851182">Spill den samme lyden på alle høyttalere (monolyd)</translation>
-<translation id="7581273696622423628">Besvar undersøkelsen</translation>
 <translation id="7581462281756524039">Et opprydningsverktøy</translation>
 <translation id="7582582252461552277">Foretrekk dette nettverket</translation>
 <translation id="7586312264284919041">Vil du få denne siden oversatt?</translation>

@@ -13,7 +13,7 @@
 <translation id="1016566241875885511">Додаткова інформація (необов’язково)</translation>
 <translation id="1017280919048282932">&amp;Додати до словника</translation>
 <translation id="1018656279737460067">Скасовано</translation>
-<translation id="102272308210570439">Дозволити Помічнику використовувати вміст на екрані</translation>
+<translation id="102272308210570439">Дозволити Асистенту використовувати вміст на екрані</translation>
 <translation id="1026822031284433028">Завантажити зображення</translation>
 <translation id="1029317248976101138">Збільшити</translation>
 <translation id="1031362278801463162">Завантаження попереднього перегляду</translation>
@@ -651,7 +651,7 @@
 <translation id="204914487372604757">Створити ярлик</translation>
 <translation id="2050339315714019657">Портретна</translation>
 <translation id="2053312383184521053">Дані про неактивний стан</translation>
-<translation id="205560151218727633">Логотип Google Помічник</translation>
+<translation id="205560151218727633">Логотип Google Асистент</translation>
 <translation id="2065405795449409761">Веб-переглядачем Chrome керує автоматична пробна програма.</translation>
 <translation id="2068054174185416762">Частота кадрів</translation>
 <translation id="2070909990982335904">Імена, які починаються з крапки, зарезервовані для системи. Виберіть інше ім’я.</translation>
@@ -1456,7 +1456,7 @@
 <translation id="3308006649705061278">Організаційний підрозділ (OU)</translation>
 <translation id="3308116878371095290">Цій сторінці було відмовлено в збереженні файлів cookie.</translation>
 <translation id="3308134619352333507">Кнопка "Сховати"</translation>
-<translation id="3308852433423051161">Завантажується Google Помічник…</translation>
+<translation id="3308852433423051161">Завантажується Google Асистент…</translation>
 <translation id="3309747692199697901">Завжди запускати на всіх сайтах</translation>
 <translation id="3312424061798279731">Активні мови</translation>
 <translation id="3313080019966590424"><ph name="DOWNLOAD_RECEIVED_AND_TOTAL" />, <ph name="SUB_STATUS_TEXT" />
@@ -1584,7 +1584,7 @@
 <translation id="3493881266323043047">Чинність</translation>
 <translation id="3494769164076977169">Запитувати, якщо сайт намагається завантажити файли автоматично після першого файлу (рекомендовано)</translation>
 <translation id="3495304270784461826">Помилок: <ph name="COUNT" />.</translation>
-<translation id="3495660573538963482">Налаштування Google Помічника</translation>
+<translation id="3495660573538963482">Налаштування Google Асистента</translation>
 <translation id="3496213124478423963">Зменшити</translation>
 <translation id="3504135463003295723">Назва групи:</translation>
 <translation id="3505030558724226696">Скасувати доступ до пристрою</translation>
@@ -1624,7 +1624,6 @@
 <translation id="3564334271939054422">Можливо, щоб під’єднатися до цієї мережі Wi-Fi (<ph name="NETWORK_ID" />), потрібно перейти на її сторінку входу.</translation>
 <translation id="3564708465992574908">Рівні масштабування</translation>
 <translation id="3566721612727112615">Немає сайтів</translation>
-<translation id="3566866560249787686">Не вдалося завантажити Google Помічник. Повторіть спробу.</translation>
 <translation id="3569382839528428029">Надати програмі <ph name="APP_NAME" /> доступ до вашого екрана?</translation>
 <translation id="3570985609317741174">Веб-вміст</translation>
 <translation id="3571734092741541777">Налаштувати</translation>
@@ -1762,7 +1761,7 @@
 <translation id="3777806571986431400">Розширення ввімкнено</translation>
 <translation id="3778152852029592020">Завантаження скасовано.</translation>
 <translation id="3778740492972734840">&amp;Інструменти розробника</translation>
-<translation id="3778868487658107119">Ставте запитання. Давайте завдання. Ваш персональний Google Помічник завжди готовий допомогти.</translation>
+<translation id="3778868487658107119">Ставте запитання. Давайте завдання. Ваш персональний Google Асистент завжди готовий допомогти.</translation>
 <translation id="3780663724044634171">Виберіть обліковий запис, який керуватиме контрольованим користувачем.</translation>
 <translation id="378312418865624974">Читати унікальний ідентифікатор для цього комп’ютера</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -2003,7 +2002,7 @@
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4195814663415092787">Продовжити з місця зупинки</translation>
 <translation id="4197674956721858839">Вибір файлів для архівування</translation>
-<translation id="4198146608511578238">Утримуйте значок "Панель запуску", щоб спілкуватися з Google Помічником.</translation>
+<translation id="4198146608511578238">Утримуйте значок "Панель запуску", щоб спілкуватися з Google Асистентом.</translation>
 <translation id="4200689466366162458">Спеціальні слова</translation>
 <translation id="4200983522494130825">Нова &amp;вкладка</translation>
 <translation id="4206144641569145248">Прибулець</translation>
@@ -2839,6 +2838,7 @@
 <translation id="5592595402373377407">Ще недостатньо даних.</translation>
 <translation id="5595152862129936745">Дуже далеко</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
+<translation id="5596627076506792578">Інші опції</translation>
 <translation id="5600706100022181951">Щоб завантажити оновлення, буде використано <ph name="UPDATE_SIZE_MB" /> МБ мобільного Інтернету. Продовжити?</translation>
 <translation id="5601503069213153581">PIN-код</translation>
 <translation id="5605623530403479164">Інші пошукові системи</translation>
@@ -3324,7 +3324,7 @@
 <translation id="641081527798843608">Збіг суб’єкта</translation>
 <translation id="641105183165925463">$1 МБ</translation>
 <translation id="6412931879992742813">Нове анонімне вікно</translation>
-<translation id="6417265370957905582">Google Помічник</translation>
+<translation id="6417265370957905582">Google Асистент</translation>
 <translation id="6418160186546245112">Повернення до попередньої встановленої версії <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Назавжди видалити доступ для всіх програм</translation>
 <translation id="6419288379019356534">Цим пристроєм керує <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
@@ -4019,7 +4019,6 @@
 <translation id="7576690715254076113">Сортувати за копіями</translation>
 <translation id="7579149537961810247">Вимкнути звук на сайтах</translation>
 <translation id="7580671184200851182">Відтворювати один аудіозапис на всіх динаміках (монофонічне аудіо)</translation>
-<translation id="7581273696622423628">Відповісти на запитання</translation>
 <translation id="7581462281756524039">Інструмент очищення</translation>
 <translation id="7582582252461552277">Віддавати перевагу цій мережі</translation>
 <translation id="7586312264284919041">Перекласти цю сторінку?</translation>
@@ -4148,7 +4147,7 @@
 <translation id="7801746894267596941">Ваші зашифровані дані може читати лише користувач, який знає вашу парольну фразу. Парольна фраза не надсилається в Google і не зберігається там. Якщо ви забули парольну фразу, потрібно</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7805768142964895445">Статус</translation>
-<translation id="7807067443225230855">Пошук і Помічник</translation>
+<translation id="7807067443225230855">Пошук і Асистент</translation>
 <translation id="7807711621188256451">Завжди дозволяти хосту <ph name="HOST" /> доступ до вашої камери</translation>
 <translation id="7810202088502699111">На цій сторінці спливаючі вікна заблоковано.</translation>
 <translation id="781167124805380294">Транслювати файл <ph name="FILE_NAME" /></translation>
@@ -4530,7 +4529,7 @@
 <translation id="8446884382197647889">Докладніше</translation>
 <translation id="8449008133205184768">Вставити та застосувати стиль</translation>
 <translation id="8449036207308062757">Керувати пам’яттю</translation>
-<translation id="8451512073679317615">помічник</translation>
+<translation id="8451512073679317615">асистент</translation>
 <translation id="8452135315243592079">Немає SIM-карти</translation>
 <translation id="8453482423012550001">Копіювання елементів ($1)…</translation>
 <translation id="8454288007744638700">Або виберіть нову мережу:</translation>
@@ -4618,7 +4617,7 @@
 <translation id="8620617069779373398">Статус роумінгу</translation>
 <translation id="8620765578342452535">Налаштувати з’єднання з мережею</translation>
 <translation id="8623004009673949077">У режимі термінала в ОС Chrome потрібно встановити програму з атрибутом маніфесту "kiosk_only".</translation>
-<translation id="8624205858755890468">Дозволяє Помічнику показувати вам пов’язані дані, додатки та дії.</translation>
+<translation id="8624205858755890468">Дозволяє Асистенту показувати вам пов’язані дані, додатки та дії.</translation>
 <translation id="862542460444371744">&amp;Розширення</translation>
 <translation id="8627151598708688654">Виберіть джерело</translation>
 <translation id="862727964348362408">Призупинено</translation>
