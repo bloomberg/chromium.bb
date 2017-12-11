@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/events/gestures/gesture_recognizer.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
 
@@ -25,9 +26,19 @@ LockWindow::LockWindow(Config config) {
   }
   Init(params);
   SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
+
+  // TODO(agawronska): Add tests for UI visibility when virtual keyboard is
+  // present.
+  // Disable virtual keyboard overscroll because it interferes with scrolling
+  // login/lock content. See crbug.com/363635.
+  keyboard::SetKeyboardOverscrollOverride(
+      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
 }
 
 LockWindow::~LockWindow() {
+  keyboard::SetKeyboardOverscrollOverride(
+      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
+
   // We need to destroy the root view before destroying |data_dispatcher_|
   // because lock screen destruction assumes it is alive. We could hand out
   // base::WeakPtr<LoginDataDispatcher> instances if needed instead.
