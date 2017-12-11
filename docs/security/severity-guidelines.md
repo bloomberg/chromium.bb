@@ -20,7 +20,7 @@ exhausted or in other exceptional circumstances.
 ## Critical severity
 
 Critical severity issues allow an attacker run arbitrary code on the underlying
-platform with the user's privileges in the normal course of browsing.
+platform with the user's privileges.
 
 They are normally assigned priority **Pri-0** and assigned to the current stable
 milestone (or earliest milestone affected). For critical severity bugs,
@@ -36,8 +36,7 @@ if there is evidence of active exploitation.
 
 Example bugs:
 
-* Memory corruption in the browser process controllable by a malicious web site
-([564501](https://crbug.com/564501)).
+* Memory corruption in the browser process ([564501](https://crbug.com/564501)).
 * Exploit chains made up of multiple bugs that can lead to code execution
 outside of the sandbox ([416449](https://crbug.com/416449)).
 
