@@ -20,6 +20,7 @@ extern const CGFloat kIncognitoToolbarBackgroundColor;
 
 // Stackview constraints.
 extern const CGFloat kLocationBarVerticalMargin;
+extern const CGFloat kExpandedLocationBarVerticalMargin;
 extern const CGFloat kButtonVerticalMargin;
 extern const CGFloat kLeadingMarginIPad;
 extern const CGFloat kHorizontalMargin;
