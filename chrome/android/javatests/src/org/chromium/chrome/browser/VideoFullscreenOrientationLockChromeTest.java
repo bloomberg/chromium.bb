@@ -42,7 +42,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
-        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS,
+        MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY,
         "enable-features=VideoFullscreenOrientationLock",
         "disable-features=" + ChromeFeatureList.FULLSCREEN_ACTIVITY})
 public class VideoFullscreenOrientationLockChromeTest {

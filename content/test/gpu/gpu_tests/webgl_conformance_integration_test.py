@@ -260,7 +260,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # --test-type=gpu is used only to suppress the "Google API Keys are missing"
     # infobar, which causes flakiness in tests.
     browser_args += [
-      '--ignore-autoplay-restrictions',
+      '--autoplay-policy=no-user-gesture-required',
       '--disable-domain-blocking-for-3d-apis',
       '--disable-gpu-process-crash-limit',
       '--test-type=gpu',

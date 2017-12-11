@@ -149,7 +149,9 @@ class EncryptedMediaTest : public MediaBrowserTest,
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
+    command_line->AppendSwitchASCII(
+        switches::kAutoplayPolicy,
+        switches::autoplay::kNoUserGestureRequiredPolicy);
 #if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
     scoped_feature_list_.InitWithFeatures({media::kExternalClearKeyForTesting},
                                           {});
