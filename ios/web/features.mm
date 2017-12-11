@@ -16,5 +16,8 @@ const base::Feature kNewPassKitDownload{"NewPassKitDownload",
 const base::Feature kNewFileDownload{"NewFileDownload",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace web

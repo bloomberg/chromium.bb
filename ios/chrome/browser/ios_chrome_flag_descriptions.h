@@ -127,6 +127,11 @@ extern const char kWebPaymentsDescription[];
 extern const char kWebPaymentsNativeAppsName[];
 extern const char kWebPaymentsNativeAppsDescription[];
 
+// Title and description for the flag to enable WKHTTPSystemCookieStore usage
+// for main context URL requests.
+extern const char kWKHTTPSystemCookieStoreName[];
+extern const char kWKHTTPSystemCookieStoreDescription[];
+
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions
