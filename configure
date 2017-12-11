@@ -522,6 +522,7 @@ post_process_cmdline() {
       soft_enable frame_size
       soft_enable segment_globalmv
       soft_enable short_filter
+      soft_enable simplify_tx_mode
     fi
 
     # Enable low-bitdepth pixel pipeline by default
