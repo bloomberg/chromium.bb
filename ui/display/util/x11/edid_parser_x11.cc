@@ -4,12 +4,9 @@
 
 #include "ui/display/util/x11/edid_parser_x11.h"
 
-#include <X11/extensions/Xrandr.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-
 #include "base/strings/string_util.h"
 #include "ui/display/util/edid_parser.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 

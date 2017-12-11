@@ -4,10 +4,6 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 
-// Clean up X11 header polution
-#undef None
-#undef Bool
-
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
