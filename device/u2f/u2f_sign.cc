@@ -14,7 +14,7 @@ namespace device {
 U2fSign::U2fSign(const std::vector<std::vector<uint8_t>>& registered_keys,
                  const std::vector<uint8_t>& challenge_hash,
                  const std::vector<uint8_t>& app_param,
-                 std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
+                 std::vector<U2fDiscovery*> discoveries,
                  const ResponseCallback& cb)
     : U2fRequest(std::move(discoveries), cb),
       registered_keys_(registered_keys),
@@ -29,7 +29,7 @@ std::unique_ptr<U2fRequest> U2fSign::TrySign(
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
-    std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
+    std::vector<U2fDiscovery*> discoveries,
     const ResponseCallback& cb) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fSign>(
       registered_keys, challenge_hash, app_param, std::move(discoveries), cb);

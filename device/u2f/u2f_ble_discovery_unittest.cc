@@ -4,6 +4,8 @@
 
 #include "device/u2f/u2f_ble_discovery.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -28,8 +30,8 @@ ACTION_P(ReturnFromAsyncCall, closure) {
   closure.Run();
 }
 
-std::string GetTestDeviceId(std::string address) {
-  return "ble:" + address;
+MATCHER_P(IdMatches, id, "") {
+  return arg->GetId() == std::string("ble:") + id;
 }
 
 TEST_F(BluetoothTest, U2fBleDiscoveryFindsKnownDevice) {
@@ -43,15 +45,17 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsKnownDevice) {
   SimulateLowEnergyDevice(7);
 
   U2fBleDiscovery discovery;
-  MockU2fDiscovery::MockDelegate delegate;
-  discovery.SetDelegate(delegate.GetWeakPtr());
+  MockU2fDiscoveryObserver observer;
+  discovery.AddObserver(&observer);
 
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(delegate, OnDeviceAddedStr(GetTestDeviceId(
-                              BluetoothTestBase::kTestDeviceAddress1)));
-    EXPECT_CALL(delegate, OnStarted(true)).WillOnce(ReturnFromAsyncCall(quit));
+    EXPECT_CALL(observer,
+                DeviceAdded(&discovery,
+                            IdMatches(BluetoothTestBase::kTestDeviceAddress1)));
+    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true))
+        .WillOnce(ReturnFromAsyncCall(quit));
 
     discovery.Start();
     run_loop.Run();
@@ -63,7 +67,8 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsKnownDevice) {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
 
-    EXPECT_CALL(delegate, OnStopped(true)).WillOnce(ReturnFromAsyncCall(quit));
+    EXPECT_CALL(observer, DiscoveryStopped(&discovery, true))
+        .WillOnce(ReturnFromAsyncCall(quit));
 
     discovery.Stop();
     run_loop.Run();
@@ -78,13 +83,14 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsNewDevice) {
   InitWithFakeAdapter();
 
   U2fBleDiscovery discovery;
-  MockU2fDiscovery::MockDelegate delegate;
-  discovery.SetDelegate(delegate.GetWeakPtr());
+  MockU2fDiscoveryObserver observer;
+  discovery.AddObserver(&observer);
 
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(delegate, OnStarted(true)).WillOnce(ReturnFromAsyncCall(quit));
+    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true))
+        .WillOnce(ReturnFromAsyncCall(quit));
 
     discovery.Start();
     run_loop.Run();
@@ -93,8 +99,9 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsNewDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(delegate, OnDeviceAddedStr(GetTestDeviceId(
-                              BluetoothTestBase::kTestDeviceAddress1)))
+    EXPECT_CALL(observer,
+                DeviceAdded(&discovery,
+                            IdMatches(BluetoothTestBase::kTestDeviceAddress1)))
         .WillOnce(ReturnFromAsyncCall(quit));
 
     SimulateLowEnergyDevice(4);  // This device should be ignored.
@@ -108,7 +115,8 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsNewDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(delegate, OnStopped(true)).WillOnce(ReturnFromAsyncCall(quit));
+    EXPECT_CALL(observer, DiscoveryStopped(&discovery, true))
+        .WillOnce(ReturnFromAsyncCall(quit));
     discovery.Stop();
     run_loop.Run();
   }

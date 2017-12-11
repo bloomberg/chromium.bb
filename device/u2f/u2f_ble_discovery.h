@@ -5,12 +5,12 @@
 #ifndef DEVICE_U2F_U2F_BLE_DISCOVERY_H_
 #define DEVICE_U2F_U2F_BLE_DISCOVERY_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/u2f/u2f_discovery.h"
-
-#include <memory>
 
 namespace device {
 
@@ -30,9 +30,12 @@ class U2fBleDiscovery : public U2fDiscovery, BluetoothAdapter::Observer {
  private:
   static const BluetoothUUID& U2fServiceUUID();
 
-  void GetAdapterCallback(scoped_refptr<BluetoothAdapter> adapter);
+  void OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter);
   void OnSetPowered();
-  void DiscoverySessionStarted(std::unique_ptr<BluetoothDiscoverySession>);
+  void OnSetPoweredError();
+  void OnStartDiscoverySessionWithFilter(
+      std::unique_ptr<BluetoothDiscoverySession>);
+  void OnStartDiscoverySessionWithFilterError();
 
   // BluetoothAdapter::Observer:
   void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;

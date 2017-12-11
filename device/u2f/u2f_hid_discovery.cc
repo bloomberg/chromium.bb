@@ -34,38 +34,31 @@ void U2fHidDiscovery::Start() {
 }
 void U2fHidDiscovery::Stop() {
   binding_.Unbind();
-  if (delegate_)
-    delegate_->OnStopped(true);
+  NotifyDiscoveryStopped(true);
 }
 
 void U2fHidDiscovery::DeviceAdded(device::mojom::HidDeviceInfoPtr device_info) {
   // Ignore non-U2F devices
-  if (delegate_ && filter_.Matches(*device_info)) {
-    delegate_->OnDeviceAdded(std::make_unique<U2fHidDevice>(
-        std::move(device_info), hid_manager_.get()));
+  if (filter_.Matches(*device_info)) {
+    AddDevice(std::make_unique<U2fHidDevice>(std::move(device_info),
+                                             hid_manager_.get()));
   }
 }
 
 void U2fHidDiscovery::DeviceRemoved(
     device::mojom::HidDeviceInfoPtr device_info) {
   // Ignore non-U2F devices
-  if (delegate_ && filter_.Matches(*device_info)) {
-    delegate_->OnDeviceRemoved(U2fHidDevice::GetIdForDevice(*device_info));
+  if (filter_.Matches(*device_info)) {
+    RemoveDevice(U2fHidDevice::GetIdForDevice(*device_info));
   }
 }
 
 void U2fHidDiscovery::OnGetDevices(
     std::vector<device::mojom::HidDeviceInfoPtr> device_infos) {
-  if (delegate_) {
-    for (auto& device_info : device_infos) {
-      if (filter_.Matches(*device_info)) {
-        delegate_->OnDeviceAdded(std::make_unique<U2fHidDevice>(
-            std::move(device_info), hid_manager_.get()));
-      }
-    }
-
-    delegate_->OnStarted(true);
-  }
+  std::for_each(
+      device_infos.begin(), device_infos.end(),
+      [this](auto& device_info) { DeviceAdded(std::move(device_info)); });
+  NotifyDiscoveryStarted(true);
 }
 
 }  // namespace device

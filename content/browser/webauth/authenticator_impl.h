@@ -22,6 +22,7 @@
 #include "url/origin.h"
 
 namespace device {
+class U2fDiscovery;
 class U2fRequest;
 enum class U2fReturnCode : uint8_t;
 }  // namespace device
@@ -65,6 +66,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
   mojo::BindingSet<webauth::mojom::Authenticator> bindings_;
+  std::unique_ptr<device::U2fDiscovery> u2f_discovery_;
   std::unique_ptr<device::U2fRequest> u2f_request_;
   MakeCredentialCallback make_credential_response_callback_;
 

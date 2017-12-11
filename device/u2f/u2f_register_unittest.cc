@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/u2f/u2f_register.h"
+
 #include <list>
+#include <tuple>
 #include <utility>
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/u2f/mock_u2f_device.h"
 #include "device/u2f/mock_u2f_discovery.h"
-#include "device/u2f/u2f_register.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -59,7 +61,7 @@ class TestRegisterCallback {
 
 TEST_F(U2fRegisterTest, TestRegisterSuccess) {
   std::unique_ptr<MockU2fDevice> device(new MockU2fDevice());
-  auto discovery = std::make_unique<MockU2fDiscovery>();
+  MockU2fDiscovery discovery;
 
   EXPECT_CALL(*device.get(), GetId())
       .WillRepeatedly(testing::Return("device0"));
@@ -67,20 +69,17 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
   EXPECT_CALL(*device.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(testing::Invoke(discovery.get(),
-                                &MockU2fDiscovery::StartSuccessAsync));
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(
+          testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
 
   TestRegisterCallback cb;
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  MockU2fDiscovery* discovery_weak = discovery.get();
-  discoveries.push_back(std::move(discovery));
   std::vector<std::vector<uint8_t>> registration_keys;
   std::unique_ptr<U2fRequest> request = U2fRegister::TryRegistration(
       registration_keys, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      std::move(discoveries), cb.callback());
+      {&discovery}, cb.callback());
   request->Start();
-  discovery_weak->AddDevice(std::move(device));
+  discovery.AddDevice(std::move(device));
   std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
       response = cb.WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
@@ -94,7 +93,7 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
 
 TEST_F(U2fRegisterTest, TestDelayedSuccess) {
   std::unique_ptr<MockU2fDevice> device(new MockU2fDevice());
-  auto discovery = std::make_unique<MockU2fDiscovery>();
+  MockU2fDiscovery discovery;
 
   EXPECT_CALL(*device.get(), GetId())
       .WillRepeatedly(testing::Return("device0"));
@@ -105,20 +104,17 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
   EXPECT_CALL(*device.get(), TryWinkRef(_))
       .Times(2)
       .WillRepeatedly(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(testing::Invoke(discovery.get(),
-                                &MockU2fDiscovery::StartSuccessAsync));
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(
+          testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
   TestRegisterCallback cb;
 
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  MockU2fDiscovery* discovery_weak = discovery.get();
   std::vector<std::vector<uint8_t>> registration_keys;
-  discoveries.push_back(std::move(discovery));
   std::unique_ptr<U2fRequest> request = U2fRegister::TryRegistration(
       registration_keys, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      std::move(discoveries), cb.callback());
+      {&discovery}, cb.callback());
   request->Start();
-  discovery_weak->AddDevice(std::move(device));
+  discovery.AddDevice(std::move(device));
   std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
       response = cb.WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
@@ -134,7 +130,7 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   // Second device will have a successful touch
   std::unique_ptr<MockU2fDevice> device0(new MockU2fDevice());
   std::unique_ptr<MockU2fDevice> device1(new MockU2fDevice());
-  auto discovery = std::make_unique<MockU2fDiscovery>();
+  MockU2fDiscovery discovery;
 
   EXPECT_CALL(*device0.get(), GetId())
       .WillRepeatedly(testing::Return("device0"));
@@ -149,21 +145,18 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
   EXPECT_CALL(*device1.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(testing::Invoke(discovery.get(),
-                                &MockU2fDiscovery::StartSuccessAsync));
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(
+          testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
 
   TestRegisterCallback cb;
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  MockU2fDiscovery* discovery_weak = discovery.get();
-  discoveries.push_back(std::move(discovery));
   std::vector<std::vector<uint8_t>> registration_keys;
   std::unique_ptr<U2fRequest> request = U2fRegister::TryRegistration(
       registration_keys, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      std::move(discoveries), cb.callback());
+      {&discovery}, cb.callback());
   request->Start();
-  discovery_weak->AddDevice(std::move(device0));
-  discovery_weak->AddDevice(std::move(device1));
+  discovery.AddDevice(std::move(device0));
+  discovery.AddDevice(std::move(device1));
   std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
       response = cb.WaitForCallback();
 
@@ -186,7 +179,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   std::vector<std::vector<uint8_t>> handles = {unknown_key0, unknown_key1,
                                                unknown_key2};
   std::unique_ptr<MockU2fDevice> device(new MockU2fDevice());
-  auto discovery = std::make_unique<MockU2fDiscovery>();
+  MockU2fDiscovery discovery;
 
   EXPECT_CALL(*device.get(), GetId())
       .WillRepeatedly(testing::Return("device0"));
@@ -207,18 +200,15 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   EXPECT_CALL(*device.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(testing::Invoke(discovery.get(),
-                                &MockU2fDiscovery::StartSuccessAsync));
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(
+          testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
 
   TestRegisterCallback cb;
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  MockU2fDiscovery* discovery_weak = discovery.get();
-  discoveries.push_back(std::move(discovery));
   std::unique_ptr<U2fRequest> request = U2fRegister::TryRegistration(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      std::move(discoveries), cb.callback());
-  discovery_weak->AddDevice(std::move(device));
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32), {&discovery},
+      cb.callback());
+  discovery.AddDevice(std::move(device));
 
   std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
       response = cb.WaitForCallback();
@@ -243,7 +233,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
                                                unknown_key2};
   std::unique_ptr<MockU2fDevice> device0(new MockU2fDevice());
   std::unique_ptr<MockU2fDevice> device1(new MockU2fDevice());
-  auto discovery = std::make_unique<MockU2fDiscovery>();
+  MockU2fDiscovery discovery;
 
   EXPECT_CALL(*device0.get(), GetId())
       .WillRepeatedly(testing::Return("device0"));
@@ -277,20 +267,17 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(testing::Invoke(discovery.get(),
-                                &MockU2fDiscovery::StartSuccessAsync));
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(
+          testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
 
   TestRegisterCallback cb;
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  MockU2fDiscovery* discovery_weak = discovery.get();
-  discoveries.push_back(std::move(discovery));
   std::unique_ptr<U2fRequest> request = U2fRegister::TryRegistration(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      std::move(discoveries), cb.callback());
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32), {&discovery},
+      cb.callback());
 
-  discovery_weak->AddDevice(std::move(device0));
-  discovery_weak->AddDevice(std::move(device1));
+  discovery.AddDevice(std::move(device0));
+  discovery.AddDevice(std::move(device1));
   std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
       response = cb.WaitForCallback();
 
@@ -317,7 +304,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   std::vector<std::vector<uint8_t>> handles = {unknown_key0, unknown_key1,
                                                unknown_key2, duplicate_key};
   std::unique_ptr<MockU2fDevice> device(new MockU2fDevice());
-  auto discovery = std::make_unique<MockU2fDiscovery>();
+  MockU2fDiscovery discovery;
 
   EXPECT_CALL(*device.get(), GetId())
       .WillRepeatedly(testing::Return("device0"));
@@ -341,17 +328,14 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   EXPECT_CALL(*device.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(testing::Invoke(discovery.get(),
-                                &MockU2fDiscovery::StartSuccessAsync));
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(
+          testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
   TestRegisterCallback cb;
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  MockU2fDiscovery* discovery_weak = discovery.get();
-  discoveries.push_back(std::move(discovery));
   std::unique_ptr<U2fRequest> request = U2fRegister::TryRegistration(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      std::move(discoveries), cb.callback());
-  discovery_weak->AddDevice(std::move(device));
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32), {&discovery},
+      cb.callback());
+  discovery.AddDevice(std::move(device));
   std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
       response = cb.WaitForCallback();
   EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED, std::get<0>(response));
@@ -369,7 +353,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
                                                unknown_key2, duplicate_key};
   std::unique_ptr<MockU2fDevice> device0(new MockU2fDevice());
   std::unique_ptr<MockU2fDevice> device1(new MockU2fDevice());
-  auto discovery = std::make_unique<MockU2fDiscovery>();
+  MockU2fDiscovery discovery;
 
   EXPECT_CALL(*device0.get(), GetId())
       .WillRepeatedly(testing::Return("device0"));
@@ -407,18 +391,15 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   EXPECT_CALL(*device1.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(testing::Invoke(discovery.get(),
-                                &MockU2fDiscovery::StartSuccessAsync));
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(
+          testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
   TestRegisterCallback cb;
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  MockU2fDiscovery* discovery_weak = discovery.get();
-  discoveries.push_back(std::move(discovery));
   std::unique_ptr<U2fRequest> request = U2fRegister::TryRegistration(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      std::move(discoveries), cb.callback());
-  discovery_weak->AddDevice(std::move(device0));
-  discovery_weak->AddDevice(std::move(device1));
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32), {&discovery},
+      cb.callback());
+  discovery.AddDevice(std::move(device0));
+  discovery.AddDevice(std::move(device1));
   std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
       response = cb.WaitForCallback();
   EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED, std::get<0>(response));

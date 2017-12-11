@@ -20,7 +20,7 @@ namespace {
 
 class FakeU2fRequest : public U2fRequest {
  public:
-  FakeU2fRequest(std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
+  FakeU2fRequest(std::vector<U2fDiscovery*> discoveries,
                  const ResponseCallback& cb)
       : U2fRequest(std::move(discoveries), cb) {}
   ~FakeU2fRequest() override = default;
@@ -30,6 +30,10 @@ class FakeU2fRequest : public U2fRequest {
             std::vector<uint8_t>());
   }
 };
+
+void ReponseDoNothing(U2fReturnCode status_code,
+                      const std::vector<uint8_t>& response,
+                      const std::vector<uint8_t>& key_handle) {}
 
 }  // namespace
 
@@ -44,14 +48,18 @@ class U2fRequestTest : public testing::Test {
 };
 
 TEST_F(U2fRequestTest, TestIterateDevice) {
-  // No discoveries are needed, since |request.devices_| is accessed directly.
-  auto do_nothing = [](U2fReturnCode, const std::vector<uint8_t>&,
-                       const std::vector<uint8_t>&) {};
-  FakeU2fRequest request({}, base::Bind(do_nothing));
+  MockU2fDiscovery discovery;
+  FakeU2fRequest request({&discovery}, base::BindRepeating(ReponseDoNothing));
 
+  auto device0 = std::make_unique<MockU2fDevice>();
+  auto device1 = std::make_unique<MockU2fDevice>();
+  EXPECT_CALL(*device1.get(), GetId())
+      .WillRepeatedly(testing::Return("device0"));
+  EXPECT_CALL(*device1.get(), GetId())
+      .WillRepeatedly(testing::Return("device1"));
   // Add two U2F devices
-  request.devices_.push_back(std::make_unique<MockU2fDevice>());
-  request.devices_.push_back(std::make_unique<MockU2fDevice>());
+  discovery.AddDevice(std::move(device0));
+  discovery.AddDevice(std::move(device1));
 
   // Move first device to current
   request.IterateDevice();
@@ -73,38 +81,46 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
 
   // Moving attempted devices results in a delayed retry, after which the first
   // device will be tried again. Check for the expected behavior here.
-  auto* mock_device =
-      static_cast<MockU2fDevice*>(request.devices_.front().get());
+  auto* mock_device = static_cast<MockU2fDevice*>(request.devices_.front());
   EXPECT_CALL(*mock_device, TryWinkRef(_));
   task_runner_->FastForwardUntilNoTasksRemain();
 
-  EXPECT_EQ(mock_device, request.current_device_.get());
+  EXPECT_EQ(mock_device, request.current_device_);
   EXPECT_EQ(static_cast<size_t>(1), request.devices_.size());
   EXPECT_EQ(static_cast<size_t>(0), request.attempted_devices_.size());
 }
 
 TEST_F(U2fRequestTest, TestBasicMachine) {
-  auto discovery = std::make_unique<MockU2fDiscovery>();
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          testing::Invoke(discovery.get(), &MockU2fDiscovery::StartSuccess));
+  MockU2fDiscovery discovery;
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccess));
 
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  MockU2fDiscovery* discovery_weak = discovery.get();
-  discoveries.push_back(std::move(discovery));
-
-  auto do_nothing = [](U2fReturnCode, const std::vector<uint8_t>&,
-                       const std::vector<uint8_t>&) {};
-  FakeU2fRequest request(std::move(discoveries), base::Bind(do_nothing));
+  FakeU2fRequest request({&discovery}, base::BindRepeating(ReponseDoNothing));
   request.Start();
 
   // Add one U2F device
   auto device = std::make_unique<MockU2fDevice>();
+  EXPECT_CALL(*device, GetId());
   EXPECT_CALL(*device, TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery_weak->AddDevice(std::move(device));
+  discovery.AddDevice(std::move(device));
 
   EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
+}
+
+TEST_F(U2fRequestTest, TestAlreadyPresentDevice) {
+  MockU2fDiscovery discovery;
+  auto device = std::make_unique<MockU2fDevice>();
+  EXPECT_CALL(*device, GetId());
+  discovery.AddDevice(std::move(device));
+
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccess));
+
+  FakeU2fRequest request({&discovery}, base::BindRepeating(ReponseDoNothing));
+  request.Start();
+
+  EXPECT_NE(nullptr, request.current_device_);
 }
 
 }  // namespace device

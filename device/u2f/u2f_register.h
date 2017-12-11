@@ -7,7 +7,9 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
+
 #include "device/u2f/u2f_request.h"
 
 namespace device {
@@ -19,7 +21,7 @@ class U2fRegister : public U2fRequest {
   U2fRegister(const std::vector<std::vector<uint8_t>>& registered_keys,
               const std::vector<uint8_t>& challenge_hash,
               const std::vector<uint8_t>& app_param,
-              std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
+              std::vector<U2fDiscovery*> discoveries,
               const ResponseCallback& cb);
   ~U2fRegister() override;
 
@@ -27,7 +29,7 @@ class U2fRegister : public U2fRequest {
       const std::vector<std::vector<uint8_t>>& registered_keys,
       const std::vector<uint8_t>& challenge_hash,
       const std::vector<uint8_t>& app_param,
-      std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
+      std::vector<U2fDiscovery*> discoveries,
       const ResponseCallback& cb);
 
  private:

@@ -66,8 +66,8 @@ U2fBleDiscovery::~U2fBleDiscovery() {
 
 void U2fBleDiscovery::Start() {
   auto& factory = BluetoothAdapterFactory::Get();
-  factory.GetAdapter(base::Bind(&U2fBleDiscovery::GetAdapterCallback,
-                                weak_factory_.GetWeakPtr()));
+  factory.GetAdapter(
+      base::Bind(&U2fBleDiscovery::OnGetAdapter, weak_factory_.GetWeakPtr()));
 }
 
 void U2fBleDiscovery::Stop() {
@@ -85,8 +85,7 @@ const BluetoothUUID& U2fBleDiscovery::U2fServiceUUID() {
   return service_uuid;
 }
 
-void U2fBleDiscovery::GetAdapterCallback(
-    scoped_refptr<BluetoothAdapter> adapter) {
+void U2fBleDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
   adapter_ = std::move(adapter);
   DCHECK(adapter_);
   VLOG(2) << "Got adapter " << adapter_->GetAddress();
@@ -98,13 +97,8 @@ void U2fBleDiscovery::GetAdapterCallback(
     adapter_->SetPowered(
         true,
         base::Bind(&U2fBleDiscovery::OnSetPowered, weak_factory_.GetWeakPtr()),
-        base::Bind(
-            [](base::WeakPtr<Delegate> delegate) {
-              LOG(ERROR) << "Failed to power on the adapter.";
-              if (delegate)
-                delegate->OnStarted(false);
-            },
-            delegate_));
+        base::Bind(&U2fBleDiscovery::OnSetPoweredError,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -114,10 +108,7 @@ void U2fBleDiscovery::OnSetPowered() {
   for (BluetoothDevice* device : adapter_->GetDevices()) {
     if (base::ContainsKey(device->GetUUIDs(), U2fServiceUUID())) {
       VLOG(2) << "U2F BLE device: " << device->GetAddress();
-      if (delegate_) {
-        delegate_->OnDeviceAdded(
-            std::make_unique<U2fFakeBleDevice>(device->GetAddress()));
-      }
+      AddDevice(std::make_unique<U2fFakeBleDevice>(device->GetAddress()));
     }
   }
 
@@ -127,33 +118,34 @@ void U2fBleDiscovery::OnSetPowered() {
 
   adapter_->StartDiscoverySessionWithFilter(
       std::move(filter),
-      base::Bind(&U2fBleDiscovery::DiscoverySessionStarted,
+      base::Bind(&U2fBleDiscovery::OnStartDiscoverySessionWithFilter,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(
-          [](base::WeakPtr<Delegate> delegate) {
-            LOG(ERROR) << "Discovery session not started.";
-            if (delegate)
-              delegate->OnStarted(false);
-          },
-          delegate_));
+      base::Bind(&U2fBleDiscovery::OnStartDiscoverySessionWithFilterError,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void U2fBleDiscovery::DiscoverySessionStarted(
+void U2fBleDiscovery::OnSetPoweredError() {
+  DLOG(ERROR) << "Failed to power on the adapter.";
+  NotifyDiscoveryStarted(false);
+}
+
+void U2fBleDiscovery::OnStartDiscoverySessionWithFilter(
     std::unique_ptr<BluetoothDiscoverySession> session) {
   discovery_session_ = std::move(session);
-  VLOG(2) << "Discovery session started.";
-  if (delegate_)
-    delegate_->OnStarted(true);
+  DVLOG(2) << "Discovery session started.";
+  NotifyDiscoveryStarted(true);
+}
+
+void U2fBleDiscovery::OnStartDiscoverySessionWithFilterError() {
+  DLOG(ERROR) << "Discovery session not started.";
+  NotifyDiscoveryStarted(false);
 }
 
 void U2fBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                   BluetoothDevice* device) {
   if (base::ContainsKey(device->GetUUIDs(), U2fServiceUUID())) {
     VLOG(2) << "Discovered U2F BLE device: " << device->GetAddress();
-    if (delegate_) {
-      delegate_->OnDeviceAdded(
-          std::make_unique<U2fFakeBleDevice>(device->GetAddress()));
-    }
+    AddDevice(std::make_unique<U2fFakeBleDevice>(device->GetAddress()));
   }
 }
 
@@ -161,15 +153,13 @@ void U2fBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
                                     BluetoothDevice* device) {
   if (base::ContainsKey(device->GetUUIDs(), U2fServiceUUID())) {
     VLOG(2) << "U2F BLE device removed: " << device->GetAddress();
-    if (delegate_)
-      delegate_->OnDeviceRemoved(U2fFakeBleDevice::GetId(device->GetAddress()));
+    RemoveDevice(device->GetAddress());
   }
 }
 
 void U2fBleDiscovery::OnStopped(bool success) {
   discovery_session_.reset();
-  if (delegate_)
-    delegate_->OnStopped(success);
+  NotifyDiscoveryStopped(success);
 }
 
 }  // namespace device

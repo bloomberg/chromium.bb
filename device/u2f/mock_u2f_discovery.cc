@@ -10,47 +10,32 @@
 
 namespace device {
 
-MockU2fDiscovery::MockDelegate::MockDelegate() : weak_factory_(this) {}
+MockU2fDiscoveryObserver::MockU2fDiscoveryObserver() = default;
 
-MockU2fDiscovery::MockDelegate::~MockDelegate() = default;
-
-void MockU2fDiscovery::MockDelegate::OnDeviceAdded(
-    std::unique_ptr<U2fDevice> device) {
-  OnDeviceAddedStr(device->GetId());
-}
-
-void MockU2fDiscovery::MockDelegate::OnDeviceRemoved(
-    base::StringPiece device_id) {
-  OnDeviceRemovedStr(std::string(device_id));
-}
-
-base::WeakPtr<MockU2fDiscovery::MockDelegate>
-MockU2fDiscovery::MockDelegate::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
+MockU2fDiscoveryObserver::~MockU2fDiscoveryObserver() = default;
 
 MockU2fDiscovery::MockU2fDiscovery() = default;
 
 MockU2fDiscovery::~MockU2fDiscovery() = default;
 
-void MockU2fDiscovery::AddDevice(std::unique_ptr<U2fDevice> device) {
-  if (delegate_)
-    delegate_->OnDeviceAdded(std::move(device));
+bool MockU2fDiscovery::AddDevice(std::unique_ptr<U2fDevice> device) {
+  return U2fDiscovery::AddDevice(std::move(device));
 }
 
-void MockU2fDiscovery::RemoveDevice(base::StringPiece device_id) {
-  if (delegate_)
-    delegate_->OnDeviceRemoved(device_id);
+bool MockU2fDiscovery::RemoveDevice(base::StringPiece device_id) {
+  return U2fDiscovery::RemoveDevice(device_id);
+}
+
+base::ObserverList<U2fDiscovery::Observer>& MockU2fDiscovery::GetObservers() {
+  return observers_;
 }
 
 void MockU2fDiscovery::StartSuccess() {
-  if (delegate_)
-    delegate_->OnStarted(true);
+  NotifyDiscoveryStarted(true);
 }
 
 void MockU2fDiscovery::StartFailure() {
-  if (delegate_)
-    delegate_->OnStarted(false);
+  NotifyDiscoveryStarted(false);
 }
 
 // static
