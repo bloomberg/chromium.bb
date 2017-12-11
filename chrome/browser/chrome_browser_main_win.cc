@@ -71,6 +71,7 @@
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "components/crash/content/app/crash_export_thunks.h"
+#include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -471,17 +472,19 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
 int ChromeBrowserMainPartsWin::PreCreateThreads() {
   // Record whether the machine is enterprise managed in a crash key. This will
   // be used to better identify whether crashes are from enterprise users.
-  base::debug::SetCrashKeyValue(
-      crash_keys::kIsEnterpriseManaged,
-      base::win::IsEnterpriseManaged() ? "yes" : "no");
+  static crash_reporter::CrashKeyString<4> is_enterprise_managed(
+      "is-enterprise-managed");
+  is_enterprise_managed.Set(base::win::IsEnterpriseManaged() ? "yes" : "no");
 
   // Set crash keys containing the registry values used to determine Chrome's
   // update channel at process startup; see https://crbug.com/579504.
   const auto& details = install_static::InstallDetails::Get();
-  base::debug::SetCrashKeyValue(crash_keys::kApValue,
-                                base::UTF16ToUTF8(details.update_ap()));
-  base::debug::SetCrashKeyValue(
-      crash_keys::kCohortName, base::UTF16ToUTF8(details.update_cohort_name()));
+
+  static crash_reporter::CrashKeyString<50> ap_value("ap");
+  ap_value.Set(base::UTF16ToUTF8(details.update_ap()));
+
+  static crash_reporter::CrashKeyString<32> update_cohort_name("cohort-name");
+  update_cohort_name.Set(base::UTF16ToUTF8(details.update_cohort_name()));
 
   return ChromeBrowserMainParts::PreCreateThreads();
 }

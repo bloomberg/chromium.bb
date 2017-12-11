@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -23,22 +22,14 @@
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/crash_keys.h"
 
 namespace installer {
 
 namespace {
 
-// Crash Keys
-
-const char kApValue[] = "ap";
-const char kCohortName[] = "cohort-name";
-const char kCurrentVersion[] = "current-version";
-const char kIsSystemLevel[] = "system-level";
-const char kOperation[] = "operation";
-const char kStateKey[] = "state-key";
-
-const char *OperationToString(InstallerState::Operation operation) {
+const char* OperationToString(InstallerState::Operation operation) {
   switch (operation) {
     case InstallerState::SINGLE_INSTALL_OR_UPDATE:
       return "single-install-or-update";
@@ -105,17 +96,6 @@ void ConfigureCrashReporting(const InstallerState& installer_state) {
 size_t RegisterCrashKeys() {
   static constexpr base::debug::CrashKey kFixedKeys[] = {
       {crash_keys::kMetricsClientId, crash_keys::kSmallSize},
-      {kApValue, crash_keys::kSmallSize},
-      {kCohortName, crash_keys::kSmallSize},
-      {kCurrentVersion, crash_keys::kSmallSize},
-      {kIsSystemLevel, crash_keys::kSmallSize},
-      {kOperation, crash_keys::kSmallSize},
-
-      // This is a Windows registry key, which maxes out at 255 chars.
-      // (kMediumSize actually maxes out at 252 chars on Windows, but
-      // potentially truncating such a small amount is a fair tradeoff compared
-      // to using kLargeSize, which is wasteful.)
-      {kStateKey, crash_keys::kMediumSize},
   };
   std::vector<base::debug::CrashKey> keys(std::begin(kFixedKeys),
                                           std::end(kFixedKeys));
@@ -125,22 +105,29 @@ size_t RegisterCrashKeys() {
 }
 
 void SetInitialCrashKeys(const InstallerState& state) {
-  using base::debug::SetCrashKeyValue;
+  using crash_reporter::CrashKeyString;
 
-  SetCrashKeyValue(kOperation, OperationToString(state.operation()));
-  SetCrashKeyValue(kIsSystemLevel, state.system_install() ? "true" : "false");
+  static CrashKeyString<64> operation("operation");
+  operation.Set(OperationToString(state.operation()));
 
+  static CrashKeyString<6> is_system_level("system-level");
+  is_system_level.Set(state.system_install() ? "true" : "false");
+
+  // This is a Windows registry key, which maxes out at 255 chars.
+  static CrashKeyString<256> state_crash_key("state-key");
   const base::string16 state_key = state.state_key();
   if (!state_key.empty())
-    SetCrashKeyValue(kStateKey, base::UTF16ToUTF8(state_key));
+    state_crash_key.Set(base::UTF16ToUTF8(state_key));
 
   // Set crash keys containing the registry values used to determine Chrome's
   // update channel at process startup; see https://crbug.com/579504.
   const auto& details = install_static::InstallDetails::Get();
-  base::debug::SetCrashKeyValue(kApValue,
-                                base::UTF16ToUTF8(details.update_ap()));
-  base::debug::SetCrashKeyValue(
-      kCohortName, base::UTF16ToUTF8(details.update_cohort_name()));
+
+  static CrashKeyString<50> ap_value("ap");
+  ap_value.Set(base::UTF16ToUTF8(details.update_ap()));
+
+  static CrashKeyString<32> update_cohort_name("cohort-name");
+  update_cohort_name.Set(base::UTF16ToUTF8(details.update_cohort_name()));
 }
 
 void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {
@@ -148,12 +135,11 @@ void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {
 }
 
 void SetCurrentVersionCrashKey(const base::Version* current_version) {
-  if (current_version) {
-    base::debug::SetCrashKeyValue(kCurrentVersion,
-                                  current_version->GetString());
-  } else {
-    base::debug::ClearCrashKey(kCurrentVersion);
-  }
+  static crash_reporter::CrashKeyString<32> version_key("current-version");
+  if (current_version)
+    version_key.Set(current_version->GetString());
+  else
+    version_key.Clear();
 }
 
 }  // namespace installer

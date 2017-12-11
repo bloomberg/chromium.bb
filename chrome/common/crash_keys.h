@@ -72,19 +72,6 @@ extern const char kShutdownType[];
 // invalid attempt to Pin the browser process after that.
 extern const char kBrowserUnpinTrace[];
 
-#if defined(OS_WIN)
-extern const char kHungAudioThreadDetails[];
-
-// Whether the machine is enterprise managed (only sent on Windows).
-extern const char kIsEnterpriseManaged[];
-
-// The "ap" (additional parameters) value in Chrome's ClientState registry key.
-extern const char kApValue[];
-
-// The "name" value in Chrome's ClientState\cohort registry key.
-extern const char kCohortName[];
-#endif
-
 // The user's printers, up to kPrinterInfoCount. Should be set with
 // ScopedPrinterInfo.
 const size_t kPrinterInfoCount = 4;
