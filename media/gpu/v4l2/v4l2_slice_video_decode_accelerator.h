@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_V4L2_SLICE_VIDEO_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_V4L2_SLICE_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_V4L2_V4L2_SLICE_VIDEO_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_V4L2_V4L2_SLICE_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <linux/videodev2.h>
 #include <stddef.h>
@@ -23,7 +23,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/vp8_decoder.h"
 #include "media/gpu/vp9_decoder.h"
 #include "media/video/video_decode_accelerator.h"
@@ -481,4 +481,4 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_V4L2_SLICE_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_V4L2_V4L2_SLICE_VIDEO_DECODE_ACCELERATOR_H_

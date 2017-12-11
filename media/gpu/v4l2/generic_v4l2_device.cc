@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 
-#include "media/gpu/generic_v4l2_device.h"
+#include "media/gpu/v4l2/generic_v4l2_device.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -25,7 +25,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/gpu/features.h"
-#include "media/gpu/generic_v4l2_device.h"
+#include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"

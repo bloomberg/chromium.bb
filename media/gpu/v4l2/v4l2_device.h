@@ -6,8 +6,8 @@
 // V4L2DecodeAccelerator class to delegate/pass the device specific
 // handling of any of the functionalities.
 
-#ifndef MEDIA_GPU_V4L2_DEVICE_H_
-#define MEDIA_GPU_V4L2_DEVICE_H_
+#ifndef MEDIA_GPU_V4L2_V4L2_DEVICE_H_
+#define MEDIA_GPU_V4L2_V4L2_DEVICE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -197,4 +197,4 @@ class MEDIA_GPU_EXPORT V4L2Device
 
 }  //  namespace media
 
-#endif  // MEDIA_GPU_V4L2_DEVICE_H_
+#endif  // MEDIA_GPU_V4L2_V4L2_DEVICE_H_

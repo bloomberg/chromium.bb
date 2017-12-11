@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_V4L2_VIDEO_ENCODE_ACCELERATOR_H_
-#define MEDIA_GPU_V4L2_VIDEO_ENCODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_V4L2_V4L2_VIDEO_ENCODE_ACCELERATOR_H_
+#define MEDIA_GPU_V4L2_V4L2_VIDEO_ENCODE_ACCELERATOR_H_
 
 #include <linux/videodev2.h>
 #include <stddef.h>
@@ -19,8 +19,8 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/v4l2_device.h"
-#include "media/gpu/v4l2_image_processor.h"
+#include "media/gpu/v4l2/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -316,4 +316,4 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_V4L2_VIDEO_ENCODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_V4L2_V4L2_VIDEO_ENCODE_ACCELERATOR_H_

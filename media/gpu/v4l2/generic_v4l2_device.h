@@ -5,8 +5,8 @@
 // This file contains the implementation of GenericV4L2Device used on
 // platforms, which provide generic V4L2 video codec devices.
 
-#ifndef MEDIA_GPU_GENERIC_V4L2_DEVICE_H_
-#define MEDIA_GPU_GENERIC_V4L2_DEVICE_H_
+#ifndef MEDIA_GPU_V4L2_GENERIC_V4L2_DEVICE_H_
+#define MEDIA_GPU_V4L2_GENERIC_V4L2_DEVICE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,7 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "media/gpu/features.h"
-#include "media/gpu/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_device.h"
 
 namespace media {
 
@@ -128,4 +128,4 @@ class GenericV4L2Device : public V4L2Device {
 };
 }  //  namespace media
 
-#endif  // MEDIA_GPU_GENERIC_V4L2_DEVICE_H_
+#endif  // MEDIA_GPU_V4L2_GENERIC_V4L2_DEVICE_H_

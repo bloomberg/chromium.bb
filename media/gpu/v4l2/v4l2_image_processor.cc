@@ -17,7 +17,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/gpu/v4l2_image_processor.h"
+#include "media/gpu/v4l2/v4l2_image_processor.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 #define VLOGF(level) VLOG(level) << __func__ << "(): "

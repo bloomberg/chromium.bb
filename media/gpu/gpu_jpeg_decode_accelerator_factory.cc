@@ -21,8 +21,8 @@
 #endif
 
 #if defined(USE_V4L2_JDA)
-#include "media/gpu/v4l2_device.h"
-#include "media/gpu/v4l2_jpeg_decode_accelerator.h"
+#include "media/gpu/v4l2/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_jpeg_decode_accelerator.h"
 #endif
 
 namespace media {
