@@ -1221,9 +1221,6 @@ extern const char kSiteExplorationUiDescription[];
 extern const char kNtpGoogleGInOmniboxName[];
 extern const char kNtpGoogleGInOmniboxDescription[];
 
-extern const char kNtpOfflinePagesName[];
-extern const char kNtpOfflinePagesDescription[];
-
 extern const char kNtpPopularSitesName[];
 extern const char kNtpPopularSitesDescription[];
 

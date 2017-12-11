@@ -1992,11 +1992,6 @@ const char kNtpGoogleGInOmniboxName[] = "Google G in New Tab Page omnibox";
 const char kNtpGoogleGInOmniboxDescription[] =
     "Show a Google G in the omnibox on the New Tab Page.";
 
-const char kNtpOfflinePagesName[] = "Enable NTP offline pages";
-const char kNtpOfflinePagesDescription[] =
-    "Enables badging of offline pages on the New Tab page. Only relevant if "
-    "offline pages are enabled.";
-
 const char kNtpPopularSitesName[] = "Show popular sites on the New Tab page";
 const char kNtpPopularSitesDescription[] =
     "Pre-populate the New Tab page with popular sites.";

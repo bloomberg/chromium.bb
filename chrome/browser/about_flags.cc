@@ -2602,9 +2602,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(content::kWebRtcH264WithOpenH264FFmpeg)},
 #endif  // ENABLE_WEBRTC && BUILDFLAG(RTC_USE_H264) && !MEDIA_DISABLE_FFMPEG
 #if defined(OS_ANDROID)
-    {"offline-pages-ntp", flag_descriptions::kNtpOfflinePagesName,
-     flag_descriptions::kNtpOfflinePagesDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNTPOfflinePagesFeature)},
     {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
      flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},

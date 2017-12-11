@@ -41,8 +41,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@EnableFeatures({ChromeFeatureList.CHROME_HOME, ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL,
-        ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME})
+@EnableFeatures({ChromeFeatureList.CHROME_HOME, ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL})
 public class SuggestionsCarouselTest {
     private static final String URL_STRING = "http://www.test.com";
     private static final String INVALID_URL = "file://URL";
