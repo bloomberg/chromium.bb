@@ -262,27 +262,27 @@ void DocumentLoader::DidOpenPartial(int32_t result) {
 
   // Leave position untouched for multiparted responce for now, when we read the
   // data we'll get it.
-  if (!loader_->IsMultipart()) {
-    // Need to make sure that the server returned a byte-range, since it's
-    // possible for a server to just ignore our byte-range request and just
-    // return the entire document even if it supports byte-range requests.
-    // i.e. sniff response to
-    // http://www.act.org/compass/sample/pdf/geometry.pdf
-    int start_pos = 0;
-    int end_pos = 0;
-    if (loader_->GetByteRange(&start_pos, &end_pos)) {
-      if (start_pos % DataStream::kChunkSize != 0) {
-        return ReadComplete();
-      }
-      DCHECK(!chunk_.chunk_data);
-      chunk_.chunk_index = chunk_stream_.GetChunkIndex(start_pos);
-    } else {
-      SetPartialLoadingEnabled(false);
-    }
-    return ContinueDownload();
+  if (loader_->IsMultipart()) {
+    // Needs more data to calc chunk index.
+    return ReadMore();
   }
-  // Needs more data to calc chunk index.
-  return ReadMore();
+
+  // Need to make sure that the server returned a byte-range, since it's
+  // possible for a server to just ignore our byte-range request and just
+  // return the entire document even if it supports byte-range requests.
+  // i.e. sniff response to
+  // http://www.act.org/compass/sample/pdf/geometry.pdf
+  int start_pos = 0;
+  if (loader_->GetByteRangeStart(&start_pos)) {
+    if (start_pos % DataStream::kChunkSize != 0)
+      return ReadComplete();
+
+    DCHECK(!chunk_.chunk_data);
+    chunk_.chunk_index = chunk_stream_.GetChunkIndex(start_pos);
+  } else {
+    SetPartialLoadingEnabled(false);
+  }
+  return ContinueDownload();
 }
 
 void DocumentLoader::ReadMore() {
@@ -306,19 +306,16 @@ void DocumentLoader::DidRead(int32_t result) {
   }
   if (loader_->IsMultipart()) {
     int start_pos = 0;
-    int end_pos = 0;
-    if (!loader_->GetByteRange(&start_pos, &end_pos)) {
+    if (!loader_->GetByteRangeStart(&start_pos))
       return ReadComplete();
-    }
+
     DCHECK(!chunk_.chunk_data);
     chunk_.chunk_index = chunk_stream_.GetChunkIndex(start_pos);
   }
-  if (!SaveChunkData(buffer_, result)) {
+  if (!SaveChunkData(buffer_, result))
     return ReadMore();
-  }
-  if (IsDocumentComplete()) {
+  if (IsDocumentComplete())
     return ReadComplete();
-  }
   return ContinueDownload();
 }
 

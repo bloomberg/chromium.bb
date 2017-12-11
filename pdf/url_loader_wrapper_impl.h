@@ -34,7 +34,7 @@ class URLLoaderWrapperImpl : public URLLoaderWrapper {
   std::string GetContentDisposition() const override;
   int GetStatusCode() const override;
   bool IsMultipart() const override;
-  bool GetByteRange(int* start, int* end) const override;
+  bool GetByteRangeStart(int* start) const override;
   bool GetDownloadProgress(int64_t* bytes_received,
                            int64_t* total_bytes_to_be_received) const override;
   void Close() override;

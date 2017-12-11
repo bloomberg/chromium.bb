@@ -156,11 +156,9 @@ bool URLLoaderWrapperImpl::IsMultipart() const {
   return is_multipart_;
 }
 
-bool URLLoaderWrapperImpl::GetByteRange(int* start, int* end) const {
+bool URLLoaderWrapperImpl::GetByteRangeStart(int* start) const {
   DCHECK(start);
-  DCHECK(end);
   *start = byte_range_.start();
-  *end = byte_range_.end();
   return byte_range_.IsValid();
 }
 
