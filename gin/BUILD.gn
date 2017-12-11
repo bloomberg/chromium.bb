@@ -165,7 +165,10 @@ test("gin_unittests") {
     "//v8",
   ]
 
-  configs += [ "//v8:external_startup_data" ]
+  configs += [
+    "//tools/v8_context_snapshot:use_v8_context_snapshot",
+    "//v8:external_startup_data",
+  ]
 
   data = [
     "shell/hello_world.js",
