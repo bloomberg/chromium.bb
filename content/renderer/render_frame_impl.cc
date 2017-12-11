@@ -304,10 +304,6 @@ using blink::WebFloatPoint;
 using blink::WebFloatRect;
 #endif
 
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enums: " #a)
-
 namespace content {
 
 namespace {
@@ -6026,6 +6022,10 @@ void RenderFrameImpl::OnClearActiveFindMatch() {
   frame_->ClearActiveFindMatch();
 }
 
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
+
 // Ensure that content::StopFindAction and blink::WebLocalFrame::StopFindAction
 // are kept in sync.
 STATIC_ASSERT_ENUM(STOP_FIND_ACTION_CLEAR_SELECTION,
@@ -6034,6 +6034,8 @@ STATIC_ASSERT_ENUM(STOP_FIND_ACTION_KEEP_SELECTION,
                    WebLocalFrame::kStopFindActionKeepSelection);
 STATIC_ASSERT_ENUM(STOP_FIND_ACTION_ACTIVATE_SELECTION,
                    WebLocalFrame::kStopFindActionActivateSelection);
+
+#undef STATIC_ASSERT_ENUM
 
 void RenderFrameImpl::OnStopFinding(StopFindAction action) {
   blink::WebPlugin* plugin = GetWebPluginForFind();
