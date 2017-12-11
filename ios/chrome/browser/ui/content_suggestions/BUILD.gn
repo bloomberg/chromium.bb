@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("content_suggestions") {
+source_set("content_suggestions_ui") {
   sources = [
     "content_suggestions_collection_controlling.h",
     "content_suggestions_collection_synchronizing.h",
@@ -29,7 +29,7 @@ source_set("content_suggestions") {
   ]
   deps = [
     ":content_suggestions_constant",
-    ":content_suggestions_util",
+    ":content_suggestions_ui_util",
     "resources:content_suggestions_no_image",
     "resources:content_suggestions_offline",
     "//base",
@@ -59,7 +59,7 @@ source_set("content_suggestions_constant") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("content_suggestions_util") {
+source_set("content_suggestions_ui_util") {
   sources = [
     "content_suggestions_collection_utils.h",
     "content_suggestions_collection_utils.mm",
@@ -89,8 +89,8 @@ source_set("unit_tests") {
     "content_suggestions_header_synchronizer_unittest.mm",
   ]
   deps = [
-    ":content_suggestions",
-    ":content_suggestions_util",
+    ":content_suggestions_ui",
+    ":content_suggestions_ui_util",
     "//base",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
@@ -114,9 +114,9 @@ source_set("eg_tests") {
     "ntp_home_test_utils.mm",
   ]
   deps = [
-    ":content_suggestions",
     ":content_suggestions_constant",
-    ":content_suggestions_util",
+    ":content_suggestions_ui",
+    ":content_suggestions_ui_util",
     "//base",
     "//components/keyed_service/ios",
     "//components/ntp_snippets",
