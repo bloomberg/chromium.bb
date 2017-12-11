@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrdevice-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRDevice : EventTarget {
   readonly attribute DOMString deviceName;
   readonly attribute boolean isExternal;

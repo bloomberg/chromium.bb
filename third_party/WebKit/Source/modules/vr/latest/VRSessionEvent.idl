@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrsessionevent-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2,
+    RuntimeEnabled=WebXR,
     Constructor(DOMString type, VRSessionEventInit eventInitDict)
 ] interface VRSessionEvent : Event {
   readonly attribute VRSession session;

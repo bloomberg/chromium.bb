@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrstagebounds-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRStageBounds {
   readonly attribute FrozenArray<VRStageBoundsPoint> geometry;
 };

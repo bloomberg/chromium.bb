@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrview-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRView {
   readonly attribute VREye? eye;
   readonly attribute Float32Array projectionMatrix;

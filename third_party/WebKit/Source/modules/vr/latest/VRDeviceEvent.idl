@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrdeviceevent-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2,
+    RuntimeEnabled=WebXR,
     Constructor(DOMString type, VRDeviceEventInit eventInitDict)
 ] interface VRDeviceEvent : Event {
   readonly attribute VRDevice device;

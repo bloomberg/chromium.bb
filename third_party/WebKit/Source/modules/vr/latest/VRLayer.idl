@@ -5,5 +5,5 @@
 // https://w3c.github.io/webvr/spec/latest/#vrlayer-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRLayer {};

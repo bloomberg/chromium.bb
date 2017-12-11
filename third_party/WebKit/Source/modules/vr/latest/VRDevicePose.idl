@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/spec/latest/#vrdevicepose-interface
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRDevicePose {
   readonly attribute Float32Array poseModelMatrix;
 

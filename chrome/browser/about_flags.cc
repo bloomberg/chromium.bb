@@ -2208,9 +2208,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-gamepad-extensions", flag_descriptions::kGamepadExtensionsName,
      flag_descriptions::kGamepadExtensionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kGamepadExtensions)},
-    // TODO(bajones): When adding a flag for the "2.0" API (crbug.com/670510),
-    // use FEATURE_VALUE_TYPE, just use "webvr" without "enable-", and update
-    // the description to indicate this is the older version of the API ("1.1").
     {"enable-webvr", flag_descriptions::kWebvrName,
      flag_descriptions::kWebvrDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
@@ -2218,6 +2215,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebVrExperimentalRenderingName,
      flag_descriptions::kWebVrExperimentalRenderingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebVrExperimentalRendering)},
+    {"webxr", flag_descriptions::kWebXrName,
+     flag_descriptions::kWebXrDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebXr)},
 #if BUILDFLAG(ENABLE_VR)
     {"webvr-vsync-align", flag_descriptions::kWebVrVsyncAlignName,
      flag_descriptions::kWebVrVsyncAlignDescription, kOsAndroid,

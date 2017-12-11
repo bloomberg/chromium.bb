@@ -4,7 +4,8 @@
 
 // https://w3c.github.io/webvr/spec/latest/#vrsession-interface
 [
-    RuntimeEnabled=WebVR2
+    SecureContext,
+    RuntimeEnabled=WebXR
 ] interface VRSession : EventTarget {
   readonly attribute VRDevice device;
   readonly attribute boolean exclusive;

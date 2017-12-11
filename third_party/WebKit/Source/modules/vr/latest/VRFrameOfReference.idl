@@ -12,7 +12,7 @@ enum VRFrameOfReferenceType {
 
 [
     SecureContext,
-    RuntimeEnabled=WebVR2
+    RuntimeEnabled=WebXR
 ] interface VRFrameOfReference : VRCoordinateSystem {
   readonly attribute VRStageBounds? bounds;
   readonly attribute double emulatedHeight;

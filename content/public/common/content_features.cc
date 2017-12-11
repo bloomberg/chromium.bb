@@ -472,6 +472,9 @@ const base::Feature kWebVrExperimentalRendering{
 const base::Feature kWebVrVsyncAlign{"WebVrVsyncAlign",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the WebXR Device API is enabled.
+const base::Feature kWebXr{"WebXR", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enabled "work stealing" in the script runner.
 const base::Feature kWorkStealingInScriptRunner{
     "WorkStealingInScriptRunner", base::FEATURE_DISABLED_BY_DEFAULT};
