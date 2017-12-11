@@ -235,7 +235,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
       return false;
     }
 
-// TODO(posciak): crbug.com/450898.
+// TODO(posciak): https://crbug.com/450898.
 #if defined(ARCH_CPU_ARMEL)
     if (!gl::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
       LOGF(ERROR) << "context does not have EGL_KHR_fence_sync";
@@ -666,7 +666,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
     }
 
     EGLSyncKHR egl_sync = EGL_NO_SYNC_KHR;
-// TODO(posciak): crbug.com/450898.
+// TODO(posciak): https://crbug.com/450898.
 #if defined(ARCH_CPU_ARMEL)
     egl_sync = eglCreateSyncKHR(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
     if (egl_sync == EGL_NO_SYNC_KHR) {
@@ -1642,10 +1642,10 @@ void V4L2VideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
     return;
   }
 
-  // TODO(posciak): crbug.com/270039. Exynos requires a streamoff-streamon
-  // sequence after flush to continue, even if we are not resetting. This would
-  // make sense, because we don't really want to resume from a non-resume point
-  // (e.g. not from an IDR) if we are flushed.
+  // TODO(posciak): https://crbug.com/270039. Exynos requires a
+  // streamoff-streamon sequence after flush to continue, even if we are not
+  // resetting. This would make sense, because we don't really want to resume
+  // from a non-resume point (e.g. not from an IDR) if we are flushed.
   // MSE player however triggers a Flush() on chunk end, but never Reset(). One
   // could argue either way, or even say that Flush() is not needed/harmful when
   // transitioning to next chunk.

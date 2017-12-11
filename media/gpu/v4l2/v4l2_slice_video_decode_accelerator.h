@@ -246,9 +246,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // file descriptors.
   void ImportBufferForPictureTask(
       int32_t picture_buffer_id,
-      // TODO(posciak): (crbug.com/561749) we should normally be able to pass
-      // the vector by itself via std::move, but it's not possible to do this
-      // if this method is used as a callback.
+      // TODO(posciak): (https://crbug.com/561749) we should normally be able to
+      // pass the vector by itself via std::move, but it's not possible to do
+      // this if this method is used as a callback.
       std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds);
 
   // Create a GLImage for the buffer associated with V4L2 |buffer_index| and
@@ -258,9 +258,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   void CreateGLImageFor(
       size_t buffer_index,
       int32_t picture_buffer_id,
-      // TODO(posciak): (crbug.com/561749) we should normally be able to pass
-      // the vector by itself via std::move, but it's not possible to do this
-      // if this method is used as a callback.
+      // TODO(posciak): (https://crbug.com/561749) we should normally be able to
+      // pass the vector by itself via std::move, but it's not possible to do
+      // this if this method is used as a callback.
       std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds,
       GLuint client_texture_id,
       GLuint texture_id,
@@ -274,9 +274,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
       size_t buffer_index,
       int32_t picture_buffer_id,
       scoped_refptr<gl::GLImage> gl_image,
-      // TODO(posciak): (crbug.com/561749) we should normally be able to pass
-      // the vector by itself via std::move, but it's not possible to do this
-      // if this method is used as a callback.
+      // TODO(posciak): (https://crbug.com/561749) we should normally be able to
+      // pass the vector by itself via std::move, but it's not possible to do
+      // this if this method is used as a callback.
       std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds);
 
   // Performed on decoder_thread_ as a consequence of poll() on decoder_thread_

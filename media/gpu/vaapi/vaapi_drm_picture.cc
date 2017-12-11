@@ -119,7 +119,7 @@ bool VaapiDrmPicture::Allocate(gfx::BufferFormat format) {
   pixmap_ = factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size_,
                                         format, gfx::BufferUsage::SCANOUT);
 #else
-  // TODO(jisorce): Implement non-ozone case, see crbug.com/785201.
+  // TODO(jisorce): Implement non-ozone case, see https://crbug.com/785201.
   NOTIMPLEMENTED();
 #endif  // USE_OZONE
 
