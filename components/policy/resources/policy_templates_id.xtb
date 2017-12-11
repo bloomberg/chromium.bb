@@ -46,39 +46,6 @@
 
       Nilai kebijakan harus ditentukan dalam milidetik.</translation>
 <translation id="1151353063931113432">Izinkan gambar di situs ini</translation>
-<translation id="1151545095291359187">Mengonfigurasi setelan pengelolaan ekstensi untuk <ph name="PRODUCT_NAME" />.
-
-          Kebijakan ini mengontrol berbagai setelan, termasuk setelan yang dikontrol oleh kebijakan terkait ekstensi yang sudah ada mana pun. Kebijakan ini akan mengganti kebijakan lama apa pun jika keduanya disetel.
-
-          Kebijakan ini memetakan ID ekstensi atau URL update ke konfigurasinya. Dengan ID ekstensi, konfigurasi hanya akan diterapkan ke ekstensi yang ditentukan. Konfigurasi default dapat disetel untuk ID spesifik <ph name="DEFAULT_SCOPE" />, yang akan diterapkan ke semua ekstensi yang tidak memiliki konfigurasi kustom, yang disetel dalam kebijakan ini. Dengan URL update, konfigurasi akan diterapkan ke semua ekstensi dengan URL update persis seperti yang dinyatakan dalam manifes ekstensi ini, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurasi untuk setiap ekstensi (atau ekstensi dengan URL update yang sama) adalah kamus lain yang dapat berisi kolom yang didokumentasikan di bawah.
-
-          <ph name="INSTALLATION_MODE" />: memetakan ke string yang menunjukkan mode penginstalan untuk ekstensi. String yang valid adalah:
-          * <ph name="ALLOWED" />: mengizinkan ekstensi diinstal oleh pengguna. Konfigurasi ini adalah perilaku default.
-          * <ph name="BLOCKED" />: memblokir penginstalan ekstensi.
-          * <ph name="FORCE_INSTALLED" />: ekstensi akan otomatis diinstal dan tidak dapat dihapus oleh pengguna.
-          * <ph name="NORMAL_INSTALLED" />: ekstensi akan otomatis diinstal, tetapi dapat dinonaktifkan oleh pengguna.
-
-          <ph name="INSTALLATION_MODE" /> juga dapat dikonfigurasi untuk beberapa ekstensi, termasuk ekstensi <ph name="DEFAULT_SCOPE" /> (sebagai setelan default) dan ekstensi dengan URL update yang sama. Dalam hal ini, hanya nilai <ph name="ALLOWED" /> dan <ph name="BLOCKED" /> yang dapat digunakan.
-
-          Jika mode disetel ke <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" />, <ph name="UPDATE_URL" /> juga harus dikonfigurasi. Perhatikan bahwa URL update yang disetel dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan di manifes ekstensi. URL update harus mengarah ke dokumen XML Manifes Update seperti yang dijelaskan di atas.
-
-          <ph name="BLOCKED_PERMISSIONS" />: memetakan ke daftar string yang menunjukkan izin API yang diblokir untuk ekstensi. Nama izin sama dengan string izin yang dinyatakan dalam manifes ekstensi seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC3" />. Setelan ini juga dapat dikonfigurasi untuk ekstensi <ph name="DEFAULT_SCOPE" />. Jika mewajibkan izin yang berada di daftar blokir, ekstensi tidak akan diizinkan untuk dimuat. Jika ekstensi berisi izin yang diblokir sebagai persyaratan opsional, ekstensi akan ditangani dengan cara normal, tetapi permintaan izin yang bertentangan akan ditolak secara otomatis selama waktu proses.
-
-          <ph name="ALLOWED_PERMISSIONS" />: mirip dengan <ph name="BLOCKED_PERMISSIONS" />, namun mengizinkan beberapa izin secara eksplisit yang mungkin diblokir oleh daftar izin yang diblokir secara global, sehingga tidak dapat dikonfigurasi untuk ekstensi <ph name="DEFAULT_SCOPE" />. Perhatikan bahwa setelan ini tidak memberikan izin ke ekstensi secara otomatis.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: memetakan ke string versi. Format string versi sama dengan yang digunakan dalam manifes ekstensi, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC4" />. Ekstensi dengan versi yang lebih lama daripada versi minimum yang ditentukan akan dinonaktifkan. Hal ini juga berlaku pada ekstensi yang diinstal paksa.
-
-          Setelan berikut dapat digunakan hanya untuk konfigurasi <ph name="DEFAULT_SCOPE" /> default:
-
-          <ph name="INSTALL_SOURCES" />: Setiap item dalam daftar ini adalah pola pencocokan gaya ekstensi (<ph name="LINK_TO_MATCH_PATTERNS" />). Pengguna dapat dengan mudah menginstal item dari URL apa pun yang cocok dengan item di daftar ini. Lokasi halaman maupun file <ph name="EXTENSION_SUFFIX_WILDCARD" /> tempat download dimulai (yaitu perujuk) harus diizinkan oleh pola ini.
-
-          <ph name="ALLOWED_TYPES" />: Setelan ini memberi akses jenis ekstensi/aplikasi yang diizinkan, yang dapat diinstal di <ph name="PRODUCT_NAME" />. Nilainya adalah daftar string, yang masing-masing harus berupa salah satu dari: <ph name="VALID_ALLOWED_TYPES" />. Lihat dokumentasi ekstensi <ph name="PRODUCT_NAME" /> untuk informasi selengkapnya tentang jenis ini.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jika pengguna mencoba menginstal ekstensi namun diblokir oleh kebijakan, Toko Web Chrome akan menampilkan pesan error umum. Setelan ini mengizinkan Anda menambahkan teks ke pesan error. Setelan ini dapat digunakan untuk mengarahkan pengguna ke layanan bantuan, menjelaskan alasan ekstensi tertentu diblokir, atau hal-hal lain. Pesan error ini akan terpotong jika lebih dari 1.000 karakter.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Menerima daftar host yang interaksinya dengan ekstensi akan diblokir. Hal ini termasuk melakukan injeksi JavaScript, mengubah dan melihat webRequests/webNavigation, serta melihat dan mengubah cookie. Formatnya mirip dengan Pola Pencocokan <ph name="LINK_TO_MATCH_PATTERNS" />, kecuali tidak ada path yang dapat ditentukan. Mis. "*://*.example.com". Format ini juga mendukung penulisan karakter pengganti TLD yang efektif, misalnya "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Menerima daftar host yang dapat berinteraksi dengan ekstensi, terlepas dari apakah host terdaftar dalam <ph name="RUNTIME_BLOCKED_HOSTS" /> atau tidak. Formatnya sama dengan format <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">Laporkan status pengalih dev perangkat ketika boot.
 
       Jika kebijakan ini disetel ke false, status pengalih dev tidak akan dilaporkan.</translation>
@@ -291,6 +258,7 @@
 <translation id="1969212217917526199">Menggantikan kebijakan pada versi Debug untuk host akses jarak jauh.
 
           Nilainya diuraikan dalam bentuk kamus nama kebijakan JSON untuk pemetaan nilai kebijakan.</translation>
+<translation id="1969808853498848952">Selalu menjalankan plugin yang membutuhkan otorisasi (tidak berlaku lagi)</translation>
 <translation id="1988371335297483117">Payload pembaruan otomatis di <ph name="PRODUCT_OS_NAME" /> dapat didownload via HTTP, bukan HTTPS. Cara ini memungkinkan penyimpanan cache HTTP yang transparan dari download HTTP.
 
       Jika kebijakan ini disetel ke true, <ph name="PRODUCT_OS_NAME" /> akan berupaya mendownload payload pembaruan otomatis via HTTP. Jika kebijakan ini disetel ke false atau tidak disetel, HTTPS akan digunakan untuk mendownload payload pembaruan otomatis.</translation>
@@ -793,6 +761,7 @@
 <translation id="3709266154059827597">Konfigurasikan daftar hitam pemasangan ekstensi</translation>
 <translation id="3711895659073496551">Tangguhkan</translation>
 <translation id="3736879847913515635">Mengaktifkan penambahan orang di pengelola pengguna</translation>
+<translation id="3737544779868348650">Hostname jaringan perangkat</translation>
 <translation id="3750220015372671395">Blokir pembuatan kunci di situs ini</translation>
 <translation id="3756011779061588474">Blokir mode pengembang</translation>
 <translation id="3758089716224084329">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy.
@@ -1211,6 +1180,13 @@
 <translation id="5130288486815037971">Untuk mengetahui apakah cipher suite RC4 di TLS diaktifkan</translation>
 <translation id="5141670636904227950">Menyetel jenis lup default yang diaktifkan di layar masuk</translation>
 <translation id="5142301680741828703">Selalu mengurai pola URL berikut di <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Menentukan hostname perangkat yang digunakan di permintaan DHCP.
+
+      Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai hostname perangkat selama proses permintaan DHCP.
+
+      String dapat berisi variabel ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} yang akan digantikan dengan nilai di perangkat sebelum digunakan sebagai hostname. Substitusi yang dihasilkan harus berupa hostname yang valid (menurut  RFC 1035, pasal 3.1).
+
+      Jika kebijakan ini tidak disetel, atau nilai setelah subsitusi bukan hostname yang valid, tidak ada hostname yang akan disetel di permintaan DHCP. </translation>
 <translation id="5148753489738115745">Memungkinkan Anda menentukan parameter tambahan yang digunakan saat <ph name="PRODUCT_FRAME_NAME" /> meluncurkan <ph name="PRODUCT_NAME" />.
 
           Jika kebijakan ini tidak disetel, baris perintah default akan digunakan.</translation>
@@ -1382,6 +1358,9 @@
 
       Jika setelan ini tidak disetel, direktori profil default akan digunakan.</translation>
 <translation id="5826047473100157858">Menentukan apakah pengguna dapat membuka halaman dalam mode Penyamaran di <ph name="PRODUCT_NAME" />. Jika 'Aktifkan' dipilih atau kebijakan dibiarkan tidak disetel, halaman dapat dibuka dalam mode Penyamaran. Jika 'Nonaktifkan' dipilih, halaman tidak dapat dibuka dalam mode Penyamaran. Jika 'Paksa' dipilih, halaman dapat dibuka HANYA dalam mode Penyamaran.</translation>
+<translation id="5835124959204887277">Menentukan URL dan domain yang tidak akan diperlihatkan perintah saat sertifikat pengesahan dari Kunci Keamanan diminta. Selain itu, sinyal akan dikirimkan ke Kuanci Keamanan yang menandakan bahwa pengesahan satu per satu mungkin digunakan. Tanpa ini, pengguna akan diminta di Chrome 65+ jika situs meminta pengesahan Kunci Keamanan.
+
+      URL (seperti https://example.com/some/path) hanya akan cocok sebagai U2F appID. Domain (seperti example.com) hanya akan cocok sebagai webauthn RP ID. Oleh karena itu, guna mencakup U2F dan webauthn API untuk situs tertentu, appID URL dan domain perlu dicantumkan.</translation>
 <translation id="5836064773277134605">Batasi jangkauan port UDP yang digunakan oleh hosting akses jarak jauh</translation>
 <translation id="5862253018042179045">Menyetel status default fitur aksesibilitas masukan yang diucapkan di layar masuk.
 
@@ -1560,6 +1539,7 @@
       Jika dinonaktifkan, data formulir isi-otomatis tidak akan diimpor.
 
       Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor atau proses impor dapat berlangsung secara otomatis.</translation>
+<translation id="6224304369267200483">URL/domain otomatis mengizinkan pengesahan langsung Kunci Keamanan</translation>
 <translation id="6233173491898450179">Setel direktori download</translation>
 <translation id="6244210204546589761">URL untuk membuka saat permulaan</translation>
 <translation id="6258193603492867656">Menentukan apakah SPN Kerberos yang dihasilkan harus mencakup port non-standar. Jika Anda mengaktifkan setelan ini, dan port non-standar (selain port 80 atau 443) dimasukkan, port ini akan dimasukkan ke SPN Kerberos yang dihasilkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, SPN Kerberos yang dihasilkan tidak akan pernah mencakup port.</translation>
@@ -1788,6 +1768,13 @@
 <translation id="7202925763179776247">Izinkan batasan download</translation>
 <translation id="7207095846245296855">Paksa Google SafeSearch</translation>
 <translation id="7216442368414164495">Memungkinkan pengguna ikut serta dalam pelaporan yang diperluas Safe Browsing</translation>
+<translation id="7221822638060296742">Memungkinkan Anda menyetel apakah situs diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />. Otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> dapat diizinkan atau ditolak untuk semua situs.
+
+          Klik untuk memutar memungkinkan plugin <ph name="FLASH_PLUGIN_NAME" /> dijalankan, tetapi pengguna harus mengklik placeholder untuk memulai eksekusinya.
+
+          Pemutaran otomatis hanya diizinkan untuk domain yang secara eksplisit dicantumkan di kebijakan <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jika Anda ingin mengaktifkan pemutaran otomatis untuk semua situs, pertimbangkanlah menambahkan http://* dan https://* ke daftar ini.
+
+          Jika kebijakan ini tidak disetel, pengguna dapat mengubah setelan ini secara manual.</translation>
 <translation id="7234280155140786597">Nama hosting perpesanan asli yang dilarang (atau * untuk semua)</translation>
 <translation id="7236775576470542603">Menyetel jenis lup default yang diaktifkan di layar masuk.
 

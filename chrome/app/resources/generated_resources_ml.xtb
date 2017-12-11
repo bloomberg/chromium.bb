@@ -1622,7 +1622,6 @@
 <translation id="3564334271939054422">നിങ്ങൾ ഉപയോഗിക്കുന്ന Wi-Fi (<ph name="NETWORK_ID" />) അതിന്റെ ലോഗിൻ പേജ് സന്ദർശിക്കാൻ നിങ്ങളോട് ആവശ്യപ്പെടാം.</translation>
 <translation id="3564708465992574908">സൂം ലെവലുകൾ</translation>
 <translation id="3566721612727112615">സൈറ്റുകൾ ചേർത്തിട്ടില്ല</translation>
-<translation id="3566866560249787686">Google അസിസ്‌റ്റന്റിന് ലോഡ് ചെയ്യാനായില്ല, വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> എന്നതിനെ നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നതിന് അനുവദിക്കാൻ താൽപ്പര്യമുണ്ടോ?</translation>
 <translation id="3570985609317741174">വെബ് ഉള്ളടക്കം</translation>
 <translation id="3571734092741541777">സജ്ജീകരിക്കുക</translation>
@@ -2836,6 +2835,7 @@
 <translation id="5592595402373377407">ഇതുവരെയും മതിയായ ഡാറ്റ ലഭ്യമല്ല.</translation>
 <translation id="5595152862129936745">വളരെ ദൂരെ</translation>
 <translation id="5595485650161345191">വിലാസം എഡിറ്റുചെയ്യുക</translation>
+<translation id="5596627076506792578">കൂടുതൽ ഓപ്‌ഷനുകൾ</translation>
 <translation id="5600706100022181951"><ph name="UPDATE_SIZE_MB" /> MB മൊബൈല്‍ ഡാറ്റ ഉപയോഗിച്ച് അപ്‌ഡേറ്റ് ഡൗൺലോഡുചെയ്യും. തുടരാൻ താൽപ്പര്യമുണ്ടോ?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">മറ്റ് സെര്‍ച് എഞ്ചിനുകള്‍</translation>
@@ -4017,7 +4017,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7576690715254076113">ഒത്തുനോക്കുക</translation>
 <translation id="7579149537961810247">സൈറ്റുകൾ മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="7580671184200851182">എല്ലാ സ്‌പീക്കറുകളിലൂടെയും സമാനമായ ഓഡിയോ പ്ലേ ചെയ്യുക (മോണോ ഓഡിയോ)</translation>
-<translation id="7581273696622423628">സർവേയിൽ പങ്കെടുക്കുക</translation>
 <translation id="7581462281756524039">ഒരു ക്ലീൻഅപ്പ് ഉപകരണം</translation>
 <translation id="7582582252461552277">ഈ നെറ്റ്‌വെർക്ക് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7586312264284919041">ഈ പേജ് വിവർത്തനം ചെയ്യാൻ താൽപ്പര്യമുണ്ടോ?</translation>

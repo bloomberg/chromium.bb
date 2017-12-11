@@ -1624,7 +1624,6 @@ Iš <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Naudojant šį „Wi-Fi“ tinklą (<ph name="NETWORK_ID" />) gali būti prašoma apsilankyti prisijungimo puslapyje.</translation>
 <translation id="3564708465992574908">Mastelio keitimo lygiai</translation>
 <translation id="3566721612727112615">Nepridėta jokių svetainių</translation>
-<translation id="3566866560249787686">Nepavyko įkelti „Google“ padėjėjo; bandykite dar kartą.</translation>
 <translation id="3569382839528428029">Ar norite, kad „<ph name="APP_NAME" />“ bendrintų jūsų ekraną?</translation>
 <translation id="3570985609317741174">Žiniatinklio turinys</translation>
 <translation id="3571734092741541777">Nustatyti</translation>
@@ -2839,6 +2838,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5592595402373377407">Kol kas nepakanka duomenų.</translation>
 <translation id="5595152862129936745">Labai toli</translation>
 <translation id="5595485650161345191">Adreso redagavimas</translation>
+<translation id="5596627076506792578">Daugiau parinkčių</translation>
 <translation id="5600706100022181951">Naujinys bus atsisiųstas naudojant <ph name="UPDATE_SIZE_MB" /> MB mobiliojo ryšio duomenų. Ar norite tęsti?</translation>
 <translation id="5601503069213153581">PIN kodas</translation>
 <translation id="5605623530403479164">Kiti paieškos varikliai</translation>
@@ -4020,7 +4020,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7576690715254076113">Gretinti</translation>
 <translation id="7579149537961810247">Nutildyti svetaines</translation>
 <translation id="7580671184200851182">Paleisti tą patį garso įrašą visuose garsiakalbiuose (monofoninio garso įrašas)</translation>
-<translation id="7581273696622423628">Dalyvauti apklausoje</translation>
 <translation id="7581462281756524039">Valymo įrankis</translation>
 <translation id="7582582252461552277">Rinktis šį tinklą</translation>
 <translation id="7586312264284919041">Ar norėtumėte išversti šį puslapį?</translation>

@@ -47,39 +47,6 @@
 
       Politika değeri mili saniye olarak belirtilmelidir.</translation>
 <translation id="1151353063931113432">Bu sitelerdeki resimlere izin ver</translation>
-<translation id="1151545095291359187"><ph name="PRODUCT_NAME" /> için uzantı yönetimi ayarlarını yapılandırır.
-
-          Bu politika, uzantıyla ilgili mevcut politikaların kontrol ettiği ayarlar da dahil olmak üzere çeşitli ayarları denetler. Bu politikayla birlikte ayarlanan eski politikalar geçersiz kılınır.
-
-          Bu politika, bir uzantı kimliğini veya güncelleme URL'sini kendi yapılandırmasıyla eşleştirir. Uzantı kimliği kullanıldığında, yapılandırma sadece belirtilen uzantıya uygulanır. Özel <ph name="DEFAULT_SCOPE" />, kimliği için varsayılan bir yapılandırma ayarlanabilir ve bu, politikada ayarlanmış özel bir yapılandırmaya sahip olmayan tüm uzantılara uygulanır. Bir güncelleme URL'si kullanıldığında yapılandırma, <ph name="LINK_TO_EXTENSION_DOC1" /> adresinde açıklandığı gibi, bu uzantının manifest dosyasında tamamen aynı güncelleme URL'sine sahip tüm uzantılara uygulanır.
-
-          Her uzantının (veya aynı güncelleme URL'sine sahip uzantıların) yapılandırması aşağıda açıklanan alanların yer aldığı ayrı bir sözlüktür.
-
-          <ph name="INSTALLATION_MODE" />: Uzantı için yükleme modunu belirten bir dizeye eşler. Geçerli dizeler şunlardır:
-          * <ph name="ALLOWED" />: Kullanıcının uzantıyı yüklemesine izin verir. Bu varsayılan davranıştır.
-          * <ph name="BLOCKED" />: Uzantının yüklenmesini engeller.
-          * <ph name="FORCE_INSTALLED" />: Uzantı otomatik olarak yüklenir ve kullanıcı tarafından kaldırılamaz.
-          * <ph name="NORMAL_INSTALLED" />: Uzantı otomatik olarak yüklenir, ancak kullanıcı tarafından devre dışı bırakılabilir. 
-
-          <ph name="INSTALLATION_MODE" />, <ph name="DEFAULT_SCOPE" /> uzantısı dahil olmak üzere birden fazla uzantı ve aynı güncelleme URL'sine sahip uzantılar için de (varsayılan ayarlar olarak) yapılandırılabilir. Bu durumda sadece <ph name="ALLOWED" /> ve <ph name="BLOCKED" /> değerleri kullanılabilir.
-
-          Mod <ph name="FORCE_INSTALLED" /> veya <ph name="NORMAL_INSTALLED" /> seçeneğine ayarlanırsa ayrıca <ph name="UPDATE_URL" /> yapılandırılmalıdır. Bu politikada ayarlanmış olan güncelleme URL'sinin sadece ilk yükleme için kullanıldığını unutmayın. Uzantının sonraki güncellemelerinde, uzantının manifest dosyasında belirtilen güncelleme URL'si kullanılır. Güncelleme URL'si, yukarıda belirtildiği gibi bir Güncelleme Manifest XML dokümanını işaret etmelidir.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Uzantı için engellenen API izinlerini belirten dizeleri barındıran bir listeye eşlenir. İzin adları, <ph name="LINK_TO_EXTENSION_DOC3" /> adresinde açıklandığı gibi, uzantının manifest dosyasında belirtilen izin dizeleri ile aynıdır. Bu ayar <ph name="DEFAULT_SCOPE" /> uzantısı için de yapılandırılabilir. Uzantı, engelleme listesine alınmış bir izni gerektiriyorsa yüklemesine izin verilmez. İsteğe bağlı koşul olarak engellenmiş bir izin içeriyorsa normal şekilde işlem yapılır, ancak çakışan izinler istenirse çalışma zamanında otomatik olarak reddedilir.
-
-          <ph name="ALLOWED_PERMISSIONS" />: <ph name="BLOCKED_PERMISSIONS" /> dizesine benzer, ancak izin listesi tarafından genel olarak engellenmiş olabilecek ve böylece <ph name="DEFAULT_SCOPE" /> uzantısı için yapılandırılamayan bazı izinler açık şekilde sağlanır. Bu ayarın izinleri uzantılara otomatik olarak vermediğini unutmayın.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Bir sürüm dizesine eşlenir. Sürüm dizesinin biçimi, <ph name="LINK_TO_EXTENSION_DOC4" /> adresinde açıklandığı gibi, uzantı manifest dosyasında kullanılan biçimle aynıdır. Belirtilen minimum sürümden daha eski sürüme sahip uzantılar devre dışı bırakılır. Bu, yüklenmeye zorlanan uzantılar için de geçerlidir.
-
-          Aşağıdaki ayarlar sadece varsayılan <ph name="DEFAULT_SCOPE" /> yapılandırması için kullanılabilir:
-
-          <ph name="INSTALL_SOURCES" />: Bu listedeki her öğe, uzantı tarzında bir eşleşme kalıbıdır (bkz. <ph name="LINK_TO_MATCH_PATTERNS" />). Kullanıcılar bu listedeki bir öğeyle eşleşen herhangi bir URL'den kolayca öğe yükleyebilirler. Bu kalıplar hem <ph name="EXTENSION_SUFFIX_WILDCARD" /> dosyasının konumuna hem de indirme işleminin başlatıldığı sayfaya (yani yönlendiren) izin vermelidir.
-
-          <ph name="ALLOWED_TYPES" />: Bu ayar, izin verilen ve <ph name="PRODUCT_NAME" /> .ürününe yüklenebilen uzantı/uygulama türlerini beyaz listeye ekler. Değer, her biri şunlardan biri olması gereken dizelerden oluşan bir listedir: <ph name="VALID_ALLOWED_TYPES" />. Bu türlerle ilgili daha fazla bilgi için <ph name="PRODUCT_NAME" /> uzantılarıyla ilgili dokümanlara bakın.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Bir kullanıcı bir uzantıyı yüklemeyi dener ancak politika tarafından engellenirse, Chrome Web Mağazası bir genel hata mesajı görüntüler. Bu ayar, hata mesajına metin eklemenize olanak tanır. Bu işlem, kullanıcıları yardım masanıza yönlendirmek, belirli bir uzantının engellenme nedenini açıklamak veya başka bir amaçla kullanılabilir. Bu hata mesajı 1000 karakterden uzun olursa kesilir.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Bir uzantının etkileşimde bulunmasının engelleneceği ana makinelerin listesini kabul eder. Bu etkileşim javascript ekleme, webRequest / webNavigation öğelerini değiştirme ve görüntüleme, çerezleri görüntüleme ve değiştirmeyi içerir. Biçim, Eşleşme Kalıplarına (<ph name="LINK_TO_MATCH_PATTERNS" />) benzer ancak herhangi bir yol (ör. "*://*.example.com") tanımlanamaz. Bu, etkili TLD joker karakterlerini de (ör. "*://example.*") destekler.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: <ph name="RUNTIME_BLOCKED_HOSTS" /> içinde listelenip listelenmediklerinden bağımsız olarak bir uzantının etkileşimde bulunabileceği ana makinelerin bir listesini kabul eder. Bu, <ph name="RUNTIME_BLOCKED_HOSTS" /> ile aynı biçimdir.
-          </translation>
 <translation id="1152117524387175066">Açılışta cihazın geliştirici anahtarının durumunu bildirin.
 
       Politika yanlış değerine ayarlanmışsa geliştirici anahtarının durumu rapor edilmez.</translation>

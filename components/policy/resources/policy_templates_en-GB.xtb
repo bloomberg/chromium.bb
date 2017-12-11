@@ -46,39 +46,6 @@
 
       The policy value should be specified in milliseconds.</translation>
 <translation id="1151353063931113432">Allow images on these sites</translation>
-<translation id="1151545095291359187">Configures extension management settings for <ph name="PRODUCT_NAME" />.
-
-          This policy controls multiple settings, including settings controlled by any existing extension-related policy. This policy will override any legacy policies if both are set.
-
-          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE" />, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          The configuration for each extension (or extensions with same update URL) is another dictionary that can contain the fields documented below.
-
-          <ph name="INSTALLATION_MODE" />: Maps to a string indicating the installation mode for the extension. The valid strings are:
-          * <ph name="ALLOWED" />: Allows the extension to be installed by the user. This is the default behaviour.
-          * <ph name="BLOCKED" />: Blocks installation of the extension.
-          * <ph name="FORCE_INSTALLED" />: The extension is automatically installed and can't be removed by the user.
-          * <ph name="NORMAL_INSTALLED" />: The extension is automatically installed but can be disabled by the user.
-
-          The <ph name="INSTALLATION_MODE" /> can also be configured for multiple extensions as well, including the <ph name="DEFAULT_SCOPE" /> extension (as default settings) and extensions with same update URL. Only the <ph name="ALLOWED" /> and <ph name="BLOCKED" /> values can be used in this case.
-
-          If the mode is set to <ph name="FORCE_INSTALLED" /> or <ph name="NORMAL_INSTALLED" /> then an <ph name="UPDATE_URL" /> must be configured too. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest. The update URL should point to an Update Manifest XML document as mentioned above.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3" />. This setting also can be configured for <ph name="DEFAULT_SCOPE" /> extension. If the extension requires a permission which is on the blocklist, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
-
-          <ph name="ALLOWED_PERMISSIONS" />: Similar to <ph name="BLOCKED_PERMISSIONS" />, but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus cannot be configured for <ph name="DEFAULT_SCOPE" /> extension. Note that this setting doesn't give granted permissions to extensions automatically.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4" />. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
-
-          The following settings can be used only for the default <ph name="DEFAULT_SCOPE" /> configuration:
-
-          <ph name="INSTALL_SOURCES" />: Each item in this list is an extension-style match pattern (<ph name="LINK_TO_MATCH_PATTERNS" />). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the <ph name="EXTENSION_SUFFIX_WILDCARD" /> file and the page where the download is started from (i.e.  the referrer) must be allowed by these patterns.
-
-          <ph name="ALLOWED_TYPES" />: This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" />.  The value is a list of strings, each of which should be one of the following: <ph name="VALID_ALLOWED_TYPES" />. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: If a user tries to install an extension, but it is blocked by policy the Chrome Web Store displays a generic error message. This setting allows you to append text to the error message. This could be used to direct users to your help desk, explain why a particular extension is blocked or something else. This error message will be truncated if it is longer than 1000 characters.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepts a list of hosts that an extension will be blocked from interacting with. This includes injecting javascript, altering and viewing webRequests/ webNavigation, viewing and altering cookies. The format is similar to Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" /> except no paths may be defined. e.g. '*://*.example.com'. This also supports effective TLD wildcarding e.g. '*://example.*'.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepts a list of hosts that an extension can interact with, regardless of whether they are listed in <ph name="RUNTIME_BLOCKED_HOSTS" />. This is the same format as <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">Report the state of the device's dev switch at boot.
 
       If the policy is set to false, the state of the dev switch will not be reported.</translation>
@@ -299,6 +266,7 @@
 <translation id="1969212217917526199">Overrides policies on Debug builds of the remote access host.
 
           The value is parsed as a JSON dictionary of policy name to policy value mappings.</translation>
+<translation id="1969808853498848952">Always runs plug-ins that require authorisation (deprecated)</translation>
 <translation id="1988371335297483117">Auto-update payloads on <ph name="PRODUCT_OS_NAME" /> can be downloaded via HTTP instead of HTTPS. This allows transparent HTTP caching of HTTP downloads.
 
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will attempt to download auto-update payloads via HTTP. If the policy is set to false or not set, HTTPS will be used for downloading auto-update payloads.</translation>
@@ -825,6 +793,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
+<translation id="3737544779868348650">Device network hostname</translation>
 <translation id="3750220015372671395">Block key generation on these sites</translation>
 <translation id="3756011779061588474">Block developer mode</translation>
 <translation id="3758089716224084329">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
@@ -1266,6 +1235,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Determine the hostname of the device used in DHCP requests.
+
+      If this policy is set to a non-empty string, that string will be used as the device hostname during DHCP request.
+
+      The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
+
+      If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. </translation>
 <translation id="5148753489738115745">Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME" /> launches <ph name="PRODUCT_NAME" />.
 
           If this policy is not set the default command line will be used.</translation>
@@ -1466,6 +1442,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If 'Disabled' is selected, pages may not be opened in Incognito mode.
 
       If 'Forced' is selected, pages may be opened ONLY in Incognito mode.</translation>
+<translation id="5835124959204887277">Specifies URLs and domains for which no prompt will be shown when attestation certificates from Security Keys are requested. Additionally, a signal will be sent to the Security Key indicating that individual attestation may be used. Without this, users will be prompted in Chrome 65+ when sites request attestation of Security Keys.
+
+      URLs (like https://example.com/some/path) will only match as U2F appIDs. Domains (like example.com) only match as webauthn RP IDs. Thus, to cover both U2F and webauthn APIs for a given site, both the appID URL and domain would need to be listed.</translation>
 <translation id="5836064773277134605">Restrict the UDP port range used by the remote access host</translation>
 <translation id="5862253018042179045">Set the default state of the spoken feedback accessibility feature on the login screen.
 
@@ -1646,6 +1625,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If disabled, the autofill form data is not imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
+<translation id="6224304369267200483">URLs/domains automatically permitted direct Security Key attestation</translation>
 <translation id="6233173491898450179">Set download directory</translation>
 <translation id="6244210204546589761">URLs to open on start-up</translation>
 <translation id="6258193603492867656">Specifies whether the generated Kerberos SPN should include a non-standard port. If you enable this setting, and a non-standard port (i.e. a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN. If you disable this setting, the generated Kerberos SPN will not include a port in any case.</translation>
@@ -1894,6 +1874,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7202925763179776247">Allow download restrictions</translation>
 <translation id="7207095846245296855">Force Google SafeSearch</translation>
 <translation id="7216442368414164495">Allow users to opt in to Safe Browsing extended reporting</translation>
+<translation id="7221822638060296742">Allows you to set whether websites are allowed to automatically run the <ph name="FLASH_PLUGIN_NAME" /> plug-in. Automatically running the <ph name="FLASH_PLUGIN_NAME" /> plug-in can be either allowed for all websites or denied for all websites.
+
+          Click to play allows the <ph name="FLASH_PLUGIN_NAME" /> plug-in to run but the user must click on the placeholder to start its execution.
+
+          Automatic playback is only allowed for domains explicitly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> policy. If you want to enabled automatic playback for all sites, consider adding http://* and https://* to this list.
+
+          If this policy is left not set, the user will be able to change this setting manually.</translation>
 <translation id="7234280155140786597">Names of the forbidden native messaging hosts (or * for all)</translation>
 <translation id="7236775576470542603">Set the default type of screen magnifier that is enabled on the login screen.
 

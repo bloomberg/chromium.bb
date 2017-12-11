@@ -1620,7 +1620,6 @@
 <translation id="3564334271939054422">તમે ઉપયોગમાં લઈ રહ્યાં છો તે Wi-Fi નેટવર્ક <ph name="NETWORK_ID" /> માટે, તમારે તેના લોગિન પૃષ્ઠની મુલાકાત લેવાની જરૂર હોઈ શકે છે.</translation>
 <translation id="3564708465992574908">ઝૂમ સ્તરો</translation>
 <translation id="3566721612727112615">કોઈ સાઇટ્સ ઉમેરી નથી</translation>
-<translation id="3566866560249787686">Google સહાયક લોડ કરવામાં અસમર્થ હતું, કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="3569382839528428029">શું તમે ઇચ્છો છો કે <ph name="APP_NAME" /> તમારી સ્ક્રીનને શેર કરે?</translation>
 <translation id="3570985609317741174">વેબ સામગ્રી</translation>
 <translation id="3571734092741541777">સેટ અપ</translation>
@@ -2835,6 +2834,7 @@
 <translation id="5592595402373377407">હજુ સુધી પર્યાપ્ત ડેટા ઉપલબ્ધ નથી.</translation>
 <translation id="5595152862129936745">ખૂબ દૂર</translation>
 <translation id="5595485650161345191">સરનામું સંપાદિત કરો</translation>
+<translation id="5596627076506792578">વધુ વિકલ્પો</translation>
 <translation id="5600706100022181951">અપડેટ ડાઉનલોડ કરવામાં <ph name="UPDATE_SIZE_MB" /> MB મોબાઇલ ડેટા વપરાશે. શું તમે ચાલુ રાખવા માગો છો?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">અન્ય શોધ એંજીન્સ</translation>
@@ -4016,7 +4016,6 @@
 <translation id="7576690715254076113">કૉલેટ</translation>
 <translation id="7579149537961810247">સાઇટને મ્યૂટ કરો</translation>
 <translation id="7580671184200851182">તમામ સ્પીકર્સ મારફતે સમાન ઑડિઓ ચલાવો (મોનો ઑડિઓ)</translation>
-<translation id="7581273696622423628">સર્વેક્ષણમાં ભાગ લો</translation>
 <translation id="7581462281756524039">સફાઈ સાધન</translation>
 <translation id="7582582252461552277">આ નેટવર્કને પસંદ કરો</translation>
 <translation id="7586312264284919041">તમે આ પૃષ્ઠનો અનુવાદ કરવા માંગો છો?</translation>

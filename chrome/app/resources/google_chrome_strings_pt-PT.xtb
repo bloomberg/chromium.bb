@@ -147,7 +147,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termos de Utilização<ph name="END_TERMS_OF_SERVICE_LINK" /> do Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (copiado para o Chrome)</translation>
 <translation id="5251420635869119124">Os convidados podem utilizar o Chrome sem perder qualquer funcionalidade.</translation>
-<translation id="5284703908158630707">{SECONDS,plural, =1{O Google Chrome irá reiniciar dentro de 1 segundo.}one{Google Chrome will restart in # seconds.}other{O Google Chrome irá reiniciar dentro de # segundos.}}</translation>
+<translation id="5284703908158630707">{SECONDS,plural, =1{O Google Chrome irá reiniciar dentro de 1 segundo.}other{O Google Chrome irá reiniciar dentro de # segundos.}}</translation>
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="5386244825306882791">Também controla a página apresentada quando inicia o Chrome ou pesquisa a partir da Caixa geral.</translation>
 <translation id="5430073640787465221">O ficheiro de preferências está danificado ou não é válido. O Google Chrome não consegue recuperar as suas definições.</translation>
@@ -183,7 +183,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="6400076122676892962">Em breve, este computador deixará de receber atualizações do Google Chrome, uma vez que o Mac OS X 10.6, o Mac OS X 10.7 e o Mac OS X 10.8 já não serão suportados.</translation>
 <translation id="6410540444482791104">Pode ajudar a tornar o Chrome mais seguro e fácil de utilizar ao enviar automaticamente algumas informações do sistema e conteúdo de páginas para a Google para ajudar a detetar aplicações e sites perigosos.</translation>
 <translation id="6470176598693778404">Este computador deixará de receber atualizações do Google Chrome, uma vez que o Mac OS X 10.6, o Mac OS X 10.7 e Mac OS X 10.8 já não são suportados.</translation>
-<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do Google Chrome?}one{# downloads are currently in progress. Do you want to cancel the downloads and exit Google Chrome?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do Google Chrome?}}</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do Google Chrome?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do Google Chrome?}}</translation>
 <translation id="6566149418543181476">A atualizar o Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="6598387184982954187">Está a utilizar <ph name="PROFILE_EMAIL" /> para sincronizar os seus conteúdos do Chrome. Para atualizar a preferência de sincronização ou utilizar o Chrome sem uma Conta Google, aceda a <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiado para o Chrome</translation>
@@ -261,7 +261,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="8796108026289707191">Deve reiniciar o Google Chrome agora.</translation>
 <translation id="8823341990149967727">O Chrome Está Desatualizado</translation>
 <translation id="884296878221830158">Também controla a página apresentada quando inicia o Chrome ou clica no botão Página Inicial.</translation>
-<translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Não tem os direitos adequados para uma instalação ao nível do sistema. Tente executar o programa de instalação novamente como Administrador.</translation>
 <translation id="8914504000324227558">Reiniciar o Chrome</translation>
 <translation id="9026991721384951619">O Chrome OS não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>

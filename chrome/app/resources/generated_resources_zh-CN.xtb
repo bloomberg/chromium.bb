@@ -1618,7 +1618,6 @@
 <translation id="3564334271939054422">您要使用的 Wi-Fi 网络（“<ph name="NETWORK_ID" />”）可能需要您访问其登录页面。</translation>
 <translation id="3564708465992574908">缩放级别</translation>
 <translation id="3566721612727112615">未添加任何网站</translation>
-<translation id="3566866560249787686">无法加载 Google 智能助理，请重试。</translation>
 <translation id="3569382839528428029">您允许 <ph name="APP_NAME" /> 共享您的屏幕吗？</translation>
 <translation id="3570985609317741174">网络内容</translation>
 <translation id="3571734092741541777">设置</translation>
@@ -2826,6 +2825,7 @@
 <translation id="5592595402373377407">尚无足够的数据。</translation>
 <translation id="5595152862129936745">非常远</translation>
 <translation id="5595485650161345191">修改地址</translation>
+<translation id="5596627076506792578">更多选项</translation>
 <translation id="5600706100022181951">下载更新需要使用 <ph name="UPDATE_SIZE_MB" /> MB 的移动数据流量。要继续吗？</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">其他搜索引擎</translation>
@@ -3996,7 +3996,6 @@
 <translation id="7576690715254076113">自动分页</translation>
 <translation id="7579149537961810247">将多个网站静音</translation>
 <translation id="7580671184200851182">在所有音响设备上播放相同的音频（单声道音频）</translation>
-<translation id="7581273696622423628">参与调查</translation>
 <translation id="7581462281756524039">清理工具</translation>
 <translation id="7582582252461552277">首选此网络</translation>
 <translation id="7586312264284919041">您是否要翻译该网页？</translation>

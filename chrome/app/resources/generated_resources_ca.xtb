@@ -1622,7 +1622,6 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">És possible que la xarxa Wi-Fi que esteu fent servir (<ph name="NETWORK_ID" />) sol·liciti que en visiteu la pàgina d'inici de sessió.</translation>
 <translation id="3564708465992574908">Nivells de zoom</translation>
 <translation id="3566721612727112615">No s'ha afegit cap lloc</translation>
-<translation id="3566866560249787686">L'Assistent de Google no s'ha pogut carregar. Torna-ho a provar.</translation>
 <translation id="3569382839528428029">Voleu que <ph name="APP_NAME" /> comparteixi la vostra pantalla?</translation>
 <translation id="3570985609317741174">Contingut web</translation>
 <translation id="3571734092741541777">Configura</translation>
@@ -2335,7 +2334,7 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4820334425169212497">No, no el veig</translation>
 <translation id="4821725298388681253">Això és una versió inicial. Algunes de les funcions, com ara la cerca i la introducció de text, encara no estan disponibles.</translation>
 <translation id="4821935166599369261">Creació de &amp;perfils activada</translation>
-<translation id="4823484602432206655">Llegir i canviar la configuració de l'usuari i del dispositiu</translation>
+<translation id="4823484602432206655">Llegir i canviar la configuració d'usuari i del dispositiu</translation>
 <translation id="4823651846660089135">El dispositiu és només de lectura</translation>
 <translation id="4828937774870308359">Australià</translation>
 <translation id="4829768588131278040">Configura un PIN</translation>
@@ -2838,6 +2837,7 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Encara no hi ha prou dades disponibles.</translation>
 <translation id="5595152862129936745">Molt lluny</translation>
 <translation id="5595485650161345191">Edita l'adreça</translation>
+<translation id="5596627076506792578">Més opcions</translation>
 <translation id="5600706100022181951">Per baixar l'actualització s'utilitzaran <ph name="UPDATE_SIZE_MB" /> MB de dades mòbils. Vols continuar?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Altres motors de cerca</translation>
@@ -4010,7 +4010,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7576690715254076113">Intercala</translation>
 <translation id="7579149537961810247">Silencia els llocs web</translation>
 <translation id="7580671184200851182">Reprodueix el mateix àudio per tots els altaveus (àudio mono)</translation>
-<translation id="7581273696622423628">Vull respondre a l'enquesta</translation>
 <translation id="7581462281756524039">Eina per netejar</translation>
 <translation id="7582582252461552277">Estableix aquesta xarxa com a preferida</translation>
 <translation id="7586312264284919041">Vols traduir aquesta pàgina?</translation>

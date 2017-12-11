@@ -1624,7 +1624,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3564334271939054422">Sieć Wi-Fi (<ph name="NETWORK_ID" />), której używasz, może wymagać wejścia na stronę logowania.</translation>
 <translation id="3564708465992574908">Poziomy powiększenia</translation>
 <translation id="3566721612727112615">Nie dodano żadnych stron</translation>
-<translation id="3566866560249787686">Nie udało się załadować Asystenta Google. Spróbuj ponownie.</translation>
 <translation id="3569382839528428029">Czy chcesz, aby aplikacja <ph name="APP_NAME" /> miała dostęp do Twojego ekranu?</translation>
 <translation id="3570985609317741174">Treści internetowe</translation>
 <translation id="3571734092741541777">Konfiguruj</translation>
@@ -2839,6 +2838,7 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="5592595402373377407">Brak wystarczającej ilości danych.</translation>
 <translation id="5595152862129936745">Bardzo daleko</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
+<translation id="5596627076506792578">Więcej opcji</translation>
 <translation id="5600706100022181951">Pobranie aktualizacji wykorzysta <ph name="UPDATE_SIZE_MB" /> MB mobilnej transmisji danych. Czy chcesz kontynuować?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Inne wyszukiwarki</translation>
@@ -4012,7 +4012,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="7576690715254076113">Sortuj</translation>
 <translation id="7579149537961810247">Wycisz strony</translation>
 <translation id="7580671184200851182">Odtwarzaj ten sam dźwięk na wszystkich głośnikach (dźwięk mono)</translation>
-<translation id="7581273696622423628">Wypełnij ankietę</translation>
 <translation id="7581462281756524039">Narzędzie do czyszczenia</translation>
 <translation id="7582582252461552277">Preferuj tę sieć</translation>
 <translation id="7586312264284919041">Chcesz przetłumaczyć tę stronę?</translation>

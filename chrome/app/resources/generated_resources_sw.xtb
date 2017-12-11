@@ -1618,7 +1618,6 @@ Kutoka <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Mtandao wa Wi-Fi unaotumia <ph name="NETWORK_ID" /> unaweza kukuhitaji utembelee ukurasa wake wa kuingia katika akaunti.</translation>
 <translation id="3564708465992574908">Viwango vya Kukuza</translation>
 <translation id="3566721612727112615">Hakuna tovuti zilizoongezwa</translation>
-<translation id="3566866560249787686">Programu ya Google Mratibu haijapakiwa, tafadhali jaribu tena.</translation>
 <translation id="3569382839528428029">Je, unataka <ph name="APP_NAME" /> ishiriki skrini yako?</translation>
 <translation id="3570985609317741174">Maudhui ya wavuti</translation>
 <translation id="3571734092741541777">Weka mipangilio</translation>
@@ -2831,6 +2830,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5592595402373377407">Bado hakuna data ya kutosha.</translation>
 <translation id="5595152862129936745">Mbali sana</translation>
 <translation id="5595485650161345191">Badilisha anwani</translation>
+<translation id="5596627076506792578">Chaguo zaidi</translation>
 <translation id="5600706100022181951">Sasisho litapakuliwa kwa kutumia MB <ph name="UPDATE_SIZE_MB" /> za data ya simu. Je, ungependa kuendelea?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Mitambo mingine ya kutafuta</translation>
@@ -4011,7 +4011,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7576690715254076113">Kusanya</translation>
 <translation id="7579149537961810247">Zima Sauti za Tovuti</translation>
 <translation id="7580671184200851182">Cheza sauti moja kupitia spika zote (sauti ya mono)</translation>
-<translation id="7581273696622423628">Shiriki katika utafiti</translation>
 <translation id="7581462281756524039">Zana ya kusafisha</translation>
 <translation id="7582582252461552277">Pendelea mtandao huu</translation>
 <translation id="7586312264284919041">Ungependa kutafsiri ukurasa huu?</translation>

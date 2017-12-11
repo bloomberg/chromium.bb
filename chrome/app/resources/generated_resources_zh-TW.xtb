@@ -1624,7 +1624,6 @@
 <translation id="3564334271939054422">您所使用的 Wi-Fi 網路 (<ph name="NETWORK_ID" />) 可能會要求您造訪登入頁面。</translation>
 <translation id="3564708465992574908">縮放等級</translation>
 <translation id="3566721612727112615">未新增任何網站</translation>
-<translation id="3566866560249787686">無法載入 Google 個人助理，請再試一次。</translation>
 <translation id="3569382839528428029">你想讓 <ph name="APP_NAME" /> 共用你的畫面嗎？</translation>
 <translation id="3570985609317741174">網頁內容</translation>
 <translation id="3571734092741541777">設定</translation>
@@ -2837,6 +2836,7 @@
 <translation id="5592595402373377407">目前還沒有足夠的資料。</translation>
 <translation id="5595152862129936745">非常遠</translation>
 <translation id="5595485650161345191">編輯地址</translation>
+<translation id="5596627076506792578">更多選項</translation>
 <translation id="5600706100022181951">下載更新將使用 <ph name="UPDATE_SIZE_MB" /> MB 的行動數據。要繼續嗎？</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">其他搜尋引擎</translation>
@@ -4013,7 +4013,6 @@
 <translation id="7576690715254076113">自動分頁</translation>
 <translation id="7579149537961810247">關閉多個網站音訊</translation>
 <translation id="7580671184200851182">透過所有喇叭播放相同的音效 (單聲道音訊)</translation>
-<translation id="7581273696622423628">填寫問卷</translation>
 <translation id="7581462281756524039">清理工具</translation>
 <translation id="7582582252461552277">偏好使用這個網路</translation>
 <translation id="7586312264284919041">你要翻譯這個網頁嗎？</translation>

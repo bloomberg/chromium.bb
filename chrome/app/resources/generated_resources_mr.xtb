@@ -1619,7 +1619,6 @@
 <translation id="3564334271939054422">आपण वापरत असलेल्या (<ph name="NETWORK_ID" />) Wi-Fi नेटवर्कला आपण त्याच्या लॉग इन पृष्ठास भेट देणे आवश्यक असू शकते.</translation>
 <translation id="3564708465992574908">झूम स्तर</translation>
 <translation id="3566721612727112615">कोणत्याही साइट जोडल्या नाहीत</translation>
-<translation id="3566866560249787686">Google साहाय्यक लोड करण्यात अयशस्वी, कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> नी आपली स्क्रीन सामायिक करावी असे आपण इच्छिता?</translation>
 <translation id="3570985609317741174">वेब सामग्री</translation>
 <translation id="3571734092741541777">सेट अप</translation>
@@ -2833,6 +2832,7 @@
 <translation id="5592595402373377407">अद्याप पुरेसा डेटा उपलब्ध नाही.</translation>
 <translation id="5595152862129936745">खूप दूर आहे</translation>
 <translation id="5595485650161345191">पत्ता संपादित करा</translation>
+<translation id="5596627076506792578">अधिक पर्याय</translation>
 <translation id="5600706100022181951">अपडेट <ph name="UPDATE_SIZE_MB" /> MB मोबाइल डेटा वापरून डाउनलोड केले जाईल. आपल्याला सुरू ठेवायचे आहे का?</translation>
 <translation id="5601503069213153581">पिन</translation>
 <translation id="5605623530403479164">इतर शोध इंजिने</translation>
@@ -4014,7 +4014,6 @@
 <translation id="7576690715254076113">तुलनात्मक</translation>
 <translation id="7579149537961810247">साइट निःशब्द करा</translation>
 <translation id="7580671184200851182">सर्व स्पीकर मधून समान ऑडिओ प्ले करा (मोनो ऑडिओ)</translation>
-<translation id="7581273696622423628">सर्वेक्षण घ्या</translation>
 <translation id="7581462281756524039">एक क्लीनअप साधन</translation>
 <translation id="7582582252461552277">या नेटवर्कला प्राधान्य द्या</translation>
 <translation id="7586312264284919041">आपण हे पृष्ठ भाषांतरीत करु इच्छिता?</translation>

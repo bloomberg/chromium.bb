@@ -46,39 +46,6 @@
 
       El valor de la política s'ha d'especificar en mil·lisegons.</translation>
 <translation id="1151353063931113432">Permet les imatges en aquests llocs</translation>
-<translation id="1151545095291359187">Configura les opcions de gestió d'extensions per a <ph name="PRODUCT_NAME" />.
-
-          Aquesta política controla diverses opcions de configuració, com ara les opcions controlades per qualsevol política actual relacionada amb extensions. Aquesta política substituirà qualsevol política anterior, si totes dues s'han definit.
-
-          Aquesta política assigna un identificador d'extensió o un URL d'actualització a la configuració corresponent. Amb un identificador d'extensió, la configuració s'aplicarà només a l'extensió especificada. Es pot establir una configuració predeterminada per a l'identificador especial <ph name="DEFAULT_SCOPE" />, que s'aplicarà a totes les extensions que no tinguin establerta una configuració personalitzada en aquesta política. Amb un URL d'actualització, la configuració s'aplicarà a totes les extensions que tinguin el mateix URL d'actualització indicat al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          La configuració de cada extensió (o d'extensions amb el mateix URL d'actualització) és un altre diccionari que pot incloure els camps indicats a continuació.
-
-          <ph name="INSTALLATION_MODE" />: s'assigna a una cadena que indica el mode d'instal·lació de l'extensió. Les cadenes vàlides són:
-          * <ph name="ALLOWED" />: permet que l'usuari instal·li l'extensió. És el comportament predeterminat.
-          * <ph name="BLOCKED" />: bloqueja la instal·lació de l'extensió.
-          * <ph name="FORCE_INSTALLED" />: l'extensió s'instal·la automàticament i l'usuari no la pot suprimir.
-          * <ph name="NORMAL_INSTALLED" />: l'extensió s'instal·la automàticament, però l'usuari la pot desactivar.
-
-          El camp <ph name="INSTALLATION_MODE" /> també es pot configurar per a diverses extensions, com ara <ph name="DEFAULT_SCOPE" /> (com a configuració predeterminada) i les extensions amb el mateix URL d'actualització. En aquest cas, només es poden utilitzar els valors <ph name="ALLOWED" /> i <ph name="BLOCKED" />.
-
-          Si el mode es defineix en <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, cal configurar també un valor per a <ph name="UPDATE_URL" />. Tingues en compte que l'URL d'actualització establert en aquesta política només s'utilitza a la instal·lació inicial; a les instal·lacions següents de l'extensió s'utilitzarà l'URL d'actualització indicat al fitxer de manifest de l'extensió. L'URL d'actualització ha d'apuntar a un document XML de manifest d'actualització, tal com s'ha descrit abans.
-
-          <ph name="BLOCKED_PERMISSIONS" />: s'assigna a una llista de cadenes que indiquen els permisos de les API bloquejades per a l'extensió. Els noms dels permisos són els mateixos que les cadenes de permís que es mostren al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC3" />. Aquesta opció també es pot configurar per a l'extensió <ph name="DEFAULT_SCOPE" />. Si l'extensió requereix un permís de la llista de bloquejats, no es podrà carregar. Si conté un permís bloquejat com a requisit opcional, es gestionarà com és habitual, però les sol·licituds de permisos en conflicte es rebutjaran automàticament en el temps d'execució.
-
-          <ph name="ALLOWED_PERMISSIONS" />: s'assembla a <ph name="BLOCKED_PERMISSIONS" />, però permet explícitament alguns permisos que poden estar inclosos a la llista general de permisos bloquejats. Per això, no es pot configurar per a l'extensió <ph name="DEFAULT_SCOPE" />. Tingues en compte que aquesta opció de configuració no ofereix automàticament els permisos concedits a les extensions.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: s'assigna a una cadena de versió. El format de la cadena de versió és el mateix que l'utilitzat al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC4" />. Les extensions anteriors a la versió mínima especificada es desactivaran. Això s'aplica també a les extensions instal·lades de manera forçosa.
-
-          Les opcions següents només es poden utilitzar per a la configuració predeterminada de l'extensió <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: tots els elements d'aquesta llista són un patró de coincidència amb l'estil de l'extensió (consulta (<ph name="LINK_TO_MATCH_PATTERNS" />). Els usuaris podran instal·lar fàcilment els elements de qualsevol URL que coincideixi amb un element d'aquesta llista. Aquests patrons han de permetre tant la ubicació del fitxer <ph name="EXTENSION_SUFFIX_WILDCARD" /> com la pàgina on comença la baixada (és a dir, l'URL de referència).
-
-          <ph name="ALLOWED_TYPES" />: aquesta opció afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" />. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: <ph name="VALID_ALLOWED_TYPES" />. Consulta la documentació sobre les extensions de <ph name="PRODUCT_NAME" /> per obtenir-ne més informació.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: si un usuari prova d'instal·lar una extensió però la política li ho impedeix, es mostra un missatge d'error genèric a Chrome Web Store. Aquesta opció et permet incloure text al missatge d'error. Això et pot servir per redirigir els usuaris al centre d'ajuda, explicar-los per què s'ha bloquejat una extensió concreta o una altra cosa. Si el missatge d'error té més de 1.000 caràcters, es truncarà.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: accepta una llista d'amfitrions amb què una extensió no pot interaccionar. Això inclou introduir JavaScript, modificar i mostrar els esdeveniments webRequests o webNavigation, i mostrar i modificar galetes. El format s'assembla als patrons de coincidència <ph name="LINK_TO_MATCH_PATTERNS" /> però no es poden definir camins. Per exemple, "*://*.example.com". Això també admet l'ús efectiu de comodins de domini de nivell superior, com ara "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: accepta una llista d'amfitrions amb què una extensió pot interaccionar, independentment de si s'han inclòs a la llista <ph name="RUNTIME_BLOCKED_HOSTS" />. És el mateix format que <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">Informa de l'estat del botó per a desenvolupadors en iniciar.
 
       Si la política s'estableix com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>

@@ -46,39 +46,6 @@
 
       应以毫秒为单位指定此政策的值。</translation>
 <translation id="1151353063931113432">在这些网站上允许图片</translation>
-<translation id="1151545095291359187">为 <ph name="PRODUCT_NAME" /> 配置扩展程序管理设置。
-
-          此政策可控制多项设置，其中包括由任何现有的扩展程序相关政策控制的设置。此政策将会替换所有旧版政策（如果同时设置了这两种政策的话）。
-
-          此政策可将某个扩展程序 ID 或某个更新网址映射至其配置。对于扩展程序 ID，配置将只会应用于所指定的扩展程序。您可为特殊 ID“<ph name="DEFAULT_SCOPE" />”设置默认配置，该配置将会应用于未在此政策中设置自定义配置的所有扩展程序。对于更新网址，配置则会应用于具有在此扩展程序的清单中注明的确切更新网址的所有扩展程序（如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述）。
-
-          每个扩展程序（或具有相同更新网址的扩展程序）的配置都是一个单独的字典条目，其中可以包含下述字段。
-
-          <ph name="INSTALLATION_MODE" />：会映射至一个字符串，该字符串用于指明相应扩展程序的安装模式。有效字符串为：
-          * <ph name="ALLOWED" />：允许用户安装相应扩展程序。这是默认行为。
-          * <ph name="BLOCKED" />：禁止安装相应扩展程序。
-          * <ph name="FORCE_INSTALLED" />：自动安装相应扩展程序，且用户无法将其卸载。
-          * <ph name="NORMAL_INSTALLED" />：自动安装相应扩展程序，但用户可将其停用。
-
-          您也可同时为多个扩展程序配置“<ph name="INSTALLATION_MODE" />”，其中包括“<ph name="DEFAULT_SCOPE" />”扩展程序（以作为默认设置）和具有相同更新网址的扩展程序。在这种情况下，只能使用“<ph name="ALLOWED" />”和“<ph name="BLOCKED" />”这两个值。
-
-          如果此模式设为“<ph name="FORCE_INSTALLED" />”或“<ph name="NORMAL_INSTALLED" />”，那么您还必须配置“<ph name="UPDATE_URL" />”。请注意，此政策中设置的更新网址仅会用于初次安装，相应扩展程序的后续更新将会使用其清单中指定的更新网址。更新网址应指向更新清单 XML 文档（如上所述）。
-
-          <ph name="BLOCKED_PERMISSIONS" />：会映射至一系列字符串，这些字符串用于指明相应扩展程序的已被屏蔽的 API 权限。权限名称与扩展程序清单中声明的权限字符串相同（如 <ph name="LINK_TO_EXTENSION_DOC3" /> 中所述）。您也可为“<ph name="DEFAULT_SCOPE" />”扩展程序配置此设置。如果相应扩展程序请求获得屏蔽名单中的某项权限，它将无法进行加载。如果相应扩展程序包含某项已被屏蔽的权限，而这项权限只是作为可选请求，系统将会按照正常方式予以处理，但如果相应扩展程序请求获得冲突的权限，在运行时将会被系统自动拒绝。
-
-          <ph name="ALLOWED_PERMISSIONS" />：与“<ph name="BLOCKED_PERMISSIONS" />”类似，但该设置会明确允许某些可能已被全局屏蔽权限列表屏蔽的权限，因此您无法为“<ph name="DEFAULT_SCOPE" />”扩展程序配置此设置。请注意，此设置不会自动向扩展程序授予所允许的权限。
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />：会映射至一个版本字符串。版本字符串的格式与扩展程序清单中使用的格式相同（如 <ph name="LINK_TO_EXTENSION_DOC4" /> 中所述）。系统将会停用版本低于所指定的最低版本的扩展程序。此设置也适用于强制安装的扩展程序。
-
-          以下设置仅适用于默认的“<ph name="DEFAULT_SCOPE" />”配置：
-
-          <ph name="INSTALL_SOURCES" />：此列表中的每一项都是一种扩展程序样式的匹配模式（请访问 <ph name="LINK_TO_MATCH_PATTERNS" />）。用户将能够从任何与此列表中的扩展程序匹配的网址上轻松地安装扩展程序。<ph name="EXTENSION_SUFFIX_WILDCARD" /> 文件的位置和下载所始于的网页（即引荐来源网址）都必须由这些模式授权。
-
-          <ph name="ALLOWED_TYPES" />：通过此设置，您可将允许在 <ph name="PRODUCT_NAME" /> 中安装的扩展程序/应用的类型列入白名单。此设置的值是一系列字符串，其中每个字符串都应是以下类型之一：<ph name="VALID_ALLOWED_TYPES" />。要详细了解这些类型，请参阅 <ph name="PRODUCT_NAME" /> 扩展程序文档。
-          <ph name="BLOCKED_INSTALL_MESSAGE" />：如果用户尝试安装的扩展程序已被相关政策屏蔽，Chrome 网上应用店就会显示一条常规的错误消息。此设置可让您向这类错误消息附加文本，以便将用户引导至您的支持部门、解释相应扩展程序为何会被屏蔽，或用于其他用途。如果此类错误消息的长度超过 1000 个字符，则会被截断。
-          <ph name="RUNTIME_BLOCKED_HOSTS" />：此设置的值是一系列主机名称，用于指明相应扩展程序将被禁止与哪些主机交互（包括注入 JavaScript、更改和查看 webRequests / webNavigation，以及查看和更改 Cookie）。格式与匹配模式（请访问 <ph name="LINK_TO_MATCH_PATTERNS" />）类似，但无法指定任何路径（例如“*://*.example.com”）。也支持有效的顶级域名 (TLD) 通配符（例如“*://example.*”）。
-          <ph name="RUNTIME_ALLOWED_HOSTS" />：此设置的值是一系列主机名称，用于指明相应扩展程序可与哪些主机交互，无论它们是否已列在“<ph name="RUNTIME_BLOCKED_HOSTS" />”中。格式与“<ph name="RUNTIME_BLOCKED_HOSTS" />”相同。
-          </translation>
 <translation id="1152117524387175066">报告设备启动时的dev开关状态。
 
       如果此政策设为False，则不报告dev开关的状态。</translation>

@@ -46,39 +46,6 @@
 
       A házirend értékét ezredmásodpercben kell megadni.</translation>
 <translation id="1151353063931113432">Képek engedélyezése ezeken a webhelyeken</translation>
-<translation id="1151545095291359187">Konfigurálja a <ph name="PRODUCT_NAME" /> bővítménykezelési beállításait.
-
-          Ez a házirend több beállítást is vezérel, beleértve a bővítményekkel kapcsolatban már meghatározott házirendek beállításait is. Felülbírálja a régi házirendeket, ha mindkettő be van állítva.
-
-          A házirend bővítményazonosítót vagy frissítési URL-t rendel hozzá a konfigurációjához. Bővítményazonosító használata esetén a konfiguráció kizárólag a megadott bővítményre fog vonatkozni. A speciális <ph name="DEFAULT_SCOPE" /> azonosítóhoz be lehet állítani alapértelmezett konfigurációt, amely az összes olyan bővítményre érvényes lesz, amelyhez nincs beállítva egyéni konfiguráció ebben a házirendben. Frissítési URL használata esetén a konfiguráció az összes olyan bővítményre érvényes lesz, amelynek a frissítési URL-je pontosan ugyanaz, mint a bővítmény jegyzékében megadott URL (ennek a leírását lásd itt: <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Az egyes bővítmények (vagy az ugyanazzal a frissítési URL-lel rendelkező bővítmények) konfigurációja egy másik könyvtár, amely az alább ismertetett mezőket tartalmazza.
-
-          <ph name="INSTALLATION_MODE" />: Olyan karakterlánchoz kapcsolódik, amely jelzi a bővítmény telepítési módját. Az érvényes karakterláncok a következők:
-          * <ph name="ALLOWED" />: Engedélyezi a felhasználónak a bővítmény telepítését. Ez az alapértelmezett viselkedés.
-          * <ph name="BLOCKED" />: Letiltja a bővítmény telepítését.
-          * <ph name="FORCE_INSTALLED" />: A bővítmény automatikusan települ, és a felhasználó nem távolíthatja el.
-          * <ph name="NORMAL_INSTALLED" />: A bővítmény automatikusan települ, de a felhasználó letilthatja.
-
-          Az <ph name="INSTALLATION_MODE" /> több bővítményhez is beállítható, beleértve a <ph name="DEFAULT_SCOPE" /> bővítményt (alapértelmezett beállítás) és az ugyanazzal a frissítési URL-lel rendelkező bővítményeket. Ebben az esetben kizárólag a következő értékeket lehet használni: <ph name="ALLOWED" /> és <ph name="BLOCKED" />.
-
-          Ha a mód beállítása <ph name="FORCE_INSTALLED" /> vagy <ph name="NORMAL_INSTALLED" />, akkor a következőt is be kell állítani: <ph name="UPDATE_URL" />. Felhívjuk figyelmét, hogy a jelen házirendben megadott frissítési URL-t csak az első telepítés során használja a böngésző. A bővítmény további frissítései a bővítmény jegyzékfájljában megadott frissítési URL-t fogják használni. A frissítési URL-nek a fent említettek szerint a frissítési jegyzéket tartalmazó XML-dokumentumra kell mutatnia.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Olyan karakterláncok listájához van hozzárendelve, amelyek a bővítmény letiltott API-engedélyeit jelzik. Az engedélynevek ugyanazok, mint a bővítmény jegyzékében deklarált engedélyek karakterláncai (ezek leírását lásd itt: <ph name="LINK_TO_EXTENSION_DOC3" />). Ez a beállítás a <ph name="DEFAULT_SCOPE" /> bővítményhez is beállítható. Ha a bővítménynek olyan engedélyre van szüksége, amely szerepel a tiltólistán, akkor nem töltődhet be. Amennyiben választható követelményként tartalmazza valamelyik letiltott engedélyt, a böngésző a megszokott módon kezeli, de az ütköző engedélyekre irányuló kérelmeket automatikusan elutasítja futásidőben.
-
-          <ph name="ALLOWED_PERMISSIONS" />: Hasonló, mint a <ph name="BLOCKED_PERMISSIONS" />, de kifejezetten engedélyez bizonyos engedélyeket, amelyeket esetleg letilthat az engedélyek globális tiltólistája, ezért nem lehet beállítani a <ph name="DEFAULT_SCOPE" /> bővítményhez. Ez a beállítás nem adja meg automatikusan az engedélyeket a bővítményeknek.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Verzió karakterlánca. A verzió karakterláncának formátuma ugyanaz, mint a bővítmény jegyzékfájljában használt formátum (ennek leírását lásd itt: <ph name="LINK_TO_EXTENSION_DOC4" />). A megadott minimális verziószámnál régebbi verziójú bővítményeket a böngésző letiltja. Ez a kényszerített telepítésű bővítményekre is érvényes.
-
-          A következő beállítások csak az alapértelmezett <ph name="DEFAULT_SCOPE" /> konfigurációnál használhatók:
-
-          <ph name="INSTALL_SOURCES" />: Az ezen a listán szereplő összes elem bővítmény jellegű egyezési minta (<ph name="LINK_TO_MATCH_PATTERNS" />). A felhasználók a listán szereplő bármelyik elemmel egyező URL-ről könnyűszerrel telepíthetnek elemeket. A mintáknak a <ph name="EXTENSION_SUFFIX_WILDCARD" /> fájl helye mellett azt az oldalt is engedélyezniük kell, ahonnan a letöltés megkezdődik (azaz a hivatkozó oldalt).
-
-          <ph name="ALLOWED_TYPES" />: Ez a beállítás a bővítmények/alkalmazások azon megengedett típusait teszi engedélyezőlistára, amelyek telepíthetők a <ph name="PRODUCT_NAME" /> böngészőben. Az érték karakterláncok listája, és mindegyik karakterláncnak a következők valamelyikének kell lennie: <ph name="VALID_ALLOWED_TYPES" />. Ezekről a típusokról a <ph name="PRODUCT_NAME" />-bővítmények dokumentációja nyújt további tájékoztatást.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Ha a felhasználó olyan bővítményt próbál meg telepíteni, amelyet letilt a házirend, a Chrome Internetes áruház általános hibaüzenetet jelenít meg. Ez a beállítás lehetővé teszi szöveg hozzáfűzését a hibaüzenethez. Használhatja arra, hogy átirányítsa a felhasználókat az ügyfélszolgálathoz, hogy ismertesse az adott bővítmény letiltásának indokát stb. Ha a hibaüzenet hossza meghaladja az 1000 karaktert, a rendszer levágja a végét.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Olyan gazdagépek listáját fogadja el, amelyekkel az adott bővítmény nem léphet interakcióba. Ebbe beletartozik a JavaScript beszúrása, a webRequest / webNavigation API-k megtekintése és módosítása, valamint a cookie-k megtekintése és módosítása. Formátuma hasonló az egyezési mintákéhoz (<ph name="LINK_TO_MATCH_PATTERNS" />) de útvonalat (pl. „*://*.example.com”) nem lehet megadni. Támogatja a legfelső szintű domainek helyettesítő karakterrel való ellátását (pl. „*://example.*”).
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Olyan gazdagépek listáját fogadja el, amelyekkel az adott bővítmény akkor is interakcióba léphet, ha szerepelnek a <ph name="RUNTIME_BLOCKED_HOSTS" /> listán. Formátuma ugyanaz, mint a <ph name="RUNTIME_BLOCKED_HOSTS" /> listáé.
-          </translation>
 <translation id="1152117524387175066">Az eszköz fejlesztői kapcsolójának állapotjelentése a rendszer indításakor.
 
       Ha a házirend értéke hamis, akkor a fejlesztői kapcsoló állapota nem lesz jelentve.</translation>

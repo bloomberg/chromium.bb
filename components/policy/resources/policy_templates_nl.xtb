@@ -46,39 +46,6 @@
 
       De beleidswaarde moet worden opgegeven in milliseconden.</translation>
 <translation id="1151353063931113432">Afbeeldingen toestaan op deze sites</translation>
-<translation id="1151545095291359187">Hiermee worden extensiebeheerinstellingen voor <ph name="PRODUCT_NAME" /> geconfigureerd.
-
-          Met dit beleid worden meerdere instellingen beheerd, inclusief instellingen die worden beheerd door bestaande, aan extensies gerelateerde beleidsregels. Dit beleid overschrijft alle oudere beleidsregels als beide zijn ingesteld.
-
-          Dit beleid wijst een extensie-ID of update-URL toe aan de bijbehorende configuratie. Bij een extensie-ID wordt de configuratie uitsluitend op de opgegeven extensie toegepast. Er kan een standaardconfiguratie worden ingesteld voor de speciale ID <ph name="DEFAULT_SCOPE" />. Deze wordt vervolgens toegepast op alle extensies waarvoor geen aangepaste configuratie is ingesteld in dit beleid. Bij een update-URL wordt de configuratie toegepast op alle extensies met de exacte update-URL in het manifest van deze extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          De configuratie voor elke extensie (of extensies met dezelfde update-URL) is een woordenboek dat de onderstaande velden kan bevatten.
-
-          <ph name="INSTALLATION_MODE" />: Is toegewezen aan een tekenreeks die de installatiemodus voor de extensie aangeeft. De geldige tekenreeksen zijn:
-          * <ph name="ALLOWED" />: Staat toe dat de extensie wordt geïnstalleerd door de gebruiker. Dit is het standaardgedrag.
-          * <ph name="BLOCKED" />: Blokkeert de installatie van de extensie.
-          * <ph name="FORCE_INSTALLED" />: De extensie wordt automatisch geïnstalleerd en kan niet door de gebruiker worden verwijderd.
-          * <ph name="NORMAL_INSTALLED" />: De extensie wordt automatisch geïnstalleerd, maar kan door de gebruiker worden uitgeschakeld.
-
-          De <ph name="INSTALLATION_MODE" /> kan ook worden geconfigureerd voor meerdere extensies, waaronder de extensie <ph name="DEFAULT_SCOPE" /> (als standaardinstellingen) en extensies met dezelfde update-URL. Alleen de waarden <ph name="ALLOWED" /> en <ph name="BLOCKED" /> kunnen in dit geval worden gebruikt.
-
-          Als de modus is ingesteld op <ph name="FORCE_INSTALLED" /> of <ph name="NORMAL_INSTALLED" />, moet er ook een <ph name="UPDATE_URL" /> worden geconfigureerd. Let op: De in dit beleid ingestelde update-URL wordt alleen gebruikt voor de aanvankelijke installatie. Volgende updates van de extensie gebruiken de update-URL die in het manifest van de update-URL is opgenomen. De update-URL moet naar een XML-document met een updatemanifest verwijzen, zoals hierboven genoemd.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Is toegewezen aan een lijst van tekenreeksen die de geblokkeerde API-rechten voor de extensie aangeven. De namen van de rechten zijn hetzelfde als de tekenreeksen voor rechten die zijn opgenomen in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC3" />. Deze instelling kan ook worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />. Als er rechten zijn vereist voor de extensie die op de blokkeerlijst staan, kan deze niet worden geladen. Als de extensie geblokkeerde rechten als optionele vereiste bevat, wordt deze als gebruikelijk behandeld, maar wordt de aanvraag van conflicterende rechten automatisch afgewezen tijdens de uitvoering.
-
-          <ph name="ALLOWED_PERMISSIONS" />: Vergelijkbaar met <ph name="BLOCKED_PERMISSIONS" />, maar in dit geval worden sommige rechten expliciet toegestaan die wellicht zijn geblokkeerd via lijsten met globaal geblokkeerde rechten. Deze instelling kan daarom niet worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />.Let op: Deze instelling geeft niet automatisch goedgekeurde rechten af aan extensies.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Is toegewezen aan een versiereeks. De indeling van de versiereeks is gelijk aan de indeling in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC4" />. Een extensie met een versie die ouder is dan de opgegeven minimum versie wordt uitgeschakeld. Dit is ook van toepassing op automatisch geïnstalleerde extensies.
-
-          De volgende instellingen kunnen alleen worden gebruikt voor de standaardconfiguratie <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: Elk item in deze lijst is een patroon van een extensie (<ph name="LINK_TO_MATCH_PATTERNS" />).Gebruikers kunnen gemakkelijk items installeren vanaf elke URL die overeenkomt met een item in deze lijst. De locatie van het <ph name="EXTENSION_SUFFIX_WILDCARD" />-bestand en de pagina waar de download wordt gestart (dat wil zeggen, de verwijzing), moeten beide zijn toegestaan op basis van deze patronen.
-
-          <ph name="ALLOWED_TYPES" />: Met deze instelling worden de toegestane typen extensies/apps die in <ph name="PRODUCT_NAME" /> kunnen worden geïnstalleerd, op een witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende moet zijn: <ph name="VALID_ALLOWED_TYPES" />. Raadpleeg de documentatie over <ph name="PRODUCT_NAME" />-extensies voor meer informatie over deze typen.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Als een gebruiker probeert een extensie te installeren, maar deze wordt geblokkeerd door beleid, geeft de Chrome Web Store een algemene foutmelding weer. Met deze instelling kun je tekst toevoegen aan de foutmelding. Deze tekst kan bijvoorbeeld worden gebruikt om gebruikers door te verwijzen naar je helpdesk of uit te leggen waarom een bepaalde extensie wordt geblokkeerd. De foutmelding wordt afgekapt als deze meer dan 1000 tekens bevat.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepteert een lijst met hosts waarmee een extensie geen interactie mag hebben. Dit omvat het invoegen van JavaScript, het aanpassen en bekijken van webRequests/webNavigation en het bekijken en aanpassen van cookies. De indeling is vergelijkbaar met overeenkomstpatronen <ph name="LINK_TO_MATCH_PATTERNS" />, behalve dat er geen paden kunnen worden gedefinieerd (zoals "*://*.example.com"). Dit biedt ook ondersteuning voor effectieve TLD-jokertekens ("*://example.*").
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepteert een lijst met hosts waarmee een extensie interactie mag hebben, ongeacht of ze worden vermeld in <ph name="RUNTIME_BLOCKED_HOSTS" />. Dit is dezelfde indeling als <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">De status van de schakelaar voor de ontwikkelaarsmodus van het apparaat bij opstarten melden.
 
       Als het beleid is ingesteld op 'onwaar' (false), wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>

@@ -1625,7 +1625,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Mạng Wi-Fi bạn đang sử dụng (<ph name="NETWORK_ID" />) có thể yêu cầu bạn truy cập vào trang đăng nhập của mạng đó.</translation>
 <translation id="3564708465992574908">Mức thu phóng</translation>
 <translation id="3566721612727112615">Chưa thêm trang web nào</translation>
-<translation id="3566866560249787686">Không thể tải Trợ lý Google, vui lòng thử lại.</translation>
 <translation id="3569382839528428029">Bạn có muốn <ph name="APP_NAME" /> chia sẻ màn hình của bạn không?</translation>
 <translation id="3570985609317741174">Nội dung web</translation>
 <translation id="3571734092741541777">Thiết lập</translation>
@@ -2840,6 +2839,7 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Chưa có đủ dữ liệu.</translation>
 <translation id="5595152862129936745">Rất xa</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
+<translation id="5596627076506792578">Tùy chọn khác</translation>
 <translation id="5600706100022181951">Bản cập nhật sẽ được tải xuống bằng cách dùng <ph name="UPDATE_SIZE_MB" /> MB dữ liệu di động. Bạn có muốn tiếp tục không?</translation>
 <translation id="5601503069213153581">Mã PIN</translation>
 <translation id="5605623530403479164">Công cụ tìm kiếm khác</translation>
@@ -4020,7 +4020,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7576690715254076113">Đối chiếu</translation>
 <translation id="7579149537961810247">Tắt tiếng các trang web</translation>
 <translation id="7580671184200851182">Phát cùng một âm thanh qua tất cả các loa (đơn âm)</translation>
-<translation id="7581273696622423628">Thực hiện khảo sát</translation>
 <translation id="7581462281756524039">Công cụ làm sạch</translation>
 <translation id="7582582252461552277">Thích mạng này</translation>
 <translation id="7586312264284919041">Bạn có muốn dịch trang này không?</translation>

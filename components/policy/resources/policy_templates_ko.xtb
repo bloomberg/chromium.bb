@@ -46,39 +46,6 @@
 
       이 정책 값은 밀리초 단위로 지정되어야 합니다.</translation>
 <translation id="1151353063931113432">이 사이트에서 이미지 허용</translation>
-<translation id="1151545095291359187"><ph name="PRODUCT_NAME" /> 관련 확장 프로그램의 관리 설정을 구성합니다.
-
-          이 정책에서는 여러 설정을 관리하며, 확장 프로그램과 관련된 정책에 따라 관리되는 기존의 모든 설정도 이 정책에 따라 관리됩니다. 두 가지가 모두 설정된 경우 모든 기존 정책을 무시합니다.
-
-          이 정책은 확장 프로그램 ID나 업데이트 URL을 설정에 매핑합니다. 확장 프로그램 ID를 이용하면 지정된 확장 프로그램에만 설정이 적용됩니다. 특수 ID <ph name="DEFAULT_SCOPE" />에 기본 설정을 적용할 수 있으며 이 기본 설정은 본 정책에서 맞춤 설정을 지정하지 않은 모든 확장 프로그램에 적용됩니다. 설정은 업데이트 URL을 이용해 <ph name="LINK_TO_EXTENSION_DOC1" />에 설명된 것과 같이 이 확장 프로그램의 매니페스트에 명시된 정확한 업데이트 URL로 모든 확장 프로그램에 적용됩니다.
-
-          각 확장 프로그램과 관련된 설정 또는 업데이트 URL이 동일한 확장 프로그램과 관련된 설정은 아래에서 설명된 입력란을 포함할 수 있는 또 다른 사전으로 볼 수 있습니다.
-
-          <ph name="INSTALLATION_MODE" />: 확장 프로그램 관련 설치 모드를 표시하는 문자열에 매핑됩니다. 유효한 문자열은 다음과 같습니다.
-          * <ph name="ALLOWED" />: 사용자가 확장 프로그램을 설치할 수 있도록 허용합니다. 기본 동작입니다.
-          * <ph name="BLOCKED" />: 확장 프로그램 설치를 차단합니다.
-          * <ph name="FORCE_INSTALLED" />: 확장 프로그램이 자동으로 설치되며 사용자가 삭제할 수 없습니다.
-          * <ph name="NORMAL_INSTALLED" />: 확장 프로그램이 자동으로 설치되며 사용자가 사용 중지할 수 있습니다.
-
-          <ph name="INSTALLATION_MODE" />은(는) <ph name="DEFAULT_SCOPE" /> 확장 프로그램(기본 설정) 및 동일한 업데이트 URL이 포함된 확장 프로그램 등 여러 확장 프로그램에 설정할 수도 있습니다. 이 경우 <ph name="ALLOWED" /> 및 <ph name="BLOCKED" /> 값만 사용할 수 있습니다.
-
-          모드가 <ph name="FORCE_INSTALLED" /> 또는 <ph name="NORMAL_INSTALLED" />(으)로 설정된 경우 <ph name="UPDATE_URL" />도 설정해야 합니다. 이 정책에 설정된 업데이트 URL은 최초 설치 시에만 사용되며 이후 확장 프로그램 업데이트는 확장 프로그램의 매니페스트에 표시된 업데이트 URL을 사용하게 됩니다. 업데이트 URL은 위에서 설명한 대로 매니페스트 XML 업데이트 문서로 연결되어야 합니다.
-
-          <ph name="BLOCKED_PERMISSIONS" />: 확장 프로그램에서 차단된 API 권한을 나타내는 문자열 목록으로 매핑됩니다. 권한 이름은 <ph name="LINK_TO_EXTENSION_DOC3" />에서 설명한 대로 확장 프로그램의 매니페스트에서 정의된 권한 문자열과 동일합니다. 이 설정 또한 <ph name="DEFAULT_SCOPE" /> 확장 프로그램에 설정할 수 있습니다. 확장 프로그램에서 차단 목록에 있는 권한을 요구하는 경우 로드가 허용되지 않습니다. 선택 요구사항에 차단 권한이 포함된 경우 정상적인 방식으로 처리되지만 상충되는 권한을 요청하는 경우 런타임 시 자동으로 거부됩니다.
-
-          <ph name="ALLOWED_PERMISSIONS" />: <ph name="BLOCKED_PERMISSIONS" />과(와) 비슷하지만 전역 차단된 권한 목록에서 차단되었을 수 있는 일부 권한을 명시적으로 허용하므로, <ph name="DEFAULT_SCOPE" /> 확장 프로그램에 설정할 수 없습니다. 이 설정은 자동으로 확장 프로그램에 권한을 부여하지 않습니다.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: 버전 문자열에 매핑됩니다. 버전 문자열의 형식은 <ph name="LINK_TO_EXTENSION_DOC4" />에 설명된 것처럼 확장 프로그램 매니페스트에 사용된 문자열과 동일합니다. 지정된 최소 버전보다 이전 버전의 확장 프로그램은 사용 중지되며 이는 강제로 설치된 확장 프로그램에도 적용됩니다.
-
-          다음 설정은 기본 <ph name="DEFAULT_SCOPE" /> 설정에만 사용됩니다.
-
-          <ph name="INSTALL_SOURCES" />: 이 목록에 포함된 각 항목은 확장 프로그램 스타일의 일치 패턴입니다(<ph name="LINK_TO_MATCH_PATTERNS" /> 참조). 사용자는 이 목록에 포함된 항목과 일치하는 모든 URL의 항목을 간편하게 설치할 수 있습니다. <ph name="EXTENSION_SUFFIX_WILDCARD" /> 파일과 다운로드 시작 페이지(예: 리퍼러) 위치는 이 패턴에 따라 허용되어야 합니다.
-
-          <ph name="ALLOWED_TYPES" />: 이 설정은 <ph name="PRODUCT_NAME" />에 설치할 수 있는 확장 프로그램/앱의 허용 유형을 허용 목록에 추가합니다. 이 값은 문자열 목록으로 각각은 <ph name="VALID_ALLOWED_TYPES" /> 중 한 가지입니다. 이러한 유형에 관해 자세히 알아보려면 <ph name="PRODUCT_NAME" /> 확장 프로그램 관련 문서를 참조하세요.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: 사용자가 확장 프로그램을 설치하려고 하지만 정책에 의해 차단된 경우 Chrome 웹 스토어에서 일반 오류 메시지를 표시합니다. 이 설정을 사용하면 오류 메시지에 텍스트를 첨부할 수 있습니다. 사용자를 헬프 데스크로 안내하거나 특정 확장 프로그램이 차단된 이유를 설명하는 등에 사용할 수 있습니다. 이 오류 메시지는 영문 1,000자(한글 500자)를 초과하는 경우 잘려서 표시됩니다.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: 확장 프로그램이 상호작용할 수 없도록 차단된 호스트 목록을 허용합니다. 여기에는 자바스크립트 삽입, webRequests/webNavigation 변경 및 보기, 쿠키 보기 및 변경이 포함됩니다. 형식은 일치 패턴 <ph name="LINK_TO_MATCH_PATTERNS" />과(와) 유사하지만 어떠한 경로도 ‘*://*.example.com’과 같이 정의되지 않을 수 있습니다. ‘*://example.*’과 같은 효과적인 TLD 와일드카드도 지원합니다.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: <ph name="RUNTIME_BLOCKED_HOSTS" />에 포함되었는지에 관계없이 확장 프로그램이 상호작용할 수 있는 호스트 목록을 허용합니다. <ph name="RUNTIME_BLOCKED_HOSTS" />과(와) 형식이 동일합니다.
-          </translation>
 <translation id="1152117524387175066">부팅 시 기기의 개발자 스위치 상태를 보고합니다.
 
       이 정책을 false로 설정하면 기기 개발자 스위치 상태가 보고되지 않습니다.</translation>

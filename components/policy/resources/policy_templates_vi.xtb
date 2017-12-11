@@ -46,39 +46,6 @@
 
       Giá trị của chính sách phải được chỉ định theo mili giây.</translation>
 <translation id="1151353063931113432">Cho phép hình ảnh trên các trang web này</translation>
-<translation id="1151545095291359187">Định cấu hình cài đặt quản lý tiện ích đối với <ph name="PRODUCT_NAME" />.
-
-          Chính sách này kiểm soát nhiều cài đặt, bao gồm cả những cài đặt chịu sự kiểm soát của bất kỳ chính sách hiện có nào liên quan đến tiện ích. Chính sách này sẽ ghi đè bất kỳ chính sách cũ nào nếu đã đặt cả hai.
-
-          Chính sách này ánh xạ một ID tiện ích hoặc một URL cập nhật tới cấu hình của chính sách. Với ID tiện ích, cấu hình sẽ chỉ được áp dụng cho tiện ích đã chỉ định. Bạn có thể đặt cấu hình mặc định cho ID đặc biệt <ph name="DEFAULT_SCOPE" />, cấu hình này sẽ áp dụng cho tất cả các tiện ích chưa đặt cấu hình tùy chỉnh trong chính sách này. Với URL cập nhật, cấu hình sẽ được áp dụng cho tất cả tiện ích có URL cập nhật chính xác đã nêu trong tệp kê khai của tiện ích này, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Cấu hình cho mỗi tiện ích (hoặc các tiện ích có cùng URL cập nhật) là một từ điển khác có thể chứa các trường được nêu dưới đây.
-
-          <ph name="INSTALLATION_MODE" />: ánh xạ tới một chuỗi cho biết chế độ cài đặt của tiện ích. Các chuỗi hợp lệ là:
-          * <ph name="ALLOWED" />: cho phép người dùng cài đặt tiện ích. Đây là hành vi mặc định.
-          * <ph name="BLOCKED" />: chặn cài đặt tiện ích.
-          * <ph name="FORCE_INSTALLED" />: tiện ích tự động cài đặt và người dùng không thể xóa.
-          * <ph name="NORMAL_INSTALLED" />: tiện ích tự động cài đặt nhưng người dùng có thể tắt.
-
-          Bạn cũng có thể định cấu hình <ph name="INSTALLATION_MODE" /> cho nhiều tiện ích, bao gồm cả tiện ích <ph name="DEFAULT_SCOPE" /> (giống như cài đặt mặc định) và các tiện ích có cùng URL cập nhật. Bạn chỉ có thể sử dụng các giá trị <ph name="ALLOWED" /> và <ph name="BLOCKED" /> trong trường hợp này.
-
-          Nếu đặt chế độ thành <ph name="FORCE_INSTALLED" /> hoặc <ph name="NORMAL_INSTALLED" /> thì bạn cũng phải định cấu hình <ph name="UPDATE_URL" />. Lưu ý rằng URL cập nhật được đặt trong chính sách này chỉ dùng cho cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. URL cập nhật phải trỏ tới tài liệu XML của Tệp kê khai cập nhật như đề cập ở trên.
-
-          <ph name="BLOCKED_PERMISSIONS" />: ánh xạ tới một danh sách các chuỗi cho biết các quyền API bị chặn đối với tiện ích. Tên quyền giống với các chuỗi quyền được khai báo trong tệp kê khai của tiện ích như mô tả tại <ph name="LINK_TO_EXTENSION_DOC3" />. Bạn cũng có thể định cấu hình cài đặt này cho tiện ích <ph name="DEFAULT_SCOPE" />. Nếu tiện ích yêu cầu một quyền có trong danh sách chặn thì quyền đó sẽ không được phép tải. Nếu tiện ích chứa một quyền bị chặn dưới dạng yêu cầu tùy chọn, thì quyền đó sẽ được xử lý theo cách thông thường, nhưng việc yêu cầu các quyền xung đột sẽ tự động bị từ chối vào thời gian chạy.
-
-          <ph name="ALLOWED_PERMISSIONS" />: tương tự như <ph name="BLOCKED_PERMISSIONS" />, nhưng cho phép rõ ràng một số quyền có thể bị chặn theo danh sách quyền bị chặn chung nên không thể định cấu hình cho tiện ích <ph name="DEFAULT_SCOPE" />. Xin lưu ý rằng cài đặt này không tự động cung cấp quyền đã cấp cho tiện ích.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: ánh xạ tới một chuỗi phiên bản. Định dạng của chuỗi phiên bản tương tự như định dạng dùng trong tệp kê khai của tiện ích, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC4" />. Tiện ích có phiên bản cũ hơn phiên bản tối thiểu đã chỉ định sẽ bị tắt. Điều này cũng áp dụng cho các tiện ích bị buộc cài đặt.
-
-          Bạn chỉ có thể sử dụng các cài đặt sau cho cấu hình <ph name="DEFAULT_SCOPE" /> mặc định:
-
-          <ph name="INSTALL_SOURCES" />: Mỗi mục trong danh sách này là mẫu khớp với kiểu của tiện ích (<ph name="LINK_TO_MATCH_PATTERNS" />). Người dùng có thể dễ dàng cài đặt các mục từ URL bất kỳ khớp với một mục trong danh sách này. Cả vị trí của tệp <ph name="EXTENSION_SUFFIX_WILDCARD" /> và trang bắt đầu tải xuống (tức là liên kết giới thiệu) phải được các mẫu này cho phép.
-
-          <ph name="ALLOWED_TYPES" />: Cài đặt này cho phép các loại tiện ích/ứng dụng được phép cài đặt trong <ph name="PRODUCT_NAME" />. Giá trị là một danh sách chuỗi, mỗi chuỗi phải thuộc một trong số các loại sau: <ph name="VALID_ALLOWED_TYPES" />. Hãy xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Nếu người dùng cố cài đặt một tiện ích nhưng tiện ích đó bị chính sách chặn, thì Cửa hàng Chrome trực tuyến sẽ hiển thị thông báo lỗi chung. Cài đặt này cho phép bạn thêm văn bản vào thông báo lỗi. Thông báo này có thể dùng để chuyển hướng người dùng đến bộ phận trợ giúp, giải thích nguyên nhân một tiện ích cụ thể bị chặn hoặc cho mục đích khác. Thông báo lỗi này sẽ bị cắt bớt nếu dài hơn 1000 ký tự.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Chấp nhận một danh sách các máy chủ mà một tiện ích sẽ bị chặn tương tác với các máy chủ đó. Việc này bao gồm chèn javascript, thay đổi và xem webRequests / webNavigation, xem và thay đổi cookie. Định dạng tương tự như Mẫu khớp <ph name="LINK_TO_MATCH_PATTERNS" /> trừ trường hợp không xác định được đường dẫn, ví dụ: "*://*.example.com". Ngoài ra còn hỗ trợ cả ký tự đại diện cho miền cấp cao nhất (TLD) hiệu quả, ví dụ: "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Chấp nhận một danh sách các máy chủ mà một tiện ích có thể tương tác bất kể các máy chủ đó có tên trong <ph name="RUNTIME_BLOCKED_HOSTS" /> hay không. Định dạng tương tự như <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">Báo cáo trạng thái của bộ chuyển đổi dành cho nhà phát triển của thiết bị lúc khởi động.
 
       Nếu chính sách được đặt thành sai, trạng thái của bộ chuyển đổi dành cho nhà phát triển sẽ không được báo cáo.</translation>

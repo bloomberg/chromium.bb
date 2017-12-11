@@ -5,11 +5,11 @@
 <translation id="1003088604756913841">Abrir link numa nova janela da aplicação <ph name="APP" /></translation>
 <translation id="1005274289863221750">Utilizar o seu microfone e a câmara</translation>
 <translation id="1007408791287232274">Não foi possível carregar dispositivos.</translation>
-<translation id="1010833424573920260">{NUM_PAGES,plural, =1{Página sem resposta}one{Pages Unresponsive}other{Páginas sem resposta}}</translation>
+<translation id="1010833424573920260">{NUM_PAGES,plural, =1{Página sem resposta}other{Páginas sem resposta}}</translation>
 <translation id="1012794136286421601">Os seus ficheiros de Documentos, Folhas, Apresentações e Desenhos estão a ser sincronizados. Abra a aplicação Google Drive para aceder aos ficheiros online ou offline.</translation>
 <translation id="1013707859758800957">A execução de um plug-in sem isolamento de processos foi permitida nesta página.</translation>
 <translation id="1015318665228971643">Editar nome da pasta</translation>
-<translation id="1016437870506746108">{COUNT,plural, =0{Abrir todos numa &amp;nova janela}=1{Abrir numa &amp;nova janela}one{Abrir todos (#) numa &amp;nova janela}other{Abrir todos (#) numa &amp;nova janela}}</translation>
+<translation id="1016437870506746108">{COUNT,plural, =0{Abrir todos numa &amp;nova janela}=1{Abrir numa &amp;nova janela}other{Abrir todos (#) numa &amp;nova janela}}</translation>
 <translation id="1016566241875885511">Informações adicionais (opcional)</translation>
 <translation id="1017280919048282932">&amp;Adicionar ao dicionário</translation>
 <translation id="1018656279737460067">Cancelado</translation>
@@ -69,7 +69,7 @@
 <translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;Parar</translation>
 <translation id="1110155001042129815">Esperar</translation>
-<translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{Continuar transferência}one{Continue Downloads}other{Continuar transferências}}</translation>
+<translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{Continuar transferência}other{Continuar transferências}}</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamante</translation>
 <translation id="1114335938027186412">O seu computador contém um dispositivo de segurança com TPM (Trusted Platform Module, Módulo de plataforma fidedigna), que é utilizado para implementar várias funcionalidades de segurança essenciais no Chrome OS. Visite o Centro de Ajuda do Chromebook em https://support.google.com/chromebook/?p=tpm para saber mais.</translation>
@@ -99,7 +99,7 @@
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
 <translation id="1156488781945104845">Hora atual</translation>
 <translation id="1161575384898972166">Inicie sessão no <ph name="TOKEN_NAME" /> para exportar o certificado de cliente.</translation>
-<translation id="1163361280229063150">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do modo de navegação anónima?}one{# downloads are currently in progress. Do you want to cancel the downloads and exit incognito mode?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do modo de navegação anónima?}}</translation>
+<translation id="1163361280229063150">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do modo de navegação anónima?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do modo de navegação anónima?}}</translation>
 <translation id="1163931534039071049">&amp;Ver fonte da moldura</translation>
 <translation id="1164674268730883318">Pretende desativar o Smart Lock para o <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164899421101904659">Introduzir chave de desbloqueio do PIN</translation>
@@ -122,7 +122,7 @@
 <translation id="1188807932851744811">Registo não carregado.</translation>
 <translation id="1189418886587279221">Ativa as funcionalidades de acessibilidade para facilitar a utilização do dispositivo.</translation>
 <translation id="1190144681599273207">A obtenção deste ficheiro utilizará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
-<translation id="11901918071949011">{NUM_FILES,plural, =1{Acesso a um ficheiro armazenado no computador}one{Access # files stored on your computer}other{Acesso a # ficheiros armazenados no computador}}</translation>
+<translation id="11901918071949011">{NUM_FILES,plural, =1{Acesso a um ficheiro armazenado no computador}other{Acesso a # ficheiros armazenados no computador}}</translation>
 <translation id="1195076408729068893">Para iniciar o Smart Lock, introduza a sua palavra-passe. Da próxima vez, pode utilizar o telemóvel para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Erro desconhecido.</translation>
 <translation id="1196338895211115272">Falha ao exportar chave privada.</translation>
@@ -389,7 +389,7 @@
 <translation id="1589055389569595240">Mostrar ortografia e gramática</translation>
 <translation id="1593594475886691512">A formatar...</translation>
 <translation id="159359590073980872">Cache de Imagem</translation>
-<translation id="1594233345027811150">{NUM_DOWNLOAD,plural, =1{Transferência em curso}one{Downloads in progress}other{Transferências em curso}}</translation>
+<translation id="1594233345027811150">{NUM_DOWNLOAD,plural, =1{Transferência em curso}other{Transferências em curso}}</translation>
 <translation id="1598233202702788831">As atualizações estão desativadas pelo seu gestor.</translation>
 <translation id="1600857548979126453">Aceder ao back-end do depurador da página</translation>
 <translation id="1601560923496285236">Aplicar</translation>
@@ -431,7 +431,7 @@
 <translation id="1650709179466243265">Adicionar www. e .com e abrir endereço</translation>
 <translation id="1651008383952180276">Tem de introduzir a mesma frase de acesso duas vezes</translation>
 <translation id="1652972346408808053">Palavra-passe guardada. Aceda às suas palavras-passe a partir de qualquer dispositivo em <ph name="SAVED_PASSWORDS_LINK" /></translation>
-<translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Adicione a impressora ao Google Cloud Print para poder imprimir em qualquer local.}one{Add # printers to Google Cloud Print so you can print from anywhere.}other{Adicione # impressoras ao Google Cloud Print para poder imprimir em qualquer local.}}</translation>
+<translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Adicione a impressora ao Google Cloud Print para poder imprimir em qualquer local.}other{Adicione # impressoras ao Google Cloud Print para poder imprimir em qualquer local.}}</translation>
 <translation id="1657406563541664238">Ajude a melhorar o <ph name="PRODUCT_NAME" /> enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
 <translation id="1658424621194652532">Esta página está a aceder ao seu microfone.</translation>
 <translation id="1660204651932907780">Permitir que os sites reproduzam som (recomendado)</translation>
@@ -797,7 +797,7 @@
 <translation id="2272570998639520080">Copo de Martini</translation>
 <translation id="2276503375879033601">Adicionar mais aplicações</translation>
 <translation id="2277255602909579701">Todos os cookies e dados do site</translation>
-<translation id="2277769717710009150">{COUNT,plural, =1{1 item copiado}one{# item copiado}other{# itens copiados}}</translation>
+<translation id="2277769717710009150">{COUNT,plural, =1{1 item copiado}other{# itens copiados}}</translation>
 <translation id="2278562042389100163">Abrir janela do browser</translation>
 <translation id="2279874276457403668">É possível criar apenas uma sessão de cada vez.</translation>
 <translation id="2280486287150724112">Margem direita</translation>
@@ -928,7 +928,7 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2501278716633472235">Retroceder</translation>
 <translation id="2501797496290880632">Introduza um atalho</translation>
 <translation id="2502441965851148920">As atualizações automáticas estão ativadas. As atualizações manuais estão desativadas pelo seu gestor.</translation>
-<translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Ecrã #}one{Screen #}other{Ecrãs #}}</translation>
+<translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Ecrã #}other{Ecrãs #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> de <ph name="TOTAL_SIZE" /></translation>
 <translation id="2505993325121092464">Termos de Utilização do Google Play</translation>
 <translation id="2508428939232952663">Conta da Google Play Store</translation>
@@ -1597,7 +1597,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3511399794969432965">Tem problemas de ligação?</translation>
 <translation id="351152300840026870">Tipo de letra com largura fixa</translation>
 <translation id="3511528412952710609">Curto</translation>
-<translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar transferência}one{Cancel Downloads}other{Cancelar transferências}}</translation>
+<translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar transferência}other{Cancelar transferências}}</translation>
 <translation id="3514373592552233661">As redes preferidas terão prioridade em relação a outras redes conhecidas caso mais do que uma estejam disponíveis</translation>
 <translation id="3523642406908660543">Perguntar quando um site pretender utilizar um plug-in para aceder ao seu computador (recomendado)</translation>
 <translation id="3527085408025491307">Pasta</translation>
@@ -1626,7 +1626,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">A rede Wi-Fi que está a utilizar (<ph name="NETWORK_ID" />) pode exigir que aceda à respetiva página de início de sessão.</translation>
 <translation id="3564708465992574908">Níveis de zoom</translation>
 <translation id="3566721612727112615">Nenhum site adicionado</translation>
-<translation id="3566866560249787686">Não foi possível carregar o Assistente do Google. Tente novamente.</translation>
 <translation id="3569382839528428029">Deseja que <ph name="APP_NAME" /> partilhe o seu ecrã?</translation>
 <translation id="3570985609317741174">Conteúdo da Web</translation>
 <translation id="3571734092741541777">Configurar</translation>
@@ -1687,7 +1686,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3652817283076144888">A inicializar</translation>
 <translation id="3653999333232393305">Continuar a permitir que <ph name="HOST" /> aceda ao seu microfone</translation>
 <translation id="3654045516529121250">Ler definições de acessibilidade</translation>
-<translation id="3655712721956801464">{NUM_FILES,plural, =1{Tem acesso permanente a um ficheiro.}one{It has permanent access to # files.}other{Tem acesso permanente a # ficheiros.}}</translation>
+<translation id="3655712721956801464">{NUM_FILES,plural, =1{Tem acesso permanente a um ficheiro.}other{Tem acesso permanente a # ficheiros.}}</translation>
 <translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />Quando ativa a cópia de segurança automática, os dados das aplicações e do dispositivo são guardados periodicamente numa pasta privada no Google Drive. Os dados das aplicações podem ser quaisquer dados que uma aplicação tenha guardado (com base nas definições do programador), incluindo dados potencialmente sensíveis, como contactos, mensagens e fotos.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Os dados da cópia de segurança não contam para a quota do Armazenamento do Drive. Não é feita uma cópia de segurança dos ficheiros grandes ou dos ficheiros que os programadores optaram por excluir do serviço.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="3660234220361471169">Não fidedigno</translation>
@@ -1755,7 +1754,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="37613671848467444">Abrir na Janela de &amp;Navegação Anónima</translation>
 <translation id="3763401818161139108">Executar sempre em <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Informações de compilação detalhadas</translation>
-<translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicar com um dispositivo USB}one{Communicate with # USB devices}other{Comunicar com # dispositivos USB}}</translation>
+<translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicar com um dispositivo USB}other{Comunicar com # dispositivos USB}}</translation>
 <translation id="3764986667044728669">Não foi possível efetuar a inscrição</translation>
 <translation id="3768037234834996183">A sincronizar as preferências...</translation>
 <translation id="3771294271822695279">Ficheiros de vídeo</translation>
@@ -1782,7 +1781,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3797900183766075808">Pe&amp;squisar no <ph name="SEARCH_ENGINE" /> por "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="3798325802885154040">Permite-lhe ativar/desativar a funcionalidade tocar para clicar</translation>
 <translation id="3798449238516105146">Versão</translation>
-<translation id="3799201711591988491">{COUNT,plural, =0{&amp;Abrir todos}=1{&amp;Abrir marcador}one{&amp;Abrir todos (#)}other{&amp;Abrir todos (#)}}</translation>
+<translation id="3799201711591988491">{COUNT,plural, =0{&amp;Abrir todos}=1{&amp;Abrir marcador}other{&amp;Abrir todos (#)}}</translation>
 <translation id="3800806661949714323">Mostrar tudo (recomendado)</translation>
 <translation id="3802282970260083766">Definições do dispositivo</translation>
 <translation id="380408572480438692">A ativação da recolha de dados de desempenho ajudará a Google a melhorar o sistema ao longo do tempo. Não serão enviados quaisquer dados enquanto não apresentar um relatório de comentários (Alt-Shift-I) e incluir os dados de desempenho. É possível regressar a este ecrã para desativar a recolha em qualquer altura.</translation>
@@ -1985,7 +1984,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4140559601186535628">Mensagens push</translation>
 <translation id="4146026355784316281">Abrir sempre com o visualizador do sistema</translation>
 <translation id="4150201353443180367">Visualização</translation>
-<translation id="4152670763139331043">{NUM_TABS,plural, =1{1 separador}one{# tabs}other{# separadores}}</translation>
+<translation id="4152670763139331043">{NUM_TABS,plural, =1{1 separador}other{# separadores}}</translation>
 <translation id="4154664944169082762">Impressões digitais</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">Abrir lista de reprodução</translation>
@@ -2066,7 +2065,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4312866146174492540">Bloquear (predefinição)</translation>
 <translation id="4316850752623536204">Website para programadores</translation>
 <translation id="4320177379694898372">Sem ligação à Internet</translation>
-<translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continuar transferência}one{Continue downloads}other{Continuar transferências}}</translation>
+<translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continuar transferência}other{Continuar transferências}}</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322394346347055525">Fechar os Outros Separadores</translation>
 <translation id="4324577459193912240">Ficheiro incompleto</translation>
@@ -2363,7 +2362,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4853020600495124913">Abrir numa &amp;nova janela</translation>
 <translation id="4856478137399998590">O seu serviço de dados móveis está ativado e pronto a utilizar</translation>
-<translation id="4857506433977877623">{COUNT,plural, =0{Abrir todos numa janela de &amp;navegação anónima}=1{Abrir numa janela de &amp;navegação anónima}one{Abrir todos (#) numa janela de &amp;navegação anónima}other{Abrir todos (#) numa janela de &amp;navegação anónima}}</translation>
+<translation id="4857506433977877623">{COUNT,plural, =0{Abrir todos numa janela de &amp;navegação anónima}=1{Abrir numa janela de &amp;navegação anónima}other{Abrir todos (#) numa janela de &amp;navegação anónima}}</translation>
 <translation id="4858913220355269194">Fritz</translation>
 <translation id="4862050643946421924">A adicionar dispositivo…</translation>
 <translation id="4862642413395066333">Respostas OCSP de assinatura</translation>
@@ -2490,7 +2489,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5050042263972837708">Nome do grupo</translation>
 <translation id="5052499409147950210">Editar site</translation>
 <translation id="5053604404986157245">A palavra-passe TPM, gerada aleatoriamente, não está disponível. Esta situação é normal após uma Powerwash.</translation>
-<translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Esta pasta contém um marcador. Tem a certeza de que pretende eliminá-la?}one{This folder contains # bookmarks. Are you sure you want to delete it?}other{Esta pasta contém # marcadores. Tem a certeza de que pretende eliminá-la?}}</translation>
+<translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Esta pasta contém um marcador. Tem a certeza de que pretende eliminá-la?}other{Esta pasta contém # marcadores. Tem a certeza de que pretende eliminá-la?}}</translation>
 <translation id="5061708541166515394">Contraste</translation>
 <translation id="5062930723426326933">O início de sessão falhou. Ligue-se à Internet e tente novamente.</translation>
 <translation id="5063480226653192405">Utilização</translation>
@@ -2841,6 +2840,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Ainda não estão disponíveis dados suficientes.</translation>
 <translation id="5595152862129936745">Muito afastado</translation>
 <translation id="5595485650161345191">Editar morada</translation>
+<translation id="5596627076506792578">Mais opções</translation>
 <translation id="5600706100022181951">A atualização será transferida e irá utilizar <ph name="UPDATE_SIZE_MB" /> MB de dados móveis. Pretende continuar?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Outros motores de pesquisa</translation>
@@ -2921,7 +2921,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5747059785823487638">Informações do áudio</translation>
 <translation id="5747552184818312860">Expira</translation>
 <translation id="5747785204778348146">Programador – instável</translation>
-<translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{Cancelar transferência}one{Cancel downloads}other{Cancelar transferências}}</translation>
+<translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{Cancelar transferência}other{Cancelar transferências}}</translation>
 <translation id="5750324801516359607">Afastado</translation>
 <translation id="5751545372099101699">Artigo de prateleira 4</translation>
 <translation id="5752453871435543420">Cópia de segurança na nuvem do Chrome OS</translation>
@@ -2936,7 +2936,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5765491088802881382">Não existe nenhuma rede disponível</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5771816112378578655">Configuração em curso...</translation>
-<translation id="5772265531560382923">{NUM_PAGES,plural, =1{Pode aguardar que a página responda ou sair da mesma.}one{Pode aguardar que as páginas respondam ou sair das mesmas.}other{Pode aguardar que as páginas respondam ou sair das mesmas.}}</translation>
+<translation id="5772265531560382923">{NUM_PAGES,plural, =1{Pode aguardar que a página responda ou sair da mesma.}other{Pode aguardar que as páginas respondam ou sair das mesmas.}}</translation>
 <translation id="577322787686508614">A operação de leitura não é permitida em: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Aplicação Abrir Ficheiros</translation>
 <translation id="5774515636230743468">Manifesto:</translation>
@@ -3248,7 +3248,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6280215091796946657">Iniciar sessão com uma conta diferente</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> não é habitualmente transferido e pode ser perigoso.</translation>
-<translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Nova impressora na rede}one{New printers on your network}other{Novas impressoras na rede}}</translation>
+<translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Nova impressora na rede}other{Novas impressoras na rede}}</translation>
 <translation id="6286684120317096255">A utilização de dados está a ser medida</translation>
 <translation id="6286708577777130801">Detalhes de palavras-passe guardadas</translation>
 <translation id="6287852322318138013">Selecionar uma aplicação para abrir este ficheiro</translation>
@@ -3927,7 +3927,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Página de fundo: <ph name="BACKGROUND_PAGE_URL" /></translation>
-<translation id="7433692219247014412">{COUNT,plural, =0{Abrir todos numa &amp;nova janela}=1{Abrir numa &amp;nova janela}one{Abrir todos (#) numa &amp;nova janela}other{Abrir todos (#) numa &amp;nova janela}}</translation>
+<translation id="7433692219247014412">{COUNT,plural, =0{Abrir todos numa &amp;nova janela}=1{Abrir numa &amp;nova janela}other{Abrir todos (#) numa &amp;nova janela}}</translation>
 <translation id="7434509671034404296">Programador</translation>
 <translation id="7436921188514130341">Ah, bolas! Ocorreu um erro durante a mudança de nome.</translation>
 <translation id="7439964298085099379">Tem o modo Alto Contraste ativado. Pretende instalar a nossa extensão de Alto Contraste e um tema escuro?</translation>
@@ -3962,7 +3962,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
 <translation id="7487099628810939106">Atraso antes do clique:</translation>
 <translation id="7487969577036436319">Não existem componentes instalados</translation>
-<translation id="7489355918927585587">{COUNT,plural, =0{&amp;Abrir todos}=1{&amp;Abrir marcador}one{&amp;Abrir todos (#)}other{&amp;Abrir todos (#)}}</translation>
+<translation id="7489355918927585587">{COUNT,plural, =0{&amp;Abrir todos}=1{&amp;Abrir marcador}other{&amp;Abrir todos (#)}}</translation>
 <translation id="7489605380874780575">Verificar elegibilidade</translation>
 <translation id="749028671485790643">Pessoa <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">Endereço MAC</translation>
@@ -4022,7 +4022,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7576690715254076113">Agrupar</translation>
 <translation id="7579149537961810247">Desativar som dos sites</translation>
 <translation id="7580671184200851182">Reproduzir o mesmo áudio em todas as colunas (áudio mono)</translation>
-<translation id="7581273696622423628">Participar no inquérito</translation>
 <translation id="7581462281756524039">Uma ferramenta de limpeza</translation>
 <translation id="7582582252461552277">Preferir esta rede</translation>
 <translation id="7586312264284919041">Gostaria de traduzir esta página?</translation>
@@ -4076,7 +4075,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7690853182226561458">Adicionar &amp;pasta...</translation>
 <translation id="7693221960936265065">desde sempre</translation>
 <translation id="769569204874261517"><ph name="USER_DISPLAY_NAME" /> (já presente neste dispositivo)</translation>
-<translation id="7698408911093959127">{COUNT,plural, =1{1 item na lista de marcadores}one{# item(ns) na lista de marcadores}other{# itens na lista de marcadores}}</translation>
+<translation id="7698408911093959127">{COUNT,plural, =1{1 item na lista de marcadores}other{# itens na lista de marcadores}}</translation>
 <translation id="7701040980221191251">Nenhum</translation>
 <translation id="7701869757853594372">Identificadores de UTILIZADOR</translation>
 <translation id="7702907602086592255">Domínio</translation>
@@ -4299,7 +4298,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8028993641010258682">Tamanho</translation>
 <translation id="8030656706657716245">Adicionar impressora</translation>
 <translation id="8032244173881942855">Não é possível transmitir o separador.</translation>
-<translation id="803435727213847625">{COUNT,plural, =0{Abrir todos numa &amp;janela de navegação anónima}=1{Abrir numa &amp;janela de navegação anónima}one{Abrir todos (#) numa &amp;janela de navegação anónima}other{Abrir todos (#) numa &amp;janela de navegação anónima}}</translation>
+<translation id="803435727213847625">{COUNT,plural, =0{Abrir todos numa &amp;janela de navegação anónima}=1{Abrir numa &amp;janela de navegação anónima}other{Abrir todos (#) numa &amp;janela de navegação anónima}}</translation>
 <translation id="8037117027592400564">Ler todo o texto falado através da voz sintetizada</translation>
 <translation id="8037357227543935929">Pedir (predefinição)</translation>
 <translation id="803771048473350947">Ficheiro</translation>
@@ -4445,7 +4444,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ativou o ecrã inteiro.</translation>
 <translation id="8270242299912238708">Documentos PDF</translation>
 <translation id="827097179112817503">Mostrar botão Página inicial</translation>
-<translation id="8271246892936492311">{COUNT,plural, =1{1 marcador eliminado}one{# marcador eliminado}other{# marcadores eliminados}}</translation>
+<translation id="8271246892936492311">{COUNT,plural, =1{1 marcador eliminado}other{# marcadores eliminados}}</translation>
 <translation id="8272443605911821513">Faça a gestão das suas extensões clicando em Extensões no menu "Mais ferramentas".</translation>
 <translation id="8274332263553132018">Transmitir ficheiro</translation>
 <translation id="8274924778568117936">Não desligue ou feche o <ph name="DEVICE_TYPE" /> até a atualização terminar. O <ph name="DEVICE_TYPE" /> será reiniciado quando a instalação estiver concluída.</translation>
@@ -4923,7 +4922,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9100765901046053179">Definições avançadas</translation>
 <translation id="9101691533782776290">Iniciar aplicação</translation>
 <translation id="9102610709270966160">Ativar extensão</translation>
-<translation id="9103001804464916031">{NUM_DOWNLOAD,plural, =1{Transferência em curso}one{Downloads in Progress}other{Transferências em curso}}</translation>
+<translation id="9103001804464916031">{NUM_DOWNLOAD,plural, =1{Transferência em curso}other{Transferências em curso}}</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">Para libertar espaço, elimine ficheiros do armazenamento do dispositivo.</translation>
 <translation id="9110990317705400362">Estamos constantemente a procurar formas de tornar a navegação mais segura. Anteriormente, qualquer Website poderia pedir-lhe para adicionar uma extensão ao navegador. Nas versões mais recentes do Google Chrome, tem de definir explicitamente no Chrome que pretende instalar estas extensões adicionando-as através da página Extensões. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -5013,7 +5012,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="960987915827980018">Falta cerca de 1 hora</translation>
 <translation id="962802172452141067">Árvore de pastas de marcadores</translation>
 <translation id="968174221497644223">Cache da aplicação</translation>
-<translation id="970047733946999531">{NUM_TABS,plural, =1{1 separador}one{# Tabs}other{# separadores}}</translation>
+<translation id="970047733946999531">{NUM_TABS,plural, =1{1 separador}other{# separadores}}</translation>
 <translation id="971774202801778802">URL do marcador</translation>
 <translation id="973473557718930265">Sair</translation>
 <translation id="974555521953189084">Introduza a frase de acesso para iniciar a sincronização</translation>

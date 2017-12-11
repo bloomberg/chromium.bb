@@ -1624,7 +1624,6 @@
 <translation id="3564334271939054422">आप जिस वाई-फ़ाई नेटवर्क (<ph name="NETWORK_ID" />) का उपयोग कर रहे हैं उसके लिए आपको लॉगिन पृष्‍ठ पर जाने की अावश्‍यकता हो सकती है.</translation>
 <translation id="3564708465992574908">ज़ूम स्तर</translation>
 <translation id="3566721612727112615">कोई साइट नहीं जोड़ी गई</translation>
-<translation id="3566866560249787686">Google Assistant को लोड नहीं किया जा सका, कृपया फिर से कोशिश करें.</translation>
 <translation id="3569382839528428029">क्या आप चाहते हैं कि <ph name="APP_NAME" /> आपकी स्क्रीन को साझा करे?</translation>
 <translation id="3570985609317741174">वेब सामग्री</translation>
 <translation id="3571734092741541777">सेट करें</translation>
@@ -2838,6 +2837,7 @@
 <translation id="5592595402373377407">अभी पर्याप्त डेटा उपलब्ध नहीं है.</translation>
 <translation id="5595152862129936745">बहुत दूर</translation>
 <translation id="5595485650161345191">पता संपादित करें</translation>
+<translation id="5596627076506792578">अधिक विकल्प</translation>
 <translation id="5600706100022181951">अपडेट को डाउनलोड करने में <ph name="UPDATE_SIZE_MB" /> MB मोबाइल डेटा का उपयोग होगा. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="5601503069213153581">पिन</translation>
 <translation id="5605623530403479164">अन्य खोज इंजन</translation>
@@ -4018,7 +4018,6 @@
 <translation id="7576690715254076113">सेट में प्रिंट करें</translation>
 <translation id="7579149537961810247">साइटें म्यूट करें</translation>
 <translation id="7580671184200851182">सभी स्पीकर से समान ऑडियो चलाएं (मोनो ऑडियो)</translation>
-<translation id="7581273696622423628">सर्वेक्षण में भाग लें</translation>
 <translation id="7581462281756524039">क्‍लीनअप टूल</translation>
 <translation id="7582582252461552277">इस नेटवर्क को प्राथमि‍कता दें</translation>
 <translation id="7586312264284919041">क्‍या आप इस पेज का अनुवाद देखना चाहते हैं?</translation>

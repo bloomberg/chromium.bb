@@ -495,7 +495,7 @@
 <translation id="471880041731876836">Non sei autorizzato a visitare questo sito</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica di rete Windows<ph name="END_LINK" /></translation>
 <translation id="472349245089439925">Il tuo pagamento</translation>
-<translation id="4726672564094551039">Ricarica norme</translation>
+<translation id="4726672564094551039">Ricarica criteri</translation>
 <translation id="4728558894243024398">Piattaforma</translation>
 <translation id="4736825316280949806">Riavvia Chromium</translation>
 <translation id="4744603770635761495">Percorso eseguibile</translation>
@@ -974,6 +974,7 @@
 <translation id="8625384913736129811">Salva la carta su questo dispositivo</translation>
 <translation id="8647750283161643317">Ripristina i valori predefiniti per tutto</translation>
 <translation id="8660471606262461360">Da Google Payments</translation>
+<translation id="8680536109547170164"><ph name="QUERY" />, risposta, <ph name="ANSWER" /></translation>
 <translation id="8688672835843460752">Disponibile</translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN" /> non è criptata.</translation>
 <translation id="8718314106902482036">Pagamento non completato</translation>

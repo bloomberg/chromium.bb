@@ -399,7 +399,7 @@
 <translation id="3759461132968374835">Nemate nedavnih izvješća o padu. Ovdje se neće prikazati padovi do kojih je došlo kada je izvješćivanje o padovima onemogućeno.</translation>
 <translation id="3765032636089507299">Stranica Sigurno pregledavanje trenutačno je u izradi.</translation>
 <translation id="3778403066972421603">Želite li spremiti ovu karticu na svoj Google račun i na ovaj uređaj?</translation>
-<translation id="3783418713923659662">MasterCard</translation>
+<translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Istječe <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3808375843007691220">Upozorenje: pristupate eksperimentalnim značajkama!</translation>
 <translation id="382518646247711829">Ako upotrebljavate proxy poslužitelj...</translation>
@@ -978,6 +978,7 @@
 <translation id="8625384913736129811">Spremi tu karticu na ovaj uređaj</translation>
 <translation id="8647750283161643317">Vrati sve na zadano</translation>
 <translation id="8660471606262461360">S Google Paymentsa</translation>
+<translation id="8680536109547170164"><ph name="QUERY" />, odgovor, <ph name="ANSWER" /></translation>
 <translation id="8688672835843460752">Dostupno</translation>
 <translation id="8703575177326907206">Vaša veza s <ph name="DOMAIN" /> nije šifrirana.</translation>
 <translation id="8718314106902482036">Plaćanje nije dovršeno</translation>

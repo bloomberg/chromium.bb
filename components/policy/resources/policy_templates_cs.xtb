@@ -46,39 +46,6 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 
       Hodnota zásady se určuje v milisekundách.</translation>
 <translation id="1151353063931113432">Povolit obrázky na těchto stránkách</translation>
-<translation id="1151545095291359187">Konfiguruje nastavení správy rozšíření prohlížeče <ph name="PRODUCT_NAME" />.
-
-          Tato zásada řídí několik nastavení, včetně těch, která jsou nakonfigurována existujícími zásadami pro rozšíření. Pokud je tato zásada nastavena, přepíše všechny starší nastavené zásady.
-
-          Tato zásada mapuje konfiguraci na ID rozšíření nebo adresu URL. Pokud je definováno ID rozšíření, bude konfigurace použita pouze na konkrétní rozšíření. Pro zvláštní ID <ph name="DEFAULT_SCOPE" /> lze nastavit výchozí konfiguraci. Tato konfigurace bude použita na všechna rozšíření, která v této zásadě nemají nastavenou vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, bude konfigurace použita na všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Konfigurace pro jednotlivá rozšíření (nebo rozšíření se stejnou adresou URL pro aktualizaci) představuje další slovník, který může obsahovat níže popsaná pole.
-
-          <ph name="INSTALLATION_MODE" />: mapuje se na řetězec udávající režim instalace rozšíření. Platné řetězce:
-          * <ph name="ALLOWED" />: umožňuje, aby bylo rozšíření nainstalováno uživatelem. Toto chování je výchozí.
-          * <ph name="BLOCKED" />: blokuje instalaci rozšíření.
-          * <ph name="FORCE_INSTALLED" />: rozšíření je instalováno automaticky a uživatel ho nemůže odstranit.
-          * <ph name="NORMAL_INSTALLED" />: rozšíření je instalováno automaticky, ale uživatel ho může deaktivovat.
-
-          Pole <ph name="INSTALLATION_MODE" /> může být nakonfigurováno i pro několik rozšíření najednou, a to včetně rozšíření <ph name="DEFAULT_SCOPE" /> (jako výchozí nastavení) a rozšíření se stejnou adresou URL pro aktualizaci. V tomto případě lze použít pouze hodnoty <ph name="ALLOWED" /> a <ph name="BLOCKED" />.
-
-          Pokud je režim nastaven na hodnotu <ph name="FORCE_INSTALLED" /> nebo <ph name="NORMAL_INSTALLED" />, musí být nakonfigurována i adresa URL <ph name="UPDATE_URL" />. Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Adresa URL pro aktualizaci by měla odkazovat na dokument XML manifestu aktualizace (viz výše).
-
-          <ph name="BLOCKED_PERMISSIONS" />: mapuje se na seznam řetězců, které definují blokovaná oprávnění rozhraní API daného rozšíření. Názvy oprávnění jsou stejné jako řetězce oprávnění deklarované v manifestu rozšíření (viz <ph name="LINK_TO_EXTENSION_DOC3" />). Toto nastavení lze nakonfigurovat také pro rozšíření <ph name="DEFAULT_SCOPE" />. Pokud rozšíření vyžaduje oprávnění, které se nachází na seznamu blokovaných položek, nebude se moci načíst. Pokud je blokované oprávnění vyžadováno volitelně, rozšíření bude spuštěno normálním způsobem, ale žádost o konfliktní oprávnění bude za běhu automaticky zamítnuta.
-
-          <ph name="ALLOWED_PERMISSIONS" />: toto pole je podobné jako pole <ph name="BLOCKED_PERMISSIONS" />, ale na rozdíl od něj explicitně povoluje některá oprávnění, která by mohla být blokována seznamem globálně blokovaných oprávnění. Toto pole proto nelze nakonfigurovat pro rozšíření <ph name="DEFAULT_SCOPE" />. Upozorňujeme, že toto nastavení rozšířením automaticky neposkytuje udělená oprávnění.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: mapuje se na řetězec verze. Formát řetězce verze je stejný jako ten v manifestu rozšíření (viz <ph name="LINK_TO_EXTENSION_DOC4" />). Rozšíření nižší verze, než je stanovená minimální verze, bude deaktivováno. Toto nastavení se vztahuje i na rozšíření, jejichž instalace byla vynucena.
-
-          Následující nastavení lze použít pouze pro výchozí konfiguraci <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: každá položka v tomto seznamu představuje vzor podobný jako u rozšíření (<ph name="LINK_TO_MATCH_PATTERNS" />). Uživatelé budou moci jednoduše instalovat položky z jakékoli adresy, která odpovídá položce v tomto seznamu. V těchto vzorech musí být povoleno umístění souboru <ph name="EXTENSION_SUFFIX_WILDCARD" /> i stránka, ze které bude zahájeno stahování (tj. zdroj odkazu).
-
-          <ph name="ALLOWED_TYPES" />: toto nastavení vytvoří seznam povolených rozšíření nebo aplikací, které lze nainstalovat do prohlížeče <ph name="PRODUCT_NAME" />. Hodnota představuje seznam řetězců. Musí se jednat o řetězce z následujícího výčtu: <ph name="VALID_ALLOWED_TYPES" />. Další informace o těchto typech naleznete v dokumentaci k rozšířením prohlížeče <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Pokud se uživatel pokusí nainstalovat rozšíření, které je blokováno zásadami, zobrazí Internetový obchod Chrome obecnou chybovou zprávu. Pomocí tohoto nastavení lze k chybové zprávě přidat text. Můžete pomocí něj uživatele nasměrovat na oddělení nápovědy, vysvětlit, proč je konkrétní rozšíření blokováno, nebo poskytnou jiné informace. Pokud tato chybová zpráva bude delší než 1000 znaků, bude oříznuta.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Představuje seznam hostitelů, se kterými rozšíření nebude smět interagovat. Týká se to vkládání JavaScriptu, úprav a zobrazování požadavků webRequest a webNavigation a zobrazování a úprav souborů cookie. Formát se podobá vzorům (<ph name="LINK_TO_MATCH_PATTERNS" />), ale není dovoleno zadávat cesty, například „*://*.example.com“. Jsou podporovány také zástupné znaky pro domény nejvyšší úrovně, například „*://example.*“.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Představuje seznam hostitelů, se kterými rozšíření může interagovat bez ohledu na to, zda jsou uvedeni v seznamu <ph name="RUNTIME_BLOCKED_HOSTS" />. Formát je stejný jako u seznamu <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">Hlásí stav přepínače režimu pro vývojáře při spuštění zařízení.
 
       Pokud je tato zásada nastavena na hodnotu false, stav přepínače režimu pro vývojáře se hlásit nebude.</translation>

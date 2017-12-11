@@ -1624,7 +1624,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Het is mogelijk dat je de inlogpagina moet bezoeken van het wifi-netwerk dat je gebruikt (<ph name="NETWORK_ID" />).</translation>
 <translation id="3564708465992574908">Zoomniveaus</translation>
 <translation id="3566721612727112615">Geen sites toegevoegd</translation>
-<translation id="3566866560249787686">Google Assistent kan niet worden geladen. Probeer het opnieuw.</translation>
 <translation id="3569382839528428029">Wil je je scherm delen met <ph name="APP_NAME" />?</translation>
 <translation id="3570985609317741174">Webinhoud</translation>
 <translation id="3571734092741541777">Instellen</translation>
@@ -2840,6 +2839,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5592595402373377407">Nog niet voldoende gegevens beschikbaar.</translation>
 <translation id="5595152862129936745">Heel veraf</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
+<translation id="5596627076506792578">Meer opties</translation>
 <translation id="5600706100022181951">De update wordt gedownload met <ph name="UPDATE_SIZE_MB" /> MB mobiele data. Wil je doorgaan?</translation>
 <translation id="5601503069213153581">Pincode</translation>
 <translation id="5605623530403479164">Andere zoekmachines</translation>
@@ -4020,7 +4020,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7576690715254076113">Sorteren</translation>
 <translation id="7579149537961810247">Geluid van sites dempen</translation>
 <translation id="7580671184200851182">Dezelfde audio afspelen via alle speakers (mono-audio)</translation>
-<translation id="7581273696622423628">Enquête invullen</translation>
 <translation id="7581462281756524039">Een cleanup-tool</translation>
 <translation id="7582582252461552277">Dit netwerk voorrang geven</translation>
 <translation id="7586312264284919041">Wil je deze pagina vertalen?</translation>

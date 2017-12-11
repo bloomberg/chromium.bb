@@ -46,40 +46,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Politikværdien skal angives i millisekunder.</translation>
 <translation id="1151353063931113432">Tillad billeder på disse websites</translation>
-<translation id="1151545095291359187">Konfigurerer indstillinger for administration af udvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne politik styrer flere indstillinger, inklusive indstillinger, der styres af eksisterende politikker vedrørende udvidelser. Denne politik tilsidesætter eventuelle ældre politikker, hvis begge er indstillet.
-
-          Denne politik knytter et udvidelses-id eller en opdateringswebadresse til sin konfiguration. Med et udvidelses-id bliver konfigurationen udelukkende anvendt på den angivne udvidelse. Der kan indstilles en standardkonfiguration for det særlige id <ph name="DEFAULT_SCOPE" />, som anvendes på alle udvidelser, for hvilke der ikke er indstillet en tilpasset konfiguration i denne politik. Med en opdateringswebadresse anvendes konfigurationen på alle udvidelser, hvor den nøjagtige opdateringswebadresse er angivet i manifestfilen for denne udvidelse som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurationen for hver udvidelse (eller udvidelser med samme opdateringswebadresse) er en anden ordbog, der kan indeholde de felter, der er dokumenteret nedenfor.
-
-          <ph name="INSTALLATION_MODE" />: Tilknytter en streng, der angiver installationstilstanden for udvidelsen. De gyldige strenge er:
-          * <ph name="ALLOWED" />: Tillader, at udvidelsen installeres af brugeren. Dette er standardadfærden.
-          * <ph name="BLOCKED" />: Blokerer for installation af udvidelsen.
-          * <ph name="FORCE_INSTALLED" />: Udvidelsen installeres automatisk og kan ikke fjernes af brugeren.
-          * <ph name="NORMAL_INSTALLED" />: Udvidelsen installeres automatisk, men kan deaktiveres af brugeren.
-
-          <ph name="INSTALLATION_MODE" /> kan også konfigureres for flere udvidelser, bl.a. udvidelsen <ph name="DEFAULT_SCOPE" /> (som standardindstillinger), og for udvidelser med samme opdateringswebadresse. Det er kun værdierne <ph name="ALLOWED" /> og <ph name="BLOCKED" />, der kan bruges i dette tilfælde.
-
-          Hvis denne tilstand er indstillet til <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" />, skal der også konfigureres en <ph name="UPDATE_URL" />. Bemærk, at opdateringswebadressen, der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen bruger den opdateringswebadresse, der er angivet i udvidelsens manifestfil. Som nævnt ovenfor skal opdateringswebadressen pege på et Update Manifest XML-dokument.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Tilknytter en liste over strenge, der angiver de blokerede API-tilladelser for udvidelsen. Navnene på tilladelserne er de samme som de tilladelsesstrenge, der er angivet i udvidelsens manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC3" />. Denne indstilling kan også konfigureres for udvidelsen <ph name="DEFAULT_SCOPE" />. Hvis udvidelsen kræver en tilladelse, der er på blokeringslisten, tillades det ikke, at den indlæses. Hvis den indeholder en blokeret tilladelse som valgfrit krav, håndteres den på normal vis, men anmodning om modstridende tilladelser afvises automatisk på kørselstidspunktet.
-
-          <ph name="ALLOWED_PERMISSIONS" />: Svarer til <ph name="BLOCKED_PERMISSIONS" />, men tillader i stedet udtrykkeligt nogle tilladelser, som kan være blokeret af listen med globalt blokerede tilladelser, og som dermed ikke kan konfigureres for udvidelsen <ph name="DEFAULT_SCOPE" />. Bemærk, at denne indstilling ikke automatisk giver tildelte tilladelser til udvidelser.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Tilknytter en versionsstreng. Formatet for versionsstrengen er det samme som det, der bruges i udvidelsesmanifestfilen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC4" />. En udvidelse med en version, der er ældre end den angivne minimumsversion, deaktiveres. Dette gælder også for udvidelser med tvungen installation.
-
-          Følgende indstillinger kan kun bruges til standardkonfigurationen <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: Hvert element på listen har et matchmønster, der minder om en udvidelse (se <ph name="LINK_TO_MATCH_PATTERNS" />). Brugerne kan nemt installere elementer fra enhver webadresse, der matcher et element på denne liste. Både placeringen af <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen 
-og siden, hvor downloadet er startet fra (dvs. henvisningswebadressen), skal tillades af disse mønstre.
-
-          <ph name="ALLOWED_TYPES" />: Denne indstilling hvidlister de tilladte typer af udvidelser/apps, der kan installeres på <ph name="PRODUCT_NAME" />.  Værdien er en liste over strenge, hvor hver af disse skal være en af følgende: <ph name="VALID_ALLOWED_TYPES" />. Se udvidelsesdokumentationen for <ph name="PRODUCT_NAME" /> for at få flere oplysninger om disse typer.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Hvis en bruger forsøger at installere en udvidelse, som er blokeret af en politik, viser Chrome Webshop en generisk fejlmeddelelse. Med denne indstilling kan du føje tekst til fejlmeddelelsen. Teksten kan bruges til at lede brugerne til dit supportteam, forklare, hvorfor en bestemt udvidelse er blokeret eller andet. Denne fejlmeddelelse forkortes, hvis den er på mere end 1000 tegn.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepterer en liste over hosts, som en udvidelse blokeres fra at interagere med. Dette omfatter indsættelse af javascript, ændring og visning af webRequests/webNavigation samt visning og ændring af cookies. Formatet ligner Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, bortset fra at der ikke må defineres nogen stier, f.eks. "*://*.eksempel.dk". Dette understøtter også gældende TLD-jokertegn, f.eks. "*://eksempel.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepterer en liste over hosts, som en udvidelse kan interagere med, uanset om de er angivet på <ph name="RUNTIME_BLOCKED_HOSTS" /> eller ej. Dette er det samme format som <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">Rapportér tilstanden for enhedens udviklerkontakt ved opstart.
 
       Hvis politikken er angivet til Falsk, rapporteres tilstanden for udviklerkontakten ikke.</translation>

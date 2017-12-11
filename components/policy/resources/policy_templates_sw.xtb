@@ -46,39 +46,6 @@
 
       Thamani ya sera inafaa kubainishwa katika milisekunde.</translation>
 <translation id="1151353063931113432">Ruhusu picha katika tovuti hizi</translation>
-<translation id="1151545095291359187">Huweka mipangilio ya kudhibiti kiendelezi cha <ph name="PRODUCT_NAME" />.
-
-         Sera hii inadhibiti mipangilio mingi, ikiwa ni pamoja na mipangilio inayodhibitiwa na sera zozote zilizopo zinazohusu viendelezi. Sera hii itabatilisha sera zozote zilizopitwa na wakati iwapo zimewekwa.
-
-          Sera hii huweka Kitambulisho cha kiendelezi au URL ya sasisho kwenye mipangilio yake. Ukiwa na Kitambulisho cha kiendelezi, mipangilio itatumika kwenye kiendelezi kilichobainishwa pekee. Mipangilio chaguo-msingi inaweza kuwekwa kwa Kitamblisho maalum cha <ph name="DEFAULT_SCOPE" />, ambacho kitatumika kwenye viendelezi vyote ambavyo havijawekwa mipangilio ya kawaida katika sera hii. Ukiwa na URL ya sasisho, mipangilio itawekwa kwenye viendelezi vyote kwa kutumia URL iliyobainishwa katika faili za maelezo ya kiendelezi hiki, kama ilivyofafanuliwa katika <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Mipangilio ya kila kiendelezi (au viendelezi vyenye URL sawa) ni kamusi nyingine iliyo na sehemu zilizoonyeshwa hapa.
-
-          <ph name="INSTALLATION_MODE" />: huwekwa kwenye mfuatano kuonyesha hali ya kusakinisha kiendelezi. Mifutano sahihi ni:
-          * <ph name="ALLOWED" />: huruhusu kiendelezi kusakinishwa na mtumiaji. Hii ndiyo shughuli chaguo-msingi.
-          * <ph name="BLOCKED" />: huzuia usakinishaji wa kiendelezi.
-          * <ph name="FORCE_INSTALLED" />: kiendelezi husakinishwa kiotomatiki na hakiwezi kuondolewa na mtumiaji.
-          * <ph name="NORMAL_INSTALLED" />: kiendelezi husakinishwa kiotomatiki lakini kinaweza kuzimwa na mtumiaji.
-
-          <ph name="INSTALLATION_MODE" />  inaweza pia kuwekwa kwenye viendelezi vingi, ikiwa ni pamoja na kiendelezi cha <ph name="DEFAULT_SCOPE" /> (kama mipangilio chaguo-msingi) na viendelezi vyenye URL moja ya sasisho. Ni thamani za <ph name="ALLOWED" /> na <ph name="BLOCKED" /> pekee zinazoweza kutumiwa katika hali hii.
-
-          Ikiwa hali imewekwa kuwa <ph name="FORCE_INSTALLED" /> au <ph name="NORMAL_INSTALLED" /> ni lazima mipangilio ya <ph name="UPDATE_URL" /> iwekwe pia. Kumbuka kwamba URL ya sasisho inatumika kwa usakinishaji wa awali pekee; masasisho ya viendelezi vinavyofuata yatatumia URL ya sasisho iliyoonyeshwa katika faili ya maelezo ya kiendelezi. Lazima URL ya sasisho ielekeze kwenye hati ya Faili ya XML ya Maelezo ya Sasisho kama ilivyotajwa hapo juu.
-
-          <ph name="BLOCKED_PERMISSIONS" />: huweka kwenye orodha ya mifuatano inayoonyesha ruhusa za API zilizozuiwa katika kiendelezi. Majina ya ruhusa ni sawa na mifuatano ya ruhusa iliyotajwa katika faili ya maelezo ya kiendelezi kama ilivyoelezwa kwenye <ph name="LINK_TO_EXTENSION_DOC3" />. Mipangilio hii pia inaweza kuwekwa kwenye kiendelezi cha <ph name="DEFAULT_SCOPE" />.  Ikiwa kiendelezi kinahitaji ruhusa iliyo kwenye orodha ambayo haijaidhinishwa, hakitaruhusiwa kupakia. Ikiwa kina ruhusa iliyozuiwa kama hitaji la hiari, kitashughulikiwa kwa njia ya kawaida, lakini ombi la ruhusa zinazokinzana litakataliwa kiotomatiki wakati wa utekelezaji.
-
-          <ph name="ALLOWED_PERMISSIONS" />: sawa na <ph name="BLOCKED_PERMISSIONS" />, lakini badala yake hukubali baadhi ya ruhusa ambazo zinaweza kuzuiwa na orodha ya viendelezi vyote vilivyozuiwa, kwa hivyo haiwezi kuwekwa katika kiendelezi cha <ph name="DEFAULT_SCOPE" />. Kumbuka kwamba mipangilio hii haitoi ruhusa za viendelezi kiotomatiki. 
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: huwekwa kwenye mfuatano wa toleo. Muundo wa mfuatano wa toleo ni sawa na ule unaotumika katika faili ya maelezo ya kiendelezi, kama ilivyoelezwa katika <ph name="LINK_TO_EXTENSION_DOC4" />. Kiendelezi chenye toleo la zamani kuliko toleo lililobainishwa kitazimwa. Hii inatumika vilevile kwenye viendelezi vya kusakinisha kwa lazima.
-
-          Mipangilio ifuatayo inaweza kutumika katika mipangilio chaguo-msingi ya <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />:  Kila kipengee katika orodha hii ni ruwaza inayolingana na mtindo wa kiendelezi (<ph name="LINK_TO_MATCH_PATTERNS" />). Watumiaji wataweza kusakinisha vipengee kwa urahisi kutoka URL yoyote inayolingana na kipengee katika orodha hii. Eneo la faili ya <ph name="EXTENSION_SUFFIX_WILDCARD" /> na ukurasa ambapo kipakuliwa kilianzishwa (yaani kielekezi) lazima vikubaliwe na ruwaza hizi.
-
-          <ph name="ALLOWED_TYPES" />: Mipangilio hii inaidhinisha aina ya kiendelezi au programu zinazoruhusiwa ambazo zinaweza kusakinishwa katika <ph name="PRODUCT_NAME" />. Thamani ni orodha ya mifuatano ambayo kila moja inapaswa kuwa miongoni mwa zifuatazo: <ph name="VALID_ALLOWED_TYPES" />. Angalia viendelezi vya <ph name="PRODUCT_NAME" />  kwa maelezo zaidi kuhusu aina hizi.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Mtumiaji akijaribu kusakinisha kiendelezi lakini kimezuiwa, kulingana na sera ya Duka la Chrome Kwenye Wavuti utaonyeshwa ujumbe wa jumla wa hitilafu. Mipangilio hii hukuruhusu kuweka maandishi kwenye ujumbe wa hitilafu. Hii inaweza kutumika kuwaelekeza watumiaji kwenye huduma yako ya usaidizi, kuwaeleza sababu ya kiendelezi fulani kuzuiwa au jambo lingine. Ujumbe huu wa hitilafu utapunguzwa ikiwa unazidi herufi 1000.
-        <ph name="RUNTIME_BLOCKED_HOSTS" />: Huruhusu orodha ya seva pangishi ambako kiendelezi kitazuiwa kuwasiliana nazo. Hii inajumuisha kuweka javascript, kubadilisha na kuangalia webRequests / webNavigation, kuangalia na kubadilisha vidakuzi. Muundo unakaribiana na Ruwaza Zinazolingana <ph name="LINK_TO_MATCH_PATTERNS" /> ila hakuna njia zinazoweza kufafanuliwa. Kwa mfano, "*://*.example.com". . Hii pia hutumia herufi wakilishi ya TLD kwa mfano. "*://example.*". 
-       <ph name="RUNTIME_ALLOWED_HOSTS" />: Huruhusu orodha ya seva pangishi ambako kiendelezi kinaruhusiwa kuwasiliana nazo bila kujali ikiwa zimeorodheshwa katika <ph name="RUNTIME_BLOCKED_HOSTS" /> au la. Huu ni muundo sawa na <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="1152117524387175066">Ripoti hali ya ubadilishaji wa kifaa cha dev wakati wa kuwasha.
 
       Ikiwa sera hii itawekwa kuwa uongo, hali ya ubadilishaji wa dev haitaripotiwa.</translation>

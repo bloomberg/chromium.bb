@@ -978,6 +978,7 @@
 <translation id="8625384913736129811">Diese Karte für dieses Gerät speichern</translation>
 <translation id="8647750283161643317">Alle auf Standardeinstellung zurücksetzen</translation>
 <translation id="8660471606262461360">Aus Google Payments</translation>
+<translation id="8680536109547170164"><ph name="QUERY" />, Antwort, <ph name="ANSWER" /></translation>
 <translation id="8688672835843460752">Verfügbar</translation>
 <translation id="8703575177326907206">Die Verbindung zu <ph name="DOMAIN" /> ist nicht verschlüsselt.</translation>
 <translation id="8718314106902482036">Zahlung nicht abgeschlossen</translation>
@@ -1000,7 +1001,7 @@
 <translation id="8870413625673593573">Kürzlich geschlossen</translation>
 <translation id="8874824191258364635">Geben Sie eine gültige Kartennummer ein</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
-<translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
+<translation id="8891727572606052622">Ungültiger Proxymodus</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
 <translation id="8931333241327730545">Möchten Sie diese Karte in Ihrem Google-Konto speichern?</translation>
 <translation id="8932102934695377596">Ihre Uhr geht nach.</translation>

@@ -1620,7 +1620,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3564334271939054422">Eventuell müssen Sie die Anmeldeseite des verwendeten WLAN-Netzwerken (<ph name="NETWORK_ID" />) aufrufen.</translation>
 <translation id="3564708465992574908">Zoomstufen</translation>
 <translation id="3566721612727112615">Keine Websites hinzugefügt</translation>
-<translation id="3566866560249787686">Google Assistant konnte nicht geladen werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="3569382839528428029">Soll <ph name="APP_NAME" /> Ihren Bildschirm freigeben?</translation>
 <translation id="3570985609317741174">Webinhalte</translation>
 <translation id="3571734092741541777">Einrichten</translation>
@@ -2835,6 +2834,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5592595402373377407">Noch nicht genügend Daten vorhanden</translation>
 <translation id="5595152862129936745">Sehr weit entfernt</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
+<translation id="5596627076506792578">Weitere Optionen</translation>
 <translation id="5600706100022181951">Der Download des Updates verbraucht <ph name="UPDATE_SIZE_MB" /> MB an mobilen Daten. Möchten Sie fortfahren?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5605623530403479164">Andere Suchmaschinen</translation>
@@ -3260,7 +3260,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6314335155547195432">Passwort erstellen</translation>
 <translation id="6314819609899340042">Sie haben die Debugging-Funktionen auf diesem <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät aktiviert.</translation>
 <translation id="6315343732431721770">Ihre "Beim Start"-Seiten wurden geändert und enthalten nun <ph name="URL" />. Zum Deaktivieren von Erweiterungen, die Ihre "Beim Start"-Seite ändern, klicken Sie auf "Wiederherstellen".</translation>
-<translation id="6315493146179903667">Alle nach vorne bringen</translation>
+<translation id="6315493146179903667">Alle nach vorn bringen</translation>
 <translation id="6316806695097060329">Dieses <ph name="SHORT_PRODUCT_NAME" />-Gerät wurde so konzipiert, dass Sie das Web optimal nutzen und genießen können.</translation>
 <translation id="6317369057005134371">Warten auf Anwendungsfenster...</translation>
 <translation id="6322279351188361895">Privater Schlüssel konnte nicht gelesen werden.</translation>
@@ -4018,7 +4018,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7576690715254076113">Zuordnen</translation>
 <translation id="7579149537961810247">Websites stummschalten</translation>
 <translation id="7580671184200851182">Dieselben Audioinhalte über alle Boxen wiedergeben (Mono-Audio)</translation>
-<translation id="7581273696622423628">An Umfrage teilnehmen</translation>
 <translation id="7581462281756524039">Ein Bereinigungstool</translation>
 <translation id="7582582252461552277">Dieses Netzwerk bevorzugen</translation>
 <translation id="7586312264284919041">Möchten Sie diese Seite übersetzen?</translation>
@@ -4430,7 +4429,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="825483282309623688">Zur Wiederherstellung Ihrer Daten benötigen Sie eine Internetverbindung.</translation>
 <translation id="8256319818471787266">Bello</translation>
 <translation id="8257950718085972371">Zugriff auf die Kamera weiter blockieren</translation>
-<translation id="8259239505248583312">Los geht's!</translation>
+<translation id="8259239505248583312">Los gehts!</translation>
 <translation id="8260126382462817229">Melden Sie sich noch einmal an</translation>
 <translation id="8260864402787962391">Maus</translation>
 <translation id="8261378640211443080">Diese Erweiterung ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
@@ -4902,7 +4901,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9064275926664971810">AutoFill aktivieren, um Webformulare mit nur einem Klick auszufüllen</translation>
 <translation id="9064939804718829769">Übertragung wird durchgeführt...</translation>
 <translation id="9065203028668620118">Bearbeiten</translation>
-<translation id="9066782832737749352">Text-in-Sprache</translation>
+<translation id="9066782832737749352">Sprachausgabe</translation>
 <translation id="9070219033670098627">Person wechseln</translation>
 <translation id="907148966137935206">Anzeige von Pop-ups für keine Website zulassen (empfohlen)</translation>
 <translation id="9072550133391925347">Mit <ph name="PASSWORD_MANAGER_BRAND" /> werden Sie mit Ihren gespeicherten Passwörtern automatisch auf allen entsprechenden Websites und Apps angemeldet.</translation>
