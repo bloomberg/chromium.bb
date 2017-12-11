@@ -333,8 +333,6 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
 
   switch (relation) {
     case CSSSelector::kShadowDeepAsDescendant:
-      DCHECK(
-          !RuntimeEnabledFeatures::DeepCombinatorInCSSDynamicProfileEnabled());
       Deprecation::CountDeprecation(context.element->GetDocument(),
                                     WebFeature::kCSSDeepCombinator);
     // fall through
@@ -416,15 +414,10 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
 
     case CSSSelector::kShadowPseudo: {
       if (!is_ua_rule_ &&
-          context.selector->GetPseudoType() == CSSSelector::kPseudoShadow) {
-        if (mode_ == kQueryingRules) {
-          UseCounter::Count(context.element->GetDocument(),
-                            WebFeature::kPseudoShadowInStaticProfile);
-        } else if (RuntimeEnabledFeatures::
-                       ShadowPseudoElementInCSSDynamicProfileEnabled()) {
-          Deprecation::CountDeprecation(context.element->GetDocument(),
-                                        WebFeature::kCSSSelectorPseudoShadow);
-        }
+          context.selector->GetPseudoType() == CSSSelector::kPseudoShadow &&
+          mode_ == kQueryingRules) {
+        UseCounter::Count(context.element->GetDocument(),
+                          WebFeature::kPseudoShadowInStaticProfile);
       }
       // If we're in the same tree-scope as the scoping element, then following
       // a shadow descendant combinator would escape that and thus the scope.
