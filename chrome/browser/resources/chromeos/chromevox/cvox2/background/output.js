@@ -304,25 +304,13 @@ Output.RULES = {
     },
     cell: {
       enter: {
-        speak: `@cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex,
-            $tableCellRowIndex),
-            $if($ariaCellColumnIndex, $ariaCellColumnIndex,
-            $tableCellColumnIndex)) $node(tableColumnHeader) $state`,
-        braille: `$state @cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex,
-            $tableCellRowIndex),
-            $if($ariaCellColumnIndex, $ariaCellColumnIndex,
-            $tableCellColumnIndex)) $node(tableColumnHeader)`,
+        speak: `$cellIndexText $node(tableColumnHeader) $state`,
+        braille: `$state $cellIndexText $node(tableColumnHeader)`,
       },
-      speak: `$name @cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex,
-          $tableCellRowIndex),
-          $if($ariaCellColumnIndex, $ariaCellColumnIndex,
-          $tableCellColumnIndex)) $node(tableColumnHeader)
+      speak: `$name $cellIndexText $node(tableColumnHeader)
           $state $description`,
       braille: `$state
-          $name @cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex,
-          $tableCellRowIndex),
-          $if($ariaCellColumnIndex, $ariaCellColumnIndex,
-          $tableCellColumnIndex)) $node(tableColumnHeader) $description`
+          $name $cellIndexText $node(tableColumnHeader) $description`
     },
     checkBox: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
@@ -1170,6 +1158,24 @@ Output.prototype = {
           value = String(value + 1);
           options.annotation.push(token);
           this.append_(buff, value, options);
+        } else if (token == 'cellIndexText') {
+          if (node.htmlAttributes['aria-coltext']) {
+            var value = node.htmlAttributes['aria-coltext'];
+            var row = node;
+            while (row && row.role != RoleType.ROW)
+              row = row.parent;
+            if (!row || !row.htmlAttributes['aria-rowtext'])
+              return;
+            value += row.htmlAttributes['aria-rowtext'];
+            this.append_(buff, value, options);
+          } else {
+            this.format_(
+                node, ` @cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex,
+                    $tableCellRowIndex),
+                $if($ariaCellColumnIndex, $ariaCellColumnIndex,
+                     $tableCellColumnIndex))`,
+                buff);
+          }
         } else if (token == 'node') {
           if (!tree.firstChild || !node[tree.firstChild.value])
             return;
