@@ -195,6 +195,11 @@ int DownloadTaskImpl::GetErrorCode() const {
   return error_code_;
 }
 
+int DownloadTaskImpl::GetHttpCode() const {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return http_code_;
+}
+
 int64_t DownloadTaskImpl::GetTotalBytes() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return total_bytes_;
@@ -249,8 +254,13 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
         error_code_ = GetNetErrorCodeFromNSError(error);
         percent_complete_ = GetTaskPercentComplete(task);
         total_bytes_ = task.countOfBytesExpectedToReceive;
-        if (task.response.MIMEType)
+        if (task.response.MIMEType) {
           mime_type_ = base::SysNSStringToUTF8(task.response.MIMEType);
+        }
+        if ([task.response isKindOfClass:[NSHTTPURLResponse class]]) {
+          http_code_ =
+              static_cast<NSHTTPURLResponse*>(task.response).statusCode;
+        }
 
         if (task.state != NSURLSessionTaskStateCompleted) {
           OnDownloadUpdated();

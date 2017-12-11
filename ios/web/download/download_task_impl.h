@@ -61,6 +61,7 @@ class DownloadTaskImpl : public DownloadTask {
   const GURL& GetOriginalUrl() const override;
   bool IsDone() const override;
   int GetErrorCode() const override;
+  int GetHttpCode() const override;
   int64_t GetTotalBytes() const override;
   int GetPercentComplete() const override;
   std::string GetContentDisposition() const override;
@@ -102,6 +103,7 @@ class DownloadTaskImpl : public DownloadTask {
   GURL original_url_;
   bool is_done_ = false;
   int error_code_ = 0;
+  int http_code_ = -1;
   int64_t total_bytes_ = -1;
   int percent_complete_ = -1;
   std::string content_disposition_;

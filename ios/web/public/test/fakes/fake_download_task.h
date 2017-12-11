@@ -27,6 +27,7 @@ class FakeDownloadTask : public DownloadTask {
   const GURL& GetOriginalUrl() const override;
   bool IsDone() const override;
   int GetErrorCode() const override;
+  int GetHttpCode() const override;
   int64_t GetTotalBytes() const override;
   int GetPercentComplete() const override;
   std::string GetContentDisposition() const override;
@@ -38,6 +39,7 @@ class FakeDownloadTask : public DownloadTask {
   // Setters for task properties. Setters invoke OnDownloadUpdated callback.
   void SetDone(bool done);
   void SetErrorCode(int error_code);
+  void SetHttpCode(int http_code);
   void SetTotalBytes(int64_t total_bytes);
   void SetPercentComplete(int percent_complete);
   void SetContentDisposition(const std::string& content_disposition);
@@ -54,6 +56,7 @@ class FakeDownloadTask : public DownloadTask {
   GURL original_url_;
   bool is_done_ = false;
   int error_code_ = 0;
+  int http_code_ = -1;
   std::string content_disposition_;
   int64_t total_bytes_ = -1;
   int percent_complete_ = -1;
