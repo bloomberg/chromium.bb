@@ -60,8 +60,7 @@ void DoGlobalDumpWithoutCallback(
     MemoryDumpManager::RequestGlobalDumpFunction global_dump_fn,
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail) {
-  GlobalMemoryDumpRequestArgs args{dump_type, level_of_detail};
-  global_dump_fn.Run(args);
+  global_dump_fn.Run(dump_type, level_of_detail);
 }
 
 // Proxy class which wraps a ConvertableToTraceFormat owned by the

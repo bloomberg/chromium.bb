@@ -50,7 +50,7 @@ enum HeapProfilingMode {
 class BASE_EXPORT MemoryDumpManager {
  public:
   using RequestGlobalDumpFunction =
-      RepeatingCallback<void(const GlobalMemoryDumpRequestArgs& args)>;
+      RepeatingCallback<void(MemoryDumpType, MemoryDumpLevelOfDetail)>;
 
   static const char* const kTraceCategory;
 
