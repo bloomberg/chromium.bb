@@ -6,10 +6,6 @@
 
 #include <vector>
 
-// Generically-named #defines from Xlib that conflict with symbols in GTest.
-#undef Bool
-#undef None
-
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"

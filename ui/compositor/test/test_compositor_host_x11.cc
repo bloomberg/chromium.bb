@@ -4,8 +4,6 @@
 
 #include "ui/compositor/test/test_compositor_host.h"
 
-#include <X11/Xlib.h>
-
 #include <memory>
 
 #include "base/bind.h"
@@ -17,6 +15,7 @@
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -66,10 +65,9 @@ TestCompositorHostX11::~TestCompositorHostX11() {}
 void TestCompositorHostX11::Show() {
   XDisplay* display = gfx::GetXDisplay();
   XSetWindowAttributes swa;
-  swa.override_redirect = True;
+  swa.override_redirect = x11::True;
   window_ = XCreateWindow(
-      display,
-      RootWindow(display, DefaultScreen(display)),  // parent
+      display, XRootWindow(display, DefaultScreen(display)),  // parent
       bounds_.x(), bounds_.y(), bounds_.width(), bounds_.height(),
       0,               // border width
       CopyFromParent,  // depth

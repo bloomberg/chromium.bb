@@ -4,14 +4,11 @@
 
 #include "ui/gfx/path_x11.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xregion.h>
-#include <X11/Xutil.h>
-
 #include <memory>
 
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/x/x11.h"
 
 namespace gfx {
 
