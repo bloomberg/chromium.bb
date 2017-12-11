@@ -91,10 +91,10 @@ class OffscreenTabsOwner
 // OffscreenTab is instantiated by OffscreenTabsOwner.  An instance is shut down
 // one of three ways:
 //
-//   1. When its WebContents::GetCapturerCount() returns to zero, indicating
-//      there are no more consumers of its captured content (e.g., when all
-//      MediaStreams have been closed).  OffscreenTab will auto-detect this case
-//      and self-destruct.
+//   1. When WebContents::IsBeingCaptured() returns false, indicating there are
+//      no more consumers of its captured content (e.g., when all MediaStreams
+//      have been closed).  OffscreenTab will auto-detect this case and
+//      self-destruct.
 //   2. By the renderer, where the WebContents implementation will invoke the
 //      WebContentsDelegate::CloseContents() override.  This occurs, for
 //      example, when a page calls window.close().

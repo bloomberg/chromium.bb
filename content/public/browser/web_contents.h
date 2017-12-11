@@ -392,7 +392,7 @@ class WebContents : public PageNavigator,
   // returned by GetPreferredSize() until all captures have ended.
   virtual void IncrementCapturerCount(const gfx::Size& capture_size) = 0;
   virtual void DecrementCapturerCount() = 0;
-  virtual int GetCapturerCount() const = 0;
+  virtual bool IsBeingCaptured() const = 0;
 
   // Indicates/Sets whether all audio output from this WebContents is muted.
   virtual bool IsAudioMuted() const = 0;

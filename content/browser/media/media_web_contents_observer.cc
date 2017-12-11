@@ -129,7 +129,7 @@ void MediaWebContentsObserver::WasShown() {
 void MediaWebContentsObserver::WasHidden() {
   // If there are entities capturing screenshots or video (e.g., mirroring),
   // don't release the wake lock.
-  if (!web_contents()->GetCapturerCount()) {
+  if (!web_contents()->IsBeingCaptured()) {
     GetVideoWakeLock()->CancelWakeLock();
     has_video_wake_lock_for_testing_ = false;
   }
