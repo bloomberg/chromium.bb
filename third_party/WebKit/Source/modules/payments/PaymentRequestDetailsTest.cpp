@@ -128,7 +128,7 @@ class PaymentRequestDetailsTest
 TEST_P(PaymentRequestDetailsTest, ValidatesDetails) {
   V8TestingScope scope;
   scope.GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL(NullURL(), "https://www.example.com/")));
+      SecurityOrigin::Create(KURL("https://www.example.com/")));
   scope.GetDocument().SetSecureContextStateForTesting(
       SecureContextState::kSecure);
   PaymentOptions options;

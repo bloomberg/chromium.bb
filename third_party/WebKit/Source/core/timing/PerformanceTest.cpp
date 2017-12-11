@@ -51,14 +51,13 @@ class PerformanceTest : public ::testing::Test {
  protected:
   void SetUp() override {
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-    page_holder_->GetDocument().SetURL(KURL(NullURL(), "https://example.com"));
+    page_holder_->GetDocument().SetURL(KURL("https://example.com"));
     performance_ = Performance::Create(page_holder_->GetDocument().domWindow());
     performance_->time_origin_ = kTimeOrigin;
 
     // Create another dummy page holder and pretend this is the iframe.
     another_page_holder_ = DummyPageHolder::Create(IntSize(400, 300));
-    another_page_holder_->GetDocument().SetURL(
-        KURL(NullURL(), "https://iframed.com/bar"));
+    another_page_holder_->GetDocument().SetURL(KURL("https://iframed.com/bar"));
   }
 
   bool ObservingLongTasks() {

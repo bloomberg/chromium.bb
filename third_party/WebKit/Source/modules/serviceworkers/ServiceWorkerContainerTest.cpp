@@ -367,9 +367,9 @@ TEST_F(ServiceWorkerContainerTest,
                                      options);
 
     EXPECT_EQ(1ul, stub_provider.RegisterCallCount());
-    EXPECT_EQ(WebURL(KURL(NullURL(), "http://localhost/x/y/")),
+    EXPECT_EQ(WebURL(KURL("http://localhost/x/y/")),
               stub_provider.RegisterScope());
-    EXPECT_EQ(WebURL(KURL(NullURL(), "http://localhost/x/y/worker.js")),
+    EXPECT_EQ(WebURL(KURL("http://localhost/x/y/worker.js")),
               stub_provider.RegisterScriptURL());
     EXPECT_EQ(mojom::ServiceWorkerUpdateViaCache::kImports,
               stub_provider.UpdateViaCache());
@@ -390,7 +390,7 @@ TEST_F(ServiceWorkerContainerTest,
     ScriptState::Scope script_scope(GetScriptState());
     container->getRegistration(GetScriptState(), "");
     EXPECT_EQ(1ul, stub_provider.GetRegistrationCallCount());
-    EXPECT_EQ(WebURL(KURL(NullURL(), "http://localhost/x/index.html")),
+    EXPECT_EQ(WebURL(KURL("http://localhost/x/index.html")),
               stub_provider.GetRegistrationURL());
     EXPECT_EQ(mojom::ServiceWorkerUpdateViaCache::kImports,
               stub_provider.UpdateViaCache());

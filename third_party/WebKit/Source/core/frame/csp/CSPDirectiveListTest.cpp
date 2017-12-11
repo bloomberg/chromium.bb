@@ -161,7 +161,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceNoNonce) {
   for (const auto& test : cases) {
     SCOPED_TRACE(::testing::Message()
                  << "List: `" << test.list << "`, URL: `" << test.url << "`");
-    KURL script_src = KURL(NullURL(), test.url);
+    const KURL script_src(test.url);
 
     // Report-only
     Member<CSPDirectiveList> directive_list =
@@ -217,7 +217,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
   for (const auto& test : cases) {
     SCOPED_TRACE(::testing::Message()
                  << "List: `" << test.list << "`, URL: `" << test.url << "`");
-    KURL resource = KURL(NullURL(), test.url);
+    const KURL resource(test.url);
 
     // Report-only 'script-src'
     Member<CSPDirectiveList> directive_list =
@@ -355,7 +355,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
     SCOPED_TRACE(::testing::Message()
                  << "List: `" << test.list << "`, URL: `" << test.url
                  << "`, Integrity: `" << test.integrity << "`");
-    KURL resource = KURL(NullURL(), test.url);
+    const KURL resource(test.url);
 
     IntegrityMetadataSet integrity_metadata;
     ASSERT_EQ(SubresourceIntegrity::kIntegrityParseValidResult,
@@ -487,7 +487,7 @@ TEST_F(CSPDirectiveListTest, allowRequestWithoutIntegrity) {
   };
 
   for (const auto& test : cases) {
-    KURL resource = KURL(NullURL(), test.url);
+    const KURL resource(test.url);
     // Report-only
     Member<CSPDirectiveList> directive_list =
         CreateList(test.list, kContentSecurityPolicyHeaderTypeReport);
@@ -542,7 +542,7 @@ TEST_F(CSPDirectiveListTest, WorkerSrc) {
 
   for (const auto& test : cases) {
     SCOPED_TRACE(test.list);
-    KURL resource = KURL(NullURL(), "https://example.test/worker.js");
+    const KURL resource("https://example.test/worker.js");
     Member<CSPDirectiveList> directive_list =
         CreateList(test.list, kContentSecurityPolicyHeaderTypeEnforce);
     EXPECT_EQ(test.allowed,
@@ -587,7 +587,7 @@ TEST_F(CSPDirectiveListTest, WorkerSrcChildSrcFallback) {
 
   for (const auto& test : cases) {
     SCOPED_TRACE(test.list);
-    KURL resource = KURL(NullURL(), "https://example.test/worker.js");
+    const KURL resource("https://example.test/worker.js");
     Member<CSPDirectiveList> directive_list =
         CreateList(test.list, kContentSecurityPolicyHeaderTypeEnforce);
     EXPECT_EQ(test.allowed,

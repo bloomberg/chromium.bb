@@ -207,7 +207,7 @@ payments::mojom::blink::PaymentResponsePtr BuildPaymentResponseForTest() {
 
 void MakePaymentRequestOriginSecure(Document& document) {
   document.SetSecurityOrigin(
-      SecurityOrigin::Create(KURL(NullURL(), "https://www.example.com/")));
+      SecurityOrigin::Create(KURL("https://www.example.com/")));
   document.SetSecureContextStateForTesting(SecureContextState::kSecure);
 }
 
