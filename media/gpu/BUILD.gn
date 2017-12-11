@@ -369,7 +369,7 @@ component("gpu") {
       "windows/init_guid.cc",
     ]
     configs += [
-      # TODO(crbug.com/167187): Fix size_t to int truncations.
+      # TODO(https://crbug.com/167187): Fix size_t to int truncations.
       "//build/config/compiler:no_size_t_to_int_warning",
       "//third_party/khronos:khronos_headers",
     ]
@@ -462,7 +462,7 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
     }
 
     if (is_win) {
-      # TODO(crbug.com/167187): Fix size_t to int truncations.
+      # TODO(https://crbug.com/167187): Fix size_t to int truncations.
       configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
       deps += [
         "//third_party/angle:libEGL",

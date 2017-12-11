@@ -2361,7 +2361,8 @@ TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
 }
 
 #if defined(OS_CHROMEOS)
-// TODO(kcwu): add back test of verify_output=true after crbug.com/694131 fixed.
+// TODO(kcwu): add back test of verify_output=true after
+// https://crbug.com/694131 fixed.
 INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
@@ -2398,7 +2399,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         std::make_tuple(1, false, 0, true, false, true, false, false, false)));
 
-// TODO(kcwu): add back bitrate test after crbug.com/693336 fixed.
+// TODO(kcwu): add back bitrate test after https://crbug.com/693336 fixed.
 INSTANTIATE_TEST_CASE_P(
     DISABLED_MidStreamParamSwitchFPS,
     VideoEncodeAcceleratorTest,

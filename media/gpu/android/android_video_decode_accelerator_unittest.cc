@@ -238,7 +238,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
 
   EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecSync(_, _));
   // AVDA must set client callbacks even in sync mode, so that the chooser is
-  // in a sane state.  crbug.com/772899 .
+  // in a sane state.  https://crbug.com/772899 .
   EXPECT_CALL(*chooser_, MockSetClientCallbacks());
   ASSERT_TRUE(InitializeAVDA());
   testing::Mock::VerifyAndClearExpectations(chooser_);

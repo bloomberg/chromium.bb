@@ -814,10 +814,10 @@ void VaapiVideoEncodeAccelerator::UpdateSPS() {
   // Spec A.2 and A.3.
   switch (profile_) {
     case H264PROFILE_BASELINE:
-      // Due to crbug.com/345569, we don't distinguish between constrained
-      // and non-constrained baseline profiles. Since many codecs can't do
-      // non-constrained, and constrained is usually what we mean (and it's a
-      // subset of non-constrained), default to it.
+      // Due to https://crbug.com/345569, we don't distinguish between
+      // constrained and non-constrained baseline profiles. Since many codecs
+      // can't do non-constrained, and constrained is usually what we mean (and
+      // it's a subset of non-constrained), default to it.
       current_sps_.profile_idc = H264SPS::kProfileIDCBaseline;
       current_sps_.constraint_set0_flag = true;
       break;

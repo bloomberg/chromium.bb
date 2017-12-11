@@ -249,7 +249,7 @@ void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
   }
 
   // We should stop |encoder_worker_thread_| before releasing |encoder_|, see
-  // crbug.com/715759.
+  // https://crbug.com/715759.
   if (encoder_worker_thread_.IsRunning()) {
     encoder_worker_task_runner_->PostTask(
         FROM_HERE,

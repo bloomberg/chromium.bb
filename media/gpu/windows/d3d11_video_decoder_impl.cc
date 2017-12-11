@@ -132,7 +132,7 @@ void D3D11VideoDecoderImpl::Initialize(const VideoDecoderConfig& config,
       return;
     }
     // TODO(liberato): what happens if we don't break on any iteration?
-    // crbug.com/775577 .
+    // https://crbug.com/775577 .
     if (dec_config.ConfigBitstreamRaw == 2)
       break;
   }

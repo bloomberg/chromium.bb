@@ -16,7 +16,7 @@ namespace {
 
 // TODO(emircan): Check if we can find the actual system capabilities via
 // creating VTCompressionSessions with varying requirements.
-// See crbug.com/584784.
+// See https://crbug.com/584784.
 const size_t kBitsPerByte = 8;
 const size_t kDefaultResolutionWidth = 640;
 const size_t kDefaultResolutionHeight = 480;
@@ -535,7 +535,7 @@ bool VTVideoEncodeAccelerator::ConfigureCompressionSession() {
   rv &= session_property_setter.Set(kVTCompressionPropertyKey_RealTime, true);
   rv &= session_property_setter.Set(
       kVTCompressionPropertyKey_AllowFrameReordering, false);
-  // Limit keyframe output to 4 minutes, see crbug.com/658429.
+  // Limit keyframe output to 4 minutes, see https://crbug.com/658429.
   rv &= session_property_setter.Set(
       kVTCompressionPropertyKey_MaxKeyFrameInterval, 7200);
   rv &= session_property_setter.Set(

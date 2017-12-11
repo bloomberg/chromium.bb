@@ -460,7 +460,8 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
             return;
           }
 
-          // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691
+          // TODO(dshwang): after moving to D3D11, remove this.
+          // https://crbug.com/438691
           GLenum format =
               video_decode_accelerator_.get()->GetSurfaceInternalFormat();
           if (format != GL_RGBA) {
