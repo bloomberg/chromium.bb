@@ -114,6 +114,9 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
         ->GetTaskRunner(TaskType::kPostedMessage)
         ->PostTask(BLINK_FROM_HERE, std::move(task));
   } else {
+    // GetWorkerThread() returns nullptr while the worker thread is being
+    // created. In that case, push events into the queue and dispatch them in
+    // WorkerThreadCreated().
     queued_early_tasks_.push_back(
         QueuedTask{std::move(message), std::move(channels), stack_id});
   }
@@ -166,16 +169,24 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   if (!worker_object_)
     return;
 
-  // We don't bother checking the askedToTerminate() flag here, because
-  // exceptions should *always* be reported even if the thread is terminated.
-  // This is intentionally different than the behavior in MessageWorkerTask,
-  // because terminated workers no longer deliver messages (section 4.6 of the
-  // WebWorker spec), but they do report exceptions.
-
+  // We don't bother checking the AskedToTerminate() flag for dispatching the
+  // event on the owner context, because exceptions should *always* be reported
+  // even if the thread is terminated as the spec says:
+  //
+  // "Thus, error reports propagate up to the chain of dedicated workers up to
+  // the original Document, even if some of the workers along this chain have
+  // been terminated and garbage collected."
+  // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
   ErrorEvent* event =
       ErrorEvent::Create(error_message, location->Clone(), nullptr);
   if (worker_object_->DispatchEvent(event) != DispatchEventResult::kNotCanceled)
     return;
+
+  // The worker thread can already be terminated.
+  if (!GetWorkerThread()) {
+    DCHECK(AskedToTerminate());
+    return;
+  }
 
   // The HTML spec requires to queue an error event using the DOM manipulation
   // task source.
