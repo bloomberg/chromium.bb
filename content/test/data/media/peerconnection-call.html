@@ -1,5 +1,6 @@
 <html>
 <head>
+  <script type="text/javascript" src="webrtc_codec_utils.js"></script>
   <script type="text/javascript" src="webrtc_test_utilities.js"></script>
   <script type="text/javascript" src="webrtc_test_common.js"></script>
   <script type="text/javascript">
@@ -709,6 +710,19 @@
         reportTestSuccess();
       });
     });
+  }
+
+  function CanSetupH264VideoCallOnSupportedDevice() {
+    createConnections(null);
+    setOfferSdpTransform(maybePreferH264SendCodec);
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+        .then(addStreamToBothConnectionsAndNegotiate)
+        .catch(failTest);
+
+    Promise.all([
+      detectVideoPlaying('remote-view-1'),
+      detectVideoPlaying('remote-view-1')
+    ]).then(reportTestSuccess);
   }
 
   </script>
