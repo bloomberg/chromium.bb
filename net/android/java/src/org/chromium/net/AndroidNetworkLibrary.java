@@ -25,6 +25,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 
@@ -260,21 +261,48 @@ class AndroidNetworkLibrary {
         return "";
     }
 
+    public static class NetworkSecurityPolicyProxy {
+        private static NetworkSecurityPolicyProxy sInstance = new NetworkSecurityPolicyProxy();
+
+        public static NetworkSecurityPolicyProxy getInstance() {
+            return sInstance;
+        }
+
+        @VisibleForTesting
+        public static void setInstanceForTesting(
+                NetworkSecurityPolicyProxy networkSecurityPolicyProxy) {
+            sInstance = networkSecurityPolicyProxy;
+        }
+
+        @TargetApi(Build.VERSION_CODES.N)
+        public boolean isCleartextTrafficPermitted(String host) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                // No per-host configuration before N.
+                return isCleartextTrafficPermitted();
+            }
+            return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted(host);
+        }
+
+        @TargetApi(Build.VERSION_CODES.M)
+        public boolean isCleartextTrafficPermitted() {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                // Always true before M.
+                return true;
+            }
+            return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+        }
+    }
+
     /**
-     * Returns true if cleartext traffic to |host| is allowed by the current app. Always true on L
-     * and older.
+     * Returns true if cleartext traffic to |host| is allowed by the current app.
      */
-    @TargetApi(Build.VERSION_CODES.N)
     @CalledByNative
     private static boolean isCleartextPermitted(String host) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            NetworkSecurityPolicy policy = NetworkSecurityPolicy.getInstance();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                return policy.isCleartextTrafficPermitted(host);
-            }
-            return policy.isCleartextTrafficPermitted();
+        try {
+            return NetworkSecurityPolicyProxy.getInstance().isCleartextTrafficPermitted(host);
+        } catch (IllegalArgumentException e) {
+            return NetworkSecurityPolicyProxy.getInstance().isCleartextTrafficPermitted();
         }
-        return true;
     }
 
     @TargetApi(Build.VERSION_CODES.M)

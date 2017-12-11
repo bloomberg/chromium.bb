@@ -46,7 +46,6 @@
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "jni/AndroidNetworkLibraryTestUtil_jni.h"
 #endif
@@ -1462,19 +1461,30 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, BrotliAdvertisement) {
 TEST_F(URLRequestHttpJobTest, AndroidCleartextPermittedTest) {
   context_.set_check_cleartext_permitted(true);
 
-  struct TestCase {
+  static constexpr struct TestCase {
     const char* url;
     bool cleartext_permitted;
     bool should_block;
-  } cases[] = {
-      {"http://blocked.test/", true, false},
-      {"https://blocked.test/", true, false},
-      {"http://blocked.test/", false, true},
-      {"https://blocked.test/", false, false},
+    int expected_per_host_call_count;
+    int expected_default_call_count;
+  } kTestCases[] = {
+      {"http://unblocked.test/", true, false, 1, 0},
+      {"https://unblocked.test/", true, false, 0, 0},
+      {"http://blocked.test/", false, true, 1, 0},
+      {"https://blocked.test/", false, false, 0, 0},
+      // If determining the per-host cleartext policy causes an
+      // IllegalArgumentException (because the hostname is invalid),
+      // the default configuration should be applied, and the
+      // exception should not cause a JNI error.
+      {"http://./", false, true, 1, 1},
+      {"http://./", true, false, 1, 1},
+      // Even if the host name would be considered invalid, https
+      // schemes should not trigger cleartext policy checks.
+      {"https://./", false, false, 0, 0},
   };
 
-  for (const TestCase& test : cases) {
-    JNIEnv* env = base::android::AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  for (const TestCase& test : kTestCases) {
     Java_AndroidNetworkLibraryTestUtil_setUpSecurityPolicyForTesting(
         env, test.cleartext_permitted);
 
@@ -1485,16 +1495,19 @@ TEST_F(URLRequestHttpJobTest, AndroidCleartextPermittedTest) {
     request->Start();
     base::RunLoop().Run();
 
-    int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
-    bool expect_blocked = (sdk_int >= base::android::SDK_VERSION_MARSHMALLOW &&
-                           test.should_block);
-    if (expect_blocked) {
+    if (test.should_block) {
       EXPECT_THAT(delegate.request_status(),
                   IsError(ERR_CLEARTEXT_NOT_PERMITTED));
     } else {
       // Should fail since there's no test server running
       EXPECT_THAT(delegate.request_status(), IsError(ERR_FAILED));
     }
+    EXPECT_EQ(
+        Java_AndroidNetworkLibraryTestUtil_getPerHostCleartextCheckCount(env),
+        test.expected_per_host_call_count);
+    EXPECT_EQ(
+        Java_AndroidNetworkLibraryTestUtil_getDefaultCleartextCheckCount(env),
+        test.expected_default_call_count);
   }
 }
 #endif
