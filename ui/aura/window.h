@@ -253,6 +253,15 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                                   const Window* target,
                                   gfx::Rect* rect);
 
+  // Convert the native |point| in pixels to the target's host's coordiantes if
+  // source and target have different hosts.
+  static void ConvertNativePointToTargetHost(const Window* source,
+                                             const Window* target,
+                                             gfx::PointF* point);
+  static void ConvertNativePointToTargetHost(const Window* source,
+                                             const Window* target,
+                                             gfx::Point* point);
+
   // Moves the cursor to the specified location relative to the window.
   void MoveCursorTo(const gfx::Point& point_in_window);
 

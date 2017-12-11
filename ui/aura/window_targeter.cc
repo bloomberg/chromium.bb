@@ -166,6 +166,25 @@ Window* WindowTargeter::FindTargetForLocatedEvent(Window* window,
     Window* target = FindTargetInRootWindow(window, *event);
     if (target) {
       window->ConvertEventToTarget(target, event);
+
+#if defined(OS_CHROMEOS)
+      if (window->IsRootWindow() && event->HasNativeEvent()) {
+        // If window is root, and the target is in a different host, we need to
+        // convert the native event to the target's host as well. This happens
+        // while a widget is being dragged and when the majority of its bounds
+        // reside in a different display. Setting the widget's bounds at this
+        // point changes the window's root, and the event's target's root, but
+        // the events are still being generated relative to the original
+        // display. crbug.com/714578.
+        ui::LocatedEvent* e =
+            static_cast<ui::LocatedEvent*>(event->native_event());
+        gfx::PointF native_point = e->location_f();
+        aura::Window::ConvertNativePointToTargetHost(window, target,
+                                                     &native_point);
+        e->set_location_f(native_point);
+      }
+#endif
+
       return target;
     }
   }
