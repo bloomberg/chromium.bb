@@ -22,7 +22,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -822,8 +822,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   ASSERT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT));
 
-  NotificationDisplayService* display_service =
-      NotificationDisplayService::GetForProfile(browser()->profile());
+  NotificationDisplayServiceImpl* display_service =
+      NotificationDisplayServiceImpl::GetForProfile(browser()->profile());
   NotificationHandler* handler = display_service->GetNotificationHandler(
       NotificationHandler::Type::WEB_PERSISTENT);
   ASSERT_TRUE(handler);

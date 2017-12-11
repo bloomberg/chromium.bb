@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "ui/message_center/notification.h"
 
 namespace content {
@@ -25,7 +25,7 @@ class Profile;
 // Implementation of the NotificationDisplayService interface that can be used
 // for testing purposes. Supports additional methods enabling instrumenting the
 // faked underlying notification system.
-class StubNotificationDisplayService : public NotificationDisplayService {
+class StubNotificationDisplayService : public NotificationDisplayServiceImpl {
  public:
   // Factory function to be used with NotificationDisplayServiceFactory's
   // SetTestingFactory method, overriding the default display service.

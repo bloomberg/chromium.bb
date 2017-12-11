@@ -12,30 +12,36 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class NotificationHandler;
 class Profile;
 
 namespace message_center {
 class Notification;
 }
 
-// Profile-bound service that enables notifications to be displayed and
-// interacted with on the user's screen, orthogonal of whether this
-// functionality is provided by the browser or by the operating system. An
-// instance can be retrieved through the NotificationDisplayServiceFactory.
-//
-// TODO(peter): Add a NotificationHandler mechanism for registering listeners.
+// Profile-bound service that enables user-visible notifications to be displayed
+// and managed. Notifications may either be presented using a notification
+// center provided by the platform, or by Chrome's Message Center.
 class NotificationDisplayService : public KeyedService {
  public:
+  ~NotificationDisplayService() override;
+
+  // Callback to be used with the GetDisplayed() method. Includes the set of
+  // notification ids that is being displayed to the user. The
+  // |supports_synchronization| callback indicates whether the platform has the
+  // ability to query which notifications are still being displayed.
+  //
+  // TODO(peter): Rename |supports_synchronization| to |supported|.
+  // TODO(peter): Change this to be a base::OnceCallback, remove use of the
+  //              std::unique_ptr<> in favor of move semantics.
   using DisplayedNotificationsCallback =
       base::Callback<void(std::unique_ptr<std::set<std::string>>,
                           bool /* supports_synchronization */)>;
 
+  // Returns an instance of the display service for the given |profile|.
   static NotificationDisplayService* GetForProfile(Profile* profile);
 
   // Returns the NDS for system notifications which aren't tied to a particular
@@ -43,53 +49,26 @@ class NotificationDisplayService : public KeyedService {
   // elsewhere as needed.
   static NotificationDisplayService* GetForSystemNotifications();
 
-  explicit NotificationDisplayService(Profile* profile);
-  ~NotificationDisplayService() override;
-
-  // Displays the |notification| identified by |notification_id|.
+  // Displays the |notification| of type |notification_type|. The |metadata|
+  // may be provided for certain notification types that require additional
+  // information for the notification to be displayed.
   virtual void Display(
       NotificationHandler::Type notification_type,
       const message_center::Notification& notification,
       std::unique_ptr<NotificationCommon::Metadata> metadata = nullptr) = 0;
 
-  // Closes the notification identified by |notification_id|.
+  // Closes the notification having |notification_id| of |notification_type|.
   virtual void Close(NotificationHandler::Type notification_type,
                      const std::string& notification_id) = 0;
 
-  // Writes the ids of all currently displaying notifications and
-  // invokes |callback| with the result once known.
+  // Gets the IDs of currently displaying notifications and invokes |callback|
+  // once available. Not all backends support retrieving this information.
   virtual void GetDisplayed(const DisplayedNotificationsCallback& callback) = 0;
 
-  // Used to propagate back events originate from the user (click, close...).
-  // The events are received and dispatched to the right consumer depending on
-  // the type of notification. Consumers include, service workers, pages,
-  // extensions...
-  void ProcessNotificationOperation(NotificationCommon::Operation operation,
-                                    NotificationHandler::Type notification_type,
-                                    const GURL& origin,
-                                    const std::string& notification_id,
-                                    const base::Optional<int>& action_index,
-                                    const base::Optional<base::string16>& reply,
-                                    const base::Optional<bool>& by_user);
-
-  // Returns the notification handler that was registered for the given type.
-  // May return null.
-  NotificationHandler* GetNotificationHandler(
-      NotificationHandler::Type notification_type);
-
-  // Registers an implementation object to handle notification operations
-  // for |notification_type|.
-  void AddNotificationHandler(NotificationHandler::Type notification_type,
-                              std::unique_ptr<NotificationHandler> handler);
-
-  // Removes an implementation object added via AddNotificationHandler.
-  void RemoveNotificationHandler(NotificationHandler::Type notification_type);
+ protected:
+  NotificationDisplayService() = default;
 
  private:
-  std::map<NotificationHandler::Type, std::unique_ptr<NotificationHandler>>
-      notification_handlers_;
-  Profile* profile_;
-
   DISALLOW_COPY_AND_ASSIGN(NotificationDisplayService);
 };
 
