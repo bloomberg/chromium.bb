@@ -93,7 +93,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
 
   void InsertText(const String& text, bool select_inserted_text, EditingState*);
   void InsertTextRunWithoutNewlines(const String& text,
-                                    bool select_inserted_text,
                                     EditingState*);
   void InsertLineBreak(EditingState*);
   void InsertParagraphSeparatorInQuotedContent(EditingState*);
