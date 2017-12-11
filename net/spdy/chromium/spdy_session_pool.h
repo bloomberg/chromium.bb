@@ -111,6 +111,10 @@ class NET_EXPORT SpdySessionPool
   void RemoveUnavailableSession(
       const base::WeakPtr<SpdySession>& unavailable_session);
 
+  // Note that the next three methods close sessions, potentially notifing
+  // delegates of error or synchronously invoking callbacks, which might trigger
+  // retries, thus opening new sessions.
+
   // Close only the currently existing SpdySessions with |error|.
   // Let any new ones created while this method is running continue to
   // live.
@@ -121,8 +125,9 @@ class NET_EXPORT SpdySessionPool
   // live.
   void CloseCurrentIdleSessions();
 
-  // Close all SpdySessions, including any new ones created in the process of
-  // closing the current ones.
+  // Repeatedly close all SpdySessions until all of them (including new ones
+  // created in the process of closing the current ones, and new ones created in
+  // the process of closing those new ones, etc.) are unavailable.
   void CloseAllSessions();
 
   // Creates a Value summary of the state of the spdy session pool.
