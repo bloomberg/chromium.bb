@@ -223,7 +223,7 @@ StyleSelfAlignmentData ResolvedSelfAlignment(
     ItemPosition normal_value_behavior) {
   if (value.GetPosition() == kItemPositionNormal ||
       value.GetPosition() == kItemPositionAuto)
-    return {normal_value_behavior, kOverflowAlignmentDefault};
+    return {normal_value_behavior, OverflowAlignment::kDefault};
   return value;
 }
 

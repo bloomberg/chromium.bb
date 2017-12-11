@@ -204,11 +204,7 @@ enum ItemPosition {
   kItemPositionRight
 };
 
-enum OverflowAlignment {
-  kOverflowAlignmentDefault,
-  kOverflowAlignmentUnsafe,
-  kOverflowAlignmentSafe
-};
+enum class OverflowAlignment : unsigned { kDefault, kUnsafe, kSafe };
 
 enum ItemPositionType { kNonLegacyPosition, kLegacyPosition };
 

@@ -37,11 +37,11 @@ class ComputedStyleInitialValues{
   static StyleContentAlignmentData InitialContentAlignment() {
     return StyleContentAlignmentData(ContentPosition::kNormal,
                                      ContentDistributionType::kDefault,
-                                     kOverflowAlignmentDefault);
+                                     OverflowAlignment::kDefault);
   }
   static StyleSelfAlignmentData InitialDefaultAlignment() {
     return StyleSelfAlignmentData(kItemPositionNormal,
-                                  kOverflowAlignmentDefault);
+                                  OverflowAlignment::kDefault);
   }
   static StyleImage* InitialBorderImageSource() { return nullptr; }
   static float InitialBorderWidth() { return 3; }
