@@ -496,90 +496,36 @@
   "Android Cronet Builder Asan": {
     "gtest_tests": [
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cronet_sample_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "cronet_sample_test_apk"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cronet_smoketests_missing_native_library_instrumentation_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "cronet_smoketests_missing_native_library_instrumentation_apk"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cronet_smoketests_platform_only_instrumentation_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "cronet_smoketests_platform_only_instrumentation_apk"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cronet_test_instrumentation_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "cronet_test_instrumentation_apk"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cronet_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "cronet_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "net_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -845,30 +791,12 @@
   "Android Tests (trial)(dbg)": {
     "gtest_tests": [
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "blink_heap_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "blink_heap_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "blink_platform_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -903,326 +831,164 @@
   "Jelly Bean Tester": {
     "gtest_tests": [
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "android_webview_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "android_webview_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "base_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "base_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "breakpad_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "breakpad_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "capture_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "capture_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cc_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "cc_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "components_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "components_browsertests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "components_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "components_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "content_browsertests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "content_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "device_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "device_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "events_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "events_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gfx_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gfx_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gl_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gl_tests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gl_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gl_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gpu_ipc_service_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gpu_ipc_service_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gpu_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gpu_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ipc_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "ipc_tests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "latency_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "latency_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "media_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "media_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "net_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "net_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "sandbox_linux_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "sandbox_linux_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "sql_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "sql_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "storage_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "storage_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_android_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "ui_android_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_base_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "ui_base_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_touch_selection_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "ui_touch_selection_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "unit_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "unit_tests"
       }
@@ -1242,326 +1008,164 @@
   "Lollipop Consumer Tester": {
     "gtest_tests": [
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "android_webview_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "android_webview_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "base_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "base_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "breakpad_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "breakpad_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "capture_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "capture_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cc_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "cc_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "components_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "components_browsertests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "components_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "components_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "content_browsertests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "content_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "device_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "device_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "events_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "events_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gfx_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gfx_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gl_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gl_tests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gl_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gl_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gpu_ipc_service_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gpu_ipc_service_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gpu_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "gpu_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ipc_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "ipc_tests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "latency_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "latency_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "media_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "media_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "net_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "net_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "sandbox_linux_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "sandbox_linux_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "sql_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "sql_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "storage_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "storage_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_android_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "ui_android_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_base_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "ui_base_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_touch_selection_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "ui_touch_selection_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "unit_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        "swarming": {
+          "can_use_on_swarming_builders": false
         },
         "test": "unit_tests"
       }
@@ -3621,6 +3225,16 @@
               "device_type": "marlin"
             }
           ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
           "shards": 5
         },
         "test": "chrome_public_test_apk"
@@ -3670,105 +3284,42 @@
   "Unswarmed N5 Tests Dummy Builder": {
     "gtest_tests": [
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "android_webview_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "android_webview_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "base_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "base_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "breakpad_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "breakpad_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "capture_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "capture_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cc_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "cc_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "components_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "components_browsertests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "components_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -3779,135 +3330,54 @@
           "--shard-timeout",
           "600"
         ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "content_browsertests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "content_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "device_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "device_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "events_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "events_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gfx_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "gfx_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gl_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "gl_tests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gl_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "gl_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gpu_ipc_service_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "gpu_ipc_service_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gpu_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -3918,150 +3388,60 @@
           "--shard-timeout",
           "600"
         ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ipc_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "ipc_tests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "media_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "media_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "net_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "net_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "sandbox_linux_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "sandbox_linux_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "sql_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "sql_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "storage_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "storage_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_android_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "ui_android_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_base_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "ui_base_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_touch_selection_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "ui_touch_selection_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "unit_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -4092,105 +3472,42 @@
   "Unswarmed N5X Tests Dummy Builder": {
     "gtest_tests": [
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "android_webview_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "android_webview_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "base_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "base_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "breakpad_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "breakpad_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "capture_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "capture_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "cc_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "cc_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "components_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "components_browsertests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "components_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -4201,135 +3518,54 @@
           "--shard-timeout",
           "600"
         ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "content_browsertests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "content_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "device_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "device_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "events_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "events_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gfx_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "gfx_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gl_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "gl_tests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gl_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "gl_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gpu_ipc_service_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "gpu_ipc_service_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "gpu_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -4340,150 +3576,60 @@
           "--shard-timeout",
           "600"
         ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ipc_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "ipc_tests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "media_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "media_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "net_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "net_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "sandbox_linux_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "sandbox_linux_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "sql_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "sql_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "storage_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "storage_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_android_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "ui_android_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_base_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "ui_base_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "ui_touch_selection_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "ui_touch_selection_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "unit_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -6184,8 +5330,7 @@
               "device_type": "gce_x86"
             }
           ],
-          "hard_timeout": 960,
-          "shards": 1
+          "hard_timeout": 960
         }
       }
     ]
