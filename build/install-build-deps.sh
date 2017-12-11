@@ -448,10 +448,12 @@ nacl_list="\
   ${naclports_list}
 "
 
-if package_exists libssl1.0.0; then
-  nacl_list="${nacl_list} libssl1.0.0:i386"
-else
+if package_exists libssl1.1; then
+  nacl_list="${nacl_list} libssl1.1:i386"
+elif package_exists libssl1.0.2; then
   nacl_list="${nacl_list} libssl1.0.2:i386"
+else
+  nacl_list="${nacl_list} libssl1.0.0:i386"
 fi
 
 # Find the proper version of packages that depend on mesa. Only one -lts variant
@@ -479,10 +481,10 @@ dev_list="${dev_list} libgbm-dev${mesa_variant}
 nacl_list="${nacl_list} libgl1-mesa-glx${mesa_variant}:i386"
 
 # Some package names have changed over time
-if package_exists libpng12-0; then
-  lib_list="${lib_list} libpng12-0"
-else
+if package_exists libpng16-16; then
   lib_list="${lib_list} libpng16-16"
+else
+  lib_list="${lib_list} libpng12-0"
 fi
 if package_exists libnspr4-dbg; then
   dbg_list="${dbg_list} libnspr4-dbg libnss3-dbg"
@@ -508,10 +510,10 @@ if package_exists libbrlapi0.6; then
 else
   dev_list="${dev_list} libbrlapi0.5"
 fi
-if package_exists apache2-bin; then
-  dev_list="${dev_list} apache2-bin"
-else
+if package_exists apache2.2-bin; then
   dev_list="${dev_list} apache2.2-bin"
+else
+  dev_list="${dev_list} apache2-bin"
 fi
 if package_exists xfonts-mathml; then
   dev_list="${dev_list} xfonts-mathml"
