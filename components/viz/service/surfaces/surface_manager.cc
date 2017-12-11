@@ -123,7 +123,7 @@ Surface* SurfaceManager::CreateSurface(
 
   DCHECK(IsMarkedForDestruction(surface_info.id()));
   surfaces_to_destroy_.erase(surface_info.id());
-  surface->ResetSeenFirstFrameActivation();
+  surface->Reset(surface_client);
   return surface;
 }
 

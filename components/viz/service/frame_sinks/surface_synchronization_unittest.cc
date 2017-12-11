@@ -111,6 +111,12 @@ class SurfaceSynchronizationTest : public testing::Test {
     return child_support2().GetCurrentSurfaceForTesting();
   }
 
+  void CreateFrameSink(const FrameSinkId& frame_sink_id, bool is_root) {
+    supports_[frame_sink_id] = CompositorFrameSinkSupport::Create(
+        &support_client_, &frame_sink_manager_, frame_sink_id, is_root,
+        kNeedsSyncPoints);
+  }
+
   void DestroyFrameSink(const FrameSinkId& frame_sink_id) {
     auto it = supports_.find(frame_sink_id);
     if (it == supports_.end())
@@ -1029,6 +1035,50 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
   EXPECT_EQ(child_id, surface_observer().last_created_surface_id());
 }
 
+// Verifies that if a surface is marked destroyed and a new frame arrives after
+// a CompositorFrameSink is destroyed and recreated then it will be recovered.
+TEST_F(SurfaceSynchronizationTest, SurfaceResurrectionAfterDestruction) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
+
+  // Create the child surface by submitting a frame to it.
+  EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
+  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that the child surface is created.
+  Surface* surface = GetSurfaceForId(child_id);
+  EXPECT_NE(nullptr, surface);
+
+  // Add a reference from the parent to the child.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id}, {child_id},
+                          std::vector<TransferableResource>()));
+
+  // Attempt to destroy the child surface. The surface must still exist since
+  // the parent needs it but it will be marked as destroyed.
+  child_support1().EvictCurrentSurface();
+  surface = GetSurfaceForId(child_id);
+  EXPECT_NE(nullptr, surface);
+  EXPECT_TRUE(IsMarkedForDestruction(child_id));
+
+  // Child submits another frame to the same local surface id that is marked
+  // destroyed.
+  surface_observer().Reset();
+  DestroyFrameSink(child_id.frame_sink_id());
+  CreateFrameSink(child_id.frame_sink_id(), false);
+  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that the surface that was marked destroyed is recovered and is being
+  // used again.
+  Surface* surface2 = GetSurfaceForId(child_id);
+  EXPECT_EQ(surface, surface2);
+  EXPECT_FALSE(IsMarkedForDestruction(child_id));
+  EXPECT_EQ(surface2->client().get(), &child_support1());
+  EXPECT_EQ(child_id, surface_observer().last_created_surface_id());
+}
 // Verifies that if a LocalSurfaceId belonged to a surface that doesn't
 // exist anymore, it can still be reused for new surfaces.
 TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {

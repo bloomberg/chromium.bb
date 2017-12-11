@@ -84,10 +84,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
           bool needs_sync_tokens);
   ~Surface();
 
-  // Clears the |seen_first_frame_activation_| bit causing a
-  // FirstSurfaceActivation to be triggered on the next CompositorFrame
-  // activation.
-  void ResetSeenFirstFrameActivation();
+  // Clears the pending and active frame data as well as the
+  // |seen_first_frame_activation_| bit causing a FirstSurfaceActivation to be
+  // triggered on the next CompositorFrame activation.
+  void Reset(base::WeakPtr<SurfaceClient> client);
 
   const SurfaceId& surface_id() const { return surface_info_.id(); }
   const SurfaceId& previous_frame_surface_id() const {
