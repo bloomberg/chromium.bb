@@ -35,8 +35,12 @@ class DataReductionProxyServer {
       const std::vector<DataReductionProxyServer>&
           data_reduction_proxy_servers);
 
-  // Returns |proxy_type_| for verification by tests.
-  ProxyServer_ProxyType GetProxyTypeForTesting() const;
+  // Returns true if this is a core data reduction proxy server.
+  bool IsCoreProxy() const;
+
+  // Returns true if this is a secure data reduction proxy server. Only HTTPS
+  // and QUIC proxy servers are considered secure.
+  bool IsSecureProxy() const;
 
  private:
   net::ProxyServer proxy_server_;

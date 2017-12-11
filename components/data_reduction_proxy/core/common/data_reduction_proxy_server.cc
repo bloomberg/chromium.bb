@@ -50,8 +50,12 @@ DataReductionProxyServer::ConvertToNetProxyServers(
   return net_proxy_servers;
 }
 
-ProxyServer_ProxyType DataReductionProxyServer::GetProxyTypeForTesting() const {
-  return proxy_type_;
+bool DataReductionProxyServer::IsCoreProxy() const {
+  return proxy_type_ == ProxyServer_ProxyType_CORE;
+}
+
+bool DataReductionProxyServer::IsSecureProxy() const {
+  return proxy_server_.is_https() || proxy_server_.is_quic();
 }
 
 }  // namespace data_reduction_proxy
