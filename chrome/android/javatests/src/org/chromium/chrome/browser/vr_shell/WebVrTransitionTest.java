@@ -226,4 +226,25 @@ public class WebVrTransitionTest {
             }
         }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
     }
+
+    /**
+     * Tests that window.requestAnimationFrame stops firing while in WebVR presentation, but resumes
+     * afterwards.
+     */
+    @Test
+    @MediumTest
+    public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("test_window_raf_stops_firing_while_presenting"),
+                PAGE_LOAD_TIMEOUT_S);
+        VrTestFramework.executeStepAndWait(
+                "stepVerifyBeforePresent()", mVrTestFramework.getFirstTabWebContents());
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
+        VrTestFramework.executeStepAndWait(
+                "stepVerifyDuringPresent()", mVrTestFramework.getFirstTabWebContents());
+        VrTransitionUtils.forceExitVr();
+        VrTestFramework.executeStepAndWait(
+                "stepVerifyAfterPresent()", mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+    }
 }
