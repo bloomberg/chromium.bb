@@ -74,15 +74,6 @@ struct BASE_EXPORT MemoryDumpRequestArgs {
   MemoryDumpLevelOfDetail level_of_detail;
 };
 
-// Initial request arguments for a global memory dump. (see
-// MemoryDumpManager::RequestGlobalMemoryDump()). Keep this consistent with
-// memory_instrumentation.mojo and memory_instrumentation_struct_traits.{h,cc}
-// TODO(hjd): Move this to memory_instrumentation, crbug.com/776726
-struct BASE_EXPORT GlobalMemoryDumpRequestArgs {
-  MemoryDumpType dump_type;
-  MemoryDumpLevelOfDetail level_of_detail;
-};
-
 // Args for ProcessMemoryDump and passed to OnMemoryDump calls for memory dump
 // providers. Dump providers are expected to read the args for creating dumps.
 struct MemoryDumpArgs {
