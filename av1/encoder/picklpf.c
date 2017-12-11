@@ -27,7 +27,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/picklpf.h"
 
-#if CONFIG_LPF_SB
+#if CONFIG_LPF_SB && !CONFIG_LOOPFILTER_LEVEL
 #if CONFIG_HIGHBITDEPTH
 static int compute_sb_y_sse_highbd(const YV12_BUFFER_CONFIG *src,
                                    const YV12_BUFFER_CONFIG *frame,
@@ -115,7 +115,7 @@ int av1_get_max_filter_level(const AV1_COMP *cpi) {
   }
 }
 
-#if CONFIG_LPF_SB
+#if CONFIG_LPF_SB && !CONFIG_LOOPFILTER_LEVEL
 // TODO(chengchen): reduce memory usage by copy superblock instead of frame
 static int try_filter_superblock(const YV12_BUFFER_CONFIG *sd,
                                  AV1_COMP *const cpi, int filt_level,
@@ -230,7 +230,7 @@ int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   return filt_best;
 }
 
-#else  // CONFIG_LPF_SB
+#elif !CONFIG_LPF_SB  // CONFIG_LPF_SB
 static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 AV1_COMP *const cpi, int filt_level,
                                 int partial_frame
@@ -401,6 +401,7 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                            LPF_PICK_METHOD method) {
   AV1_COMMON *const cm = &cpi->common;
   struct loopfilter *const lf = &cm->lf;
+  (void)sd;
 
   lf->sharpness_level = cm->frame_type == KEY_FRAME ? 0 : cpi->oxcf.sharpness;
 
@@ -450,13 +451,16 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     if (cm->bit_depth != AOM_BITS_8 && cm->frame_type == KEY_FRAME)
       filt_guess -= 4;
 #if CONFIG_LOOPFILTER_LEVEL
+    // TODO(chengchen): retrain the model for Y, U, V filter levels
     lf->filter_level[0] = clamp(filt_guess, min_filter_level, max_filter_level);
     lf->filter_level[1] = clamp(filt_guess, min_filter_level, max_filter_level);
+    lf->filter_level_u = clamp(filt_guess, min_filter_level, max_filter_level);
+    lf->filter_level_v = clamp(filt_guess, min_filter_level, max_filter_level);
 #else
     lf->filter_level = clamp(filt_guess, min_filter_level, max_filter_level);
 #endif
   } else {
-#if CONFIG_LPF_SB
+#if CONFIG_LPF_SB && !CONFIG_LOOPFILTER_LEVEL
     int mi_row, mi_col;
     // TODO(chengchen): init last_lvl using previous frame's info?
     int last_lvl = 0;
@@ -485,7 +489,7 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
         }
       }
     }
-#else  // CONFIG_LPF_SB
+#elif !CONFIG_LPF_SB  // !CONFIG_LPF_SB
 #if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = lf->filter_level[1] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 2);

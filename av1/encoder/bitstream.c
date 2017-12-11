@@ -2298,11 +2298,26 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_LPF_SB
   // send filter level for each superblock (64x64)
   if (bsize == cm->sb_size && !USE_GUESS_LEVEL) {
+    int lvl_idx;
     if (mi_row == 0 && mi_col == 0) {
+#if CONFIG_LOOPFILTER_LEVEL
+      aom_write_literal(w, cm->mi[0].mbmi.filt_lvl[0], 6);
+      aom_write_literal(w, cm->mi[0].mbmi.filt_lvl[1], 6);
+      if (cm->mi[0].mbmi.filt_lvl[0] || cm->mi[0].mbmi.filt_lvl[1]) {
+        aom_write_literal(w, cm->mi[0].mbmi.filt_lvl[2], 6);
+        aom_write_literal(w, cm->mi[0].mbmi.filt_lvl[3], 6);
+      }
+      for (lvl_idx = 0; lvl_idx < 4; ++lvl_idx) {
+        cm->mi_grid_visible[0]->mbmi.reuse_sb_lvl[lvl_idx] = 0;
+        cm->mi_grid_visible[0]->mbmi.delta[lvl_idx] = 0;
+        cm->mi_grid_visible[0]->mbmi.sign[lvl_idx] = 0;
+      }
+#else
       aom_write_literal(w, cm->mi[0].mbmi.filt_lvl, 6);
       cm->mi_grid_visible[0]->mbmi.reuse_sb_lvl = 0;
       cm->mi_grid_visible[0]->mbmi.delta = 0;
       cm->mi_grid_visible[0]->mbmi.sign = 0;
+#endif
     } else {
       int prev_mi_row, prev_mi_col;
       if (mi_col - MAX_MIB_SIZE < 0) {
@@ -2317,6 +2332,44 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       MB_MODE_INFO *prev_mbmi =
           &cm->mi_grid_visible[prev_mi_row * cm->mi_stride + prev_mi_col]->mbmi;
 
+#if CONFIG_LOOPFILTER_LEVEL
+      for (lvl_idx = 0; lvl_idx < 4; ++lvl_idx) {
+        const uint8_t curr_lvl = curr_mbmi->filt_lvl[lvl_idx];
+        const uint8_t prev_lvl = prev_mbmi->filt_lvl[lvl_idx];
+
+        const int reuse_prev_lvl = curr_lvl == prev_lvl;
+        const int reuse_ctx = prev_mbmi->reuse_sb_lvl[lvl_idx];
+        curr_mbmi->reuse_sb_lvl[lvl_idx] = reuse_prev_lvl;
+        aom_write_symbol(w, reuse_prev_lvl,
+                         xd->tile_ctx->lpf_reuse_cdf[lvl_idx][reuse_ctx], 2);
+        cpi->td.counts->lpf_reuse[lvl_idx][reuse_ctx][reuse_prev_lvl]++;
+
+        if (reuse_prev_lvl) {
+          curr_mbmi->delta[lvl_idx] = 0;
+          curr_mbmi->sign[lvl_idx] = 0;
+        } else {
+          const unsigned int delta = abs(curr_lvl - prev_lvl) / LPF_STEP;
+          const int delta_ctx = prev_mbmi->delta[lvl_idx];
+          curr_mbmi->delta[lvl_idx] = delta;
+          aom_write_symbol(w, delta,
+                           xd->tile_ctx->lpf_delta_cdf[lvl_idx][delta_ctx],
+                           DELTA_RANGE);
+          cpi->td.counts->lpf_delta[lvl_idx][delta_ctx][delta]++;
+
+          if (delta) {
+            const int sign = curr_lvl > prev_lvl;
+            const int sign_ctx = prev_mbmi->sign[lvl_idx];
+            curr_mbmi->sign[lvl_idx] = sign;
+            aom_write_symbol(
+                w, sign,
+                xd->tile_ctx->lpf_sign_cdf[lvl_idx][reuse_ctx][sign_ctx], 2);
+            cpi->td.counts->lpf_sign[lvl_idx][reuse_ctx][sign_ctx][sign]++;
+          } else {
+            curr_mbmi->sign[lvl_idx] = 0;
+          }
+        }
+      }
+#else
       const uint8_t curr_lvl = curr_mbmi->filt_lvl;
       const uint8_t prev_lvl = prev_mbmi->filt_lvl;
 
@@ -2349,6 +2402,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
           curr_mbmi->sign = 0;
         }
       }
+#endif  // CONFIG_LOOPFILTER_LEVEL
     }
   }
 #endif
@@ -2586,12 +2640,18 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 
 // Encode the loop filter level and type
 #if CONFIG_LOOPFILTER_LEVEL
-  aom_wb_write_literal(wb, lf->filter_level[0], 6);
-  aom_wb_write_literal(wb, lf->filter_level[1], 6);
-  if (lf->filter_level[0] || lf->filter_level[1]) {
-    aom_wb_write_literal(wb, lf->filter_level_u, 6);
-    aom_wb_write_literal(wb, lf->filter_level_v, 6);
+#if CONFIG_LPF_SB
+  if (USE_GUESS_LEVEL) {
+#endif  // CONFIG_LPF_SB
+    aom_wb_write_literal(wb, lf->filter_level[0], 6);
+    aom_wb_write_literal(wb, lf->filter_level[1], 6);
+    if (lf->filter_level[0] || lf->filter_level[1]) {
+      aom_wb_write_literal(wb, lf->filter_level_u, 6);
+      aom_wb_write_literal(wb, lf->filter_level_v, 6);
+    }
+#if CONFIG_LPF_SB
   }
+#endif  // CONFIG_LPF_SB
 #else
 #if CONFIG_LPF_SB
   if (USE_GUESS_LEVEL) aom_wb_write_literal(wb, lf->filter_level, 6);

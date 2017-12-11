@@ -587,11 +587,6 @@ post_process_cmdline() {
       log_echo "encoder side amvr requires hash_me"
       enable_feature hash_me
     fi
-    if enabled lpf_sb; then
-      log_echo "lpf_sb can't work with loopfilter_level yet."
-      log_echo "disabling loopfilter_level"
-      disable_feature loopfilter_level
-    fi
 }
 
 process_targets() {

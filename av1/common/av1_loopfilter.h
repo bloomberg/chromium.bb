@@ -148,6 +148,9 @@ void av1_loop_filter_frame_init(struct AV1Common *cm, int default_filt_lvl,
 #if CONFIG_LPF_SB
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int filter_level,
+#if CONFIG_LOOPFILTER_LEVEL
+                           int frame_filter_level_r,
+#endif
                            int y_only, int partial_frame, int mi_row,
                            int mi_col);
 
@@ -158,6 +161,9 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer,
                           int col_start, int col_end, int y_only);
 
 void av1_loop_filter_sb_level_init(struct AV1Common *cm, int mi_row, int mi_col,
+#if CONFIG_LOOPFILTER_LEVEL
+                                   int plane, int dir,
+#endif
                                    int lvl);
 #else
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,

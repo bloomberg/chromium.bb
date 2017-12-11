@@ -319,9 +319,16 @@ typedef struct frame_contexts {
   aom_cdf_prob cfl_alpha_cdf[CFL_ALPHA_CONTEXTS][CDF_SIZE(CFL_ALPHABET_SIZE)];
 #endif
 #if CONFIG_LPF_SB
+#if CONFIG_LOOPFILTER_LEVEL
+  aom_cdf_prob lpf_reuse_cdf[4][LPF_REUSE_CONTEXT][CDF_SIZE(2)];
+  aom_cdf_prob lpf_delta_cdf[4][LPF_DELTA_CONTEXT][CDF_SIZE(DELTA_RANGE)];
+  aom_cdf_prob lpf_sign_cdf[4][LPF_REUSE_CONTEXT][LPF_SIGN_CONTEXT]
+                           [CDF_SIZE(2)];
+#else
   aom_cdf_prob lpf_reuse_cdf[LPF_REUSE_CONTEXT][CDF_SIZE(2)];
   aom_cdf_prob lpf_delta_cdf[LPF_DELTA_CONTEXT][CDF_SIZE(DELTA_RANGE)];
   aom_cdf_prob lpf_sign_cdf[LPF_REUSE_CONTEXT][LPF_SIGN_CONTEXT][CDF_SIZE(2)];
+#endif
 #endif  // CONFIG_LPF_SB
 } FRAME_CONTEXT;
 
@@ -429,9 +436,15 @@ typedef struct FRAME_COUNTS {
                                     [FILTER_INTRA_MODES];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LPF_SB
+#if CONFIG_LOOPFILTER_LEVEL
+  unsigned int lpf_reuse[4][LPF_REUSE_CONTEXT][2];
+  unsigned int lpf_delta[4][LPF_DELTA_CONTEXT][DELTA_RANGE];
+  unsigned int lpf_sign[4][LPF_REUSE_CONTEXT][LPF_SIGN_CONTEXT][2];
+#else
   unsigned int lpf_reuse[LPF_REUSE_CONTEXT][2];
   unsigned int lpf_delta[LPF_DELTA_CONTEXT][DELTA_RANGE];
   unsigned int lpf_sign[LPF_REUSE_CONTEXT][LPF_SIGN_CONTEXT][2];
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif  // CONFIG_LPF_SB
 } FRAME_COUNTS;
 

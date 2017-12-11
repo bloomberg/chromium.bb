@@ -3256,6 +3256,23 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     }
 #if CONFIG_LPF_SB
     if (USE_LOOP_FILTER_SUPERBLOCK) {
+#if CONFIG_LOOPFILTER_LEVEL
+      int filter_lvl[4];
+
+      if (USE_GUESS_LEVEL) {
+        struct loopfilter *lf = &cpi->common.lf;
+        filter_lvl[0] = lf->filter_level[0];
+        filter_lvl[1] = lf->filter_level[1];
+        filter_lvl[2] = lf->filter_level_u;
+        filter_lvl[3] = lf->filter_level_v;
+        av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[0],
+                              filter_lvl[1], 0, 1, mi_row, mi_col);
+        av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[2],
+                              filter_lvl[2], 1, 1, mi_row, mi_col);
+        av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[3],
+                              filter_lvl[3], 2, 1, mi_row, mi_col);
+      }
+#else
       int filter_lvl;
 
       if (USE_GUESS_LEVEL) {
@@ -3283,6 +3300,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       // if filter_lvl is 0, we still need to set mi info
       if (filter_lvl == 0)
         av1_loop_filter_sb_level_init(cm, mi_row, mi_col, filter_lvl);
+#endif  // CONFIG_LOOPFILTER_LEVEL
     }
 #endif  // CONFIG_LPF_SB
   }
