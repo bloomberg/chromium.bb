@@ -24,8 +24,7 @@ using v8::String;
 
 namespace gin {
 
-// TODO(yzshen): crbug.com/793480
-TEST(RunnerTest, DISABLED_Run) {
+TEST(RunnerTest, Run) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   std::string source = "this.result = 'PASS';\n";
 
