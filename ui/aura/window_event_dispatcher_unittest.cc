@@ -2861,17 +2861,20 @@ TEST_P(WindowEventDispatcherTest, FractionOfTimeWithoutUserInputRecorded) {
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowEventDispatcherTest,
                         ::testing::Values(test::BackendType::CLASSIC,
-                                          test::BackendType::MUS));
+                                          test::BackendType::MUS,
+                                          test::BackendType::MUS_HOSTING_VIZ));
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowEventDispatcherTestWithMessageLoop,
                         ::testing::Values(test::BackendType::CLASSIC,
-                                          test::BackendType::MUS));
+                                          test::BackendType::MUS,
+                                          test::BackendType::MUS_HOSTING_VIZ));
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowEventDispatcherTestInHighDPI,
                         ::testing::Values(test::BackendType::CLASSIC,
-                                          test::BackendType::MUS));
+                                          test::BackendType::MUS,
+                                          test::BackendType::MUS_HOSTING_VIZ));
 
 using WindowEventDispatcherMusTest = test::AuraTestBaseMus;
 
