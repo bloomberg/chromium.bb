@@ -4256,29 +4256,10 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
       !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
     const int ext_tx_set = get_ext_tx_set(mbmi->min_tx_size, bsize, is_inter,
                                           cm->reduced_tx_set_used);
-    if (is_inter) {
-      if (ext_tx_set > 0)
-        rd_stats->rate +=
-            x->inter_tx_type_costs[ext_tx_set]
-                                  [txsize_sqr_map[mbmi->min_tx_size]]
-                                  [mbmi->tx_type];
-    } else {
-      if (ext_tx_set > 0 && ALLOW_INTRA_EXT_TX) {
-#if CONFIG_FILTER_INTRA
-        PREDICTION_MODE intra_dir;
-        if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0])
-          intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
-                                             .filter_intra_mode[0]];
-        else
-          intra_dir = mbmi->mode;
-        rd_stats->rate += x->intra_tx_type_costs[ext_tx_set][mbmi->min_tx_size]
-                                                [intra_dir][mbmi->tx_type];
-#else
-        rd_stats->rate += x->intra_tx_type_costs[ext_tx_set][mbmi->min_tx_size]
-                                                [mbmi->mode][mbmi->tx_type];
-#endif
-      }
-    }
+    if (ext_tx_set > 0)
+      rd_stats->rate +=
+          x->inter_tx_type_costs[ext_tx_set][txsize_sqr_map[mbmi->min_tx_size]]
+                                [mbmi->tx_type];
   }
 #endif  // CONFIG_TXK_SEL
 
