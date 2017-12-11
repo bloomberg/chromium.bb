@@ -828,6 +828,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/ResourcesContextWrapperFactory.java",
     "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
     "java/src/org/chromium/android_webview/SslUtil.java",
+    "java/src/org/chromium/android_webview/WebViewChromiumRunQueue.java",
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
