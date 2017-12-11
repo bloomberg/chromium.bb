@@ -330,10 +330,14 @@ void RenderWidgetInputHandler::HandleInputEvent(
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
     if (gesture_event.source_device == blink::kWebGestureDeviceTouchpad) {
-      delegate_->ObserveGestureEventAndResult(
-          gesture_event,
+      gfx::Vector2dF latest_overscroll_delta =
           event_overscroll ? event_overscroll->latest_overscroll_delta
-                           : gfx::Vector2dF(),
+                           : gfx::Vector2dF();
+      cc::OverscrollBehavior overscroll_behavior =
+          event_overscroll ? event_overscroll->overscroll_behavior
+                           : cc::OverscrollBehavior();
+      delegate_->ObserveGestureEventAndResult(
+          gesture_event, latest_overscroll_delta, overscroll_behavior,
           processed != WebInputEventResult::kNotHandled);
     }
   }

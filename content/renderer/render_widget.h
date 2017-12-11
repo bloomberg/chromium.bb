@@ -22,6 +22,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/input/touch_action.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/content_export.h"
@@ -261,9 +262,11 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidgetInputHandlerDelegate
   void FocusChangeComplete() override;
-  void ObserveGestureEventAndResult(const blink::WebGestureEvent& gesture_event,
-                                    const gfx::Vector2dF& unused_delta,
-                                    bool event_processed) override;
+  void ObserveGestureEventAndResult(
+      const blink::WebGestureEvent& gesture_event,
+      const gfx::Vector2dF& unused_delta,
+      const cc::OverscrollBehavior& overscroll_behavior,
+      bool event_processed) override;
 
   void OnDidHandleKeyEvent() override;
   void OnDidOverscroll(const ui::DidOverscrollParams& params) override;
