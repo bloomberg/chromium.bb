@@ -7,7 +7,7 @@
 
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
-#include "cc/paint/image_provider.h"
+#include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_flags.h"
 
@@ -34,26 +34,6 @@ class CC_PAINT_EXPORT ScopedRasterFlags {
   }
 
  private:
-  // An ImageProvider that passes decode requests through to the
-  // |source_provider| but keeps the decode cached throughtout its lifetime,
-  // instead of passing the ref to the caller.
-  class DecodeStashingImageProvider : public ImageProvider {
-   public:
-    // |source_provider| must outlive this class.
-    explicit DecodeStashingImageProvider(ImageProvider* source_provider);
-    ~DecodeStashingImageProvider() override;
-
-    // ImageProvider implementation.
-    ScopedDecodedDrawImage GetDecodedDrawImage(
-        const DrawImage& draw_image) override;
-
-   private:
-    ImageProvider* source_provider_;
-    base::StackVector<ScopedDecodedDrawImage, 1> decoded_images_;
-
-    DISALLOW_COPY_AND_ASSIGN(DecodeStashingImageProvider);
-  };
-
   void DecodeImageShader(const SkMatrix& ctm);
   void DecodeRecordShader(const SkMatrix& ctm);
   void AdjustStrokeIfNeeded(const SkMatrix& ctm);
