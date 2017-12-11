@@ -179,14 +179,6 @@ void LayoutSVGText::UpdateLayout() {
   DCHECK(!needs_reordering_);
   LayoutAnalyzer::Scope analyzer(*this);
 
-  bool update_parent_boundaries = false;
-  if (needs_transform_update_) {
-    local_transform_ = ToSVGTextElement(GetNode())->CalculateTransform(
-        SVGElement::kIncludeMotionTransform);
-    needs_transform_update_ = false;
-    update_parent_boundaries = true;
-  }
-
   // When laying out initially, build the character data map and propagate
   // resulting layout attributes to all LayoutSVGInlineText children in the
   // subtree.
@@ -195,11 +187,25 @@ void LayoutSVGText::UpdateLayout() {
     needs_text_metrics_update_ = true;
   }
 
+  bool update_parent_boundaries = false;
+
   // If the root layout size changed (eg. window size changes), or the screen
   // scale factor has changed, then recompute the on-screen font size. Since
   // the computation of layout attributes uses the text metrics, we need to
   // update them before updating the layout attributes.
   if (needs_text_metrics_update_) {
+    // Recompute the transform before updating font and corresponding
+    // metrics. At this point our bounding box may be incorrect, so
+    // any box relative transforms will be incorrect. Since the scaled
+    // font size only needs the scaling components to be correct, this
+    // should be fine. We update the transform again after computing
+    // the bounding box below, and after that we clear the
+    // |needs_transform_update_| flag.
+    if (needs_transform_update_) {
+      local_transform_ = ToSVGTextElement(GetNode())->CalculateTransform(
+          SVGElement::kIncludeMotionTransform);
+    }
+
     UpdateFontAndMetrics(*this);
     // Font changes may change the size of the "em" unit, so we need to
     // update positions that might depend on the font size. This is a big
@@ -255,8 +261,17 @@ void LayoutSVGText::UpdateLayout() {
   needs_reordering_ = false;
 
   FloatRect new_boundaries = ObjectBoundingBox();
-  if (!update_parent_boundaries)
-    update_parent_boundaries = old_boundaries != new_boundaries;
+  bool bounds_changed = old_boundaries != new_boundaries;
+
+  // Update the transform after laying out. Update if the bounds
+  // changed too, since the transform could depend on the bounding
+  // box.
+  if (bounds_changed || needs_transform_update_) {
+    local_transform_ = ToSVGTextElement(GetNode())->CalculateTransform(
+        SVGElement::kIncludeMotionTransform);
+    needs_transform_update_ = false;
+    update_parent_boundaries = true;
+  }
 
   overflow_.reset();
   AddSelfVisualOverflow(LayoutRect(new_boundaries));
