@@ -1299,16 +1299,6 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
       "WebRTC.NumDataChannelsPerPeerConnection", num_data_channels_created_);
 }
 
-// static
-void RTCPeerConnectionHandler::DestructAllHandlers() {
-  // Copy g_peer_connection_handlers since releasePeerConnectionHandler will
-  // remove an item.
-  std::set<RTCPeerConnectionHandler*> handlers(
-      GetPeerConnectionHandlers()->begin(), GetPeerConnectionHandlers()->end());
-  for (auto* handler : handlers)
-    handler->client_->ReleasePeerConnectionHandler();
-}
-
 void RTCPeerConnectionHandler::associateWithFrame(blink::WebLocalFrame* frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(frame);
