@@ -16,7 +16,7 @@ class InvertBubbleViewBrowserTest : public DialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowDialog(const std::string& name) override {
-    chrome::ShowInvertBubbleView(browser(), &anchor_);
+    ShowInvertBubbleView(browser(), &anchor_);
   }
 
  private:

@@ -12,8 +12,6 @@ namespace views {
 class View;
 }
 
-namespace chrome {
-
 // Show a bubble telling the user that they're using Windows high-contrast mode
 // with a light-on-dark scheme, so they may be interested in a high-contrast
 // Chrome extension and a dark theme. Only shows the first time we encounter
@@ -22,7 +20,5 @@ void MaybeShowInvertBubbleView(BrowserView* browser_view);
 
 // Shows the above bubble unconditionally.
 void ShowInvertBubbleView(Browser* browser, views::View* anchor);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_INVERT_BUBBLE_VIEW_H_
