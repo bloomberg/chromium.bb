@@ -24,10 +24,8 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
-import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
@@ -40,15 +38,11 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -60,12 +54,8 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
-import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
-import org.chromium.components.feature_engagement.EventConstants;
-import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -131,18 +121,6 @@ public class BottomSheet
 
     /** The amount of time it takes to transition sheet content in or out. */
     private static final long TRANSITION_DURATION_MS = 150;
-
-    /**
-     * The default duration the in-product help bubble should be visible before dismissing
-     * automatically.
-     */
-    private static final int HELP_BUBBLE_TIMEOUT_DURATION_MS = 10000;
-
-    /**
-     * The name of the fieldtrial parameter used to determine the timeout duration for the
-     * in-product help bubble.
-     */
-    private static final String HELP_BUBBLE_TIMEOUT_PARAM_NAME = "x_iph-timeout-duration-ms";
 
     /**
      * The fraction of the way to the next state the sheet must be swiped to animate there when
@@ -267,9 +245,6 @@ public class BottomSheet
     /** A delegate for when the action bar starts showing. */
     private ViewShiftingActionBarDelegate mActionBarDelegate;
 
-    /** The {@link LayoutManagerChrome} used to show and hide overview mode. **/
-    private LayoutManagerChrome mLayoutManager;
-
     /** Whether or not the back button was used to enter the tab switcher. */
     private boolean mBackButtonDismissesChrome;
 
@@ -278,9 +253,6 @@ public class BottomSheet
 
     /** The token used to enable browser controls persistence. */
     private int mPersistentControlsToken;
-
-    /** A help bubble that points to the bottom sheet, helping users find bookmarks, et. al. */
-    private ViewAnchoredTextBubble mHelpBubble;
 
     /** Conversion ratio of dp to px. */
     private float mDpToPx;
@@ -293,6 +265,10 @@ public class BottomSheet
 
     /** The speed of the swipe the last time the sheet was opened. */
     private long mLastSheetOpenMicrosPerDp;
+
+    // TODO(twellington): Remove this after Chrome Home launches.
+    /** The in-product help bubble controller used to display various help bubbles. */
+    private ChromeHomeIphBubbleController mIPHBubbleController;
 
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
@@ -662,8 +638,8 @@ public class BottomSheet
      * @param layoutManager The {@link LayoutManagerChrome} used to show and hide overview mode.
      */
     public void setLayoutManagerChrome(LayoutManagerChrome layoutManager) {
-        mLayoutManager = layoutManager;
         mNtpController.setLayoutManagerChrome(layoutManager);
+        getIphBubbleController().setLayoutManagerChrome(layoutManager);
     }
 
     /**
@@ -671,6 +647,7 @@ public class BottomSheet
      */
     public void setFullscreenManager(ChromeFullscreenManager fullscreenManager) {
         mFullscreenManager = fullscreenManager;
+        getIphBubbleController().setFullscreenManager(fullscreenManager);
     }
 
     /**
@@ -1171,19 +1148,6 @@ public class BottomSheet
         dismissSelectedText();
         for (BottomSheetObserver o : mObservers) o.onSheetOpened(reason);
         mActivity.addViewObscuringAllTabs(this);
-
-        if (mHelpBubble != null) mHelpBubble.dismiss();
-
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-        tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED);
-
-        if (reason == StateChangeReason.SWIPE) {
-            tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED_FROM_SWIPE);
-        } else if (reason == StateChangeReason.EXPAND_BUTTON) {
-            tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED_FROM_BUTTON);
-        } else if (reason == StateChangeReason.OMNIBOX_FOCUS) {
-            tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED_FROM_OMNIBOX_FOCUS);
-        }
     }
 
     /**
@@ -1208,8 +1172,6 @@ public class BottomSheet
         setFocusable(false);
         setFocusableInTouchMode(false);
         setContentDescription(null);
-
-        showColdStartHelpBubble();
     }
 
     /**
@@ -1634,45 +1596,11 @@ public class BottomSheet
     }
 
     /**
-     * @return Whether or not the browser is in overview mode.
-     */
-    private boolean isInOverviewMode() {
-        return mActivity != null && mActivity.isInOverviewMode();
-    }
-
-    /**
-     * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
-     * mode, when "find in page" is visible, or when the toolbar is hidden.
-     */
-    private boolean canMoveSheet() {
-        if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
-        boolean isFindInPageVisible =
-                mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
-
-        return !isToolbarAndroidViewHidden()
-                && (!isInOverviewMode() || mNtpController.isShowingNewTabUi())
-                && !isFindInPageVisible;
-    }
-
-    /**
      * Show the in-product help bubble for the {@link BottomSheet} if it has not already been shown.
      * This method must be called after the toolbar has had at least one layout pass.
      */
     public void showColdStartHelpBubble() {
-        // If FRE is not complete, the FRE screen is likely covering ChromeTabbedActivity so the
-        // help bubble should not be shown.
-        if (!FirstRunStatus.getFirstRunFlowComplete()) return;
-
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-        tracker.addOnInitializedCallback(new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean success) {
-                // Skip showing if the tracker failed to initialize.
-                if (!success) return;
-
-                maybeShowHelpBubble(false, false);
-            }
-        });
+        getIphBubbleController().showColdStartHelpBubble();
     }
 
     /**
@@ -1684,106 +1612,17 @@ public class BottomSheet
      * @param fromPullToRefresh Whether the help bubble is being displayed due to a pull to refresh.
      */
     public void maybeShowHelpBubble(boolean fromMenu, boolean fromPullToRefresh) {
-        // Skip showing if the bottom sheet is already open, the UI has not been initialized
-        // (indicated by mLayoutManager == null), or the tab switcher is showing.
-        if (isSheetOpen() || mLayoutManager == null || mLayoutManager.overviewVisible()) {
-            return;
-        }
-
-        // Determine which IPH feature to use for triggering the help UI.
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-        boolean showRefreshIph = fromPullToRefresh
-                && tracker.shouldTriggerHelpUI(
-                           FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE);
-        boolean showColdStartIph = !fromMenu && !fromPullToRefresh
-                && tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
-        if (!fromMenu && !showRefreshIph && !showColdStartIph) return;
-
-        // Determine which strings to use.
-        boolean showExpandButtonHelpBubble =
-                !showRefreshIph && mDefaultToolbarView.isUsingExpandButton();
-        View anchorView = showExpandButtonHelpBubble
-                ? mControlContainer.findViewById(R.id.expand_sheet_button)
-                : mControlContainer;
-        int stringId = showRefreshIph ? R.string.bottom_sheet_pull_to_refresh_help_bubble_message
-                                      : showExpandButtonHelpBubble
-                        ? R.string.bottom_sheet_accessibility_expand_button_help_bubble_message
-                        : R.string.bottom_sheet_help_bubble_message;
-        int accessibilityStringId = showRefreshIph
-                ? R.string.bottom_sheet_pull_to_refresh_help_bubble_accessibility_message
-                : stringId;
-
-        // Register an overview mode observer so the bubble can be dismissed if overview mode
-        // is shown.
-        EmptyOverviewModeObserver overviewModeObserver = new EmptyOverviewModeObserver() {
-            @Override
-            public void onOverviewModeStartedShowing(boolean showToolbar) {
-                mHelpBubble.dismiss();
-            }
-        };
-        mLayoutManager.addOverviewModeObserver(overviewModeObserver);
-
-        // Force the browser controls to stay visible while the help bubble is showing.
-        int persistentControlsToken =
-                mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
-
-        // Create the help bubble and setup dismissal behavior.
-        mHelpBubble = new ViewAnchoredTextBubble(
-                getContext(), anchorView, stringId, accessibilityStringId);
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PERSISTENT_IPH)) {
-            int dismissTimeout = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                    ChromeFeatureList.CHROME_HOME_PERSISTENT_IPH, HELP_BUBBLE_TIMEOUT_PARAM_NAME,
-                    HELP_BUBBLE_TIMEOUT_DURATION_MS);
-            mHelpBubble.setAutoDismissTimeout(dismissTimeout);
-        } else {
-            mHelpBubble.setDismissOnTouchInteraction(true);
-        }
-
-        mHelpBubble.addOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                mFullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
-                        persistentControlsToken);
-                mLayoutManager.removeOverviewModeObserver(overviewModeObserver);
-
-                if (fromMenu) {
-                    tracker.dismissed(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE);
-                } else if (fromPullToRefresh) {
-                    tracker.dismissed(FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE);
-                } else {
-                    tracker.dismissed(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
-                }
-
-                ViewHighlighter.turnOffHighlight(anchorView);
-
-                mHelpBubble = null;
-            }
-        });
-
-        // Highlight the expand button if necessary.
-        if (showExpandButtonHelpBubble) {
-            ViewHighlighter.turnOnHighlight(anchorView, true);
-        }
-
-        // Show the bubble.
-        int inset = getContext().getResources().getDimensionPixelSize(
-                R.dimen.bottom_sheet_help_bubble_inset);
-        mHelpBubble.setInsetPx(0, inset, 0, inset);
-        mHelpBubble.show();
+        getIphBubbleController().maybeShowHelpBubble(fromMenu, fromPullToRefresh);
     }
 
-    /**
-     * Called when the sheet content has changed, to update dependent state and notify observers.
-     * @param content The new sheet content, or null if the sheet has no content.
-     */
-    private void onSheetContentChanged(@Nullable final BottomSheetContent content) {
-        mSheetContent = content;
-        for (BottomSheetObserver o : mObservers) {
-            o.onSheetContentChanged(content);
+    /** Gets the IPH bubble controller, creating it if necessary. */
+    private ChromeHomeIphBubbleController getIphBubbleController() {
+        if (mIPHBubbleController == null) {
+            mIPHBubbleController = new ChromeHomeIphBubbleController(
+                    getContext(), mDefaultToolbarView, mControlContainer, this);
         }
-        updateHandleTint();
-        mToolbarHolder.setBackgroundColor(Color.TRANSPARENT);
+
+        return mIPHBubbleController;
     }
 
     /**
@@ -1826,10 +1665,44 @@ public class BottomSheet
     }
 
     /**
+     * @return Whether or not the browser is in overview mode.
+     */
+    private boolean isInOverviewMode() {
+        return mActivity != null && mActivity.isInOverviewMode();
+    }
+
+    /**
+     * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
+     * mode, when "find in page" is visible, or when the toolbar is hidden.
+     */
+    private boolean canMoveSheet() {
+        if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
+        boolean isFindInPageVisible =
+                mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
+
+        return !isToolbarAndroidViewHidden()
+                && (!isInOverviewMode() || mNtpController.isShowingNewTabUi())
+                && !isFindInPageVisible;
+    }
+
+    /**
+     * Called when the sheet content has changed, to update dependent state and notify observers.
+     * @param content The new sheet content, or null if the sheet has no content.
+     */
+    private void onSheetContentChanged(@Nullable final BottomSheetContent content) {
+        mSheetContent = content;
+        for (BottomSheetObserver o : mObservers) {
+            o.onSheetContentChanged(content);
+        }
+        updateHandleTint();
+        mToolbarHolder.setBackgroundColor(Color.TRANSPARENT);
+    }
+
+    /**
      * @return The bottom sheet's help bubble if it exists.
      */
     @VisibleForTesting
     public @Nullable ViewAnchoredTextBubble getHelpBubbleForTests() {
-        return mHelpBubble;
+        return getIphBubbleController().getHelpBubbleForTests();
     }
 }
