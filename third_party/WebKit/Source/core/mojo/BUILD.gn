@@ -52,7 +52,7 @@ jumbo_source_set("unit_tests") {
 
   data_deps = [
     ":test_bindings_js_data_deps",
-    "//mojo/public/js:new_bindings",
+    "//mojo/public/js:bindings",
   ]
 }
 

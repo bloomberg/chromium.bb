@@ -6,27 +6,26 @@ import("//tools/grit/grit_rule.gni")
 
 interfaces_bindings_gen_dir = "$root_gen_dir/mojo/public/interfaces/bindings"
 
-# TODO(yzshen): Rename to "bindings" and move the files accordingly.
-action("new_bindings") {
-  new_bindings_js_files = [
+action("bindings") {
+  bindings_js_files = [
     # This must be the first file in the list, because it initializes global
-    # variable |mojoBindings| that the others need to refer to.
-    "new_bindings/base.js",
+    # variable |mojo| that the others need to refer to.
+    "base.js",
 
-    "new_bindings/bindings.js",
-    "new_bindings/buffer.js",
-    "new_bindings/codec.js",
-    "new_bindings/connector.js",
-    "new_bindings/interface_types.js",
-    "new_bindings/lib/control_message_handler.js",
-    "new_bindings/lib/control_message_proxy.js",
-    "new_bindings/lib/interface_endpoint_client.js",
-    "new_bindings/lib/interface_endpoint_handle.js",
-    "new_bindings/lib/pipe_control_message_handler.js",
-    "new_bindings/lib/pipe_control_message_proxy.js",
-    "new_bindings/router.js",
-    "new_bindings/unicode.js",
-    "new_bindings/validator.js",
+    "bindings.js",
+    "interface_types.js",
+    "lib/buffer.js",
+    "lib/codec.js",
+    "lib/connector.js",
+    "lib/control_message_handler.js",
+    "lib/control_message_proxy.js",
+    "lib/interface_endpoint_client.js",
+    "lib/interface_endpoint_handle.js",
+    "lib/pipe_control_message_handler.js",
+    "lib/pipe_control_message_proxy.js",
+    "lib/router.js",
+    "lib/unicode.js",
+    "lib/validator.js",
 
     # These two needs to refer to codec.js.
     "$interfaces_bindings_gen_dir/interface_control_messages.mojom.js",
@@ -38,12 +37,12 @@ action("new_bindings") {
   # bindings instead of simply concatenating the files.
   script = "//v8/tools/concatenate-files.py"
 
-  sources = new_bindings_js_files
+  sources = bindings_js_files
   outputs = [
     compiled_file,
   ]
 
-  args = rebase_path(new_bindings_js_files, root_build_dir)
+  args = rebase_path(bindings_js_files, root_build_dir)
   args += [ rebase_path(compiled_file, root_build_dir) ]
 
   deps = [
@@ -66,6 +65,6 @@ grit("resources") {
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    ":new_bindings",
+    ":bindings",
   ]
 }
