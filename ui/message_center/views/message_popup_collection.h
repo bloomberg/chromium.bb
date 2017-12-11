@@ -13,12 +13,14 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/toast_contents_view.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace base {
@@ -50,7 +52,8 @@ class PopupAlignmentDelegate;
 // be slightly different.
 class MESSAGE_CENTER_EXPORT MessagePopupCollection
     : public MessageViewDelegate,
-      public MessageCenterObserver {
+      public MessageCenterObserver,
+      public views::ViewObserver {
  public:
   MessagePopupCollection(MessageCenter* message_center,
                          UiController* tray,
@@ -67,7 +70,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                                           int button_index,
                                           const base::string16& reply) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;
-  void UpdateNotificationSize(const std::string& notification_id) override;
+
+  // Overridden from views::ViewObserver:
+  void OnViewPreferredSizeChanged(views::View* observed_view) override;
+  void OnViewIsDeleting(views::View* observed_view) override;
 
   void MarkAllPopupsShown();
 
@@ -152,22 +158,22 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   PopupAlignmentDelegate* alignment_delegate_;
 
-  int defer_counter_;
+  int defer_counter_ = 0;
 
   // This is only used to compare with incoming events, do not assume that
   // the toast will be valid if this pointer is non-NULL.
-  ToastContentsView* latest_toast_entered_;
+  ToastContentsView* latest_toast_entered_ = nullptr;
 
   // Denotes a mode when user is clicking the Close button of toasts in a
   // sequence, w/o moving the mouse. We reposition the toasts so the next one
   // happens to be right under the mouse, and the user can just dispose of
   // multipel toasts by clicking. The mode ends when defer_timer_ expires.
-  bool user_is_closing_toasts_by_clicking_;
+  bool user_is_closing_toasts_by_clicking_ = false;
   std::unique_ptr<base::OneShotTimer> defer_timer_;
   // The top edge to align the position of the next toast during 'close by
   // clicking" mode.
   // Only to be used when user_is_closing_toasts_by_clicking_ is true.
-  int target_top_edge_;
+  int target_top_edge_ = 0;
 
   // This is the number of pause request for timer. If it's more than zero, the
   // timer is paused. If zero, the timer is not paused.
@@ -178,9 +184,11 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   std::unique_ptr<MessageViewContextMenuController> context_menu_controller_;
 
+  ScopedObserver<views::View, views::ViewObserver> observed_views_{this};
+
   // Gives out weak pointers to toast contents views which have an unrelated
   // lifetime.  Must remain the last member variable.
-  base::WeakPtrFactory<MessagePopupCollection> weak_factory_;
+  base::WeakPtrFactory<MessagePopupCollection> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupCollection);
 };

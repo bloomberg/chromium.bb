@@ -28,6 +28,9 @@ class VIEWS_EXPORT ViewObserver {
   // Called when View::SetEnabled() is called with a new value.
   virtual void OnViewEnabledChanged(View* observed_view) {}
 
+  // Called from View::PreferredSizeChanged().
+  virtual void OnViewPreferredSizeChanged(View* observed_view) {}
+
   // Called when the bounds of |observed_view| change.
   virtual void OnViewBoundsChanged(View* observed_view) {}
 

@@ -1049,8 +1049,7 @@ void NotificationViewMD::SetExpanded(bool expanded) {
 
   UpdateViewForExpandedState(expanded_);
   content_row_->InvalidateLayout();
-  if (delegate())
-    delegate()->UpdateNotificationSize(notification_id());
+  PreferredSizeChanged();
 }
 
 void NotificationViewMD::Activate() {

@@ -54,12 +54,7 @@ MessagePopupCollection::MessagePopupCollection(
     : message_center_(message_center),
       tray_(tray),
       alignment_delegate_(alignment_delegate),
-      defer_counter_(0),
-      latest_toast_entered_(NULL),
-      user_is_closing_toasts_by_clicking_(false),
-      target_top_edge_(0),
-      context_menu_controller_(new MessageViewContextMenuController()),
-      weak_factory_(this) {
+      context_menu_controller_(new MessageViewContextMenuController()) {
   DCHECK(message_center_);
   defer_timer_.reset(new base::OneShotTimer);
   message_center_->AddObserver(this);
@@ -122,9 +117,15 @@ void MessagePopupCollection::ClickOnSettingsButton(
   message_center_->ClickOnSettingsButton(notification_id);
 }
 
-void MessagePopupCollection::UpdateNotificationSize(
-    const std::string& notification_id) {
-  OnNotificationUpdated(notification_id);
+void MessagePopupCollection::OnViewPreferredSizeChanged(
+    views::View* observed_view) {
+  DCHECK_EQ(MessageView::kViewClassName, observed_view->GetClassName());
+  OnNotificationUpdated(
+      static_cast<MessageView*>(observed_view)->notification_id());
+}
+
+void MessagePopupCollection::OnViewIsDeleting(views::View* observed_view) {
+  observed_views_.Remove(observed_view);
 }
 
 void MessagePopupCollection::MarkAllPopupsShown() {
@@ -195,6 +196,7 @@ void MessagePopupCollection::UpdateWidgets() {
 
     // Create top-level notification.
     MessageView* view = MessageViewFactory::Create(nullptr, notification, true);
+    observed_views_.Add(view);
 #if defined(OS_CHROMEOS)
     // Disable pinned feature since this is a popup.
     view->set_force_disable_pinned();

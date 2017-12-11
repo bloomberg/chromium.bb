@@ -33,7 +33,8 @@ namespace message_center {
 static const SkColor kBitmapColor = SK_ColorGREEN;
 
 class NotificationViewMDTest : public views::ViewsTestBase,
-                               public MessageViewDelegate {
+                               public MessageViewDelegate,
+                               public views::ViewObserver {
  public:
   NotificationViewMDTest();
   ~NotificationViewMDTest() override;
@@ -52,7 +53,9 @@ class NotificationViewMDTest : public views::ViewsTestBase,
                                           int button_index,
                                           const base::string16& reply) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;
-  void UpdateNotificationSize(const std::string& notification_id) override;
+
+  // Overridden from views::ViewObserver:
+  void OnViewPreferredSizeChanged(views::View* observed_view) override;
 
   NotificationViewMD* notification_view() const {
     return notification_view_.get();
@@ -118,6 +121,7 @@ void NotificationViewMDTest::SetUp() {
   // TODO(tetsui): Confirm that NotificationViewMD options are same as one
   // created by the method.
   notification_view_.reset(new NotificationViewMD(this, *notification_));
+  notification_view_->AddObserver(this);
   notification_view_->SetIsNested();
   notification_view_->set_owned_by_client();
 
@@ -138,6 +142,7 @@ void NotificationViewMDTest::SetUp() {
 }
 
 void NotificationViewMDTest::TearDown() {
+  notification_view_->RemoveObserver(this);
   widget()->Close();
   notification_view_.reset();
   views::ViewsTestBase::TearDown();
@@ -182,8 +187,9 @@ void NotificationViewMDTest::ClickOnSettingsButton(
   NOTREACHED();
 }
 
-void NotificationViewMDTest::UpdateNotificationSize(
-    const std::string& notification_id) {
+void NotificationViewMDTest::OnViewPreferredSizeChanged(
+    views::View* observed_view) {
+  EXPECT_EQ(observed_view, notification_view());
   widget()->SetSize(notification_view()->GetPreferredSize());
 }
 

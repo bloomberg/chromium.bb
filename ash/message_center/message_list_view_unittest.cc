@@ -187,7 +187,6 @@ class MessageListViewTest : public AshTestBase,
       int button_index,
       const base::string16& reply) override {}
   void ClickOnSettingsButton(const std::string& notification_id) override {}
-  void UpdateNotificationSize(const std::string& notification_id) override;
 
   // Widget to host a MessageListView.
   std::unique_ptr<views::Widget> widget_;
@@ -198,12 +197,6 @@ class MessageListViewTest : public AshTestBase,
 
   DISALLOW_COPY_AND_ASSIGN(MessageListViewTest);
 };
-
-void MessageListViewTest::UpdateNotificationSize(
-    const std::string& notification_id) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
-}
 
 /* Unit tests *****************************************************************/
 
