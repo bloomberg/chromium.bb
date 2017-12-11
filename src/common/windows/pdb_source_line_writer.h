@@ -92,9 +92,7 @@ class PDBSourceLineWriter {
     ANY_FILE   // try PDB_FILE and then EXE_FILE
   };
 
-  // NB: |enable_multiple_field| is temporary while transitioning to enabling
-  // writing the multiple field permanently.
-  explicit PDBSourceLineWriter(bool enable_multiple_field = false);
+  explicit PDBSourceLineWriter();
   ~PDBSourceLineWriter();
 
   // Opens the given file.  For executable files, the corresponding pdb
@@ -231,10 +229,6 @@ class PDBSourceLineWriter {
   // parameters.  function must have the tag SymTagFunction.  In the event of
   // a failure, returns 0, which is also a valid number of bytes.
   static int GetFunctionStackParamSize(IDiaSymbol *function);
-
-  // True if the optional 'm' field on FUNC and PUBLIC for multiple symbols at
-  // the same address should be output.
-  bool enable_multiple_field_;
 
   // The filename of the PE file corresponding to the currently-open
   // pdb file.

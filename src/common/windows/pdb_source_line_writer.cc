@@ -219,8 +219,7 @@ bool CreateDiaDataSourceInstance(CComPtr<IDiaDataSource> &data_source) {
 
 }  // namespace
 
-PDBSourceLineWriter::PDBSourceLineWriter(bool enable_multiple_field)
-    : enable_multiple_field_(enable_multiple_field), output_(NULL) {
+PDBSourceLineWriter::PDBSourceLineWriter() : output_(NULL) {
 }
 
 PDBSourceLineWriter::~PDBSourceLineWriter() {
@@ -373,8 +372,7 @@ bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function,
   MapAddressRange(image_map_, AddressRange(rva, static_cast<DWORD>(length)),
                   &ranges);
   for (size_t i = 0; i < ranges.size(); ++i) {
-    const char* optional_multiple_field =
-      enable_multiple_field_ && has_multiple_symbols ? "m " : "";
+    const char* optional_multiple_field = has_multiple_symbols ? "m " : "";
     fprintf(output_, "FUNC %s%lx %lx %x %ws\n", optional_multiple_field,
             ranges[i].rva, ranges[i].length, stack_param_size, name.m_str);
   }
@@ -891,8 +889,7 @@ bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol,
   AddressRangeVector ranges;
   MapAddressRange(image_map_, AddressRange(rva, 1), &ranges);
   for (size_t i = 0; i < ranges.size(); ++i) {
-    const char* optional_multiple_field =
-      enable_multiple_field_ && has_multiple_symbols ? "m " : "";
+    const char* optional_multiple_field = has_multiple_symbols ? "m " : "";
     fprintf(output_, "PUBLIC %s%lx %x %ws\n", optional_multiple_field,
             ranges[i].rva, stack_param_size > 0 ? stack_param_size : 0,
             name.m_str);
