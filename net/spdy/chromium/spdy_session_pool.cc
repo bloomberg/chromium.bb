@@ -4,6 +4,7 @@
 
 #include "net/spdy/chromium/spdy_session_pool.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/logging.h"
@@ -13,6 +14,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/trace_constants.h"
 #include "net/http/http_network_session.h"
@@ -77,6 +79,8 @@ SpdySessionPool::SpdySessionPool(
 
 SpdySessionPool::~SpdySessionPool() {
   DCHECK(spdy_session_request_map_.empty());
+  // TODO(bnc): CloseAllSessions() is also called in HttpNetworkSession
+  // destructor, one of the two calls should be removed.
   CloseAllSessions();
 
   while (!sessions_.empty()) {
@@ -270,7 +274,9 @@ void SpdySessionPool::CloseCurrentIdleSessions() {
 }
 
 void SpdySessionPool::CloseAllSessions() {
-  while (!available_sessions_.empty()) {
+  auto is_draining = [](const SpdySession* s) { return s->IsDraining(); };
+  // Repeat until every SpdySession owned by |this| is draining.
+  while (!std::all_of(sessions_.begin(), sessions_.end(), is_draining)) {
     CloseCurrentSessionsHelper(ERR_ABORTED, "Closing all sessions.",
                                false /* idle_only */);
   }
@@ -521,16 +527,20 @@ void SpdySessionPool::CloseCurrentSessionsHelper(Error error,
                                                  const SpdyString& description,
                                                  bool idle_only) {
   WeakSessionList current_sessions = GetCurrentSessions();
-  for (WeakSessionList::const_iterator it = current_sessions.begin();
-       it != current_sessions.end(); ++it) {
-    if (!*it)
+  for (base::WeakPtr<SpdySession>& session : current_sessions) {
+    if (!session)
       continue;
 
-    if (idle_only && (*it)->is_active())
+    if (idle_only && session->is_active())
       continue;
 
-    (*it)->CloseSessionOnError(error, description);
-    DCHECK(!IsSessionAvailable(*it));
+    if (session->IsDraining())
+      continue;
+
+    session->CloseSessionOnError(error, description);
+
+    DCHECK(!IsSessionAvailable(session));
+    DCHECK(!session || session->IsDraining());
   }
 }
 

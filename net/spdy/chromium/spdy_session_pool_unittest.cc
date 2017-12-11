@@ -13,6 +13,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "build/build_config.h"
 #include "net/dns/host_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log_with_source.h"
@@ -804,6 +805,114 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_TRUE(delegateB.StreamIsClosed());
   EXPECT_THAT(delegateB.WaitForClose(), IsError(ERR_NETWORK_CHANGED));
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+}
+
+// Regression test for https://crbug.com/789791.
+TEST_F(SpdySessionPoolTest, HandleIPAddressChangeThenShutdown) {
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
+  SpdyTestUtil spdy_util;
+  SpdySerializedFrame req(spdy_util.ConstructSpdyGet(kDefaultUrl, 1, MEDIUM));
+  MockWrite writes[] = {CreateMockWrite(req, 1)};
+  StaticSocketDataProvider data(reads, arraysize(reads), writes,
+                                arraysize(writes));
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+
+  const GURL url(kDefaultUrl);
+  SpdySessionKey key(HostPortPair::FromURL(url), ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> session =
+      CreateSpdySession(http_session_.get(), key, NetLogWithSource());
+
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, session, url, MEDIUM, NetLogWithSource());
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
+
+  SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(delegate.send_headers_completed());
+
+  spdy_session_pool_->OnIPAddressChanged();
+
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+  EXPECT_EQ(1u, num_active_streams(session));
+  EXPECT_TRUE(session->IsGoingAway());
+  EXPECT_FALSE(session->IsDraining());
+#else
+  EXPECT_EQ(0u, num_active_streams(session));
+  EXPECT_FALSE(session->IsGoingAway());
+  EXPECT_TRUE(session->IsDraining());
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+
+  http_session_.reset();
+
+  data.AllReadDataConsumed();
+  data.AllWriteDataConsumed();
+}
+
+// Regression test for https://crbug.com/789791.
+TEST_F(SpdySessionPoolTest, HandleGracefulGoawayThenShutdown) {
+  SpdyTestUtil spdy_util;
+  SpdySerializedFrame goaway(spdy_util.ConstructSpdyGoAway(
+      0x7fffffff, ERROR_CODE_NO_ERROR, "Graceful shutdown."));
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(goaway, 2),
+      MockRead(ASYNC, ERR_IO_PENDING, 3), MockRead(ASYNC, OK, 4)};
+  SpdySerializedFrame req(spdy_util.ConstructSpdyGet(kDefaultUrl, 1, MEDIUM));
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+
+  const GURL url(kDefaultUrl);
+  SpdySessionKey key(HostPortPair::FromURL(url), ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> session =
+      CreateSpdySession(http_session_.get(), key, NetLogWithSource());
+
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, session, url, MEDIUM, NetLogWithSource());
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
+
+  SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
+
+  // Send headers.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(delegate.send_headers_completed());
+
+  EXPECT_EQ(1u, num_active_streams(session));
+  EXPECT_FALSE(session->IsGoingAway());
+  EXPECT_FALSE(session->IsDraining());
+
+  // Read GOAWAY.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, num_active_streams(session));
+  EXPECT_TRUE(session->IsGoingAway());
+  EXPECT_FALSE(session->IsDraining());
+
+  http_session_.reset();
+
+  data.AllReadDataConsumed();
+  data.AllWriteDataConsumed();
 }
 
 class SpdySessionMemoryDumpTest
