@@ -45,7 +45,7 @@ const char kNonMinimalCBOREncoding[] =
 }  // namespace
 
 CBORReader::CBORReader(Bytes::const_iterator it, Bytes::const_iterator end)
-    : it_(it), end_(end), error_code_(DecoderError::NO_ERROR) {}
+    : it_(it), end_(end), error_code_(DecoderError::CBOR_NO_ERROR) {}
 CBORReader::~CBORReader() {}
 
 // static
@@ -60,7 +60,7 @@ base::Optional<CBORValue> CBORReader::Read(const Bytes& data,
   if (error_code_out)
     *error_code_out = reader.GetErrorCode();
 
-  if (reader.GetErrorCode() != DecoderError::NO_ERROR)
+  if (reader.GetErrorCode() != DecoderError::CBOR_NO_ERROR)
     return base::nullopt;
   return decoded_cbor;
 }
@@ -255,7 +255,7 @@ CBORReader::DecoderError CBORReader::GetErrorCode() {
 // static
 const char* CBORReader::ErrorCodeToString(DecoderError error) {
   switch (error) {
-    case DecoderError::NO_ERROR:
+    case DecoderError::CBOR_NO_ERROR:
       return kNoError;
     case DecoderError::UNSUPPORTED_MAJOR_TYPE:
       return kUnsupportedMajorType;

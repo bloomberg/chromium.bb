@@ -47,7 +47,7 @@ class CONTENT_EXPORT CBORReader {
   using Bytes = std::vector<uint8_t>;
 
   enum class DecoderError {
-    NO_ERROR = 0,
+    CBOR_NO_ERROR = 0,
     UNSUPPORTED_MAJOR_TYPE,
     UNKNOWN_ADDITIONAL_INFO,
     INCOMPLETE_CBOR_DATA,
