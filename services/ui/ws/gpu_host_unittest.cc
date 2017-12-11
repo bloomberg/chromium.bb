@@ -16,12 +16,6 @@
 #include "services/ui/ws/gpu_host_delegate.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-#undef None
-#undef Bool
-#endif  // USE_X11
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
