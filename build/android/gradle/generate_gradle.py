@@ -550,7 +550,7 @@ def _GenerateGradleFile(entry, generator, build_vars, source_properties,
       target_type = 'java_library'
   elif deps_info['type'] == 'java_binary':
     target_type = 'java_binary'
-    variables['main_class'] = gradle['main_class']
+    variables['main_class'] = deps_info.get('main_class')
   elif deps_info['type'] == 'junit_binary':
     target_type = 'android_junit'
     variables['sourceSetName'] = 'test'

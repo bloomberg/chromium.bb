@@ -29,8 +29,10 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 {% if template_type == 'java_binary' %}
-mainClassName = "{{ main_class }}"
 applicationName = "{{ target_name }}"
+{% if main_class %}
+mainClassName = "{{ main_class }}"
+{% endif %}
 {% endif %}
 {% if template_type in ('java_binary', 'java_library') %}
 archivesBaseName = "{{ target_name }}"

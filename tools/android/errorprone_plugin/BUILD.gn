@@ -10,18 +10,12 @@ java_library("errorprone_plugin_java") {
     "src/org/chromium/tools/errorprone/plugin/NoSynchronizedThisCheck.java",
   ]
 
-  processors_javac =
-      [ "com.google.auto.service.processor.AutoServiceProcessor" ]
-
   # Necessary to avoid dependency cycle
   enable_errorprone = false
 
-  # TODO(agrieve): Make it so that you don't need to specify the full classpath
-  #     of annotation processors.
+  annotation_processor_deps = [ "//third_party/auto:auto_service_processor" ]
   deps = [
-    "//third_party/auto:auto_common_java",
     "//third_party/auto:auto_service_java",
     "//third_party/errorprone:errorprone_java",
-    "//third_party/guava:guava_java",
   ]
 }

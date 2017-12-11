@@ -173,9 +173,11 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     # Put the manifest in a temporary directory in order to avoid lint detecting
     # sibling res/ and src/ directories (which should be pass explicitly if they
     # are to be included).
-    if manifest_path:
-      os.symlink(os.path.abspath(manifest_path),
-                 os.path.join(project_dir, 'AndroidManifest.xml'))
+    if not manifest_path:
+      manifest_path = os.path.join(
+          _SRC_ROOT, 'build', 'android', 'AndroidManifest.xml')
+    os.symlink(os.path.abspath(manifest_path),
+               os.path.join(project_dir, 'AndroidManifest.xml'))
     cmd.append(project_dir)
 
     if os.path.exists(result_path):
