@@ -69,7 +69,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
 
   // RenderWidgetHostView:
   void InitAsChild(gfx::NativeView parent_view) override {}
-  RenderWidgetHost* GetRenderWidgetHost() const override;
   void SetSize(const gfx::Size& size) override {}
   void SetBounds(const gfx::Rect& rect) override {}
   gfx::Vector2dF GetLastScrollOffset() const override;
@@ -118,6 +117,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   gfx::Rect GetBoundsInRootWindow() override;
   bool LockMouse() override;
   void UnlockMouse() override;
+  RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
 
   bool is_showing() const { return is_showing_; }

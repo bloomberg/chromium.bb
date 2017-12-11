@@ -105,7 +105,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   RenderWidgetHostImpl* GetFocusedWidget() const;
 
   // RenderWidgetHostView implementation.
-  RenderWidgetHost* GetRenderWidgetHost() const override;
+  RenderWidgetHost* GetRenderWidgetHost() const final;
   void SetBackgroundColorToDefault() final;
   ui::TextInputClient* GetTextInputClient() override;
   void WasUnOccluded() override {}
@@ -451,6 +451,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // of context menu. The view can then perform platform specific tasks and
   // changes.
   virtual void SetShowingContextMenu(bool showing) {}
+
+  // Returns the associated RenderWidgetHostImpl.
+  virtual RenderWidgetHostImpl* GetRenderWidgetHostImpl() const;
 
   // Process swap messages sent before |frame_token| in RenderWidgetHostImpl.
   void OnFrameTokenChangedForView(uint32_t frame_token);

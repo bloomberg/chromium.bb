@@ -110,7 +110,7 @@ void TouchSelectionControllerClientChildFrame::SetNeedsAnimate() {
 void TouchSelectionControllerClientChildFrame::MoveCaret(
     const gfx::PointF& position) {
   RenderWidgetHostDelegate* host_delegate =
-      RenderWidgetHostImpl::From(rwhv_->GetRenderWidgetHost())->delegate();
+      rwhv_->GetRenderWidgetHostImpl()->delegate();
   if (host_delegate)
     host_delegate->MoveCaret(ConvertFromRoot(position));
 }
@@ -118,7 +118,7 @@ void TouchSelectionControllerClientChildFrame::MoveCaret(
 void TouchSelectionControllerClientChildFrame::MoveRangeSelectionExtent(
     const gfx::PointF& extent) {
   RenderWidgetHostDelegate* host_delegate =
-      RenderWidgetHostImpl::From(rwhv_->GetRenderWidgetHost())->delegate();
+      rwhv_->GetRenderWidgetHostImpl()->delegate();
   if (host_delegate)
     host_delegate->MoveRangeSelectionExtent(ConvertFromRoot(extent));
 }
@@ -127,7 +127,7 @@ void TouchSelectionControllerClientChildFrame::SelectBetweenCoordinates(
     const gfx::PointF& base,
     const gfx::PointF& extent) {
   RenderWidgetHostDelegate* host_delegate =
-      RenderWidgetHostImpl::From(rwhv_->GetRenderWidgetHost())->delegate();
+      rwhv_->GetRenderWidgetHostImpl()->delegate();
   if (host_delegate) {
     host_delegate->SelectRange(ConvertFromRoot(base), ConvertFromRoot(extent));
   }
@@ -173,7 +173,7 @@ void TouchSelectionControllerClientChildFrame::ExecuteCommand(int command_id,
   manager_->GetTouchSelectionController()
       ->HideAndDisallowShowingAutomatically();
   RenderWidgetHostDelegate* host_delegate =
-      RenderWidgetHostImpl::From(rwhv_->GetRenderWidgetHost())->delegate();
+      rwhv_->GetRenderWidgetHostImpl()->delegate();
   if (!host_delegate)
     return;
 
@@ -200,8 +200,7 @@ void TouchSelectionControllerClientChildFrame::RunContextMenu() {
       gfx::PointF(anchor_rect.CenterPoint().x(), anchor_rect.y());
   gfx::Point origin = rwhv_->GetViewOriginInRoot();
   anchor_point.Offset(-origin.x(), -origin.y());
-  RenderWidgetHostImpl* host =
-      RenderWidgetHostImpl::From(rwhv_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* host = rwhv_->GetRenderWidgetHostImpl();
   host->Send(new ViewMsg_ShowContextMenu(host->GetRoutingID(),
                                          ui::MENU_SOURCE_TOUCH_EDIT_MENU,
                                          gfx::ToRoundedPoint(anchor_point)));
