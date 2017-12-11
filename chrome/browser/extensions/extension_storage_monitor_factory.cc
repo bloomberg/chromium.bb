@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/extension_storage_monitor.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -39,7 +38,7 @@ ExtensionStorageMonitorFactory::~ExtensionStorageMonitorFactory() {
 
 KeyedService* ExtensionStorageMonitorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new ExtensionStorageMonitor(Profile::FromBrowserContext(context));
+  return new ExtensionStorageMonitor(context);
 }
 
 content::BrowserContext* ExtensionStorageMonitorFactory::GetBrowserContextToUse(
