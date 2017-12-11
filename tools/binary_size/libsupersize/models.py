@@ -36,6 +36,7 @@ import match_util
 
 METADATA_GIT_REVISION = 'git_revision'
 METADATA_APK_FILENAME = 'apk_file_name'  # Path relative to output_directory.
+METADATA_APK_SIZE = 'apk_size'  # File size of apk in bytes.
 METADATA_MAP_FILENAME = 'map_file_name'  # Path relative to output_directory.
 METADATA_ELF_ARCHITECTURE = 'elf_arch'  # "Machine" field from readelf -h
 METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
@@ -48,6 +49,7 @@ SECTION_BSS = '.bss'
 SECTION_DATA = '.data'
 SECTION_DATA_REL_RO = '.data.rel.ro'
 SECTION_DATA_REL_RO_LOCAL = '.data.rel.ro.local'
+SECTION_OTHER = '.other'
 SECTION_PAK_NONTRANSLATED = '.pak.nontranslated'
 SECTION_PAK_TRANSLATIONS = '.pak.translations'
 SECTION_RODATA = '.rodata'
@@ -60,6 +62,7 @@ SECTION_NAME_TO_SECTION = {
     SECTION_DATA: 'd',
     SECTION_DATA_REL_RO_LOCAL: 'R',
     SECTION_DATA_REL_RO: 'R',
+    SECTION_OTHER: 'o',
     SECTION_PAK_NONTRANSLATED: 'P',
     SECTION_PAK_TRANSLATIONS: 'p',
     SECTION_RODATA: 'r',
@@ -75,6 +78,7 @@ SECTION_TO_SECTION_NAME = collections.OrderedDict((
     ('b', SECTION_BSS),
     ('p', SECTION_PAK_TRANSLATIONS),
     ('P', SECTION_PAK_NONTRANSLATED),
+    ('o', SECTION_OTHER),
 ))
 
 

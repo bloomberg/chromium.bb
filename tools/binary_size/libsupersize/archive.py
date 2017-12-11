@@ -586,6 +586,7 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
 
       if apk_path:
         metadata[models.METADATA_APK_FILENAME] = relative_to_out(apk_path)
+        metadata[models.METADATA_APK_SIZE] = os.path.getsize(apk_path)
   return metadata
 
 
@@ -756,7 +757,7 @@ def _ParsePakSymbols(object_paths, output_directory, symbols_by_id):
   return section_sizes, raw_symbols
 
 
-def _ParseApkSectionSizes(section_sizes, metadata, apk_elf_result):
+def _ParseApkElfSectionSize(section_sizes, metadata, apk_elf_result):
   if metadata:
     logging.debug('Extracting section sizes from .so within .apk')
     apk_build_id, apk_section_sizes = apk_elf_result.get()
@@ -779,6 +780,21 @@ def _ParseApkSectionSizes(section_sizes, metadata, apk_elf_result):
         apk_section_sizes['%s (unpacked)' % packed_section_name] = (
             section_sizes.get(packed_section_name))
   return apk_section_sizes
+
+
+def _ParseApkOtherSymbols(section_sizes, apk_path):
+  apk_symbols = []
+  with zipfile.ZipFile(apk_path) as z:
+    for zip_info in z.infolist():
+      # Skip shared library and pak files as they are already accounted for.
+      if (zip_info.filename.endswith('.so')
+          or zip_info.filename.endswith('.pak')):
+        continue
+      apk_symbols.append(models.Symbol(
+            models.SECTION_OTHER, zip_info.compress_size,
+            full_name=zip_info.filename))
+  section_sizes[models.SECTION_OTHER] = sum(s.size for s in apk_symbols)
+  return apk_symbols
 
 
 def _FindPakSymbolsFromApk(apk_path, output_directory):
@@ -844,9 +860,10 @@ def CreateSectionSizesAndSymbols(
 
   pak_symbols_by_id = None
   if apk_path:
-    section_sizes = _ParseApkSectionSizes(section_sizes, metadata,
-                                          apk_elf_result)
     pak_symbols_by_id = _FindPakSymbolsFromApk(apk_path, output_directory)
+    section_sizes = _ParseApkElfSectionSize(section_sizes, metadata,
+                                            apk_elf_result)
+    raw_symbols.extend(_ParseApkOtherSymbols(section_sizes, apk_path))
   elif pak_files and pak_info_file:
     pak_symbols_by_id = _FindPakSymbolsFromFiles(pak_files, pak_info_file)
 
