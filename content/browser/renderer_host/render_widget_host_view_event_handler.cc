@@ -135,7 +135,7 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       set_focus_on_mouse_down_or_key_event_(false),
       synthetic_move_sent_(false),
-      host_(RenderWidgetHostImpl::From(host)),
+      host_(host),
       host_view_(host_view),
       popup_child_host_view_(nullptr),
       popup_child_event_handler_(nullptr),

@@ -540,10 +540,6 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
 }
 
-RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
-  return host_;
-}
-
 void RenderWidgetHostViewAura::Show() {
   if (is_mus_browser_plugin_guest_)
     return;
@@ -2348,6 +2344,11 @@ void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
   ui::GestureRecognizer::Get()->CancelActiveTouches(window_);
 }
 
+RenderWidgetHostImpl* RenderWidgetHostViewAura::GetRenderWidgetHostImpl()
+    const {
+  return host_;
+}
+
 viz::FrameSinkId RenderWidgetHostViewAura::GetFrameSinkId() {
   return frame_sink_id_;
 }
@@ -2379,8 +2380,7 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
     GetInputMethod()->ShowImeIfNeeded();
   }
 
-  if (auto* render_widget_host =
-          RenderWidgetHostImpl::From(updated_view->GetRenderWidgetHost())) {
+  if (auto* render_widget_host = updated_view->GetRenderWidgetHostImpl()) {
     // Monitor the composition information if there is a focused editable node.
     render_widget_host->RequestCompositionUpdates(
         false /* immediate_request */,

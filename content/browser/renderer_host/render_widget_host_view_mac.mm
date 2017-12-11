@@ -743,10 +743,6 @@ void RenderWidgetHostViewMac::UpdateBackingStoreProperties() {
     browser_compositor_->SetDisplayColorSpace(current_display_color_space_);
 }
 
-RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
-  return render_widget_host_;
-}
-
 void RenderWidgetHostViewMac::Show() {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:NO];
@@ -1525,6 +1521,10 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
       RenderWidgetHostImpl::From(GetRenderWidgetHost());
   return std::unique_ptr<SyntheticGestureTarget>(
       new SyntheticGestureTargetMac(host, cocoa_view_));
+}
+
+RenderWidgetHostImpl* RenderWidgetHostViewMac::GetRenderWidgetHostImpl() const {
+  return render_widget_host_;
 }
 
 viz::FrameSinkId RenderWidgetHostViewMac::GetFrameSinkId() {

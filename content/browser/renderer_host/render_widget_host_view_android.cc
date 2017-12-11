@@ -571,11 +571,6 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
   NOTIMPLEMENTED();
 }
 
-RenderWidgetHost*
-RenderWidgetHostViewAndroid::GetRenderWidgetHost() const {
-  return host_;
-}
-
 void RenderWidgetHostViewAndroid::WasResized() {
   host_->WasResized();
 }
@@ -2125,6 +2120,11 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
 void RenderWidgetHostViewAndroid::DidStopFlinging() {
   if (content_view_core_)
     content_view_core_->DidStopFlinging();
+}
+
+RenderWidgetHostImpl* RenderWidgetHostViewAndroid::GetRenderWidgetHostImpl()
+    const {
+  return host_;
 }
 
 viz::FrameSinkId RenderWidgetHostViewAndroid::GetFrameSinkId() {

@@ -668,8 +668,7 @@ void BrowserPluginGuest::SendTextInputTypeChangedToView(
 
   if (last_text_input_state_.get()) {
     guest_rwhv->TextInputStateChanged(*last_text_input_state_);
-    if (auto* rwh =
-            RenderWidgetHostImpl::From(guest_rwhv->GetRenderWidgetHost())) {
+    if (auto* rwh = guest_rwhv->GetRenderWidgetHostImpl()) {
       // We need composition range information for some IMEs. To get the
       // updates, we need to explicitly ask the renderer to monitor and send the
       // composition information changes. RenderWidgetHostView of the page will

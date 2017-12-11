@@ -97,10 +97,6 @@ TestRenderWidgetHostView::~TestRenderWidgetHostView() {
     manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
-RenderWidgetHost* TestRenderWidgetHostView::GetRenderWidgetHost() const {
-  return rwh_;
-}
-
 gfx::Vector2dF TestRenderWidgetHostView::GetLastScrollOffset() const {
   return gfx::Vector2dF();
 }
@@ -215,6 +211,11 @@ bool TestRenderWidgetHostView::LockMouse() {
 }
 
 void TestRenderWidgetHostView::UnlockMouse() {
+}
+
+RenderWidgetHostImpl* TestRenderWidgetHostView::GetRenderWidgetHostImpl()
+    const {
+  return rwh_;
 }
 
 viz::FrameSinkId TestRenderWidgetHostView::GetFrameSinkId() {

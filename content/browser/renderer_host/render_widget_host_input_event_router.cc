@@ -213,7 +213,7 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
   // When the mouse is locked, directly route the events to the widget that
   // holds the lock and return.
   if (root_view->IsMouseLocked()) {
-    target = RenderWidgetHostImpl::From(root_view->GetRenderWidgetHost())
+    target = root_view->GetRenderWidgetHostImpl()
                  ->delegate()
                  ->GetMouseLockWidget()
                  ->GetView();
@@ -306,7 +306,7 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
   gfx::PointF transformed_point;
 
   if (root_view->IsMouseLocked()) {
-    target = RenderWidgetHostImpl::From(root_view->GetRenderWidgetHost())
+    target = root_view->GetRenderWidgetHostImpl()
                  ->delegate()
                  ->GetMouseLockWidget()
                  ->GetView();

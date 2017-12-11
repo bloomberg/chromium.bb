@@ -84,7 +84,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // RenderWidgetHostView implementation.
   void InitAsChild(gfx::NativeView parent_view) override;
-  RenderWidgetHost* GetRenderWidgetHost() const override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
   void Focus() override;
@@ -138,6 +137,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void DidStopFlinging() override;
   bool LockMouse() override;
   void UnlockMouse() override;
+  RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event,
