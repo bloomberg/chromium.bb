@@ -130,9 +130,6 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kLabeledExpressionStatement:
       blink_feature = WebFeature::kV8LabeledExpressionStatement;
       break;
-    case v8::Isolate::kLineOrParagraphSeparatorAsLineTerminator:
-      blink_feature = WebFeature::kV8LineOrParagraphSeparatorAsLineTerminator;
-      break;
     case v8::Isolate::kErrorCaptureStackTrace:
       blink_feature = WebFeature::kV8ErrorCaptureStackTrace;
       break;

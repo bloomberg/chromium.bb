@@ -1679,7 +1679,6 @@ enum WebFeature {
   kFileReaderResultBeforeCompletion = 2158,
   kSyncXhrInPageDismissal = 2159,
   kAsyncXhrInPageDismissal = 2160,
-  kV8LineOrParagraphSeparatorAsLineTerminator = 2161,
   kAnimationSetPlaybackRateCompensatorySeek = 2162,
   kDeepCombinatorInStaticProfile = 2163,
   kPseudoShadowInStaticProfile = 2164,
