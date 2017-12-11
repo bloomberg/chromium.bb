@@ -126,7 +126,6 @@ layer at (8,52) size 180x3621 backgroundClip at (0,0) size 785x585 clip at (0,0)
           text run at (0,20) width 12: "3."
       LayoutBlockFlow {IMG} at (0,231) size 50x0 [bgcolor=#008000]
         LayoutInline {SPAN} at (0,0) size 0x0
-          LayoutImage (floating) {IMG} at (0,0) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,231) size 180.25x40
         LayoutBR {BR} at (0,0) size 0x19
@@ -134,7 +133,6 @@ layer at (8,52) size 180x3621 backgroundClip at (0,0) size 785x585 clip at (0,0)
           text run at (0,20) width 12: "4."
       LayoutBlockFlow {IMG} at (0,271) size 180.25x50 [bgcolor=#008000]
         LayoutInline {SPAN} at (0,0) size 0x0
-          LayoutImage (floating) {IMG} at (0,0) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,321) size 180.25x40
         LayoutBR {BR} at (0,0) size 0x19
@@ -142,7 +140,6 @@ layer at (8,52) size 180x3621 backgroundClip at (0,0) size 785x585 clip at (0,0)
           text run at (0,20) width 12: "5."
       LayoutBlockFlow {IMG} at (0,361) size 180.25x0
         LayoutInline {SPAN} at (0,0) size 0x0
-          LayoutImage (floating) {IMG} at (0,0) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,361) size 180.25x20
         LayoutBR {BR} at (0,0) size 0x19
@@ -229,7 +226,6 @@ layer at (8,52) size 180x3621 backgroundClip at (0,0) size 785x585 clip at (0,0)
           text run at (0,20) width 12: "5."
       LayoutBlockFlow {IMG} at (0,401) size 180.25x0
         LayoutInline {SPAN} at (0,0) size 0x0
-          LayoutImage (floating) {IMG} at (0,0) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,401) size 180.25x20
         LayoutBR {BR} at (0,0) size 0x19
@@ -346,7 +342,6 @@ layer at (8,52) size 180x3621 backgroundClip at (0,0) size 785x585 clip at (0,0)
           text run at (0,20) width 12: "5."
       LayoutBlockFlow {IMG} at (0,401) size 180.25x0
         LayoutInline {SPAN} at (0,0) size 0x0
-          LayoutImage (floating) {IMG} at (0,0) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,401) size 180.25x20
         LayoutBR {BR} at (0,0) size 0x19

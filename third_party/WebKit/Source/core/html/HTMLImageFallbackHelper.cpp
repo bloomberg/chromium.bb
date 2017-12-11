@@ -23,8 +23,9 @@ namespace blink {
 using namespace HTMLNames;
 
 static bool NoImageSourceSpecified(const Element& element) {
-  bool no_src_specified =
-      !element.hasAttribute(srcAttr) || element.getAttribute(srcAttr).IsNull();
+  bool no_src_specified = !element.hasAttribute(srcAttr) ||
+                          element.getAttribute(srcAttr).IsNull() ||
+                          element.getAttribute(srcAttr).IsEmpty();
   bool no_srcset_specified = !element.hasAttribute(srcsetAttr) ||
                              element.getAttribute(srcsetAttr).IsNull();
   return no_src_specified && no_srcset_specified;
