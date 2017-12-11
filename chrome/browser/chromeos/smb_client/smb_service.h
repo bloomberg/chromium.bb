@@ -18,6 +18,10 @@
 #include "chromeos/dbus/smb_provider_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace base {
+class FilePath;
+}  // namespace base
+
 namespace chromeos {
 namespace smb_client {
 
@@ -42,7 +46,7 @@ class SmbService : public KeyedService, public ProviderInterface {
   // Starts the process of mounting an SMB file system.
   // Calls SmbProviderClient::Mount().
   void Mount(const file_system_provider::MountOptions& options,
-             const std::string& share_path,
+             const base::FilePath& share_path,
              MountResponse callback);
 
   // Completes the mounting of an SMB file system, passing |options| on to

@@ -5,10 +5,8 @@
 #ifndef CHROMEOS_DBUS_SMB_PROVIDER_CLIENT_H_
 #define CHROMEOS_DBUS_SMB_PROVIDER_CLIENT_H_
 
-#include <string>
-
-#include <base/callback.h>
-
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/smbprovider/directory_entry.pb.h"
@@ -26,6 +24,12 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
       base::OnceCallback<void(smbprovider::ErrorType error, int32_t mount_id)>;
   using UnmountCallback =
       base::OnceCallback<void(smbprovider::ErrorType error)>;
+  using ReadDirectoryCallback =
+      base::OnceCallback<void(smbprovider::ErrorType error,
+                              const smbprovider::DirectoryEntryList& entries)>;
+  using GetMetdataEntryCallback =
+      base::OnceCallback<void(smbprovider::ErrorType error,
+                              const smbprovider::DirectoryEntry& entry)>;
 
   ~SmbProviderClient() override;
 
@@ -36,11 +40,26 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
   // Calls Mount. It runs OpenDirectory() on |share_path| to check that it is a
   // valid share. |callback| is called after getting (or failing to get) D-BUS
   // response.
-  virtual void Mount(const std::string& share_path, MountCallback callback) = 0;
+  virtual void Mount(const base::FilePath& share_path,
+                     MountCallback callback) = 0;
 
   // Calls Unmount. This removes the corresponding mount of |mount_id| from
   // the list of valid mounts. Subsequent operations on |mount_id| will fail.
   virtual void Unmount(int32_t mount_id, UnmountCallback callback) = 0;
+
+  // Calls ReadDirectory. Using the corresponding mount of |mount_id|, this
+  // reads the directory on a given |directory_path| and passes the
+  // DirectoryEntryList to the supplied ReadDirectoryCallback.
+  virtual void ReadDirectory(int32_t mount_id,
+                             const base::FilePath& directory_path,
+                             ReadDirectoryCallback callback) = 0;
+
+  // Calls GetMetadataEntry. Using the corresponding mount of |mount_id|, this
+  // reads an entry in a given |entry_path| and passes the DirectoryEntry to the
+  // supplied GetMetadataEntryCallback.
+  virtual void GetMetadataEntry(int32_t mount_id,
+                                const base::FilePath& entry_path,
+                                GetMetdataEntryCallback callback) = 0;
 
  protected:
   // Create() should be used instead.
