@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -261,6 +262,25 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
 
   // No |testEvent2| because it was recorded while history was disabled.
   EXPECT_TRUE(ExpectUserEvents({testEvent1, consent1, consent2, testEvent3}));
+}
+
+// Test that events that are logged before sync is enabled.
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, LoggedBeforeSyncSetup) {
+  const UserEventSpecifics consent1 = CreateUserConsent(1);
+  const UserEventSpecifics consent2 = CreateUserConsent(2);
+  ASSERT_TRUE(SetupClients());
+  syncer::UserEventService* event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
+  auto bridge = event_service->GetSyncBridge();
+  // Wait for UserEventSyncBridge to be ready to receive events.
+  // TODO(crbug.com/761485): Remove when the store is initialized instantly.
+  ASSERT_TRUE(!bridge->change_processor()->IsTrackingMetadata());
+  while (!bridge->change_processor()->IsTrackingMetadata())
+    base::RunLoop().RunUntilIdle();
+  event_service->RecordUserEvent(consent1);
+  ASSERT_TRUE(SetupSync());
+  event_service->RecordUserEvent(consent2);
+  EXPECT_TRUE(ExpectUserEvents({consent1, consent2}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {

@@ -25,9 +25,10 @@ class PrefRegistrySimple;
 
 namespace consent_auditor {
 
+enum class ConsentStatus { REVOKED, GIVEN };
+
 class ConsentAuditor : public KeyedService {
  public:
-  enum class ConsentStatus { REVOKED, GIVEN };
 
   ConsentAuditor(PrefService* pref_service,
                  syncer::UserEventService* user_event_service,
@@ -65,7 +66,7 @@ class ConsentAuditor : public KeyedService {
       const std::string& feature,
       const std::vector<int>& consent_grd_ids,
       const std::vector<std::string>& placeholder_replacements,
-      ConsentAuditor::ConsentStatus status);
+      ConsentStatus status);
 
   PrefService* pref_service_;
   syncer::UserEventService* user_event_service_;

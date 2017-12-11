@@ -162,7 +162,7 @@ TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
 
 TEST_F(ConsentAuditorTest, RecordingEnabled) {
   consent_auditor()->RecordGaiaConsent("feature1", {}, {},
-                                       ConsentAuditor::ConsentStatus::GIVEN);
+                                       ConsentStatus::GIVEN);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
 }
@@ -171,7 +171,7 @@ TEST_F(ConsentAuditorTest, RecordingDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(switches::kSyncUserConsentEvents);
   consent_auditor()->RecordGaiaConsent("feature1", {}, {},
-                                       ConsentAuditor::ConsentStatus::GIVEN);
+                                       ConsentStatus::GIVEN);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(0U, events.size());
 }
@@ -181,7 +181,7 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
   std::vector<std::string> kPlaceholders = {"OK.", "user@example.com"};
   base::Time t1 = base::Time::Now();
   consent_auditor()->RecordGaiaConsent("feature1", kMessageIds, kPlaceholders,
-                                       ConsentAuditor::ConsentStatus::GIVEN);
+                                       ConsentStatus::GIVEN);
   base::Time t2 = base::Time::Now();
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
