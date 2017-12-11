@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_cell.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/web/mailto_handler.h"
-#import "ios/chrome/browser/web/mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MDCPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -49,13 +49,13 @@ const CGFloat kSwitchLabelFontSize = 12.0f;
 }  // namespace
 
 @interface OpenMailHandlerViewController () {
-  // A rewriter object that can rewrite a mailto:// URL to one that can
+  // A manager object that can rewrite a mailto:// URL to one that can
   // launch a different mail client app.
-  MailtoURLRewriter* _rewriter;
+  MailtoHandlerManager* _manager;
   // Item with the UISwitch toggle for user to choose whether a mailto://
   // app selection should be remembered for future use.
   CollectionViewSwitchItem* _alwaysAskItem;
-  // An array of apps that can handle mailto:// URLs. The |rewriter| object
+  // An array of apps that can handle mailto:// URLs. The |_manager| object
   // lists all supported mailto:// handlers, but not all of them would be
   // installed.
   NSMutableArray<MailtoHandler*>* _availableHandlers;
@@ -71,13 +71,13 @@ const CGFloat kSwitchLabelFontSize = 12.0f;
 
 @implementation OpenMailHandlerViewController
 
-- (instancetype)initWithRewriter:(nullable MailtoURLRewriter*)rewriter
-                 selectedHandler:(nullable OpenMailtoHandlerSelectedHandler)
-                                     selectedHandler {
+- (instancetype)initWithManager:(nullable MailtoHandlerManager*)manager
+                selectedHandler:
+                    (nullable OpenMailtoHandlerSelectedHandler)selectedHandler {
   self = [super initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
                          style:CollectionViewControllerStyleDefault];
   if (self) {
-    _rewriter = rewriter;
+    _manager = manager;
     // This will be copied automatically by ARC.
     _selectedHandler = selectedHandler;
   }
@@ -115,7 +115,7 @@ const CGFloat kSwitchLabelFontSize = 12.0f;
   // Adds list of available mailto:// handler apps.
   [model addSectionWithIdentifier:SectionIdentifierApps];
   _availableHandlers = [NSMutableArray array];
-  for (MailtoHandler* handler in [_rewriter defaultHandlers]) {
+  for (MailtoHandler* handler in [_manager defaultHandlers]) {
     if ([handler isAvailable]) {
       [_availableHandlers addObject:handler];
       CollectionViewTextItem* item =
@@ -187,7 +187,7 @@ const CGFloat kSwitchLabelFontSize = 12.0f;
       DCHECK_LT(row, [_availableHandlers count]);
       MailtoHandler* handler = _availableHandlers[row];
       if (![_alwaysAskItem isOn])
-        [_rewriter setDefaultHandlerID:[handler appStoreID]];
+        [_manager setDefaultHandlerID:[handler appStoreID]];
       if (_selectedHandler)
         _selectedHandler(handler);
       [self.presentingViewController dismissViewControllerAnimated:YES

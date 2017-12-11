@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/web/mailto_handler.h"
-#import "ios/chrome/browser/web/mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -22,8 +22,8 @@ class OpenMailHandlerViewControllerTest : public CollectionViewControllerTest {
  protected:
   CollectionViewController* InstantiateController() override {
     return [[OpenMailHandlerViewController alloc]
-        initWithRewriter:rewriter_
-         selectedHandler:selected_handler_];
+        initWithManager:manager_
+        selectedHandler:selected_handler_];
   }
 
   // Returns an OCMock object representing a MailtoHandler object with name
@@ -38,20 +38,20 @@ class OpenMailHandlerViewControllerTest : public CollectionViewControllerTest {
     return mail_app;
   }
 
-  MailtoURLRewriter* rewriter_;
+  MailtoHandlerManager* manager_;
   OpenMailtoHandlerSelectedHandler selected_handler_;
 };
 
 // Verifies the basic structure of the model.
 TEST_F(OpenMailHandlerViewControllerTest, TestModel) {
-  // Mock rewriter_ must be created before the controller.
-  id rewriter_mock = OCMClassMock([MailtoURLRewriter class]);
+  // Mock manager_ must be created before the controller.
+  id manager_mock = OCMClassMock([MailtoHandlerManager class]);
   NSArray* mail_apps = @[
     CreateMockApp(@"app1", @"111", YES), CreateMockApp(@"app2", @"222", NO),
     CreateMockApp(@"app3", @"333", YES)
   ];
-  OCMStub([rewriter_mock defaultHandlers]).andReturn(mail_apps);
-  rewriter_ = base::mac::ObjCCastStrict<MailtoURLRewriter>(rewriter_mock);
+  OCMStub([manager_mock defaultHandlers]).andReturn(mail_apps);
+  manager_ = base::mac::ObjCCastStrict<MailtoHandlerManager>(manager_mock);
   CreateController();
   CheckController();
 
@@ -70,13 +70,13 @@ TEST_F(OpenMailHandlerViewControllerTest, TestModel) {
 // Verifies that when the second row is selected, the callback is called with
 // the second mailto:// handler.
 TEST_F(OpenMailHandlerViewControllerTest, TestSelectionCallback) {
-  // Mock rewriter_ and callback block must be created before the controller.
-  id rewriter_mock = OCMClassMock([MailtoURLRewriter class]);
+  // Mock manager_ and callback block must be created before the controller.
+  id manager_mock = OCMClassMock([MailtoHandlerManager class]);
   NSArray* mailApps = @[
     CreateMockApp(@"app1", @"111", YES), CreateMockApp(@"app2", @"222", YES)
   ];
-  OCMStub([rewriter_mock defaultHandlers]).andReturn(mailApps);
-  rewriter_ = base::mac::ObjCCastStrict<MailtoURLRewriter>(rewriter_mock);
+  OCMStub([manager_mock defaultHandlers]).andReturn(mailApps);
+  manager_ = base::mac::ObjCCastStrict<MailtoHandlerManager>(manager_mock);
   __block BOOL handler_called = NO;
   selected_handler_ = ^(MailtoHandler* handler) {
     EXPECT_NSEQ(@"222", [handler appStoreID]);
@@ -97,17 +97,17 @@ TEST_F(OpenMailHandlerViewControllerTest, TestSelectionCallback) {
 
 // Verifies that if the "always ask" toggle is turned OFF and a certain row
 // in the view controller is selected, the corresponding mailto:// handler
-// app is set as the default in |rewriter_|.
+// app is set as the default in |manager_|.
 TEST_F(OpenMailHandlerViewControllerTest, TestAlwaysAskToggle) {
-  // Mock rewriter_ must be created before the controller.
-  id rewriter_mock = OCMClassMock([MailtoURLRewriter class]);
+  // Mock manager_ must be created before the controller.
+  id manager_mock = OCMClassMock([MailtoHandlerManager class]);
   NSArray* mail_apps = @[
     CreateMockApp(@"app1", @"111", YES), CreateMockApp(@"app2", @"222", YES)
   ];
-  OCMStub([rewriter_mock defaultHandlers]).andReturn(mail_apps);
+  OCMStub([manager_mock defaultHandlers]).andReturn(mail_apps);
   // The second app will be selected for this test.
-  OCMExpect([rewriter_mock setDefaultHandlerID:@"222"]);
-  rewriter_ = base::mac::ObjCCastStrict<MailtoURLRewriter>(rewriter_mock);
+  OCMExpect([manager_mock setDefaultHandlerID:@"222"]);
+  manager_ = base::mac::ObjCCastStrict<MailtoHandlerManager>(manager_mock);
   CreateController();
 
   // Finds the UISwitch cell and toggle the switch to OFF.
@@ -127,5 +127,5 @@ TEST_F(OpenMailHandlerViewControllerTest, TestAlwaysAskToggle) {
       [NSIndexPath indexPathForRow:1 inSection:1];
   [test_view_controller collectionView:[test_view_controller collectionView]
               didSelectItemAtIndexPath:selected_index_path];
-  EXPECT_OCMOCK_VERIFY(rewriter_mock);
+  EXPECT_OCMOCK_VERIFY(manager_mock);
 }

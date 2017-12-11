@@ -7,7 +7,7 @@
 
 #import "ios/chrome/browser/web/mailto_handler.h"
 #import "ios/chrome/browser/web/mailto_handler_gmail.h"
-#import "ios/chrome/browser/web/mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/mailto_handler_manager.h"
 
 // Test fixtures for faking MailtoHandlerGmail objects that reports whether
 // Gmail app as installed or not.
@@ -25,9 +25,9 @@
 @end
 
 // An observer object that counts and reports the number of times it has been
-// called by the MailtoURLRewriter object.
-@interface CountingMailtoURLRewriterObserver
-    : NSObject<MailtoURLRewriterObserver>
+// called by the MailtoHandlerManager object.
+@interface CountingMailtoHandlerManagerObserver
+    : NSObject<MailtoHandlerManagerObserver>
 // Returns the number of times that observer has been called.
 @property(nonatomic, readonly) int changeCount;
 @end
