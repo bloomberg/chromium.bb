@@ -739,6 +739,377 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   }
 }
 
+// Test that we log quality metrics appropriately with fields having
+// only_fill_when_focused and are supposed to log RATIONALIZATION_OK.
+TEST_F(AutofillMetricsTest,
+       QualityMetrics_LoggedCorrecltyForRationalizationOk) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Name", "name", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Address", "address", "3734 Elvis Presley Blvd.",
+                            "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  field.is_autofilled = false;
+
+  // Below are fields with only_fill_when_focused set to true.
+  // RATIONALIZATION_OK because it's ambiguous value.
+  test::CreateTestFormField("Phone1", "phone1", "nonsense value", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  // RATIONALIZATION_OK because it's same type but different
+  // to what is in the profile.
+  test::CreateTestFormField("Phone2", "phone2", "2345678902", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+
+  // RATIONALIZATION_OK because it's a type mismatch.
+  test::CreateTestFormField("Phone3", "phone3", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  base::UserActionTester user_action_tester;
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+  std::string guid("00000000-0000-0000-0000-000000000001");
+  // Trigger phone number rationalization at filling time.
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendID(std::string(), guid));
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount("Autofill_FilledProfileSuggestion"));
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->SubmitForm(form, TimeTicks::Now());
+
+  // Rationalization quality.
+  {
+    std::string rationalization_histogram =
+        "Autofill.RationalizationQuality.PhoneNumber";
+    // RATIONALIZATION_OK is logged 3 times.
+    histogram_tester.ExpectBucketCount(rationalization_histogram,
+                                       AutofillMetrics::RATIONALIZATION_OK, 3);
+  }
+}
+
+// Test that we log quality metrics appropriately with fields having
+// only_fill_when_focused and are supposed to log RATIONALIZATION_GOOD.
+TEST_F(AutofillMetricsTest,
+       QualityMetrics_LoggedCorrecltyForRationalizationGood) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Name", "name", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Address", "address", "3734 Elvis Presley Blvd.",
+                            "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  field.is_autofilled = false;
+
+  // Below are fields with only_fill_when_focused set to true.
+  // RATIONALIZATION_GOOD because it's empty.
+  test::CreateTestFormField("Phone1", "phone1", "", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  base::UserActionTester user_action_tester;
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+  std::string guid("00000000-0000-0000-0000-000000000001");
+  // Trigger phone number rationalization at filling time.
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendID(std::string(), guid));
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount("Autofill_FilledProfileSuggestion"));
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->SubmitForm(form, TimeTicks::Now());
+
+  // Rationalization quality.
+  {
+    std::string rationalization_histogram =
+        "Autofill.RationalizationQuality.PhoneNumber";
+    // RATIONALIZATION_GOOD is logged once.
+    histogram_tester.ExpectBucketCount(
+        rationalization_histogram, AutofillMetrics::RATIONALIZATION_GOOD, 1);
+  }
+}
+
+// Test that we log quality metrics appropriately with fields having
+// only_fill_when_focused and are supposed to log RATIONALIZATION_BAD.
+TEST_F(AutofillMetricsTest,
+       QualityMetrics_LoggedCorrecltyForRationalizationBad) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Name", "name", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Address", "address", "3734 Elvis Presley Blvd.",
+                            "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  field.is_autofilled = false;
+
+  // Below are fields with only_fill_when_focused set to true.
+  // RATIONALIZATION_BAD because it's filled with same
+  // value as filled previously.
+  test::CreateTestFormField("Phone1", "phone1", "2345678901", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  base::UserActionTester user_action_tester;
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+  std::string guid("00000000-0000-0000-0000-000000000001");
+  // Trigger phone number rationalization at filling time.
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendID(std::string(), guid));
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount("Autofill_FilledProfileSuggestion"));
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->SubmitForm(form, TimeTicks::Now());
+
+  // Rationalization quality.
+  {
+    std::string rationalization_histogram =
+        "Autofill.RationalizationQuality.PhoneNumber";
+    // RATIONALIZATION_BAD is logged once.
+    histogram_tester.ExpectBucketCount(rationalization_histogram,
+                                       AutofillMetrics::RATIONALIZATION_BAD, 1);
+  }
+}
+
+// Test that we log quality metrics appropriately with fields having
+// only_fill_when_focused set to true.
+TEST_F(AutofillMetricsTest,
+       QualityMetrics_LoggedCorrecltyForOnlyFillWhenFocusedField) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  // TRUE_POSITIVE + no rationalization logging
+  test::CreateTestFormField("Name", "name", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  // TRUE_POSITIVE + no rationalization logging
+  test::CreateTestFormField("Address", "address", "3734 Elvis Presley Blvd.",
+                            "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
+
+  // TRUE_POSITIVE + no rationalization logging
+  test::CreateTestFormField("Phone", "phone", "2345678901", "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  field.is_autofilled = false;
+
+  // Below are fields with only_fill_when_focused set to true.
+  // TRUE_NEGATIVE_EMPTY + RATIONALIZATION_GOOD
+  test::CreateTestFormField("Phone1", "phone1", "", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  // TRUE_POSITIVE + RATIONALIZATION_BAD
+  test::CreateTestFormField("Phone2", "phone2", "2345678901", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+
+  // FALSE_NEGATIVE_MISMATCH + RATIONALIZATION_OK
+  test::CreateTestFormField("Phone3", "phone3", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  base::UserActionTester user_action_tester;
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+  std::string guid("00000000-0000-0000-0000-000000000001");
+  // Trigger phone number rationalization at filling time.
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendID(std::string(), guid));
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount("Autofill_FilledProfileSuggestion"));
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->SubmitForm(form, TimeTicks::Now());
+
+  // Rationalization quality.
+  {
+    std::string rationalization_histogram =
+        "Autofill.RationalizationQuality.PhoneNumber";
+    histogram_tester.ExpectBucketCount(
+        rationalization_histogram, AutofillMetrics::RATIONALIZATION_GOOD, 1);
+    histogram_tester.ExpectBucketCount(rationalization_histogram,
+                                       AutofillMetrics::RATIONALIZATION_OK, 1);
+    histogram_tester.ExpectBucketCount(rationalization_histogram,
+                                       AutofillMetrics::RATIONALIZATION_BAD, 1);
+  }
+
+  // Heuristic predictions.
+  {
+    std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate.Heuristic";
+    std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType.Heuristic";
+
+    // TRUE_POSITIVE:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_POSITIVE, 4);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TRUE_POSITIVE), 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_LINE1,
+                                AutofillMetrics::TRUE_POSITIVE),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_CITY_AND_NUMBER,
+                                AutofillMetrics::TRUE_POSITIVE),
+        2);
+    // TRUE_NEGATIVE_EMPTY
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_NEGATIVE_EMPTY, 1);
+    // FALSE_NEGATIVE_MISMATCH
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+        1);
+    // Sanity Check:
+    histogram_tester.ExpectTotalCount(aggregate_histogram, 6);
+    histogram_tester.ExpectTotalCount(by_field_type_histogram, 5);
+  }
+
+  // Server overrides heuristic so Overall and Server are the same predictions
+  // (as there were no test fields where server == NO_SERVER_DATA and heuristic
+  // != UNKNOWN_TYPE).
+  for (const std::string source : {"Server", "Overall"}) {
+    std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate." + source;
+    std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType." + source;
+
+    // TRUE_POSITIVE:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_POSITIVE, 4);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TRUE_POSITIVE), 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_LINE1,
+                                AutofillMetrics::TRUE_POSITIVE),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_CITY_AND_NUMBER,
+                                AutofillMetrics::TRUE_POSITIVE),
+        2);
+    // TRUE_NEGATIVE_EMPTY
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_NEGATIVE_EMPTY, 1);
+    // FALSE_NEGATIVE_MISMATCHFALSE_NEGATIVE_MATCH
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_CITY_AND_NUMBER,
+                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+        1);
+    // Sanity Check:
+    histogram_tester.ExpectTotalCount(aggregate_histogram, 6);
+    histogram_tester.ExpectTotalCount(by_field_type_histogram, 5);
+  }
+}
+
 // Tests the true negatives (empty + no prediction and unknown + no prediction)
 // and false positives (empty + bad prediction and unknown + bad prediction)
 // are counted correctly.

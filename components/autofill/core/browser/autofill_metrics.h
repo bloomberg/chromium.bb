@@ -284,6 +284,26 @@ class AutofillMetrics {
     NUM_FIELD_TYPE_QUALITY_METRICS
   };
 
+  // Metrics measuring how well rationalization has performed given user's
+  // actual input.
+  enum RationalizationQualityMetric {
+    // Rationalization did make it better for the user. Most commonly, user
+    // have left it empty as rationalization predicted.
+    RATIONALIZATION_GOOD,
+
+    // Rationalization did not make it better or worse. Meaning user have
+    // input some value that would not be filled correctly automatically.
+    RATIONALIZATION_OK,
+
+    // Rationalization did make it worse, user has to fill
+    // in a value that would have been automatically filled
+    // if there was no rationalization at all.
+    RATIONALIZATION_BAD,
+
+    // This must be last.
+    NUM_RATIONALIZATION_QUALITY_METRICS
+  };
+
   enum QualityMetricPredictionSource {
     PREDICTION_SOURCE_UNKNOWN,    // Not used. The prediction source is unknown.
     PREDICTION_SOURCE_HEURISTIC,  // Local heuristic field-type prediction.
