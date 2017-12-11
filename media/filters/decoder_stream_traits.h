@@ -66,8 +66,8 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   // if timestamp gaps are detected. Sufficiently large gaps can lead to AV sync
   // drift.
   std::unique_ptr<AudioTimestampValidator> audio_ts_validator_;
-
   MediaLog* media_log_;
+  PipelineStatistics stats_;
 };
 
 template <>
@@ -104,6 +104,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   base::TimeDelta last_keyframe_timestamp_;
   MovingAverage keyframe_distance_average_;
   base::flat_set<base::TimeDelta> frames_to_drop_;
+  PipelineStatistics stats_;
 };
 
 }  // namespace media
