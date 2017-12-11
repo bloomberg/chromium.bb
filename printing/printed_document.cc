@@ -243,7 +243,8 @@ void PrintedDocument::set_debug_dump_path(
 base::FilePath PrintedDocument::CreateDebugDumpPath(
     const base::string16& document_name,
     const base::FilePath::StringType& extension) {
-  DCHECK(!g_debug_dump_info.Get().empty());
+  if (!g_debug_dump_info.Get().empty())
+    return base::FilePath();
 
   // Create a filename.
   base::string16 filename;
