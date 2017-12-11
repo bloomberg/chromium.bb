@@ -25,6 +25,10 @@ class ServiceConfig {
   // DownloadParams::StartResult::BACKOFF return value.
   virtual uint32_t GetMaxScheduledDownloadsPerClient() const = 0;
 
+  // The maximum number of downloads the DownloadService can have currently in
+  // Active or Paused states, shared by all clients.
+  virtual uint32_t GetMaxConcurrentDownloads() const = 0;
+
   // Returns the minimum amount of time the DownloadService will wait before
   // automatically erasing any files that remain on disk in the same place with
   // the same name for a completed download.  It is up to the Client to move or

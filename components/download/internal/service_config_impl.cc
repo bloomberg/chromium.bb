@@ -17,6 +17,10 @@ uint32_t ServiceConfigImpl::GetMaxScheduledDownloadsPerClient() const {
   return config_->max_scheduled_downloads;
 }
 
+uint32_t ServiceConfigImpl::GetMaxConcurrentDownloads() const {
+  return config_->max_concurrent_downloads;
+}
+
 const base::TimeDelta& ServiceConfigImpl::GetFileKeepAliveTime() const {
   return config_->file_keep_alive_time;
 }

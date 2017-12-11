@@ -13,10 +13,12 @@ TEST(ServiceConfigImplTest, TestApi) {
   ServiceConfigImpl impl(&config);
 
   config.max_scheduled_downloads = 7;
+  config.max_concurrent_downloads = 12;
   config.file_keep_alive_time = base::TimeDelta::FromSeconds(12);
 
   EXPECT_EQ(config.max_scheduled_downloads,
             impl.GetMaxScheduledDownloadsPerClient());
+  EXPECT_EQ(config.max_concurrent_downloads, impl.GetMaxConcurrentDownloads());
   EXPECT_EQ(config.file_keep_alive_time, impl.GetFileKeepAliveTime());
 }
 

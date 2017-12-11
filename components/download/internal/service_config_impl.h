@@ -19,6 +19,7 @@ class ServiceConfigImpl : public ServiceConfig {
 
   // ServiceConfig implementation.
   uint32_t GetMaxScheduledDownloadsPerClient() const override;
+  uint32_t GetMaxConcurrentDownloads() const override;
   const base::TimeDelta& GetFileKeepAliveTime() const override;
 
  private:
