@@ -37,6 +37,8 @@ class MESSAGE_CENTER_EXPORT MessageView
     : public views::View,
       public views::SlideOutController::Delegate {
  public:
+  static const char kViewClassName[];
+
   MessageView(MessageViewDelegate* delegate, const Notification& notification);
   ~MessageView() override;
 
@@ -73,6 +75,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   void OnFocus() override;
   void OnBlur() override;
   void Layout() override;
+  const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::SlideOutController::Delegate

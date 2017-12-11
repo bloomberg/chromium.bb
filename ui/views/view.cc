@@ -1523,6 +1523,8 @@ void View::PreferredSizeChanged() {
   InvalidateLayout();
   if (parent_)
     parent_->ChildPreferredSizeChanged(this);
+  for (ViewObserver& observer : observers_)
+    observer.OnViewPreferredSizeChanged(this);
 }
 
 bool View::GetNeedsNotificationWhenVisibleBoundsChange() const {

@@ -259,8 +259,7 @@ void MessageCenterView::OnAllNotificationsCleared() {
 
   // Action by user.
   message_center_->RemoveAllNotifications(
-      true /* by_user */,
-      message_center::MessageCenter::RemoveType::NON_PINNED);
+      true /* by_user */, MessageCenter::RemoveType::NON_PINNED);
   is_clearing_all_notifications_ = false;
 }
 
@@ -495,18 +494,6 @@ void MessageCenterView::ClickOnSettingsButton(
   message_center_->ClickOnSettingsButton(notification_id);
 }
 
-void MessageCenterView::UpdateNotificationSize(
-    const std::string& notification_id) {
-  // TODO(edcourtney, yoshiki): We don't call OnNotificationUpdated directly
-  // because it resets the reposition session, which can end up deleting
-  // notification items when it cancels animations. This causes problems for
-  // ARC notifications. See crbug.com/714493. OnNotificationUpdated should not
-  // have to consider the reposition session, but OnMouseEntered and
-  // OnMouseExited don't work properly for ARC notifications at the moment.
-  // See crbug.com/714587.
-  UpdateNotification(notification_id);
-}
-
 void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
 
@@ -544,10 +531,18 @@ void MessageCenterView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
+void MessageCenterView::OnViewPreferredSizeChanged(views::View* observed_view) {
+  DCHECK_EQ(std::string(MessageView::kViewClassName),
+            observed_view->GetClassName());
+  UpdateNotification(
+      static_cast<MessageView*>(observed_view)->notification_id());
+}
+
 void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
   MessageView* view = message_center::MessageViewFactory::Create(
       this, notification, false);  // Not top-level.
+  view->AddObserver(this);
 
   // TODO(yoshiki): Temporarily disable context menu on custom (arc)
   // notifications. See crbug.com/750307 for details.
