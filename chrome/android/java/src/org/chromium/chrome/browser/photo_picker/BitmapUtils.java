@@ -10,6 +10,8 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.os.Build;
 
+import org.chromium.base.metrics.RecordHistogram;
+
 import java.io.FileDescriptor;
 import java.io.IOException;
 
@@ -17,6 +19,20 @@ import java.io.IOException;
  * A collection of utility functions for dealing with bitmaps.
  */
 class BitmapUtils {
+    // Constants used to log UMA enum histogram, must stay in sync with the
+    // ExifOrientation enum in enums.xml. Further actions can only be appended,
+    // existing entries must not be overwritten.
+    private static final int EXIF_ORIENTATION_NORMAL = 0;
+    private static final int EXIF_ORIENTATION_ROTATE_90 = 1;
+    private static final int EXIF_ORIENTATION_ROTATE_180 = 2;
+    private static final int EXIF_ORIENTATION_ROTATE_270 = 3;
+    private static final int EXIF_ORIENTATION_TRANSPOSE = 4;
+    private static final int EXIF_ORIENTATION_TRANSVERSE = 5;
+    private static final int EXIF_ORIENTATION_FLIP_HORIZONTAL = 6;
+    private static final int EXIF_ORIENTATION_FLIP_VERTICAL = 7;
+    private static final int EXIF_ORIENTATION_UNDEFINED = 8;
+    private static final int EXIF_ORIENTATION_ACTION_BOUNDARY = 9;
+
     /**
      * Takes a |bitmap| and returns a square thumbnail of |size|x|size| from the center of the
      * bitmap specified, rotating it according to the Exif information, if needed (on Nougat and
@@ -97,6 +113,15 @@ class BitmapUtils {
     }
 
     /**
+     * Records the Exif histogram value for a photo.
+     * @param sample The sample to record.
+     */
+    private static void recordExifHistogram(int sample) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.PhotoPicker.ExifOrientation", sample, EXIF_ORIENTATION_ACTION_BOUNDARY);
+    }
+
+    /**
      * Crops a |bitmap| to a certain square |size| and rotates it according to the Exif information,
      * if needed (on Nougat and up only).
      * @param bitmap The bitmap to crop.
@@ -110,13 +135,46 @@ class BitmapUtils {
             try {
                 ExifInterface exif = new ExifInterface(descriptor);
                 int rotation = exif.getAttributeInt(
-                        ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                if (rotation == ExifInterface.ORIENTATION_ROTATE_90) {
-                    matrix.postRotate(90);
-                } else if (rotation == ExifInterface.ORIENTATION_ROTATE_180) {
-                    matrix.postRotate(180);
-                } else if (rotation == ExifInterface.ORIENTATION_ROTATE_270) {
-                    matrix.postRotate(270);
+                        ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+                switch (rotation) {
+                    case ExifInterface.ORIENTATION_NORMAL:
+                        recordExifHistogram(EXIF_ORIENTATION_NORMAL);
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        matrix.postRotate(90);
+                        recordExifHistogram(EXIF_ORIENTATION_ROTATE_90);
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        matrix.postRotate(180);
+                        recordExifHistogram(EXIF_ORIENTATION_ROTATE_180);
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        matrix.postRotate(-90);
+                        recordExifHistogram(EXIF_ORIENTATION_ROTATE_270);
+                        break;
+                    case ExifInterface.ORIENTATION_TRANSPOSE:
+                        matrix.setRotate(90);
+                        matrix.postScale(-1, 1);
+                        recordExifHistogram(EXIF_ORIENTATION_TRANSPOSE);
+                        break;
+                    case ExifInterface.ORIENTATION_TRANSVERSE:
+                        matrix.setRotate(-90);
+                        matrix.postScale(-1, 1);
+                        recordExifHistogram(EXIF_ORIENTATION_TRANSVERSE);
+                        break;
+                    case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                        matrix.setScale(-1, 1);
+                        recordExifHistogram(EXIF_ORIENTATION_FLIP_HORIZONTAL);
+                        break;
+                    case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                        matrix.setScale(1, -1);
+                        recordExifHistogram(EXIF_ORIENTATION_FLIP_VERTICAL);
+                        break;
+                    case ExifInterface.ORIENTATION_UNDEFINED:
+                        recordExifHistogram(EXIF_ORIENTATION_UNDEFINED);
+                        break;
+                    default:
+                        break;
                 }
             } catch (IOException e) {
             }
