@@ -44,6 +44,7 @@ class SyncAwareCounterTest : public SyncTest {
         ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
         SigninManagerFactory::GetForProfile(browser()->profile()),
         browser()->profile()->GetRequestContext()));
+    run_loop_.reset(new base::RunLoop());
   }
 
   history::WebHistoryService* GetFakeWebHistoryService(Profile* profile) {
@@ -57,37 +58,30 @@ class SyncAwareCounterTest : public SyncTest {
   // Callback and result retrieval ---------------------------------------------
 
   void WaitForCounting() {
-    run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
+    run_loop_.reset(new base::RunLoop());
+    finished_ = false;
   }
 
+  // Returns true if the counter finished since the last call to
+  // WaitForCounting() or CountingFinishedSinceLastAsked()
   bool CountingFinishedSinceLastAsked() {
     bool result = finished_;
     finished_ = false;
     return result;
   }
 
-  void WaitForCountingOrConfirmFinished() {
-    if (CountingFinishedSinceLastAsked())
-      return;
-
-    WaitForCounting();
-    CountingFinishedSinceLastAsked();
-  }
-
   bool IsSyncEnabled() { return sync_enabled_; }
 
-  void Callback(std::unique_ptr<BrowsingDataCounter::Result> result) {
+  void OnCounterResult(std::unique_ptr<BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
 
     if (finished_) {
       auto* sync_result =
           static_cast<BrowsingDataCounter::SyncResult*>(result.get());
       sync_enabled_ = sync_result->is_sync_enabled();
-    }
-
-    if (run_loop_ && finished_)
       run_loop_->Quit();
+    }
   }
 
  private:
@@ -115,23 +109,17 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, AutofillCounter) {
           profile, ServiceAccessType::IMPLICIT_ACCESS),
       sync_service);
 
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&SyncAwareCounterTest::Callback, base::Unretained(this)));
-
-  // Note that some Sync operations notify observers immediately (and thus there
-  // is no need to call |WaitForCounting()|; in fact, it would block the test),
-  // while other operations only post the task on UI thread's message loop
-  // (which requires calling |WaitForCounting()| for them to run). Therefore,
-  // this test always checks if the callback has already run and only waits
-  // if it has not.
+  counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
+               base::Bind(&SyncAwareCounterTest::OnCounterResult,
+                          base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing autofill, and this should restart the counter.
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(sync_service->IsSyncActive());
   ASSERT_TRUE(sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL));
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
 
   // We stop syncing autofill in particular. This restarts the counter.
@@ -143,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, AutofillCounter) {
                                      everything_except_autofill);
   ASSERT_FALSE(sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL));
   sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL));
   EXPECT_FALSE(IsSyncEnabled());
 
@@ -158,12 +146,12 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, AutofillCounter) {
   sync_blocker = sync_service->GetSetupInProgressHandle();
   sync_service->ChangePreferredDataTypes(syncer::ModelTypeSet::All());
   sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
 
   // Stopping the Sync service triggers a restart.
   sync_service->RequestStop(syncer::SyncService::CLEAR_DATA);
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_FALSE(IsSyncEnabled());
 }
 
@@ -182,23 +170,17 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, PasswordCounter) {
                                           ServiceAccessType::EXPLICIT_ACCESS),
       sync_service);
 
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&SyncAwareCounterTest::Callback, base::Unretained(this)));
-
-  // Note that some Sync operations notify observers immediately (and thus there
-  // is no need to call |WaitForCounting()|; in fact, it would block the test),
-  // while other operations only post the task on UI thread's message loop
-  // (which requires calling |WaitForCounting()| for them to run). Therefore,
-  // this test always checks if the callback has already run and only waits
-  // if it has not.
+  counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
+               base::Bind(&SyncAwareCounterTest::OnCounterResult,
+                          base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing passwords, and this should restart the counter.
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(sync_service->IsSyncActive());
   ASSERT_TRUE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
 
   // We stop syncing passwords in particular. This restarts the counter.
@@ -210,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, PasswordCounter) {
                                      everything_except_passwords);
   ASSERT_FALSE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
   sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   ASSERT_FALSE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
   EXPECT_FALSE(IsSyncEnabled());
 
@@ -226,12 +208,12 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, PasswordCounter) {
   sync_blocker = sync_service->GetSetupInProgressHandle();
   sync_service->ChangePreferredDataTypes(syncer::ModelTypeSet::All());
   sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
 
   // Stopping the Sync service triggers a restart.
   sync_service->RequestStop(syncer::SyncService::CLEAR_DATA);
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_FALSE(IsSyncEnabled());
 }
 
@@ -253,16 +235,10 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
                  base::Unretained(this), base::Unretained(profile)),
       sync_service);
 
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&SyncAwareCounterTest::Callback, base::Unretained(this)));
-
-  // Note that some Sync operations notify observers immediately (and thus there
-  // is no need to call |WaitForCounting()|; in fact, it would block the test),
-  // while other operations only post the task on UI thread's message loop
-  // (which requires calling |WaitForCounting()| for them to run). Therefore,
-  // this test always checks if the callback has already run and only waits
-  // if it has not.
+  counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
+               base::Bind(&SyncAwareCounterTest::OnCounterResult,
+                          base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing history deletion, and this should restart the counter.
@@ -273,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
   ASSERT_TRUE(sync_service->GetActiveDataTypes().Has(
       syncer::HISTORY_DELETE_DIRECTIVES));
 
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
 
   // We stop syncing history deletion in particular. This restarts the counter.
@@ -284,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
   sync_service->OnUserChoseDatatypes(/*sync_everything=*/false,
                                      everything_except_history);
   sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_FALSE(IsSyncEnabled());
 
   // If the history deletion sync is not affected, the counter is not restarted.
@@ -309,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
   sync_blocker = sync_service->GetSetupInProgressHandle();
   sync_service->ChangePreferredDataTypes(syncer::ModelTypeSet::All());
   sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
 
   // Changing the syncing datatypes to another set that still includes history
@@ -320,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
 
   // Stopping the Sync service triggers a restart.
   sync_service->RequestStop(syncer::SyncService::CLEAR_DATA);
-  WaitForCountingOrConfirmFinished();
+  WaitForCounting();
   EXPECT_FALSE(IsSyncEnabled());
 }
 
