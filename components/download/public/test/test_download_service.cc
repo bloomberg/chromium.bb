@@ -26,6 +26,7 @@ class TestServiceConfig : public ServiceConfig {
 
   // ServiceConfig implementation.
   uint32_t GetMaxScheduledDownloadsPerClient() const override { return 0; }
+  uint32_t GetMaxConcurrentDownloads() const override { return 0; }
   const base::TimeDelta& GetFileKeepAliveTime() const override {
     return time_delta_;
   }
