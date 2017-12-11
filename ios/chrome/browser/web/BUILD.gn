@@ -132,6 +132,8 @@ source_set("web_internal") {
     "error_page_generator.mm",
     "external_app_launcher.h",
     "external_app_launcher.mm",
+    "external_app_launcher_tab_helper.h",
+    "external_app_launcher_tab_helper.mm",
     "external_app_launching_state.h",
     "external_app_launching_state.mm",
     "external_apps_launch_policy_decider.h",

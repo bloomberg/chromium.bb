@@ -85,7 +85,7 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
-#import "ios/chrome/browser/web/external_app_launcher.h"
+#import "ios/chrome/browser/web/external_app_launcher_tab_helper.h"
 #import "ios/chrome/browser/web/navigation_manager_util.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -167,10 +167,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   // The Overscroll controller responsible for displaying the
   // overscrollActionsView above the toolbar.
   OverscrollActionsController* _overscrollActionsController;
-
-  // Lightweight object dealing with various different UI behaviours when
-  // opening a URL in an external application.
-  ExternalAppLauncher* _externalAppLauncher;
 
   // Handles retrieving, generating and updating snapshots of CRWWebController's
   // web page.
@@ -524,9 +520,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (BOOL)openExternalURL:(const GURL&)url
               sourceURL:(const GURL&)sourceURL
             linkClicked:(BOOL)linkClicked {
-  if (!_externalAppLauncher)
-    _externalAppLauncher = [[ExternalAppLauncher alloc] init];
-
   // Make a local url copy for possible modification.
   GURL finalURL = url;
 
@@ -561,9 +554,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       return NO;
   }
 
-  if ([_externalAppLauncher requestToOpenURL:finalURL
-                               sourcePageURL:sourceURL
-                                 linkClicked:linkClicked]) {
+  ExternalAppLauncherTabHelper* externalAppLauncherTabHelper =
+      ExternalAppLauncherTabHelper::FromWebState(self.webState);
+  if (externalAppLauncherTabHelper->RequestToOpenUrl(finalURL, sourceURL,
+                                                     linkClicked)) {
     // Clears pending navigation history after successfully launching the
     // external app.
     DCHECK([self navigationManager]);
@@ -1197,10 +1191,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 #pragma mark - TestingSupport
 
 @implementation Tab (TestingSupport)
-
-- (void)replaceExternalAppLauncher:(id)externalAppLauncher {
-  _externalAppLauncher = externalAppLauncher;
-}
 
 - (TabModel*)parentTabModel {
   return _parentTabModel;
