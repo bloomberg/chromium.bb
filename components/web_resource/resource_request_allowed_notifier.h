@@ -80,7 +80,6 @@ class ResourceRequestAllowedNotifier
   //   GetResourceRequestsAllowedState() == ALLOWED.
   bool ResourceRequestsAllowed();
 
-  void SetWaitingForNetworkForTesting(bool waiting);
   void SetWaitingForEulaForTesting(bool waiting);
   void SetObserverRequestedForTesting(bool requested);
 
@@ -111,9 +110,6 @@ class ResourceRequestAllowedNotifier
   // requested permission to make a request or not. If it did not, then this
   // class should not notify it even if the criteria is met.
   bool observer_requested_permission_;
-
-  // Tracks network connectivity criteria.
-  bool waiting_for_network_;
 
   // Tracks EULA acceptance criteria.
   bool waiting_for_user_to_accept_eula_;
