@@ -77,6 +77,9 @@ class CoordinationUnitGraphObserver {
                                     const mojom::Event event) {}
   virtual void OnPageEventReceived(const PageCoordinationUnitImpl* page_cu,
                                    const mojom::Event event) {}
+  virtual void OnProcessEventReceived(
+      const ProcessCoordinationUnitImpl* process_cu,
+      const mojom::Event event) {}
 
   void set_coordination_unit_manager(
       CoordinationUnitManager* coordination_unit_manager) {
