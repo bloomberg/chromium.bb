@@ -44,6 +44,7 @@ namespace blink {
 
 class CanvasImageSource;
 class HTMLCanvasElement;
+class ImageData;
 class ImageBitmap;
 class WebLayer;
 
@@ -91,6 +92,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
                                                     SnapshotReason) const = 0;
+  virtual ImageData* ToImageData(SnapshotReason reason) { return nullptr; }
   virtual ContextType GetContextType() const = 0;
   virtual bool IsComposited() const = 0;
   virtual bool IsAccelerated() const = 0;
@@ -162,8 +164,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   virtual void SetFilterQuality(SkFilterQuality) { NOTREACHED(); }
   virtual void Reshape(int width, int height) { NOTREACHED(); }
   virtual void MarkLayerComposited() { NOTREACHED(); }
-  virtual scoped_refptr<Uint8Array> PaintRenderingResultsToDataArray(
-      SourceDrawingBuffer) {
+  virtual ImageData* PaintRenderingResultsToImageData(SourceDrawingBuffer) {
     NOTREACHED();
     return nullptr;
   }
