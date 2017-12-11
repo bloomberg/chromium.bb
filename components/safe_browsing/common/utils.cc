@@ -23,10 +23,6 @@ std::string ShortURLForReporting(const GURL& url) {
   return spec;
 }
 
-void LogDelay(base::TimeDelta time) {
-  UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
-}
-
 void LogNoUserActionResourceLoadingDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.NoUserActionResourceLoadingDelay", time);
 }

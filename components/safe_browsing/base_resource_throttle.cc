@@ -361,4 +361,13 @@ void BaseResourceThrottle::ResumeRequest() {
   }
 }
 
+void BaseResourceThrottle::LogDelay(base::TimeDelta time) {
+  UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
+  if (resource_type_ == content::RESOURCE_TYPE_MAIN_FRAME) {
+    UMA_HISTOGRAM_LONG_TIMES("SB2.Delay.MainFrame", time);
+  } else {
+    UMA_HISTOGRAM_LONG_TIMES("SB2.Delay.Subresource", time);
+  }
+}
+
 }  // namespace safe_browsing

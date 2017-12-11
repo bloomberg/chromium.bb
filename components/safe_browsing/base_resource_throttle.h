@@ -141,6 +141,12 @@ class BaseResourceThrottle
 
   void ResumeRequest();
 
+  // UMA histogram helper for logging "SB2.Delay".
+  // Logs the user perceived delay caused by SafeBrowsing. This delay is the
+  // time delta starting from when we would have started reading data from the
+  // network, and ending when the SafeBrowsing check completes.
+  void LogDelay(base::TimeDelta delay);
+
   // The result of the most recent safe browsing check. Only valid to read this
   // when state_ != STATE_CHECKING_URL.
   safe_browsing::SBThreatType threat_type_;
