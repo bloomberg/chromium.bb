@@ -52,6 +52,7 @@ source_set("public") {
     "service_manager_connection.h",
     "ssl_status.cc",
     "ssl_status.h",
+    "system_cookie_store_util.h",
     "url_data_source_ios.h",
     "url_scheme_util.h",
     "url_schemes.h",
