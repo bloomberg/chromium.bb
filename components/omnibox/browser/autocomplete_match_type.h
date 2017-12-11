@@ -9,6 +9,8 @@
 
 #include "base/strings/string16.h"
 
+struct AutocompleteMatch;
+
 struct AutocompleteMatchType {
   // Type of AutocompleteMatch. Typedef'ed in autocomplete_match.h. Defined here
   // to pass the type details back and forth between the browser and renderer.
@@ -66,16 +68,14 @@ struct AutocompleteMatchType {
   // Converts |type| to a string representation. Used in logging.
   static std::string ToString(AutocompleteMatchType::Type type);
 
-  // Returns the accessibility label for an AutocompleteMatch of type |type|
-  // whose text is |match_text| and which may have friendly descriptive text in
-  // |additional_descriptive_text_|. The accessibility label describes the
+  // Returns the accessibility label for an AutocompleteMatch |match|
+  // whose text is |match_text| The accessibility label describes the
   // match for use in a screenreader or other assistive technology.
   // The |label_prefix_length| is an optional out param that provides the number
   // of characters in the label that were added before the actual match_text.
   static base::string16 ToAccessibilityLabel(
-      AutocompleteMatchType::Type type,
+      const AutocompleteMatch& match,
       const base::string16& match_text,
-      const base::string16& additional_descriptive_text,
       int* label_prefix_length = nullptr);
 };
 
