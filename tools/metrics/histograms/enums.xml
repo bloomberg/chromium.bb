@@ -24167,26 +24167,48 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="LinuxDistro">
   <int value="0" label="Unknown"/>
-  <int value="1" label="Ubuntu Other"/>
-  <int value="2" label="Ubuntu 14.04"/>
-  <int value="3" label="Ubuntu 16.04"/>
-  <int value="4" label="Ubuntu 16.10"/>
-  <int value="5" label="Ubuntu 17.04"/>
-  <int value="6" label="Debian Other"/>
-  <int value="7" label="Debian 8"/>
-  <int value="8" label="openSUSE Other"/>
-  <int value="9" label="openSUSE Leap 42.2"/>
-  <int value="10" label="Fedora Other"/>
-  <int value="11" label="Fedora 24"/>
-  <int value="12" label="Fedora 25"/>
-  <int value="13" label="Fedora 26"/>
-  <int value="14" label="Debian 9"/>
+  <int value="1" label="(DEPRECATED) Ubuntu Other"/>
+  <int value="2" label="(DEPRECATED) Ubuntu 14.04"/>
+  <int value="3" label="(DEPRECATED) Ubuntu 16.04"/>
+  <int value="4" label="(DEPRECATED) Ubuntu 16.10"/>
+  <int value="5" label="(DEPRECATED) Ubuntu 17.04"/>
+  <int value="6" label="(DEPRECATED) Debian Other"/>
+  <int value="7" label="(DEPRECATED) Debian 8"/>
+  <int value="8" label="(DEPRECATED) openSUSE Other"/>
+  <int value="9" label="(DEPRECATED) openSUSE Leap 42.2"/>
+  <int value="10" label="(DEPRECATED) Fedora Other"/>
+  <int value="11" label="(DEPRECATED) Fedora 24"/>
+  <int value="12" label="(DEPRECATED) Fedora 25"/>
+  <int value="13" label="(DEPRECATED) Fedora 26"/>
+  <int value="14" label="(DEPRECATED) Debian 9"/>
   <int value="15" label="Arch"/>
   <int value="16" label="CentOS"/>
   <int value="17" label="elementary OS"/>
   <int value="18" label="Mint"/>
   <int value="19" label="RHEL"/>
   <int value="20" label="SUSE Linux Enterprise"/>
+  <int value="50" label="Debian Other"/>
+  <int value="51" label="Debian 8"/>
+  <int value="52" label="Debian 9"/>
+  <int value="53" label="Debian 10"/>
+  <int value="100" label="Fedora Other"/>
+  <int value="101" label="Fedora 24"/>
+  <int value="102" label="Fedora 25"/>
+  <int value="103" label="Fedora 26"/>
+  <int value="104" label="Fedora 27"/>
+  <int value="105" label="Fedora 28"/>
+  <int value="150" label="openSUSE Other"/>
+  <int value="151" label="openSUSE Leap 42.2"/>
+  <int value="152" label="openSUSE Leap 42.3"/>
+  <int value="153" label="openSUSE Leap 15"/>
+  <int value="200" label="Ubuntu Other"/>
+  <int value="201" label="Ubuntu 14.04"/>
+  <int value="202" label="Ubuntu 16.04"/>
+  <int value="203" label="Ubuntu 16.10"/>
+  <int value="204" label="Ubuntu 17.04"/>
+  <int value="205" label="Ubuntu 17.10"/>
+  <int value="206" label="Ubuntu 18.04"/>
+  <int value="207" label="Ubuntu 18.10"/>
 </enum>
 
 <enum name="LinuxGlibcVersion">
