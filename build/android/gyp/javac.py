@@ -279,6 +279,13 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
                      additional_files=options.additional_jar_files)
 
 
+def _ParseAndFlattenGnLists(gn_lists):
+  ret = []
+  for arg in gn_lists:
+    ret.extend(build_utils.ParseGnList(arg))
+  return ret
+
+
 def _ParseOptions(argv):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -303,8 +310,11 @@ def _ParseOptions(argv):
   parser.add_option(
       '--classpath',
       action='append',
-      help='Classpath for javac. If this is specified multiple times, they '
-      'will all be appended to construct the classpath.')
+      help='Classpath to use when annotation processors are present.')
+  parser.add_option(
+      '--interface-classpath',
+      action='append',
+      help='Classpath to use when no annotation processors are present.')
   parser.add_option(
       '--incremental',
       action='store_true',
@@ -320,13 +330,14 @@ def _ParseOptions(argv):
       default='',
       help='List of .class file patterns to exclude from the jar.')
   parser.add_option(
-      '--processor',
-      dest='processors',
+      '--processors',
       action='append',
-      help='Annotation processor to use.')
+      help='GN list of annotation processor main classes.')
   parser.add_option(
       '--processorpath',
-      help='Where javac should look for annotation processors.')
+      action='append',
+      help='GN list of jars that comprise the classpath used for Annotation '
+           'Processors.')
   parser.add_option(
       '--processor-arg',
       dest='processor_args',
@@ -364,10 +375,14 @@ def _ParseOptions(argv):
   options, args = parser.parse_args(argv)
   build_utils.CheckOptions(options, parser, required=('jar_path',))
 
-  bootclasspath = []
-  for arg in options.bootclasspath:
-    bootclasspath += build_utils.ParseGnList(arg)
-  options.bootclasspath = bootclasspath
+  options.bootclasspath = _ParseAndFlattenGnLists(options.bootclasspath)
+  options.classpath = _ParseAndFlattenGnLists(options.classpath)
+  options.interface_classpath = _ParseAndFlattenGnLists(
+      options.interface_classpath)
+  options.processorpath = _ParseAndFlattenGnLists(options.processorpath)
+  options.processors = _ParseAndFlattenGnLists(options.processors)
+  options.java_srcjars = _ParseAndFlattenGnLists(options.java_srcjars)
+
   if options.java_version == '1.8' and options.bootclasspath:
     # Android's boot jar doesn't contain all java 8 classes.
     # See: https://github.com/evant/gradle-retrolambda/issues/23.
@@ -378,16 +393,6 @@ def _ParseOptions(argv):
     jdk_dir = os.path.dirname(os.path.dirname(jar_path))
     rt_jar = os.path.join(jdk_dir, 'jre', 'lib', 'rt.jar')
     options.bootclasspath.append(rt_jar)
-
-  classpath = []
-  for arg in options.classpath:
-    classpath += build_utils.ParseGnList(arg)
-  options.classpath = classpath
-
-  java_srcjars = []
-  for arg in options.java_srcjars:
-    java_srcjars += build_utils.ParseGnList(arg)
-  options.java_srcjars = java_srcjars
 
   additional_jar_files = []
   for arg in options.additional_jar_files or []:
@@ -435,17 +440,10 @@ def main(argv):
       # Chromium only allows UTF8 source files.  Being explicit avoids
       # javac pulling a default encoding from the user's environment.
       '-encoding', 'UTF-8',
-      # Make sure we do not pass an empty string to -classpath and -sourcepath.
-      '-classpath', ':'.join(options.classpath) or ':',
       # Prevent compiler from compiling .java files not listed as inputs.
       # See: http://blog.ltgt.net/most-build-tools-misuse-javac/
       '-sourcepath', ':',
   ))
-
-  if options.bootclasspath:
-    javac_cmd.extend([
-      '-bootclasspath', ':'.join(options.bootclasspath)
-    ])
 
   if options.java_version:
     javac_cmd.extend([
@@ -463,26 +461,26 @@ def main(argv):
 
   if options.processors:
     javac_cmd.extend(['-processor', ','.join(options.processors)])
+
+  if options.bootclasspath:
+    javac_cmd.extend(['-bootclasspath', ':'.join(options.bootclasspath)])
+
+  # Annotation processors crash when given interface jars.
+  active_classpath = (
+      options.classpath if options.processors else options.interface_classpath)
+  if active_classpath:
+    javac_cmd.extend(['-classpath', ':'.join(active_classpath)])
+
   if options.processorpath:
-    javac_cmd.extend(['-processorpath', options.processorpath])
+    javac_cmd.extend(['-processorpath', ':'.join(options.processorpath)])
   if options.processor_args:
     for arg in options.processor_args:
       javac_cmd.extend(['-A%s' % arg])
 
   javac_cmd.extend(options.javac_arg)
 
-  classpath_inputs = options.bootclasspath
-  if options.classpath:
-    if options.classpath[0].endswith('.interface.jar'):
-      classpath_inputs.extend(options.classpath)
-    else:
-      # TODO(agrieve): Remove this .TOC heuristic once GYP is no more.
-      for path in options.classpath:
-        if os.path.exists(path + '.TOC'):
-          classpath_inputs.append(path + '.TOC')
-        else:
-          classpath_inputs.append(path)
-
+  classpath_inputs = (options.bootclasspath + options.interface_classpath +
+                      options.processorpath)
   # GN already knows of java_files, so listing them just make things worse when
   # they change.
   depfile_deps = [javac_path] + classpath_inputs + options.java_srcjars
