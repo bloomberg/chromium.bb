@@ -246,7 +246,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
         dest_render_frame_host->GetView()->Hide();
     } else {
       EnsureRenderFrameHostVisibilityConsistent();
-
+      EnsureRenderFrameHostPageFocusConsistent();
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
       // manager still uses NotificationService and expects to see a
       // RenderViewHost changed notification after WebContents and
@@ -833,6 +833,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
     if (navigation_rfh == render_frame_host_.get()) {
       EnsureRenderFrameHostVisibilityConsistent();
+      EnsureRenderFrameHostPageFocusConsistent();
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
       // manager still uses NotificationService and expects to see a
       // RenderViewHost changed notification after WebContents and
@@ -2818,6 +2819,15 @@ void RenderFrameHostManager::EnsureRenderFrameHostVisibilityConsistent() {
       view->Show();
     }
   }
+}
+
+void RenderFrameHostManager::EnsureRenderFrameHostPageFocusConsistent() {
+  frame_tree_node_->frame_tree()->SetPageFocus(
+      render_frame_host_->GetSiteInstance(), frame_tree_node_->frame_tree()
+                                                 ->root()
+                                                 ->current_frame_host()
+                                                 ->GetRenderWidgetHost()
+                                                 ->is_focused());
 }
 
 }  // namespace content
