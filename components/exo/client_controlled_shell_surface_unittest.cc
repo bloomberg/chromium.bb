@@ -8,11 +8,14 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
+#include "ash/wm/workspace_controller_test_api.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/pointer.h"
@@ -32,6 +35,12 @@
 namespace exo {
 namespace {
 using ClientControlledShellSurfaceTest = test::ExoTestBase;
+
+bool HasBackdrop() {
+  ash::WorkspaceController* wc =
+      ash::ShellTestApi(ash::Shell::Get()).workspace_controller();
+  return !!ash::WorkspaceControllerTestApi(wc).GetBackdropWindow();
+}
 
 bool IsWidgetPinned(views::Widget* widget) {
   ash::mojom::WindowPinType type =
@@ -384,7 +393,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowStartMaximized) {
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
-  shell_surface->Maximize();
+  shell_surface->SetMaximized();
   views::Widget* widget = shell_surface->GetWidget();
   aura::Window* window = widget->GetNativeWindow();
 
@@ -417,7 +426,7 @@ TEST_F(ClientControlledShellSurfaceTest, CompositorLockInRotation) {
   shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   // Start in maximized.
-  shell_surface->Maximize();
+  shell_surface->SetMaximized();
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -449,7 +458,7 @@ TEST_F(ClientControlledShellSurfaceTest, KeyboardNavigationWithSystemTray) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface());
-  std::unique_ptr<ShellSurface> shell_surface =
+  auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
 
   surface->Attach(buffer.get());
@@ -478,6 +487,173 @@ TEST_F(ClientControlledShellSurfaceTest, KeyboardNavigationWithSystemTray) {
   EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
   EXPECT_TRUE(
       system_tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, Maximize) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_FALSE(HasBackdrop());
+  shell_surface->SetMaximized();
+  EXPECT_TRUE(HasBackdrop());
+  surface->Commit();
+  EXPECT_TRUE(HasBackdrop());
+  EXPECT_TRUE(shell_surface->GetWidget()->IsMaximized());
+
+  // Toggle maximize.
+  ash::wm::WMEvent maximize_event(ash::wm::WM_EVENT_TOGGLE_MAXIMIZE);
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+
+  ash::wm::GetWindowState(window)->OnWMEvent(&maximize_event);
+  EXPECT_FALSE(shell_surface->GetWidget()->IsMaximized());
+  EXPECT_FALSE(HasBackdrop());
+
+  ash::wm::GetWindowState(window)->OnWMEvent(&maximize_event);
+  EXPECT_TRUE(shell_surface->GetWidget()->IsMaximized());
+  EXPECT_TRUE(HasBackdrop());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, Restore) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_FALSE(HasBackdrop());
+  // Note: Remove contents to avoid issues with maximize animations in tests.
+  shell_surface->SetMaximized();
+  EXPECT_TRUE(HasBackdrop());
+  shell_surface->SetRestored();
+  EXPECT_FALSE(HasBackdrop());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, SetFullscreen) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+
+  shell_surface->SetFullscreen(true);
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_TRUE(HasBackdrop());
+
+  shell_surface->SetFullscreen(false);
+  surface->Commit();
+  EXPECT_FALSE(HasBackdrop());
+  EXPECT_NE(CurrentContext()->bounds().ToString(),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, ToggleFullscreen) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_FALSE(HasBackdrop());
+  shell_surface->SetMaximized();
+  EXPECT_TRUE(HasBackdrop());
+
+  ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+
+  // Enter fullscreen mode.
+  ash::wm::GetWindowState(window)->OnWMEvent(&event);
+
+  EXPECT_TRUE(HasBackdrop());
+
+  // Leave fullscreen mode.
+  ash::wm::GetWindowState(window)->OnWMEvent(&event);
+  EXPECT_TRUE(HasBackdrop());
+}
+
+TEST_F(ClientControlledShellSurfaceTest,
+       DefaultDeviceScaleFactorForcedScaleFactor) {
+  double scale = 1.5;
+  display::Display::SetForceDeviceScaleFactor(scale);
+
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::Display::SetInternalDisplayId(display_id);
+
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  gfx::Transform transform;
+  transform.Scale(1.0 / scale, 1.0 / scale);
+
+  EXPECT_EQ(
+      transform.ToString(),
+      shell_surface->host_window()->layer()->GetTargetTransform().ToString());
+}
+
+TEST_F(ClientControlledShellSurfaceTest,
+       DefaultDeviceScaleFactorFromDisplayManager) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::Display::SetInternalDisplayId(display_id);
+  gfx::Size size(1920, 1080);
+
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+
+  double scale = 1.25;
+  display::ManagedDisplayMode mode(size, 60.f, false /* overscan */,
+                                   true /*native*/, 1.0, scale);
+  mode.set_is_default(true);
+
+  display::ManagedDisplayInfo::ManagedDisplayModeList mode_list;
+  mode_list.push_back(mode);
+
+  display::ManagedDisplayInfo native_display_info(display_id, "test", false);
+  native_display_info.SetManagedDisplayModes(mode_list);
+
+  native_display_info.SetBounds(gfx::Rect(size));
+  native_display_info.set_device_scale_factor(scale);
+
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(native_display_info);
+
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  display_manager->UpdateInternalManagedDisplayModeListForTest();
+
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  gfx::Transform transform;
+  transform.Scale(1.0 / scale, 1.0 / scale);
+
+  EXPECT_EQ(
+      transform.ToString(),
+      shell_surface->host_window()->layer()->GetTargetTransform().ToString());
 }
 
 }  // namespace exo

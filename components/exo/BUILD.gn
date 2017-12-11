@@ -47,6 +47,8 @@ source_set("exo") {
     "shared_memory.h",
     "shell_surface.cc",
     "shell_surface.h",
+    "shell_surface_base.cc",
+    "shell_surface_base.h",
     "sub_surface.cc",
     "sub_surface.h",
     "surface.cc",
