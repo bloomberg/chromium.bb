@@ -383,6 +383,14 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
             template_context['exported'] = self.info_provider.specifier_for_export
             template_context['header_includes'].append(
                 self.info_provider.include_path_for_export)
+
+        # TODO(bashi): Dependency resolution shouldn't happen here.
+        # Move this into includes_for_type() families.
+        for argument in callback_function.arguments:
+            if argument.idl_type.is_union_type:
+                template_context['header_includes'].append(
+                    self.info_provider.include_path_for_union_types(argument.idl_type))
+
         template_context['header_includes'] = normalize_and_sort_includes(
             template_context['header_includes'], self.snake_case_generated_files)
         template_context['cpp_includes'] = normalize_and_sort_includes(
