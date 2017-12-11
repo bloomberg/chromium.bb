@@ -1357,49 +1357,30 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
 }
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
-                                       AV1_COMMON *cm, RestorationInfo *rsi,
-                                       int components_pattern,
-                                       YV12_BUFFER_CONFIG *dst) {
-  YV12_BUFFER_CONFIG dst_;
-
+                                       AV1_COMMON *cm, RestorationInfo *rsi) {
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src,
                            YV12_BUFFER_CONFIG *dst);
   static const copy_fun copy_funs[3] = { aom_yv12_copy_y, aom_yv12_copy_u,
                                          aom_yv12_copy_v };
 
-  for (int plane = 0; plane < 3; ++plane) {
-    if ((components_pattern == 1 << plane) &&
-        (rsi[plane].frame_restoration_type == RESTORE_NONE)) {
-      if (dst) copy_funs[plane](frame, dst);
-      return;
-    }
-  }
-  if (components_pattern ==
-      ((1 << AOM_PLANE_Y) | (1 << AOM_PLANE_U) | (1 << AOM_PLANE_V))) {
-    // All components
-    if (rsi[0].frame_restoration_type == RESTORE_NONE &&
-        rsi[1].frame_restoration_type == RESTORE_NONE &&
-        rsi[2].frame_restoration_type == RESTORE_NONE) {
-      if (dst) aom_yv12_copy_frame(frame, dst);
-      return;
-    }
+  if (rsi[0].frame_restoration_type == RESTORE_NONE &&
+      rsi[1].frame_restoration_type == RESTORE_NONE &&
+      rsi[2].frame_restoration_type == RESTORE_NONE) {
+    return;
   }
 
-  if (!dst) {
-    dst = &dst_;
-    memset(dst, 0, sizeof(YV12_BUFFER_CONFIG));
-    const int frame_width = frame->crop_widths[0];
-    const int frame_height = ALIGN_POWER_OF_TWO(frame->crop_heights[0], 3);
-    if (aom_realloc_frame_buffer(dst, frame_width, frame_height,
-                                 cm->subsampling_x, cm->subsampling_y,
+  YV12_BUFFER_CONFIG dst;
+  memset(&dst, 0, sizeof(dst));
+  const int frame_width = frame->crop_widths[0];
+  const int frame_height = ALIGN_POWER_OF_TWO(frame->crop_heights[0], 3);
+  if (aom_realloc_frame_buffer(
+          &dst, frame_width, frame_height, cm->subsampling_x, cm->subsampling_y,
 #if CONFIG_HIGHBITDEPTH
-                                 cm->use_highbitdepth,
+          cm->use_highbitdepth,
 #endif
-                                 AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
-                                 NULL, NULL) < 0)
-      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                         "Failed to allocate restoration dst buffer");
-  }
+          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL) < 0)
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate restoration dst buffer");
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationLineBuffers rlbs;
@@ -1413,11 +1394,10 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
 #endif
 
   for (int plane = 0; plane < 3; ++plane) {
-    if (!((components_pattern >> plane) & 1)) continue;
     const RestorationInfo *prsi = &rsi[plane];
     RestorationType rtype = prsi->frame_restoration_type;
     if (rtype == RESTORE_NONE) {
-      copy_funs[plane](frame, dst);
+      copy_funs[plane](frame, &dst);
       continue;
     }
 
@@ -1442,23 +1422,19 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
     ctxt.highbd = highbd;
     ctxt.bit_depth = bit_depth;
     ctxt.data8 = frame->buffers[plane];
-    ctxt.dst8 = dst->buffers[plane];
+    ctxt.dst8 = dst.buffers[plane];
     ctxt.data_stride = frame->strides[is_uv];
-    ctxt.dst_stride = dst->strides[is_uv];
+    ctxt.dst_stride = dst.strides[is_uv];
     ctxt.tmpbuf = cm->rst_tmpbuf;
 
     av1_foreach_rest_unit_in_frame(cm, plane, filter_frame_on_tile,
                                    filter_frame_on_unit, &ctxt);
   }
 
-  if (dst == &dst_) {
-    for (int plane = 0; plane < 3; ++plane) {
-      if ((components_pattern >> plane) & 1) {
-        copy_funs[plane](dst, frame);
-      }
-    }
-    aom_free_frame_buffer(dst);
+  for (int plane = 0; plane < 3; ++plane) {
+    copy_funs[plane](&dst, frame);
   }
+  aom_free_frame_buffer(&dst);
 }
 
 static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,

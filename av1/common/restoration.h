@@ -322,9 +322,7 @@ void av1_loop_restoration_filter_unit(
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        struct AV1Common *cm,
-                                       RestorationInfo *rsi,
-                                       int components_pattern,
-                                       YV12_BUFFER_CONFIG *dst);
+                                       RestorationInfo *rsi);
 void av1_loop_restoration_precal();
 
 typedef void (*rest_unit_visitor_t)(const RestorationTileLimits *limits,
