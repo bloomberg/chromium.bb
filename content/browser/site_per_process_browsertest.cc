@@ -1799,8 +1799,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
 
 // This test verifies that Scrolling a focused editable element into view works
 // when the element is inside an OOPIF.
+// Flaky test, see crbug.com/793616
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       ScrollFocusedEditableElementIntoView) {
+                       DISABLED_ScrollFocusedEditableElementIntoView) {
   GURL main_frame_url(
       embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
