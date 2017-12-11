@@ -11,6 +11,8 @@ source_set("u2f") {
     "u2f_apdu_command.h",
     "u2f_apdu_response.cc",
     "u2f_apdu_response.h",
+    "u2f_ble_connection.cc",
+    "u2f_ble_connection.h",
     "u2f_ble_discovery.cc",
     "u2f_ble_discovery.h",
     "u2f_ble_frames.cc",
