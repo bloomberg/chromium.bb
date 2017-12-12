@@ -8,17 +8,14 @@
 
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/web_contents.h"
 #include "net/http/http_response_headers.h"
 
 namespace page_load_metrics {
 
 BrowserPageTrackDecider::BrowserPageTrackDecider(
     PageLoadMetricsEmbedderInterface* embedder_interface,
-    content::WebContents* web_contents,
     content::NavigationHandle* navigation_handle)
     : embedder_interface_(embedder_interface),
-      web_contents_(web_contents),
       navigation_handle_(navigation_handle) {}
 
 BrowserPageTrackDecider::~BrowserPageTrackDecider() {}
@@ -47,13 +44,6 @@ int BrowserPageTrackDecider::GetHttpStatusCode() {
   if (!response_headers)
     return -1;
   return response_headers->response_code();
-}
-
-bool BrowserPageTrackDecider::IsHtmlOrXhtmlPage() {
-  DCHECK(HasCommitted());
-  const std::string& mime_type = web_contents_->GetContentsMimeType();
-  return mime_type == "text/html" || mime_type == "application/xhtml+xml" ||
-         mime_type == "multipart/related";
 }
 
 }  // namespace page_load_metrics

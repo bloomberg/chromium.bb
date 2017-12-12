@@ -50,9 +50,6 @@ class PageTrackDecider {
   // is available.
   virtual int GetHttpStatusCode() = 0;
 
-  // Whether the current page is an HTML or XHTML page.
-  virtual bool IsHtmlOrXhtmlPage() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PageTrackDecider);
 };

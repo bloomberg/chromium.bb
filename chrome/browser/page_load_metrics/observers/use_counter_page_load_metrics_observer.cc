@@ -49,3 +49,13 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
     }
   }
 }
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+UseCounterPageLoadMetricsObserver::ShouldObserveMimeType(
+    const std::string& mime_type) const {
+  return PageLoadMetricsObserver::ShouldObserveMimeType(mime_type) ==
+                     CONTINUE_OBSERVING ||
+                 mime_type == "image/svg+xml"
+             ? CONTINUE_OBSERVING
+             : STOP_OBSERVING;
+}

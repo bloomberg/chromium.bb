@@ -32,6 +32,8 @@ class UseCounterPageLoadMetricsObserver
   void OnFeaturesUsageObserved(
       const page_load_metrics::mojom::PageLoadFeatures&,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  ObservePolicy ShouldObserveMimeType(
+      const std::string& mime_type) const override;
 
  private:
   // To keep tracks of which features have been measured.
