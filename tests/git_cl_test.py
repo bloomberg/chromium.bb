@@ -813,8 +813,8 @@ class TestGitCl(TestCase):
     ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
-      ((['git', '-c', 'core.quotePath=false', 'diff',
-         '--name-status', '--no-renames', '-r', 'fake_ancestor_sha...', '.'],),
+      ((['git', 'diff', '--name-status', '--no-renames', '-r',
+         'fake_ancestor_sha...', '.'],),
         'M\t.gitignore\n'),
       ((['git', 'config', 'branch.master.rietveldpatchset'],), CERR1),
       ((['git', 'log', '--pretty=format:%s%n%n%b',
@@ -1110,8 +1110,8 @@ class TestGitCl(TestCase):
     ] + self._git_sanity_checks('fake_ancestor_sha', 'feature') + [
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],), 'fake_sha'),
-      ((['git', '-c', 'core.quotePath=false', 'diff',
-         '--name-status', '--no-renames', '-r', 'fake_ancestor_sha...', '.'],),
+      ((['git', 'diff', '--name-status', '--no-renames', '-r',
+         'fake_ancestor_sha...', '.'],),
        'M\tfile1.cpp'),
       ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
       ((['git', 'config', 'branch.feature.rietveldserver'],),
@@ -1228,8 +1228,7 @@ class TestGitCl(TestCase):
         fail_cherry_pick=True,
         debug=False)
     self.calls += [
-      ((['git', '-c', 'core.quotePath=false', 'diff',
-         '--name-status', '--diff-filter=U'],),
+      ((['git', 'diff', '--name-status', '--diff-filter=U'],),
        'U       path/file1\n'
        'U       file2.cpp\n'),
       ((['git', 'cherry-pick', '--abort'],), ''),
@@ -1446,8 +1445,8 @@ class TestGitCl(TestCase):
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
 
-      ((['git', '-c', 'core.quotePath=false', 'diff', '--name-status',
-         '--no-renames', '-r', ancestor_revision + '...', '.'],),
+      ((['git', 'diff', '--name-status', '--no-renames', '-r',
+         ancestor_revision + '...', '.'],),
        'M\t.gitignore\n'),
       ((['git', 'config', 'branch.master.gerritpatchset'],), CERR1),
     ]

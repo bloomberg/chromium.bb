@@ -305,8 +305,7 @@ class GitWrapper(SCMWrapper):
       # actually in a broken state here. The index will have both 'a' and 'A',
       # but only one of them will exist on the disk. To progress, we delete
       # everything that status thinks is modified.
-      output = self._Capture([
-          '-c', 'core.quotePath=false', 'status', '--porcelain'], strip=False)
+      output = self._Capture(['status', '--porcelain'], strip=False)
       for line in output.splitlines():
         # --porcelain (v1) looks like:
         # XY filename
@@ -325,8 +324,7 @@ class GitWrapper(SCMWrapper):
     self._Fetch(options, prune=True, quiet=options.verbose)
     self._Scrub(revision, options)
     if file_list is not None:
-      files = self._Capture(
-          ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
+      files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def _DisableHooks(self):
@@ -442,8 +440,7 @@ class GitWrapper(SCMWrapper):
         self._DeleteOrMove(options.force)
         self._Clone(revision, url, options)
       if file_list is not None:
-        files = self._Capture(
-          ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
+        files = self._Capture(['ls-files']).splitlines()
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       if not verbose:
         # Make the output a little prettier. It's nice to have some whitespace
@@ -722,8 +719,7 @@ class GitWrapper(SCMWrapper):
       # merge-base by default), so doesn't include untracked files. So we use
       # 'git ls-files --directory --others --exclude-standard' here directly.
       paths = scm.GIT.Capture(
-          ['-c', 'core.quotePath=false', 'ls-files',
-           '--directory', '--others', '--exclude-standard'],
+          ['ls-files', '--directory', '--others', '--exclude-standard'],
           self.checkout_path)
       for path in (p for p in paths.splitlines() if p.endswith('/')):
         full_path = os.path.join(self.checkout_path, path)

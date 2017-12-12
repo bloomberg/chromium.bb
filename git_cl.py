@@ -5359,8 +5359,7 @@ def PushToGitWithAutoRebase(remote, branch, original_description,
       print('Your patch doesn\'t apply cleanly to \'%s\' HEAD @ %s, '
             'the following files have merge conflicts:' %
             (branch, parent_hash))
-      print(RunGit(['-c', 'core.quotePath=false', 'diff',
-                    '--name-status', '--diff-filter=U']).strip())
+      print(RunGit(['diff', '--name-status', '--diff-filter=U']).strip())
       print('Please rebase your patch and try again.')
       RunGitWithCode(['cherry-pick', '--abort'])
       break

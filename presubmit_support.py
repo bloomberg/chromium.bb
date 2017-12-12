@@ -1038,8 +1038,7 @@ class GitChange(Change):
     """List all files under source control in the repo."""
     root = root or self.RepositoryRoot()
     return subprocess.check_output(
-        ['git', '-c', 'core,quotePath=false', 'ls-files', '--', '.'],
-        cwd=root).splitlines()
+        ['git', 'ls-files', '--', '.'], cwd=root).splitlines()
 
 
 def ListRelevantPresubmitFiles(files, root):

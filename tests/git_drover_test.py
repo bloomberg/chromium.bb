@@ -79,8 +79,7 @@ class GitDroverTest(auto_stub.TestCase):
           (['git', 'branch', '-D', 'drover_branch_123'], self._parent_repo),
       ]
     self.MANUAL_RESOLVE_PREPARATION_COMMANDS = [
-        (['git', '-c', 'core.quotePath=false', 'status', '--porcelain'],
-         self._target_repo),
+        (['git', 'status', '--porcelain'], self._target_repo),
         (['git', 'update-index', '--skip-worktree', '--stdin'],
          self._target_repo),
     ]
@@ -115,7 +114,7 @@ class GitDroverTest(auto_stub.TestCase):
       raise subprocess.CalledProcessError(1, args[0])
     if args == ['git', 'rev-parse', '--git-dir']:
       return os.path.join(self._parent_repo, '.git')
-    if args == ['git', '-c', 'core.quotePath=false', 'status', '--porcelain']:
+    if args == ['git', 'status', '--porcelain']:
       return ' D foo\nUU baz\n D bar\n'
     if args == ['git', 'log', '-1', '--format=%ae']:
       return 'author@domain.org'
