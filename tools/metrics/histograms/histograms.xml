@@ -53448,6 +53448,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.RTT.NotAHangingRequest.HangingRequest" units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    HTTP RTT observation received by the network quality estimator.  Recorded
+    when the request is detected as hanging.
+  </summary>
+</histogram>
+
+<histogram name="NQE.RTT.NotAHangingRequest.HttpRTT" units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    HTTP RTT observation received by the network quality estimator.  Recorded
+    when the request is detected as not hanging because it was comparable to the
+    HTTP RTT estimate.
+  </summary>
+</histogram>
+
+<histogram name="NQE.RTT.NotAHangingRequest.MinHttpBound" units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    HTTP RTT observation received by the network quality estimator.  Recorded
+    when the request is detected as not hanging because the RTT value was lower
+    than the minimum threshold RTT needed to be categorized as a hanging
+    request.
+  </summary>
+</histogram>
+
+<histogram name="NQE.RTT.NotAHangingRequest.TransportRTT" units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    HTTP RTT observation received by the network quality estimator.  Recorded
+    when the request is detected as not hanging because it was comparable to the
+    transport RTT estimate.
+  </summary>
+</histogram>
+
 <histogram name="NQE.RTT.ObservationSource" enum="NQEObservationSource">
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -53505,6 +53541,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Count of the requests that were not marked as hanging by the heuristic
     algorithm in the throughput analyzer in the network quality estimator. A
     sample is recorded everytime the heuristic algorithm is run.
+  </summary>
+</histogram>
+
+<histogram name="NQE.ThroughputObservation.Hanging" units="Kbps">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Throughput observation made by network quality estimator, and eventually
+    discarded because the window (over which the througput was computed) was
+    detected as hanging.
+  </summary>
+</histogram>
+
+<histogram name="NQE.ThroughputObservation.NotHanging" units="Kbps">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Throughput observation made by network quality estimator, and used when the
+    window (over which the througput was computed) was detected as not hanging.
   </summary>
 </histogram>
 

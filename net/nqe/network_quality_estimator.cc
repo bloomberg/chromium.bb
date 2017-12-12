@@ -379,6 +379,45 @@ void NetworkQualityEstimator::NotifyStartTransaction(
   throughput_analyzer_->NotifyStartTransaction(request);
 }
 
+bool NetworkQualityEstimator::IsHangingRequest(
+    base::TimeDelta observed_http_rtt) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (transport_rtt_observation_count_last_ect_computation_ >=
+          params_->http_rtt_transport_rtt_min_count() &&
+      (params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() <=
+           0 ||
+       observed_http_rtt <
+           params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() *
+               GetTransportRTT().value_or(base::TimeDelta::FromSeconds(10)))) {
+    // If there are sufficient number of transport RTT samples available, use
+    // the transport RTT estimate to determine if the request is hanging.
+    UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.TransportRTT",
+                        observed_http_rtt);
+    return false;
+  }
+
+  if (params_->hanging_request_http_rtt_upper_bound_http_rtt_multiplier() <=
+          0 ||
+      observed_http_rtt <
+          params_->hanging_request_http_rtt_upper_bound_http_rtt_multiplier() *
+              GetHttpRTT().value_or(base::TimeDelta::FromSeconds(10))) {
+    // Use the HTTP RTT estimate to determine if the request is hanging.
+    UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.HttpRTT",
+                        observed_http_rtt);
+    return false;
+  }
+
+  if (observed_http_rtt <=
+      params_->hanging_request_upper_bound_min_http_rtt()) {
+    UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.MinHttpBound",
+                        observed_http_rtt);
+    return false;
+  }
+  UMA_HISTOGRAM_TIMES("NQE.RTT.HangingRequest", observed_http_rtt);
+  return true;
+}
+
 void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
   TRACE_EVENT0(kNetTracingCategory,
                "NetworkQualityEstimator::NotifyHeadersReceived");
@@ -413,6 +452,10 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
   if (observed_http_rtt <= base::TimeDelta())
     return;
   DCHECK_GE(observed_http_rtt, base::TimeDelta());
+
+  if (IsHangingRequest(observed_http_rtt))
+    return;
+
   Observation http_rtt_observation(observed_http_rtt.InMilliseconds(),
                                    tick_clock_->NowTicks(),
                                    current_network_id_.signal_strength,

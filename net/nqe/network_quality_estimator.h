@@ -344,6 +344,11 @@ class NET_EXPORT NetworkQualityEstimator
   // effective connection type.
   void AddAndNotifyObserversOfThroughput(const Observation& observation);
 
+  // Returns true if the request with observed HTTP of |observed_http_rtt| is
+  // expected to be a hanging request. The decision is made by comparing
+  // |observed_http_rtt| with the expected HTTP and transport RTT.
+  bool IsHangingRequest(base::TimeDelta observed_http_rtt) const;
+
   base::Optional<int32_t> ComputeIncreaseInTransportRTTForTests() {
     return ComputeIncreaseInTransportRTT();
   }

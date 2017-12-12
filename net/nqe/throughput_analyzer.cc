@@ -215,6 +215,46 @@ void ThroughputAnalyzer::NotifyRequestCompleted(const URLRequest& request) {
   MaybeStartThroughputObservationWindow();
 }
 
+bool ThroughputAnalyzer::IsHangingWindow(int64_t bits_received,
+                                         base::TimeDelta duration,
+                                         double downstream_kbps_double) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (params_->throughput_hanging_requests_cwnd_size_multiplier() <= 0)
+    return false;
+
+  // Initial congestion window size for TCP connections.
+  static constexpr size_t kCwndSizeKilobytes = 10 * 1.5;
+  static constexpr size_t kCwndSizeBits = kCwndSizeKilobytes * 1000 * 8;
+
+  // Scale the |duration| to one HTTP RTT, and compute the number of bits that
+  // would be received over a duration of one HTTP RTT.
+  size_t bits_received_over_one_http_rtt =
+      bits_received * (network_quality_provider_->GetHttpRTT()
+                           .value_or(base::TimeDelta::FromSeconds(10))
+                           .InMillisecondsF() /
+                       duration.InMillisecondsF());
+
+  // If |is_hanging| is true, it implies that less than
+  // kCwndSizeKilobytes were received over a period of 1 HTTP RTT. For a network
+  // that is not under-utilized, it is expected that at least |kCwndSizeBits|
+  // are received over a duration of 1 HTTP RTT.
+  bool is_hanging =
+      bits_received_over_one_http_rtt <
+      (kCwndSizeBits *
+       params_->throughput_hanging_requests_cwnd_size_multiplier());
+
+  // Record kbps as function of |is_hanging|.
+  if (is_hanging) {
+    UMA_HISTOGRAM_COUNTS_1M("NQE.ThroughputObservation.Hanging",
+                            downstream_kbps_double);
+  } else {
+    UMA_HISTOGRAM_COUNTS_1M("NQE.ThroughputObservation.NotHanging",
+                            downstream_kbps_double);
+  }
+  return is_hanging;
+}
+
 bool ThroughputAnalyzer::MaybeGetThroughputObservation(
     int32_t* downstream_kbps) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -248,6 +288,13 @@ bool ThroughputAnalyzer::MaybeGetThroughputObservation(
 
   double downstream_kbps_double =
       (bits_received * 1.0f) / duration.InMillisecondsF();
+
+  if (IsHangingWindow(bits_received, duration, downstream_kbps_double)) {
+    requests_.clear();
+    EndThroughputObservationWindow();
+    return false;
+  }
+
   // Round-up |downstream_kbps_double|.
   *downstream_kbps = static_cast<int64_t>(std::ceil(downstream_kbps_double));
   DCHECK(IsCurrentlyTrackingThroughput());

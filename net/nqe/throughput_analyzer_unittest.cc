@@ -104,6 +104,7 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
   using internal::ThroughputAnalyzer::disable_throughput_measurements;
   using internal::ThroughputAnalyzer::CountInFlightRequests;
   using internal::ThroughputAnalyzer::EraseHangingRequests;
+  using internal::ThroughputAnalyzer::IsHangingWindow;
 
  private:
   int throughput_observations_received_;
@@ -781,6 +782,63 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
   throughput_analyzer.NotifyRequestCompleted(*(request_3.get()));
   throughput_analyzer.NotifyRequestCompleted(*(request_4.get()));
   EXPECT_EQ(1, throughput_analyzer.throughput_observations_received());
+}
+
+TEST(ThroughputAnalyzerTest, TestHangingWindow) {
+  static constexpr size_t kCwndSizeKilobytes = 10 * 1.5;
+  static constexpr size_t kCwndSizeBits = kCwndSizeKilobytes * 1000 * 8;
+
+  base::SimpleTestTickClock tick_clock;
+
+  TestNetworkQualityProvider network_quality_provider;
+  int64_t http_rtt_msec = 1000;
+  network_quality_provider.SetHttpRtt(
+      base::TimeDelta::FromMilliseconds(http_rtt_msec));
+  std::map<std::string, std::string> variation_params;
+  variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "1";
+  NetworkQualityEstimatorParams params(variation_params);
+
+  TestThroughputAnalyzer throughput_analyzer(&network_quality_provider, &params,
+                                             &tick_clock);
+
+  const struct {
+    size_t bits_received;
+    base::TimeDelta window_duration;
+    bool expected_hanging;
+  } tests[] = {
+      {100, base::TimeDelta::FromMilliseconds(http_rtt_msec), true},
+      {kCwndSizeBits - 1, base::TimeDelta::FromMilliseconds(http_rtt_msec),
+       true},
+      {kCwndSizeBits + 1, base::TimeDelta::FromMilliseconds(http_rtt_msec),
+       false},
+      {2 * (kCwndSizeBits - 1),
+       base::TimeDelta::FromMilliseconds(http_rtt_msec * 2), true},
+      {2 * (kCwndSizeBits + 1),
+       base::TimeDelta::FromMilliseconds(http_rtt_msec * 2), false},
+      {kCwndSizeBits / 2 - 1,
+       base::TimeDelta::FromMilliseconds(http_rtt_msec / 2), true},
+      {kCwndSizeBits / 2 + 1,
+       base::TimeDelta::FromMilliseconds(http_rtt_msec / 2), false},
+  };
+
+  for (const auto& test : tests) {
+    base::HistogramTester histogram_tester;
+    double kbps = test.bits_received / test.window_duration.InMillisecondsF();
+    EXPECT_EQ(test.expected_hanging,
+              throughput_analyzer.IsHangingWindow(test.bits_received,
+                                                  test.window_duration, kbps));
+
+    if (test.expected_hanging) {
+      histogram_tester.ExpectUniqueSample("NQE.ThroughputObservation.Hanging",
+                                          kbps, 1);
+      histogram_tester.ExpectTotalCount("NQE.ThroughputObservation.NotHanging",
+                                        0);
+    } else {
+      histogram_tester.ExpectTotalCount("NQE.ThroughputObservation.Hanging", 0);
+      histogram_tester.ExpectUniqueSample(
+          "NQE.ThroughputObservation.NotHanging", kbps, 1);
+    }
+  }
 }
 
 }  // namespace
