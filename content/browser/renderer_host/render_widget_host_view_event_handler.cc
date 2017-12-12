@@ -202,8 +202,7 @@ bool RenderWidgetHostViewEventHandler::LockMouse() {
   }
 
   if (ShouldMoveToCenter()) {
-    synthetic_move_sent_ = true;
-    window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
+    MoveCursorToCenter();
   }
   delegate_->SetTooltipsEnabled(false);
   return true;
@@ -750,8 +749,7 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
   // needs to be moved back to the center.
   if (event->flags() & ui::EF_IS_NON_CLIENT) {
     // TODO(jonross): ideally this would not be done for mus (crbug.com/621412)
-    synthetic_move_sent_ = true;
-    window_->MoveCursorTo(center);
+    MoveCursorToCenter();
     return;
   }
 
@@ -790,10 +788,8 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
     synthetic_move_sent_ = false;
   } else {
     // Check if the mouse has reached the border and needs to be centered.
-    if (ShouldMoveToCenter()) {
-      synthetic_move_sent_ = true;
-      window_->MoveCursorTo(center);
-    }
+    if (ShouldMoveToCenter())
+      MoveCursorToCenter();
     bool is_selection_popup = NeedsInputGrab(popup_child_host_view_);
     // Forward event to renderer.
     if (CanRendererHandleEvent(event, mouse_locked_, is_selection_popup) &&
@@ -850,6 +846,21 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
     unlocked_global_mouse_position_.SetPoint(event->PositionInScreen().x,
                                              event->PositionInScreen().y);
   }
+}
+
+void RenderWidgetHostViewEventHandler::MoveCursorToCenter() {
+#if defined(OS_WIN)
+  // TODO(crbug.com/781182): Set the global position when move cursor to center.
+  // This is a workaround for a bug from Windows update 16299, and should be remove
+  // once the bug is fixed in OS.
+  gfx::PointF center_in_screen(window_->GetBoundsInScreen().CenterPoint());
+  global_mouse_position_ = center_in_screen;
+#else
+  synthetic_move_sent_ = true;
+#endif
+
+  gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());
+  window_->MoveCursorTo(center);
 }
 
 void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {

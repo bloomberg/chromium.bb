@@ -176,6 +176,9 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   void ModifyEventMovementAndCoords(const ui::MouseEvent& ui_mouse_event,
                                     blink::WebMouseEvent* event);
 
+  // This method moves cursor to window center for pointer lock.
+  void MoveCursorToCenter();
+
   // Helper function to set keyboard focus to the main window.
   void SetKeyboardFocus();
 
