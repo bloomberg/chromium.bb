@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -18,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
@@ -36,6 +38,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -62,6 +65,9 @@ const char kTruncatedBodyPath[] = "/truncated-body";
 // The body of the truncated response (After truncation).
 const char kTruncatedBody[] = "Truncated Body";
 
+// Server path returns a 5xx error once, then returns the request body.
+const char kFailOnceThenEchoBody[] = "/fail-once-then-echo-body";
+
 // Class to make it easier to start a SimpleURLLoader, wait for it to complete,
 // and check the result.
 class SimpleLoaderTestHelper {
@@ -79,12 +85,17 @@ class SimpleLoaderTestHelper {
                                     TRAFFIC_ANNOTATION_FOR_TESTS)) {
     // Create a desistination directory, if downloading to a file.
     if (download_type_ == DownloadType::TO_FILE) {
+      base::ScopedAllowBlockingForTesting allow_blocking;
       EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
       dest_path_ = temp_dir_.GetPath().AppendASCII("foo");
     }
   }
 
-  ~SimpleLoaderTestHelper() {}
+  ~SimpleLoaderTestHelper() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    if (temp_dir_.IsValid())
+      EXPECT_TRUE(temp_dir_.Delete());
+  }
 
   // File path that will be written to.
   const base::FilePath& dest_path() const {
@@ -181,6 +192,12 @@ class SimpleLoaderTestHelper {
 
   SimpleURLLoader* simple_url_loader() { return simple_url_loader_.get(); }
 
+  // Destroys the SimpleURLLoader. Useful in tests where the SimpleURLLoader is
+  // destroyed while it still has an open file, as the file needs to be closed
+  // before the SimpleLoaderTestHelper's destructor tries to clean up the temp
+  // directory.
+  void DestroySimpleURLLoader() { simple_url_loader_.reset(); }
+
   // Returns the HTTP response code. Fails if there isn't one.
   int GetResponseCode() const {
     EXPECT_TRUE(done_);
@@ -214,6 +231,8 @@ class SimpleLoaderTestHelper {
     EXPECT_TRUE(download_type_ == DownloadType::TO_FILE ||
                 download_type_ == DownloadType::TO_TEMP_FILE);
     EXPECT_FALSE(response_body_);
+
+    base::ScopedAllowBlockingForTesting allow_blocking;
 
     if (!file_path.empty()) {
       EXPECT_TRUE(base::PathExists(file_path));
@@ -313,6 +332,29 @@ std::unique_ptr<net::test_server::HttpResponse> HandleTruncatedBody(
   return std::move(response);
 }
 
+// Request handler for the embedded test server that returns a 5xx error once,
+// and on future requests, has a response body matching the request body.
+std::unique_ptr<net::test_server::HttpResponse> FailOnceThenEchoBody(
+    bool* has_failed_request,
+    const net::test_server::HttpRequest& request) {
+  if (request.GetURL().path_piece() != kFailOnceThenEchoBody)
+    return nullptr;
+
+  if (!*has_failed_request) {
+    EXPECT_FALSE(request.content.empty());
+    *has_failed_request = true;
+    std::unique_ptr<net::test_server::BasicHttpResponse> response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_INTERNAL_SERVER_ERROR);
+    return response;
+  }
+
+  std::unique_ptr<net::test_server::BasicHttpResponse> response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_content(request.content);
+  return std::move(response);
+}
+
 // Base class with shared setup logic.
 class SimpleURLLoaderTestBase {
  public:
@@ -338,11 +380,31 @@ class SimpleURLLoaderTestBase {
     test_server_.RegisterRequestHandler(base::Bind(&HandleResponseSize));
     test_server_.RegisterRequestHandler(base::Bind(&HandleInvalidGzip));
     test_server_.RegisterRequestHandler(base::Bind(&HandleTruncatedBody));
+    test_server_.RegisterRequestHandler(base::BindRepeating(
+        &FailOnceThenEchoBody, base::Owned(new bool(false))));
 
     EXPECT_TRUE(test_server_.Start());
+
+    // Can only create this after blocking calls.  Creating the network stack
+    // has some, as does starting the test server.
+    disallow_blocking_ = std::make_unique<base::ScopedDisallowBlocking>();
   }
 
   virtual ~SimpleURLLoaderTestBase() {}
+
+  // Returns the path of a file that can be used in upload tests.
+  static base::FilePath GetTestFilePath() {
+    base::FilePath test_data_dir;
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir);
+    return test_data_dir.AppendASCII("content/test/data/title1.html");
+  }
+
+  static std::string GetTestFileContents() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    std::string file_contents;
+    EXPECT_TRUE(base::ReadFileToString(GetTestFilePath(), &file_contents));
+    return file_contents;
+  }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -352,6 +414,8 @@ class SimpleURLLoaderTestBase {
   mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   net::test_server::EmbeddedTestServer test_server_;
+
+  std::unique_ptr<base::ScopedDisallowBlocking> disallow_blocking_;
 };
 
 class SimpleURLLoaderTest
@@ -369,10 +433,13 @@ class SimpleURLLoaderTest
                                                     GetParam());
   }
 
-  std::unique_ptr<SimpleLoaderTestHelper> CreateHelperForURL(const GURL& url) {
+  std::unique_ptr<SimpleLoaderTestHelper> CreateHelperForURL(
+      const GURL& url,
+      const char* method = "GET") {
     std::unique_ptr<ResourceRequest> resource_request =
         std::make_unique<ResourceRequest>();
     resource_request->url = url;
+    resource_request->method = method;
     return std::make_unique<SimpleLoaderTestHelper>(std::move(resource_request),
                                                     GetParam());
   }
@@ -783,12 +850,121 @@ TEST_P(SimpleURLLoaderTest, DestroyServiceBeforeResponseStarts) {
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL("/hung"));
   test_helper->StartSimpleLoader(url_loader_factory_.get());
-  network_service_ = nullptr;
+  {
+    // Destroying the NetworkService may result in blocking operations on some
+    // platforms, like joining threads.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    network_service_.reset();
+  }
   test_helper->Wait();
 
   EXPECT_EQ(net::ERR_FAILED, test_helper->simple_url_loader()->NetError());
   EXPECT_FALSE(test_helper->response_body());
   ASSERT_FALSE(test_helper->simple_url_loader()->ResponseInfo());
+}
+
+TEST_P(SimpleURLLoaderTest, UploadFile) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/echo"), "POST");
+  test_helper->simple_url_loader()->AttachFileForUpload(GetTestFilePath(),
+                                                        "text/plain");
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->response_body());
+  EXPECT_EQ(GetTestFileContents(), *test_helper->response_body());
+
+  // Also make sure the correct method was sent, with the right content-type.
+  test_helper = CreateHelperForURL(test_server_.GetURL("/echoall"), "POST");
+  test_helper->simple_url_loader()->AttachFileForUpload(GetTestFilePath(),
+                                                        "text/plain");
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->response_body());
+  EXPECT_NE(std::string::npos,
+            test_helper->response_body()->find("Content-Type: text/plain"));
+  EXPECT_NE(std::string::npos, test_helper->response_body()->find("POST /"));
+  EXPECT_EQ(std::string::npos, test_helper->response_body()->find("PUT /"));
+}
+
+TEST_P(SimpleURLLoaderTest, UploadFileWithPut) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/echo"), "PUT");
+  test_helper->simple_url_loader()->AttachFileForUpload(GetTestFilePath(),
+                                                        "text/plain");
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->response_body());
+  EXPECT_EQ(GetTestFileContents(), *test_helper->response_body());
+
+  // Also make sure the correct method was sent, with the right content-type.
+  test_helper = CreateHelperForURL(test_server_.GetURL("/echoall"), "PUT");
+  test_helper->simple_url_loader()->AttachFileForUpload(GetTestFilePath(),
+                                                        "text/salted");
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->response_body());
+  EXPECT_NE(std::string::npos,
+            test_helper->response_body()->find("Content-Type: text/salted"));
+  EXPECT_EQ(std::string::npos,
+            test_helper->response_body()->find("Content-Type: text/plain"));
+  EXPECT_EQ(std::string::npos, test_helper->response_body()->find("POST /"));
+  EXPECT_NE(std::string::npos, test_helper->response_body()->find("PUT /"));
+}
+
+TEST_P(SimpleURLLoaderTest, UploadWithRetry) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(kFailOnceThenEchoBody), "POST");
+  test_helper->simple_url_loader()->AttachFileForUpload(GetTestFilePath(),
+                                                        "text/plain");
+  test_helper->simple_url_loader()->SetRetryOptions(
+      1, SimpleURLLoader::RETRY_ON_5XX);
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->response_body());
+  EXPECT_EQ(GetTestFileContents(), *test_helper->response_body());
+}
+
+TEST_P(SimpleURLLoaderTest, UploadNonexistantFile) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/echo"), "POST");
+  // Path to a file that doesn't exist.  Start with the test directory just to
+  // get a valid absolute path the test has access to.
+  base::FilePath path_to_nonexistent_file =
+      GetTestFilePath().DirName().AppendASCII("this/file/does/not/exist");
+  // Appending a path to the end of a file should guarantee no such file exists.
+  test_helper->simple_url_loader()->AttachFileForUpload(
+      path_to_nonexistent_file, "text/plain");
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND,
+            test_helper->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper->simple_url_loader()->ResponseInfo());
+  EXPECT_FALSE(test_helper->response_body());
+}
+
+// Test case where uploading a file is canceled before the URLLoader is started
+// (But after the SimpleURLLoader is started).
+TEST_P(SimpleURLLoaderTest, UploadFileCanceledBeforeLoaderStarted) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(GURL("http://does_not_matter:7/"), "POST");
+  test_helper->simple_url_loader()->AttachFileForUpload(GetTestFilePath(),
+                                                        "text/plain");
+
+  test_helper->StartSimpleLoader(url_loader_factory_.get());
+  test_helper.reset();
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_P(SimpleURLLoaderTest, UploadFileCanceledWithRetry) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/hung"), "POST");
+  test_helper->simple_url_loader()->AttachFileForUpload(GetTestFilePath(),
+                                                        "text/plain");
+  test_helper->simple_url_loader()->SetRetryOptions(
+      2, SimpleURLLoader::RETRY_ON_5XX);
+  test_helper->StartSimpleLoader(url_loader_factory_.get());
+  scoped_task_environment_.RunUntilIdle();
+  test_helper.reset();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 enum class TestLoaderEvent {
@@ -1671,10 +1847,13 @@ TEST_F(SimpleURLLoaderFileTest, OverwriteFile) {
   std::string junk_data(100, '!');
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(GURL("data:text/plain,foo"));
-  ASSERT_EQ(static_cast<int>(junk_data.size()),
-            base::WriteFile(test_helper->dest_path(), junk_data.data(),
-                            junk_data.size()));
-  ASSERT_TRUE(base::PathExists(test_helper->dest_path()));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_EQ(static_cast<int>(junk_data.size()),
+              base::WriteFile(test_helper->dest_path(), junk_data.data(),
+                              junk_data.size()));
+    ASSERT_TRUE(base::PathExists(test_helper->dest_path()));
+  }
 
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
 
@@ -1688,8 +1867,11 @@ TEST_F(SimpleURLLoaderFileTest, OverwriteFile) {
 TEST_F(SimpleURLLoaderFileTest, FileCreateError) {
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(GURL("data:text/plain,foo"));
-  ASSERT_TRUE(base::CreateDirectory(test_helper->dest_path()));
-  ASSERT_TRUE(base::PathExists(test_helper->dest_path()));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::CreateDirectory(test_helper->dest_path()));
+    ASSERT_TRUE(base::PathExists(test_helper->dest_path()));
+  }
 
   // The directory should still exist after the download fails.
   test_helper->set_expect_path_exists_on_error(true);
@@ -1737,14 +1919,20 @@ TEST_F(SimpleURLLoaderFileTest, DeleteLoaderDuringRequestDestroysFile) {
         // Destination file should have been created, and request should still
         // be in progress.
         base::FilePath dest_path = test_helper->dest_path();
-        EXPECT_TRUE(base::PathExists(dest_path));
-        EXPECT_FALSE(test_helper->done());
+        {
+          base::ScopedAllowBlockingForTesting allow_blocking;
+          EXPECT_TRUE(base::PathExists(dest_path));
+          EXPECT_FALSE(test_helper->done());
+        }
 
         // Destroying the SimpleURLLoader now should post a task to destroy the
         // file.
-        test_helper.reset();
+        test_helper->DestroySimpleURLLoader();
         scoped_task_environment_.RunUntilIdle();
-        EXPECT_FALSE(base::PathExists(dest_path));
+        {
+          base::ScopedAllowBlockingForTesting allow_blocking;
+          EXPECT_FALSE(base::PathExists(dest_path));
+        }
       }
     }
   }
