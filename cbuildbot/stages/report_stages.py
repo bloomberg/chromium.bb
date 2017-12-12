@@ -558,6 +558,9 @@ class ReportStage(generic_stages.BuilderStage,
   """Summarize all the builds."""
 
   _STATS_HISTORY_DAYS = 7
+  _PALADIN_ANNOTATION = ('https://chromiumos-build-annotator.googleplex.com/'
+                         'build_annotations/edit_annotations/master-paladin/'
+                         '%s/?')
 
   def __init__(self, builder_run, completion_instance, **kwargs):
     super(ReportStage, self).__init__(builder_run, **kwargs)
@@ -1051,6 +1054,8 @@ class ReportStage(generic_stages.BuilderStage,
                       'self_destructed': self_destructed}
         metrics.SecondsDistribution(constants.MON_CQ_BUILD_DURATION).add(
             duration, fields=mon_fields)
+        logging.PrintBuildbotLink('Build annotator',
+                                  self._PALADIN_ANNOTATION % build_id)
 
       # From this point forward, treat all exceptions as warnings.
       self._post_completion = True
