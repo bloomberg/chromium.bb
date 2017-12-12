@@ -21,6 +21,7 @@
 #ifndef SVGDocumentExtensions_h
 #define SVGDocumentExtensions_h
 
+#include "base/macros.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
@@ -36,8 +37,6 @@ class SubtreeLayoutScope;
 
 class SVGDocumentExtensions
     : public GarbageCollectedFinalized<SVGDocumentExtensions> {
-  WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions);
-
  public:
   explicit SVGDocumentExtensions(Document*);
   ~SVGDocumentExtensions();
@@ -86,6 +85,7 @@ class SVGDocumentExtensions
 #if DCHECK_IS_ON()
   bool in_relative_length_svg_roots_invalidation_ = false;
 #endif
+  DISALLOW_COPY_AND_ASSIGN(SVGDocumentExtensions);
 };
 
 }  // namespace blink
