@@ -8,7 +8,9 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <iterator>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -94,6 +96,12 @@ class ObserverList
   // An iterator class that can be used to access the list of observers.
   class Iter {
    public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = ObserverType;
+    using difference_type = ptrdiff_t;
+    using pointer = ObserverType*;
+    using reference = ObserverType&;
+
     Iter() : index_(0), max_index_(0) {}
 
     explicit Iter(const ObserverList* list)
@@ -145,6 +153,12 @@ class ObserverList
         EnsureValidIndex();
       }
       return *this;
+    }
+
+    Iter operator++(int) {
+      Iter it(*this);
+      ++(*this);
+      return it;
     }
 
     ObserverType* operator->() const {
