@@ -15,7 +15,7 @@
 
 namespace content {
 
-typedef void (*AccessibilityEventCallback)(std::string);
+using AccessibilityEventCallback = base::RepeatingCallback<void(std::string)>;
 
 class BrowserAccessibilityManager;
 

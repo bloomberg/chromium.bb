@@ -46,11 +46,11 @@ void NavigateFrameToURL(FrameTreeNode* node, const GURL& url) {
   observer.Wait();
 }
 
-void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed) {
+void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed, bool success) {
   ShellJavaScriptDialogManager* manager =
       static_cast<ShellJavaScriptDialogManager*>(
           shell->GetJavaScriptDialogManager(shell->web_contents()));
-  manager->set_should_proceed_on_beforeunload(proceed);
+  manager->set_should_proceed_on_beforeunload(proceed, success);
 }
 
 RenderFrameHost* ConvertToRenderFrameHost(FrameTreeNode* frame_tree_node) {

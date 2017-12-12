@@ -26,7 +26,7 @@ AXEventServer::AXEventServer(int pid)
   base::test::ScopedTaskEnvironment scoped_task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
-  recorder_->ListenToEvents(&OnEvent);
+  recorder_->ListenToEvents(base::BindRepeating(OnEvent));
 
   base::RunLoop run_loop;
   run_loop.Run();

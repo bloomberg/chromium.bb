@@ -11,7 +11,7 @@ namespace content {
 AccessibilityEventRecorder::AccessibilityEventRecorder(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid)
-    : manager_(manager), callback_(nullptr) {}
+    : manager_(manager) {}
 
 AccessibilityEventRecorder::~AccessibilityEventRecorder() {
 }
@@ -28,7 +28,7 @@ AccessibilityEventRecorder* AccessibilityEventRecorder::Create(
 void AccessibilityEventRecorder::OnEvent(std::string event) {
   event_logs_.push_back(event);
   if (callback_)
-    callback_(event);
+    callback_.Run(event);
 }
 
 }  // namespace content

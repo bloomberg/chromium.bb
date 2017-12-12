@@ -955,7 +955,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // schedule it for afterwards. Since the BeforeUnload event is synchronous,
   // clicking on the link right away would cause the ExecuteScript to never
   // return.
-  SetShouldProceedOnBeforeUnload(shell(), false);
+  SetShouldProceedOnBeforeUnload(shell(), false, false);
   EXPECT_TRUE(ExecuteScript(shell(), "clickLinkSoon()"));
   WaitForAppModalDialog(shell());
 

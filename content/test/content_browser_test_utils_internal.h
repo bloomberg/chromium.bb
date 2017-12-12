@@ -38,8 +38,8 @@ struct ScreenInfo;
 void NavigateFrameToURL(FrameTreeNode* node, const GURL& url);
 
 // Sets the DialogManager to proceed by default or not when showing a
-// BeforeUnload dialog.
-void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed);
+// BeforeUnload dialog, and if it proceeds, what value to return.
+void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed, bool success);
 
 // Extends the ToRenderFrameHost mechanism to FrameTreeNodes.
 RenderFrameHost* ConvertToRenderFrameHost(FrameTreeNode* frame_tree_node);
