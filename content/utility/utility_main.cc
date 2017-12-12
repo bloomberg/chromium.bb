@@ -52,10 +52,8 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // Seccomp-BPF policy.
   auto sandbox_type =
       service_manager::SandboxTypeFromCommandLine(parameters.command_line);
-  // TODO(tsepez): turning on the sandbox fails when using a persistent cookie
-  // store.
-  if (parameters.zygote_child /* ||
-      sandbox_type == service_manager::SANDBOX_TYPE_NETWORK*/) {
+  if (parameters.zygote_child ||
+      sandbox_type == service_manager::SANDBOX_TYPE_NETWORK) {
     service_manager::SandboxLinux::PreSandboxHook pre_sandbox_hook;
     if (sandbox_type == service_manager::SANDBOX_TYPE_NETWORK)
       pre_sandbox_hook = base::BindOnce(&NetworkPreSandboxHook);
