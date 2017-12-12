@@ -168,9 +168,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void OnReportFineGrainedExpectedQueueingTime(
       const char* split_description,
       base::TimeDelta queueing_time) override;
-  void OnReportSplitExpectedQueueingTime(
-      const char* split_description,
-      base::TimeDelta queueing_time) override;
 
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
   scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();

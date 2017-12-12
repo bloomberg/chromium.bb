@@ -25,9 +25,6 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
    public:
     virtual void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
                                                   bool is_disjoint_window) = 0;
-    virtual void OnReportSplitExpectedQueueingTime(
-        const char* split_description,
-        base::TimeDelta queueing_time) = 0;
     virtual void OnReportFineGrainedExpectedQueueingTime(
         const char* split_description,
         base::TimeDelta queueing_time) = 0;

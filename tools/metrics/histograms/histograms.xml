@@ -69834,14 +69834,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Expected queueing time split by tasks according to their frame status, in
     microseconds. The sum of the split values will be equal to the total,
-    reported on RendererScheduler.ExpectedTaskQueueingDuration2. This is
-    equivalent to RendererScheduler.ExpectedQueueingTimeByFrameType, just with
-    different units. Recorded for each 1000 ms window.
+    reported on RendererScheduler.ExpectedTaskQueueingDuration2. Recorded for
+    each 1000 ms window.
   </summary>
 </histogram>
 
 <histogram base="true" name="RendererScheduler.ExpectedQueueingTimeByFrameType"
     units="ms">
+  <obsolete>
+    Replaced with RendererScheduler.ExpectedQueueingTimeByFrameStatus as of
+    December 2017.
+  </obsolete>
   <owner>npm@chromium.org</owner>
   <summary>
     Expected queueing time split by tasks according to their frame type. The sum
@@ -69851,8 +69854,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="RendererScheduler.ExpectedQueueingTimeByTaskQueue"
+    units="microseconds">
+  <owner>npm@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Expected queueing time split by tasks according to the type of their task
+    queue, in microseconds. The sum of the split values should be equal to the
+    total, reported on RendererScheduler.ExpectedTaskQueueingDuration2. Recorded
+    for each 1000 ms window.
+  </summary>
+</histogram>
+
 <histogram base="true"
     name="RendererScheduler.ExpectedQueueingTimeByTaskQueueType" units="ms">
+  <obsolete>
+    Replaced with RendererScheduler.ExpectedQueueingTimeByTaskQueue as of
+    December 2017.
+  </obsolete>
   <owner>npm@chromium.org</owner>
   <summary>
     Expected queueing time split by tasks according to the type of their task
@@ -108139,7 +108158,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              frames."/>
   <affected-histogram
       name="RendererScheduler.ExpectedQueueingTimeByFrameStatus"/>
-  <affected-histogram name="RendererScheduler.ExpectedQueueingTimeByFrameType"/>
 </histogram_suffixes>
 
 <histogram_suffixes
@@ -108160,8 +108178,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Expected Queueing Time from the unthrottled task queue."/>
   <suffix name="Other"
       label="Expected Queueing Time from events in any other task queue."/>
-  <affected-histogram
-      name="RendererScheduler.ExpectedQueueingTimeByTaskQueueType"/>
+  <affected-histogram name="RendererScheduler.ExpectedQueueingTimeByTaskQueue"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RendererScheduler.MainThreadLoadSplit" separator=".">
