@@ -132,6 +132,21 @@ void reference_hybrid_2d(double *in, double *out, int size, int type0,
   for (int r = 0; r < size; r++) {
     reference_hybrid_1d(tempOut + r * size, out + r * size, size, type1);
   }
+
+#if CONFIG_TX64X64
+  if (size == 64) {  // tx_size == TX64X64
+    // Zero out top-right 32x32 area.
+    for (int row = 0; row < 32; ++row) {
+      memset(out + row * 64 + 32, 0, 32 * sizeof(*out));
+    }
+    // Zero out the bottom 64x32 area.
+    memset(out + 32 * 64, 0, 32 * 64 * sizeof(*out));
+    // Re-pack non-zero coeffs in the first 32x32 indices.
+    for (int row = 1; row < 32; ++row) {
+      memcpy(out + row * 32, out + row * 64, 32 * sizeof(*out));
+    }
+  }
+#endif  // CONFIG_TX_64X64
   delete[] tempOut;
 }
 

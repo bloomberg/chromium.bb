@@ -169,7 +169,10 @@ const AV1FwdTxfm2dParam av1_fwd_txfm2d_param_c[] = {
   AV1FwdTxfm2dParam(DCT_DCT, TX_32X32, 70, 7),
   AV1FwdTxfm2dParam(ADST_DCT, TX_32X32, 70, 7),
   AV1FwdTxfm2dParam(DCT_ADST, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(ADST_ADST, TX_32X32, 70, 7)
+  AV1FwdTxfm2dParam(ADST_ADST, TX_32X32, 70, 7),
+#if CONFIG_TX64X64
+  AV1FwdTxfm2dParam(DCT_DCT, TX_64X64, 70, 7),
+#endif  // CONFIG_TX64X64
 };
 
 INSTANTIATE_TEST_CASE_P(C, AV1FwdTxfm2d,
