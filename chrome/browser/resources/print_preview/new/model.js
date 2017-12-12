@@ -3,17 +3,6 @@
 // found in the LICENSE file.
 
 cr.exportPath('print_preview_new');
-
-/**
- * @typedef {{
- *   value: *,
- *   valid: boolean,
- *   available: boolean,
- *   updatesPreview: boolean
- * }}
- */
-print_preview_new.Setting;
-
 /**
  * @typedef {{
  *   previewLoading: boolean,
@@ -25,8 +14,63 @@ print_preview_new.Setting;
  */
 print_preview_new.State;
 
+/**
+ * @typedef {{id: string,
+ *            origin: print_preview.DestinationOrigin,
+ *            account: string,
+ *            capabilities: ?print_preview.Cdd,
+ *            displayName: string,
+ *            extensionId: string,
+ *            extensionName: string}}
+ */
+print_preview_new.RecentDestination;
+
+/**
+ * Must be kept in sync with the C++ MarginType enum in
+ * printing/print_job_constants.h.
+ * @enum {number}
+ */
+print_preview_new.MarginsTypeValue = {
+  DEFAULT: 0,
+  NO_MARGINS: 1,
+  MINIMUM: 2,
+  CUSTOM: 3
+};
+
+/**
+ * @typedef {{
+ *    version: string,
+ *    recentDestinations: (!Array<!print_preview_new.RecentDestination> |
+ *                         undefined),
+ *    dpi: ({horizontal_dpi: number,
+ *           vertical_dpi: number,
+ *           is_default: (boolean | undefined)} | undefined),
+ *    mediaSize: ({height_microns: number,
+ *                 width_microns: number,
+ *                 custom_display_name: (string | undefined),
+ *                 is_default: (boolean | undefined)} | undefined),
+ *    marginsType: (print_preview_new.MarginsTypeValue | undefined),
+ *    customMargins: ({marginTop: number,
+ *                     marginBottom: number,
+ *                     marginLeft: number,
+ *                     marginRight: number} | undefined),
+ *    isColorEnabled: (boolean | undefined),
+ *    isDuplexEnabled: (boolean | undefined),
+ *    isHeaderFooterEnabled: (boolean | undefined),
+ *    isLandscapeEnabled: (boolean | undefined),
+ *    isCollateEnabled: (boolean | undefined),
+ *    isFitToPageEnabled: (boolean | undefined),
+ *    isCssBackgroundEnabled: (boolean | undefined),
+ *    scaling: (string | undefined),
+ *    vendor_options: (Object | undefined)
+ * }}
+ */
+print_preview_new.SerializedSettings;
+
 Polymer({
   is: 'print-preview-model',
+
+  behaviors: [SettingsBehavior],
 
   properties: {
     /**
@@ -57,7 +101,7 @@ Polymer({
       notify: true,
       value: {
         pages: {
-          value: [1, 2, 3, 4, 5],
+          value: [1],
           valid: true,
           available: true,
           updatesPreview: true,
@@ -233,13 +277,7 @@ Polymer({
     documentInfo: {
       type: Object,
       notify: true,
-      value: function() {
-        const info = new print_preview.DocumentInfo();
-        info.init(false, 'DocumentTitle', true);
-        info.updatePageCount(5);
-        info.fitToPageScaling_ = 94;
-        return info;
-      },
+      value: new print_preview.DocumentInfo(),
     },
 
     /** @type {!print_preview_new.State} */
@@ -273,11 +311,16 @@ Polymer({
    */
   MONOCHROME_TYPES_: ['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'],
 
-  /** @private {!print_preview.NativeLayer} */
-  nativeLayer_: print_preview.NativeLayer.getInstance(),
+  /** @private {?print_preview.NativeLayer} */
+  nativeLayer_: null,
+
+  /** @type {!print_preview.MeasurementSystem} */
+  measurementSystem_: new print_preview.MeasurementSystem(
+      ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL),
 
   /** @override */
   attached: function() {
+    this.nativeLayer_ = print_preview.NativeLayer.getInstance(),
     this.nativeLayer_.getInitialSettings().then(
         this.onInitialSettingsSet_.bind(this));
   },
@@ -287,7 +330,52 @@ Polymer({
    * @private
    */
   onInitialSettingsSet_: function(settings) {
-    // Do nothing here for now.
+    this.documentInfo.init(
+        settings.previewModifiable, settings.documentTitle,
+        settings.documentHasSelection);
+    // Temporary setting, will be replaced when page count is known from
+    // the page-count-ready webUI event.
+    this.documentInfo.updatePageCount(5);
+    this.notifyPath('documentInfo.isModifiable');
+    // Before triggering the final notification for settings availability,
+    // set initialized = true.
+    this.notifyPath('documentInfo.hasSelection');
+    this.notifyPath('documentInfo.title');
+    this.notifyPath('documentInfo.pageCount');
+    this.updateFromStickySettings_(settings.serializedAppStateStr);
+    this.measurementSystem_.setSystem(
+        settings.thousandsDelimeter, settings.decimalDelimeter,
+        settings.unitType);
+    this.setSetting('selectionOnly', settings.shouldPrintSelectionOnly);
+    // TODO(rbpotter): add destination store initialization.
+  },
+
+  /**
+   * @param {?string} savedSettingsStr The sticky settings from native layer
+   * @private
+   */
+  updateFromStickySettings_(savedSettingsStr) {
+    if (!savedSettingsStr)
+      return;
+    let savedSettings;
+    try {
+      savedSettings = /** @type {print_preview_new.SerializedSettings} */ (
+          JSON.parse(savedSettingsStr));
+    } catch (e) {
+      console.error('Unable to parse state ' + e);
+      return;  // use default values rather than updating.
+    }
+
+    const updateIfDefined = (key1, key2) => {
+      if (savedSettings[key2] != undefined)
+        this.setSetting(key1, savedSettings[key2]);
+    };
+    [['dpi', 'dpi'], ['mediaSize', 'mediaSize'], ['margins', 'marginsType'],
+     ['color', 'isColorEnabled'], ['headerFooter', 'isHeaderFooterEnabled'],
+     ['layout', 'isLandscapeEnabled'], ['collate', 'isCollateEnabled'],
+     ['fitToPage', 'isFitToPageEnabled'],
+     ['cssBackground', 'isCssBackgroundEnabled'], ['scaling', 'scaling'],
+    ].forEach(keys => updateIfDefined(keys[0], keys[1]));
   },
 
   /**
