@@ -20,6 +20,8 @@
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
@@ -75,13 +77,6 @@ static int kLabelBackgroundRadius = 2;
 
 // Horizontal padding for the label, on both sides.
 static const int kHorizontalLabelPadding = 8;
-
-// Color of the label which identifies if a selector item can be snapped in
-// split view.
-constexpr SkColor kCannotSnapLabelColor = SkColorSetA(SK_ColorBLACK, 0xB0);
-
-// The amount of round on the cannot snap label.
-constexpr int kCannotSnapLabelRounding = 10;
 
 // Height of an item header.
 static const int kHeaderHeight = 32;
@@ -410,23 +405,24 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
 
     // Use |cannot_snap_container_| to specify the padding surrounding
     // |cannot_snap_label_| and to give the label rounded corners.
-    auto* layout = new views::BoxLayout(views::BoxLayout::kVertical);
-    cannot_snap_container_ =
-        new RoundedRectView(kCannotSnapLabelRounding, kCannotSnapLabelColor);
+    cannot_snap_container_ = new RoundedRectView(
+        kSplitviewLabelRoundRectRadiusDp, kSplitviewLabelBackgroundColor);
+    cannot_snap_container_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical,
+                             gfx::Insets(kSplitviewLabelVerticalInsetDp,
+                                         kSplitviewLabelHorizontalInsetDp)));
+    cannot_snap_container_->AddChildView(cannot_snap_label_);
+    cannot_snap_container_->set_can_process_events_within_subtree(false);
     cannot_snap_container_->SetPaintToLayer();
     cannot_snap_container_->layer()->SetFillsBoundsOpaquely(false);
-    cannot_snap_container_->AddChildView(cannot_snap_label_);
-    cannot_snap_container_->SetLayoutManager(layout);
-    cannot_snap_container_->set_can_process_events_within_subtree(false);
-    layout->SetFlexForView(cannot_snap_label_, 1);
+    cannot_snap_container_->layer()->SetOpacity(0.f);
     AddChildView(cannot_snap_container_);
-    cannot_snap_container_->SetVisible(false);
   }
 
   ShieldButton* listener_button() { return listener_button_; }
 
   void SetCannotSnapLabelVisibility(bool visible) {
-    cannot_snap_container_->SetVisible(visible);
+    AnimateSplitviewLabelOpacity(cannot_snap_container_->layer(), visible);
   }
 
  protected:
@@ -445,10 +441,11 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
 
     // Position the cannot snap label.
     gfx::Size label_size = cannot_snap_label_->CalculatePreferredSize();
-    label_size.Enlarge(2 * kHorizontalLabelPadding,
-                       2 * kHorizontalLabelPadding);
-    if (!bounds.IsEmpty())
-      label_size.SetToMin(bounds.size());
+    label_size.set_width(
+        std::min(label_size.width() + 2 * kSplitviewLabelHorizontalInsetDp,
+                 bounds.width() - 2 * kSplitviewLabelHorizontalInsetDp));
+    label_size.set_height(
+        std::max(label_size.height(), kSplitviewLabelPreferredHeightDp));
 
     gfx::Rect cannot_snap_bounds = GetLocalBounds();
     cannot_snap_bounds.ClampToCenteredSize(label_size);
@@ -772,9 +769,8 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   cannot_snap_label_view_ = new views::Label(title);
   cannot_snap_label_view_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   cannot_snap_label_view_->SetAutoColorReadabilityEnabled(false);
-  cannot_snap_label_view_->SetMultiLine(true);
-  cannot_snap_label_view_->SetEnabledColor(kLabelColor);
-  cannot_snap_label_view_->SetBackgroundColor(kLabelBackgroundColor);
+  cannot_snap_label_view_->SetEnabledColor(kSplitviewLabelEnabledColor);
+  cannot_snap_label_view_->SetBackgroundColor(kSplitviewLabelBackgroundColor);
   cannot_snap_label_view_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
 

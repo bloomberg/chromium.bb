@@ -28,6 +28,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/panels/panel_layout_manager.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_overview_overlay.h"
@@ -2045,6 +2046,11 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
         ->current_indicator_type();
   }
 
+  int GetEdgeInset(int screen_width) const {
+    return screen_width * kHighlightScreenPrimaryAxisRatio +
+           kHighlightScreenEdgePaddingDp;
+  }
+
  private:
   class SplitViewTestWindowDelegate : public aura::test::TestWindowDelegate {
    public:
@@ -2125,9 +2131,9 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   const int drag_offset = OverviewWindowDragController::kMinimumDragOffset;
   const int drag_offset_snap_region =
       OverviewWindowDragController::kMinimumDragOffsetAlreadyInSnapRegionDp;
-  const int edge_inset = OverviewWindowDragController::kScreenEdgeInsetForDrag;
   const int screen_width =
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(left_window.get()).width();
+  const int edge_inset = GetEdgeInset(screen_width);
   // The selector item has a margin which does not accept events. Inset any
   // event aimed at the selector items edge so events will reach it.
   const int selector_item_inset = 20;
@@ -2317,9 +2323,9 @@ TEST_F(SplitViewWindowSelectorTest, PhantomWindowVisibility) {
   ToggleOverview();
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
 
-  const int edge_inset = OverviewWindowDragController::kScreenEdgeInsetForDrag;
   const int screen_width =
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(window.get()).width();
+  const int edge_inset = GetEdgeInset(screen_width);
 
   // Verify the phantom window is visible when |selector_item|'s x is in the
   // range [0, edge_inset] or [screen_width - edge_inset - 1, screen_width].
@@ -2384,7 +2390,9 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
   ToggleOverview();
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
 
-  const int edge_inset = OverviewWindowDragController::kScreenEdgeInsetForDrag;
+  const int screen_width =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
+  const int edge_inset = GetEdgeInset(screen_width);
 
   // Verify that when are no snapped windows, the overlay is visible when a drag
   // is initiated and disappears when the drag reaches |edge_inset| from the
@@ -2734,18 +2742,25 @@ TEST_F(SplitViewWindowSelectorTest, OverviewUnsnappableIndicatorVisibility) {
   WindowSelectorItem* unsnappable_selector_item =
       GetWindowItemForWindow(grid_index, unsnappable_window.get());
 
-  // Note: Using IsDrawn() instead of visible() because
-  // |cannot_snap_label_view_|'s parent (which handles the padding and rounded
-  // corners) is actually the item whose visibility gets altered.
-  EXPECT_FALSE(snappable_selector_item->cannot_snap_label_view_->IsDrawn());
-  EXPECT_FALSE(unsnappable_selector_item->cannot_snap_label_view_->IsDrawn());
+  // Note: Check opacities of  |cannot_snap_label_view_|'s parent (which handles
+  // the padding and rounded corners) is actually the item whose layer's opacity
+  // gets altered.
+  ui::Layer* snappable_layer =
+      snappable_selector_item->cannot_snap_label_view_->parent()->layer();
+  ui::Layer* unsnappable_layer =
+      unsnappable_selector_item->cannot_snap_label_view_->parent()->layer();
+  ASSERT_TRUE(snappable_layer);
+  ASSERT_TRUE(unsnappable_layer);
+
+  EXPECT_EQ(0.f, snappable_layer->opacity());
+  EXPECT_EQ(0.f, unsnappable_layer->opacity());
 
   // Snap the extra snappable window to enter split view mode.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
 
-  EXPECT_FALSE(snappable_selector_item->cannot_snap_label_view_->IsDrawn());
-  EXPECT_TRUE(unsnappable_selector_item->cannot_snap_label_view_->IsDrawn());
+  EXPECT_EQ(0.f, snappable_layer->opacity());
+  EXPECT_EQ(1.f, unsnappable_layer->opacity());
 }
 
 // Test that when splitview mode and overview mode are both active at the same

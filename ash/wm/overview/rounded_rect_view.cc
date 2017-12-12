@@ -9,8 +9,8 @@
 
 namespace ash {
 
-RoundedRectView::RoundedRectView(int corner_radius, SkColor background)
-    : corner_radius_(corner_radius), background_(background) {}
+RoundedRectView::RoundedRectView(int corner_radius, SkColor background_color)
+    : corner_radius_(corner_radius), background_color_(background_color) {}
 
 RoundedRectView::~RoundedRectView() = default;
 
@@ -25,7 +25,15 @@ void RoundedRectView::OnPaint(gfx::Canvas* canvas) {
   path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
 
   canvas->ClipPath(path, true);
-  canvas->DrawColor(background_);
+  canvas->DrawColor(background_color_);
+}
+
+void RoundedRectView::SetBackgroundColor(SkColor background_color) {
+  if (background_color_ == background_color)
+    return;
+
+  background_color_ = background_color;
+  SchedulePaint();
 }
 
 }  // namespace ash
