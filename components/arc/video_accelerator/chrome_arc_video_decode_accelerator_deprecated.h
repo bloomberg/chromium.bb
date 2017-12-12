@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
-#define COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_DEPRECATED_H_
+#define COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_DEPRECATED_H_
 
 #include <list>
 #include <memory>
@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/video_accelerator/arc_video_decode_accelerator.h"
+#include "components/arc/video_accelerator/arc_video_decode_accelerator_deprecated.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -23,22 +23,22 @@ class ProtectedBufferHandle;
 
 // This class is executed in the GPU process. It takes decoding requests from
 // ARC via IPC channels and translates and sends those requests to an
-// implementation of media::VideoDecodeAccelerator. It also returns the decoded
-// frames back to the ARC side.
-class ChromeArcVideoDecodeAccelerator
-    : public ArcVideoDecodeAccelerator,
+// implementation of media::VideoDecodeAcceleratorDeprecated.
+// It also returns the decoded frames back to the ARC side.
+class ChromeArcVideoDecodeAcceleratorDeprecated
+    : public ArcVideoDecodeAcceleratorDeprecated,
       public media::VideoDecodeAccelerator::Client,
-      public base::SupportsWeakPtr<ChromeArcVideoDecodeAccelerator> {
+      public base::SupportsWeakPtr<ChromeArcVideoDecodeAcceleratorDeprecated> {
  public:
-  ChromeArcVideoDecodeAccelerator(
+  ChromeArcVideoDecodeAcceleratorDeprecated(
       const gpu::GpuPreferences& gpu_preferences,
       ProtectedBufferManager* protected_buffer_manager);
-  ~ChromeArcVideoDecodeAccelerator() override;
+  ~ChromeArcVideoDecodeAcceleratorDeprecated() override;
 
-  // Implementation of the ArcVideoDecodeAccelerator interface.
-  ArcVideoDecodeAccelerator::Result Initialize(
+  // Implementation of the ArcVideoDecodeAcceleratorDeprecated interface.
+  ArcVideoDecodeAcceleratorDeprecated::Result Initialize(
       const Config& config,
-      ArcVideoDecodeAccelerator::Client* client) override;
+      ArcVideoDecodeAcceleratorDeprecated::Client* client) override;
   void SetNumberOfOutputBuffers(size_t number) override;
   bool AllocateProtectedBuffer(PortType port,
                                uint32_t index,
@@ -119,9 +119,9 @@ class ChromeArcVideoDecodeAccelerator
   };
 
   // The helper method to simplify reporting of the status returned to UMA.
-  ArcVideoDecodeAccelerator::Result InitializeTask(
+  ArcVideoDecodeAcceleratorDeprecated::Result InitializeTask(
       const Config& config,
-      ArcVideoDecodeAccelerator::Client* client);
+      ArcVideoDecodeAcceleratorDeprecated::Client* client);
 
   // Helper function to validate |port| and |index|.
   bool ValidatePortAndIndex(PortType port, uint32_t index) const;
@@ -153,8 +153,8 @@ class ChromeArcVideoDecodeAccelerator
   std::unique_ptr<media::VideoDecodeAccelerator> vda_;
 
   // It's safe to use the pointer here, the life cycle of the |arc_client_|
-  // is longer than this ChromeArcVideoDecodeAccelerator.
-  ArcVideoDecodeAccelerator::Client* arc_client_;
+  // is longer than this ChromeArcVideoDecodeAcceleratorDeprecated.
+  ArcVideoDecodeAcceleratorDeprecated::Client* arc_client_;
 
   // The next ID for the bitstream buffer, started from 0.
   int32_t next_bitstream_buffer_id_;
@@ -186,9 +186,9 @@ class ChromeArcVideoDecodeAccelerator
   gpu::GpuPreferences gpu_preferences_;
   ProtectedBufferManager* protected_buffer_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeArcVideoDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(ChromeArcVideoDecodeAcceleratorDeprecated);
 };
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_DEPRECATED_H_
