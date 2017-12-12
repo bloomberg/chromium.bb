@@ -76,6 +76,26 @@ TEST_F(AudioOutputTest, OpenAndClose) {
   EXPECT_TRUE(stream_->Open());
 }
 
+// Verify that Stop() can be called before Start().
+TEST_F(AudioOutputTest, StopBeforeStart) {
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
+  CreateWithDefaultParameters();
+  EXPECT_TRUE(stream_->Open());
+  stream_->Stop();
+}
+
+// Verify that Stop() can be called more than once.
+TEST_F(AudioOutputTest, StopTwice) {
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
+  CreateWithDefaultParameters();
+  EXPECT_TRUE(stream_->Open());
+  SineWaveAudioSource source(1, 200.0, stream_params_.sample_rate());
+
+  stream_->Start(&source);
+  stream_->Stop();
+  stream_->Stop();
+}
+
 // This test produces actual audio for .25 seconds on the default device.
 TEST_F(AudioOutputTest, Play200HzTone) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
