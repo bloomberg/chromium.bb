@@ -567,6 +567,8 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetPopupBlockingEnabled,
                         OnSetPopupBlockingEnabled)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinished, OnTestFinished)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NavigateSecondaryWindow,
+                        OnNavigateSecondaryWindow)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ShowDevTools, OnShowDevTools)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_EvaluateInDevTools,
                         OnEvaluateInDevTools)
@@ -950,6 +952,16 @@ void BlinkTestController::OnOverridePreferences(const WebPreferences& prefs) {
 
 void BlinkTestController::OnSetPopupBlockingEnabled(bool block_popups) {
   LayoutTestContentBrowserClient::Get()->SetPopupBlockingEnabled(block_popups);
+}
+
+void BlinkTestController::OnNavigateSecondaryWindow(const GURL& url) {
+  if (secondary_window_)
+    secondary_window_->LoadURL(url);
+}
+
+void BlinkTestController::OnInspectSecondaryWindow() {
+  if (devtools_bindings_)
+    devtools_bindings_->Attach();
 }
 
 void BlinkTestController::OnShowDevTools(const std::string& settings,

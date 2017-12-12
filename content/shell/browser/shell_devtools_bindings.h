@@ -46,6 +46,7 @@ class ShellDevToolsBindings : public WebContentsObserver,
                         ShellDevToolsDelegate* delegate);
 
   void InspectElementAt(int x, int y);
+  virtual void Attach();
 
   void CallClientFunction(const std::string& function_name,
                           const base::Value* arg1,
@@ -67,7 +68,6 @@ class ShellDevToolsBindings : public WebContentsObserver,
  private:
   // WebContentsObserver overrides
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
-  void DocumentAvailableInMainFrame() override;
   void WebContentsDestroyed() override;
 
   // net::URLFetcherDelegate overrides.

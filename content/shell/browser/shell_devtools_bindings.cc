@@ -154,7 +154,7 @@ void ShellDevToolsBindings::ReadyToCommitNavigation(
 #endif
 }
 
-void ShellDevToolsBindings::DocumentAvailableInMainFrame() {
+void ShellDevToolsBindings::Attach() {
   if (agent_host_)
     agent_host_->DetachClient(this);
   agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents_);
@@ -191,8 +191,6 @@ void ShellDevToolsBindings::SetPreferences(const std::string& json) {
 
 void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
-  if (!agent_host_)
-    return;
   std::string method;
   base::ListValue* params = nullptr;
   base::DictionaryValue* dict = nullptr;
@@ -207,7 +205,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
 
   if (method == "dispatchProtocolMessage" && params && params->GetSize() == 1) {
     std::string protocol_message;
-    if (!params->GetString(0, &protocol_message))
+    if (!agent_host_ || !params->GetString(0, &protocol_message))
       return;
     agent_host_->DispatchProtocolMessage(this, protocol_message);
   } else if (method == "loadCompleted") {
@@ -289,6 +287,8 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"));
   } else if (method == "reattach") {
+    if (!agent_host_)
+      return;
     agent_host_->DetachClient(this);
     agent_host_->AttachClient(this);
   } else if (method == "registerExtensionsAPI") {

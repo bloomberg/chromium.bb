@@ -407,6 +407,14 @@ void BlinkTestRunner::DisableAutoResizeMode(const WebSize& new_size) {
     ForceResizeRenderView(render_view(), new_size);
 }
 
+void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {
+  Send(new ShellViewHostMsg_NavigateSecondaryWindow(routing_id(), url));
+}
+
+void BlinkTestRunner::InspectSecondaryWindow() {
+  Send(new LayoutTestHostMsg_InspectSecondaryWindow(routing_id()));
+}
+
 void BlinkTestRunner::ShowDevTools(const std::string& settings,
                                    const std::string& frontend_url) {
   Send(new ShellViewHostMsg_ShowDevTools(

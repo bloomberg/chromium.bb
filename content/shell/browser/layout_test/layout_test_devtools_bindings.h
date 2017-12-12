@@ -27,6 +27,7 @@ class LayoutTestDevToolsBindings : public ShellDevToolsBindings {
                              bool new_harness);
 
   void EvaluateInFrontend(int call_id, const std::string& expression);
+  void Attach() override;
 
   ~LayoutTestDevToolsBindings() override;
 
@@ -39,10 +40,12 @@ class LayoutTestDevToolsBindings : public ShellDevToolsBindings {
   // WebContentsObserver implementation.
   void RenderProcessGone(base::TerminationStatus status) override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  void DocumentAvailableInMainFrame() override;
 
   void NavigateDevToolsFrontend();
 
   bool ready_for_test_ = false;
+  bool is_startup_test_ = false;
   GURL frontend_url_;
   std::vector<std::pair<int, std::string>> pending_evaluations_;
   std::unique_ptr<SecondaryObserver> secondary_observer_;

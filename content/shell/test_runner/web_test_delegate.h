@@ -136,6 +136,9 @@ class WebTestDelegate {
                             const std::string& frontend_url) = 0;
   virtual void CloseDevTools() = 0;
 
+  virtual void NavigateSecondaryWindow(const GURL& url) = 0;
+  virtual void InspectSecondaryWindow() = 0;
+
   // Evaluate the given script in the DevTools agent.
   virtual void EvaluateInWebInspector(int call_id,
                                       const std::string& script) = 0;

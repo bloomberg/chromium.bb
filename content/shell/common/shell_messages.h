@@ -67,6 +67,7 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessage,
                     std::string /* message */)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessageToStderr,
                     std::string /* message */)
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_NavigateSecondaryWindow, GURL /* url */)
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ShowDevTools,
                     std::string /* settings */,
                     std::string /* frontend_url */)

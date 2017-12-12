@@ -41,9 +41,14 @@ namespace content {
 class LayoutTestDevToolsBindings::SecondaryObserver
     : public WebContentsObserver {
  public:
-  explicit SecondaryObserver(LayoutTestDevToolsBindings* bindings)
+  SecondaryObserver(LayoutTestDevToolsBindings* bindings, bool is_startup_test)
       : WebContentsObserver(bindings->inspected_contents()),
-        bindings_(bindings) {}
+        bindings_(bindings) {
+    if (is_startup_test) {
+      bindings_->NavigateDevToolsFrontend();
+      bindings_ = nullptr;
+    }
+  }
 
   // WebContentsObserver implementation.
   void DocumentAvailableInMainFrame() override {
@@ -139,6 +144,12 @@ void LayoutTestDevToolsBindings::EvaluateInFrontend(int call_id,
       base::UTF8ToUTF16(source));
 }
 
+void LayoutTestDevToolsBindings::Attach() {
+  DCHECK(is_startup_test_);
+  ShellDevToolsBindings::Attach();
+  EvaluateInFrontend(0, "TestRunner._startupTestSetupFinished();");
+}
+
 LayoutTestDevToolsBindings::LayoutTestDevToolsBindings(
     WebContents* devtools_contents,
     WebContents* inspected_contents,
@@ -148,14 +159,18 @@ LayoutTestDevToolsBindings::LayoutTestDevToolsBindings(
     : ShellDevToolsBindings(devtools_contents, inspected_contents, nullptr),
       frontend_url_(frontend_url) {
   SetPreferences(settings);
-
   if (new_harness) {
-    secondary_observer_ = std::make_unique<SecondaryObserver>(this);
-    NavigationController::LoadURLParams params(
-        GetInspectedPageURL(frontend_url));
-    params.transition_type = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    inspected_contents->GetController().LoadURLWithParams(params);
+    is_startup_test_ =
+        frontend_url.query().find("/startup/") != std::string::npos;
+    secondary_observer_ =
+        std::make_unique<SecondaryObserver>(this, is_startup_test_);
+    if (!is_startup_test_) {
+      NavigationController::LoadURLParams params(
+          GetInspectedPageURL(frontend_url));
+      params.transition_type = ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+      inspected_contents->GetController().LoadURLWithParams(params);
+    }
   } else {
     NavigateDevToolsFrontend();
   }
@@ -188,6 +203,12 @@ void LayoutTestDevToolsBindings::RenderProcessGone(
 void LayoutTestDevToolsBindings::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
+}
+
+void LayoutTestDevToolsBindings::DocumentAvailableInMainFrame() {
+  if (is_startup_test_)
+    return;
+  ShellDevToolsBindings::Attach();
 }
 
 }  // namespace content
