@@ -298,6 +298,17 @@ def main():
             os.path.splitext(f)[1] in ['.so', '.a']):
         subprocess.call([EU_STRIP, '-g', dest])
 
+  stripped_binaries = ['clang', 'llvm-symbolizer', 'sancov']
+  if sys.platform.startswith('linux'):
+    stripped_binaries.append('lld')
+    stripped_binaries.append('llvm-ar')
+  for f in stripped_binaries:
+    if sys.platform == 'darwin':
+      # See http://crbug.com/256342
+      subprocess.call(['strip', '-x', os.path.join(pdir, 'bin', f)])
+    elif sys.platform.startswith('linux'):
+      subprocess.call(['strip', os.path.join(pdir, 'bin', f)])
+
   # Set up symlinks.
   if sys.platform != 'win32':
     os.symlink('clang', os.path.join(pdir, 'bin', 'clang++'))
