@@ -26,10 +26,11 @@ class MockResourceFactory final : public NonTextResourceFactory {
 
 // static
 MockResource* MockResource::Fetch(FetchParameters& params,
-                                  ResourceFetcher* fetcher) {
+                                  ResourceFetcher* fetcher,
+                                  ResourceClient* client) {
   params.SetRequestContext(WebURLRequest::kRequestContextSubresource);
-  Resource* resource = fetcher->RequestResource(params, MockResourceFactory());
-  return static_cast<MockResource*>(resource);
+  return static_cast<MockResource*>(
+      fetcher->RequestResource(params, MockResourceFactory(), client));
 }
 
 // static

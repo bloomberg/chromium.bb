@@ -167,7 +167,8 @@ TEST(ResourceTest, RevalidationSucceeded) {
   // Simulate a successful revalidation.
   resource->SetRevalidatingRequest(ResourceRequest("data:text/html,"));
 
-  Persistent<MockResourceClient> client = new MockResourceClient(resource);
+  Persistent<MockResourceClient> client = new MockResourceClient;
+  resource->AddClient(client);
 
   ResourceResponse revalidating_response;
   revalidating_response.SetHTTPStatusCode(304);
@@ -179,7 +180,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
             GetMemoryCache()->ResourceForURL(KURL("data:text/html,")));
   GetMemoryCache()->Remove(resource);
 
-  client->RemoveAsClient();
+  resource->RemoveClient(client);
   EXPECT_FALSE(resource->IsAlive());
   EXPECT_FALSE(client->NotifyFinishedCalled());
 }
@@ -197,7 +198,8 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   // Simulate a successful revalidation.
   resource->SetRevalidatingRequest(ResourceRequest("data:text/html,"));
 
-  Persistent<MockResourceClient> client = new MockResourceClient(resource);
+  Persistent<MockResourceClient> client = new MockResourceClient;
+  resource->AddClient(client);
 
   ResourceResponse revalidating_response;
   revalidating_response.SetHTTPStatusCode(304);
@@ -209,7 +211,7 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
             GetMemoryCache()->ResourceForURL(KURL("data:text/html,")));
   GetMemoryCache()->Remove(resource);
 
-  client->RemoveAsClient();
+  resource->RemoveClient(client);
   EXPECT_FALSE(resource->IsAlive());
   EXPECT_FALSE(client->NotifyFinishedCalled());
 }
@@ -249,7 +251,8 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   EXPECT_EQ("custom value",
             resource->GetResponse().HttpHeaderField("x-custom"));
 
-  Persistent<MockResourceClient> client = new MockResourceClient(resource);
+  Persistent<MockResourceClient> client = new MockResourceClient;
+  resource->AddClient(client);
 
   // Perform a revalidation step.
   ResourceResponse revalidating_response;
@@ -281,8 +284,6 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   EXPECT_EQ("proxy-connection value",
             resource->GetResponse().HttpHeaderField("proxy-connection"));
   EXPECT_EQ("updated", resource->GetResponse().HttpHeaderField("x-custom"));
-
-  client->RemoveAsClient();
 
   resource->RemoveClient(client);
   EXPECT_FALSE(resource->IsAlive());
@@ -317,7 +318,8 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_EQ("https://example.com/1",
             resource->LastResourceRequest().Url().GetString());
 
-  Persistent<MockResourceClient> client = new MockResourceClient(resource);
+  Persistent<MockResourceClient> client = new MockResourceClient;
+  resource->AddClient(client);
 
   // The revalidating request is redirected.
   ResourceResponse redirect_response;
@@ -355,7 +357,8 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_TRUE(client->NotifyFinishedCalled());
 
   // Test the case where a client is added after revalidation is completed.
-  Persistent<MockResourceClient> client2 = new MockResourceClient(resource);
+  Persistent<MockResourceClient> client2 = new MockResourceClient;
+  resource->AddClient(client2);
 
   // Because the client is added asynchronously,
   // |runUntilIdle()| is called to make |client2| to be notified.
@@ -365,8 +368,8 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
 
   GetMemoryCache()->Remove(resource);
 
-  client->RemoveAsClient();
-  client2->RemoveAsClient();
+  resource->RemoveClient(client);
+  resource->RemoveClient(client2);
   EXPECT_FALSE(resource->IsAlive());
 }
 

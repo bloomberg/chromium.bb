@@ -1237,13 +1237,9 @@ TEST(ImageResourceTest, FailedRevalidationSvgToSvg) {
 
 // Tests for pruning.
 
-TEST(ImageResourceTest, AddClientAfterPrune) {
+TEST(ImageResourceTest, Prune) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-
-  // Adds a ResourceClient but not ImageResourceObserver.
-  Persistent<MockResourceClient> client1 =
-      new MockResourceClient(image_resource);
 
   ReceiveResponse(image_resource, url, "image/jpeg",
                   reinterpret_cast<const char*>(kJpegImage),
@@ -1255,9 +1251,6 @@ TEST(ImageResourceTest, AddClientAfterPrune) {
   EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
   EXPECT_EQ(kJpegImageHeight,
             image_resource->GetContent()->GetImage()->height());
-  EXPECT_TRUE(client1->NotifyFinishedCalled());
-
-  client1->RemoveAsClient();
 
   EXPECT_FALSE(image_resource->IsAlive());
 
@@ -1265,17 +1258,12 @@ TEST(ImageResourceTest, AddClientAfterPrune) {
 
   EXPECT_TRUE(image_resource->GetContent()->HasImage());
 
-  // Re-adds a ResourceClient but not ImageResourceObserver.
-  Persistent<MockResourceClient> client2 =
-      new MockResourceClient(image_resource);
-
   blink::testing::RunPendingTasks();
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
   EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
   EXPECT_EQ(kJpegImageHeight,
             image_resource->GetContent()->GetImage()->height());
-  EXPECT_TRUE(client2->NotifyFinishedCalled());
 }
 
 TEST(ImageResourceTest, CancelOnDecodeError) {

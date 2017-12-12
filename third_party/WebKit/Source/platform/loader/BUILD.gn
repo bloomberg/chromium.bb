@@ -154,7 +154,6 @@ jumbo_source_set("test_support") {
     "testing/MockFetchContext.h",
     "testing/MockResource.cpp",
     "testing/MockResource.h",
-    "testing/MockResourceClient.cpp",
     "testing/MockResourceClient.h",
     "testing/WebURLLoaderFactoryWithMock.cpp",
     "testing/WebURLLoaderFactoryWithMock.h",
