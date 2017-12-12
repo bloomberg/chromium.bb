@@ -15,9 +15,8 @@ const CSSValue* ScrollSnapMarginInlineEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+  return ConsumeLength(range, context.Mode(), kValueRangeAll,
+                       CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 
 }  // namespace CSSLonghand
