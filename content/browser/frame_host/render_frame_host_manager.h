@@ -521,6 +521,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigationRequest(
       const NavigationRequest& navigation_request);
 
+  // Helper to initialize the RenderFrame if it's not initialized.
+  void InitializeRenderFrameIfNecessary(RenderFrameHostImpl* render_frame_host);
+
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
