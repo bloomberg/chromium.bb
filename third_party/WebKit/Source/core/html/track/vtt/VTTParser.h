@@ -66,6 +66,7 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
     kId,
     kTimingsAndSettings,
     kCueText,
+    kRegion,
     kBadCue
   };
 
@@ -125,12 +126,14 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
   ParseState CollectCueText(const String&);
   ParseState RecoverCue(const String&);
   ParseState IgnoreBadCue(const String&);
+  ParseState CollectRegionSettings(const String&);
+  ParseState CollectWebVTTBlock(const String&);
+  ParseState CheckAndRecoverCue(const String& line);
+  bool CheckAndCreateRegion(const String& line);
+  bool CheckAndStoreRegion(const String& line);
 
   void CreateNewCue();
   void ResetCueValues();
-
-  void CollectMetadataHeader(const String&);
-  void CreateNewRegion(const String& header_value);
 
   static bool CollectTimeStamp(VTTScanner& input, double& time_stamp);
 
@@ -140,8 +143,9 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
   double current_start_time_;
   double current_end_time_;
   StringBuilder current_content_;
+  String previous_line_;
   String current_settings_;
-
+  Member<VTTRegion> current_region_;
   Member<VTTParserClient> client_;
 
   HeapVector<Member<TextTrackCue>> cue_list_;
