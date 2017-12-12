@@ -27,8 +27,8 @@
 #define XMLDocumentParserScope_h
 
 #include <libxml/xmlerror.h>
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -36,7 +36,6 @@ class Document;
 
 class XMLDocumentParserScope {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(XMLDocumentParserScope);
 
  public:
   explicit XMLDocumentParserScope(Document*);
@@ -54,6 +53,7 @@ class XMLDocumentParserScope {
   xmlGenericErrorFunc old_generic_error_func_;
   xmlStructuredErrorFunc old_structured_error_func_;
   void* old_error_context_;
+  DISALLOW_COPY_AND_ASSIGN(XMLDocumentParserScope);
 };
 
 }  // namespace blink

@@ -27,6 +27,7 @@
 #ifndef XPathStep_h
 #define XPathStep_h
 
+#include "base/macros.h"
 #include "core/xml/XPathExpressionNode.h"
 #include "core/xml/XPathNodeSet.h"
 
@@ -39,8 +40,6 @@ namespace XPath {
 class Predicate;
 
 class Step final : public ParseNode {
-  WTF_MAKE_NONCOPYABLE(Step);
-
  public:
   enum Axis {
     kAncestorAxis,
@@ -132,6 +131,7 @@ class Step final : public ParseNode {
   Axis axis_;
   Member<NodeTest> node_test_;
   HeapVector<Member<Predicate>> predicates_;
+  DISALLOW_COPY_AND_ASSIGN(Step);
 };
 
 bool OptimizeStepPair(Step*, Step*);

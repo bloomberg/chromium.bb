@@ -5,6 +5,7 @@
 #ifndef XMLParserScriptRunner_h
 #define XMLParserScriptRunner_h
 
+#include "base/macros.h"
 #include "core/dom/PendingScript.h"
 #include "platform/wtf/text/TextPosition.h"
 
@@ -20,7 +21,6 @@ class XMLParserScriptRunnerHost;
 class XMLParserScriptRunner final
     : public GarbageCollectedFinalized<XMLParserScriptRunner>,
       public PendingScriptClient {
-  WTF_MAKE_NONCOPYABLE(XMLParserScriptRunner);
   USING_GARBAGE_COLLECTED_MIXIN(XMLParserScriptRunner);
 
  public:
@@ -51,6 +51,7 @@ class XMLParserScriptRunner final
 
   // TODO(crbug/717643): Implement
   // https://html.spec.whatwg.org/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
+  DISALLOW_COPY_AND_ASSIGN(XMLParserScriptRunner);
 };
 
 }  // namespace blink
