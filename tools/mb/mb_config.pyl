@@ -141,7 +141,6 @@
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ToTLinuxASanLibfuzzer': 'release_libfuzzer_asan_clang_tot',
       'ToTLinuxMSan': 'clang_tot_msan_release',
-      'ToTLinuxLLD': 'clang_tot_lld_release_shared',
       'ToTLinuxThinLTO': 'clang_tot_release_full_symbols_thin_lto_static_use_lld',
       'ToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
@@ -1219,11 +1218,6 @@
 
     'clang_tot_release_full_symbols_thin_lto_static_use_lld': [
       'clang_tot', 'release', 'full_symbols', 'thin_lto', 'static', 'use_lld',
-    ],
-
-    'clang_tot_lld_release_shared': [
-      # TODO(crbug.com/605819): Enable debug info in release builds.
-      'clang_tot', 'release', 'shared', 'use_lld',
     ],
 
     'clang_tot_shared_debug': [

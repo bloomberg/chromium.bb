@@ -747,14 +747,6 @@
           'gtest_tests': 'chromium_linux_clang_gtests',
         },
       },
-      'ToTLinuxLLD': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_gtests',
-        },
-      },
       'ToTLinuxMSan': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_clang_gtests',
