@@ -3,6 +3,6 @@ PASS Iterating over an empty StylePropertyMap gives a zero-length array
 PASS StylePropertyMap iterates properties in correct order
 FAIL StylePropertyMap iterator returns CSS properties with the correct CSSStyleValue result is not defined
 PASS StylePropertyMap iterator returns list-valued properties with the correct CSSStyleValue
-FAIL StylePropertyMap iterator returns custom properties with the correct CSSStyleValue assert_equals: expected "CSSUnparsedValue" but got "CSSStyleValue"
+PASS StylePropertyMap iterator returns custom properties with the correct CSSStyleValue
 Harness: the test ran to completion.
 

@@ -11,7 +11,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/MutableCSSPropertyValueSet.h"
-#include "core/css/cssom/CSSUnsupportedStyleValue.h"
+#include "core/css/cssom/CSSUnparsedValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/properties/CSSProperty.h"
 
@@ -77,15 +77,11 @@ InlineStylePropertyMap::GetIterationEntries() {
     String name;
     CSSStyleValueOrCSSStyleValueSequence value;
     if (property_id == CSSPropertyVariable) {
-      const CSSCustomPropertyDeclaration& custom_declaration =
+      const CSSCustomPropertyDeclaration& decl =
           ToCSSCustomPropertyDeclaration(property_reference.Value());
-      name = custom_declaration.GetName();
-      // TODO(meade): Eventually custom properties will support other types, so
-      // actually return them instead of always returning a
-      // CSSUnsupportedStyleValue.
-      // TODO(779477): Should these return CSSUnparsedValues?
-      value.SetCSSStyleValue(
-          CSSUnsupportedStyleValue::Create(custom_declaration.CustomCSSText()));
+      name = decl.GetName();
+      DCHECK(decl.Value());
+      value.SetCSSStyleValue(CSSUnparsedValue::FromCSSValue(*decl.Value()));
     } else {
       name = getPropertyNameString(property_id);
       CSSStyleValueVector style_value_vector =
