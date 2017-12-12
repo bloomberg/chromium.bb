@@ -202,21 +202,21 @@ def main():
 
     # Linux64 build numbers
     elif util.IsLinux():
+          versions['64'] = '520842'
           versions['63'] = '508578'
           versions['62'] = '499100'
-          versions['61'] = '488595'
 
     # Mac build numbers
     elif util.IsMac():
+          versions['64'] = '520840'
           versions['63'] = '508578'
           versions['62'] = '499098'
-          versions['61'] = '488595'
 
     # Windows build numbers
     elif util.IsWindows():
+          versions['64'] = '520840'
           versions['63'] = '508578'
           versions['62'] = '499101'
-          versions['61'] = '488595'
 
     code = 0
     for version, revision in versions.iteritems():
