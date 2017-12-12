@@ -3535,4 +3535,126 @@ TEST(NetworkQualityEstimatorTest, MaybeComputeECTAfterNSamples) {
   EXPECT_EQ(rtt_new, estimator.GetHttpRTT().value());
 }
 
+// Tests that the hanging request is correctly detected.
+TEST(NetworkQualityEstimatorTest, HangingRequestUsingHttpOnly) {
+  base::HistogramTester histogram_tester;
+
+  std::map<std::string, std::string> variation_params;
+  variation_params["add_default_platform_observations"] = "false";
+  variation_params["hanging_request_http_rtt_upper_bound_http_rtt_multiplier"] =
+      "6";
+  variation_params["hanging_request_upper_bound_min_http_rtt_msec"] = "500";
+
+  TestNetworkQualityEstimator estimator(variation_params);
+
+  // 500 msec.
+  const int32_t hanging_request_threshold =
+      estimator.params()
+          ->hanging_request_upper_bound_min_http_rtt()
+          .InMilliseconds();
+
+  estimator.set_start_time_null_http_rtt(base::TimeDelta::FromMilliseconds(5));
+  base::RunLoop().RunUntilIdle();
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+
+  const struct {
+    base::TimeDelta observed_http_rtt;
+    std::string histogram_name;
+  } tests[] = {
+      {base::TimeDelta::FromMilliseconds(10),
+       "NQE.RTT.NotAHangingRequest.HttpRTT"},
+      {base::TimeDelta::FromMilliseconds(100),
+       "NQE.RTT.NotAHangingRequest.MinHttpBound"},
+      {base::TimeDelta::FromMilliseconds(hanging_request_threshold - 1),
+       "NQE.RTT.NotAHangingRequest.MinHttpBound"},
+      {base::TimeDelta::FromMilliseconds(hanging_request_threshold + 1),
+       "NQE.RTT.HangingRequest"},
+      {base::TimeDelta::FromMilliseconds(1000), "NQE.RTT.HangingRequest"},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(
+        test.observed_http_rtt.InMilliseconds() >= hanging_request_threshold,
+        estimator.IsHangingRequest(test.observed_http_rtt));
+    histogram_tester.ExpectBucketCount(
+        test.histogram_name, test.observed_http_rtt.InMilliseconds(), 1);
+  }
+
+  // Verify total sample count in all histograms.
+  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.TransportRTT",
+                                    0);
+  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.HttpRTT", 1);
+  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.MinHttpBound",
+                                    2);
+  histogram_tester.ExpectTotalCount("NQE.RTT.HangingRequest", 2);
+}
+
+TEST(NetworkQualityEstimatorTest, HangingRequestUsingTransportAndHttpOnly) {
+  base::HistogramTester histogram_tester;
+
+  std::map<std::string, std::string> variation_params;
+  variation_params["add_default_platform_observations"] = "false";
+  variation_params
+      ["hanging_request_http_rtt_upper_bound_transport_rtt_multiplier"] = "8";
+  variation_params["hanging_request_http_rtt_upper_bound_http_rtt_multiplier"] =
+      "6";
+  variation_params["hanging_request_upper_bound_min_http_rtt_msec"] = "500";
+
+  const base::TimeDelta transport_rtt = base::TimeDelta::FromMilliseconds(100);
+
+  TestNetworkQualityEstimator estimator(variation_params);
+
+  // 800 msec.
+  const int32_t hanging_request_threshold =
+      transport_rtt.InMilliseconds() *
+      estimator.params()
+          ->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier();
+
+  estimator.DisableOfflineCheckForTesting(true);
+  estimator.set_start_time_null_http_rtt(base::TimeDelta::FromMilliseconds(5));
+
+  for (size_t i = 0; i < 100; ++i) {
+    // Throw enough transport RTT samples so that transport RTT estimate is
+    // recomputed.
+    estimator.AddAndNotifyObserversOfRTT(NetworkQualityEstimator::Observation(
+        transport_rtt.InMilliseconds(), base::TimeTicks::Now(), INT32_MIN,
+        NETWORK_QUALITY_OBSERVATION_SOURCE_TCP, 0));
+  }
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(transport_rtt, estimator.GetTransportRTT());
+
+  const struct {
+    base::TimeDelta observed_http_rtt;
+    std::string histogram_name;
+  } tests[] = {
+      {base::TimeDelta::FromMilliseconds(100),
+       "NQE.RTT.NotAHangingRequest.TransportRTT"},
+      {base::TimeDelta::FromMilliseconds(500),
+       "NQE.RTT.NotAHangingRequest.TransportRTT"},
+      {base::TimeDelta::FromMilliseconds(hanging_request_threshold - 1),
+       "NQE.RTT.NotAHangingRequest.TransportRTT"},
+      {base::TimeDelta::FromMilliseconds(hanging_request_threshold + 1),
+       "NQE.RTT.HangingRequest"},
+      {base::TimeDelta::FromMilliseconds(1000), "NQE.RTT.HangingRequest"},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(
+        test.observed_http_rtt.InMilliseconds() >= hanging_request_threshold,
+        estimator.IsHangingRequest(test.observed_http_rtt));
+    histogram_tester.ExpectBucketCount(
+        test.histogram_name, test.observed_http_rtt.InMilliseconds(), 1);
+  }
+
+  // Verify total sample count in all histograms.
+  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.TransportRTT",
+                                    3);
+  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.HttpRTT", 0);
+  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.MinHttpBound",
+                                    0);
+  histogram_tester.ExpectTotalCount("NQE.RTT.HangingRequest", 2);
+}
+
 }  // namespace net
