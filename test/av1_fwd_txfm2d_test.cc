@@ -180,11 +180,13 @@ TEST(AV1FwdTxfm2d, CfgTest) {
     int bd = libaom_test::bd_arr[bd_idx];
     int8_t low_range = libaom_test::low_range_arr[bd_idx];
     int8_t high_range = libaom_test::high_range_arr[bd_idx];
-    // TODO(angiebird): include rect txfm in this test
-    for (int tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (int tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
 #if CONFIG_TX64X64
-        if (tx_size == TX_64X64 && tx_type != DCT_DCT) continue;
+        if ((tx_size_wide[tx_size] == 64 || tx_size_high[tx_size] == 64) &&
+            tx_type != DCT_DCT) {
+          continue;
+        }
 #endif  // CONFIG_TX64X64
         TXFM_2D_FLIP_CFG cfg;
         av1_get_fwd_txfm_cfg(static_cast<TX_TYPE>(tx_type),
