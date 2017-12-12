@@ -608,13 +608,18 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
       (HasEGLExtension("EGL_ANDROID_front_buffer_auto_refresh") &&
        HasEGLExtension("EGL_ANDROID_create_native_client_buffer"));
 
+#if defined(OS_WIN)
   // Need EGL_ANGLE_flexible_surface_compatibility to allow surfaces with and
-  // without alpha to be bound to the same context.
+  // without alpha to be bound to the same context. Blacklist direct composition
+  // if MCTU.dll or MCTUX.dll are injected. These are user mode drivers for
+  // display adapters from Magic Control Technology Corporation.
   g_use_direct_composition =
       HasEGLExtension("EGL_ANGLE_direct_composition") &&
       HasEGLExtension("EGL_ANGLE_flexible_surface_compatibility") &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDirectComposition);
+          switches::kDisableDirectComposition) &&
+      !GetModuleHandle(TEXT("MCTU.dll")) && !GetModuleHandle(TEXT("MCTUX.dll"));
+#endif
 
   g_egl_display_texture_share_group_supported =
       HasEGLExtension("EGL_ANGLE_display_texture_share_group");
