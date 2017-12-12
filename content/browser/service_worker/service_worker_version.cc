@@ -1007,8 +1007,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_NavigateClient, OnNavigateClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SkipWaiting,
                         OnSkipWaiting)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClaimClients,
-                        OnClaimClients)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1042,6 +1040,35 @@ void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
   script_cache_map_.ClearMetadata(
       url, base::Bind(&ServiceWorkerVersion::OnClearCachedMetadataFinished,
                       weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void ServiceWorkerVersion::ClaimClients(ClaimClientsCallback callback) {
+  if (status_ != ACTIVATING && status_ != ACTIVATED) {
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kState,
+                            std::string(kClaimClientsStateErrorMesage));
+    return;
+  }
+  if (!context_) {
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kAbort,
+                            std::string(kClaimClientsShutdownErrorMesage));
+    return;
+  }
+
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  // Registration must be kept alive by ServiceWorkerGlobalScope#registration.
+  if (!registration) {
+    mojo::ReportBadMessage("ClaimClients: No live registration");
+    // ReportBadMessage() will kill the renderer process, but Mojo complains if
+    // the callback is not run. Just run it with nonsense arguments.
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
+                            std::string());
+    return;
+  }
+
+  registration->ClaimClients();
+  std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
+                          base::nullopt);
 }
 
 void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
@@ -1392,28 +1419,6 @@ void ServiceWorkerVersion::OnSkipWaiting(int request_id) {
   pending_skip_waiting_requests_.push_back(request_id);
   if (pending_skip_waiting_requests_.size() == 1)
     registration->ActivateWaitingVersionWhenReady();
-}
-
-void ServiceWorkerVersion::OnClaimClients(int request_id) {
-  if (status_ != ACTIVATING && status_ != ACTIVATED) {
-    embedded_worker_->SendIpcMessage(ServiceWorkerMsg_ClaimClientsError(
-        request_id, blink::mojom::ServiceWorkerErrorType::kState,
-        base::ASCIIToUTF16(kClaimClientsStateErrorMesage)));
-    return;
-  }
-  if (context_) {
-    if (ServiceWorkerRegistration* registration =
-            context_->GetLiveRegistration(registration_id_)) {
-      registration->ClaimClients();
-      embedded_worker_->SendIpcMessage(
-          ServiceWorkerMsg_DidClaimClients(request_id));
-      return;
-    }
-  }
-
-  embedded_worker_->SendIpcMessage(ServiceWorkerMsg_ClaimClientsError(
-      request_id, blink::mojom::ServiceWorkerErrorType::kAbort,
-      base::ASCIIToUTF16(kClaimClientsShutdownErrorMesage)));
 }
 
 void ServiceWorkerVersion::OnPongFromWorker() {
