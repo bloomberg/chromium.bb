@@ -53,7 +53,6 @@ video::-webkit-media-controls-panel {
 
   min-width: 48px;
   flex: 1;
-  padding-bottom: 12px;
 
   font-size: 12px;
   font-weight: normal;  /* Make sure that we don't inherit non-defaults. */
@@ -259,8 +258,11 @@ video::-webkit-media-controls-timeline {
   -webkit-appearance: -internal-media-control;
 
   height: 2px;
-  padding: 0;
-  margin: 5px 16px;
+  padding-top: 5px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 17px;
+  margin: 0;
   background: transparent;
 }
 
@@ -293,6 +295,8 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-backg
   position: absolute;
   width: 100%;
   top: 0;
+  height: 2px;
+  overflow: hidden;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
