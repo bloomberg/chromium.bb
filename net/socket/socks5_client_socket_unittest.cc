@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/sys_byteorder.h"
+#include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
@@ -382,6 +383,29 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     EXPECT_TRUE(LogContainsEndEvent(net_log_entries, -1,
                                     NetLogEventType::SOCKS5_CONNECT));
   }
+}
+
+TEST_F(SOCKS5ClientSocketTest, Tag) {
+  StaticSocketDataProvider data;
+  TestNetLog log;
+  MockTaggingStreamSocket* tagging_sock =
+      new MockTaggingStreamSocket(std::unique_ptr<StreamSocket>(
+          new MockTCPClientSocket(address_list_, &log, &data)));
+
+  std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  // |connection| takes ownership of |tagging_sock|, but keep a
+  // non-owning pointer to it.
+  connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
+  SOCKS5ClientSocket socket(
+      std::move(connection),
+      HostResolver::RequestInfo(HostPortPair("localhost", 80)));
+
+  EXPECT_EQ(tagging_sock->tag(), SocketTag());
+#if defined(OS_ANDROID)
+  SocketTag tag(0x12345678, 0x87654321);
+  socket.ApplySocketTag(tag);
+  EXPECT_EQ(tagging_sock->tag(), tag);
+#endif  // OS_ANDROID
 }
 
 }  // namespace

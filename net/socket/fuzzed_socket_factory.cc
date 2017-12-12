@@ -92,6 +92,8 @@ class FailingSSLClientSocket : public SSLClientSocket {
 
   int64_t GetTotalReceivedBytes() const override { return 0; }
 
+  void ApplySocketTag(const net::SocketTag& tag) override {}
+
   // SSLSocket implementation:
   int ExportKeyingMaterial(const base::StringPiece& label,
                            bool has_context,

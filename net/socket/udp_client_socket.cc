@@ -76,6 +76,10 @@ NetworkChangeNotifier::NetworkHandle UDPClientSocket::GetBoundNetwork() const {
   return network_;
 }
 
+void UDPClientSocket::ApplySocketTag(const SocketTag& tag) {
+  socket_.ApplySocketTag(tag);
+}
+
 int UDPClientSocket::Read(IOBuffer* buf,
                           int buf_len,
                           const CompletionCallback& callback) {

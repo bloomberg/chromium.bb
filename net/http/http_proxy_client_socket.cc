@@ -27,7 +27,7 @@
 namespace net {
 
 HttpProxyClientSocket::HttpProxyClientSocket(
-    ClientSocketHandle* transport_socket,
+    std::unique_ptr<ClientSocketHandle> transport_socket,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     const HostPortPair& proxy_server,
@@ -40,7 +40,7 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     : io_callback_(base::Bind(&HttpProxyClientSocket::OnIOComplete,
                               base::Unretained(this))),
       next_state_(STATE_NONE),
-      transport_(transport_socket),
+      transport_(std::move(transport_socket)),
       endpoint_(endpoint),
       auth_(http_auth_controller),
       tunnel_(tunnel),
@@ -50,7 +50,7 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       redirect_has_load_timing_info_(false),
       proxy_server_(proxy_server),
       proxy_delegate_(proxy_delegate),
-      net_log_(transport_socket->socket()->NetLog()) {
+      net_log_(transport_->socket()->NetLog()) {
   // Synthesize the bits of a request that we actually use.
   request_.url = GURL("https://" + endpoint.ToString());
   request_.method = "CONNECT";
@@ -206,6 +206,10 @@ void HttpProxyClientSocket::GetConnectionAttempts(
 
 int64_t HttpProxyClientSocket::GetTotalReceivedBytes() const {
   return transport_->socket()->GetTotalReceivedBytes();
+}
+
+void HttpProxyClientSocket::ApplySocketTag(const SocketTag& tag) {
+  return transport_->socket()->ApplySocketTag(tag);
 }
 
 int HttpProxyClientSocket::Read(IOBuffer* buf, int buf_len,

@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -33,6 +34,7 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/socket_performance_watcher.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_client_socket_pool.h"
@@ -592,6 +594,7 @@ class MockClientSocket : public SSLClientSocket {
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
   int64_t GetTotalReceivedBytes() const override;
+  void ApplySocketTag(const SocketTag& tag) override {}
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
@@ -795,6 +798,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
                           const IPEndPoint& address) override;
   int ConnectUsingDefaultNetwork(const IPEndPoint& address) override;
   NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override;
+  void ApplySocketTag(const SocketTag& tag) override;
 
   // AsyncSocket implementation.
   void OnReadComplete(const MockRead& data) override;
@@ -1038,6 +1042,72 @@ class ScopedWebSocketEndpointZeroUnlockDelay {
   base::TimeDelta old_delay_;
 };
 
+// WrappedStreamSocket is a base class that wraps an existing StreamSocket,
+// forwarding the Socket and StreamSocket interfaces to the underlying
+// transport.
+// This is to provide a common base class for subclasses to override specific
+// StreamSocket methods for testing, while still communicating with a 'real'
+// StreamSocket.
+class WrappedStreamSocket : public StreamSocket {
+ public:
+  explicit WrappedStreamSocket(std::unique_ptr<StreamSocket> transport);
+  ~WrappedStreamSocket() override;
+
+  // StreamSocket implementation:
+  int Connect(const CompletionCallback& callback) override;
+  void Disconnect() override;
+  bool IsConnected() const override;
+  bool IsConnectedAndIdle() const override;
+  int GetPeerAddress(IPEndPoint* address) const override;
+  int GetLocalAddress(IPEndPoint* address) const override;
+  const NetLogWithSource& NetLog() const override;
+  void SetSubresourceSpeculation() override;
+  void SetOmniboxSpeculation() override;
+  bool WasEverUsed() const override;
+  bool WasAlpnNegotiated() const override;
+  NextProto GetNegotiatedProtocol() const override;
+  bool GetSSLInfo(SSLInfo* ssl_info) override;
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  void ClearConnectionAttempts() override;
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override;
+  int64_t GetTotalReceivedBytes() const override;
+  void ApplySocketTag(const SocketTag& tag) override;
+
+  // Socket implementation:
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override;
+  int ReadIfReady(IOBuffer* buf,
+                  int buf_len,
+                  const CompletionCallback& callback) override;
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
+
+ protected:
+  std::unique_ptr<StreamSocket> transport_;
+};
+
+// StreamSocket that wraps another StreamSocket, but keeps track of any
+// SocketTag applied to the socket.
+class MockTaggingStreamSocket : public WrappedStreamSocket {
+ public:
+  explicit MockTaggingStreamSocket(std::unique_ptr<StreamSocket> transport)
+      : WrappedStreamSocket(std::move(transport)) {}
+  ~MockTaggingStreamSocket() override {}
+
+  void ApplySocketTag(const SocketTag& tag) override;
+
+  SocketTag tag() { return tag_; }
+
+ private:
+  SocketTag tag_;
+};
+
 // Constants for a successful SOCKS v5 handshake.
 extern const char kSOCKS5GreetRequest[];
 extern const int kSOCKS5GreetRequestLength;
@@ -1056,6 +1126,12 @@ int64_t CountReadBytes(const MockRead reads[], size_t reads_size);
 
 // Helper function to get the total data size of the MockWrites in |writes|.
 int64_t CountWriteBytes(const MockWrite writes[], size_t writes_size);
+
+#if defined(OS_ANDROID)
+// Query the system to find out how many bytes were received with tag
+// |expected_tag| for our UID.  Return the count of recieved bytes.
+uint64_t GetTaggedBytes(int32_t expected_tag);
+#endif
 
 }  // namespace net
 

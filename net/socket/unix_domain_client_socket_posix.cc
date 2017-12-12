@@ -155,6 +155,10 @@ int64_t UnixDomainClientSocket::GetTotalReceivedBytes() const {
   return 0;
 }
 
+void UnixDomainClientSocket::ApplySocketTag(const SocketTag& tag) {
+  // Ignore socket tags as Unix domain sockets are local only.
+}
+
 int UnixDomainClientSocket::Read(IOBuffer* buf, int buf_len,
                                  const CompletionCallback& callback) {
   DCHECK(socket_);

@@ -20,6 +20,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/next_proto.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -67,6 +68,7 @@ class MockSSLClientSocket : public net::SSLClientSocket {
   MOCK_METHOD0(ClearConnectionAttempts, void());
   MOCK_METHOD1(AddConnectionAttempts, void(const net::ConnectionAttempts&));
   MOCK_CONST_METHOD0(GetTotalReceivedBytes, int64_t());
+  MOCK_METHOD1(ApplySocketTag, void(const net::SocketTag&));
   MOCK_METHOD5(ExportKeyingMaterial,
                int(const StringPiece&,
                    bool,

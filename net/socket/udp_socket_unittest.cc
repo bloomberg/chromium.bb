@@ -24,6 +24,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
+#include "net/socket/socket_test_util.h"
 #include "net/socket/udp_client_socket.h"
 #include "net/socket/udp_server_socket.h"
 #include "net/test/gtest_util.h"
@@ -906,6 +907,79 @@ TEST_F(UDPSocketTest, SetDSCPFake) {
   g_expected_traffic_type = QOSTrafficTypeBestEffort;
   EXPECT_THAT(client.SetDiffServCodePoint(DSCP_DEFAULT), IsOk());
   client.Close();
+}
+#endif
+
+// On Android, where socket tagging is supported, verify that UDPSocket::Tag
+// works as expected.
+#if defined(OS_ANDROID)
+TEST_F(UDPSocketTest, Tag) {
+  UDPServerSocket server(nullptr, NetLogSource());
+  ASSERT_THAT(server.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0)), IsOk());
+  IPEndPoint server_address;
+  ASSERT_THAT(server.GetLocalAddress(&server_address), IsOk());
+
+  UDPClientSocket client(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
+                         nullptr, NetLogSource());
+  ASSERT_THAT(client.Connect(server_address), IsOk());
+
+  // Verify UDP packets are tagged and counted properly.
+  int32_t tag_val1 = 0x12345678;
+  uint64_t old_traffic = GetTaggedBytes(tag_val1);
+  SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
+  client.ApplySocketTag(tag1);
+  // Client sends to the server.
+  std::string simple_message("hello world!");
+  int rv = WriteSocket(&client, simple_message);
+  EXPECT_EQ(simple_message.length(), static_cast<size_t>(rv));
+  // Server waits for message.
+  std::string str = RecvFromSocket(&server);
+  EXPECT_EQ(simple_message, str);
+  // Server echoes reply.
+  rv = SendToSocket(&server, simple_message);
+  EXPECT_EQ(simple_message.length(), static_cast<size_t>(rv));
+  // Client waits for response.
+  str = ReadSocket(&client);
+  EXPECT_EQ(simple_message, str);
+  EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
+
+  // Verify socket can be retagged with a new value and the current process's
+  // UID.
+  int32_t tag_val2 = 0x87654321;
+  old_traffic = GetTaggedBytes(tag_val2);
+  SocketTag tag2(getuid(), tag_val2);
+  client.ApplySocketTag(tag2);
+  // Client sends to the server.
+  rv = WriteSocket(&client, simple_message);
+  EXPECT_EQ(simple_message.length(), static_cast<size_t>(rv));
+  // Server waits for message.
+  str = RecvFromSocket(&server);
+  EXPECT_EQ(simple_message, str);
+  // Server echoes reply.
+  rv = SendToSocket(&server, simple_message);
+  EXPECT_EQ(simple_message.length(), static_cast<size_t>(rv));
+  // Client waits for response.
+  str = ReadSocket(&client);
+  EXPECT_EQ(simple_message, str);
+  EXPECT_GT(GetTaggedBytes(tag_val2), old_traffic);
+
+  // Verify socket can be retagged with a new value and the current process's
+  // UID.
+  old_traffic = GetTaggedBytes(tag_val1);
+  client.ApplySocketTag(tag1);
+  // Client sends to the server.
+  rv = WriteSocket(&client, simple_message);
+  EXPECT_EQ(simple_message.length(), static_cast<size_t>(rv));
+  // Server waits for message.
+  str = RecvFromSocket(&server);
+  EXPECT_EQ(simple_message, str);
+  // Server echoes reply.
+  rv = SendToSocket(&server, simple_message);
+  EXPECT_EQ(simple_message.length(), static_cast<size_t>(rv));
+  // Client waits for response.
+  str = ReadSocket(&client);
+  EXPECT_EQ(simple_message, str);
+  EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
 }
 #endif
 

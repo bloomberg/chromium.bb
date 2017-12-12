@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
@@ -467,6 +468,31 @@ TEST_F(SOCKSClientSocketTest, NoIPv6RealResolver) {
 
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED,
             callback_.GetResult(user_sock_->Connect(callback_.callback())));
+}
+
+TEST_F(SOCKSClientSocketTest, Tag) {
+  StaticSocketDataProvider data;
+  TestNetLog log;
+  MockTaggingStreamSocket* tagging_sock =
+      new MockTaggingStreamSocket(std::unique_ptr<StreamSocket>(
+          new MockTCPClientSocket(address_list_, &log, &data)));
+
+  std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  // |connection| takes ownership of |tagging_sock|, but keep a
+  // non-owning pointer to it.
+  connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
+  MockHostResolver host_resolver;
+  SOCKSClientSocket socket(
+      std::move(connection),
+      HostResolver::RequestInfo(HostPortPair("localhost", 80)),
+      DEFAULT_PRIORITY, &host_resolver);
+
+  EXPECT_EQ(tagging_sock->tag(), SocketTag());
+#if defined(OS_ANDROID)
+  SocketTag tag(0x12345678, 0x87654321);
+  socket.ApplySocketTag(tag);
+  EXPECT_EQ(tagging_sock->tag(), tag);
+#endif  // OS_ANDROID
 }
 
 }  // namespace net

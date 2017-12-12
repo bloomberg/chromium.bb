@@ -18,6 +18,7 @@ namespace net {
 class IPEndPoint;
 class NetLogWithSource;
 class SSLInfo;
+class SocketTag;
 
 class NET_EXPORT_PRIVATE StreamSocket : public Socket {
  public:
@@ -135,6 +136,18 @@ class NET_EXPORT_PRIVATE StreamSocket : public Socket {
   // default initialized upon entry. Implementations should override fields in
   // |stats|. Default implementation does nothing.
   virtual void DumpMemoryStats(SocketMemoryStats* stats) const {}
+
+  // Apply |tag| to this socket. If socket isn't yet connected, tag will be
+  // applied when socket is later connected. If Connect() fails or socket
+  // is closed, tag is cleared. If this socket is layered upon or wraps an
+  // underlying socket, |tag| will be applied to the underlying socket in the
+  // same manner as if ApplySocketTag() was called on the underlying socket.
+  // The tag can be applied at any time, in other words active sockets can be
+  // retagged with a different tag. Sockets wrapping multiplexed sockets
+  // (e.g. sockets who proxy through a QUIC or Spdy stream) cannot be tagged as
+  // the tag would inadvertently affect other streams; calling ApplySocketTag()
+  // in this case will result in CHECK(false).
+  virtual void ApplySocketTag(const SocketTag& tag) = 0;
 
  protected:
   // The following class is only used to gather statistics about the history of

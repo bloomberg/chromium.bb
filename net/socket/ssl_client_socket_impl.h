@@ -117,6 +117,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
   int64_t GetTotalReceivedBytes() const override;
   void DumpMemoryStats(SocketMemoryStats* stats) const override;
+  void ApplySocketTag(const SocketTag& tag) override;
 
   // Dumps memory allocation stats. |pmd| is the browser process memory dump.
   static void DumpSSLClientSessionMemoryStats(
