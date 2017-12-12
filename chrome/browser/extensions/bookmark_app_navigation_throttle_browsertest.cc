@@ -4,9 +4,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -41,10 +43,15 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_fetcher.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace net::test_server;
 
 namespace extensions {
+
+using ProcessNavigationResult =
+    BookmarkAppNavigationThrottle::ProcessNavigationResult;
 
 enum class LinkTarget {
   SELF,
@@ -95,6 +102,29 @@ class BookmarkAppNavigationObserver : public content::TestNavigationObserver {
   // The request body of the last navigation if it was a post request.
   scoped_refptr<content::ResourceRequestBody> last_resource_request_body_;
 };
+
+void ExpectNavigationResultHistogramEquals(
+    const base::HistogramTester& histogram_tester,
+    const std::vector<std::pair<ProcessNavigationResult,
+                                base::HistogramBase::Count>>& expected_counts) {
+  std::vector<base::Bucket> expected_bucket_counts;
+  for (const auto& pair : expected_counts) {
+    expected_bucket_counts.push_back(base::Bucket(
+        static_cast<base::HistogramBase::Sample>(pair.first), pair.second));
+  }
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.BookmarkApp.NavigationResult"),
+      testing::UnorderedElementsAreArray(expected_bucket_counts));
+}
+
+// When an app is launched, whether it's in response to a navigation or click
+// in a launch surface e.g. App Shelf, the first navigation in the app is
+// an AUTO_BOOKMARK navigation.
+std::pair<ProcessNavigationResult, base::HistogramBase::Count>
+GetAppLaunchedEntry() {
+  return {ProcessNavigationResult::kProceedTransitionAutoBookmark, 1};
+}
 
 std::string CreateServerRedirect(const GURL& target_url) {
   const char* const kServerRedirectBase = "/server-redirect?";
@@ -539,10 +569,13 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
                                           kLaunchingPagePath);
   }
 
+  const base::HistogramTester& global_histogram() { return histogram_tester_; }
+
   const Extension* test_bookmark_app() { return test_bookmark_app_; }
 
  private:
   const Extension* test_bookmark_app_;
+  base::HistogramTester histogram_tester_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
@@ -564,6 +597,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       app_url, base::Bind(&ClickLinkAndWait,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           app_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 // Tests that navigating to the Web App's app_url doesn't open a new window
@@ -579,6 +614,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       app_url, base::Bind(&ClickLinkAndWait,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           app_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 // Tests that most transition types for navigations to in-scope or
@@ -649,6 +686,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
   ASSERT_TRUE(ui::PageTransitionCoreTypeIs(observer.transition_type(),
                                            ui::PAGE_TRANSITION_AUTO_SUBFRAME));
+
+  // Subframe navigations are completely ignored, so there should be no change
+  // in the histogram.
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
@@ -682,6 +723,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
   ASSERT_TRUE(ui::PageTransitionCoreTypeIs(
       observer.transition_type(), ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
+
+  // Subframe navigations are completely ignored, so there should be no change
+  // in the histogram.
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 // Tests that pasting an in-scope URL into the address bar and navigating to it,
@@ -701,6 +746,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
   ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
       app_url, base::Bind(&NavigateToURLWrapper, &params)));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kProceedTransitionFromAddressBar, 1}});
 }
 
 // Tests that going back to an in-scope URL does not open a new app window.
@@ -738,6 +787,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
         out_of_scope_url, base::Bind(&NavigateToURLWrapper, &params)));
   }
 
+  base::HistogramTester scoped_histogram;
   TestTabActionDoesNotOpenAppWindow(
       in_scope_url,
       base::Bind(
@@ -747,6 +797,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
             observer->WaitForNavigationFinished();
           },
           browser()->tab_strip_model()->GetActiveWebContents(), in_scope_url));
+
+  ExpectNavigationResultHistogramEquals(
+      scoped_histogram,
+      {{ProcessNavigationResult::kProceedTransitionForwardBack, 1}});
 }
 
 // Tests that clicking a link to an app that launches in a tab does not open a
@@ -765,6 +819,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest, TabApp) {
       app_url, base::Bind(&ClickLinkAndWait,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           app_url, LinkTarget::SELF, GetParam()));
+
+  // Non-windowed apps are not considered when looking for a target app, so it's
+  // as if there was no app installed for the URL.
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 // Tests that clicking a link with target="_self" to the app's app_url opens the
@@ -779,6 +837,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       app_url, base::Bind(&ClickLinkAndWait,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           app_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_blank" to the app's app_url opens
@@ -793,6 +855,11 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       app_url, base::Bind(&ClickLinkAndWait,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           app_url, LinkTarget::BLANK, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_self" and for which the server
@@ -810,6 +877,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWaitForURL,
                  browser()->tab_strip_model()->GetActiveWebContents(),
                  redirecting_url, app_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_blank" and for which the server
@@ -827,6 +898,11 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWaitForURL,
                  browser()->tab_strip_model()->GetActiveWebContents(),
                  redirecting_url, app_url, LinkTarget::BLANK, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_self" and for which the client
@@ -859,6 +935,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
                          ->tab_strip_model()
                          ->GetActiveWebContents()
                          ->GetLastCommittedURL());
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_blank" and for which the client
@@ -895,6 +975,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
                          ->tab_strip_model()
                          ->GetActiveWebContents()
                          ->GetLastCommittedURL());
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
 }
 
 // Tests that an app that immediately redirects to an out-of-scope URL opens a
@@ -927,6 +1011,11 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(initial_tab, new_tab);
   EXPECT_EQ(GetLaunchingPageURL(), new_tab->GetLastCommittedURL());
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {GetAppLaunchedEntry(),
+       {ProcessNavigationResult::kOpenInChromeProceedOutOfScopeLaunch, 1}});
 }
 
 // Tests that clicking a link with target="_self" to a URL in the Web App's
@@ -943,6 +1032,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWait,
                  browser()->tab_strip_model()->GetActiveWebContents(),
                  in_scope_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_self" to a URL out of the Web App's
@@ -959,6 +1052,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWait,
                  browser()->tab_strip_model()->GetActiveWebContents(),
                  out_of_scope_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 // Set of tests to make sure form submissions have the correct behavior.
@@ -1022,6 +1117,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
     target_url = AddTestQueryParam(target_url);
   }
 
+  base::HistogramTester scoped_histogram;
+
   // All form submissions that start in the browser should be kept in the
   // browser.
   if (start_in == StartIn::BROWSER) {
@@ -1030,6 +1127,14 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
         base::Bind(&SubmitFormAndWait,
                    current_browser->tab_strip_model()->GetActiveWebContents(),
                    target_url, request_type));
+
+    // Navigations to out-of-scope URLs are considered regular navigations and
+    // therefore not recorded.
+    if (target_url_path == kInScopeUrlPath) {
+      ExpectNavigationResultHistogramEquals(
+          scoped_histogram,
+          {{ProcessNavigationResult::kProceedInBrowserFormSubmission, 1}});
+    }
     return;
   }
 
@@ -1041,17 +1146,25 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
         base::Bind(&SubmitFormAndWait,
                    current_browser->tab_strip_model()->GetActiveWebContents(),
                    target_url, request_type));
+
+    ExpectNavigationResultHistogramEquals(
+        scoped_histogram,
+        {{ProcessNavigationResult::kProceedInAppSameScope, 1}});
     return;
   }
 
-  // When in an app out-of-scope navigations should always open a new foreground
-  // tab.
+  // When in an app, out-of-scope navigations should always open a new
+  // foreground tab.
   DCHECK_EQ(target_url_path, kOutOfScopeUrlPath);
   TestAppActionOpensForegroundTab(
       current_browser, target_url,
       base::Bind(&SubmitFormAndWait,
                  current_browser->tab_strip_model()->GetActiveWebContents(),
                  target_url, request_type));
+
+  ExpectNavigationResultHistogramEquals(
+      scoped_histogram,
+      {{ProcessNavigationResult::kDeferOpenNewTabInAppOutOfScope, 1}});
 }
 
 // Tests that prerender links don't open the app.
@@ -1082,6 +1195,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
       },
       browser()->tab_strip_model()->GetActiveWebContents(),
       embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath)));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kCancelPrerenderContents, 1}});
 }
 
 // Tests fetch calls don't open a new App window.
@@ -1105,6 +1222,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest, Fetch) {
       },
       browser()->tab_strip_model()->GetActiveWebContents(),
       embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath)));
+
+  // Fetch requests don't go through our NavigationHandle.
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 // Tests that clicking "Open link in new tab" to an in-scope URL opens a new
@@ -1119,6 +1239,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
       app_url, base::Bind(&ExecuteContextMenuLinkCommandAndWait,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           app_url, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kProceedStartedFromContextMenu, 1}});
 }
 
 // Tests that clicking "Open link in new window" to an in-scope URL opens a new
@@ -1133,6 +1257,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
       app_url, base::Bind(&ExecuteContextMenuLinkCommandAndWait,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           app_url, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kProceedStartedFromContextMenu, 1}});
 }
 
 // Tests that clicking "Open link in new tab" in an app to an in-scope URL opens
@@ -1142,12 +1270,17 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
 
+  base::HistogramTester scoped_histogram;
   const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
   TestAppActionOpensForegroundTab(
       app_browser, app_url,
       base::Bind(&ExecuteContextMenuLinkCommandAndWait,
                  app_browser->tab_strip_model()->GetActiveWebContents(),
                  app_url, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+
+  ExpectNavigationResultHistogramEquals(
+      scoped_histogram,
+      {{ProcessNavigationResult::kProceedStartedFromContextMenu, 1}});
 }
 
 // Tests that clicking "Open link in incognito window" to an in-scope URL opens
@@ -1186,6 +1319,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
   EXPECT_EQ(initial_tab, browser()->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(initial_url, initial_tab->GetLastCommittedURL());
+
+  // Incognito navigations are completely ignored.
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 // Tests that clicking a link to an in-scope URL when in incognito does not open
@@ -1203,6 +1339,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWait,
                  incognito_browser->tab_strip_model()->GetActiveWebContents(),
                  in_scope_url, LinkTarget::SELF, GetParam()));
+
+  // Incognito navigations are completely ignored.
+  ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
 // Tests that clicking a target=_self link with from a URL out of the Web App's
@@ -1226,6 +1365,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWait,
                  browser()->tab_strip_model()->GetActiveWebContents(),
                  in_scope_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a target=_blank link with from a URL out of the Web App's
@@ -1249,6 +1392,11 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWait,
                  browser()->tab_strip_model()->GetActiveWebContents(),
                  in_scope_url, LinkTarget::BLANK, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking links inside a website for an installed app doesn't open
@@ -1263,6 +1411,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
   ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
       app_url, base::Bind(&NavigateToURLWrapper, &params)));
 
+  base::HistogramTester scoped_histogram;
   const GURL in_scope_url =
       embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
   TestTabActionDoesNotOpenAppWindow(
@@ -1270,6 +1419,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWait,
                  browser()->tab_strip_model()->GetActiveWebContents(),
                  in_scope_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      scoped_histogram,
+      {{ProcessNavigationResult::kProceedInBrowserSameScope, 1}});
 }
 
 // Tests that in-browser navigations with all the following characteristics
@@ -1290,6 +1443,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   TestTabActionDoesNotOpenAppWindow(
       embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath),
       base::Bind(&NavigateToURLWrapper, &params));
+
+  // The first AUTO_BOOKMARK navigation is the one we triggered and the second
+  // one is the redirect.
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kProceedTransitionAutoBookmark, 2}});
 }
 
 // Tests that in-browser navigations with all the following characteristics
@@ -1309,6 +1468,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   TestTabActionDoesNotOpenAppWindow(GetLaunchingPageURL(),
                                     base::Bind(&NavigateToURLWrapper, &params));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kProceedTransitionAutoBookmark, 1}});
 }
 
 // Tests that clicking links inside the app to in-scope URLs doesn't open new
@@ -1324,6 +1487,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
   int num_tabs_app_browser = app_browser->tab_strip_model()->count();
   size_t num_browsers = chrome::GetBrowserCount(profile());
 
+  base::HistogramTester scoped_histogram;
   const GURL in_scope_url =
       embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
   ClickLinkAndWait(app_web_contents, in_scope_url, LinkTarget::SELF,
@@ -1335,6 +1499,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
   EXPECT_EQ(app_browser, chrome::FindLastActive());
 
   EXPECT_EQ(in_scope_url, app_web_contents->GetLastCommittedURL());
+
+  ExpectNavigationResultHistogramEquals(
+      scoped_histogram, {{ProcessNavigationResult::kProceedInAppSameScope, 1}});
 }
 
 // Tests that clicking links inside the app to out-of-scope URLs opens a new
@@ -1345,6 +1512,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
 
+  const base::HistogramTester scoped_histogram;
   const GURL out_of_scope_url =
       embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
   TestAppActionOpensForegroundTab(
@@ -1352,6 +1520,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWait,
                  app_browser->tab_strip_model()->GetActiveWebContents(),
                  out_of_scope_url, LinkTarget::SELF, GetParam()));
+
+  ExpectNavigationResultHistogramEquals(
+      scoped_histogram,
+      {{ProcessNavigationResult::kDeferOpenNewTabInAppOutOfScope, 1}});
 }
 
 INSTANTIATE_TEST_CASE_P(
