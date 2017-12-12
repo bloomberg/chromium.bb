@@ -5,6 +5,7 @@
 #ifndef Grid_h
 #define Grid_h
 
+#include "base/macros.h"
 #include "core/layout/OrderIterator.h"
 #include "core/style/GridArea.h"
 #include "core/style/GridPositionsResolver.h"
@@ -106,8 +107,6 @@ class Grid final {
 // TODO(svillar): ideally the Grid class should be the one returning an iterator
 // for its contents.
 class GridIterator final {
-  WTF_MAKE_NONCOPYABLE(GridIterator);
-
  public:
   // |direction| is the direction that is fixed to |fixedTrackIndex| so e.g
   // GridIterator(m_grid, ForColumns, 1) will walk over the rows of the 2nd
@@ -130,6 +129,7 @@ class GridIterator final {
   size_t row_index_;
   size_t column_index_;
   size_t child_index_;
+  DISALLOW_COPY_AND_ASSIGN(GridIterator);
 };
 
 }  // namespace blink

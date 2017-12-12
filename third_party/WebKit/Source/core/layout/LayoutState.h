@@ -26,10 +26,10 @@
 #ifndef LayoutState_h
 #define LayoutState_h
 
+#include "base/macros.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -63,7 +63,6 @@ class LayoutState {
   // The reason is that it is scoped to layout, thus we can avoid expensive
   // mallocs.
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(LayoutState);
 
  public:
   // Constructor for root LayoutState created by LayoutView
@@ -136,6 +135,7 @@ class LayoutState {
   LayoutUnit height_offset_for_table_footers_;
 
   LayoutObject& layout_object_;
+  DISALLOW_COPY_AND_ASSIGN(LayoutState);
 };
 
 }  // namespace blink

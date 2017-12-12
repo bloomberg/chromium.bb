@@ -22,6 +22,7 @@
 #ifndef InlineBox_h
 #define InlineBox_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/LineLayoutItem.h"
@@ -51,8 +52,6 @@ static inline bool IsLineOverSide(LineVerticalPositionType type) {
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to
 // some LayoutObject (i.e., it represents a portion of that LayoutObject).
 class CORE_EXPORT InlineBox : public DisplayItemClient {
-  WTF_MAKE_NONCOPYABLE(InlineBox);
-
  public:
   InlineBox(LineLayoutItem obj)
       : next_(nullptr),
@@ -519,6 +518,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 #if DCHECK_IS_ON()
   bool has_bad_parent_ = false;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(InlineBox);
 };
 
 #if !DCHECK_IS_ON()

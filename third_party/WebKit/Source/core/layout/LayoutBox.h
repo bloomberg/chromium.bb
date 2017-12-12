@@ -24,6 +24,7 @@
 #define LayoutBox_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/OverflowModel.h"
@@ -56,7 +57,6 @@ enum ShouldComputePreferred { kComputeActual, kComputePreferred };
 using SnapAreaSet = HashSet<const LayoutBox*>;
 
 struct LayoutBoxRareData {
-  WTF_MAKE_NONCOPYABLE(LayoutBoxRareData);
   USING_FAST_MALLOC(LayoutBoxRareData);
 
  public:
@@ -115,6 +115,7 @@ struct LayoutBoxRareData {
   // TODO(sunyunjia): We should get rid of this variable and move the next
   // rect_to_scroll calculation into ScrollRectToVisible. crbug.com/741830
   LayoutSize pending_offset_to_scroll_;
+  DISALLOW_COPY_AND_ASSIGN(LayoutBoxRareData);
 };
 
 // LayoutBox implements the full CSS box model.

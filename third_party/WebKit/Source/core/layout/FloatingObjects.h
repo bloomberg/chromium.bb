@@ -26,6 +26,7 @@
 #define FloatingObjects_h
 
 #include <memory>
+#include "base/macros.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/PODIntervalTree.h"
 #include "platform/geometry/LayoutRect.h"
@@ -38,7 +39,6 @@ class LayoutBox;
 class RootInlineBox;
 
 class FloatingObject {
-  WTF_MAKE_NONCOPYABLE(FloatingObject);
   USING_FAST_MALLOC(FloatingObject);
 
  public:
@@ -148,6 +148,7 @@ class FloatingObject {
   unsigned is_placed_ : 1;
   unsigned is_lowest_non_overhanging_float_in_child_ : 1;
   unsigned is_in_placed_tree_ : 1;
+  DISALLOW_COPY_AND_ASSIGN(FloatingObject);
 };
 
 struct FloatingObjectHashFunctions {
@@ -193,7 +194,6 @@ typedef HashMap<LayoutBox*, std::unique_ptr<FloatingObject>>
     LayoutBoxToFloatInfoMap;
 
 class FloatingObjects {
-  WTF_MAKE_NONCOPYABLE(FloatingObjects);
   USING_FAST_MALLOC(FloatingObjects);
 
  public:
@@ -280,6 +280,7 @@ class FloatingObjects {
   };
   FloatBottomCachedValue lowest_float_bottom_cache_[2];
   bool cached_horizontal_writing_mode_;
+  DISALLOW_COPY_AND_ASSIGN(FloatingObjects);
 };
 
 #ifndef NDEBUG
