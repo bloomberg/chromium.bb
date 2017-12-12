@@ -576,6 +576,13 @@ void FrameTreeNode::DidStopLoading() {
 
   // Notify the RenderFrameHostManager of the event.
   render_manager()->OnDidStopLoading();
+
+  // Notify accessibility that the user is no longer trying to load or
+  // reload a page.
+  BrowserAccessibilityManager* manager =
+      current_frame_host()->browser_accessibility_manager();
+  if (manager)
+    manager->DidStopLoading();
 }
 
 void FrameTreeNode::DidChangeLoadProgress(double load_progress) {

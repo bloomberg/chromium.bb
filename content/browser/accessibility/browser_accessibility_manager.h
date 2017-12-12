@@ -172,6 +172,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   virtual void UserIsReloading();
   void NavigationSucceeded();
   void NavigationFailed();
+  void DidStopLoading();
 
   // Pretend that the given node has focus, for testing only. Doesn't
   // communicate with the renderer and doesn't fire any events.

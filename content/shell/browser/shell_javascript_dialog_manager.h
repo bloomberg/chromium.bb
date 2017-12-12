@@ -46,8 +46,9 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
   void set_dialog_request_callback(const base::Closure& callback) {
     dialog_request_callback_ = callback;
   }
-  void set_should_proceed_on_beforeunload(bool proceed) {
+  void set_should_proceed_on_beforeunload(bool proceed, bool success) {
     should_proceed_on_beforeunload_ = proceed;
+    beforeunload_success_ = success;
   }
 
  private:
@@ -61,8 +62,9 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
   base::Closure dialog_request_callback_;
 
   // Whether to automatically proceed when asked to display a BeforeUnload
-  // dialog.
+  // dialog, and the return value that should be passed (success or failure).
   bool should_proceed_on_beforeunload_;
+  bool beforeunload_success_;
 
   DialogClosedCallback before_unload_callback_;
 
