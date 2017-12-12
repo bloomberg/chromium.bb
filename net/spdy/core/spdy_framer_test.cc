@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/spdy/chromium/spdy_flags.h"
 #include "net/spdy/core/array_output_buffer.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/mock_spdy_framer_visitor.h"
@@ -375,6 +376,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   explicit TestSpdyVisitor(SpdyFramer::CompressionOption option)
       : framer_(option),
+        deframer_(FLAGS_chromium_http2_flag_h2_on_stream_pad_length),
         error_count_(0),
         headers_frame_count_(0),
         push_promise_frame_count_(0),
@@ -436,6 +438,13 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     VLOG(1) << "OnStreamEnd(" << stream_id << ")";
     EXPECT_EQ(header_stream_id_, stream_id);
     ++end_of_stream_count_;
+  }
+
+  void OnStreamPadLength(SpdyStreamId stream_id, size_t value) override {
+    VLOG(1) << "OnStreamPadding(" << stream_id << ", " << value << ")\n";
+    EXPECT_EQ(header_stream_id_, stream_id);
+    // Count the padding length field byte against total data bytes.
+    data_bytes_ += 1;
   }
 
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
@@ -732,7 +741,8 @@ class SpdyFramerTest : public ::testing::TestWithParam<Output> {
  public:
   SpdyFramerTest()
       : output_(output_buffer, kSize),
-        framer_(SpdyFramer::ENABLE_COMPRESSION) {}
+        framer_(SpdyFramer::ENABLE_COMPRESSION),
+        deframer_(FLAGS_chromium_http2_flag_h2_on_stream_pad_length) {}
 
  protected:
   void SetUp() override {
@@ -954,7 +964,11 @@ TEST_P(SpdyFramerTest, CorrectlySizedDataPaddingNoError) {
   {
     testing::InSequence seq;
     EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, false));
-    EXPECT_CALL(visitor, OnStreamPadding(1, 1));
+    if (FLAGS_chromium_http2_flag_h2_on_stream_pad_length) {
+      EXPECT_CALL(visitor, OnStreamPadLength(1, 4));
+    } else {
+      EXPECT_CALL(visitor, OnStreamPadding(1, 1));
+    }
     EXPECT_CALL(visitor, OnError(_)).Times(0);
     // Note that OnStreamFrameData(1, _, 1)) is never called
     // since there is no data, only padding
@@ -3265,7 +3279,11 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   bytes_consumed += kDataFrameMinimumSize;
 
   // Send the padding length field.
-  EXPECT_CALL(visitor, OnStreamPadding(1, 1));
+  if (FLAGS_chromium_http2_flag_h2_on_stream_pad_length) {
+    EXPECT_CALL(visitor, OnStreamPadLength(1, kPaddingLen - 1));
+  } else {
+    EXPECT_CALL(visitor, OnStreamPadding(1, 1));
+  }
   CHECK_EQ(1u, deframer_.ProcessInput(frame.data() + bytes_consumed, 1));
   CHECK_EQ(deframer_.state(), Http2DecoderAdapter::SPDY_FORWARD_STREAM_FRAME);
   CHECK_EQ(deframer_.spdy_framer_error(), Http2DecoderAdapter::SPDY_NO_ERROR);
