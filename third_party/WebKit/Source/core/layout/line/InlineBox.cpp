@@ -95,8 +95,13 @@ String InlineBox::DebugName() const {
 }
 
 LayoutRect InlineBox::VisualRect() const {
-  // TODO(chrishtr): tighten these bounds.
+  // TODO(wangxianzhu): tighten it.
   return GetLineLayoutItem().VisualRect();
+}
+
+LayoutRect InlineBox::PartialInvalidationRect() const {
+  // TODO(wangxianzhu): tighten it.
+  return GetLineLayoutItem().PartialInvalidationRect();
 }
 
 #ifndef NDEBUG

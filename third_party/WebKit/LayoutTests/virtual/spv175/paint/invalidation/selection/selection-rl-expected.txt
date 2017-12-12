@@ -7,8 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Should have blue, not gray, highlight'",
-          "rect": [18, 18, 233, 19],
+          "object": "InlineTextBox 'Testing both hit testing'",
+          "rect": [773, 38, 19, 83],
           "reason": "selection"
         }
       ]
@@ -20,7 +20,7 @@
       "reason": "selection"
     },
     {
-      "object": "InlineTextBox 'Should have blue, not gray, highlight'",
+      "object": "InlineTextBox 'Testing both hit testing'",
       "reason": "selection"
     }
   ]
