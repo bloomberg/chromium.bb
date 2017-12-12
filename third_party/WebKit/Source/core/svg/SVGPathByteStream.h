@@ -21,7 +21,6 @@
 #define SVGPathByteStream_h
 
 #include <memory>
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 

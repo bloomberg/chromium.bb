@@ -31,9 +31,9 @@
 #ifndef SVGProperty_h
 #define SVGProperty_h
 
+#include "base/macros.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -42,8 +42,6 @@ class SVGElement;
 class SVGAnimationElement;
 
 class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
-  WTF_MAKE_NONCOPYABLE(SVGPropertyBase);
-
  public:
   // Properties do not have a primitive type by default
   typedef void PrimitiveType;
@@ -92,6 +90,7 @@ class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
   // hierarchy.  Not tracing it is safe, albeit an undesirable state of affairs.
   // See http://crbug.com/528275 for the detail.
   UntracedMember<SVGPropertyBase> owner_list_;
+  DISALLOW_COPY_AND_ASSIGN(SVGPropertyBase);
 };
 
 #define DEFINE_SVG_PROPERTY_TYPE_CASTS(thisType)               \

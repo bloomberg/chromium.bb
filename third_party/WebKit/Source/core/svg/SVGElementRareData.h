@@ -20,12 +20,12 @@
 #ifndef SVGElementRareData_h
 #define SVGElementRareData_h
 
+#include "base/macros.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGElement.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -33,8 +33,6 @@ class SVGElementProxySet;
 
 class SVGElementRareData
     : public GarbageCollectedFinalized<SVGElementRareData> {
-  WTF_MAKE_NONCOPYABLE(SVGElementRareData);
-
  public:
   SVGElementRareData(SVGElement* owner)
       : owner_(owner),
@@ -120,6 +118,7 @@ class SVGElementRareData
   scoped_refptr<ComputedStyle> override_computed_style_;
   // Used by <animateMotion>
   AffineTransform animate_motion_transform_;
+  DISALLOW_COPY_AND_ASSIGN(SVGElementRareData);
 };
 
 }  // namespace blink

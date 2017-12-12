@@ -31,11 +31,11 @@ G*     * Redistributions in binary form must reproduce the above
 #ifndef SVGAnimatedProperty_h
 #define SVGAnimatedProperty_h
 
+#include "base/macros.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -43,8 +43,6 @@ class ExceptionState;
 class SVGElement;
 
 class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
-  WTF_MAKE_NONCOPYABLE(SVGAnimatedPropertyBase);
-
  public:
   virtual ~SVGAnimatedPropertyBase();
 
@@ -105,6 +103,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   UntracedMember<SVGElement> context_element_;
 
   const QualifiedName& attribute_name_;
+  DISALLOW_COPY_AND_ASSIGN(SVGAnimatedPropertyBase);
 };
 
 template <typename Property>

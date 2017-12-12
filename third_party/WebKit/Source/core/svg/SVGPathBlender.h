@@ -20,8 +20,8 @@
 #ifndef SVGPathBlender_h
 #define SVGPathBlender_h
 
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -29,7 +29,6 @@ class SVGPathConsumer;
 class SVGPathByteStreamSource;
 
 class SVGPathBlender final {
-  WTF_MAKE_NONCOPYABLE(SVGPathBlender);
   STACK_ALLOCATED();
 
  public:
@@ -47,6 +46,7 @@ class SVGPathBlender final {
   SVGPathByteStreamSource* from_source_;
   SVGPathByteStreamSource* to_source_;
   SVGPathConsumer* consumer_;
+  DISALLOW_COPY_AND_ASSIGN(SVGPathBlender);
 };
 
 }  // namespace blink

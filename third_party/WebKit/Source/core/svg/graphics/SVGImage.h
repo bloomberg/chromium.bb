@@ -27,6 +27,7 @@
 #ifndef SVGImage_h
 #define SVGImage_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/paint/PaintRecord.h"
@@ -239,7 +240,6 @@ DEFINE_IMAGE_TYPE_CASTS(SVGImage);
 
 class ImageObserverDisabler {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ImageObserverDisabler);
 
  public:
   ImageObserverDisabler(Image* image) : image_(image) {
@@ -250,6 +250,7 @@ class ImageObserverDisabler {
 
  private:
   Image* image_;
+  DISALLOW_COPY_AND_ASSIGN(ImageObserverDisabler);
 };
 
 }  // namespace blink
