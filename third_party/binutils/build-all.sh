@@ -23,7 +23,7 @@ if [ ! -d "$OUTPUTDIR" ]; then
 fi
 
 # Download the source
-VERSION=2.28
+VERSION=2.29.1
 wget -c http://ftp.gnu.org/gnu/binutils/binutils-$VERSION.tar.bz2
 
 # Verify the signature
@@ -32,7 +32,7 @@ if ! gpg --verify binutils-$VERSION.tar.bz2.sig; then
   echo "GPG Signature failed to verify."
   echo ""
   echo "You may need to import the vendor GPG key with:"
-  echo "# gpg --keyserver hkp://pgp.mit.edu:80 --recv-key 4AE55E93"
+  echo "# gpg --keyserver hkp://pgp.mit.edu:80 --recv-key 4AE55E93 DD9E3C4F"
   exit 1
 fi
 
