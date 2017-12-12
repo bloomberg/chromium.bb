@@ -5,6 +5,7 @@
 #ifndef SnapCoordinator_h
 #define SnapCoordinator_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "platform/heap/Handle.h"
@@ -32,8 +33,6 @@ struct SnapContainerData;
 // For more information see spec: https://drafts.csswg.org/css-snappoints/
 class CORE_EXPORT SnapCoordinator final
     : public GarbageCollectedFinalized<SnapCoordinator> {
-  WTF_MAKE_NONCOPYABLE(SnapCoordinator);
-
  public:
   static SnapCoordinator* Create();
   ~SnapCoordinator();
@@ -83,6 +82,7 @@ class CORE_EXPORT SnapCoordinator final
   explicit SnapCoordinator();
 
   HashMap<const LayoutBox*, SnapContainerData> snap_container_map_;
+  DISALLOW_COPY_AND_ASSIGN(SnapCoordinator);
 };
 
 }  // namespace blink

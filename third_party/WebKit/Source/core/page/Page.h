@@ -25,6 +25,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/Deprecation.h"
@@ -44,7 +45,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/web/WebWindowFeatures.h"
 
@@ -88,7 +88,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
                                public PageVisibilityNotifier,
                                public SettingsDelegate {
   USING_GARBAGE_COLLECTED_MIXIN(Page);
-  WTF_MAKE_NONCOPYABLE(Page);
   friend class Settings;
 
  public:
@@ -96,7 +95,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // required.
   struct CORE_EXPORT PageClients final {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(PageClients);
 
    public:
     PageClients();
@@ -104,6 +102,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
     Member<ChromeClient> chrome_client;
     EditorClient* editor_client;
+    DISALLOW_COPY_AND_ASSIGN(PageClients);
   };
 
   static Page* Create(PageClients& page_clients) {
@@ -408,6 +407,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // browsing context.  See also RelatedPages method.
   Member<Page> next_related_page_;
   Member<Page> prev_related_page_;
+  DISALLOW_COPY_AND_ASSIGN(Page);
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;
