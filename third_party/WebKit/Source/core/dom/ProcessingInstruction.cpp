@@ -154,20 +154,26 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
   options.initiator_info.name = FetchInitiatorTypeNames::processinginstruction;
   FetchParameters params(ResourceRequest(GetDocument().CompleteURL(href)),
                          options);
+  loading_ = true;
   if (is_xsl_) {
-    if (RuntimeEnabledFeatures::XSLTEnabled())
-      resource = XSLStyleSheetResource::Fetch(params, GetDocument().Fetcher());
+    if (RuntimeEnabledFeatures::XSLTEnabled()) {
+      resource =
+          XSLStyleSheetResource::Fetch(params, GetDocument().Fetcher(), this);
+    }
   } else {
     params.SetCharset(charset.IsEmpty() ? GetDocument().Encoding()
                                         : WTF::TextEncoding(charset));
-    resource = CSSStyleSheetResource::Fetch(params, GetDocument().Fetcher());
+    GetDocument().GetStyleEngine().AddPendingSheet(style_engine_context_);
+    resource =
+        CSSStyleSheetResource::Fetch(params, GetDocument().Fetcher(), this);
   }
 
-  if (resource) {
-    loading_ = true;
-    if (!is_xsl_)
-      GetDocument().GetStyleEngine().AddPendingSheet(style_engine_context_);
-    SetResource(resource);
+  if (!resource) {
+    loading_ = false;
+    if (!is_xsl_) {
+      GetDocument().GetStyleEngine().RemovePendingSheet(*this,
+                                                        style_engine_context_);
+    }
   }
 }
 

@@ -136,17 +136,18 @@ void StyleRuleImport::RequestStyleSheet() {
   options.initiator_info.name = FetchInitiatorTypeNames::css;
   FetchParameters params(ResourceRequest(abs_url), options);
   params.SetCharset(parent_style_sheet_->Charset());
-  CSSStyleSheetResource* resource =
-      CSSStyleSheetResource::Fetch(params, fetcher);
-  if (resource) {
+  loading_ = true;
+  DCHECK(!style_sheet_client_->GetResource());
+  if (!CSSStyleSheetResource::Fetch(params, fetcher, style_sheet_client_)) {
+    loading_ = false;
+  } else if (loading_) {
     // if the import rule is issued dynamically, the sheet may be
     // removed from the pending sheet count, so let the doc know
     // the sheet being imported is pending.
     if (parent_style_sheet_ && parent_style_sheet_->LoadCompleted() &&
-        root_sheet == parent_style_sheet_)
+        root_sheet == parent_style_sheet_) {
       parent_style_sheet_->StartLoadingDynamicSheet();
-    loading_ = true;
-    style_sheet_client_->TakeResource(resource);
+    }
   }
 }
 

@@ -74,11 +74,6 @@ class StyleRuleImport : public StyleRuleBase {
     void NotifyFinished(Resource* resource) override {
       owner_rule_->NotifyFinished(resource);
     }
-
-    void TakeResource(Resource* resource) {
-      DCHECK(!GetResource());
-      SetResource(resource);
-    }
     void Dispose() { ClearResource(); }
 
     String DebugName() const override { return "ImportedStyleSheetClient"; }
