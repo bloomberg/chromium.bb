@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/resource_throttle.h"
 
 namespace chrome_browser_net {
@@ -19,20 +20,19 @@ struct RedirectInfo;
 class URLRequest;
 }
 
+class GURL;
 class ProfileIOData;
 
 // This resource throttle tracks requests in order to help the predictor learn
 // resource relationships. It notifies the predictor of redirect and referrer
 // relationships, and populates the predictor's timed cache of ongoing
-// navigations. It also initiates predictive actions based on subframe
+// navigations. It also initiates predictive actions based on navigation
 // requests and redirects.
 // Note: This class does not issue predictive actions off of the initial main
 // frame request (before any redirects). That is done on the UI thread in
 // response to navigation callbacks in predictor_tab_helper.cc.
 // TODO(csharrison): This class shouldn't depend on chrome_browser_net. The
 // predictor should probably be moved here (along with its dependencies).
-// TODO(csharrison): When the PreconnectMore experiment is over, move all
-// prediction dispatching to the tab helper.
 class PredictorResourceThrottle : public content::ResourceThrottle {
  public:
   PredictorResourceThrottle(net::URLRequest* request,
@@ -50,8 +50,13 @@ class PredictorResourceThrottle : public content::ResourceThrottle {
   const char* GetNameForLogging() const override;
 
  private:
+  void DispatchPredictions(const GURL& url, const GURL& site_for_cookies);
+  void DoPredict(const GURL& url, const GURL& site_for_cookies);
+
   net::URLRequest* request_;
   chrome_browser_net::Predictor* predictor_;
+
+  base::WeakPtrFactory<PredictorResourceThrottle> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictorResourceThrottle);
 };
