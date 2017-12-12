@@ -111,8 +111,7 @@ class WebView : protected WebWidget {
   // client may be null, while PageVisibilityState defines the initial
   // visibility of the page.
   BLINK_EXPORT static WebView* Create(WebViewClient*,
-                                      mojom::PageVisibilityState,
-                                      WebView* opener);
+                                      mojom::PageVisibilityState);
 
   // Initializes the various client interfaces.
   virtual void SetCredentialManagerClient(WebCredentialManagerClient*) = 0;

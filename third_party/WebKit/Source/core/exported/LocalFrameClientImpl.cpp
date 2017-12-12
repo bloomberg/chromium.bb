@@ -32,7 +32,6 @@
 #include "core/exported/LocalFrameClientImpl.h"
 
 #include <memory>
-#include <utility>
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/CoreInitializer.h"
@@ -1136,11 +1135,6 @@ void LocalFrameClientImpl::ScrollRectToVisibleInParentFrame(
 void LocalFrameClientImpl::SetVirtualTimePauser(
     WebScopedVirtualTimePauser virtual_time_pauser) {
   virtual_time_pauser_ = std::move(virtual_time_pauser);
-}
-
-Frame* LocalFrameClientImpl::FindFrame(const AtomicString& name) const {
-  DCHECK(web_frame_->Client());
-  return ToCoreFrame(web_frame_->Client()->FindFrame(name));
 }
 
 }  // namespace blink

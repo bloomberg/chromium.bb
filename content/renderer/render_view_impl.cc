@@ -542,14 +542,9 @@ void RenderViewImpl::Initialize(
 #endif
   display_mode_ = params->initial_size.display_mode;
 
-  WebFrame* opener_frame =
-      RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
-
-  webview_ =
-      WebView::Create(this,
-                      is_hidden() ? blink::mojom::PageVisibilityState::kHidden
-                                  : blink::mojom::PageVisibilityState::kVisible,
-                      opener_frame ? opener_frame->View() : nullptr);
+  webview_ = WebView::Create(
+      this, is_hidden() ? blink::mojom::PageVisibilityState::kHidden
+                        : blink::mojom::PageVisibilityState::kVisible);
   RenderWidget::Init(show_callback, webview_->GetWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
@@ -599,6 +594,9 @@ void RenderViewImpl::Initialize(
   }
 
   ApplyBlinkSettings(command_line, webview()->GetSettings());
+
+  WebFrame* opener_frame =
+      RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
   if (params->main_frame_routing_id != MSG_ROUTING_NONE) {
     CHECK(params->main_frame_interface_provider.is_valid());
