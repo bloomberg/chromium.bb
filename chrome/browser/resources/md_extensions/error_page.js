@@ -62,7 +62,10 @@ cr.define('extensions', function() {
        * Index into |entries_|.
        * @private
        */
-      selectedEntry_: Number,
+      selectedEntry_: {
+        type: Number,
+        observer: 'onSelectedErrorChanged_',
+      },
 
       /** @private {?chrome.developerPrivate.StackFrame}*/
       selectedStackFrame_: {
@@ -75,7 +78,6 @@ cr.define('extensions', function() {
 
     observers: [
       'observeDataChanges_(data.*)',
-      'onSelectedErrorChanged_(selectedEntry_)',
     ],
 
     /** @override */
@@ -96,7 +98,9 @@ cr.define('extensions', function() {
     observeDataChanges_: function() {
       const errors = this.data.manifestErrors.concat(this.data.runtimeErrors);
       this.entries_ = errors;
-      this.selectedEntry_ = this.entries_.length ? 0 : -1;
+      this.selectedEntry_ = -1;  // This also help reset code-section content.
+      if (this.entries_.length)
+        this.selectedEntry_ = 0;
     },
 
     /** @private */
