@@ -503,6 +503,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   void CancelPendingIfNecessary(RenderFrameHostImpl* render_frame_host);
 
   void OnSetHasReceivedUserGesture();
+  void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
 
   // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not
   // null, it creates a RenderFrameProxy in the target renderer process which is

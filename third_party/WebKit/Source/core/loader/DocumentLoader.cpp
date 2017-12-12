@@ -1088,15 +1088,25 @@ void DocumentLoader::InstallNewDocument(
       false);
 
   // Persist the user gesture state between frames.
+  bool user_gesture_before_value = false;
   if (user_gesture_bit_set) {
-    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(
-        ShouldPersistUserGestureValue(previous_security_origin,
-                                      document->GetSecurityOrigin()));
+    user_gesture_before_value = ShouldPersistUserGestureValue(
+        previous_security_origin, document->GetSecurityOrigin());
 
     // Clear the user gesture bit that is not persisted.
     // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
     if (frame_->IsMainFrame())
       frame_->ClearActivation();
+  }
+
+  // If the user gesture before navigation bit has changed then update it on the
+  // frame.
+  if (frame_->HasReceivedUserGestureBeforeNavigation() !=
+      user_gesture_before_value) {
+    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(
+        user_gesture_before_value);
+    GetLocalFrameClient().SetHasReceivedUserGestureBeforeNavigation(
+        user_gesture_before_value);
   }
 
   if (ShouldClearWindowName(*frame_, previous_security_origin, *document)) {
