@@ -57,6 +57,10 @@
       #networkState[connected] {
         color: var(--google-green-500);
       }
+
+      #networkState[error] {
+        color: var(--google-red-500);
+      }
     </style>
     <!-- Title section: Icon + name + connection state. -->
     <div id="titleDiv" class="settings-box first">
@@ -64,8 +68,9 @@
         <cr-network-icon network-state="[[networkProperties]]">
         </cr-network-icon>
         <div id="networkState" class="title"
-            connected$="[[isConnectedState_(networkProperties)]]">
-          [[getStateText_(networkProperties)]]
+            connected$="[[isConnectedState_(networkProperties)]]"
+            error$="[[outOfRange_]]">
+          [[getStateText_(networkProperties, outOfRange_)]]
         </div>
         <template is="dom-if"
             if="[[isPolicySource(networkProperties.Source))]]">
@@ -96,7 +101,7 @@
       <paper-button class="primary-button" on-tap="onConnectTap_"
           hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
           disabled="[[!enableConnect_(networkProperties, defaultNetwork,
-              globalPolicy)]]">
+              globalPolicy, networkPropertiesReceived_, outOfRange_)]]">
         $i18n{networkButtonConnect}
       </paper-button>
       <paper-button class="primary-button" on-tap="onDisconnectTap_"
@@ -285,7 +290,8 @@
 
     <tether-connection-dialog id="tetherDialog"
         network-properties="[[networkProperties]]"
-        on-tether-connect="onTetherConnect_">
+        on-tether-connect="onTetherConnect_"
+        out-of-range="[[outOfRange_]]">
     </tether-connection-dialog>
   </template>
   <script src="internet_detail_page.js"></script>
