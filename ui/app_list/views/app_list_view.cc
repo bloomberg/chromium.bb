@@ -10,6 +10,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
@@ -827,6 +828,20 @@ void AppListView::RecordStateTransitionForUma(AppListViewState new_state) {
 
   UMA_HISTOGRAM_ENUMERATION(kAppListStateTransitionSourceHistogram, transition,
                             kMaxAppListStateTransition);
+
+  switch (transition) {
+    case kPeekingToFullscreenAllApps:
+    case KHalfToFullscreenSearch:
+      base::RecordAction(base::UserMetricsAction("AppList_PeekingToFull"));
+      break;
+
+    case kFullscreenAllAppsToPeeking:
+      base::RecordAction(base::UserMetricsAction("AppList_FullToPeeking"));
+      break;
+
+    default:
+      break;
+  }
 }
 
 void AppListView::MaybeCreateAccessibilityEvent(AppListViewState new_state) {

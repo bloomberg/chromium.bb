@@ -1782,13 +1782,29 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AppList_ClickOnApp">
+  <owner>vadimt@chromium.org</owner>
+  <description>
+    User clicks an icon in app grid. Chrome and Files are counted. Folders,
+    suggested apps and search results aren't.
+  </description>
+</action>
+
+<action name="AppList_ClickOnAppFromSearch">
+  <obsolete>
+    Deprecated in favor of a more general AppList_OpenSearchResult event.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="AppList_ClickOnAppFromSearch">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+<action name="AppList_EnterSearch">
+  <owner>vadimt@chromium.org</owner>
+  <description>CrOS Launcher entered search mode.</description>
+</action>
+
+<action name="AppList_FullToPeeking">
+  <owner>vadimt@chromium.org</owner>
+  <description>CrOS Launcher went from full to peeking state.</description>
 </action>
 
 <action name="AppList_HotwordRecognized">
@@ -1796,7 +1812,33 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AppList_LeaveSearch">
+  <owner>vadimt@chromium.org</owner>
+  <description>CrOS Launcher left search mode.</description>
+</action>
+
+<action name="AppList_OpenSearchResult">
+  <owner>vadimt@chromium.org</owner>
+  <description>User opens a search result in CrOS Launcher.</description>
+</action>
+
+<action name="AppList_OpenSuggestedApp">
+  <owner>vadimt@chromium.org</owner>
+  <description>
+    User opens an app from the suggestions row in CrOS Launcher.
+  </description>
+</action>
+
+<action name="AppList_PeekingToFull">
+  <owner>vadimt@chromium.org</owner>
+  <description>
+    CrOS Launcher went from peeking to full state or, in a search mode, from
+    half to full.
+  </description>
+</action>
+
 <action name="AppList_Search">
+  <obsolete>Name was bad. Renamed to AppList_OpenSearchResult.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -1817,6 +1859,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Arc.Launcher.Search.OpenPlayStore.InstantApps">
+  <obsolete>
+    Deprecated in favor of Apps.AppListSearchResultOpenType histogram.
+  </obsolete>
   <owner>hejq@chromium.org</owner>
   <description>
     Recorded when the user opens the an instant app from a Play Store app search
@@ -1825,6 +1870,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Arc.Launcher.Search.OpenPlayStore.UninstalledApps">
+  <obsolete>
+    Deprecated in favor of Apps.AppListSearchResultOpenType histogram.
+  </obsolete>
   <owner>hejq@chromium.org</owner>
   <description>
     Recorded when the user opens the installing page of a Play Store app search
@@ -16124,6 +16172,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SearchAnswer_StoppedLoading">
+  <obsolete>
+    Deprecated in favor of analysing proportion of shown
+    (SearchAnswer.AnswerVisibleTime total) vs. successfully loaded
+    (SearchAnswer.RequestResult.REQUEST_RESULT_RECEIVED_ANSWER) cards.
+  </obsolete>
   <owner>vadimt@chromium.org</owner>
   <description>Answer card successfully loads.</description>
 </action>

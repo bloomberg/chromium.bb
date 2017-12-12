@@ -189,7 +189,6 @@ void AnswerCardSearchProvider::DidStopLoading(
   answer_loaded_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES("SearchAnswer.LoadingTime",
                       answer_loaded_time_ - server_request_start_time_);
-  base::RecordAction(base::UserMetricsAction("SearchAnswer_StoppedLoading"));
 }
 
 void AnswerCardSearchProvider::UpdateResult() {

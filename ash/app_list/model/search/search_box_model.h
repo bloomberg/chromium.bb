@@ -74,7 +74,9 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
 
   // Sets/gets the text for the search box's Textfield and the voice search
   // flag.
-  void Update(const base::string16& text, bool is_voice_query);
+  void Update(const base::string16& text,
+              bool is_voice_query,
+              bool initiated_by_user);
   const base::string16& text() const { return text_; }
   bool is_voice_query() const { return is_voice_query_; }
 
