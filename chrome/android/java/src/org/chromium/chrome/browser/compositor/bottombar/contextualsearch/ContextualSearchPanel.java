@@ -205,11 +205,6 @@ public class ContextualSearchPanel extends OverlayPanel {
             }
         }
 
-        if (fromState == PanelState.PEEKED
-                && (toState == PanelState.EXPANDED || toState == PanelState.MAXIMIZED)) {
-            mManagementDelegate.onPanelExpandedOrMaximized();
-        }
-
         if ((fromState == PanelState.UNDEFINED || fromState == PanelState.CLOSED)
                 && toState == PanelState.PEEKED) {
             mManagementDelegate.onPanelFinishedShowing();
