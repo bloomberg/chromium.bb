@@ -42,12 +42,14 @@
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/StaticBitmapImage.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
 
@@ -235,8 +237,15 @@ static bool ExtractImageData(Image* image,
   if (!image)
     return false;
 
-  std::unique_ptr<ImageBuffer> image_buffer = ImageBuffer::Create(image_size);
-  if (!image_buffer)
+  CanvasColorParams color_params;
+  SkImageInfo info = SkImageInfo::Make(
+      image_size.Width(), image_size.Height(), color_params.GetSkColorType(),
+      color_params.GetSkAlphaType(),
+      color_params.GetSkColorSpaceForSkSurfaces());
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRaster(info, color_params.GetSkSurfaceProps());
+
+  if (!surface)
     return false;
 
   // FIXME: This is not totally correct but it is needed to prevent shapes
@@ -247,11 +256,18 @@ static bool ExtractImageData(Image* image,
   IntRect image_source_rect(IntPoint(), image->Size());
   IntRect image_dest_rect(IntPoint(), image_size);
   // TODO(ccameron): No color conversion is required here.
-  image->Draw(image_buffer->Canvas(), flags, image_dest_rect, image_source_rect,
+  std::unique_ptr<PaintCanvas> canvas =
+      color_params.WrapCanvas(surface->getCanvas());
+  canvas->save();
+  canvas->clear(SK_ColorTRANSPARENT);
+
+  image->Draw(canvas.get(), flags, image_dest_rect, image_source_rect,
               kDoNotRespectImageOrientation,
               Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
 
-  return image_buffer->GetImageData(image_dest_rect, contents);
+  return StaticBitmapImage::ConvertToArrayBufferContents(
+      StaticBitmapImage::Create(surface->makeImageSnapshot()), contents,
+      image_dest_rect, color_params);
 }
 
 static std::unique_ptr<RasterShapeIntervals> ExtractIntervalsFromImageData(

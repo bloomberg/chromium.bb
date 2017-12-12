@@ -54,7 +54,6 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/WTFString.h"
-#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
@@ -264,70 +263,6 @@ void ImageBuffer::Draw(GraphicsContext& context,
   FloatRect src_rect =
       src_ptr ? *src_ptr : FloatRect(FloatPoint(), FloatSize(Size()));
   surface_->Draw(context, dest_rect, src_rect, op);
-}
-
-bool ImageBuffer::GetImageData(const IntRect& rect,
-                               WTF::ArrayBufferContents& contents,
-                               bool* is_gpu_readback_invoked) const {
-  uint8_t bytes_per_pixel = surface_->ColorParams().BytesPerPixel();
-  CheckedNumeric<int> data_size = bytes_per_pixel;
-  data_size *= rect.Size().Area();
-  if (!data_size.IsValid() ||
-      data_size.ValueOrDie() > v8::TypedArray::kMaxLength)
-    return false;
-
-  if (!IsSurfaceValid()) {
-    size_t alloc_size_in_bytes = rect.Size().Area() * bytes_per_pixel;
-    auto data = WTF::ArrayBufferContents::CreateDataHandle(
-        alloc_size_in_bytes, WTF::ArrayBufferContents::kZeroInitialize);
-    if (!data)
-      return false;
-    WTF::ArrayBufferContents result(std::move(data), alloc_size_in_bytes,
-                                    WTF::ArrayBufferContents::kNotShared);
-    result.Transfer(contents);
-    return true;
-  }
-
-  DCHECK(Canvas());
-
-  scoped_refptr<StaticBitmapImage> snapshot = surface_->NewImageSnapshot(
-      kPreferNoAcceleration, kSnapshotReasonGetImageData);
-  if (!snapshot)
-    return false;
-
-  const bool may_have_stray_area =
-      surface_->IsAccelerated()  // GPU readback may fail silently
-      || rect.X() < 0 || rect.Y() < 0 ||
-      rect.MaxX() > surface_->Size().Width() ||
-      rect.MaxY() > surface_->Size().Height();
-  size_t alloc_size_in_bytes = rect.Size().Area() * bytes_per_pixel;
-  WTF::ArrayBufferContents::InitializationPolicy initialization_policy =
-      may_have_stray_area ? WTF::ArrayBufferContents::kZeroInitialize
-                          : WTF::ArrayBufferContents::kDontInitialize;
-  auto data = WTF::ArrayBufferContents::CreateDataHandle(alloc_size_in_bytes,
-                                                         initialization_policy);
-  if (!data)
-    return false;
-  WTF::ArrayBufferContents result(std::move(data), alloc_size_in_bytes,
-                                  WTF::ArrayBufferContents::kNotShared);
-
-  SkColorType color_type =
-      (surface_->ColorParams().GetSkColorType() == kRGBA_F16_SkColorType)
-          ? kRGBA_F16_SkColorType
-          : kRGBA_8888_SkColorType;
-  SkImageInfo info = SkImageInfo::Make(rect.Width(), rect.Height(), color_type,
-                                       kUnpremul_SkAlphaType);
-  sk_sp<SkImage> sk_image = snapshot->PaintImageForCurrentFrame().GetSkImage();
-  bool read_pixels_successful = sk_image->readPixels(
-      info, result.Data(), info.minRowBytes(), rect.X(), rect.Y());
-  DCHECK(read_pixels_successful ||
-         !sk_image->bounds().intersect(SkIRect::MakeXYWH(
-             rect.X(), rect.Y(), info.width(), info.height())));
-  if (is_gpu_readback_invoked) {
-    *is_gpu_readback_invoked = true;
-  }
-  result.Transfer(contents);
-  return true;
 }
 
 void ImageBuffer::PutByteArray(const unsigned char* source,
