@@ -49,6 +49,13 @@ class SANDBOX_EXPORT BrokerFilePermission {
     return BrokerFilePermission(path, true, false, true, true, true);
   }
 
+  // Temporary files must always be newly created and do not confer rights to
+  // use pre-existing files of the same name.
+  static BrokerFilePermission ReadWriteCreateTemporary(
+      const std::string& path) {
+    return BrokerFilePermission(path, false, true, true, true, true);
+  }
+
   static BrokerFilePermission ReadWriteCreateTemporaryRecursive(
       const std::string& path) {
     return BrokerFilePermission(path, true, true, true, true, true);
