@@ -54,18 +54,6 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   return pending_script;
 }
 
-ClassicPendingScript* ClassicPendingScript::CreateExternalForTest(
-    ScriptElementBase* element,
-    ScriptResource* resource) {
-  DCHECK(resource);
-  ClassicPendingScript* pending_script = new ClassicPendingScript(
-      element, TextPosition(), ScriptSourceLocationType::kExternalFile,
-      ScriptFetchOptions(), true /* is_external */);
-  pending_script->SetResource(resource);
-  pending_script->CheckState();
-  return pending_script;
-}
-
 ClassicPendingScript* ClassicPendingScript::CreateInline(
     ScriptElementBase* element,
     const TextPosition& starting_position,
@@ -114,7 +102,7 @@ void ClassicPendingScript::Prefinalize() {
 
 void ClassicPendingScript::DisposeInternal() {
   MemoryCoordinator::Instance().UnregisterClient(this);
-  SetResource(nullptr);
+  ClearResource();
   integrity_failure_ = false;
   CancelStreaming();
 }
