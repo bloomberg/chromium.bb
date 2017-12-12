@@ -650,11 +650,15 @@ void HTMLMediaElement::ParseAttribute(
   }
 }
 
-void HTMLMediaElement::FinishParsingChildren() {
-  HTMLElement::FinishParsingChildren();
+void HTMLMediaElement::ParserDidSetAttributes() {
+  HTMLElement::ParserDidSetAttributes();
 
   if (FastHasAttribute(mutedAttr))
     muted_ = true;
+}
+
+void HTMLMediaElement::FinishParsingChildren() {
+  HTMLElement::FinishParsingChildren();
 
   if (Traversal<HTMLTrackElement>::FirstChild(*this))
     ScheduleTextTrackResourceLoad();
