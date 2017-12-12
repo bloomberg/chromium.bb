@@ -115,6 +115,26 @@ diff -ruN ./original/include/arch/unix/apr_private.h ./changed/include/arch/unix
 -#define HAVE_EPOLL_CREATE1 1
 +/* #define HAVE_EPOLL_CREATE1 1 */
  
+@@ -183,10 +183,19 @@
+ #define HAVE_GETENV 1
+ 
+ /* Define to 1 if you have the `getgrgid_r' function. */
+-#define HAVE_GETGRGID_R 1
++// Removed due to incompatability with Android NDK r16
++// On older NDK versions, _POSIX_THREAD_SAFE_FUNCTIONS was unconditionally
++// #undef'd. On newer versions, it is unconditionally defined as the Posix
++// version. This causes issues in
++// user/unix/groupinfo.c, as APR seems to unconditionally define
++// HAVE_GETGRGID_R AND HAVE_GETGRNAM_R, and the only thing that was previously
++// preventing it from using getgrgid_r/getgrnam_r was
++// _POSIX_THREAD_SAFE_FUNCTIONS being undefined.
++// #define HAVE_GETGRGID_R 1
+ 
+ /* Define to 1 if you have the `getgrnam_r' function. */
+-#define HAVE_GETGRNAM_R 1
++// Removed due to incompatability with Android NDK r16
++// #define HAVE_GETGRNAM_R 1
+ 
  /* Define to 1 if you have the <errno.h> header file. */
  #define HAVE_ERRNO_H 1
 @@ -195,13 +195,13 @@
