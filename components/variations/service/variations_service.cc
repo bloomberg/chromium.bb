@@ -31,6 +31,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
+#include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -250,44 +251,14 @@ VariationsService::VariationsService(
       disable_deltas_for_next_request_(false),
       resource_request_allowed_notifier_(std::move(notifier)),
       request_count_(0),
+      safe_seed_manager_(state_manager->clean_exit_beacon()->exited_cleanly(),
+                         local_state),
       field_trial_creator_(local_state, client_.get(), ui_string_overrider),
       weak_ptr_factory_(this) {
   DCHECK(client_.get());
   DCHECK(resource_request_allowed_notifier_.get());
 
   resource_request_allowed_notifier_->Init(this);
-
-  // Increment the crash streak if the previous session crashed.
-  // Note that the streak is not cleared if the previous run didn’t crash.
-  // Instead, it’s incremented on each crash until Chrome is able to
-  // successfully fetch a new seed. This way, a seed update that mostly
-  // destabilizes Chrome will still result in a fallback to safe mode.
-  int num_crashes = local_state->GetInteger(prefs::kVariationsCrashStreak);
-  if (!state_manager_->clean_exit_beacon()->exited_cleanly()) {
-    ++num_crashes;
-    local_state->SetInteger(prefs::kVariationsCrashStreak, num_crashes);
-  }
-
-  // After three failures in a row -- either consistent crashes or consistent
-  // failures to fetch the seed -- assume that the current seed is bad, and fall
-  // back to the safe seed. However, ignore any number of failures if the
-  // --force-fieldtrials flag is set, as this flag is only used by developers,
-  // and there's no need to make the development process flakier.
-  const int kMaxFailuresBeforeRevertingToSafeSeed = 3;
-  int num_failures_to_fetch =
-      local_state->GetInteger(prefs::kVariationsFailedToFetchSeedStreak);
-  bool fall_back_to_safe_mode =
-      (num_crashes >= kMaxFailuresBeforeRevertingToSafeSeed ||
-       num_failures_to_fetch >= kMaxFailuresBeforeRevertingToSafeSeed) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kForceFieldTrials);
-  UMA_HISTOGRAM_BOOLEAN("Variations.SafeMode.FellBackToSafeMode",
-                        fall_back_to_safe_mode);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.SafeMode.Streak.Crashes",
-                              std::min(std::max(num_crashes, 0), 100));
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "Variations.SafeMode.Streak.FetchFailures",
-      std::min(std::max(num_failures_to_fetch, 0), 100));
 }
 
 VariationsService::~VariationsService() {
@@ -409,7 +380,9 @@ std::string VariationsService::GetDefaultVariationsServerURLForTesting() {
 
 // static
 void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
+  SafeSeedManager::RegisterPrefs(registry);
   VariationsSeedStore::RegisterPrefs(registry);
+
   registry->RegisterInt64Pref(prefs::kVariationsLastFetchTime, 0);
   // This preference will only be written by the policy service, which will fill
   // it according to a value stored in the User Policy.
@@ -418,11 +391,6 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // This preference keeps track of the country code used to filter
   // permanent-consistency studies.
   registry->RegisterListPref(prefs::kVariationsPermanentConsistencyCountry);
-
-  // Prefs tracking failures along the way to fetching a seed, used to implement
-  // Safe Mode.
-  registry->RegisterIntegerPref(prefs::kVariationsCrashStreak, 0);
-  registry->RegisterIntegerPref(prefs::kVariationsFailedToFetchSeedStreak, 0);
 }
 
 // static
@@ -493,12 +461,7 @@ bool VariationsService::DoFetchFromURL(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsFetchingEnabled());
 
-  // Pessimistically assume the fetch will fail. The failure streak will be
-  // reset upon success.
-  int num_failures_to_fetch =
-      local_state_->GetInteger(prefs::kVariationsFailedToFetchSeedStreak);
-  local_state_->SetInteger(prefs::kVariationsFailedToFetchSeedStreak,
-                           num_failures_to_fetch + 1);
+  safe_seed_manager_.RecordFetchStarted();
 
   // Normally, there shouldn't be a |pending_request_| when this fires. However
   // it's not impossible - for example if Chrome was paused (e.g. in a debugger
@@ -788,13 +751,7 @@ void VariationsService::PerformSimulationWithVersion(
 
 void VariationsService::RecordSuccessfulFetch() {
   field_trial_creator_.RecordLastFetchTime();
-
-  // Note: It's important to clear the crash streak as well as the fetch
-  // failures streak. Crashes that occur after a successful seed fetch do not
-  // prevent updating to a new seed, and therefore do not necessitate falling
-  // back to a safe seed.
-  local_state_->SetInteger(prefs::kVariationsCrashStreak, 0);
-  local_state_->SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 0);
+  safe_seed_manager_.RecordSuccessfulFetch();
 }
 
 void VariationsService::GetClientFilterableStateForVersionCalledForTesting() {
