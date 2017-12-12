@@ -12402,24 +12402,22 @@ TEST_F(LayerTreeHostImplTest, WheelScrollWithPageScaleFactorOnInnerLayer) {
 
 class LayerTreeHostImplCountingLostSurfaces : public LayerTreeHostImplTest {
  public:
-  LayerTreeHostImplCountingLostSurfaces() : num_lost_surfaces_(0) {}
   void DidLoseLayerTreeFrameSinkOnImplThread() override {
     num_lost_surfaces_++;
   }
 
  protected:
-  int num_lost_surfaces_;
+  int num_lost_surfaces_ = 0;
 };
 
+// We do not want to reset context recovery state when we get repeated context
+// loss notifications via different paths.
 TEST_F(LayerTreeHostImplCountingLostSurfaces, TwiceLostSurface) {
-  // Really we just need at least one client notification each time
-  // we go from having a valid output surface to not having a valid output
-  // surface.
   EXPECT_EQ(0, num_lost_surfaces_);
   host_impl_->DidLoseLayerTreeFrameSink();
   EXPECT_EQ(1, num_lost_surfaces_);
   host_impl_->DidLoseLayerTreeFrameSink();
-  EXPECT_LE(1, num_lost_surfaces_);
+  EXPECT_EQ(1, num_lost_surfaces_);
 }
 
 size_t CountRenderPassesWithId(const viz::RenderPassList& list,

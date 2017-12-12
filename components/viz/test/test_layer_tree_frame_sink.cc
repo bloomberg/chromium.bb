@@ -26,19 +26,19 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& renderer_settings,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     bool synchronous_composite,
     bool disable_display_vsync,
     double refresh_rate)
     : LayerTreeFrameSink(std::move(compositor_context_provider),
                          std::move(worker_context_provider),
+                         std::move(compositor_task_runner),
                          gpu_memory_buffer_manager,
                          shared_bitmap_manager),
       synchronous_composite_(synchronous_composite),
       disable_display_vsync_(disable_display_vsync),
       renderer_settings_(renderer_settings),
       refresh_rate_(refresh_rate),
-      task_runner_(std::move(task_runner)),
       frame_sink_id_(kLayerTreeFrameSinkId),
       parent_local_surface_id_allocator_(new ParentLocalSurfaceIdAllocator),
       external_begin_frame_source_(this),
@@ -80,23 +80,24 @@ bool TestLayerTreeFrameSink::BindToClient(
   if (!synchronous_composite_) {
     if (disable_display_vsync_) {
       begin_frame_source_ = base::MakeUnique<BackToBackBeginFrameSource>(
-          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()));
+          base::MakeUnique<DelayBasedTimeSource>(
+              compositor_task_runner_.get()));
     } else {
       begin_frame_source_ = base::MakeUnique<DelayBasedBeginFrameSource>(
-          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()),
+          base::MakeUnique<DelayBasedTimeSource>(compositor_task_runner_.get()),
           BeginFrameSource::kNotRestartableId);
       begin_frame_source_->SetAuthoritativeVSyncInterval(
           base::TimeDelta::FromMilliseconds(1000.f / refresh_rate_));
     }
     scheduler = base::MakeUnique<DisplayScheduler>(
-        begin_frame_source_.get(), task_runner_.get(),
+        begin_frame_source_.get(), compositor_task_runner_.get(),
         display_output_surface->capabilities().max_frames_pending);
   }
 
   display_ = base::MakeUnique<Display>(
       shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings_,
       frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
-      task_runner_);
+      compositor_task_runner_);
 
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;
@@ -163,7 +164,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
     display_->DrawAndSwap();
     // Post this to get a new stack frame so that we exit this function before
     // calling the client to tell it that it is done.
-    task_runner_->PostTask(
+    compositor_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&TestLayerTreeFrameSink::SendCompositorFrameAckToClient,
                        weak_ptr_factory_.GetWeakPtr()));

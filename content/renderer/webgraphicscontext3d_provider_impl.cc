@@ -14,7 +14,6 @@ WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
     scoped_refptr<ui::ContextProviderCommandBuffer> provider,
     bool software_rendering)
     : provider_(std::move(provider)), software_rendering_(software_rendering) {
-  provider_->AddObserver(this);
 }
 
 WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {
@@ -24,6 +23,9 @@ WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {
 bool WebGraphicsContext3DProviderImpl::BindToCurrentThread() {
   // TODO(danakj): Could plumb this result out to the caller so they know to
   // retry or not, if any client cared to know if it should retry or not.
+  // Call AddObserver here instead of in constructor so that it's called on the
+  // correct thread.
+  provider_->AddObserver(this);
   return provider_->BindToCurrentThread() == gpu::ContextResult::kSuccess;
 }
 

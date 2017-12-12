@@ -50,6 +50,9 @@ class ThreadTrackingLayerTreeFrameSinkClient
 
 TEST(ClientLayerTreeFrameSinkTest,
      DidLoseLayerTreeFrameSinkCalledOnConnectionError) {
+  base::Thread bg_thread("BG Thread");
+  bg_thread.Start();
+
   scoped_refptr<cc::TestContextProvider> provider =
       cc::TestContextProvider::Create();
   TestGpuMemoryBufferManager test_gpu_memory_buffer_manager;
@@ -62,6 +65,7 @@ TEST(ClientLayerTreeFrameSinkTest,
       mojo::MakeRequest(&client);
 
   ClientLayerTreeFrameSink::InitParams init_params;
+  init_params.compositor_task_runner = bg_thread.task_runner();
   init_params.gpu_memory_buffer_manager = &test_gpu_memory_buffer_manager;
   init_params.pipes.compositor_frame_sink_info = std::move(sink_info);
   init_params.pipes.client_request = std::move(client_request);
@@ -76,8 +80,6 @@ TEST(ClientLayerTreeFrameSinkTest,
   ThreadTrackingLayerTreeFrameSinkClient frame_sink_client(&called_thread_id,
                                                            &close_run_loop);
 
-  base::Thread bg_thread("BG Thread");
-  bg_thread.Start();
   auto bind_in_background =
       [](ClientLayerTreeFrameSink* layer_tree_frame_sink,
          ThreadTrackingLayerTreeFrameSinkClient* frame_sink_client) {

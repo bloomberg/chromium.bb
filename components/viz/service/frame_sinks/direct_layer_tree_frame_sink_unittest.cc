@@ -85,8 +85,8 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         std::move(scheduler), task_runner_);
     layer_tree_frame_sink_ = std::make_unique<TestDirectLayerTreeFrameSink>(
         kArbitraryFrameSinkId, &support_manager_, &frame_sink_manager_,
-        display_.get(), context_provider_, nullptr, &gpu_memory_buffer_manager_,
-        &bitmap_manager_);
+        display_.get(), context_provider_, nullptr, task_runner_,
+        &gpu_memory_buffer_manager_, &bitmap_manager_);
 
     layer_tree_frame_sink_->BindToClient(&layer_tree_frame_sink_client_);
     display_->Resize(display_size_);

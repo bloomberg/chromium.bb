@@ -648,7 +648,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           : std::make_unique<viz::DirectLayerTreeFrameSink>(
                 compositor->frame_sink_id(), GetHostFrameSinkManager(),
                 GetFrameSinkManager(), data->display.get(), context_provider,
-                shared_worker_context_provider_, GetGpuMemoryBufferManager(),
+                shared_worker_context_provider_, compositor->task_runner(),
+                GetGpuMemoryBufferManager(),
                 viz::ServerSharedBitmapManager::current());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);

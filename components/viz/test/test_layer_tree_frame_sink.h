@@ -122,8 +122,6 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   const RendererSettings renderer_settings_;
   const double refresh_rate_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
   FrameSinkId frame_sink_id_;
   // TODO(danakj): These don't need to be stored in unique_ptrs when
   // LayerTreeFrameSink is owned/destroyed on the compositor thread.

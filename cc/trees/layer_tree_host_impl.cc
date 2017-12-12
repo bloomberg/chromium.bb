@@ -2186,9 +2186,15 @@ void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
 }
 
 void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
+  // Check that we haven't already detected context loss because we get it via
+  // two paths: compositor context loss on the compositor thread and worker
+  // context loss posted from main thread to compositor thread. We do not want
+  // to reset the context recovery state in the scheduler.
+  if (!has_valid_layer_tree_frame_sink_)
+    return;
+  has_valid_layer_tree_frame_sink_ = false;
   if (resource_provider_)
     resource_provider_->DidLoseContextProvider();
-  has_valid_layer_tree_frame_sink_ = false;
   client_->DidLoseLayerTreeFrameSinkOnImplThread();
 }
 
