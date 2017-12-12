@@ -3081,10 +3081,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromeVoxArcSupport)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"enable-mojo-loading", flag_descriptions::kMojoLoadingName,
-     flag_descriptions::kMojoLoadingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kLoadingWithMojo)},
-
     {"enable-fetch-keepalive-timeout-setting",
      flag_descriptions::kFetchKeepaliveTimeoutSettingName,
      flag_descriptions::kFetchKeepaliveTimeoutSettingDescription, kOsAll,

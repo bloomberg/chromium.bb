@@ -24,9 +24,7 @@ namespace content {
 // resources from other websites, not constrained by the Same Origin Policy.  We
 // are trying to verify that the renderer cannot fetch any cross-site document
 // responses even when the Same Origin Policy is turned off inside the renderer.
-class SiteIsolationStatsGathererBrowserTest
-    : public ContentBrowserTest,
-      public testing::WithParamInterface<bool> {
+class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
  public:
   SiteIsolationStatsGathererBrowserTest() {}
   ~SiteIsolationStatsGathererBrowserTest() override {}
@@ -49,11 +47,6 @@ class SiteIsolationStatsGathererBrowserTest
     // Since we assume exploited renderer process, it can bypass the same origin
     // policy at will. Simulate that by passing the disable-web-security flag.
     command_line->AppendSwitch(switches::kDisableWebSecurity);
-
-    if (GetParam()) {
-      command_line->AppendSwitchASCII("--enable-blink-features",
-                                      "LoadingWithMojo");
-    }
   }
 
   void SetUpOnMainThread() override {
@@ -136,7 +129,7 @@ class SiteIsolationStatsGathererBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationStatsGathererBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(SiteIsolationStatsGathererBrowserTest,
+IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
                        CrossSiteDocumentBlockingForMimeType) {
   // This test is disabled in --site-per-process, since the documents are
   // blocked before arriving in the renderer process and thus the existing
@@ -195,7 +188,7 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationStatsGathererBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(SiteIsolationStatsGathererBrowserTest,
+IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
                        CrossSiteDocumentBlockingForDifferentTargets) {
   // This webpage loads a cross-site HTML page in different targets such as
   // <img>,<link>,<embed>, etc. Since the requested document is blocked, and one
@@ -209,9 +202,5 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationStatsGathererBrowserTest,
   GURL foo("http://foo.com/cross_site_document_request_target.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo));
 }
-
-INSTANTIATE_TEST_CASE_P(SiteIsolationStatsGathererBrowserTest,
-                        SiteIsolationStatsGathererBrowserTest,
-                        ::testing::Values(false, true));
 
 }  // namespace content

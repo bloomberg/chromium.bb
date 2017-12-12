@@ -1785,25 +1785,6 @@
             ]
         }
     ],
-    "LoadingWithMojo": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_Launch",
-                    "enable_features": [
-                        "LoadingWithMojo"
-                    ]
-                }
-            ]
-        }
-    ],
     "LsdPermissionPrompt": [
         {
             "platforms": [

@@ -316,10 +316,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       WebRuntimeFeatures::EnableGenericSensorExtraClasses(true);
   }
 
-  if (base::FeatureList::IsEnabled(features::kLoadingWithMojo) ||
-      base::FeatureList::IsEnabled(features::kNetworkService))
-    WebRuntimeFeatures::EnableLoadingWithMojo(true);
-
   if (base::FeatureList::IsEnabled(features::kNotificationsWithMojo))
     WebRuntimeFeatures::EnableNotificationsWithMojo(true);
 

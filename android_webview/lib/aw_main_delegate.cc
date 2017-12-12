@@ -152,8 +152,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLineHelper::AddDisabledFeature(*cl,
                                         media::kMediaDrmPersistentLicense.name);
 
-  CommandLineHelper::AddEnabledFeature(*cl, features::kLoadingWithMojo.name);
-
   CommandLineHelper::AddDisabledFeature(*cl, features::kMojoInputMessages.name);
 
   android_webview::RegisterPathProvider();
