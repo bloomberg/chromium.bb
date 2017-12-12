@@ -1072,7 +1072,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
       tx_type = intra_mode_to_tx_type_context[mbmi->uv_mode];
     }
   }
-  assert(tx_type >= DCT_DCT && tx_type < TX_TYPES);
+  assert(tx_type < TX_TYPES);
   if (!av1_ext_tx_used[tx_set_type][tx_type]) return DCT_DCT;
   return tx_type;
 #endif  // CONFIG_TXK_SEL
