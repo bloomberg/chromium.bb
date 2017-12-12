@@ -17,7 +17,6 @@ KeyStorageKWallet::KeyStorageKWallet(
     std::string app_name,
     scoped_refptr<base::SequencedTaskRunner> dbus_task_runner)
     : desktop_env_(desktop_env),
-      handle_(-1),
       app_name_(std::move(app_name)),
       dbus_task_runner_(dbus_task_runner) {}
 
@@ -40,16 +39,16 @@ bool KeyStorageKWallet::Init() {
 }
 
 bool KeyStorageKWallet::InitWithKWalletDBus(
-    std::unique_ptr<KWalletDBus> optional_kwallet_dbus_ptr) {
-  if (optional_kwallet_dbus_ptr) {
-    kwallet_dbus_ = std::move(optional_kwallet_dbus_ptr);
+    std::unique_ptr<KWalletDBus> mock_kwallet_dbus_ptr) {
+  if (mock_kwallet_dbus_ptr) {
+    kwallet_dbus_ = std::move(mock_kwallet_dbus_ptr);
   } else {
     // Initializing with production KWalletDBus
-    kwallet_dbus_.reset(new KWalletDBus(desktop_env_));
+    kwallet_dbus_ = std::make_unique<KWalletDBus>(desktop_env_);
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SESSION;
     options.connection_type = dbus::Bus::PRIVATE;
-    kwallet_dbus_->SetSessionBus(new dbus::Bus(options));
+    kwallet_dbus_->SetSessionBus(base::MakeRefCounted<dbus::Bus>(options));
   }
 
   InitResult result = InitWallet();
@@ -96,7 +95,7 @@ std::string KeyStorageKWallet::GetKeyImpl() {
   // Get handle
   KWalletDBus::Error error =
       kwallet_dbus_->Open(wallet_name_, app_name_, &handle_);
-  if (error || handle_ == -1)
+  if (error || handle_ == kInvalidHandle)
     return std::string();
 
   // Create folder
