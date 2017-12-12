@@ -262,18 +262,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void EnableAudioDebugRecordings(const base::FilePath& file) = 0;
   virtual void DisableAudioDebugRecordings() = 0;
 
-  // Starts a local WebRTC event log for each peerconnection on the render
-  // process. A base_path must be supplied, which will be extended to include
-  // several identifiers to ensure uniqueness. If a recording was already in
-  // progress, this call will return false and have no other effect.
-  virtual bool StartLocalWebRtcEventLogging(
-      const base::FilePath& base_path) = 0;
-
-  // Stops local recording of WebRTC events log for all peerconnections on the
-  // render process. If no recording was in progress, this call will return
-  // false.
-  virtual bool StopLocalWebRtcEventLogging() = 0;
-
   // Enables or disables WebRTC's echo canceller AEC3. Disabled implies
   // selecting the older AEC2. The operation is asynchronous, |callback| is run
   // when done with the boolean indicating if successful and an error message.

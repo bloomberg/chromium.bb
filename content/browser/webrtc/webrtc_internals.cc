@@ -124,6 +124,10 @@ WebRTCInternals* WebRTCInternals::GetInstance() {
   return g_webrtc_internals.Pointer();
 }
 
+WebRtcEventLogManager* WebRTCInternals::GetWebRtcEventLogManager() {
+  return WebRtcEventLogManager::GetInstance();
+}
+
 void WebRTCInternals::OnAddPeerConnection(int render_process_id,
                                           ProcessId pid,
                                           int lid,
@@ -348,7 +352,8 @@ void WebRTCInternals::EnableLocalEventLogRecordings(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_WEBRTC)
 #if defined(OS_ANDROID)
-  EnableLocalEventLogRecordingsOnAllRenderProcessHosts();
+  GetWebRtcEventLogManager()->EnableLocalLogging(
+      event_log_recordings_file_path_);
 #else
   DCHECK(web_contents);
   DCHECK(!select_file_dialog_);
@@ -367,21 +372,13 @@ void WebRTCInternals::DisableLocalEventLogRecordings() {
   event_log_recordings_ = false;
   // Tear down the dialog since the user has unchecked the event log checkbox.
   select_file_dialog_ = nullptr;
-  for (RenderProcessHost::iterator i(
-           content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance())
-    i.GetCurrentValue()->StopLocalWebRtcEventLogging();
+  GetWebRtcEventLogManager()->DisableLocalLogging();
 #endif
 }
 
 bool WebRTCInternals::IsEventLogRecordingsEnabled() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return event_log_recordings_;
-}
-
-const base::FilePath& WebRTCInternals::GetEventLogFilePath() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return event_log_recordings_file_path_;
 }
 
 void WebRTCInternals::SendUpdate(const char* command,
@@ -418,7 +415,8 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
   switch (selection_type_) {
     case SelectionType::kRtcEventLogs:
       event_log_recordings_file_path_ = path;
-      EnableLocalEventLogRecordingsOnAllRenderProcessHosts();
+      event_log_recordings_ = true;
+      GetWebRtcEventLogManager()->EnableLocalLogging(path);
       break;
     case SelectionType::kAudioDebugRecordings:
       audio_debug_recordings_file_path_ = path;
@@ -521,17 +519,6 @@ void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
       FROM_HERE, base::BindOnce(&media::AudioManager::EnableDebugRecording,
                                 base::Unretained(audio_manager),
                                 audio_debug_recordings_file_path_));
-}
-
-void WebRTCInternals::EnableLocalEventLogRecordingsOnAllRenderProcessHosts() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  event_log_recordings_ = true;
-  for (RenderProcessHost::iterator i(
-           content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance())
-    i.GetCurrentValue()->StartLocalWebRtcEventLogging(
-        event_log_recordings_file_path_);
 }
 #endif
 
