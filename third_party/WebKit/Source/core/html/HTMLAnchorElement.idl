@@ -24,7 +24,7 @@ interface HTMLAnchorElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString target;
     [CEReactions, Reflect] attribute DOMString download;
     // FIXME: ping should be a DOMTokenList.
-    [CEReactions, Reflect] attribute DOMString ping;
+    [CEReactions, Reflect] attribute USVString ping;
     [CEReactions, Reflect] attribute DOMString rel;
     // FIXME: readonly attribute DOMTokenList relList;
     [CEReactions, Reflect] attribute DOMString hreflang;
