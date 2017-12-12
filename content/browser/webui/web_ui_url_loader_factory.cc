@@ -71,6 +71,10 @@ void ReadData(scoped_refptr<ResourceResponse> headers,
   base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
                           bytes->size());
 
+  // Treats empty gzipped data as unzipped.
+  if (!bytes->size())
+    gzipped = false;
+
   if (replacements) {
     std::string temp_string;
     // We won't know the the final output size ahead of time, so we have to
