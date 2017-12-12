@@ -57,7 +57,7 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
 
     for (int ci = 0; ci < count; ci++) {
       int16_t expected[64 * 64] = { 0 };
-      ASSERT_LT(txfm2d_size, NELEMENTS(expected));
+      ASSERT_LE(txfm2d_size, NELEMENTS(expected));
 
       for (int ni = 0; ni < txfm2d_size; ++ni) {
         if (ci == 0) {
@@ -69,11 +69,11 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
       }
 
       int32_t coeffs[64 * 64] = { 0 };
-      ASSERT_LT(txfm2d_size, NELEMENTS(coeffs));
+      ASSERT_LE(txfm2d_size, NELEMENTS(coeffs));
       fwd_txfm_func(expected, coeffs, tx_w, tx_type_, bd);
 
       uint16_t actual[64 * 64] = { 0 };
-      ASSERT_LT(txfm2d_size, NELEMENTS(actual));
+      ASSERT_LE(txfm2d_size, NELEMENTS(actual));
       inv_txfm_func(coeffs, actual, tx_w, tx_type_, bd);
 
       for (int ni = 0; ni < txfm2d_size; ++ni) {
@@ -176,7 +176,12 @@ const AV1InvTxfm2dParam av1_inv_txfm2d_param[] = {
   AV1InvTxfm2dParam(DCT_DCT, TX_32X32, 4, 0.4),
   AV1InvTxfm2dParam(ADST_DCT, TX_32X32, 4, 0.4),
   AV1InvTxfm2dParam(DCT_ADST, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(ADST_ADST, TX_32X32, 4, 0.4)
+  AV1InvTxfm2dParam(ADST_ADST, TX_32X32, 4, 0.4),
+#if CONFIG_TX64X64
+  // Large round trip error expected, because of inherent approximation in the
+  // transform.
+  AV1InvTxfm2dParam(DCT_DCT, TX_64X64, 900, 214),
+#endif  // CONFIG_TX64X64
 };
 
 INSTANTIATE_TEST_CASE_P(C, AV1InvTxfm2d,
