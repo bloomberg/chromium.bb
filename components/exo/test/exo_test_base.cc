@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "components/exo/test/exo_test_helper.h"
+#include "components/exo/test/test_client_controlled_state_delegate.h"
 #include "components/exo/wm_helper.h"
 #include "ui/wm/core/wm_core_switches.h"
 
@@ -27,9 +28,11 @@ void ExoTestBase::SetUp() {
   AshTestBase::SetUp();
   wm_helper_ = std::make_unique<WMHelper>();
   WMHelper::SetInstance(wm_helper_.get());
+  test::TestClientControlledStateDelegate::InstallFactory();
 }
 
 void ExoTestBase::TearDown() {
+  test::TestClientControlledStateDelegate::UninstallFactory();
   WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
   AshTestBase::TearDown();

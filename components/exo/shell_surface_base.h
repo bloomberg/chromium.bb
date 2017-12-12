@@ -77,15 +77,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
     surface_destroyed_callback_ = std::move(surface_destroyed_callback);
   }
 
-  // Set the callback to run when the surface state changed.
-  using StateChangedCallback =
-      base::RepeatingCallback<void(ash::mojom::WindowStateType old_state_type,
-                                   ash::mojom::WindowStateType new_state_type)>;
-  void set_state_changed_callback(
-      const StateChangedCallback& state_changed_callback) {
-    state_changed_callback_ = state_changed_callback;
-  }
-
   // Set the callback to run when the client is asked to configure the surface.
   // The size is a hint, in the sense that the client is free to ignore it if
   // it doesn't resize, pick a smaller size (to satisfy aspect ratio or resize
@@ -346,7 +337,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Rect pending_geometry_;
   base::RepeatingClosure close_callback_;
   base::OnceClosure surface_destroyed_callback_;
-  StateChangedCallback state_changed_callback_;
   ConfigureCallback configure_callback_;
   ScopedConfigure* scoped_configure_ = nullptr;
   std::unique_ptr<ui::CompositorLock> configure_compositor_lock_;

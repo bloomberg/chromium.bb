@@ -11,7 +11,9 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/macros.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
@@ -144,6 +146,28 @@ TEST_F(ClientControlledStateTest, Minimize) {
 
   widget()->Restore();
   EXPECT_TRUE(widget()->IsMinimized());
+  EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
+  EXPECT_EQ(mojom::WindowStateType::MINIMIZED, delegate()->old_state());
+  EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->new_state());
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_FALSE(widget()->IsMinimized());
+  EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
+
+  // use wm::Unminimize to unminimize.
+  widget()->Minimize();
+  EXPECT_FALSE(widget()->IsMinimized());
+  EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
+  EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->old_state());
+  EXPECT_EQ(mojom::WindowStateType::MINIMIZED, delegate()->new_state());
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(widget()->IsMinimized());
+  EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
+
+  ::wm::Unminimize(widget()->GetNativeWindow());
+  EXPECT_TRUE(widget()->IsMinimized());
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL,
+            widget()->GetNativeWindow()->GetProperty(
+                aura::client::kPreMinimizedShowStateKey));
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
   EXPECT_EQ(mojom::WindowStateType::MINIMIZED, delegate()->old_state());
   EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->new_state());
