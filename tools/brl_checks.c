@@ -68,7 +68,7 @@ check_base(const char *tableList, const char *input, const char *expected,
 	int i, retval = 0;
 	int funcStatus = 0;
 	formtype *typeformbuf = NULL;
-	int cursorPosbuf;
+	int *cursorPosbuf = NULL;
 
 	inbuf = malloc(sizeof(widechar) * inlen);
 	outbuf = malloc(sizeof(widechar) * outlen);
@@ -78,7 +78,9 @@ check_base(const char *tableList, const char *input, const char *expected,
 		memcpy(typeformbuf, in.typeform, outlen * sizeof(formtype));
 	}
 	if (in.cursorPos >= 0) {
-		cursorPosbuf = in.cursorPos;
+		cursorPosbuf = malloc(sizeof(int));
+		*cursorPosbuf = in.cursorPos;
+		//		memcpy(cursorPosbuf, in.cursorPos, sizeof(int));
 	}
 	inlen = _lou_extParseChars(input, inbuf);
 	if (!inlen) {
@@ -88,10 +90,10 @@ check_base(const char *tableList, const char *input, const char *expected,
 	}
 	if (in.direction == 0) {
 		funcStatus = lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, typeformbuf,
-				NULL, NULL, NULL, &cursorPosbuf, in.mode);
+				NULL, NULL, NULL, cursorPosbuf, in.mode);
 	} else {
 		funcStatus = lou_backTranslate(tableList, inbuf, &inlen, outbuf, &outlen,
-				typeformbuf, NULL, NULL, NULL, &cursorPosbuf, in.mode);
+				typeformbuf, NULL, NULL, NULL, cursorPosbuf, in.mode);
 	}
 	if (!funcStatus) {
 		fprintf(stderr, "Translation failed.\n");
@@ -153,6 +155,7 @@ fail:
 	free(outbuf);
 	free(expectedbuf);
 	free(typeformbuf);
+	free(cursorPosbuf);
 	return retval;
 }
 
