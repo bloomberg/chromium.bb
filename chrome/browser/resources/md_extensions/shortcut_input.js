@@ -17,8 +17,6 @@ cr.define('extensions', function() {
   const ShortcutInput = Polymer({
     is: 'extensions-shortcut-input',
 
-    behaviors: [I18nBehavior],
-
     properties: {
       /** @type {!Object} */
       delegate: Object,

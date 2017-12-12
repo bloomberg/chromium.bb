@@ -26,8 +26,6 @@ cr.define('extensions', function() {
   const Toolbar = Polymer({
     is: 'extensions-toolbar',
 
-    behaviors: [I18nBehavior],
-
     properties: {
       /** @type {extensions.ToolbarDelegate} */
       delegate: Object,
