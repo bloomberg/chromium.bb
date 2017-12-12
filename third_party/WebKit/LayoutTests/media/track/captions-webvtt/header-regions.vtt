@@ -1,10 +1,27 @@
 WEBVTT FILE
-Region: id=region_without_settings
-Region: id=region_with_all_settings width=32% height=5 regionanchor=41%,20% viewportanchor=31%,84% scroll=up
-Region: id=region_floating_point_anchor regionanchor=41.125%,20.25% viewportanchor=32.75%,32.5%
-Region: id=not_unique_id width=42%
-Region: id=not_unique_id width=67%
-Region: invalid_settings values but region still created
+
+REGION
+id:region_without_settings
+
+REGION
+id:region_with_all_settings width:32%
+lines:5
+regionanchor:41%,20% viewportanchor:31%,84%
+scroll:up
+
+REGION
+id:region_floating_point_anchor
+regionanchor:41.125%,20.25% viewportanchor:32.75%,32.5%
+
+REGION
+id:not_unique_id width:42%
+
+REGION
+id:not_unique_id
+width:67%
+
+REGION
+invalid_settings values but region still created
 : Invalid Header
 
 00:00:00.000 --> 00:00:02.500 region:someregionattributeid

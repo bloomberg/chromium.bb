@@ -103,7 +103,7 @@ class VTTRegion final : public ScriptWrappable {
     kNone,
     kId,
     kWidth,
-    kHeight,
+    kLines,
     kRegionAnchor,
     kViewportAnchor,
     kScroll

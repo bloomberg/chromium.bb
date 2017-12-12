@@ -164,7 +164,7 @@ void VTTRegion::SetRegionSettings(const String& input_string) {
   VTTScanner input(input_string);
 
   while (!input.IsAtEnd()) {
-    input.SkipWhile<VTTParser::IsValidSettingDelimiter>();
+    input.SkipWhile<VTTParser::IsASpace>();
 
     if (input.IsAtEnd())
       break;
@@ -172,8 +172,8 @@ void VTTRegion::SetRegionSettings(const String& input_string) {
     // Scan the name part.
     RegionSetting name = ScanSettingName(input);
 
-    // Verify that we're looking at a '='.
-    if (name == kNone || !input.Scan('=')) {
+    // Verify that we're looking at a ':'.
+    if (name == kNone || !input.Scan(':')) {
       input.SkipUntil<VTTParser::IsASpace>();
       continue;
     }
@@ -186,8 +186,8 @@ void VTTRegion::SetRegionSettings(const String& input_string) {
 VTTRegion::RegionSetting VTTRegion::ScanSettingName(VTTScanner& input) {
   if (input.Scan("id"))
     return kId;
-  if (input.Scan("height"))
-    return kHeight;
+  if (input.Scan("lines"))
+    return kLines;
   if (input.Scan("width"))
     return kWidth;
   if (input.Scan("viewportanchor"))
@@ -226,7 +226,7 @@ void VTTRegion::ParseSettingValue(RegionSetting setting, VTTScanner& input) {
         DVLOG(VTT_LOG_LEVEL) << "parseSettingValue, invalid Width";
       break;
     }
-    case kHeight: {
+    case kLines: {
       int number;
       if (input.ScanDigits(number) && ParsedEntireRun(input, value_run))
         lines_ = number;
