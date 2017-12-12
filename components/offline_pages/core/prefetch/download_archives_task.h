@@ -24,6 +24,9 @@ class DownloadArchivesTask : public Task {
   // Maximum number of parallel downloads.
   static const int kMaxConcurrentDownloads;
 
+  // Maximum number of parallel downloads when limitless prefetching is enabled.
+  static const int kMaxConcurrentDownloadsForLimitless;
+
   // Represents item to be downloaded as a result of running the task.
   struct DownloadItem {
     int64_t offline_id;

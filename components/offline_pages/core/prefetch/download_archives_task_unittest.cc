@@ -8,7 +8,10 @@
 #include <set>
 
 #include "base/guid.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
@@ -303,16 +306,84 @@ TEST_F(DownloadArchivesTaskTest, TooManyArchivesToDownload) {
     const PrefetchItem* download_item_before =
         FindPrefetchItemByOfflineId(items_before_run, item_ids[i]);
     const PrefetchItem* download_item_after =
-        FindPrefetchItemByOfflineId(items_before_run, item_ids[i]);
+        FindPrefetchItemByOfflineId(items_after_run, item_ids[i]);
     ASSERT_TRUE(download_item_before);
     ASSERT_TRUE(download_item_after);
-    EXPECT_EQ(*download_item_before, *download_item_before);
+    EXPECT_EQ(*download_item_before, *download_item_after);
     EXPECT_EQ(PrefetchItemState::RECEIVED_BUNDLE, download_item_after->state);
   }
 
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadExpectedFileSize",
-      kSmallArchiveSize / 1024, 2);
+      kSmallArchiveSize / 1024, DownloadArchivesTask::kMaxConcurrentDownloads);
+}
+
+TEST_F(DownloadArchivesTaskTest,
+       ManyLargeArchivesToDownloadWithLimitlessEnabled) {
+  // Enable limitless prefetching.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {kPrefetchingOfflinePagesFeature,
+       kOfflinePagesLimitlessPrefetchingFeature},
+      {});
+
+  // Check the concurrent downloads limit is greater for limitless.
+  ASSERT_GT(DownloadArchivesTask::kMaxConcurrentDownloadsForLimitless,
+            DownloadArchivesTask::kMaxConcurrentDownloads);
+
+  // Create more archives than we allow to download in parallel with limitless
+  // and put them in the fresher |item_ids| in front.
+  const size_t max_concurrent_downloads = base::checked_cast<size_t>(
+      DownloadArchivesTask::kMaxConcurrentDownloadsForLimitless);
+  const size_t total_items = max_concurrent_downloads + 2;
+  std::vector<int64_t> item_ids;
+  for (size_t i = 0; i < total_items; ++i)
+    item_ids.insert(item_ids.begin(), InsertItemToDownload(kLargeArchiveSize));
+
+  std::set<PrefetchItem> items_before_run;
+  EXPECT_EQ(total_items, store_util()->GetAllItems(&items_before_run));
+
+  DownloadArchivesTask task(store(), prefetch_downloader());
+  base::HistogramTester histogram_tester;
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+
+  std::set<PrefetchItem> items_after_run;
+  EXPECT_EQ(total_items, store_util()->GetAllItems(&items_after_run));
+
+  std::map<std::string, std::string> requested_downloads =
+      prefetch_downloader()->requested_downloads();
+  EXPECT_EQ(max_concurrent_downloads, requested_downloads.size());
+
+  // The freshest |kMaxConcurrentDownloadsForLimitless| items should be started
+  // as with limitless enabled there's no download size restrictions.
+  for (size_t i = 0; i < max_concurrent_downloads; ++i) {
+    const PrefetchItem* download_item =
+        FindPrefetchItemByOfflineId(items_after_run, item_ids[i]);
+    ASSERT_TRUE(download_item);
+    EXPECT_EQ(PrefetchItemState::DOWNLOADING, download_item->state);
+
+    auto it = requested_downloads.find(download_item->guid);
+    ASSERT_TRUE(it != requested_downloads.end());
+    EXPECT_EQ(it->second, download_item->archive_body_name);
+  }
+
+  // Remaining items shouldn't have been started.
+  for (size_t i = max_concurrent_downloads; i < total_items; ++i) {
+    const PrefetchItem* download_item_before =
+        FindPrefetchItemByOfflineId(items_before_run, item_ids[i]);
+    const PrefetchItem* download_item_after =
+        FindPrefetchItemByOfflineId(items_after_run, item_ids[i]);
+    ASSERT_TRUE(download_item_before);
+    ASSERT_TRUE(download_item_after);
+    EXPECT_EQ(*download_item_before, *download_item_after);
+    EXPECT_EQ(PrefetchItemState::RECEIVED_BUNDLE, download_item_after->state);
+  }
+
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.DownloadExpectedFileSize",
+      kLargeArchiveSize / 1024, max_concurrent_downloads);
 }
 
 TEST_F(DownloadArchivesTaskTest, SingleArchiveSecondAttempt) {
