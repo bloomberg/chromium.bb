@@ -110,7 +110,7 @@ static void PaintSelection(GraphicsContext& context,
   context.FillRect(selection_rect, color);
 }
 
-// This is copied from InlineTextBoxPainter::PaintSelection() but lucks of
+// This is copied from InlineTextBoxPainter::PaintSelection() but lacks of
 // ltr, expanding new line wrap or so which uses InlineTextBox functions.
 void NGTextFragmentPainter::Paint(const Document& document,
                                   const PaintInfo& paint_info,
@@ -184,6 +184,7 @@ void NGTextFragmentPainter::Paint(const Document& document,
   // include selection and composition highlights.
   if (have_selection && paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing) {
+    // TODO(yoichio): Implement composition highlights.
     PaintSelection(context, text_fragment, document, style,
                    selection_style.fill_color, box_rect, selection_start,
                    selection_end);
