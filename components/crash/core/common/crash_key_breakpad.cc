@@ -23,8 +23,10 @@ namespace internal {
 
 namespace {
 
-// String used to format chunked key names.
-const char kChunkFormatString[] = "%s-%" PRIuS;
+// String used to format chunked key names. The __1 through __N syntax is
+// recognized by the crash collector, which will then stitch the numbered
+// parts back into a single string value.
+const char kChunkFormatString[] = "%s__%" PRIuS;
 
 static TransitionalCrashKeyStorage* g_storage = nullptr;
 

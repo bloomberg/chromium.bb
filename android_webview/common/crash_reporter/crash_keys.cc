@@ -80,16 +80,18 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     "gpu-psver",
     "gpu-vsver",
     "gpu-gl-vendor",
+    "gpu-gl-vendor__1",
+    "gpu-gl-vendor__2",
     "gpu-gl-renderer",
 
     // content/:
     "bad_message_reason",
     "discardable-memory-allocated",
     "discardable-memory-free",
-    "mojo-message-error-1",
-    "mojo-message-error-2",
-    "mojo-message-error-3",
-    "mojo-message-error-4",
+    "mojo-message-error__1",
+    "mojo-message-error__2",
+    "mojo-message-error__3",
+    "mojo-message-error__4",
     "total-discardable-memory-allocated",
     nullptr};
 // clang-format on
