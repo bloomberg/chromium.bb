@@ -44,6 +44,8 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
       const SubTaskAttribution::EntriesVector& sub_task_attributions);
   ~PerformanceLongTaskTiming() override;
 
+  void BuildJSONValue(V8ObjectBuilder&) const override;
+
   TaskAttributionVector attribution_;
 };
 

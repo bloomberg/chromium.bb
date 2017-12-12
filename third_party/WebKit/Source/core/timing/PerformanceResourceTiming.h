@@ -95,7 +95,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   virtual void Trace(blink::Visitor*);
 
  protected:
-  void BuildJSONValue(ScriptState*, V8ObjectBuilder&) const override;
+  void BuildJSONValue(V8ObjectBuilder&) const override;
 
   // This constructor is for PerformanceNavigationTiming.
   // Related doc: https://goo.gl/uNecAj.

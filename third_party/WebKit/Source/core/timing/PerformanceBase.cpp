@@ -32,6 +32,7 @@
 #include "core/timing/PerformanceBase.h"
 
 #include <algorithm>
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/events/Event.h"
@@ -608,6 +609,17 @@ DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
 
 DOMHighResTimeStamp PerformanceBase::now() const {
   return MonotonicTimeToDOMHighResTimeStamp(MonotonicallyIncreasingTime());
+}
+
+ScriptValue PerformanceBase::toJSONForBinding(ScriptState* script_state) const {
+  V8ObjectBuilder result(script_state);
+  BuildJSONValue(result);
+  return result.GetScriptValue();
+}
+
+void PerformanceBase::BuildJSONValue(V8ObjectBuilder& builder) const {
+  builder.AddNumber("timeOrigin", timeOrigin());
+  // |memory| is not part of the spec, omitted.
 }
 
 void PerformanceBase::Trace(blink::Visitor* visitor) {

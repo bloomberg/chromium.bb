@@ -175,11 +175,11 @@ void Performance::UpdateLongTaskInstrumentation() {
   }
 }
 
-ScriptValue Performance::toJSONForBinding(ScriptState* script_state) const {
-  V8ObjectBuilder result(script_state);
-  result.Add("timing", timing()->toJSONForBinding(script_state));
-  result.Add("navigation", navigation()->toJSONForBinding(script_state));
-  return result.GetScriptValue();
+void Performance::BuildJSONValue(V8ObjectBuilder& builder) const {
+  PerformanceBase::BuildJSONValue(builder);
+  builder.Add("timing", timing()->toJSONForBinding(builder.GetScriptState()));
+  builder.Add("navigation",
+              navigation()->toJSONForBinding(builder.GetScriptState()));
 }
 
 void Performance::Trace(blink::Visitor* visitor) {
