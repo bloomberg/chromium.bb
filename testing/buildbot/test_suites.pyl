@@ -1116,6 +1116,12 @@
         'shards': 5,
       },
     },
+    'mus_content_unittests': {
+      'test': 'content_unittests',
+      'args': [
+        '--mus',
+      ],
+    },
     'content_browsertests --mus': {
       'test': 'content_browsertests',
       'override_isolate_target': 'content_browsertests',
