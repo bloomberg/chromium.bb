@@ -4,64 +4,47 @@
 
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/dice_tab_helper.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace {
 
 void RedirectToNtp(content::WebContents* contents) {
   VLOG(1) << "RedirectToNtp";
-  content::OpenURLParams params(GURL(chrome::kChromeUINewTabURL),
-                                content::Referrer(),
-                                WindowOpenDisposition::CURRENT_TAB,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
-  contents->OpenURL(params);
-}
-
-Profile* GetProfileForContents(content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  DCHECK(browser);
-  Profile* profile = browser->profile();
-  DCHECK(profile);
-  return profile;
+  contents->GetController().LoadURL(
+      GURL(chrome::kChromeUINewTabURL), content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 
 }  // namespace
 
 ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    PrefService* user_prefs,
+    SigninManager* signin_manager,
+    bool is_sync_signin_tab,
+    EnableSyncCallback enable_sync_callback,
+    ShowSigninErrorCallback show_signin_error_callback)
     : content::WebContentsObserver(web_contents),
-      profile_(GetProfileForContents(web_contents)) {
-  DCHECK(profile_);
-
-  if (!signin::IsDicePrepareMigrationEnabled())
-    return;
-
-  DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
-  if (tab_helper) {
-    should_start_sync_ = tab_helper->should_start_sync_after_web_signin();
-    signin_access_point_ = tab_helper->signin_access_point();
-    signin_reason_ = tab_helper->signin_reason();
-  }
+      user_prefs_(user_prefs),
+      signin_manager_(signin_manager),
+      enable_sync_callback_(std::move(enable_sync_callback)),
+      show_signin_error_callback_(std::move(show_signin_error_callback)),
+      is_sync_signin_tab_(is_sync_signin_tab) {
+  DCHECK(web_contents);
+  DCHECK(user_prefs_);
+  DCHECK(signin_manager_);
 }
+
+ProcessDiceHeaderDelegateImpl::~ProcessDiceHeaderDelegateImpl() = default;
 
 bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
   if (!signin::IsDicePrepareMigrationEnabled()) {
@@ -70,15 +53,14 @@ bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
     return false;
   }
 
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  DCHECK(signin_manager);
-  if (signin_manager->IsAuthenticated()) {
+  if (signin_manager_->IsAuthenticated()) {
     VLOG(1) << "Do not start sync after web sign-in [already authenticated].";
     return false;
   }
 
-  if (!should_start_sync_) {
-    VLOG(1) << "Do not start sync after web sign-in [no a Chrome sign-in tab].";
+  if (!is_sync_signin_tab_) {
+    VLOG(1)
+        << "Do not start sync after web sign-in [not a Chrome sign-in tab].";
     return false;
   }
 
@@ -92,18 +74,14 @@ void ProcessDiceHeaderDelegateImpl::EnableSync(const std::string& account_id) {
   }
 
   content::WebContents* web_contents = this->web_contents();
-  Browser* browser = nullptr;
-  if (web_contents) {
-    browser = chrome::FindBrowserWithWebContents(web_contents);
-    // After signing in to Chrome, the user should be redirected to the NTP.
-    RedirectToNtp(web_contents);
-  }
-
-  // DiceTurnSyncOnHelper is suicidal (it will kill itself once it finishes
-  // enabling sync).
   VLOG(1) << "Start sync after web sign-in.";
-  new DiceTurnSyncOnHelper(profile_, browser, signin_access_point_,
-                           signin_reason_, account_id);
+  std::move(enable_sync_callback_).Run(web_contents, account_id);
+
+  if (!web_contents)
+    return;
+
+  // After signing in to Chrome, the user should be redirected to the NTP.
+  RedirectToNtp(web_contents);
 }
 
 void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeFailure(
@@ -111,19 +89,15 @@ void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeFailure(
     const GoogleServiceAuthError& error) {
   DCHECK_NE(GoogleServiceAuthError::NONE, error.state());
   bool should_enable_sync = ShouldEnableSync();
-  if (!should_enable_sync &&
-      !signin::IsDiceEnabledForProfile(profile_->GetPrefs())) {
+  if (!should_enable_sync && !signin::IsDiceEnabledForProfile(user_prefs_))
     return;
-  }
 
-  // Show pop up-dialog.
   content::WebContents* web_contents = this->web_contents();
-  Browser* browser = web_contents
-                         ? chrome::FindBrowserWithWebContents(web_contents)
-                         : chrome::FindBrowserWithProfile(profile_);
-  LoginUIServiceFactory::GetForProfile(profile_)->DisplayLoginResult(
-      browser, base::UTF8ToUTF16(error.ToString()), base::UTF8ToUTF16(email));
-
   if (should_enable_sync && web_contents)
     RedirectToNtp(web_contents);
+
+  // Show the error even if the WebContents was closed, because the user may be
+  // signed out of the web.
+  std::move(show_signin_error_callback_)
+      .Run(web_contents, error.ToString(), email);
 }

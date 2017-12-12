@@ -2667,6 +2667,7 @@ test("unit_tests") {
     sources += [
       "../browser/signin/dice_response_handler_unittest.cc",
       "../browser/signin/dice_tab_helper_unittest.cc",
+      "../browser/signin/process_dice_header_delegate_impl_unittest.cc",
     ]
   }
 
