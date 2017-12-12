@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/test_wallpaper_delegate.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/command_line.h"
@@ -144,6 +145,19 @@ class TestWallpaperObserver : public mojom::WallpaperObserver {
   int wallpaper_colors_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperObserver);
+};
+
+class TestWallpaperControllerObserver : public WallpaperControllerObserver {
+ public:
+  TestWallpaperControllerObserver() = default;
+
+  void OnWallpaperDataChanged() override {}
+
+  void OnWallpaperBlurChanged() override { ++wallpaper_blur_changed_count_; }
+
+  void Reset() { wallpaper_blur_changed_count_ = 0; }
+
+  int wallpaper_blur_changed_count_ = 0;
 };
 
 }  // namespace
@@ -969,6 +983,113 @@ TEST_F(WallpaperControllerTest, VerifyWallpaperCache) {
   EXPECT_FALSE(
       controller_->GetWallpaperFromCache(account_id1, &cached_wallpaper));
   EXPECT_FALSE(controller_->GetPathFromCache(account_id1, &path));
+}
+
+TEST_F(WallpaperControllerTest, WallpaperBlur) {
+  ASSERT_TRUE(controller_->IsBlurEnabled());
+  ASSERT_FALSE(controller_->IsWallpaperBlurred());
+
+  TestWallpaperControllerObserver observer;
+  controller_->AddObserver(&observer);
+
+  SetSessionState(SessionState::ACTIVE);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::LOCKED);
+  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(1, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::LOGGED_IN_NOT_ACTIVE);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(2, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::LOGIN_SECONDARY);
+  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(3, observer.wallpaper_blur_changed_count_);
+
+  // Blur state does not change below.
+  observer.Reset();
+  SetSessionState(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::OOBE);
+  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::UNKNOWN);
+  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  controller_->RemoveObserver(&observer);
+}
+
+TEST_F(WallpaperControllerTest, WallpaperBlurDisabledByPolicy) {
+  // Simulate DEVICE policy wallpaper.
+  const wallpaper::WallpaperInfo info("", WALLPAPER_LAYOUT_CENTER,
+                                      wallpaper::DEVICE, base::Time::Now());
+  const gfx::ImageSkia image = CreateImage(10, 10, kWallpaperColor);
+  controller_->SetWallpaperImage(image, info);
+  ASSERT_FALSE(controller_->IsBlurEnabled());
+  ASSERT_FALSE(controller_->IsWallpaperBlurred());
+
+  TestWallpaperControllerObserver observer;
+  controller_->AddObserver(&observer);
+
+  SetSessionState(SessionState::ACTIVE);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::LOCKED);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::LOGGED_IN_NOT_ACTIVE);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::LOGIN_SECONDARY);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::LOGIN_PRIMARY);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::OOBE);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::UNKNOWN);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
+
+  controller_->RemoveObserver(&observer);
+}
+
+TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
+  ASSERT_TRUE(controller_->IsBlurEnabled());
+  ASSERT_FALSE(controller_->IsWallpaperBlurred());
+
+  TestWallpaperControllerObserver observer;
+  controller_->AddObserver(&observer);
+
+  // Simulate lock and unlock sequence.
+  controller_->PrepareWallpaperForLockScreenChange(true);
+  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(1, observer.wallpaper_blur_changed_count_);
+
+  SetSessionState(SessionState::LOCKED);
+  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+
+  // Change of state to ACTIVE trigers post lock animation and
+  // PrepareWallpaperForLockScreenChange(false)
+  SetSessionState(SessionState::ACTIVE);
+  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_EQ(2, observer.wallpaper_blur_changed_count_);
+
+  controller_->RemoveObserver(&observer);
 }
 
 }  // namespace ash

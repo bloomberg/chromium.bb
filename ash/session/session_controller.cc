@@ -116,6 +116,10 @@ bool SessionController::IsUserSessionBlocked() const {
          !(state_ == SessionState::LOCKED && is_unlocking_);
 }
 
+bool SessionController::IsUnlocking() const {
+  return is_unlocking_;
+}
+
 bool SessionController::IsInSecondaryLoginScreen() const {
   return state_ == SessionState::LOGIN_SECONDARY;
 }
