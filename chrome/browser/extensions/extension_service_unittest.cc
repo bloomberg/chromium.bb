@@ -66,6 +66,7 @@
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/test_blacklist.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -4928,46 +4929,71 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 }
 
 // Tests loading single extensions (like --load-extension)
-// Flaky crashes. http://crbug.com/231806
-TEST_F(ExtensionServiceTest, DISABLED_LoadExtension) {
+TEST_F(ExtensionServiceTest, LoadExtension) {
   InitializeEmptyExtensionService();
+  extensions::TestExtensionDir good_extension_dir;
+  good_extension_dir.WriteManifest(
+      R"({
+           "name": "Good Extension",
+           "version": "0.1",
+           "manifest_version": 2
+         })");
 
-  base::FilePath ext1 = data_dir()
-                            .AppendASCII("good")
-                            .AppendASCII("Extensions")
-                            .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-                            .AppendASCII("1.0.0.0");
-  extensions::UnpackedInstaller::Create(service())->Load(ext1);
-  content::RunAllTasksUntilIdle();
+  {
+    extensions::ChromeTestExtensionLoader loader(profile());
+    loader.set_pack_extension(false);
+    loader.LoadExtension(good_extension_dir.UnpackedPath());
+  }
   EXPECT_EQ(0u, GetErrors().size());
-  ASSERT_EQ(1u, loaded_.size());
-  EXPECT_EQ(Manifest::UNPACKED, loaded_[0]->location());
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
-
   ValidatePrefKeyCount(1);
 
-  base::FilePath no_manifest =
-      data_dir()
-          .AppendASCII("bad")
-          // .AppendASCII("Extensions")
-          .AppendASCII("cccccccccccccccccccccccccccccccc")
-          .AppendASCII("1");
-  extensions::UnpackedInstaller::Create(service())->Load(no_manifest);
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(1u, GetErrors().size());
-  ASSERT_EQ(1u, loaded_.size());
-  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+  auto get_extension_by_name = [](const extensions::ExtensionSet& extensions,
+                                  const std::string& name) {
+    // NOTE: lambda type deduction doesn't recognize returning
+    // const Extension* in one place and nullptr in another as the same type, so
+    // we have to make sure to return an explicit type here.
+    const extensions::Extension* result = nullptr;
+    for (const auto& extension : extensions) {
+      if (extension->name() == name) {
+        result = extension.get();
+        break;
+      }
+    }
+    return result;
+  };
+  constexpr const char kGoodExtension[] = "Good Extension";
+  {
+    const Extension* extension =
+        get_extension_by_name(registry()->enabled_extensions(), kGoodExtension);
+    ASSERT_TRUE(extension);
+    EXPECT_EQ(Manifest::UNPACKED, extension->location());
+  }
 
-  // Test uninstall.
-  std::string id = loaded_[0]->id();
-  EXPECT_FALSE(unloaded_id_.length());
-  service()->UninstallExtension(id,
-                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                                NULL);
+  // Try loading an extension with no manifest. It should fail.
+  extensions::TestExtensionDir bad_extension_dir;
+  bad_extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "// some JS");
+  {
+    extensions::ChromeTestExtensionLoader loader(profile());
+    loader.set_pack_extension(false);
+    loader.set_should_fail(true);
+    loader.LoadExtension(bad_extension_dir.UnpackedPath());
+  }
+
+  EXPECT_EQ(1u, GetErrors().size());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+  EXPECT_EQ(1u, registry()->GenerateInstalledExtensionsSet()->size());
+  EXPECT_TRUE(
+      get_extension_by_name(registry()->enabled_extensions(), kGoodExtension));
+
+  // Test uninstalling the good extension.
+  const extensions::ExtensionId good_id =
+      get_extension_by_name(registry()->enabled_extensions(), kGoodExtension)
+          ->id();
+  service()->UninstallExtension(
+      good_id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
   content::RunAllTasksUntilIdle();
-  EXPECT_EQ(id, unloaded_id_);
-  ASSERT_EQ(0u, loaded_.size());
-  EXPECT_EQ(0u, registry()->enabled_extensions().size());
+  EXPECT_TRUE(registry()->GenerateInstalledExtensionsSet()->is_empty());
 }
 
 // Tests that we generate IDs when they are not specified in the manifest for
