@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
@@ -191,8 +192,17 @@ void ScopedFeatureList::InitAndEnableFeatureWithParameters(
     field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
   }
 
-  std::string kTrialName = "scoped_feature_list_trial_name";
+  // TODO(crbug.com/794021) Remove this unique field trial name hack when there
+  // is a cleaner solution.
+  // Ensure that each call to this method uses a distinct field trial name.
+  // Otherwise, nested calls might fail due to the shared FieldTrialList
+  // already having the field trial registered.
+  static int num_calls = 0;
+  ++num_calls;
+  std::string kTrialName =
+      "scoped_feature_list_trial_name" + base::NumberToString(num_calls);
   std::string kTrialGroup = "scoped_feature_list_trial_group";
+
   field_trial_override_ =
       base::FieldTrialList::CreateFieldTrial(kTrialName, kTrialGroup);
   DCHECK(field_trial_override_);
