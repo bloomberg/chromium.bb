@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "gin/public/isolate_holder.h"
@@ -17,10 +16,12 @@
 namespace gin {
 
 V8IsolateMemoryDumpProvider::V8IsolateMemoryDumpProvider(
-    IsolateHolder* isolate_holder)
+    IsolateHolder* isolate_holder,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : isolate_holder_(isolate_holder) {
+  DCHECK(task_runner);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "V8Isolate", base::ThreadTaskRunnerHandle::Get());
+      this, "V8Isolate", task_runner);
 }
 
 V8IsolateMemoryDumpProvider::~V8IsolateMemoryDumpProvider() {

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gin/gin_export.h"
 
@@ -20,7 +21,9 @@ class IsolateHolder;
 class V8IsolateMemoryDumpProvider
     : public base::trace_event::MemoryDumpProvider {
  public:
-  explicit V8IsolateMemoryDumpProvider(IsolateHolder* isolate_holder);
+  V8IsolateMemoryDumpProvider(
+      IsolateHolder* isolate_holder,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~V8IsolateMemoryDumpProvider() override;
 
   // MemoryDumpProvider implementation.
