@@ -910,10 +910,10 @@ void PaintController::GenerateRasterInvalidation(
     return;
   }
 
-  if (client.GetPaintInvalidationReason() !=
-          PaintInvalidationReason::kRectangle &&
-      client.GetPaintInvalidationReason() !=
-          PaintInvalidationReason::kIncremental) {
+  auto reason = client.GetPaintInvalidationReason();
+  if (reason != PaintInvalidationReason::kRectangle &&
+      reason != PaintInvalidationReason::kSelection &&
+      reason != PaintInvalidationReason::kIncremental) {
     GenerateFullRasterInvalidation(chunk, *old_item, *new_item);
     return;
   }
@@ -921,10 +921,8 @@ void PaintController::GenerateRasterInvalidation(
   GenerateIncrementalRasterInvalidation(chunk, *old_item, *new_item);
 
   auto partial_rect = client.PartialInvalidationRect();
-  if (!partial_rect.IsEmpty()) {
-    AddRasterInvalidation(client, chunk, FloatRect(partial_rect),
-                          PaintInvalidationReason::kRectangle);
-  }
+  if (!partial_rect.IsEmpty())
+    AddRasterInvalidation(client, chunk, FloatRect(partial_rect), reason);
 }
 
 static FloatRect ComputeRightDelta(const FloatPoint& location,

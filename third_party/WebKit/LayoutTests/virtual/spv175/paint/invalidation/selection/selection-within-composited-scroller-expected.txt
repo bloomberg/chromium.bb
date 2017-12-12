@@ -27,7 +27,7 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'test'",
-          "rect": [0, 610, 22, 19],
+          "rect": [0, 610, 21, 19],
           "reason": "selection"
         }
       ],
