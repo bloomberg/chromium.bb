@@ -4080,6 +4080,26 @@ TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatConvertsFormatDesktop) {
                                     GL_LUMINANCE_ALPHA32F_ARB);
 }
 
+TEST_P(GLES2DecoderManualInitTest, TexImage2Dnorm16OnGLES2) {
+  InitState init;
+  init.extensions = "GL_EXT_texture_norm16";
+  init.gl_version = "opengl es 2.0";
+  InitDecoder(init);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 16, 17, 0, GL_RED, GL_UNSIGNED_SHORT,
+               0, 0);
+}
+
+TEST_P(GLES2DecoderManualInitTest, TexImage2Dnorm16OnGLES3) {
+  InitState init;
+  init.extensions = "GL_EXT_texture_norm16";
+  init.gl_version = "opengl es 3.0";
+  InitDecoder(init);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_R16_EXT, 16, 17, 0, GL_RED,
+               GL_UNSIGNED_SHORT, 0, 0);
+}
+
 class GLES2DecoderCompressedFormatsTest : public GLES2DecoderManualInitTest {
  public:
   GLES2DecoderCompressedFormatsTest() = default;
