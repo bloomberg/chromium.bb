@@ -217,10 +217,6 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingInterstitial) {
                                   kFlagLoadAsComponent)) << message_;
 }
 
-// XXX(kalman): All web messaging tests disabled on windows due to extreme
-// flakiness. See http://crbug.com/350517.
-#if !defined(OS_WIN)
-
 // Tests externally_connectable between a web page and an extension.
 //
 // TODO(kalman): Test between extensions. This is already tested in this file,
@@ -560,6 +556,10 @@ IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest, NotInstalled) {
             CanConnectAndSendMessagesToMainFrame(extension.get()));
   EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 }
+
+// TODO(kalman): Most web messaging tests disabled on windows due to extreme
+// flakiness. See http://crbug.com/350517.
+#if !defined(OS_WIN)
 
 // Tests two extensions on the same sites: one web connectable, one not.
 IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest,
@@ -1305,13 +1305,6 @@ IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest,
 }
 
 INSTANTIATE_TEST_CASE_P(NativeBindings,
-                        ExternallyConnectableMessagingTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(JavaScriptBindings,
-                        ExternallyConnectableMessagingTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
-
-INSTANTIATE_TEST_CASE_P(NativeBindings,
                         ExternallyConnectableMessagingWithTlsChannelIdTest,
                         ::testing::Values(NATIVE_BINDINGS));
 INSTANTIATE_TEST_CASE_P(JavaScriptBindings,
@@ -1319,6 +1312,13 @@ INSTANTIATE_TEST_CASE_P(JavaScriptBindings,
                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 #endif  // !defined(OS_WIN) - http://crbug.com/350517.
+
+INSTANTIATE_TEST_CASE_P(NativeBindings,
+                        ExternallyConnectableMessagingTest,
+                        ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_CASE_P(JavaScriptBindings,
+                        ExternallyConnectableMessagingTest,
+                        ::testing::Values(JAVASCRIPT_BINDINGS));
 
 // Tests that messages sent in the unload handler of a window arrive.
 IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingOnUnload) {
