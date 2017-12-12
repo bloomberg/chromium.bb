@@ -70,9 +70,7 @@ if (enable_vr) {
         "//third_party/WebKit/public:blink_headers",
       ]
       ldflags = [ "-landroid" ]
-      libs = [
-        "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
-      ]
+      libs = [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
 
@@ -149,6 +147,28 @@ if (enable_vr) {
     # compile this when webvr is disabled.
     sources = [
       "empty.cc",
+    ]
+  }
+}
+
+if (enable_openvr) {
+  shared_library("openvr_mock") {
+    output_name = "mock_vr_clients/bin/vrclient"
+    if (target_cpu == "x64" && is_win) {
+      output_name = "mock_vr_clients/bin/vrclient_x64"
+    }
+
+    sources = [
+      "openvr/test/fake_openvr_impl_api.cc",
+    ]
+
+    libs = [
+      "d3d11.lib",
+      "DXGI.lib",
+    ]
+
+    deps = [
+      "//base",
     ]
   }
 }
