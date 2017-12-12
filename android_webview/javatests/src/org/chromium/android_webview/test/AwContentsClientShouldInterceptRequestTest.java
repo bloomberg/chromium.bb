@@ -970,7 +970,7 @@ public class AwContentsClientShouldInterceptRequestTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testLoadDataWithBaseUrlShouldNotTriggerShouldInterceptRequest() throws Throwable {
+    public void testLoadDataWithBaseUrlTriggersShouldInterceptRequest() throws Throwable {
         String data = "foo";
         String mimeType = "text/plain";
         boolean isBase64Encoded = false;
@@ -981,7 +981,9 @@ public class AwContentsClientShouldInterceptRequestTest {
         mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
                 mContentsClient.getOnPageFinishedHelper(), data, mimeType, isBase64Encoded, baseUrl,
                 historyUrl);
-        Assert.assertEquals(callCount, mShouldInterceptRequestHelper.getCallCount());
+        Assert.assertEquals(callCount + 1, mShouldInterceptRequestHelper.getCallCount());
+        // Not checking the URL yet. It's the empty data URL which should be fixed in
+        // crbug.com/669885.
     }
 
     @Test
