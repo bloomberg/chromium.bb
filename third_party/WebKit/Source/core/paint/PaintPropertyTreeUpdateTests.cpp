@@ -280,8 +280,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(overflow_a->GetLayoutObject()
                    ->FirstFragment()
-                   .GetRarePaintData()
-                   ->PaintProperties()
+                   .PaintProperties()
                    ->ScrollTranslation()
                    ->ScrollNode()
                    ->HasBackgroundAttachmentFixedDescendants());

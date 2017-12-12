@@ -1233,10 +1233,10 @@ void PaintLayerPainter::PaintAncestorClippingMask(
     const DisplayItemClient& client =
         *paint_layer_.GetCompositedLayerMapping()->AncestorClippingMaskLayer();
     const auto& layer_fragment = paint_layer_.GetLayoutObject().FirstFragment();
-    auto state = layer_fragment.GetRarePaintData()->PreEffectProperties();
+    auto state = layer_fragment.PreEffectProperties();
     // This is a hack to incorporate mask-based clip-path.
     // See CompositingLayerPropertyUpdater.cpp about AncestorClippingMaskLayer.
-    state.SetEffect(layer_fragment.GetRarePaintData()->GetPreFilter());
+    state.SetEffect(layer_fragment.PreFilter());
     ScopedPaintChunkProperties properties(
         context.GetPaintController(), state, client,
         DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
@@ -1264,12 +1264,10 @@ void PaintLayerPainter::PaintChildClippingMaskForFragments(
     const DisplayItemClient& client =
         *paint_layer_.GetCompositedLayerMapping()->ChildClippingMaskLayer();
     for (auto& fragment : layer_fragments) {
-      auto state =
-          fragment.fragment_data->GetRarePaintData()->ContentsProperties();
+      auto state = fragment.fragment_data->ContentsProperties();
       // This is a hack to incorporate mask-based clip-path.
       // See CompositingLayerPropertyUpdater.cpp about ChildClippingMaskLayer.
-      state.SetEffect(
-          fragment.fragment_data->GetRarePaintData()->GetPreFilter());
+      state.SetEffect(fragment.fragment_data->PreFilter());
       ScopedPaintChunkProperties fragment_paint_chunk_properties(
           context.GetPaintController(), state, client,
           DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));

@@ -420,45 +420,6 @@ TEST_F(LayoutObjectTest, VisualRect) {
   EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
 }
 
-TEST_F(LayoutObjectTest, LocationInBackingAndSelectionVisualRect) {
-  auto* object = GetDocument().body()->GetLayoutObject();
-  EXPECT_EQ(nullptr, object->FirstFragment().GetRarePaintData());
-
-  // Default LocationInBacking and SelectionVisualRect should not create
-  // RarePaintData.
-  object->GetMutableForPainting().FirstFragment().SetVisualRect(
-      LayoutRect(10, 20, 30, 400));
-  object->GetMutableForPainting().FirstFragment().SetLocationInBacking(
-      LayoutPoint(10, 20));
-  object->GetMutableForPainting().SetSelectionVisualRect(LayoutRect());
-  EXPECT_EQ(nullptr, object->FirstFragment().GetRarePaintData());
-  EXPECT_EQ(LayoutPoint(10, 20), object->FirstFragment().LocationInBacking());
-  EXPECT_EQ(LayoutRect(), object->SelectionVisualRect());
-
-  // Non-Default LocationInBacking and SelectionVisualRect create RarePaintData.
-  object->GetMutableForPainting().FirstFragment().SetLocationInBacking(
-      LayoutPoint(20, 30));
-  object->GetMutableForPainting().SetSelectionVisualRect(
-      LayoutRect(1, 2, 3, 4));
-  EXPECT_NE(nullptr, object->FirstFragment().GetRarePaintData());
-  EXPECT_EQ(LayoutPoint(20, 30), object->FirstFragment().LocationInBacking());
-  EXPECT_EQ(LayoutRect(1, 2, 3, 4), object->SelectionVisualRect());
-
-  // RarePaintData should store default LocationInBacking and
-  // SelectionVisualRect once it's created.
-  object->GetMutableForPainting().FirstFragment().SetLocationInBacking(
-      LayoutPoint(10, 20));
-  object->GetMutableForPainting().SetSelectionVisualRect(LayoutRect());
-  EXPECT_NE(nullptr, object->FirstFragment().GetRarePaintData());
-  EXPECT_EQ(LayoutPoint(10, 20), object->FirstFragment().LocationInBacking());
-  EXPECT_EQ(LayoutRect(), object->SelectionVisualRect());
-
-  object->ClearPreviousVisualRects();
-  EXPECT_EQ(LayoutRect(), object->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutPoint(), object->FirstFragment().LocationInBacking());
-  EXPECT_EQ(LayoutRect(), object->SelectionVisualRect());
-}
-
 TEST_F(LayoutObjectTest, DisplayContentsInlineWrapper) {
   SetBodyInnerHTML("<div id='div' style='display:contents;color:pink'>A</div>");
   Element* div = GetDocument().getElementById("div");

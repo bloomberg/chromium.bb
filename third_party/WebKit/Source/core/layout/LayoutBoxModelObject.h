@@ -167,11 +167,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   virtual int PixelSnappedOffsetHeight(const Element*) const;
 
   bool HasSelfPaintingLayer() const;
-  PaintLayer* Layer() const {
-    return FirstFragment().GetRarePaintData()
-               ? FirstFragment().GetRarePaintData()->Layer()
-               : nullptr;
-  }
+  PaintLayer* Layer() const { return FirstFragment().Layer(); }
   // The type of PaintLayer to instantiate. Any value returned from this
   // function other than NoPaintLayer will lead to a PaintLayer being created.
   virtual PaintLayerType LayerTypeRequired() const = 0;

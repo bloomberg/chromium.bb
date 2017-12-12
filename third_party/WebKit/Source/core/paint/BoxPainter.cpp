@@ -67,8 +67,8 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
                     .backface_hidden);
       scoped_scroll_property.emplace(
           paint_info.context.GetPaintController(),
-          layout_box_.FirstFragment().GetRarePaintData()->ContentsProperties(),
-          layout_box_, DisplayItem::PaintPhaseToScrollType(paint_info.phase));
+          layout_box_.FirstFragment().ContentsProperties(), layout_box_,
+          DisplayItem::PaintPhaseToScrollType(paint_info.phase));
     }
 
     // The background painting code assumes that the borders are part of the

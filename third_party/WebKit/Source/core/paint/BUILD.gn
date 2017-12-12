@@ -147,8 +147,6 @@ blink_core_sources("paint") {
     "PaintTiming.h",
     "PrePaintTreeWalk.cpp",
     "PrePaintTreeWalk.h",
-    "RarePaintData.cpp",
-    "RarePaintData.h",
     "ReplacedPainter.cpp",
     "ReplacedPainter.h",
     "RootInlineBoxPainter.cpp",

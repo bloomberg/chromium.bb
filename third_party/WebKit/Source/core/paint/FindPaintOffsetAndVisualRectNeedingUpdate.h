@@ -32,11 +32,10 @@ class FindPaintOffsetNeedingUpdateScope {
         fragment_data_(fragment_data),
         is_actually_needed_(is_actually_needed),
         old_paint_offset_(fragment_data.PaintOffset()) {
-    auto* rare_paint_data = fragment_data.GetRarePaintData();
-    if (rare_paint_data && rare_paint_data->PaintProperties() &&
-        rare_paint_data->PaintProperties()->PaintOffsetTranslation()) {
+    auto* properties = fragment_data.PaintProperties();
+    if (properties && properties->PaintOffsetTranslation()) {
       old_paint_offset_translation_ =
-          rare_paint_data->PaintProperties()->PaintOffsetTranslation()->Clone();
+          properties->PaintOffsetTranslation()->Clone();
     }
   }
 

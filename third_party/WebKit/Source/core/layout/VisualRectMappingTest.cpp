@@ -48,8 +48,7 @@ class VisualRectMappingTest : public RenderingTest {
       geometry_mapper_rect.MoveBy(FloatPoint(fragment_data.PaintOffset()));
       GeometryMapper::LocalToAncestorVisualRect(
           *fragment_data.LocalBorderBoxProperties(),
-          ancestor.FirstFragment().GetRarePaintData()->ContentsProperties(),
-          geometry_mapper_rect);
+          ancestor.FirstFragment().ContentsProperties(), geometry_mapper_rect);
       geometry_mapper_rect.MoveBy(
           -FloatPoint(ancestor.FirstFragment().PaintOffset()));
     }
