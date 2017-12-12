@@ -1,21 +1,13 @@
 Tests node xPath construction
 
-3 Prefix  Suffix
-4
-5
-6
 '#document':'' - '/'
   '#comment':' Pre-comment ' - '/comment()[1]'
   'html':'' - '/html'
     'head':'' - '/html/head'
-      'script':'' - '//*[@id="script-id"]'
-      'script':'' - '/html/head/script[2]'
-      'script':'' - '/html/head/script[4]'
-        '#text':'\n// Comment\n//' - '/html/head/script[4]/text()[1]'
-        '#cdata-section':'\nfunction f()\n{\n    document.write("<");\n}\n//' - '/html/head/script[4]/text()[2]'
+      'script':'' - '/html/head/script'
+        '#text':'\n// Comment\n//' - '/html/head/script/text()[1]'
+        '#cdata-section':'\nfunction f()\n{\n    document.write("<");\n}\n//' - '/html/head/script/text()[2]'
     'body':'' - '/html/body'
-      'p':'' - '/html/body/p'
-        '#text':'Tests node xPath construction' - '/html/body/p/text()'
       'div':'' - '//*[@id="id1"]'
       'div':'' - '//*[@id="id2"]'
       'div':'' - '//*[@id="container"]'

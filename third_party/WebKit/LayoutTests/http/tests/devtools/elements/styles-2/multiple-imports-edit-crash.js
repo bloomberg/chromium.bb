@@ -1,18 +1,38 @@
-<html>
-<head>
-<style>
-@import url(../styles/resources/multiple-imports-edit-crash-1.css);
-@import url(../styles/resources/multiple-imports-edit-crash-2.css);
-@import url(../styles/resources/multiple-imports-edit-crash-1.css);
-#inspected {
-    color: green;
-}
-</style>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that modifying stylesheet text with multiple @import at-rules does not crash.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+    <head>
+      <style>
+        @import url(../../styles/resources/multiple-imports-edit-crash-1.css);
+        @import url(../../styles/resources/multiple-imports-edit-crash-2.css);
+        @import url(../../styles/resources/multiple-imports-edit-crash-1.css);
+        #inspected {
+            color: green;
+        }
+      </style>
+    </head>
+    <body>
+      <div id="inspected">Text</div>
+    </body>
+  `);
+  var initialAddsExpected = 3;
+  var initialAdded = [];
+  await new Promise(f => TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, function styleSheetAdded(event) {
+    initialAdded.push(resourceName(event.data.sourceURL));
+    if (!(--initialAddsExpected)) {
+      initialAdded.sort();
+      TestRunner.addResult('Initially added:');
+      TestRunner.addResult(initialAdded.join('\n'));
+      f();
+    }
+  }, this));
+
   TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, this);
   TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
   ElementsTestRunner.nodeWithId('inspected', nodeFound);
@@ -60,16 +80,4 @@ function test() {
   function resourceName(url) {
     return url.substring(url.lastIndexOf('/') + 1);
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that modifying stylesheet text with multiple @import at-rules does not crash.
-</p>
-
-<div id="inspected">Text</div>
-</body>
-</html>
+})();

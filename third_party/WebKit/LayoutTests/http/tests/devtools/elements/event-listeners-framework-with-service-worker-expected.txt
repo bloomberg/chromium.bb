@@ -1,6 +1,5 @@
 Tests framework event listeners output in Sources panel when service worker is present.
 
-Inspect Me
 Selecting service worker thread
 Context is dedicated worker: true
 Dumping listeners
@@ -10,11 +9,11 @@ Dumping listeners
 
 ======== load ========
 == Raw
-[expanded] WindowRemoveevent-listeners-framework-with-service-worker.html:54
+[expanded] WindowRemoveinspected-page.html:1
     useCapture: false
     passive: false
     once: false
     handler: function onload(event) {
-  runTest()
+  testFunction()
 }
 
