@@ -622,13 +622,14 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsRichlyEditable() const { return false; }
   bool AriaCheckedIsPresent() const;
   bool AriaPressedIsPresent() const;
-  bool SupportsActiveDescendant() const;
+  bool SupportsARIAActiveDescendant() const;
   bool SupportsARIAAttributes() const;
   virtual bool SupportsARIADragging() const { return false; }
   virtual bool SupportsARIADropping() const { return false; }
   virtual bool SupportsARIAFlowTo() const { return false; }
   virtual bool SupportsARIAOwns() const { return false; }
   bool SupportsRangeValue() const;
+  bool SupportsARIAReadOnly() const;
   virtual SortDirection GetSortDirection() const {
     return kSortDirectionUndefined;
   }
@@ -639,7 +640,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Value should be 1-based. 0 means not supported.
   virtual int PosInSet() const { return 0; }
   virtual int SetSize() const { return 0; }
-  bool SupportsSetSizeAndPosInSet() const;
+  bool SupportsARIASetSizeAndPosInSet() const;
 
   // ARIA live-region features.
   bool IsLiveRegion() const;
@@ -856,7 +857,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   bool CanReceiveAccessibilityFocus() const;
   bool NameFromContents(bool recursive) const;
-  bool CanSupportAriaReadOnly() const;
 
   AccessibilityRole ButtonRoleType() const;
 
