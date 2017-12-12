@@ -1267,6 +1267,36 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   return new_instance;
 }
 
+void RenderFrameHostManager::InitializeRenderFrameIfNecessary(
+    RenderFrameHostImpl* render_frame_host) {
+  // TODO: this copies some logic inside GetFrameHostForNavigation, which also
+  // duplicates logic in Navigate. They should all use this method, but that
+  // involves slight reordering.
+  if (render_frame_host->IsRenderFrameLive())
+    return;
+
+  if (!ReinitializeRenderFrame(render_frame_host))
+    return;
+
+  if (render_frame_host != render_frame_host_.get())
+    return;
+
+  EnsureRenderFrameHostVisibilityConsistent();
+
+  // TODO: uncomment this when the method is shared. Not adding the call now
+  // to make merge to 63 easier.
+  // EnsureRenderFrameHostPageFocusConsistent();
+
+  // TODO(nasko): This is a very ugly hack. The Chrome extensions process
+  // manager still uses NotificationService and expects to see a
+  // RenderViewHost changed notification after WebContents and
+  // RenderFrameHostManager are completely initialized. This should be
+  // removed once the process manager moves away from NotificationService.
+  // See https://crbug.com/462682.
+  delegate_->NotifyMainFrameSwappedFromRenderManager(
+      nullptr, render_frame_host_->render_view_host());
+}
+
 RenderFrameHostManager::SiteInstanceDescriptor
 RenderFrameHostManager::DetermineSiteInstanceForURL(
     const GURL& dest_url,
