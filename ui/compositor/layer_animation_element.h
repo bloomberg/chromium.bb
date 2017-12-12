@@ -46,11 +46,10 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     BRIGHTNESS = (1 << 4),
     GRAYSCALE = (1 << 5),
     COLOR = (1 << 6),
-    TEMPERATURE = (1 << 7),
 
     // Used when iterating over properties.
     FIRST_PROPERTY = TRANSFORM,
-    SENTINEL = (1 << 8)
+    SENTINEL = (1 << 7)
   };
 
   static AnimatableProperty ToAnimatableProperty(
@@ -68,7 +67,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     float brightness;
     float grayscale;
     SkColor color;
-    float temperature;
   };
 
   typedef uint32_t AnimatableProperties;
@@ -139,12 +137,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // return value.
   static std::unique_ptr<LayerAnimationElement> CreateColorElement(
       SkColor color,
-      base::TimeDelta duration);
-
-  // Creates an element that transitions to the given color temperature. The
-  // caller owns the return value.
-  static std::unique_ptr<LayerAnimationElement> CreateTemperatureElement(
-      float temperature,
       base::TimeDelta duration);
 
   // Sets the start time for the animation. This must be called before the first

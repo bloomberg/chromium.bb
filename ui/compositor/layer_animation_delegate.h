@@ -38,8 +38,6 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
                                          PropertyChangeReason reason) = 0;
   virtual void SetColorFromAnimation(SkColor color,
                                      PropertyChangeReason reason) = 0;
-  virtual void SetTemperatureFromAnimation(float temperature,
-                                           PropertyChangeReason reason) = 0;
   virtual void ScheduleDrawForAnimation() = 0;
   virtual const gfx::Rect& GetBoundsForAnimation() const = 0;
   virtual gfx::Transform GetTransformForAnimation() const = 0;
@@ -48,7 +46,6 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual float GetBrightnessForAnimation() const = 0;
   virtual float GetGrayscaleForAnimation() const = 0;
   virtual SkColor GetColorForAnimation() const = 0;
-  virtual float GetTemperatureFromAnimation() const = 0;
   virtual float GetDeviceScaleFactor() const = 0;
   virtual ui::Layer* GetLayer() = 0;
   virtual cc::Layer* GetCcLayer() const = 0;

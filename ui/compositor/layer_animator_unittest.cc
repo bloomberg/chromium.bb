@@ -2863,40 +2863,6 @@ TEST(LayerAnimatorTest, Color) {
             ColorToString(delegate.GetColorForAnimation()));
 }
 
-// Verifies temperature property is modified appropriately.
-TEST(LayerAnimatorTest, Temperature) {
-  TestLayerAnimationDelegate delegate;
-  scoped_refptr<LayerAnimator> animator(CreateDefaultTestAnimator(&delegate));
-
-  float start_temperature = 0.0f;
-  float middle_temperature = 0.5f;
-  float target_temperature = 1.0f;
-
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-
-  delegate.SetTemperatureFromAnimation(
-      start_temperature, PropertyChangeReason::NOT_FROM_ANIMATION);
-
-  animator->ScheduleAnimation(new LayerAnimationSequence(
-      LayerAnimationElement::CreateTemperatureElement(target_temperature,
-                                                      delta)));
-
-  EXPECT_TRUE(animator->is_animating());
-  EXPECT_EQ(start_temperature, delegate.GetTemperatureFromAnimation());
-
-  base::TimeTicks start_time = animator->last_step_time();
-
-  animator->Step(start_time + base::TimeDelta::FromMilliseconds(500));
-
-  EXPECT_TRUE(animator->is_animating());
-  EXPECT_EQ(middle_temperature, delegate.GetTemperatureFromAnimation());
-
-  animator->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
-
-  EXPECT_FALSE(animator->is_animating());
-  EXPECT_EQ(target_temperature, delegate.GetTemperatureFromAnimation());
-}
-
 // Verifies SchedulePauseForProperties().
 TEST(LayerAnimatorTest, SchedulePauseForProperties) {
   scoped_refptr<LayerAnimator> animator(CreateDefaultTestAnimator());
@@ -2925,12 +2891,8 @@ TEST(LayerAnimatorTest, IsAnimatingOnePropertyOf) {
       LayerAnimationElement::LayerAnimationElement::BRIGHTNESS |
       LayerAnimationElement::LayerAnimationElement::GRAYSCALE));
   EXPECT_TRUE(animator->IsAnimatingOnePropertyOf(
-      LayerAnimationElement::LayerAnimationElement::BRIGHTNESS |
-      LayerAnimationElement::LayerAnimationElement::TEMPERATURE));
+      LayerAnimationElement::LayerAnimationElement::BRIGHTNESS));
   EXPECT_FALSE(animator->IsAnimatingOnePropertyOf(
-      LayerAnimationElement::LayerAnimationElement::TEMPERATURE));
-  EXPECT_FALSE(animator->IsAnimatingOnePropertyOf(
-      LayerAnimationElement::LayerAnimationElement::TEMPERATURE |
       LayerAnimationElement::LayerAnimationElement::BOUNDS));
 }
 
