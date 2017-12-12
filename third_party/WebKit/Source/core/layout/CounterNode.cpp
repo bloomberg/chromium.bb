@@ -359,6 +359,31 @@ void CounterNode::RemoveChild(CounterNode* old_child) {
     next->Recount();
 }
 
+void CounterNode::MoveNonResetSiblingsToChildOf(
+    CounterNode* first_node,
+    CounterNode& new_parent,
+    const AtomicString& identifier) {
+  if (!first_node)
+    return;
+
+  scoped_refptr<CounterNode> cur_node = first_node;
+  scoped_refptr<CounterNode> old_parent = first_node->Parent();
+  while (cur_node && !cur_node->ActsAsReset()) {
+    scoped_refptr<CounterNode> next = cur_node->NextSibling();
+    old_parent->RemoveChild(cur_node.get());
+    new_parent.InsertAfter(cur_node.get(), new_parent.LastChild(), identifier);
+    cur_node = next;
+  }
+
+  // We assume that a reset node cannot have a non-reset node as its next
+  // sibling, but we're not sure this is always true, so we add a DCHECK to be
+  // safe.
+  while (cur_node) {
+    DCHECK(cur_node->ActsAsReset());
+    cur_node = cur_node->NextSibling();
+  }
+}
+
 #ifndef NDEBUG
 
 static void ShowTreeAndMark(const CounterNode* node) {
