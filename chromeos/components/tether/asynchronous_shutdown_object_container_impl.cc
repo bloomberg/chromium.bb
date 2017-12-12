@@ -62,7 +62,7 @@ AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnectionHandler* network_connection_handler,
     PrefService* pref_service) {
-  return base::MakeUnique<AsynchronousShutdownObjectContainerImpl>(
+  return std::make_unique<AsynchronousShutdownObjectContainerImpl>(
       adapter, cryptauth_service, tether_host_fetcher, network_state_handler,
       managed_network_configuration_handler, network_connection_handler,
       pref_service);
@@ -81,28 +81,28 @@ AsynchronousShutdownObjectContainerImpl::
     : adapter_(adapter),
       tether_host_fetcher_(tether_host_fetcher),
       local_device_data_provider_(
-          base::MakeUnique<cryptauth::LocalDeviceDataProvider>(
+          std::make_unique<cryptauth::LocalDeviceDataProvider>(
               cryptauth_service)),
       remote_beacon_seed_fetcher_(
-          base::MakeUnique<cryptauth::RemoteBeaconSeedFetcher>(
+          std::make_unique<cryptauth::RemoteBeaconSeedFetcher>(
               cryptauth_service->GetCryptAuthDeviceManager())),
       ble_advertisement_device_queue_(
-          base::MakeUnique<BleAdvertisementDeviceQueue>()),
-      ble_synchronizer_(base::MakeUnique<BleSynchronizer>(adapter)),
+          std::make_unique<BleAdvertisementDeviceQueue>()),
+      ble_synchronizer_(std::make_unique<BleSynchronizer>(adapter)),
       ble_advertiser_(
-          base::MakeUnique<BleAdvertiserImpl>(local_device_data_provider_.get(),
+          std::make_unique<BleAdvertiserImpl>(local_device_data_provider_.get(),
                                               remote_beacon_seed_fetcher_.get(),
                                               ble_synchronizer_.get())),
       ble_scanner_(
-          base::MakeUnique<BleScannerImpl>(adapter,
+          std::make_unique<BleScannerImpl>(adapter,
                                            local_device_data_provider_.get(),
                                            ble_synchronizer_.get(),
                                            tether_host_fetcher_)),
-      ad_hoc_ble_advertiser_(base::MakeUnique<AdHocBleAdvertiserImpl>(
+      ad_hoc_ble_advertiser_(std::make_unique<AdHocBleAdvertiserImpl>(
           local_device_data_provider_.get(),
           remote_beacon_seed_fetcher_.get(),
           ble_synchronizer_.get())),
-      ble_connection_manager_(base::MakeUnique<BleConnectionManager>(
+      ble_connection_manager_(std::make_unique<BleConnectionManager>(
           cryptauth_service,
           adapter,
           ble_advertisement_device_queue_.get(),
@@ -110,14 +110,14 @@ AsynchronousShutdownObjectContainerImpl::
           ble_scanner_.get(),
           ad_hoc_ble_advertiser_.get())),
       disconnect_tethering_request_sender_(
-          base::MakeUnique<DisconnectTetheringRequestSenderImpl>(
+          std::make_unique<DisconnectTetheringRequestSenderImpl>(
               ble_connection_manager_.get(),
               tether_host_fetcher_)),
       network_configuration_remover_(
-          base::MakeUnique<NetworkConfigurationRemover>(
+          std::make_unique<NetworkConfigurationRemover>(
               network_state_handler,
               managed_network_configuration_handler)),
-      wifi_hotspot_disconnector_(base::MakeUnique<WifiHotspotDisconnectorImpl>(
+      wifi_hotspot_disconnector_(std::make_unique<WifiHotspotDisconnectorImpl>(
           network_connection_handler,
           network_state_handler,
           pref_service,

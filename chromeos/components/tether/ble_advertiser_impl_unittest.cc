@@ -128,22 +128,22 @@ class BleAdvertiserImplTest : public testing::Test {
 
   void SetUp() override {
     fake_generator_ =
-        base::MakeUnique<cryptauth::FakeBleAdvertisementGenerator>();
+        std::make_unique<cryptauth::FakeBleAdvertisementGenerator>();
     cryptauth::BleAdvertisementGenerator::SetInstanceForTesting(
         fake_generator_.get());
 
     mock_seed_fetcher_ =
-        base::MakeUnique<cryptauth::MockRemoteBeaconSeedFetcher>();
+        std::make_unique<cryptauth::MockRemoteBeaconSeedFetcher>();
     mock_local_data_provider_ =
-        base::MakeUnique<cryptauth::MockLocalDeviceDataProvider>();
-    fake_ble_synchronizer_ = base::MakeUnique<FakeBleSynchronizer>();
+        std::make_unique<cryptauth::MockLocalDeviceDataProvider>();
+    fake_ble_synchronizer_ = std::make_unique<FakeBleSynchronizer>();
 
     fake_advertisement_factory_ =
         base::WrapUnique(new FakeErrorTolerantBleAdvertisementFactory());
     ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(
         fake_advertisement_factory_.get());
 
-    ble_advertiser_ = base::MakeUnique<BleAdvertiserImpl>(
+    ble_advertiser_ = std::make_unique<BleAdvertiserImpl>(
         mock_local_data_provider_.get(), mock_seed_fetcher_.get(),
         fake_ble_synchronizer_.get());
 
@@ -211,7 +211,7 @@ TEST_F(BleAdvertiserImplTest, CannotGenerateAdvertisement) {
 
 TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully) {
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
       fake_devices_[0].GetDeviceId()));
@@ -243,7 +243,7 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully) {
 TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   // Register device 0.
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
       fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
@@ -253,7 +253,7 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
 
   // Register device 1.
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[1]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[1]));
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
       fake_devices_[1].GetDeviceId()));
   EXPECT_EQ(2u, fake_advertisement_factory_->num_created());
@@ -288,7 +288,7 @@ TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
 
   // Register device 0.
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
       fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
@@ -296,7 +296,7 @@ TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
 
   // Register device 1.
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[1]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[1]));
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
       fake_devices_[1].GetDeviceId()));
   EXPECT_EQ(2u, fake_advertisement_factory_->num_created());
@@ -304,7 +304,7 @@ TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
 
   // Register device 2. This should fail, since it is over the limit.
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[2]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[2]));
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(
       fake_devices_[2].GetDeviceId()));
   EXPECT_EQ(2u, fake_advertisement_factory_->num_created());
@@ -355,7 +355,7 @@ TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
 // previous one has been finished.
 TEST_F(BleAdvertiserImplTest, SameAdvertisementAdded_FirstHasNotBeenStopped) {
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
 
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
       fake_devices_[0].GetDeviceId()));
@@ -372,7 +372,7 @@ TEST_F(BleAdvertiserImplTest, SameAdvertisementAdded_FirstHasNotBeenStopped) {
   // advertisement has not successfully stopped, no new advertisement should
   // have been created yet.
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
       fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
@@ -399,7 +399,7 @@ TEST_F(BleAdvertiserImplTest, ObserverDeletesObjectWhenNotified) {
   ble_advertiser_->RemoveObserver(test_observer_.get());
 
   fake_generator_->set_advertisement(
-      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
+      std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
   ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0].GetDeviceId());
   ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0].GetDeviceId());
   InvokeAdvertisementStoppedCallback(0u /* index */,

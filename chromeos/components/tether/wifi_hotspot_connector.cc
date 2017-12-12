@@ -4,9 +4,10 @@
 
 #include "chromeos/components/tether/wifi_hotspot_connector.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "chromeos/network/device_state.h"
@@ -28,8 +29,8 @@ WifiHotspotConnector::WifiHotspotConnector(
     NetworkConnect* network_connect)
     : network_state_handler_(network_state_handler),
       network_connect_(network_connect),
-      timer_(base::MakeUnique<base::OneShotTimer>()),
-      clock_(base::MakeUnique<base::DefaultClock>()),
+      timer_(std::make_unique<base::OneShotTimer>()),
+      clock_(std::make_unique<base::DefaultClock>()),
       weak_ptr_factory_(this) {
   network_state_handler_->AddObserver(this, FROM_HERE);
 }

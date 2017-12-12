@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -196,24 +195,24 @@ class HostScannerTest : public NetworkStateTest {
     scanned_device_infos_from_current_scan_.clear();
 
     fake_tether_host_fetcher_ =
-        base::MakeUnique<FakeTetherHostFetcher>(test_devices_);
-    fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
+        std::make_unique<FakeTetherHostFetcher>(test_devices_);
+    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
     fake_host_scan_device_prioritizer_ =
-        base::MakeUnique<FakeHostScanDevicePrioritizer>();
+        std::make_unique<FakeHostScanDevicePrioritizer>();
     mock_tether_host_response_recorder_ =
-        base::MakeUnique<MockTetherHostResponseRecorder>();
+        std::make_unique<MockTetherHostResponseRecorder>();
     fake_notification_presenter_ =
-        base::MakeUnique<FakeNotificationPresenter>();
+        std::make_unique<FakeNotificationPresenter>();
     device_id_tether_network_guid_map_ =
-        base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
-    fake_host_scan_cache_ = base::MakeUnique<FakeHostScanCache>();
+        std::make_unique<DeviceIdTetherNetworkGuidMap>();
+    fake_host_scan_cache_ = std::make_unique<FakeHostScanCache>();
 
     fake_host_scanner_operation_factory_ =
         base::WrapUnique(new FakeHostScannerOperationFactory(test_devices_));
     HostScannerOperation::Factory::SetInstanceForTesting(
         fake_host_scanner_operation_factory_.get());
 
-    test_clock_ = base::MakeUnique<base::SimpleTestClock>();
+    test_clock_ = std::make_unique<base::SimpleTestClock>();
 
     host_scanner_ = base::WrapUnique(new HostScanner(
         network_state_handler(), fake_tether_host_fetcher_.get(),
@@ -224,7 +223,7 @@ class HostScannerTest : public NetworkStateTest {
         device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get(),
         test_clock_.get()));
 
-    test_observer_ = base::MakeUnique<TestObserver>();
+    test_observer_ = std::make_unique<TestObserver>();
     host_scanner_->AddObserver(test_observer_.get());
   }
 

@@ -4,7 +4,8 @@
 
 #include "chromeos/components/tether/host_scan_scheduler_impl.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -86,7 +87,7 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     DBusThreadManager::Initialize();
     NetworkStateTest::SetUp();
 
-    histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
 
     ethernet_service_path_ = ConfigureService(CreateConfigurationJsonString(
         kEthernetServiceGuid, shill::kTypeEthernet));
@@ -96,9 +97,9 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     network_state_handler()->SetTetherTechnologyState(
         NetworkStateHandler::TECHNOLOGY_ENABLED);
 
-    fake_host_scanner_ = base::MakeUnique<FakeHostScanner>();
+    fake_host_scanner_ = std::make_unique<FakeHostScanner>();
 
-    host_scan_scheduler_ = base::MakeUnique<HostScanSchedulerImpl>(
+    host_scan_scheduler_ = std::make_unique<HostScanSchedulerImpl>(
         network_state_handler(), fake_host_scanner_.get());
 
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,

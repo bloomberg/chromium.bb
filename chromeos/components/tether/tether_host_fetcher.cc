@@ -4,8 +4,9 @@
 
 #include "chromeos/components/tether/tether_host_fetcher.h"
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
@@ -36,7 +37,7 @@ void TetherHostFetcher::ProcessFetchSingleTetherHostRequest(
     const TetherHostCallback& callback) {
   for (const auto& remote_device : remote_device_list) {
     if (remote_device.GetDeviceId() == device_id) {
-      callback.Run(base::MakeUnique<cryptauth::RemoteDevice>(remote_device));
+      callback.Run(std::make_unique<cryptauth::RemoteDevice>(remote_device));
       return;
     }
   }

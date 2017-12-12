@@ -7,7 +7,6 @@
 #include <memory>
 #include <unordered_map>
 
-#include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/host_scan_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -24,12 +23,12 @@ class PersistentHostScanCacheImplTest : public testing::Test {
 
   void SetUp() override {
     test_pref_service_ =
-        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     PersistentHostScanCacheImpl::RegisterPrefs(test_pref_service_->registry());
 
     host_scan_cache_ =
-        base::MakeUnique<PersistentHostScanCacheImpl>(test_pref_service_.get());
-    expected_cache_ = base::MakeUnique<FakeHostScanCache>();
+        std::make_unique<PersistentHostScanCacheImpl>(test_pref_service_.get());
+    expected_cache_ = std::make_unique<FakeHostScanCache>();
   }
 
   void SetHostScanResult(const HostScanCacheEntry& entry) {
@@ -131,7 +130,7 @@ TEST_F(PersistentHostScanCacheImplTest, TestStoredPersistently) {
 
   // Create a new object.
   host_scan_cache_ =
-      base::MakeUnique<PersistentHostScanCacheImpl>(test_pref_service_.get());
+      std::make_unique<PersistentHostScanCacheImpl>(test_pref_service_.get());
 
   // The new object should still access the stored scanned data.
   VerifyPersistentCacheMatchesInMemoryCache(2u /* expected_size */);

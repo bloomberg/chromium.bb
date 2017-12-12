@@ -4,7 +4,8 @@
 
 #include "chromeos/components/tether/tether_disconnector_impl.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
@@ -32,16 +33,16 @@ class TetherDisconnectorImplTest : public testing::Test {
   ~TetherDisconnectorImplTest() override = default;
 
   void SetUp() override {
-    fake_active_host_ = base::MakeUnique<FakeActiveHost>();
+    fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_wifi_hotspot_disconnector_ =
-        base::MakeUnique<FakeWifiHotspotDisconnector>();
+        std::make_unique<FakeWifiHotspotDisconnector>();
     fake_disconnect_tethering_request_sender_ =
-        base::MakeUnique<FakeDisconnectTetheringRequestSender>();
-    fake_tether_connector_ = base::MakeUnique<FakeTetherConnector>();
+        std::make_unique<FakeDisconnectTetheringRequestSender>();
+    fake_tether_connector_ = std::make_unique<FakeTetherConnector>();
     device_id_tether_network_guid_map_ =
-        base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
+        std::make_unique<DeviceIdTetherNetworkGuidMap>();
 
-    tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
+    tether_disconnector_ = std::make_unique<TetherDisconnectorImpl>(
         fake_active_host_.get(), fake_wifi_hotspot_disconnector_.get(),
         fake_disconnect_tethering_request_sender_.get(),
         fake_tether_connector_.get(), device_id_tether_network_guid_map_.get());

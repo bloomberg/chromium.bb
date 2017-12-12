@@ -5,12 +5,12 @@
 #include "chromeos/cert_loader.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "crypto/nss_util.h"
@@ -214,9 +214,9 @@ bool CertLoader::IsInitialized() {
 }
 
 CertLoader::CertLoader() : weak_factory_(this) {
-  system_cert_cache_ = base::MakeUnique<CertCache>(
+  system_cert_cache_ = std::make_unique<CertCache>(
       base::BindRepeating(&CertLoader::CacheUpdated, base::Unretained(this)));
-  user_cert_cache_ = base::MakeUnique<CertCache>(
+  user_cert_cache_ = std::make_unique<CertCache>(
       base::BindRepeating(&CertLoader::CacheUpdated, base::Unretained(this)));
 }
 

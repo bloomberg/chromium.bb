@@ -97,11 +97,11 @@ class NetworkConnectionHandlerTetherDelegateTest : public testing::Test {
     test_network_connection_handler_ =
         base::WrapUnique(new TestNetworkConnectionHandler());
 
-    fake_active_host_ = base::MakeUnique<FakeActiveHost>();
-    fake_tether_connector_ = base::MakeUnique<FakeTetherConnector>();
-    fake_tether_disconnector_ = base::MakeUnique<FakeTetherDisconnector>();
+    fake_active_host_ = std::make_unique<FakeActiveHost>();
+    fake_tether_connector_ = std::make_unique<FakeTetherConnector>();
+    fake_tether_disconnector_ = std::make_unique<FakeTetherDisconnector>();
 
-    delegate_ = base::MakeUnique<NetworkConnectionHandlerTetherDelegate>(
+    delegate_ = std::make_unique<NetworkConnectionHandlerTetherDelegate>(
         test_network_connection_handler_.get(), fake_active_host_.get(),
         fake_tether_connector_.get(), fake_tether_disconnector_.get());
   }
@@ -209,7 +209,7 @@ TEST_F(NetworkConnectionHandlerTetherDelegateTest,
 
   test_network_connection_handler_ =
       base::WrapUnique(new TestNetworkConnectionHandler());
-  delegate_ = base::MakeUnique<NetworkConnectionHandlerTetherDelegate>(
+  delegate_ = std::make_unique<NetworkConnectionHandlerTetherDelegate>(
       test_network_connection_handler_.get(), fake_active_host_.get(),
       dummy_connector.get(), dummy_disconnector.get());
 

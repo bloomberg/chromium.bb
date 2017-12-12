@@ -4,6 +4,8 @@
 
 #include "chromeos/components/tether/timer_factory.h"
 
+#include <memory>
+
 namespace chromeos {
 
 namespace tether {
@@ -11,7 +13,7 @@ namespace tether {
 TimerFactory::~TimerFactory() = default;
 
 std::unique_ptr<base::Timer> TimerFactory::CreateOneShotTimer() {
-  return base::MakeUnique<base::OneShotTimer>();
+  return std::make_unique<base::OneShotTimer>();
 }
 
 }  // namespace tether

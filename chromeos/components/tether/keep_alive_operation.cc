@@ -37,7 +37,7 @@ void KeepAliveOperation::Factory::SetInstanceForTesting(Factory* factory) {
 std::unique_ptr<KeepAliveOperation> KeepAliveOperation::Factory::BuildInstance(
     const cryptauth::RemoteDevice& device_to_connect,
     BleConnectionManager* connection_manager) {
-  return base::MakeUnique<KeepAliveOperation>(device_to_connect,
+  return std::make_unique<KeepAliveOperation>(device_to_connect,
                                               connection_manager);
 }
 
@@ -48,7 +48,7 @@ KeepAliveOperation::KeepAliveOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
-      clock_(base::MakeUnique<base::DefaultClock>()) {}
+      clock_(std::make_unique<base::DefaultClock>()) {}
 
 KeepAliveOperation::~KeepAliveOperation() = default;
 
@@ -65,7 +65,7 @@ void KeepAliveOperation::OnDeviceAuthenticated(
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
   keep_alive_tickle_request_start_time_ = clock_->Now();
   SendMessageToDevice(remote_device,
-                      base::MakeUnique<MessageWrapper>(KeepAliveTickle()));
+                      std::make_unique<MessageWrapper>(KeepAliveTickle()));
 }
 
 void KeepAliveOperation::OnMessageReceived(
@@ -84,7 +84,7 @@ void KeepAliveOperation::OnMessageReceived(
 
   KeepAliveTickleResponse* response =
       static_cast<KeepAliveTickleResponse*>(message_wrapper->GetProto().get());
-  device_status_ = base::MakeUnique<DeviceStatus>(response->device_status());
+  device_status_ = std::make_unique<DeviceStatus>(response->device_status());
 
   DCHECK(!keep_alive_tickle_request_start_time_.is_null());
   UMA_HISTOGRAM_TIMES(
@@ -101,7 +101,7 @@ void KeepAliveOperation::OnOperationFinished() {
     // will still be null.
     observer.OnOperationFinished(
         remote_device_, device_status_
-                            ? base::MakeUnique<DeviceStatus>(*device_status_)
+                            ? std::make_unique<DeviceStatus>(*device_status_)
                             : nullptr);
   }
 }

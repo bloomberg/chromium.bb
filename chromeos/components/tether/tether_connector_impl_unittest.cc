@@ -4,7 +4,8 @@
 
 #include "chromeos/components/tether/tether_connector_impl.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "chromeos/components/tether/connect_tethering_operation.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
@@ -143,24 +144,24 @@ class TetherConnectorImplTest : public NetworkStateTest {
         fake_operation_factory_.get());
 
     fake_wifi_hotspot_connector_ =
-        base::MakeUnique<FakeWifiHotspotConnector>(network_state_handler());
-    fake_active_host_ = base::MakeUnique<FakeActiveHost>();
+        std::make_unique<FakeWifiHotspotConnector>(network_state_handler());
+    fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_tether_host_fetcher_ =
-        base::MakeUnique<FakeTetherHostFetcher>(test_devices_);
-    fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
+        std::make_unique<FakeTetherHostFetcher>(test_devices_);
+    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
     mock_tether_host_response_recorder_ =
-        base::MakeUnique<MockTetherHostResponseRecorder>();
+        std::make_unique<MockTetherHostResponseRecorder>();
     device_id_tether_network_guid_map_ =
-        base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
-    fake_host_scan_cache_ = base::MakeUnique<FakeHostScanCache>();
+        std::make_unique<DeviceIdTetherNetworkGuidMap>();
+    fake_host_scan_cache_ = std::make_unique<FakeHostScanCache>();
     fake_notification_presenter_ =
-        base::MakeUnique<FakeNotificationPresenter>();
+        std::make_unique<FakeNotificationPresenter>();
     mock_host_connection_metrics_logger_ =
         base::WrapUnique(new StrictMock<MockHostConnectionMetricsLogger>);
     fake_disconnect_tethering_request_sender_ =
-        base::MakeUnique<FakeDisconnectTetheringRequestSender>();
+        std::make_unique<FakeDisconnectTetheringRequestSender>();
     fake_wifi_hotspot_disconnector_ =
-        base::MakeUnique<FakeWifiHotspotDisconnector>();
+        std::make_unique<FakeWifiHotspotDisconnector>();
 
     result_.clear();
 

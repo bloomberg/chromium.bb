@@ -4,6 +4,8 @@
 
 #include "chromeos/components/tether/tether_component_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/asynchronous_shutdown_object_container_impl.h"
@@ -79,7 +81,7 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  return base::MakeUnique<TetherComponentImpl>(
+  return std::make_unique<TetherComponentImpl>(
       cryptauth_service, tether_host_fetcher, notification_presenter,
       pref_service, network_state_handler,
       managed_network_configuration_handler, network_connect,

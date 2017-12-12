@@ -38,7 +38,7 @@ AdHocBleAdvertiserImpl::AdHocBleAdvertiserImpl(
     : local_device_data_provider_(local_device_data_provider),
       remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
       ble_synchronizer_(ble_synchronizer),
-      timer_factory_(base::MakeUnique<TimerFactory>()),
+      timer_factory_(std::make_unique<TimerFactory>()),
       weak_ptr_factory_(this) {}
 
 AdHocBleAdvertiserImpl::~AdHocBleAdvertiserImpl() {}

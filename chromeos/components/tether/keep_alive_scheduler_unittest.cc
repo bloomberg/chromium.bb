@@ -92,11 +92,11 @@ class KeepAliveSchedulerTest : public testing::Test {
       : test_devices_(cryptauth::GenerateTestRemoteDevices(2)) {}
 
   void SetUp() override {
-    fake_active_host_ = base::MakeUnique<FakeActiveHost>();
-    fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
-    fake_host_scan_cache_ = base::MakeUnique<FakeHostScanCache>();
+    fake_active_host_ = std::make_unique<FakeActiveHost>();
+    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
+    fake_host_scan_cache_ = std::make_unique<FakeHostScanCache>();
     device_id_tether_network_guid_map_ =
-        base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
+        std::make_unique<DeviceIdTetherNetworkGuidMap>();
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       true /* is_repeating */);
 
@@ -126,7 +126,7 @@ class KeepAliveSchedulerTest : public testing::Test {
       int battery_percentage,
       int connection_strength) {
     fake_operation_factory_->last_created()->SendOperationFinishedEvent(
-        base::MakeUnique<DeviceStatus>(CreateTestDeviceStatus(
+        std::make_unique<DeviceStatus>(CreateTestDeviceStatus(
             cell_provider, battery_percentage, connection_strength)));
   }
 

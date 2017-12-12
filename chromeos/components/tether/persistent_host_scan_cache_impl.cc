@@ -4,10 +4,10 @@
 
 #include "chromeos/components/tether/persistent_host_scan_cache_impl.h"
 
+#include <memory>
 #include <unordered_set>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -28,7 +28,7 @@ constexpr char kSetupRequiredKey[] = "setup_required";
 std::unique_ptr<base::DictionaryValue> HostScanCacheEntryToDictionary(
     const HostScanCacheEntry& entry) {
   std::unique_ptr<base::DictionaryValue> dictionary =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
 
   dictionary->SetString(kTetherNetworkGuidKey, entry.tether_network_guid);
   dictionary->SetString(kDeviceNameKey, entry.device_name);
