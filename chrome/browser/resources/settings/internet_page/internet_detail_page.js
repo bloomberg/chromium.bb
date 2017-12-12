@@ -64,6 +64,18 @@ Polymer({
     },
 
     /**
+     * Whether the network has been lost (e.g., has gone out of range). A
+     * network is considered to be lost when a 'network-list-changed' event
+     * occurs, and the new network list does not contain the GUID of the current
+     * network.
+     * @private
+     */
+    outOfRange_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Highest priority connected network or null.
      * @type {?CrOnc.NetworkStateProperties}
      */
@@ -131,8 +143,6 @@ Polymer({
   /**
    * Set to true to once the initial properties have been received. This
    * prevents setProperties from being called when setting default properties.
-   * This will also be set to false if the network no longer exists in the
-   * list of networks (e.g. it goes out of range).
    * @private {boolean}
    */
   networkPropertiesReceived_: false,
@@ -265,7 +275,7 @@ Polymer({
    */
   checkNetworkExists_: function(event) {
     var networkIds = event.detail;
-    this.networkPropertiesReceived_ = networkIds.indexOf(this.guid) != -1;
+    this.outOfRange_ = networkIds.indexOf(this.guid) == -1;
   },
 
   /**
@@ -330,6 +340,7 @@ Polymer({
 
     this.networkProperties = properties;
     this.networkPropertiesReceived_ = true;
+    this.outOfRange_ = false;
   },
 
   /**
@@ -351,6 +362,7 @@ Polymer({
       ConnectionState: state.ConnectionState,
     };
     this.networkPropertiesReceived_ = true;
+    this.outOfRange_ = false;
   },
 
   /**
@@ -384,12 +396,20 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {boolean} outOfRange
    * @return {string} The text to display for the network connection state.
    * @private
    */
-  getStateText_: function(networkProperties) {
+  getStateText_: function(networkProperties, outOfRange) {
     if (!networkProperties.ConnectionState)
       return '';
+
+    if (outOfRange) {
+      return networkProperties.Type == CrOnc.Type.TETHER ?
+          this.i18n('tetherPhoneOutOfRange') :
+          this.i18n('networkOutOfRange');
+    }
+
     return this.i18n('Onc' + networkProperties.ConnectionState);
   },
 
@@ -564,13 +584,17 @@ Polymer({
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {?CrOnc.NetworkStateProperties} defaultNetwork
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} networkPropertiesReceived
+   * @param {boolean} outOfRange
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  enableConnect_: function(networkProperties, defaultNetwork, globalPolicy) {
+  enableConnect_: function(
+      networkProperties, defaultNetwork, globalPolicy,
+      networkPropertiesReceived, outOfRange) {
     if (!this.showConnect_(networkProperties, globalPolicy))
       return false;
-    if (!this.networkPropertiesReceived_)
+    if (!networkPropertiesReceived || outOfRange)
       return false;
     if ((networkProperties.Type == CrOnc.Type.CELLULAR) &&
         (CrOnc.isSimLocked(networkProperties) ||
