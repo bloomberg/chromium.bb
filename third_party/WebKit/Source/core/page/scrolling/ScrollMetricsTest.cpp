@@ -232,7 +232,6 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
      .box { overflow:scroll; width: 100px; height: 100px; }
      .translucent { opacity: 0.5; }
      .transform { transform: scale(0.8); }
-     .with-border-radius { border: 5px solid; border-radius: 5px; }
      .spacer { height: 1000px; }
      .composited { will-change: transform; }
     </style>
@@ -262,9 +261,8 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
   EXPECT_WHEEL_BUCKET(kHasOpacityAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kIsNotStackingContextAndLCDText, 1);
-  EXPECT_WHEEL_BUCKET(kHasBorderRadius, 1);
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 0);
-  EXPECT_WHEEL_TOTAL(4);
+  EXPECT_WHEEL_TOTAL(3);
 }
 
 }  // namespace
