@@ -6,26 +6,23 @@
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  let devices = [];
-  let push = device => devices.push(device);
-  // We can't use Promise.all() because Chrome will always close
-  // the previous chooser in the process of handling a user gesture
-  // for the next request.
-  return setBluetoothFakeAdapter('HeartRateAdapter')
+const test_desc = 'Discover a device using alias, name, or UUID.';
+
+bluetooth_test(() => getHealthThermometerDevice()
+    // Chrome will always close the previous chooser in the process of handling
+    // a user gesture for the next request, so these need to be done
+    // sequentially.
     .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: [heart_rate.alias]}]}))
-    .then(push)
+      filters: [{services: [health_thermometer.alias]}]
+    }))
+    .then(device => assert_equals(device.constructor.name, 'BluetoothDevice'))
     .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: [heart_rate.name]}]}))
-    .then(push)
+      filters: [{services: [health_thermometer.name]}]
+    }))
+    .then(device => assert_equals(device.constructor.name, 'BluetoothDevice'))
     .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: [heart_rate.uuid]}]}))
-    .then(push)
-    .then(() => {
-      devices.forEach(device => {
-        assert_equals(device.constructor.name, 'BluetoothDevice');
-      });
-    });
-}, 'Mock will resolve.');
+      filters: [{services: [health_thermometer.uuid]}]
+    }))
+    .then(device => assert_equals(device.constructor.name, 'BluetoothDevice')),
+    test_desc);
 </script>
