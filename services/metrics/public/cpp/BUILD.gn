@@ -9,6 +9,8 @@ component("metrics_cpp") {
     "delegating_ukm_recorder.cc",
     "delegating_ukm_recorder.h",
     "metrics_export.h",
+    "metrics_utils.cc",
+    "metrics_utils.h",
     "mojo_ukm_recorder.cc",
     "mojo_ukm_recorder.h",
     "ukm_entry_builder.cc",

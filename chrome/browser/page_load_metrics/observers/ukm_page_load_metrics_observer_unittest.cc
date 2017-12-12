@@ -15,6 +15,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_provider.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -315,5 +316,66 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
     test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
                                           internal::kUkmPageTransition,
                                           ui::PAGE_TRANSITION_RELOAD);
+  }
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, BodySizeMetrics) {
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
+      // Cached request.
+      {GURL(kResourceUrl),
+       net::HostPortPair(),
+       -1 /* frame_tree_node_id */,
+       true /* was_cached */,
+       1024 * 20 /* raw_body_bytes */,
+       0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_SCRIPT,
+       0,
+       {} /* load_timing_info */},
+      // Uncached non-proxied request.
+      {GURL(kResourceUrl),
+       net::HostPortPair(),
+       -1 /* frame_tree_node_id */,
+       false /* was_cached */,
+       1024 * 40 /* raw_body_bytes */,
+       1024 * 40 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::RESOURCE_TYPE_SCRIPT,
+       0,
+       {} /* load_timing_info */},
+  };
+
+  int64_t network_bytes = 0;
+  int64_t cache_bytes = 0;
+  for (const auto& request : resources) {
+    SimulateLoadedResource(request);
+    if (!request.was_cached) {
+      network_bytes += request.raw_body_bytes;
+    } else {
+      cache_bytes += request.raw_body_bytes;
+    }
+  }
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  int64_t bucketed_network_bytes =
+      ukm::GetExponentialBucketMin(network_bytes, 1.3);
+  int64_t bucketed_cache_bytes = ukm::GetExponentialBucketMin(cache_bytes, 1.3);
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(
+          internal::kUkmPageLoadEventName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    test_ukm_recorder().ExpectEntryMetric(kv.second.get(), "Net.NetworkBytes",
+                                          bucketed_network_bytes);
+    test_ukm_recorder().ExpectEntryMetric(kv.second.get(), "Net.CacheBytes",
+                                          bucketed_cache_bytes);
   }
 }

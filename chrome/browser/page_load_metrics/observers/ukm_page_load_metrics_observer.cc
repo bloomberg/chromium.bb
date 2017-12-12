@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
@@ -10,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -150,6 +152,16 @@ void UkmPageLoadMetricsObserver::OnComplete(
   RecordTimingMetrics(timing, info.source_id);
 }
 
+void UkmPageLoadMetricsObserver::OnLoadedResource(
+    const page_load_metrics::ExtraRequestCompleteInfo&
+        extra_request_complete_info) {
+  if (extra_request_complete_info.was_cached) {
+    cache_bytes_ += extra_request_complete_info.raw_body_bytes;
+  } else {
+    network_bytes_ += extra_request_complete_info.raw_body_bytes;
+  }
+}
+
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     ukm::SourceId source_id) {
@@ -179,6 +191,12 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetExperimental_PaintTiming_NavigationToFirstMeaningfulPaint(
         timing.paint_timing->first_meaningful_paint.value().InMilliseconds());
   }
+
+  // Use a bucket spacing factor of 1.3 for bytes.
+  builder.SetNet_CacheBytes(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
+  builder.SetNet_NetworkBytes(
+      ukm::GetExponentialBucketMin(network_bytes_, 1.3));
+
   builder.Record(ukm::UkmRecorder::Get());
 }
 
