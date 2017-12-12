@@ -45,7 +45,6 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -690,27 +689,20 @@ void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)
 
 // ExpandableContainerView::DetailsView ----------------------------------------
 
-ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
-                                                  bool parent_bulleted)
-    : layout_(views::GridLayout::CreateAndInstall(this)), state_(0) {
-  views::ColumnSet* column_set = layout_->AddColumnSet(0);
-  const int padding = GetLeftPaddingForBulletedItems(parent_bulleted);
-  column_set->AddPaddingColumn(0, padding);
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                        0, views::GridLayout::FIXED, horizontal_space - padding,
-                        0);
-}
-
-void ExpandableContainerView::DetailsView::AddDetail(
-    const base::string16& detail) {
-  layout_->StartRowWithPadding(0, 0, 0,
-                               ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                   DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
-  views::Label* detail_label =
-      new views::Label(PrepareForDisplay(detail, false));
-  detail_label->SetMultiLine(true);
-  detail_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout_->AddView(detail_label);
+ExpandableContainerView::DetailsView::DetailsView(
+    const PermissionDetails& details)
+    : state_(0) {
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
+  for (auto& detail : details) {
+    views::Label* detail_label =
+        new views::Label(PrepareForDisplay(detail, false));
+    detail_label->SetMultiLine(true);
+    detail_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(detail_label);
+  }
 }
 
 gfx::Size ExpandableContainerView::DetailsView::CalculatePreferredSize() const {
@@ -730,66 +722,32 @@ ExpandableContainerView::ExpandableContainerView(
     const PermissionDetails& details,
     int horizontal_space,
     bool parent_bulleted)
-    : details_view_(NULL),
+    : details_view_(nullptr),
       slide_animation_(this),
-      more_details_(NULL),
-      arrow_toggle_(NULL),
+      details_link_(nullptr),
       expanded_(false) {
+  DCHECK(!details.empty());
+
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
-  int column_set_id = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
+  constexpr int kColumnSetId = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
+
+  const int left_padding = GetLeftPaddingForBulletedItems(parent_bulleted);
+  column_set->AddPaddingColumn(0, left_padding);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                        0, views::GridLayout::USE_PREF, 0, 0);
+                        0, views::GridLayout::FIXED,
+                        horizontal_space - left_padding, 0);
 
-  if (details.empty())
-    return;
-
-  details_view_ = new DetailsView(horizontal_space, parent_bulleted);
-
-  layout->StartRow(0, column_set_id);
+  layout->StartRow(0, kColumnSetId);
+  details_view_ = new DetailsView(details);
   layout->AddView(details_view_);
 
-  for (size_t i = 0; i < details.size(); ++i)
-    details_view_->AddDetail(details[i]);
-
-  // Make sure the link width column is as wide as needed for both Show and
-  // Hide details, so that the arrow doesn't shift horizontally when we toggle.
-  views::Link* link = new views::Link(
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
-  int link_col_width = link->GetPreferredSize().width();
-  link->SetText(l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
-  link_col_width = std::max(link_col_width, link->GetPreferredSize().width());
-
-  column_set = layout->AddColumnSet(++column_set_id);
-  // Padding to the left of the More Details column.
-  column_set->AddPaddingColumn(0,
-                               GetLeftPaddingForBulletedItems(parent_bulleted));
-  // The More Details column.
-  column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::FIXED,
-                        link_col_width,
-                        link_col_width);
-  // The Up/Down arrow column.
-  column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::TRAILING,
-                        0,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-
-  // Add the More Details link.
-  layout->StartRow(0, column_set_id);
-  more_details_ = link;
-  more_details_->set_listener(this);
-  more_details_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(more_details_);
-
-  // Add the arrow after the More Details link.
-  arrow_toggle_ = new views::ImageButton(this);
-  UpdateArrowToggle(false);
-  layout->AddView(arrow_toggle_);
+  layout->StartRow(0, kColumnSetId);
+  details_link_ =
+      new views::Link(l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
+  details_link_->set_listener(this);
+  details_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  layout->AddView(details_link_);
 }
 
 ExpandableContainerView::~ExpandableContainerView() {
@@ -813,13 +771,9 @@ void ExpandableContainerView::AnimationProgressed(
 }
 
 void ExpandableContainerView::AnimationEnded(const gfx::Animation* animation) {
-  if (arrow_toggle_)
-    UpdateArrowToggle(animation->GetCurrentValue() != 0.0);
-  if (more_details_) {
-    more_details_->SetText(expanded_ ?
-        l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS) :
-        l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
-  }
+  details_link_->SetText(
+      expanded_ ? l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS)
+                : l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
 }
 
 void ExpandableContainerView::ChildPreferredSizeChanged(views::View* child) {
@@ -833,12 +787,6 @@ void ExpandableContainerView::ToggleDetailLevel() {
     slide_animation_.Hide();
   else
     slide_animation_.Show();
-}
-
-void ExpandableContainerView::UpdateArrowToggle(bool expanded) {
-  gfx::ImageSkia icon = gfx::CreateVectorIcon(
-      expanded ? kCaretUpIcon : kCaretDownIcon, gfx::kChromeIconGrey);
-  arrow_toggle_->SetImage(views::Button::STATE_NORMAL, &icon);
 }
 
 // static
