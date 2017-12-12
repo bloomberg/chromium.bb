@@ -19,10 +19,6 @@
 
 #define AVG_BIAS (0)
 
-static INLINE od_coeff od_rshift1(od_coeff v) {
-  return (v + (v < 0)) >> 1;
-}
-
 static INLINE od_coeff od_add(od_coeff p0, od_coeff p1) {
   return p0 + p1;
 }
@@ -31,12 +27,16 @@ static INLINE od_coeff od_sub(od_coeff p0, od_coeff p1) {
   return p0 - p1;
 }
 
-static INLINE od_coeff od_avg_add(od_coeff p0, od_coeff p1) {
+static INLINE od_coeff od_add_avg(od_coeff p0, od_coeff p1) {
   return (od_add(p0, p1) + AVG_BIAS) >> 1;
 }
 
-static INLINE od_coeff od_avg_sub(od_coeff p0, od_coeff p1) {
+static INLINE od_coeff od_sub_avg(od_coeff p0, od_coeff p1) {
   return (od_sub(p0, p1) + AVG_BIAS) >> 1;
+}
+
+static INLINE od_coeff od_rshift1(od_coeff v) {
+  return (v + (v < 0)) >> 1;
 }
 
 /* Fixed point multiply. */
@@ -51,20 +51,6 @@ static INLINE void od_rot2(od_coeff *p0, od_coeff *p1, od_coeff t, int c0,
   *p0 = od_mul(t, c1, q1);
 }
 
-/* Rotate by Pi/4 and add. */
-static INLINE void od_rotate_pi4_add(od_coeff *p0, od_coeff *p1, od_coeff t,
- int c0, int q0, int c1, int q1) {
-  od_rot2(p0, p1, t, c0, q0, c1, q1);
-  *p1 = od_add(*p1, *p0);
-}
-
-/* Rotate by Pi/4 and subtract. */
-static INLINE void od_rotate_pi4_sub(od_coeff *p0, od_coeff *p1, od_coeff t,
- int c0, int q0, int c1, int q1) {
-  od_rot2(p0, p1, t, c0, q0, c1, q1);
-  *p1 = od_sub(*p1, *p0);
-}
-
 /* Three multiply rotation primative. */
 static INLINE void od_rot3(od_coeff *p0, od_coeff *p1, od_coeff *t, od_coeff *u,
  int c0, int q0, int c1, int q1, int c2, int q2) {
@@ -73,34 +59,78 @@ static INLINE void od_rot3(od_coeff *p0, od_coeff *p1, od_coeff *t, od_coeff *u,
   *t = od_mul(*t, c2, q2);
 }
 
-/* Rotate and add. */
-static INLINE void od_rotate_add(od_coeff *p0, od_coeff *p1, od_coeff t,
- int c0, int q0, int c1, int q1, int c2, int q2, int shift) {
-  od_coeff u;
-  od_rot3(p0, p1, &t, &u, c0, q0, c1, q1, c2, q2);
-  *p0 = od_add(*p0, t);
-  if (shift) t = od_rshift1(t);
-  *p1 = od_add(u, t);
+#define NONE (0)
+#define AVG (!NONE)
+#define SHIFT (!NONE)
+
+#define ADD (0)
+#define SUB (1)
+
+/* Rotate by Pi/4 and add. */
+static INLINE void od_rotate_pi4_kernel(od_coeff *p0, od_coeff *p1, int c0,
+ int q0, int c1, int q1, int type, int avg) {
+  od_coeff t;
+  t = type == ADD ?
+   avg ? od_sub_avg(*p1, *p0) : od_sub(*p1, *p0) :
+   avg ? od_add_avg(*p1, *p0) : od_add(*p1, *p0);
+  od_rot2(p0, p1, t, c0, q0, c1, q1);
+  *p1 = type == ADD ? od_add(*p1, *p0) : od_sub(*p1, *p0);
 }
 
-/* Rotate and subtract. */
-static INLINE void od_rotate_sub(od_coeff *p0, od_coeff *p1, od_coeff t,
- int c0, int q0, int c1, int q1, int c2, int q2, int shift) {
+#define od_rotate_pi4_add(p0, p1, c0, q0, c1, q1) \
+ od_rotate_pi4_kernel(p0, p1, c0, q0, c1, q1, ADD, NONE)
+#define od_rotate_pi4_sub(p0, p1, c0, q0, c1, q1) \
+ od_rotate_pi4_kernel(p0, p1, c0, q0, c1, q1, SUB, NONE)
+
+#define od_rotate_pi4_add_avg(p0, p1, c0, q0, c1, q1) \
+ od_rotate_pi4_kernel(p0, p1, c0, q0, c1, q1, ADD, AVG)
+#define od_rotate_pi4_sub_avg(p0, p1, c0, q0, c1, q1) \
+ od_rotate_pi4_kernel(p0, p1, c0, q0, c1, q1, SUB, AVG)
+
+/* Rotate and add. */
+static INLINE void od_rotate_kernel(od_coeff *p0, od_coeff *p1, od_coeff v,
+ int c0, int q0, int c1, int q1, int c2, int q2, int type, int avg, int shift) {
   od_coeff u;
+  od_coeff t;
+  t = type == ADD ?
+   avg ? od_sub_avg(*p1, v) : od_sub(*p1, v) :
+   avg ? od_add_avg(*p1, v) : od_add(*p1, v);
   od_rot3(p0, p1, &t, &u, c0, q0, c1, q1, c2, q2);
   *p0 = od_add(*p0, t);
   if (shift) t = od_rshift1(t);
-  *p1 = od_sub(u, t);
+  *p1 = type == ADD ? od_add(u, t) : od_sub(u, t);
 }
+
+#define od_rotate_add(p0, p1, c0, q0, c1, q1, c2, q2, shift) \
+ od_rotate_kernel(p0, p1, *p0, c0, q0, c1, q1, c2, q2, ADD, NONE, shift)
+#define od_rotate_sub(p0, p1, c0, q0, c1, q1, c2, q2, shift) \
+ od_rotate_kernel(p0, p1, *p0, c0, q0, c1, q1, c2, q2, SUB, NONE, shift)
+
+#define od_rotate_add_avg(p0, p1, c0, q0, c1, q1, c2, q2, shift) \
+ od_rotate_kernel(p0, p1, *p0, c0, q0, c1, q1, c2, q2, ADD, AVG, shift)
+#define od_rotate_sub_avg(p0, p1, c0, q0, c1, q1, c2, q2, shift) \
+ od_rotate_kernel(p0, p1, *p0, c0, q0, c1, q1, c2, q2, SUB, AVG, shift)
+
+#define od_rotate_add_half(p0, p1, v, c0, q0, c1, q1, c2, q2, shift) \
+ od_rotate_kernel(p0, p1, v, c0, q0, c1, q1, c2, q2, ADD, NONE, shift)
+#define od_rotate_sub_half(p0, p1, v, c0, q0, c1, q1, c2, q2, shift) \
+ od_rotate_kernel(p0, p1, v, c0, q0, c1, q1, c2, q2, SUB, NONE, shift)
 
 /* Rotate and subtract with negation. */
-static INLINE void od_rotate_neg(od_coeff *p0, od_coeff *p1, od_coeff t,
- int c0, int q0, int c1, int q1, int c2, int q2) {
+static INLINE void od_rotate_neg_kernel(od_coeff *p0, od_coeff *p1,
+ int c0, int q0, int c1, int q1, int c2, int q2, int avg) {
   od_coeff u;
+  od_coeff t;
+  t = avg ? od_sub_avg(*p0, *p1) : od_sub(*p0, *p1);
   od_rot3(p0, p1, &t, &u, c0, q0, c1, q1, c2, q2);
   *p0 = od_sub(*p0, t);
   *p1 = od_sub(t, u);
 }
+
+#define od_rotate_neg(p0, p1, c0, q0, c1, q1, c2, q2) \
+ od_rotate_neg_kernel(p0, p1, c0, q0, c1, q1, c2, q2, NONE)
+#define od_rotate_neg_avg(p0, p1, c0, q0, c1, q1, c2, q2) \
+ od_rotate_neg_kernel(p0, p1, c0, q0, c1, q1, c2, q2, AVG)
 
 /* Computes the +/- addition butterfly (asymmetric output).
    The inverse to this function is od_butterfly_add_asym().
@@ -182,7 +212,7 @@ static INLINE void od_butterfly_neg_asym(od_coeff *p0, od_coeff *p1,
 static INLINE void od_fdct_2(od_coeff *p0, od_coeff *p1) {
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4]  = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]            = 1.4142135623730951 */
-  od_rotate_pi4_add(p1, p0, od_avg_sub(*p0, *p1), 11585, 13, 11585, 13);
+  od_rotate_pi4_add_avg(p1, p0, 11585, 13, 11585, 13);
 }
 
 /**
@@ -191,14 +221,13 @@ static INLINE void od_fdct_2(od_coeff *p0, od_coeff *p1) {
 static INLINE void od_idct_2(od_coeff *p0, od_coeff *p1) {
   /*  11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/16384 = Cos[Pi/4]             = 0.7071067811865475 */
-  od_rotate_pi4_sub(p0, p1, od_add(*p1, *p0), 11585, 13, 11585, 14);
+  od_rotate_pi4_sub(p0, p1, 11585, 13, 11585, 14);
 }
 
 /**
  * 2-point asymmetric Type-II fDCT
  */
-static INLINE void od_fdct_2_asym(od_coeff *p0, od_coeff *p1,
- od_coeff p1h) {
+static INLINE void od_fdct_2_asym(od_coeff *p0, od_coeff *p1, od_coeff p1h) {
   od_butterfly_neg_asym(p0, p1, p1h);
 }
 
@@ -219,7 +248,7 @@ static INLINE void od_fdst_2(od_coeff *p0, od_coeff *p1) {
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8]  = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8]  = 0.5411961001461971 */
   /*   3135/4096 = 2*Cos[3*Pi/8]              = 0.7653668647301796 */
-  od_rotate_sub(p0, p1, od_avg_add(*p0, *p1), 21407, 14, 8867, 14, 3135, 12, 0);
+  od_rotate_sub_avg(p0, p1, 21407, 14, 8867, 14, 3135, 12, NONE);
 }
 
 /**
@@ -232,15 +261,14 @@ static INLINE void od_idst_2(od_coeff *p0, od_coeff *p1) {
 /**
  * 2-point asymmetric Type-IV fDCT
  */
-static INLINE void od_fdst_2_asym(od_coeff *p0, od_coeff p0h,
- od_coeff *p1) {
+static INLINE void od_fdst_2_asym(od_coeff *p0, od_coeff p0h, od_coeff *p1) {
 
   /* Stage 0 */
 
   /* 15137/16384 = (Sin[3*Pi/8] + Cos[3*Pi/8])/Sqrt[2] = 0.9238795325112867 */
   /*   3135/4096 = (Sin[3*Pi/8] - Cos[3*Pi/8])*Sqrt[2] = 0.7653668647301795 */
   /*  8867/16384 = Cos[3*Pi/8]*Sqrt[2]                 = 0.5411961001461971 */
-  od_rotate_sub(p0, p1, od_add(p0h, *p1), 15137, 14, 3135, 12, 8867, 14, 0);
+  od_rotate_sub_half(p0, p1, p0h, 15137, 14, 3135, 12, 8867, 14, NONE);
 }
 
 /**
@@ -253,7 +281,7 @@ static INLINE void od_idst_2_asym(od_coeff *p0, od_coeff *p1) {
   /* 15137/16384 = (Sin[3*Pi/8] + Cos[3*Pi/8])/Sqrt[2] = 0.9238795325112867 */
   /*   3135/4096 = (Sin[3*Pi/8] - Cos[3*Pi/8])*Sqrt[2] = 0.7653668647301795 */
   /*   8867/8192 = 2*Cos[3*Pi/8]*Sqrt[2]               = 1.0823922002923940 */
-  od_rotate_sub(p0, p1, od_avg_add(*p1, *p0), 15137, 14, 3135, 12, 8867, 13, 1);
+  od_rotate_sub_avg(p0, p1, 15137, 14, 3135, 12, 8867, 13, SHIFT);
 }
 
 /* --- 4-point Transforms --- */
@@ -333,12 +361,12 @@ static INLINE void od_fdst_4(od_coeff *q0, od_coeff *q1,
   /* 13623/16384 = (Sin[7*Pi/16] + Cos[7*Pi/16])/Sqrt[2] = 0.831469612302545 */
   /* 18205/16384 = (Sin[7*Pi/16] - Cos[7*Pi/16])*Sqrt[2] = 1.111140466039204 */
   /*  9041/32768 = Cos[7*Pi/16]*Sqrt[2]                  = 0.275899379282943 */
-  od_rotate_sub(q0, q3, od_add(*q3, *q0), 13623, 14, 18205, 14, 9041, 15, 1);
+  od_rotate_sub(q0, q3, 13623, 14, 18205, 14, 9041, 15, SHIFT);
 
   /* 16069/16384 = (Sin[5*Pi/16] + Cos[5*Pi/16])/Sqrt[2] = 0.9807852804032304 */
   /* 12785/32768 = (Sin[5*Pi/16] - Cos[5*Pi/16])*Sqrt[2] = 0.3901806440322566 */
   /* 12873/16384 = Cos[5*Pi/16]*Sqrt[2]                  = 0.7856949583871021 */
-  od_rotate_add(q2, q1, od_sub(*q1, *q2), 16069, 14, 12785, 15, 12873, 14, 1);
+  od_rotate_add(q2, q1, 16069, 14, 12785, 15, 12873, 14, SHIFT);
 
   /* Stage 1 */
 
@@ -349,7 +377,7 @@ static INLINE void od_fdst_4(od_coeff *q0, od_coeff *q1,
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(q2, q1, od_avg_add(*q1, *q2), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(q2, q1, 11585, 13, 11585, 13);
 }
 
 /**
@@ -364,7 +392,7 @@ static INLINE void od_idst_4(od_coeff *q0, od_coeff *q2,
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(q2, q1, od_avg_add(*q1, *q2), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(q2, q1, 11585, 13, 11585, 13);
 
   /* Stage 1 */
 
@@ -376,12 +404,12 @@ static INLINE void od_idst_4(od_coeff *q0, od_coeff *q2,
   /* 16069/16384 = (Sin[5*Pi/16] + Cos[5*Pi/16])/Sqrt[2] = 0.9807852804032304 */
   /* 12785/32768 = (Sin[5*Pi/16] - Cos[5*Pi/16])*Sqrt[2] = 0.3901806440322566 */
   /* 12873/16384 = Cos[5*Pi/16]*Sqrt[2]                  = 0.7856949583871021 */
-  od_rotate_add(q2, q1, od_sub(*q1, q2h), 16069, 14, 12785, 15, 12873, 14, 0);
+  od_rotate_add_half(q2, q1, q2h, 16069, 14, 12785, 15, 12873, 14, NONE);
 
   /* 13623/16384 = (Sin[7*Pi/16] + Cos[7*Pi/16])/Sqrt[2] = 0.831469612302545 */
   /* 18205/16384 = (Sin[7*Pi/16] - Cos[7*Pi/16])*Sqrt[2] = 1.111140466039204 */
   /*  9041/32768 = Cos[7*Pi/16]*Sqrt[2]                  = 0.275899379282943 */
-  od_rotate_sub(q0, q3, od_add(q0h, *q3), 13623, 14, 18205, 14, 9041, 15, 0);
+  od_rotate_sub_half(q0, q3, q0h, 13623, 14, 18205, 14, 9041, 15, NONE);
 }
 
 /**
@@ -395,12 +423,12 @@ static INLINE void od_fdst_4_asym(od_coeff *q0, od_coeff q0h, od_coeff *q1,
   /*  9633/16384 = (Sin[7*Pi/16] + Cos[7*Pi/16])/2 = 0.5879378012096793 */
   /*  12873/8192 = (Sin[7*Pi/16] - Cos[7*Pi/16])*2 = 1.5713899167742045 */
   /* 12785/32768 = Cos[7*Pi/16]*2                  = 0.3901806440322565 */
-  od_rotate_sub(q0, q3, od_add(q0h, *q3), 9633, 14, 12873, 13, 12785, 15, 1);
+  od_rotate_sub_half(q0, q3, q0h, 9633, 14, 12873, 13, 12785, 15, SHIFT);
 
   /* 22725/32768 = (Sin[5*Pi/16] + Cos[5*Pi/16])/2 = 0.6935199226610738 */
   /* 18081/32768 = (Sin[5*Pi/16] - Cos[5*Pi/16])*2 = 0.5517987585658861 */
   /* 18205/16384 = Cos[5*Pi/16]*2                  = 1.1111404660392044 */
-  od_rotate_add(q2, q1, od_sub(*q1, q2h), 22725, 15, 18081, 15, 18205, 14, 1);
+  od_rotate_add_half(q2, q1, q2h, 22725, 15, 18081, 15, 18205, 14, SHIFT);
 
   /* Stage 1 */
 
@@ -411,7 +439,7 @@ static INLINE void od_fdst_4_asym(od_coeff *q0, od_coeff q0h, od_coeff *q1,
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(q2, q1, od_avg_add(*q1, *q2), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(q2, q1, 11585, 13, 11585, 13);
 }
 
 /**
@@ -426,7 +454,7 @@ static INLINE void od_idst_4_asym(od_coeff *q0, od_coeff *q2,
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(q2, q1, od_avg_add(*q1, *q2), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(q2, q1, 11585, 13, 11585, 13);
 
   /* Stage 1 */
 
@@ -438,12 +466,12 @@ static INLINE void od_idst_4_asym(od_coeff *q0, od_coeff *q2,
   /* 22725/32768 = (Sin[5*Pi/16] + Cos[5*Pi/16])/2 = 0.6935199226610738 */
   /* 18081/32768 = (Sin[5*Pi/16] - Cos[5*Pi/16])*2 = 0.5517987585658861 */
   /* 18205/16384 = Cos[5*Pi/16]*2                  = 1.1111404660392044 */
-  od_rotate_add(q2, q1, od_sub(*q1, q2h), 22725, 15, 18081, 15, 18205, 14, 1);
+  od_rotate_add_half(q2, q1, q2h, 22725, 15, 18081, 15, 18205, 14, SHIFT);
 
   /*  9633/16384 = (Sin[7*Pi/16] + Cos[7*Pi/16])/2 = 0.5879378012096793 */
   /*  12873/8192 = (Sin[7*Pi/16] - Cos[7*Pi/16])*2 = 1.5713899167742045 */
   /* 12785/32768 = Cos[7*Pi/16]*2                  = 0.3901806440322565 */
-  od_rotate_sub(q0, q3, od_add(q0h, *q3), 9633, 14, 12873, 13, 12785, 15, 1);
+  od_rotate_sub_half(q0, q3, q0h, 9633, 14, 12873, 13, 12785, 15, SHIFT);
 }
 
 /* --- 8-point Transforms --- */
@@ -549,22 +577,22 @@ static INLINE void od_fdst_8(od_coeff *r0, od_coeff *r1,
   /* 17911/16384 = Sin[15*Pi/32] + Cos[15*Pi/32] = 1.0932018670017576 */
   /* 14699/16384 = Sin[15*Pi/32] - Cos[15*Pi/32] = 0.8971675863426363 */
   /*    803/8192 = Cos[15*Pi/32]                 = 0.0980171403295606 */
-  od_rotate_sub(r0, r7, od_add(*r7, *r0), 17911, 14, 14699, 14, 803, 13, 0);
+  od_rotate_sub(r0, r7, 17911, 14, 14699, 14, 803, 13, NONE);
 
   /* 40869/32768 = Sin[13*Pi/32] + Cos[13*Pi/32] = 1.24722501298667123 */
   /* 21845/32768 = Sin[13*Pi/32] - Cos[13*Pi/32] = 0.66665565847774650 */
   /*   1189/4096 = Cos[13*Pi/32]                 = 0.29028467725446233 */
-  od_rotate_add(r6, r1, od_sub(*r1, *r6), 40869, 15, 21845, 15, 1189, 12, 0);
+  od_rotate_add(r6, r1, 40869, 15, 21845, 15, 1189, 12, NONE);
 
   /* 22173/16384 = Sin[11*Pi/32] + Cos[11*Pi/32] = 1.3533180011743526 */
   /*   3363/8192 = Sin[11*Pi/32] - Cos[11*Pi/32] = 0.4105245275223574 */
   /* 15447/32768 = Cos[11*Pi/32]                 = 0.47139673682599764 */
-  od_rotate_sub(r2, r5, od_add(*r5, *r2), 22173, 14, 3363, 13, 15447, 15, 0);
+  od_rotate_sub(r2, r5, 22173, 14, 3363, 13, 15447, 15, NONE);
 
   /* 23059/16384 = Sin[9*Pi/32] + Cos[9*Pi/32] = 1.4074037375263826 */
   /*  2271/16384 = Sin[9*Pi/32] - Cos[9*Pi/32] = 0.1386171691990915 */
   /*   5197/8192 = Cos[9*Pi/32]                = 0.6343932841636455 */
-  od_rotate_add(r4, r3, od_sub(*r3, *r4), 23059, 14, 2271, 14, 5197, 13, 0);
+  od_rotate_add(r4, r3, 23059, 14, 2271, 14, 5197, 13, NONE);
 
   /* Stage 1 */
 
@@ -585,16 +613,16 @@ static INLINE void od_fdst_8(od_coeff *r0, od_coeff *r1,
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_add(r3, r4, od_avg_sub(*r4, *r3), 21407, 14, 8867, 14, 3135, 12, 0);
+  od_rotate_add_avg(r3, r4, 21407, 14, 8867, 14, 3135, 12, NONE);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_neg(r2, r5, od_avg_sub(*r2, *r5), 21407, 14, 8867, 14, 3135, 12);
+  od_rotate_neg_avg(r2, r5, 21407, 14, 8867, 14, 3135, 12);
 
   /* 46341/32768 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 46341/32768 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_add(r1, r6, od_avg_sub(*r6, *r1), 46341, 15, 46341, 15);
+  od_rotate_pi4_add_avg(r1, r6, 46341, 15, 46341, 15);
 }
 
 /**
@@ -613,17 +641,17 @@ static INLINE void od_idst_8(od_coeff *r0, od_coeff *r4,
 
   /* 46341/32768 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 46341/32768 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(r6, r1, od_avg_add(*r1, *r6), 11585, 13, 46341, 15);
+  od_rotate_pi4_sub_avg(r6, r1, 11585, 13, 46341, 15);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_neg(r5, r2, od_avg_sub(*r5, *r2), 21407, 14, 8867, 14, 3135, 12);
+  od_rotate_neg_avg(r5, r2, 21407, 14, 8867, 14, 3135, 12);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_sub(r4, r3, od_avg_add(*r3, *r4), 21407, 14, 8867, 14, 3135, 12, 0);
+  od_rotate_sub_avg(r4, r3, 21407, 14, 8867, 14, 3135, 12, NONE);
 
   /* Stage 2 */
 
@@ -644,22 +672,22 @@ static INLINE void od_idst_8(od_coeff *r0, od_coeff *r4,
   /* 23059/16384 = Sin[9*Pi/32] + Cos[9*Pi/32] = 1.4074037375263826 */
   /*  2271/16384 = Sin[9*Pi/32] - Cos[9*Pi/32] = 0.1386171691990915 */
   /*   5197/8192 = Cos[9*Pi/32]                = 0.6343932841636455 */
-  od_rotate_add(r4, r3, od_sub(*r3, *r4), 23059, 14, 2271, 14, 5197, 13, 0);
+  od_rotate_add(r4, r3, 23059, 14, 2271, 14, 5197, 13, NONE);
 
   /* 22173/16384 = Sin[11*Pi/32] + Cos[11*Pi/32] = 1.3533180011743526 */
   /*   3363/8192 = Sin[11*Pi/32] - Cos[11*Pi/32] = 0.4105245275223574 */
   /* 15447/32768 = Cos[11*Pi/32]                 = 0.47139673682599764 */
-  od_rotate_sub(r2, r5, od_add(*r5, *r2), 22173, 14, 3363, 13, 15447, 15, 0);
+  od_rotate_sub(r2, r5, 22173, 14, 3363, 13, 15447, 15, NONE);
 
   /* 40869/32768 = Sin[13*Pi/32] + Cos[13*Pi/32] = 1.24722501298667123 */
   /* 21845/32768 = Sin[13*Pi/32] - Cos[13*Pi/32] = 0.66665565847774650 */
   /*   1189/4096 = Cos[13*Pi/32]                 = 0.29028467725446233 */
-  od_rotate_add(r6, r1, od_sub(*r1, *r6), 40869, 15, 21845, 15, 1189, 12, 0);
+  od_rotate_add(r6, r1, 40869, 15, 21845, 15, 1189, 12, NONE);
 
   /* 17911/16384 = Sin[15*Pi/32] + Cos[15*Pi/32] = 1.0932018670017576 */
   /* 14699/16384 = Sin[15*Pi/32] - Cos[15*Pi/32] = 0.8971675863426363 */
   /*    803/8192 = Cos[15*Pi/32]                 = 0.0980171403295606 */
-  od_rotate_sub(r0, r7, od_add(*r7, *r0), 17911, 14, 14699, 14, 803, 13, 0);
+  od_rotate_sub(r0, r7, 17911, 14, 14699, 14, 803, 13, NONE);
 }
 
 /**
@@ -677,22 +705,22 @@ static INLINE void od_fdst_8_asym(od_coeff *r0, od_coeff r0h, od_coeff *r1,
   /* 12665/16384 = (Sin[15*Pi/32] + Cos[15*Pi/32])/Sqrt[2] = 0.77301045336274 */
   /*   5197/4096 = (Sin[15*Pi/32] - Cos[15*Pi/32])*Sqrt[2] = 1.26878656832729 */
   /*  2271/16384 = Cos[15*Pi/32]*Sqrt[2]                   = 0.13861716919909 */
-  od_rotate_sub(r0, r7, od_add(*r7, r0h), 12665, 14, 5197, 12, 2271, 14, 0);
+  od_rotate_sub_half(r0, r7, r0h, 12665, 14, 5197, 12, 2271, 14, NONE);
 
   /* 28899/32768 = Sin[13*Pi/32] + Cos[13*Pi/32])/Sqrt[2] = 0.881921264348355 */
   /* 30893/32768 = Sin[13*Pi/32] - Cos[13*Pi/32])*Sqrt[2] = 0.942793473651995 */
   /*   3363/8192 = Cos[13*Pi/32]*Sqrt[2]                  = 0.410524527522357 */
-  od_rotate_add(r6, r1, od_sub(*r1, r6h), 28899, 15, 30893, 15, 3363, 13, 0);
+  od_rotate_add_half(r6, r1, r6h, 28899, 15, 30893, 15, 3363, 13, NONE);
 
   /* 31357/32768 = Sin[11*Pi/32] + Cos[11*Pi/32])/Sqrt[2] = 0.956940335732209 */
   /*   1189/2048 = Sin[11*Pi/32] - Cos[11*Pi/32])*Sqrt[2] = 0.580569354508925 */
   /* 21845/32768 = Cos[11*Pi/32]*Sqrt[2]                  = 0.666655658477747 */
-  od_rotate_sub(r2, r5, od_add(*r5, r2h), 31357, 15, 1189, 11, 21845, 15, 0);
+  od_rotate_sub_half(r2, r5, r2h, 31357, 15, 1189, 11, 21845, 15, NONE);
 
   /* 16305/16384 = (Sin[9*Pi/32] + Cos[9*Pi/32])/Sqrt[2] = 0.9951847266721969 */
   /*    803/4096 = (Sin[9*Pi/32] - Cos[9*Pi/32])*Sqrt[2] = 0.1960342806591213 */
   /* 14699/16384 = Cos[9*Pi/32]*Sqrt[2]                  = 0.8971675863426364 */
-  od_rotate_add(r4, r3, od_sub(*r3, r4h), 16305, 14, 803, 12, 14699, 14, 0);
+  od_rotate_add_half(r4, r3, r4h, 16305, 14, 803, 12, 14699, 14, NONE);
 
   /* Stage 1 */
 
@@ -713,16 +741,16 @@ static INLINE void od_fdst_8_asym(od_coeff *r0, od_coeff r0h, od_coeff *r1,
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_add(r3, r4, od_avg_sub(*r4, *r3), 21407, 14, 8867, 14, 3135, 12, 0);
+  od_rotate_add_avg(r3, r4, 21407, 14, 8867, 14, 3135, 12, NONE);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_neg(r2, r5, od_avg_sub(*r2, *r5), 21407, 14, 8867, 14, 3135, 12);
+  od_rotate_neg_avg(r2, r5, 21407, 14, 8867, 14, 3135, 12);
 
   /* 46341/32768 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 46341/32768 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_add(r1, r6, od_avg_sub(*r6, *r1), 46341, 15, 46341, 15);
+  od_rotate_pi4_add_avg(r1, r6, 46341, 15, 46341, 15);
 }
 
 /**
@@ -741,17 +769,17 @@ static INLINE void od_idst_8_asym(od_coeff *r0, od_coeff *r4,
 
   /* 46341/32768 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 46341/32768 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(r6, r1, od_avg_add(*r1, *r6), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(r6, r1, 11585, 13, 11585, 13);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_neg(r5, r2, od_avg_sub(*r5, *r2), 21407, 14, 8867, 14, 3135, 12);
+  od_rotate_neg_avg(r5, r2, 21407, 14, 8867, 14, 3135, 12);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_sub(r4, r3, od_avg_add(*r3, *r4), 21407, 14, 8867, 14, 3135, 12, 0);
+  od_rotate_sub_avg(r4, r3, 21407, 14, 8867, 14, 3135, 12, NONE);
 
   /* Stage 2 */
 
@@ -772,22 +800,22 @@ static INLINE void od_idst_8_asym(od_coeff *r0, od_coeff *r4,
   /* 16305/16384 = (Sin[9*Pi/32] + Cos[9*Pi/32])/Sqrt[2] = 0.9951847266721969 */
   /*    803/4096 = (Sin[9*Pi/32] - Cos[9*Pi/32])*Sqrt[2] = 0.1960342806591213 */
   /* 14699/16384 = Cos[9*Pi/32]*Sqrt[2]                  = 0.8971675863426364 */
-  od_rotate_add(r4, r3, od_sub(*r3, *r4), 16305, 14, 803, 12, 14699, 14, 1);
+  od_rotate_add(r4, r3, 16305, 14, 803, 12, 14699, 14, SHIFT);
 
   /* 31357/32768 = Sin[11*Pi/32] + Cos[11*Pi/32])/Sqrt[2] = 0.956940335732209 */
   /*   1189/2048 = Sin[11*Pi/32] - Cos[11*Pi/32])*Sqrt[2] = 0.580569354508925 */
   /* 21845/32768 = Cos[11*Pi/32]*Sqrt[2]                  = 0.666655658477747 */
-  od_rotate_sub(r2, r5, od_add(*r5, *r2), 31357, 15, 1189, 11, 21845, 15, 1);
+  od_rotate_sub(r2, r5, 31357, 15, 1189, 11, 21845, 15, SHIFT);
 
   /* 28899/32768 = Sin[13*Pi/32] + Cos[13*Pi/32])/Sqrt[2] = 0.881921264348355 */
   /* 30893/32768 = Sin[13*Pi/32] - Cos[13*Pi/32])*Sqrt[2] = 0.942793473651995 */
   /*   3363/8192 = Cos[13*Pi/32]*Sqrt[2]                  = 0.410524527522357 */
-  od_rotate_add(r6, r1, od_sub(*r1, *r6), 28899, 15, 30893, 15, 3363, 13, 1);
+  od_rotate_add(r6, r1, 28899, 15, 30893, 15, 3363, 13, SHIFT);
 
   /* 12665/16384 = (Sin[15*Pi/32] + Cos[15*Pi/32])/Sqrt[2] = 0.77301045336274 */
   /*   5197/4096 = (Sin[15*Pi/32] - Cos[15*Pi/32])*Sqrt[2] = 1.26878656832729 */
   /*  2271/16384 = Cos[15*Pi/32]*Sqrt[2]                   = 0.13861716919909 */
-  od_rotate_sub(r0, r7, od_add(*r7, *r0), 12665, 14, 5197, 12, 2271, 14, 1);
+  od_rotate_sub(r0, r7, 12665, 14, 5197, 12, 2271, 14, SHIFT);
 }
 
 /* --- 16-point Transforms --- */
@@ -937,42 +965,42 @@ static INLINE void od_fdst_16(od_coeff *s0, od_coeff *s1,
   /* 24279/32768 = (Sin[31*Pi/64] + Cos[31*Pi/64])/Sqrt[2] = 0.74095112535496 */
   /* 44011/32768 = (Sin[31*Pi/64] - Cos[31*Pi/64])*Sqrt[2] = 1.34311790969404 */
   /*  1137/16384 = Cos[31*Pi/64]*Sqrt[2]                   = 0.06939217050794 */
-  od_rotate_sub(s0, sf, od_add(*sf, *s0), 24279, 15, 44011, 15, 1137, 14, 1);
+  od_rotate_sub(s0, sf, 24279, 15, 44011, 15, 1137, 14, SHIFT);
 
   /* 1645/2048 = (Sin[29*Pi/64] + Cos[29*Pi/64])/Sqrt[2] = 0.8032075314806449 */
   /*   305/256 = (Sin[29*Pi/64] - Cos[29*Pi/64])*Sqrt[2] = 1.1913986089848667 */
   /*  425/2048 = Cos[29*Pi/64]*Sqrt[2]                   = 0.2075082269882116 */
-  od_rotate_add(se, s1, od_sub(*s1, *se), 1645, 11, 305, 8, 425, 11, 1);
+  od_rotate_add(se, s1, 1645, 11, 305, 8, 425, 11, SHIFT);
 
   /* 14053/32768 = (Sin[27*Pi/64] + Cos[27*Pi/64])/Sqrt[2] = 0.85772861000027 */
   /*   8423/8192 = (Sin[27*Pi/64] - Cos[27*Pi/64])*Sqrt[2] = 1.02820548838644 */
   /*   2815/8192 = Cos[27*Pi/64]*Sqrt[2]                   = 0.34362586580705 */
-  od_rotate_sub(s2, sd, od_add(*sd, *s2), 14053, 14, 8423, 13, 2815, 13, 1);
+  od_rotate_sub(s2, sd, 14053, 14, 8423, 13, 2815, 13, SHIFT);
 
   /* 14811/16384 = (Sin[25*Pi/64] + Cos[25*Pi/64])/Sqrt[2] = 0.90398929312344 */
   /*   7005/8192 = (Sin[25*Pi/64] - Cos[25*Pi/64])*Sqrt[2] = 0.85511018686056 */
   /*   3903/8192 = Cos[25*Pi/64]*Sqrt[2]                   = 0.47643419969316 */
-  od_rotate_add(sc, s3, od_sub(*s3, *sc), 14811, 14, 7005, 13, 3903, 13, 1);
+  od_rotate_add(sc, s3, 14811, 14, 7005, 13, 3903, 13, SHIFT);
 
   /* 30853/32768 = (Sin[23*Pi/64] + Cos[23*Pi/64])/Sqrt[2] = 0.94154406518302 */
   /* 11039/16384 = (Sin[23*Pi/64] - Cos[23*Pi/64])*Sqrt[2] = 0.67377970678444 */
   /* 19813/32768 = Cos[23*Pi/64]*Sqrt[2]                   = 0.60465421179080 */
-  od_rotate_sub(s4, sb, od_add(*sb, *s4), 30853, 15, 11039, 14, 19813, 15, 1);
+  od_rotate_sub(s4, sb, 30853, 15, 11039, 14, 19813, 15, SHIFT);
 
   /* 15893/16384 = (Sin[21*Pi/64] + Cos[21*Pi/64])/Sqrt[2] = 0.97003125319454 */
   /*   3981/8192 = (Sin[21*Pi/64] - Cos[21*Pi/64])*Sqrt[2] = 0.89716758634264 */
   /*   1489/2048 = Cos[21*Pi/64]*Sqrt[2]                   = 0.72705107329128 */
-  od_rotate_add(sa, s5, od_sub(*s5, *sa), 15893, 14, 3981, 13, 1489, 11, 1);
+  od_rotate_add(sa, s5, 15893, 14, 3981, 13, 1489, 11, SHIFT);
 
   /* 32413/32768 = (Sin[19*Pi/64] + Cos[19*Pi/64])/Sqrt[2] = 0.98917650996478 */
   /*    601/2048 = (Sin[19*Pi/64] - Cos[19*Pi/64])*Sqrt[2] = 0.29346094891072 */
   /* 27605/32768 = Cos[19*Pi/64]*Sqrt[2]                   = 0.84244603550942 */
-  od_rotate_sub(s6, s9, od_add(*s9, *s6), 32413, 15, 601, 11, 27605, 15, 1);
+  od_rotate_sub(s6, s9, 32413, 15, 601, 11, 27605, 15, SHIFT);
 
   /* 32729/32768 = (Sin[17*Pi/64] + Cos[17*Pi/64])/Sqrt[2] = 0.99879545620517 */
   /*    201/2048 = (Sin[17*Pi/64] - Cos[17*Pi/64])*Sqrt[2] = 0.09813534865484 */
   /* 31121/32768 = Cos[17*Pi/64]*Sqrt[2]                   = 0.94972778187775 */
-  od_rotate_add(s8, s7, od_sub(*s7, *s8), 32729, 15, 201, 11, 31121, 15, 1);
+  od_rotate_add(s8, s7, 32729, 15, 201, 11, 31121, 15, SHIFT);
 
   /* Stage 1 */
 
@@ -1001,23 +1029,22 @@ static INLINE void od_fdst_16(od_coeff *s0, od_coeff *s1,
   /*   9633/8192 = Sin[7*Pi/16] + Cos[7*Pi/16] = 1.1758756024193586 */
   /* 12873/16384 = Sin[7*Pi/16] - Cos[7*Pi/16] = 0.7856949583871022 */
   /* 12785/32768 = 2*Cos[7*Pi/16]              = 0.3901806440322565 */
-  od_rotate_sub(s8, s7, od_avg_add(*s7, *s8), 9633, 13, 12873, 14, 12785, 15,
-   0);
+  od_rotate_sub_avg(s8, s7, 9633, 13, 12873, 14, 12785, 15, NONE);
 
   /* 45451/32768 = Sin[5*Pi/16] + Cos[5*Pi/16] = 1.3870398453221475 */
   /*  9041/32768 = Sin[5*Pi/16] - Cos[5*Pi/16] = 0.2758993792829431 */
   /* 18205/32768 = Cos[5*Pi/16]                = 0.5555702330196022 */
-  od_rotate_sub(s9, s6, od_add(*s6, *s9), 45451, 15, 9041, 15, 18205, 15, 0);
+  od_rotate_sub(s9, s6, 45451, 15, 9041, 15, 18205, 15, NONE);
 
   /* 22725/16384 = Sin[5*Pi/16] + Cos[5*Pi/16] = 1.3870398453221475 */
   /*  9041/32768 = Sin[5*Pi/16] - Cos[5*Pi/16] = 0.2758993792829431 */
   /* 18205/32768 = 2*Cos[5*Pi/16]              = 1.1111404660392044 */
-  od_rotate_neg(s5, sa, od_avg_sub(*s5, *sa), 22725, 14, 9041, 15, 18205, 14);
+  od_rotate_neg_avg(s5, sa, 22725, 14, 9041, 15, 18205, 14);
 
   /* 38531/32768 = Sin[7*Pi/16] + Cos[7*Pi/16] = 1.1758756024193586 */
   /* 12873/16384 = Sin[7*Pi/16] - Cos[7*Pi/16] = 0.7856949583871022 */
   /*  6393/32768 = Cos[7*Pi/16]                = 0.1950903220161283 */
-  od_rotate_neg(s4, sb, od_sub(*s4, *sb), 38531, 15, 12873, 14, 6393, 15);
+  od_rotate_neg(s4, sb, 38531, 15, 12873, 14, 6393, 15);
 
   /* Stage 4 */
 
@@ -1035,24 +1062,24 @@ static INLINE void od_fdst_16(od_coeff *s0, od_coeff *s1,
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[7*Pi/8]             = 0.7653668647301796 */
-  od_rotate_sub(sc, s3, od_avg_add(*s3, *sc), 21407, 14, 8867, 14, 3135, 12, 0);
+  od_rotate_sub_avg(sc, s3, 21407, 14, 8867, 14, 3135, 12, NONE);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3870398453221475 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_neg(s2, sd, od_avg_sub(*s2, *sd), 21407, 14, 8867, 14, 3135, 12);
+  od_rotate_neg_avg(s2, sd, 21407, 14, 8867, 14, 3135, 12);
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(sa, s5, od_avg_add(*s5, *sa), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(sa, s5, 11585, 13, 11585, 13);
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(s6, s9, od_avg_add(*s9, *s6), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(s6, s9, 11585, 13, 11585, 13);
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(se, s1, od_avg_add(*s1, *se), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(se, s1, 11585, 13, 11585, 13);
 }
 
 /**
@@ -1081,25 +1108,25 @@ static INLINE void od_idst_16(od_coeff *s0, od_coeff *s8,
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(s6, s9, od_avg_add(*s9, *s6), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(s6, s9, 11585, 13, 11585, 13);
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(sa, s5, od_avg_add(*s5, *sa), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(sa, s5, 11585, 13, 11585, 13);
 
   /* 11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/8192 = 2*Cos[Pi/4]           = 1.4142135623730951 */
-  od_rotate_pi4_sub(se, s1, od_avg_add(*s1, *se), 11585, 13, 11585, 13);
+  od_rotate_pi4_sub_avg(se, s1, 11585, 13, 11585, 13);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[7*Pi/8]             = 0.7653668647301796 */
-  od_rotate_sub(sc, s3, od_avg_add(*s3, *sc), 21407, 14, 8867, 14, 3135, 12, 0);
+  od_rotate_sub_avg(sc, s3, 21407, 14, 8867, 14, 3135, 12, NONE);
 
   /* 21407/16384 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3870398453221475 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/4096 = 2*Cos[3*Pi/8]             = 0.7653668647301796 */
-  od_rotate_neg(sd, s2, od_avg_sub(*sd, *s2), 21407, 14, 8867, 14, 3135, 12);
+  od_rotate_neg_avg(sd, s2, 21407, 14, 8867, 14, 3135, 12);
 
   /* Stage 4 */
 
@@ -1117,23 +1144,22 @@ static INLINE void od_idst_16(od_coeff *s0, od_coeff *s8,
   /*   9633/8192 = Sin[7*Pi/16] + Cos[7*Pi/16] = 1.1758756024193586 */
   /* 12873/16384 = Sin[7*Pi/16] - Cos[7*Pi/16] = 0.7856949583871022 */
   /* 12785/32768 = 2*Cos[7*Pi/16]              = 0.3901806440322565 */
-  od_rotate_sub(s8, s7, od_avg_add(*s7, *s8), 9633, 13, 12873, 14, 12785, 15,
-   0);
+  od_rotate_sub_avg(s8, s7, 9633, 13, 12873, 14, 12785, 15, NONE);
 
   /* 45451/32768 = Sin[5*Pi/16] + Cos[5*Pi/16] = 1.3870398453221475 */
   /*  9041/32768 = Sin[5*Pi/16] - Cos[5*Pi/16] = 0.2758993792829431 */
   /* 18205/32768 = Cos[5*Pi/16]                = 0.5555702330196022 */
-  od_rotate_sub(s9, s6, od_add(*s6, *s9), 45451, 15, 9041, 15, 18205, 15, 0);
+  od_rotate_sub(s9, s6, 45451, 15, 9041, 15, 18205, 15, NONE);
 
   /* 22725/16384 = Sin[5*Pi/16] + Cos[5*Pi/16] = 1.3870398453221475 */
   /*  9041/32768 = Sin[5*Pi/16] - Cos[5*Pi/16] = 0.2758993792829431 */
   /* 18205/32768 = 2*Cos[5*Pi/16]              = 1.1111404660392044 */
-  od_rotate_neg(sa, s5, od_avg_sub(*sa, *s5), 22725, 14, 9041, 15, 18205, 14);
+  od_rotate_neg_avg(sa, s5, 22725, 14, 9041, 15, 18205, 14);
 
   /* 38531/32768 = Sin[7*Pi/16] + Cos[7*Pi/16] = 1.1758756024193586 */
   /* 12873/16384 = Sin[7*Pi/16] - Cos[7*Pi/16] = 0.7856949583871022 */
   /*  6393/32768 = Cos[7*Pi/16]                = 0.1950903220161283 */
-  od_rotate_neg(sb, s4, od_sub(*sb, *s4), 38531, 15, 12873, 14, 6393, 15);
+  od_rotate_neg(sb, s4, 38531, 15, 12873, 14, 6393, 15);
 
   /* Stage 2 */
 
@@ -1162,42 +1188,42 @@ static INLINE void od_idst_16(od_coeff *s0, od_coeff *s8,
   /* 32729/32768 = (Sin[17*Pi/64] + Cos[17*Pi/64])/Sqrt[2] = 0.99879545620517 */
   /*    201/2048 = (Sin[17*Pi/64] - Cos[17*Pi/64])*Sqrt[2] = 0.09813534865484 */
   /* 31121/32768 = Cos[17*Pi/64]*Sqrt[2]                   = 0.94972778187775 */
-  od_rotate_add(s8, s7, od_sub(*s7, s8h), 32729, 15, 201, 11, 31121, 15, 0);
+  od_rotate_add_half(s8, s7, s8h, 32729, 15, 201, 11, 31121, 15, NONE);
 
   /* 32413/32768 = (Sin[19*Pi/64] + Cos[19*Pi/64])/Sqrt[2] = 0.98917650996478 */
   /*    601/2048 = (Sin[19*Pi/64] - Cos[19*Pi/64])*Sqrt[2] = 0.29346094891072 */
   /* 27605/32768 = Cos[19*Pi/64]*Sqrt[2]                   = 0.84244603550942 */
-  od_rotate_sub(s6, s9, od_add(*s9, s6h), 32413, 15, 601, 11, 27605, 15, 0);
+  od_rotate_sub_half(s6, s9, s6h, 32413, 15, 601, 11, 27605, 15, NONE);
 
   /* 15893/16384 = (Sin[21*Pi/64] + Cos[21*Pi/64])/Sqrt[2] = 0.97003125319454 */
   /*   3981/8192 = (Sin[21*Pi/64] - Cos[21*Pi/64])*Sqrt[2] = 0.89716758634264 */
   /*   1489/2048 = Cos[21*Pi/64]*Sqrt[2]                   = 0.72705107329128 */
-  od_rotate_add(sa, s5, od_sub(*s5, sah), 15893, 14, 3981, 13, 1489, 11, 0);
+  od_rotate_add_half(sa, s5, sah, 15893, 14, 3981, 13, 1489, 11, NONE);
 
   /* 30853/32768 = (Sin[23*Pi/64] + Cos[23*Pi/64])/Sqrt[2] = 0.94154406518302 */
   /* 11039/16384 = (Sin[23*Pi/64] - Cos[23*Pi/64])*Sqrt[2] = 0.67377970678444 */
   /* 19813/32768 = Cos[23*Pi/64]*Sqrt[2]                   = 0.60465421179080 */
-  od_rotate_sub(s4, sb, od_add(*sb, s4h), 30853, 15, 11039, 14, 19813, 15, 0);
+  od_rotate_sub_half(s4, sb, s4h, 30853, 15, 11039, 14, 19813, 15, NONE);
 
   /* 14811/16384 = (Sin[25*Pi/64] + Cos[25*Pi/64])/Sqrt[2] = 0.90398929312344 */
   /*   7005/8192 = (Sin[25*Pi/64] - Cos[25*Pi/64])*Sqrt[2] = 0.85511018686056 */
   /*   3903/8192 = Cos[25*Pi/64]*Sqrt[2]                   = 0.47643419969316 */
-  od_rotate_add(sc, s3, od_sub(*s3, sch), 14811, 14, 7005, 13, 3903, 13, 0);
+  od_rotate_add_half(sc, s3, sch, 14811, 14, 7005, 13, 3903, 13, NONE);
 
   /* 14053/32768 = (Sin[27*Pi/64] + Cos[27*Pi/64])/Sqrt[2] = 0.85772861000027 */
   /*   8423/8192 = (Sin[27*Pi/64] - Cos[27*Pi/64])*Sqrt[2] = 1.02820548838644 */
   /*   2815/8192 = Cos[27*Pi/64]*Sqrt[2]                   = 0.34362586580705 */
-  od_rotate_sub(s2, sd, od_add(*sd, s2h), 14053, 14, 8423, 13, 2815, 13, 0);
+  od_rotate_sub_half(s2, sd, s2h, 14053, 14, 8423, 13, 2815, 13, NONE);
 
   /* 1645/2048 = (Sin[29*Pi/64] + Cos[29*Pi/64])/Sqrt[2] = 0.8032075314806449 */
   /*   305/256 = (Sin[29*Pi/64] - Cos[29*Pi/64])*Sqrt[2] = 1.1913986089848667 */
   /*  425/2048 = Cos[29*Pi/64]*Sqrt[2]                   = 0.2075082269882116 */
-  od_rotate_add(se, s1, od_sub(*s1, seh), 1645, 11, 305, 8, 425, 11, 0);
+  od_rotate_add_half(se, s1, seh, 1645, 11, 305, 8, 425, 11, NONE);
 
   /* 24279/32768 = (Sin[31*Pi/64] + Cos[31*Pi/64])/Sqrt[2] = 0.74095112535496 */
   /* 44011/32768 = (Sin[31*Pi/64] - Cos[31*Pi/64])*Sqrt[2] = 1.34311790969404 */
   /*  1137/16384 = Cos[31*Pi/64]*Sqrt[2]                   = 0.06939217050794 */
-  od_rotate_sub(s0, sf, od_add(*sf, s0h), 24279, 15, 44011, 15, 1137, 14, 0);
+  od_rotate_sub_half(s0, sf, s0h, 24279, 15, 44011, 15, 1137, 14, NONE);
 }
 
 /**
@@ -1219,42 +1245,42 @@ static INLINE void od_fdst_16_asym(od_coeff *s0, od_coeff s0h, od_coeff *s1,
   /*   1073/2048 = (Sin[31*Pi/64] + Cos[31*Pi/64])/2 = 0.5239315652662953 */
   /* 62241/32768 = (Sin[31*Pi/64] - Cos[31*Pi/64])*2 = 1.8994555637555088 */
   /*   201/16384 = Cos[31*Pi/64]*2                   = 0.0981353486548360 */
-  od_rotate_sub(s0, sf, od_add(*sf, s0h), 1073, 11, 62241, 15, 201, 11, 1);
+  od_rotate_sub_half(s0, sf, s0h, 1073, 11, 62241, 15, 201, 11, SHIFT);
 
   /* 18611/32768 = (Sin[29*Pi/64] + Cos[29*Pi/64])/2 = 0.5679534922100714 */
   /* 55211/32768 = (Sin[29*Pi/64] - Cos[29*Pi/64])*2 = 1.6848920710188384 */
   /*    601/2048 = Cos[29*Pi/64]*2                   = 0.2934609489107235 */
-  od_rotate_add(se, s1, od_sub(*s1, seh), 18611, 15, 55211, 15, 601, 11, 1);
+  od_rotate_add_half(se, s1, seh, 18611, 15, 55211, 15, 601, 11, SHIFT);
 
   /*  9937/16384 = (Sin[27*Pi/64] + Cos[27*Pi/64])/2 = 0.6065057165489039 */
   /*   1489/1024 = (Sin[27*Pi/64] - Cos[27*Pi/64])*2 = 1.4541021465825602 */
   /*   3981/8192 = Cos[27*Pi/64]*2                   = 0.4859603598065277 */
-  od_rotate_sub(s2, sd, od_add(*sd, s2h), 9937, 14, 1489, 10, 3981, 13, 1);
+  od_rotate_sub_half(s2, sd, s2h, 9937, 14, 1489, 10, 3981, 13, SHIFT);
 
   /* 10473/16384 = (Sin[25*Pi/64] + Cos[25*Pi/64])/2 = 0.6392169592876205 */
   /* 39627/32768 = (Sin[25*Pi/64] - Cos[25*Pi/64])*2 = 1.2093084235816014 */
   /* 11039/16384 = Cos[25*Pi/64]*2                   = 0.6737797067844401 */
-  od_rotate_add(sc, s3, od_sub(*s3, sch), 10473, 14, 39627, 15, 11039, 14, 1);
+  od_rotate_add_half(sc, s3, sch, 10473, 14, 39627, 15, 11039, 14, SHIFT);
 
   /* 2727/4096 = (Sin[23*Pi/64] + Cos[23*Pi/64])/2 = 0.6657721932768628 */
   /* 3903/4096 = (Sin[23*Pi/64] - Cos[23*Pi/64])*2 = 0.9528683993863225 */
   /* 7005/8192 = Cos[23*Pi/64]*2                   = 0.8551101868605642 */
-  od_rotate_sub(s4, sb, od_add(*sb, s4h), 2727, 12, 3903, 12, 7005, 13, 1);
+  od_rotate_sub_half(s4, sb, s4h, 2727, 12, 3903, 12, 7005, 13, SHIFT);
 
   /* 5619/8192 = (Sin[21*Pi/64] + Cos[21*Pi/64])/2 = 0.6859156770967569 */
   /* 2815/4096 = (Sin[21*Pi/64] - Cos[21*Pi/64])*2 = 0.6872517316141069 */
   /* 8423/8192 = Cos[21*Pi/64]*2                   = 1.0282054883864433 */
-  od_rotate_add(sa, s5, od_sub(*s5, sah), 5619, 13, 2815, 12, 8423, 13, 1);
+  od_rotate_add_half(sa, s5, sah, 5619, 13, 2815, 12, 8423, 13, SHIFT);
 
   /*   2865/4096 = (Sin[19*Pi/64] + Cos[19*Pi/64])/2 = 0.6994534179865391 */
   /* 13588/32768 = (Sin[19*Pi/64] - Cos[19*Pi/64])*2 = 0.4150164539764232 */
   /*     305/256 = Cos[19*Pi/64]*2                   = 1.1913986089848667 */
-  od_rotate_sub(s6, s9, od_add(*s9, s6h), 2865, 12, 13599, 15, 305, 8, 1);
+  od_rotate_sub_half(s6, s9, s6h, 2865, 12, 13599, 15, 305, 8, SHIFT);
 
   /* 23143/32768 = (Sin[17*Pi/64] + Cos[17*Pi/64])/2 = 0.7062550401009887 */
   /*   1137/8192 = (Sin[17*Pi/64] - Cos[17*Pi/64])*2 = 0.1387843410158816 */
   /* 44011/32768 = Cos[17*Pi/64]*2                   = 1.3431179096940367 */
-  od_rotate_add(s8, s7, od_sub(*s7, s8h), 23143, 15, 1137, 13, 44011, 15, 1);
+  od_rotate_add_half(s8, s7, s8h, 23143, 15, 1137, 13, 44011, 15, SHIFT);
 
   /* Stage 1 */
 
@@ -1283,22 +1309,22 @@ static INLINE void od_fdst_16_asym(od_coeff *s0, od_coeff s0h, od_coeff *s1,
   /*   9633/8192 = Sin[7*Pi/16] + Cos[7*Pi/16] = 1.1758756024193586 */
   /* 12873/16384 = Sin[7*Pi/16] - Cos[7*Pi/16] = 0.7856949583871022 */
   /*  6393/32768 = Cos[7*Pi/16]                = 0.1950903220161283 */
-  od_rotate_sub(s8, s7, od_add(*s7, *s8), 9633, 13, 12873, 14, 6393, 15, 0);
+  od_rotate_sub(s8, s7, 9633, 13, 12873, 14, 6393, 15, NONE);
 
   /* 45451/32768 = Sin[5*Pi/16] + Cos[5*Pi/16] = 1.3870398453221475 */
   /*  9041/32768 = Sin[5*Pi/16] - Cos[5*Pi/16] = 0.2758993792829431 */
   /* 18205/32768 = Cos[5*Pi/16]                = 0.5555702330196022 */
-  od_rotate_sub(s9, s6, od_add(*s6, *s9), 45451, 15, 9041, 15, 18205, 15, 0);
+  od_rotate_sub(s9, s6, 45451, 15, 9041, 15, 18205, 15, NONE);
 
   /*  11363/8192 = Sin[5*Pi/16] + Cos[5*Pi/16] = 1.3870398453221475 */
   /*  9041/32768 = Sin[5*Pi/16] - Cos[5*Pi/16] = 0.2758993792829431 */
   /*   4551/8192 = Cos[5*Pi/16]                = 0.5555702330196022 */
-  od_rotate_neg(s5, sa, od_sub(*s5, *sa), 11363, 13, 9041, 15, 4551, 13);
+  od_rotate_neg(s5, sa, 11363, 13, 9041, 15, 4551, 13);
 
   /*  9633/32768 = Sin[7*Pi/16] + Cos[7*Pi/16] = 1.1758756024193586 */
   /* 12873/16384 = Sin[7*Pi/16] - Cos[7*Pi/16] = 0.7856949583871022 */
   /*  6393/32768 = Cos[7*Pi/16]                = 0.1950903220161283 */
-  od_rotate_neg(s4, sb, od_sub(*s4, *sb), 9633, 13, 12873, 14, 6393, 15);
+  od_rotate_neg(s4, sb, 9633, 13, 12873, 14, 6393, 15);
 
   /* Stage 4 */
 
@@ -1316,24 +1342,24 @@ static INLINE void od_fdst_16_asym(od_coeff *s0, od_coeff s0h, od_coeff *s1,
   /*  10703/8192 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/8192 = Cos[7*Pi/8]               = 0.3826834323650898 */
-  od_rotate_sub(sc, s3, od_add(*s3, *sc), 10703, 13, 8867, 14, 3135, 13, 0);
+  od_rotate_sub(sc, s3, 10703, 13, 8867, 14, 3135, 13, NONE);
 
   /*  10703/8192 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3870398453221475 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/8192 = Cos[3*Pi/8]               = 0.3826834323650898 */
-  od_rotate_neg(s2, sd, od_sub(*s2, *sd), 10703, 13, 8867, 14, 3135, 13);
+  od_rotate_neg(s2, sd, 10703, 13, 8867, 14, 3135, 13);
 
   /*  11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/16384 = Cos[Pi/4]             = 0.7071067811865475 */
-  od_rotate_pi4_sub(sa, s5, od_add(*s5, *sa), 11585, 13, 11585, 14);
+  od_rotate_pi4_sub(sa, s5, 11585, 13, 11585, 14);
 
   /*  11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/16384 = Cos[Pi/4]             = 0.7071067811865475 */
-  od_rotate_pi4_sub(s6, s9, od_add(*s9, *s6), 11585, 13, 11585, 14);
+  od_rotate_pi4_sub(s6, s9, 11585, 13, 11585, 14);
 
   /*  11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/16384 = Cos[Pi/4]             = 0.7071067811865475 */
-  od_rotate_pi4_sub(se, s1, od_add(*s1, *se), 11585, 13, 11585, 14);
+  od_rotate_pi4_sub(se, s1, 11585, 13, 11585, 14);
 }
 
 /**
@@ -1362,25 +1388,25 @@ static INLINE void od_idst_16_asym(od_coeff *s0, od_coeff *s8,
 
   /*  11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/16384 = Cos[Pi/4]           = 0.7071067811865475 */
-  od_rotate_pi4_sub(s6, s9, od_add(*s9, *s6), 11585, 13, 11585, 14);
+  od_rotate_pi4_sub(s6, s9, 11585, 13, 11585, 14);
 
   /*  11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/16384 = 2*Cos[Pi/4]           = 0.7071067811865475 */
-  od_rotate_pi4_sub(sa, s5, od_add(*s5, *sa), 11585, 13, 11585, 14);
+  od_rotate_pi4_sub(sa, s5, 11585, 13, 11585, 14);
 
   /*  11585/8192 = Sin[Pi/4] + Cos[Pi/4] = 1.4142135623730951 */
   /* 11585/16384 = 2*Cos[Pi/4]           = 0.7071067811865475 */
-  od_rotate_pi4_sub(se, s1, od_add(*s1, *se), 11585, 13, 11585, 14);
+  od_rotate_pi4_sub(se, s1, 11585, 13, 11585, 14);
 
   /*  10703/8192 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3065629648763766 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/8192 = Cos[7*Pi/8]               = 0.7653668647301796 */
-  od_rotate_sub(sc, s3, od_add(*s3, *sc), 10703, 13, 8867, 14, 3135, 13, 0);
+  od_rotate_sub(sc, s3, 10703, 13, 8867, 14, 3135, 13, NONE);
 
   /*  10703/8192 = Sin[3*Pi/8] + Cos[3*Pi/8] = 1.3870398453221475 */
   /*  8867/16384 = Sin[3*Pi/8] - Cos[3*Pi/8] = 0.5411961001461969 */
   /*   3135/8192 = Cos[3*Pi/8]               = 0.7653668647301796 */
-  od_rotate_neg(sd, s2, od_sub(*sd, *s2), 10703, 13, 8867, 14, 3135, 13);
+  od_rotate_neg(sd, s2, 10703, 13, 8867, 14, 3135, 13);
 
   /* Stage 4 */
 
@@ -1398,22 +1424,22 @@ static INLINE void od_idst_16_asym(od_coeff *s0, od_coeff *s8,
   /*   9633/8192 = Sin[7*Pi/16] + Cos[7*Pi/16] = 1.1758756024193586 */
   /* 12873/16384 = Sin[7*Pi/16] - Cos[7*Pi/16] = 0.7856949583871022 */
   /*  6393/32768 = Cos[7*Pi/16]                = 0.1950903220161283 */
-  od_rotate_neg(sb, s4, od_sub(*sb, *s4), 9633, 13, 12873, 14, 6393, 15);
+  od_rotate_neg(sb, s4, 9633, 13, 12873, 14, 6393, 15);
 
   /*  11363/8192 = Sin[5*Pi/16] + Cos[5*Pi/16] = 1.3870398453221475 */
   /*  9041/32768 = Sin[5*Pi/16] - Cos[5*Pi/16] = 0.2758993792829431 */
   /*   4551/8192 = Cos[5*Pi/16]                = 0.5555702330196022 */
-  od_rotate_neg(sa, s5, od_sub(*sa, *s5), 11363, 13, 9041, 15, 4551, 13);
+  od_rotate_neg(sa, s5, 11363, 13, 9041, 15, 4551, 13);
 
   /* 22725/16384 = Sin[5*Pi/16] + Cos[5*Pi/16] = 1.3870398453221475 */
   /*  9041/32768 = Sin[5*Pi/16] - Cos[5*Pi/16] = 0.2758993792829431 */
   /* 18205/32768 = Cos[5*Pi/16]                = 0.5555702330196022 */
-  od_rotate_sub(s9, s6, od_add(*s6, *s9), 22725, 14, 9041, 15, 18205, 15, 0);
+  od_rotate_sub(s9, s6, 22725, 14, 9041, 15, 18205, 15, NONE);
 
   /*   9633/8192 = Sin[7*Pi/16] + Cos[7*Pi/16] = 1.1758756024193586 */
   /* 12873/16384 = Sin[7*Pi/16] - Cos[7*Pi/16] = 0.7856949583871022 */
   /*  6393/32768 = Cos[7*Pi/16]                = 0.1950903220161283 */
-  od_rotate_sub(s8, s7, od_add(*s7, *s8), 9633, 13, 12873, 14, 6393, 15, 0);
+  od_rotate_sub(s8, s7, 9633, 13, 12873, 14, 6393, 15, NONE);
 
   /* Stage 2 */
 
@@ -1442,42 +1468,42 @@ static INLINE void od_idst_16_asym(od_coeff *s0, od_coeff *s8,
   /* 23143/32768 = (Sin[17*Pi/64] + Cos[17*Pi/64])/2 = 0.7062550401009887 */
   /*   1137/8192 = (Sin[17*Pi/64] - Cos[17*Pi/64])*2 = 0.1387843410158816 */
   /* 44011/32768 = Cos[17*Pi/64]*2                   = 1.3431179096940367 */
-  od_rotate_add(s8, s7, od_sub(*s7, s8h), 23143, 15, 1137, 13, 44011, 15, 1);
+  od_rotate_add_half(s8, s7, s8h, 23143, 15, 1137, 13, 44011, 15, SHIFT);
 
   /*   2865/4096 = (Sin[19*Pi/64] + Cos[19*Pi/64])/2 = 0.6994534179865391 */
   /* 13599/32768 = (Sin[19*Pi/64] - Cos[19*Pi/64])*2 = 0.4150164539764232 */
   /*     305/256 = Cos[19*Pi/64]*2                   = 1.1913986089848667 */
-  od_rotate_sub(s6, s9, od_add(*s9, s6h), 2865, 12, 13599, 15, 305, 8, 1);
+  od_rotate_sub_half(s6, s9, s6h, 2865, 12, 13599, 15, 305, 8, SHIFT);
 
   /* 5619/8192 = (Sin[21*Pi/64] + Cos[21*Pi/64])/2 = 0.6859156770967569 */
   /* 2815/4096 = (Sin[21*Pi/64] - Cos[21*Pi/64])*2 = 0.6872517316141069 */
   /* 8423/8192 = Cos[21*Pi/64]*2                   = 1.0282054883864433 */
-  od_rotate_add(sa, s5, od_sub(*s5, sah), 5619, 13, 2815, 12, 8423, 13, 1);
+  od_rotate_add_half(sa, s5, sah, 5619, 13, 2815, 12, 8423, 13, SHIFT);
 
   /* 2727/4096 = (Sin[23*Pi/64] + Cos[23*Pi/64])/2 = 0.6657721932768628 */
   /* 3903/4096 = (Sin[23*Pi/64] - Cos[23*Pi/64])*2 = 0.9528683993863225 */
   /* 7005/8192 = Cos[23*Pi/64]*2                   = 0.8551101868605642 */
-  od_rotate_sub(s4, sb, od_add(*sb, s4h), 2727, 12, 3903, 12, 7005, 13, 1);
+  od_rotate_sub_half(s4, sb, s4h, 2727, 12, 3903, 12, 7005, 13, SHIFT);
 
   /* 10473/16384 = (Sin[25*Pi/64] + Cos[25*Pi/64])/2 = 0.6392169592876205 */
   /* 39627/32768 = (Sin[25*Pi/64] - Cos[25*Pi/64])*2 = 1.2093084235816014 */
   /* 11039/16384 = Cos[25*Pi/64]*2                   = 0.6737797067844401 */
-  od_rotate_add(sc, s3, od_sub(*s3, sch), 10473, 14, 39627, 15, 11039, 14, 1);
+  od_rotate_add_half(sc, s3, sch, 10473, 14, 39627, 15, 11039, 14, SHIFT);
 
   /*  9937/16384 = (Sin[27*Pi/64] + Cos[27*Pi/64])/2 = 0.6065057165489039 */
   /*   1489/1024 = (Sin[27*Pi/64] - Cos[27*Pi/64])*2 = 1.4541021465825602 */
   /*   3981/8192 = Cos[27*Pi/64]*2                   = 0.4859603598065277 */
-  od_rotate_sub(s2, sd, od_add(*sd, s2h), 9937, 14, 1489, 10, 3981, 13, 1);
+  od_rotate_sub_half(s2, sd, s2h, 9937, 14, 1489, 10, 3981, 13, SHIFT);
 
   /* 18611/32768 = (Sin[29*Pi/64] + Cos[29*Pi/64])/2 = 0.5679534922100714 */
   /* 55211/32768 = (Sin[29*Pi/64] - Cos[29*Pi/64])*2 = 1.6848920710188384 */
   /*    601/2048 = Cos[29*Pi/64]*2                   = 0.2934609489107235 */
-  od_rotate_add(se, s1, od_sub(*s1, seh), 18611, 15, 55211, 15, 601, 11, 1);
+  od_rotate_add_half(se, s1, seh, 18611, 15, 55211, 15, 601, 11, SHIFT);
 
   /*   1073/2048 = (Sin[31*Pi/64] + Cos[31*Pi/64])/2 = 0.5239315652662953 */
   /* 62241/32768 = (Sin[31*Pi/64] - Cos[31*Pi/64])*2 = 1.8994555637555088 */
   /*    201/2048 = Cos[31*Pi/64]*2                   = 0.0981353486548360 */
-  od_rotate_sub(s0, sf, od_add(*sf, s0h), 1073, 11, 62241, 15, 201, 11, 1);
+  od_rotate_sub_half(s0, sf, s0h, 1073, 11, 62241, 15, 201, 11, SHIFT);
 }
 
 /* --- 32-point Transforms --- */
