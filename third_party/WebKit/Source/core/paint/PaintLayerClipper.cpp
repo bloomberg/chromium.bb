@@ -290,7 +290,7 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
       PaintLayer* enclosing_pagination_layer =
           layer_.EnclosingPaginationLayer();
       layer_.ConvertToLayerCoords(enclosing_pagination_layer, offset);
-      offset.MoveBy(fragment_data.GetRarePaintData()->PaginationOffset());
+      offset.MoveBy(fragment_data.PaginationOffset());
       offset.MoveBy(enclosing_pagination_layer->VisualOffsetFromAncestor(
           context.root_layer));
     } else {

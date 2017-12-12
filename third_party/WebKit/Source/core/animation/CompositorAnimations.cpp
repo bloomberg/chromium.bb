@@ -340,11 +340,9 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     // the DCHECK below.
     // DCHECK(document().lifecycle().state() >=
     // DocumentLifecycle::PrePaintClean);
-    if (RarePaintData* rare_paint_data = target_element.GetLayoutObject()
-                                             ->FirstFragment()
-                                             .GetRarePaintData()) {
-      const ObjectPaintProperties* paint_properties =
-          rare_paint_data->PaintProperties();
+    if (const auto* paint_properties = target_element.GetLayoutObject()
+                                           ->FirstFragment()
+                                           .PaintProperties()) {
       const TransformPaintPropertyNode* transform_node =
           paint_properties->Transform();
       const EffectPaintPropertyNode* effect_node = paint_properties->Effect();

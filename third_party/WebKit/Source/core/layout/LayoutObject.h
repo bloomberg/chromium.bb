@@ -45,7 +45,6 @@
 #include "core/paint/FragmentData.h"
 #include "core/paint/LayerHitTestRects.h"
 #include "core/paint/PaintPhase.h"
-#include "core/paint/RarePaintData.h"
 #include "core/paint/compositing/CompositingState.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleDifference.h"
@@ -422,12 +421,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Sets the parent of this object but doesn't add it as a child of the parent.
   void SetDangerousOneWayParent(LayoutObject*);
 
-  UniqueObjectId UniqueId() const {
-    DCHECK(fragment_.GetRarePaintData());
-    return fragment_.GetRarePaintData()
-               ? fragment_.GetRarePaintData()->UniqueId()
-               : 0;
-  }
+  UniqueObjectId UniqueId() const { return fragment_.UniqueId(); }
 
  private:
   //////////////////////////////////////////
@@ -1782,10 +1776,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
 
     void SetSelectionVisualRect(const LayoutRect& r) {
-      if (layout_object_.fragment_.GetRarePaintData() || !r.IsEmpty()) {
-        layout_object_.fragment_.EnsureRarePaintData().SetSelectionVisualRect(
-            r);
-      }
+      layout_object_.fragment_.SetSelectionVisualRect(r);
     }
 
     void SetPreviousBackgroundObscured(bool b) {
@@ -1921,14 +1912,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   LayoutRect SelectionVisualRect() const {
-    return fragment_.GetRarePaintData()
-               ? fragment_.GetRarePaintData()->SelectionVisualRect()
-               : LayoutRect();
+    return fragment_.SelectionVisualRect();
   }
   LayoutRect PartialInvalidationRect() const {
-    return fragment_.GetRarePaintData()
-               ? fragment_.GetRarePaintData()->PartialInvalidationRect()
-               : LayoutRect();
+    return fragment_.PartialInvalidationRect();
   }
 
   void InvalidateIfControlStateChanged(ControlState);
@@ -2066,8 +2053,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                        const LayoutPoint& layer_offset) const {}
 
   void SetPartialInvalidationRect(const LayoutRect& rect) {
-    if (fragment_.GetRarePaintData() || !rect.IsEmpty())
-      fragment_.EnsureRarePaintData().SetPartialInvalidationRect(rect);
+    fragment_.SetPartialInvalidationRect(rect);
   }
 
 #if DCHECK_IS_ON()
@@ -2076,8 +2062,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            ShouldCheckForPaintInvalidation() || ShouldInvalidateSelection() ||
            NeedsPaintOffsetAndVisualRectUpdate() ||
            (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-            fragment_.GetRarePaintData() &&
-            !fragment_.GetRarePaintData()->PartialInvalidationRect().IsEmpty());
+            !fragment_.PartialInvalidationRect().IsEmpty());
   }
 #endif
 

@@ -87,7 +87,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       scoped_scroll_property.emplace(
           paint_info.context.GetPaintController(),
-          layout_view_.FirstFragment().GetRarePaintData()->ContentsProperties(),
+          layout_view_.FirstFragment().ContentsProperties(),
           *display_item_client, DisplayItem::kDocumentBackground);
     }
   }

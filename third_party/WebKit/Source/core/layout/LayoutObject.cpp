@@ -89,7 +89,6 @@
 #include "core/page/Page.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/RarePaintData.h"
 #include "core/style/ContentData.h"
 #include "core/style/CursorData.h"
 #include "platform/InstanceCounters.h"
@@ -145,9 +144,10 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
 #endif
   unsigned bitfields_;
   unsigned bitfields2_;
+  // The following fields are in FragmentData.
   LayoutRect visual_rect_;
   LayoutPoint paint_offset_;
-  std::unique_ptr<RarePaintData> rare_paint_data_;
+  std::unique_ptr<int> rare_data_;
   std::unique_ptr<FragmentData> next_fragment_;
 };
 
@@ -1277,10 +1277,9 @@ LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
 
 void LayoutObject::ClearPreviousVisualRects() {
   fragment_.SetVisualRect(LayoutRect());
-  if (fragment_.GetRarePaintData()) {
-    fragment_.GetRarePaintData()->SetLocationInBacking(LayoutPoint());
-    fragment_.GetRarePaintData()->SetSelectionVisualRect(LayoutRect());
-  }
+  fragment_.SetLocationInBacking(LayoutPoint());
+  fragment_.SetSelectionVisualRect(LayoutRect());
+
   // Ensure check paint invalidation of subtree that would be triggered by
   // location change if we had valid previous location.
   SetMayNeedPaintInvalidationSubtree();
@@ -3524,9 +3523,8 @@ void LayoutObject::ClearPaintInvalidationFlags() {
 #if DCHECK_IS_ON()
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
-  if (fragment_.GetRarePaintData() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    fragment_.GetRarePaintData()->SetPartialInvalidationRect(LayoutRect());
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    fragment_.SetPartialInvalidationRect(LayoutRect());
 
   ClearShouldDoFullPaintInvalidation();
   bitfields_.SetMayNeedPaintInvalidation(false);

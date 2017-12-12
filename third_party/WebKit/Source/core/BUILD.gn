@@ -1741,6 +1741,7 @@ jumbo_source_set("unit_tests") {
     "paint/BlockPainterTest.cpp",
     "paint/BoxPaintInvalidatorTest.cpp",
     "paint/FirstMeaningfulPaintDetectorTest.cpp",
+    "paint/FragmentDataTest.cpp",
     "paint/HTMLCanvasPainterTest.cpp",
     "paint/LayerClipRecorderTest.cpp",
     "paint/LinkHighlightImplTest.cpp",
