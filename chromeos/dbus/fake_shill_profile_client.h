@@ -62,6 +62,7 @@ class CHROMEOS_EXPORT FakeShillProfileClient :
   bool GetService(const std::string& service_path,
                   std::string* profile_path,
                   base::DictionaryValue* properties) override;
+  bool HasService(const std::string& service_path) override;
   void ClearProfiles() override;
 
  private:
@@ -73,10 +74,6 @@ class CHROMEOS_EXPORT FakeShillProfileClient :
 
   ProfileProperties* GetProfile(const dbus::ObjectPath& profile_path,
                                 const ErrorCallback& error_callback);
-
-  bool GetServiceDataFromProfile(const ProfileProperties* profile,
-                                 const std::string& service_path,
-                                 base::DictionaryValue* properties);
 
   // List of profiles known to the client in order they were added, and in the
   // reverse order of priority.
