@@ -48,6 +48,7 @@ cr.define('cr.ui', function() {
       this.addEventListener('mousedown', this);
       this.addEventListener('keydown', this);
       this.addEventListener('dblclick', this);
+      this.addEventListener('blur', this);
 
       // Adding the 'custom-appearance' class prevents widgets.css from changing
       // the appearance of this element.
@@ -164,6 +165,10 @@ cr.define('cr.ui', function() {
             // executed after this.
             this.classList.remove('using-mouse');
           }
+          break;
+        case 'blur':
+          // No need to hide the focus ring anymore, without having focus.
+          this.classList.remove('using-mouse');
           break;
         case 'activate':
           var hideDelayed =
