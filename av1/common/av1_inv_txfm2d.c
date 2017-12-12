@@ -232,9 +232,11 @@ static INLINE void inv_txfm2d_add_facade(const int32_t *input, uint16_t *output,
                                          int bd) {
   TXFM_2D_FLIP_CFG cfg;
   av1_get_inv_txfm_cfg(tx_type, tx_size, &cfg);
-  TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
+  // Forward shift sum uses larger square size, to be consistent with what
+  // av1_gen_inv_stage_range() does for inverse shifts.
+  const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
   inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf,
-                   fwd_shift_sum[tx_size_sqr], bd);
+                   fwd_shift_sum[tx_size_sqr_up], bd);
 }
 
 void av1_inv_txfm2d_add_4x8_c(const int32_t *input, uint16_t *output,
