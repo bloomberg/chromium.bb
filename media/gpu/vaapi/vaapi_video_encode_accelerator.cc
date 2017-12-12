@@ -43,6 +43,7 @@ const size_t kMinSurfacesToEncode = 2;
 // Subjectively chosen.
 const size_t kNumInputBuffers = 4;
 const size_t kMaxNumReferenceFrames = 4;
+const size_t kExtraOutputBufferSize = 8192;  // bytes
 
 // We need up to kMaxNumReferenceFrames surfaces for reference, plus one
 // for input and one for encode (which will be added to the set of reference
@@ -205,7 +206,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
                           RoundUpToPowerOf2(visible_size_.height(), 16));
   mb_width_ = coded_size_.width() / 16;
   mb_height_ = coded_size_.height() / 16;
-  output_buffer_byte_size_ = coded_size_.GetArea();
+  output_buffer_byte_size_ = coded_size_.GetArea() + kExtraOutputBufferSize;
 
   UpdateRates(initial_bitrate, kDefaultFramerate);
 
