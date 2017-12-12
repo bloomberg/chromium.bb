@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/nav_button_layout_manager_gsettings.h"
+#include "chrome/browser/ui/libgtkui/settings_provider_gsettings.h"
 
 #include <gio/gio.h>
 
@@ -28,8 +28,7 @@ namespace libgtkui {
 
 // Public interface:
 
-NavButtonLayoutManagerGSettings::NavButtonLayoutManagerGSettings(
-    GtkUi* delegate)
+SettingsProviderGSettings::SettingsProviderGSettings(GtkUi* delegate)
     : delegate_(delegate), settings_(nullptr) {
   DCHECK(delegate_);
 
@@ -54,7 +53,7 @@ NavButtonLayoutManagerGSettings::NavButtonLayoutManagerGSettings(
                        G_CALLBACK(OnMiddleClickActionChangedThunk), this);
 }
 
-NavButtonLayoutManagerGSettings::~NavButtonLayoutManagerGSettings() {
+SettingsProviderGSettings::~SettingsProviderGSettings() {
   if (settings_) {
     if (signal_button_id_)
       g_signal_handler_disconnect(settings_, signal_button_id_);
@@ -66,7 +65,7 @@ NavButtonLayoutManagerGSettings::~NavButtonLayoutManagerGSettings() {
 
 // Private:
 
-void NavButtonLayoutManagerGSettings::OnDecorationButtonLayoutChanged(
+void SettingsProviderGSettings::OnDecorationButtonLayoutChanged(
     GSettings* settings,
     const gchar* key) {
   gchar* button_layout = g_settings_get_string(settings, kButtonLayoutKey);
@@ -76,7 +75,7 @@ void NavButtonLayoutManagerGSettings::OnDecorationButtonLayoutChanged(
   g_free(button_layout);
 }
 
-void NavButtonLayoutManagerGSettings::ParseAndStoreButtonValue(
+void SettingsProviderGSettings::ParseAndStoreButtonValue(
     const std::string& button_string) {
   std::vector<views::FrameButton> leading_buttons;
   std::vector<views::FrameButton> trailing_buttons;
@@ -84,9 +83,8 @@ void NavButtonLayoutManagerGSettings::ParseAndStoreButtonValue(
   delegate_->SetWindowButtonOrdering(leading_buttons, trailing_buttons);
 }
 
-void NavButtonLayoutManagerGSettings::OnMiddleClickActionChanged(
-    GSettings* settings,
-    const gchar* key) {
+void SettingsProviderGSettings::OnMiddleClickActionChanged(GSettings* settings,
+                                                           const gchar* key) {
   gchar* click_action = g_settings_get_string(settings, kMiddleClickActionKey);
   if (!click_action)
     return;
@@ -94,26 +92,27 @@ void NavButtonLayoutManagerGSettings::OnMiddleClickActionChanged(
   g_free(click_action);
 }
 
-void NavButtonLayoutManagerGSettings::ParseAndStoreMiddleClickValue(
+void SettingsProviderGSettings::ParseAndStoreMiddleClickValue(
     const std::string& click_action) {
-  GtkUi::NonClientMiddleClickAction action;
+  GtkUi::NonClientWindowFrameAction action;
 
   if (click_action == "none") {
-    action = views::LinuxUI::MIDDLE_CLICK_ACTION_NONE;
+    action = views::LinuxUI::WINDOW_FRAME_ACTION_NONE;
   } else if (click_action == "lower") {
-    action = views::LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
+    action = views::LinuxUI::WINDOW_FRAME_ACTION_LOWER;
   } else if (click_action == "minimize") {
-    action = views::LinuxUI::MIDDLE_CLICK_ACTION_MINIMIZE;
+    action = views::LinuxUI::WINDOW_FRAME_ACTION_MINIMIZE;
   } else if (click_action == "toggle-maximize") {
-    action = views::LinuxUI::MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE;
+    action = views::LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE;
   } else {
     // While we want to have the default state be lower if there isn't a
     // value, we want to default to no action if the user has explicitly
     // chose an action that we don't implement.
-    action = views::LinuxUI::MIDDLE_CLICK_ACTION_NONE;
+    action = views::LinuxUI::WINDOW_FRAME_ACTION_NONE;
   }
 
-  delegate_->SetNonClientMiddleClickAction(action);
+  delegate_->SetNonClientWindowFrameAction(
+      views::LinuxUI::WINDOW_FRAME_ACTION_SOURCE_MIDDLE_CLICK, action);
 }
 
 }  // namespace libgtkui

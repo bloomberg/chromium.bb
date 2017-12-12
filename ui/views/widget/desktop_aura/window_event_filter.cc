@@ -56,49 +56,61 @@ void WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
                                          int previous_click_component) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
+  LinuxUI* linux_ui = LinuxUI::instance();
 
-  if (event->IsMiddleMouseButton()) {
-    LinuxUI::NonClientMiddleClickAction action =
-        LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
-    LinuxUI* linux_ui = LinuxUI::instance();
-    if (linux_ui)
-      action = linux_ui->GetNonClientMiddleClickAction();
+  views::LinuxUI::NonClientWindowFrameActionSourceType action_type;
+  views::LinuxUI::NonClientWindowFrameAction default_action;
 
-    switch (action) {
-      case LinuxUI::MIDDLE_CLICK_ACTION_NONE:
-        break;
-      case LinuxUI::MIDDLE_CLICK_ACTION_LOWER:
-        LowerWindow();
-        break;
-      case LinuxUI::MIDDLE_CLICK_ACTION_MINIMIZE:
-        window_tree_host_->Minimize();
-        break;
-      case LinuxUI::MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE:
-        if (target->GetProperty(aura::client::kResizeBehaviorKey) &
-            ui::mojom::kResizeBehaviorCanMaximize)
-          ToggleMaximizedState();
-        break;
+  if (event->IsRightMouseButton()) {
+    action_type = LinuxUI::WINDOW_FRAME_ACTION_SOURCE_RIGHT_CLICK;
+    default_action = LinuxUI::WINDOW_FRAME_ACTION_MENU;
+  } else if (event->IsMiddleMouseButton()) {
+    action_type = LinuxUI::WINDOW_FRAME_ACTION_SOURCE_MIDDLE_CLICK;
+    default_action = LinuxUI::WINDOW_FRAME_ACTION_NONE;
+  } else if (event->IsLeftMouseButton() &&
+             event->flags() & ui::EF_IS_DOUBLE_CLICK) {
+    click_component_ = HTNOWHERE;
+    if (previous_click_component == HTCAPTION) {
+      action_type = LinuxUI::WINDOW_FRAME_ACTION_SOURCE_DOUBLE_CLICK;
+      default_action = LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE;
+    } else {
+      return;
     }
-
-    event->SetHandled();
+  } else {
+    MaybeDispatchHostWindowDragMovement(HTCAPTION, event);
     return;
   }
 
-  if (event->IsLeftMouseButton() && event->flags() & ui::EF_IS_DOUBLE_CLICK) {
-    click_component_ = HTNOWHERE;
-    if ((target->GetProperty(aura::client::kResizeBehaviorKey) &
-         ui::mojom::kResizeBehaviorCanMaximize) &&
-        previous_click_component == HTCAPTION) {
-      // Our event is a double click in the caption area in a window that can be
-      // maximized. We are responsible for dispatching this as a minimize/
-      // maximize on X11 (Windows converts this to min/max events for us).
-      ToggleMaximizedState();
-      event->SetHandled();
-      return;
-    }
+  LinuxUI::NonClientWindowFrameAction action =
+      linux_ui ? linux_ui->GetNonClientWindowFrameAction(action_type)
+               : default_action;
+  switch (action) {
+    case LinuxUI::WINDOW_FRAME_ACTION_NONE:
+      break;
+    case LinuxUI::WINDOW_FRAME_ACTION_LOWER:
+      LowerWindow();
+      break;
+    case LinuxUI::WINDOW_FRAME_ACTION_MINIMIZE:
+      window_tree_host_->Minimize();
+      break;
+    case LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE:
+      if (target->GetProperty(aura::client::kResizeBehaviorKey) &
+          ui::mojom::kResizeBehaviorCanMaximize)
+        ToggleMaximizedState();
+      break;
+    case LinuxUI::WINDOW_FRAME_ACTION_MENU:
+      views::Widget* widget = views::Widget::GetWidgetForNativeView(target);
+      if (!widget)
+        break;
+      views::View* view = widget->GetContentsView();
+      if (!view)
+        break;
+      gfx::Point location(event->location());
+      views::View::ConvertPointToScreen(view, &location);
+      view->ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
+      break;
   }
-
-  MaybeDispatchHostWindowDragMovement(HTCAPTION, event);
+  event->SetHandled();
 }
 
 void WindowEventFilter::OnClickedMaximizeButton(ui::MouseEvent* event) {
