@@ -15,36 +15,55 @@ ScopedMakeCurrent::ScopedMakeCurrent(gl::GLContext* context,
     : previous_context_(gl::GLContext::GetCurrent()),
       previous_surface_(gl::GLSurface::GetCurrent()),
       context_(context),
-      surface_(surface),
-      succeeded_(false) {
+      surface_(surface) {
   DCHECK(context);
   DCHECK(surface);
   succeeded_ = context->MakeCurrent(surface);
 }
 
 ScopedMakeCurrent::~ScopedMakeCurrent() {
-  if (previous_context_.get()) {
-    DCHECK(previous_surface_.get());
-    previous_context_->MakeCurrent(previous_surface_.get());
-  } else {
-    context_->ReleaseCurrent(surface_.get());
-  }
+  if (!restored_)
+    CHECK(Restore()) << "ScopedMakeCurrent: Restore failed";
 }
 
 bool ScopedMakeCurrent::Succeeded() const {
   return succeeded_;
 }
 
-ScopedReleaseCurrent::ScopedReleaseCurrent(gl::GLSurface* this_surface) {
-  gl::GLContext* current_context = gl::GLContext::GetCurrent();
-  bool was_current =
-      current_context && current_context->IsCurrent(this_surface);
-  if (was_current) {
-    make_current_.emplace(current_context, this_surface);
-    current_context->ReleaseCurrent(this_surface);
-  }
+bool ScopedMakeCurrent::Restore() {
+  DCHECK(!restored_);
+  restored_ = true;
+
+  if (!succeeded_)
+    return true;
+
+  if (previous_context_)
+    return previous_context_->MakeCurrent(previous_surface_.get());
+
+  context_->ReleaseCurrent(surface_.get());
+  return true;
 }
 
-ScopedReleaseCurrent::~ScopedReleaseCurrent() {}
+ScopedReleaseCurrent::ScopedReleaseCurrent()
+    : previous_context_(gl::GLContext::GetCurrent()),
+      previous_surface_(gl::GLSurface::GetCurrent()) {
+  if (previous_context_)
+    previous_context_->ReleaseCurrent(previous_surface_.get());
+}
+
+ScopedReleaseCurrent::~ScopedReleaseCurrent() {
+  if (!restored_)
+    CHECK(Restore()) << "ScopedReleaseCurrent: Restore failed";
+}
+
+bool ScopedReleaseCurrent::Restore() {
+  DCHECK(!restored_);
+  restored_ = true;
+
+  if (previous_context_)
+    return previous_context_->MakeCurrent(previous_surface_.get());
+
+  return true;
+}
 
 }  // namespace ui

@@ -1231,20 +1231,17 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
   size_ = size;
   is_hdr_ = is_hdr;
   has_alpha_ = has_alpha;
-  ui::ScopedReleaseCurrent release_current(this);
   return RecreateRootSurface();
 }
 
 gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
     const PresentationCallback& callback) {
-  {
-    ui::ScopedReleaseCurrent release_current(this);
-    root_surface_->SwapBuffers(callback);
-
-    layer_tree_->CommitAndClearPendingOverlays();
-  }
+  ui::ScopedReleaseCurrent release_current;
+  root_surface_->SwapBuffers(callback);
+  layer_tree_->CommitAndClearPendingOverlays();
   child_window_.ClearInvalidContents();
-  return gfx::SwapResult::SWAP_ACK;
+  return release_current.Restore() ? gfx::SwapResult::SWAP_ACK
+                                   : gfx::SwapResult::SWAP_FAILED;
 }
 
 gfx::SwapResult DirectCompositionSurfaceWin::PostSubBuffer(
@@ -1270,11 +1267,9 @@ bool DirectCompositionSurfaceWin::ScheduleDCLayer(
 bool DirectCompositionSurfaceWin::SetEnableDCLayers(bool enable) {
   if (enable_dc_layers_ == enable)
     return true;
-  ui::ScopedReleaseCurrent release_current(this);
   enable_dc_layers_ = enable;
   return RecreateRootSurface();
 }
-
 
 bool DirectCompositionSurfaceWin::FlipsVertically() const {
   return true;
