@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -55,6 +56,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSavePasswordsSwitch,
   SectionIdentifierSavedPasswords,
   SectionIdentifierBlacklist,
+  SectionIdentifierExportPasswordsButton,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -63,6 +65,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSavePasswordsSwitch,
   ItemTypeSavedPassword,  // This is a repeated item type.
   ItemTypeBlacklisted,    // This is a repeated item type.
+  ItemTypeExportPasswordsButton,
 };
 
 }  // namespace
@@ -115,6 +118,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   PrefBackedBoolean* passwordManagerEnabled_;
   // The item related to the switch for the password manager setting.
   CollectionViewSwitchItem* savePasswordsItem_;
+  // The item related to the button for exporting passwords.
+  CollectionViewTextItem* exportPasswordsItem_;
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> passwordStore_;
   // A helper object for passing data about saved passwords from a finished
@@ -205,6 +210,16 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [model addItem:savePasswordsItem_
       toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
 
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordExport)) {
+    // Export passwords button.
+    [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+    exportPasswordsItem_ = [self exportPasswordsItem];
+    [model addItem:exportPasswordsItem_
+        toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+    [self updateExportPasswordsItem];
+  }
+
   // Saved passwords.
   if (!savedForms_.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
@@ -220,6 +235,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
           toSectionWithIdentifier:SectionIdentifierSavedPasswords];
     }
   }
+
   if (!blacklistedForms_.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierBlacklist];
     CollectionViewTextItem* headerItem =
@@ -258,6 +274,15 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   savePasswordsItem.on = [passwordManagerEnabled_ value];
   savePasswordsItem.accessibilityIdentifier = @"savePasswordsItem_switch";
   return savePasswordsItem;
+}
+
+- (CollectionViewTextItem*)exportPasswordsItem {
+  CollectionViewTextItem* exportPasswordsItem = [[CollectionViewTextItem alloc]
+      initWithType:ItemTypeExportPasswordsButton];
+  exportPasswordsItem.text = l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS);
+  exportPasswordsItem.accessibilityIdentifier = @"exportPasswordsItem_button";
+  exportPasswordsItem.accessibilityTraits = UIAccessibilityTraitButton;
+  return exportPasswordsItem;
 }
 
 - (SavedFormContentItem*)savedFormItemWithForm:(autofill::PasswordForm*)form {
@@ -440,6 +465,14 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   return !savedForms_.empty() || !blacklistedForms_.empty();
 }
 
+- (void)updateExportPasswordsItem {
+  if (savedForms_.empty()) {
+    exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint500];
+    exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitNotEnabled;
+    [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
+  }
+}
+
 #pragma mark UICollectionViewDelegate
 
 - (void)openDetailedViewForForm:(const autofill::PasswordForm&)form {
@@ -483,6 +516,12 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       DCHECK_LT(base::checked_cast<size_t>(indexPath.item),
                 blacklistedForms_.size());
       [self openDetailedViewForForm:*blacklistedForms_[indexPath.item]];
+      break;
+    case ItemTypeExportPasswordsButton:
+      DCHECK(base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordExport));
+      // TODO(crbug.com/789122): Trigger alert dialogue to confirm passwords
+      // export.
       break;
     default:
       NOTREACHED();
@@ -587,6 +626,10 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
           [strongSelf.editor setEditing:NO];
         }
         [strongSelf updateEditButton];
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::kPasswordExport)) {
+          [strongSelf updateExportPasswordsItem];
+        }
       }];
 }
 
