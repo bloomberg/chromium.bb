@@ -164,10 +164,7 @@ FillLayer& FillLayer::operator=(const FillLayer& o) {
   return *this;
 }
 
-bool FillLayer::operator==(const FillLayer& o) const {
-  // We do not check the "isSet" booleans for each property, since those are
-  // only used during initial construction to propagate patterns into layers.
-  // All layer comparisons happen after values have all been filled in anyway.
+bool FillLayer::LayerPropertiesEqual(const FillLayer& o) const {
   return DataEquivalent(image_, o.image_) && x_position_ == o.x_position_ &&
          y_position_ == o.y_position_ &&
          background_x_origin_ == o.background_x_origin_ &&
@@ -177,14 +174,22 @@ bool FillLayer::operator==(const FillLayer& o) const {
          origin_ == o.origin_ && repeat_x_ == o.repeat_x_ &&
          repeat_y_ == o.repeat_y_ && size_type_ == o.size_type_ &&
          mask_source_type_ == o.mask_source_type_ &&
-         size_length_ == o.size_length_ && type_ == o.type_ &&
+         size_length_ == o.size_length_ && type_ == o.type_;
+}
+
+bool FillLayer::operator==(const FillLayer& o) const {
+  return LayerPropertiesEqual(o) &&
          ((next_ && o.next_) ? *next_ == *o.next_ : next_ == o.next_);
 }
 
 bool FillLayer::VisuallyEqual(const FillLayer& o) const {
-  if (!image_ && !o.image_ && clip_ == o.clip_)
-    return true;
-  return *this == o;
+  if (image_ || o.image_) {
+    if (!LayerPropertiesEqual(o))
+      return false;
+  }
+  if (next_ && o.next_)
+    return next_->VisuallyEqual(*o.next_);
+  return next_ == o.next_;
 }
 
 void FillLayer::FillUnsetProperties() {

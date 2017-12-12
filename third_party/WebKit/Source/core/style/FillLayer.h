@@ -300,6 +300,7 @@ class CORE_EXPORT FillLayer {
 
   bool ImageIsOpaque(const Document&, const ComputedStyle&) const;
   bool ImageTilesLayer() const;
+  bool LayerPropertiesEqual(const FillLayer&) const;
 
   FillLayer* next_;
 
