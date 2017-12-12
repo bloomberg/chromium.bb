@@ -69,10 +69,8 @@ class MockShillManagerClient : public ShillManagerClient {
   MOCK_METHOD2(ConnectToBestServices,
                void(const base::Closure& callback,
                     const ErrorCallback& error_callback));
-  MOCK_METHOD5(SetNetworkThrottlingStatus,
-               void(const bool,
-                    const uint32_t,
-                    const uint32_t,
+  MOCK_METHOD3(SetNetworkThrottlingStatus,
+               void(const NetworkThrottlingStatus&,
                     const base::Closure&,
                     const ErrorCallback& error_callback));
   MOCK_METHOD0(GetTestInterface, TestInterface*());
