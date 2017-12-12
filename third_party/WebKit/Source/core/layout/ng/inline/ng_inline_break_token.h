@@ -56,6 +56,10 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
     return *state_stack_;
   }
 
+#ifndef NDEBUG
+  String ToString() const override;
+#endif  // NDEBUG
+
  private:
   NGInlineBreakToken(NGInlineNode node,
                      unsigned item_index,

@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/ng_block_break_token.h"
 
+#include "platform/wtf/text/StringBuilder.h"
+
 namespace blink {
 
 NGBlockBreakToken::NGBlockBreakToken(
@@ -19,5 +21,18 @@ NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode node,
                                      LayoutUnit used_block_size)
     : NGBreakToken(kBlockBreakToken, kFinished, node),
       used_block_size_(used_block_size) {}
+
+#ifndef NDEBUG
+
+String NGBlockBreakToken::ToString() const {
+  StringBuilder string_builder;
+  string_builder.Append(NGBreakToken::ToString());
+  string_builder.Append(" used:");
+  string_builder.Append(used_block_size_.ToString());
+  string_builder.Append("px");
+  return string_builder.ToString();
+}
+
+#endif  // NDEBUG
 
 }  // namespace blink
