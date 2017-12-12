@@ -51,9 +51,12 @@ MessageListView::MessageListView()
   layout->SetDefaultFlex(1);
   SetLayoutManager(layout);
 
-  SetBackground(
-      views::CreateSolidBackground(MessageCenterView::kBackgroundColor));
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(GetMarginBetweenItems())));
+  if (!switches::IsSidebarEnabled()) {
+    SetBackground(
+        views::CreateSolidBackground(MessageCenterView::kBackgroundColor));
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(message_center::kMarginBetweenItemsInList)));
+  }
   animator_.AddObserver(this);
 }
 

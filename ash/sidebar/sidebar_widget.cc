@@ -15,6 +15,8 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/app_list/app_list_features.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -36,8 +38,13 @@ display::Display GetCurrentDisplay(aura::Window* window) {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window);
 }
 
+const SkColor kLightShadingColor = SkColorSetARGB(200, 0, 0, 0);
+
 // TODO(yoshiki): Remove the margins from the sidebar.
 constexpr size_t kWidth = message_center::kNotificationWidth + 2;
+
+// The blur radius of the background.
+constexpr int kSidebarBackgroundBlurRadius = 30;
 
 gfx::Rect CalculateBounds(const gfx::Rect& display_bounds) {
   return gfx::Rect(display_bounds.x() + display_bounds.width() - kWidth,
@@ -50,9 +57,19 @@ class SidebarWidget::DelegateView : public views::WidgetDelegateView,
                                     public views::ButtonListener {
  public:
   DelegateView(Shelf* shelf, SidebarInitMode mode)
-      : container_(new views::View()),
-        layout_(new views::BoxLayout(views::BoxLayout::kVertical)) {
-    SetLayoutManager(new views::FillLayout());
+      : container_(new views::View()), background_(new views::View) {
+    bool is_background_blur_enabled =
+        app_list::features::IsBackgroundBlurEnabled();
+
+    background_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    background_->layer()->SetFillsBoundsOpaquely(false);
+    background_->layer()->SetColor(kLightShadingColor);
+    background_->layer()->SetOpacity(
+        is_background_blur_enabled
+            ? app_list::AppListView::kAppListOpacityWithBlur
+            : app_list::AppListView::kAppListOpacity);
+    if (is_background_blur_enabled)
+      background_->layer()->SetBackgroundBlur(kSidebarBackgroundBlurRadius);
 
     auto* message_center = message_center::MessageCenter::Get();
     auto* ui_controller = shelf->shelf_widget()
@@ -68,10 +85,14 @@ class SidebarWidget::DelegateView : public views::WidgetDelegateView,
     message_center_view_->SetNotifications(
         message_center->GetVisibleNotifications());
 
-    container_->SetLayoutManager(layout_);
+    auto* container_layout = new views::BoxLayout(views::BoxLayout::kVertical);
+    container_->SetPaintToLayer();
+    container_->layer()->SetFillsBoundsOpaquely(false);
+    container_->SetLayoutManager(container_layout);
     container_->AddChildView(message_center_view_);
-    layout_->SetFlexForView(message_center_view_, 1);
+    container_layout->SetFlexForView(message_center_view_, 1);
 
+    AddChildView(background_);
     AddChildView(container_);
   }
 
@@ -79,6 +100,7 @@ class SidebarWidget::DelegateView : public views::WidgetDelegateView,
   void Layout() override {
     DCHECK(message_center_view_);
 
+    background_->SetBoundsRect(GetLocalBounds());
     container_->SetBoundsRect(GetLocalBounds());
 
     int message_center_height = height();
@@ -92,7 +114,7 @@ class SidebarWidget::DelegateView : public views::WidgetDelegateView,
 
  private:
   views::View* container_;
-  views::BoxLayout* layout_;
+  views::View* background_;
   ash::MessageCenterView* message_center_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
