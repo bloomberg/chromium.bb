@@ -485,11 +485,6 @@ void WebMediaPlayerMS::Pause() {
   paused_ = true;
 }
 
-bool WebMediaPlayerMS::SupportsSave() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return false;
-}
-
 void WebMediaPlayerMS::Seek(double seconds) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }

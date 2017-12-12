@@ -94,7 +94,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // Playback controls.
   void Play() override;
   void Pause() override;
-  bool SupportsSave() const override;
   void Seek(double seconds) override;
   void SetRate(double rate) override;
   void SetVolume(double volume) override;

@@ -27,45 +27,12 @@ MediaControlDownloadButtonElement::MediaControlDownloadButtonElement(
 }
 
 bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() {
-  const KURL& url = MediaElement().currentSrc();
-
-  // Check page settings to see if download is disabled.
-  if (GetDocument().GetPage() &&
-      GetDocument().GetPage()->GetSettings().GetHideDownloadUI())
-    return false;
-
-  // URLs that lead to nowhere are ignored.
-  if (url.IsNull() || url.IsEmpty())
-    return false;
-
-  // If we have no source, we can't download.
-  if (MediaElement().getNetworkState() == HTMLMediaElement::kNetworkEmpty ||
-      MediaElement().getNetworkState() == HTMLMediaElement::kNetworkNoSource) {
-    return false;
-  }
-
-  // Local files and blobs (including MSE) should not have a download button.
-  if (url.IsLocalFile())
-    return false;
-
-  // MediaStream can't be downloaded.
-  if (HTMLMediaElement::IsMediaStreamURL(url.GetString()))
-    return false;
-
-  // MediaSource can't be downloaded.
-  if (MediaElement().HasMediaSource())
-    return false;
-
-  // HLS stream shouldn't have a download button.
-  if (HTMLMediaElement::IsHLSURL(url))
-    return false;
-
-  // Infinite streams don't have a clear end at which to finish the download
-  // (would require adding UI to prompt for the duration to download).
-  if (MediaElement().duration() == std::numeric_limits<double>::infinity())
+  if (!MediaElement().SupportsSave())
     return false;
 
   // The attribute disables the download button.
+  // This is run after `SupportSave()` to guarantee that it is recorded only if
+  // it blocks the download button from showing up.
   if (MediaElement().ControlsListInternal()->ShouldHideDownload()) {
     UseCounter::Count(MediaElement().GetDocument(),
                       WebFeature::kHTMLMediaElementControlsListNoDownload);

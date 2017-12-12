@@ -1891,7 +1891,41 @@ void HTMLMediaElement::AddPlayedRange(double start, double end) {
 }
 
 bool HTMLMediaElement::SupportsSave() const {
-  return GetWebMediaPlayer() && GetWebMediaPlayer()->SupportsSave();
+  // Check if download is disabled per settings.
+  if (GetDocument().GetSettings() &&
+      GetDocument().GetSettings()->GetHideDownloadUI()) {
+    return false;
+  }
+
+  // URLs that lead to nowhere are ignored.
+  if (current_src_.IsNull() || current_src_.IsEmpty())
+    return false;
+
+  // If we have no source, we can't download.
+  if (network_state_ == kNetworkEmpty || network_state_ == kNetworkNoSource)
+    return false;
+
+  // It is not useful to offer a save feature on local files.
+  if (current_src_.IsLocalFile())
+    return false;
+
+  // MediaStream can't be downloaded.
+  if (IsMediaStreamURL(current_src_.GetString()))
+    return false;
+
+  // MediaSource can't be downloaded.
+  if (HasMediaSource())
+    return false;
+
+  // HLS stream shouldn't have a download button.
+  if (IsHLSURL(current_src_))
+    return false;
+
+  // Infinite streams don't have a clear end at which to finish the download.
+  if (duration() == std::numeric_limits<double>::infinity())
+    return false;
+
+  return true;
 }
 
 void HTMLMediaElement::SetIgnorePreloadNone() {
