@@ -20,7 +20,10 @@ class TreeModel;
 
 // TreeModelNode --------------------------------------------------------------
 
-// Type of class returned from the model.
+// Type of class returned from the model. This is a low-level interface.
+// Generally you will want to use TreeNode or TreeNodeWithValue which provides
+// a basic implementation for storing the tree hierarchy. See
+// tree_node_model.h.
 class TreeModelNode {
  public:
   // Returns the title for the node.
@@ -54,7 +57,10 @@ class UI_BASE_EXPORT TreeModelObserver {
 
 // TreeModel ------------------------------------------------------------------
 
-// The model for TreeView.
+// The model for TreeView. This is a low-level interface and requires a lot
+// of bookkeeping for the tree to be implemented. Generally you will want to
+// use TreeNodeModel which provides a standard implementation for basic
+// hierarchy and observer notification. See tree_node_model.h.
 class UI_BASE_EXPORT TreeModel {
  public:
   // Returns the root of the tree. This may or may not be shown in the tree,

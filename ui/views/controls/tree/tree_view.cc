@@ -461,7 +461,7 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     InternalNode* child_removing = parent_node->GetChild(start);
     if (selected_node_ && selected_node_->HasAncestor(child_removing))
       reset_selection = true;
-    parent_node->Remove(child_removing);
+    parent_node->Remove(start);
   }
   if (reset_selection) {
     // selected_node_ is no longer valid (at the time we enter this function
