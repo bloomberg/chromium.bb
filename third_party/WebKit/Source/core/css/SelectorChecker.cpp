@@ -321,6 +321,9 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
 
   // Disable :visited matching when we see the first link or try to match
   // anything else than an ancestors.
+  //
+  // FIXME(emilio): This is_sub_selector check is wrong if we allow sub
+  // selectors with combinators somewhere.
   if (!context.is_sub_selector &&
       (context.element->IsLink() || (relation != CSSSelector::kDescendant &&
                                      relation != CSSSelector::kChild)))
@@ -359,6 +362,8 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
           return match;
         if (NextSelectorExceedsScope(next_context))
           return kSelectorFailsCompletely;
+        if (next_context.element->IsLink())
+          next_context.visited_match_type = kVisitedMatchDisabled;
       }
       return kSelectorFailsCompletely;
     case CSSSelector::kChild: {
