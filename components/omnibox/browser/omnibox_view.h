@@ -279,12 +279,15 @@ class OmniboxView {
   void UpdateTextStyle(const base::string16& display_text,
                        const AutocompleteSchemeClassifier& classifier);
 
+  void OnShiftKeyChanged(bool down) { shift_key_down_ = down; }
+
  private:
   friend class OmniboxViewMacTest;
 
   // |model_| can be NULL in tests.
   std::unique_ptr<OmniboxEditModel> model_;
   OmniboxEditController* controller_;
+  bool shift_key_down_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxView);
 };

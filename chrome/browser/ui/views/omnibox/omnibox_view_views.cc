@@ -873,6 +873,8 @@ void OmniboxViewViews::OnBlur() {
   else
     CloseOmniboxPopup();
 
+  OnShiftKeyChanged(false);
+
   // Tell the model to reset itself.
   model()->OnKillFocus();
 
@@ -988,6 +990,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     // The omnibox contents may change while the control key is pressed.
     if (event.key_code() == ui::VKEY_CONTROL)
       model()->OnControlKeyChanged(false);
+    else if (event.key_code() == ui::VKEY_SHIFT)
+      OnShiftKeyChanged(false);
 
     return false;
   }
@@ -1012,6 +1016,9 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       return model()->OnEscapeKeyPressed();
     case ui::VKEY_CONTROL:
       model()->OnControlKeyChanged(true);
+      break;
+    case ui::VKEY_SHIFT:
+      OnShiftKeyChanged(true);
       break;
     case ui::VKEY_DELETE:
       if (shift && model()->popup_model()->IsOpen())

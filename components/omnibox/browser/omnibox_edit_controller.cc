@@ -14,11 +14,6 @@ void OmniboxEditController::OnAutocompleteAccept(
   transition_ = transition;
 }
 
-bool OmniboxEditController::SwitchToTabWithURL(const std::string& url,
-                                               bool close_this) {
-  return false;
-}
-
 OmniboxEditController::OmniboxEditController()
     : disposition_(WindowOpenDisposition::CURRENT_TAB),
       transition_(ui::PageTransitionFromInt(
