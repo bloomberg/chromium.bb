@@ -2028,6 +2028,8 @@ jumbo_source_set("browser") {
       "android/content_view_statics.cc",
       "android/date_time_chooser_android.cc",
       "android/date_time_chooser_android.h",
+      "android/gesture_listener_manager.cc",
+      "android/gesture_listener_manager.h",
       "android/ime_adapter_android.cc",
       "android/ime_adapter_android.h",
       "android/interstitial_page_delegate_android.cc",

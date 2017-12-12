@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -258,11 +257,9 @@ public class InfoBarContainer extends SwipableOverlayView {
     }
 
     @Override
-    public void setContentViewCore(ContentViewCore contentViewCore) {
-        super.setContentViewCore(contentViewCore);
-        if (getContentViewCore() != null) {
-            nativeSetWebContents(mNativeInfoBarContainer, contentViewCore.getWebContents());
-        }
+    public void setWebContents(WebContents webContents) {
+        super.setWebContents(webContents);
+        if (webContents != null) nativeSetWebContents(mNativeInfoBarContainer, webContents);
     }
 
     /**

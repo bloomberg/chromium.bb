@@ -215,8 +215,6 @@ class ContentViewCore : public WebContentsObserver {
                        bool is_mobile_optimized_hint);
 
   void RequestDisallowInterceptTouchEvent();
-  void OnGestureEventAck(const blink::WebGestureEvent& event,
-                         InputEventAckState ack_result);
   bool FilterInputEvent(const blink::WebInputEvent& event);
 
   void DidStopFlinging();

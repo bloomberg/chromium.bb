@@ -27,7 +27,6 @@ import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
-import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
@@ -255,18 +254,6 @@ public interface ContentViewCore {
      * @param timeMs Current time (in milliseconds).
      */
     void cancelFling(long timeMs);
-
-    /**
-     * Add a listener that gets alerted on gesture state changes.
-     * @param listener Listener to add.
-     */
-    void addGestureStateListener(GestureStateListener listener);
-
-    /**
-     * Removes a listener that was added to watch for gesture state changes.
-     * @param listener Listener to remove.
-     */
-    void removeGestureStateListener(GestureStateListener listener);
 
     /**
      * To be called when the ContentView is shown.

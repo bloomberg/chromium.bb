@@ -16,6 +16,7 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -56,6 +57,8 @@ import java.util.UUID;
  */
 @JNINamespace("content")
 public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
+    private static final String TAG = "cr_WebContentsImpl";
+
     private static final String PARCEL_VERSION_KEY = "version";
     private static final String PARCEL_WEBCONTENTS_KEY = "webcontents";
     private static final String PARCEL_PROCESS_GUARD_KEY = "processguard";
@@ -168,6 +171,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     private static class WebContentsInternalsImpl implements WebContentsInternals {
         public HashSet<Object> retainedObjects;
         public HashMap<String, Pair<Object, Class>> injectedObjects;
+        public HashMap<Class, WebContentsUserData> userDataMap;
     }
 
     private WebContentsImpl(
@@ -181,6 +185,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         WebContentsInternalsImpl internals = new WebContentsInternalsImpl();
         internals.retainedObjects = new HashSet<Object>();
         internals.injectedObjects = new HashMap<String, Pair<Object, Class>>();
+        internals.userDataMap = new HashMap<>();
 
         mRenderCoordinates = new RenderCoordinates();
         mRenderCoordinates.reset();
@@ -736,6 +741,41 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
      */
     public RenderCoordinates getRenderCoordinates() {
         return mRenderCoordinates;
+    }
+
+    /**
+     * Sets {@link WebContentsUserData} object in {@code UserDataMap}.
+     * <p>
+     * Note: This should be only called by {@link WebContentsUserData}.
+     * @param key Key of the generic object to set (its class instance).
+     * @param data The wrapper {@link WebContentsUserData} of the generic object to store.
+     */
+    void setUserData(Class key, WebContentsUserData data) {
+        Map<Class, WebContentsUserData> userDataMap = getUserDataMap();
+        if (userDataMap == null) {
+            Log.e(TAG, "UserDataMap can't be found");
+            return;
+        }
+        assert !userDataMap.containsKey(key); // Do not allow duplicated Data
+        userDataMap.put(key, data);
+    }
+
+    /**
+     * Gets {@link WebContentsUserData} object from {@code UserDataMap}.
+     * <p>
+     * Note: This should be only called by {@link WebContentsUserData}.
+     * @param key Key of the generic object wrapped in {@link WebContentsUserData}.
+     * @return The {@link WebContentUserData} wrapping the object associated with the key.
+     */
+    WebContentsUserData getUserData(Class key) {
+        Map<Class, WebContentsUserData> userDataMap = getUserDataMap();
+        return userDataMap != null ? userDataMap.get(key) : null;
+    }
+
+    private Map<Class, WebContentsUserData> getUserDataMap() {
+        WebContentsInternals internals = mInternalsHolder.get();
+        if (internals == null) return null;
+        return ((WebContentsInternalsImpl) internals).userDataMap;
     }
 
     // This is static to avoid exposing a public destroy method on the native side of this class.

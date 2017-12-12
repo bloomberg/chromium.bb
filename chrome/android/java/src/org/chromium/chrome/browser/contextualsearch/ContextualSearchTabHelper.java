@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -207,7 +208,8 @@ public class ContextualSearchTabHelper
         ContextualSearchManager contextualSearchManager = getContextualSearchManager(mTab);
         if (mGestureStateListener == null && contextualSearchManager != null) {
             mGestureStateListener = contextualSearchManager.getGestureStateListener();
-            cvc.addGestureStateListener(mGestureStateListener);
+            GestureListenerManager.fromWebContents(cvc.getWebContents())
+                    .addListener(mGestureStateListener);
 
             // If we needed to add our listener, we also need to add our selection client.
             cvc.setSelectionClient(mSelectionClientManager.addContextualSearchSelectionClient(
@@ -225,7 +227,8 @@ public class ContextualSearchTabHelper
         if (cvc == null) return;
 
         if (mGestureStateListener != null) {
-            cvc.removeGestureStateListener(mGestureStateListener);
+            GestureListenerManager.fromWebContents(cvc.getWebContents())
+                    .removeListener(mGestureStateListener);
             mGestureStateListener = null;
 
             // If we needed to remove our listener, we also need to remove our selection client.

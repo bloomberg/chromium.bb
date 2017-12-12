@@ -722,30 +722,18 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
 }
 
 bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
-  RenderWidgetHostDelegate* delegate = host_->delegate();
-  if (!delegate)
-    return false;
-
-  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
+  auto* delegate_view = GetRenderViewHostDelegateView();
   return delegate_view ? delegate_view->DoBrowserControlsShrinkBlinkSize()
                        : false;
 }
 
 float RenderWidgetHostViewAndroid::GetTopControlsHeight() const {
-  RenderWidgetHostDelegate* delegate = host_->delegate();
-  if (!delegate)
-    return 0.f;
-
-  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
+  auto* delegate_view = GetRenderViewHostDelegateView();
   return delegate_view ? delegate_view->GetTopControlsHeight() : 0.f;
 }
 
 float RenderWidgetHostViewAndroid::GetBottomControlsHeight() const {
-  RenderWidgetHostDelegate* delegate = host_->delegate();
-  if (!delegate)
-    return 0.f;
-
-  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
+  auto* delegate_view = GetRenderViewHostDelegateView();
   return delegate_view ? delegate_view->GetBottomControlsHeight() : 0.f;
 }
 
@@ -1824,8 +1812,15 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
   if (overscroll_controller_)
     overscroll_controller_->OnGestureEventAck(event, ack_result);
 
-  if (content_view_core_)
-    content_view_core_->OnGestureEventAck(event, ack_result);
+  auto* view = GetRenderViewHostDelegateView();
+  if (view)
+    view->GestureEventAck(event, ack_result);
+}
+
+RenderViewHostDelegateView*
+RenderWidgetHostViewAndroid::GetRenderViewHostDelegateView() const {
+  RenderWidgetHostDelegate* delegate = host_->delegate();
+  return delegate ? delegate->GetDelegateView() : nullptr;
 }
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
