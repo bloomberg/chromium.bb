@@ -137,6 +137,13 @@ source_set("sha1") {
   ]
 }
 
+source_set("whitelist_packed_format") {
+  sources = [
+    "whitelist/whitelist_packed_format.cc",
+    "whitelist/whitelist_packed_format.h",
+  ]
+}
+
 ##------------------------------------------------------------------------------
 ## chrome_elf sub targets
 ##------------------------------------------------------------------------------
@@ -231,13 +238,13 @@ static_library("whitelist") {
     "whitelist/whitelist.h",
     "whitelist/whitelist_file.cc",
     "whitelist/whitelist_file.h",
-    "whitelist/whitelist_file_format.h",
     "whitelist/whitelist_ime.cc",
     "whitelist/whitelist_ime.h",
   ]
   deps = [
     ":nt_registry",
     ":sha1",
+    ":whitelist_packed_format",
     "//chrome/install_static:install_static_util",
   ]
 }
@@ -270,6 +277,7 @@ test("chrome_elf_unittests") {
     ":security",
     ":sha1",
     ":whitelist",
+    ":whitelist_packed_format",
     "//base",
     "//base/test:test_support",
     "//chrome/common:version_header",

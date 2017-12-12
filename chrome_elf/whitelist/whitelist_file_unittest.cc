@@ -17,13 +17,13 @@
 #include "base/win/pe_image.h"
 #include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/sha1/sha1.h"
-#include "chrome_elf/whitelist/whitelist_file_format.h"
+#include "chrome_elf/whitelist/whitelist_packed_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace whitelist {
 namespace {
 
-constexpr wchar_t kFileName[] = L"dbfile";
+constexpr wchar_t kTestBlFileName[] = L"blfile";
 constexpr DWORD kPageSize = 4096;
 
 struct TestModule {
@@ -87,7 +87,7 @@ bool GetTestModules(std::vector<TestModule>* test_modules,
 }
 
 //------------------------------------------------------------------------------
-// WhitelistComponentTest class
+// WhitelistFileTest class
 //------------------------------------------------------------------------------
 
 class WhitelistFileTest : public testing::Test {
@@ -95,74 +95,113 @@ class WhitelistFileTest : public testing::Test {
   WhitelistFileTest() = default;
 
   void SetUp() override {
-    std::vector<PackedWhitelistModule> test_file_array;
-    ASSERT_TRUE(GetTestModules(&test_array_, &test_file_array));
+    ASSERT_TRUE(GetTestModules(&test_array_, &test_packed_array_));
 
-    // Setup test component file.
+    // Setup temp test dir.
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+
+    // Store full path to test file (without creating it yet).
     base::FilePath path = scoped_temp_dir_.GetPath();
+    path = path.Append(kTestBlFileName);
+    bl_test_file_path_ = std::move(path.value());
 
-    // Create the component file.  It will be cleaned up with
-    // |scoped_temp_dir_|.
-    path = path.Append(kFileName);
-    base::File file(path, base::File::FLAG_CREATE_ALWAYS |
-                              base::File::FLAG_WRITE |
-                              base::File::FLAG_SHARE_DELETE |
-                              base::File::FLAG_DELETE_ON_CLOSE);
+    // Override the file paths in the live code for testing.
+    OverrideFilePathForTesting(bl_test_file_path_);
+  }
+
+  void CreateTestFile() {
+    base::File file(base::FilePath(bl_test_file_path_),
+                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
+                        base::File::FLAG_SHARE_DELETE |
+                        base::File::FLAG_DELETE_ON_CLOSE);
     ASSERT_TRUE(file.IsValid());
-
-    // Store the path for tests to use.
-    test_file_path_ = std::move(path.value());
 
     // Write content {metadata}{array_of_modules}.
     PackedWhitelistMetadata meta = {
-        kInitialVersion, static_cast<uint32_t>(test_file_array.size())};
-    ASSERT_TRUE(file.Write(0, reinterpret_cast<const char*>(&meta),
-                           sizeof(meta)) == sizeof(meta));
-    int size = static_cast<int>(test_file_array.size() *
+        kInitialVersion, static_cast<uint32_t>(test_packed_array_.size())};
+    ASSERT_EQ(file.Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta)),
+              static_cast<int>(sizeof(meta)));
+    int size = static_cast<int>(test_packed_array_.size() *
                                 sizeof(PackedWhitelistModule));
-    ASSERT_TRUE(
+    ASSERT_EQ(
         file.Write(sizeof(PackedWhitelistMetadata),
-                   reinterpret_cast<const char*>(test_file_array.data()),
-                   size) == size);
+                   reinterpret_cast<const char*>(test_packed_array_.data()),
+                   size),
+        size);
 
     // Leave file handle open for DELETE_ON_CLOSE.
-    file_ = std::move(file);
+    bl_file_ = std::move(file);
   }
 
-  const base::string16& GetTestFilePath() { return test_file_path_; }
+  const base::string16& GetBlTestFilePath() { return bl_test_file_path_; }
+
+  base::File* GetBlFile() { return &bl_file_; }
 
   const std::vector<TestModule>& GetTestArray() { return test_array_; }
 
  private:
   base::ScopedTempDir scoped_temp_dir_;
-  base::File file_;
-  base::string16 test_file_path_;
+  base::File bl_file_;
+  base::string16 bl_test_file_path_;
   std::vector<TestModule> test_array_;
+  std::vector<PackedWhitelistModule> test_packed_array_;
 
   DISALLOW_COPY_AND_ASSIGN(WhitelistFileTest);
 };
 
 //------------------------------------------------------------------------------
-// Whitelist component tests
+// Whitelist file tests
 //------------------------------------------------------------------------------
 
-// Test initialization of the whitelist from file.
-TEST_F(WhitelistFileTest, Init) {
-  // Override the component file path for testing.
-  OverrideFilePathForTesting(GetTestFilePath());
+// Test successful initialization and module lookup.
+TEST_F(WhitelistFileTest, Success) {
+  // Create blacklist data file.
+  CreateTestFile();
 
-  // Init component whitelist!
+  // Init.
   ASSERT_EQ(InitFromFile(), FileStatus::kSuccess);
 
   // Test matching.
   for (const auto& test_module : GetTestArray()) {
-    ASSERT_TRUE(IsModuleWhitelisted(test_module.basename, test_module.imagesize,
-                                    test_module.timedatestamp));
+    EXPECT_TRUE(IsModuleListed(test_module.basename, test_module.imagesize,
+                               test_module.timedatestamp));
   }
 
   // Test a failure to match.
-  ASSERT_FALSE(IsModuleWhitelisted("booya.dll", 1337, 0x12345678));
+  EXPECT_FALSE(IsModuleListed("booya.dll", 1337, 0x12345678));
+}
+
+// Test successful initialization with no packed files.
+TEST_F(WhitelistFileTest, NoFiles) {
+  ASSERT_EQ(InitFromFile(), FileStatus::kSuccess);
+  EXPECT_FALSE(IsModuleListed("booya.dll", 1337, 0x12345678));
+}
+
+TEST_F(WhitelistFileTest, CorruptFile) {
+  CreateTestFile();
+
+  base::File* file = GetBlFile();
+  ASSERT_TRUE(file->IsValid());
+
+  // 1) Not enough data for array size
+  PackedWhitelistMetadata meta = {kCurrent, static_cast<uint32_t>(50)};
+  ASSERT_EQ(file->Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta)),
+            static_cast<int>(sizeof(meta)));
+  EXPECT_EQ(InitFromFile(), FileStatus::kArrayReadFail);
+
+  // 2) Corrupt data or just unsupported metadata version.
+  meta = {kUnsupported, static_cast<uint32_t>(50)};
+  ASSERT_EQ(file->Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta)),
+            static_cast<int>(sizeof(meta)));
+  EXPECT_EQ(InitFromFile(), FileStatus::kInvalidFormatVersion);
+
+  // 3) Not enough data for metadata.
+  meta = {kCurrent, static_cast<uint32_t>(10)};
+  ASSERT_EQ(
+      file->Write(0, reinterpret_cast<const char*>(&meta), sizeof(meta) / 2),
+      static_cast<int>(sizeof(meta) / 2));
+  ASSERT_TRUE(file->SetLength(sizeof(meta) / 2));
+  EXPECT_EQ(InitFromFile(), FileStatus::kMetadataReadFail);
 }
 
 }  // namespace
