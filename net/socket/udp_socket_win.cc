@@ -29,6 +29,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_options.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/udp_net_log_parameters.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -1216,6 +1217,12 @@ void UDPSocketWin::DetachFromThread() {
 void UDPSocketWin::UseNonBlockingIO() {
   DCHECK(!core_);
   use_non_blocking_io_ = true;
+}
+
+void UDPSocketWin::ApplySocketTag(const SocketTag& tag) {
+  // Windows does not support any specific SocketTags so fail if any non-default
+  // tag is applied.
+  CHECK(tag == SocketTag());
 }
 
 }  // namespace net

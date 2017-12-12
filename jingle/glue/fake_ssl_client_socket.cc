@@ -356,4 +356,8 @@ int64_t FakeSSLClientSocket::GetTotalReceivedBytes() const {
   return 0;
 }
 
+void FakeSSLClientSocket::ApplySocketTag(const net::SocketTag& tag) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace jingle_glue

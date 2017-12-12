@@ -61,6 +61,7 @@ class AndroidUsbSocket : public net::StreamSocket {
   void AddConnectionAttempts(const net::ConnectionAttempts& attempts) override {
   }
   int64_t GetTotalReceivedBytes() const override;
+  void ApplySocketTag(const net::SocketTag& tag) override;
 
  private:
   void RespondToReader(bool disconnect);

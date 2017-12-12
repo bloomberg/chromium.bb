@@ -300,6 +300,8 @@ class FakeSocket : public StreamSocket {
     return 0;
   }
 
+  void ApplySocketTag(const SocketTag& tag) override {}
+
  private:
   NetLogWithSource net_log_;
   FakeDataChannel* incoming_;

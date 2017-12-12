@@ -30,6 +30,7 @@
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_net_log_params.h"
 #include "net/socket/socket_options.h"
+#include "net/socket/socket_tag.h"
 
 namespace net {
 
@@ -1016,6 +1017,12 @@ bool TCPSocketWin::GetEstimatedRoundTripTime(base::TimeDelta* out_rtt) const {
   // TODO(bmcquade): Consider implementing using
   // GetPerTcpConnectionEStats/GetPerTcp6ConnectionEStats.
   return false;
+}
+
+void TCPSocketWin::ApplySocketTag(const SocketTag& tag) {
+  // Windows does not support any specific SocketTags so fail if any non-default
+  // tag is applied.
+  CHECK(tag == SocketTag());
 }
 
 }  // namespace net

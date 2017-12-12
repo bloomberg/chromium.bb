@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -88,92 +89,6 @@ namespace net {
 class NetLogWithSource;
 
 namespace {
-
-// WrappedStreamSocket is a base class that wraps an existing StreamSocket,
-// forwarding the Socket and StreamSocket interfaces to the underlying
-// transport.
-// This is to provide a common base class for subclasses to override specific
-// StreamSocket methods for testing, while still communicating with a 'real'
-// StreamSocket.
-class WrappedStreamSocket : public StreamSocket {
- public:
-  explicit WrappedStreamSocket(std::unique_ptr<StreamSocket> transport)
-      : transport_(std::move(transport)) {}
-  ~WrappedStreamSocket() override = default;
-
-  // StreamSocket implementation:
-  int Connect(const CompletionCallback& callback) override {
-    return transport_->Connect(callback);
-  }
-  void Disconnect() override { transport_->Disconnect(); }
-  bool IsConnected() const override { return transport_->IsConnected(); }
-  bool IsConnectedAndIdle() const override {
-    return transport_->IsConnectedAndIdle();
-  }
-  int GetPeerAddress(IPEndPoint* address) const override {
-    return transport_->GetPeerAddress(address);
-  }
-  int GetLocalAddress(IPEndPoint* address) const override {
-    return transport_->GetLocalAddress(address);
-  }
-  const NetLogWithSource& NetLog() const override {
-    return transport_->NetLog();
-  }
-  void SetSubresourceSpeculation() override {
-    transport_->SetSubresourceSpeculation();
-  }
-  void SetOmniboxSpeculation() override { transport_->SetOmniboxSpeculation(); }
-  bool WasEverUsed() const override { return transport_->WasEverUsed(); }
-  bool WasAlpnNegotiated() const override {
-    return transport_->WasAlpnNegotiated();
-  }
-  NextProto GetNegotiatedProtocol() const override {
-    return transport_->GetNegotiatedProtocol();
-  }
-  bool GetSSLInfo(SSLInfo* ssl_info) override {
-    return transport_->GetSSLInfo(ssl_info);
-  }
-  void GetConnectionAttempts(ConnectionAttempts* out) const override {
-    transport_->GetConnectionAttempts(out);
-  }
-  void ClearConnectionAttempts() override {
-    transport_->ClearConnectionAttempts();
-  }
-  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {
-    transport_->AddConnectionAttempts(attempts);
-  }
-  int64_t GetTotalReceivedBytes() const override {
-    return transport_->GetTotalReceivedBytes();
-  }
-
-  // Socket implementation:
-  int Read(IOBuffer* buf,
-           int buf_len,
-           const CompletionCallback& callback) override {
-    return transport_->Read(buf, buf_len, callback);
-  }
-  int ReadIfReady(IOBuffer* buf,
-                  int buf_len,
-                  const CompletionCallback& callback) override {
-    return transport_->ReadIfReady(buf, buf_len, callback);
-  }
-  int Write(IOBuffer* buf,
-            int buf_len,
-            const CompletionCallback& callback,
-            const NetworkTrafficAnnotationTag& traffic_annotation =
-                NO_TRAFFIC_ANNOTATION_BUG_656607) override {
-    return transport_->Write(buf, buf_len, callback);
-  }
-  int SetReceiveBufferSize(int32_t size) override {
-    return transport_->SetReceiveBufferSize(size);
-  }
-  int SetSendBufferSize(int32_t size) override {
-    return transport_->SetSendBufferSize(size);
-  }
-
- protected:
-  std::unique_ptr<StreamSocket> transport_;
-};
 
 // ReadBufferingStreamSocket is a wrapper for an existing StreamSocket that
 // will ensure a certain amount of data is internally buffered before
@@ -4468,6 +4383,30 @@ TEST_F(SSLClientSocketTest, SessionCacheShard) {
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+}
+
+TEST_F(SSLClientSocketTest, Tag) {
+  ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
+
+  TestNetLog log;
+  std::unique_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr(), NULL, &log, NetLogSource()));
+
+  MockTaggingStreamSocket* tagging_sock =
+      new MockTaggingStreamSocket(std::move(transport));
+
+  // |sock| takes ownership of |tagging_sock|, but keep a
+  // non-owning pointer to it.
+  std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket>(tagging_sock),
+      spawned_test_server()->host_port_pair(), SSLConfig()));
+
+  EXPECT_EQ(tagging_sock->tag(), SocketTag());
+#if defined(OS_ANDROID)
+  SocketTag tag(0x12345678, 0x87654321);
+  sock->ApplySocketTag(tag);
+  EXPECT_EQ(tagging_sock->tag(), tag);
+#endif  // OS_ANDROID
 }
 
 }  // namespace net

@@ -35,6 +35,7 @@ namespace net {
 class IPAddress;
 class NetLog;
 struct NetLogSource;
+class SocketTag;
 
 class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
  public:
@@ -205,6 +206,9 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // This class by default uses overlapped IO. Call this method before Open()
   // to switch to non-blocking IO.
   void UseNonBlockingIO();
+
+  // Apply |tag| to this socket.
+  void ApplySocketTag(const SocketTag& tag);
 
  private:
   enum SocketOptions {

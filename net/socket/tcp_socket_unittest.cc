@@ -13,6 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -21,7 +22,9 @@
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/socket_performance_watcher.h"
+#include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -431,6 +434,119 @@ TEST_F(TCPSocketTest, SPWNoAdvance) {
   TestSPWNotifications(true, 2u, 0u, 3u);
 }
 #endif  // defined(TCP_INFO) || defined(OS_LINUX)
+
+// On Android, where socket tagging is supported, verify that TCPSocket::Tag
+// works as expected.
+#if defined(OS_ANDROID)
+TEST_F(TCPSocketTest, Tag) {
+  // Start test server.
+  EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr_list;
+  ASSERT_TRUE(test_server.GetAddressList(&addr_list));
+  EXPECT_EQ(socket_.Open(addr_list[0].GetFamily()), OK);
+
+  // Verify TCP connect packets are tagged and counted properly.
+  int32_t tag_val1 = 0x12345678;
+  uint64_t old_traffic = GetTaggedBytes(tag_val1);
+  SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
+  socket_.ApplySocketTag(tag1);
+  TestCompletionCallback connect_callback;
+  int connect_result =
+      socket_.Connect(addr_list[0], connect_callback.callback());
+  EXPECT_THAT(connect_callback.GetResult(connect_result), IsOk());
+  EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
+
+  // Verify socket can be retagged with a new value and the current process's
+  // UID.
+  int32_t tag_val2 = 0x87654321;
+  old_traffic = GetTaggedBytes(tag_val2);
+  SocketTag tag2(getuid(), tag_val2);
+  socket_.ApplySocketTag(tag2);
+  const char kRequest1[] = "GET /";
+  scoped_refptr<IOBufferWithSize> write_buffer1(
+      new IOBufferWithSize(strlen(kRequest1)));
+  memmove(write_buffer1->data(), kRequest1, strlen(kRequest1));
+  TestCompletionCallback write_callback1;
+  EXPECT_EQ(
+      socket_.Write(write_buffer1.get(), strlen(kRequest1),
+                    write_callback1.callback(), TRAFFIC_ANNOTATION_FOR_TESTS),
+      (int)strlen(kRequest1));
+  EXPECT_GT(GetTaggedBytes(tag_val2), old_traffic);
+
+  // Verify socket can be retagged with a new value and the current process's
+  // UID.
+  old_traffic = GetTaggedBytes(tag_val1);
+  socket_.ApplySocketTag(tag1);
+  const char kRequest2[] = "\n\n";
+  scoped_refptr<IOBufferWithSize> write_buffer2(
+      new IOBufferWithSize(strlen(kRequest2)));
+  memmove(write_buffer2->data(), kRequest2, strlen(kRequest2));
+  TestCompletionCallback write_callback2;
+  EXPECT_EQ(
+      socket_.Write(write_buffer2.get(), strlen(kRequest2),
+                    write_callback2.callback(), TRAFFIC_ANNOTATION_FOR_TESTS),
+      (int)strlen(kRequest2));
+  EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
+
+  socket_.Close();
+}
+
+TEST_F(TCPSocketTest, TagAfterConnect) {
+  // Start test server.
+  EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr_list;
+  ASSERT_TRUE(test_server.GetAddressList(&addr_list));
+  EXPECT_EQ(socket_.Open(addr_list[0].GetFamily()), OK);
+
+  // Connect socket.
+  TestCompletionCallback connect_callback;
+  int connect_result =
+      socket_.Connect(addr_list[0], connect_callback.callback());
+  EXPECT_THAT(connect_callback.GetResult(connect_result), IsOk());
+
+  // Verify socket can be tagged with a new value and the current process's
+  // UID.
+  int32_t tag_val2 = 0x87654321;
+  uint64_t old_traffic = GetTaggedBytes(tag_val2);
+  SocketTag tag2(getuid(), tag_val2);
+  socket_.ApplySocketTag(tag2);
+  const char kRequest1[] = "GET /";
+  scoped_refptr<IOBufferWithSize> write_buffer1(
+      new IOBufferWithSize(strlen(kRequest1)));
+  memmove(write_buffer1->data(), kRequest1, strlen(kRequest1));
+  TestCompletionCallback write_callback1;
+  EXPECT_EQ(
+      socket_.Write(write_buffer1.get(), strlen(kRequest1),
+                    write_callback1.callback(), TRAFFIC_ANNOTATION_FOR_TESTS),
+      (int)strlen(kRequest1));
+  EXPECT_GT(GetTaggedBytes(tag_val2), old_traffic);
+
+  // Verify socket can be retagged with a new value and the current process's
+  // UID.
+  int32_t tag_val1 = 0x12345678;
+  old_traffic = GetTaggedBytes(tag_val1);
+  SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
+  socket_.ApplySocketTag(tag1);
+  const char kRequest2[] = "\n\n";
+  scoped_refptr<IOBufferWithSize> write_buffer2(
+      new IOBufferWithSize(strlen(kRequest2)));
+  memmove(write_buffer2->data(), kRequest2, strlen(kRequest2));
+  TestCompletionCallback write_callback2;
+  EXPECT_EQ(
+      socket_.Write(write_buffer2.get(), strlen(kRequest2),
+                    write_callback2.callback(), TRAFFIC_ANNOTATION_FOR_TESTS),
+      (int)strlen(kRequest2));
+  EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
+
+  socket_.Close();
+}
+#endif
 
 }  // namespace
 }  // namespace net

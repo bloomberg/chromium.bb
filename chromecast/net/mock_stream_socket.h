@@ -46,6 +46,7 @@ class MockStreamSocket : public net::StreamSocket {
   MOCK_METHOD0(ClearConnectionAttempts, void());
   MOCK_METHOD1(AddConnectionAttempts, void(const net::ConnectionAttempts&));
   MOCK_CONST_METHOD0(GetTotalReceivedBytes, int64_t());
+  MOCK_METHOD1(ApplySocketTag, void(const net::SocketTag&));
 
  private:
   net::NetLogWithSource net_log_;

@@ -347,6 +347,10 @@ int64_t TCPClientSocket::GetTotalReceivedBytes() const {
   return total_received_bytes_;
 }
 
+void TCPClientSocket::ApplySocketTag(const SocketTag& tag) {
+  socket_->ApplySocketTag(tag);
+}
+
 void TCPClientSocket::DidCompleteConnect(int result) {
   DCHECK_EQ(next_connect_state_, CONNECT_STATE_CONNECT_COMPLETE);
   DCHECK_NE(result, ERR_IO_PENDING);

@@ -25,6 +25,7 @@
 #include "net/socket/datagram_socket.h"
 #include "net/socket/diff_serv_code_point.h"
 #include "net/socket/socket_descriptor.h"
+#include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -32,6 +33,7 @@ namespace net {
 class IPAddress;
 class NetLog;
 struct NetLogSource;
+class SocketTag;
 
 class NET_EXPORT UDPSocketPosix {
  public:
@@ -244,6 +246,9 @@ class NET_EXPORT UDPSocketPosix {
   // Resets the thread to be used for thread-safety checks.
   void DetachFromThread();
 
+  // Apply |tag| to this socket.
+  void ApplySocketTag(const SocketTag& tag);
+
  private:
   enum SocketOptions {
     SOCKET_OPTION_MULTICAST_LOOP = 1 << 0
@@ -375,6 +380,10 @@ class NET_EXPORT UDPSocketPosix {
   // These are used to lower the overhead updating activity monitor.
   SentActivityMonitor sent_activity_monitor_;
   ReceivedActivityMonitor received_activity_monitor_;
+
+  // Current socket tag if |socket_| is valid, otherwise the tag to apply when
+  // |socket_| is opened.
+  SocketTag tag_;
 
   THREAD_CHECKER(thread_checker_);
 

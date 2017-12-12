@@ -34,6 +34,7 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
                           const IPEndPoint& address) override;
   int ConnectUsingDefaultNetwork(const IPEndPoint& address) override;
   NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override;
+  void ApplySocketTag(const SocketTag& tag) override;
   int Read(IOBuffer* buf,
            int buf_len,
            const CompletionCallback& callback) override;

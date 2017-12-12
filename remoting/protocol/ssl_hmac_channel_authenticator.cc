@@ -159,6 +159,7 @@ class NetStreamSocketAdapter : public net::StreamSocket {
     NOTIMPLEMENTED();
     return 0;
   }
+  void ApplySocketTag(const net::SocketTag& tag) override { NOTIMPLEMENTED(); }
 
  private:
   std::unique_ptr<P2PStreamSocket> socket_;

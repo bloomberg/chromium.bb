@@ -20,6 +20,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/quic/chromium/quic_proxy_client_socket.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/socket_tag.h"
 #include "net/spdy/chromium/spdy_proxy_client_socket.h"
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
@@ -292,6 +293,25 @@ int64_t HttpProxyClientSocketWrapper::GetTotalReceivedBytes() const {
   return transport_socket_->GetTotalReceivedBytes();
 }
 
+void HttpProxyClientSocketWrapper::ApplySocketTag(const SocketTag& tag) {
+  // TODO(pauljensen): Once SocketTag is plumbed through the socket pools
+  // this method can be implemented. Implementation details:
+  //  1. HttpProxyClientSocketWrapper will need to cache the tag because
+  //     transport_socket_ may not be set yet. The cached tag should be
+  //     cached in either transport_params_ or ssl_params_ so that it is
+  //     applied to future underlying sockets.
+  //  2. If transport_socket_ is set, the tag should be applied to it.
+  //  3. Tests may be easiest to write in
+  //     http_proxy_client_socket_pool_unittest.cc which has infrastructure
+  //     for testing non-QUIC proxies. Note that retagging is only possible
+  //     when proxying over HTTP/1.
+  //  4. Proxy auth isn't supported in Cronet, while socket tagging is only
+  //     presently supported in Cronet, so rather than implement auth restart
+  //     in this class, it may be easier to disallow auth restart when socket
+  //     tagging is used.
+  CHECK(tag == SocketTag());
+}
+
 int HttpProxyClientSocketWrapper::Read(IOBuffer* buf,
                                        int buf_len,
                                        const CompletionCallback& callback) {
@@ -551,7 +571,7 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
 
   // Add a HttpProxy connection on top of the tcp socket.
   transport_socket_.reset(new HttpProxyClientSocket(
-      transport_socket_handle_.release(), user_agent_, endpoint_,
+      std::move(transport_socket_handle_), user_agent_, endpoint_,
       GetDestination().host_port_pair(), http_auth_controller_.get(), tunnel_,
       using_spdy_, negotiated_protocol_, proxy_delegate_,
       ssl_params_.get() != nullptr));

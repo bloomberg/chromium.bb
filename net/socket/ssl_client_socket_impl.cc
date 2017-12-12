@@ -720,6 +720,10 @@ void SSLClientSocketImpl::DumpMemoryStats(SocketMemoryStats* stats) const {
   stats->total_size = stats->buffer_size + stats->cert_size;
 }
 
+void SSLClientSocketImpl::ApplySocketTag(const SocketTag& tag) {
+  return transport_->socket()->ApplySocketTag(tag);
+}
+
 // static
 void SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd) {
