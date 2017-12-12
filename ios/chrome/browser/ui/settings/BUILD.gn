@@ -255,6 +255,7 @@ source_set("unit_tests") {
     "//components/google/core/browser",
     "//components/handoff",
     "//components/password_manager/core/browser:test_support",
+    "//components/password_manager/core/common",
     "//components/pref_registry",
     "//components/prefs:test_support",
     "//components/search_engines",
