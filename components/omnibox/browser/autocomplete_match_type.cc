@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
@@ -57,10 +58,9 @@ static int AccessibilityLabelPrefixLength(base::string16 accessibility_label) {
   return length == base::string16::npos ? 0 : static_cast<int>(length);
 }
 
-base::string16 AutocompleteMatchType::ToAccessibilityLabel(
-    const AutocompleteMatch& match,
-    const base::string16& match_text,
-    int* label_prefix_length) {
+static base::string16 ToAccessibilityLabelImpl(const AutocompleteMatch& match,
+                                               const base::string16& match_text,
+                                               int* label_prefix_length) {
   // Types with a message ID of zero get |text| returned as-is.
   static constexpr int message_ids[] = {
       0,                             // URL_WHAT_YOU_TYPED
@@ -151,4 +151,18 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
   return has_description
              ? l10n_util::GetStringFUTF16(message, match_text, description)
              : l10n_util::GetStringFUTF16(message, match_text);
+}
+
+base::string16 AutocompleteMatchType::ToAccessibilityLabel(
+    const AutocompleteMatch& match,
+    const base::string16& match_text,
+    size_t match_index,
+    size_t total_matches,
+    int* label_prefix_length) {
+  base::string16 result =
+      ToAccessibilityLabelImpl(match, match_text, label_prefix_length);
+
+  return l10n_util::GetStringFUTF16(IDS_ACC_AUTOCOMPLETE_N_OF_M, result,
+                                    base::IntToString16(match_index + 1),
+                                    base::IntToString16(total_matches));
 }
