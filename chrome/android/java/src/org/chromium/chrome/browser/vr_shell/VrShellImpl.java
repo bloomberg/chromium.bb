@@ -67,7 +67,6 @@ public class VrShellImpl
     private final ChromeActivity mActivity;
     private final VrShellDelegate mDelegate;
     private final VirtualDisplayAndroid mContentVirtualDisplay;
-    private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private final TabRedirectHandler mTabRedirectHandler;
     private final TabObserver mTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
@@ -151,10 +150,6 @@ public class VrShellImpl
         mLastContentDpr = wa != null ? wa.getDisplay().getDipScale() : 1.0f;
         mLastContentWidth = activeContentViewCore.getViewportWidthPix() / mLastContentDpr;
         mLastContentHeight = activeContentViewCore.getViewportHeightPix() / mLastContentDpr;
-
-        mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl(
-                new VrExternalNavigationDelegate(mActivity.getActivityTab()),
-                mActivity.getActivityTab());
 
         mTabRedirectHandler = new TabRedirectHandler(mActivity) {
             @Override
@@ -393,7 +388,8 @@ public class VrShellImpl
 
     private void initializeTabForVR() {
         mNonVrInterceptNavigationDelegate = mTab.getInterceptNavigationDelegate();
-        mTab.setInterceptNavigationDelegate(mInterceptNavigationDelegate);
+        mTab.setInterceptNavigationDelegate(
+                new InterceptNavigationDelegateImpl(new VrExternalNavigationDelegate(mTab), mTab));
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
         mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
         mTab.setTabRedirectHandler(mTabRedirectHandler);
