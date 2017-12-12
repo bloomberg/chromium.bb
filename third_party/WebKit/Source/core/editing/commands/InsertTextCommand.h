@@ -40,10 +40,8 @@ class CORE_EXPORT InsertTextCommand : public CompositeEditCommand {
   static InsertTextCommand* Create(
       Document& document,
       const String& text,
-      bool select_inserted_text = false,
       RebalanceType rebalance_type = kRebalanceLeadingAndTrailingWhitespaces) {
-    return new InsertTextCommand(document, text, select_inserted_text,
-                                 rebalance_type);
+    return new InsertTextCommand(document, text, rebalance_type);
   }
 
   String TextDataForInputEvent() const final;
@@ -51,7 +49,6 @@ class CORE_EXPORT InsertTextCommand : public CompositeEditCommand {
  protected:
   InsertTextCommand(Document&,
                     const String& text,
-                    bool select_inserted_text,
                     RebalanceType);
 
   void DoApply(EditingState*) override;
@@ -59,15 +56,14 @@ class CORE_EXPORT InsertTextCommand : public CompositeEditCommand {
   Position PositionInsideTextNode(const Position&, EditingState*);
   Position InsertTab(const Position&, EditingState*);
 
-  bool PerformTrivialReplace(const String&, bool select_inserted_text);
-  bool PerformOverwrite(const String&, bool select_inserted_text);
+  bool PerformTrivialReplace(const String&);
+  bool PerformOverwrite(const String&);
   void SetEndingSelectionWithoutValidation(const Position& start_position,
                                            const Position& end_position);
 
   friend class TypingCommand;
 
   String text_;
-  bool select_inserted_text_;
   RebalanceType rebalance_type_;
 };
 

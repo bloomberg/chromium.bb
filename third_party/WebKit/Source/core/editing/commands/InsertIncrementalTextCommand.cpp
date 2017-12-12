@@ -119,18 +119,15 @@ SelectionInDOMTree ComputeSelectionForInsertion(
 InsertIncrementalTextCommand* InsertIncrementalTextCommand::Create(
     Document& document,
     const String& text,
-    bool select_inserted_text,
     RebalanceType rebalance_type) {
-  return new InsertIncrementalTextCommand(document, text, select_inserted_text,
-                                          rebalance_type);
+  return new InsertIncrementalTextCommand(document, text, rebalance_type);
 }
 
 InsertIncrementalTextCommand::InsertIncrementalTextCommand(
     Document& document,
     const String& text,
-    bool select_inserted_text,
     RebalanceType rebalance_type)
-    : InsertTextCommand(document, text, select_inserted_text, rebalance_type) {}
+    : InsertTextCommand(document, text, rebalance_type) {}
 
 void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
