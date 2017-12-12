@@ -140,11 +140,10 @@ class SurfaceSynchronizationTest : public testing::Test {
         surface_id);
   }
 
-  Surface* GetLatestInFlightSurface(const FrameSinkId& parent,
-                                    const SurfaceId& primary_surface_id,
+  Surface* GetLatestInFlightSurface(const SurfaceId& primary_surface_id,
                                     const SurfaceId& fallback_surface_id) {
     return frame_sink_manager().surface_manager()->GetLatestInFlightSurface(
-        parent, primary_surface_id, fallback_surface_id);
+        primary_surface_id, fallback_surface_id);
   }
 
   FakeExternalBeginFrameSource* begin_frame_source() {
@@ -1850,8 +1849,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   EXPECT_TRUE(HasTemporaryReference(child_id1));
   EXPECT_THAT(GetChildReferences(parent_id), IsEmpty());
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(parent_id.frame_sink_id(), child_id2,
-                                     child_id1));
+            GetLatestInFlightSurface(child_id2, child_id1));
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -1868,8 +1866,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   EXPECT_FALSE(HasTemporaryReference(child_id1));
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(parent_id.frame_sink_id(), child_id2,
-                                     child_id1));
+            GetLatestInFlightSurface(child_id2, child_id1));
 
   // Submit a child CompositorFrame to a new SurfaceId and verify that
   // GetLatestInFlightSurface returns the right surface.
@@ -1884,22 +1881,19 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   // GetLatestInFlightSurface will not return child_id2's surface because it
   // does not yet have an owner.
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(parent_id.frame_sink_id(), child_id2,
-                                     child_id1));
+            GetLatestInFlightSurface(child_id2, child_id1));
 
   // Now that the owner of |child_id2| is known, GetLatestInFlightSurface will
   // return it as a possible fallback.
   frame_sink_manager().surface_manager()->AssignTemporaryReference(
       child_id2, parent_id.frame_sink_id());
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(parent_id.frame_sink_id(), child_id2,
-                                     child_id1));
+            GetLatestInFlightSurface(child_id2, child_id1));
 
   // If the primary surface is old, then we shouldn't return an in-flight
   // surface that is newer than the primary.
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(parent_id.frame_sink_id(), child_id1,
-                                     child_id1));
+            GetLatestInFlightSurface(child_id1, child_id1));
 }
 
 // This test verifies that GetLatestInFlightSurface will return nullptr
@@ -1928,8 +1922,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithBogusFallback) {
   // If the fallback surface doesn't exist, then GetLatestInFlightSurface should
   // always return nullptr.
   const SurfaceId bogus_child_id = MakeSurfaceId(kChildFrameSink1, 10);
-  EXPECT_EQ(nullptr, GetLatestInFlightSurface(parent_id.frame_sink_id(),
-                                              child_id1, bogus_child_id));
+  EXPECT_EQ(nullptr, GetLatestInFlightSurface(child_id1, bogus_child_id));
 }
 
 // This test verifies that GetLatestInFlightSurface will return the fallback
@@ -1962,8 +1955,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceDifferentFrameSinkIds) {
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
                                          MakeDefaultCompositorFrame());
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(parent_id.frame_sink_id(), child_id2,
-                                     child_id1));
+            GetLatestInFlightSurface(child_id2, child_id1));
 }
 
 // This test verifies that if a child submits a LocalSurfaceId newer that the

@@ -310,12 +310,13 @@ void HostFrameSinkManager::RegisterAfterConnectionLoss() {
   }
 }
 
+void HostFrameSinkManager::OnSurfaceCreated(const SurfaceId& surface_id) {
+  if (assign_temporary_references_)
+    PerformAssignTemporaryReference(surface_id);
+}
+
 void HostFrameSinkManager::OnFirstSurfaceActivation(
     const SurfaceInfo& surface_info) {
-  // TODO(kylechar): This needs to happen when the surface is created, not when
-  // it first activates.
-  if (assign_temporary_references_)
-    PerformAssignTemporaryReference(surface_info.id());
 
   auto it = frame_sink_data_map_.find(surface_info.id().frame_sink_id());
 

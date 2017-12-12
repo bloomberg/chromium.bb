@@ -187,7 +187,6 @@ void SurfaceAggregator::UnrefResources(
 void SurfaceAggregator::HandleSurfaceQuad(
     const SurfaceDrawQuad* surface_quad,
     float parent_device_scale_factor,
-    const FrameSinkId& parent_frame_sink_id,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     RenderPass* dest_pass,
@@ -216,8 +215,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
   }
 
   Surface* fallback_surface = manager_->GetLatestInFlightSurface(
-      parent_frame_sink_id, primary_surface_id,
-      *surface_quad->fallback_surface_id);
+      primary_surface_id, *surface_quad->fallback_surface_id);
 
   // If the fallback is specified and missing then that's an error. Report the
   // error to console, and log the UMA.
@@ -366,7 +364,6 @@ void SurfaceAggregator::EmitSurfaceContent(
         dest_pass->transform_to_root_target);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
-                    surface->surface_id().frame_sink_id(),
                     surface->GetActiveFrame().device_scale_factor(),
                     child_to_parent_map, gfx::Transform(), ClipData(),
                     copy_pass.get(), surface_id);
@@ -421,7 +418,6 @@ void SurfaceAggregator::EmitSurfaceContent(
         CalculateClipRect(clip_rect, surface_quad_clip_rect, target_transform);
 
     CopyQuadsToPass(quads, last_pass.shared_quad_state_list,
-                    surface->surface_id().frame_sink_id(),
                     surface->GetActiveFrame().device_scale_factor(),
                     child_to_parent_map, surface_transform, quads_clip,
                     dest_pass, surface_id);
@@ -633,7 +629,6 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
 void SurfaceAggregator::CopyQuadsToPass(
     const QuadList& source_quad_list,
     const SharedQuadStateList& source_shared_quad_state_list,
-    const FrameSinkId& parent_frame_sink_id,
     float parent_device_scale_factor,
     const std::unordered_map<ResourceId, ResourceId>& child_to_parent_map,
     const gfx::Transform& target_transform,
@@ -677,8 +672,8 @@ void SurfaceAggregator::CopyQuadsToPass(
         continue;
 
       HandleSurfaceQuad(surface_quad, parent_device_scale_factor,
-                        parent_frame_sink_id, target_transform, clip_rect,
-                        dest_pass, ignore_undamaged, &damage_rect_in_quad_space,
+                        target_transform, clip_rect, dest_pass,
+                        ignore_undamaged, &damage_rect_in_quad_space,
                         &damage_rect_in_quad_space_valid);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
@@ -784,7 +779,6 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
-                    surface->surface_id().frame_sink_id(),
                     frame.device_scale_factor(), child_to_parent_map,
                     gfx::Transform(), ClipData(), copy_pass.get(),
                     surface->surface_id());
@@ -1002,8 +996,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
         // TODO(fsamuel): Consider caching this value somewhere so that
         // HandleSurfaceQuad doesn't need to call it again.
         Surface* fallback_surface = manager_->GetLatestInFlightSurface(
-            surface->surface_id().frame_sink_id(), surface_info.primary_id,
-            *surface_info.fallback_id);
+            surface_info.primary_id, *surface_info.fallback_id);
         if (fallback_surface && fallback_surface->HasActiveFrame())
           child_surface = fallback_surface;
       }

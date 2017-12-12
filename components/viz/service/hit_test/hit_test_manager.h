@@ -37,6 +37,7 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
       const SurfaceId& surface_id) const;
 
   // SurfaceObserver:
+  void OnSurfaceCreated(const SurfaceId& surface_id) override {}
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
   void OnSurfaceActivated(const SurfaceId& surface_id) override;
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}

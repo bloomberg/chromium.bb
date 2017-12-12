@@ -199,13 +199,12 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   // Returns the most recent surface associated with the |fallback_surface_id|'s
   // FrameSinkId that was created prior to the current primary surface and
-  // verified by the viz host to be owned by |parent|. If the FrameSinkId of the
-  // |primary_surface_id| does not match the |fallback_surface_id|'s then this
-  // method will always return the fallback surface because we cannot guarantee
-  // the latest in flight surface from the fallback frame sink is older than the
-  // primary surface.
-  Surface* GetLatestInFlightSurface(const FrameSinkId& parent,
-                                    const SurfaceId& primary_surface_id,
+  // verified by the viz host to be owned by the fallback surface's parent. If
+  // the FrameSinkId of the |primary_surface_id| does not match the
+  // |fallback_surface_id|'s then this method will always return the fallback
+  // surface because we cannot guarantee the latest in flight surface from the
+  // fallback frame sink is older than the primary surface.
+  Surface* GetLatestInFlightSurface(const SurfaceId& primary_surface_id,
                                     const SurfaceId& fallback_surface_id);
 
   // Called by SurfaceAggregator notifying us that it will use |surface| in the
@@ -287,6 +286,12 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   // Returns true if |surface_id| is in the garbage collector's queue.
   bool IsMarkedForDestruction(const SurfaceId& surface_id);
+
+  // Determines if the provided |owner| FrameSinkId matches the FrameSinkId of
+  // a surface in the set of |fallback_parents|.
+  bool IsOwnerAmongFallbackParents(
+      const base::flat_set<SurfaceId>& fallback_parents,
+      const base::Optional<FrameSinkId>& owner) const;
 
   // Use reference or sequence based lifetime management.
   LifetimeType lifetime_type_;
