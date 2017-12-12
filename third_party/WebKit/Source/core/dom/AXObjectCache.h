@@ -57,42 +57,6 @@ class CORE_EXPORT AXObjectCache
   virtual ~AXObjectCache();
   virtual void Trace(blink::Visitor*);
 
-  enum AXNotification {
-    kAXActiveDescendantChanged,
-    kAXAlert,
-    kAXAriaAttributeChanged,
-    kAXAutocorrectionOccured,
-    kAXBlur,
-    kAXCheckedStateChanged,
-    kAXChildrenChanged,
-    kAXClicked,
-    kAXDocumentSelectionChanged,
-    kAXExpandedChanged,
-    kAXFocusedUIElementChanged,
-    kAXHide,
-    kAXHover,
-    kAXInvalidStatusChanged,
-    kAXLayoutComplete,
-    kAXLiveRegionChanged,
-    kAXLoadComplete,
-    kAXLocationChanged,
-    kAXMenuListItemSelected,
-    kAXMenuListItemUnselected,
-    kAXMenuListValueChanged,
-    kAXRowCollapsed,
-    kAXRowCountChanged,
-    kAXRowExpanded,
-    kAXScrollPositionChanged,
-    kAXScrolledToAnchor,
-    kAXSelectedChildrenChanged,
-    kAXSelectedTextChanged,
-    kAXShow,
-    kAXTextChanged,
-    kAXTextInserted,
-    kAXTextRemoved,
-    kAXValueChanged
-  };
-
   virtual void Dispose() = 0;
 
   virtual void SelectionChanged(Node*) = 0;
