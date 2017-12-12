@@ -353,10 +353,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                                 const ServiceWorkerClientInfo& client);
   void OnNavigateClientError(int request_id, const GURL& url);
   void OnDidSkipWaiting(int request_id);
-  void OnDidClaimClients(int request_id);
-  void OnClaimClientsError(int request_id,
-                           blink::mojom::ServiceWorkerErrorType error_type,
-                           const base::string16& message);
+  void OnDidClaimClients(
+      std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks> callbacks,
+      blink::mojom::ServiceWorkerErrorType error,
+      const base::Optional<std::string>& error_msg);
   // Called to resolve the FetchEvent.preloadResponse promise.
   void OnNavigationPreloadResponse(
       int fetch_event_id,

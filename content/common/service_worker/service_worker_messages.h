@@ -186,11 +186,6 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_NavigateClient,
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
                     int /* request_id */)
 
-// Asks the browser to have this worker take control of pages that match
-// its scope.
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClaimClients,
-                    int /* request_id */)
-
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
 //
@@ -208,12 +203,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidClaimClients,
-                     int /* request_id */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ClaimClientsError,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerErrorType,
-                     base::string16 /* message */)
 
 // Sent via EmbeddedWorker as a response of GetClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClient,
