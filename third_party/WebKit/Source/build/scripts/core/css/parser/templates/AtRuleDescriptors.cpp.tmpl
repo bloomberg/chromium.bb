@@ -24,18 +24,6 @@ namespace blink {
 
 namespace {
 
-static const char descriptorStringPool[] = {
-{% for descriptor in descriptors %}
-  "{{descriptor.name}}\0"
-{% endfor %}
-};
-
-static const unsigned short descriptorStringOffsets[] = {
-{% for offset in descriptor_offsets %}
-  {{offset}},
-{% endfor %}
-};
-
 %}
 
 %struct-type
@@ -95,13 +83,6 @@ static AtRuleDescriptorID AsAtRuleDescriptorID(
 }
 
 }  // namespace
-
-const char* GetDescriptorName(AtRuleDescriptorID descriptor_id) {
-  unsigned short id = static_cast<unsigned short>(descriptor_id);
-  DCHECK_GT(id, 0);
-  DCHECK_LT(id, {{descriptors_count}});
-  return descriptorStringPool + descriptorStringOffsets[id - 1];
-}
 
 AtRuleDescriptorID AsAtRuleDescriptorID(StringView string) {
   unsigned length = string.length();
