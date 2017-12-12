@@ -1278,6 +1278,17 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       report_raw_headers = false;
     }
 
+    // Do not report raw headers if the request's site needs to be isolated
+    // from the current process.
+    if (report_raw_headers) {
+      bool is_isolated =
+          SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
+          policy->IsIsolatedOrigin(url::Origin::Create(request_data.url));
+      if (is_isolated &&
+          !policy->CanAccessDataForOrigin(child_id, request_data.url))
+        report_raw_headers = false;
+    }
+
     if (request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
         request_data.resource_type == RESOURCE_TYPE_FAVICON) {
       do_not_prompt_for_login = true;
