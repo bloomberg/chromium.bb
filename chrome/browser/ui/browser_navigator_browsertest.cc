@@ -1383,7 +1383,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ViewSourceIsntSingleton) {
   NavigateParams singleton_params(browser(), GURL(chrome::kChromeUIVersionURL),
                                   ui::PAGE_TRANSITION_LINK);
   singleton_params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  EXPECT_EQ(-1, GetIndexOfSingletonTab(&singleton_params));
+  EXPECT_EQ(-1, GetIndexOfExistingTab(&singleton_params));
 }
 
 // This test verifies that browser initiated navigations can send requests

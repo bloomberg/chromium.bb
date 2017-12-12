@@ -22,8 +22,15 @@ enum class WindowOpenDisposition {
   SAVE_TO_DISK,
   OFF_THE_RECORD,
   IGNORE_ACTION,
+  // Activates an existing tab containing the url, rather than navigating.
+  // This is similar to SINGLETON_TAB, but searches across all windows from
+  // the current profile and anonymity (instead of just the current one);
+  // closes the current tab on switching if the current tab was the NTP with
+  // no session history; and behaves like CURRENT_TAB instead of
+  // NEW_FOREGROUND_TAB when no existing tab is found.
+  SWITCH_TO_TAB,
   // Update when adding a new disposition.
-  MAX_VALUE = IGNORE_ACTION
+  MAX_VALUE = SWITCH_TO_TAB
 };
 
 namespace ui {
