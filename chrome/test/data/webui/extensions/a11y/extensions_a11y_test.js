@@ -84,18 +84,6 @@ var CrExtensionsA11yTest = class extends PolymerTest {
   }
 };
 
-var CrExtensionsA11yTestWithMultipleExensions =
-    class extends CrExtensionsA11yTest {
-  /** @override */
-  testGenPreamble() {
-    GEN('  InstallGoodExtension();');
-    GEN('  InstallPackagedApp();');
-    GEN('  InstallHostedApp();');
-    GEN('  InstallPlatformApp();');
-  }
-};
-
-/** A11y Test Definitions. */
 AccessibilityTest.define('CrExtensionsA11yTest', {
   /** @override */
   name: 'NoExtensions',
@@ -110,12 +98,23 @@ AccessibilityTest.define('CrExtensionsA11yTest', {
   tests: {
     'Accessible with No Extensions': function() {
       let list =
-          document.querySelector('* /deep/ #viewManager /deep/ #items-list');
+          document.querySelector('* /deep/ #items-list');
       assertEquals(list.extensions.length, 0);
       assertEquals(list.apps.length, 0);
     }
   },
 });
+
+var CrExtensionsA11yTestWithMultipleExensions =
+    class extends CrExtensionsA11yTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('  InstallGoodExtension();');
+    GEN('  InstallPackagedApp();');
+    GEN('  InstallHostedApp();');
+    GEN('  InstallPlatformApp();');
+  }
+};
 
 AccessibilityTest.define('CrExtensionsA11yTestWithMultipleExensions', {
   /** @override */
@@ -131,10 +130,65 @@ AccessibilityTest.define('CrExtensionsA11yTestWithMultipleExensions', {
   tests: {
     'Accessible with Extensions and Apps': function() {
       let list =
-          document.querySelector('* /deep/ #viewManager /deep/ #items-list');
+          document.querySelector('* /deep/ #items-list');
       assertEquals(list.extensions.length, 1);
       assertEquals(list.apps.length, 3);
     },
   },
 });
 
+var CrExtensionsShortcutA11yTestWithNoExtensions =
+    class extends CrExtensionsA11yTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/shortcuts';
+  }
+};
+
+AccessibilityTest.define('CrExtensionsShortcutA11yTestWithNoExtensions', {
+  /** @override */
+  name: 'ShortcutsWithNoExtensions',
+
+  /** @override */
+  axeOptions: CrExtensionsA11yTest.axeOptions,
+
+  /** @override */
+  violationFilter: CrExtensionsA11yTest.violationFilter,
+
+  /** @override */
+  tests: {
+    'Accessible with No Extensions or Apps': function() {
+      let list = document.querySelector(
+          '* /deep/ extensions-keyboard-shortcuts');
+      assertEquals(list.items.length, 0);
+    },
+  },
+});
+
+var CrExtensionsShortcutA11yTestWithMultipleExensions =
+    class extends CrExtensionsShortcutA11yTestWithNoExtensions {
+  /** @override */
+  testGenPreamble() {
+    GEN('  InstallGoodExtension();');
+  }
+};
+
+AccessibilityTest.define('CrExtensionsShortcutA11yTestWithMultipleExensions', {
+  /** @override */
+  name: 'ShortcutsWithExtensions',
+
+  /** @override */
+  axeOptions: CrExtensionsA11yTest.axeOptions,
+
+  /** @override */
+  violationFilter: CrExtensionsA11yTest.violationFilter,
+
+  /** @override */
+  tests: {
+    'Accessible with Extensions and Apps': function() {
+      let list = document.querySelector(
+          '* /deep/ extensions-keyboard-shortcuts');
+      assertEquals(list.items.length, 1);
+    },
+  },
+});
