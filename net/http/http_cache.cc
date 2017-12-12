@@ -1105,10 +1105,14 @@ void HttpCache::ProcessDoneHeadersQueue(ActiveEntry* entry) {
         transaction->WriteModeTransactionAboutToBecomeReader();
         auto return_val = entry->readers.insert(transaction);
         DCHECK(return_val.second);
+        transaction->MaybeSetParallelWritingPatternForMetrics(
+            PARALLEL_WRITING_NONE_CACHE_READ);
       }
     } else {  // mode READ
       auto return_val = entry->readers.insert(transaction);
       DCHECK(return_val.second);
+      transaction->MaybeSetParallelWritingPatternForMetrics(
+          PARALLEL_WRITING_NONE_CACHE_READ);
     }
   }
 
