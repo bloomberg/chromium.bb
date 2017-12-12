@@ -7,8 +7,6 @@ source_set("browser") {
   sources = [
     "account_consistency_service.h",
     "account_consistency_service.mm",
-    "ios_signin_client.cc",
-    "ios_signin_client.h",
     "manage_accounts_delegate.h",
     "merge_session_observer_bridge.h",
     "merge_session_observer_bridge.mm",
