@@ -237,7 +237,7 @@ public class LocationBarLayout extends FrameLayout
 
     private DeferredOnSelectionRunnable mDeferredOnSelection;
 
-    private abstract class DeferredOnSelectionRunnable implements Runnable {
+    private static abstract class DeferredOnSelectionRunnable implements Runnable {
         protected final OmniboxSuggestion mSuggestion;
         protected final int mPosition;
         protected boolean mShouldLog;
