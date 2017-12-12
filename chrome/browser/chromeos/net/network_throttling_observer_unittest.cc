@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_shill_manager_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -44,9 +44,10 @@ class NetworkThrottlingObserverTest : public ::testing::Test {
 
   const ShillManagerClient::NetworkThrottlingStatus&
   GetNetworkThrottlingStatus() {
-    auto* manager_client = static_cast<FakeShillManagerClient*>(
-        DBusThreadManager::Get()->GetShillManagerClient());
-    return manager_client->GetNetworkThrottlingStatus();
+    return DBusThreadManager::Get()
+        ->GetShillManagerClient()
+        ->GetTestInterface()
+        ->GetNetworkThrottlingStatus();
   }
 
  private:
