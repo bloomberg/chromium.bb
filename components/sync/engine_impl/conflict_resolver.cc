@@ -26,7 +26,6 @@ using syncable::Directory;
 using syncable::Entry;
 using syncable::Id;
 using syncable::MutableEntry;
-using syncable::WriteTransaction;
 
 namespace {
 
@@ -65,7 +64,7 @@ ConflictResolver::ConflictResolver() {}
 
 ConflictResolver::~ConflictResolver() {}
 
-void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
+void ConflictResolver::ProcessSimpleConflict(syncable::WriteTransaction* trans,
                                              const Id& id,
                                              const Cryptographer* cryptographer,
                                              StatusController* status,
