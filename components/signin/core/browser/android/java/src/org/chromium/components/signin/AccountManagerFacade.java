@@ -24,7 +24,7 @@ import org.chromium.net.NetworkChangeNotifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,10 +61,13 @@ public class AccountManagerFacade {
     private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
     private final AtomicReference<AccountManagerResult<Account[]>> mMaybeAccounts =
             new AtomicReference<>();
-    private final AsyncTask<Void, Void, AccountManagerResult<Account[]>> mPopulateAccountCacheTask;
+    private final CountDownLatch mPopulateAccountCacheLatch = new CountDownLatch(1);
     private final CachedMetrics.TimesHistogramSample mPopulateAccountCacheWaitingTimeHistogram =
             new CachedMetrics.TimesHistogramSample(
                     "Signin.AndroidPopulateAccountCacheWaitingTime", TimeUnit.MILLISECONDS);
+
+    private int mUpdateTasksCounter = 0;
+    private final ArrayList<Runnable> mCallbacksWaitingForPendingUpdates = new ArrayList<>();
 
     /**
      * A simple callback for getAuthToken.
@@ -95,7 +98,7 @@ public class AccountManagerFacade {
         mDelegate.registerObservers();
         mDelegate.addObserver(this::updateAccounts);
 
-        mPopulateAccountCacheTask = updateAccounts();
+        updateAccounts();
     }
 
     /**
@@ -260,16 +263,16 @@ public class AccountManagerFacade {
         AccountManagerResult<Account[]> maybeAccounts = mMaybeAccounts.get();
         if (maybeAccounts == null) {
             try {
-                // First call to update hasn't finished executing yet, get() will wait for it
+                // First call to update hasn't finished executing yet, should wait for it
                 long now = SystemClock.elapsedRealtime();
-                maybeAccounts = mPopulateAccountCacheTask.get();
+                mPopulateAccountCacheLatch.await();
+                maybeAccounts = mMaybeAccounts.get();
                 if (ThreadUtils.runningOnUiThread()) {
                     mPopulateAccountCacheWaitingTimeHistogram.record(
                             SystemClock.elapsedRealtime() - now);
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                Log.w(TAG, "Update accounts task failed", e);
-                return new Account[0];
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Interrupted waiting for accounts", e);
             }
         }
         return maybeAccounts.get();
@@ -531,32 +534,59 @@ public class AccountManagerFacade {
         return mDelegate.getProfileDataSource();
     }
 
-    private AsyncTask<Void, Void, AccountManagerResult<Account[]>> updateAccounts() {
+    /**
+     * Executes the callback after all pending account list updates finish. If there are no pending
+     * account list updates, executes the callback right away.
+     * @param callback the callback to be executed
+     */
+    @MainThread
+    public void waitForPendingUpdates(Runnable callback) {
         ThreadUtils.assertOnUiThread();
-        AsyncTask<Void, Void, AccountManagerResult<Account[]>> updateAccountsTask =
-                new AsyncTask<Void, Void, AccountManagerResult<Account[]>>() {
-                    @Override
-                    public AccountManagerResult<Account[]> doInBackground(Void... params) {
-                        try {
-                            return new AccountManagerResult<>(mDelegate.getAccountsSync());
-                        } catch (AccountManagerDelegateException ex) {
-                            return new AccountManagerResult<>(ex);
-                        }
-                    }
+        if (mUpdateTasksCounter == 0) {
+            callback.run();
+            return;
+        }
+        mCallbacksWaitingForPendingUpdates.add(callback);
+    }
 
-                    @Override
-                    public void onPostExecute(AccountManagerResult<Account[]> accounts) {
-                        mMaybeAccounts.set(accounts);
-                        fireOnAccountsChangedNotification();
-                    }
-                };
-        updateAccountsTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-        return updateAccountsTask;
+    private void updateAccounts() {
+        ThreadUtils.assertOnUiThread();
+        ++mUpdateTasksCounter;
+        new UpdateAccountsTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private void fireOnAccountsChangedNotification() {
         for (AccountsChangeObserver observer : mObservers) {
             observer.onAccountsChanged();
+        }
+    }
+
+    private class UpdateAccountsTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        public Void doInBackground(Void... params) {
+            mMaybeAccounts.set(getAccountManagerResult());
+            mPopulateAccountCacheLatch.countDown();
+            return null;
+        }
+
+        private AccountManagerResult<Account[]> getAccountManagerResult() {
+            try {
+                return new AccountManagerResult<>(mDelegate.getAccountsSync());
+            } catch (AccountManagerDelegateException ex) {
+                return new AccountManagerResult<>(ex);
+            }
+        }
+
+        @Override
+        public void onPostExecute(Void v) {
+            fireOnAccountsChangedNotification();
+
+            if (--mUpdateTasksCounter > 0) return;
+
+            for (Runnable callback : mCallbacksWaitingForPendingUpdates) {
+                callback.run();
+            }
+            mCallbacksWaitingForPendingUpdates.clear();
         }
     }
 
