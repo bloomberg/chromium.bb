@@ -19,8 +19,9 @@ import java.util.List;
 
 /**
  * Subclass of DropdownFieldAdapter used to display a dropdown hint that won't appear in the
- * expanded dropdown options but will be used when no element is selected. The last shown element
- * will have a "+" icon on its left and a blue tint to indicate the option to add an element.
+ * expanded dropdown options but will be used when no element is selected. In some cases, the last
+ * shown element will have a "+" icon on its left and a blue tint to indicate the option to add an
+ * element.
  *
  * @param <T> The type of element to be inserted into the adapter.
  *
@@ -35,25 +36,26 @@ import java.util.List;
  *                                                         . hint       . -> hidden
  *                                                         ..............
  */
-public class BillingAddressAdapter<T> extends DropdownFieldAdapter<T> {
+public class AddressDropDownAdapter<T> extends DropdownFieldAdapter<T> {
     private final int mTextViewResourceId;
+    private boolean mAddButtonIncluded;
 
     /**
      * Creates an array adapter for which the last element is a hint that is not shown in the
-     * expanded view and where the last shown element has a "+" icon on its left and has a blue
-     * tint.
+     * expanded view and where in some cases, the last shown element has a "+" icon on its left and
+     * has a blue tint.
      *
      * @param context            The current context.
      * @param resource           The resource ID for a layout file containing a layout to use when
      *                           instantiating views.
      * @param textViewResourceId The id of the TextView within the layout resource to be populated.
-     * @param objects            The objects to represent in the ListView, the last of which will
-     *                           have a "+" icon on its left and will have a blue tint.
+     * @param objects            The objects to represent in the ListView, in some cases, the last
+     *                           item will have a "+" icon on its left and will have a blue tint.
      * @param hint               The element to be used as a hint when no element is selected. It is
      *                           not taken into account in the count function and thus will not be
      *                           displayed when in the expanded dropdown view.
      */
-    public BillingAddressAdapter(
+    public AddressDropDownAdapter(
             Context context, int resource, int textViewResourceId, List<T> objects, T hint) {
         // Make a copy of objects so the hint is not added to the original list.
         super(context, resource, textViewResourceId, objects);
@@ -62,6 +64,10 @@ public class BillingAddressAdapter<T> extends DropdownFieldAdapter<T> {
         add(hint);
 
         mTextViewResourceId = textViewResourceId;
+        // The "+" icon is displayed only when the last item is "Add Address."
+        mAddButtonIncluded = objects.get(getCount() - 1)
+                                     .toString()
+                                     .equals(context.getString(R.string.payments_add_address));
     }
 
     @Override
@@ -96,9 +102,8 @@ public class BillingAddressAdapter<T> extends DropdownFieldAdapter<T> {
                     ApiCompatibilityUtils.getPaddingEnd(convertView),
                     convertView.getPaddingBottom());
         }
-
-        // The last item is "ADD ADDRESS".
-        if (position == getCount() - 1) {
+        // When the last item is "ADD ADDRESS", show the "+" icon.
+        if (mAddButtonIncluded && position == getCount() - 1) {
             // Add a "+" icon and a blue tint to the last element.
             Resources resources = getContext().getResources();
             if (textView == null) {

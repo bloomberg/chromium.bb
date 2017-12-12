@@ -67,8 +67,8 @@ class EditorDropdownField implements EditorFieldView {
         final List<CharSequence> dropdownValues = getDropdownValues(dropdownKeyValues);
         ArrayAdapter<CharSequence> adapter;
         if (mFieldModel.getHint() != null) {
-            // Use the BillingAddressAdapter and pass it a hint to be displayed as default.
-            adapter = new BillingAddressAdapter<CharSequence>(context,
+            // Use the AddressDropDownAdapter and pass it a hint to be displayed as default.
+            adapter = new AddressDropDownAdapter<CharSequence>(context,
                     R.layout.multiline_spinner_item, R.id.spinner_item, dropdownValues,
                     mFieldModel.getHint().toString());
             // Wrap the TextView in the dropdown popup around with a FrameLayout to display the text
@@ -81,7 +81,9 @@ class EditorDropdownField implements EditorFieldView {
             // If no value is selected, select the hint entry which is the last item in the adapter.
             // Using getCount will not result in an out of bounds index because the hint value is
             // ommited in the count.
-            if (mFieldModel.getValue() == null) mSelectedIndex = adapter.getCount();
+            if (mFieldModel.getValue() == null || mFieldModel.getValue().length() == 0) {
+                mSelectedIndex = adapter.getCount();
+            }
         } else {
             adapter = new DropdownFieldAdapter<CharSequence>(
                     context, R.layout.multiline_spinner_item, dropdownValues);
@@ -116,12 +118,6 @@ class EditorDropdownField implements EditorFieldView {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) requestFocusAndHideKeyboard();
-
-                // If the dropdown supports an hint and the hint is selected, select the first
-                // element instead.
-                if (mDropdown.getSelectedItemPosition() == count) {
-                    mDropdown.setSelection(0);
-                }
 
                 return false;
             }
