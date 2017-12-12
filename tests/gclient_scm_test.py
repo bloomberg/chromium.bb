@@ -631,7 +631,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
                                   options)
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(
-        ['git', 'ls-files'], cwd=self.base_path,
+        ['git', '-c', 'core.quotePath=false', 'ls-files'], cwd=self.base_path,
         env=gclient_scm.scm.GIT.ApplyEnvVars({}), stderr=-1,).AndReturn('')
     gclient_scm.subprocess2.check_output(
         ['git', 'rev-parse', '--verify', 'HEAD'],
@@ -668,7 +668,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
                                   options)
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(
-        ['git', 'ls-files'], cwd=self.base_path,
+        ['git', '-c', 'core.quotePath=false', 'ls-files'], cwd=self.base_path,
         env=gclient_scm.scm.GIT.ApplyEnvVars({}), stderr=-1,).AndReturn('')
     gclient_scm.subprocess2.check_output(
         ['git', 'rev-parse', '--verify', 'HEAD'],

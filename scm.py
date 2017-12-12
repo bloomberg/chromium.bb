@@ -131,8 +131,8 @@ class GIT(object):
       upstream_branch = GIT.GetUpstreamBranch(cwd)
       if upstream_branch is None:
         raise gclient_utils.Error('Cannot determine upstream branch')
-    command = ['diff', '--name-status', '--no-renames',
-               '-r', '%s...' % upstream_branch]
+    command = ['-c', 'core.quotePath=false', 'diff',
+               '--name-status', '--no-renames', '-r', '%s...' % upstream_branch]
     if not files:
       pass
     elif isinstance(files, basestring):
