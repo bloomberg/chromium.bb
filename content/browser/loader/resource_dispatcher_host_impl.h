@@ -270,6 +270,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const NavigationRequestInfo& info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       NavigationURLLoaderImplCore* loader,
+      mojom::URLLoaderClientPtr url_loader_client,
+      mojom::URLLoaderRequest url_loader_request,
       ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core);
 

@@ -14,6 +14,7 @@
 #include "content/browser/loader/navigation_url_loader_network_service.h"
 #include "content/browser/loader/url_loader_request_handler.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
@@ -33,7 +34,8 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
         resource_context, storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, delegate);
   }
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService) ||
+      IsNavigationMojoResponseEnabled()) {
     return std::make_unique<NavigationURLLoaderNetworkService>(
         resource_context, storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, appcache_handle,
