@@ -11,6 +11,11 @@
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
+#include "core/layout/LayoutTextFragment.h"
+#include "core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/paint/ng/ng_paint_fragment.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 
@@ -73,6 +78,7 @@ using IsTypeOfSimple = bool(const LayoutObject& layout_object);
 
 USING_LAYOUTOBJECT_FUNC(IsLayoutBlock);
 USING_LAYOUTOBJECT_FUNC(IsLayoutBlockFlow);
+USING_LAYOUTOBJECT_FUNC(IsLayoutNGBlockFlow);
 USING_LAYOUTOBJECT_FUNC(IsLayoutInline);
 USING_LAYOUTOBJECT_FUNC(IsBR);
 USING_LAYOUTOBJECT_FUNC(IsListItem);
@@ -97,6 +103,10 @@ static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
 
 static bool IsSVGTSpan(const LayoutObject& layout_object) {
   return layout_object.GetName() == String("LayoutSVGTSpan");
+}
+
+static bool IsLegacyBlockFlow(const LayoutObject& layout_object) {
+  return layout_object.IsLayoutBlockFlow() && !layout_object.IsLayoutNGMixin();
 }
 
 static bool TestLayoutObject(LayoutObject* object,
@@ -664,6 +674,184 @@ TEST_F(LayoutSelectionTest, Embed) {
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT(IsLayoutEmbeddedContent, kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
+}
+
+class NGLayoutSelectionTest
+    : public LayoutSelectionTest,
+      private ScopedLayoutNGForTest,
+      private ScopedLayoutNGPaintFragmentsForTest,
+      private ScopedPaintUnderInvalidationCheckingForTest {
+ public:
+  NGLayoutSelectionTest()
+      : ScopedLayoutNGForTest(true),
+        ScopedLayoutNGPaintFragmentsForTest(true),
+        ScopedPaintUnderInvalidationCheckingForTest(true) {}
+};
+
+static const NGPaintFragment* FindNGPaintFragmentInternal(
+    const NGPaintFragment* paint,
+    const LayoutObject* layout_object) {
+  if (paint->GetLayoutObject() == layout_object)
+    return paint;
+  for (const auto& child : paint->Children()) {
+    if (const NGPaintFragment* child_fragment =
+            FindNGPaintFragmentInternal(child.get(), layout_object))
+      return child_fragment;
+  }
+  return nullptr;
+}
+
+static const NGPhysicalTextFragment& GetNGPhysicalTextFragment(
+    const LayoutObject* layout_object) {
+  DCHECK(layout_object->IsText());
+  LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow();
+  DCHECK(block_flow);
+  DCHECK(block_flow->IsLayoutNGMixin());
+  LayoutNGBlockFlow* layout_ng = ToLayoutNGBlockFlow(block_flow);
+  const NGPaintFragment* paint_fragment =
+      FindNGPaintFragmentInternal(layout_ng->PaintFragment(), layout_object);
+  const NGPhysicalFragment& physical_fragment =
+      paint_fragment->PhysicalFragment();
+  return ToNGPhysicalTextFragment(physical_fragment);
+}
+
+TEST_F(NGLayoutSelectionTest, SelectOnOneText) {
+#ifndef NDEBUG
+  // This line prohibits compiler optimization removing the debug function.
+  PrintLayoutTreeForDebug();
+#endif
+  const SelectionInDOMTree& selection =
+      SetSelectionTextToBody("foo<span>b^a|r</span>");
+  Selection().SetSelection(selection);
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("foo", kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT("bar", kStartAndEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+
+  LayoutObject* const foo =
+      GetDocument().body()->firstChild()->GetLayoutObject();
+  EXPECT_EQ(std::make_pair(0u, 0u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(foo)));
+  LayoutObject* const bar = GetDocument()
+                                .body()
+                                ->firstChild()
+                                ->nextSibling()
+                                ->firstChild()
+                                ->GetLayoutObject();
+  EXPECT_EQ(std::make_pair(4u, 5u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(bar)));
+}
+
+TEST_F(NGLayoutSelectionTest, FirstLetterInAnotherBlockFlow) {
+  const SelectionInDOMTree& selection = SetSelectionTextToBody(
+      "<style>:first-letter { float: right}</style>^fo|o");
+  Selection().SetSelection(selection);
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("f"), kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("oo"), kEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  Node* const foo = GetDocument().body()->firstChild()->nextSibling();
+  const LayoutTextFragment* const foo_f =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*foo, 0));
+  EXPECT_EQ(std::make_pair(0u, 1u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(foo_f)));
+  const LayoutTextFragment* const foo_oo =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*foo, 1));
+  EXPECT_EQ(std::make_pair(1u, 2u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(foo_oo)));
+}
+
+TEST_F(NGLayoutSelectionTest, TwoNGBlockFlows) {
+  const SelectionInDOMTree& selection =
+      SetSelectionTextToBody("<div>f^oo</div><div>ba|r</div>");
+  Selection().SetSelection(selection);
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("bar", kEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  LayoutObject* const foo =
+      GetDocument().body()->firstChild()->firstChild()->GetLayoutObject();
+  EXPECT_EQ(std::make_pair(1u, 3u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(foo)));
+  LayoutObject* const bar = GetDocument()
+                                .body()
+                                ->firstChild()
+                                ->nextSibling()
+                                ->firstChild()
+                                ->GetLayoutObject();
+  EXPECT_EQ(std::make_pair(0u, 2u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(bar)));
+}
+
+TEST_F(NGLayoutSelectionTest, MixedBlockFlowsAsSibling) {
+  const SelectionInDOMTree& selection = SetSelectionTextToBody(
+      "<div>f^oo</div>"
+      "<div contenteditable>ba|r</div>");
+  Selection().SetSelection(selection);
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLegacyBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("bar", kEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  LayoutObject* const foo =
+      GetDocument().body()->firstChild()->firstChild()->GetLayoutObject();
+  EXPECT_EQ(std::make_pair(1u, 3u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(foo)));
+  EXPECT_EQ(2u, Selection().LayoutSelectionEnd().value());
+}
+
+TEST_F(NGLayoutSelectionTest, MixedBlockFlowsAnscestor) {
+  const SelectionInDOMTree& selection = SetSelectionTextToBody(
+      "<div contenteditable>f^oo"
+      "<div contenteditable=false>ba|r</div></div>");
+  Selection().SetSelection(selection);
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLegacyBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("bar", kEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart().value());
+  LayoutObject* const bar = GetDocument()
+                                .body()
+                                ->firstChild()
+                                ->firstChild()
+                                ->nextSibling()
+                                ->firstChild()
+                                ->GetLayoutObject();
+  EXPECT_EQ(std::make_pair(0u, 2u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(bar)));
+}
+
+TEST_F(NGLayoutSelectionTest, MixedBlockFlowsDecendant) {
+  const SelectionInDOMTree& selection = SetSelectionTextToBody(
+      "<div contenteditable=false>f^oo"
+      "<div contenteditable>ba|r</div></div>");
+  Selection().SetSelection(selection);
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLegacyBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT("bar", kEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  LayoutObject* const foo =
+      GetDocument().body()->firstChild()->firstChild()->GetLayoutObject();
+  EXPECT_EQ(std::make_pair(1u, 3u), Selection().LayoutSelectionStartEndForNG(
+                                        GetNGPhysicalTextFragment(foo)));
+  EXPECT_EQ(2u, Selection().LayoutSelectionEnd().value());
 }
 
 }  // namespace blink

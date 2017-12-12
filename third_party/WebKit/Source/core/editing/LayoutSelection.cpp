@@ -32,6 +32,8 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
+#include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {
@@ -604,6 +606,99 @@ static NewPaintRangeAndSelectedLayoutObjects MarkStartAndEndInTwoNodes(
           std::move(selected_objects)};
 }
 
+static WTF::Optional<unsigned> GetTextContentOffset(
+    LayoutObject* layout_object,
+    WTF::Optional<unsigned> node_offset) {
+  DCHECK(layout_object->EnclosingNGBlockFlow());
+  // |layout_object| is start or end of selection and offset is only valid
+  // if it is LayoutText.
+  if (!layout_object->IsText())
+    return WTF::nullopt;
+  // There are LayoutText that selection can't be inside it(BR, WBR,
+  // LayoutCounter).
+  if (!node_offset.has_value())
+    return WTF::nullopt;
+  const Position position_in_dom(*layout_object->GetNode(),
+                                 node_offset.value());
+  const NGOffsetMapping* const offset_mapping =
+      NGOffsetMapping::GetFor(position_in_dom);
+  DCHECK(offset_mapping);
+  const WTF::Optional<unsigned>& ng_offset =
+      offset_mapping->GetTextContentOffset(position_in_dom);
+  return ng_offset;
+}
+
+static NewPaintRangeAndSelectedLayoutObjects ComputeNewPaintRange(
+    const NewPaintRangeAndSelectedLayoutObjects& new_range,
+    LayoutObject* start_layout_object,
+    WTF::Optional<unsigned> start_node_offset,
+    LayoutObject* end_layout_object,
+    WTF::Optional<unsigned> end_node_offset) {
+  if (new_range.PaintRange().IsNull())
+    return {};
+  LayoutObject* const start = new_range.PaintRange().StartLayoutObject();
+  // If LayoutObject is not in NG, use legacy offset.
+  const WTF::Optional<unsigned> start_offset =
+      start->EnclosingNGBlockFlow()
+          ? GetTextContentOffset(start_layout_object, start_node_offset)
+          : new_range.PaintRange().StartOffset();
+
+  LayoutObject* const end = new_range.PaintRange().EndLayoutObject();
+  const WTF::Optional<unsigned> end_offset =
+      end->EnclosingNGBlockFlow()
+          ? GetTextContentOffset(end_layout_object, end_node_offset)
+          : new_range.PaintRange().EndOffset();
+
+  return {{start, start_offset, end, end_offset},
+          std::move(new_range.LayoutObjects())};
+}
+
+// ClampOffset modifies |offset| fixed in a range of |text_fragment| start/end
+// offsets.
+static unsigned ClampOffset(unsigned offset,
+                            const NGPhysicalTextFragment& text_fragment) {
+  return std::min(std::max(offset, text_fragment.StartOffset()),
+                  text_fragment.EndOffset());
+}
+
+std::pair<unsigned, unsigned> LayoutSelection::SelectionStartEndForNG(
+    const NGPhysicalTextFragment& text_fragment) {
+  // FrameSelection holds selection offsets in layout block flow at
+  // LayoutSelection::Commit() if selection starts/ends within Text that
+  // each LayoutObject::SelectionState indicates.
+  // These offset can out of |text_fragment| because SelectionState is of each
+  // LayoutText and not |text_fragment|.
+  switch (text_fragment.GetLayoutObject()->GetSelectionState()) {
+    case SelectionState::kStart: {
+      DCHECK(SelectionStart().has_value());
+      unsigned start_in_block = SelectionStart().value_or(0);
+      return {ClampOffset(start_in_block, text_fragment),
+              text_fragment.EndOffset()};
+    }
+    case SelectionState::kEnd: {
+      DCHECK(SelectionEnd().has_value());
+      unsigned end_in_block =
+          SelectionEnd().value_or(text_fragment.EndOffset());
+      return {text_fragment.StartOffset(),
+              ClampOffset(end_in_block, text_fragment)};
+    }
+    case SelectionState::kStartAndEnd: {
+      DCHECK(SelectionStart().has_value());
+      DCHECK(SelectionEnd().has_value());
+      unsigned start_in_block = SelectionStart().value_or(0);
+      unsigned end_in_block =
+          SelectionEnd().value_or(text_fragment.EndOffset());
+      return {ClampOffset(start_in_block, text_fragment),
+              ClampOffset(end_in_block, text_fragment)};
+    }
+    case SelectionState::kInside:
+      return {text_fragment.StartOffset(), text_fragment.EndOffset()};
+    default:
+      // This block is not included in selection.
+      return {0, 0};
+  }
+}
+
 static NewPaintRangeAndSelectedLayoutObjects
 CalcSelectionRangeAndSetSelectionState(const FrameSelection& frame_selection) {
   const SelectionInDOMTree& selection_in_dom =
@@ -652,14 +747,19 @@ CalcSelectionRangeAndSetSelectionState(const FrameSelection& frame_selection) {
   const WTF::Optional<unsigned> end_offset = ComputeEndOffset(
       *end_layout_object, selection.EndPosition().ToOffsetInAnchor());
 
-  if (start_layout_object == end_layout_object) {
-    return MarkStartAndEndInOneNode(std::move(selected_objects),
-                                    start_layout_object, start_offset,
-                                    end_offset);
-  }
-  return MarkStartAndEndInTwoNodes(std::move(selected_objects),
-                                   start_layout_object, start_offset,
-                                   end_layout_object, end_offset);
+  NewPaintRangeAndSelectedLayoutObjects new_range =
+      start_layout_object == end_layout_object
+          ? MarkStartAndEndInOneNode(std::move(selected_objects),
+                                     start_layout_object, start_offset,
+                                     end_offset)
+          : MarkStartAndEndInTwoNodes(std::move(selected_objects),
+                                      start_layout_object, start_offset,
+                                      end_layout_object, end_offset);
+
+  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
+    return new_range;
+  return ComputeNewPaintRange(new_range, start_layout_object, start_offset,
+                              end_layout_object, end_offset);
 }
 
 void LayoutSelection::SetHasPendingSelection() {

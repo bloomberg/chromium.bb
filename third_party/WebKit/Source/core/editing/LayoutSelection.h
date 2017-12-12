@@ -31,6 +31,7 @@ namespace blink {
 
 class IntRect;
 class LayoutObject;
+class NGPhysicalTextFragment;
 class FrameSelection;
 
 // This class represents a selection range in layout tree for painting and
@@ -104,6 +105,13 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void ClearSelection();
   WTF::Optional<unsigned> SelectionStart() const;
   WTF::Optional<unsigned> SelectionEnd() const;
+  // This function returns selected part of |text_fragment|.
+  // Returned pair is a partial range of
+  // (text_fragment.StartOffset(), text_fragment.EndOffset()).
+  // If first equals second, it indicates "no selection in fragment".
+  std::pair<unsigned, unsigned> SelectionStartEndForNG(
+      const NGPhysicalTextFragment&);
+
   void OnDocumentShutdown();
 
   void Trace(blink::Visitor*);
