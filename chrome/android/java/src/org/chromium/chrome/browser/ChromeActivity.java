@@ -801,15 +801,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         maybeRemoveWindowBackground();
 
         Tab tab = getActivityTab();
-        if (tab == null) return;
         if (hasFocus) {
-            tab.onActivityShown();
+            if (tab != null) tab.onActivityShown();
             VrShellDelegate.onActivityShown(this);
         } else {
             boolean stopped = ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED;
             if (stopped) {
                 VrShellDelegate.onActivityHidden(this);
-                tab.onActivityHidden();
+                if (tab != null) tab.onActivityHidden();
             }
         }
     }
