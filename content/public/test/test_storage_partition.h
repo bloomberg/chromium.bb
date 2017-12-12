@@ -126,8 +126,7 @@ class TestStoragePartition : public StoragePartition {
 
   void ClearDataForOrigin(uint32_t remove_mask,
                           uint32_t quota_storage_remove_mask,
-                          const GURL& storage_origin,
-                          net::URLRequestContextGetter* rq_context) override;
+                          const GURL& storage_origin) override;
 
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
