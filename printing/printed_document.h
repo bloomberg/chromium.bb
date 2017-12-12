@@ -101,18 +101,22 @@ class PRINTING_EXPORT PrintedDocument
   const base::string16& name() const { return immutable_.name_; }
   int cookie() const { return immutable_.cookie_; }
 
-  // Sets a path where to dump printing output files for debugging. If never set
-  // no files are generated.
-  static void set_debug_dump_path(const base::FilePath& debug_dump_path);
+  // Sets a path where to dump printing output files for debugging. If never
+  // set, no files are generated. |debug_dump_path| must not be empty.
+  static void SetDebugDumpPath(const base::FilePath& debug_dump_path);
+
+  // Returns true if SetDebugDumpPath() has been called.
+  static bool HasDebugDumpPath();
 
   // Creates debug file name from given |document_name| and |extension|.
-  // |extension| should include '.', example ".pdf"
-  // Returns empty |base::FilePath| if debug dumps is not enabled.
+  // |extension| should include the leading dot. e.g. ".pdf"
+  // Should only be called when debug dumps are enabled.
   static base::FilePath CreateDebugDumpPath(
       const base::string16& document_name,
       const base::FilePath::StringType& extension);
 
-  // Dump data on blocking task runner if debug dumps enabled.
+  // Dump data on blocking task runner.
+  // Should only be called when debug dumps are enabled.
   void DebugDumpData(const base::RefCountedMemory* data,
                      const base::FilePath::StringType& extension);
 
