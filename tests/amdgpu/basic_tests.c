@@ -1459,8 +1459,6 @@ static void amdgpu_sync_dependency_test(void)
 	static uint32_t *ptr;
 	uint64_t seq_no;
 
-	CU_ASSERT_EQUAL(r, 0);
-
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle[0]);
 	CU_ASSERT_EQUAL(r, 0);
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle[1]);
