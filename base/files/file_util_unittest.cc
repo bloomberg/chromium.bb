@@ -1364,10 +1364,14 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
   // this is best-effort because it's not supported by all file systems. Both
   // files will have the same flags so no need to get them individually.
   int flags;
-  CHECK_EQ(0, ioctl(file1.GetPlatformFile(), FS_IOC_GETFLAGS, &flags));
-  flags |= FS_IMMUTABLE_FL;
-  ioctl(file1.GetPlatformFile(), FS_IOC_SETFLAGS, &flags);
-  ioctl(file3.GetPlatformFile(), FS_IOC_SETFLAGS, &flags);
+  bool file_attrs_supported =
+      ioctl(file1.GetPlatformFile(), FS_IOC_GETFLAGS, &flags) == 0;
+  // Some filesystems (e.g. tmpfs) don't support file attributes.
+  if (file_attrs_supported) {
+    flags |= FS_IMMUTABLE_FL;
+    ioctl(file1.GetPlatformFile(), FS_IOC_SETFLAGS, &flags);
+    ioctl(file3.GetPlatformFile(), FS_IOC_SETFLAGS, &flags);
+  }
 #endif
 
   // Delete recursively and check that at least the second file got deleted.
@@ -1377,9 +1381,11 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
 
 #if defined(OS_LINUX)
   // Make sure that the test can clean up after itself.
-  flags &= ~FS_IMMUTABLE_FL;
-  ioctl(file1.GetPlatformFile(), FS_IOC_SETFLAGS, &flags);
-  ioctl(file3.GetPlatformFile(), FS_IOC_SETFLAGS, &flags);
+  if (file_attrs_supported) {
+    flags &= ~FS_IMMUTABLE_FL;
+    ioctl(file1.GetPlatformFile(), FS_IOC_SETFLAGS, &flags);
+    ioctl(file3.GetPlatformFile(), FS_IOC_SETFLAGS, &flags);
+  }
 #endif
 }
 
