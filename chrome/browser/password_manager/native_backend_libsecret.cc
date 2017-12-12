@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/os_crypt/libsecret_task_runner_linux.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "url/origin.h"
@@ -412,7 +413,7 @@ bool NativeBackendLibsecret::GetAllLogins(
 
 scoped_refptr<base::SequencedTaskRunner>
 NativeBackendLibsecret::GetBackgroundTaskRunner() {
-  return nullptr;
+  return os_crypt::GetLibsecretTaskRunner();
 }
 
 bool NativeBackendLibsecret::GetLoginsList(
