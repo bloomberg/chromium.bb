@@ -19,10 +19,12 @@ class CC_PAINT_EXPORT ClientRawMemoryTransferCacheEntry
  public:
   explicit ClientRawMemoryTransferCacheEntry(std::vector<uint8_t> data);
   ~ClientRawMemoryTransferCacheEntry() final;
+  uint32_t Id() const final;
   size_t SerializedSize() const final;
   bool Serialize(base::span<uint8_t> data) const final;
 
  private:
+  uint32_t id_;
   std::vector<uint8_t> data_;
 };
 

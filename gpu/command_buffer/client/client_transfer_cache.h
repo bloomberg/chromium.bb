@@ -5,11 +5,12 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_CLIENT_TRANSFER_CACHE_H_
 #define GPU_COMMAND_BUFFER_CLIENT_CLIENT_TRANSFER_CACHE_H_
 
+#include <map>
+
 #include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/client/client_discardable_manager.h"
 #include "gpu/command_buffer/client/gles2_impl_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/common/transfer_cache_entry_id.h"
 
 namespace gpu {
 namespace gles2 {
@@ -38,23 +39,28 @@ class GLES2_IMPL_EXPORT ClientTransferCache {
   ClientTransferCache();
   ~ClientTransferCache();
 
-  TransferCacheEntryId CreateCacheEntry(
-      gles2::GLES2CmdHelper* helper,
-      MappedMemoryManager* mapped_memory,
-      const cc::ClientTransferCacheEntry& entry);
-  bool LockTransferCacheEntry(TransferCacheEntryId id);
+  void CreateCacheEntry(gles2::GLES2CmdHelper* helper,
+                        MappedMemoryManager* mapped_memory,
+                        const cc::ClientTransferCacheEntry& entry);
+  bool LockTransferCacheEntry(cc::TransferCacheEntryType type, uint32_t id);
   void UnlockTransferCacheEntry(gles2::GLES2CmdHelper* helper,
-                                TransferCacheEntryId id);
+                                cc::TransferCacheEntryType type,
+                                uint32_t id);
   void DeleteTransferCacheEntry(gles2::GLES2CmdHelper* helper,
-                                TransferCacheEntryId id);
-
-  // Test only functions
-  ClientDiscardableManager* DiscardableManagerForTesting() {
-    return &discardable_manager_;
-  }
+                                cc::TransferCacheEntryType type,
+                                uint32_t id);
 
  private:
+  ClientDiscardableHandle::Id FindDiscardableHandleId(
+      cc::TransferCacheEntryType type,
+      uint32_t id);
+
+  std::map<uint32_t, ClientDiscardableHandle::Id>& DiscardableHandleIdMap(
+      cc::TransferCacheEntryType entry_type);
+
   ClientDiscardableManager discardable_manager_;
+  std::map<uint32_t, ClientDiscardableHandle::Id> discardable_handle_id_map_
+      [static_cast<uint32_t>(cc::TransferCacheEntryType::kLast) + 1];
 };
 
 }  // namespace gpu

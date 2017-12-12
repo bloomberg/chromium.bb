@@ -4627,10 +4627,9 @@ _FUNCTION_INFO = {
   },
   "CreateTransferCacheEntryINTERNAL": {
     'decoder_func': 'DoCreateTransferCacheEntryINTERNAL',
-    'cmd_args': 'GLuint64 handle_id, GLuint handle_shm_id, '
-                'GLuint handle_shm_offset, GLuint type, '
-                'GLuint data_shm_id, GLuint data_shm_offset, '
-                'GLuint data_size',
+    'cmd_args': 'GLuint entry_type, GLuint entry_id, GLuint handle_shm_id, '
+                'GLuint handle_shm_offset, GLuint data_shm_id, '
+                'GLuint data_shm_offset, GLuint data_size',
     'internal': True,
     'impl_func': True,
     'client_test': False,
@@ -4638,7 +4637,7 @@ _FUNCTION_INFO = {
   },
   "DeleteTransferCacheEntryINTERNAL": {
     'decoder_func': 'DoDeleteTransferCacheEntryINTERNAL',
-    'cmd_args': 'GLuint64 handle_id',
+    'cmd_args': 'GLuint entry_type, GLuint entry_id',
     'internal': True,
     'impl_func': True,
     'client_test': False,
@@ -4646,7 +4645,7 @@ _FUNCTION_INFO = {
   },
   "UnlockTransferCacheEntryINTERNAL": {
     'decoder_func': 'DoUnlockTransferCacheEntryINTERNAL',
-    'cmd_args': 'GLuint64 handle_id',
+    'cmd_args': 'GLuint entry_type, GLuint entry_id',
     'internal': True,
     'impl_func': True,
     'client_test': False,

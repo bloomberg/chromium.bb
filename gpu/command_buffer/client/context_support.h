@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "gpu/command_buffer/common/transfer_cache_entry_id.h"
+#include "cc/paint/transfer_cache_entry.h"
 #include "ui/gfx/overlay_transform.h"
 
 namespace cc {
@@ -94,12 +94,14 @@ class ContextSupport {
   // Access to transfer cache functionality for OOP raster. Only
   // ThreadsafeLockTransferCacheEntry can be accessed without holding the
   // context lock.
-  virtual gpu::TransferCacheEntryId CreateTransferCacheEntry(
+  virtual void CreateTransferCacheEntry(
       const cc::ClientTransferCacheEntry& entry) = 0;
-  virtual bool ThreadsafeLockTransferCacheEntry(
-      gpu::TransferCacheEntryId id) = 0;
-  virtual void UnlockTransferCacheEntry(gpu::TransferCacheEntryId id) = 0;
-  virtual void DeleteTransferCacheEntry(gpu::TransferCacheEntryId id) = 0;
+  virtual bool ThreadsafeLockTransferCacheEntry(cc::TransferCacheEntryType type,
+                                                uint32_t id) = 0;
+  virtual void UnlockTransferCacheEntry(cc::TransferCacheEntryType type,
+                                        uint32_t id) = 0;
+  virtual void DeleteTransferCacheEntry(cc::TransferCacheEntryType type,
+                                        uint32_t id) = 0;
 
  protected:
   ContextSupport() = default;

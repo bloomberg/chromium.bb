@@ -215,11 +215,14 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool ThreadSafeShallowLockDiscardableTexture(uint32_t texture_id) override;
   void CompleteLockDiscardableTexureOnContextThread(
       uint32_t texture_id) override;
-  TransferCacheEntryId CreateTransferCacheEntry(
+  void CreateTransferCacheEntry(
       const cc::ClientTransferCacheEntry& entry) override;
-  bool ThreadsafeLockTransferCacheEntry(gpu::TransferCacheEntryId id) override;
-  void UnlockTransferCacheEntry(gpu::TransferCacheEntryId id) override;
-  void DeleteTransferCacheEntry(gpu::TransferCacheEntryId id) override;
+  bool ThreadsafeLockTransferCacheEntry(cc::TransferCacheEntryType type,
+                                        uint32_t id) override;
+  void UnlockTransferCacheEntry(cc::TransferCacheEntryType type,
+                                uint32_t id) override;
+  void DeleteTransferCacheEntry(cc::TransferCacheEntryType type,
+                                uint32_t id) override;
 
   // TODO(danakj): Move to ContextSupport once ContextProvider doesn't need to
   // intercept it.

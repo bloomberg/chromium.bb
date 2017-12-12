@@ -23,18 +23,21 @@ class CC_PAINT_EXPORT TransferCacheDeserializeHelper {
   // Type safe access to an entry in the transfer cache. Returns null if the
   // entry is missing or of the wrong type.
   template <typename T>
-  T* GetEntryAs(uint64_t id) {
-    ServiceTransferCacheEntry* entry = GetEntryInternal(id);
+  T* GetEntryAs(uint32_t id) {
+    ServiceTransferCacheEntry* entry = GetEntryInternal(T::kType, id);
     if (entry == nullptr) {
       return nullptr;
     }
-    if (entry->Type() != T::kType)
-      return nullptr;
+    // The service side entry is created using T::kType, so the class created is
+    // guaranteed to make the entry type.
+    DCHECK_EQ(entry->Type(), T::kType);
     return static_cast<T*>(entry);
   }
 
  private:
-  virtual ServiceTransferCacheEntry* GetEntryInternal(uint64_t id) = 0;
+  virtual ServiceTransferCacheEntry* GetEntryInternal(
+      TransferCacheEntryType entry_type,
+      uint32_t entry_id) = 0;
 };
 
 };  // namespace cc

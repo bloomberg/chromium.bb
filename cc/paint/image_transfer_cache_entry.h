@@ -24,11 +24,14 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
       const SkColorSpace* target_color_space);
   ~ClientImageTransferCacheEntry() final;
 
+  uint32_t Id() const final;
+
   // ClientTransferCacheEntry implementation:
   size_t SerializedSize() const final;
   bool Serialize(base::span<uint8_t> data) const final;
 
  private:
+  uint32_t id_;
   const SkPixmap* const pixmap_;
   size_t size_ = 0;
 };
