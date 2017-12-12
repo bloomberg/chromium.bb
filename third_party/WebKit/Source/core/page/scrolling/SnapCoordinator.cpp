@@ -308,16 +308,8 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
       MinimumValueForLength(container_style->ScrollPaddingLeft(),
                             container.Width()));
   LayoutRectOutsets area_margin(
-      // According to spec
-      // https://www.w3.org/TR/css-scroll-snap-1/#scroll-snap-margin
-      // Only fixed values are valid inputs. So we would return 0 for percentage
-      // values.
-      // TODO(sunyunjia): Update CSS parser to reject percentage and auto values
-      // for scroll-snap-margin, and reject auto values for scroll-padding.
-      MinimumValueForLength(area_style->ScrollSnapMarginTop(), LayoutUnit()),
-      MinimumValueForLength(area_style->ScrollSnapMarginRight(), LayoutUnit()),
-      MinimumValueForLength(area_style->ScrollSnapMarginBottom(), LayoutUnit()),
-      MinimumValueForLength(area_style->ScrollSnapMarginLeft(), LayoutUnit()));
+      area_style->ScrollSnapMarginTop(), area_style->ScrollSnapMarginRight(),
+      area_style->ScrollSnapMarginBottom(), area_style->ScrollSnapMarginLeft());
   container.Contract(container_padding);
   area.Expand(area_margin);
 

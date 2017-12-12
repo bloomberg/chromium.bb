@@ -3801,29 +3801,21 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ZoomAdjustedPixelValueForLength(style.ScrollPaddingInlineEnd(),
                                              style);
     case CSSPropertyScrollSnapMarginTop:
-      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginTop(),
-                                             style);
+      return ZoomAdjustedPixelValue(style.ScrollSnapMarginTop(), style);
     case CSSPropertyScrollSnapMarginRight:
-      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginRight(),
-                                             style);
+      return ZoomAdjustedPixelValue(style.ScrollSnapMarginRight(), style);
     case CSSPropertyScrollSnapMarginBottom:
-      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginBottom(),
-                                             style);
+      return ZoomAdjustedPixelValue(style.ScrollSnapMarginBottom(), style);
     case CSSPropertyScrollSnapMarginLeft:
-      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginLeft(),
-                                             style);
+      return ZoomAdjustedPixelValue(style.ScrollSnapMarginLeft(), style);
     case CSSPropertyScrollSnapMarginBlockStart:
-      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginBlockStart(),
-                                             style);
+      return ZoomAdjustedPixelValue(style.ScrollSnapMarginBlockStart(), style);
     case CSSPropertyScrollSnapMarginBlockEnd:
-      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginBlockEnd(),
-                                             style);
+      return ZoomAdjustedPixelValue(style.ScrollSnapMarginBlockEnd(), style);
     case CSSPropertyScrollSnapMarginInlineStart:
-      return ZoomAdjustedPixelValueForLength(
-          style.ScrollSnapMarginInlineStart(), style);
+      return ZoomAdjustedPixelValue(style.ScrollSnapMarginInlineStart(), style);
     case CSSPropertyScrollSnapMarginInlineEnd:
-      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginInlineEnd(),
-                                             style);
+      return ZoomAdjustedPixelValue(style.ScrollSnapMarginInlineEnd(), style);
     case CSSPropertyOverscrollBehavior: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       list->Append(*CSSIdentifierValue::Create(style.OverscrollBehaviorX()));

@@ -719,11 +719,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // scroll-snap-margin-block-start
-  const Length& ScrollSnapMarginBlockStart() const {
+  float ScrollSnapMarginBlockStart() const {
     return IsHorizontalWritingMode() ? ScrollSnapMarginTop()
                                      : ScrollSnapMarginLeft();
   }
-  void SetScrollSnapMarginBlockStart(const Length& v) {
+  void SetScrollSnapMarginBlockStart(float v) {
     if (IsHorizontalWritingMode())
       SetScrollSnapMarginTop(v);
     else
@@ -731,11 +731,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // scroll-snap-margin-block-end
-  const Length& ScrollSnapMarginBlockEnd() const {
+  float ScrollSnapMarginBlockEnd() const {
     return IsHorizontalWritingMode() ? ScrollSnapMarginBottom()
                                      : ScrollSnapMarginRight();
   }
-  void SetScrollSnapMarginBlockEnd(const Length& v) {
+  void SetScrollSnapMarginBlockEnd(float v) {
     if (IsHorizontalWritingMode())
       SetScrollSnapMarginBottom(v);
     else
@@ -743,11 +743,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // scroll-snap-margin-inline-start
-  const Length& ScrollSnapMarginInlineStart() const {
+  float ScrollSnapMarginInlineStart() const {
     return IsHorizontalWritingMode() ? ScrollSnapMarginLeft()
                                      : ScrollSnapMarginTop();
   }
-  void SetScrollSnapMarginInlineStart(const Length& v) {
+  void SetScrollSnapMarginInlineStart(float v) {
     if (IsHorizontalWritingMode())
       SetScrollSnapMarginLeft(v);
     else
@@ -755,11 +755,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // scroll-snap-margin-inline-end
-  const Length& ScrollSnapMarginInlineEnd() const {
+  float ScrollSnapMarginInlineEnd() const {
     return IsHorizontalWritingMode() ? ScrollSnapMarginRight()
                                      : ScrollSnapMarginBottom();
   }
-  void SetScrollSnapMarginInlineEnd(const Length& v) {
+  void SetScrollSnapMarginInlineEnd(float v) {
     if (IsHorizontalWritingMode())
       SetScrollSnapMarginRight(v);
     else
