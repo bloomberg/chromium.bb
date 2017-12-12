@@ -568,10 +568,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._test_package = self._test_apk.GetPackageName()
     all_instrumentations = self._test_apk.GetAllInstrumentations()
     all_junit3_runner_classes = [
-        x for x in all_instrumentations if ('true' not in x.get(
+        x for x in all_instrumentations if ('0xffffffff' not in x.get(
             'chromium-junit4', ''))]
     all_junit4_test_runner_classes = [
-        x for x in all_instrumentations if ('true' in x.get(
+        x for x in all_instrumentations if ('0xffffffff' in x.get(
             'chromium-junit4', ''))]
 
     if len(all_junit3_runner_classes) > 1:
