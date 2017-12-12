@@ -737,12 +737,19 @@ void VRDisplay::submitFrame() {
     client->DrawingBufferClientRestoreFramebufferBinding();
     client->DrawingBufferClientRestoreRenderbufferBinding();
 
-    // We decompose the cloned handle, and use it to create a mojo::ScopedHandle
-    // which will own cleanup of the handle, and will be passed over IPC.
-    gfx::GpuMemoryBufferHandle gpu_handle =
-        CloneHandleForIPC(gpu_memory_buffer->GetHandle());
-    vr_presentation_provider_->SubmitFrameWithTextureHandle(
-        vr_frame_id_, mojo::WrapPlatformFile(gpu_handle.handle.GetHandle()));
+    // We can fail to obtain a GpuMemoryBuffer if we don't have GPU support, or
+    // for some out-of-memory situations.
+    // TODO(billorr): Consider whether we should just drop the frame or exit
+    // presentation.
+    if (gpu_memory_buffer) {
+      // We decompose the cloned handle, and use it to create a
+      // mojo::ScopedHandle which will own cleanup of the handle, and will be
+      // passed over IPC.
+      gfx::GpuMemoryBufferHandle gpu_handle =
+          CloneHandleForIPC(gpu_memory_buffer->GetHandle());
+      vr_presentation_provider_->SubmitFrameWithTextureHandle(
+          vr_frame_id_, mojo::WrapPlatformFile(gpu_handle.handle.GetHandle()));
+    }
 #else
     NOTIMPLEMENTED();
 #endif
