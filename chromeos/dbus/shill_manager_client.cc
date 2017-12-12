@@ -93,17 +93,15 @@ class ShillManagerClientImpl : public ShillManagerClient {
   }
 
   void SetNetworkThrottlingStatus(
-      const bool enabled,
-      const uint32_t upload_rate_kbits,
-      const uint32_t download_rate_kbits,
+      const NetworkThrottlingStatus& status,
       const base::Closure& callback,
       const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kSetNetworkThrottlingFunction);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendBool(enabled);
-    writer.AppendUint32(upload_rate_kbits);
-    writer.AppendUint32(download_rate_kbits);
+    writer.AppendBool(status.enabled);
+    writer.AppendUint32(status.upload_rate_kbits);
+    writer.AppendUint32(status.download_rate_kbits);
     helper_->CallVoidMethodWithErrorCallback(&method_call, callback,
                                              error_callback);
   }

@@ -73,6 +73,9 @@ class CHROMEOS_EXPORT FakeShillManagerClient
                             const ErrorCallback& error_callback) override;
   void ConnectToBestServices(const base::Closure& callback,
                              const ErrorCallback& error_callback) override;
+  void SetNetworkThrottlingStatus(const NetworkThrottlingStatus& status,
+                                  const base::Closure& callback,
+                                  const ErrorCallback& error_callback) override;
 
   ShillManagerClient::TestInterface* GetTestInterface() override;
 
@@ -100,11 +103,7 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   void SetupDefaultEnvironment() override;
   int GetInteractiveDelay() const override;
   void SetBestServiceToConnect(const std::string& service_path) override;
-  void SetNetworkThrottlingStatus(bool enabled,
-                                  uint32_t upload_rate_kbits,
-                                  uint32_t download_rate_kbits,
-                                  const base::Closure& callback,
-                                  const ErrorCallback& error_callback) override;
+  const NetworkThrottlingStatus& GetNetworkThrottlingStatus() override;
 
   // Constants used for testing.
   static const char kFakeEthernetNetworkGuid[];
@@ -153,6 +152,9 @@ class CHROMEOS_EXPORT FakeShillManagerClient
 
   // Roaming state for fake cellular service.
   std::string roaming_state_;
+
+  // Current network throttling status.
+  NetworkThrottlingStatus network_throttling_status_ = {false, 0, 0};
 
   typedef std::map<std::string, base::Value*> ShillPropertyMap;
   typedef std::map<std::string, ShillPropertyMap> DevicePropertyMap;

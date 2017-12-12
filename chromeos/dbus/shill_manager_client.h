@@ -32,6 +32,18 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
   typedef ShillClientHelper::StringCallback StringCallback;
   typedef ShillClientHelper::BooleanCallback BooleanCallback;
 
+  struct NetworkThrottlingStatus {
+    // Enable or disable network bandwidth throttling.
+    // Following fields are available only if |enabled| is true.
+    bool enabled;
+
+    // Uploading rate (kbits/s).
+    uint32_t upload_rate_kbits;
+
+    // Downloading rate (kbits/s).
+    uint32_t download_rate_kbits;
+  };
+
   // Interface for setting up devices, services, and technologies for testing.
   // Accessed through GetTestInterface(), only implemented in the Stub Impl.
   class TestInterface {
@@ -86,6 +98,9 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
 
     // Sets the 'best' service to connect to on a ConnectToBestServices call.
     virtual void SetBestServiceToConnect(const std::string& service_path) = 0;
+
+    // Returns the current network throttling status.
+    virtual const NetworkThrottlingStatus& GetNetworkThrottlingStatus() = 0;
 
    protected:
     virtual ~TestInterface() {}
@@ -221,13 +236,9 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
                                      const ErrorCallback& error_callback) = 0;
 
   // Enable or disable network bandwidth throttling, on all interfaces on the
-  // system. If |enabled| is true, |upload_rate_kbits| and |download_rate_kbits|
-  // are the desired rates (in kbits/s) to throttle to. If |enabled| is false,
-  // throttling is off, and the rates are ignored.
+  // system.
   virtual void SetNetworkThrottlingStatus(
-      bool enabled,
-      uint32_t upload_rate_kbits,
-      uint32_t download_rate_kbits,
+      const NetworkThrottlingStatus& status,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 

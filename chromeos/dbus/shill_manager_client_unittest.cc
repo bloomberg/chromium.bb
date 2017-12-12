@@ -273,13 +273,13 @@ TEST_F(ShillManagerClientTest, NetworkThrottling) {
   // Call method.
   base::MockCallback<base::Closure> mock_closure;
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
-  client_->SetNetworkThrottlingStatus(enabled, upload_rate, download_rate,
-                                      mock_closure.Get(),
-                                      mock_error_callback.Get());
   EXPECT_CALL(mock_closure, Run()).Times(1);
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
-  // Run the message loop.
+  client_->SetNetworkThrottlingStatus(
+      ShillManagerClient::NetworkThrottlingStatus{enabled, upload_rate,
+                                                  download_rate},
+      mock_closure.Get(), mock_error_callback.Get());
   base::RunLoop().RunUntilIdle();
 }
 

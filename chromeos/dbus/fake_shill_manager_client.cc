@@ -590,12 +590,18 @@ void FakeShillManagerClient::SetBestServiceToConnect(
   best_service_ = service_path;
 }
 
+const ShillManagerClient::NetworkThrottlingStatus&
+FakeShillManagerClient::GetNetworkThrottlingStatus() {
+  return network_throttling_status_;
+}
+
 void FakeShillManagerClient::SetNetworkThrottlingStatus(
-    bool enabled,
-    uint32_t upload_rate_kbits,
-    uint32_t download_rate_kbits,
+    const NetworkThrottlingStatus& status,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {}
+    const ErrorCallback& error_callback) {
+  network_throttling_status_ = status;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+}
 
 void FakeShillManagerClient::SetupDefaultEnvironment() {
   // Bail out from setup if there is no message loop. This will be the common

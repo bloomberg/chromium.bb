@@ -243,7 +243,9 @@ void ShillPropertyHandler::SetNetworkThrottlingStatus(
     uint32_t upload_rate_kbits,
     uint32_t download_rate_kbits) {
   shill_manager_->SetNetworkThrottlingStatus(
-      throttling_enabled, upload_rate_kbits, download_rate_kbits,
+      ShillManagerClient::NetworkThrottlingStatus{
+          throttling_enabled, upload_rate_kbits, download_rate_kbits,
+      },
       base::Bind(&base::DoNothing),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
                  "SetNetworkThrottlingStatus failed", "Manager",
