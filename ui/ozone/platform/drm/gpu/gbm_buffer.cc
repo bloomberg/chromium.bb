@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -70,7 +71,20 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
     bool ret = drm_->AddFramebuffer2(
         gbm_bo_get_width(bo), gbm_bo_get_height(bo), framebuffer_pixel_format_,
         handles, strides, offsets, modifiers, &framebuffer_, addfb_flags);
-    PLOG_IF(ERROR, !ret) << "AddFramebuffer2 failed";
+    // TODO(dcastagna): remove debugging info once we figure out why
+    // AddFramebuffer2 is failing. crbug.com/789292
+    if (!ret) {
+      PLOG(ERROR) << "AddFramebuffer2 failed: ";
+      LOG(ERROR) << base::StringPrintf(
+          "planes: %zu, width: %u, height: %u, addfb_flags: %u",
+          gbm_bo_get_num_planes(bo), gbm_bo_get_width(bo),
+          gbm_bo_get_height(bo), addfb_flags);
+      for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
+        LOG(ERROR) << base::StringPrintf(
+            "handle: %u, stride: %u, offset: %u, modifier: %zu", handles[i],
+            strides[i], offsets[i], modifiers[i]);
+      }
+    }
     DCHECK(ret);
     if (opaque_framebuffer_pixel_format_ != framebuffer_pixel_format_) {
       ret = drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
