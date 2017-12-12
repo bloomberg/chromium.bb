@@ -208,7 +208,7 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
       resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
       break;
     case Resource::kCSSStyleSheet:
-      resource = CSSStyleSheetResource::Fetch(params, Fetcher());
+      resource = CSSStyleSheetResource::Fetch(params, Fetcher(), nullptr);
       break;
     case Resource::kFont:
       resource = FontResource::Fetch(params, Fetcher());
