@@ -23,9 +23,6 @@ namespace message_center {
 class MESSAGE_CENTER_EXPORT NotificationDelegate
     : public base::RefCountedThreadSafe<NotificationDelegate> {
  public:
-  // To be called when the desktop notification is actually shown.
-  virtual void Display();
-
   // To be called when the desktop notification is closed.  If closed by a
   // user explicitly (as opposed to timeout/script), |by_user| should be true.
   virtual void Close(bool by_user);

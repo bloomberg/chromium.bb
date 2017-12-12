@@ -11,8 +11,6 @@ namespace message_center {
 
 // NotificationDelegate:
 
-void NotificationDelegate::Display() {}
-
 void NotificationDelegate::Close(bool by_user) {}
 
 void NotificationDelegate::Click() {}
