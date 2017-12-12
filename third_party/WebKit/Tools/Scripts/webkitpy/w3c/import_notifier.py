@@ -150,7 +150,8 @@ class ImportNotifier(object):
             issue: The issue number of the import CL (a string).
             gerrit_url: Gerrit URL of the CL.
         """
-        imported_commits = self.local_wpt.commits_in_range(wpt_revision_start, wpt_revision_end)
+        commits_in_range = self.local_wpt.commits_in_range(wpt_revision_start, wpt_revision_end)
+        imported_commits = [commit_hash for commit_hash, _ in commits_in_range]
         for directory, failures in self.new_failures_by_directory.iteritems():
             title = '[WPT] New failures introduced in {} by import {}'.format(directory, issue)
             _log.info(title)
