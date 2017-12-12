@@ -143,18 +143,6 @@ inline v8::Local<v8::Value> GetPropertyUnsafe(
       .ToLocalChecked();
 }
 
-// Wraps v8::Function::Call(). Returns true on success.
-inline bool CallFunction(v8::Local<v8::Context> context,
-                         v8::Local<v8::Function> function,
-                         v8::Local<v8::Value> recv,
-                         int argc,
-                         v8::Local<v8::Value> argv[],
-                         v8::Local<v8::Value>* out) {
-  v8::MicrotasksScope microtasks_scope(
-      context->GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
-  return function->Call(context, recv, argc, argv).ToLocal(out);
-}
-
 }  // namespace v8_helpers
 }  // namespace extensions
 
