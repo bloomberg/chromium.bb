@@ -2816,6 +2816,92 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
             match.contents_class[2].style);
 }
 
+// Verifies that "http://" is trimmed in the general case.
+TEST_F(SearchProviderTest, DoTrimHttpScheme) {
+  const base::string16 input(ASCIIToUTF16("face book"));
+  const base::string16 url(ASCIIToUTF16("http://www.facebook.com"));
+  SearchSuggestionParser::NavigationResult result(
+      ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
+      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      false, 0, false, input);
+
+  // Generate the contents and check for the presence of a scheme.
+  QueryForInput(input, false, false);
+  AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
+  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), match_inline.contents);
+}
+
+// Verifies that "http://" is not trimmed for input that has a scheme, even if
+// the input doesn't match the URL.
+TEST_F(SearchProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
+  const base::string16 input(ASCIIToUTF16("https://face book"));
+  const base::string16 url(ASCIIToUTF16("http://www.facebook.com"));
+  SearchSuggestionParser::NavigationResult result(
+      ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
+      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      false, 0, false, input);
+
+  // Generate the contents and check for the presence of a scheme.
+  QueryForInput(input, false, false);
+  AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
+  EXPECT_EQ(url, match_inline.contents);
+}
+
+// Verifies that "https://" is not trimmed for input in the general case.
+TEST_F(SearchProviderTest, DontTrimHttpsScheme) {
+  const base::string16 input(ASCIIToUTF16("face book"));
+  const base::string16 url(ASCIIToUTF16("https://www.facebook.com"));
+  SearchSuggestionParser::NavigationResult result(
+      ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
+      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      false, 0, false, input);
+
+  // Generate the contents and check for the presence of a scheme.
+  QueryForInput(input, false, false);
+  AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
+  EXPECT_EQ(url, match_inline.contents);
+}
+
+// Verifies that "https://" is not trimmed for input that has a (non-matching)
+// scheme, even if flag requests it.
+TEST_F(SearchProviderTest, DontTrimHttpsSchemeDespiteFlag) {
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentHideSuggestionUrlScheme);
+
+  const base::string16 input(ASCIIToUTF16("http://face book"));
+  const base::string16 url(ASCIIToUTF16("https://www.facebook.com"));
+  SearchSuggestionParser::NavigationResult result(
+      ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
+      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      false, 0, false, input);
+
+  // Generate the contents and check for the presence of a scheme.
+  QueryForInput(input, false, false);
+  AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
+  EXPECT_EQ(url, match_inline.contents);
+}
+
+// Verifies that "https://" is trimmed if the flag requests it, and
+// nothing else would prevent it.
+TEST_F(SearchProviderTest, DoTrimHttpsSchemeIfFlag) {
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentHideSuggestionUrlScheme);
+
+  const base::string16 input(ASCIIToUTF16("face book"));
+  const base::string16 url(ASCIIToUTF16("https://www.facebook.com"));
+  SearchSuggestionParser::NavigationResult result(
+      ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
+      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      false, 0, false, input);
+
+  // Generate the contents and check for the presence of a scheme.
+  QueryForInput(input, false, false);
+  AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
+  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), match_inline.contents);
+}
+
 #if !defined(OS_WIN)
 // Verify entity suggestion parsing.
 TEST_F(SearchProviderTest, ParseEntitySuggestion) {
