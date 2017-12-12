@@ -29,7 +29,6 @@ import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
-import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
@@ -172,12 +171,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void cancelFling(long timeMs) {}
-
-    @Override
-    public void addGestureStateListener(GestureStateListener listener) {}
-
-    @Override
-    public void removeGestureStateListener(GestureStateListener listener) {}
 
     @Override
     public void onShow() {}

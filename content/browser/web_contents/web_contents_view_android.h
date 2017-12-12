@@ -18,6 +18,10 @@
 #include "ui/android/view_client.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+namespace blink {
+class WebGestureEvent;
+}
+
 namespace content {
 class ContentViewCore;
 class RenderWidgetHostViewAndroid;
@@ -103,6 +107,8 @@ class WebContentsViewAndroid : public WebContentsView,
   int GetTopControlsHeight() const override;
   int GetBottomControlsHeight() const override;
   bool DoBrowserControlsShrinkBlinkSize() const override;
+  void GestureEventAck(const blink::WebGestureEvent& event,
+                       InputEventAckState ack_result) override;
 
   // ui::ViewClient implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& event) override;

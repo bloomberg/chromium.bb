@@ -12,7 +12,12 @@
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/features.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
+
+namespace blink {
+class WebGestureEvent;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -77,6 +82,10 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
 
   // Returns true if the browser controls resize Blink's view size.
   virtual bool DoBrowserControlsShrinkBlinkSize() const;
+
+  // Do post-event tasks for gesture events.
+  virtual void GestureEventAck(const blink::WebGestureEvent& event,
+                               InputEventAckState ack_result);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // Shows a popup menu with the specified items.

@@ -10,6 +10,7 @@
 #include "cc/layers/layer.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_view_core.h"
+#include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -501,6 +502,15 @@ int WebContentsViewAndroid::GetBottomControlsHeight() const {
 bool WebContentsViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
   auto* delegate = web_contents_->GetDelegate();
   return delegate ? delegate->DoBrowserControlsShrinkBlinkSize() : false;
+}
+
+void WebContentsViewAndroid::GestureEventAck(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  auto* manager = GestureListenerManager::FromWebContents(web_contents_);
+  if (!manager)
+    return;
+  manager->GestureEventAck(event, ack_result);
 }
 
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {
