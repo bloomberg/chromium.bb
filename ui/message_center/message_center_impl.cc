@@ -590,8 +590,6 @@ void MessageCenterImpl::DisplayedNotification(
     notification_list_->MarkSinglePopupAsDisplayed(id);
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
-  if (delegate.get())
-    delegate->Display();
   {
     internal::ScopedNotificationsIterationLock lock(this);
     for (auto& observer : observer_list_)

@@ -80,7 +80,6 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
   class TestDelegate : public message_center::NotificationDelegate {
    public:
     TestDelegate() = default;
-    void Display() override { log_ += "Display_"; }
     void Close(bool by_user) override {
       log_ += "Close_";
       log_ += (by_user ? "by_user_" : "programmatically_");
@@ -162,11 +161,9 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicAddCancel) {
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicDelegate) {
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("hey", &delegate), profile());
-  // Verify that delegate accumulated correct log of events.
-  EXPECT_EQ("Display_", delegate->log());
   manager()->CancelById("hey", NotificationUIManager::GetProfileID(profile()));
   // Verify that delegate accumulated correct log of events.
-  EXPECT_EQ("Display_Close_programmatically_", delegate->log());
+  EXPECT_EQ("Close_programmatically_", delegate->log());
   delegate->Release();
 }
 
@@ -177,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
       manager()->GetMessageCenterNotificationIdForTest("n", profile());
   message_center()->ClickOnNotificationButton(notification_id, 1);
   // Verify that delegate accumulated correct log of events.
-  EXPECT_EQ("Display_ButtonClick_1_", delegate->log());
+  EXPECT_EQ("ButtonClick_1_", delegate->log());
   delegate->Release();
 }
 
@@ -189,7 +186,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   manager()->Add(CreateRichTestNotification("n", &delegate2), profile());
 
   manager()->CancelById("n", NotificationUIManager::GetProfileID(profile()));
-  EXPECT_EQ("Display_", delegate->log());
   EXPECT_EQ("Close_programmatically_", delegate2->log());
 
   delegate->Release();
