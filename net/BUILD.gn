@@ -85,10 +85,6 @@ net_configs = [
   "//build/config/compiler:wexit_time_destructors",
 ]
 
-if (use_glib && use_gconf && !is_chromeos) {
-  net_configs += [ "//build/config/linux/gconf" ]
-}
-
 if (is_linux) {
   net_configs += [ "//build/config/linux:libresolv" ]
 }
