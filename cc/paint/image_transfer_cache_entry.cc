@@ -4,17 +4,21 @@
 
 #include "cc/paint/image_transfer_cache_entry.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 
 namespace cc {
+namespace {
+base::AtomicSequenceNumber g_next_id;
+}
 
 ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
     const SkPixmap* pixmap,
     const SkColorSpace* target_color_space)
-    : pixmap_(pixmap) {
+    : id_(g_next_id.GetNext()), pixmap_(pixmap) {
   // Compute and cache the size of the data.
   // We write the following:
   // - Image color type (uint32_t)
@@ -36,6 +40,10 @@ ClientImageTransferCacheEntry::~ClientImageTransferCacheEntry() = default;
 
 size_t ClientImageTransferCacheEntry::SerializedSize() const {
   return size_;
+}
+
+uint32_t ClientImageTransferCacheEntry::Id() const {
+  return id_;
 }
 
 bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {

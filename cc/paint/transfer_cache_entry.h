@@ -19,7 +19,7 @@ namespace cc {
 //  - Implement a ClientTransferCacheEntry and ServiceTransferCacheEntry for
 //    your new type.
 //  - Update ServiceTransferCacheEntry::Create in transfer_cache_entry.cc.
-enum class TransferCacheEntryType {
+enum class TransferCacheEntryType : uint32_t {
   kRawMemory,
   kImage,
   kPaintTypeface,
@@ -33,8 +33,13 @@ class CC_PAINT_EXPORT ClientTransferCacheEntry {
  public:
   virtual ~ClientTransferCacheEntry() {}
 
-  // Returns the type of this entry.
+  // Returns the type of this entry. Combined with id, it should form a unique
+  // identifier.
   virtual TransferCacheEntryType Type() const = 0;
+
+  // Returns the id of this entry. Combined with type, it should form a unique
+  // identifier.
+  virtual uint32_t Id() const = 0;
 
   // Returns the serialized sized of this entry in bytes. This function will be
   // used to determine how much memory is going to be allocated and passed to

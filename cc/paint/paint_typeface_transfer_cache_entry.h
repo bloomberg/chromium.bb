@@ -13,11 +13,12 @@
 namespace cc {
 
 class CC_PAINT_EXPORT ClientPaintTypefaceTransferCacheEntry
-    : public ClientTransferCacheEntry {
+    : public ClientTransferCacheEntryBase<
+          TransferCacheEntryType::kPaintTypeface> {
  public:
   explicit ClientPaintTypefaceTransferCacheEntry(const PaintTypeface& typeface);
   ~ClientPaintTypefaceTransferCacheEntry() final;
-  TransferCacheEntryType Type() const final;
+  uint32_t Id() const final;
   size_t SerializedSize() const final;
   bool Serialize(base::span<uint8_t> data) const final;
 
@@ -30,11 +31,11 @@ class CC_PAINT_EXPORT ClientPaintTypefaceTransferCacheEntry
 };
 
 class CC_PAINT_EXPORT ServicePaintTypefaceTransferCacheEntry
-    : public ServiceTransferCacheEntry {
+    : public ServiceTransferCacheEntryBase<
+          TransferCacheEntryType::kPaintTypeface> {
  public:
   ServicePaintTypefaceTransferCacheEntry();
   ~ServicePaintTypefaceTransferCacheEntry() final;
-  TransferCacheEntryType Type() const final;
   size_t CachedSize() const final;
   bool Deserialize(GrContext* context, base::span<uint8_t> data) final;
 

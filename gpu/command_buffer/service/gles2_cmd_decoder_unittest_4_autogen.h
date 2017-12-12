@@ -53,19 +53,19 @@ TEST_P(GLES2DecoderTest4, CreateTransferCacheEntryINTERNALValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest4, DeleteTransferCacheEntryINTERNALValidArgs) {
-  EXPECT_CALL(*gl_, DeleteTransferCacheEntryINTERNAL(1));
+  EXPECT_CALL(*gl_, DeleteTransferCacheEntryINTERNAL(1, 2));
   SpecializedSetup<cmds::DeleteTransferCacheEntryINTERNAL, 0>(true);
   cmds::DeleteTransferCacheEntryINTERNAL cmd;
-  cmd.Init(1);
+  cmd.Init(1, 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_P(GLES2DecoderTest4, UnlockTransferCacheEntryINTERNALValidArgs) {
-  EXPECT_CALL(*gl_, UnlockTransferCacheEntryINTERNAL(1));
+  EXPECT_CALL(*gl_, UnlockTransferCacheEntryINTERNAL(1, 2));
   SpecializedSetup<cmds::UnlockTransferCacheEntryINTERNAL, 0>(true);
   cmds::UnlockTransferCacheEntryINTERNAL cmd;
-  cmd.Init(1);
+  cmd.Init(1, 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

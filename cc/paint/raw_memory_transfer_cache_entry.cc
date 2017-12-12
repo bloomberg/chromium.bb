@@ -6,16 +6,25 @@
 
 #include <string.h>
 
+#include "base/atomic_sequence_num.h"
+
 namespace cc {
+namespace {
+base::AtomicSequenceNumber g_next_id;
+}
 
 ClientRawMemoryTransferCacheEntry::ClientRawMemoryTransferCacheEntry(
     std::vector<uint8_t> data)
-    : data_(std::move(data)) {}
+    : id_(g_next_id.GetNext()), data_(std::move(data)) {}
 ClientRawMemoryTransferCacheEntry::~ClientRawMemoryTransferCacheEntry() =
     default;
 
 size_t ClientRawMemoryTransferCacheEntry::SerializedSize() const {
   return data_.size();
+}
+
+uint32_t ClientRawMemoryTransferCacheEntry::Id() const {
+  return id_;
 }
 
 bool ClientRawMemoryTransferCacheEntry::Serialize(

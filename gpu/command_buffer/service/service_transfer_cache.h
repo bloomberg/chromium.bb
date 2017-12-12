@@ -11,7 +11,6 @@
 #include "base/containers/span.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
-#include "gpu/command_buffer/common/transfer_cache_entry_id.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/gpu_export.h"
 
@@ -30,14 +29,15 @@ class GPU_EXPORT ServiceTransferCache {
   ServiceTransferCache();
   ~ServiceTransferCache();
 
-  bool CreateLockedEntry(TransferCacheEntryId id,
+  bool CreateLockedEntry(cc::TransferCacheEntryType entry_type,
+                         uint32_t entry_id,
                          ServiceDiscardableHandle handle,
-                         cc::TransferCacheEntryType type,
                          GrContext* context,
                          base::span<uint8_t> data);
-  bool UnlockEntry(TransferCacheEntryId id);
-  bool DeleteEntry(TransferCacheEntryId id);
-  cc::ServiceTransferCacheEntry* GetEntry(TransferCacheEntryId id);
+  bool UnlockEntry(cc::TransferCacheEntryType entry_type, uint32_t entry_id);
+  bool DeleteEntry(cc::TransferCacheEntryType entry_type, uint32_t entry_id);
+  cc::ServiceTransferCacheEntry* GetEntry(cc::TransferCacheEntryType entry_type,
+                                          uint32_t entry_id);
 
   // Test-only functions:
   void SetCacheSizeLimitForTesting(size_t cache_size_limit) {
@@ -57,7 +57,9 @@ class GPU_EXPORT ServiceTransferCache {
     ServiceDiscardableHandle handle;
     std::unique_ptr<cc::ServiceTransferCacheEntry> entry;
   };
-  using EntryCache = base::MRUCache<TransferCacheEntryId, CacheEntryInternal>;
+  using EntryCache =
+      base::MRUCache<std::pair<cc::TransferCacheEntryType, uint32_t>,
+                     CacheEntryInternal>;
   EntryCache entries_;
 
   // Total size of all |entries_|. The same as summing

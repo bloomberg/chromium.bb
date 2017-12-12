@@ -6149,25 +6149,28 @@ void GLES2Implementation::CompleteLockDiscardableTexureOnContextThread(
   helper_->LockDiscardableTextureCHROMIUM(texture_id);
 }
 
-gpu::TransferCacheEntryId GLES2Implementation::CreateTransferCacheEntry(
+void GLES2Implementation::CreateTransferCacheEntry(
     const cc::ClientTransferCacheEntry& entry) {
-  return share_group()->transfer_cache()->CreateCacheEntry(
+  share_group()->transfer_cache()->CreateCacheEntry(
       helper_, mapped_memory_.get(), entry);
 }
 
 bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(
-    gpu::TransferCacheEntryId id) {
-  return share_group()->transfer_cache()->LockTransferCacheEntry(id);
+    cc::TransferCacheEntryType type,
+    uint32_t id) {
+  return share_group()->transfer_cache()->LockTransferCacheEntry(type, id);
 }
 
 void GLES2Implementation::UnlockTransferCacheEntry(
-    gpu::TransferCacheEntryId id) {
-  share_group()->transfer_cache()->UnlockTransferCacheEntry(helper_, id);
+    cc::TransferCacheEntryType type,
+    uint32_t id) {
+  share_group()->transfer_cache()->UnlockTransferCacheEntry(helper_, type, id);
 }
 
 void GLES2Implementation::DeleteTransferCacheEntry(
-    gpu::TransferCacheEntryId id) {
-  share_group()->transfer_cache()->DeleteTransferCacheEntry(helper_, id);
+    cc::TransferCacheEntryType type,
+    uint32_t id) {
+  share_group()->transfer_cache()->DeleteTransferCacheEntry(helper_, type, id);
 }
 
 void GLES2Implementation::SetLostContextCallback(

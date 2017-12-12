@@ -58,8 +58,8 @@ ClientPaintTypefaceTransferCacheEntry::ClientPaintTypefaceTransferCacheEntry(
 ClientPaintTypefaceTransferCacheEntry::
     ~ClientPaintTypefaceTransferCacheEntry() = default;
 
-TransferCacheEntryType ClientPaintTypefaceTransferCacheEntry::Type() const {
-  return TransferCacheEntryType::kPaintTypeface;
+uint32_t ClientPaintTypefaceTransferCacheEntry::Id() const {
+  return typeface_.sk_id();
 }
 
 size_t ClientPaintTypefaceTransferCacheEntry::SerializedSize() const {
@@ -111,9 +111,6 @@ ServicePaintTypefaceTransferCacheEntry::
     ServicePaintTypefaceTransferCacheEntry() = default;
 ServicePaintTypefaceTransferCacheEntry::
     ~ServicePaintTypefaceTransferCacheEntry() = default;
-TransferCacheEntryType ServicePaintTypefaceTransferCacheEntry::Type() const {
-  return TransferCacheEntryType::kPaintTypeface;
-}
 
 size_t ServicePaintTypefaceTransferCacheEntry::CachedSize() const {
   return size_;

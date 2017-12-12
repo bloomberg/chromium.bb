@@ -1988,15 +1988,15 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                              GLint pixel_config);
   void DoEndRasterCHROMIUM();
 
-  void DoCreateTransferCacheEntryINTERNAL(GLuint64 handle_id,
+  void DoCreateTransferCacheEntryINTERNAL(GLuint entry_type,
+                                          GLuint entry_id,
                                           GLuint handle_shm_id,
                                           GLuint handle_shm_offset,
-                                          GLuint type,
                                           GLuint data_shm_id,
                                           GLuint data_shm_offset,
                                           GLuint data_size);
-  void DoUnlockTransferCacheEntryINTERNAL(GLuint64 id);
-  void DoDeleteTransferCacheEntryINTERNAL(GLuint64 id);
+  void DoUnlockTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id);
+  void DoDeleteTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id);
 
   void DoWindowRectanglesEXT(GLenum mode, GLsizei n, const volatile GLint* box);
 
@@ -20369,8 +20369,10 @@ class TransferCacheDeserializeHelperImpl
   ~TransferCacheDeserializeHelperImpl() override = default;
 
  private:
-  cc::ServiceTransferCacheEntry* GetEntryInternal(uint64_t id) override {
-    return transfer_cache_->GetEntry(TransferCacheEntryId::FromUnsafeValue(id));
+  cc::ServiceTransferCacheEntry* GetEntryInternal(
+      cc::TransferCacheEntryType entry_type,
+      uint32_t entry_id) override {
+    return transfer_cache_->GetEntry(entry_type, entry_id);
   }
   ServiceTransferCache* transfer_cache_;
 };
@@ -20455,16 +20457,13 @@ void GLES2DecoderImpl::DoWindowRectanglesEXT(GLenum mode,
 }
 
 void GLES2DecoderImpl::DoCreateTransferCacheEntryINTERNAL(
-    GLuint64 raw_handle_id,
+    GLuint raw_entry_type,
+    GLuint entry_id,
     GLuint handle_shm_id,
     GLuint handle_shm_offset,
-    GLuint raw_type,
     GLuint data_shm_id,
     GLuint data_shm_offset,
     GLuint data_size) {
-  TransferCacheEntryId handle_id =
-      TransferCacheEntryId::FromUnsafeValue(raw_handle_id);
-
   if (!supports_oop_raster_) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
@@ -20474,8 +20473,9 @@ void GLES2DecoderImpl::DoCreateTransferCacheEntryINTERNAL(
   DCHECK(gr_context_);
 
   // Validate the type we are about to create.
-  cc::TransferCacheEntryType type;
-  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_type, &type)) {
+  cc::TransferCacheEntryType entry_type;
+  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
+                                                        &entry_type)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
         "Attempt to use OOP transfer cache with an invalid cache entry type.");
@@ -20502,7 +20502,7 @@ void GLES2DecoderImpl::DoCreateTransferCacheEntryINTERNAL(
                                   handle_shm_id);
 
   if (!GetContextGroup()->transfer_cache()->CreateLockedEntry(
-          handle_id, handle, type, gr_context_.get(),
+          entry_type, entry_id, handle, gr_context_.get(),
           base::make_span(data_memory, data_size))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
                        "Failure to deserialize transfer cache entry.");
@@ -20510,21 +20510,35 @@ void GLES2DecoderImpl::DoCreateTransferCacheEntryINTERNAL(
   }
 }
 
-void GLES2DecoderImpl::DoUnlockTransferCacheEntryINTERNAL(
-    GLuint64 raw_handle_id) {
-  TransferCacheEntryId handle_id =
-      TransferCacheEntryId::FromUnsafeValue(raw_handle_id);
-  if (!GetContextGroup()->transfer_cache()->UnlockEntry(handle_id)) {
+void GLES2DecoderImpl::DoUnlockTransferCacheEntryINTERNAL(GLuint raw_entry_type,
+                                                          GLuint entry_id) {
+  cc::TransferCacheEntryType entry_type;
+  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
+                                                        &entry_type)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache with an invalid cache entry type.");
+    return;
+  }
+
+  if (!GetContextGroup()->transfer_cache()->UnlockEntry(entry_type, entry_id)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
                        "Attempt to unlock an invalid ID");
   }
 }
 
-void GLES2DecoderImpl::DoDeleteTransferCacheEntryINTERNAL(
-    GLuint64 raw_handle_id) {
-  TransferCacheEntryId handle_id =
-      TransferCacheEntryId::FromUnsafeValue(raw_handle_id);
-  if (!GetContextGroup()->transfer_cache()->DeleteEntry(handle_id)) {
+void GLES2DecoderImpl::DoDeleteTransferCacheEntryINTERNAL(GLuint raw_entry_type,
+                                                          GLuint entry_id) {
+  cc::TransferCacheEntryType entry_type;
+  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
+                                                        &entry_type)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache with an invalid cache entry type.");
+    return;
+  }
+
+  if (!GetContextGroup()->transfer_cache()->DeleteEntry(entry_type, entry_id)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
                        "Attempt to delete an invalid ID");
   }

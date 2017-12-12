@@ -15,8 +15,8 @@
 
 namespace cc {
 namespace {
-base::AtomicSequenceNumber s_next_id_;
-base::AtomicSequenceNumber s_next_content_id_;
+base::AtomicSequenceNumber g_next_id_;
+base::AtomicSequenceNumber g_next_content_id_;
 }  // namespace
 
 const PaintImage::Id PaintImage::kNonLazyStableId = -1;
@@ -73,12 +73,12 @@ PaintImage::DecodingMode PaintImage::GetConservative(DecodingMode one,
 
 // static
 PaintImage::Id PaintImage::GetNextId() {
-  return s_next_id_.GetNext();
+  return g_next_id_.GetNext();
 }
 
 // static
 PaintImage::ContentId PaintImage::GetNextContentId() {
-  return s_next_content_id_.GetNext();
+  return g_next_content_id_.GetNext();
 }
 
 const sk_sp<SkImage>& PaintImage::GetSkImage() const {

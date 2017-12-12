@@ -16142,64 +16142,57 @@ struct CreateTransferCacheEntryINTERNAL {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint64 _handle_id,
+  void Init(GLuint _entry_type,
+            GLuint _entry_id,
             GLuint _handle_shm_id,
             GLuint _handle_shm_offset,
-            GLuint _type,
             GLuint _data_shm_id,
             GLuint _data_shm_offset,
             GLuint _data_size) {
     SetHeader();
-    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_handle_id),
-                                    &handle_id_0, &handle_id_1);
+    entry_type = _entry_type;
+    entry_id = _entry_id;
     handle_shm_id = _handle_shm_id;
     handle_shm_offset = _handle_shm_offset;
-    type = _type;
     data_shm_id = _data_shm_id;
     data_shm_offset = _data_shm_offset;
     data_size = _data_size;
   }
 
   void* Set(void* cmd,
-            GLuint64 _handle_id,
+            GLuint _entry_type,
+            GLuint _entry_id,
             GLuint _handle_shm_id,
             GLuint _handle_shm_offset,
-            GLuint _type,
             GLuint _data_shm_id,
             GLuint _data_shm_offset,
             GLuint _data_size) {
-    static_cast<ValueType*>(cmd)->Init(_handle_id, _handle_shm_id,
-                                       _handle_shm_offset, _type, _data_shm_id,
+    static_cast<ValueType*>(cmd)->Init(_entry_type, _entry_id, _handle_shm_id,
+                                       _handle_shm_offset, _data_shm_id,
                                        _data_shm_offset, _data_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  GLuint64 handle_id() const volatile {
-    return static_cast<GLuint64>(
-        GLES2Util::MapTwoUint32ToUint64(handle_id_0, handle_id_1));
-  }
-
   gpu::CommandHeader header;
-  uint32_t handle_id_0;
-  uint32_t handle_id_1;
+  uint32_t entry_type;
+  uint32_t entry_id;
   uint32_t handle_shm_id;
   uint32_t handle_shm_offset;
-  uint32_t type;
   uint32_t data_shm_id;
   uint32_t data_shm_offset;
   uint32_t data_size;
 };
 
-static_assert(sizeof(CreateTransferCacheEntryINTERNAL) == 36,
-              "size of CreateTransferCacheEntryINTERNAL should be 36");
+static_assert(sizeof(CreateTransferCacheEntryINTERNAL) == 32,
+              "size of CreateTransferCacheEntryINTERNAL should be 32");
 static_assert(offsetof(CreateTransferCacheEntryINTERNAL, header) == 0,
               "offset of CreateTransferCacheEntryINTERNAL header should be 0");
 static_assert(
-    offsetof(CreateTransferCacheEntryINTERNAL, handle_id_0) == 4,
-    "offset of CreateTransferCacheEntryINTERNAL handle_id_0 should be 4");
+    offsetof(CreateTransferCacheEntryINTERNAL, entry_type) == 4,
+    "offset of CreateTransferCacheEntryINTERNAL entry_type should be 4");
 static_assert(
-    offsetof(CreateTransferCacheEntryINTERNAL, handle_id_1) == 8,
-    "offset of CreateTransferCacheEntryINTERNAL handle_id_1 should be 8");
+    offsetof(CreateTransferCacheEntryINTERNAL, entry_id) == 8,
+    "offset of CreateTransferCacheEntryINTERNAL entry_id should be 8");
 static_assert(
     offsetof(CreateTransferCacheEntryINTERNAL, handle_shm_id) == 12,
     "offset of CreateTransferCacheEntryINTERNAL handle_shm_id should be 12");
@@ -16207,17 +16200,15 @@ static_assert(offsetof(CreateTransferCacheEntryINTERNAL, handle_shm_offset) ==
                   16,
               "offset of CreateTransferCacheEntryINTERNAL handle_shm_offset "
               "should be 16");
-static_assert(offsetof(CreateTransferCacheEntryINTERNAL, type) == 20,
-              "offset of CreateTransferCacheEntryINTERNAL type should be 20");
 static_assert(
-    offsetof(CreateTransferCacheEntryINTERNAL, data_shm_id) == 24,
-    "offset of CreateTransferCacheEntryINTERNAL data_shm_id should be 24");
+    offsetof(CreateTransferCacheEntryINTERNAL, data_shm_id) == 20,
+    "offset of CreateTransferCacheEntryINTERNAL data_shm_id should be 20");
 static_assert(
-    offsetof(CreateTransferCacheEntryINTERNAL, data_shm_offset) == 28,
-    "offset of CreateTransferCacheEntryINTERNAL data_shm_offset should be 28");
+    offsetof(CreateTransferCacheEntryINTERNAL, data_shm_offset) == 24,
+    "offset of CreateTransferCacheEntryINTERNAL data_shm_offset should be 24");
 static_assert(
-    offsetof(CreateTransferCacheEntryINTERNAL, data_size) == 32,
-    "offset of CreateTransferCacheEntryINTERNAL data_size should be 32");
+    offsetof(CreateTransferCacheEntryINTERNAL, data_size) == 28,
+    "offset of CreateTransferCacheEntryINTERNAL data_size should be 28");
 
 struct DeleteTransferCacheEntryINTERNAL {
   typedef DeleteTransferCacheEntryINTERNAL ValueType;
@@ -16231,25 +16222,20 @@ struct DeleteTransferCacheEntryINTERNAL {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint64 _handle_id) {
+  void Init(GLuint _entry_type, GLuint _entry_id) {
     SetHeader();
-    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_handle_id),
-                                    &handle_id_0, &handle_id_1);
+    entry_type = _entry_type;
+    entry_id = _entry_id;
   }
 
-  void* Set(void* cmd, GLuint64 _handle_id) {
-    static_cast<ValueType*>(cmd)->Init(_handle_id);
+  void* Set(void* cmd, GLuint _entry_type, GLuint _entry_id) {
+    static_cast<ValueType*>(cmd)->Init(_entry_type, _entry_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  GLuint64 handle_id() const volatile {
-    return static_cast<GLuint64>(
-        GLES2Util::MapTwoUint32ToUint64(handle_id_0, handle_id_1));
-  }
-
   gpu::CommandHeader header;
-  uint32_t handle_id_0;
-  uint32_t handle_id_1;
+  uint32_t entry_type;
+  uint32_t entry_id;
 };
 
 static_assert(sizeof(DeleteTransferCacheEntryINTERNAL) == 12,
@@ -16257,11 +16243,11 @@ static_assert(sizeof(DeleteTransferCacheEntryINTERNAL) == 12,
 static_assert(offsetof(DeleteTransferCacheEntryINTERNAL, header) == 0,
               "offset of DeleteTransferCacheEntryINTERNAL header should be 0");
 static_assert(
-    offsetof(DeleteTransferCacheEntryINTERNAL, handle_id_0) == 4,
-    "offset of DeleteTransferCacheEntryINTERNAL handle_id_0 should be 4");
+    offsetof(DeleteTransferCacheEntryINTERNAL, entry_type) == 4,
+    "offset of DeleteTransferCacheEntryINTERNAL entry_type should be 4");
 static_assert(
-    offsetof(DeleteTransferCacheEntryINTERNAL, handle_id_1) == 8,
-    "offset of DeleteTransferCacheEntryINTERNAL handle_id_1 should be 8");
+    offsetof(DeleteTransferCacheEntryINTERNAL, entry_id) == 8,
+    "offset of DeleteTransferCacheEntryINTERNAL entry_id should be 8");
 
 struct UnlockTransferCacheEntryINTERNAL {
   typedef UnlockTransferCacheEntryINTERNAL ValueType;
@@ -16275,25 +16261,20 @@ struct UnlockTransferCacheEntryINTERNAL {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint64 _handle_id) {
+  void Init(GLuint _entry_type, GLuint _entry_id) {
     SetHeader();
-    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_handle_id),
-                                    &handle_id_0, &handle_id_1);
+    entry_type = _entry_type;
+    entry_id = _entry_id;
   }
 
-  void* Set(void* cmd, GLuint64 _handle_id) {
-    static_cast<ValueType*>(cmd)->Init(_handle_id);
+  void* Set(void* cmd, GLuint _entry_type, GLuint _entry_id) {
+    static_cast<ValueType*>(cmd)->Init(_entry_type, _entry_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  GLuint64 handle_id() const volatile {
-    return static_cast<GLuint64>(
-        GLES2Util::MapTwoUint32ToUint64(handle_id_0, handle_id_1));
-  }
-
   gpu::CommandHeader header;
-  uint32_t handle_id_0;
-  uint32_t handle_id_1;
+  uint32_t entry_type;
+  uint32_t entry_id;
 };
 
 static_assert(sizeof(UnlockTransferCacheEntryINTERNAL) == 12,
@@ -16301,11 +16282,11 @@ static_assert(sizeof(UnlockTransferCacheEntryINTERNAL) == 12,
 static_assert(offsetof(UnlockTransferCacheEntryINTERNAL, header) == 0,
               "offset of UnlockTransferCacheEntryINTERNAL header should be 0");
 static_assert(
-    offsetof(UnlockTransferCacheEntryINTERNAL, handle_id_0) == 4,
-    "offset of UnlockTransferCacheEntryINTERNAL handle_id_0 should be 4");
+    offsetof(UnlockTransferCacheEntryINTERNAL, entry_type) == 4,
+    "offset of UnlockTransferCacheEntryINTERNAL entry_type should be 4");
 static_assert(
-    offsetof(UnlockTransferCacheEntryINTERNAL, handle_id_1) == 8,
-    "offset of UnlockTransferCacheEntryINTERNAL handle_id_1 should be 8");
+    offsetof(UnlockTransferCacheEntryINTERNAL, entry_id) == 8,
+    "offset of UnlockTransferCacheEntryINTERNAL entry_id should be 8");
 
 struct TexStorage2DImageCHROMIUM {
   typedef TexStorage2DImageCHROMIUM ValueType;
