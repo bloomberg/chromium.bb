@@ -247,6 +247,10 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
   std::map<base::ProcessId, uint64_t> shared_footprints =
       GraphProcessor::ComputeSharedFootprintFromGraph(*global_graph);
 
+  // Perform the rest of the computation on the graph.
+  GraphProcessor::AddOverheadsAndPropogateEntries(global_graph.get());
+  GraphProcessor::CalculateSizesForGraph(global_graph.get());
+
   // Build up the global dump by iterating on the |valid| process dumps.
   mojom::GlobalMemoryDumpPtr global_dump(mojom::GlobalMemoryDump::New());
   global_dump->process_dumps.reserve(request->responses.size());
