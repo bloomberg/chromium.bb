@@ -29,7 +29,7 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     int client_id,
     SurfaceHandle surface_handle) {
   // Don't clear anonymous io surfaces.
-  bool should_clear = id.is_valid();
+  bool should_clear = (client_id != 0);
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       gfx::CreateIOSurface(size, format, should_clear));
   if (!io_surface)
@@ -99,9 +99,9 @@ GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
                                                       bool* is_cleared) {
   // Note that the child id doesn't matter since the texture will never be
   // directly exposed to other processes, only via a mailbox.
-  gfx::GpuMemoryBufferHandle handle =
-      CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId(), size, format, usage,
-                            0 /* client_id */, gpu::kNullSurfaceHandle);
+  gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBuffer(
+      gfx::GpuMemoryBufferId(next_anonymous_image_id_++), size, format, usage,
+      0 /* client_id */, gpu::kNullSurfaceHandle);
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   io_surface.reset(IOSurfaceLookupFromMachPort(handle.mach_port.get()));
