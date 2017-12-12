@@ -123,7 +123,6 @@ class WebMediaPlayer {
   // Playback controls.
   virtual void Play() = 0;
   virtual void Pause() = 0;
-  virtual bool SupportsSave() const = 0;
   virtual void Seek(double seconds) = 0;
   virtual void SetRate(double) = 0;
   virtual void SetVolume(double) = 0;

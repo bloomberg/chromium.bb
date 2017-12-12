@@ -35,7 +35,6 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   void Load(LoadType, const blink::WebMediaPlayerSource&, CORSMode) override {}
   void Play() override {}
   void Pause() override {}
-  bool SupportsSave() const override { return true; }
   void Seek(double seconds) override {}
   void SetRate(double) override {}
   void SetVolume(double) override {}

@@ -19,7 +19,6 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   void Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {}
   void Play() override {}
   void Pause() override {}
-  bool SupportsSave() const override { return false; }
   void Seek(double seconds) override {}
   void SetRate(double) override {}
   void SetVolume(double) override {}
