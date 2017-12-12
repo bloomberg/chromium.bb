@@ -47,7 +47,7 @@ class MediaEngagementPreloadedList {
   // record a histogram and should not be renumbered.
   enum class CheckResult {
     // The check succeeded and the string was found in the data.
-    kFound = 0,
+    kFoundHttpsOnly = 0,
 
     // The check succeeded but the string was not found in the data.
     kNotFound,
@@ -57,6 +57,14 @@ class MediaEngagementPreloadedList {
 
     // The check failed because the list has not been loaded.
     kListNotLoaded,
+
+    // The check succeeded, the string was found and it had metadata that it
+    // allows insecure origins.
+    kFoundHttpOrHttps,
+
+    // The check succeeded, the string was found but it was https only and the
+    // origin was insecure.
+    kFoundHttpsOnlyButWasHttp,
 
     kCount
   };
@@ -80,8 +88,19 @@ class MediaEngagementPreloadedList {
     kCount
   };
 
+  enum class DafsaResult {
+    // The string was not found.
+    kNotFound = -1,
+
+    // The string was found.
+    kFoundHttpsOnly,
+
+    // The string was found and should allow both HTTP and HTTPS origins.
+    kFoundHttpOrHttps,
+  };
+
   // Checks if |input| is present in the preloaded data.
-  bool CheckStringIsPresent(const std::string& input) const;
+  DafsaResult CheckStringIsPresent(const std::string& input) const;
 
   // Records |result| to the LoadResult histogram.
   void RecordLoadResult(LoadResult result);

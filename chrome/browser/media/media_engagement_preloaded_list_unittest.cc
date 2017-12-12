@@ -64,7 +64,8 @@ class MediaEngagementPreloadedListTest : public ::testing::Test {
   }
 
   bool CheckStringIsPresent(const std::string& input) {
-    return preloaded_list_->CheckStringIsPresent(input);
+    return preloaded_list_->CheckStringIsPresent(input) !=
+           MediaEngagementPreloadedList::DafsaResult::kNotFound;
   }
 
   base::FilePath GetFilePathRelativeToModule(base::FilePath path) {
@@ -75,9 +76,20 @@ class MediaEngagementPreloadedListTest : public ::testing::Test {
 
   bool IsEmpty() { return preloaded_list_->empty(); }
 
-  void ExpectCheckResultFoundCount(int count) {
-    ExpectCheckResultCount(MediaEngagementPreloadedList::CheckResult::kFound,
-                           count);
+  void ExpectCheckResultFoundHttpsOnlyCount(int count) {
+    ExpectCheckResultCount(
+        MediaEngagementPreloadedList::CheckResult::kFoundHttpsOnly, count);
+  }
+
+  void ExpectCheckResultFoundHttpsButWasHttpOnlyCount(int count) {
+    ExpectCheckResultCount(
+        MediaEngagementPreloadedList::CheckResult::kFoundHttpsOnlyButWasHttp,
+        count);
+  }
+
+  void ExpectCheckResultFoundHttpOrHttpsCount(int count) {
+    ExpectCheckResultCount(
+        MediaEngagementPreloadedList::CheckResult::kFoundHttpOrHttps, count);
   }
 
   void ExpectCheckResultNotFoundCount(int count) {
@@ -157,7 +169,8 @@ TEST_F(MediaEngagementPreloadedListTest, CheckOriginIsPresent) {
 
   // Check they were recorded on the histogram.
   ExpectCheckResultTotal(4);
-  ExpectCheckResultFoundCount(4);
+  ExpectCheckResultFoundHttpsOnlyCount(3);
+  ExpectCheckResultFoundHttpOrHttpsCount(1);
 
   // Check some origins that are not in the list.
   EXPECT_FALSE(CheckOriginIsPresent(GURL("https://example.org")));
@@ -166,16 +179,13 @@ TEST_F(MediaEngagementPreloadedListTest, CheckOriginIsPresent) {
 
   // Check they were recorded on the histogram.
   ExpectCheckResultTotal(7);
-  ExpectCheckResultNotFoundCount(3);
+  ExpectCheckResultNotFoundCount(2);
+  ExpectCheckResultFoundHttpsButWasHttpOnlyCount(1);
 
   // Make sure only the full origin matches.
   EXPECT_FALSE(CheckStringIsPresent("123"));
   EXPECT_FALSE(CheckStringIsPresent("http"));
-  EXPECT_FALSE(CheckStringIsPresent("example.com"));
-
-  // Check they were recorded on the histogram.
-  ExpectCheckResultTotal(10);
-  ExpectCheckResultNotFoundCount(6);
+  EXPECT_FALSE(CheckStringIsPresent("example.org"));
 }
 
 TEST_F(MediaEngagementPreloadedListTest, LoadMissingFile) {
@@ -236,4 +246,32 @@ TEST_F(MediaEngagementPreloadedListTest, LoadEmptyFile) {
   EXPECT_FALSE(CheckOriginIsPresent(GURL("https://example.com")));
   ExpectCheckResultTotal(1);
   ExpectCheckResultListEmptyCount(1);
+}
+
+TEST_F(MediaEngagementPreloadedListTest, CheckOriginIsPresent_UnsecureSchemes) {
+  ASSERT_TRUE(LoadFromFile(GetFilePathRelativeToModule(kSampleDataPath)));
+  EXPECT_TRUE(IsLoaded());
+  EXPECT_FALSE(IsEmpty());
+
+  // Check the load result was recorded on the histogram.
+  ExpectLoadResultLoaded();
+
+  // An origin that has both HTTP and HTTPS entries should allow either.
+  EXPECT_TRUE(CheckOriginIsPresent(GURL("https://google.com")));
+  EXPECT_TRUE(CheckOriginIsPresent(GURL("http://google.com")));
+  ExpectCheckResultTotal(2);
+  ExpectCheckResultFoundHttpOrHttpsCount(2);
+
+  // An origin that only has a HTTP origin should allow either.
+  EXPECT_TRUE(CheckOriginIsPresent(GURL("https://123.123.123.123")));
+  EXPECT_TRUE(CheckOriginIsPresent(GURL("http://123.123.123.123")));
+  ExpectCheckResultTotal(4);
+  ExpectCheckResultFoundHttpOrHttpsCount(4);
+
+  // An origin that has only HTTPS should only allow HTTPS.
+  EXPECT_TRUE(CheckOriginIsPresent(GURL("https://example.com")));
+  EXPECT_FALSE(CheckOriginIsPresent(GURL("http://example.com")));
+  ExpectCheckResultTotal(6);
+  ExpectCheckResultFoundHttpsOnlyCount(1);
+  ExpectCheckResultFoundHttpsButWasHttpOnlyCount(1);
 }

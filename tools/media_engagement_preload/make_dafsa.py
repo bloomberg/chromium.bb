@@ -7,6 +7,7 @@ import array
 import json
 import sys
 import os
+import urlparse
 
 SOURCE_ROOT = os.path.join(os.path.dirname(
     os.path.abspath(__file__)), os.pardir, os.pardir)
@@ -208,7 +209,10 @@ The bytes in the generated array has the following meaning:
 10: 0x82 <return_value> 0x82 & 0x0F -> return 2
 """
 
-import sys
+
+HTTPS_ONLY = 0
+HTTP_AND_HTTPS = 1
+
 
 class InputError(Exception):
   """Exception raised for errors in the input file."""
@@ -447,10 +451,27 @@ def words_to_proto(words):
 
 
 def parse_json(infile):
-  """Parses the JSON input file and appends a 0."""
+  """Parses the JSON input file and appends a 0 or 1 based on protocol."""
   try:
-    return [entry.encode('ascii', 'ignore') + "0"
-            for entry in json.loads(infile)]
+    netlocs = {}
+    for entry in json.loads(infile):
+      # Parse the origin and reject any with an invalid protocol.
+      parsed = urlparse.urlparse(entry)
+      if parsed.scheme != 'http' and parsed.scheme != 'https':
+        raise InputError('Invalid protocol: %s' % entry)
+
+      # Store the netloc in netlocs with a flag for either HTTP+HTTPS or HTTPS
+      # only. The HTTP+HTTPS value is numerically higher than HTTPS only so it
+      # will take priority.
+      netlocs[parsed.netloc] = max(
+          netlocs.get(parsed.netloc, HTTPS_ONLY),
+          HTTP_AND_HTTPS if parsed.scheme == 'http' else HTTPS_ONLY)
+
+    # Join the numerical values to the netlocs.
+    output = []
+    for location, value in netlocs.iteritems():
+      output.append(location + str(value))
+    return output
   except ValueError:
     raise InputError('Failed to parse JSON.')
 
