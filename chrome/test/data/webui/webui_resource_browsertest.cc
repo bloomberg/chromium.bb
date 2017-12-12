@@ -209,6 +209,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuButtonTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI);
   AddLibrary(IDR_WEBUI_JS_CR_UI_POSITION_UTIL);
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU_BUTTON);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_MENU_ITEM);
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("menu_button_test.html")));
 }

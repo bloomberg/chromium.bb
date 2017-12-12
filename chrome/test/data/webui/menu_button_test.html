@@ -48,6 +48,57 @@ function testMenuShowAndHideEvents() {
   assertFalse(menuButton.classList.contains('using-mouse'));
 }
 
+function testFocusMoves() {
+  var menu = document.createElement('div');
+  var otherButton = document.createElement('button');
+  cr.ui.decorate(menu, cr.ui.Menu);
+  menu.addMenuItem({});
+  document.body.appendChild(menu);
+  document.body.appendChild(otherButton);
+
+  var menuButton = document.createElement('div');
+  cr.ui.decorate(menuButton, cr.ui.MenuButton);
+  // Allow to put focus on the menu button by focus().
+  menuButton.tabIndex = 1;
+  menuButton.menu = menu;
+  document.body.appendChild(menuButton);
+
+  // Case 1: Close by mouse click outside the menu.
+  otherButton.focus();
+  // Click to show menu.
+  menuButton.dispatchEvent(new MouseEvent('mousedown'));
+  assertTrue(menuButton.isMenuShown());
+  // Click again to hide menu by clicking the button.
+  menuButton.dispatchEvent(new MouseEvent('mousedown'));
+  assertFalse(menuButton.isMenuShown());
+  // Focus should be kept on the original place.
+  assertEquals(otherButton, document.activeElement);
+
+  // Case 2: Activate menu item with mouse.
+  menuButton.dispatchEvent(new MouseEvent('mousedown'));
+  assertTrue(menuButton.isMenuShown());
+  // Emulate choosing a menu item by mouse click.
+  var menuItem = menu.menuItems[0];
+  menuItem.selected = true;
+  menuItem.dispatchEvent(new MouseEvent('mouseup', {buttons: 1}));
+  assertFalse(menuButton.isMenuShown());
+  // Focus should be kept on the original place.
+  assertEquals(otherButton, document.activeElement);
+
+  // Case 3: Open menu and activate by keyboard.
+  menuButton.focus();
+  assertEquals(menuButton, document.activeElement);
+  // Open menu
+  menuButton.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+  assertTrue(menuButton.isMenuShown(), 'menu opened');
+  // Select an item and activate
+  menu.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+  menu.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+  assertFalse(menuButton.isMenuShown(), 'menu closed');
+  // Focus should be still on the menu button.
+  assertEquals(menuButton, document.activeElement);
+}
+
 </script>
 </body>
 </html>
