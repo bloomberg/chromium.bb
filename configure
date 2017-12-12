@@ -259,6 +259,7 @@ EXPERIMENT_LIST="
     filter_intra
     intra_edge
     ext_intra_mod
+    ext_intra_mod2
     intrabc
     new_quant
     loop_restoration
