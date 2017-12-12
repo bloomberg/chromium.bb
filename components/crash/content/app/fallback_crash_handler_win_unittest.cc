@@ -47,7 +47,7 @@ class ExceptionPointers {
 
   EXCEPTION_POINTERS* exception_ptrs() { return &exception_ptrs_; }
   std::string AsString() {
-    return base::Uint64ToString(reinterpret_cast<uintptr_t>(exception_ptrs()));
+    return base::NumberToString(reinterpret_cast<uintptr_t>(exception_ptrs()));
   }
 
  private:

@@ -23,7 +23,7 @@ std::string AudioDeviceIdCalculator::GetStableDeviceId(
   if (!stable_id_map_loaded_)
     LoadStableIdMap();
   std::string audio_service_stable_id_str =
-      base::Uint64ToString(audio_service_stable_id);
+      base::NumberToString(audio_service_stable_id);
   const auto& it = stable_id_map_.find(audio_service_stable_id_str);
   if (it != stable_id_map_.end())
     return it->second;

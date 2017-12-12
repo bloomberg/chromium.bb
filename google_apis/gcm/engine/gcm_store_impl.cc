@@ -435,9 +435,9 @@ void GCMStoreImpl::Backend::SetDeviceCredentials(
   write_options.sync = true;
 
   std::string encrypted_token;
-  encryptor_->EncryptString(base::Uint64ToString(device_security_token),
+  encryptor_->EncryptString(base::NumberToString(device_security_token),
                             &encrypted_token);
-  std::string android_id_str = base::Uint64ToString(device_android_id);
+  std::string android_id_str = base::NumberToString(device_android_id);
   leveldb::Status s =
       db_->Put(write_options,
                MakeSlice(kDeviceAIDKey),

@@ -175,7 +175,7 @@ void DeviceCommandScreenshotJob::StartScreenshotUpload() {
     header_fields.insert(std::make_pair(net::HttpRequestHeaders::kContentType,
                                         kContentTypeImagePng));
     header_fields.insert(std::make_pair(kCommandIdHeaderName,
-                                        base::Uint64ToString(unique_id())));
+                                        base::NumberToString(unique_id())));
     std::unique_ptr<std::string> data = base::MakeUnique<std::string>(
         (const char*)screenshot_entry.second->front(),
         screenshot_entry.second->size());

@@ -473,7 +473,7 @@ void AnnotateFormsWithSignatures(
     if (password_form) {
       form.SetAttribute(
           blink::WebString::FromASCII(kDebugAttributeForFormSignature),
-          blink::WebString::FromUTF8(base::Uint64ToString(
+          blink::WebString::FromUTF8(base::NumberToString(
               CalculateFormSignature(password_form->form_data))));
 
       std::vector<blink::WebFormControlElement> control_elements =
@@ -491,7 +491,7 @@ void AnnotateFormsWithSignatures(
         control_element.SetAttribute(
             blink::WebString::FromASCII(kDebugAttributeForFieldSignature),
             blink::WebString::FromUTF8(
-                base::Uint64ToString(CalculateFieldSignatureForField(field))));
+                base::NumberToString(CalculateFieldSignatureForField(field))));
       }
     }
   }

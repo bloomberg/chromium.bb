@@ -343,9 +343,9 @@ void SelectFileDialogImplKDE::GetKDialogCommandLine(
   // Attach to the current Chrome window.
   if (parent != x11::None) {
     command_line->AppendSwitchNative(
-        desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ?
-            "--embed" : "--attach",
-        base::Uint64ToString(parent));
+        desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ? "--embed"
+                                                        : "--attach",
+        base::NumberToString(parent));
   }
 
   // Set the correct title for the dialog.

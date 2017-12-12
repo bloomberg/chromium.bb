@@ -173,7 +173,7 @@ class JingleSession : public Session {
 
   // This prefix is necessary to disambiguate between the ID's sent from the
   // client and the ID's sent from the host.
-  std::string outgoing_id_prefix_ = base::Uint64ToString(base::RandUint64());
+  std::string outgoing_id_prefix_ = base::NumberToString(base::RandUint64());
   int next_outgoing_id_ = 0;
 
   // Transport info messages that are received while the session is being

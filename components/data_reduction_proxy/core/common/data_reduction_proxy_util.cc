@@ -103,8 +103,8 @@ void GetChromiumBuildAndPatch(const std::string& version_string,
   uint32_t build_number;
   uint32_t patch_number;
   GetChromiumBuildAndPatchAsInts(version_string, &build_number, &patch_number);
-  *build = base::Uint64ToString(build_number);
-  *patch = base::Uint64ToString(patch_number);
+  *build = base::NumberToString(build_number);
+  *patch = base::NumberToString(patch_number);
 }
 
 void GetChromiumBuildAndPatchAsInts(const std::string& version_string,

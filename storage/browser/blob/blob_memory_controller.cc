@@ -961,7 +961,7 @@ void BlobMemoryController::OnMemoryPressure(
 }
 
 FilePath BlobMemoryController::GenerateNextPageFileName() {
-  std::string file_name = base::Uint64ToString(current_file_num_++);
+  std::string file_name = base::NumberToString(current_file_num_++);
   return blob_storage_dir_.Append(FilePath::FromUTF8Unsafe(file_name));
 }
 

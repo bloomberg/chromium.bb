@@ -41,7 +41,7 @@ WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
       render_process_id_(content::ChildProcessHost::kInvalidUniqueID),
       render_frame_id_(MSG_ROUTING_NONE) {
   dict_.SetString(keys::kMethodKey, request.method);
-  dict_.SetString(keys::kRequestIdKey, base::Uint64ToString(request.id));
+  dict_.SetString(keys::kRequestIdKey, base::NumberToString(request.id));
   dict_.SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   dict_.SetString(keys::kTypeKey,
                   WebRequestResourceTypeToString(request.web_request_type));

@@ -32,7 +32,7 @@ const FilePath::CharType kFutureFileName[] = FILE_PATH_LITERAL("_future_name_");
 
 /* static */
 base::FilePath BlobDataBuilder::GetFutureFileItemPath(uint64_t file_id) {
-  std::string file_id_str = base::Uint64ToString(file_id);
+  std::string file_id_str = base::NumberToString(file_id);
   return base::FilePath(kFutureFileName)
       .AddExtension(
           base::FilePath::StringType(file_id_str.begin(), file_id_str.end()));

@@ -129,13 +129,13 @@ TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
   ASSERT_TRUE(auth_tokenizer.GetNext());
   EXPECT_EQ(kLoginHeader, auth_tokenizer.token());
   ASSERT_TRUE(auth_tokenizer.GetNext());
-  EXPECT_EQ(base::Uint64ToString(kAndroidId), auth_tokenizer.token());
+  EXPECT_EQ(base::NumberToString(kAndroidId), auth_tokenizer.token());
   ASSERT_TRUE(auth_tokenizer.GetNext());
-  EXPECT_EQ(base::Uint64ToString(kSecurityToken), auth_tokenizer.token());
+  EXPECT_EQ(base::NumberToString(kSecurityToken), auth_tokenizer.token());
 
   std::map<std::string, std::string> expected_pairs;
   expected_pairs["app"] = kAppId;
-  expected_pairs["device"] = base::Uint64ToString(kAndroidId);
+  expected_pairs["device"] = base::NumberToString(kAndroidId);
   expected_pairs["delete"] = "true";
   expected_pairs["gcm_unreg_caller"] = "false";
 
@@ -373,14 +373,14 @@ TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {
   ASSERT_TRUE(auth_tokenizer.GetNext());
   EXPECT_EQ(kLoginHeader, auth_tokenizer.token());
   ASSERT_TRUE(auth_tokenizer.GetNext());
-  EXPECT_EQ(base::Uint64ToString(kAndroidId), auth_tokenizer.token());
+  EXPECT_EQ(base::NumberToString(kAndroidId), auth_tokenizer.token());
   ASSERT_TRUE(auth_tokenizer.GetNext());
-  EXPECT_EQ(base::Uint64ToString(kSecurityToken), auth_tokenizer.token());
+  EXPECT_EQ(base::NumberToString(kSecurityToken), auth_tokenizer.token());
 
   std::map<std::string, std::string> expected_pairs;
   expected_pairs["gmsv"] = base::IntToString(kGCMVersion);
   expected_pairs["app"] = kAppId;
-  expected_pairs["device"] = base::Uint64ToString(kAndroidId);
+  expected_pairs["device"] = base::NumberToString(kAndroidId);
   expected_pairs["delete"] = "true";
   expected_pairs["appid"] = kInstanceId;
   expected_pairs["sender"] = kDeveloperId;
@@ -403,7 +403,7 @@ TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataWithSubtype) {
   expected_pairs["gmsv"] = base::IntToString(kGCMVersion);
   expected_pairs["app"] = kProductCategoryForSubtypes;
   expected_pairs["X-subtype"] = kAppId;
-  expected_pairs["device"] = base::Uint64ToString(kAndroidId);
+  expected_pairs["device"] = base::NumberToString(kAndroidId);
   expected_pairs["delete"] = "true";
   expected_pairs["appid"] = kInstanceId;
   expected_pairs["sender"] = kDeveloperId;

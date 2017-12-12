@@ -329,47 +329,53 @@ bool String16ToIntImpl(const StringPiece16& input, VALUE* output) {
 
 }  // namespace
 
-std::string NumberToString(int32_t value) {
-  return IntToStringT<std::string, int32_t>::IntToString(value);
+std::string NumberToString(int value) {
+  return IntToStringT<std::string, int>::IntToString(value);
 }
 
-string16 NumberToString16(int32_t value) {
-  return IntToStringT<string16, int32_t>::IntToString(value);
+string16 NumberToString16(int value) {
+  return IntToStringT<string16, int>::IntToString(value);
 }
 
-std::string NumberToString(uint32_t value) {
-  return IntToStringT<std::string, uint32_t>::IntToString(value);
+std::string NumberToString(unsigned value) {
+  return IntToStringT<std::string, unsigned>::IntToString(value);
 }
 
-string16 NumberToString16(uint32_t value) {
-  return IntToStringT<string16, uint32_t>::IntToString(value);
+string16 NumberToString16(unsigned value) {
+  return IntToStringT<string16, unsigned>::IntToString(value);
 }
 
-std::string NumberToString(int64_t value) {
-  return IntToStringT<std::string, int64_t>::IntToString(value);
+std::string NumberToString(long value) {
+  return IntToStringT<std::string, long>::IntToString(value);
 }
 
-string16 NumberToString16(int64_t value) {
-  return IntToStringT<string16, int64_t>::IntToString(value);
+string16 NumberToString16(long value) {
+  return IntToStringT<string16, long>::IntToString(value);
 }
 
-std::string NumberToString(uint64_t value) {
-  return IntToStringT<std::string, uint64_t>::IntToString(value);
+std::string NumberToString(unsigned long value) {
+  return IntToStringT<std::string, unsigned long>::IntToString(value);
 }
 
-string16 NumberToString16(uint64_t value) {
-  return IntToStringT<string16, uint64_t>::IntToString(value);
+string16 NumberToString16(unsigned long value) {
+  return IntToStringT<string16, unsigned long>::IntToString(value);
 }
 
-#if defined(OS_MACOSX)
-std::string NumberToString(size_t value) {
-  return IntToStringT<std::string, size_t>::IntToString(value);
+std::string NumberToString(long long value) {
+  return IntToStringT<std::string, long long>::IntToString(value);
 }
 
-string16 NumberToString16(size_t value) {
-  return IntToStringT<string16, size_t>::IntToString(value);
+string16 NumberToString16(long long value) {
+  return IntToStringT<string16, long long>::IntToString(value);
 }
-#endif
+
+std::string NumberToString(unsigned long long value) {
+  return IntToStringT<std::string, unsigned long long>::IntToString(value);
+}
+
+string16 NumberToString16(unsigned long long value) {
+  return IntToStringT<string16, unsigned long long>::IntToString(value);
+}
 
 std::string NumberToString(double value) {
   // According to g_fmt.cc, it is sufficient to declare a buffer of size 32.

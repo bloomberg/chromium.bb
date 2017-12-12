@@ -305,7 +305,7 @@ void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
         new base::DictionaryValue());
 
     audio_node->SetBoolean("isInput", node.is_input);
-    audio_node->SetString("id", base::Uint64ToString(node.id));
+    audio_node->SetString("id", base::NumberToString(node.id));
     audio_node->SetString("deviceName", node.device_name);
     audio_node->SetString("type", node.type);
     audio_node->SetString("name", node.name);

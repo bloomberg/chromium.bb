@@ -373,7 +373,7 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
       // with %zu and a size_t in printf, nor does it support %llu.
       replacement_id = base::StringPrintf(
           "<%s: %s>", pattern.alias,
-          base::Uint64ToString(identifier_space->size()).c_str());
+          base::NumberToString(identifier_space->size()).c_str());
       (*identifier_space)[matched_id_as_string] = replacement_id;
     }
 

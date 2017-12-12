@@ -149,7 +149,7 @@ bool AddDeviceInfo(HANDLE interface_enumerator,
   }
 
   std::string drive_id = "\\\\.\\PhysicalDrive";
-  drive_id.append(base::Uint64ToString(device_number.DeviceNumber));
+  drive_id.append(base::NumberToString(device_number.DeviceNumber));
 
   api::image_writer_private::RemovableStorageDevice device;
   device.capacity = disk_capacity;

@@ -197,11 +197,10 @@ void RegistrationRequest::Start() {
 
 void RegistrationRequest::BuildRequestHeaders(std::string* extra_headers) {
   net::HttpRequestHeaders headers;
-  headers.SetHeader(
-      net::HttpRequestHeaders::kAuthorization,
-      std::string(kLoginHeader) + " " +
-          base::Uint64ToString(request_info_.android_id) + ":" +
-          base::Uint64ToString(request_info_.security_token));
+  headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                    std::string(kLoginHeader) + " " +
+                        base::NumberToString(request_info_.android_id) + ":" +
+                        base::NumberToString(request_info_.security_token));
   *extra_headers = headers.ToString();
 }
 
@@ -211,8 +210,7 @@ void RegistrationRequest::BuildRequestBody(std::string* body) {
     BuildFormEncoding(kSubtypeKey, request_info_.subtype, body);
 
   BuildFormEncoding(kDeviceIdKey,
-                    base::Uint64ToString(request_info_.android_id),
-                    body);
+                    base::NumberToString(request_info_.android_id), body);
 
   DCHECK(custom_request_handler_.get());
   custom_request_handler_->BuildRequestBody(body);

@@ -211,8 +211,7 @@ TEST_F(DeltaFileEntryWithDataTest, IdForLongUrl) {
 
   std::stringstream expected_length_stream;
   expected_length_stream << std::setfill('0') << std::setw(8)
-                         << base::Uint64ToString(
-                                static_cast<uint64_t>(url.str().size()));
+                         << base::NumberToString(url.str().size());
   std::string length = data.Id().substr(0, 8);
   EXPECT_EQ(expected_length_stream.str(), length);
 

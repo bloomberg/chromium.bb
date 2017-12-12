@@ -49,15 +49,15 @@ void AcquireMemoryMetrics(const base::Process& process,
     const uint64_t kPageSize = 4096;
     crash_keys->insert(std::make_pair(
         "ProcessPrivateUsage",
-        base::Uint64ToString(process_memory.PrivateUsage / kPageSize)));
+        base::NumberToString(process_memory.PrivateUsage / kPageSize)));
 
     crash_keys->insert(std::make_pair(
         "ProcessPeakWorkingSetSize",
-        base::Uint64ToString(process_memory.PeakWorkingSetSize / kPageSize)));
+        base::NumberToString(process_memory.PeakWorkingSetSize / kPageSize)));
 
     crash_keys->insert(std::make_pair(
         "ProcessPeakPagefileUsage",
-        base::Uint64ToString(process_memory.PeakPagefileUsage / kPageSize)));
+        base::NumberToString(process_memory.PeakPagefileUsage / kPageSize)));
   }
 
   // Grab system commit memory. Also best effort.

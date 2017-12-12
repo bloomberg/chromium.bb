@@ -251,9 +251,9 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
 
 #if defined(USE_X11)
   basic_info->Append(NewDescriptionValuePair(
-      "System visual ID", base::Uint64ToString(gpu_info.system_visual)));
+      "System visual ID", base::NumberToString(gpu_info.system_visual)));
   basic_info->Append(NewDescriptionValuePair(
-      "RGBA visual ID", base::Uint64ToString(gpu_info.rgba_visual)));
+      "RGBA visual ID", base::NumberToString(gpu_info.rgba_visual)));
 #endif
 
   info->Set("basic_info", std::move(basic_info));
@@ -378,9 +378,9 @@ std::unique_ptr<base::ListValue> getDisplayInfo() {
         "Color space information", display.color_space().ToString()));
     display_info->Append(NewDescriptionValuePair(
         "Bits per color component",
-        base::Uint64ToString(display.depth_per_component())));
+        base::NumberToString(display.depth_per_component())));
     display_info->Append(NewDescriptionValuePair(
-        "Bits per pixel", base::Uint64ToString(display.color_depth())));
+        "Bits per pixel", base::NumberToString(display.color_depth())));
   }
   return display_info;
 }

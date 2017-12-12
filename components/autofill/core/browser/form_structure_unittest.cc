@@ -35,7 +35,7 @@ namespace autofill {
 class FormStructureTest : public testing::Test {
  public:
   static std::string Hash64Bit(const std::string& str) {
-    return base::Uint64ToString(StrToHash64Bit(str));
+    return base::NumberToString(StrToHash64Bit(str));
   }
 
   void SetUp() override {

@@ -16,7 +16,7 @@ namespace content {
 LocalStorageArea::LocalStorageArea(
     scoped_refptr<LocalStorageCachedArea> cached_area)
     : cached_area_(std::move(cached_area)),
-      id_(base::Uint64ToString(base::RandUint64())) {
+      id_(base::NumberToString(base::RandUint64())) {
   cached_area_->AreaCreated(this);
 }
 

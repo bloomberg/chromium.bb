@@ -172,7 +172,7 @@ static std::string ToString(Node* node) {
 
   s += base::StringPrintf("%u", node->count_);
   s += " @";
-  s += base::Uint64ToString(node->edges_in_frequency_order.size());
+  s += base::NumberToString(node->edges_in_frequency_order.size());
   s += "}";
   return s;
 }

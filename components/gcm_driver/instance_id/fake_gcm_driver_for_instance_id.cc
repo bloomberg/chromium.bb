@@ -67,7 +67,7 @@ void FakeGCMDriverForInstanceID::GetToken(
   if (iter != tokens_.end()) {
     token = iter->second;
   } else {
-    token = base::Uint64ToString(base::RandUint64());
+    token = base::NumberToString(base::RandUint64());
     tokens_[key] = token;
   }
 

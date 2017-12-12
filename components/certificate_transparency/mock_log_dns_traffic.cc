@@ -282,7 +282,7 @@ bool MockLogDnsTraffic::ExpectRequestAndResponse(
 bool MockLogDnsTraffic::ExpectLeafIndexRequestAndResponse(
     base::StringPiece qname,
     uint64_t leaf_index) {
-  return ExpectRequestAndResponse(qname, {base::Uint64ToString(leaf_index)});
+  return ExpectRequestAndResponse(qname, {base::NumberToString(leaf_index)});
 }
 
 bool MockLogDnsTraffic::ExpectAuditProofRequestAndResponse(

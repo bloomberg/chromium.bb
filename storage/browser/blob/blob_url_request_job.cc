@@ -154,7 +154,7 @@ scoped_refptr<net::HttpResponseHeaders> BlobURLRequestJob::GenerateHeaders(
   if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT) {
     std::string content_length_header(net::HttpRequestHeaders::kContentLength);
     content_length_header.append(": ");
-    content_length_header.append(base::Uint64ToString(content_size));
+    content_length_header.append(base::NumberToString(content_size));
     headers->AddHeader(content_length_header);
     if (status_code == net::HTTP_PARTIAL_CONTENT) {
       DCHECK(byte_range->IsValid());

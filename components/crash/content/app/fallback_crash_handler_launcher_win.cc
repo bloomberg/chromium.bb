@@ -52,7 +52,7 @@ bool FallbackCrashHandlerLauncher::Initialize(
   cmd_line.AppendSwitchPath("database", crashpad_database);
   cmd_line.AppendSwitchASCII(
       "exception-pointers",
-      base::Uint64ToString(reinterpret_cast<uintptr_t>(&exception_pointers_)));
+      base::NumberToString(reinterpret_cast<uintptr_t>(&exception_pointers_)));
   cmd_line.AppendSwitchASCII(
       "process", base::UintToString(
                      base::win::HandleToUint32(self_process_handle_.Get())));

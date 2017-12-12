@@ -3015,7 +3015,7 @@ TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
     if (show_signatures) {
       EXPECT_EQ(form_element.GetAttribute(form_signature_attribute),
                 blink::WebString::FromUTF8(
-                    base::Uint64ToString(CalculateFormSignature(form_data))));
+                    base::NumberToString(CalculateFormSignature(form_data))));
     }
 
     // Check field signatures.
@@ -3031,7 +3031,7 @@ TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
                 expect_signature_for_field);
       if (expect_signature_for_field) {
         EXPECT_EQ(field_element.GetAttribute(field_signature_attribute),
-                  blink::WebString::FromUTF8(base::Uint64ToString(
+                  blink::WebString::FromUTF8(base::NumberToString(
                       CalculateFieldSignatureForField(form_data.fields[i]))));
       }
     }

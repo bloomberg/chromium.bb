@@ -63,9 +63,8 @@ std::string AudioNode::ToString() const {
   base::StringAppendF(&result,
                       "active = %s ",
                       active ? "true" : "false");
-  base::StringAppendF(&result,
-                      "plugged_time= %s ",
-                      base::Uint64ToString(plugged_time).c_str());
+  base::StringAppendF(&result, "plugged_time= %s ",
+                      base::NumberToString(plugged_time).c_str());
 
   return result;
 }

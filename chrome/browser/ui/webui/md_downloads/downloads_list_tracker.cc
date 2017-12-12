@@ -205,7 +205,7 @@ DownloadsListTracker::CreateDownloadItemValue(
   file_value->SetString(
       "date_string", TimeFormatLongDate(download_item->GetStartTime()));
 
-  file_value->SetString("id", base::Uint64ToString(download_item->GetId()));
+  file_value->SetString("id", base::NumberToString(download_item->GetId()));
 
   base::FilePath download_path(download_item->GetTargetFilePath());
   file_value->Set("file_path", base::CreateFilePathValue(download_path));

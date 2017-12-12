@@ -187,7 +187,7 @@ bool ShaderTranslator::Init(GLenum shader_type,
     options_affecting_compilation_ =
         base::MakeRefCounted<OptionsAffectingCompilationString>(
             std::string(":CompileOptions:" +
-                        base::Uint64ToString(GetCompileOptions())) +
+                        base::NumberToString(GetCompileOptions())) +
             sh::GetBuiltInResourcesString(compiler_));
   }
 
