@@ -287,38 +287,44 @@ public class LibraryLoader {
             return;
         }
 
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                try (TraceEvent e =
-                                TraceEvent.scoped("LibraryLoader.asyncPrefetchLibrariesToMemory")) {
-                    int percentage = nativePercentageOfResidentNativeLibraryCode();
-                    boolean success = false;
-                    // Arbitrary percentage threshold. If most of the native library is already
-                    // resident (likely with monochrome), don't bother creating a prefetch process.
-                    boolean prefetch = coldStart && percentage < 90;
-                    if (prefetch) {
-                        success = nativeForkAndPrefetchNativeLibrary();
-                        if (!success) {
-                            Log.w(TAG, "Forking a process to prefetch the native library failed.");
-                        }
-                    }
-                    // As this runs in a background thread, it can be called before histograms are
-                    // initialized. In this instance, histograms are dropped.
-                    RecordHistogram.initialize();
-                    if (prefetch) {
-                        RecordHistogram.recordBooleanHistogram(
-                                "LibraryLoader.PrefetchStatus", success);
-                    }
-                    if (percentage != -1) {
-                        String histogram = "LibraryLoader.PercentageOfResidentCodeBeforePrefetch"
-                                + (coldStart ? ".ColdStartup" : ".WarmStartup");
-                        RecordHistogram.recordPercentageHistogram(histogram, percentage);
+        new LibraryPrefetchTask(coldStart).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private static class LibraryPrefetchTask extends AsyncTask<Void, Void, Void> {
+        private final boolean mColdStart;
+
+        public LibraryPrefetchTask(boolean coldStart) {
+            mColdStart = coldStart;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try (TraceEvent e = TraceEvent.scoped("LibraryLoader.asyncPrefetchLibrariesToMemory")) {
+                int percentage = nativePercentageOfResidentNativeLibraryCode();
+                boolean success = false;
+                // Arbitrary percentage threshold. If most of the native library is already
+                // resident (likely with monochrome), don't bother creating a prefetch process.
+                boolean prefetch = mColdStart && percentage < 90;
+                if (prefetch) {
+                    success = nativeForkAndPrefetchNativeLibrary();
+                    if (!success) {
+                        Log.w(TAG, "Forking a process to prefetch the native library failed.");
                     }
                 }
-                return null;
+                // As this runs in a background thread, it can be called before histograms are
+                // initialized. In this instance, histograms are dropped.
+                RecordHistogram.initialize();
+                if (prefetch) {
+                    RecordHistogram.recordBooleanHistogram("LibraryLoader.PrefetchStatus", success);
+                }
+                if (percentage != -1) {
+                    String histogram = "LibraryLoader.PercentageOfResidentCodeBeforePrefetch"
+                            + (mColdStart ? ".ColdStartup" : ".WarmStartup");
+                    RecordHistogram.recordPercentageHistogram(histogram, percentage);
+                }
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            return null;
+        }
     }
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
