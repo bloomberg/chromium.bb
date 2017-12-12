@@ -25,7 +25,8 @@ class VaapiH264Picture;
 
 // A picture (a frame or a field) in the H.264 spec sense.
 // See spec at http://www.itu.int/rec/T-REC-H.264
-class MEDIA_GPU_EXPORT H264Picture : public base::RefCounted<H264Picture> {
+class MEDIA_GPU_EXPORT H264Picture
+    : public base::RefCountedThreadSafe<H264Picture> {
  public:
   using Vector = std::vector<scoped_refptr<H264Picture>>;
 
@@ -91,7 +92,7 @@ class MEDIA_GPU_EXPORT H264Picture : public base::RefCounted<H264Picture> {
   gfx::Rect visible_rect;
 
  protected:
-  friend class base::RefCounted<H264Picture>;
+  friend class base::RefCountedThreadSafe<H264Picture>;
   virtual ~H264Picture();
 
  private:
