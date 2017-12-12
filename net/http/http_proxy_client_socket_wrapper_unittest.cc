@@ -7,8 +7,8 @@
 #include <cstdio>
 #include <memory>
 
-#include "net/cert/cert_verifier.h"
-#include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert/do_nothing_ct_verifier.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -68,10 +68,10 @@ class HttpProxyClientSocketWrapperTest
       : proxy_host_port_(kProxyHost, kProxyPort),
         endpoint_host_port_(kOriginHost, kOriginPort),
         ssl_config_service_(new MockSSLConfigService()),
-        cert_verifier_(CertVerifier::CreateDefault()),
+        cert_verifier_(new MockCertVerifier()),
         channel_id_service_(
             new ChannelIDService(new DefaultChannelIDStore(nullptr))),
-        cert_transparency_verifier_(new MultiLogCTVerifier()),
+        cert_transparency_verifier_(new DoNothingCTVerifier()),
         random_generator_(0),
         quic_version_(GetParam()),
         client_maker_(quic_version_,
@@ -197,11 +197,11 @@ class HttpProxyClientSocketWrapperTest
   scoped_refptr<SSLConfigService> ssl_config_service_;
   MockClientSocketFactory socket_factory_;
   HttpServerPropertiesImpl http_server_properties_;
-  std::unique_ptr<CertVerifier> cert_verifier_;
+  std::unique_ptr<MockCertVerifier> cert_verifier_;
   CTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
-  std::unique_ptr<CTVerifier> cert_transparency_verifier_;
+  std::unique_ptr<DoNothingCTVerifier> cert_transparency_verifier_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockRandom random_generator_;
 
