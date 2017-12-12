@@ -160,7 +160,7 @@ void VideoCaptureController::BufferContext::DecreaseConsumerCount() {
 
 mojo::ScopedSharedBufferHandle
 VideoCaptureController::BufferContext::CloneHandle() {
-  return buffer_handle_->Clone();
+  return buffer_handle_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
 }
 
 VideoCaptureController::VideoCaptureController(

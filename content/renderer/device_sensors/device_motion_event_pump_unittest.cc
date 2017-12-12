@@ -85,7 +85,8 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
 
     shared_memory_ = mojo::SharedBufferHandle::Create(kSharedBufferSizeInBytes);
 
-    accelerometer_.shared_buffer_handle = shared_memory_->Clone();
+    accelerometer_.shared_buffer_handle =
+        shared_memory_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
     accelerometer_.shared_buffer = shared_memory_->MapAtOffset(
         kReadingBufferSize,
         device::SensorReadingSharedBuffer::GetOffset(accelerometer_.type));
@@ -94,7 +95,8 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
     accelerometer_.shared_buffer_reader.reset(
         new device::SensorReadingSharedBufferReader(accelerometer_buffer_));
 
-    linear_acceleration_sensor_.shared_buffer_handle = shared_memory_->Clone();
+    linear_acceleration_sensor_.shared_buffer_handle =
+        shared_memory_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
     linear_acceleration_sensor_.shared_buffer = shared_memory_->MapAtOffset(
         kReadingBufferSize, device::SensorReadingSharedBuffer::GetOffset(
                                 linear_acceleration_sensor_.type));
@@ -105,7 +107,8 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
         new device::SensorReadingSharedBufferReader(
             linear_acceleration_sensor_buffer_));
 
-    gyroscope_.shared_buffer_handle = shared_memory_->Clone();
+    gyroscope_.shared_buffer_handle =
+        shared_memory_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
     gyroscope_.shared_buffer = shared_memory_->MapAtOffset(
         kReadingBufferSize,
         device::SensorReadingSharedBuffer::GetOffset(gyroscope_.type));
