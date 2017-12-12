@@ -26,6 +26,7 @@
 #ifndef DragController_h
 #define DragController_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/page/DragActions.h"
@@ -52,8 +53,6 @@ class WebMouseEvent;
 
 class CORE_EXPORT DragController final
     : public GarbageCollected<DragController> {
-  WTF_MAKE_NONCOPYABLE(DragController);
-
  public:
   static DragController* Create(Page*);
 
@@ -132,6 +131,7 @@ class CORE_EXPORT DragController final
 
   DragDestinationAction drag_destination_action_;
   bool did_initiate_drag_;
+  DISALLOW_COPY_AND_ASSIGN(DragController);
 };
 
 }  // namespace blink

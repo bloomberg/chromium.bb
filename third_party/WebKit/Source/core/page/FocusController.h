@@ -26,12 +26,12 @@
 #ifndef FocusController_h
 #define FocusController_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebFocusType.h"
 
 namespace blink {
@@ -52,8 +52,6 @@ class RemoteFrame;
 
 class CORE_EXPORT FocusController final
     : public GarbageCollected<FocusController> {
-  WTF_MAKE_NONCOPYABLE(FocusController);
-
  public:
   using OwnerMap = HeapHashMap<Member<ContainerNode>, Member<Element>>;
 
@@ -134,6 +132,7 @@ class CORE_EXPORT FocusController final
   bool is_focused_;
   bool is_changing_focused_frame_;
   HeapHashSet<WeakMember<FocusChangedObserver>> focus_changed_observers_;
+  DISALLOW_COPY_AND_ASSIGN(FocusController);
 };
 
 }  // namespace blink

@@ -20,17 +20,16 @@
 #ifndef ScopedPagePauser_h
 #define ScopedPagePauser_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class Page;
 
 class CORE_EXPORT ScopedPagePauser final {
-  WTF_MAKE_NONCOPYABLE(ScopedPagePauser);
   USING_FAST_MALLOC(ScopedPagePauser);
 
  public:
@@ -44,6 +43,7 @@ class CORE_EXPORT ScopedPagePauser final {
   static bool IsActive();
 
   std::unique_ptr<WebScheduler::RendererPauseHandle> pause_handle_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedPagePauser);
 };
 
 }  // namespace blink
