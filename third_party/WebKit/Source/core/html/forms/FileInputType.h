@@ -91,6 +91,10 @@ class CORE_EXPORT FileInputType final : public InputType,
   String DefaultToolTip(const InputTypeView&) const override;
   void CopyNonAttributeProperties(const HTMLInputElement&) override;
 
+  // KeyboardClickableInputTypeView overrides.
+  void HandleKeypressEvent(KeyboardEvent*) override;
+  void HandleKeyupEvent(KeyboardEvent*) override;
+
   // FileChooserClient implementation.
   void FilesChosen(const Vector<FileChooserFileInfo>&) override;
 

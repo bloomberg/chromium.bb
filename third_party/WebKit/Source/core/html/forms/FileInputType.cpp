@@ -26,6 +26,7 @@
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/events/Event.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/UseCounter.h"
@@ -418,6 +419,32 @@ void FileInputType::CopyNonAttributeProperties(const HTMLInputElement& source) {
   const FileList* source_list = source.files();
   for (unsigned i = 0; i < source_list->length(); ++i)
     file_list_->Append(source_list->item(i)->Clone());
+}
+
+void FileInputType::HandleKeypressEvent(KeyboardEvent* event) {
+  if (GetElement().FastHasAttribute(webkitdirectoryAttr)) {
+    // Override to invoke the action on Enter key up (not press) to avoid
+    // repeats committing the file chooser.
+    const String& key = event->key();
+    if (key == "Enter") {
+      event->SetDefaultHandled();
+      return;
+    }
+  }
+  KeyboardClickableInputTypeView::HandleKeypressEvent(event);
+}
+
+void FileInputType::HandleKeyupEvent(KeyboardEvent* event) {
+  if (GetElement().FastHasAttribute(webkitdirectoryAttr)) {
+    // Override to invoke the action on Enter key up (not press) to avoid
+    // repeats committing the file chooser.
+    if (event->key() == "Enter") {
+      GetElement().DispatchSimulatedClick(event);
+      event->SetDefaultHandled();
+      return;
+    }
+  }
+  KeyboardClickableInputTypeView::HandleKeyupEvent(event);
 }
 
 }  // namespace blink

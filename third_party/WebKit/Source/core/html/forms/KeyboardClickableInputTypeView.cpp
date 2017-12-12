@@ -49,13 +49,13 @@ void KeyboardClickableInputTypeView::HandleKeydownEvent(KeyboardEvent* event) {
 }
 
 void KeyboardClickableInputTypeView::HandleKeypressEvent(KeyboardEvent* event) {
-  int char_code = event->charCode();
-  if (char_code == '\r') {
+  const String& key = event->key();
+  if (key == "Enter") {
     GetElement().DispatchSimulatedClick(event);
     event->SetDefaultHandled();
     return;
   }
-  if (char_code == ' ') {
+  if (key == " ") {
     // Prevent scrolling down the page.
     event->SetDefaultHandled();
   }
