@@ -57,8 +57,8 @@ static base::LazyInstance<RoutingIDProxyMap>::DestructorAtExit
     g_routing_id_proxy_map = LAZY_INSTANCE_INITIALIZER;
 
 // Facilitates lookup of RenderFrameProxy by WebRemoteFrame.
-typedef std::map<blink::WebRemoteFrame*, RenderFrameProxy*> FrameMap;
-base::LazyInstance<FrameMap>::DestructorAtExit g_frame_map =
+typedef std::map<blink::WebRemoteFrame*, RenderFrameProxy*> FrameProxyMap;
+base::LazyInstance<FrameProxyMap>::DestructorAtExit g_frame_proxy_map =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -169,8 +169,8 @@ RenderFrameProxy* RenderFrameProxy::FromWebFrame(
     blink::WebRemoteFrame* web_frame) {
   // TODO(dcheng): Turn this into a DCHECK() if it doesn't crash on canary.
   CHECK(web_frame);
-  FrameMap::iterator iter = g_frame_map.Get().find(web_frame);
-  if (iter != g_frame_map.Get().end()) {
+  FrameProxyMap::iterator iter = g_frame_proxy_map.Get().find(web_frame);
+  if (iter != g_frame_proxy_map.Get().end()) {
     RenderFrameProxy* proxy = iter->second;
     DCHECK_EQ(web_frame, proxy->web_frame());
     return proxy;
@@ -216,8 +216,8 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 
   render_widget_->RegisterRenderFrameProxy(this);
 
-  std::pair<FrameMap::iterator, bool> result =
-      g_frame_map.Get().insert(std::make_pair(web_frame_, this));
+  std::pair<FrameProxyMap::iterator, bool> result =
+      g_frame_proxy_map.Get().insert(std::make_pair(web_frame_, this));
   CHECK(result.second) << "Inserted a duplicate item.";
 
   enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
@@ -591,10 +591,10 @@ void RenderFrameProxy::FrameDetached(DetachType type) {
 
   // Remove the entry in the WebFrame->RenderFrameProxy map, as the |web_frame_|
   // is no longer valid.
-  FrameMap::iterator it = g_frame_map.Get().find(web_frame_);
-  CHECK(it != g_frame_map.Get().end());
+  FrameProxyMap::iterator it = g_frame_proxy_map.Get().find(web_frame_);
+  CHECK(it != g_frame_proxy_map.Get().end());
   CHECK_EQ(it->second, this);
-  g_frame_map.Get().erase(it);
+  g_frame_proxy_map.Get().erase(it);
 
   web_frame_ = nullptr;
 
