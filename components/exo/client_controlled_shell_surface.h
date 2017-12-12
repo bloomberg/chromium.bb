@@ -9,6 +9,8 @@
 #include <string>
 
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/wm/client_controlled_state.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/exo/shell_surface_base.h"
 #include "ui/base/hit_test.h"
@@ -53,6 +55,15 @@ class ClientControlledShellSurface
   // Called when the client chagned the fullscreen state.
   void SetFullscreen(bool fullscreen);
 
+  // Set the callback to run when the surface state changed.
+  using StateChangedCallback =
+      base::RepeatingCallback<void(ash::mojom::WindowStateType old_state_type,
+                                   ash::mojom::WindowStateType new_state_type)>;
+  void set_state_changed_callback(
+      const StateChangedCallback& state_changed_callback) {
+    state_changed_callback_ = state_changed_callback;
+  }
+
   // Pin/unpin the surface. Pinned surface cannot be switched to
   // other windows unless its explicitly unpinned.
   void SetPinned(ash::mojom::WindowPinType type);
@@ -74,11 +85,18 @@ class ClientControlledShellSurface
   // Set top inset for surface.
   void SetTopInset(int height);
 
+  // Sends the window state change event to client.
+  void OnWindowStateChangeEvent(ash::mojom::WindowStateType old_state,
+                                ash::mojom::WindowStateType next_state);
+
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
 
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override;
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override;
+
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;
   bool GetSavedWindowPlacement(const views::Widget* widget,
@@ -101,6 +119,14 @@ class ClientControlledShellSurface
   // Overridden from ui::CompositorLockClient:
   void CompositorLockTimedOut() override;
 
+  // A factory callback to create ClientControlledState::Delegate.
+  using DelegateFactoryCallback = base::RepeatingCallback<
+      std::unique_ptr<ash::wm::ClientControlledState::Delegate>(void)>;
+
+  // Set the factory callback for unit test.
+  static void SetClientControlledStateDelegateFactoryForTest(
+      const DelegateFactoryCallback& callback);
+
  private:
   // Overridden from ShellSurface:
   void SetWidgetBounds(const gfx::Rect& bounds) override;
@@ -122,6 +148,8 @@ class ClientControlledShellSurface
   // crbug.com/765954
   void EnsureCompositorIsLockedForOrientationChange();
 
+  ash::wm::WindowState* GetWindowState();
+
   int64_t primary_display_id_;
 
   int top_inset_height_ = 0;
@@ -130,10 +158,14 @@ class ClientControlledShellSurface
   double scale_ = 1.0;
   double pending_scale_ = 1.0;
 
+  StateChangedCallback state_changed_callback_;
+
   // TODO(reveman): Use configure callbacks for orientation. crbug.com/765954
   Orientation pending_orientation_ = Orientation::LANDSCAPE;
   Orientation orientation_ = Orientation::LANDSCAPE;
   Orientation expected_orientation_ = Orientation::LANDSCAPE;
+
+  ash::wm::ClientControlledState* client_controlled_state_ = nullptr;
 
   std::unique_ptr<ui::CompositorLock> orientation_compositor_lock_;
 

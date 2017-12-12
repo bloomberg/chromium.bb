@@ -324,6 +324,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
 
+  class TestApi {
+   public:
+    static State* GetStateImpl(WindowState* window_state) {
+      return window_state->current_state_.get();
+    }
+  };
+
  private:
   friend class DefaultState;
   friend class ash::wm::ClientControlledState;
