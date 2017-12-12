@@ -24,6 +24,33 @@ class Extension;
 // if the URLs are in scope of the Bookmark App.
 class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
  public:
+  // Used to record the result of a navigation.
+  enum class ProcessNavigationResult {
+    kProceedStartedFromContextMenu,
+    kProceedTransitionTyped,
+    kProceedTransitionAutoBookmark,
+    kProceedTransitionAutoSubframe,
+    kProceedTransitionManualSubframe,
+    kProceedTransitionGenerated,
+    kProceedTransitionAutoToplevel,
+    kProceedTransitionReload,
+    kProceedTransitionKeyword,
+    kProceedTransitionKeywordGenerated,
+    kProceedTransitionForwardBack,
+    kProceedTransitionFromAddressBar,
+    kOpenInChromeProceedOutOfScopeLaunch,
+    kProceedInAppSameScope,
+    kProceedInBrowserFormSubmission,
+    kProceedInBrowserSameScope,
+    kCancelPrerenderContents,
+    kDeferOpenAppCloseEmptyWebContents,
+    kCancelOpenedApp,
+    kDeferOpenNewTabInAppOutOfScope,
+    // Add ProcessNavigation results immediately above this line. Also
+    // update the enum list in tools/metrics/enums.xml accordingly.
+    kCount,
+  };
+
   static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* navigation_handle);
 
