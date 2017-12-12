@@ -30,6 +30,7 @@ class PageTestBase : public ::testing::Test {
   // TODO(shanmuga.m@samsung.com): These two function to be unified.
   void SetBodyContent(const std::string&);
   void SetBodyInnerHTML(const String&);
+  void SetHtmlInnerHTML(const std::string&);
 
   Document& GetDocument() const;
   Page& GetPage() const;
@@ -40,6 +41,7 @@ class PageTestBase : public ::testing::Test {
   Element* GetElementById(const char* id) const;
   AnimationClock& GetAnimationClock();
   PendingAnimations& GetPendingAnimations();
+  FocusController& GetFocusController() const;
 
   void UpdateAllLifecyclePhases();
 
