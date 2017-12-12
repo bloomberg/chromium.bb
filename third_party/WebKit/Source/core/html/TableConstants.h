@@ -17,9 +17,7 @@ constexpr unsigned kMaxColSpan = 1000u;
 // https://html.spec.whatwg.org/multipage/tables.html#dom-tdth-rowspan
 constexpr unsigned kDefaultRowSpan = 1u;
 constexpr unsigned kMaxRowSpan = 65534u;
-// The minimum value is 1 though the standard says it's 0. It's intentional
-// because we don't implement rowSpan=0 behavior.
-constexpr unsigned kMinRowSpan = 1;
+constexpr unsigned kMinRowSpan = 0;
 
 }  // namespace blink
 

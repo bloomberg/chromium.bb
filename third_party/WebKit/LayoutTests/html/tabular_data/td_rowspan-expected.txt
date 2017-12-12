@@ -8,7 +8,7 @@ PASS rowspanAttributeEffect("") is 1
 PASS rowspanAttributeEffect("1") is 1
 PASS rowspanAttributeEffect("2") is 2
 PASS rowspanAttributeEffect("10") is 10
-PASS rowspanAttributeEffect("0") is 1
+PASS rowspanAttributeEffect("0") is 0
 PASS rowspanAttributeEffect("-1") is 1
 PASS rowspanAttributeEffect("1x") is 1
 PASS rowspanAttributeEffect("1.") is 1
