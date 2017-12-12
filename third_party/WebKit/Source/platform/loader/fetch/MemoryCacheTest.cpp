@@ -31,8 +31,10 @@
 #include "platform/loader/fetch/MemoryCache.h"
 
 #include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/testing/MockFetchContext.h"
 #include "platform/loader/testing/MockResourceClient.h"
 #include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -42,32 +44,42 @@
 
 namespace blink {
 
-class MemoryCacheTest : public ::testing::Test {
+class FakeDecodedResource final : public Resource {
  public:
-  class FakeDecodedResource final : public Resource {
+  static FakeDecodedResource* Fetch(FetchParameters& params,
+                                    ResourceFetcher* fetcher,
+                                    ResourceClient* client) {
+    return static_cast<FakeDecodedResource*>(
+        fetcher->RequestResource(params, Factory(), client));
+  }
+
+  void AppendData(const char* data, size_t len) override {
+    Resource::AppendData(data, len);
+    SetDecodedSize(this->size());
+  }
+
+  void FakeEncodedSize(size_t size) { SetEncodedSize(size); }
+
+ private:
+  class Factory final : public NonTextResourceFactory {
    public:
-    static FakeDecodedResource* Create(const String& url, Type type) {
-      ResourceRequest request(url);
-      request.SetFetchCredentialsMode(
-          network::mojom::FetchCredentialsMode::kOmit);
-      ResourceLoaderOptions options;
-      return new FakeDecodedResource(request, type, options);
+    Factory() : NonTextResourceFactory(kMock) {}
+
+    Resource* Create(const ResourceRequest& request,
+                     const ResourceLoaderOptions& options) const override {
+      return new FakeDecodedResource(request, options);
     }
-
-    void AppendData(const char* data, size_t len) override {
-      Resource::AppendData(data, len);
-      SetDecodedSize(this->size());
-    }
-
-   private:
-    FakeDecodedResource(const ResourceRequest& request,
-                        Type type,
-                        const ResourceLoaderOptions& options)
-        : Resource(request, type, options) {}
-
-    void DestroyDecodedDataIfPossible() override { SetDecodedSize(0); }
   };
 
+  FakeDecodedResource(const ResourceRequest& request,
+                      const ResourceLoaderOptions& options)
+      : Resource(request, kMock, options) {}
+
+  void DestroyDecodedDataIfPossible() override { SetDecodedSize(0); }
+};
+
+class MemoryCacheTest : public ::testing::Test {
+ public:
   class FakeResource final : public Resource {
    public:
     static FakeResource* Create(const char* url, Type type) {
@@ -83,8 +95,6 @@ class MemoryCacheTest : public ::testing::Test {
       return new FakeResource(request, type, options);
     }
 
-    void FakeEncodedSize(size_t size) { SetEncodedSize(size); }
-
    private:
     FakeResource(const ResourceRequest& request,
                  Type type,
@@ -96,6 +106,8 @@ class MemoryCacheTest : public ::testing::Test {
   void SetUp() override {
     // Save the global memory cache to restore it upon teardown.
     global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
+    fetcher_ = ResourceFetcher::Create(
+        MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource));
   }
 
   void TearDown() override {
@@ -103,6 +115,7 @@ class MemoryCacheTest : public ::testing::Test {
   }
 
   Persistent<MemoryCache> global_memory_cache_;
+  Persistent<ResourceFetcher> fetcher_;
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
 };
@@ -121,16 +134,16 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting) {
   const size_t kResourceSize1 = kSizeMax / 16;
   const size_t kResourceSize2 = kSizeMax / 20;
   GetMemoryCache()->SetCapacity(kTotalCapacity);
-  FakeResource* cached_resource =
-      FakeResource::Create("http://test/resource", Resource::kRaw);
+  Persistent<MockResourceClient> client = new MockResourceClient;
+  FetchParameters params(ResourceRequest("data:text/html,"));
+  FakeDecodedResource* cached_resource =
+      FakeDecodedResource::Fetch(params, fetcher_, client);
   cached_resource->FakeEncodedSize(kResourceSize1);
 
-  EXPECT_EQ(0u, GetMemoryCache()->size());
-  GetMemoryCache()->Add(cached_resource);
+  EXPECT_TRUE(GetMemoryCache()->Contains(cached_resource));
   EXPECT_EQ(cached_resource->size(), GetMemoryCache()->size());
 
-  Persistent<MockResourceClient> client =
-      new MockResourceClient(cached_resource);
+  client->RemoveAsClient();
   EXPECT_EQ(cached_resource->size(), GetMemoryCache()->size());
 
   cached_resource->FakeEncodedSize(kResourceSize2);
@@ -167,8 +180,9 @@ static void RunTask2(unsigned size_without_decode) {
   EXPECT_EQ(size_without_decode, GetMemoryCache()->size());
 }
 
-static void TestResourcePruningAtEndOfTask(Resource* resource1,
-                                           Resource* resource2) {
+static void TestResourcePruningAtEndOfTask(ResourceFetcher* fetcher,
+                                           const String& identifier1,
+                                           const String& identifier2) {
   GetMemoryCache()->SetDelayBeforeLiveDecodedPrune(0);
 
   // Enforce pruning by adding |dummyResource| and then call prune().
@@ -183,9 +197,19 @@ static void TestResourcePruningAtEndOfTask(Resource* resource1,
   EXPECT_EQ(0u, GetMemoryCache()->size());
 
   const char kData[6] = "abcde";
+  FetchParameters params1(ResourceRequest("data:text/html,resource1"));
+  Resource* resource1 = FakeDecodedResource::Fetch(params1, fetcher, nullptr);
+  GetMemoryCache()->Remove(resource1);
+  if (!identifier1.IsEmpty())
+    resource1->SetCacheIdentifier(identifier1);
   resource1->AppendData(kData, 3u);
   resource1->FinishForTest();
-  Persistent<MockResourceClient> client = new MockResourceClient(resource2);
+  FetchParameters params2(ResourceRequest("data:text/html,resource2"));
+  Persistent<MockResourceClient> client = new MockResourceClient;
+  Resource* resource2 = FakeDecodedResource::Fetch(params2, fetcher, client);
+  GetMemoryCache()->Remove(resource2);
+  if (!identifier2.IsEmpty())
+    resource2->SetCacheIdentifier(identifier2);
   resource2->AppendData(kData, 4u);
   resource2->FinishForTest();
 
@@ -204,31 +228,16 @@ static void TestResourcePruningAtEndOfTask(Resource* resource1,
 // Verified that when ordering a prune in a runLoop task, the prune
 // is deferred to the end of the task.
 TEST_F(MemoryCacheTest, ResourcePruningAtEndOfTask_Basic) {
-  Resource* resource1 =
-      FakeDecodedResource::Create("http://test/resource1", Resource::kRaw);
-  Resource* resource2 =
-      FakeDecodedResource::Create("http://test/resource2", Resource::kRaw);
-  TestResourcePruningAtEndOfTask(resource1, resource2);
+  TestResourcePruningAtEndOfTask(fetcher_, "", "");
 }
 
 TEST_F(MemoryCacheTest, ResourcePruningAtEndOfTask_MultipleResourceMaps) {
   {
-    Resource* resource1 =
-        FakeDecodedResource::Create("http://test/resource1", Resource::kRaw);
-    Resource* resource2 =
-        FakeDecodedResource::Create("http://test/resource2", Resource::kRaw);
-    resource1->SetCacheIdentifier("foo");
-    TestResourcePruningAtEndOfTask(resource1, resource2);
+    TestResourcePruningAtEndOfTask(fetcher_, "foo", "");
     GetMemoryCache()->EvictResources();
   }
   {
-    Resource* resource1 =
-        FakeDecodedResource::Create("http://test/resource1", Resource::kRaw);
-    Resource* resource2 =
-        FakeDecodedResource::Create("http://test/resource2", Resource::kRaw);
-    resource1->SetCacheIdentifier("foo");
-    resource2->SetCacheIdentifier("bar");
-    TestResourcePruningAtEndOfTask(resource1, resource2);
+    TestResourcePruningAtEndOfTask(fetcher_, "foo", "bar");
     GetMemoryCache()->EvictResources();
   }
 }
@@ -237,14 +246,28 @@ TEST_F(MemoryCacheTest, ResourcePruningAtEndOfTask_MultipleResourceMaps) {
 // - Resources are not pruned synchronously when ResourceClient is removed.
 // - size() is updated appropriately when Resources are added to MemoryCache
 //   and garbage collected.
-static void TestClientRemoval(Resource* resource1, Resource* resource2) {
+static void TestClientRemoval(ResourceFetcher* fetcher,
+                              const String& identifier1,
+                              const String& identifier2) {
+  GetMemoryCache()->SetCapacity(0);
   const char kData[6] = "abcde";
-  Persistent<MockResourceClient> client1 = new MockResourceClient(resource1);
+  Persistent<MockResourceClient> client1 = new MockResourceClient;
+  Persistent<MockResourceClient> client2 = new MockResourceClient;
+  FetchParameters params1(ResourceRequest("data:text/html,foo"));
+  Resource* resource1 = FakeDecodedResource::Fetch(params1, fetcher, client1);
+  FetchParameters params2(ResourceRequest("data:text/html,bar"));
+  Resource* resource2 = FakeDecodedResource::Fetch(params2, fetcher, client2);
   resource1->AppendData(kData, 4u);
-  Persistent<MockResourceClient> client2 = new MockResourceClient(resource2);
   resource2->AppendData(kData, 4u);
 
   GetMemoryCache()->SetCapacity(0);
+  // Remove and re-Add the resources, with proper cache identifiers.
+  GetMemoryCache()->Remove(resource1);
+  GetMemoryCache()->Remove(resource2);
+  if (!identifier1.IsEmpty())
+    resource1->SetCacheIdentifier(identifier1);
+  if (!identifier2.IsEmpty())
+    resource2->SetCacheIdentifier(identifier2);
   GetMemoryCache()->Add(resource1);
   GetMemoryCache()->Add(resource2);
 
@@ -287,40 +310,20 @@ static void TestClientRemoval(Resource* resource1, Resource* resource2) {
 }
 
 TEST_F(MemoryCacheTest, ClientRemoval_Basic) {
-  Resource* resource1 =
-      FakeDecodedResource::Create("http://foo.com", Resource::kRaw);
-  Resource* resource2 =
-      FakeDecodedResource::Create("http://test/resource", Resource::kRaw);
-  TestClientRemoval(resource1, resource2);
+  TestClientRemoval(fetcher_, "", "");
 }
 
 TEST_F(MemoryCacheTest, ClientRemoval_MultipleResourceMaps) {
   {
-    Resource* resource1 =
-        FakeDecodedResource::Create("http://foo.com", Resource::kRaw);
-    resource1->SetCacheIdentifier("foo");
-    Resource* resource2 =
-        FakeDecodedResource::Create("http://test/resource", Resource::kRaw);
-    TestClientRemoval(resource1, resource2);
+    TestClientRemoval(fetcher_, "foo", "");
     GetMemoryCache()->EvictResources();
   }
   {
-    Resource* resource1 =
-        FakeDecodedResource::Create("http://foo.com", Resource::kRaw);
-    Resource* resource2 =
-        FakeDecodedResource::Create("http://test/resource", Resource::kRaw);
-    resource2->SetCacheIdentifier("foo");
-    TestClientRemoval(resource1, resource2);
+    TestClientRemoval(fetcher_, "", "foo");
     GetMemoryCache()->EvictResources();
   }
   {
-    Resource* resource1 =
-        FakeDecodedResource::Create("http://test/resource", Resource::kRaw);
-    resource1->SetCacheIdentifier("foo");
-    Resource* resource2 =
-        FakeDecodedResource::Create("http://test/resource", Resource::kRaw);
-    resource2->SetCacheIdentifier("bar");
-    TestClientRemoval(resource1, resource2);
+    TestClientRemoval(fetcher_, "foo", "bar");
     GetMemoryCache()->EvictResources();
   }
 }

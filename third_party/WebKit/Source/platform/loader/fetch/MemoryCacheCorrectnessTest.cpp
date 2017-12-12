@@ -92,7 +92,7 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
   MockResource* FetchMockResource() {
     ResourceRequest resource_request{KURL(kResourceURL)};
     FetchParameters fetch_params(resource_request);
-    return MockResource::Fetch(fetch_params, Fetcher());
+    return MockResource::Fetch(fetch_params, Fetcher(), nullptr);
   }
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
   void AdvanceClock(double seconds) { platform_->AdvanceClockSeconds(seconds); }
