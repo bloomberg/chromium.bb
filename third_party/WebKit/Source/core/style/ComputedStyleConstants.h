@@ -248,6 +248,11 @@ enum TextEmphasisPosition {
   kUnderLeft,
 };
 
+enum class LineLogicalSide {
+  kOver,
+  kUnder,
+};
+
 }  // namespace blink
 
 #endif  // ComputedStyleConstants_h
