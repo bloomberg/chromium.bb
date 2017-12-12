@@ -151,7 +151,10 @@ void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
   if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
       !is_allowed_in_web_ui_renderer) {
     // Log the URL to help us diagnose any future failures of this CHECK.
-    GetContentClient()->SetActiveURL(url);
+    FrameTreeNode* root_node =
+        render_frame_host->frame_tree_node()->frame_tree()->root();
+    GetContentClient()->SetActiveURL(
+        url, root_node->current_url().possibly_invalid_spec());
     CHECK(0);
   }
 }

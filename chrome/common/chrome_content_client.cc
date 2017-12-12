@@ -37,6 +37,7 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/cdm_info.h"
@@ -475,9 +476,12 @@ void ChromeContentClient::SetPDFEntryFunctions(
 }
 #endif
 
-void ChromeContentClient::SetActiveURL(const GURL& url) {
+void ChromeContentClient::SetActiveURL(const GURL& url,
+                                       std::string top_origin) {
   base::debug::SetCrashKeyValue(crash_keys::kActiveURL,
                                 url.possibly_invalid_spec());
+  static crash_reporter::CrashKeyString<64> top_origin_key("top-origin");
+  top_origin_key.Set(top_origin);
 }
 
 void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {

@@ -1088,9 +1088,13 @@ bool RenderViewImpl::RenderWidgetWillHandleMouseEvent(
 
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->MainFrame() : nullptr;
-  if (main_frame && main_frame->IsWebLocalFrame())
+  if (main_frame) {
+    GURL active_url;
+    if (main_frame->IsWebLocalFrame())
+      active_url = main_frame->ToWebLocalFrame()->GetDocument().Url();
     GetContentClient()->SetActiveURL(
-        main_frame->ToWebLocalFrame()->GetDocument().Url());
+        active_url, main_frame->Top()->GetSecurityOrigin().ToString().Utf8());
+  }
 
   // Input IPC messages must not be processed if the RenderView is in
   // swapped out state.
