@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/variations/client_filterable_state.h"
+#include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/ui_string_overrider.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "components/variations/service/variations_service_client.h"
@@ -350,6 +351,9 @@ class VariationsService
 
   // List of observers of the VariationsService.
   base::ObserverList<Observer> observer_list_;
+
+  // The main entry point for managing safe mode state.
+  SafeSeedManager safe_seed_manager_;
 
   // Member responsible for creating trials from a variations seed.
   VariationsFieldTrialCreator field_trial_creator_;
