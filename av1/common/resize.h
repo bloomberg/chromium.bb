@@ -64,9 +64,12 @@ void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                  YV12_BUFFER_CONFIG *dst, int bd);
 
 #if CONFIG_HORZONLY_FRAME_SUPERRES
-void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                            YV12_BUFFER_CONFIG *dst,
-                                            int superres_denom, int bd);
+void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
+                                int src_stride, uint8_t *dst, int dst_stride,
+                                int plane, int rows);
+void av1_upscale_normative_and_extend_frame(const AV1_COMMON *cm,
+                                            const YV12_BUFFER_CONFIG *src,
+                                            YV12_BUFFER_CONFIG *dst);
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,

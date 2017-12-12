@@ -3464,9 +3464,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   }
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-  if (!av1_superres_unscaled(cm)) aom_extend_frame_borders(&pbi->cur_buf->buf);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {

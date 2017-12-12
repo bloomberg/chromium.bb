@@ -5220,9 +5220,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-  if (!av1_superres_unscaled(cm)) aom_extend_frame_borders(cm->frame_to_show);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   if (!no_restoration)
     av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 0);
 #endif  // CONFIG_STRIPED_LOOP_RESTORATION
