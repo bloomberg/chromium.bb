@@ -211,7 +211,7 @@ void WebContentsViewAndroid::Focus() {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (web_contents_->ShowingInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();
-  } else if (rwhv) {
+  } else {
     rwhv->Focus();
   }
 }

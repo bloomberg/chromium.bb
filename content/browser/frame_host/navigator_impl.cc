@@ -1157,10 +1157,9 @@ void NavigatorImpl::RequestNavigation(
   // a Javascript URL should not interrupt a previous navigation.
   // Note: The scoped_request will be destroyed at the end of this function.
   if (dest_url.SchemeIs(url::kJavaScriptScheme)) {
-    // Don't call frame_tree_node->render_manager()->GetFrameHostForNavigation
-    // as that might clear the speculative RFH of an ongoing navigation.
     RenderFrameHostImpl* render_frame_host =
-        frame_tree_node->current_frame_host();
+        frame_tree_node->render_manager()->GetFrameHostForNavigation(
+            *scoped_request.get());
     render_frame_host->CommitNavigation(
         nullptr,  // response
         mojom::URLLoaderClientEndpointsPtr(),
