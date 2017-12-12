@@ -56,7 +56,6 @@ namespace {
 
 static const char kRootName[] = "<root>";
 static const char kPermissionDenied[] = "<permission denied>";
-static const char kAlreadyAdded[] = "<already added>";
 
 base::LazyInstance<base::FilePath>::Leaky
     g_last_save_path = LAZY_INSTANCE_INITIALIZER;
@@ -343,10 +342,8 @@ void DevToolsFileHelper::InnerAddFileSystem(
     const base::FilePath& path) {
   std::string file_system_path = path.AsUTF8Unsafe();
 
-  if (IsFileSystemAdded(file_system_path)) {
-    FailedToAddFileSystem(kAlreadyAdded);
-    return;
-  }
+  if (IsFileSystemAdded(file_system_path))
+    RemoveFileSystem(file_system_path);
 
   std::string path_display_name = path.AsEndingWithSeparator().AsUTF8Unsafe();
   base::string16 message = l10n_util::GetStringFUTF16(
