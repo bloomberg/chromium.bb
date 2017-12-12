@@ -97,6 +97,9 @@ interface FrameSinkManager {
 // compositor. The frame sink manager host is either the browser process in
 // Chrome or the window server process.
 interface FrameSinkManagerClient {
+  // Called by the frame sink manager when a new Surface is created.
+  OnSurfaceCreated(SurfaceId surface_id);
+
   // Called by the frame sink manager when a CompositorFrame with a new
   // SurfaceId activates for the first time.
   OnFirstSurfaceActivation(SurfaceInfo surface_info);

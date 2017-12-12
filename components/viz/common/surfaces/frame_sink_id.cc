@@ -9,7 +9,7 @@
 namespace viz {
 
 std::string FrameSinkId::ToString() const {
-  return base::StringPrintf("FrameSinkId(%d, %d)", client_id_, sink_id_);
+  return base::StringPrintf("FrameSinkId(%u, %u)", client_id_, sink_id_);
 }
 
 std::ostream& operator<<(std::ostream& out, const FrameSinkId& frame_sink_id) {

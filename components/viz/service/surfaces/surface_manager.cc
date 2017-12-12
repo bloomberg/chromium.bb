@@ -112,6 +112,8 @@ Surface* SurfaceManager::CreateSurface(
       // real reference is received, is added to prevent this from happening.
       AddTemporaryReference(surface_info.id());
     }
+    for (auto& observer : observer_list_)
+      observer.OnSurfaceCreated(surface_info.id());
     return surface_map_[surface_info.id()].get();
   }
 
@@ -464,7 +466,6 @@ void SurfaceManager::RemoveTemporaryReference(const SurfaceId& surface_id,
 }
 
 Surface* SurfaceManager::GetLatestInFlightSurface(
-    const FrameSinkId& parent,
     const SurfaceId& primary_surface_id,
     const SurfaceId& fallback_surface_id) {
   if (!using_surface_references())
@@ -488,6 +489,9 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
   if (it == temporary_reference_ranges_.end())
     return fallback_surface;
 
+  const base::flat_set<SurfaceId>& fallback_parents =
+      GetSurfacesThatReferenceChild(fallback_surface_id);
+
   const std::vector<LocalSurfaceId>& temp_surfaces = it->second;
   for (const LocalSurfaceId& local_surface_id : base::Reversed(temp_surfaces)) {
     // The in-flight surface cannot be newer than the primary surface ID.
@@ -496,9 +500,12 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
       continue;
     }
 
-    // |parent| must own this temporary reference.
     SurfaceId surface_id(fallback_surface_id.frame_sink_id(), local_surface_id);
-    if (parent != temporary_references_[surface_id].owner)
+    base::Optional<FrameSinkId> owner = temporary_references_[surface_id].owner;
+    // Determine if the owner of this temporary reference matches one of the
+    // parents of the fallback surface. Typically a surface has a single parent
+    // so this operation should be cheap.
+    if (!IsOwnerAmongFallbackParents(fallback_parents, owner))
       continue;
 
     Surface* surface = GetSurfaceForId(surface_id);
@@ -654,6 +661,18 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
 
 bool SurfaceManager::IsMarkedForDestruction(const SurfaceId& surface_id) {
   return surfaces_to_destroy_.count(surface_id) != 0;
+}
+
+bool SurfaceManager::IsOwnerAmongFallbackParents(
+    const base::flat_set<SurfaceId>& fallback_parents,
+    const base::Optional<FrameSinkId>& owner) const {
+  if (!owner)
+    return false;
+
+  return std::find_if(fallback_parents.begin(), fallback_parents.end(),
+                      [owner](const SurfaceId& parent) {
+                        return parent.frame_sink_id() == owner;
+                      }) != fallback_parents.end();
 }
 
 void SurfaceManager::SurfaceWillBeDrawn(Surface* surface) {

@@ -194,6 +194,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void RegisterAfterConnectionLoss();
 
   // mojom::FrameSinkManagerClient:
+  void OnSurfaceCreated(const SurfaceId& surface_id) override;
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
   void OnClientConnectionClosed(const FrameSinkId& frame_sink_id) override;
   void OnAggregatedHitTestRegionListUpdated(

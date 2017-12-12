@@ -109,7 +109,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          float parent_device_scale_factor,
-                         const FrameSinkId& parent_frame_sink_id,
                          const gfx::Transform& target_transform,
                          const ClipData& clip_rect,
                          RenderPass* dest_pass,
@@ -164,7 +163,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void CopyQuadsToPass(
       const QuadList& source_quad_list,
       const SharedQuadStateList& source_shared_quad_state_list,
-      const FrameSinkId& parent_frame_sink_id,
       float parent_device_scale_factor,
       const std::unordered_map<ResourceId, ResourceId>& resource_to_child_map,
       const gfx::Transform& target_transform,

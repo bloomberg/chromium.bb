@@ -71,6 +71,7 @@ class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
   void OnVideoActivityEnded();
 
   // SurfaceObserver implementation.
+  void OnSurfaceCreated(const SurfaceId& surface_id) override {}
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
   void OnSurfaceActivated(const SurfaceId& surface_id) override {}
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
