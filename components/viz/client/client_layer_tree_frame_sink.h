@@ -50,6 +50,7 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
     InitParams();
     ~InitParams();
 
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner;
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
     SharedBitmapManager* shared_bitmap_manager = nullptr;
     std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source;

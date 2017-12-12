@@ -452,11 +452,13 @@ void ContextProviderCommandBuffer::OnLostContext() {
 }
 
 void ContextProviderCommandBuffer::AddObserver(viz::ContextLostObserver* obs) {
+  CheckValidThreadOrLockAcquired();
   observers_.AddObserver(obs);
 }
 
 void ContextProviderCommandBuffer::RemoveObserver(
     viz::ContextLostObserver* obs) {
+  CheckValidThreadOrLockAcquired();
   observers_.RemoveObserver(obs);
 }
 

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
@@ -57,15 +58,19 @@ class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
   };
 
   // Constructor for GL-based and/or software resources.
-  // gpu_memory_buffer_manager and shared_bitmap_manager must outlive the
-  // LayerTreeFrameSink.
-  // shared_bitmap_manager is optional (won't be used) if context_provider is
-  // present.
-  // gpu_memory_buffer_manager is optional (won't be used) if context_provider
-  // is not present.
+  //
+  // |compositor_task_runner| is used to post worker context lost callback and
+  // must belong to the same thread where all calls to or from client are made.
+  // Optional and won't be used unless |worker_context_provider| is present.
+  //
+  // |gpu_memory_buffer_manager| and |shared_bitmap_manager| must outlive the
+  // LayerTreeFrameSink. |shared_bitmap_manager| is optional (won't be used) if
+  // |context_provider| is present. |gpu_memory_buffer_manager| is optional
+  // (won't be used) unless |context_provider| is present.
   LayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       viz::SharedBitmapManager* shared_bitmap_manager);
 
@@ -131,6 +136,8 @@ class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
   virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
 
  protected:
+  class ContextLostForwarder;
+
   // viz::ContextLostObserver:
   void OnContextLost() override;
 
@@ -140,10 +147,15 @@ class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
   scoped_refptr<viz::ContextProvider> context_provider_;
   scoped_refptr<viz::ContextProvider> worker_context_provider_;
   scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider_;
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   viz::SharedBitmapManager* shared_bitmap_manager_;
 
+  std::unique_ptr<ContextLostForwarder> worker_context_lost_forwarder_;
+
  private:
+  THREAD_CHECKER(thread_checker_);
+  base::WeakPtrFactory<LayerTreeFrameSink> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSink);
 };
 

@@ -79,22 +79,19 @@ class VIZ_COMMON_EXPORT ContextProvider
   // Returns feature blacklist decisions and driver bug workarounds info.
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
 
-  // Adds/removes an observer to be called when the context is lost. This should
-  // be called from the same thread that the context is bound to. To avoid
-  // races, it should be called before BindToCurrentThread().
-  // Implementation note: Implementations must avoid post-tasking the to the
-  // observer directly as the observer may remove itself before the task runs.
+  // Adds/removes an observer to be called when the context is lost. AddObserver
+  // should be called before BindToCurrentThread from the same thread that the
+  // context is bound to, or any time while the lock is acquired after checking
+  // for context loss.
+  // NOTE: Implementations must avoid post-tasking the to the observer directly
+  // as the observer may remove itself before the task runs.
   virtual void AddObserver(ContextLostObserver* obs) = 0;
   virtual void RemoveObserver(ContextLostObserver* obs) = 0;
 
-  // Below are helper methods for ScopedContextLock. Use that instead of calling
-  // these directly.
-  //
-  // Detaches debugging thread checkers to allow use of the provider from the
-  // current thread. This can be called on any thread.
-  virtual void DetachFromThread() {}
   // Returns the lock that should be held if using this context from multiple
   // threads. This can be called on any thread.
+  // NOTE: Helper method for ScopedContextLock. Use that instead of calling this
+  // directly.
   virtual base::Lock* GetLock() = 0;
 
  protected:

@@ -112,6 +112,7 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
 SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::ContextProvider> worker_context_provider,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     viz::SharedBitmapManager* shared_bitmap_manager,
     int routing_id,
@@ -121,6 +122,7 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
     : cc::LayerTreeFrameSink(std::move(context_provider),
                              std::move(worker_context_provider),
+                             std::move(compositor_task_runner),
                              gpu_memory_buffer_manager,
                              nullptr),
       routing_id_(routing_id),

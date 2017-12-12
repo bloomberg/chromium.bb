@@ -1605,11 +1605,7 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestLoseAfterSendingBeginMainFrame);
 
-// This test causes context loss on the worker context but not the compositor
-// context and checks that draw still occurs. The resources might be in a bad
-// state e.g. null sync tokens but that shouldn't cause the draw to fail.
-class LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles
-    : public LayerTreeTest {
+class LayerTreeHostContextTestWorkerContextLostRecovery : public LayerTreeTest {
  protected:
   void SetupTree() override {
     PaintFlags flags;
@@ -1628,6 +1624,9 @@ class LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) override {
+    if (did_lose_context)
+      return;
+    did_lose_context = true;
     viz::ContextProvider::ScopedContextLock scoped_context(
         host_impl->layer_tree_frame_sink()->worker_context_provider());
     gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
@@ -1635,20 +1634,21 @@ class LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles
                             GL_INNOCENT_CONTEXT_RESET_ARB);
   }
 
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    ++num_draws_;
-  }
+  void DidInitializeLayerTreeFrameSink() override { num_frame_sinks_++; }
 
   void DidCommitAndDrawFrame() override { EndTest(); }
 
-  void AfterTest() override { EXPECT_EQ(1, num_draws_); }
+  void AfterTest() override {
+    EXPECT_TRUE(did_lose_context);
+    EXPECT_EQ(num_frame_sinks_, 2);
+  }
 
   FakeContentLayerClient client_;
-  int num_draws_ = 0;
+  bool did_lose_context = false;
+  int num_frame_sinks_ = 0;
 };
 
-MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles);
+MULTI_THREAD_TEST_F(LayerTreeHostContextTestWorkerContextLostRecovery);
 
 }  // namespace
 }  // namespace cc

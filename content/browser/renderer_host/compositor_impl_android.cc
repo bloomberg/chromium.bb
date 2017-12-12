@@ -826,7 +826,7 @@ void CompositorImpl::InitializeDisplay(
   display_ = std::make_unique<viz::Display>(
       viz::ServerSharedBitmapManager::current(), gpu_memory_buffer_manager,
       renderer_settings, frame_sink_id_, std::move(display_output_surface),
-      std::move(scheduler), std::move(task_runner));
+      std::move(scheduler), task_runner);
 
   auto layer_tree_frame_sink =
       vulkan_context_provider
@@ -836,7 +836,7 @@ void CompositorImpl::InitializeDisplay(
           : std::make_unique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, GetHostFrameSinkManager(), manager,
                 display_.get(), context_provider,
-                nullptr /* worker_context_provider */,
+                nullptr /* worker_context_provider */, task_runner,
                 gpu_memory_buffer_manager,
                 viz::ServerSharedBitmapManager::current());
 

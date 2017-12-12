@@ -41,6 +41,7 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     InitParams* params)
     : cc::LayerTreeFrameSink(std::move(context_provider),
                              std::move(worker_context_provider),
+                             std::move(params->compositor_task_runner),
                              params->gpu_memory_buffer_manager,
                              params->shared_bitmap_manager),
       hit_test_data_provider_(std::move(params->hit_test_data_provider)),

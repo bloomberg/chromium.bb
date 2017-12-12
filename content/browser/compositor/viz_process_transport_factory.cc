@@ -439,6 +439,7 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   viz::ClientLayerTreeFrameSink::InitParams params;
+  params.compositor_task_runner = compositor->task_runner();
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
   // TODO(crbug.com/730660): Make a ClientSharedBitmapManager to pass here.
   params.shared_bitmap_manager = shared_bitmap_manager_.get();
