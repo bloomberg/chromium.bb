@@ -77,4 +77,8 @@
   <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD" desc="Text for screenreaders describing a URL from a clipboard.">
     <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> location from clipboard</ph>
   </message>
+  <!-- Supplement accessibility label with item position, e.g. "1 of 3" -->
+  <message name="IDS_ACC_AUTOCOMPLETE_N_OF_M" desc="Text for screenreaders describing the current matche's position in the list of suggestions.">
+    <ph name="FRIENDLY_MATCH_TEXT">$1<ex>The Chromium Projects http://www.chromium.org bookmark</ex></ph>, <ph name="MATCH_POSITION">$2<ex>2</ex></ph> of <ph name="NUM_MATCHES">$3<ex>3</ex></ph>
+  </message>
 </grit-part>
