@@ -68,58 +68,26 @@ def should_show_log(upstream_url):
   return True
 
 
-def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
-         ignore_dirty_tree=False):
-  deps = os.path.join(root, 'DEPS')
+def get_deps(root):
+  """Returns the path and the content of the DEPS file."""
+  deps_path = os.path.join(root, 'DEPS')
   try:
-    with open(deps, 'rb') as f:
+    with open(deps_path, 'rb') as f:
       deps_content = f.read()
   except (IOError, OSError):
     raise Error('Ensure the script is run in the directory '
                 'containing DEPS file.')
+  return deps_path, deps_content
 
-  if not ignore_dirty_tree and not is_pristine(root):
-    raise Error('Ensure %s is clean first (no non-merged commits).' % root)
 
-  full_dir = os.path.normpath(os.path.join(os.path.dirname(root), deps_dir))
-  if not os.path.isdir(full_dir):
-    raise Error('Directory not found: %s (%s)' % (deps_dir, full_dir))
-  head = check_output(['git', 'rev-parse', 'HEAD'], cwd=full_dir).strip()
-
-  if not head in deps_content:
-    print('Warning: %s is not checked out at the expected revision in DEPS' %
-          deps_dir)
-    if key is None:
-      print("Warning: no key specified.  Using '%s'." % deps_dir)
-      key = deps_dir
-
-    # It happens if the user checked out a branch in the dependency by himself.
-    # Fall back to reading the DEPS to figure out the original commit.
-    for i in deps_content.splitlines():
-      m = re.match(r'\s+"' + key + '":.*"([a-z0-9]{40})",', i)
-      if m:
-        head = m.group(1)
-        break
-    else:
-      raise Error('Expected to find commit %s for %s in DEPS' % (head, key))
-
-  print('Found old revision %s' % head)
-
-  check_call(['git', 'fetch', 'origin', '--quiet'], cwd=full_dir)
-  roll_to = check_output(['git', 'rev-parse', roll_to], cwd=full_dir).strip()
-  print('Found new revision %s' % roll_to)
-
-  if roll_to == head:
-    raise AlreadyRolledError('No revision to roll!')
-
+def generate_commit_message(
+    full_dir, dependency, head, roll_to, no_log, log_limit):
+  """Creates the commit message for this specific roll."""
   commit_range = '%s..%s' % (head[:9], roll_to[:9])
-
   upstream_url = check_output(
       ['git', 'config', 'remote.origin.url'], cwd=full_dir).strip()
   log_url = get_log_url(upstream_url, head, roll_to)
-  cmd = [
-    'git', 'log', commit_range, '--date=short', '--no-merges',
-  ]
+  cmd = ['git', 'log', commit_range, '--date=short', '--no-merges']
   logs = check_output(
       cmd + ['--format=%ad %ae %s'], # Args with '=' are automatically quoted.
       cwd=full_dir).rstrip()
@@ -130,16 +98,15 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
       if not l.endswith('recipe-roller Roll recipe dependencies (trivial).')
   ]
   logs = '\n'.join(cleaned_lines) + '\n'
+
   nb_commits = len(lines)
   rolls = nb_commits - len(cleaned_lines)
-
   header = 'Roll %s/ %s (%d commit%s%s)\n\n' % (
-      deps_dir,
+      dependency,
       commit_range,
       nb_commits,
       's' if nb_commits > 1 else '',
       ('; %s trivial rolls' % rolls) if rolls else '')
-
   log_section = ''
   if log_url:
     log_section = log_url + '\n\n'
@@ -152,34 +119,64 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
       # Keep the first N log entries.
       logs = ''.join(logs.splitlines(True)[:log_limit]) + '(...)\n'
     log_section += logs
-  log_section += '\n\nCreated with:\n  roll-dep ' + deps_dir
-  if key:
-    log_section += ' ' + key
-  log_section += '\n'
+  return header + log_section
 
-  reviewer = 'R=%s\n' % ','.join(reviewers) if reviewers else ''
-  bug = 'BUG=%s\n' % bug if bug else ''
-  msg = header + log_section + reviewer + bug
 
+def calculate_roll(full_dir, dependency, deps_content, roll_to, key):
+  """Calculates the roll for a dependency by processing deps_content, and
+  fetching the dependency via git.
+  """
+  head = check_output(['git', 'rev-parse', 'HEAD'], cwd=full_dir).strip()
+  if not head in deps_content:
+    print('Warning: %s is not checked out at the expected revision in DEPS' %
+          dependency)
+    if not key:
+      key = dependency
+
+    # It happens if the user checked out a branch in the dependency by himself.
+    # Fall back to reading the DEPS to figure out the original commit.
+    for i in deps_content.splitlines():
+      m = re.match(r'\s+"' + key + '":.*"([a-z0-9]{40})",', i)
+      if m:
+        head = m.group(1)
+        break
+    else:
+      raise Error('Expected to find commit %s for %s in DEPS' % (head, key))
+
+  check_call(['git', 'fetch', 'origin', '--quiet'], cwd=full_dir)
+  roll_to = check_output(['git', 'rev-parse', roll_to], cwd=full_dir).strip()
+  return head, roll_to
+
+
+def gen_commit_msg(logs, cmdline, rolls, reviewers, bug):
+  """Returns the final commit message."""
+  commit_msg = ''
+  if len(logs) > 1:
+    commit_msg = 'Rolling %d dependencies\n\n' % len(logs)
+  commit_msg += '\n\n'.join(logs)
+  commit_msg += '\nCreated with:\n  ' + cmdline
+  commit_msg += 'R=%s\n' % ','.join(reviewers) if reviewers else ''
+  commit_msg += 'BUG=%s\n' % bug if bug else ''
+  return commit_msg
+
+
+def finalize(commit_msg, deps_path, deps_content, rolls):
+  """Edits the DEPS file, commits it, then uploads a CL."""
   print('Commit message:')
-  print('\n'.join('    ' + i for i in msg.splitlines()))
-  deps_content = deps_content.replace(head, roll_to)
-  with open(deps, 'wb') as f:
+  print('\n'.join('    ' + i for i in commit_msg.splitlines()))
+
+  with open(deps_path, 'wb') as f:
     f.write(deps_content)
+  root = os.path.dirname(deps_path)
   check_call(['git', 'add', 'DEPS'], cwd=root)
-  check_call(['git', 'commit', '--quiet', '-m', msg], cwd=root)
+  check_call(['git', 'commit', '--quiet', '-m', commit_msg], cwd=root)
 
   # Pull the dependency to the right revision. This is surprising to users
   # otherwise.
-  check_call(['git', 'checkout', '--quiet', roll_to], cwd=full_dir)
-
-  print('')
-  if not reviewers:
-    print('You forgot to pass -r, make sure to insert a R=foo@example.com line')
-    print('to the commit description before emailing.')
-    print('')
-  print('Run:')
-  print('  git cl upload --send-mail')
+  for dependency, (_head, roll_to) in sorted(rolls.iteritems()):
+    full_dir = os.path.normpath(
+        os.path.join(os.path.dirname(root), dependency))
+    check_call(['git', 'checkout', '--quiet', roll_to], cwd=full_dir)
 
 
 def main():
@@ -203,11 +200,19 @@ def main():
   parser.add_argument(
       '--roll-to', default='origin/master',
       help='Specify the new commit to roll to (default: %(default)s)')
-  parser.add_argument('dep_path', help='Path to dependency')
-  parser.add_argument('key', nargs='?',
-      help='Regexp for dependency in DEPS file')
+  parser.add_argument(
+      '--key', action='append', default=[],
+      help='Regex(es) for dependency in DEPS file')
+  parser.add_argument('dep_path', nargs='+', help='Path(s) to dependency')
   args = parser.parse_args()
 
+  if len(args.dep_path) > 1:
+    if args.roll_to != 'origin/master':
+      parser.error(
+          'Can\'t use multiple paths to roll simultaneously and --roll-to')
+    if args.key:
+      parser.error(
+          'Can\'t use multiple paths to roll simultaneously and --key')
   reviewers = None
   if args.reviewer:
     reviewers = args.reviewer.split(',')
@@ -215,22 +220,55 @@ def main():
       if not '@' in r:
         reviewers[i] = r + '@chromium.org'
 
+  root = os.getcwd()
+  dependencies = sorted(d.rstrip('/').rstrip('\\') for d in args.dep_path)
+  cmdline = 'roll-dep ' + ' '.join(dependencies) + ''.join(
+      ' --key ' + k for k in args.key)
   try:
-    roll(
-        os.getcwd(),
-        args.dep_path.rstrip('/').rstrip('\\'),
-        args.roll_to,
-        args.key,
-        reviewers,
-        args.bug,
-        args.no_log,
-        args.log_limit,
-        args.ignore_dirty_tree)
+    if not args.ignore_dirty_tree and not is_pristine(root):
+      raise Error('Ensure %s is clean first (no non-merged commits).' % root)
+    # First gather all the information without modifying anything, except for a
+    # git fetch.
+    deps_path, deps_content = get_deps(root)
+    rolls = {}
+    for dependency in dependencies:
+      full_dir = os.path.normpath(
+          os.path.join(os.path.dirname(root), dependency))
+      if not os.path.isdir(full_dir):
+        raise Error('Directory not found: %s (%s)' % (dependency, full_dir))
+      head, roll_to = calculate_roll(
+          full_dir, dependency, deps_content, args.roll_to, args.key)
+      if roll_to == head:
+        if len(dependencies) == 1:
+          raise AlreadyRolledError('No revision to roll!')
+        print('%s: Already at latest commit %s' % (dependency, roll_to))
+      else:
+        print(
+            '%s: Rolling from %s to %s' % (dependency, head[:10], roll_to[:10]))
+        rolls[dependency] = (head, roll_to)
 
+    logs = []
+    for dependency, (head, roll_to) in sorted(rolls.iteritems()):
+      full_dir = os.path.normpath(
+          os.path.join(os.path.dirname(root), dependency))
+      log = generate_commit_message(
+          full_dir, dependency, head, roll_to, args.no_log, args.log_limit)
+      logs.append(log)
+      deps_content = deps_content.replace(head, roll_to)
+
+    commit_msg = gen_commit_msg(logs, cmdline, rolls, reviewers, args.bug)
+    finalize(commit_msg, deps_path, deps_content, rolls)
   except Error as e:
     sys.stderr.write('error: %s\n' % e)
     return 2 if isinstance(e, AlreadyRolledError) else 1
 
+  print('')
+  if not reviewers:
+    print('You forgot to pass -r, make sure to insert a R=foo@example.com line')
+    print('to the commit description before emailing.')
+    print('')
+  print('Run:')
+  print('  git cl upload --send-mail')
   return 0
 
 
