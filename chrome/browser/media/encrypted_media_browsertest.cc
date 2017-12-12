@@ -798,7 +798,13 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
                        kUnitTestSuccess);
 }
 
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Renewal) {
+// TODO(crbug.com/794039) Test is flaky on linux asan.
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_Renewal DISABLED_Renewal
+#else
+#define MAYBE_Renewal Renewal
+#endif
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_Renewal) {
   TestPlaybackCase(kExternalClearKeyRenewalKeySystem, kNoSessionToLoad,
                    media::kEnded);
 
