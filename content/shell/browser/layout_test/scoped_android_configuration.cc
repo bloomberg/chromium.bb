@@ -16,13 +16,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/android/url_utils.h"
 #include "base/test/test_support_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
-#include "jni/ShellLayoutTestUtils_jni.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -129,12 +129,7 @@ void RedirectStream(
 }  // namespace
 
 ScopedAndroidConfiguration::ScopedAndroidConfiguration() : sockets_() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jtest_data_dir =
-      Java_ShellLayoutTestUtils_getIsolatedTestRoot(env);
-  base::FilePath test_data_dir(
-      base::android::ConvertJavaStringToUTF8(env, jtest_data_dir));
-  base::InitAndroidTestPaths(test_data_dir);
+  base::InitAndroidTestPaths(base::android::GetIsolatedTestRoot());
 
   bool success =
       base::MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI);
