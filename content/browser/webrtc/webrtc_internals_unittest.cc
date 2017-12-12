@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "content/browser/webrtc/webrtc_internals_ui_observer.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,6 +70,14 @@ class MockWakeLock : public device::mojom::WakeLock {
   bool has_wakelock_;
 };
 
+}  // namespace
+
+class WebRtcEventLogManagerForTesting : public WebRtcEventLogManager {
+ public:
+  WebRtcEventLogManagerForTesting() = default;
+  ~WebRtcEventLogManagerForTesting() override = default;
+};
+
 // Derived class for testing only.  Allows the tests to have their own instance
 // for testing and control the period for which WebRTCInternals will bulk up
 // updates (changes down from 500ms to 1ms).
@@ -77,19 +86,26 @@ class WebRTCInternalsForTest : public WebRTCInternals {
   WebRTCInternalsForTest()
       : WebRTCInternals(1, true),
         mock_wake_lock_(mojo::MakeRequest(&wake_lock_)) {}
+
   ~WebRTCInternalsForTest() override {}
+
   bool HasWakeLock() { return mock_wake_lock_.HasWakeLock(); }
+
+  WebRtcEventLogManager* GetWebRtcEventLogManager() override {
+    return &temporary_webrtc_event_log_manager_;
+  }
 
  private:
   MockWakeLock mock_wake_lock_;
+  // WebRtcEventLogManager is a lazily constructed singleton with its own
+  // sequenced task runner. The singleton remains alive between tests, but
+  // the runner's underlying task queue becomes invalidated. Therefore, we
+  // override it and make WebRtcInternals (the unit under test) use a temporary
+  // object, that would not outlive the test.
+  WebRtcEventLogManagerForTesting temporary_webrtc_event_log_manager_;
 };
 
-}  // namespace
-
 class WebRtcInternalsTest : public testing::Test {
- public:
-  WebRtcInternalsTest() : io_thread_(BrowserThread::UI, &io_loop_) {}
-
  protected:
   void VerifyString(const base::DictionaryValue* dict,
                     const std::string& key,
@@ -131,8 +147,7 @@ class WebRtcInternalsTest : public testing::Test {
     VerifyString(dict, "video", video);
   }
 
-  base::MessageLoop io_loop_;
-  TestBrowserThread io_thread_;
+  TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 TEST_F(WebRtcInternalsTest, AddRemoveObserver) {

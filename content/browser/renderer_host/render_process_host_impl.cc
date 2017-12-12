@@ -1309,9 +1309,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       gpu_observer_registered_(false),
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
-#if BUILDFLAG(ENABLE_WEBRTC)
-      webrtc_eventlog_host_(id_),
-#endif
       permission_service_context_(new PermissionServiceContext(this)),
       indexed_db_factory_(new IndexedDBDispatcherHost(
           id_,
@@ -1331,6 +1328,15 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       shared_bitmap_allocation_notifier_impl_(
           viz::ServerSharedBitmapManager::current()),
       weak_factory_(this) {
+#if BUILDFLAG(ENABLE_WEBRTC)
+  // WebRTCInternals' constructor needs to be invoked from a scope that allows
+  // blocking. By doing it now, we make sure no later scope triggers
+  // construction at a potentially illegal time.
+  // TODO(eladalon): Remove the necessity for this; it is brittle.
+  // https://crbug.com/792847
+  WebRTCInternals::GetInstance();
+#endif
+
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -1738,8 +1744,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetDOMStorageContext()));
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  peer_connection_tracker_host_ = new PeerConnectionTrackerHost(
-      GetID(), webrtc_eventlog_host_.GetWeakPtr());
+  peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
   AddFilter(peer_connection_tracker_host_.get());
   AddFilter(new MediaStreamTrackMetricsHost());
 #endif
@@ -3172,15 +3177,6 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
       FROM_HERE, base::BindOnce(&base::DoNothing),
       base::BindOnce(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
                      weak_factory_.GetWeakPtr()));
-}
-
-bool RenderProcessHostImpl::StartLocalWebRtcEventLogging(
-    const base::FilePath& base_path) {
-  return webrtc_eventlog_host_.StartLocalWebRtcEventLogging(base_path);
-}
-
-bool RenderProcessHostImpl::StopLocalWebRtcEventLogging() {
-  return webrtc_eventlog_host_.StopLocalWebRtcEventLogging();
 }
 
 void RenderProcessHostImpl::SetEchoCanceller3(
