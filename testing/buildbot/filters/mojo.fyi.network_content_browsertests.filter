@@ -39,8 +39,8 @@
 -BrowserSideNavigationBrowserTest.FailedNavigation
 -ContentBrowserTest.AbortedRendererInitiatedNavigationDoNotCancelPendingXHR
 -CrossSiteResourceHandlerTest.NoDeliveryToDetachedFrame
--CrossSiteTransferTest/CrossSiteTransferTest.NoLeakOnCrossSiteCancel*
--CrossSiteTransferTest/CrossSiteTransferTest.ReplaceEntryCrossProcessThenTransfer*
+-CrossSiteTransferTest.NoLeakOnCrossSiteCancel
+-CrossSiteTransferTest.ReplaceEntryCrossProcessThenTransfer
 -DevToolsDownloadContentTest.MultiDownload
 -DevToolsDownloadContentTest.DefaultDownload
 -DevToolsDownloadContentTest.ResetDownloadState
@@ -129,8 +129,7 @@
 # Cross-site document blocking needs to be implemented in the network service.
 # https://crbug.com/786505 (cross site document blocking)
 # https://crbug.com/792546 (cross site document blocking in network service)
--SiteIsolationStatsGathererBrowserTest/SiteIsolationStatsGathererBrowserTest.CrossSiteDocumentBlockingForMimeType/0
--SiteIsolationStatsGathererBrowserTest/SiteIsolationStatsGathererBrowserTest.CrossSiteDocumentBlockingForMimeType/1
+-SiteIsolationStatsGathererBrowserTest.CrossSiteDocumentBlockingForMimeType
 -CrossSiteDocumentBlockingTest.BlockDocuments
 -CrossSiteDocumentBlockingIsolatedOriginTest.BlockDocumentsFromIsolatedOrigin
 -CrossSiteDocumentBlockingTest.RangeRequest
