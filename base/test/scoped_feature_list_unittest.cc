@@ -166,7 +166,7 @@ TEST_F(ScopedFeatureListTest, OverrideWithFeatureParameters) {
     EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature1));
     EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature2));
     EXPECT_EQ("", GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
-    EXPECT_EQ("", GetFieldTrialParamValueByFeature(kTestFeature2, kParam));
+    EXPECT_EQ(kValue, GetFieldTrialParamValueByFeature(kTestFeature2, kParam));
     EXPECT_EQ(trial.get(), FeatureList::GetFieldTrial(kTestFeature1));
     EXPECT_NE(nullptr, FeatureList::GetFieldTrial(kTestFeature2));
   }
