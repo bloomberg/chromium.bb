@@ -51,7 +51,7 @@ class ScopedPrinterInfo {
 
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
-// The URL of the active tab.
+// The URL actively being processed in some way.
 extern const char kActiveURL[];
 
 // Installed extensions. |kExtensionID| should be formatted with an integer,

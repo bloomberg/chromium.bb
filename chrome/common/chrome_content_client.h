@@ -69,7 +69,7 @@ class ChromeContentClient : public content::ContentClient {
       const std::vector<std::unique_ptr<content::PepperPluginInfo>>& plugins);
 #endif
 
-  void SetActiveURL(const GURL& url) override;
+  void SetActiveURL(const GURL& url, std::string top_origin) override;
   void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
   void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) override;

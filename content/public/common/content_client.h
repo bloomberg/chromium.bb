@@ -80,8 +80,14 @@ class CONTENT_EXPORT ContentClient {
   ContentRendererClient* renderer() { return renderer_; }
   ContentUtilityClient* utility() { return utility_; }
 
-  // Sets the currently active URL.  Use GURL() to clear the URL.
-  virtual void SetActiveURL(const GURL& url) {}
+  // Sets the active URL (the URL of a frame that is navigating or processing an
+  // IPC message), and the origin of the main frame (for diagnosing crashes).
+  // Use GURL() or std::string() to clear the URL/origin.
+  //
+  // A string is used for the origin because the source of that value may be a
+  // WebSecurityOrigin or a full URL (if called from the browser process) and a
+  // string is the lowest-common-denominator.
+  virtual void SetActiveURL(const GURL& url, std::string top_origin) {}
 
   // Sets the data on the current gpu.
   virtual void SetGpuInfo(const gpu::GPUInfo& gpu_info) {}

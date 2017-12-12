@@ -1700,7 +1700,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 
   DCHECK(!frame_->GetDocument().IsNull());
 
-  GetContentClient()->SetActiveURL(frame_->GetDocument().Url());
+  GetContentClient()->SetActiveURL(
+      frame_->GetDocument().Url(),
+      frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
   {
     SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.OnMessageReceived");
@@ -5508,7 +5510,8 @@ void RenderFrameImpl::OnFailedNavigation(
   RenderFrameImpl::PrepareRenderViewForNavigation(
       common_params.url, request_params);
 
-  GetContentClient()->SetActiveURL(common_params.url);
+  GetContentClient()->SetActiveURL(
+      common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
   // If this frame is navigating cross-process, it may naively assume that this
   // is the first navigation in the frame, but this may not actually be the
@@ -6308,7 +6311,8 @@ void RenderFrameImpl::NavigateInternal(
   RenderFrameImpl::PrepareRenderViewForNavigation(
       common_params.url, request_params);
 
-  GetContentClient()->SetActiveURL(common_params.url);
+  GetContentClient()->SetActiveURL(
+      common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
   // If this frame is navigating cross-process, it may naively assume that this
   // is the first navigation in the frame, but this may not actually be the
