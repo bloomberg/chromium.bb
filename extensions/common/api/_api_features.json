@@ -267,6 +267,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bookmarks/*",
+      "chrome://extensions/*",
       "chrome://settings/*"
     ]
   }],

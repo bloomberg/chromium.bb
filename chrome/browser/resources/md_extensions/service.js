@@ -247,6 +247,7 @@ cr.define('extensions', function() {
     /** @override */
     updateAllExtensions() {
       chrome.developerPrivate.autoUpdate();
+      chrome.metricsPrivate.recordUserAction('Options_UpdateExtensions');
     }
 
     /** @override */

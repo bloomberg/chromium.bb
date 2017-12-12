@@ -25,6 +25,15 @@ cr.define('extensions', function() {
       },
     },
 
+    listeners: {
+      'view-enter-start': 'onViewEnter_',
+    },
+
+    /** @private */
+    onViewEnter_: function() {
+      chrome.metricsPrivate.recordUserAction('Options_ExtensionCommands');
+    },
+
     /**
      * @return {!Array<!chrome.developerPrivate.ExtensionInfo>}
      * @private
