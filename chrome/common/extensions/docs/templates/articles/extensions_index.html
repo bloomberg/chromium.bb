@@ -2,9 +2,21 @@
 
 <p>
   Extensions are small software programs that
-  can modify and enhance the functionality of the Chrome browser.
-  You write them using web technologies such as
-  HTML, JavaScript, and CSS.
+  customize the browsing experience.
+  They enable users to tailor Chrome functionality and
+  behavior to individual needs or preferences.
+  They are built on web technologies
+  such as HTML, JavaScript, and CSS.
+</p>
+
+<p>
+  An extension must fulfill a
+  <a href="single_purpose">single purpose</a>
+  that is narrowly defined
+  and easy to understand.
+  A single extension can include multiple componenets
+  and a range of functionality,
+  as long as everything contributes towards a common purpose.
 </p>
 
 <p>
@@ -14,31 +26,130 @@
        align="right"
        style="margin-top:0px; margin-left:0.5em"
        alt="A screenshot of an extension's icon in the browser bar">
-  Extensions have little to no user interface.
-  For example, the image to the right shows the icon
-  that provides the UI for the
-  <a href="samples#google-mail-checker">Google Mail Checker extension</a>.
+  User interfaces should be minimal and have intent.
+  They can range from a simple icon,
+  such as the
+  <a href="samples#google-mail-checker">Google Mail Checker extension</a>
+  shown on the right,
+  to <a href="override">overriding</a> an entire page.
 </p>
 
 <p>
-  Extensions bundle all their files
-  into a single file that the user downloads and installs.
-  This bundling means that, unlike ordinary web apps,
-  extensions don't need to depend
-  on content from the web.
+  Extension files are zipped into a single <code>.crx</code> package
+  that the user downloads and installs.
+  This means extensions do not depend on content from the web,
+  unlike ordinary web apps.
 </p>
 
 <p>
-  You can distribute your extension
-  using the
+  Extensions are distributed through the
   <a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>
-  to publish to the
+  and published to the
   <a href="http://chrome.google.com/webstore">Chrome Web Store</a>.
   For more information, see the
   <a href="http://code.google.com/chrome/webstore">store developer documentation</a>.
 </p>
 
-<h2 id="How-do-I-start">How do I start?</h2>
+<h2 id="hello-extensions">Hello Extensions</h2>
+<p>
+Take a small step into extensions with this quick Hello Extensions example.
+You can create a new directory to store files or download them
+<a href="examples/tutorials/" download="hello_extensions.zip">
+  here.
+</a>
+</p>
+
+<p>
+Start by creating a file called <code>manifest.json</code>
+and include the following code:
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Hello Extensions",
+    "description" : "Base Level Extension",
+    "version": "1.0",
+    "manifest_version": 2
+  }
+</pre>
+<p>
+Every extension requires a manifest,
+though most extensions will not do much with just the manifest.
+For this quick start,
+the extension has a popup file and icon declared under the browser action:
+<a href="browserAction"><code>browser_action</code></a>.
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Hello Extensions",
+    "description" : "Base Level Extension",
+    "version": "1.0",
+    "manifest_version": 2,
+    <b>"browser_action": {
+      "default_popup": "hello.html",
+      "default_icon": "hello_extensions.png"
+    }</b>
+  }
+</pre>
+<p>
+  Download
+  <a href="examples/tutorials/hello_extensions" download="hello_extensions.png">
+  <code>hello_extensions.png</code> here</a>
+   and then create a file titled <code>hello.html</code>:
+</p>
+
+<pre data-filename="hello.html">
+  &lt;html&gt;
+    &lt;body&gt;
+      &lt;h1&gt;Hello Extensions&lt;/h1&gt;
+    &lt;/body&gt;
+  &lt;/html&gt;
+</pre>
+<p>
+  The extension now displays <code>hello.html</code> when the icon is clicked.
+  The next step is to include a command
+  in the manifest.json that enables a keyboard shortcut.
+  This step is fun, but not necessary:
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Hello Extensions",
+    "description" : "Base Level Extension",
+    "version": "1.0",
+    "manifest_version": 2,
+    "browser_action": {
+      "default_popup": "hello.html",
+      "default_icon": "hello_extensions.png"
+    },
+    <b>"commands": {
+      "_execute_browser_action": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+F",
+          "mac": "MacCtrl+Shift+F"
+        },
+        "description": "Opens hello.html"
+      }
+    }
+  </b>
+  }
+</pre>
+
+<p>
+The last step is to install the extension on your local machine.
+<ol>
+  <li>Navigate to <code>chrome://extensions</code> in your browser.
+  You can also access this page by
+  clicking on the Chrome menu on the top right side of the Omnibox,
+  hovering over <b>More Tools</b> and selecting <b>Extensions</b>.</li>
+  <li>Check the box next to <b> Developer Mode</b>.</li>
+  <li>Click <b>Load Unpacked Extension</b> and select the directory for your
+    "Hello Extensions" extension.</li>
+</ol>
+Congratulations! You can now use your popup-based extension by clicking
+the <code>hello_world.png</code> icon or by pressing
+<code>Ctrl+Shift+F</code> on your keyboard.
+</p>
+
+<h2 id="How-do-I-start">What next?</h2>
 <ol>
   <li>
     Follow the <a href="getstarted">Getting Started tutorial</a>
