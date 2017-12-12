@@ -37,16 +37,30 @@ class CrashKeyBreakpadTest;
 // The crash key name must be a constant string expression, and the value
 // should be unique and identifying. The maximum size for the value is
 // specified as the template argument, and values greater than this are
-// truncated. Crash keys should be declared with static storage duration.
+// truncated. When specifying a value size, space should be left for the
+// `NUL` byte. Crash keys should be declared with static storage duration.
 //
-// Example:
+// Examples:
+// \code
+//    // This crash key is only set in one function:
+//    void DidNavigate(const GURL& gurl) {
+//      static crash_reporter::CrashKeyString<256> url_key("url");
+//      url_key.Set(gurl.ToString());
+//    }
+//
+//    // This crash key can be set/cleared across different functions:
 //    namespace {
-//    crash_reporter::CrashKeyString<256> g_active_url("current-page-url");
+//    crash_reporter::CrashKeyString<32> g_operation_id("operation-req-id");
 //    }
 //
-//    void DidNaviagate(GURL new_url) {
-//      g_active_url.Set(new_url.ToString());
+//    void OnStartingOperation(const std::string& request_id) {
+//      g_operation_id.Set(request_id);
 //    }
+//
+//    void OnEndingOperation() {
+//      g_operation_id.Clear()
+//    }
+// \endcode
 #if defined(USE_CRASHPAD_ANNOTATION)
 
 template <crashpad::Annotation::ValueSizeType MaxLength>
