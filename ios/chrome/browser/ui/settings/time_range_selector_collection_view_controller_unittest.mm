@@ -63,7 +63,10 @@ class TimeRangeSelectorCollectionViewControllerTest
 
   // Verifies that the cell at |item| in |section| has the given |accessory|
   // type.
-  void CheckTextItemAccessoryType(int accessory_type, int section, int item) {
+  void CheckTextItemAccessoryType(
+      MDCCollectionViewCellAccessoryType accessory_type,
+      int section,
+      int item) {
     CollectionViewTextItem* cell = GetCollectionViewItem(section, item);
     EXPECT_EQ(accessory_type, cell.accessoryType);
   }
