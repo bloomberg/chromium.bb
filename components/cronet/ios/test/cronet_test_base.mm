@@ -28,7 +28,6 @@
 @synthesize errorPerTask = _errorPerTask;
 @synthesize totalBytesReceivedPerTask = _totalBytesReceivedPerTask;
 @synthesize expectedContentLengthPerTask = _expectedContentLengthPerTask;
-@synthesize taskMetrics = _taskMetrics;
 
 - (id)init {
   if (self = [super init]) {
@@ -43,7 +42,6 @@
   _totalBytesReceivedPerTask = [NSMutableDictionary dictionaryWithCapacity:0];
   _expectedContentLengthPerTask =
       [NSMutableDictionary dictionaryWithCapacity:0];
-  _taskMetrics = nil;
 }
 
 - (NSError*)error {
@@ -144,13 +142,6 @@
           (void (^)(NSURLSessionAuthChallengeDisposition disp,
                     NSURLCredential* credential))completionHandler {
   completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
-}
-
-- (void)URLSession:(NSURLSession*)session
-                          task:(NSURLSessionTask*)task
-    didFinishCollectingMetrics:(NSURLSessionTaskMetrics*)metrics
-    NS_AVAILABLE_IOS(10.0) {
-  _taskMetrics = metrics;
 }
 
 - (void)URLSession:(NSURLSession*)session
