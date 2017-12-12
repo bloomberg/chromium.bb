@@ -101,10 +101,6 @@ bool BackgroundProfilingTriggers::IsAllowedToUpload() const {
 bool BackgroundProfilingTriggers::IsOverTriggerThreshold(
     int content_process_type,
     uint32_t private_footprint_kb) {
-  if (!host_->ShouldProfileProcessType(content_process_type)) {
-    return false;
-  }
-
   switch (content_process_type) {
     case content::ProcessType::PROCESS_TYPE_BROWSER:
       return private_footprint_kb > kBrowserProcessMallocTriggerKb;

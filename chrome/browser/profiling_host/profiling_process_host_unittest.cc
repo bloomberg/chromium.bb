@@ -36,18 +36,18 @@ TEST(ProfilingProcessHost, ShouldProfileNewRenderer) {
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
-TEST(ProfilingProcessHost, GetCurrentMode_Default) {
+TEST(ProfilingProcessHost, GetModeForStartup_Default) {
   EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-            ProfilingProcessHost::GetCurrentMode());
+            ProfilingProcessHost::GetModeForStartup());
 }
 
-TEST(ProfilingProcessHost, GetCurrentMode_Commandline) {
+TEST(ProfilingProcessHost, GetModeForStartup_Commandline) {
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kMemlog,
                                                               "");
     EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -55,7 +55,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Commandline) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kMemlog,
                                                               "invalid");
     EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -63,7 +63,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Commandline) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kMemlog, switches::kMemlogModeAll);
     EXPECT_EQ(ProfilingProcessHost::Mode::kAll,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -71,7 +71,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Commandline) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kMemlog, switches::kMemlogModeBrowser);
     EXPECT_EQ(ProfilingProcessHost::Mode::kBrowser,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -79,7 +79,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Commandline) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kMemlog, switches::kMemlogModeMinimal);
     EXPECT_EQ(ProfilingProcessHost::Mode::kMinimal,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -87,7 +87,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Commandline) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kMemlog, switches::kMemlogModeGpu);
     EXPECT_EQ(ProfilingProcessHost::Mode::kGpu,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -95,13 +95,13 @@ TEST(ProfilingProcessHost, GetCurrentMode_Commandline) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kMemlog, switches::kMemlogModeRendererSampling);
     EXPECT_EQ(ProfilingProcessHost::Mode::kRendererSampling,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 }
 
-TEST(ProfilingProcessHost, GetCurrentMode_Finch) {
+TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
   EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-            ProfilingProcessHost::GetCurrentMode());
+            ProfilingProcessHost::GetModeForStartup());
   std::map<std::string, std::string> parameters;
 
   {
@@ -111,7 +111,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Finch) {
         profiling::kOOPHeapProfilingFeature, parameters);
 
     EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -120,7 +120,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Finch) {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         profiling::kOOPHeapProfilingFeature, parameters);
     EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -130,7 +130,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Finch) {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         profiling::kOOPHeapProfilingFeature, parameters);
     EXPECT_EQ(ProfilingProcessHost::Mode::kAll,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -140,7 +140,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Finch) {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         profiling::kOOPHeapProfilingFeature, parameters);
     EXPECT_EQ(ProfilingProcessHost::Mode::kBrowser,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -150,7 +150,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Finch) {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         profiling::kOOPHeapProfilingFeature, parameters);
     EXPECT_EQ(ProfilingProcessHost::Mode::kMinimal,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -160,7 +160,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_Finch) {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         profiling::kOOPHeapProfilingFeature, parameters);
     EXPECT_EQ(ProfilingProcessHost::Mode::kGpu,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -170,12 +170,12 @@ TEST(ProfilingProcessHost, GetCurrentMode_Finch) {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         profiling::kOOPHeapProfilingFeature, parameters);
     EXPECT_EQ(ProfilingProcessHost::Mode::kRendererSampling,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 }
 
 // Ensure the commandline overrides any given field trial.
-TEST(ProfilingProcessHost, GetCurrentMode_CommandLinePrecedence) {
+TEST(ProfilingProcessHost, GetModeForStartup_CommandLinePrecedence) {
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kMemlog, switches::kMemlogModeAll);
@@ -188,18 +188,18 @@ TEST(ProfilingProcessHost, GetCurrentMode_CommandLinePrecedence) {
       profiling::kOOPHeapProfilingFeature, parameters);
 
   EXPECT_EQ(ProfilingProcessHost::Mode::kAll,
-            ProfilingProcessHost::GetCurrentMode());
+            ProfilingProcessHost::GetModeForStartup());
 }
 
 #else
 
-TEST(ProfilingProcessHost, GetCurrentMode_NoModeWithoutShim) {
+TEST(ProfilingProcessHost, GetModeForStartup_NoModeWithoutShim) {
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kMemlog, switches::kMemlogModeAll);
     EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 
   {
@@ -210,7 +210,7 @@ TEST(ProfilingProcessHost, GetCurrentMode_NoModeWithoutShim) {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         profiling::kOOPHeapProfilingFeature, parameters);
     EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetCurrentMode());
+              ProfilingProcessHost::GetModeForStartup());
   }
 }
 

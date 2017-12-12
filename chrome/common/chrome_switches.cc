@@ -473,8 +473,10 @@ const char kMediaCacheSize[]                = "media-cache-size";
 const char kMemlog[] = "memlog";
 const char kMemlogKeepSmallAllocations[] = "memlog-keep-small-allocations";
 const char kMemlogModeAll[] = "all";
+const char kMemlogModeAllRenderers[] = "all-renderers";
 const char kMemlogModeBrowser[] = "browser";
 const char kMemlogModeGpu[] = "gpu";
+const char kMemlogModeManual[] = "manual";
 const char kMemlogModeMinimal[] = "minimal";
 const char kMemlogModeRendererSampling[] = "renderer-sampling";
 

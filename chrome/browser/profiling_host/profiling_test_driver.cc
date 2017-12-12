@@ -281,11 +281,6 @@ void ProfilingTestDriver::RunInitializationOnUIThreadAndSignal() {
 bool ProfilingTestDriver::RunInitializationOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (options_.mode == ProfilingProcessHost::Mode::kRendererSampling) {
-    profiling::ProfilingProcessHost::GetInstance()
-        ->SetRendererSamplingAlwaysProfileForTest();
-  }
-
   LOG(ERROR) << "RunInitializationOnUIThread: "
              << base::CommandLine::ForCurrentProcess()->GetCommandLineString();
   if (!CheckOrStartProfiling())
@@ -439,7 +434,7 @@ bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
   base::ProcessId renderer_pid = static_cast<base::ProcessId>(pid);
   base::Value* heaps_v2 = FindHeapsV2(renderer_pid, dump_json);
   if (options_.mode == ProfilingProcessHost::Mode::kAll ||
-      options_.mode == ProfilingProcessHost::Mode::kRendererSampling) {
+      options_.mode == ProfilingProcessHost::Mode::kAllRenderers) {
     if (!heaps_v2) {
       LOG(ERROR) << "Failed to find heaps v2 for renderer";
       return false;
@@ -457,10 +452,9 @@ bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
     }
   }
 
-  // RendererSampling guarantees only 1 renderer is ever sampled at a time.
-  if (options_.mode == ProfilingProcessHost::Mode::kRendererSampling) {
-    if (NumProcessesWithName(dump_json, "Renderer", nullptr) != 1) {
-      LOG(ERROR) << "There should be exactly 1 renderer dump";
+  if (options_.mode == ProfilingProcessHost::Mode::kAllRenderers) {
+    if (NumProcessesWithName(dump_json, "Renderer", nullptr) == 0) {
+      LOG(ERROR) << "There should be at least 1 renderer dump";
       return false;
     }
   } else {
