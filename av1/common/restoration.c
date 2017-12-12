@@ -1357,7 +1357,7 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
 }
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
-                                       AV1_COMMON *cm, RestorationInfo *rsi) {
+                                       AV1_COMMON *cm) {
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src,
                            YV12_BUFFER_CONFIG *dst);
   static const copy_fun copy_funs[3] = { aom_yv12_copy_y, aom_yv12_copy_u,
@@ -1388,8 +1388,8 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
 #endif
 
   for (int plane = 0; plane < 3; ++plane) {
-    const RestorationInfo *prsi = &rsi[plane];
-    RestorationType rtype = prsi->frame_restoration_type;
+    const RestorationInfo *rsi = &cm->rst_info[plane];
+    RestorationType rtype = rsi->frame_restoration_type;
     if (rtype == RESTORE_NONE) {
       copy_funs[plane](frame, &dst);
       continue;
@@ -1406,7 +1406,7 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                  highbd);
 
     FilterFrameCtxt ctxt;
-    ctxt.rsi = prsi;
+    ctxt.rsi = rsi;
 #if CONFIG_STRIPED_LOOP_RESTORATION
     ctxt.rlbs = &rlbs;
     ctxt.cm = cm;
