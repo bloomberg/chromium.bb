@@ -59,9 +59,8 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
         new net::DefaultChannelIDStore(channel_id_db.get())));
 
     // Set up the CookieStore
-    content::CookieStoreConfig cookie_config(
-        CookieFilePath(), content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
-        nullptr);
+    content::CookieStoreConfig cookie_config(CookieFilePath(), false, false,
+                                             nullptr);
     cookie_config.channel_id_service = channel_id_service_.get();
     cookie_config.background_task_runner = background_task_runner;
     safe_browsing_cookie_store_ = content::CreateCookieStore(cookie_config);

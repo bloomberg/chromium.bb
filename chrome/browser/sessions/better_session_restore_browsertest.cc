@@ -13,9 +13,12 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -43,9 +46,14 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
@@ -91,7 +99,9 @@ class URLRequestFakerInterceptor : public net::URLRequestInterceptor {
 class URLRequestFakerForPostRequestsInterceptor
     : public net::URLRequestInterceptor {
  public:
-  URLRequestFakerForPostRequestsInterceptor() {}
+  explicit URLRequestFakerForPostRequestsInterceptor(
+      std::string* last_upload_bytes)
+      : last_upload_bytes_(last_upload_bytes) {}
   ~URLRequestFakerForPostRequestsInterceptor() override {}
 
   // URLRequestInterceptor implementation:
@@ -100,7 +110,7 @@ class URLRequestFakerForPostRequestsInterceptor
       net::NetworkDelegate* network_delegate) const override {
     // Read the uploaded data and store it to last_upload_bytes.
     const net::UploadDataStream* upload_data = request->get_upload();
-    last_upload_bytes_.clear();
+    last_upload_bytes_->clear();
     if (upload_data) {
       const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
           upload_data->GetElementReaders();
@@ -109,7 +119,7 @@ class URLRequestFakerForPostRequestsInterceptor
           const net::UploadBytesElementReader* bytes_reader =
               (*readers)[i]->AsBytesReader();
           if (bytes_reader) {
-            last_upload_bytes_ +=
+            *last_upload_bytes_ +=
                 std::string(bytes_reader->bytes(), bytes_reader->length());
           }
         }
@@ -121,17 +131,9 @@ class URLRequestFakerForPostRequestsInterceptor
         true);
   }
 
-  // Did the last intercepted upload data contain |search_string|?
-  // This method is not thread-safe.  It's called on the UI thread, though
-  // the intercept takes place on the IO thread.  It must not be called while an
-  // upload is in progress.
-  bool DidLastUploadContain(const std::string& search_string) {
-    return last_upload_bytes_.find(search_string) != std::string::npos;
-  }
+  mutable std::string* last_upload_bytes_;
 
  private:
-  mutable std::string last_upload_bytes_;
-
   DISALLOW_COPY_AND_ASSIGN(URLRequestFakerForPostRequestsInterceptor);
 };
 
@@ -157,7 +159,8 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
 
 }  // namespace
 
-class BetterSessionRestoreTest : public InProcessBrowserTest {
+class BetterSessionRestoreTest : public InProcessBrowserTest,
+                                 public content::NotificationObserver {
  public:
   BetterSessionRestoreTest()
       : fake_server_address_("http://www.test.com/"),
@@ -167,23 +170,30 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
         title_error_write_failed_(base::ASCIIToUTF16("ERROR_WRITE_FAILED")),
         title_error_empty_(base::ASCIIToUTF16("ERROR_EMPTY")) {
     // Set up the URL request filtering.
-    std::vector<std::string> test_files;
-    test_files.push_back("common.js");
-    test_files.push_back("cookies.html");
-    test_files.push_back("local_storage.html");
-    test_files.push_back("post.html");
-    test_files.push_back("post_with_password.html");
-    test_files.push_back("session_cookies.html");
-    test_files.push_back("session_storage.html");
-    test_files.push_back("subdomain_cookies.html");
-    base::FilePath test_file_dir;
-    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_file_dir));
-    test_file_dir =
-        test_file_dir.AppendASCII("chrome/test/data").AppendASCII(test_path_);
+    test_files_.push_back("common.js");
+    test_files_.push_back("cookies.html");
+    test_files_.push_back("local_storage.html");
+    test_files_.push_back("post.html");
+    test_files_.push_back("post_with_password.html");
+    test_files_.push_back("session_cookies.html");
+    test_files_.push_back("session_storage.html");
+    test_files_.push_back("subdomain_cookies.html");
 
-    for (std::vector<std::string>::const_iterator it = test_files.begin();
-         it != test_files.end(); ++it) {
-      base::FilePath path = test_file_dir.AppendASCII(*it);
+    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_file_dir_));
+    test_file_dir_ =
+        test_file_dir_.AppendASCII("chrome/test/data").AppendASCII(test_path_);
+
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+      content::NotificationService::SetCreationCallbackForTesting(
+          base::BindRepeating(
+              &BetterSessionRestoreTest::NotificationServiceCreated,
+              base::Unretained(this)));
+      return;
+    }
+
+    for (std::vector<std::string>::const_iterator it = test_files_.begin();
+         it != test_files_.end(); ++it) {
+      base::FilePath path = test_file_dir_.AppendASCII(*it);
       std::string contents;
       CHECK(base::ReadFileToString(path, &contents));
       net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
@@ -191,13 +201,76 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
           std::unique_ptr<net::URLRequestInterceptor>(
               new URLRequestFakerInterceptor(contents)));
     }
-    post_interceptor_ = new URLRequestFakerForPostRequestsInterceptor();
+    post_interceptor_ =
+        new URLRequestFakerForPostRequestsInterceptor(&last_upload_bytes_);
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
         GURL(fake_server_address_ + test_path_ + "posted.php"),
         std::unique_ptr<net::URLRequestInterceptor>(post_interceptor_));
   }
 
  protected:
+  void NotificationServiceCreated() {
+    // Need to hook this early because on session restore, the restored tab
+    // comes up before SetUpOnMainThread(). Also here it's too early because
+    // we don't have a profile yet.
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                   content::NotificationService::AllSources());
+    content::NotificationService::SetCreationCallbackForTesting(
+        base::RepeatingClosure());
+  }
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
+
+    Profile* profile = content::Source<Profile>(source).ptr();
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile);
+    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindLambdaForTesting(
+            [&](content::URLLoaderInterceptor::RequestParams* params) {
+              std::string path = params->url_request.url.path();
+              std::string path_prefix = std::string("/") + test_path_;
+              for (auto& it : test_files_) {
+                std::string file = path_prefix + it;
+                if (path == file) {
+                  base::ScopedAllowBlockingForTesting allow_io;
+                  base::FilePath file_path = test_file_dir_.AppendASCII(it);
+                  std::string contents;
+                  CHECK(base::ReadFileToString(file_path, &contents));
+
+                  content::URLLoaderInterceptor::WriteResponse(
+                      net::URLRequestTestJob::test_headers(), contents,
+                      params->client.get());
+
+                  return true;
+                }
+              }
+              if (path == path_prefix + "posted.php") {
+                last_upload_bytes_.clear();
+                if (params->url_request.request_body) {
+                  auto* elements = params->url_request.request_body->elements();
+                  DCHECK_EQ(elements->size(), 1u);
+                  auto& element = (*elements)[0];
+                  DCHECK_EQ(element.type(),
+                            content::ResourceRequestBody::Element::TYPE_BYTES);
+                  last_upload_bytes_ =
+                      std::string(element.bytes(), element.length());
+                }
+                content::URLLoaderInterceptor::WriteResponse(
+                    net::URLRequestTestJob::test_headers(),
+                    "<html><head><title>PASS</title></head><body>Data posted"
+                    "</body></html>",
+                    params->client.get());
+                return true;
+              }
+              return false;
+            }),
+        storage_partition, true, true);
+  }
+
   void SetUpOnMainThread() override {
     SessionServiceTestHelper helper(
         SessionServiceFactory::GetForProfile(browser()->profile()));
@@ -206,6 +279,8 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     g_browser_process->set_background_mode_manager_for_test(
         std::unique_ptr<BackgroundModeManager>(new FakeBackgroundModeManager));
   }
+
+  void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
 
   void StoreDataWithPage(const std::string& filename) {
     StoreDataWithPage(browser(), filename);
@@ -282,6 +357,14 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     }
   }
 
+  // Did the last intercepted upload data contain |search_string|?
+  // This method is not thread-safe.  It's called on the UI thread, though
+  // the intercept takes place on the IO thread.  It must not be called while an
+  // upload is in progress.
+  bool DidLastUploadContain(const std::string& search_string) {
+    return last_upload_bytes_.find(search_string) != std::string::npos;
+  }
+
   void PostFormWithPage(const std::string& filename, bool password_present) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -290,11 +373,11 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
         browser(), GURL(fake_server_address_ + test_path_ + filename));
     base::string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(title_pass_, final_title);
-    EXPECT_TRUE(post_interceptor_->DidLastUploadContain("posted-text"));
-    EXPECT_TRUE(post_interceptor_->DidLastUploadContain("text-entered"));
+    EXPECT_TRUE(DidLastUploadContain("posted-text"));
+    EXPECT_TRUE(DidLastUploadContain("text-entered"));
     if (password_present) {
-      EXPECT_TRUE(post_interceptor_->DidLastUploadContain("posted-password"));
-      EXPECT_TRUE(post_interceptor_->DidLastUploadContain("password-entered"));
+      EXPECT_TRUE(DidLastUploadContain("posted-password"));
+      EXPECT_TRUE(DidLastUploadContain("password-entered"));
     }
   }
 
@@ -305,14 +388,10 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   void CheckFormRestored(
       Browser* browser, bool text_present, bool password_present) {
     CheckReloadedPageRestored(browser);
-    EXPECT_EQ(text_present,
-              post_interceptor_->DidLastUploadContain("posted-text"));
-    EXPECT_EQ(text_present,
-              post_interceptor_->DidLastUploadContain("text-entered"));
-    EXPECT_EQ(password_present,
-              post_interceptor_->DidLastUploadContain("posted-password"));
-    EXPECT_EQ(password_present,
-              post_interceptor_->DidLastUploadContain("password-entered"));
+    EXPECT_EQ(text_present, DidLastUploadContain("posted-text"));
+    EXPECT_EQ(text_present, DidLastUploadContain("text-entered"));
+    EXPECT_EQ(password_present, DidLastUploadContain("posted-password"));
+    EXPECT_EQ(password_present, DidLastUploadContain("password-entered"));
   }
 
   virtual Browser* QuitBrowserAndRestore(Browser* browser,
@@ -363,7 +442,11 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   }
 
  private:
+  std::string last_upload_bytes_;
+  content::NotificationRegistrar registrar_;
   const std::string fake_server_address_;
+  std::vector<std::string> test_files_;
+  base::FilePath test_file_dir_;
   const std::string test_path_;
   const base::string16 title_pass_;
   const base::string16 title_storing_;
@@ -373,6 +456,8 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   // Interceptor is owned by URLRequestFilter and lives on IO thread; this is
   // just a reference.
   URLRequestFakerForPostRequestsInterceptor* post_interceptor_;
+
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(BetterSessionRestoreTest);
 };

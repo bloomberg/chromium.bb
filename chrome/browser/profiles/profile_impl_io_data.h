@@ -13,7 +13,6 @@
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "components/prefs/pref_store.h"
-#include "content/public/browser/cookie_store_factory.h"
 
 namespace chrome_browser_net {
 class Predictor;
@@ -43,14 +42,11 @@ class ProfileImplIOData : public ProfileIOData {
 
     // Init() must be called before ~Handle(). It records most of the
     // parameters needed to construct a ChromeURLRequestContextGetter.
-    void Init(const base::FilePath& cookie_path,
-              const base::FilePath& channel_id_path,
-              const base::FilePath& media_cache_path,
+    void Init(const base::FilePath& media_cache_path,
               int media_cache_max_size,
               const base::FilePath& extensions_cookie_path,
               const base::FilePath& profile_path,
               chrome_browser_net::Predictor* predictor,
-              content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
               storage::SpecialStoragePolicy* special_storage_policy,
               std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
                   domain_reliability_monitor);
@@ -128,12 +124,11 @@ class ProfileImplIOData : public ProfileIOData {
     ~LazyParams();
 
     // All of these parameters are intended to be read on the IO thread.
-    base::FilePath cookie_path;
-    base::FilePath channel_id_path;
     base::FilePath media_cache_path;
     int media_cache_max_size;
     base::FilePath extensions_cookie_path;
-    content::CookieStoreConfig::SessionCookieMode session_cookie_mode;
+    bool restore_old_session_cookies;
+    bool persist_session_cookies;
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy;
     std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
         domain_reliability_monitor;

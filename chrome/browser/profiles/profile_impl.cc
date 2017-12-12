@@ -611,11 +611,6 @@ void ProfileImpl::DoFinalInit() {
   }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND)
 
-  base::FilePath cookie_path = GetPath();
-  cookie_path = cookie_path.Append(chrome::kCookieFilename);
-  base::FilePath channel_id_path = GetPath();
-  channel_id_path = channel_id_path.Append(chrome::kChannelIDFilename);
-
   base::FilePath media_cache_path = base_cache_path_;
   int media_cache_max_size;
   GetMediaCacheParameters(&media_cache_path, &media_cache_max_size);
@@ -625,27 +620,11 @@ void ProfileImpl::DoFinalInit() {
   extensions_cookie_path =
       extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
 
-#if defined(OS_ANDROID)
-  SessionStartupPref::Type startup_pref_type =
-      SessionStartupPref::GetDefaultStartupType();
-#else
-  SessionStartupPref::Type startup_pref_type =
-      StartupBrowserCreator::GetSessionStartupPref(
-          *base::CommandLine::ForCurrentProcess(), this).type;
-#endif
-  content::CookieStoreConfig::SessionCookieMode session_cookie_mode =
-      content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES;
-  if (GetLastSessionExitType() == Profile::EXIT_CRASHED ||
-      startup_pref_type == SessionStartupPref::LAST) {
-    session_cookie_mode = content::CookieStoreConfig::RESTORED_SESSION_COOKIES;
-  }
-
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
-  io_data_.Init(cookie_path, channel_id_path, media_cache_path,
-                media_cache_max_size, extensions_cookie_path, GetPath(),
-                predictor_, session_cookie_mode, GetSpecialStoragePolicy(),
+  io_data_.Init(media_cache_path, media_cache_max_size, extensions_cookie_path,
+                GetPath(), predictor_, GetSpecialStoragePolicy(),
                 CreateDomainReliabilityMonitor(local_state));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -956,6 +935,24 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
   // it to be set by asking for the prefs.
   GetPrefs();
   return last_session_exit_type_;
+}
+
+bool ProfileImpl::ShouldRestoreOldSessionCookies() {
+#if defined(OS_ANDROID)
+  SessionStartupPref::Type startup_pref_type =
+      SessionStartupPref::GetDefaultStartupType();
+#else
+  SessionStartupPref::Type startup_pref_type =
+      StartupBrowserCreator::GetSessionStartupPref(
+          *base::CommandLine::ForCurrentProcess(), this)
+          .type;
+#endif
+  return GetLastSessionExitType() == Profile::EXIT_CRASHED ||
+         startup_pref_type == SessionStartupPref::LAST;
+}
+
+bool ProfileImpl::ShouldPersistSessionCookies() {
+  return true;
 }
 
 PrefService* ProfileImpl::GetPrefs() {

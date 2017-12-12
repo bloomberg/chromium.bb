@@ -289,6 +289,11 @@ class Profile : public content::BrowserContext {
   // Returns how the last session was shutdown.
   virtual ExitType GetLastSessionExitType() = 0;
 
+  // Returns whether session cookies are restored and saved. The value is
+  // ignored for in-memory profiles.
+  virtual bool ShouldRestoreOldSessionCookies();
+  virtual bool ShouldPersistSessionCookies();
+
   // Creates the main NetworkContext for the profile, or returns nullptr to
   // defer NetworkContext creation to the caller.
   virtual content::mojom::NetworkContextPtr CreateMainNetworkContext();

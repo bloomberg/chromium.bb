@@ -135,6 +135,19 @@ ProfileNetworkContextService::CreateMainNetworkContextParams() {
     // change.
     network_context_params->http_server_properties_path =
         profile_->GetPath().Append(chrome::kNetworkPersistentStateFilename);
+
+    base::FilePath cookie_path = profile_->GetPath();
+    cookie_path = cookie_path.Append(chrome::kCookieFilename);
+    network_context_params->cookie_path = cookie_path;
+
+    base::FilePath channel_id_path = profile_->GetPath();
+    channel_id_path = channel_id_path.Append(chrome::kChannelIDFilename);
+    network_context_params->channel_id_path = channel_id_path;
+
+    network_context_params->restore_old_session_cookies =
+        profile_->ShouldRestoreOldSessionCookies();
+    network_context_params->persist_session_cookies =
+        profile_->ShouldPersistSessionCookies();
   }
 
   // NOTE(mmenke): Keep these protocol handlers and

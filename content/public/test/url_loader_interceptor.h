@@ -64,6 +64,11 @@ class URLLoaderInterceptor {
                        bool intercept_subresources = false);
   ~URLLoaderInterceptor();
 
+  // Helper methods for use when intercepting.
+  static void WriteResponse(const std::string& headers,
+                            const std::string& body,
+                            mojom::URLLoaderClient* client);
+
  private:
   class Interceptor;
   class IOThreadWrapper;

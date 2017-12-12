@@ -115,7 +115,8 @@ void QuotaPolicyCookieStore::OnLoad(
 }
 
 CookieStoreConfig::CookieStoreConfig()
-    : session_cookie_mode(EPHEMERAL_SESSION_COOKIES),
+    : restore_old_session_cookies(false),
+      persist_session_cookies(false),
       crypto_delegate(nullptr),
       channel_id_service(nullptr) {
   // Default to an in-memory cookie store.
@@ -123,14 +124,17 @@ CookieStoreConfig::CookieStoreConfig()
 
 CookieStoreConfig::CookieStoreConfig(
     const base::FilePath& path,
-    SessionCookieMode session_cookie_mode,
+    bool restore_old_session_cookies,
+    bool persist_session_cookies,
     storage::SpecialStoragePolicy* storage_policy)
     : path(path),
-      session_cookie_mode(session_cookie_mode),
+      restore_old_session_cookies(restore_old_session_cookies),
+      persist_session_cookies(persist_session_cookies),
       storage_policy(storage_policy),
       crypto_delegate(nullptr),
       channel_id_service(nullptr) {
-  CHECK(!path.empty() || session_cookie_mode == EPHEMERAL_SESSION_COOKIES);
+  CHECK(!path.empty() ||
+        (!restore_old_session_cookies && !persist_session_cookies));
 }
 
 CookieStoreConfig::~CookieStoreConfig() {
@@ -162,12 +166,8 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
 
     scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
         new net::SQLitePersistentCookieStore(
-            config.path,
-            client_task_runner,
-            background_task_runner,
-            (config.session_cookie_mode ==
-             CookieStoreConfig::RESTORED_SESSION_COOKIES),
-            config.crypto_delegate));
+            config.path, client_task_runner, background_task_runner,
+            config.restore_old_session_cookies, config.crypto_delegate));
 
     QuotaPolicyCookieStore* persistent_store =
         new QuotaPolicyCookieStore(
@@ -176,12 +176,8 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
 
     cookie_monster.reset(new net::CookieMonster(persistent_store,
                                                 config.channel_id_service));
-    if ((config.session_cookie_mode ==
-         CookieStoreConfig::PERSISTANT_SESSION_COOKIES) ||
-        (config.session_cookie_mode ==
-         CookieStoreConfig::RESTORED_SESSION_COOKIES)) {
+    if (config.persist_session_cookies)
       cookie_monster->SetPersistSessionCookies(true);
-    }
   }
 
   if (!config.cookieable_schemes.empty())

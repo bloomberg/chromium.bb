@@ -35,10 +35,20 @@ struct NetworkContextParams {
   // available on Windows and Mac).
   proxy_resolver.mojom.ProxyResolverFactory? proxy_resolver_factory;
 
-  // Points to the cookie file. Currently ignored. An in-memory cookie store is
-  // always used instead.
-  // TODO(mmenke): Respect this parameter.
+  // Points to the cookie file. An in-memory cookie store is used if it's empty.
   mojo.common.mojom.FilePath? cookie_path;
+
+  // If the cookie file is given, this controls whether previously written
+  // session cookies are restored. Otherwise it should be false.
+  bool restore_old_session_cookies = false;
+
+  // If the cookie file is given, this controls whether to persist session
+  // cookies. Otherwise it should be false.
+  bool persist_session_cookies = false;
+
+  // Points to the channel ID file. If a cookie file is specified, this must be
+  // specifed as well. Otherwise an in-memory store is used.
+  mojo.common.mojom.FilePath? channel_id_path;
 
   // True if an HTTP cache should be used.
   bool http_cache_enabled = true;

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
@@ -16,6 +17,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "build/build_config.h"
+#include "components/cookie_config/cookie_store_util.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/json_pref_store.h"
@@ -37,13 +39,18 @@
 #include "content/public/network/ignore_errors_cert_verifier.h"
 #include "content/public/network/url_request_context_builder_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/extras/sqlite/sqlite_channel_id_store.h"
+#include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy/proxy_config.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -220,6 +227,52 @@ std::unique_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
   }
   builder.set_accept_language("en-us,en");
   builder.set_user_agent(GetContentClient()->GetUserAgent());
+
+  // The cookie configuration is in this method, which is only used by the
+  // network process, and not ApplyContextParamsToBuilder which is used by the
+  // browser as well. This is because this code path doesn't handle encryption
+  // and other configuration done in QuotaPolicyCookieStore yet (and we still
+  // have to figure out which of the latter needs to move to the network
+  // process). TODO: http://crbug.com/789644
+  if (network_context_params->cookie_path) {
+    DCHECK(network_context_params->channel_id_path);
+    net::CookieCryptoDelegate* crypto_delegate = nullptr;
+
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner =
+        base::MessageLoop::current()->task_runner();
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+
+    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
+        new net::SQLiteChannelIDStore(
+            network_context_params->channel_id_path.value(),
+            background_task_runner);
+    std::unique_ptr<net::ChannelIDService> channel_id_service(
+        std::make_unique<net::ChannelIDService>(
+            new net::DefaultChannelIDStore(channel_id_db.get())));
+
+    scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
+        new net::SQLitePersistentCookieStore(
+            network_context_params->cookie_path.value(), client_task_runner,
+            background_task_runner,
+            network_context_params->restore_old_session_cookies,
+            crypto_delegate));
+
+    std::unique_ptr<net::CookieMonster> cookie_store =
+        std::make_unique<net::CookieMonster>(sqlite_store.get(),
+                                             channel_id_service.get());
+    if (network_context_params->persist_session_cookies)
+      cookie_store->SetPersistSessionCookies(true);
+
+    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+    builder.SetCookieAndChannelIdStores(std::move(cookie_store),
+                                        std::move(channel_id_service));
+  } else {
+    DCHECK(!network_context_params->restore_old_session_cookies);
+    DCHECK(!network_context_params->persist_session_cookies);
+  }
 
   std::unique_ptr<net::CertVerifier> cert_verifier =
       net::CertVerifier::CreateDefault();
