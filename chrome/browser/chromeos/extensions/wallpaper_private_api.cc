@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -278,15 +279,15 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
 
   base::FilePath wallpaper_path;
   base::FilePath fallback_path;
-  chromeos::WallpaperManager::WallpaperResolution resolution =
-      wallpaper_manager->GetAppropriateResolution();
+  ash::WallpaperController::WallpaperResolution resolution =
+      ash::WallpaperController::GetAppropriateResolution();
 
   std::string file_name = GURL(params->url).ExtractFileName();
   CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
                          &wallpaper_path));
   fallback_path = wallpaper_path.Append(file_name);
   if (params->layout != wallpaper_base::WALLPAPER_LAYOUT_STRETCH &&
-      resolution == chromeos::WallpaperManager::WALLPAPER_RESOLUTION_SMALL) {
+      resolution == ash::WallpaperController::WALLPAPER_RESOLUTION_SMALL) {
     file_name = base::FilePath(file_name)
                     .InsertBeforeExtension(chromeos::kSmallWallpaperSuffix)
                     .value();
@@ -417,8 +418,8 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     // maintain the aspect ratio after resize.
     chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
         wallpaper_, file_path, wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
-        chromeos::kSmallWallpaperMaxWidth, chromeos::kSmallWallpaperMaxHeight,
-        NULL);
+        ash::WallpaperController::kSmallWallpaperMaxWidth,
+        ash::WallpaperController::kSmallWallpaperMaxHeight, NULL);
   } else {
     std::string error = base::StringPrintf(
         "Failed to create/write wallpaper to %s.", file_name.c_str());
@@ -460,12 +461,11 @@ bool WallpaperPrivateResetWallpaperFunction::RunAsync() {
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
 
   // Do not change wallpaper if policy is in effect.
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  if (wallpaper_manager->IsPolicyControlled(account_id))
+  if (chromeos::WallpaperManager::Get()->IsPolicyControlled(account_id))
     return false;
 
-  wallpaper_manager->SetDefaultWallpaper(account_id, true /* show_wallpaper */);
+  WallpaperControllerClient::Get()->SetDefaultWallpaper(
+      account_id, true /* show_wallpaper */);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
@@ -548,8 +548,8 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
   scoped_refptr<base::RefCountedBytes> data;
   chromeos::WallpaperManager::Get()->ResizeImage(
       *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
-      chromeos::kWallpaperThumbnailWidth, chromeos::kWallpaperThumbnailHeight,
-      &data, NULL);
+      ash::WallpaperController::kWallpaperThumbnailWidth,
+      ash::WallpaperController::kWallpaperThumbnailHeight, &data, NULL);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(

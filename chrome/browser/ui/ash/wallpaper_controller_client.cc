@@ -178,8 +178,8 @@ void WallpaperControllerClient::SetDefaultWallpaper(const AccountId& account_id,
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
     return;
-  wallpaper_controller_->SetDefaultWallpaper(std::move(user_info),
-                                             show_wallpaper);
+  wallpaper_controller_->SetDefaultWallpaper(
+      std::move(user_info), GetFilesId(account_id).id(), show_wallpaper);
 }
 
 void WallpaperControllerClient::SetCustomizedDefaultWallpaper(

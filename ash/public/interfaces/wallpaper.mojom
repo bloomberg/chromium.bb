@@ -80,7 +80,7 @@ interface WallpaperController {
   // Sets wallpaper from policy or from a local file. Saves the custom wallpaper
   // to file, posts task to generate thumbnail and updates local state.
   // |user_info|: The user's information related to wallpaper.
-  // |wallpaper_files_id|: The unique id of each wallpaper file.
+  // |wallpaper_files_id|: The file id for user_info.account_id.
   // |file_name|: The name of the wallpaper file.
   // |layout|: The layout of the wallpaper, used for wallpaper resizing.
   // |type|: The type of the wallpaper, e.g., default, policy etc.
@@ -111,9 +111,13 @@ interface WallpaperController {
                      bool show_wallpaper);
 
   // Sets the user's wallpaper to be the default wallpaper. Note: different user
-  // types may have different default wallpapers. If |show_wallpaper| is false,
-  // don't show the default wallpaper now.
-  SetDefaultWallpaper(WallpaperUserInfo user_info, bool show_wallpaper);
+  // types may have different default wallpapers.
+  // |wallpaper_files_id|: The file id for user_info.account_id.
+  // |show_wallpaper|: If false, don't show the new wallpaper now but only
+  //                   update cache.
+  SetDefaultWallpaper(WallpaperUserInfo user_info,
+                      string wallpaper_files_id,
+                      bool show_wallpaper);
 
   // Sets a customized default wallpaper to be used wherever a default wallpaper
   // is needed. Note: it doesn't change the default wallpaper for guest and
@@ -139,7 +143,7 @@ interface WallpaperController {
   ShowSigninWallpaper();
 
   // Removes all of the user's saved wallpapers and related info.
-  // |wallpaper_files_id|: The unique id of each wallpaper file.
+  // |wallpaper_files_id|: The file id for user_info.account_id.
   RemoveUserWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);
 
   // TODO(crbug.com/776464): This is only used by WallpaperManager. Remove this

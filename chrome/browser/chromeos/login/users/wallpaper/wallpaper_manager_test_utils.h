@@ -10,49 +10,20 @@
 #include "ash/ash_constants.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace base {
-class CommandLine;
-class FilePath;
-class ScopedTempDir;
-}  // namespace base
-
 namespace chromeos {
 namespace wallpaper_manager_test_utils {
 
-// Colors used for different default wallpapers by CreateCmdlineWallpapers().
-extern const SkColor kLargeDefaultWallpaperColor;
-extern const SkColor kSmallDefaultWallpaperColor;
-extern const SkColor kLargeGuestWallpaperColor;
-extern const SkColor kSmallGuestWallpaperColor;
-extern const SkColor kLargeChildWallpaperColor;
-extern const SkColor kSmallChildWallpaperColor;
-
-// A custom color, specifically chosen to not
-// conflict with any of the default wallpaper colors.
-extern const SkColor kCustomWallpaperColor;
+// Custom wallpaper colors.
+extern const SkColor kLargeCustomWallpaperColor;
+extern const SkColor kSmallCustomWallpaperColor;
 
 // Dimension used for width and height of default wallpaper images. A
 // small value is used to minimize the amount of time spent compressing
 // and writing images.
 extern const int kWallpaperSize;
 
-// Creates compressed JPEG image of solid color.
-// Result bytes are written to |output|.
-// Returns true if gfx::JPEGCodec::Encode() succeeds.
-bool CreateJPEGImage(int width,
-                     int height,
-                     SkColor color,
-                     std::vector<unsigned char>* output);
-
 // Creates a test image of given size.
 gfx::ImageSkia CreateTestImage(int width, int height, SkColor color);
-
-// Writes a JPEG image of the specified size and color to |path|. Returns
-// true on success.
-bool WriteJPEGFile(const base::FilePath& path,
-                   int width,
-                   int height,
-                   SkColor color);
 
 // Returns true if the color at the center of |image| is close to
 // |expected_color|. (The center is used so small wallpaper images can be
@@ -62,13 +33,6 @@ bool ImageIsNearColor(gfx::ImageSkia image, SkColor expected_color);
 // Wait until all wallpaper loading is done, and WallpaperManager comes into
 // a stable state.
 void WaitAsyncWallpaperLoadFinished();
-
-// Initializes default wallpaper paths "*default_*file" and writes JPEG
-// wallpaper images to them.
-// Only needs to be called (once) by tests that want to test loading of
-// default wallpapers.
-void CreateCmdlineWallpapers(const base::ScopedTempDir& dir,
-                             std::unique_ptr<base::CommandLine>* command_line);
 
 }  // namespace wallpaper_manager_test_utils
 }  // namespace chromeos
