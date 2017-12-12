@@ -39,6 +39,8 @@ const char* WaitInterval::GetModeString(BlockingMode mode) {
   return "";
 }
 
+#undef ENUM_CASE
+
 DataTypeTracker::DataTypeTracker()
     : local_nudge_count_(0),
       local_refresh_request_count_(0),
