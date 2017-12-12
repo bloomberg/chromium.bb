@@ -26,6 +26,7 @@
 #ifndef AXMockObject_h
 #define AXMockObject_h
 
+#include "base/macros.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
 
@@ -34,8 +35,6 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class MODULES_EXPORT AXMockObject : public AXObject {
-  WTF_MAKE_NONCOPYABLE(AXMockObject);
-
  protected:
   explicit AXMockObject(AXObjectCacheImpl&);
 
@@ -50,6 +49,8 @@ class MODULES_EXPORT AXMockObject : public AXObject {
   bool IsMockObject() const final { return true; }
 
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(AXMockObject);
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMockObject, IsMockObject());

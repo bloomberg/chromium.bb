@@ -29,6 +29,7 @@
 #ifndef AXMediaControls_h
 #define AXMediaControls_h
 
+#include "base/macros.h"
 #include "modules/accessibility/AXSlider.h"
 #include "modules/media_controls/elements/MediaControlElementType.h"
 
@@ -37,11 +38,9 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AccessibilityMediaControl : public AXLayoutObject {
-  WTF_MAKE_NONCOPYABLE(AccessibilityMediaControl);
-
  public:
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
-  ~AccessibilityMediaControl() override {}
+  ~AccessibilityMediaControl() override = default;
 
   AccessibilityRole RoleValue() const override;
 
@@ -59,14 +58,14 @@ class AccessibilityMediaControl : public AXLayoutObject {
   AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl&);
   MediaControlElementType ControlType() const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaControl);
 };
 
 class AccessibilityMediaTimeline final : public AXSlider {
-  WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeline);
-
  public:
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
-  ~AccessibilityMediaTimeline() override {}
+  ~AccessibilityMediaTimeline() override = default;
 
   String Description(AXNameFrom,
                      AXDescriptionFrom&,
@@ -75,14 +74,14 @@ class AccessibilityMediaTimeline final : public AXSlider {
 
  private:
   AccessibilityMediaTimeline(LayoutObject*, AXObjectCacheImpl&);
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaTimeline);
 };
 
 class AXMediaControlsContainer final : public AccessibilityMediaControl {
-  WTF_MAKE_NONCOPYABLE(AXMediaControlsContainer);
-
  public:
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
-  ~AXMediaControlsContainer() override {}
+  ~AXMediaControlsContainer() override = default;
 
   AccessibilityRole RoleValue() const override { return kToolbarRole; }
 
@@ -99,14 +98,14 @@ class AXMediaControlsContainer final : public AccessibilityMediaControl {
  private:
   AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(AXMediaControlsContainer);
 };
 
 class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
-  WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeDisplay);
-
  public:
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
-  ~AccessibilityMediaTimeDisplay() override {}
+  ~AccessibilityMediaTimeDisplay() override = default;
 
   AccessibilityRole RoleValue() const override { return kStaticTextRole; }
 
@@ -121,6 +120,8 @@ class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
  private:
   AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl&);
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaTimeDisplay);
 };
 
 }  // namespace blink

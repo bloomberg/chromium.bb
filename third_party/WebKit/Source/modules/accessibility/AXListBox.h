@@ -29,6 +29,7 @@
 #ifndef AXListBox_h
 #define AXListBox_h
 
+#include "base/macros.h"
 #include "modules/accessibility/AXLayoutObject.h"
 
 namespace blink {
@@ -36,8 +37,6 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXListBox final : public AXLayoutObject {
-  WTF_MAKE_NONCOPYABLE(AXListBox);
-
  private:
   AXListBox(LayoutObject*, AXObjectCacheImpl&);
 
@@ -53,6 +52,8 @@ class AXListBox final : public AXLayoutObject {
 
  private:
   int active_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(AXListBox);
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXListBox, IsAXListBox());

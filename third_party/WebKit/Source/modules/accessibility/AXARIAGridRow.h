@@ -29,6 +29,7 @@
 #ifndef AXARIAGridRow_h
 #define AXARIAGridRow_h
 
+#include "base/macros.h"
 #include "modules/accessibility/AXTableRow.h"
 
 namespace blink {
@@ -36,8 +37,6 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXARIAGridRow final : public AXTableRow {
-  WTF_MAKE_NONCOPYABLE(AXARIAGridRow);
-
  private:
   AXARIAGridRow(LayoutObject*, AXObjectCacheImpl&);
   virtual void Trace(blink::Visitor*);
@@ -68,6 +67,8 @@ class AXARIAGridRow final : public AXTableRow {
   bool IsARIARow() const final;
   void ComputeCells(AXObjectVector from_child_list);
   bool AddCell(AXObject*);
+
+  DISALLOW_COPY_AND_ASSIGN(AXARIAGridRow);
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXARIAGridRow, IsARIARow());

@@ -21,6 +21,7 @@
 #ifndef AXProgressIndicator_h
 #define AXProgressIndicator_h
 
+#include "base/macros.h"
 #include "modules/accessibility/AXLayoutObject.h"
 
 namespace blink {
@@ -30,8 +31,6 @@ class HTMLProgressElement;
 class LayoutProgress;
 
 class AXProgressIndicator final : public AXLayoutObject {
-  WTF_MAKE_NONCOPYABLE(AXProgressIndicator);
-
  public:
   static AXProgressIndicator* Create(LayoutProgress*, AXObjectCacheImpl&);
 
@@ -48,6 +47,8 @@ class AXProgressIndicator final : public AXLayoutObject {
 
   HTMLProgressElement* GetProgressElement() const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(AXProgressIndicator);
 };
 
 }  // namespace blink

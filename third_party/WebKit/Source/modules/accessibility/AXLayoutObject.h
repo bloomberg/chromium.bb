@@ -29,10 +29,10 @@
 #ifndef AXLayoutObject_h
 #define AXLayoutObject_h
 
+#include "base/macros.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXNodeObject.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/Forward.h"
 
 namespace blink {
 
@@ -45,8 +45,6 @@ class LocalFrameView;
 class Node;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
-  WTF_MAKE_NONCOPYABLE(AXLayoutObject);
-
  protected:
   AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
 
@@ -212,6 +210,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool CanIgnoreTextAsEmpty() const;
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;
+
+  DISALLOW_COPY_AND_ASSIGN(AXLayoutObject);
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXLayoutObject, IsAXLayoutObject());
