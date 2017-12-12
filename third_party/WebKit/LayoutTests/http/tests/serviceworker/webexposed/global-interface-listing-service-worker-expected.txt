@@ -1003,6 +1003,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter transferSize
     getter workerStart
     method constructor
+    method toJSON
 interface PerformanceServerTiming
     attribute @@toStringTag
     getter description

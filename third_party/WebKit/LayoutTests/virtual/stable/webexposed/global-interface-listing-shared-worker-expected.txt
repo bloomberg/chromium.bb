@@ -664,6 +664,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter transferSize
 [Worker]     getter workerStart
 [Worker]     method constructor
+[Worker]     method toJSON
 [Worker] interface PermissionStatus : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onchange

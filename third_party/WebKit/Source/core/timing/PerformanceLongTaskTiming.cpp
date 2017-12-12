@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "core/timing/PerformanceLongTaskTiming.h"
+
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/frame/DOMWindow.h"
 #include "core/timing/SubTaskAttribution.h"
 #include "core/timing/TaskAttributionTiming.h"
@@ -55,6 +57,16 @@ PerformanceLongTaskTiming::~PerformanceLongTaskTiming() {}
 
 TaskAttributionVector PerformanceLongTaskTiming::attribution() const {
   return attribution_;
+}
+
+void PerformanceLongTaskTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
+  PerformanceEntry::BuildJSONValue(builder);
+  Vector<ScriptValue> attribution;
+  for (unsigned i = 0; i < attribution_.size(); i++) {
+    attribution.push_back(
+        attribution_[i]->toJSONForBinding(builder.GetScriptState()));
+  }
+  builder.Add("attribution", attribution);
 }
 
 void PerformanceLongTaskTiming::Trace(blink::Visitor* visitor) {

@@ -267,9 +267,8 @@ DOMHighResTimeStamp PerformanceNavigationTiming::duration() const {
 }
 
 void PerformanceNavigationTiming::BuildJSONValue(
-    ScriptState* script_state,
     V8ObjectBuilder& builder) const {
-  PerformanceResourceTiming::BuildJSONValue(script_state, builder);
+  PerformanceResourceTiming::BuildJSONValue(builder);
   builder.AddNumber("unloadEventStart", unloadEventStart());
   builder.AddNumber("unloadEventEnd", unloadEventEnd());
   builder.AddNumber("domInteractive", domInteractive());

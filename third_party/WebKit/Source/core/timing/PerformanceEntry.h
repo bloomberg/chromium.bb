@@ -99,7 +99,7 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
                    const String& entry_type,
                    double start_time,
                    double finish_time);
-  virtual void BuildJSONValue(ScriptState*, V8ObjectBuilder&) const;
+  virtual void BuildJSONValue(V8ObjectBuilder&) const;
 
  private:
   const String name_;
