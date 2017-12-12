@@ -85,24 +85,8 @@ ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
     if (mmap_error == ENOMEM)
       base::TerminateBecauseOutOfMemory(map_size);
 
-    bool fd_valid = fcntl(dmabuf_fd_.get(), F_GETFD) != -1 ||
-                    logging::GetLastSystemErrorCode() != EBADF;
-    std::string mmap_params = base::StringPrintf(
-        "(addr=nullptr, length=%zu, prot=(PROT_READ | PROT_WRITE), "
-        "flags=MAP_SHARED, fd=%d[valid=%d], offset=0)",
-        map_size, dmabuf_fd_.get(), fd_valid);
-    std::string errno_str = logging::SystemErrorCodeToString(mmap_error);
-    LOG(ERROR) << "Failed to mmap dmabuf; mmap_params: " << mmap_params
-               << ", buffer_size: (" << size.ToString()
-               << "),  errno: " << errno_str;
-    LOG(ERROR) << "NativePixmapHandle:";
-    LOG(ERROR) << "Number of fds: " << handle.fds.size();
-    LOG(ERROR) << "Number of planes: " << handle.planes.size();
-    for (const auto& plane : handle.planes) {
-      LOG(ERROR) << "stride  " << plane.stride << " offset " << plane.offset
-                 << " size " << plane.size;
-    }
-    CHECK(false) << "Failed to mmap dmabuf.";
+    CHECK(false) << "Failed to mmap dmabuf: "
+                 << logging::SystemErrorCodeToString(mmap_error);
   }
 }
 
