@@ -499,10 +499,15 @@ const char kEnableOutOfProcessHeapProfilingDescription[] =
 const char kEnableOutOfProcessHeapProfilingModeMinimal[] =
     "Profile only the browser and GPU processes.";
 const char kEnableOutOfProcessHeapProfilingModeAll[] = "Profile all processes.";
+const char kEnableOutOfProcessHeapProfilingModeAllRenderers[] =
+    "Profiles all renderers.";
 const char kEnableOutOfProcessHeapProfilingModeBrowser[] =
     "Profile only the browser processes.";
 const char kEnableOutOfProcessHeapProfilingModeGpu[] =
     "Profile only the GPU processes.";
+const char kEnableOutOfProcessHeapProfilingModeManual[] =
+    "By default, no processes are profiled. User may choose to start-profiling "
+    "processes via chrome://memory-internals.";
 const char kEnableOutOfProcessHeapProfilingModeRendererSampling[] =
     "Profile a random sampling of renderer processes, ensuring only one is "
     "ever profiled at a time.";

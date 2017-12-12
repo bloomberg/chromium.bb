@@ -48,9 +48,12 @@ namespace {
 // Returns the string to display at the top of the page for help.
 std::string GetMessageString() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  switch (ProfilingProcessHost::GetCurrentMode()) {
+  switch (ProfilingProcessHost::GetInstance()->GetMode()) {
     case ProfilingProcessHost::Mode::kAll:
       return std::string("Memory logging is enabled for all processes.");
+
+    case ProfilingProcessHost::Mode::kAllRenderers:
+      return std::string("Memory logging is enabled for all renderers.");
 
     case ProfilingProcessHost::Mode::kBrowser:
       return std::string(
@@ -58,6 +61,11 @@ std::string GetMessageString() {
 
     case ProfilingProcessHost::Mode::kGpu:
       return std::string("Memory logging is enabled for just the gpu process.");
+
+    case ProfilingProcessHost::Mode::kManual:
+      return std::string(
+          "Memory logging must be manually enabled for each process via "
+          "chrome://memory-internals.");
 
     case ProfilingProcessHost::Mode::kMinimal:
       return std::string(
@@ -248,7 +256,7 @@ void MemoryInternalsDOMHandler::HandleStartProfiling(
   if (!args->is_list() || args->GetList().size() != 1)
     return;
 
-  ProfilingProcessHost::GetInstance()->StartProfiling(
+  ProfilingProcessHost::GetInstance()->StartManualProfiling(
       args->GetList()[0].GetInt());
 }
 
