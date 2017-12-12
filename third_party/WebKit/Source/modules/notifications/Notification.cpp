@@ -48,7 +48,6 @@
 #include "modules/notifications/NotificationData.h"
 #include "modules/notifications/NotificationManager.h"
 #include "modules/notifications/NotificationOptions.h"
-#include "modules/notifications/NotificationPermissionCallback.h"
 #include "modules/notifications/NotificationResourcesLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
@@ -412,7 +411,7 @@ String Notification::permission(ExecutionContext* context) {
 
 ScriptPromise Notification::requestPermission(
     ScriptState* script_state,
-    NotificationPermissionCallback* deprecated_callback) {
+    V8NotificationPermissionCallback* deprecated_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   Document* doc = ToDocumentOrNull(context);
 

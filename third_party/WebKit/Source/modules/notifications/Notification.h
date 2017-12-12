@@ -52,9 +52,9 @@ namespace blink {
 
 class ExecutionContext;
 class NotificationOptions;
-class NotificationPermissionCallback;
 class NotificationResourcesLoader;
 class ScriptState;
+class V8NotificationPermissionCallback;
 
 class MODULES_EXPORT Notification final
     : public EventTargetWithInlineData,
@@ -113,8 +113,9 @@ class MODULES_EXPORT Notification final
 
   static String PermissionString(mojom::blink::PermissionStatus);
   static String permission(ExecutionContext*);
-  static ScriptPromise requestPermission(ScriptState*,
-                                         NotificationPermissionCallback*);
+  static ScriptPromise requestPermission(
+      ScriptState*,
+      V8NotificationPermissionCallback* deprecated_callback = nullptr);
 
   static size_t maxActions();
 
