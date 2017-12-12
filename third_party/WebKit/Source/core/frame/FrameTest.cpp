@@ -5,24 +5,22 @@
 #include "core/frame/Frame.h"
 
 #include "core/dom/UserGestureIndicator.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class FrameTest : public ::testing::Test {
+class FrameTest : public PageTestBase {
  public:
   void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    PageTestBase::SetUp();
     Navigate("https://example.com/");
 
     ASSERT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
     ASSERT_FALSE(
         GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
   }
-
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
   void Navigate(const String& destinationUrl) {
     const KURL& url = KURL(NullURL(), destinationUrl);
@@ -38,9 +36,6 @@ class FrameTest : public ::testing::Test {
   }
 
   void NavigateDifferentDomain() { Navigate("https://example.org/"); }
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(FrameTest, NoGesture) {

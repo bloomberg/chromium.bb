@@ -79,14 +79,20 @@ void PageTestBase::LoadAhem(LocalFrame& frame) {
 }
 
 // Both sets the inner html and runs the document lifecycle.
-void PageTestBase::SetBodyInnerHTML(const String& html_content) {
-  GetDocument().body()->SetInnerHTMLFromString(html_content,
+void PageTestBase::SetBodyInnerHTML(const String& body_content) {
+  GetDocument().body()->SetInnerHTMLFromString(body_content,
                                                ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhases();
 }
 
 void PageTestBase::SetBodyContent(const std::string& body_content) {
   SetBodyInnerHTML(String::FromUTF8(body_content.c_str()));
+}
+
+void PageTestBase::SetHtmlInnerHTML(const std::string& html_content) {
+  GetDocument().documentElement()->SetInnerHTMLFromString(
+      String::FromUTF8(html_content.c_str()));
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
 void PageTestBase::UpdateAllLifecyclePhases() {
@@ -107,6 +113,10 @@ AnimationClock& PageTestBase::GetAnimationClock() {
 
 PendingAnimations& PageTestBase::GetPendingAnimations() {
   return GetDocument().GetPendingAnimations();
+}
+
+FocusController& PageTestBase::GetFocusController() const {
+  return GetDocument().GetPage()->GetFocusController();
 }
 
 }  // namespace blink

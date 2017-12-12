@@ -13,7 +13,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
@@ -26,14 +26,12 @@ namespace blink {
 // To avoid symbol collisions in jumbo builds.
 namespace flat_tree_traversal_ng_test {
 
-class FlatTreeTraversalNgTest : public ::testing::Test,
+class FlatTreeTraversalNgTest : public PageTestBase,
                                 private ScopedIncrementalShadowDOMForTest {
  public:
   FlatTreeTraversalNgTest() : ScopedIncrementalShadowDOMForTest(true) {}
 
  protected:
-  Document& GetDocument() const;
-
   // Sets |mainHTML| to BODY element with |innerHTML| property and attaches
   // shadow root to child with |shadowHTML|, then update distribution for
   // calling member functions in |FlatTreeTraversalNg|.
@@ -46,23 +44,7 @@ class FlatTreeTraversalNgTest : public ::testing::Test,
   void AttachV0ShadowRoot(Element& shadow_host, const char* shadow_inner_html);
   void AttachOpenShadowRoot(Element& shadow_host,
                             const char* shadow_inner_html);
-
- private:
-  void SetUp() override;
-
-  Persistent<Document> document_;
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
-
-void FlatTreeTraversalNgTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-  document_ = &dummy_page_holder_->GetDocument();
-  DCHECK(document_);
-}
-
-Document& FlatTreeTraversalNgTest::GetDocument() const {
-  return *document_;
-}
 
 void FlatTreeTraversalNgTest::SetupSampleHTML(const char* main_html,
                                               const char* shadow_html,
