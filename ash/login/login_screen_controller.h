@@ -64,6 +64,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetDevChannelInfo(const std::string& os_version_label_text,
                          const std::string& enterprise_info_text,
                          const std::string& bluetooth_name) override;
+  void IsReadyForPassword(IsReadyForPasswordCallback callback) override;
 
   // Wrappers around the mojom::LoginScreenClient interface. Hash the password
   // and send AuthenticateUser request to LoginScreenClient.

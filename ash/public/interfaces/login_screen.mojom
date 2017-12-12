@@ -78,6 +78,9 @@ interface LoginScreen {
   SetDevChannelInfo(string os_version_label_text,
                     string enterprise_info_text,
                     string bluetooth_name);
+
+  // Check if the login/lock screen is ready for a password.
+  IsReadyForPassword() => (bool is_ready);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests

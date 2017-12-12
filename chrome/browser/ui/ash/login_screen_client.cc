@@ -171,6 +171,11 @@ void LoginScreenClient::SetDevChannelInfo(
                                    bluetooth_name);
 }
 
+void LoginScreenClient::IsReadyForPassword(
+    ash::mojom::LoginScreen::IsReadyForPasswordCallback callback) {
+  login_screen_->IsReadyForPassword(std::move(callback));
+}
+
 void LoginScreenClient::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }

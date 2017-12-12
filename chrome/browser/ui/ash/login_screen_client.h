@@ -84,6 +84,8 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void SetDevChannelInfo(const std::string& os_version_label_text,
                          const std::string& enterprise_info_text,
                          const std::string& bluetooth_name);
+  void IsReadyForPassword(
+      ash::mojom::LoginScreen::IsReadyForPasswordCallback callback);
 
   void SetDelegate(Delegate* delegate);
 
