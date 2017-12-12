@@ -20,6 +20,6 @@
 // https://html.spec.whatwg.org/#the-base-element
 
 interface HTMLBaseElement : HTMLElement {
-    [CEReactions] attribute DOMString href;
+    [CEReactions] attribute USVString href;
     [CEReactions, Reflect] attribute DOMString target;
 };

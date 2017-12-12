@@ -33,12 +33,12 @@
 
 [
     ActiveScriptWrappable,
-    Constructor(DOMString url, optional EventSourceInit eventSourceInitDict),
+    Constructor(USVString url, optional EventSourceInit eventSourceInitDict),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     RaisesException=Constructor
 ] interface EventSource : EventTarget {
-    readonly attribute DOMString url;
+    readonly attribute USVString url;
     readonly attribute boolean withCredentials;
 
     // ready state

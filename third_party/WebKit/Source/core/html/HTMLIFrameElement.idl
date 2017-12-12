@@ -21,7 +21,7 @@
 // https://html.spec.whatwg.org/#the-iframe-element
 
 interface HTMLIFrameElement : HTMLElement {
-    [CEReactions, Reflect, URL] attribute DOMString src;
+    [CEReactions, Reflect, URL] attribute USVString src;
     [CEReactions, Reflect] attribute DOMString srcdoc;
     [CEReactions, Reflect] attribute DOMString name;
     [CEReactions, PutForwards=value] readonly attribute DOMTokenList sandbox;
@@ -45,7 +45,7 @@ interface HTMLIFrameElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString align;
     [CEReactions, Reflect] attribute DOMString scrolling;
     [CEReactions, Reflect] attribute DOMString frameBorder;
-    [CEReactions, Reflect, URL] attribute DOMString longDesc;
+    [CEReactions, Reflect, URL] attribute USVString longDesc;
 
     [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
     [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;

@@ -41,7 +41,7 @@
     // |assign| itself is not cross-origin accessible.
     // TODO(yukishiino): Remove [CrossOrigin] once we support the Incumbent
     // realm correctly.
-    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void assign(DOMString url);
+    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void assign(USVString url);
 
     // |replace|, and *writing* |href| do not require a security check, as they
     // *change* the page, and thus these do not change any property of an
@@ -49,7 +49,7 @@
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
     // https://html.spec.whatwg.org/multipage/browsers.html#crossoriginproperties-(-o-)
-    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void replace(DOMString url);
+    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void replace(USVString url);
     [CallWith=CurrentWindow] void reload();
 
     // TODO(foolip): |ancestorOrigins| should have [Unforgeable, SameObject].
@@ -60,15 +60,15 @@
     // using DOMString instead of USVString.
     [SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter] attribute URLString href;
     [NotEnumerable] DOMString toString();
-    [MeasureAs=LocationOrigin] readonly attribute DOMString origin;
+    [MeasureAs=LocationOrigin] readonly attribute USVString origin;
 
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString protocol;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString host;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString hostname;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString port;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString pathname;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString search;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString hash;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute USVString protocol;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute USVString host;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute USVString hostname;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute USVString port;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute USVString pathname;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute USVString search;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute USVString hash;
 
     // TODO(foolip): Location does not have a valueOf() override in the spec.
     // See the comment in Location.h for the purpose of this.
