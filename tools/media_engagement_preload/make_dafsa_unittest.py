@@ -678,22 +678,25 @@ class ExamplesTest(unittest.TestCase):
   def testExample1(self):
     """Tests Example 1 from make_dafsa.py."""
     infile = '["https://www.example.com:8081", "http://www.example.org"]'
-    outfile = ("\n3\x81htt\xf0\x02\x93://www.example.or\xe7\x99"
-               "s://www.example.com:8081\x80")
+    outfile = "\n\x1c\x81www.example\xae\x02\x89com:8081\x80org\x81"
     self.assertEqual(make_dafsa.words_to_proto(make_dafsa.parse_json(infile)),
                       outfile)
 
   def testExample2(self):
     """Tests Example 2 from make_dafsa.py."""
     infile = '["https://www.example.org", "http://www.google.com"]'
-    outfile = ("\n-\x81htt\xf0\x02\x92://www.google.co\xed\x94"
-               "s://www.example.org\x80")
+    outfile = "\n\x1e\x81www\xae\x02\x8bgoogle.com\x81example.org\x80"
     self.assertEqual(make_dafsa.words_to_proto(make_dafsa.parse_json(infile)),
                       outfile)
 
-  def testExample3(self):
-    """Tests Example 3 from make_dafsa.py."""
+  def testBadJSON(self):
+    """Tests make_dafsa.py with bad JSON input."""
     self.assertRaises(make_dafsa.InputError, make_dafsa.parse_json, "badinput")
+
+  def testInvalidProtocol(self):
+    """Tests make_dafsa.py with an invalid protocol."""
+    self.assertRaises(make_dafsa.InputError, make_dafsa.parse_json,
+                      '["ftp://www.example.com"]')
 
 
 if __name__ == '__main__':
