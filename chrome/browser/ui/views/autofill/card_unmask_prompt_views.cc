@@ -23,8 +23,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/compositing_recorder.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -41,7 +39,6 @@
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
@@ -56,53 +53,11 @@ SkColor const kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 
 }  // namespace
 
-// A view that allows changing the opacity of its contents.
-class CardUnmaskPromptViews::FadeOutView : public View {
- public:
-  FadeOutView() {}
-
-  void SetAlpha(SkAlpha alpha) {
-    alpha_ = alpha;
-    SchedulePaint();
-  }
-
-  void set_fade_everything(bool fade_everything) {
-    fade_everything_ = fade_everything;
-  }
-
-  // views::View
-  void PaintChildren(const views::PaintInfo& paint_info) override {
-    constexpr bool kLcdTextRequiresOpaqueLayer = true;
-    ui::CompositingRecorder recorder(paint_info.context(), alpha_,
-                                     kLcdTextRequiresOpaqueLayer);
-    View::PaintChildren(paint_info);
-  }
-
-  void OnPaint(gfx::Canvas* canvas) override {
-    if (!fade_everything_ || alpha_ == SK_AlphaOPAQUE)
-      return View::OnPaint(canvas);
-
-    canvas->SaveLayerAlpha(alpha_);
-    View::OnPaint(canvas);
-    canvas->Restore();
-  }
-
- private:
-  // Controls whether the background and border are faded out as well. Default
-  // is false, meaning only children are faded.
-  bool fade_everything_ = false;
-
-  SkAlpha alpha_ = SK_AlphaOPAQUE;
-
-  DISALLOW_COPY_AND_ASSIGN(FadeOutView);
-};
-
 CardUnmaskPromptViews::CardUnmaskPromptViews(
     CardUnmaskPromptController* controller,
     content::WebContents* web_contents)
     : controller_(controller),
       web_contents_(web_contents),
-      overlay_animation_(this),
       weak_ptr_factory_(this) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
 }
@@ -123,10 +78,9 @@ void CardUnmaskPromptViews::ControllerGone() {
 
 void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   SetInputsEnabled(false);
-  progress_overlay_->SetAlpha(0);
+  controls_container_->SetVisible(false);
   progress_overlay_->SetVisible(true);
   progress_throbber_->Start();
-  overlay_animation_.Show();
   DialogModelChanged();
   Layout();
 }
@@ -145,12 +99,8 @@ void CardUnmaskPromptViews::GotVerificationResult(
                        weak_ptr_factory_.GetWeakPtr()),
         controller_->GetSuccessMessageDuration());
   } else {
-    // TODO(estade): it's somewhat jarring when the error comes back too
-    // quickly.
-    overlay_animation_.Reset();
-    if (storage_row_)
-      storage_row_->SetAlpha(SK_AlphaOPAQUE);
     progress_overlay_->SetVisible(false);
+    controls_container_->SetVisible(true);
 
     if (allow_retry) {
       SetInputsEnabled(true);
@@ -242,7 +192,7 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
     return nullptr;
 
   // Local storage checkbox and (?) tooltip.
-  storage_row_ = new FadeOutView();
+  storage_row_ = new views::View();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   views::BoxLayout* storage_row_layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal,
@@ -372,15 +322,6 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
   DialogModelChanged();
 }
 
-void CardUnmaskPromptViews::AnimationProgressed(
-    const gfx::Animation* animation) {
-  SkAlpha alpha = static_cast<SkAlpha>(
-      animation->CurrentValueBetween(SK_AlphaTRANSPARENT, SK_AlphaOPAQUE));
-  progress_overlay_->SetAlpha(alpha);
-  if (storage_row_)
-    storage_row_->SetAlpha(SK_AlphaOPAQUE - alpha);
-}
-
 void CardUnmaskPromptViews::InitIfNecessary() {
   if (has_children())
     return;
@@ -419,18 +360,18 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       provider->GetInsetsMetric(views::INSETS_DIALOG)));
   AddChildView(main_contents);
 
-  views::View* controls_container = new views::View();
-  controls_container->SetLayoutManager(new views::BoxLayout(
+  controls_container_ = new views::View();
+  controls_container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  main_contents->AddChildView(controls_container);
+  main_contents->AddChildView(controls_container_);
 
   // Instruction text of the dialog.
   instructions_ = new views::Label(controller_->GetInstructionsMessage());
   instructions_->SetEnabledColor(kGreyTextColor);
   instructions_->SetMultiLine(true);
   instructions_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  controls_container->AddChildView(instructions_);
+  controls_container_->AddChildView(instructions_);
 
   // Input row, containing month/year dropdowns if needed and the CVC field.
   input_row_ = new views::View();
@@ -459,7 +400,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   cvc_image->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_CVC_IMAGE_DESCRIPTION));
   input_row_->AddChildView(cvc_image);
-  controls_container->AddChildView(input_row_);
+  controls_container_->AddChildView(input_row_);
 
   // Temporary error view, just below the input field(s).
   views::View* temporary_error = new views::View();
@@ -481,11 +422,10 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   error_label_->SetEnabledColor(kWarningColor);
   temporary_error->AddChildView(error_label_);
   temporary_error_layout->SetFlexForView(error_label_, 1);
-  controls_container->AddChildView(temporary_error);
+  controls_container_->AddChildView(temporary_error);
 
   // On top of the main contents, we add the progress overlay and hide it.
-  progress_overlay_ = new FadeOutView();
-  progress_overlay_->set_fade_everything(true);
+  progress_overlay_ = new views::View();
   views::BoxLayout* progress_layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
