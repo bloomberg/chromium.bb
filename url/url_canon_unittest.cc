@@ -1277,8 +1277,17 @@ TEST(URLCanonTest, Query) {
 TEST(URLCanonTest, Ref) {
   // Refs are trivial, it just checks the encoding.
   DualComponentCase ref_cases[] = {
-      // Regular one, we shouldn't escape spaces, et al.
-      {"hello, world", L"hello, world", "#hello, world", Component(1, 12),
+      {"hello!", L"hello!", "#hello!", Component(1, 6), true},
+      // We should escape spaces, double-quotes, angled braces, and backtics.
+      {"hello, world", L"hello, world", "#hello,%20world", Component(1, 14),
+       true},
+      {"hello,\"world", L"hello,\"world", "#hello,%22world", Component(1, 14),
+       true},
+      {"hello,<world", L"hello,<world", "#hello,%3Cworld", Component(1, 14),
+       true},
+      {"hello,>world", L"hello,>world", "#hello,%3Eworld", Component(1, 14),
+       true},
+      {"hello,`world", L"hello,`world", "#hello,%60world", Component(1, 14),
        true},
       // UTF-8/wide input should be preserved
       {"\xc2\xa9", L"\xa9", "#%C2%A9", Component(1, 6), true},

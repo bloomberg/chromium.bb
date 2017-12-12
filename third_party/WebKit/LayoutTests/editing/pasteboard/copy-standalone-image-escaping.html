@@ -12,7 +12,7 @@ function editingTest() {
     var e = document.getElementById('dest');
     s.collapse(e, 0);
     document.execCommand('Paste');
-    if (e.firstChild.src.indexOf('#\x22\x3epreserve-fragment') !== -1)
+    if (e.firstChild.src.indexOf('#%22%3Epreserve-fragment') !== -1)
         alert('PASS');
     else
         alert('FAIL: ' + e.firstChild.src);

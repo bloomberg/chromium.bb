@@ -244,6 +244,43 @@ bool DoPort(const CHAR* spec,
   return true;
 }
 
+// clang-format off
+//   Percent-escape all "C0 controls" (0x00-0x1F)
+//   https://infra.spec.whatwg.org/#c0-control along with the characters ' '
+//   (0x20), '"' (0x22), '<' (0x3C), '>' (0x3E), and '`' (0x60):
+const bool kShouldEscapeCharInRef[0x80] = {
+//  Control characters (0x00-0x1F)
+    true,  true,  true,  true,  true,  true,  true,  true,
+    true,  true,  true,  true,  true,  true,  true,  true,
+    true,  true,  true,  true,  true,  true,  true,  true,
+    true,  true,  true,  true,  true,  true,  true,  true,
+//  ' '    !      "      #      $      %      &      '
+    true,  false, true,  false, false, false, false, false,
+//  (      )      *      +      ,      -      .      /
+    false, false, false, false, false, false, false, false,
+//  0      1      2      3      4      5      6      7
+    false, false, false, false, false, false, false, false,
+//  8      9      :      ;      <      =      >      ?
+    false, false, false, false, true,  false, true,  false,
+//  @      A      B      C      D      E      F      G
+    false, false, false, false, false, false, false, false,
+//  H      I      J      K      L      M      N      O
+    false, false, false, false, false, false, false, false,
+//  P      Q      R      S      T      U      V      W
+    false, false, false, false, false, false, false, false,
+//  X      Y      Z      [      \      ]      ^      _
+    false, false, false, false, false, false, false, false,
+//  `      a      b      c      d      e      f      g
+    true,  false, false, false, false, false, false, false,
+//  h      i      j      k      l      m      n      o
+    false, false, false, false, false, false, false, false,
+//  p      q      r      s      t      u      v      w
+    false, false, false, false, false, false, false, false,
+//  x      y      z      {      |      }      ~
+    false, false, false, false, false, false, false
+};
+// clang-format on
+
 template<typename CHAR, typename UCHAR>
 void DoCanonicalizeRef(const CHAR* spec,
                        const Component& ref,
@@ -266,14 +303,14 @@ void DoCanonicalizeRef(const CHAR* spec,
     if (spec[i] == 0) {
       // IE just strips NULLs, so we do too.
       continue;
-    } else if (static_cast<UCHAR>(spec[i]) < 0x20) {
-      // Unline IE seems to, we escape control characters. This will probably
-      // make the reference fragment unusable on a web page, but people
-      // shouldn't be using control characters in their anchor names.
-      AppendEscapedChar(static_cast<unsigned char>(spec[i]), output);
-    } else if (static_cast<UCHAR>(spec[i]) < 0x80) {
-      // Normal ASCII characters are just appended.
-      output->push_back(static_cast<char>(spec[i]));
+    }
+
+    UCHAR current_char = static_cast<UCHAR>(spec[i]);
+    if (current_char < 0x80) {
+      if (kShouldEscapeCharInRef[current_char])
+        AppendEscapedChar(static_cast<unsigned char>(spec[i]), output);
+      else
+        output->push_back(static_cast<char>(spec[i]));
     } else {
       AppendUTF8EscapedChar(spec, &i, end, output);
     }
