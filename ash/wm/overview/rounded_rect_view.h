@@ -19,15 +19,17 @@ namespace ash {
 //               classes and move into ui/views.
 class RoundedRectView : public views::View {
  public:
-  RoundedRectView(int corner_radius, SkColor background);
+  RoundedRectView(int corner_radius, SkColor background_color);
   ~RoundedRectView() override;
+
+  void SetBackgroundColor(SkColor background_color);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   int corner_radius_;
-  SkColor background_;
+  SkColor background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedRectView);
 };

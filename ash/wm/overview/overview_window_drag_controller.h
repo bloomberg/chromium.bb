@@ -24,9 +24,6 @@ class WindowSelectorItem;
 // and shows/hides the phantom window accordingly.
 class ASH_EXPORT OverviewWindowDragController {
  public:
-  // Snapping distance between the dragged window with the screen edge. It's
-  // useful especially for touch events.
-  static constexpr int kScreenEdgeInsetForDrag = 200;
   // The minimum offset that will be considered as a drag event.
   static constexpr int kMinimumDragOffset = 5;
   // The minimum offset that an item must be moved before it is considered a

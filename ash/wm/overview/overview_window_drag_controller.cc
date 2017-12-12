@@ -12,6 +12,7 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_overview_overlay.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/wm_event.h"
@@ -246,31 +247,44 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
       Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
   switch (screen_orientation) {
     case blink::kWebScreenOrientationLockLandscapePrimary:
-    case blink::kWebScreenOrientationLockLandscapeSecondary:
-      area.Inset(kScreenEdgeInsetForDrag, 0);
-      if (location_in_screen.x() <= area.x())
+    case blink::kWebScreenOrientationLockLandscapeSecondary: {
+      // The window can be snapped if it reaches close enough to the screen
+      // edge of the screen (on primary axis). The edge insets are a fixed ratio
+      // of the screen plus some padding. This matches the overlay ui.
+      const int screen_edge_inset_for_drag =
+          area.width() * kHighlightScreenPrimaryAxisRatio +
+          kHighlightScreenEdgePaddingDp;
+      area.Inset(screen_edge_inset_for_drag, 0);
+      if (location_in_screen.x() <= area.x()) {
         return IsPrimaryScreenOrientation(screen_orientation)
                    ? SplitViewController::LEFT
                    : SplitViewController::RIGHT;
-      if (location_in_screen.x() >= area.right() - 1)
+      }
+      if (location_in_screen.x() >= area.right() - 1) {
         return IsPrimaryScreenOrientation(screen_orientation)
                    ? SplitViewController::RIGHT
                    : SplitViewController::LEFT;
+      }
       return SplitViewController::NONE;
-
+    }
     case blink::kWebScreenOrientationLockPortraitPrimary:
-    case blink::kWebScreenOrientationLockPortraitSecondary:
-      area.Inset(0, kScreenEdgeInsetForDrag);
-      if (location_in_screen.y() <= area.y())
+    case blink::kWebScreenOrientationLockPortraitSecondary: {
+      const int screen_edge_inset_for_drag =
+          area.height() * kHighlightScreenPrimaryAxisRatio +
+          kHighlightScreenEdgePaddingDp;
+      area.Inset(0, screen_edge_inset_for_drag);
+      if (location_in_screen.y() <= area.y()) {
         return IsPrimaryScreenOrientation(screen_orientation)
                    ? SplitViewController::RIGHT
                    : SplitViewController::LEFT;
-      if (location_in_screen.y() >= area.bottom() - 1)
+      }
+      if (location_in_screen.y() >= area.bottom() - 1) {
         return IsPrimaryScreenOrientation(screen_orientation)
                    ? SplitViewController::LEFT
                    : SplitViewController::RIGHT;
+      }
       return SplitViewController::NONE;
-
+    }
     default:
       NOTREACHED();
       return SplitViewController::NONE;
