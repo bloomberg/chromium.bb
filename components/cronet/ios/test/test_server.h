@@ -14,6 +14,9 @@ class TestServer {
   static bool Start();
   static void Shutdown();
 
+  // Returns URL which responds with the body "The quick brown fox jumps over
+  // the lazy dog".
+  static std::string GetSimpleURL();
   // Returns URL which respond with echo of header with |header_name| in
   // response body.
   static std::string GetEchoHeaderURL(const std::string& header_name);
