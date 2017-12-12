@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 
+#include "platform/wtf/text/StringBuilder.h"
+
 namespace blink {
 
 NGInlineBreakToken::NGInlineBreakToken(
@@ -29,5 +31,21 @@ NGInlineBreakToken::NGInlineBreakToken(NGLayoutInputNode node)
       state_stack_(nullptr) {}
 
 NGInlineBreakToken::~NGInlineBreakToken() {}
+
+#ifndef NDEBUG
+
+String NGInlineBreakToken::ToString() const {
+  StringBuilder string_builder;
+  string_builder.Append(NGBreakToken::ToString());
+  if (!IsFinished()) {
+    string_builder.Append(
+        String::Format(" index:%u offset:%u", ItemIndex(), TextOffset()));
+    if (IsForcedBreak())
+      string_builder.Append(" forced");
+  }
+  return string_builder.ToString();
+}
+
+#endif  // NDEBUG
 
 }  // namespace blink

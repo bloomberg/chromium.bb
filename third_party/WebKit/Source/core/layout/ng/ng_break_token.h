@@ -49,6 +49,11 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   // used with any other node.
   NGLayoutInputNode InputNode() const { return node_; }
 
+#ifndef NDEBUG
+  virtual String ToString() const;
+  void ShowBreakTokenTree() const;
+#endif  // NDEBUG
+
  protected:
   NGBreakToken(NGBreakTokenType type,
                NGBreakTokenStatus status,
