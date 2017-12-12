@@ -59,7 +59,7 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
   // Record the search metric if the SearchResult is not a suggested app.
   if (result->display_type() != SearchResult::DISPLAY_RECOMMENDATION) {
     // Count AppList.Search here because it is composed of search + action.
-    base::RecordAction(base::UserMetricsAction("AppList_Search"));
+    base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
 
     UMA_HISTOGRAM_COUNTS_100(kSearchQueryLength, search_box_->text().size());
 

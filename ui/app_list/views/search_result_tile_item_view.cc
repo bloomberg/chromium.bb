@@ -7,6 +7,7 @@
 #include "ash/app_list/model/search/search_result.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
@@ -204,6 +205,7 @@ void SearchResultTileItemView::LogAppLaunch() const {
     return;
 
   UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen, is_suggested_app_);
+  base::RecordAction(base::UserMetricsAction("AppList_OpenSuggestedApp"));
 }
 
 void SearchResultTileItemView::ButtonPressed(views::Button* sender,

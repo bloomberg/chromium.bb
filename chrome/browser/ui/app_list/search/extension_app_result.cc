@@ -69,7 +69,6 @@ void ExtensionAppResult::Open(int event_flags) {
   if (display_type() != DISPLAY_RECOMMENDATION) {
     RecordHistogram(APP_SEARCH_RESULT);
     extensions::RecordAppListSearchLaunch(extension);
-    base::RecordAction(base::UserMetricsAction("AppList_ClickOnAppFromSearch"));
   }
 
   controller()->ActivateApp(

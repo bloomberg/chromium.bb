@@ -225,12 +225,6 @@ void ArcPlayStoreSearchResult::Open(int event_flags) {
   // Open the installing page of this result in Play Store.
   RecordHistogram(is_instant_app() ? PLAY_STORE_INSTANT_APP
                                    : PLAY_STORE_UNINSTALLED_APP);
-  base::RecordAction(
-      is_instant_app()
-          ? base::UserMetricsAction(
-                "Arc.Launcher.Search.OpenPlayStore.InstantApps")
-          : base::UserMetricsAction(
-                "Arc.Launcher.Search.OpenPlayStore.UninstalledApps"));
 }
 
 ui::MenuModel* ArcPlayStoreSearchResult::GetContextMenuModel() {

@@ -145,7 +145,9 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
 
   // Ensure a search finds the extension.
   EXPECT_FALSE(observed_result_);
-  model->search_box()->Update(base::ASCIIToUTF16("minimal"), false);
+  model->search_box()->Update(base::ASCIIToUTF16("minimal"),
+                              false /* is_voice_query */,
+                              true /* initiated_by_user */);
   EXPECT_TRUE(observed_result_);
 
   // Ensure the UI is updated. This is via PostTask in views.
