@@ -21,5 +21,6 @@ bump the version numbers in README.chromium.
 
 Locally patch hb-private.hh to silence unusued variable warnings in MSVC.
 
-Locally patching hb_set implementation back to the pre 1.6.1 implemention as we
-observe a set of timeToFirst*Paint performance regressions in issue 781794.
+Locally patch PAGE_BITS to 8192 in hb-set-private to see whether larger page
+sizes help avoid the set performance regressions we are observing in issue
+782220.
