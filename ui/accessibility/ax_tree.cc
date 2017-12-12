@@ -306,6 +306,9 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   if (update.has_tree_data)
     UpdateData(update.tree_data);
 
+  // We distinguish between updating the root, e.g. changing its children or
+  // some of its attributes, or replacing the root completely.
+  bool root_updated = false;
   if (update.node_id_to_clear != 0) {
     AXNode* node = GetFromId(update.node_id_to_clear);
     if (!node) {
@@ -313,13 +316,25 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
                                   update.node_id_to_clear);
       return false;
     }
+
+    // Only destroy the root if the root was replaced and not if it's simply
+    // updated. To figure out if  the root was simply updated, we compare the ID
+    // of the new root with the existing root ID.
     if (node == root_) {
-      // Clear root_ before calling DestroySubtree so that root_ doesn't
-      // ever point to an invalid node.
-      AXNode* old_root = root_;
-      root_ = nullptr;
-      DestroySubtree(old_root, &update_state);
-    } else {
+      if (update.root_id != old_root_id) {
+        // Clear root_ before calling DestroySubtree so that root_ doesn't ever
+        // point to an invalid node.
+        AXNode* old_root = root_;
+        root_ = nullptr;
+        DestroySubtree(old_root, &update_state);
+      } else {
+        root_updated = true;
+      }
+    }
+
+    // If the root has simply been updated, we treat it like an update to any
+    // other node.
+    if (root_ && (node != root_ || root_updated)) {
       for (int i = 0; i < node->child_count(); ++i)
         DestroySubtree(node->ChildAtIndex(i), &update_state);
       std::vector<AXNode*> children;
@@ -364,17 +379,23 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
       if (is_new_node) {
         if (is_reparented_node) {
           // A reparented subtree is any new node whose parent either doesn't
-          // exist, or is not new.
+          // exist, or whose parent is not new.
+          // Note that we also need to check for the special case when we update
+          // the root without replacing it.
           bool is_subtree = !node->parent() ||
-                            new_nodes.find(node->parent()) == new_nodes.end();
+                            new_nodes.find(node->parent()) == new_nodes.end() ||
+                            (node->parent() == root_ && root_updated);
           change = is_subtree ? AXTreeDelegate::SUBTREE_REPARENTED
                               : AXTreeDelegate::NODE_REPARENTED;
         } else {
           // A new subtree is any new node whose parent is either not new, or
           // whose parent happens to be new only because it has been reparented.
+          // Note that we also need to check for the special case when we update
+          // the root without replacing it.
           bool is_subtree = !node->parent() ||
                             new_nodes.find(node->parent()) == new_nodes.end() ||
-                            update_state.HasRemovedNode(node->parent());
+                            update_state.HasRemovedNode(node->parent()) ||
+                            (node->parent() == root_ && root_updated);
           change = is_subtree ? AXTreeDelegate::SUBTREE_CREATED
                               : AXTreeDelegate::NODE_CREATED;
         }
