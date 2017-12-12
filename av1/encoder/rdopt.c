@@ -6454,10 +6454,12 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     x->best_mv.as_mv.row *= 8;
     x->best_mv.as_mv.col *= 8;
   }
-  if (bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0) {
+  const int use_fractional_mv =
+      bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
 #else
-  if (bestsme < INT_MAX) {
+  const int use_fractional_mv = bestsme < INT_MAX;
 #endif
+  if (use_fractional_mv) {
     int dis; /* TODO: use dis in distortion calculation later. */
     switch (mbmi->motion_mode) {
       case SIMPLE_TRANSLATION:
@@ -6711,10 +6713,12 @@ static void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     x->best_mv.as_mv.row *= 8;
     x->best_mv.as_mv.col *= 8;
   }
-  if (bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0) {
+  const int use_fractional_mv =
+      bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
 #else
-  if (bestsme < INT_MAX) {
+  const int use_fractional_mv = bestsme < INT_MAX;
 #endif
+  if (use_fractional_mv) {
     int dis; /* TODO: use dis in distortion calculation later. */
     unsigned int sse;
     bestsme = cpi->find_fractional_mv_step(
