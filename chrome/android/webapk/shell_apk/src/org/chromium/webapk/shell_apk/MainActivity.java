@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
                 WebApkConstants.EXTRA_FORCE_NAVIGATION, overrideSpecified);
 
         HostBrowserLauncher launcher =
-                new HostBrowserLauncher(this, startUrl, source, forceNavigation);
+                new HostBrowserLauncher(this, getIntent(), startUrl, source, forceNavigation);
         launcher.selectHostBrowserAndLaunch(() -> finish());
     }
 

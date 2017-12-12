@@ -43,7 +43,7 @@ struct ShortcutInfo {
     // Used for bookmark-type shortcuts that launch the tabbed browser.
     SOURCE_ADD_TO_HOMESCREEN_SHORTCUT = 8,
 
-    // Used for WebAPKs launched via an external intent.
+    // Used for WebAPKs launched via an external intent and not from Chrome.
     SOURCE_EXTERNAL_INTENT = 9,
 
     // Used for WebAPK PWAs added via the banner.
@@ -58,7 +58,12 @@ struct ShortcutInfo {
     // Used for WebAPK intents received as a result of share events.
     SOURCE_WEBAPK_SHARE_TARGET = 13,
 
-    SOURCE_COUNT = 14
+    // Used for WebAPKs launched via an external intent from this Chrome APK.
+    // WebAPKs launched from a different Chrome APK (e.g. Chrome Canary) will
+    // report SOURCE_EXTERNAL_INTENT.
+    SOURCE_EXTERNAL_INTENT_FROM_CHROME = 14,
+
+    SOURCE_COUNT = 15
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);

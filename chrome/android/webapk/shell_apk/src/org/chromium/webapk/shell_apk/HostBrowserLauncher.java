@@ -47,6 +47,9 @@ class HostBrowserLauncher {
 
     private Context mContext;
 
+    /** Intent used to launch WebAPK. */
+    private Intent mIntent;
+
     /** URL to launch WebAPK at. */
     private String mStartUrl;
 
@@ -56,10 +59,11 @@ class HostBrowserLauncher {
     /** Whether the WebAPK should be navigated to {@link mStartUrl} if it is already running. */
     private boolean mForceNavigation;
 
-    public HostBrowserLauncher(
-            Activity parentActivity, String startUrl, int source, boolean forceNavigation) {
+    public HostBrowserLauncher(Activity parentActivity, Intent intent, String startUrl, int source,
+            boolean forceNavigation) {
         mParentActivity = parentActivity;
         mContext = parentActivity.getApplicationContext();
+        mIntent = intent;
         mStartUrl = startUrl;
         mSource = source;
         mForceNavigation = forceNavigation;
@@ -149,6 +153,10 @@ class HostBrowserLauncher {
         Intent intent = new Intent();
         intent.setAction(ACTION_START_WEBAPK);
         intent.setPackage(runtimeHost);
+        Bundle copiedExtras = mIntent.getExtras();
+        if (copiedExtras != null) {
+            intent.putExtras(copiedExtras);
+        }
         intent.putExtra(WebApkConstants.EXTRA_URL, mStartUrl)
                 .putExtra(WebApkConstants.EXTRA_SOURCE, mSource)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, mContext.getPackageName())
