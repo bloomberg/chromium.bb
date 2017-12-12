@@ -33,8 +33,8 @@ public class ShareActivity extends Activity {
             return;
         }
 
-        HostBrowserLauncher launcher = new HostBrowserLauncher(
-                this, startUrl, WebApkConstants.SHORTCUT_SOURCE_SHARE, true /* forceNavigation */);
+        HostBrowserLauncher launcher = new HostBrowserLauncher(this, getIntent(), startUrl,
+                WebApkConstants.SHORTCUT_SOURCE_SHARE, true /* forceNavigation */);
         launcher.selectHostBrowserAndLaunch(() -> finish());
     }
 
