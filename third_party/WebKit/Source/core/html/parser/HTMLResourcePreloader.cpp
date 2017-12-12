@@ -76,19 +76,19 @@ void HTMLResourcePreloader::Preload(
   if (!document_->Loader())
     return;
 
-  Resource* resource = preload->Start(document_);
-
+  CSSPreloaderResourceClient* client = nullptr;
   // Don't scan a Resource more than once, to avoid a self-referencing
   // stlyesheet causing infinite recursion.
-  if (resource && !css_preloaders_.Contains(resource) &&
+  if (!css_preloaders_.Contains(preload->ResourceURL()) &&
       preload->ResourceType() == Resource::kCSSStyleSheet) {
     Settings* settings = document_->GetSettings();
     if (settings && (settings->GetCSSExternalScannerNoPreload() ||
                      settings->GetCSSExternalScannerPreload())) {
-      css_preloaders_.insert(resource,
-                             new CSSPreloaderResourceClient(resource, this));
+      client = new CSSPreloaderResourceClient(this);
+      css_preloaders_.insert(preload->ResourceURL(), client);
     }
   }
+  preload->Start(document_, client);
 }
 
 }  // namespace blink

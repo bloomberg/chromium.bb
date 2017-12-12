@@ -60,16 +60,17 @@
 namespace blink {
 
 class ApplicationCacheHost;
-class SubresourceFilter;
-class ResourceFetcher;
+class CSSPreloaderResourceClient;
 class Document;
 class DocumentParser;
+class FrameLoader;
 class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
-class FrameLoader;
+class ResourceFetcher;
 class ResourceTimingInfo;
 class SerializedScriptValue;
+class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
 struct ViewportDescriptionWrapper;
 
@@ -202,7 +203,9 @@ class CORE_EXPORT DocumentLoader
   void DispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
                                   LinkLoader::MediaPreloadPolicy);
 
-  Resource* StartPreload(Resource::Type, FetchParameters&);
+  Resource* StartPreload(Resource::Type,
+                         FetchParameters&,
+                         CSSPreloaderResourceClient*);
 
   void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>);

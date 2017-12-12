@@ -392,7 +392,7 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
   }
   link_fetch_params.SetLinkPreload(true);
   return document.Loader()->StartPreload(resource_type.value(),
-                                         link_fetch_params);
+                                         link_fetch_params, nullptr);
 }
 
 // https://html.spec.whatwg.org/#link-type-modulepreload

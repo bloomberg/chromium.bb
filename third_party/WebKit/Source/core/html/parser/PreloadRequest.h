@@ -21,6 +21,7 @@
 
 namespace blink {
 
+class CSSPreloaderResourceClient;
 class Document;
 
 class CORE_EXPORT PreloadRequest {
@@ -67,7 +68,7 @@ class CORE_EXPORT PreloadRequest {
 
   bool IsSafeToSendToAnotherThread() const;
 
-  Resource* Start(Document*);
+  Resource* Start(Document*, CSSPreloaderResourceClient*);
 
   void SetDefer(FetchParameters::DeferOption defer) { defer_ = defer; }
   void SetCharset(const String& charset) { charset_ = charset.IsolatedCopy(); }
