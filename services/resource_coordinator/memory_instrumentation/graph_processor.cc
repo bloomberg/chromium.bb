@@ -566,7 +566,10 @@ void GraphProcessor::CalculateSizeForNode(Node* node) {
 
   // Check that if both aggregated and node sizes exist that the node size
   // is bigger than the aggregated.
-  DCHECK(!node_size || !aggregated_size || *node_size >= *aggregated_size);
+  // TODO(lalitm): the following condition is triggered very often even though
+  // it is a warning in JS code. Find a way to add the warning to display in UI
+  // or to fix all instances where this is violated and then enable this check.
+  // DCHECK(!node_size || !aggregated_size || *node_size >= *aggregated_size);
 
   // Calculate the maximal size of an owner node.
   base::Optional<uint64_t> max_owner_size;
@@ -580,7 +583,10 @@ void GraphProcessor::CalculateSizeForNode(Node* node) {
 
   // Check that if both owner and node sizes exist that the node size
   // is bigger than the owner.
-  DCHECK(!node_size || !max_owner_size || *node_size >= *max_owner_size);
+  // TODO(lalitm): the following condition is triggered very often even though
+  // it is a warning in JS code. Find a way to add the warning to display in UI
+  // or to fix all instances where this is violated and then enable this check.
+  // DCHECK(!node_size || !max_owner_size || *node_size >= *max_owner_size);
 
   // Clear out any existing size entry which may exist.
   node->entries()->erase(kSizeEntryName);
