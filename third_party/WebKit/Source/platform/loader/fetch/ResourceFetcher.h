@@ -73,7 +73,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   Resource* RequestResource(FetchParameters&,
                             const ResourceFactory&,
-                            ResourceClient* = nullptr,
+                            ResourceClient*,
                             const SubstituteData& = SubstituteData());
 
   Resource* CachedResource(const KURL&) const;
