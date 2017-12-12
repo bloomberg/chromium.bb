@@ -80,14 +80,12 @@ FT_BEGIN_HEADER
   /* If you enable this configuration option, FreeType recognizes an       */
   /* environment variable called `FREETYPE_PROPERTIES', which can be used  */
   /* to control the various font drivers and modules.  The controllable    */
-  /* properties are listed in the section `Controlling FreeType Modules'   */
-  /* in the reference's table of contents; currently there are properties  */
-  /* for the auto-hinter (file `ftautoh.h'), CFF (file `ftcffdrv.h'),      */
-  /* TrueType (file `ftttdrv.h'), and PCF (file `ftpcfdrv.h').             */
+  /* properties are listed in the section @properties.                     */
   /*                                                                       */
   /* `FREETYPE_PROPERTIES' has the following syntax form (broken here into */
   /* multiple lines for better readability).                               */
   /*                                                                       */
+  /* {                                                                     */
   /*   <optional whitespace>                                               */
   /*   <module-name1> ':'                                                  */
   /*   <property-name1> '=' <property-value1>                              */
@@ -95,6 +93,7 @@ FT_BEGIN_HEADER
   /*   <module-name2> ':'                                                  */
   /*   <property-name2> '=' <property-value2>                              */
   /*   ...                                                                 */
+  /* }                                                                     */
   /*                                                                       */
   /* Example:                                                              */
   /*                                                                       */
@@ -211,6 +210,10 @@ FT_BEGIN_HEADER
   /*   Do not #undef this macro here since the build system might define   */
   /*   it for certain configurations only.                                 */
   /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
+  /*                                                                       */
 /* #define FT_CONFIG_OPTION_SYSTEM_ZLIB */
 
 
@@ -226,6 +229,10 @@ FT_BEGIN_HEADER
   /*   the system available bzip2 implementation.                          */
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
+  /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
   /*                                                                       */
 /* #define FT_CONFIG_OPTION_USE_BZIP2 */
 
@@ -252,6 +259,10 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
   /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
+  /*                                                                       */
 #define FT_CONFIG_OPTION_USE_PNG
 
 
@@ -264,6 +275,10 @@ FT_BEGIN_HEADER
   /*   by a font's character map will be hinted also.                      */
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
+  /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
   /*                                                                       */
 #if !defined(WITHOUT_HARFBUZZ)
 #define FT_CONFIG_OPTION_USE_HARFBUZZ
@@ -638,7 +653,7 @@ FT_BEGIN_HEADER
   /* This option requires TT_CONFIG_OPTION_BYTECODE_INTERPRETER to be      */
   /* defined.                                                              */
   /*                                                                       */
-  /* [1] http://www.microsoft.com/typography/cleartype/truetypecleartype.aspx */
+  /* [1] https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx */
   /*                                                                       */
 /* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  1         */
 #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  2
@@ -658,7 +673,7 @@ FT_BEGIN_HEADER
   /* composite flags array which can be used to disambiguate, but old      */
   /* fonts will not have them.                                             */
   /*                                                                       */
-  /*   http://www.microsoft.com/typography/otspec/glyf.htm                 */
+  /*   https://www.microsoft.com/typography/otspec/glyf.htm                */
   /*   https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html */
   /*                                                                       */
 #undef TT_CONFIG_OPTION_COMPONENT_OFFSET_SCALED
@@ -780,8 +795,8 @@ FT_BEGIN_HEADER
   /* possible to set up the default values of the four control points that */
   /* define the stem darkening behaviour of the (new) CFF engine.  For     */
   /* more details please read the documentation of the                     */
-  /* `darkening-parameters' property of the cff driver module (file        */
-  /* `ftcffdrv.h'), which allows the control at run-time.                  */
+  /* `darkening-parameters' property (file `ftdriver.h'), which allows the */
+  /* control at run-time.                                                  */
   /*                                                                       */
   /* Do *not* undefine these macros!                                       */
   /*                                                                       */
@@ -869,7 +884,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* This experimental option is active only if the rendering mode is      */
   /* FT_RENDER_MODE_LIGHT; you can switch warping on and off with the      */
-  /* `warping' property of the auto-hinter (see file `ftautoh.h' for more  */
+  /* `warping' property of the auto-hinter (see file `ftdriver.h' for more */
   /* information; by default it is switched off).                          */
   /*                                                                       */
 /*#define AF_CONFIG_OPTION_USE_WARPER*/
