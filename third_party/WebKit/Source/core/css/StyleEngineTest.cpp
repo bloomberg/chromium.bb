@@ -453,6 +453,19 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
                                   GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, IgnoreInvalidPropertyValue) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<section><div id='t1'>Red</div></section>"
+      "<style id='s1'>div { color: red; } section div#t1 { color:rgb(0");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* t1 = GetDocument().getElementById("t1");
+  ASSERT_TRUE(t1);
+  ASSERT_TRUE(t1->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(255, 0, 0), t1->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+}
+
 TEST_F(StyleEngineTest, TextToSheetCache) {
   HTMLStyleElement* element = HTMLStyleElement::Create(GetDocument(), false);
 

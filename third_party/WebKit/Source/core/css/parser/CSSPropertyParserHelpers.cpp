@@ -568,7 +568,7 @@ static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
       if (i != 1 && !requires_commas)
         return false;
       requires_commas = true;
-    } else if (requires_commas ||
+    } else if (requires_commas || args.AtEnd() ||
                (&args.Peek() - 1)->GetType() != kWhitespaceToken) {
       return false;
     }
