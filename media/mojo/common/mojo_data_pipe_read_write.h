@@ -14,8 +14,7 @@
 
 namespace media {
 
-// An async reader to read a certain amount of bytes from a mojo data pipe by
-// request.
+// Read a certain amount of bytes from a mojo data pipe by request.
 class MojoDataPipeReader {
  public:
   explicit MojoDataPipeReader(
@@ -37,7 +36,7 @@ class MojoDataPipeReader {
 
  private:
   void CompleteCurrentRead();
-  void OnPipeReadable(MojoResult result, const mojo::HandleSignalsState& state);
+  void TryReadData(MojoResult result);
   void OnPipeError(MojoResult result);
 
   // Read side of the data pipe.
@@ -62,8 +61,7 @@ class MojoDataPipeReader {
   DISALLOW_COPY_AND_ASSIGN(MojoDataPipeReader);
 };
 
-// An async writer to write a certain amount of data into a mojo data pipe by
-// request.
+// Write a certain amount of data into a mojo data pipe by request.
 class MojoDataPipeWriter {
  public:
   explicit MojoDataPipeWriter(
@@ -83,7 +81,7 @@ class MojoDataPipeWriter {
   bool IsPipeValid() const;
 
  private:
-  void OnPipeWritable(MojoResult result, const mojo::HandleSignalsState& state);
+  void TryWriteData(MojoResult result);
   void OnPipeError(MojoResult result);
   void CompleteCurrentWrite();
 
