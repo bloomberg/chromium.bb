@@ -2343,14 +2343,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_INTRABC && !CONFIG_LPF_SB
   {
 // Loopfilter the whole frame.
-#if CONFIG_LPF_SB
-    av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                          cm->lf.filter_level, 0, 0, 0, 0);
-#else
+#if !CONFIG_LPF_SB
 #if CONFIG_OBU
     if (endTile == cm->tile_rows * cm->tile_cols - 1)
 #endif
-#if CONFIG_LOOPFILTER_LEVEL && !CONFIG_LPF_SB
+#if CONFIG_LOOPFILTER_LEVEL
       if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
         av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
                               cm->lf.filter_level[0], cm->lf.filter_level[1], 0,
@@ -2362,7 +2359,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                               cm->lf.filter_level_v, cm->lf.filter_level_v, 2,
                               0);
       }
-#elif !CONFIG_LPF_SB
+#else
     av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
                           cm->lf.filter_level, 0, 0);
 #endif  // CONFIG_LOOPFILTER_LEVEL
