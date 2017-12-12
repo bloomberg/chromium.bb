@@ -50,7 +50,7 @@ void DebugDumpPageTask(const base::string16& doc_name,
                        const PrintedPage* page) {
   base::AssertBlockingAllowed();
 
-  DCHECK(!g_debug_dump_info.Get().empty());
+  DCHECK(PrintedDocument::HasDebugDumpPath());
 
   static constexpr base::FilePath::CharType kExtension[] =
       FILE_PATH_LITERAL(".emf");
@@ -67,7 +67,7 @@ void DebugDumpTask(const base::string16& doc_name,
                    const MetafilePlayer* metafile) {
   base::AssertBlockingAllowed();
 
-  DCHECK(!g_debug_dump_info.Get().empty());
+  DCHECK(PrintedDocument::HasDebugDumpPath());
 
   static constexpr base::FilePath::CharType kExtension[] =
       FILE_PATH_LITERAL(".pdf");
@@ -124,7 +124,7 @@ PrintedDocument::PrintedDocument(const PrintSettings& settings,
     }
   }
 
-  if (!g_debug_dump_info.Get().empty())
+  if (HasDebugDumpPath())
     DebugDumpSettings(name, settings);
 }
 
@@ -146,7 +146,7 @@ void PrintedDocument::SetPage(int page_number,
     mutable_.pages_[page_number] = page;
   }
 
-  if (!g_debug_dump_info.Get().empty()) {
+  if (HasDebugDumpPath()) {
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
         base::BindOnce(&DebugDumpPageTask, name(), base::RetainedRef(page)));
@@ -177,7 +177,7 @@ void PrintedDocument::SetDocument(std::unique_ptr<MetafilePlayer> metafile,
 #endif
   }
 
-  if (!g_debug_dump_info.Get().empty()) {
+  if (HasDebugDumpPath()) {
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
         base::BindOnce(&DebugDumpTask, name(), mutable_.metafile_.get()));
@@ -235,16 +235,22 @@ int PrintedDocument::expected_page_count() const {
   return mutable_.expected_page_count_;
 }
 
-void PrintedDocument::set_debug_dump_path(
-    const base::FilePath& debug_dump_path) {
+// static
+void PrintedDocument::SetDebugDumpPath(const base::FilePath& debug_dump_path) {
+  DCHECK(!debug_dump_path.empty());
   g_debug_dump_info.Get() = debug_dump_path;
 }
 
+// static
+bool PrintedDocument::HasDebugDumpPath() {
+  return g_debug_dump_info.IsCreated();
+}
+
+// static
 base::FilePath PrintedDocument::CreateDebugDumpPath(
     const base::string16& document_name,
     const base::FilePath::StringType& extension) {
-  if (!g_debug_dump_info.Get().empty())
-    return base::FilePath();
+  DCHECK(HasDebugDumpPath());
 
   // Create a filename.
   base::string16 filename;
@@ -259,15 +265,15 @@ base::FilePath PrintedDocument::CreateDebugDumpPath(
   system_filename = base::UTF16ToUTF8(filename);
 #endif  // OS_WIN
   base::i18n::ReplaceIllegalCharactersInPath(&system_filename, '_');
-  return g_debug_dump_info.Get().Append(system_filename).AddExtension(
-      extension);
+  const auto& dump_path = g_debug_dump_info.Get();
+  DCHECK(!dump_path.empty());
+  return dump_path.Append(system_filename).AddExtension(extension);
 }
 
 void PrintedDocument::DebugDumpData(
     const base::RefCountedMemory* data,
     const base::FilePath::StringType& extension) {
-  if (g_debug_dump_info.Get().empty())
-    return;
+  DCHECK(HasDebugDumpPath());
   base::PostTaskWithTraits(FROM_HERE,
                            {base::TaskPriority::BACKGROUND, base::MayBlock()},
                            base::BindOnce(&DebugDumpDataTask, name(), extension,

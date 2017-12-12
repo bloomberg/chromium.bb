@@ -263,11 +263,12 @@ PrintingContext::Result PrintingContextWin::NewDocument(
   di.lpszDocName = document_name.c_str();
 
   // Is there a debug dump directory specified? If so, force to print to a file.
-  base::string16 debug_dump_path =
-      PrintedDocument::CreateDebugDumpPath(document_name,
-                                           FILE_PATH_LITERAL(".prn")).value();
-  if (!debug_dump_path.empty())
-    di.lpszOutput = debug_dump_path.c_str();
+  if (PrintedDocument::HasDebugDumpPath()) {
+    base::FilePath debug_dump_path = PrintedDocument::CreateDebugDumpPath(
+        document_name, FILE_PATH_LITERAL(".prn"));
+    if (!debug_dump_path.empty())
+      di.lpszOutput = debug_dump_path.value().c_str();
+  }
 
   // No message loop running in unit tests.
   DCHECK(!base::MessageLoop::current() ||
