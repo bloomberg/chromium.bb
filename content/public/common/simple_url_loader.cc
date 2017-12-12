@@ -32,7 +32,9 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "storage/common/data_element.h"
 
 namespace content {
 
@@ -82,6 +84,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       const OnRedirectCallback& on_redirect_callback) override;
   void SetAllowPartialResults(bool allow_partial_results) override;
   void SetAllowHttpErrorResults(bool allow_http_error_results) override;
+  void AttachFileForUpload(const base::FilePath& upload_file_path,
+                           const std::string& upload_content_type) override;
   void SetRetryOptions(int max_retries, int retry_mode) override;
   int NetError() const override;
   const ResourceResponseHead* ResponseInfo() const override;
@@ -153,6 +157,20 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
+
+  // Choose the TaskPriority based on |resource_request_|'s net priority.
+  // TODO(mmenke): Can something better be done here?
+  base::TaskPriority GetTaskPriority() const {
+    base::TaskPriority task_priority;
+    if (resource_request_->priority >= net::MEDIUM) {
+      task_priority = base::TaskPriority::USER_BLOCKING;
+    } else if (resource_request_->priority >= net::LOW) {
+      task_priority = base::TaskPriority::USER_VISIBLE;
+    } else {
+      task_priority = base::TaskPriority::BACKGROUND;
+    }
+    return task_priority;
+  }
 
   // Bound to the URLLoaderClient message pipe (|client_binding_|) via
   // set_connection_error_handler.
@@ -440,23 +458,12 @@ class SaveToFileBodyHandler : public BodyHandler {
                         const base::FilePath& path,
                         bool create_temp_file,
                         uint64_t max_body_size,
-                        net::RequestPriority request_priority)
+                        base::TaskPriority task_priority)
       : BodyHandler(simple_url_loader),
         download_to_file_complete_callback_(
             std::move(download_to_file_complete_callback)),
         weak_ptr_factory_(this) {
     DCHECK(create_temp_file || !path.empty());
-
-    // Choose the TaskPriority based on the net request priority.
-    // TODO(mmenke): Can something better be done here?
-    base::TaskPriority task_priority;
-    if (request_priority >= net::MEDIUM) {
-      task_priority = base::TaskPriority::USER_BLOCKING;
-    } else if (request_priority >= net::LOW) {
-      task_priority = base::TaskPriority::USER_VISIBLE;
-    } else {
-      task_priority = base::TaskPriority::BACKGROUND;
-    }
 
     // Can only do this after initializing the WeakPtrFactory.
     file_writer_ = std::make_unique<FileWriter>(path, create_temp_file,
@@ -757,6 +764,20 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
       weak_ptr_factory_(this) {
   // Allow creation and use on different threads.
   DETACH_FROM_SEQUENCE(sequence_checker_);
+#if DCHECK_IS_ON()
+  if (resource_request_->request_body) {
+    for (const storage::DataElement& element :
+         *resource_request_->request_body->elements()) {
+      // Files should be attached with AttachFileForUpload, so that (Once
+      // supported) they can be opened in the current process.
+      //
+      // TODO(mmenke): Add a similar method for bytes, to allow streaming of
+      // large byte buffers to the network process when uploading.
+      DCHECK(element.type() != storage::DataElement::TYPE_FILE &&
+             element.type() != storage::DataElement::TYPE_BYTES);
+    }
+  }
+#endif  // DCHECK_IS_ON()
 }
 
 SimpleURLLoaderImpl::~SimpleURLLoaderImpl() {}
@@ -790,7 +811,7 @@ void SimpleURLLoaderImpl::DownloadToFile(
   DCHECK(!file_path.empty());
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
       this, std::move(download_to_file_complete_callback), file_path,
-      false /* create_temp_file */, max_body_size, resource_request_->priority);
+      false /* create_temp_file */, max_body_size, GetTaskPriority());
   Start(url_loader_factory);
 }
 
@@ -800,7 +821,7 @@ void SimpleURLLoaderImpl::DownloadToTempFile(
     int64_t max_body_size) {
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
       this, std::move(download_to_file_complete_callback), base::FilePath(),
-      true /* create_temp_file */, max_body_size, resource_request_->priority);
+      true /* create_temp_file */, max_body_size, GetTaskPriority());
   Start(url_loader_factory);
 }
 
@@ -820,6 +841,27 @@ void SimpleURLLoaderImpl::SetAllowHttpErrorResults(
   // Check if a request has not yet been started.
   DCHECK(!body_handler_);
   allow_http_error_results_ = allow_http_error_results;
+}
+
+void SimpleURLLoaderImpl::AttachFileForUpload(
+    const base::FilePath& upload_file_path,
+    const std::string& upload_content_type) {
+  DCHECK(!upload_file_path.empty());
+  // Currently only allow a single file to be attached.
+  DCHECK(!resource_request_->request_body);
+  DCHECK(resource_request_->method != "GET" &&
+         resource_request_->method != "HEAD");
+
+  // Create an empty body to make DCHECKing that there's no upload body yet
+  // simpler.
+  resource_request_->request_body = new ResourceRequestBody();
+  // TODO(mmenke): Open the file in the current process and append the file
+  // handle instead of the file path.
+  resource_request_->request_body->AppendFileRange(
+      upload_file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+
+  resource_request_->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                       upload_content_type);
 }
 
 void SimpleURLLoaderImpl::SetRetryOptions(int max_retries, int retry_mode) {
