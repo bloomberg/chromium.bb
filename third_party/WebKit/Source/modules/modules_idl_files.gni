@@ -195,7 +195,6 @@ modules_idl_files =
           "nfc/NFC.idl",
           "notifications/Notification.idl",
           "notifications/NotificationEvent.idl",
-          "notifications/NotificationPermissionCallback.idl",
           "canvas/offscreencanvas2d/OffscreenCanvasRenderingContext2D.idl",
           "payments/AbortPaymentEvent.idl",
           "payments/CanMakePaymentEvent.idl",

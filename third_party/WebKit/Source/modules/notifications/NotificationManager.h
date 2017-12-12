@@ -13,10 +13,10 @@
 
 namespace blink {
 
-class NotificationPermissionCallback;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
+class V8NotificationPermissionCallback;
 
 // The notification manager, unique to the execution context, is responsible for
 // connecting and communicating with the Mojo notification service.
@@ -40,7 +40,7 @@ class NotificationManager final
 
   ScriptPromise RequestPermission(
       ScriptState*,
-      NotificationPermissionCallback* deprecated_callback);
+      V8NotificationPermissionCallback* deprecated_callback);
 
   // Shows a notification that is not tied to any service worker.
   void DisplayNonPersistentNotification(const String& title);
@@ -55,7 +55,7 @@ class NotificationManager final
   const mojom::blink::NotificationServicePtr& GetNotificationService();
 
   void OnPermissionRequestComplete(ScriptPromiseResolver*,
-                                   NotificationPermissionCallback*,
+                                   V8NotificationPermissionCallback*,
                                    mojom::blink::PermissionStatus);
 
   void OnNotificationServiceConnectionError();
