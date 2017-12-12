@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/indexeddb/indexeddb-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-async function test() {
+(async function() {
+  TestRunner.addResult(`Tests that the IndexedDB database content live updates.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.showPanel('resources');
+
   let indexedDBModel = TestRunner.mainTarget.model(Resources.IndexedDBModel);
   indexedDBModel._throttler._timeout = 0;
   var objectStore;
@@ -23,57 +25,51 @@ async function test() {
     TestRunner.addResult('Index marked needs refresh = ' + indexView._needsRefresh.visible());
   }
 
-  let promise = InspectorTest.addSnifferPromise(Resources.IndexedDBTreeElement.prototype, '_addIndexedDB');
+  let promise = TestRunner.addSnifferPromise(Resources.IndexedDBTreeElement.prototype, '_addIndexedDB');
   await ApplicationTestRunner.createDatabaseAsync('database1');
   await promise;
-  promise = InspectorTest.addSnifferPromise(Resources.IDBObjectStoreTreeElement.prototype, 'update');
+  promise = TestRunner.addSnifferPromise(Resources.IDBObjectStoreTreeElement.prototype, 'update');
   await ApplicationTestRunner.createObjectStoreAsync('database1', 'objectStore1', 'index1');
   await promise;
   ApplicationTestRunner.dumpIndexedDBTree();
 
   isMarkedNeedsRefresh();
   TestRunner.addResult('\nAdd entry to objectStore1:');
-  promise = InspectorTest.addSnifferPromise(Resources.IDBDataView.prototype, 'markNeedsRefresh');
+  promise = TestRunner.addSnifferPromise(Resources.IDBDataView.prototype, 'markNeedsRefresh');
   await ApplicationTestRunner.addIDBValueAsync('database1', 'objectStore1', 'testKey', 'testValue');
   await promise;
   isMarkedNeedsRefresh();
   ApplicationTestRunner.dumpObjectStores();
 
   TestRunner.addResult('\nRefresh views:');
-  promise = InspectorTest.addSnifferPromise(Resources.IDBDataView.prototype, '_updatedDataForTests');
+  promise = TestRunner.addSnifferPromise(Resources.IDBDataView.prototype, '_updatedDataForTests');
   objectStoreView._updateData(true);
   await promise;
-  promise = InspectorTest.addSnifferPromise(Resources.IDBDataView.prototype, '_updatedDataForTests');
+  promise = TestRunner.addSnifferPromise(Resources.IDBDataView.prototype, '_updatedDataForTests');
   indexView._updateData(true);
   await promise;
   isMarkedNeedsRefresh();
   ApplicationTestRunner.dumpObjectStores();
 
   TestRunner.addResult('\nDelete entry from objectStore1:');
-  promise = InspectorTest.addSnifferPromise(Resources.IDBDataView.prototype, 'markNeedsRefresh');
+  promise = TestRunner.addSnifferPromise(Resources.IDBDataView.prototype, 'markNeedsRefresh');
   await ApplicationTestRunner.deleteIDBValueAsync('database1', 'objectStore1', 'testKey');
   await promise;
   isMarkedNeedsRefresh();
   ApplicationTestRunner.dumpObjectStores();
 
   TestRunner.addResult('\nRefresh views:');
-  promise = InspectorTest.addSnifferPromise(Resources.IDBDataView.prototype, '_updatedDataForTests');
+  promise = TestRunner.addSnifferPromise(Resources.IDBDataView.prototype, '_updatedDataForTests');
   objectStoreView._updateData(true);
   await promise;
-  promise = InspectorTest.addSnifferPromise(Resources.IDBDataView.prototype, '_updatedDataForTests');
+  promise = TestRunner.addSnifferPromise(Resources.IDBDataView.prototype, '_updatedDataForTests');
   indexView._updateData(true);
   await promise;
   isMarkedNeedsRefresh();
   ApplicationTestRunner.dumpObjectStores();
 
-  promise = InspectorTest.addSnifferPromise(Resources.IndexedDBTreeElement.prototype, 'setExpandable');
+  promise = TestRunner.addSnifferPromise(Resources.IndexedDBTreeElement.prototype, 'setExpandable');
   await ApplicationTestRunner.deleteDatabaseAsync('database1');
   await promise;
-  InspectorTest.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that the IndexedDB database content live updates.</p>
-</body>
-</html>
+  TestRunner.completeTest();
+})();
