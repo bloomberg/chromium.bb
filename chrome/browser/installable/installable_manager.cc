@@ -159,8 +159,7 @@ bool InstallableManager::IsContentSecure(content::WebContents* web_contents) {
   security_state::SecurityInfo security_info;
   SecurityStateTabHelper::FromWebContents(web_contents)
       ->GetSecurityInfo(&security_info);
-  return security_info.security_level == security_state::SECURE ||
-         security_info.security_level == security_state::EV_SECURE;
+  return security_state::IsSslCertificateValid(security_info.security_level);
 }
 
 // static
