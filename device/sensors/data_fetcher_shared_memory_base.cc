@@ -185,7 +185,8 @@ mojo::ScopedSharedBufferHandle
 DataFetcherSharedMemoryBase::GetSharedMemoryHandle(ConsumerType consumer_type) {
   auto it = shared_memory_map_.find(consumer_type);
   DCHECK(it != shared_memory_map_.end());
-  return it->second.first->Clone();
+  return it->second.first->Clone(
+      mojo::SharedBufferHandle::AccessMode::READ_ONLY);
 }
 
 bool DataFetcherSharedMemoryBase::InitAndStartPollingThreadIfNecessary() {

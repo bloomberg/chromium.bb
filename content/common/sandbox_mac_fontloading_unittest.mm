@@ -64,7 +64,8 @@ bool FontLoadingTestCase::BeforeSandboxInit() {
 }
 
 bool FontLoadingTestCase::SandboxedTest() {
-  mojo::ScopedSharedBufferHandle shmem_handle = font_shmem_->Clone();
+  mojo::ScopedSharedBufferHandle shmem_handle =
+      font_shmem_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
   if (!shmem_handle.is_valid()) {
     LOG(ERROR) << "ScopedSharedBufferHandle handle duplication failed";
     return false;

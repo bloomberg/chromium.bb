@@ -81,7 +81,8 @@ class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
 
     shared_memory_ = mojo::SharedBufferHandle::Create(kSharedBufferSizeInBytes);
 
-    relative_orientation_sensor_.shared_buffer_handle = shared_memory_->Clone();
+    relative_orientation_sensor_.shared_buffer_handle =
+        shared_memory_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
     relative_orientation_sensor_.shared_buffer = shared_memory_->MapAtOffset(
         kReadingBufferSize, device::SensorReadingSharedBuffer::GetOffset(
                                 relative_orientation_sensor_.type));
@@ -92,7 +93,8 @@ class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
         new device::SensorReadingSharedBufferReader(
             relative_orientation_sensor_buffer_));
 
-    absolute_orientation_sensor_.shared_buffer_handle = shared_memory_->Clone();
+    absolute_orientation_sensor_.shared_buffer_handle =
+        shared_memory_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
     absolute_orientation_sensor_.shared_buffer = shared_memory_->MapAtOffset(
         kReadingBufferSize, device::SensorReadingSharedBuffer::GetOffset(
                                 absolute_orientation_sensor_.type));
