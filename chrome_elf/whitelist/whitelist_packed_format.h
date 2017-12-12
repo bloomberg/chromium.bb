@@ -14,14 +14,23 @@
 //   second by code_id hash (there can be multiple of the same basename hash).
 // -----------------------------------------------------------------------------
 
-#ifndef CHROME_ELF_WHITELIST_WHITELIST_FILE_FORMAT_H_
-#define CHROME_ELF_WHITELIST_WHITELIST_FILE_FORMAT_H_
+#ifndef CHROME_ELF_WHITELIST_WHITELIST_PACKED_FORMAT_H_
+#define CHROME_ELF_WHITELIST_WHITELIST_PACKED_FORMAT_H_
+
+#include <stdint.h>
 
 namespace whitelist {
+
+// Subdir relative to install_static::GetUserDataDirectory().
+extern const wchar_t kFileSubdir[];
+
+// Packed module data cache file.
+extern const wchar_t kBlFileName[];
 
 enum PackedWhitelistVersion : uint32_t {
   kInitialVersion = 1,
   kCurrent = kInitialVersion,
+  kUnsupported
 };
 
 struct PackedWhitelistMetadata {
@@ -40,6 +49,9 @@ struct PackedWhitelistModule {
   // the FileHeader.TimeDateStamp and OptionalHeader.SizeOfImage with the
   // formatting string %08X%x. Then SHA1 the string.
   uint8_t code_id_hash[20];
+  // A timestamp used for tracking "last attempted load".  Used to manage
+  // lifetime of entries in the local caches.
+  uint32_t time_date_stamp;
 };
 
 // These struct are directly written to a file. Therefore the padding should
@@ -47,10 +59,10 @@ struct PackedWhitelistModule {
 static_assert(sizeof(PackedWhitelistMetadata) == 8,
               "The actual padding of the PackedWhitelistMetadata struct "
               "doesn't match the expected padding");
-static_assert(sizeof(PackedWhitelistModule) == 40,
+static_assert(sizeof(PackedWhitelistModule) == 44,
               "The actual padding of the PackedWhitelistModule struct doesn't "
               "match the expected padding");
 
 }  // namespace whitelist
 
-#endif  // CHROME_ELF_WHITELIST_WHITELIST_FILE_FORMAT_H_
+#endif  // CHROME_ELF_WHITELIST_WHITELIST_PACKED_FORMAT_H_
