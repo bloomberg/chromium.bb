@@ -143,7 +143,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h",
   "+third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h",
-  "+third_party/WebKit/public/platform/modules/notifications/notification.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h",
   "+third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h",
   "+third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h",
