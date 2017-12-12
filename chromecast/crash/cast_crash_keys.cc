@@ -35,7 +35,6 @@ size_t RegisterCastCrashKeys() {
       // content/:
       {"discardable-memory-allocated", ::crash_keys::kSmallSize},
       {"discardable-memory-free", ::crash_keys::kSmallSize},
-      {"subresource_url", ::crash_keys::kLargeSize},
       {"total-discardable-memory-allocated", ::crash_keys::kSmallSize},
       {"view-count", ::crash_keys::kSmallSize},
 

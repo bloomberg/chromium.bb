@@ -515,7 +515,10 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   }
 
   // Set subresource URL for crash reporting.
-  base::debug::SetCrashKeyValue("subresource_url", gurl.spec());
+  static base::debug::CrashKeyString* subresource_url =
+      base::debug::AllocateCrashKeyString("subresource_url",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(subresource_url, gurl.spec());
 
   // Used for HLS playback.
   loaded_url_ = gurl;
