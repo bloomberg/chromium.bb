@@ -42,7 +42,7 @@ class CORE_EXPORT KeyboardClickableInputTypeView : public InputTypeView {
   KeyboardClickableInputTypeView(HTMLInputElement& element)
       : InputTypeView(element) {}
 
- private:
+ protected:
   void HandleKeydownEvent(KeyboardEvent*) override;
   void HandleKeypressEvent(KeyboardEvent*) override;
   void HandleKeyupEvent(KeyboardEvent*) override;
