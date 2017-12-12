@@ -3175,50 +3175,87 @@ class TestGitCl(TestCase):
     self.assertRegexpMatches(out.getvalue(), 'Landed as: .*deadbeef')
 
   BUILDBUCKET_BUILDS_MAP = {
-        '9000': {
-            'id': '9000',
-            'status': 'STARTED',
-            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/2',
-            'result_details_json': '{"properties": {}}',
-            'bucket': 'master.x.y',
-            'created_by': 'user:someone@chromium.org',
-            'created_ts': '147200002222000',
-            'parameters_json': '{"builder_name": "my-builder", "category": ""}',
-        },
-        '8000': {
-            'id': '8000',
-            'status': 'COMPLETED',
-            'result': 'FAILURE',
-            'failure_reason': 'BUILD_FAILURE',
-            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/1',
-            'result_details_json': '{"properties": {}}',
-            'bucket': 'master.x.y',
-            'created_by': 'user:someone@chromium.org',
-            'created_ts': '147200001111000',
-            'parameters_json': '{"builder_name": "my-builder", "category": ""}',
-        },
-    }
+    '9000': {
+      'id': '9000',
+      'bucket': 'master.x.y',
+      'created_by': 'user:someone@chromium.org',
+      'created_ts': '147200002222000',
+      'experimental': False,
+      'parameters_json': json.dumps({
+        'builder_name': 'my-bot',
+        'properties': {'category': 'cq'},
+      }),
+      'status': 'STARTED',
+      'tags': [
+        'build_address:x.y/my-bot/2',
+        'builder:my-bot',
+        'experimental:false',
+        'user_agent:cq',
+      ],
+      'url': 'http://build.cr.org/p/x.y/builders/my-bot/builds/2',
+    },
+    '8000': {
+      'id': '8000',
+      'bucket': 'master.x.y',
+      'created_by': 'user:someone@chromium.org',
+      'created_ts': '147200001111000',
+      'experimental': False,
+      'failure_reason': 'BUILD_FAILURE',
+      'parameters_json': json.dumps({
+        'builder_name': 'my-bot',
+        'properties': {'category': 'cq'},
+      }),
+      'result_details_json': json.dumps({
+        'properties': {'buildnumber': 1},
+      }),
+      'result': 'FAILURE',
+      'status': 'COMPLETED',
+      'tags': [
+        'build_address:x.y/my-bot/1',
+        'builder:my-bot',
+        'experimental:false',
+        'user_agent:cq',
+      ],
+      'url': 'http://build.cr.org/p/x.y/builders/my-bot/builds/1',
+    },
+  }
 
   def test_write_try_results_json(self):
     expected_output = [
-        {
-            'buildbucket_id': '8000',
-            'bucket': 'master.x.y',
-            'builder_name': 'my-builder',
-            'status': 'COMPLETED',
-            'result': 'FAILURE',
-            'failure_reason': 'BUILD_FAILURE',
-            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/1',
-        },
-        {
-            'buildbucket_id': '9000',
-            'bucket': 'master.x.y',
-            'builder_name': 'my-builder',
-            'status': 'STARTED',
-            'result': None,
-            'failure_reason': None,
-            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/2',
-        }
+      {
+        'bucket': 'master.x.y',
+        'buildbucket_id': '8000',
+        'builder_name': 'my-bot',
+        'created_ts': '147200001111000',
+        'experimental': False,
+        'failure_reason': 'BUILD_FAILURE',
+        'result': 'FAILURE',
+        'status': 'COMPLETED',
+        'tags': [
+          'build_address:x.y/my-bot/1',
+          'builder:my-bot',
+          'experimental:false',
+          'user_agent:cq',
+        ],
+        'url': 'http://build.cr.org/p/x.y/builders/my-bot/builds/1',
+      },
+      {
+        'bucket': 'master.x.y',
+        'buildbucket_id': '9000',
+        'builder_name': 'my-bot',
+        'created_ts': '147200002222000',
+        'experimental': False,
+        'failure_reason': None,
+        'result': None,
+        'status': 'STARTED',
+        'tags': [
+          'build_address:x.y/my-bot/2',
+          'builder:my-bot',
+          'experimental:false',
+          'user_agent:cq',
+        ],
+        'url': 'http://build.cr.org/p/x.y/builders/my-bot/builds/2',
+      },
     ]
     self.calls = [(('write_json', 'output.json', expected_output), '')]
     git_cl.write_try_results_json('output.json', self.BUILDBUCKET_BUILDS_MAP)
