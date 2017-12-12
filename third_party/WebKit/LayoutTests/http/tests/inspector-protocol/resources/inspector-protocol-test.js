@@ -259,8 +259,8 @@ TestRunner.Session = class {
       code = `(${code.toString()})(${argsString})`;
     }
     var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true});
-    if (response.error) {
-      this._testRunner.log(`Error while evaluating '${code}': ${JSON.stringify(response.error)}`);
+    if (response.error || response.result.exceptionDetails) {
+      this._testRunner.log(`Error while evaluating '${code}': ${JSON.stringify(response.error || response.result.exceptionDetails)}`);
       this._testRunner.completeTest();
     } else {
       return response.result.result.value;
