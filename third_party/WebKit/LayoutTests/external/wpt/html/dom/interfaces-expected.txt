@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5284 tests; 5165 PASS, 119 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5287 tests; 5165 PASS, 122 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -4023,11 +4023,14 @@ PASS HTMLSlotElement interface: existence and properties of interface prototype 
 PASS HTMLSlotElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLSlotElement interface: attribute name
 PASS HTMLSlotElement interface: operation assignedNodes(AssignedNodesOptions)
+FAIL HTMLSlotElement interface: operation assignedElements(AssignedNodesOptions) assert_own_property: interface prototype object missing non-static operation expected property "assignedElements" missing
 PASS HTMLSlotElement must be primary interface of document.createElement("slot")
 PASS Stringification of document.createElement("slot")
 PASS HTMLSlotElement interface: document.createElement("slot") must inherit property "name" with the proper type
 PASS HTMLSlotElement interface: document.createElement("slot") must inherit property "assignedNodes(AssignedNodesOptions)" with the proper type
 PASS HTMLSlotElement interface: calling assignedNodes(AssignedNodesOptions) on document.createElement("slot") with too few arguments must throw TypeError
+FAIL HTMLSlotElement interface: document.createElement("slot") must inherit property "assignedElements(AssignedNodesOptions)" with the proper type assert_inherits: property "assignedElements" not found in prototype chain
+FAIL HTMLSlotElement interface: calling assignedElements(AssignedNodesOptions) on document.createElement("slot") with too few arguments must throw TypeError assert_inherits: property "assignedElements" not found in prototype chain
 PASS HTMLCanvasElement interface: existence and properties of interface object
 PASS HTMLCanvasElement interface object length
 PASS HTMLCanvasElement interface object name
