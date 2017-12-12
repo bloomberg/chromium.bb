@@ -289,6 +289,9 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   void InitializeWebMediaPlayerImpl() {
     auto media_log = std::make_unique<NiceMock<MockMediaLog>>();
+    surface_layer_bridge_ =
+        std::make_unique<StrictMock<MockSurfaceLayerBridge>>();
+    surface_layer_bridge_ptr_ = surface_layer_bridge_.get();
 
     // Retain a raw pointer to |media_log| for use by tests. Meanwhile, give its
     // ownership to |wmpi_|. Reject attempts to reinitialize to prevent orphaned
@@ -326,8 +329,12 @@ class WebMediaPlayerImplTest : public testing::Test {
         params->video_frame_compositor_task_runner());
     compositor_ = compositor.get();
 
-    if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo))
+    if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
       EXPECT_CALL(*compositor_, EnableSubmission(_));
+
+      EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+          .WillOnce(ReturnRef(id_));
+    }
 
     wmpi_ = base::MakeUnique<WebMediaPlayerImpl>(
         web_local_frame_, &client_, nullptr, &delegate_,
@@ -351,8 +358,7 @@ class WebMediaPlayerImplTest : public testing::Test {
  protected:
   std::unique_ptr<blink::WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
       blink::WebSurfaceLayerBridgeObserver*) {
-    return base::WrapUnique<blink::WebSurfaceLayerBridge>(
-        surface_layer_bridge_);
+    return std::move(surface_layer_bridge_);
   }
 
   void SetNetworkState(blink::WebMediaPlayer::NetworkState state) {
@@ -515,11 +521,14 @@ class WebMediaPlayerImplTest : public testing::Test {
   // may want a mock or intelligent fake.
   DummyWebMediaPlayerClient client_;
 
+  viz::FrameSinkId id_ = viz::FrameSinkId(1, 1);
+
   NiceMock<MockWebMediaPlayerDelegate> delegate_;
 
   mojom::WatchTimeRecorderProviderPtr provider_;
 
-  StrictMock<MockSurfaceLayerBridge>* surface_layer_bridge_ = nullptr;
+  std::unique_ptr<StrictMock<MockSurfaceLayerBridge>> surface_layer_bridge_;
+  StrictMock<MockSurfaceLayerBridge>* surface_layer_bridge_ptr_ = nullptr;
 
   // Only valid once set by InitializeWebMediaPlayerImpl(), this is for
   // verifying a subset of potential media logs.
@@ -1019,16 +1028,13 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
 TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitFromCommandLine("UseSurfaceLayerForVideo", "");
-  surface_layer_bridge_ = new StrictMock<MockSurfaceLayerBridge>();
 
-  viz::FrameSinkId id = viz::FrameSinkId(1, 1);
-  EXPECT_CALL(*surface_layer_bridge_, GetFrameSinkId()).WillOnce(ReturnRef(id));
   InitializeWebMediaPlayerImpl();
 
   std::unique_ptr<cc_blink::WebLayerImpl> web_layer =
       base::MakeUnique<cc_blink::WebLayerImpl>();
 
-  EXPECT_CALL(*surface_layer_bridge_, GetWebLayer())
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetWebLayer())
       .WillRepeatedly(Return(web_layer.get()));
   wmpi_->RegisterContentsLayer(web_layer.get());
 }

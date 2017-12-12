@@ -52,8 +52,8 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
   viz::SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   cc::LayerTreeSettings settings_;
-  std::unique_ptr<cc::LayerTreeResourceProvider> resource_provider_;
   std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;
+  std::unique_ptr<cc::LayerTreeResourceProvider> resource_provider_;
   viz::ContextProvider* context_provider_ = nullptr;
   base::WeakPtrFactory<VideoFrameResourceProvider> weak_ptr_factory_;
 };
