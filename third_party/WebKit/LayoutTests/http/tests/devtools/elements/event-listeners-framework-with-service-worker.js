@@ -1,12 +1,25 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/elements-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/console-test.js"></script>
-<script src="../../inspector/service-workers/service-workers-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests framework event listeners output in Sources panel when service worker is present.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.showPanel('elements');
+
+  await TestRunner.evaluateInPage(`
+    function testFunction() {}
+  `);
+
+  await TestRunner.loadHTML(`
+      <body onload="testFunction()">
+        <button id="inspectedNode">Inspect Me</button>
+      </body>
+    `);
+
   Common.settingForTest('showEventListenersForAncestors').set(false);
   var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-empty.js';
   var scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/scope1/';
@@ -48,13 +61,4 @@ function test() {
     ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>
-Tests framework event listeners output in Sources panel when service worker is present.
-</p>
-<button id="inspectedNode">Inspect Me</button>
-</body>
-</html>
+})();
