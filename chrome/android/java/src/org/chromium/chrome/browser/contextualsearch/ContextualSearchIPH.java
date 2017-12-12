@@ -48,30 +48,13 @@ public class ContextualSearchIPH {
     }
 
     /**
-     * Called before panel show is requested.
-     * @param wasActivatedByTap Whether Contextual Search was activated by tapping.
-     * @param isTapSupported Whether tapping is supported as a trigger for Contextual Search.
-     * @param profile The {@link Profile} used for {@link TrackerFactory}.
-     */
-    void beforePanelShown(boolean wasActivatedByTap, boolean isTapSupported, Profile profile) {
-        if (!wasActivatedByTap && isTapSupported) {
-            if (mIsShowing
-                    && mFeatureName.equals(
-                               FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE)) {
-                dismiss(profile);
-            } else {
-                maybeShow(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE, profile);
-            }
-        }
-    }
-
-    /**
      * Called after the Contextual Search panel's animation is finished.
      * @param wasActivatedByTap Whether Contextual Search was activated by tapping.
      * @param profile The {@link Profile} used for {@link TrackerFactory}.
      */
     void onPanelFinishedShowing(boolean wasActivatedByTap, Profile profile) {
         if (!wasActivatedByTap) {
+            maybeShow(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE, profile);
             maybeShow(FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE, profile);
         }
     }
@@ -88,17 +71,6 @@ public class ContextualSearchIPH {
     }
 
     /**
-     * Called when the Contextual Search panel is expanded or maximized.
-     * @param profile The {@link Profile} used for {@link TrackerFactory}.
-     */
-    void onPanelExpandedOrMaximized(Profile profile) {
-        if (!TextUtils.isEmpty(mFeatureName)
-                && mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE)) {
-            dismiss(profile);
-        }
-    }
-
-    /**
      * Shows the appropriate In-Product Help UI if the conditions are met.
      * @param featureName Name of the feature in IPH, look at {@link FeatureConstants}.
      * @param profile The {@link Profile} used for {@link TrackerFactory}.
@@ -109,17 +81,7 @@ public class ContextualSearchIPH {
         if (mSearchPanel == null || mParentView == null || profile == null) return;
 
         mFeatureName = featureName;
-        if (mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE)
-                || mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE)) {
-            maybeShowBubbleAbovePanel(profile);
-        } else if (mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE)) {
-            Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-            if (tracker.shouldTriggerHelpUI(
-                        FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE)) {
-                mSearchPanel.showBarBanner();
-                mIsShowing = true;
-            }
-        }
+        maybeShowBubbleAbovePanel(profile);
     }
 
     /**
@@ -130,17 +92,22 @@ public class ContextualSearchIPH {
     private void maybeShowBubbleAbovePanel(Profile profile) {
         if (!mSearchPanel.isShowing()) return;
 
-        assert(mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE)
-                || mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE));
-
         final Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
         if (!tracker.shouldTriggerHelpUI(mFeatureName)) return;
 
-        int stringId =
-                mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE)
-                ? R.string.contextual_search_iph_entity
-                : R.string.contextual_search_iph_search_result;
+        int stringId = 0;
+        switch (mFeatureName) {
+            case FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE:
+                stringId = R.string.contextual_search_iph_search_result;
+                break;
+            case FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE:
+                stringId = R.string.contextual_search_iph_entity;
+                break;
+            case FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE:
+                stringId = R.string.contextual_search_iph_tap;
+        }
 
+        assert stringId != 0;
         assert mHelpBubble == null;
         mHelpBubble = new TextBubble(mParentView.getContext(), mParentView, stringId, stringId);
         mHelpBubble.setAnchorRect(getHelpBubbleAnchorRect());
@@ -178,20 +145,12 @@ public class ContextualSearchIPH {
 
     /**
      * Dismisses the In-Product Help UI.
-     * @param profile The {@link Profile} used for {@link TrackerFactory}.
      */
-    void dismiss(Profile profile) {
+    void dismiss() {
         if (!mIsShowing || TextUtils.isEmpty(mFeatureName)) return;
 
-        if (mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE)
-                || mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE)) {
-            mHelpBubble.dismiss();
-        } else {
-            assert mFeatureName.equals(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE);
-            Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-            tracker.dismissed(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE);
-            mSearchPanel.hideBarBanner();
-        }
+        mHelpBubble.dismiss();
+
         mIsShowing = false;
     }
 

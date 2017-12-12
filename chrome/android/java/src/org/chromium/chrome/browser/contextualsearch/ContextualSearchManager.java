@@ -402,7 +402,7 @@ public class ContextualSearchManager
 
         mSearchRequest = null;
 
-        mInProductHelp.dismiss(Profile.getLastUsedProfile().getOriginalProfile());
+        mInProductHelp.dismiss();
 
         if (mIsShowingPromo && !mDidLogPromoOutcome && mSearchPanel.wasPromoInteractive()) {
             ContextualSearchUma.logPromoOutcome(mWasActivatedByTap, mIsMandatoryPromo);
@@ -485,9 +485,6 @@ public class ContextualSearchManager
             return;
         }
         mWereSearchResultsSeen = false;
-
-        mInProductHelp.beforePanelShown(
-                isTap, mPolicy.isTapSupported(), Profile.getLastUsedProfile().getOriginalProfile());
 
         // Note: now that the contextual search has properly started, set the promo involvement.
         if (mPolicy.isPromoAvailable()) {
@@ -1234,12 +1231,6 @@ public class ContextualSearchManager
     public void onPanelFinishedShowing() {
         mInProductHelp.onPanelFinishedShowing(
                 mWasActivatedByTap, Profile.getLastUsedProfile().getOriginalProfile());
-    }
-
-    @Override
-    public void onPanelExpandedOrMaximized() {
-        mInProductHelp.onPanelExpandedOrMaximized(
-                Profile.getLastUsedProfile().getOriginalProfile());
     }
 
     @Override
