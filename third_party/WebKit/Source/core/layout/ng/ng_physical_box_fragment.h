@@ -22,6 +22,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         const NGPhysicalOffsetRect& contents_visual_rect,
                         Vector<NGBaseline>& baselines,
                         NGBoxType box_type,
+                        bool is_old_layout_root,
                         unsigned,  // NGBorderEdges::Physical
                         scoped_refptr<NGBreakToken> break_token = nullptr);
 

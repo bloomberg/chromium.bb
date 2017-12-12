@@ -17,6 +17,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     const NGPhysicalOffsetRect& contents_visual_rect,
     Vector<NGBaseline>& baselines,
     NGBoxType box_type,
+    bool is_old_layout_root,
     unsigned border_edges,  // NGBorderEdges::Physical
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalContainerFragment(layout_object,
@@ -29,6 +30,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       baselines_(std::move(baselines)) {
   DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
   box_type_ = box_type;
+  is_old_layout_root_ = is_old_layout_root;
   border_edge_ = border_edges;
 }
 
@@ -98,7 +100,8 @@ scoped_refptr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset()
   scoped_refptr<NGPhysicalFragment> physical_fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), size_, children_copy, contents_visual_rect_,
-          baselines_copy, BoxType(), border_edge_, break_token_));
+          baselines_copy, BoxType(), is_old_layout_root_, border_edge_,
+          break_token_));
   return physical_fragment;
 }
 

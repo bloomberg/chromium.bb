@@ -89,6 +89,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   NGPhysicalFragment::NGBoxType BoxType() const;
   NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType);
+  NGFragmentBuilder& SetIsOldLayoutRoot();
 
   bool DidBreak() const { return did_break_; }
 
@@ -138,6 +139,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   LayoutUnit intrinsic_block_size_;
 
   NGPhysicalFragment::NGBoxType box_type_;
+  bool is_old_layout_root_;
   bool did_break_;
   LayoutUnit used_block_size_;
 
