@@ -343,6 +343,37 @@
       }
     ]
   },
+  "Android Nexus 5X Perf FYI": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "experimental.startup.android.coldish",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "experimental.startup.android.coldish",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "build46-b1--device1",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 3600,
+          "hard_timeout": 1080,
+          "ignore_task_failure": false,
+          "io_timeout": 360
+        }
+      }
+    ]
+  },
   "Linux ChromeOS Perf (mus-viz)": {
     "isolated_scripts": [
       {
