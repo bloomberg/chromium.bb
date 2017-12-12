@@ -95,7 +95,6 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   // Enabling browser side discovery means disabling extension side discovery.
   // We are migrating discovery from the external Media Route Provider to the
   // Media Router (crbug.com/687383), so we need to disable it in the provider.
-  config->enable_dial_discovery = !media_router::DialLocalDiscoveryEnabled();
   config->enable_cast_discovery = !media_router::CastDiscoveryEnabled();
   std::move(callback).Run(instance_id(), std::move(config));
 
@@ -166,26 +165,23 @@ void MediaRouterDesktop::StartDiscovery() {
     }
   }
 
-  if (media_router::DialLocalDiscoveryEnabled()) {
-    if (!dial_media_sink_service_) {
-      dial_media_sink_service_ =
-          std::make_unique<DialMediaSinkService>(context());
+  if (!dial_media_sink_service_) {
+    dial_media_sink_service_ =
+        std::make_unique<DialMediaSinkService>(context());
 
-      OnDialSinkAddedCallback dial_sink_added_cb;
-      scoped_refptr<base::SequencedTaskRunner> dial_sink_added_cb_sequence;
-      if (cast_media_sink_service_) {
-        dial_sink_added_cb =
-            cast_media_sink_service_->GetDialSinkAddedCallback();
-        dial_sink_added_cb_sequence =
-            cast_media_sink_service_->GetImplTaskRunner();
-      }
-      dial_media_sink_service_->Start(
-          base::BindRepeating(&MediaRouterDesktop::ProvideSinks,
-                              weak_factory_.GetWeakPtr(), "dial"),
-          dial_sink_added_cb, dial_sink_added_cb_sequence);
-    } else {
-      dial_media_sink_service_->ForceSinkDiscoveryCallback();
+    OnDialSinkAddedCallback dial_sink_added_cb;
+    scoped_refptr<base::SequencedTaskRunner> dial_sink_added_cb_sequence;
+    if (cast_media_sink_service_) {
+      dial_sink_added_cb = cast_media_sink_service_->GetDialSinkAddedCallback();
+      dial_sink_added_cb_sequence =
+          cast_media_sink_service_->GetImplTaskRunner();
     }
+    dial_media_sink_service_->Start(
+        base::BindRepeating(&MediaRouterDesktop::ProvideSinks,
+                            weak_factory_.GetWeakPtr(), "dial"),
+        dial_sink_added_cb, dial_sink_added_cb_sequence);
+  } else {
+    dial_media_sink_service_->ForceSinkDiscoveryCallback();
   }
 }
 
