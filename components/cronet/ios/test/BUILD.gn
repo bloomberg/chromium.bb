@@ -8,7 +8,6 @@ import("//testing/test.gni")
 test("cronet_test") {
   testonly = true
   sources = [
-    "../cronet_metrics.h",  # used for unit testing of private interface
     "cronet_acceptlang_test.mm",
     "cronet_http_test.mm",
     "cronet_metrics_test.mm",

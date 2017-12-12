@@ -33,17 +33,6 @@ FOUNDATION_EXPORT GRPC_SUPPORT_EXPORT NSString* const CRNInvalidArgumentKey;
 // be handled.
 typedef BOOL (^RequestFilterBlock)(NSURLRequest* request);
 
-// A delegate that a client can pass to Cronet to collect metrics for a
-// session task. The delegate can be added and removed by calling
-// [Cronet addMetricsDelegate:] and [Cronet removeMetricsDelegate:] methods
-// respectively.
-@protocol CronetMetricsDelegate <NSObject>
-// Is invoked by Cronet when the metrics for the task are ready.
-- (void)URLSession:(NSURLSession*)session task:(NSURLSessionTask*)task
-                    didFinishCollectingMetrics:(NSURLSessionTaskMetrics*)metrics
-    NS_AVAILABLE_IOS(10.0);
-@end
-
 // Interface for installing Cronet.
 // TODO(gcasto): Should this macro be separate from the one defined in
 // bidirectional_stream_c.h?
@@ -65,6 +54,10 @@ GRPC_SUPPORT_EXPORT
 // Sets whether Brotli should be supported by CronetEngine. This method only has
 // any effect before |start| is called.
 + (void)setBrotliEnabled:(BOOL)brotliEnabled;
+
+// Sets whether Metrics should be collected by CronetEngine. This method only
+// has any effect before |start| is called.
++ (void)setMetricsEnabled:(BOOL)metricsEnabled;
 
 // Set HTTP Cache type to be used by CronetEngine.  This method only has any
 // effect before |start| is called.  See HttpCacheType enum for available
@@ -205,20 +198,5 @@ GRPC_SUPPORT_EXPORT
 // Enables TestCertVerifier which accepts all certificates for testing.
 // This method only has any effect before |start| is called.
 + (void)enableTestCertVerifierForTesting;
-
-// Registers a CronetMetricsDelegate callback.  The client is responsible for
-// creating an object which implements CronetMetricsDelegate, and passing
-// that as a |delegate|.  Returns |YES| if the delegate is added successfully,
-// and |NO| if it was not (because there is already an identical delegate
-// registered).
-+ (BOOL)addMetricsDelegate:(id<CronetMetricsDelegate>)delegate
-    NS_AVAILABLE_IOS(10.0);
-
-// Unregisters a CronetMetricsDelegate callback.  |delegate| should be a
-// pointer to the delegate which is to be removed.  It returns |YES| if the
-// delegate is successfully removed and |NO| if the delegate is not
-// contained in the set of delegates (and therefore cannot be removed).
-+ (BOOL)removeMetricsDelegate:(id<CronetMetricsDelegate>)delegate
-    NS_AVAILABLE_IOS(10.0);
 
 @end
