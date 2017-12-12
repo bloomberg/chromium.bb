@@ -1897,9 +1897,12 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
       !frame_->GetDocument()->IsSVGDocument())
     return;
 
+  // Try the raw fragment for HTML documents, but skip it for `svgView()`:
   String fragment_identifier = url.FragmentIdentifier();
-  if (ProcessUrlFragmentHelper(fragment_identifier, behavior))
+  if (!frame_->GetDocument()->IsSVGDocument() &&
+      ProcessUrlFragmentHelper(fragment_identifier, behavior)) {
     return;
+  }
 
   // Try again after decoding the ref, based on the document's encoding.
   if (frame_->GetDocument()->Encoding().IsValid()) {

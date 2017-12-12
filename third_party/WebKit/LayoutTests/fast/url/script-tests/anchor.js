@@ -1,7 +1,7 @@
 description("Test URLs that have an anchor.");
 
 cases = [ 
-  ["hello, world", "hello, world"],
+  ["hello, world", "hello,%20world"],
   ["\xc2\xa9", "%C3%82%C2%A9"],
   ["\ud800\udf00ss", "%F0%90%8C%80ss"],
   ["%41%a", "%41%a"],

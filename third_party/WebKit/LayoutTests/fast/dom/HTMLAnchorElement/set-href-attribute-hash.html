@@ -49,12 +49,10 @@ a.href = "mailto:e-mail_address@goes_here";
 a.hash = "hash-value";
 shouldBe("a.href", "'mailto:e-mail_address@goes_here#hash-value'");
 
-// IE8 does not percent-encode spaces in the hash component, but it does that
-// in the path component.
 debug("Add hash to file: protocol");
 a.href = "file:///some path";
 a.hash = "hash value";
-shouldBe("a.href", "'file:///some%20path#hash value'");
+shouldBe("a.href", "'file:///some%20path#hash%20value'");
 
 debug("Set hash to '#'");
 a.href = "http://mydomain.com#middle";

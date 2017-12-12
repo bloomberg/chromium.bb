@@ -138,10 +138,10 @@ TEST_F(WebFrameSerializerTest, URLAttributeValues) {
       "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; "
       "charset=UTF-8\">\n"
       "</head><body><img src=\"javascript:&quot;\">\n"
-      "<a href=\"http://www.test.com/local#&quot;\">local</a>\n"
+      "<a href=\"http://www.test.com/local#%22\">local</a>\n"
       "<a "
-      "href=\"http://www.example.com/#&quot;&gt;&lt;script&gt;alert(0)&lt;/"
-      "script&gt;\">external</a>\n"
+      "href=\"http://www.example.com/#%22%3E%3Cscript%3Ealert(0)%3C/"
+      "script%3E\">external</a>\n"
       "</body></html>";
   String actual_html =
       SerializeFile("http://www.test.com", "url_attribute_values.html");

@@ -2,7 +2,7 @@ description("Canonicalization of standard URLs");
 
 cases = [
   ["http://www.google.com/foo?bar=baz#", "http://www.google.com/foo?bar=baz#"],
-  ["http://www.google.com/foo?bar=baz# \u00bb", "http://www.google.com/foo?bar=baz# %C2%BB"],
+  ["http://www.google.com/foo?bar=baz# \u00bb", "http://www.google.com/foo?bar=baz#%20%C2%BB"],
   ["http://[www.google.com]/", "http://[www.google.com]/"],
   ["http://www.google.com", "http://www.google.com/"],
   // Disabled because whitespace gets treated different in this API.

@@ -179,7 +179,7 @@ TEST(URLUtilTest, ReplaceScheme) {
   EXPECT_EQ("about://google.com/",
             CheckReplaceScheme("http://google.com/", "about"));
 
-  EXPECT_EQ("http://example.com/%20hello%20# world",
+  EXPECT_EQ("http://example.com/%20hello%20#%20world",
             CheckReplaceScheme("myscheme:example.com/ hello # world ", "http"));
 }
 
