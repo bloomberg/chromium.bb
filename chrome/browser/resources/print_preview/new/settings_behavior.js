@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview_new');
+/**
+ * @typedef {{
+ *   value: *,
+ *   valid: boolean,
+ *   available: boolean,
+ *   updatesPreview: boolean
+ * }}
+ */
+print_preview_new.Setting;
+
 /** @polymerBehavior */
 const SettingsBehavior = {
   properties: {

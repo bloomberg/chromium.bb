@@ -65,6 +65,12 @@
       <structure name="IDR_PRINT_PREVIEW_DATA_COORDINATE2D_JS"
                  file="data/coordinate2d.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_DATA_MEASUREMENT_SYSTEM_HTML"
+                 file="data/measurement_system.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_DATA_MEASUREMENT_SYSTEM_JS"
+                 file="data/measurement_system.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_DATA_PRINTABLE_AREA_HTML"
                  file="data/printable_area.html"
                  type="chrome_html" />
