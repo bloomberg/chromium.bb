@@ -32,6 +32,7 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD3(OnStreamFrameData,
                void(SpdyStreamId stream_id, const char* data, size_t len));
   MOCK_METHOD1(OnStreamEnd, void(SpdyStreamId stream_id));
+  MOCK_METHOD2(OnStreamPadLength, void(SpdyStreamId stream_id, size_t value));
   MOCK_METHOD2(OnStreamPadding, void(SpdyStreamId stream_id, size_t len));
   MOCK_METHOD1(OnHeaderFrameStart,
                SpdyHeadersHandlerInterface*(SpdyStreamId stream_id));

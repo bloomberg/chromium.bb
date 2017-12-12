@@ -130,7 +130,11 @@ const char* QuicHttpDecoderAdapter::StateToString(int state) {
   return "UNKNOWN_STATE";
 }
 
-QuicHttpDecoderAdapter::QuicHttpDecoderAdapter() {
+QuicHttpDecoderAdapter::QuicHttpDecoderAdapter()
+    : QuicHttpDecoderAdapter(false) {}
+
+QuicHttpDecoderAdapter::QuicHttpDecoderAdapter(bool h2_on_stream_pad_length)
+    : h2_on_stream_pad_length_(h2_on_stream_pad_length) {
   DVLOG(1) << "QuicHttpDecoderAdapter ctor";
   ResetInternal();
 }
@@ -401,10 +405,13 @@ void QuicHttpDecoderAdapter::OnContinuationEnd() {
 void QuicHttpDecoderAdapter::OnPadLength(size_t trailing_length) {
   DVLOG(1) << "OnPadLength: " << trailing_length;
   opt_pad_length_ = trailing_length;
+  DCHECK_LT(trailing_length, 256u);
   if (frame_header_.type == QuicHttpFrameType::DATA) {
-    visitor()->OnStreamPadding(stream_id(), 1);
-  } else if (frame_header_.type == QuicHttpFrameType::HEADERS) {
-    CHECK_LT(trailing_length, 256u);
+    if (h2_on_stream_pad_length_) {
+      visitor()->OnStreamPadLength(stream_id(), trailing_length);
+    } else {
+      visitor()->OnStreamPadding(stream_id(), 1);
+    }
   }
 }
 

@@ -9,6 +9,9 @@
 
 namespace net {
 
+NET_EXPORT_PRIVATE extern bool
+    FLAGS_chromium_http2_flag_h2_on_stream_pad_length;
+
 }  // namespace net
 
 #endif  // NET_SPDY_CHROMIUM_SPDY_FLAGS_H_

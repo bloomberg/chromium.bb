@@ -6,4 +6,7 @@
 
 namespace net {
 
+// Deliver OnPaddingLength separately from OnPadding.
+bool FLAGS_chromium_http2_flag_h2_on_stream_pad_length = true;
+
 }  // namespace net
