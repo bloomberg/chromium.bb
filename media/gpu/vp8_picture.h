@@ -14,7 +14,7 @@ namespace media {
 class V4L2VP8Picture;
 class VaapiVP8Picture;
 
-class VP8Picture : public base::RefCounted<VP8Picture> {
+class VP8Picture : public base::RefCountedThreadSafe<VP8Picture> {
  public:
   VP8Picture();
 
@@ -25,7 +25,7 @@ class VP8Picture : public base::RefCounted<VP8Picture> {
   gfx::Rect visible_rect;
 
  protected:
-  friend class base::RefCounted<VP8Picture>;
+  friend class base::RefCountedThreadSafe<VP8Picture>;
   virtual ~VP8Picture();
 
   DISALLOW_COPY_AND_ASSIGN(VP8Picture);

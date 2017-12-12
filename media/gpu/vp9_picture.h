@@ -17,7 +17,7 @@ namespace media {
 class V4L2VP9Picture;
 class VaapiVP9Picture;
 
-class VP9Picture : public base::RefCounted<VP9Picture> {
+class VP9Picture : public base::RefCountedThreadSafe<VP9Picture> {
  public:
   VP9Picture();
 
@@ -32,7 +32,7 @@ class VP9Picture : public base::RefCounted<VP9Picture> {
   gfx::Rect visible_rect;
 
  protected:
-  friend class base::RefCounted<VP9Picture>;
+  friend class base::RefCountedThreadSafe<VP9Picture>;
   virtual ~VP9Picture();
 
   DISALLOW_COPY_AND_ASSIGN(VP9Picture);
