@@ -244,8 +244,6 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
  private:
   BrowserAccessibilityAndroid* GetAXFromUniqueID(int32_t unique_id);
 
-  void UpdateEnabledState(bool enabled);
-
   void CollectStats();
 
   // A weak reference to the Java WebContentsAccessibilityAndroid object.

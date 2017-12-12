@@ -325,7 +325,12 @@ WebContentsAccessibilityAndroid::Connector::Connector(
 }
 
 WebContentsAccessibilityAndroid::Connector::~Connector() {
-  accessibility_->UpdateEnabledState(false);
+  // Remove accessibility from the BrowserAccessibilityManager or it may
+  // continue to reference this object which is being destroyed.
+  auto* manager = static_cast<BrowserAccessibilityManagerAndroid*>(
+      accessibility_->web_contents_->GetRootBrowserAccessibilityManager());
+  if (manager)
+    manager->set_web_contents_accessibility(nullptr);
 }
 
 void WebContentsAccessibilityAndroid::Connector::UpdateRenderProcessConnection(
@@ -369,39 +374,27 @@ jboolean WebContentsAccessibilityAndroid::IsEnabled(
 
 void WebContentsAccessibilityAndroid::Enable(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
-  UpdateEnabledState(true);
-}
-
-void WebContentsAccessibilityAndroid::UpdateEnabledState(bool enabled) {
   BrowserAccessibilityStateImpl* accessibility_state =
       BrowserAccessibilityStateImpl::GetInstance();
   auto* manager = static_cast<BrowserAccessibilityManagerAndroid*>(
       web_contents_->GetRootBrowserAccessibilityManager());
 
-  if (enabled) {
-    // First check if we already have a BrowserAccessibilityManager that
-    // that needs to be connected to this instance. This can happen if
-    // BAM creation precedes render view updates for the associated
-    // web contents.
-    if (manager) {
-      set_root_manager(manager);
-      manager->set_web_contents_accessibility(this);
-      return;
-    }
-
-    // Otherwise, enable accessibility globally unless it was
-    // explicitly disallowed by a command-line flag, then enable it for
-    // this WebContents if that succeeded.
-    accessibility_state->OnScreenReaderDetected();
-    if (accessibility_state->IsAccessibleBrowser())
-      web_contents_->AddAccessibilityMode(ui::kAXModeComplete);
-  } else {
-    // Remove accessibility from the BrowserAccessibilityManager or it may
-    // continue to reference this object which is no longer active (and may be
-    // about to be destroyed).
-    if (manager)
-      manager->set_web_contents_accessibility(nullptr);
+  // First check if we already have a BrowserAccessibilityManager that
+  // that needs to be connected to this instance. This can happen if
+  // BAM creation precedes render view updates for the associated
+  // web contents.
+  if (manager) {
+    set_root_manager(manager);
+    manager->set_web_contents_accessibility(this);
+    return;
   }
+
+  // Otherwise, enable accessibility globally unless it was
+  // explicitly disallowed by a command-line flag, then enable it for
+  // this WebContents if that succeeded.
+  accessibility_state->OnScreenReaderDetected();
+  if (accessibility_state->IsAccessibleBrowser())
+    web_contents_->AddAccessibilityMode(ui::kAXModeComplete);
 }
 
 bool WebContentsAccessibilityAndroid::ShouldRespectDisplayedPasswordText() {
