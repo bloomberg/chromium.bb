@@ -86,7 +86,6 @@ size_t RegisterCrashKeysHelper() {
       // content/:
       {"discardable-memory-allocated", kSmallSize},
       {"discardable-memory-free", kSmallSize},
-      {"subresource_url", kLargeSize},
       {"total-discardable-memory-allocated", kSmallSize},
       {kViewCount, kSmallSize},
 
