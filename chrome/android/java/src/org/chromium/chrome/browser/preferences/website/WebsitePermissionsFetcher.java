@@ -35,13 +35,29 @@ public class WebsitePermissionsFetcher {
      * performance and causes Site Settings/All Sites to lag significantly on opening. See
      * crbug.com/732907.
      */
-    private static class OriginAndEmbedder extends Pair<WebsiteAddress, WebsiteAddress> {
+    public static class OriginAndEmbedder extends Pair<WebsiteAddress, WebsiteAddress> {
         public OriginAndEmbedder(WebsiteAddress origin, WebsiteAddress embedder) {
             super(origin, embedder);
         }
 
         public static OriginAndEmbedder create(WebsiteAddress origin, WebsiteAddress embedder) {
             return new OriginAndEmbedder(origin, embedder);
+        }
+
+        private static boolean isEqual(Object o1, Object o2) {
+            // Returns true iff o1 == o2, handling nulls.
+            return (o1 == o2) || (o1 != null && o1.equals(o2));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            // Prior to KitKat, android.util.Pair would crash with a NullPointerException in this
+            // method. This override specialises the post-Kitkat implementation to this class, and
+            // correctly handles nulls.
+            if (!(o instanceof OriginAndEmbedder)) return false;
+
+            OriginAndEmbedder p = (OriginAndEmbedder) o;
+            return isEqual(p.first, first) && isEqual(p.second, second);
         }
 
         @Override

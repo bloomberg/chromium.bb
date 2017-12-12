@@ -8,6 +8,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +19,7 @@ import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -103,6 +105,36 @@ public class WebsitePermissionsFetcherTest {
         public void onWebsitePermissionsAvailable(Collection<Website> sites) {
             notifyCalled();
         }
+    }
+
+    @Test
+    @SmallTest
+    public void testNullsCanBeHandled() throws Exception {
+        // This is a smoke test to ensure that nulls do not cause crashes.
+        WebsitePermissionsFetcher.OriginAndEmbedder nullBoth =
+                new WebsitePermissionsFetcher.OriginAndEmbedder(null, null);
+
+        WebsitePermissionsFetcher.OriginAndEmbedder nullOrigin =
+                new WebsitePermissionsFetcher.OriginAndEmbedder(
+                        WebsiteAddress.create("https://www.google.com"), null);
+
+        WebsitePermissionsFetcher.OriginAndEmbedder nullEmbedder =
+                new WebsitePermissionsFetcher.OriginAndEmbedder(
+                        null, WebsiteAddress.create("https://www.google.com"));
+
+        HashMap<WebsitePermissionsFetcher.OriginAndEmbedder, String> map = new HashMap<>();
+
+        map.put(nullBoth, "nullBoth");
+        map.put(nullOrigin, "nullOrigin");
+        map.put(nullEmbedder, "nullEmbedder");
+
+        Assert.assertTrue(map.containsKey(nullBoth));
+        Assert.assertTrue(map.containsKey(nullOrigin));
+        Assert.assertTrue(map.containsKey(nullEmbedder));
+
+        Assert.assertEquals("nullBoth", map.get(nullBoth));
+        Assert.assertEquals("nullOrigin", map.get(nullOrigin));
+        Assert.assertEquals("nullEmbedder", map.get(nullEmbedder));
     }
 
     @Test
