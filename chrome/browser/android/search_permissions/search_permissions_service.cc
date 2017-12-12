@@ -156,7 +156,15 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
   delegate_->SetDSEChangedCallback(base::Bind(
       &SearchPermissionsService::OnDSEChanged, base::Unretained(this)));
 
-  InitializeSettingsIfNeeded();
+  // Under normal circumstances we wouldn't need to call OnDSEChanged here, just
+  // InitializeSettingsIfNeeded but it's possible that somehow the underlying
+  // pref became out of sync with what the current DSE is (e.g. if Chrome
+  // crashed between changing DSE and updating the pref). These cases could
+  // result in granting permission unintentionally so it's important to call
+  // OnDSEChanged to keep state consistent. If the current DSE and stored DSE
+  // are the same, OnDSEChanged will not do anything. OnDSEChanged will also
+  // initialize the pref correctly if needed.
+  OnDSEChanged();
 }
 
 bool SearchPermissionsService::IsPermissionControlledByDSE(
