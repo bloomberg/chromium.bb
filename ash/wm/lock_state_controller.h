@@ -160,6 +160,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // these cases an additional lock request is undesirable.)
   void StartImmediatePreLockAnimation(bool request_lock_on_completion);
   void StartCancellablePreLockAnimation();
+  void PreLockAnimation(SessionStateAnimator::AnimationSpeed speed,
+                        bool request_lock_on_completion);
   void CancelPreLockAnimation();
   void StartPostLockAnimation();
   // This method calls |callback| when animation completes.

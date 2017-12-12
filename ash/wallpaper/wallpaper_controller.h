@@ -235,6 +235,10 @@ class ASH_EXPORT WallpaperController
   // Returns custom wallpaper directory by appending corresponding |sub_dir|.
   base::FilePath GetCustomWallpaperDir(const std::string& sub_dir);
 
+  // Prepares wallpaper to lock screen transition. Will apply blur if
+  // |locking| is true and remove it otherwise.
+  void PrepareWallpaperForLockScreenChange(bool locking);
+
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
@@ -262,9 +266,9 @@ class ASH_EXPORT WallpaperController
   // Wallpaper should be dimmed for login, lock, OOBE and add user screens.
   bool ShouldApplyDimming() const;
 
-  // Wallpaper should be blurred for login, lock, OOBE and add user screens,
-  // except when the wallpaper is set by device policy. See crbug.com/775591.
-  bool ShouldApplyBlur() const;
+  // Returns whether blur is enabled for login, lock, OOBE and add user screens.
+  // See crbug.com/775591.
+  bool IsBlurEnabled() const;
 
   // Returns whether the current wallpaper is blurred.
   bool IsWallpaperBlurred() const { return is_wallpaper_blurred_; }
@@ -378,7 +382,7 @@ class ASH_EXPORT WallpaperController
   int GetWallpaperContainerId(bool locked);
 
   // Reload the wallpaper. |clear_cache| specifies whether to clear the
-  // wallpaper cahce or not.
+  // wallpaper cache or not.
   void UpdateWallpaper(bool clear_cache);
 
   // Removes |account_id|'s wallpaper info and color cache if it exists.
