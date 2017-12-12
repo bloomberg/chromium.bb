@@ -52,6 +52,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator_deprecated.h"
 #include "components/arc/video_accelerator/gpu_arc_video_encode_accelerator.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
@@ -254,6 +255,20 @@ void GpuServiceImpl::CreateArcVideoDecodeAcceleratorDeprecated(
 #endif  // defined(OS_CHROMEOS)
 }
 
+void GpuServiceImpl::CreateArcVideoDecodeAccelerator(
+    arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
+#if defined(OS_CHROMEOS)
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread,
+          weak_ptr_, std::move(vda_request)));
+#else
+  NOTREACHED();
+#endif  // defined(OS_CHROMEOS)
+}
+
 void GpuServiceImpl::CreateArcVideoEncodeAccelerator(
     arc::mojom::VideoEncodeAcceleratorRequest vea_request) {
 #if defined(OS_CHROMEOS)
@@ -288,6 +303,15 @@ void GpuServiceImpl::CreateArcVideoDecodeAcceleratorDeprecatedOnMainThread(
   DCHECK(main_runner_->BelongsToCurrentThread());
   mojo::MakeStrongBinding(
       std::make_unique<arc::GpuArcVideoDecodeAcceleratorDeprecated>(
+          gpu_preferences_, protected_buffer_manager_.get()),
+      std::move(vda_request));
+}
+
+void GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread(
+    arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  mojo::MakeStrongBinding(
+      std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
           gpu_preferences_, protected_buffer_manager_.get()),
       std::move(vda_request));
 }

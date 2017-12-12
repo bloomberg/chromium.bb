@@ -21,6 +21,11 @@ void ArcClient::CreateVideoDecodeAcceleratorDeprecated(
       std::move(vda_request));
 }
 
+void ArcClient::CreateVideoDecodeAccelerator(
+    arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
+  gpu_service_->CreateArcVideoDecodeAccelerator(std::move(vda_request));
+}
+
 void ArcClient::CreateVideoEncodeAccelerator(
     arc::mojom::VideoEncodeAcceleratorRequest vea_request) {
   gpu_service_->CreateArcVideoEncodeAccelerator(std::move(vea_request));

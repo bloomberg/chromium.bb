@@ -19,6 +19,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)
+#include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator_deprecated.h"
 #include "components/arc/video_accelerator/gpu_arc_video_encode_accelerator.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
@@ -66,6 +67,10 @@ void ChromeContentGpuClient::InitializeRegistry(
           base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(
+      base::Bind(&ChromeContentGpuClient::CreateArcVideoDecodeAccelerator,
+                 base::Unretained(this)),
+      base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(
       base::Bind(&ChromeContentGpuClient::CreateArcVideoEncodeAccelerator,
                  base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
@@ -99,6 +104,14 @@ void ChromeContentGpuClient::CreateArcVideoDecodeAcceleratorDeprecated(
     ::arc::mojom::VideoDecodeAcceleratorDeprecatedRequest request) {
   mojo::MakeStrongBinding(
       std::make_unique<arc::GpuArcVideoDecodeAcceleratorDeprecated>(
+          gpu_preferences_, protected_buffer_manager_.get()),
+      std::move(request));
+}
+
+void ChromeContentGpuClient::CreateArcVideoDecodeAccelerator(
+    ::arc::mojom::VideoDecodeAcceleratorRequest request) {
+  mojo::MakeStrongBinding(
+      base::MakeUnique<arc::GpuArcVideoDecodeAccelerator>(
           gpu_preferences_, protected_buffer_manager_.get()),
       std::move(request));
 }
