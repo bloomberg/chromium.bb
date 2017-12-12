@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/supports_user_data.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/load_flags.h"
@@ -173,10 +173,9 @@ class DomainReliabilityUploaderImpl
             << ", response code " << http_response_code
             << ", retry after " << retry_after;
 
-    UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadResponseCode",
-                                http_response_code);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadNetError",
-                                -net_error);
+    base::UmaHistogramSparse("DomainReliability.UploadResponseCode",
+                             http_response_code);
+    base::UmaHistogramSparse("DomainReliability.UploadNetError", -net_error);
 
     UploadResult result;
     GetUploadResultFromResponseDetails(net_error,

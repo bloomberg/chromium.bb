@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -90,8 +90,7 @@ std::string DetermineTextLanguage(const base::string16& text,
   const base::HistogramBase::Sample pred_lang_hash =
       static_cast<base::HistogramBase::Sample>(
           base::HashMetricName(predicted_language));
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Translate.CLD3.LanguageDetected",
-                              pred_lang_hash);
+  base::UmaHistogramSparse("Translate.CLD3.LanguageDetected", pred_lang_hash);
   if (predicted_language != chrome_lang_id::NNetLanguageIdentifier::kUnknown) {
     UMA_HISTOGRAM_PERCENTAGE("Translate.CLD3.LanguagePercentage",
                              static_cast<int>(100 * lang_id_result.proportion));

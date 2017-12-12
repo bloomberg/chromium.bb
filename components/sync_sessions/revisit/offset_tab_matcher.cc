@@ -8,8 +8,8 @@
 
 #include <algorithm>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_types.h"
 
@@ -65,8 +65,8 @@ void OffsetTabMatcher::Emit(
     // sparse we could end up with a very large output space across many
     // clients. So we clamp on a resonable bound that's larger than we expect to
     // be sure no unexpected data causes problems.
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Sync.PageRevisitNavigationMatchOffset",
-                                Clamp(best_offset_, -kMaxOffset, kMaxOffset));
+    base::UmaHistogramSparse("Sync.PageRevisitNavigationMatchOffset",
+                             Clamp(best_offset_, -kMaxOffset, kMaxOffset));
     REVISIT_HISTOGRAM_AGE("Sync.PageRevisitNavigationMatchAge",
                           best_tab_->timestamp);
     UMA_HISTOGRAM_ENUMERATION("Sync.PageRevisitNavigationMatchTransition",

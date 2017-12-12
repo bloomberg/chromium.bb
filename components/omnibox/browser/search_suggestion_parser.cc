@@ -15,6 +15,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -556,8 +557,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
             answer = SuggestionAnswer::ParseAnswer(answer_json);
             int answer_type = 0;
             if (answer && base::StringToInt(answer_type_str, &answer_type)) {
-              UMA_HISTOGRAM_SPARSE_SLOWLY("Omnibox.AnswerParseType",
-                                          answer_type);
+              base::UmaHistogramSparse("Omnibox.AnswerParseType", answer_type);
               answer_parsed_successfully = true;
 
               answer->set_type(answer_type);

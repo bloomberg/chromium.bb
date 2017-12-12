@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -79,7 +80,7 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
     current_url_suggested_ = url;
     current_url_suggested_times_ = 1;
   }
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       "Omnibox.ClipboardSuggestionShownNumTimes",
       std::min(current_url_suggested_times_, static_cast<size_t>(20)));
 

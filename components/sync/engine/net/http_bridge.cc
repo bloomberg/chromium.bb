@@ -10,8 +10,8 @@
 
 #include "base/bit_cast.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -366,10 +366,10 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (fetch_state_.request_succeeded)
     LogTimeout(false);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Sync.URLFetchResponse",
-                              source->GetStatus().is_success()
-                                  ? source->GetResponseCode()
-                                  : source->GetStatus().ToNetError());
+  base::UmaHistogramSparse("Sync.URLFetchResponse",
+                           source->GetStatus().is_success()
+                               ? source->GetResponseCode()
+                               : source->GetStatus().ToNetError());
   UMA_HISTOGRAM_LONG_TIMES("Sync.URLFetchTime",
                            fetch_state_.end_time - fetch_state_.start_time);
 

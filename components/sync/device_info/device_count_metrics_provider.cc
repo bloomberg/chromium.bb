@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/sync/device_info/device_info_tracker.h"
 
 namespace syncer {
@@ -29,8 +29,8 @@ int DeviceCountMetricsProvider::MaxActiveDeviceCount() const {
 
 void DeviceCountMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Sync.DeviceCount",
-                              std::min(MaxActiveDeviceCount(), 100));
+  base::UmaHistogramSparse("Sync.DeviceCount",
+                           std::min(MaxActiveDeviceCount(), 100));
 }
 
 }  // namespace syncer

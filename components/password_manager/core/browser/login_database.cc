@@ -16,8 +16,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
@@ -600,8 +600,8 @@ bool LoginDatabase::Init() {
     meta_table_.SetVersionNumber(kCurrentVersionNumber);
   } else {
     LogDatabaseInitError(MIGRATION_ERROR);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("PasswordManager.LoginDatabaseFailedVersion",
-                                meta_table_.GetVersionNumber());
+    base::UmaHistogramSparse("PasswordManager.LoginDatabaseFailedVersion",
+                             meta_table_.GetVersionNumber());
     LOG(ERROR) << "Unable to migrate database from "
                << meta_table_.GetVersionNumber() << " to "
                << kCurrentVersionNumber;

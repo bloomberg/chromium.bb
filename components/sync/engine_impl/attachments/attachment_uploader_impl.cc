@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -185,7 +185,7 @@ void AttachmentUploaderImpl::UploadState::OnURLFetchComplete(
   AttachmentId attachment_id = attachment_.GetId();
   net::URLRequestStatus status = source->GetStatus();
   const int response_code = source->GetResponseCode();
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       "Sync.Attachments.UploadResponseCode",
       status.is_success() ? response_code : status.error());
   if (response_code == net::HTTP_OK) {

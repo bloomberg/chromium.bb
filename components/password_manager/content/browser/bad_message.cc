@@ -5,7 +5,7 @@
 #include "components/password_manager/content/browser/bad_message.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace password_manager {
@@ -16,8 +16,8 @@ void ReceivedBadMessage(content::RenderProcessHost* host,
   LOG(ERROR)
       << "Terminating renderer for bad PasswordManager IPC message, reason "
       << static_cast<int>(reason);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Stability.BadMessageTerminated.PasswordManager",
-                              static_cast<int>(reason));
+  base::UmaHistogramSparse("Stability.BadMessageTerminated.PasswordManager",
+                           static_cast<int>(reason));
   host->ShutdownForBadMessage(
       content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
 }

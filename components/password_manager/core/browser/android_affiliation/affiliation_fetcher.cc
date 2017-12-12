@@ -11,8 +11,8 @@
 #include <string>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_api.pb.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/android_affiliation/test_affiliation_fetcher_factory.h"
@@ -46,11 +46,11 @@ void ReportStatistics(AffiliationFetchResult result,
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.AffiliationFetcher.FetchResult",
                             result, AFFILIATION_FETCH_RESULT_MAX);
   if (fetcher) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "PasswordManager.AffiliationFetcher.FetchHttpResponseCode",
         fetcher->GetResponseCode());
     // Network error codes are negative. See: src/net/base/net_error_list.h.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "PasswordManager.AffiliationFetcher.FetchErrorCode",
         -fetcher->GetStatus().error());
   }

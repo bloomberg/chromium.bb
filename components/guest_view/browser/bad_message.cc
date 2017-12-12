@@ -5,7 +5,7 @@
 #include "components/guest_view/browser/bad_message.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -16,8 +16,7 @@ namespace {
 
 void LogBadMessage(BadMessageReason reason) {
   LOG(ERROR) << "Terminating renderer for bad IPC message, reason " << reason;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Stability.BadMessageTerminated.GuestView",
-                              reason);
+  base::UmaHistogramSparse("Stability.BadMessageTerminated.GuestView", reason);
 }
 
 }  // namespace

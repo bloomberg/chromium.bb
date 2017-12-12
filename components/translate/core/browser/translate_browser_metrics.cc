@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/metrics/sparse_histogram.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 
 namespace translate {
@@ -76,7 +76,7 @@ void ReportLanguageDetectionError() {
 }
 
 void ReportLocalesOnDisabledByPrefs(const std::string& locale) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       kTranslateLocalesOnDisabledByPrefs,
       language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(locale));
 }
@@ -84,25 +84,24 @@ void ReportLocalesOnDisabledByPrefs(const std::string& locale) {
 void ReportUndisplayableLanguage(const std::string& language) {
   int language_code =
       language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(language);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateUndisplayableLanguage,
-                              language_code);
+  base::UmaHistogramSparse(kTranslateUndisplayableLanguage, language_code);
 }
 
 void ReportUnsupportedLanguageAtInitiation(const std::string& language) {
   int language_code =
       language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(language);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateUnsupportedLanguageAtInitiation,
-                              language_code);
+  base::UmaHistogramSparse(kTranslateUnsupportedLanguageAtInitiation,
+                           language_code);
 }
 
 void ReportTranslateSourceLanguage(const std::string& language) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateSourceLanguage,
-                              base::HashMetricName(language));
+  base::UmaHistogramSparse(kTranslateSourceLanguage,
+                           base::HashMetricName(language));
 }
 
 void ReportTranslateTargetLanguage(const std::string& language) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateTargetLanguage,
-                              base::HashMetricName(language));
+  base::UmaHistogramSparse(kTranslateTargetLanguage,
+                           base::HashMetricName(language));
 }
 
 const char* GetMetricsName(MetricsNameIndex index) {

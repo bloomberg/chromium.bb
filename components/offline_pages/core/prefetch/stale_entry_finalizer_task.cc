@@ -7,7 +7,7 @@
 #include <array>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
@@ -133,8 +133,8 @@ void ReportStuckItems(base::Time now, sql::Connection* db) {
   statement.BindInt64(0, earliest_valid_creation_time);
 
   while (statement.Step()) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("OfflinePages.Prefetching.StuckItemState",
-                                statement.ColumnInt(0));
+    base::UmaHistogramSparse("OfflinePages.Prefetching.StuckItemState",
+                             statement.ColumnInt(0));
   }
 }
 

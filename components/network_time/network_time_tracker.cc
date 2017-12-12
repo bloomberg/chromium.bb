@@ -12,8 +12,8 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -526,8 +526,8 @@ bool NetworkTimeTracker::UpdateTimeFromResponse() {
              << ",code=" << time_fetcher_->GetResponseCode();
     // The error code is negated because net errors are negative, but
     // the corresponding histogram enum is positive.
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NetworkTimeTracker.UpdateTimeFetchFailed",
-                                -time_fetcher_->GetStatus().error());
+    base::UmaHistogramSparse("NetworkTimeTracker.UpdateTimeFetchFailed",
+                             -time_fetcher_->GetStatus().error());
     return false;
   }
 

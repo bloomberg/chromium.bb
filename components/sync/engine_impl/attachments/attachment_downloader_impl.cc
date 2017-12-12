@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -165,7 +165,7 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
 
   net::URLRequestStatus status = source->GetStatus();
   const int response_code = source->GetResponseCode();
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       "Sync.Attachments.DownloadResponseCode",
       status.is_success() ? response_code : status.error());
   if (response_code == net::HTTP_OK) {

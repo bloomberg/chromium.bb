@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/md5.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/sys_byteorder.h"
 
 namespace proximity_auth {
@@ -52,16 +52,16 @@ void RecordAuthProximityRollingRssi(int rolling_rssi) {
   if (rolling_rssi != kUnknownProximityValue)
     rolling_rssi = std::min(50, std::max(-100, rolling_rssi));
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("EasyUnlock.AuthProximity.RollingRssi",
-                              rolling_rssi);
+  base::UmaHistogramSparse("EasyUnlock.AuthProximity.RollingRssi",
+                           rolling_rssi);
 }
 
 void RecordAuthProximityTransmitPowerDelta(int transmit_power_delta) {
   if (transmit_power_delta != kUnknownProximityValue)
     transmit_power_delta = std::min(50, std::max(-100, transmit_power_delta));
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("EasyUnlock.AuthProximity.TransmitPowerDelta",
-                              transmit_power_delta);
+  base::UmaHistogramSparse("EasyUnlock.AuthProximity.TransmitPowerDelta",
+                           transmit_power_delta);
 }
 
 void RecordAuthProximityTimeSinceLastZeroRssi(
@@ -71,8 +71,8 @@ void RecordAuthProximityTimeSinceLastZeroRssi(
 }
 
 void RecordAuthProximityRemoteDeviceModelHash(const std::string& device_model) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("EasyUnlock.AuthProximity.RemoteDeviceModelHash",
-                              HashDeviceModelName(device_model));
+  base::UmaHistogramSparse("EasyUnlock.AuthProximity.RemoteDeviceModelHash",
+                           HashDeviceModelName(device_model));
 }
 
 void RecordRemoteSecuritySettingsState(RemoteSecuritySettingsState state) {

@@ -14,8 +14,8 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
@@ -474,8 +474,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
 
   if (net::NetworkChangeNotifier::GetConnectionType() !=
       net::NetworkChangeNotifier::CONNECTION_NONE) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAConfigServiceFetchResponseCode,
-                                response_code);
+    base::UmaHistogramSparse(kUMAConfigServiceFetchResponseCode, response_code);
   }
 
   if (status.status() == net::URLRequestStatus::SUCCESS &&
