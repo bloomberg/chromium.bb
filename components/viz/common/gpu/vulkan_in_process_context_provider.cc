@@ -80,9 +80,7 @@ bool VulkanInProcessContextProvider::Initialize() {
   backend_context->fInterface.reset(interface.release());
   backend_context->fOwnsInstanceAndDevice = false;
   backend_context_.reset(backend_context);
-  gr_context_ = GrContext::Create(
-      kVulkan_GrBackend,
-      reinterpret_cast<GrBackendContext>(backend_context_.get()));
+  gr_context_ = GrContext::MakeVulkan(backend_context_);
   return true;
 #else
   return false;

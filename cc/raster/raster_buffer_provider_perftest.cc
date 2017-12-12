@@ -103,9 +103,7 @@ class PerfContextProvider : public viz::ContextProvider {
       return gr_context_.get();
 
     sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
-    gr_context_ = sk_sp<class GrContext>(GrContext::Create(
-        kOpenGL_GrBackend,
-        reinterpret_cast<GrBackendContext>(null_interface.get())));
+    gr_context_ = GrContext::MakeGL(std::move(null_interface));
     cache_controller_.SetGrContext(gr_context_.get());
     return gr_context_.get();
   }

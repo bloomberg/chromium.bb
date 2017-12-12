@@ -471,9 +471,7 @@ bool ClientBase::Init(const InitParams& params) {
 
     native_interface = sk_sp<const GrGLInterface>(GrGLCreateNativeInterface());
     DCHECK(native_interface);
-    gr_context_ = sk_sp<GrContext>(GrContext::Create(
-        kOpenGL_GrBackend,
-        reinterpret_cast<GrBackendContext>(native_interface.get())));
+    gr_context_ = GrContext::MakeGL(std::move(native_interface));
     DCHECK(gr_context_);
 
 #if defined(USE_VULKAN)

@@ -3810,9 +3810,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     }
 
     if (supports_oop_raster_) {
-      gr_context_ = sk_sp<GrContext>(GrContext::Create(
-          kOpenGL_GrBackend,
-          reinterpret_cast<GrBackendContext>(interface.get())));
+      gr_context_ = GrContext::MakeGL(std::move(interface));
       if (gr_context_) {
         // TODO(enne): this cache is for this decoder only and each decoder has
         // its own cache.  This is pretty unfortunate.  This really needs to be
