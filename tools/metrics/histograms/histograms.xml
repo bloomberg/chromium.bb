@@ -34133,6 +34133,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.GpuArcVideoDecodeAccelerator.InitializeResult"
+    enum="ArcVideoDecodeAcceleratorResult">
+  <owner>hiroh@chromium.org</owner>
+  <summary>
+    Counts of status values returned from calls to
+    GpuArcVideoDecodeAccelerator::Initialize().
+  </summary>
+</histogram>
+
 <histogram name="Media.GpuVideoDecoderError" enum="VideoDecodeAcceleratorError">
   <owner>sandersd@chromium.org</owner>
   <summary>Counts of video decode errors reported to GpuVideoDecoder.</summary>

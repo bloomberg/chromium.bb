@@ -7,9 +7,18 @@
 
 #include "components/arc/common/video_decode_accelerator_deprecated.mojom.h"
 #include "components/arc/video_accelerator/video_frame_plane.h"
+#include "media/base/video_codecs.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mojo {
+
+template <>
+struct EnumTraits<arc::mojom::VideoCodecProfile, media::VideoCodecProfile> {
+  static arc::mojom::VideoCodecProfile ToMojom(media::VideoCodecProfile input);
+
+  static bool FromMojom(arc::mojom::VideoCodecProfile input,
+                        media::VideoCodecProfile* output);
+};
 
 template <>
 struct StructTraits<arc::mojom::VideoFramePlaneDataView, arc::VideoFramePlane> {

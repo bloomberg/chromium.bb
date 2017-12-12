@@ -4,6 +4,10 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+# This needs to be conditionally-compiled since the typemaps are
+# unconditionally-included from //mojo/public/tools/bindings/mojom.gni. The
+# inclusion is done through read_file(), which does not respect the global
+# defines for GN, so it itself cannot use the "is_chromeos" variable.
 if (is_chromeos) {
   mojom("common") {
     sources = [
@@ -22,7 +26,6 @@ if (is_chromeos) {
       "crash_collector.mojom",
       "enterprise_reporting.mojom",
       "file_system.mojom",
-      "gfx.mojom",
       "ime.mojom",
       "intent_helper.mojom",
       "kiosk.mojom",
@@ -62,9 +65,11 @@ if (is_chromeos) {
 # pulling in unnecessary interfaces,
 mojom("media") {
   sources = [
+    "gfx.mojom",
     "protected_buffer_manager.mojom",
     "video.mojom",
     "video_common.mojom",
+    "video_decode_accelerator.mojom",
     "video_decode_accelerator_deprecated.mojom",
     "video_encode_accelerator.mojom",
   ]
