@@ -167,7 +167,7 @@ std::string MediaFileSystemBackend::ConstructMountName(
   name.append(extension_id);
   name.append("-");
   if (pref_id != kInvalidMediaGalleryPrefId)
-    name.append(base::Uint64ToString(pref_id));
+    name.append(base::NumberToString(pref_id));
   base::ReplaceChars(name, " /", "_", &name);
   return name;
 }

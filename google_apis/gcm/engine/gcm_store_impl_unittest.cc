@@ -108,7 +108,7 @@ void GCMStoreImplTest::LoadGCMStore(
 }
 
 std::string GCMStoreImplTest::GetNextPersistentId() {
-  return base::Uint64ToString(next_persistent_id_++);
+  return base::NumberToString(next_persistent_id_++);
 }
 
 void GCMStoreImplTest::PumpLoop() { task_runner_->RunUntilIdle(); }

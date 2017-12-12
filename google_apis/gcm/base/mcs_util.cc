@@ -61,8 +61,8 @@ std::unique_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
   std::string auth_id_hex;
   auth_id_hex = base::StringPrintf("%" PRIx64, auth_id);
 
-  std::string auth_id_str = base::Uint64ToString(auth_id);
-  std::string auth_token_str = base::Uint64ToString(auth_token);
+  std::string auth_id_str = base::NumberToString(auth_id);
+  std::string auth_token_str = base::NumberToString(auth_token);
 
   std::unique_ptr<mcs_proto::LoginRequest> login_request(
       new mcs_proto::LoginRequest());

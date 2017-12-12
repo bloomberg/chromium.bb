@@ -51,7 +51,7 @@ PersistentUniqueClientEntity::CreateFromEntity(
   // holds onto all objects, so simply make a new tag from a random  number.
   string effective_tag = client_entity.has_client_defined_unique_tag()
                              ? client_entity.client_defined_unique_tag()
-                             : base::Uint64ToString(base::RandUint64());
+                             : base::NumberToString(base::RandUint64());
   string id = LoopbackServerEntity::CreateId(model_type, effective_tag);
   return base::WrapUnique(new PersistentUniqueClientEntity(
       id, model_type, client_entity.version(), client_entity.name(),

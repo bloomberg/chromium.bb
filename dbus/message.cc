@@ -143,7 +143,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         uint64_t value = 0;
         if (!reader->PopUint64(&value))
           return kBrokenMessage;
-        output += (indent + "uint64_t " + base::Uint64ToString(value) + "\n");
+        output += (indent + "uint64_t " + base::NumberToString(value) + "\n");
         break;
       }
       case DOUBLE: {

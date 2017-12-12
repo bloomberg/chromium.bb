@@ -83,16 +83,16 @@ void ProcessVirtualDeviceName(AudioDeviceNames* device_names,
   if (device_list[0].type == chromeos::AUDIO_TYPE_LINEOUT ||
       device_list[1].type == chromeos::AUDIO_TYPE_LINEOUT) {
     device_names->emplace_back(kHeadphoneLineOutVirtualDevice,
-                               base::Uint64ToString(device_list[0].id));
+                               base::NumberToString(device_list[0].id));
   } else if (device_list[0].type == chromeos::AUDIO_TYPE_INTERNAL_SPEAKER ||
              device_list[1].type == chromeos::AUDIO_TYPE_INTERNAL_SPEAKER) {
     device_names->emplace_back(kInternalOutputVirtualDevice,
-                               base::Uint64ToString(device_list[0].id));
+                               base::NumberToString(device_list[0].id));
   } else {
     DCHECK(device_list[0].type == chromeos::AUDIO_TYPE_INTERNAL_MIC ||
            device_list[1].type == chromeos::AUDIO_TYPE_INTERNAL_MIC);
     device_names->emplace_back(kInternalInputVirtualDevice,
-                               base::Uint64ToString(device_list[0].id));
+                               base::NumberToString(device_list[0].id));
   }
 }
 
@@ -148,7 +148,7 @@ void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
       if (1 == item.second.size()) {
         const chromeos::AudioDevice& device = item.second.front();
         device_names->emplace_back(device.display_name,
-                                   base::Uint64ToString(device.id));
+                                   base::NumberToString(device.id));
       } else {
         // Create virtual device name for audio nodes that share the same device
         // index.
@@ -217,17 +217,17 @@ std::string AudioManagerCras::GetAssociatedOutputDeviceID(
       });
   return output_device_it == devices.end()
              ? ""
-             : base::Uint64ToString(output_device_it->id);
+             : base::NumberToString(output_device_it->id);
 }
 
 std::string AudioManagerCras::GetDefaultInputDeviceID() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  return base::Uint64ToString(GetPrimaryActiveInputNode());
+  return base::NumberToString(GetPrimaryActiveInputNode());
 }
 
 std::string AudioManagerCras::GetDefaultOutputDeviceID() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  return base::Uint64ToString(GetPrimaryActiveOutputNode());
+  return base::NumberToString(GetPrimaryActiveOutputNode());
 }
 
 std::string AudioManagerCras::GetGroupIDOutput(

@@ -126,7 +126,7 @@ base::FilePath GetDownloadFilePath(const base::FilePath& download_directory,
   // filename and when the download starts writing to it (think concurrently
   // running sharded browser tests installing the same test file, for
   // instance).
-  std::string random_number = base::Uint64ToString(
+  std::string random_number = base::NumberToString(
       base::RandGenerator(std::numeric_limits<uint16_t>::max()));
 
   base::FilePath file =

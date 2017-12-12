@@ -61,7 +61,7 @@ void TopSitesCacheTest::BuildTopSites(const char** spec, size_t size) {
     urls_seen.insert(spec_item);
     if (spec_item == spec[i]) {  // No indent: add new MostVisitedURL.
       base::string16 title(base::ASCIIToUTF16("Title ") +
-                     base::Uint64ToString16(top_sites_.size() + 1));
+                           base::NumberToString16(top_sites_.size() + 1));
       top_sites_.push_back(MostVisitedURL(GURL(spec_item), title));
     }
     ASSERT_TRUE(!top_sites_.empty());

@@ -552,7 +552,7 @@ bool XmppSignalStrategy::SendStanza(std::unique_ptr<buzz::XmlElement> stanza) {
 }
 
 std::string XmppSignalStrategy::GetNextId() {
-  return base::Uint64ToString(base::RandUint64());
+  return base::NumberToString(base::RandUint64());
 }
 
 void XmppSignalStrategy::SetAuthInfo(const std::string& username,

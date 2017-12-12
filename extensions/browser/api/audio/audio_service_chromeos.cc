@@ -170,7 +170,7 @@ bool AudioServiceImpl::GetInfo(OutputInfo* output_info_out,
   for (size_t i = 0; i < devices.size(); ++i) {
     if (!devices[i].is_input) {
       OutputDeviceInfo info;
-      info.id = base::Uint64ToString(devices[i].id);
+      info.id = base::NumberToString(devices[i].id);
       info.name = devices[i].device_name + ": " + devices[i].display_name;
       info.is_active = devices[i].active;
       info.volume =
@@ -180,7 +180,7 @@ bool AudioServiceImpl::GetInfo(OutputInfo* output_info_out,
       output_info_out->push_back(std::move(info));
     } else {
       InputDeviceInfo info;
-      info.id = base::Uint64ToString(devices[i].id);
+      info.id = base::NumberToString(devices[i].id);
       info.name = devices[i].device_name + ": " + devices[i].display_name;
       info.is_active = devices[i].active;
       info.gain =
@@ -354,7 +354,7 @@ bool AudioServiceImpl::GetAudioNodeIdList(
 AudioDeviceInfo AudioServiceImpl::ToAudioDeviceInfo(
     const chromeos::AudioDevice& device) {
   AudioDeviceInfo info;
-  info.id = base::Uint64ToString(device.id);
+  info.id = base::NumberToString(device.id);
   info.stream_type = device.is_input
                          ? extensions::api::audio::STREAM_TYPE_INPUT
                          : extensions::api::audio::STREAM_TYPE_OUTPUT;
@@ -407,7 +407,7 @@ void AudioServiceImpl::NotifyDeviceChanged() {
 
 void AudioServiceImpl::NotifyLevelChanged(uint64_t id, int level) {
   for (auto& observer : observer_list_)
-    observer.OnLevelChanged(base::Uint64ToString(id), level);
+    observer.OnLevelChanged(base::NumberToString(id), level);
 
   // Notify DeviceChanged event for backward compatibility.
   // TODO(jennyz): remove this code when the old version of hotrod retires.

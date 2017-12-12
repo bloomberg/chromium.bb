@@ -266,7 +266,7 @@ void MCSClient::Initialize(
     ReliablePacketInfo* packet_info = new ReliablePacketInfo();
     packet_info->protobuf.reset(iter->second);
     packet_info->tag = GetMCSProtoTag(*iter->second);
-    packet_info->persistent_id = base::Uint64ToString(iter->first);
+    packet_info->persistent_id = base::NumberToString(iter->first);
     to_send_.push_back(make_linked_ptr(packet_info));
 
     if (packet_info->tag == kDataMessageStanzaTag) {

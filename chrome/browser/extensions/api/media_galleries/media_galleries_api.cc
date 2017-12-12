@@ -176,7 +176,7 @@ base::ListValue* ConstructFileSystemList(
     file_system_dict_value->SetKey(kNameKey, base::Value(filesystems[i].name));
     file_system_dict_value->SetKey(
         kGalleryIdKey,
-        base::Value(base::Uint64ToString(filesystems[i].pref_id)));
+        base::Value(base::NumberToString(filesystems[i].pref_id)));
     if (!filesystems[i].transient_device_id.empty()) {
       file_system_dict_value->SetKey(
           kDeviceIdKey, base::Value(filesystems[i].transient_device_id));
@@ -358,7 +358,7 @@ void MediaGalleriesEventRouter::OnGalleryChanged(
     const std::string& extension_id, MediaGalleryPrefId gallery_id) {
   MediaGalleries::GalleryChangeDetails details;
   details.type = MediaGalleries::GALLERY_CHANGE_TYPE_CONTENTS_CHANGED;
-  details.gallery_id = base::Uint64ToString(gallery_id);
+  details.gallery_id = base::NumberToString(gallery_id);
   DispatchEventToExtension(extension_id,
                            events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
                            MediaGalleries::OnGalleryChanged::kEventName,
@@ -844,7 +844,7 @@ void MediaGalleriesAddGalleryWatchFunction::HandleResponse(
   // onGalleryChanged event, that's an error.
   MediaGalleriesEventRouter* api = MediaGalleriesEventRouter::Get(GetProfile());
   api::media_galleries::AddGalleryWatchResult result;
-  result.gallery_id = base::Uint64ToString(gallery_id);
+  result.gallery_id = base::NumberToString(gallery_id);
 
   if (!api->ExtensionHasGalleryChangeListener(extension()->id())) {
     result.success = false;

@@ -137,7 +137,7 @@ string GetVersion(CERTCertificate* cert_handle) {
   unsigned long version = 0;
   if (cert_handle->version.len == 0 ||
       SEC_ASN1DecodeInteger(&cert_handle->version, &version) == SECSuccess) {
-    return base::Uint64ToString(base::strict_cast<uint64_t>(version + 1));
+    return base::NumberToString(base::strict_cast<uint64_t>(version + 1));
   }
   return std::string();
 }

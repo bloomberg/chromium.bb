@@ -220,7 +220,7 @@ void JingleSession::StartConnection(
   // concurrent session per host, so a random 64-bit integer provides
   // enough entropy. In the worst case connection will fail when two
   // clients generate the same session ID concurrently.
-  session_id_ = base::Uint64ToString(
+  session_id_ = base::NumberToString(
       base::RandGenerator(std::numeric_limits<uint64_t>::max()));
 
   // Delay sending session-initiate message to ensure SessionPlugin can be

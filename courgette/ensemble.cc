@@ -24,10 +24,9 @@ Element::Element(ExecutableType kind,
 Element::~Element() = default;
 
 std::string Element::Name() const {
-  return ensemble_->name() + "("
-      + base::IntToString(kind()) + ","
-      + base::Uint64ToString(offset_in_ensemble()) + ","
-      + base::Uint64ToString(region().length()) + ")";
+  return ensemble_->name() + "(" + base::IntToString(kind()) + "," +
+         base::NumberToString(offset_in_ensemble()) + "," +
+         base::NumberToString(region().length()) + ")";
 }
 
 // Scans the Ensemble's region, sniffing out Elements.  We assume that the

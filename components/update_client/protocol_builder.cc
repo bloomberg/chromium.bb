@@ -111,7 +111,7 @@ std::string BuildDownloadCompleteEventElement(
 
   if (metrics.download_time_ms) {
     StringAppendF(&event, " download_time_ms=\"%s\"",
-                  base::Uint64ToString(metrics.download_time_ms).c_str());
+                  base::NumberToString(metrics.download_time_ms).c_str());
   }
   StringAppendF(&event, "/>");
   return event;

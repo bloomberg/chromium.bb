@@ -56,7 +56,7 @@ std::unique_ptr<base::Value> NetLogQuicPacketSentCallback(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("transmission_type", transmission_type);
   dict->SetString("packet_number",
-                  base::Uint64ToString(serialized_packet.packet_number));
+                  base::NumberToString(serialized_packet.packet_number));
   dict->SetInteger("size", serialized_packet.encrypted_length);
   dict->SetString("sent_time_us",
                   base::Int64ToString(sent_time.ToDebuggingValue()));
@@ -68,8 +68,8 @@ std::unique_ptr<base::Value> NetLogQuicPacketRetransmittedCallback(
     QuicPacketNumber new_packet_number,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("old_packet_number", base::Uint64ToString(old_packet_number));
-  dict->SetString("new_packet_number", base::Uint64ToString(new_packet_number));
+  dict->SetString("old_packet_number", base::NumberToString(old_packet_number));
+  dict->SetString("new_packet_number", base::NumberToString(new_packet_number));
   return std::move(dict);
 }
 
@@ -77,7 +77,7 @@ std::unique_ptr<base::Value> NetLogQuicDuplicatePacketCallback(
     QuicPacketNumber packet_number,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("packet_number", base::Uint64ToString(packet_number));
+  dict->SetString("packet_number", base::NumberToString(packet_number));
   return std::move(dict);
 }
 
@@ -85,10 +85,10 @@ std::unique_ptr<base::Value> NetLogQuicPacketHeaderCallback(
     const QuicPacketHeader* header,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("connection_id", base::Uint64ToString(header->connection_id));
+  dict->SetString("connection_id", base::NumberToString(header->connection_id));
   dict->SetInteger("reset_flag", header->reset_flag);
   dict->SetInteger("version_flag", header->version_flag);
-  dict->SetString("packet_number", base::Uint64ToString(header->packet_number));
+  dict->SetString("packet_number", base::NumberToString(header->packet_number));
   return std::move(dict);
 }
 
@@ -98,7 +98,7 @@ std::unique_ptr<base::Value> NetLogQuicStreamFrameCallback(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", frame->stream_id);
   dict->SetBoolean("fin", frame->fin);
-  dict->SetString("offset", base::Uint64ToString(frame->offset));
+  dict->SetString("offset", base::NumberToString(frame->offset));
   dict->SetInteger("length", frame->data_length);
   return std::move(dict);
 }
@@ -108,7 +108,7 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("largest_observed",
-                  base::Uint64ToString(frame->deprecated_largest_observed));
+                  base::NumberToString(frame->deprecated_largest_observed));
   dict->SetString("delta_time_largest_observed_us",
                   base::Int64ToString(frame->ack_delay_time.ToMicroseconds()));
 
@@ -119,7 +119,7 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
     for (QuicPacketNumber packet = frame->packets.Min();
          packet < frame->deprecated_largest_observed; ++packet) {
       if (!frame->packets.Contains(packet)) {
-        missing->AppendString(base::Uint64ToString(packet));
+        missing->AppendString(base::NumberToString(packet));
       }
     }
   }
@@ -163,7 +163,7 @@ std::unique_ptr<base::Value> NetLogQuicWindowUpdateFrameCallback(
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", frame->stream_id);
-  dict->SetString("byte_offset", base::Uint64ToString(frame->byte_offset));
+  dict->SetString("byte_offset", base::NumberToString(frame->byte_offset));
   return std::move(dict);
 }
 
@@ -191,7 +191,7 @@ std::unique_ptr<base::Value> NetLogQuicStopWaitingFrameCallback(
   auto dict = std::make_unique<base::DictionaryValue>();
   auto sent_info = std::make_unique<base::DictionaryValue>();
   sent_info->SetString("least_unacked",
-                       base::Uint64ToString(frame->least_unacked));
+                       base::NumberToString(frame->least_unacked));
   dict->Set("sent_info", std::move(sent_info));
   return std::move(dict);
 }

@@ -620,7 +620,7 @@ void DiscardableSharedMemoryManager::BytesAllocatedChanged(
   static const char kTotalDiscardableMemoryAllocatedKey[] =
       "total-discardable-memory-allocated";
   base::debug::SetCrashKeyValue(kTotalDiscardableMemoryAllocatedKey,
-                                base::Uint64ToString(new_bytes_allocated));
+                                base::NumberToString(new_bytes_allocated));
 }
 
 base::Time DiscardableSharedMemoryManager::Now() const {

@@ -61,7 +61,7 @@ SkColor RawStringToSkColor(const std::string& str) {
 
 // Conversion function for reading/writing to storage.
 std::string SkColorToRawString(SkColor color) {
-  return base::Uint64ToString(color);
+  return base::NumberToString(color);
 }
 
 // Conversion function for reading/writing to storage.

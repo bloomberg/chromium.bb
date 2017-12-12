@@ -413,11 +413,11 @@ void ClientDiscardableSharedMemoryManager::MemoryUsageChanged(
   static const char kDiscardableMemoryAllocatedKey[] =
       "discardable-memory-allocated";
   base::debug::SetCrashKeyValue(kDiscardableMemoryAllocatedKey,
-                                base::Uint64ToString(new_bytes_total));
+                                base::NumberToString(new_bytes_total));
 
   static const char kDiscardableMemoryFreeKey[] = "discardable-memory-free";
   base::debug::SetCrashKeyValue(kDiscardableMemoryFreeKey,
-                                base::Uint64ToString(new_bytes_free));
+                                base::NumberToString(new_bytes_free));
 }
 
 }  // namespace discardable_memory

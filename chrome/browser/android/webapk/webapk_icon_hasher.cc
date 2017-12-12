@@ -29,7 +29,7 @@ std::string ComputeMurmur2Hash(const std::string& raw_image_data) {
   // browser process is a security bug.
   uint64_t hash = MurmurHash64A(&raw_image_data.front(), raw_image_data.size(),
                                 kMurmur2HashSeed);
-  return base::Uint64ToString(hash);
+  return base::NumberToString(hash);
 }
 
 }  // anonymous namespace

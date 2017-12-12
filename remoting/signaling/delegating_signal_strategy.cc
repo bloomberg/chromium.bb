@@ -109,7 +109,7 @@ bool DelegatingSignalStrategy::SendStanza(
 }
 
 std::string DelegatingSignalStrategy::GetNextId() {
-  return base::Uint64ToString(base::RandUint64());
+  return base::NumberToString(base::RandUint64());
 }
 
 }  // namespace remoting

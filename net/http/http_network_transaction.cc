@@ -1048,7 +1048,7 @@ int HttpNetworkTransaction::BuildRequestHeaders(
     } else {
       request_headers_.SetHeader(
           HttpRequestHeaders::kContentLength,
-          base::Uint64ToString(request_->upload_data_stream->size()));
+          base::NumberToString(request_->upload_data_stream->size()));
     }
   } else if (request_->method == "POST" || request_->method == "PUT") {
     // An empty POST/PUT request still needs a content length.  As for HEAD,

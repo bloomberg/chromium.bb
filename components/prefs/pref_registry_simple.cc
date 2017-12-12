@@ -80,7 +80,7 @@ void PrefRegistrySimple::RegisterInt64Pref(const std::string& path,
 void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
                                             uint64_t default_value) {
   RegisterPreference(
-      path, base::MakeUnique<base::Value>(base::Uint64ToString(default_value)),
+      path, base::MakeUnique<base::Value>(base::NumberToString(default_value)),
       NO_REGISTRATION_FLAGS);
 }
 
@@ -152,6 +152,6 @@ void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
                                             uint64_t default_value,
                                             uint32_t flags) {
   RegisterPreference(
-      path, base::MakeUnique<base::Value>(base::Uint64ToString(default_value)),
+      path, base::MakeUnique<base::Value>(base::NumberToString(default_value)),
       flags);
 }

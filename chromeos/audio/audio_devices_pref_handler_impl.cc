@@ -53,8 +53,9 @@ std::string GetVersionedDeviceIdString(const chromeos::AudioDevice& device,
                                   : device.stable_device_id;
   std::string version_prefix = version == 2 ? "2 : " : "";
   std::string device_id_string =
-      version_prefix + base::Uint64ToString(stable_device_id &
-                                            static_cast<uint64_t>(0xffffffff)) +
+      version_prefix +
+      base::NumberToString(stable_device_id &
+                           static_cast<uint64_t>(0xffffffff)) +
       " : " + (device.is_input ? "1" : "0");
   // Replace any periods from the device id string with a space, since setting
   // names cannot contain periods.

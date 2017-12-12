@@ -198,11 +198,10 @@ std::unique_ptr<base::Value> ParseJson(const std::string& json) {
       trimmed_json  = json;
     } else {
       // Take the first 50 and the last 10 bytes.
-      trimmed_json = base::StringPrintf(
-          "%s [%s bytes] %s",
-          json.substr(0, 50).c_str(),
-          base::Uint64ToString(json.size() - 60).c_str(),
-          json.substr(json.size() - 10).c_str());
+      trimmed_json =
+          base::StringPrintf("%s [%s bytes] %s", json.substr(0, 50).c_str(),
+                             base::NumberToString(json.size() - 60).c_str(),
+                             json.substr(json.size() - 10).c_str());
     }
     LOG(WARNING) << "Error while parsing entry response: " << error_message
                  << ", code: " << error_code << ", json:\n" << trimmed_json;

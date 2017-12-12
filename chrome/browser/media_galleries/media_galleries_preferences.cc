@@ -286,7 +286,7 @@ std::unique_ptr<base::DictionaryValue> CreateGalleryPrefInfoDictionary(
     const MediaGalleryPrefInfo& gallery) {
   auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString(kMediaGalleriesPrefIdKey,
-                  base::Uint64ToString(gallery.pref_id));
+                  base::NumberToString(gallery.pref_id));
   dict->SetString(kMediaGalleriesDeviceIdKey, gallery.device_id);
   dict->SetString(kMediaGalleriesPathKey, gallery.path.value());
   dict->SetString(kMediaGalleriesTypeKey, TypeToStringValue(gallery.type));
@@ -1218,7 +1218,7 @@ bool MediaGalleriesPreferences::SetGalleryPermissionInPrefs(
   }
   // ...Otherwise, add a new entry for the gallery.
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString(kMediaGalleryIdKey, base::Uint64ToString(gallery_id));
+  dict->SetString(kMediaGalleryIdKey, base::NumberToString(gallery_id));
   dict->SetBoolean(kMediaGalleryHasPermissionKey, has_access);
   permissions->Append(std::move(dict));
   return true;

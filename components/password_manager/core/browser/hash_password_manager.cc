@@ -35,7 +35,7 @@ bool HashPasswordManager::SavePasswordHash(const base::string16& password) {
   }
 
   std::string salt = CreateRandomSalt();
-  std::string hash = base::Uint64ToString(
+  std::string hash = base::NumberToString(
       password_manager_util::CalculateSyncPasswordHash(password, salt));
   EncryptAndSaveToPrefs(prefs::kSyncPasswordHash, hash);
 

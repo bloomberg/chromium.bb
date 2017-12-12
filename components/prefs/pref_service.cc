@@ -449,7 +449,7 @@ int64_t PrefService::GetInt64(const std::string& path) const {
 
 void PrefService::SetUint64(const std::string& path, uint64_t value) {
   SetUserPrefValue(path,
-                   base::MakeUnique<base::Value>(base::Uint64ToString(value)));
+                   base::MakeUnique<base::Value>(base::NumberToString(value)));
 }
 
 uint64_t PrefService::GetUint64(const std::string& path) const {

@@ -41,27 +41,20 @@ namespace base {
 // Number -> string conversions ------------------------------------------------
 
 // Ignores locale! see warning above.
-BASE_EXPORT std::string NumberToString(int32_t value);
-BASE_EXPORT std::string NumberToString(uint32_t value);
-BASE_EXPORT std::string NumberToString(int64_t value);
-BASE_EXPORT std::string NumberToString(uint64_t value);
+BASE_EXPORT std::string NumberToString(int value);
+BASE_EXPORT string16 NumberToString16(int value);
+BASE_EXPORT std::string NumberToString(unsigned int value);
+BASE_EXPORT string16 NumberToString16(unsigned int value);
+BASE_EXPORT std::string NumberToString(long value);
+BASE_EXPORT string16 NumberToString16(long value);
+BASE_EXPORT std::string NumberToString(unsigned long value);
+BASE_EXPORT string16 NumberToString16(unsigned long value);
+BASE_EXPORT std::string NumberToString(long long value);
+BASE_EXPORT string16 NumberToString16(long long value);
+BASE_EXPORT std::string NumberToString(unsigned long long value);
+BASE_EXPORT string16 NumberToString16(unsigned long long value);
 BASE_EXPORT std::string NumberToString(double value);
-
-BASE_EXPORT base::string16 NumberToString16(int32_t value);
-BASE_EXPORT base::string16 NumberToString16(uint32_t value);
-BASE_EXPORT base::string16 NumberToString16(int64_t value);
-BASE_EXPORT base::string16 NumberToString16(uint64_t value);
-BASE_EXPORT base::string16 NumberToString16(double value);
-
-// Compilers seem to disagree about whether size_t is a different name for
-// uint32_t/uint64_t, or whether it's a completely different type that requires
-// a conversion. Therefore, a size_t version must exist for some compilers (to
-// avoid ambiguous call errors), but must not exist for others (to avoid
-// multiple definition errors).
-#if defined(OS_MACOSX)
-BASE_EXPORT std::string NumberToString(size_t value);
-BASE_EXPORT base::string16 NumberToString16(size_t value);
-#endif
+BASE_EXPORT string16 NumberToString16(double value);
 
 // Type-specific naming for backwards compatibility.
 //
@@ -83,12 +76,6 @@ inline std::string Int64ToString(int64_t value) {
   return NumberToString(value);
 }
 inline string16 Int64ToString16(int64_t value) {
-  return NumberToString16(value);
-}
-inline std::string Uint64ToString(uint64_t value) {
-  return NumberToString(value);
-}
-inline string16 Uint64ToString16(uint64_t value) {
   return NumberToString16(value);
 }
 
