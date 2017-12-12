@@ -502,21 +502,6 @@ TEST_F(CRWWebControllerInvalidUrlTest, IFrameWithInvalidURL) {
   EXPECT_EQ(url, web_state()->GetLastCommittedURL());
 }
 
-// Real WKWebView is required for CRWWebControllerFormActivityTest.
-typedef WebTestWithWebState CRWWebControllerFormActivityTest;
-
-// Tests that keyup event correctly delivered to WebStateObserver.
-TEST_F(CRWWebControllerFormActivityTest, KeyUpEvent) {
-  TestWebStateObserver observer(web_state());
-  LoadHtml(@"<p></p>");
-  ASSERT_FALSE(observer.form_activity_info());
-  ExecuteJavaScript(@"document.dispatchEvent(new KeyboardEvent('keyup'));");
-  TestFormActivityInfo* info = observer.form_activity_info();
-  ASSERT_TRUE(info);
-  EXPECT_EQ("keyup", info->form_activity.type);
-  EXPECT_FALSE(info->form_activity.input_missing);
-}
-
 // Real WKWebView is required for CRWWebControllerJSExecutionTest.
 typedef WebTestWithWebController CRWWebControllerJSExecutionTest;
 
