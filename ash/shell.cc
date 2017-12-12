@@ -766,6 +766,10 @@ Shell::~Shell() {
   // Removes itself as an observer of |pref_service_|.
   shelf_controller_.reset();
 
+  // NightLightController depends on the PrefService as well as the window tree
+  // host manager, and must be destructed before them. crbug.com/724231.
+  night_light_controller_ = nullptr;
+
   shell_port_->Shutdown();
   window_tree_host_manager_->Shutdown();
 
@@ -807,9 +811,7 @@ Shell::~Shell() {
   // TouchDevicesController depends on the PrefService and must be destructed
   // before it.
   touch_devices_controller_ = nullptr;
-  // NightLightController depeneds on the PrefService and must be destructed
-  // before it. crbug.com/724231.
-  night_light_controller_ = nullptr;
+
   local_state_.reset();
   shell_delegate_.reset();
 
