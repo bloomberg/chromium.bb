@@ -163,14 +163,6 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     upload_request_.active_experiments.push_back(
         kAutofillUpstreamSendPanFirstSix.name);
   }
-  if (IsAutofillUpstreamShowNewUiExperimentEnabled()) {
-    upload_request_.active_experiments.push_back(
-        kAutofillUpstreamShowNewUi.name);
-  }
-  if (IsAutofillUpstreamShowGoogleLogoExperimentEnabled()) {
-    upload_request_.active_experiments.push_back(
-        kAutofillUpstreamShowGoogleLogo.name);
-  }
 
   // All required data is available, start the upload process.
   payments_client_->GetUploadDetails(

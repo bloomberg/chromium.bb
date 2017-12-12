@@ -77,11 +77,9 @@ void SaveCardBubbleViews::Hide() {
 }
 
 views::View* SaveCardBubbleViews::CreateExtraView() {
-  if (GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP &&
-      IsAutofillUpstreamShowNewUiExperimentEnabled())
+  if (GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP)
     return nullptr;
-  // Learn More link is only shown on local save bubble or when the new UI
-  // experiment is disabled.
+  // Learn More link is only shown on local save bubble.
   DCHECK(!learn_more_link_);
   learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more_link_->SetUnderline(false);
@@ -221,10 +219,8 @@ gfx::ImageSkia SaveCardBubbleViews::GetWindowIcon() {
 }
 
 bool SaveCardBubbleViews::ShouldShowWindowIcon() const {
-  // We show the window icon (Google "G") in non-local save scenarios where the
-  // new UI is enabled.
-  return GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP &&
-         IsAutofillUpstreamShowGoogleLogoExperimentEnabled();
+  // We show the window icon (Google "G") in non-local save scenarios.
+  return GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP;
 }
 
 void SaveCardBubbleViews::WindowClosing() {
@@ -299,9 +295,9 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   // If applicable, add the upload explanation label.  Appears above the card
-  // info when new UI experiment is enabled.
+  // info.
   base::string16 explanation = controller_->GetExplanatoryMessage();
-  if (!explanation.empty() && IsAutofillUpstreamShowNewUiExperimentEnabled()) {
+  if (!explanation.empty()) {
     views::Label* explanation_label = new views::Label(explanation);
     explanation_label->SetMultiLine(true);
     explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -326,26 +322,10 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
       views::CreateSolidBorder(1, SkColorSetA(SK_ColorBLACK, 10)));
   description_view->AddChildView(card_type_icon);
 
-  // Old UI shows last four digits and expiration.  New UI shows network, last
-  // four digits, and expiration.
-  if (IsAutofillUpstreamShowNewUiExperimentEnabled()) {
-    description_view->AddChildView(
-        new views::Label(card.NetworkAndLastFourDigits()));
-  } else {
-    description_view->AddChildView(new views::Label(
-        base::string16(kMidlineEllipsis) + card.LastFourDigits()));
-  }
+  description_view->AddChildView(
+      new views::Label(card.NetworkAndLastFourDigits()));
   description_view->AddChildView(
       new views::Label(card.AbbreviatedExpirationDateForDisplay()));
-
-  // If applicable, add the upload explanation label.  Appears below the card
-  // info when new UI experiment is disabled.
-  if (!explanation.empty() && !IsAutofillUpstreamShowNewUiExperimentEnabled()) {
-    views::Label* explanation_label = new views::Label(explanation);
-    explanation_label->SetMultiLine(true);
-    explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    view->AddChildView(explanation_label);
-  }
 
   return view;
 }
