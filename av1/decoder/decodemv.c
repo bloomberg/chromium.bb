@@ -1090,7 +1090,8 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv);
 #endif
     int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
-    if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+    if (dv_ref.as_int == 0)
+      av1_find_ref_dv(&dv_ref, &xd->tile, cm->mib_size, mi_row, mi_col);
     // Ref DV should not have sub-pel.
     assert((dv_ref.as_mv.col & 7) == 0);
     assert((dv_ref.as_mv.row & 7) == 0);

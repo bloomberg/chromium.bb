@@ -8690,7 +8690,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif
 
   int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
-  if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+  if (dv_ref.as_int == 0)
+    av1_find_ref_dv(&dv_ref, tile, cm->mib_size, mi_row, mi_col);
   // Ref DV should not have sub-pel.
   assert((dv_ref.as_mv.col & 7) == 0);
   assert((dv_ref.as_mv.row & 7) == 0);

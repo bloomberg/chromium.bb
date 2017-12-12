@@ -461,22 +461,25 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 #endif  // CONFIG_EXT_WARPED_MOTION
 
 #if CONFIG_INTRABC
-static INLINE void av1_find_ref_dv(int_mv *ref_dv, int mi_row, int mi_col) {
-  // TODO(aconverse@google.com): Handle tiles and such
-  (void)mi_col;
-  if (mi_row < MAX_MIB_SIZE) {
-    ref_dv->as_mv.row = 0;
-    ref_dv->as_mv.col = -MI_SIZE * MAX_MIB_SIZE;
-  } else {
-    ref_dv->as_mv.row = -MI_SIZE * MAX_MIB_SIZE;
-    ref_dv->as_mv.col = 0;
-  }
-}
-
 #define INTRABC_DELAY_PIXELS 256  //  Delay of 256 pixels
 #define INTRABC_DELAY_SB64 (INTRABC_DELAY_PIXELS / 64)
 #define USE_WAVE_FRONT 1  // Use only top left area of frame for reference.
 #define INTRABC_ROW_DELAY 8
+
+static INLINE void av1_find_ref_dv(int_mv *ref_dv, const TileInfo *const tile,
+                                   int mib_size, int mi_row, int mi_col) {
+  (void)mi_col;
+  if (mi_row - mib_size < tile->mi_row_start) {
+    ref_dv->as_mv.row = 0;
+    ref_dv->as_mv.col = -MI_SIZE * mib_size - INTRABC_DELAY_PIXELS;
+  } else {
+    ref_dv->as_mv.row = -MI_SIZE * mib_size;
+    ref_dv->as_mv.col = 0;
+  }
+  ref_dv->as_mv.row *= 8;
+  ref_dv->as_mv.col *= 8;
+}
+
 static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
                                   int mi_row, int mi_col, BLOCK_SIZE bsize,
                                   int mib_size_log2) {
