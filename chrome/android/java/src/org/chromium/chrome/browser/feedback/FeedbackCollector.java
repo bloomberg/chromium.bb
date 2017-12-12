@@ -83,6 +83,7 @@ public class FeedbackCollector implements Runnable {
         sources.add(new ChromeHomeFeedbackSource(profile));
         sources.add(new LowEndDeviceFeedbackSource());
         sources.add(new IMEFeedbackSource());
+        sources.add(new PermissionFeedbackSource());
 
         return sources;
     }
