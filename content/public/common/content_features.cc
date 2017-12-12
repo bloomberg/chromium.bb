@@ -282,7 +282,7 @@ const base::Feature kPWAFullCodeCache{"PWAFullCodeCache",
 
 // Port some content::ResourceScheduler functionalities to renderer.
 const base::Feature kRendererSideResourceScheduler{
-    "RendererSideResourceSchduler", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RendererSideResourceScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Throttle Blink's rendering pipeline based on frame visibility.
 const base::Feature kRenderingPipelineThrottling{
