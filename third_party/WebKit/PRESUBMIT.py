@@ -205,6 +205,12 @@ def _AreLayoutNGDirectoriesModified(change):  # pylint: disable=C0103
     layout_ng_paths = [
         os.path.join('third_party', 'WebKit', 'Source', 'core', 'layout',
                      'ng'),
+        os.path.join('third_party', 'WebKit', 'Source', 'core', 'paint',
+                     'ng'),
+        os.path.join('third_party', 'WebKit', 'LayoutTests', 'FlagExpectations',
+                     'enable-blink-features=LayoutNG'),
+        os.path.join('third_party', 'WebKit', 'LayoutTests', 'flag-specific',
+                     'enable-blink-features=LayoutNG'),
     ]
     for affected_file in change.AffectedFiles():
         file_path = affected_file.LocalPath()
