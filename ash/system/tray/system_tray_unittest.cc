@@ -1057,4 +1057,43 @@ TEST_F(SystemTrayTest, AcceleratorController) {
   EXPECT_FALSE(tray->IsSystemBubbleVisible());
 }
 
+// When system tray has an active child widget, the child widget should consume
+// key event and the tray shouldn't consume key event, i.e. RerouteEventHandler
+// in TrayBubbleView should not reroute key events to the tray in this case.
+TEST_F(SystemTrayTest, ActiveChildWidget) {
+  SystemTray* tray = GetPrimarySystemTray();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, true /* show_by_click */);
+
+  // Create a child widget on system tray and focus it.
+  views::Widget* child_widget = views::Widget::CreateWindowWithParent(
+      nullptr, tray->GetBubbleView()->GetWidget()->GetNativeView());
+  std::unique_ptr<KeyEventConsumerView> consumer_view(
+      new KeyEventConsumerView());
+  child_widget->GetContentsView()->AddChildView(consumer_view.get());
+  child_widget->Show();
+  consumer_view->RequestFocus();
+
+  ASSERT_FALSE(tray->GetBubbleView()->GetWidget()->IsActive());
+  ASSERT_TRUE(child_widget->IsActive());
+
+  ui::test::EventGenerator& event_generator = GetEventGenerator();
+
+  // Press ESC key and confirm that child widget consumes it. Also confirm that
+  // the tray does not consume the key event.
+  ASSERT_EQ(0, consumer_view->number_of_consumed_key_events());
+  ASSERT_TRUE(tray->IsSystemBubbleVisible());
+  event_generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  event_generator.ReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  EXPECT_EQ(2, consumer_view->number_of_consumed_key_events());
+  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+
+  // Hide child widget and press ESC key. Confirm that the tray consumes it and
+  // the tray is closed even if the tray is not active.
+  child_widget->Hide();
+  ASSERT_FALSE(tray->GetBubbleView()->GetWidget()->IsActive());
+  event_generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  event_generator.ReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  EXPECT_FALSE(tray->IsSystemBubbleVisible());
+}
+
 }  // namespace ash
