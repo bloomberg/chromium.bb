@@ -695,17 +695,6 @@ def UpdateClang(args):
     # If any Chromium tools were built, install those now.
     RunCommand(['ninja', 'cr-install'], msvc_arch='x64')
 
-  stripped_binaries = ['clang', 'llvm-symbolizer', 'sancov']
-  if sys.platform.startswith('linux'):
-    stripped_binaries.append('lld')
-    stripped_binaries.append('llvm-ar')
-  for f in stripped_binaries:
-    if sys.platform == 'darwin':
-      # See http://crbug.com/256342
-      RunCommand(['strip', '-x', os.path.join(LLVM_BUILD_DIR, 'bin', f)])
-    elif sys.platform.startswith('linux'):
-      RunCommand(['strip', os.path.join(LLVM_BUILD_DIR, 'bin', f)])
-
   VeryifyVersionOfBuiltClangMatchesVERSION()
 
   # Do an out-of-tree build of compiler-rt.
