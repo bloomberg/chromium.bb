@@ -206,6 +206,7 @@ void AnimateInCardWithAnimationAndCompletion(UIView* view,
 
 void AnimateNewBackgroundPageWithCompletion(CardView* currentPageCard,
                                             CGRect displayFrame,
+                                            CGRect imageFrame,
                                             BOOL isPortrait,
                                             void (^completion)(void)) {
   // Create paper background.
@@ -240,10 +241,10 @@ void AnimateNewBackgroundPageWithCompletion(CardView* currentPageCard,
   // Align the bottom of |currentPageCard|'s snapshot with the bottom of the
   // screen, so that snapshots of any height are correctly aligned with the
   // tab's content.
-  currentPageCard.center = CGPointMake(
-      displaySize.width / 2.0, displaySize.height -
-                                   (currentPageCard.image.size.height / 2.0) -
-                                   kCardImageInsets.top / 2);
+  currentPageCard.center =
+      CGPointMake(displaySize.width / 2.0, displaySize.height -
+                                               (imageFrame.size.height / 2.0) -
+                                               kCardImageInsets.top / 2);
   CGAffineTransform fullScreenTransform =
       CGAffineTransformMakeScale(fullScreenScale, fullScreenScale);
   currentPageCard.transform = fullScreenTransform;

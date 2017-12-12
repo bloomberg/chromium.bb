@@ -63,9 +63,11 @@ void AnimateInPaperWithAnimationAndCompletion(UIView* view,
 // StackViewController), and out again. Creates and moves a paper card into the
 // center of the screen, and then slides it offscreen. |completion| is
 // called at the end of the sequence. |displayFrame| gives the frame within
-// which the animation will take place.
+// which the animation will take place. |imageFrame| gives the size of the
+// snapshot image from which the animation starts.
 void AnimateNewBackgroundPageWithCompletion(CardView* currentPageCard,
                                             CGRect displayFrame,
+                                            CGRect imageFrame,
                                             BOOL isPortrait,
                                             void (^completion)(void));
 
