@@ -58,23 +58,28 @@ org.chromium.mojo.bindings.MessageHeader.MESSAGE_IS_RESPONSE_FLAG
 public static final {{manager_class(interface, True)}} MANAGER =
         new {{manager_class(interface, True)}}() {
 
+    @Override
     public String getName() {
         return "{{namespace|replace(".","::")}}::{{interface.name}}";
     }
 
+    @Override
     public int getVersion() {
       return {{interface.version}};
     }
 
+    @Override
     public Proxy buildProxy(org.chromium.mojo.system.Core core,
                             org.chromium.mojo.bindings.MessageReceiverWithResponder messageReceiver) {
         return new Proxy(core, messageReceiver);
     }
 
+    @Override
     public Stub buildStub(org.chromium.mojo.system.Core core, {{interface|name}} impl) {
         return new Stub(core, impl);
     }
 
+    @Override
     public {{interface|name}}[] buildArray(int size) {
       return new {{interface|name}}[size];
     }
