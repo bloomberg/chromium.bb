@@ -2345,7 +2345,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
                                                 run_loop.QuitClosure());
   run_loop.Run();
 
-  EXPECT_EQ(1u, sink_->message_count());
+  ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
     EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SetLocalSurfaceIdForAutoResize::ID),
