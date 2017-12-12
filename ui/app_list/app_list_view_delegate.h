@@ -82,17 +82,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // the returned view.
   virtual views::View* CreateStartPageWebView(const gfx::Size& size) = 0;
 
-  // Creates the web views for the user-specified custom pages. The caller takes
-  // ownership of the returned views.
-  virtual std::vector<views::View*> CreateCustomPageWebViews(
-      const gfx::Size& size) = 0;
-
-  // Invoked when the custom launcher page's animation changes.
-  virtual void CustomLauncherPageAnimationChanged(double progress) = 0;
-
-  // Invoked when the custom launcher page's subpage should be popped.
-  virtual void CustomLauncherPagePopSubpage() = 0;
-
   // Returns true if the delegate supports speech recognition.
   virtual bool IsSpeechRecognitionEnabled() = 0;
 

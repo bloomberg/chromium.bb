@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 
+#include <string>
+#include <utility>
+
 #include "ash/app_list/app_list_presenter_delegate.h"
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/shell.h"
@@ -164,23 +167,6 @@ void AppListServiceAsh::ShowForAppInstall(Profile* profile,
   ShowAndSwitchToState(app_list::AppListModel::STATE_APPS);
   AppListServiceImpl::ShowForAppInstall(profile, extension_id,
                                         start_discovery_tracking);
-}
-
-void AppListServiceAsh::ShowForCustomLauncherPage(Profile* /*profile*/) {
-  ShowAndSwitchToState(app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
-}
-
-void AppListServiceAsh::HideCustomLauncherPage() {
-  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
-  if (!app_list_view)
-    return;
-
-  app_list::ContentsView* contents_view =
-      app_list_view->app_list_main_view()->contents_view();
-  if (contents_view->IsStateActive(
-          app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
-    contents_view->SetActiveState(app_list::AppListModel::STATE_START, true);
-  }
 }
 
 bool AppListServiceAsh::IsAppListVisible() const {

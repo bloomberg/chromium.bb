@@ -120,13 +120,6 @@ if (is_chromeos) {
   schema_sources += [ "input_ime.json" ]
 }
 
-if (enable_app_list) {
-  schema_sources += [
-    # TODO(tapted): Move this into chromeos_schema_files.
-    "launcher_page.idl",
-  ]
-}
-
 if (enable_print_preview && !is_chromeos) {
   schema_sources += [ "cloud_print_private.json" ]
 }

@@ -42,7 +42,7 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
     STATE_APPS = 0,
     STATE_SEARCH_RESULTS,
     STATE_START,
-    STATE_CUSTOM_LAUNCHER_PAGE,
+    STATE_CUSTOM_LAUNCHER_PAGE_DEPRECATED,
     // Add new values here.
 
     INVALID_STATE,
@@ -131,35 +131,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   // has a single child left.
   void DeleteUninstalledItem(const std::string& id);
 
-  // Sets whether or not the custom launcher page should be enabled.
-  void SetCustomLauncherPageEnabled(bool enabled);
-  bool custom_launcher_page_enabled() const {
-    return custom_launcher_page_enabled_;
-  }
-
-  void set_custom_launcher_page_name(const std::string& name) {
-    custom_launcher_page_name_ = name;
-  }
-
-  const std::string& custom_launcher_page_name() const {
-    return custom_launcher_page_name_;
-  }
-
-  // Pushes a custom launcher page's subpage into the state stack in the
-  // model.
-  void PushCustomLauncherPageSubpage();
-
-  // If the state stack is not empty, pops a subpage from the stack and
-  // returns true. Returns false if the stack was empty.
-  bool PopCustomLauncherPageSubpage();
-
-  // Clears the custom launcher page's subpage state stack from the model.
-  void ClearCustomLauncherPageSubpages();
-
-  int custom_launcher_page_subpage_depth() {
-    return custom_launcher_page_subpage_depth_;
-  }
-
   AppListItemList* top_level_item_list() { return top_level_item_list_.get(); }
 
   Status status() const { return status_; }
@@ -204,11 +175,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   // The AppListView state. Controlled by the AppListView.
   AppListViewState state_fullscreen_ = AppListViewState::CLOSED;
   base::ObserverList<AppListModelObserver, true> observers_;
-  bool custom_launcher_page_enabled_ = true;
-  std::string custom_launcher_page_name_;
-
-  // The current number of subpages the custom launcher page has pushed.
-  int custom_launcher_page_subpage_depth_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
 };

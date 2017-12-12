@@ -226,7 +226,6 @@ void ContentsView::ActivePageChanged() {
 
   // Whenever the page changes, the custom launcher page is considered to have
   // been reset.
-  app_list_main_view_->model()->ClearCustomLauncherPageSubpages();
   app_list_main_view_->search_box_view()->ResetTabFocus(false);
 }
 
@@ -385,12 +384,6 @@ bool ContentsView::Back() {
     case AppListModel::STATE_START:
       // Close the app list when Back() is called from the start page.
       return false;
-    case AppListModel::STATE_CUSTOM_LAUNCHER_PAGE:
-      if (app_list_main_view_->model()->PopCustomLauncherPageSubpage())
-        app_list_main_view_->view_delegate()->CustomLauncherPagePopSubpage();
-      else
-        SetActiveState(AppListModel::STATE_START);
-      break;
     case AppListModel::STATE_APPS:
       if (apps_container_view_->IsInFolderView()) {
         apps_container_view_->app_list_folder_view()->CloseFolderPage();
@@ -405,6 +398,7 @@ bool ContentsView::Back() {
       GetSearchBoxView()->SetSearchBoxActive(false);
       ShowSearchResults(false);
       break;
+    case AppListModel::STATE_CUSTOM_LAUNCHER_PAGE_DEPRECATED:
     case AppListModel::INVALID_STATE:  // Falls through.
       NOTREACHED();
       break;

@@ -1178,7 +1178,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="0" label="APPS"/>
   <int value="1" label="SEARCH_RESULTS"/>
   <int value="2" label="START"/>
-  <int value="3" label="CUSTOM_LAUNCHER_PAGE"/>
+  <int value="3" label="CUSTOM_LAUNCHER_PAGE_DEPRECATED"/>
 </enum>
 
 <enum name="AppListPageSwitcherSource">
@@ -12902,8 +12902,8 @@ Called by update_net_error_codes.py.-->
   <int value="331" label="WEB_VIEW_INTERNAL_CONTEXT_MENUS"/>
   <int value="332" label="CONTEXT_MENUS"/>
   <int value="333" label="TTS_ON_EVENT"/>
-  <int value="334" label="LAUNCHER_PAGE_ON_TRANSITION_CHANGED"/>
-  <int value="335" label="LAUNCHER_PAGE_ON_POP_SUBPAGE"/>
+  <int value="334" label="LAUNCHER_PAGE_ON_TRANSITION_CHANGED_DEPRECATED"/>
+  <int value="335" label="LAUNCHER_PAGE_ON_POP_SUBPAGE_DEPRECATED"/>
   <int value="336" label="DIAL_ON_DEVICE_LIST"/>
   <int value="337" label="DIAL_ON_ERROR"/>
   <int value="338" label="CAST_CHANNEL_ON_MESSAGE"/>

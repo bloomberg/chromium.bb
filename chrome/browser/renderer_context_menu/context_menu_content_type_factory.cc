@@ -98,8 +98,7 @@ ContextMenuContentType* ContextMenuContentTypeFactory::CreateInternal(
 
   const extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
-  if (view_type == extensions::VIEW_TYPE_APP_WINDOW ||
-      view_type == extensions::VIEW_TYPE_LAUNCHER_PAGE)
+  if (view_type == extensions::VIEW_TYPE_APP_WINDOW)
     return new ContextMenuContentTypePlatformApp(web_contents, params);
 
   if (view_type == extensions::VIEW_TYPE_EXTENSION_POPUP)

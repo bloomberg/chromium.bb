@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_SERVICE_ASH_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
@@ -62,8 +63,6 @@ class AppListServiceAsh : public AppListServiceImpl {
   void ShowForAppInstall(Profile* profile,
                          const std::string& extension_id,
                          bool start_discovery_tracking) override;
-  void ShowForCustomLauncherPage(Profile* profile) override;
-  void HideCustomLauncherPage() override;
   bool IsAppListVisible() const override;
   void DismissAppList() override;
   void EnableAppList(Profile* initial_profile,

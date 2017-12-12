@@ -70,9 +70,6 @@ InspectableViewsFinder::View InspectableViewsFinder::ConstructView(
     case VIEW_TYPE_EXTENSION_POPUP:
       view.type = api::developer_private::VIEW_TYPE_EXTENSION_POPUP;
       break;
-    case VIEW_TYPE_LAUNCHER_PAGE:
-      view.type = api::developer_private::VIEW_TYPE_LAUNCHER_PAGE;
-      break;
     case VIEW_TYPE_PANEL:
       view.type = api::developer_private::VIEW_TYPE_PANEL;
       break;
