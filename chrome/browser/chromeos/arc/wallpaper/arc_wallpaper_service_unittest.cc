@@ -144,10 +144,10 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
  protected:
   arc::ArcWallpaperService* service_ = nullptr;
   std::unique_ptr<arc::FakeWallpaperInstance> wallpaper_instance_ = nullptr;
-
- private:
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
   TestWallpaperController test_wallpaper_controller_;
+
+ private:
   chromeos::FakeChromeUserManager* const user_manager_ = nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
   arc::ArcServiceManager arc_service_manager_;
@@ -161,12 +161,10 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
 }  // namespace
 
 TEST_F(ArcWallpaperServiceTest, SetDefaultWallpaper) {
+  test_wallpaper_controller_.ClearCounts();
   service_->SetDefaultWallpaper();
-  RunAllPendingInMessageLoop();
-  // Wait until wallpaper loading is done.
-  chromeos::wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  ASSERT_EQ(1u, wallpaper_instance_->changed_ids().size());
-  EXPECT_EQ(-1, wallpaper_instance_->changed_ids()[0]);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.set_default_wallpaper_count());
 }
 
 TEST_F(ArcWallpaperServiceTest, SetAndGetWallpaper) {
