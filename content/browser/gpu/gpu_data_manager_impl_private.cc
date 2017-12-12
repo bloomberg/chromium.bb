@@ -1128,6 +1128,7 @@ void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
     gpu_info_.gl_reset_notification_strategy = 0;
     gpu_info_.software_rendering = true;
     gpu_info_.passthrough_cmd_decoder = false;
+    gpu_info_.direct_composition = false;
     gpu_info_.supports_overlays = false;
     gpu_info_.basic_info_state = gpu::kCollectInfoSuccess;
     gpu_info_.context_info_state = gpu::kCollectInfoSuccess;

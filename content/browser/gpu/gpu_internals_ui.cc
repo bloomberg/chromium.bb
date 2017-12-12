@@ -134,6 +134,9 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
       "Passthrough Command Decoder",
       std::make_unique<base::Value>(gpu_info.passthrough_cmd_decoder)));
   basic_info->Append(NewDescriptionValuePair(
+      "Direct Composition",
+      std::make_unique<base::Value>(gpu_info.direct_composition)));
+  basic_info->Append(NewDescriptionValuePair(
       "Supports overlays",
       std::make_unique<base::Value>(gpu_info.supports_overlays)));
   basic_info->Append(NewDescriptionValuePair(
