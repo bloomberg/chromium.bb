@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/user_manager/user_manager.h"
@@ -105,17 +106,32 @@ ExtensionFunction::ResponseAction AutotestPrivateShutdownFunction::Run() {
 ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
   DVLOG(1) << "AutotestPrivateLoginStatusFunction";
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
 #if defined(OS_CHROMEOS)
+  LoginScreenClient::Get()->IsReadyForPassword(base::BindOnce(
+      &AutotestPrivateLoginStatusFunction::OnIsReadyForPassword, this));
+  return RespondLater();
+#else
+  return RespondNow(OneArgument(std::make_unique<base::DictionaryValue>()));
+#endif
+}
+
+#if defined(OS_CHROMEOS)
+void AutotestPrivateLoginStatusFunction::OnIsReadyForPassword(bool is_ready) {
+  auto result = std::make_unique<base::DictionaryValue>();
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
+
+  // default_screen_locker()->locked() is set when the UI is ready, so this
+  // tells us both views based lockscreen UI and screenlocker are ready.
   const bool is_screen_locked =
-      !!chromeos::ScreenLocker::default_screen_locker();
+      !!chromeos::ScreenLocker::default_screen_locker() &&
+      chromeos::ScreenLocker::default_screen_locker()->locked();
 
   if (user_manager) {
     result->SetBoolean("isLoggedIn", user_manager->IsUserLoggedIn());
     result->SetBoolean("isOwner", user_manager->IsCurrentUserOwner());
     result->SetBoolean("isScreenLocked", is_screen_locked);
+    result->SetBoolean("isReadyForPassword", is_ready);
     if (user_manager->IsUserLoggedIn()) {
       result->SetBoolean("isRegularUser",
                          user_manager->IsLoggedInAsUserWithGaiaAccount());
@@ -143,10 +159,9 @@ ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
       result->SetString("userImage", user_image);
     }
   }
-#endif
-
-  return RespondNow(OneArgument(std::move(result)));
+  Respond(OneArgument(std::move(result)));
 }
+#endif
 
 ExtensionFunction::ResponseAction AutotestPrivateLockScreenFunction::Run() {
   DVLOG(1) << "AutotestPrivateLockScreenFunction";

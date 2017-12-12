@@ -50,6 +50,10 @@ class AutotestPrivateLoginStatusFunction : public UIThreadExtensionFunction {
  private:
   ~AutotestPrivateLoginStatusFunction() override {}
   ResponseAction Run() override;
+
+#if defined(OS_CHROMEOS)
+  void OnIsReadyForPassword(bool is_ready);
+#endif
 };
 
 class AutotestPrivateLockScreenFunction : public UIThreadExtensionFunction {

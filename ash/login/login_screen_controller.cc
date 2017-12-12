@@ -137,6 +137,11 @@ void LoginScreenController::SetDevChannelInfo(
   }
 }
 
+void LoginScreenController::IsReadyForPassword(
+    IsReadyForPasswordCallback callback) {
+  std::move(callback).Run(LockScreen::IsShown() && !is_authenticating_);
+}
+
 void LoginScreenController::AuthenticateUser(const AccountId& account_id,
                                              const std::string& password,
                                              bool authenticated_by_pin,
