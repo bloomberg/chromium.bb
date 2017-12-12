@@ -1009,7 +1009,7 @@ AXRestriction AXNodeObject::Restriction() const {
 
   // Check aria-readonly if supported by current role.
   bool is_read_only;
-  if (CanSupportAriaReadOnly() &&
+  if (SupportsARIAReadOnly() &&
       HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kReadOnly,
                                     is_read_only)) {
     // ARIA overrides other readonly state markup.
@@ -1417,7 +1417,7 @@ InvalidState AXNodeObject::GetInvalidState() const {
 }
 
 int AXNodeObject::PosInSet() const {
-  if (SupportsSetSizeAndPosInSet()) {
+  if (SupportsARIASetSizeAndPosInSet()) {
     uint32_t pos_in_set;
     if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kPosInSet, pos_in_set))
       return pos_in_set;
@@ -1429,7 +1429,7 @@ int AXNodeObject::PosInSet() const {
 }
 
 int AXNodeObject::SetSize() const {
-  if (SupportsSetSizeAndPosInSet()) {
+  if (SupportsARIASetSizeAndPosInSet()) {
     int32_t set_size;
     if (HasAOMPropertyOrARIAAttribute(AOMIntProperty::kSetSize, set_size))
       return set_size;
