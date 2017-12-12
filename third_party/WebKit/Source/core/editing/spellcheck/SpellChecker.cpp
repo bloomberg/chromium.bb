@@ -94,6 +94,9 @@ WebSpellCheckPanelHostClient& SpellChecker::SpellCheckPanelHostClient() const {
 }
 
 WebTextCheckClient* SpellChecker::GetTextCheckerClient() const {
+  // There is no frame client if the frame is detached.
+  if (!GetFrame().Client())
+    return nullptr;
   return GetFrame().Client()->GetTextCheckerClient();
 }
 
