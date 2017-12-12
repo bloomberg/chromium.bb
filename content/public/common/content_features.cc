@@ -153,10 +153,6 @@ const base::Feature kLazyInitializeMediaControls{
 const base::Feature kLazyParseCSS{"LazyParseCSS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use Mojo IPC for resource loading.
-const base::Feature kLoadingWithMojo{"LoadingWithMojo",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If this feature is enabled, media-device enumerations use a cache that is
 // invalidated upon notifications sent by base::SystemMonitor. If disabled, the
 // cache is considered invalid on every enumeration request.

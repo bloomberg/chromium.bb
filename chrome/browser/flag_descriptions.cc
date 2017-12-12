@@ -858,10 +858,6 @@ const char kMhtmlGeneratorOptionDescription[] =
 const char kMhtmlSkipNostoreMain[] = "Skips no-store main frame.";
 const char kMhtmlSkipNostoreAll[] = "Skips all no-store resources.";
 
-const char kMojoLoadingName[] = "Use Mojo IPC for resource loading";
-const char kMojoLoadingDescription[] =
-    "Use Mojo IPC instead of traditional Chrome IPC for resource loading.";
-
 const char kMojoVideoEncodeAcceleratorName[] =
     "Hardware-accelerated video encoder accessed using Mojo IPC";
 const char kMojoVideoEncodeAcceleratorDescription[] =

@@ -536,9 +536,6 @@ extern const char kMhtmlGeneratorOptionDescription[];
 extern const char kMhtmlSkipNostoreMain[];
 extern const char kMhtmlSkipNostoreAll[];
 
-extern const char kMojoLoadingName[];
-extern const char kMojoLoadingDescription[];
-
 extern const char kMojoVideoEncodeAcceleratorName[];
 extern const char kMojoVideoEncodeAcceleratorDescription[];
 

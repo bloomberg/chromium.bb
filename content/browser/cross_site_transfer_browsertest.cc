@@ -172,14 +172,7 @@ class NoTransferRequestDelegate : public WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(NoTransferRequestDelegate);
 };
 
-enum class TestParameter {
-  LOADING_WITHOUT_MOJO,
-  LOADING_WITH_MOJO,
-};
-
-class CrossSiteTransferTest
-    : public ContentBrowserTest,
-      public ::testing::WithParamInterface<TestParameter> {
+class CrossSiteTransferTest : public ContentBrowserTest {
  public:
   CrossSiteTransferTest() : old_delegate_(nullptr) {}
 
@@ -222,10 +215,6 @@ class CrossSiteTransferTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolateAllSitesForTesting(command_line);
-    if (GetParam() == TestParameter::LOADING_WITH_MOJO) {
-      command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                      "LoadingWithMojo");
-    }
   }
 
   void InjectResourceDispatcherHostDelegate() {
@@ -263,7 +252,7 @@ class CrossSiteTransferTest
 #endif
 // Tests that the |should_replace_current_entry| flag persists correctly across
 // request transfers that began with a cross-process navigation.
-IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest,
+IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
                        MAYBE_ReplaceEntryCrossProcessThenTransfer) {
   const NavigationController& controller =
       shell()->web_contents()->GetController();
@@ -317,7 +306,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest,
 // request transfers that began with a content-initiated in-process
 // navigation. This test is the same as the test above, except transfering from
 // in-process.
-IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest,
+IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
                        ReplaceEntryInProcessThenTransfer) {
   const NavigationController& controller =
       shell()->web_contents()->GetController();
@@ -352,7 +341,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest,
 
 // Tests that the |should_replace_current_entry| flag persists correctly across
 // request transfers that cross processes twice from renderer policy.
-IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest,
+IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
                        MAYBE_ReplaceEntryCrossProcessTwice) {
   const NavigationController& controller =
       shell()->web_contents()->GetController();
@@ -397,7 +386,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest,
 
 // Tests that the request is destroyed when a cross process navigation is
 // cancelled.
-IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
+IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
   const NavigationController& controller =
       shell()->web_contents()->GetController();
 
@@ -440,7 +429,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
 // files encapsulated by HTTP POST body that is forwarded to the new renderer.
 // Invalid handling of this scenario has been suspected as the cause of at least
 // some of the renderer kills tracked in https://crbug.com/613260.
-IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, PostWithFileData) {
+IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, PostWithFileData) {
   // Navigate to the page with form that posts via 307 redirection to
   // |redirect_target_url| (cross-site from |form_url|).  Using 307 (rather than
   // 302) redirection is important to preserve the HTTP method and POST body.
@@ -518,7 +507,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, PostWithFileData) {
 //
 // This test is very similar to CrossSiteTransferTest.PostWithFileData above,
 // except that it simulates a malicious form / POST originator.
-IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, MaliciousPostWithFileData) {
+IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, MaliciousPostWithFileData) {
   // The initial test window is a named form target.
   GURL initial_target_url(
       embedded_test_server()->GetURL("initial-target.com", "/title1.html"));
@@ -596,10 +585,5 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, MaliciousPostWithFileData) {
   EXPECT_FALSE(security_policy->CanReadFile(
       target_contents->GetMainFrame()->GetProcess()->GetID(), file_path));
 }
-
-INSTANTIATE_TEST_CASE_P(CrossSiteTransferTest,
-                        CrossSiteTransferTest,
-                        ::testing::Values(TestParameter::LOADING_WITHOUT_MOJO,
-                                          TestParameter::LOADING_WITH_MOJO));
 
 }  // namespace content

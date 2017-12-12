@@ -506,11 +506,7 @@ WebURLLoaderImpl::Context::Context(
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
       url_loader_factory_(url_loader_factory) {
-#if DCHECK_IS_ON()
-  const bool mojo_loading_enabled =
-      base::FeatureList::IsEnabled(features::kLoadingWithMojo);
-  DCHECK(url_loader_factory_ || !mojo_loading_enabled || !resource_dispatcher);
-#endif
+  DCHECK(url_loader_factory_ || !resource_dispatcher);
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
