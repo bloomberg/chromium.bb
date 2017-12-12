@@ -641,53 +641,93 @@ TEST(BrokerProcess, BrokerDiesOnClosedChannel) {
 
 TEST(BrokerProcess, CreateFile) {
   std::string temp_str;
+  std::string perm_str;
   {
-    ScopedTemporaryFile tmp_file;
-    temp_str = tmp_file.full_file_name();
+    ScopedTemporaryFile temp_file;
+    ScopedTemporaryFile perm_file;
+    temp_str = temp_file.full_file_name();
+    perm_str = perm_file.full_file_name();
   }
   const char* tempfile_name = temp_str.c_str();
+  const char* permfile_name = perm_str.c_str();
 
   BrokerCommandSet command_set =
       MakeBrokerCommandSet({COMMAND_ACCESS, COMMAND_OPEN});
 
   std::vector<BrokerFilePermission> permissions = {
-      BrokerFilePermission::ReadWriteCreate(tempfile_name)};
+      BrokerFilePermission::ReadWriteCreateTemporary(tempfile_name),
+      BrokerFilePermission::ReadWriteCreate(permfile_name),
+  };
+
   BrokerProcess open_broker(kFakeErrnoSentinel, command_set, permissions);
   ASSERT_TRUE(open_broker.Init(base::BindRepeating(&NoOpCallback)));
 
   int fd = -1;
 
-  // Try without O_EXCL
+  // Opening a temp file using O_CREAT but not O_EXCL must not be allowed
+  // by the broker so as to prevent spying on any pre-existing files.
   fd = open_broker.Open(tempfile_name, O_RDWR | O_CREAT);
   ASSERT_EQ(fd, -kFakeErrnoSentinel);
 
-  const char kTestText[] = "TESTTESTTEST";
-  // Create a file
+  // Opening a temp file in a normal way must not be allowed by the broker,
+  // either.
+  fd = open_broker.Open(tempfile_name, O_RDWR);
+  ASSERT_EQ(fd, -kFakeErrnoSentinel);
+
+  // Opening a temp file with both O_CREAT and O_EXCL is allowed since the
+  // file is known not to exist outside the scope of ScopedTemporaryFile.
   fd = open_broker.Open(tempfile_name, O_RDWR | O_CREAT | O_EXCL);
   ASSERT_GE(fd, 0);
+  close(fd);
+
+  // Manually create a conflict for the temp filename.
+  fd = open(tempfile_name, O_RDWR | O_CREAT, 0600);
+  ASSERT_GE(fd, 0);
+  close(fd);
+
+  // Opening a temp file with both O_CREAT and O_EXCL is allowed but fails
+  // per the OS when there is a conflict with a pre-existing file.
+  fd = open_broker.Open(tempfile_name, O_RDWR | O_CREAT | O_EXCL);
+  ASSERT_EQ(fd, -EEXIST);
+
+  // Opening a new permanent file without specifying O_EXCL is allowed.
+  fd = open_broker.Open(permfile_name, O_RDWR | O_CREAT);
+  ASSERT_GE(fd, 0);
+  close(fd);
+
+  // Opening an existing permanent file without specifying O_EXCL is allowed.
+  fd = open_broker.Open(permfile_name, O_RDWR | O_CREAT);
+  ASSERT_GE(fd, 0);
+  close(fd);
+
+  // Opening an existing file with O_EXCL is allowed but fails per the OS.
+  fd = open_broker.Open(permfile_name, O_RDWR | O_CREAT | O_EXCL);
+  ASSERT_EQ(fd, -EEXIST);
+
+  const char kTestText[] = "TESTTESTTEST";
+
+  fd = open_broker.Open(permfile_name, O_RDWR);
+  ASSERT_GE(fd, 0);
   {
+    // Write to the descriptor opened by the broker and close.
     base::ScopedFD scoped_fd(fd);
-
-    // Confirm fail if file exists
-    int bad_fd = open_broker.Open(tempfile_name, O_RDWR | O_CREAT | O_EXCL);
-    ASSERT_EQ(bad_fd, -EEXIST);
-
-    // Write to the descriptor opened by the broker.
-
     ssize_t len = HANDLE_EINTR(write(fd, kTestText, sizeof(kTestText)));
     ASSERT_EQ(len, static_cast<ssize_t>(sizeof(kTestText)));
   }
 
-  int fd_check = open(tempfile_name, O_RDONLY);
+  int fd_check = open(permfile_name, O_RDONLY);
   ASSERT_GE(fd_check, 0);
   {
     base::ScopedFD scoped_fd(fd_check);
     char buf[1024];
     ssize_t len = HANDLE_EINTR(read(fd_check, buf, sizeof(buf)));
-
     ASSERT_EQ(len, static_cast<ssize_t>(sizeof(kTestText)));
     ASSERT_EQ(memcmp(kTestText, buf, sizeof(kTestText)), 0);
   }
+
+  // Cleanup.
+  unlink(tempfile_name);
+  unlink(permfile_name);
 }
 
 void TestStatHelper(bool fast_check_in_client) {
