@@ -55,6 +55,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/download:test_support",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/store_kit",
+    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/fakes",
