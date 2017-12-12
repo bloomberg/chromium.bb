@@ -85,10 +85,6 @@
 #include "chrome/browser/ui/views/nav_button_provider.h"
 #endif
 
-#if defined(USE_GCONF)
-#include "chrome/browser/ui/libgtkui/nav_button_layout_manager_gconf.h"
-#endif
-
 // A minimized port of GtkThemeService into something that can provide colors
 // and images for aura.
 //
@@ -287,8 +283,6 @@ std::unique_ptr<NavButtonLayoutManager> CreateNavButtonLayoutManager(
 #endif
 #if defined(USE_GIO)
   return std::make_unique<NavButtonLayoutManagerGSettings>(gtk_ui);
-#elif defined(USE_GCONF)
-  return std::make_unique<NavButtonLayoutManagerGconf>(gtk_ui);
 #else
   return nullptr;
 #endif

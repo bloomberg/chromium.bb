@@ -70,14 +70,6 @@ template("libgtkui") {
       "//build/config/linux:x11",
     ]
 
-    if (use_gconf) {
-      sources += [
-        "nav_button_layout_manager_gconf.cc",
-        "nav_button_layout_manager_gconf.h",
-      ]
-      configs += [ "//build/config/linux/gconf" ]
-    }
-
     if (use_gio) {
       sources += [
         "nav_button_layout_manager_gsettings.cc",
