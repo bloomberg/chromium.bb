@@ -42,7 +42,7 @@ std::unique_ptr<BleAdvertiser> BleAdvertiserImpl::Factory::BuildInstance(
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
     BleSynchronizerBase* ble_synchronizer) {
-  return base::MakeUnique<BleAdvertiserImpl>(
+  return std::make_unique<BleAdvertiserImpl>(
       local_device_data_provider, remote_beacon_seed_fetcher, ble_synchronizer);
 }
 
@@ -135,7 +135,7 @@ void BleAdvertiserImpl::UpdateAdvertisements() {
     // the advertisement.
     if (metadata && !advertisement) {
       std::unique_ptr<cryptauth::DataWithTimestamp> service_data_copy =
-          base::MakeUnique<cryptauth::DataWithTimestamp>(
+          std::make_unique<cryptauth::DataWithTimestamp>(
               *metadata->service_data);
       advertisements_[i] =
           ErrorTolerantBleAdvertisementImpl::Factory::NewInstance(

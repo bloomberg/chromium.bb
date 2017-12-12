@@ -51,7 +51,7 @@ ConnectTetheringOperation::Factory::BuildInstance(
     BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required) {
-  return base::MakeUnique<ConnectTetheringOperation>(
+  return std::make_unique<ConnectTetheringOperation>(
       device_to_connect, connection_manager, tether_host_response_recorder,
       setup_required);
 }
@@ -66,7 +66,7 @@ ConnectTetheringOperation::ConnectTetheringOperation(
           connection_manager),
       remote_device_(device_to_connect),
       tether_host_response_recorder_(tether_host_response_recorder),
-      clock_(base::MakeUnique<base::DefaultClock>()),
+      clock_(std::make_unique<base::DefaultClock>()),
       setup_required_(setup_required),
       error_code_to_return_(
           ConnectTetheringResponse_ResponseCode::
@@ -88,7 +88,7 @@ void ConnectTetheringOperation::OnDeviceAuthenticated(
   connect_tethering_request_start_time_ = clock_->Now();
   connect_message_sequence_number_ = SendMessageToDevice(
       remote_device,
-      base::MakeUnique<MessageWrapper>(ConnectTetheringRequest()));
+      std::make_unique<MessageWrapper>(ConnectTetheringRequest()));
 }
 
 void ConnectTetheringOperation::OnMessageReceived(

@@ -4,7 +4,8 @@
 
 #include "chromeos/components/tether/notification_remover.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
@@ -33,11 +34,11 @@ class NotificationRemoverTest : public NetworkStateTest {
     DBusThreadManager::Initialize();
     NetworkStateTest::SetUp();
 
-    notification_presenter_ = base::MakeUnique<FakeNotificationPresenter>();
-    host_scan_cache_ = base::MakeUnique<FakeHostScanCache>();
-    active_host_ = base::MakeUnique<FakeActiveHost>();
+    notification_presenter_ = std::make_unique<FakeNotificationPresenter>();
+    host_scan_cache_ = std::make_unique<FakeHostScanCache>();
+    active_host_ = std::make_unique<FakeActiveHost>();
 
-    notification_remover_ = base::MakeUnique<NotificationRemover>(
+    notification_remover_ = std::make_unique<NotificationRemover>(
         network_state_handler(), notification_presenter_.get(),
         host_scan_cache_.get(), active_host_.get());
   }

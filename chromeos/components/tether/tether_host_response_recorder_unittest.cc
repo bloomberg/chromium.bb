@@ -4,6 +4,8 @@
 
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 
+#include <memory>
+
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -38,11 +40,11 @@ class TetherHostResponseRecorderTest : public testing::Test {
 
   void SetUp() override {
     pref_service_ =
-        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     TetherHostResponseRecorder::RegisterPrefs(pref_service_->registry());
 
     recorder_ =
-        base::MakeUnique<TetherHostResponseRecorder>(pref_service_.get());
+        std::make_unique<TetherHostResponseRecorder>(pref_service_.get());
 
     test_observer_ = base::WrapUnique(new TestObserver());
     recorder_->AddObserver(test_observer_.get());

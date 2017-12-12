@@ -8,7 +8,6 @@
 #include <sstream>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
@@ -58,15 +57,15 @@ class CrashRecoveryManagerImplTest : public NetworkStateTest {
 
     is_restoration_finished_ = false;
 
-    fake_active_host_ = base::MakeUnique<FakeActiveHost>();
-    fake_host_scan_cache_ = base::MakeUnique<FakeHostScanCache>();
+    fake_active_host_ = std::make_unique<FakeActiveHost>();
+    fake_host_scan_cache_ = std::make_unique<FakeHostScanCache>();
 
-    crash_recovery_manager_ = base::MakeUnique<CrashRecoveryManagerImpl>(
+    crash_recovery_manager_ = std::make_unique<CrashRecoveryManagerImpl>(
         network_state_handler(), fake_active_host_.get(),
         fake_host_scan_cache_.get());
 
     device_id_tether_network_guid_map_ =
-        base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
+        std::make_unique<DeviceIdTetherNetworkGuidMap>();
   }
 
   void TearDown() override {

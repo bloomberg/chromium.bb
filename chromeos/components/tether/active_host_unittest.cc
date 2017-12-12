@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -68,12 +67,12 @@ class ActiveHostTest : public testing::Test {
     get_active_host_results_.clear();
 
     test_pref_service_ =
-        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     fake_tether_host_fetcher_ =
-        base::MakeUnique<FakeTetherHostFetcher>(test_devices_);
+        std::make_unique<FakeTetherHostFetcher>(test_devices_);
 
     ActiveHost::RegisterPrefs(test_pref_service_->registry());
-    active_host_ = base::MakeUnique<ActiveHost>(fake_tether_host_fetcher_.get(),
+    active_host_ = std::make_unique<ActiveHost>(fake_tether_host_fetcher_.get(),
                                                 test_pref_service_.get());
 
     test_observer_ = base::WrapUnique(new TestObserver);

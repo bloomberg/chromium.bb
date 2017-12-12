@@ -4,8 +4,9 @@
 
 #include "chromeos/components/tether/ble_scanner_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/components/tether/ble_constants.h"
@@ -58,7 +59,7 @@ std::unique_ptr<BleScanner> BleScannerImpl::Factory::BuildInstance(
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     BleSynchronizerBase* ble_synchronizer,
     TetherHostFetcher* tether_host_fetcher) {
-  return base::MakeUnique<BleScannerImpl>(adapter, local_device_data_provider,
+  return std::make_unique<BleScannerImpl>(adapter, local_device_data_provider,
                                           ble_synchronizer,
                                           tether_host_fetcher);
 }
@@ -83,8 +84,8 @@ BleScannerImpl::BleScannerImpl(
       local_device_data_provider_(local_device_data_provider),
       ble_synchronizer_(ble_synchronizer),
       tether_host_fetcher_(tether_host_fetcher),
-      service_data_provider_(base::MakeUnique<ServiceDataProviderImpl>()),
-      eid_generator_(base::MakeUnique<cryptauth::ForegroundEidGenerator>()),
+      service_data_provider_(std::make_unique<ServiceDataProviderImpl>()),
+      eid_generator_(std::make_unique<cryptauth::ForegroundEidGenerator>()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   adapter_->AddObserver(this);
@@ -233,7 +234,7 @@ void BleScannerImpl::OnDiscoverySessionStarted(
 
   discovery_session_ = std::move(discovery_session);
   discovery_session_weak_ptr_factory_ =
-      base::MakeUnique<base::WeakPtrFactory<device::BluetoothDiscoverySession>>(
+      std::make_unique<base::WeakPtrFactory<device::BluetoothDiscoverySession>>(
           discovery_session_.get());
 
   ScheduleStatusChangeNotification(true /* discovery_session_active */);

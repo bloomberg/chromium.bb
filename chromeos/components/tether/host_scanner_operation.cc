@@ -4,7 +4,8 @@
 
 #include "chromeos/components/tether/host_scanner_operation.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
@@ -89,7 +90,7 @@ HostScannerOperation::Factory::BuildInstance(
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
     TetherHostResponseRecorder* tether_host_response_recorder) {
-  return base::MakeUnique<HostScannerOperation>(
+  return std::make_unique<HostScannerOperation>(
       devices_to_connect, connection_manager, host_scan_device_prioritizer,
       tether_host_response_recorder);
 }
@@ -121,7 +122,7 @@ HostScannerOperation::HostScannerOperation(
           PrioritizeDevices(devices_to_connect, host_scan_device_prioritizer),
           connection_manager),
       tether_host_response_recorder_(tether_host_response_recorder),
-      clock_(base::MakeUnique<base::DefaultClock>()) {}
+      clock_(std::make_unique<base::DefaultClock>()) {}
 
 HostScannerOperation::~HostScannerOperation() = default;
 
@@ -149,7 +150,7 @@ void HostScannerOperation::OnDeviceAuthenticated(
   device_id_to_tether_availability_request_start_time_map_[remote_device
                                                                .GetDeviceId()] =
       clock_->Now();
-  SendMessageToDevice(remote_device, base::MakeUnique<MessageWrapper>(
+  SendMessageToDevice(remote_device, std::make_unique<MessageWrapper>(
                                          TetherAvailabilityRequest()));
 }
 

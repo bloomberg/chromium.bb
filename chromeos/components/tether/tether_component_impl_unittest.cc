@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/asynchronous_shutdown_object_container_impl.h"
 #include "chromeos/components/tether/crash_recovery_manager_impl.h"
 #include "chromeos/components/tether/fake_active_host.h"
@@ -119,9 +118,9 @@ class TetherComponentImplTest : public testing::Test {
     was_synchronous_container_deleted_ = false;
     was_asynchronous_container_deleted_ = false;
 
-    fake_active_host_ = base::MakeUnique<FakeActiveHost>();
-    fake_host_scan_scheduler_ = base::MakeUnique<FakeHostScanScheduler>();
-    fake_tether_disconnector_ = base::MakeUnique<FakeTetherDisconnector>();
+    fake_active_host_ = std::make_unique<FakeActiveHost>();
+    fake_host_scan_scheduler_ = std::make_unique<FakeHostScanScheduler>();
+    fake_tether_disconnector_ = std::make_unique<FakeTetherDisconnector>();
 
     fake_synchronous_container_ = new FakeSynchronousShutdownObjectContainer(
         base::Bind(&TetherComponentImplTest::OnSynchronousContainerDeleted,
@@ -152,7 +151,7 @@ class TetherComponentImplTest : public testing::Test {
     CrashRecoveryManagerImpl::Factory::SetInstanceForTesting(
         fake_crash_recovery_manager_factory_.get());
 
-    component_ = base::MakeUnique<TetherComponentImpl>(
+    component_ = std::make_unique<TetherComponentImpl>(
         nullptr /* cryptauth_service */, nullptr /* tether_host_fetcher */,
         nullptr /* notification_presenter */, nullptr /* pref_service */,
         nullptr /* network_state_handler */,
@@ -160,7 +159,7 @@ class TetherComponentImplTest : public testing::Test {
         nullptr /* network_connect */, nullptr /* network_connection_handler */,
         nullptr /* adapter */);
 
-    test_observer_ = base::MakeUnique<TestTetherComponentObserver>();
+    test_observer_ = std::make_unique<TestTetherComponentObserver>();
     component_->AddObserver(test_observer_.get());
   }
 

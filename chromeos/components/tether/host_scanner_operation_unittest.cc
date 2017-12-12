@@ -112,11 +112,11 @@ class HostScannerOperationTest : public testing::Test {
   }
 
   void SetUp() override {
-    fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
+    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
     test_host_scan_device_prioritizer_ =
-        base::MakeUnique<TestHostScanDevicePrioritizer>();
+        std::make_unique<TestHostScanDevicePrioritizer>();
     mock_tether_host_response_recorder_ =
-        base::MakeUnique<StrictMock<MockTetherHostResponseRecorder>>();
+        std::make_unique<StrictMock<MockTetherHostResponseRecorder>>();
     test_observer_ = base::WrapUnique(new TestObserver());
   }
 

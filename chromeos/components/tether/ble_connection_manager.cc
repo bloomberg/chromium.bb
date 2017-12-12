@@ -208,8 +208,8 @@ BleConnectionManager::BleConnectionManager(
       ble_advertiser_(ble_advertiser),
       ble_scanner_(ble_scanner),
       ad_hoc_ble_advertisement_(ad_hoc_ble_advertisement),
-      timer_factory_(base::MakeUnique<TimerFactory>()),
-      clock_(base::MakeUnique<base::DefaultClock>()),
+      timer_factory_(std::make_unique<TimerFactory>()),
+      clock_(std::make_unique<base::DefaultClock>()),
       has_registered_observer_(false),
       weak_ptr_factory_(this) {}
 

@@ -23,13 +23,13 @@ class HostScanDevicePrioritizerImplTest : public testing::Test {
 
   void SetUp() override {
     pref_service_ =
-        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     TetherHostResponseRecorder::RegisterPrefs(pref_service_->registry());
     recorder_ =
-        base::MakeUnique<TetherHostResponseRecorder>(pref_service_.get());
+        std::make_unique<TetherHostResponseRecorder>(pref_service_.get());
 
     prioritizer_ =
-        base::MakeUnique<HostScanDevicePrioritizerImpl>(recorder_.get());
+        std::make_unique<HostScanDevicePrioritizerImpl>(recorder_.get());
   }
 
   std::vector<cryptauth::RemoteDevice> test_devices_;

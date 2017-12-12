@@ -118,9 +118,9 @@ class ConnectTetheringOperationTest : public testing::Test {
   }
 
   void SetUp() override {
-    fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
+    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
     mock_tether_host_response_recorder_ =
-        base::MakeUnique<StrictMock<MockTetherHostResponseRecorder>>();
+        std::make_unique<StrictMock<MockTetherHostResponseRecorder>>();
     test_observer_ = base::WrapUnique(new TestObserver());
 
     operation_ = base::WrapUnique(new ConnectTetheringOperation(
