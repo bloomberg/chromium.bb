@@ -40,11 +40,9 @@ namespace blink {
 
 InsertTextCommand::InsertTextCommand(Document& document,
                                      const String& text,
-                                     bool select_inserted_text,
                                      RebalanceType rebalance_type)
     : CompositeEditCommand(document),
       text_(text),
-      select_inserted_text_(select_inserted_text),
       rebalance_type_(rebalance_type) {}
 
 String InsertTextCommand::TextDataForInputEvent() const {
@@ -92,8 +90,7 @@ void InsertTextCommand::SetEndingSelectionWithoutValidation(
 
 // This avoids the expense of a full fledged delete operation, and avoids a
 // layout that typically results from text removal.
-bool InsertTextCommand::PerformTrivialReplace(const String& text,
-                                              bool select_inserted_text) {
+bool InsertTextCommand::PerformTrivialReplace(const String& text) {
   // We may need to manipulate neighboring whitespace if we're deleting text.
   // This case is tested in
   // InsertTextCommandTest_InsertEmptyTextAfterWhitespaceThatNeedsFixup.
@@ -112,8 +109,6 @@ bool InsertTextCommand::PerformTrivialReplace(const String& text,
     return false;
 
   SetEndingSelectionWithoutValidation(start, end_position);
-  if (select_inserted_text)
-    return true;
   SetEndingSelection(SelectionForUndoStep::From(
       SelectionInDOMTree::Builder()
           .Collapse(EndingVisibleSelection().End())
@@ -122,8 +117,7 @@ bool InsertTextCommand::PerformTrivialReplace(const String& text,
   return true;
 }
 
-bool InsertTextCommand::PerformOverwrite(const String& text,
-                                         bool select_inserted_text) {
+bool InsertTextCommand::PerformOverwrite(const String& text) {
   Position start = EndingVisibleSelection().Start();
   if (start.IsNull() || !start.IsOffsetInAnchor() ||
       !start.ComputeContainerNode()->IsTextNode())
@@ -142,7 +136,7 @@ bool InsertTextCommand::PerformOverwrite(const String& text,
   Position end_position =
       Position(text_node, start.OffsetInContainerNode() + text.length());
   SetEndingSelectionWithoutValidation(start, end_position);
-  if (select_inserted_text || EndingSelection().IsNone())
+  if (EndingSelection().IsNone())
     return true;
   SetEndingSelection(SelectionForUndoStep::From(
       SelectionInDOMTree::Builder()
@@ -165,7 +159,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
   // Delete the current selection.
   // FIXME: This delete operation blows away the typing style.
   if (EndingSelection().IsRange()) {
-    if (PerformTrivialReplace(text_, select_inserted_text_))
+    if (PerformTrivialReplace(text_))
       return;
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     bool end_of_selection_was_at_start_of_block =
@@ -185,7 +179,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
         typing_style->RemoveBlockProperties();
     }
   } else if (GetDocument().GetFrame()->GetEditor().IsOverwriteModeEnabled()) {
-    if (PerformOverwrite(text_, select_inserted_text_))
+    if (PerformOverwrite(text_))
       return;
   }
 
@@ -300,15 +294,13 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
     }
   }
 
-  if (!select_inserted_text_) {
-    SelectionInDOMTree::Builder builder;
-    const VisibleSelection& selection = EndingVisibleSelection();
-    builder.SetAffinity(selection.Affinity());
-    builder.SetIsDirectional(EndingSelection().IsDirectional());
-    if (selection.End().IsNotNull())
-      builder.Collapse(selection.End());
-    SetEndingSelection(SelectionForUndoStep::From(builder.Build()));
-  }
+  SelectionInDOMTree::Builder builder;
+  const VisibleSelection& selection = EndingVisibleSelection();
+  builder.SetAffinity(selection.Affinity());
+  builder.SetIsDirectional(EndingSelection().IsDirectional());
+  if (selection.End().IsNotNull())
+    builder.Collapse(selection.End());
+  SetEndingSelection(SelectionForUndoStep::From(builder.Build()));
 }
 
 Position InsertTextCommand::InsertTab(const Position& pos,

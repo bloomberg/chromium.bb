@@ -663,14 +663,14 @@ void TypingCommand::InsertTextRunWithoutNewlines(const String& text,
   CompositeEditCommand* command;
   if (IsIncrementalInsertion()) {
     command = InsertIncrementalTextCommand::Create(
-        GetDocument(), text, false,
+        GetDocument(), text,
         composition_type_ == kTextCompositionNone
             ? InsertIncrementalTextCommand::
                   kRebalanceLeadingAndTrailingWhitespaces
             : InsertIncrementalTextCommand::kRebalanceAllWhitespaces);
   } else {
     command = InsertTextCommand::Create(
-        GetDocument(), text, false,
+        GetDocument(), text,
         composition_type_ == kTextCompositionNone
             ? InsertTextCommand::kRebalanceLeadingAndTrailingWhitespaces
             : InsertTextCommand::kRebalanceAllWhitespaces);
