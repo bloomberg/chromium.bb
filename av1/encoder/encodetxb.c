@@ -340,9 +340,11 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   (void)blk_col;
   aom_write_bin(w, eob == 0,
                 ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
+#if CONFIG_TXK_SEL
   if (plane == 0 && eob == 0) {
     assert(tx_type == DCT_DCT);
   }
+#endif
   if (eob == 0) return;
 
   av1_txb_init_levels(tcoeff, width, height, levels);
