@@ -3717,7 +3717,7 @@
         other {# items to be removed}}
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_REGISTRY_ENTRIES" desc="Introduces a bullet list containing the names of registry entries to be removed/changed by Chrome.">
-      Registry entries:
+      Registry entries to be removed or changed:
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_MORE" desc="Link; on click, the screen shows items to be removed by Chrome. Items could include files, programs, or registry entries. This link is for advanced users. Placeholder can be 2 or more items.">
       {NUM_DOWNLOAD, plural,
