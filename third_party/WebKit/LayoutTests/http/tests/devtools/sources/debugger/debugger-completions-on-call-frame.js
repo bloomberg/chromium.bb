@@ -21,6 +21,7 @@
           var var2 = 3;
           var arr1 = [1,2,3];
           var arr2 = new Uint8Array(new ArrayBuffer(Math.pow(2, 29)));
+          var arr3 = new Array(Math.pow(2, 29));
           debugger;
       }
   `);
@@ -93,6 +94,11 @@
     function step14(next) {
       ObjectUI.JavaScriptAutocomplete.completionsForExpression('document\n', 'E')
           .then(checkAgainstGolden.bind(this, ['Element'], ['ELEMENT_NODE'], next));
+    },
+
+    function step15_ShouldNotCrash(next) {
+      ObjectUI.JavaScriptAutocomplete.completionsForExpression('arr3.', '')
+          .then(checkAgainstGolden.bind(this, ['length'], ['1', '2', '3'], next));
     }
   ]);
 
