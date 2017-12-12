@@ -1802,15 +1802,14 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                int segment_id, aom_reader *r) {
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
     return get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME) != INTRA_FRAME;
-  } else {
-    const int ctx = av1_get_intra_inter_context(xd);
-    FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-    const int is_inter =
-        aom_read_symbol(r, ec_ctx->intra_inter_cdf[ctx], 2, ACCT_STR);
-    FRAME_COUNTS *counts = xd->counts;
-    if (counts) ++counts->intra_inter[ctx][is_inter];
-    return is_inter;
   }
+  const int ctx = av1_get_intra_inter_context(xd);
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  const int is_inter =
+      aom_read_symbol(r, ec_ctx->intra_inter_cdf[ctx], 2, ACCT_STR);
+  FRAME_COUNTS *counts = xd->counts;
+  if (counts) ++counts->intra_inter[ctx][is_inter];
+  return is_inter;
 }
 
 static void fpm_sync(void *const data, int mi_row) {
