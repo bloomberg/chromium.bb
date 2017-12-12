@@ -302,6 +302,8 @@ Panel.setMode = function(mode) {
   $('main').hidden = (this.mode_ == Panel.Mode.FULLSCREEN_TUTORIAL);
   $('menus_background').hidden = (this.mode_ != Panel.Mode.FULLSCREEN_MENUS);
   $('tutorial').hidden = (this.mode_ != Panel.Mode.FULLSCREEN_TUTORIAL);
+
+  Panel.updateFromPrefs();
 };
 
 /**
