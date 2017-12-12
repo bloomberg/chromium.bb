@@ -27,6 +27,7 @@
 #define LayoutSVGShape_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/layout/svg/LayoutSVGModelObject.h"
 #include "core/layout/svg/SVGMarkerData.h"
 #include "platform/geometry/FloatRect.h"
@@ -46,13 +47,13 @@ enum ShapeGeometryCodePath {
 };
 
 struct LayoutSVGShapeRareData {
-  WTF_MAKE_NONCOPYABLE(LayoutSVGShapeRareData);
   USING_FAST_MALLOC(LayoutSVGShapeRareData);
 
  public:
   LayoutSVGShapeRareData() {}
   Path cached_non_scaling_stroke_path_;
   AffineTransform cached_non_scaling_stroke_transform_;
+  DISALLOW_COPY_AND_ASSIGN(LayoutSVGShapeRareData);
 };
 
 class LayoutSVGShape : public LayoutSVGModelObject {

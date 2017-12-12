@@ -31,13 +31,13 @@
 #ifndef FlexibleBoxAlgorithm_h
 #define FlexibleBoxAlgorithm_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/OrderIterator.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/LayoutPoint.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -229,8 +229,6 @@ class FlexLine {
 //     }
 //     // The final position of each flex item is in item.desired_location
 class FlexLayoutAlgorithm {
-  WTF_MAKE_NONCOPYABLE(FlexLayoutAlgorithm);
-
  public:
   FlexLayoutAlgorithm(const ComputedStyle*,
                       LayoutUnit line_break_length,
@@ -274,6 +272,7 @@ class FlexLayoutAlgorithm {
   Vector<FlexItem>& all_items_;
   Vector<FlexLine> flex_lines_;
   size_t next_item_index_;
+  DISALLOW_COPY_AND_ASSIGN(FlexLayoutAlgorithm);
 };
 
 }  // namespace blink

@@ -33,11 +33,11 @@
 
 #include <unicode/uchar.h>
 #include <memory>
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -57,8 +57,6 @@ class SubtreeLayoutScope;
 
 class CORE_EXPORT TextAutosizer final
     : public GarbageCollectedFinalized<TextAutosizer> {
-  WTF_MAKE_NONCOPYABLE(TextAutosizer);
-
  public:
   ~TextAutosizer();
   static TextAutosizer* Create(const Document* document) {
@@ -357,6 +355,7 @@ class CORE_EXPORT TextAutosizer final
   // FIXME: All frames should share the same m_pageInfo instance.
   PageInfo page_info_;
   bool update_page_info_deferred_;
+  DISALLOW_COPY_AND_ASSIGN(TextAutosizer);
 };
 
 }  // namespace blink

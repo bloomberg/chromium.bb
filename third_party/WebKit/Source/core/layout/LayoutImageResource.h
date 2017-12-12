@@ -27,6 +27,7 @@
 #ifndef LayoutImageResource_h
 #define LayoutImageResource_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleImage.h"
@@ -37,8 +38,6 @@ class LayoutObject;
 
 class CORE_EXPORT LayoutImageResource
     : public GarbageCollectedFinalized<LayoutImageResource> {
-  WTF_MAKE_NONCOPYABLE(LayoutImageResource);
-
  public:
   virtual ~LayoutImageResource();
 
@@ -81,6 +80,9 @@ class CORE_EXPORT LayoutImageResource
 
   LayoutObject* layout_object_;
   Member<ImageResourceContent> cached_image_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LayoutImageResource);
 };
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 #define GridTrackSizingAlgorithm_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/layout/LayoutBox.h"
 #include "core/style/GridPositionsResolver.h"
 #include "core/style/GridTrackSize.h"
@@ -226,7 +227,6 @@ class GridTrackSizingAlgorithm final {
 };
 
 class GridTrackSizingAlgorithmStrategy {
-  WTF_MAKE_NONCOPYABLE(GridTrackSizingAlgorithmStrategy);
   USING_FAST_MALLOC(GridTrackSizingAlgorithmStrategy);
 
  public:
@@ -302,6 +302,9 @@ class GridTrackSizingAlgorithmStrategy {
       GridTrackSizingDirection);
 
   GridTrackSizingAlgorithm& algorithm_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GridTrackSizingAlgorithmStrategy);
 };
 }
 

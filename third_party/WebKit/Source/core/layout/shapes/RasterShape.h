@@ -31,6 +31,7 @@
 #define RasterShape_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/layout/shapes/Shape.h"
 #include "core/layout/shapes/ShapeInterval.h"
 #include "platform/geometry/FloatRect.h"
@@ -80,8 +81,6 @@ class RasterShapeIntervals {
 };
 
 class RasterShape final : public Shape {
-  WTF_MAKE_NONCOPYABLE(RasterShape);
-
  public:
   RasterShape(std::unique_ptr<RasterShapeIntervals> intervals,
               const IntSize& margin_rect_size)
@@ -107,6 +106,7 @@ class RasterShape final : public Shape {
   std::unique_ptr<RasterShapeIntervals> intervals_;
   mutable std::unique_ptr<RasterShapeIntervals> margin_intervals_;
   IntSize margin_rect_size_;
+  DISALLOW_COPY_AND_ASSIGN(RasterShape);
 };
 
 }  // namespace blink

@@ -21,10 +21,10 @@
 #define SVGResourcesCache_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/style/StyleDifference.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -34,7 +34,6 @@ class LayoutSVGResourceContainer;
 class SVGResources;
 
 class SVGResourcesCache {
-  WTF_MAKE_NONCOPYABLE(SVGResourcesCache);
   USING_FAST_MALLOC(SVGResourcesCache);
 
  public:
@@ -63,7 +62,6 @@ class SVGResourcesCache {
                                  const ComputedStyle& new_style);
 
   class TemporaryStyleScope {
-    WTF_MAKE_NONCOPYABLE(TemporaryStyleScope);
     STACK_ALLOCATED();
 
    public:
@@ -78,6 +76,7 @@ class SVGResourcesCache {
     LayoutObject& layout_object_;
     const ComputedStyle& original_style_;
     const bool styles_are_equal_;
+    DISALLOW_COPY_AND_ASSIGN(TemporaryStyleScope);
   };
 
  private:
@@ -86,6 +85,7 @@ class SVGResourcesCache {
 
   typedef HashMap<const LayoutObject*, std::unique_ptr<SVGResources>> CacheMap;
   CacheMap cache_;
+  DISALLOW_COPY_AND_ASSIGN(SVGResourcesCache);
 };
 
 }  // namespace blink

@@ -21,16 +21,15 @@
 #ifndef TableLayoutAlgorithm_h
 #define TableLayoutAlgorithm_h
 
+#include "base/macros.h"
 #include "platform/LayoutUnit.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class LayoutTable;
 
 class TableLayoutAlgorithm {
-  WTF_MAKE_NONCOPYABLE(TableLayoutAlgorithm);
   USING_FAST_MALLOC(TableLayoutAlgorithm);
 
  public:
@@ -54,6 +53,9 @@ class TableLayoutAlgorithm {
   const static int kTableMaxWidth = 1000000;
 
   LayoutTable* table_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TableLayoutAlgorithm);
 };
 
 }  // namespace blink

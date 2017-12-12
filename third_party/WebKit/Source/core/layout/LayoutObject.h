@@ -27,6 +27,7 @@
 #ifndef LayoutObject_h
 #define LayoutObject_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
@@ -207,7 +208,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
                            LocationInBackingAndSelectionVisualRect);
   friend class VisualRectMappingTest;
-  WTF_MAKE_NONCOPYABLE(LayoutObject);
 
  public:
   // Anonymous objects should pass the document as their node, and they will
@@ -2608,13 +2608,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   static bool affects_parent_block_;
 
   FragmentData fragment_;
+  DISALLOW_COPY_AND_ASSIGN(LayoutObject);
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer
 // hit.
 class DeprecatedDisableModifyLayoutTreeStructureAsserts {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(DeprecatedDisableModifyLayoutTreeStructureAsserts);
 
  public:
   DeprecatedDisableModifyLayoutTreeStructureAsserts();
@@ -2623,6 +2623,7 @@ class DeprecatedDisableModifyLayoutTreeStructureAsserts {
 
  private:
   AutoReset<bool> disabler_;
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedDisableModifyLayoutTreeStructureAsserts);
 };
 
 // Allow equality comparisons of LayoutObjects by reference or pointer,

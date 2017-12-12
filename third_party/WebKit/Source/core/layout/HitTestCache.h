@@ -5,10 +5,10 @@
 #ifndef HitTestCache_h
 #define HitTestCache_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/layout/HitTestResult.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -36,8 +36,6 @@ namespace blink {
 
 class CORE_EXPORT HitTestCache final
     : public GarbageCollectedFinalized<HitTestCache> {
-  WTF_MAKE_NONCOPYABLE(HitTestCache);
-
  public:
   static HitTestCache* Create() { return new HitTestCache; }
 
@@ -74,6 +72,7 @@ class CORE_EXPORT HitTestCache final
   unsigned update_index_;
   HeapVector<HitTestResult, HIT_TEST_CACHE_SIZE> items_;
   uint64_t dom_tree_version_;
+  DISALLOW_COPY_AND_ASSIGN(HitTestCache);
 };
 
 }  // namespace blink

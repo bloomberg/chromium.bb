@@ -31,8 +31,8 @@
 #ifndef OrderIterator_h
 #define OrderIterator_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 #include <set>
 
@@ -42,7 +42,6 @@ class LayoutBox;
 
 class OrderIterator {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(OrderIterator);
 
  public:
   friend class OrderIteratorPopulator;
@@ -71,6 +70,7 @@ class OrderIterator {
   OrderValues order_values_;
   OrderValues::const_iterator order_values_iterator_;
   bool is_reset_;
+  DISALLOW_COPY_AND_ASSIGN(OrderIterator);
 };
 
 class OrderIteratorPopulator {

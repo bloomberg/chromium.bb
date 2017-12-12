@@ -30,10 +30,11 @@
 #ifndef PolygonShape_h
 #define PolygonShape_h
 
+#include <memory>
+#include "base/macros.h"
 #include "core/layout/shapes/Shape.h"
 #include "core/layout/shapes/ShapeInterval.h"
 #include "platform/geometry/FloatPolygon.h"
-#include <memory>
 
 namespace blink {
 
@@ -62,8 +63,6 @@ class OffsetPolygonEdge final : public VertexPair {
 };
 
 class PolygonShape final : public Shape {
-  WTF_MAKE_NONCOPYABLE(PolygonShape);
-
  public:
   PolygonShape(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fill_rule)
       : Shape(), polygon_(std::move(vertices), fill_rule) {}
@@ -76,6 +75,7 @@ class PolygonShape final : public Shape {
 
  private:
   FloatPolygon polygon_;
+  DISALLOW_COPY_AND_ASSIGN(PolygonShape);
 };
 
 }  // namespace blink

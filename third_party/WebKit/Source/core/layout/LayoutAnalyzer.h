@@ -6,9 +6,9 @@
 #define LayoutAnalyzer_h
 
 #include <memory>
+#include "base/macros.h"
 #include "platform/LayoutUnit.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -21,7 +21,6 @@ class TracedValue;
 // LayoutAnalyzer::Scope analyzer(*this);
 class LayoutAnalyzer {
   USING_FAST_MALLOC(LayoutAnalyzer);
-  WTF_MAKE_NONCOPYABLE(LayoutAnalyzer);
 
  public:
   enum Counter {
@@ -92,6 +91,7 @@ class LayoutAnalyzer {
   double start_ms_;
   unsigned depth_;
   unsigned counters_[kNumCounters];
+  DISALLOW_COPY_AND_ASSIGN(LayoutAnalyzer);
 };
 
 }  // namespace blink

@@ -20,9 +20,9 @@
 #ifndef SVGResourcesCycleSolver_h
 #define SVGResourcesCycleSolver_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -32,7 +32,6 @@ class SVGResources;
 
 class SVGResourcesCycleSolver {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(SVGResourcesCycleSolver);
 
  public:
   SVGResourcesCycleSolver(LayoutObject*, SVGResources*);
@@ -50,6 +49,7 @@ class SVGResourcesCycleSolver {
 
   ResourceSet active_resources_;
   ResourceSet dag_cache_;
+  DISALLOW_COPY_AND_ASSIGN(SVGResourcesCycleSolver);
 };
 
 }  // namespace blink

@@ -23,6 +23,7 @@
 #ifndef LayoutFrameSet_h
 #define LayoutFrameSet_h
 
+#include "base/macros.h"
 #include "core/layout/LayoutBox.h"
 
 namespace blink {
@@ -94,7 +95,6 @@ class LayoutFrameSet final : public LayoutBox {
 
   class GridAxis {
     DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(GridAxis);
 
    public:
     GridAxis();
@@ -106,6 +106,9 @@ class LayoutFrameSet final : public LayoutBox {
     Vector<bool> allow_border_;
     int split_being_resized_;
     int split_resize_offset_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(GridAxis);
   };
 
   const GridAxis& Rows() const { return rows_; }
