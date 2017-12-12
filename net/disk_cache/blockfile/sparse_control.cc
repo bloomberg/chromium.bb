@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "net/base/interval.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/blockfile/backend_impl.h"
@@ -768,68 +769,82 @@ int SparseControl::DoGetAvailableRange() {
   if (!child_)
     return child_len_;  // Move on to the next child.
 
+  // Blockfile splits sparse files into multiple child entries, each responsible
+  // for managing 1MiB of address space. This method is responsible for
+  // implementing GetAvailableRange within a single child.
+  //
+  // Input:
+  //   |child_offset_|, |child_len_|:
+  //     describe range in current child's address space the client requested.
+  //   |offset_| is equivalent to |child_offset_| but in global address space.
+  //
+  //   For example if this were child [2] and the original call was for
+  //   [0x200005, 0x200007) then |offset_| would be 0x200005, |child_offset_|
+  //   would be 5, and |child_len| would be 2.
+  //
+  // Output:
+  //   If nothing found:
+  //     return |child_len_|
+  //
+  //   If something found:
+  //     |result_| gets the length of the available range.
+  //     |offset_| gets the global address of beginning of the available range.
+  //     |range_found_| get true to signal SparseControl::GetAvailableRange().
+  //     return 0 to exit loop.
+  net::Interval<int> to_find(child_offset_, child_offset_ + child_len_);
+
+  // Within each child, valid portions are mostly tracked via the |child_map_|
+  // bitmap which marks which 1KiB 'blocks' have valid data. Scan the bitmap
+  // for the first contiguous range of set bits that's relevant to the range
+  // [child_offset_, child_offset_ + len)
+  int first_bit = child_offset_ >> 10;
+  int last_bit = (child_offset_ + child_len_ + kBlockSize - 1) >> 10;
+  int found = first_bit;
+  int bits_found = child_map_.FindBits(&found, last_bit, true);
+  net::Interval<int> bitmap_range(found * kBlockSize,
+                                  found * kBlockSize + bits_found * kBlockSize);
+
   // Bits on the bitmap should only be set when the corresponding block was
   // fully written (it's really being used). If a block is partially used, it
   // has to start with valid data, the length of the valid data is saved in
-  // |header.last_block_len| and the block itself should match
-  // |header.last_block|.
-  //
-  // In other words, (|header.last_block| + |header.last_block_len|) is the
-  // offset where the last write ended, and data in that block (which is not
-  // marked as used because it is not full) will only be reused if the next
-  // write continues at that point.
-  //
-  // This code has to find if there is any data between child_offset_ and
-  // child_offset_ + child_len_.
-  int last_bit = (child_offset_ + child_len_ + kBlockSize - 1) >> 10;
-  int start = child_offset_ >> 10;
-  int partial_start_bytes = PartialBlockLength(start);
-  int found = start;
-  int bits_found = child_map_.FindBits(&found, last_bit, true);
-  bool is_last_block_in_range = start < child_data_.header.last_block &&
-                                child_data_.header.last_block < last_bit;
-
-  int block_offset = child_offset_ & (kBlockSize - 1);
-  if (!bits_found && partial_start_bytes <= block_offset) {
-    if (!is_last_block_in_range)
-      return child_len_;
-    found = last_bit - 1;  // There are some bytes here.
+  // |header.last_block_len| and the block number saved in |header.last_block|.
+  // This is updated after every write; with |header.last_block| set to -1
+  // if no sub-KiB range is being tracked.
+  net::Interval<int> last_write_range;
+  if (child_data_.header.last_block >= 0) {
+    last_write_range =
+        net::Interval<int>(child_data_.header.last_block * kBlockSize,
+                           child_data_.header.last_block * kBlockSize +
+                               child_data_.header.last_block_len);
   }
 
-  // We are done. Just break the loop and reset result_ to our real result.
-  range_found_ = true;
+  // Often |last_write_range| is contiguously after |bitmap_range|, but not
+  // always. See if they can be combined.
+  if (!last_write_range.Empty() && !bitmap_range.Empty() &&
+      bitmap_range.max() == last_write_range.min()) {
+    bitmap_range.SetMax(last_write_range.max());
+    last_write_range.Clear();
+  }
 
-  int bytes_found = bits_found << 10;
-  bytes_found += PartialBlockLength(found + bits_found);
+  // Do any of them have anything relevant?
+  bitmap_range.IntersectWith(to_find);
+  last_write_range.IntersectWith(to_find);
 
-  // found now points to the first bytes. Lets see if we have data before it.
-  int empty_start = std::max((found << 10) - child_offset_, 0);
-  if (empty_start >= child_len_)
+  // Now return the earliest non-empty interval, if any.
+  net::Interval<int> result_range = bitmap_range;
+  if (bitmap_range.Empty() || (!last_write_range.Empty() &&
+                               last_write_range.min() < bitmap_range.min()))
+    result_range = last_write_range;
+
+  if (result_range.Empty()) {
+    // Nothing found, so we just skip over this child.
     return child_len_;
-
-  // At this point we have bytes_found stored after (found << 10), and we want
-  // child_len_ bytes after child_offset_. The first empty_start bytes after
-  // child_offset_ are invalid.
-
-  if (start == found)
-    bytes_found -= block_offset;
-
-  // If the user is searching past the end of this child, bits_found is the
-  // right result; otherwise, we have some empty space at the start of this
-  // query that we have to subtract from the range that we searched.
-  result_ = std::min(bytes_found, child_len_ - empty_start);
-
-  if (partial_start_bytes) {
-    result_ = std::min(partial_start_bytes - block_offset, child_len_);
-    empty_start = 0;
   }
 
-  // Only update offset_ when this query found zeros at the start.
-  if (empty_start)
-    offset_ += empty_start;
-
-  // This will actually break the loop.
-  buf_len_ = 0;
+  // Package up our results.
+  range_found_ = true;
+  offset_ += result_range.min() - child_offset_;
+  result_ = result_range.max() - result_range.min();
   return 0;
 }
 
