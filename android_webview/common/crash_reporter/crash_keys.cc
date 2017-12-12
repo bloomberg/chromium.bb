@@ -38,9 +38,6 @@ size_t RegisterWebViewCrashKeys() {
       {kVariations, kHugeSize},
       {kShutdownType, kSmallSize},
       {kBrowserUnpinTrace, kMediumSize},
-      {kAppPackageName, kSmallSize},
-      {kAppPackageVersionCode, kSmallSize},
-      {kAndroidSdkInt, kSmallSize},
 
       // content/:
       {"discardable-memory-allocated", kSmallSize},
