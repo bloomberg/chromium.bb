@@ -16,9 +16,8 @@ namespace blink {
 
 WorkerShadowPage::WorkerShadowPage(Client* client)
     : client_(client),
-      web_view_(WebViewImpl::Create(nullptr,
-                                    mojom::PageVisibilityState::kVisible,
-                                    nullptr)),
+      web_view_(
+          WebViewImpl::Create(nullptr, mojom::PageVisibilityState::kVisible)),
       main_frame_(WebLocalFrameImpl::CreateMainFrame(web_view_,
                                                      this,
                                                      nullptr,

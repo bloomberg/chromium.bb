@@ -260,10 +260,4 @@ bool ContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
   return false;
 }
 
-blink::WebFrame* ContentRendererClient::FindFrame(
-    blink::WebLocalFrame* relative_to_frame,
-    const std::string& name) {
-  return nullptr;
-}
-
 }  // namespace content
