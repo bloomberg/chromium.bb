@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_H_
-#define COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_DEPRECATED_H_
+#define COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_DEPRECATED_H_
 
 #include <vector>
 
@@ -53,7 +53,7 @@ struct VideoFormat {
 // The IPC interface between Android and Chromium for video decoding. Input
 // buffers are sent from Android side and get processed in Chromium and the
 // output buffers are returned back to Android side.
-class ArcVideoDecodeAccelerator {
+class ArcVideoDecodeAcceleratorDeprecated {
  public:
   enum Result {
     // Note: this enum is used for UMA reporting. The existing values should not
@@ -77,8 +77,8 @@ class ArcVideoDecodeAccelerator {
     //                format of each VDA on Chromium is supported.
   };
 
-  // The callbacks of the ArcVideoDecodeAccelerator. The user of this class
-  // should implement this interface.
+  // The callbacks of the ArcVideoDecodeAcceleratorDeprecated.
+  // The user of this class should implement this interface.
   class Client {
    public:
     virtual ~Client() {}
@@ -107,9 +107,10 @@ class ArcVideoDecodeAccelerator {
     virtual void OnFlushDone() = 0;
   };
 
-  // Initializes the ArcVideoDecodeAccelerator with specific configuration. This
-  // must be called before any other methods. This call is synchronous and
-  // returns SUCCESS iff initialization is successful.
+  // Initializes the ArcVideoDecodeAcceleratorDeprecated with
+  // specific configuration. This must be called before any other methods.
+  // This call is synchronous and returns SUCCESS
+  // iff initialization is successful.
   virtual Result Initialize(const Config& config, Client* client) = 0;
 
   // Allocates a new protected buffer on accelerator side for the given |port|
@@ -174,9 +175,9 @@ class ArcVideoDecodeAccelerator {
   // called.
   virtual void Flush() = 0;
 
-  virtual ~ArcVideoDecodeAccelerator() {}
+  virtual ~ArcVideoDecodeAcceleratorDeprecated() {}
 };
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_DEPRECATED_H_

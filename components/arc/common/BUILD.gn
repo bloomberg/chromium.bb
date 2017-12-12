@@ -65,7 +65,7 @@ mojom("media") {
     "protected_buffer_manager.mojom",
     "video.mojom",
     "video_common.mojom",
-    "video_decode_accelerator.mojom",
+    "video_decode_accelerator_deprecated.mojom",
     "video_encode_accelerator.mojom",
   ]
 

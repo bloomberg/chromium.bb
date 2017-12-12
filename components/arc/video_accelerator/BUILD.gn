@@ -4,11 +4,11 @@
 
 static_library("video_accelerator") {
   sources = [
-    "arc_video_decode_accelerator.h",
-    "chrome_arc_video_decode_accelerator.cc",
-    "chrome_arc_video_decode_accelerator.h",
-    "gpu_arc_video_decode_accelerator.cc",
-    "gpu_arc_video_decode_accelerator.h",
+    "arc_video_decode_accelerator_deprecated.h",
+    "chrome_arc_video_decode_accelerator_deprecated.cc",
+    "chrome_arc_video_decode_accelerator_deprecated.h",
+    "gpu_arc_video_decode_accelerator_deprecated.cc",
+    "gpu_arc_video_decode_accelerator_deprecated.h",
     "gpu_arc_video_encode_accelerator.cc",
     "gpu_arc_video_encode_accelerator.h",
     "protected_buffer_manager.cc",

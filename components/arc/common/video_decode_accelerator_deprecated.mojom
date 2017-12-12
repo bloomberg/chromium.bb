@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file defined the mojo interface between Android and Chromium for video
-// decoding. See comments of VideoDecodeAccelerator for more info.
+// decoding. See comments of VideoDecodeAcceleratorDeprecated for more info.
 
 module arc.mojom;
 
@@ -41,7 +41,7 @@ struct VideoFormat {
 };
 
 // Next MinVersion: 2
-struct VideoDecodeAcceleratorConfig {
+struct VideoDecodeAcceleratorConfigDeprecated {
   // Deprecated. This config struct is used for decoder only.
   enum DeviceTypeDeprecated {
     DEVICE_ENCODER = 0,
@@ -58,7 +58,7 @@ struct VideoDecodeAcceleratorConfig {
 // Next MinVersion: 5
 // Deprecated method IDs: 2, 7
 // Next method ID: 11
-interface VideoDecodeAccelerator {
+interface VideoDecodeAcceleratorDeprecated {
   enum Result {
     SUCCESS = 0,
     ILLEGAL_STATE = 1,
@@ -69,8 +69,8 @@ interface VideoDecodeAccelerator {
   };
 
   [MinVersion=2]
-  Initialize@8(VideoDecodeAcceleratorConfig config,
-               VideoDecodeClient client) => (Result result);
+  Initialize@8(VideoDecodeAcceleratorConfigDeprecated config,
+               VideoDecodeClientDeprecated client) => (Result result);
 
   [MinVersion=4]
   AllocateProtectedBuffer@10(PortType port, uint32 index, handle handle_fd,
@@ -94,8 +94,8 @@ interface VideoDecodeAccelerator {
 
 // Deprecated method IDs: 0
 // Next method ID: 6
-interface VideoDecodeClient {
-  OnError@1(VideoDecodeAccelerator.Result error);
+interface VideoDecodeClientDeprecated {
+  OnError@1(VideoDecodeAcceleratorDeprecated.Result error);
 
   OnBufferDone@2(PortType port, uint32 index, BufferMetadata metadata);
 
