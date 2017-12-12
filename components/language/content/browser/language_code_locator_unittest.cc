@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/language/language_code_locator.h"
+#include "components/language/content/browser/language_code_locator.h"
 
 #include <string>
 #include <vector>

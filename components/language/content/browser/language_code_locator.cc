@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/language/language_code_locator.h"
+#include "components/language/content/browser/language_code_locator.h"
 
 #include "base/strings/string_split.h"
 #include "third_party/s2cellid/src/s2/s2cellid.h"
