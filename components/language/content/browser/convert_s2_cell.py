@@ -14,6 +14,8 @@ sys.path.insert(1,
     os.path.join(os.path.dirname(__file__),
     os.path.pardir,
     os.path.pardir,
+    os.path.pardir,
+    os.path.pardir,
     "third_party"))
 import jinja2 # pylint: disable=F0401
 

@@ -198,7 +198,7 @@ test("components_unittests") {
       "//components/history/content/browser:unit_tests",
       "//components/invalidation/impl:unit_tests",
       "//components/keyed_service/content:unit_tests",
-      "//components/language:unit_tests",
+      "//components/language/content/browser:unit_tests",
       "//components/link_header_util:unit_tests",
       "//components/navigation_interception:unit_tests",
       "//components/network_hints/renderer:unit_tests",
@@ -469,7 +469,9 @@ if (!is_ios) {
     }
 
     if (is_android) {
-      sources += [ "test/android/browsertests_apk/components_browser_tests_jni_onload.cc" ]
+      sources += [
+        "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
+      ]
       sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
       deps += [
         "//content/public/test/android:layouttest_java_support",
@@ -526,7 +528,9 @@ if (!is_ios) {
     ]
 
     if (!is_ios) {
-      sources += [ "discardable_memory/common/discardable_shared_memory_heap_perftest.cc" ]
+      sources += [
+        "discardable_memory/common/discardable_shared_memory_heap_perftest.cc",
+      ]
       deps += [ "//components/discardable_memory/common" ]
     }
   }
