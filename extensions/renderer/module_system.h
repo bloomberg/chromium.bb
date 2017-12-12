@@ -113,9 +113,6 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // tests to mock out native modules.
   void OverrideNativeHandlerForTest(const std::string& name);
 
-  // Executes |code| in the current context with |name| as the filename.
-  void RunString(const std::string& code, const std::string& name);
-
   // Make |object|.|field| lazily evaluate to the result of
   // require(|module_name|)[|module_field|].
   //
