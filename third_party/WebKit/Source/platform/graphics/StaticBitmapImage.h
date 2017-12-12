@@ -8,10 +8,17 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Image.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+
+namespace WTF {
+
+class ArrayBufferContents;
+
+}  // namespace WTF
 
 namespace blink {
 
@@ -94,6 +101,13 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   scoped_refptr<StaticBitmapImage> ConvertToColorSpace(
       sk_sp<SkColorSpace>,
       SkTransferFunctionBehavior);
+
+  static bool ConvertToArrayBufferContents(
+      scoped_refptr<StaticBitmapImage> src_image,
+      WTF::ArrayBufferContents& dest_contents,
+      const IntRect&,
+      const CanvasColorParams&,
+      bool is_accelerated = false);
 
  protected:
   // Helper for sub-classes

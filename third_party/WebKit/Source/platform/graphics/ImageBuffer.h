@@ -54,12 +54,6 @@ class GLES2Interface;
 }
 }
 
-namespace WTF {
-
-class ArrayBufferContents;
-
-}  // namespace WTF
-
 namespace blink {
 
 class DrawingBuffer;
@@ -108,10 +102,6 @@ class PLATFORM_EXPORT ImageBuffer {
 
   void WillOverwriteCanvas() { surface_->WillOverwriteCanvas(); }
 
-  bool GetImageData(const IntRect&,
-                    WTF::ArrayBufferContents&,
-                    bool* is_gpu_readback_invoked = nullptr) const;
-
   void PutByteArray(const unsigned char* source,
                     const IntSize& source_size,
                     const IntRect& source_rect,
@@ -146,6 +136,9 @@ class PLATFORM_EXPORT ImageBuffer {
   // TODO(xlai): This function is an intermediate step making canvas element
   // have reference to Canvas2DLayerBridge. See crbug.com/776806.
   void OnCanvasDisposed();
+  const CanvasColorParams& ColorParams() const {
+    return surface_->ColorParams();
+  }
 
   base::WeakPtrFactory<ImageBuffer> weak_ptr_factory_;
 
