@@ -29,6 +29,7 @@
 #ifndef AXTableColumn_h
 #define AXTableColumn_h
 
+#include "base/macros.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXMockObject.h"
 #include "modules/accessibility/AXTable.h"
@@ -38,8 +39,6 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class MODULES_EXPORT AXTableColumn final : public AXMockObject {
-  WTF_MAKE_NONCOPYABLE(AXTableColumn);
-
  private:
   explicit AXTableColumn(AXObjectCacheImpl&);
 
@@ -66,6 +65,8 @@ class MODULES_EXPORT AXTableColumn final : public AXMockObject {
 
   bool IsTableCol() const override { return true; }
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(AXTableColumn);
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, IsTableCol());

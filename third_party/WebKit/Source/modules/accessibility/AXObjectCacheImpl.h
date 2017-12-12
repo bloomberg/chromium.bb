@@ -30,12 +30,13 @@
 #define AXObjectCacheImpl_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
@@ -52,8 +53,6 @@ class LocalFrameView;
 class MODULES_EXPORT AXObjectCacheImpl
     : public AXObjectCacheBase,
       public mojom::blink::PermissionObserver {
-  WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl);
-
  public:
   static AXObjectCache* Create(Document&);
 
@@ -271,6 +270,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   // permission.
   mojom::blink::PermissionServicePtr permission_service_;
   mojo::Binding<mojom::blink::PermissionObserver> permission_observer_binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };
 
 // This is the only subclass of AXObjectCache.

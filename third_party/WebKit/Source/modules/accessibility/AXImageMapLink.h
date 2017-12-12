@@ -29,6 +29,7 @@
 #ifndef AXImageMapLink_h
 #define AXImageMapLink_h
 
+#include "base/macros.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "modules/accessibility/AXNodeObject.h"
@@ -38,8 +39,6 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXImageMapLink final : public AXNodeObject {
-  WTF_MAKE_NONCOPYABLE(AXImageMapLink);
-
  private:
   explicit AXImageMapLink(HTMLAreaElement*, AXObjectCacheImpl&);
 
@@ -68,6 +67,8 @@ class AXImageMapLink final : public AXNodeObject {
 
  private:
   bool IsImageMapLink() const override { return true; }
+
+  DISALLOW_COPY_AND_ASSIGN(AXImageMapLink);
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, IsImageMapLink());

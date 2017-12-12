@@ -29,6 +29,7 @@
 #ifndef AXTableCell_h
 #define AXTableCell_h
 
+#include "base/macros.h"
 #include "modules/accessibility/AXLayoutObject.h"
 
 namespace blink {
@@ -36,8 +37,6 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class MODULES_EXPORT AXTableCell : public AXLayoutObject {
-  WTF_MAKE_NONCOPYABLE(AXTableCell);
-
  protected:
   AXTableCell(LayoutObject*, AXObjectCacheImpl&);
 
@@ -75,6 +74,8 @@ class MODULES_EXPORT AXTableCell : public AXLayoutObject {
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
 
   unsigned aria_col_index_from_row_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(AXTableCell);
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, IsTableCell());

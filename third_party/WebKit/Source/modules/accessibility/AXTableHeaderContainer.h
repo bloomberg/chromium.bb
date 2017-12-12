@@ -29,6 +29,7 @@
 #ifndef AXTableHeaderContainer_h
 #define AXTableHeaderContainer_h
 
+#include "base/macros.h"
 #include "modules/accessibility/AXMockObject.h"
 #include "modules/accessibility/AXTable.h"
 
@@ -37,8 +38,6 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXTableHeaderContainer final : public AXMockObject {
-  WTF_MAKE_NONCOPYABLE(AXTableHeaderContainer);
-
  private:
   explicit AXTableHeaderContainer(AXObjectCacheImpl&);
 
@@ -54,6 +53,8 @@ class AXTableHeaderContainer final : public AXMockObject {
 
  private:
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(AXTableHeaderContainer);
 };
 
 }  // namespace blink

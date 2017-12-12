@@ -29,9 +29,9 @@
 #ifndef AXListBoxOption_h
 #define AXListBoxOption_h
 
+#include "base/macros.h"
 #include "core/html/HTMLElement.h"
 #include "modules/accessibility/AXLayoutObject.h"
-#include "platform/wtf/Forward.h"
 
 namespace blink {
 
@@ -39,8 +39,6 @@ class AXObjectCacheImpl;
 class HTMLSelectElement;
 
 class AXListBoxOption final : public AXLayoutObject {
-  WTF_MAKE_NONCOPYABLE(AXListBoxOption);
-
  private:
   AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);
 
@@ -67,6 +65,8 @@ class AXListBoxOption final : public AXLayoutObject {
 
   HTMLSelectElement* ListBoxOptionParentNode() const;
   bool IsParentPresentationalRole() const;
+
+  DISALLOW_COPY_AND_ASSIGN(AXListBoxOption);
 };
 
 }  // namespace blink
