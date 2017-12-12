@@ -86,8 +86,11 @@ uint32_t GetFieldTrialUint32Param(const char* trial_name,
   return param;
 }
 
-uint32_t GetOutstandingThrottledLimit(FetchContext* context) {
+size_t GetOutstandingThrottledLimit(FetchContext* context) {
   DCHECK(context);
+
+  if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
+    return ResourceLoadScheduler::kOutstandingUnlimited;
 
   uint32_t main_frame_limit = GetFieldTrialUint32Param(
       kResourceLoadSchedulerTrial, kOutstandingLimitForBackgroundMainFrameName,
@@ -335,7 +338,8 @@ constexpr ResourceLoadScheduler::ClientId
     ResourceLoadScheduler::kInvalidClientId;
 
 ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
-    : outstanding_throttled_limit_(GetOutstandingThrottledLimit(context)),
+    : outstanding_limit_for_throttled_frame_scheduler_(
+          GetOutstandingThrottledLimit(context)),
       context_(context) {
   traffic_monitor_ = std::make_unique<ResourceLoadScheduler::TrafficMonitor>(
       context_->IsMainFrame());
@@ -351,7 +355,7 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
 
   if (Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
     policy_ = context->InitialLoadThrottlingPolicy();
-    outstanding_limit_ =
+    normal_outstanding_limit_ =
         GetFieldTrialUint32Param(kRendererSideResourceScheduler,
                                  kLimitForRendererSideResourceSchedulerName,
                                  kLimitForRendererSideResourceScheduler);
@@ -489,9 +493,9 @@ bool ResourceLoadScheduler::Release(
 }
 
 void ResourceLoadScheduler::SetOutstandingLimitForTesting(size_t tight_limit,
-                                                          size_t limit) {
+                                                          size_t normal_limit) {
   tight_outstanding_limit_ = tight_limit;
-  outstanding_limit_ = limit;
+  normal_outstanding_limit_ = normal_limit;
   MaybeRun();
 }
 
@@ -592,20 +596,18 @@ void ResourceLoadScheduler::OnThrottlingStateChanged(
         throttling_history_ = ThrottlingHistory::kThrottled;
       else if (throttling_history_ == ThrottlingHistory::kNotThrottled)
         throttling_history_ = ThrottlingHistory::kPartiallyThrottled;
-      SetOutstandingLimitAndMaybeRun(outstanding_throttled_limit_);
       break;
     case WebFrameScheduler::ThrottlingState::kNotThrottled:
       if (throttling_history_ == ThrottlingHistory::kInitial)
         throttling_history_ = ThrottlingHistory::kNotThrottled;
       else if (throttling_history_ == ThrottlingHistory::kThrottled)
         throttling_history_ = ThrottlingHistory::kPartiallyThrottled;
-      SetOutstandingLimitAndMaybeRun(kOutstandingUnlimited);
       break;
     case WebFrameScheduler::ThrottlingState::kStopped:
       throttling_history_ = ThrottlingHistory::kStopped;
-      SetOutstandingLimitAndMaybeRun(0u);
       break;
   }
+  MaybeRun();
 }
 
 ResourceLoadScheduler::ClientId ResourceLoadScheduler::GenerateClientId() {
@@ -621,18 +623,9 @@ void ResourceLoadScheduler::MaybeRun() {
     return;
 
   while (!pending_requests_.empty()) {
-    bool has_enough_running_requets = false;
+    const bool has_enough_running_requets =
+        running_requests_.size() >= GetOutstandingLimit();
 
-    switch (policy_) {
-      case ThrottlingPolicy::kTight:
-        if (running_requests_.size() >= tight_outstanding_limit_)
-          has_enough_running_requets = true;
-        break;
-      case ThrottlingPolicy::kNormal:
-        if (running_requests_.size() >= outstanding_limit_)
-          has_enough_running_requets = true;
-        break;
-    }
     if (IsThrottablePriority(pending_requests_.begin()->priority) &&
         has_enough_running_requets) {
       break;
@@ -662,9 +655,30 @@ void ResourceLoadScheduler::Run(ResourceLoadScheduler::ClientId id,
   client->Run();
 }
 
-void ResourceLoadScheduler::SetOutstandingLimitAndMaybeRun(size_t limit) {
-  outstanding_limit_ = limit;
-  MaybeRun();
+size_t ResourceLoadScheduler::GetOutstandingLimit() const {
+  size_t limit = kOutstandingUnlimited;
+
+  switch (frame_scheduler_throttling_state_) {
+    case WebFrameScheduler::ThrottlingState::kThrottled:
+      limit = std::min(limit, outstanding_limit_for_throttled_frame_scheduler_);
+      break;
+    case WebFrameScheduler::ThrottlingState::kNotThrottled:
+      break;
+    case WebFrameScheduler::ThrottlingState::kStopped:
+      if (RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
+        limit = 0;
+      break;
+  }
+
+  switch (policy_) {
+    case ThrottlingPolicy::kTight:
+      limit = std::min(limit, tight_outstanding_limit_);
+      break;
+    case ThrottlingPolicy::kNormal:
+      limit = std::min(limit, normal_outstanding_limit_);
+      break;
+  }
+  return limit;
 }
 
 }  // namespace blink
