@@ -307,7 +307,7 @@ Response StorageHandler::ClearDataForOrigin(
 
   partition->ClearDataForOrigin(
       remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      GURL(origin), partition->GetURLRequestContext());
+      GURL(origin));
   return Response::OK();
 }
 
