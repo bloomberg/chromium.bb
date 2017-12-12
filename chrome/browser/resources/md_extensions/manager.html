@@ -70,7 +70,8 @@
       <dialog id="drawer" is="cr-drawer" heading="$i18n{toolbarTitle}"
           align="$i18n{textdirection}" on-close="onDrawerClose_">
         <div class="drawer-content">
-          <extensions-sidebar id="sidebar"></extensions-sidebar>
+          <extensions-sidebar id="sidebar" on-close-drawer="onCloseDrawer_">
+          </extensions-sidebar>
         </div>
       </dialog>
     </template>
