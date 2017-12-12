@@ -34,7 +34,8 @@ def main(args):
     print 'fatal: No upstream configured for branch \'%s\'' % opts.branch
     return 1
 
-  cmd = [git.GIT_EXE, 'diff', '--patience', '-C', '-C']
+  cmd = [git.GIT_EXE, '-c', 'core.quotePath=false',
+         'diff', '--patience', '-C', '-C']
   if opts.wordwise:
     cmd += ['--word-diff=color', r'--word-diff-regex=(\w+|[^[:space:]])']
   cmd += [git.get_or_create_merge_base(opts.branch, par)]

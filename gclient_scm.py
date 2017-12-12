@@ -270,12 +270,19 @@ class GitWrapper(SCMWrapper):
     # time-stamp of the currently checked out revision.
     return self._Capture(['log', '-n', '1', '--format=%ai'])
 
+  def _GetDiffFilenames(self, base):
+    """Returns the names of files modified since base."""
+    return self._Capture(
+      # Filter to remove base if it is None.
+      filter(bool, ['-c', 'core.quotePath=false', 'diff', '--name-only', base])
+    ).split()
+
   def diff(self, options, _args, _file_list):
     try:
       merge_base = [self._Capture(['merge-base', 'HEAD', self.remote])]
     except subprocess2.CalledProcessError:
       merge_base = []
-    self._Run(['diff'] + merge_base, options)
+    self._Run(['-c', 'core.quotePath=false', 'diff'] + merge_base, options)
 
   def pack(self, _options, _args, _file_list):
     """Generates a patch file which can be applied to the root of the
@@ -359,7 +366,6 @@ class GitWrapper(SCMWrapper):
             except OSError as ex:
               self.Print('FAILED to break lock: %s: %s' % (to_break, ex))
               raise
-
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -628,8 +634,7 @@ class GitWrapper(SCMWrapper):
         raise gclient_utils.Error(switch_error)
     else:
       # case 3 - the default case
-      rebase_files = self._Capture(
-          ['diff', upstream_branch, '--name-only']).split()
+      rebase_files = self._GetDiffFilenames(upstream_branch)
       if verbose:
         self.Print('Trying fast-forward merge to branch : %s' % upstream_branch)
       try:
@@ -733,7 +738,6 @@ class GitWrapper(SCMWrapper):
 
     return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
-
   def revert(self, options, _args, file_list):
     """Reverts local modifications.
 
@@ -767,7 +771,7 @@ class GitWrapper(SCMWrapper):
       return self.update(options, [], file_list)
 
     if file_list is not None:
-      files = self._Capture(['diff', deps_revision, '--name-only']).split()
+      files = self._GetDiffFilenames(deps_revision)
 
     self._Scrub(deps_revision, options)
     self._Run(['clean', '-f', '-d'], options)
@@ -792,10 +796,11 @@ class GitWrapper(SCMWrapper):
         merge_base = [self._Capture(['merge-base', 'HEAD', self.remote])]
       except subprocess2.CalledProcessError:
         merge_base = []
-      self._Run(['diff', '--name-status'] + merge_base, options,
-                stdout=self.out_fh, always=options.verbose)
+      self._Run(
+          ['-c', 'core.quotePath=false', 'diff', '--name-status'] + merge_base,
+          options, stdout=self.out_fh, always=options.verbose)
       if file_list is not None:
-        files = self._Capture(['diff', '--name-only'] + merge_base).split()
+        files = self._GetDiffFilenames(merge_base[0] if merge_base else None)
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def GetUsableRev(self, rev, options):
@@ -960,7 +965,7 @@ class GitWrapper(SCMWrapper):
                      branch=None, printed_path=False, merge=False):
     """Attempt to rebase onto either upstream or, if specified, newbase."""
     if files is not None:
-      files.extend(self._Capture(['diff', upstream, '--name-only']).split())
+      files.extend(self._GetDiffFilenames(upstream))
     revision = upstream
     if newbase:
       revision = newbase

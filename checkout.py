@@ -301,7 +301,7 @@ class GitCheckout(CheckoutBase):
     if errors:
       raise PatchApplicationFailed(errors, verbose)
     found_files = self._check_output_git(
-        ['diff', '--ignore-submodules',
+        ['-c', 'core.quotePath=false', 'diff', '--ignore-submodules',
          '--name-only', '--staged']).splitlines(False)
     if sorted(patches.filenames) != sorted(found_files):
       extra_files = sorted(set(found_files) - set(patches.filenames))

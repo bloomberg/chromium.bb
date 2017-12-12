@@ -5885,7 +5885,8 @@ def CMDowners(parser, args):
 def BuildGitDiffCmd(diff_type, upstream_commit, args):
   """Generates a diff command."""
   # Generate diff for the current branch's changes.
-  diff_cmd = ['diff', '--no-ext-diff', '--no-prefix', diff_type,
+  diff_cmd = ['-c', 'core.quotePath=false', 'diff',
+              '--no-ext-diff', '--no-prefix', diff_type,
               upstream_commit, '--']
 
   if args:
