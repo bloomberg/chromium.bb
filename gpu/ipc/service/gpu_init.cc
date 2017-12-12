@@ -31,6 +31,7 @@
 
 #if defined(OS_WIN)
 #include "gpu/ipc/service/direct_composition_surface_win.h"
+#include "ui/gl/gl_surface_egl.h"
 #endif
 
 namespace gpu {
@@ -63,7 +64,11 @@ void CollectGraphicsInfo(GPUInfo* gpu_info) {
 
 #if defined(OS_WIN)
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
-      gl::GLSurfaceEGL::IsDirectCompositionSupported() &&
+      gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
+    gpu_info->direct_composition = true;
+  }
+
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
       DirectCompositionSurfaceWin::AreOverlaysSupported()) {
     gpu_info->supports_overlays = true;
   }

@@ -108,6 +108,7 @@ struct GpuInfo {
   int32 process_crash_count;
   bool in_process_gpu;
   bool passthrough_cmd_decoder;
+  bool direct_composition;
   bool supports_overlays;
   bool can_support_threaded_texture_mailbox;
   CollectInfoResult basic_info_state;
