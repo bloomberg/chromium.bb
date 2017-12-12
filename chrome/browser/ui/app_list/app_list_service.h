@@ -31,13 +31,13 @@ class AppListService {
   // to track discoverability of the app lancher shortcut after install. Also
   // used to provide custom install behavior (e.g. "always" enable).
   enum AppListEnableSource {
-    ENABLE_NOT_RECORDED,        // Indicates app launcher not recently enabled.
-    ENABLE_FOR_APP_INSTALL,     // Triggered by a webstore packaged app install.
-    ENABLE_VIA_WEBSTORE_LINK,   // Triggered by webstore explicitly via API.
-    ENABLE_VIA_COMMAND_LINE,    // Triggered by --enable-app-list.
-    ENABLE_ON_REINSTALL_UNUSED, // Triggered by Chrome reinstall finding pref.
-                                // Unused since detecting a reinstall and
-                                // detecting a pref are mutually exclusive.
+    ENABLE_NOT_RECORDED,       // Indicates app launcher not recently enabled.
+    ENABLE_FOR_APP_INSTALL,    // Triggered by a webstore packaged app install.
+    ENABLE_VIA_WEBSTORE_LINK,  // Triggered by webstore explicitly via API.
+    ENABLE_VIA_COMMAND_LINE,   // Triggered by --enable-app-list.
+    ENABLE_ON_REINSTALL_UNUSED,  // Triggered by Chrome reinstall finding pref.
+                                 // Unused since detecting a reinstall and
+                                 // detecting a pref are mutually exclusive.
     ENABLE_SHOWN_UNDISCOVERED,  // This overrides a prior ENABLE_FOR_APP_INSTALL
                                 // when the launcher is auto-shown without
                                 // being "discovered" beforehand.
@@ -90,13 +90,6 @@ class AppListService {
   virtual void ShowForAppInstall(Profile* profile,
                                  const std::string& extension_id,
                                  bool start_discovery_tracking) = 0;
-
-  // Shows the app list, and switches to the custom launcher page.
-  virtual void ShowForCustomLauncherPage(Profile* profile) = 0;
-
-  // Hides the custom launcher page if it is currently being shown. Does nothing
-  // otherwise.
-  virtual void HideCustomLauncherPage() = 0;
 
   // Dismiss the app list.
   virtual void DismissAppList() = 0;

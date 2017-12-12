@@ -71,10 +71,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void StartSpeechRecognition() override {}
   void StopSpeechRecognition() override;
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
-  std::vector<views::View*> CreateCustomPageWebViews(
-      const gfx::Size& size) override;
-  void CustomLauncherPageAnimationChanged(double progress) override {}
-  void CustomLauncherPagePopSubpage() override {}
   bool IsSpeechRecognitionEnabled() override;
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {}
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override {}

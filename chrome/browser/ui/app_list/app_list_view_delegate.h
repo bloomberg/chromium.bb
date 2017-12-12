@@ -29,8 +29,6 @@
 #include "ui/app_list/views/app_list_view.h"
 
 namespace app_list {
-class CustomLauncherPageContents;
-class LauncherPageEventDispatcher;
 class SearchController;
 class SearchResourceManager;
 class SpeechUIModel;
@@ -82,10 +80,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void StartSpeechRecognition() override;
   void StopSpeechRecognition() override;
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
-  std::vector<views::View*> CreateCustomPageWebViews(
-      const gfx::Size& size) override;
-  void CustomLauncherPageAnimationChanged(double progress) override;
-  void CustomLauncherPagePopSubpage() override;
   bool IsSpeechRecognitionEnabled() override;
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override;
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override;
@@ -132,19 +126,12 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
   std::unique_ptr<app_list::SearchController> search_controller_;
 
-  std::unique_ptr<app_list::LauncherPageEventDispatcher>
-      launcher_page_event_dispatcher_;
-
   base::TimeDelta auto_launch_timeout_;
 
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 
   ScopedObserver<TemplateURLService, AppListViewDelegate>
       template_url_service_observer_;
-
-  // Window contents of additional custom launcher pages.
-  std::vector<std::unique_ptr<app_list::CustomLauncherPageContents>>
-      custom_page_contents_;
 
   // Registers for NOTIFICATION_APP_TERMINATING to unload custom launcher pages.
   content::NotificationRegistrar registrar_;

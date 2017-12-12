@@ -1107,8 +1107,6 @@ static_library("extensions") {
       "../apps/drive/drive_app_uninstall_sync_service.h",
       "../apps/drive/drive_service_bridge.cc",
       "../apps/drive/drive_service_bridge.h",
-      "api/launcher_page/launcher_page_api.cc",
-      "api/launcher_page/launcher_page_api.h",
     ]
   }
 

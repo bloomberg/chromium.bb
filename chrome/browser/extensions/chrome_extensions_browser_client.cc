@@ -389,7 +389,6 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
     case VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
     case VIEW_TYPE_EXTENSION_DIALOG:
     case VIEW_TYPE_EXTENSION_POPUP:
-    case VIEW_TYPE_LAUNCHER_PAGE:
       // These are the only types that are tracked by the ExtensionTag.
       task_manager::WebContentsTags::CreateForExtension(web_contents,
                                                         view_type);

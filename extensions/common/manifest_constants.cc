@@ -82,8 +82,6 @@ const char kKioskSecondaryApps[] = "kiosk_secondary_apps";
 const char kLanguage[] = "language";
 const char kLaunch[] = "app.launch";
 const char kLaunchContainer[] = "app.launch.container";
-const char kLauncherPage[] = "launcher_page";
-const char kLauncherPagePage[] = "launcher_page.page";
 const char kLaunchHeight[] = "app.launch.height";
 const char kLaunchLocalPath[] = "app.launch.local_path";
 const char kLaunchWebURL[] = "app.launch.web_url";
@@ -507,9 +505,6 @@ const char kInvalidKioskSecondaryAppsBadAppEntry[] =
     "Invalid app id item for 'kiosk_secondary_apps'";
 const char kInvalidKioskSecondaryAppsBadAppId[] =
     "Invalid app id value for 'kiosk_secondary_apps'";
-const char kInvalidLauncherPage[] = "Invalid value for 'launcher_page'.";
-const char kInvalidLauncherPagePage[] =
-    "Invalid value for 'launcher_page.page'.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
 const char kInvalidLaunchValue[] =
@@ -701,8 +696,6 @@ const char kInvalidZipHash[] =
     "Required key 'zip_hash' is missing or invalid.";
 const char kKeyIsDeprecatedWithReplacement[] =
     "Key \"*\" is deprecated.  Key \"*\" should be used instead.";
-const char kLauncherPagePageRequired[] =
-    "The 'launcher_page.page' key is required.";
 const char kLaunchPathAndExtentAreExclusive[] =
     "The 'app.launch.local_path' and 'app.urls' keys cannot both be set.";
 const char kLaunchPathAndURLAreExclusive[] =

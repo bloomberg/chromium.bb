@@ -76,8 +76,6 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // below the search box.
   gfx::Rect GetDefaultContentsBounds() const;
 
-  bool IsCustomLauncherPageActive() const;
-
  private:
   ContentsView* contents_view_;
 

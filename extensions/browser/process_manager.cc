@@ -4,6 +4,8 @@
 
 #include "extensions/browser/process_manager.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -156,7 +158,6 @@ struct ProcessManager::ExtensionRenderFrameData {
       case VIEW_TYPE_EXTENSION_DIALOG:
       case VIEW_TYPE_EXTENSION_GUEST:
       case VIEW_TYPE_EXTENSION_POPUP:
-      case VIEW_TYPE_LAUNCHER_PAGE:
       case VIEW_TYPE_PANEL:
       case VIEW_TYPE_TAB_CONTENTS:
         return true;

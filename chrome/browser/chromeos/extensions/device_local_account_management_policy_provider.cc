@@ -157,9 +157,6 @@ const char* const kSafeManifestEntries[] = {
     // Not useful since it will prevent app from running, but we don't care.
     emk::kKioskSecondaryApps,
 
-    // Whitelisted to only allow Google Now.
-    emk::kLauncherPage,
-
     // Special-cased in IsSafeForPublicSession().
     // emk::kManifestVersion,
 
