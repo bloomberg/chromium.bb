@@ -98,5 +98,23 @@ TEST_F(CrashKeyStringTest, BaseSupport) {
   base::debug::SetCrashKeyString(crash_key, std::string(64, 'a'));
 }
 
+TEST_F(CrashKeyStringTest, CArrayInitializer) {
+  static CrashKeyString<8> keys[] = {
+      {"test-1", CrashKeyString<8>::Tag::kArray},
+      {"test-2", CrashKeyString<8>::Tag::kArray},
+      {"test-3", CrashKeyString<8>::Tag::kArray},
+  };
+
+  EXPECT_FALSE(keys[0].is_set());
+  EXPECT_FALSE(keys[1].is_set());
+  EXPECT_FALSE(keys[2].is_set());
+
+  keys[1].Set("test");
+
+  EXPECT_FALSE(keys[0].is_set());
+  EXPECT_TRUE(keys[1].is_set());
+  EXPECT_FALSE(keys[2].is_set());
+}
+
 }  // namespace
 }  // namespace crash_reporter

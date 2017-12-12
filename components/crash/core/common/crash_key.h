@@ -125,8 +125,13 @@ class CrashKeyString : public internal::CrashKeyStringImpl {
   constexpr static size_t chunk_count =
       (MaxLength / internal::kCrashKeyStorageValueSize) + 1;
 
+  // A constructor tag that can be used to initialize a C array of crash keys.
+  enum class Tag { kArray };
+
   constexpr explicit CrashKeyString(const char name[])
       : internal::CrashKeyStringImpl(name, indexes_.data, chunk_count) {}
+
+  constexpr CrashKeyString(const char name[], Tag tag) : CrashKeyString(name) {}
 
  private:
   // Indexes into the TransitionalCrashKeyStorage for when a value is set.
