@@ -53,7 +53,7 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 //    SetPriority().
 //  - A ResourceLoadScheulder won't initiate a new resource loading which can
 //    be throttable when there are active resource loading activities more than
-//    its internal threshold.
+//    its internal threshold (i.e., what GetOutstandingLimit() returns)".
 //
 // By default, ResourceLoadScheduler is disabled, which means it doesn't
 // throttle any resource loading requests.
@@ -182,7 +182,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   void SetOutstandingLimitForTesting(size_t limit) {
     SetOutstandingLimitForTesting(limit, limit);
   }
-  void SetOutstandingLimitForTesting(size_t tight_limit, size_t limit);
+  void SetOutstandingLimitForTesting(size_t tight_limit, size_t normal_limit);
 
   void OnNetworkQuiet();
 
@@ -245,7 +245,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Grants a client to run,
   void Run(ClientId, ResourceLoadSchedulerClient*);
 
-  void SetOutstandingLimitAndMaybeRun(size_t limit);
+  size_t GetOutstandingLimit() const;
 
   // A flag to indicate an internal running state.
   // TODO(toyoshim): We may want to use enum once we start to have more states.
@@ -257,16 +257,18 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   ThrottlingPolicy policy_ = ThrottlingPolicy::kNormal;
 
-  // Used to limit outstanding requests when |policy_| is kTight.
+  // ResourceLoadScheduler threshold values for various circumstances. Some
+  // conditions can overlap, and ResourceLoadScheduler chooses the smallest
+  // value in such cases.
+
+  // Used when |policy_| is |kTight|.
   size_t tight_outstanding_limit_ = kOutstandingUnlimited;
 
-  // TODO(crbug.com/735410): If this throttling is enabled always, it makes some
-  // tests fail.
-  // Used to limit outstanding requests when |policy_| is kNormal.
-  size_t outstanding_limit_ = kOutstandingUnlimited;
+  // Used when |policy_| is |kNormal|.
+  size_t normal_outstanding_limit_ = kOutstandingUnlimited;
 
-  // Outstanding limit for throttled frames. Managed via the field trial.
-  const size_t outstanding_throttled_limit_;
+  // Used when |frame_scheduler_throttling_state_| is |kThrottled|.
+  const size_t outstanding_limit_for_throttled_frame_scheduler_;
 
   // The last used ClientId to calculate the next.
   ClientId current_id_ = kInvalidClientId;
