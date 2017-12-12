@@ -214,8 +214,7 @@ void SVGUseElement::UpdateTargetReference() {
   ResourceLoaderOptions options;
   options.initiator_info.name = localName();
   FetchParameters params(ResourceRequest(element_url_), options);
-  SetResource(
-      DocumentResource::FetchSVGDocument(params, GetDocument().Fetcher()));
+  DocumentResource::FetchSVGDocument(params, GetDocument().Fetcher(), this);
 }
 
 void SVGUseElement::SvgAttributeChanged(const QualifiedName& attr_name) {

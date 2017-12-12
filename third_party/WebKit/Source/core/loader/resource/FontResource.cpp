@@ -80,7 +80,7 @@ FontResource* FontResource::Fetch(FetchParameters& params,
             WebURLRequest::kFrameTypeNone);
   params.SetRequestContext(WebURLRequest::kRequestContextFont);
   return ToFontResource(
-      fetcher->RequestResource(params, FontResourceFactory()));
+      fetcher->RequestResource(params, FontResourceFactory(), nullptr));
 }
 
 FontResource::FontResource(const ResourceRequest& resource_request,

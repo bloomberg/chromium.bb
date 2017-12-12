@@ -188,7 +188,7 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
   }
 
   ImageResource* resource = ToImageResource(
-      fetcher->RequestResource(params, ImageResourceFactory(params)));
+      fetcher->RequestResource(params, ImageResourceFactory(params), nullptr));
 
   // If the fetch originated from user agent CSS we should mark it as a user
   // agent resource.
