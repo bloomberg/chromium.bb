@@ -30,9 +30,9 @@ extern const CGFloat kStackViewSpacing;
 extern const CGFloat kLocationBarBorderWidth;
 extern const CGFloat kLocationBarBorderColor;
 extern const CGFloat kIncognitoLocationBarBorderColor;
-extern const CGFloat kLocationBarShadowRadius;
-extern const CGFloat kLocationBarShadowOpacity;
-extern const CGFloat kLocationBarShadowYOffset;
+extern const CGFloat kLocationBarCornerRadius;
+extern const CGFloat kLocationBarShadowHeight;
+extern const CGFloat kLocationBarShadowInset;
 extern const CGFloat kIcongnitoLocationBackgroundColor;
 
 // Progress Bar Height.
