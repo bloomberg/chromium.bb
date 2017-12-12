@@ -1127,7 +1127,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #endif
 
   if (!FIXED_TX_TYPE) {
-    const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
+    const TX_SIZE square_tx_size = get_min_tx_size(tx_size);
     const BLOCK_SIZE bsize = mbmi->sb_type;
     if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) >
             1 &&

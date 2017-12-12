@@ -2338,7 +2338,7 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
                      TX_SIZE tx_size, TX_TYPE tx_type) {
   if (plane > 0) return 0;
 
-  tx_size = get_min_tx_size(tx_size);
+  const TX_SIZE square_tx_size = get_min_tx_size(tx_size);
 
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
@@ -2348,8 +2348,7 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
         get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
     if (is_inter) {
       if (ext_tx_set > 0)
-        return x
-            ->inter_tx_type_costs[ext_tx_set][txsize_sqr_map[tx_size]][tx_type];
+        return x->inter_tx_type_costs[ext_tx_set][square_tx_size][tx_type];
     } else {
       if (ext_tx_set > 0 && ALLOW_INTRA_EXT_TX) {
 #if CONFIG_FILTER_INTRA
@@ -2359,11 +2358,11 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
                                              .filter_intra_mode[0]];
         else
           intra_dir = mbmi->mode;
-        return x->intra_tx_type_costs[ext_tx_set][txsize_sqr_map[tx_size]]
-                                     [intra_dir][tx_type];
+        return x->intra_tx_type_costs[ext_tx_set][square_tx_size][intra_dir]
+                                     [tx_type];
 #else
-        return x->intra_tx_type_costs[ext_tx_set][txsize_sqr_map[tx_size]]
-                                     [mbmi->mode][tx_type];
+        return x->intra_tx_type_costs[ext_tx_set][square_tx_size][mbmi->mode]
+                                     [tx_type];
 #endif
       }
     }
