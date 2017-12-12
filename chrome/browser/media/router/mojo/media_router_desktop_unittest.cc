@@ -83,10 +83,10 @@ class MediaRouterDesktopTest : public MediaRouterMojoTest {
 
  protected:
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {kEnableDialLocalDiscovery, kEnableCastDiscovery}, {});
+    feature_list_.InitWithFeatures({kEnableCastDiscovery}, {});
     MediaRouterMojoTest::SetUp();
   }
+
   std::unique_ptr<MediaRouterMojoImpl> CreateMediaRouter() override {
     auto dial_media_sink_service =
         std::make_unique<MockDialMediaSinkService>(profile());
