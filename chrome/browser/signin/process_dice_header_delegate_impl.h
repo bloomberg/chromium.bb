@@ -7,17 +7,44 @@
 
 #include "chrome/browser/signin/dice_response_handler.h"
 
+#include <memory>
+#include <string>
+
+#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/signin/core/browser/signin_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class Profile;
+namespace content {
+class WebContents;
+}
+
+class PrefService;
+class SigninManager;
 
 class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
                                       public content::WebContentsObserver {
  public:
-  explicit ProcessDiceHeaderDelegateImpl(content::WebContents* web_contents);
-  ~ProcessDiceHeaderDelegateImpl() override = default;
+  // Callback starting Sync.
+  using EnableSyncCallback =
+      base::OnceCallback<void(content::WebContents*,
+                              const std::string& /* account_id */)>;
+
+  // Callback showing a signin error UI.
+  using ShowSigninErrorCallback =
+      base::OnceCallback<void(content::WebContents*,
+                              const std::string& /* error_message */,
+                              const std::string& /* email */)>;
+
+  // |is_sync_signin_tab| is true if a sync signin flow has been started in that
+  // tab.
+  ProcessDiceHeaderDelegateImpl(
+      content::WebContents* web_contents,
+      PrefService* user_prefs,
+      SigninManager* signin_manager,
+      bool is_sync_signin_tab,
+      EnableSyncCallback enable_sync_callback,
+      ShowSigninErrorCallback show_signin_error_callback);
+  ~ProcessDiceHeaderDelegateImpl() override;
 
   // ProcessDiceHeaderDelegate:
   void EnableSync(const std::string& account_id) override;
@@ -28,13 +55,11 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // Returns true if sync should be enabled after the user signs in.
   bool ShouldEnableSync();
 
-  Profile* profile_;
-  bool should_start_sync_ = false;
-  signin_metrics::AccessPoint signin_access_point_ =
-      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
-  signin_metrics::Reason signin_reason_ =
-      signin_metrics::Reason::REASON_UNKNOWN_REASON;
-
+  PrefService* user_prefs_;
+  SigninManager* signin_manager_;
+  EnableSyncCallback enable_sync_callback_;
+  ShowSigninErrorCallback show_signin_error_callback_;
+  bool is_sync_signin_tab_;
   DISALLOW_COPY_AND_ASSIGN(ProcessDiceHeaderDelegateImpl);
 };
 
