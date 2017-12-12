@@ -1932,6 +1932,12 @@ const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
     "Enable Web Payments to skip showing its UI if the developer specifies a "
     "single app.";
 
+const char kGrantNotificationsToDSEName[] =
+    "Grant notifications to the Default Search Engine";
+const char kGrantNotificationsToDSENameDescription[] =
+    "Automatically grant the notifications permission to the Default Search "
+    "Engine";
+
 const char kHerbPrototypeChoicesName[] = "Switch preferred flavor of Herb";
 const char kHerbPrototypeChoicesDescription[] =
     "Switching this option changes which tab management prototype is being "

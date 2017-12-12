@@ -1180,6 +1180,9 @@ extern const char kEnableWebPaymentsMethodSectionOrderV2Description[];
 extern const char kEnableWebPaymentsSingleAppUiSkipName[];
 extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 
+extern const char kGrantNotificationsToDSEName[];
+extern const char kGrantNotificationsToDSENameDescription[];
+
 extern const char kHerbPrototypeChoicesName[];
 extern const char kHerbPrototypeChoicesDescription[];
 extern const char kHerbPrototypeFlavorElderberry[];

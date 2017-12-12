@@ -3656,6 +3656,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableTouchpadAndWheelScrollLatchingDescription,
      kOsAll, FEATURE_VALUE_TYPE(features::kTouchpadAndWheelScrollLatching)},
 
+#if defined(OS_ANDROID)
+    {"grant-notifications-to-dse",
+     flag_descriptions::kGrantNotificationsToDSEName,
+     flag_descriptions::kGrantNotificationsToDSENameDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kGrantNotificationsToDSE)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
