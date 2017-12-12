@@ -18,6 +18,8 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 #include "ui/base/win/atl_module.h"
@@ -25,8 +27,25 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/win/hwnd_util.h"
+#include "ui/wm/core/window_util.h"
 
 namespace views {
+
+namespace {
+
+// Return the parent of |window|, first checking to see if it has a
+// transient parent. This allows us to walk up the aura::Window
+// hierarchy when it spans multiple window tree hosts, each with
+// their own HWND.
+aura::Window* GetWindowParentIncludingTransient(aura::Window* window) {
+  aura::Window* transient_parent = wm::GetTransientParent(window);
+  if (transient_parent)
+    return transient_parent;
+
+  return window->parent();
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
@@ -40,21 +59,42 @@ NativeViewAccessibilityWin::NativeViewAccessibilityWin(View* view)
 NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {}
 
 gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
-  IAccessible* parent = NativeViewAccessibilityBase::GetParent();
-  if (parent)
-    return parent;
+  // If the View has a parent View, return that View's IAccessible.
+  if (view_->parent())
+    return view_->parent()->GetNativeViewAccessible();
 
+  // Otherwise we must be the RootView, get the corresponding Widget
+  // and Window.
+  Widget* widget = view_->GetWidget();
+  if (!widget)
+    return nullptr;
+
+  aura::Window* window = widget->GetNativeWindow();
+  if (!window)
+    return nullptr;
+
+  // Look for an ancestor window with a Widget, and if found, return
+  // the NativeViewAccessible for its RootView.
+  aura::Window* ancestor_window = GetWindowParentIncludingTransient(window);
+  while (ancestor_window) {
+    Widget* ancestor_widget = Widget::GetWidgetForNativeView(ancestor_window);
+    if (ancestor_widget && ancestor_widget->GetRootView())
+      return ancestor_widget->GetRootView()->GetNativeViewAccessible();
+    ancestor_window = GetWindowParentIncludingTransient(ancestor_window);
+  }
+
+  // If that fails, return the NativeViewAccessible for our owning HWND.
   HWND hwnd = HWNDForView(view_);
   if (!hwnd)
-    return NULL;
+    return nullptr;
 
-  HRESULT hr = ::AccessibleObjectFromWindow(
-      hwnd, OBJID_WINDOW, IID_IAccessible,
-      reinterpret_cast<void**>(&parent));
-  if (SUCCEEDED(hr))
+  IAccessible* parent;
+  if (SUCCEEDED(
+          ::AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
+                                       reinterpret_cast<void**>(&parent))))
     return parent;
 
-  return NULL;
+  return nullptr;
 }
 
 gfx::AcceleratedWidget

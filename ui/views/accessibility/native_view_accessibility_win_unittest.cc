@@ -101,39 +101,94 @@ TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
   ASSERT_STREQ(L"New value", textfield->text().c_str());
 }
 
-TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
+// A subclass of NativeViewAccessibilityWinTest that we run twice,
+// first where we create an transient child widget (child = false), the second
+// time where we create a child widget (child = true).
+class NativeViewAccessibilityWinTestWithBoolChildFlag
+    : public NativeViewAccessibilityWinTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  NativeViewAccessibilityWinTestWithBoolChildFlag() {}
+  ~NativeViewAccessibilityWinTestWithBoolChildFlag() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityWinTestWithBoolChildFlag);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        NativeViewAccessibilityWinTestWithBoolChildFlag,
+                        testing::Bool());
+
+TEST_P(NativeViewAccessibilityWinTestWithBoolChildFlag, AuraChildWidgets) {
+  // Create the parent widget.
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = gfx::Rect(0, 0, 400, 200);
   widget.Init(init_params);
+  widget.Show();
 
+  // Initially it has 1 child.
   ComPtr<IAccessible> root_view_accessible(
       widget.GetRootView()->GetNativeViewAccessible());
-
   LONG child_count = 0;
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
   ASSERT_EQ(1L, child_count);
 
-  Widget owned_widget;
-  Widget::InitParams owned_init_params =
+  // Create the child widget, one of two ways (see below).
+  Widget child_widget;
+  Widget::InitParams child_init_params =
       CreateParams(Widget::InitParams::TYPE_BUBBLE);
-  owned_init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  owned_init_params.parent = widget.GetNativeView();
-  owned_widget.Init(owned_init_params);
-  owned_widget.Show();
+  child_init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  child_init_params.parent = widget.GetNativeView();
+  child_init_params.bounds = gfx::Rect(30, 40, 100, 50);
 
+  // NOTE: this test is run two times, GetParam() returns a different
+  // value each time. The first time we test with child = false,
+  // making this an owned widget (a transient child).  The second time
+  // we test with child = true, making it a child widget.
+  child_init_params.child = GetParam();
+
+  child_widget.Init(child_init_params);
+  child_widget.Show();
+
+  // Now the IAccessible for the parent widget should have 2 children.
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
-  ASSERT_EQ(1L, child_count);
+  ASSERT_EQ(2L, child_count);
 
+  // Ensure the bounds of the parent widget are as expected.
+  ScopedVariant childid_self(CHILDID_SELF);
+  LONG x, y, width, height;
+  ASSERT_EQ(S_OK, root_view_accessible->accLocation(&x, &y, &width, &height,
+                                                    childid_self));
+  EXPECT_EQ(0, x);
+  EXPECT_EQ(0, y);
+  EXPECT_EQ(400, width);
+  EXPECT_EQ(200, height);
+
+  // Get the IAccessible for the second child of the parent widget,
+  // which should be the one for our child widget.
   ComPtr<IDispatch> child_widget_dispatch;
   ComPtr<IAccessible> child_widget_accessible;
-  ScopedVariant child_index_1(1);
+  ScopedVariant child_index_2(2);
   ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
-                      child_index_1, child_widget_dispatch.GetAddressOf()));
+                      child_index_2, child_widget_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK, child_widget_dispatch.CopyTo(
                       child_widget_accessible.GetAddressOf()));
 
+  // Check the bounds of the IAccessible for the child widget.
+  // This is a sanity check to make sure we have the right object
+  // and not some other view.
+  ASSERT_EQ(S_OK, child_widget_accessible->accLocation(&x, &y, &width, &height,
+                                                       childid_self));
+  EXPECT_EQ(30, x);
+  EXPECT_EQ(40, y);
+  EXPECT_EQ(100, width);
+  EXPECT_EQ(50, height);
+
+  // Now make sure that querying the parent of the child gets us back to
+  // the original parent.
   ComPtr<IDispatch> child_widget_parent_dispatch;
   ComPtr<IAccessible> child_widget_parent_accessible;
   ASSERT_EQ(S_OK, child_widget_accessible->get_accParent(
