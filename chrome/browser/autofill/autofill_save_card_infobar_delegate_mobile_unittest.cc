@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/prefs/pref_service.h"
@@ -24,28 +25,6 @@
 using testing::_;
 
 namespace autofill {
-
-namespace {
-
-class TestPersonalDataManager : public PersonalDataManager {
- public:
-  TestPersonalDataManager() : PersonalDataManager("en-US") {}
-
-  using PersonalDataManager::set_database;
-  using PersonalDataManager::SetPrefService;
-
-  // Overridden to avoid a trip to the database.
-  void LoadProfiles() override {}
-  void LoadCreditCards() override {}
-
-  MOCK_METHOD1(SaveImportedCreditCard,
-               std::string(const CreditCard& imported_credit_card));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
-};
-
-}  // namespace
 
 class AutofillSaveCardInfoBarDelegateMobileTest
     : public ChromeRenderViewHostTestHarness {
@@ -168,13 +147,14 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Local) {
 
   // Accept the infobar.
   {
+    personal_data_->ClearCreditCards();
     std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
         /* is_uploading= */ false,
         prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED));
-    EXPECT_CALL(*personal_data_, SaveImportedCreditCard(_));
 
     base::HistogramTester histogram_tester;
     EXPECT_TRUE(infobar->Accept());
+    ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
     histogram_tester.ExpectUniqueSample(
         "Autofill.CreditCardInfoBar.Local.PreviouslyDenied",
         AutofillMetrics::INFOBAR_ACCEPTED, 1);
@@ -279,13 +259,14 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Server) {
 
   // Accept the infobar.
   {
+    personal_data_->ClearCreditCards();
     std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
         /* is_uploading= */ true,
         prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE));
-    EXPECT_CALL(*personal_data_, SaveImportedCreditCard(_));
 
     base::HistogramTester histogram_tester;
     EXPECT_TRUE(infobar->Accept());
+    ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
     histogram_tester.ExpectUniqueSample(
         "Autofill.CreditCardInfoBar.Server.PreviouslyDenied",
         AutofillMetrics::INFOBAR_ACCEPTED, 1);
