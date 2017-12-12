@@ -32,6 +32,8 @@ function testMenuShowAndHideEvents() {
   assertEquals(true, events[1].bubbles);
   assertEquals(false, events[1].cancelable);
   assertEquals(window, events[1].view);
+  // The button must not appear highlighted.
+  assertTrue(menuButton.classList.contains('using-mouse'));
 
   // Click to show menu and hide by clicking the outside of the button.
   menuButton.dispatchEvent(new MouseEvent('mousedown'));
@@ -40,6 +42,10 @@ function testMenuShowAndHideEvents() {
   document.dispatchEvent(new MouseEvent('mousedown'));
   assertEquals(4, events.length);
   assertEquals('menuhide', events[3].type);
+  // Emulate losing focus after clicking outside of the button.
+  menuButton.dispatchEvent(new Event('blur'));
+  // Focus highlight should not be suppressed anymore.
+  assertFalse(menuButton.classList.contains('using-mouse'));
 }
 
 </script>
