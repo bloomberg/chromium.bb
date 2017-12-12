@@ -1108,30 +1108,10 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
                   return true;
                 }
 
-                std::string headers = URLRequestTestJob::test_headers();
-                net::HttpResponseInfo info;
-                info.headers = new net::HttpResponseHeaders(
-                    net::HttpUtil::AssembleRawHeaders(
-                        URLRequestTestJob::test_headers().c_str(),
-                        URLRequestTestJob::test_headers().length()));
-                content::ResourceResponseHead response;
-                response.headers = info.headers;
-                response.headers->GetMimeType(&response.mime_type);
-                params->client->OnReceiveResponse(response, base::nullopt,
-                                                  nullptr);
-
                 std::string body = URLRequestTestJob::test_data_1();
-                uint32_t bytes_written = body.size();
-                mojo::DataPipe data_pipe;
-                data_pipe.producer_handle->WriteData(
-                    body.data(), &bytes_written,
-                    MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-                params->client->OnStartLoadingResponseBody(
-                    std::move(data_pipe.consumer_handle));
-
-                network::URLLoaderCompletionStatus status;
-                status.error_code = net::OK;
-                params->client->OnComplete(status);
+                content::URLLoaderInterceptor::WriteResponse(
+                    URLRequestTestJob::test_headers(), body,
+                    params->client.get());
                 return true;
               },
               requests_to_fail, &requests_, &failures_),

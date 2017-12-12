@@ -80,6 +80,7 @@ jumbo_source_set("network_sources") {
 
   deps = [
     "//base",
+    "//components/cookie_config",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
     "//components/prefs",
@@ -90,6 +91,7 @@ jumbo_source_set("network_sources") {
     "//content/public/network:network_sources",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//net:extras",
     "//net:net_browser_services",
     "//services/network/public/cpp",
     "//services/proxy_resolver/public/interfaces",

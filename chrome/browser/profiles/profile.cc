@@ -244,6 +244,14 @@ bool Profile::IsSystemProfile() const {
   return is_system_profile_;
 }
 
+bool Profile::ShouldRestoreOldSessionCookies() {
+  return false;
+}
+
+bool Profile::ShouldPersistSessionCookies() {
+  return false;
+}
+
 content::mojom::NetworkContextPtr Profile::CreateMainNetworkContext() {
   return ProfileNetworkContextServiceFactory::GetForContext(this)
       ->CreateMainNetworkContext();

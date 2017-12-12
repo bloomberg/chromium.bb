@@ -116,7 +116,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
         content::CookieStoreConfig cookie_config(
             headless_browser_context_->GetPath().Append(
                 FILE_PATH_LITERAL("Cookies")),
-            content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL);
+            false, true, NULL);
         cookie_config.crypto_delegate =
             cookie_config::GetCookieCryptoDelegate();
         std::unique_ptr<net::CookieStore> cookie_store =

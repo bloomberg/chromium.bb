@@ -395,9 +395,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   InitializeMainContextDependencies(
       protocol_handlers, std::move(request_interceptors));
 
-  content::CookieStoreConfig cookie_config(
-      cookie_path, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
-      nullptr);
+  content::CookieStoreConfig cookie_config(cookie_path, false, true, nullptr);
   main_cookie_store_ = content::CreateCookieStore(cookie_config);
 
   net::URLRequestContext* main_context = new net::URLRequestContext();

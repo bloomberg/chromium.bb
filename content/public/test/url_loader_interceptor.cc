@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_loader.mojom.h"
+#include "net/http/http_util.h"
 
 namespace content {
 
@@ -185,6 +186,28 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             run_loop.QuitClosure());
   }
+}
+
+void URLLoaderInterceptor::WriteResponse(const std::string& headers,
+                                         const std::string& body,
+                                         mojom::URLLoaderClient* client) {
+  net::HttpResponseInfo info;
+  info.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+  content::ResourceResponseHead response;
+  response.headers = info.headers;
+  response.headers->GetMimeType(&response.mime_type);
+  client->OnReceiveResponse(response, base::nullopt, nullptr);
+
+  uint32_t bytes_written = body.size();
+  mojo::DataPipe data_pipe;
+  data_pipe.producer_handle->WriteData(body.data(), &bytes_written,
+                                       MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+  client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+
+  network::URLLoaderCompletionStatus status;
+  status.error_code = net::OK;
+  client->OnComplete(status);
 }
 
 void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(

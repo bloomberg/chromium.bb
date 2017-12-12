@@ -4,6 +4,7 @@
 
 #include "content/browser/notification_service_impl.h"
 
+#include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
 #include "content/public/browser/notification_observer.h"
@@ -15,6 +16,9 @@ namespace {
 
 base::LazyInstance<base::ThreadLocalPointer<NotificationServiceImpl>>::
     DestructorAtExit lazy_tls_ptr = LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<base::RepeatingClosure>::Leaky g_callback =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -33,6 +37,11 @@ NotificationService* NotificationService::Create() {
   return new NotificationServiceImpl;
 }
 
+void NotificationService::SetCreationCallbackForTesting(
+    const base::RepeatingClosure& callback) {
+  g_callback.Get() = callback;
+}
+
 // static
 bool NotificationServiceImpl::HasKey(const NotificationSourceMap& map,
                                      const NotificationSource& source) {
@@ -42,6 +51,8 @@ bool NotificationServiceImpl::HasKey(const NotificationSourceMap& map,
 NotificationServiceImpl::NotificationServiceImpl() {
   DCHECK(current() == nullptr);
   lazy_tls_ptr.Pointer()->Set(this);
+  if (!g_callback.Get().is_null())
+    g_callback.Get().Run();
 }
 
 void NotificationServiceImpl::AddObserver(NotificationObserver* observer,
