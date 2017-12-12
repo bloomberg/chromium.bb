@@ -19,9 +19,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
  public:
   FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl) : gl_(gl) {
     sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
-    gr_context_.reset(GrContext::Create(
-        kOpenGL_GrBackend,
-        reinterpret_cast<GrBackendContext>(gl_interface.get())));
+    gr_context_ = GrContext::MakeGL(std::move(gl_interface));
   }
 
   GrContext* GetGrContext() override { return gr_context_.get(); }
