@@ -59,8 +59,7 @@ class CORE_EXPORT HTMLResourcePreloader
 
  private:
   Member<Document> document_;
-  HeapHashMap<Member<Resource>, Member<CSSPreloaderResourceClient>>
-      css_preloaders_;
+  HeapHashMap<String, Member<CSSPreloaderResourceClient>> css_preloaders_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLResourcePreloader);
 };

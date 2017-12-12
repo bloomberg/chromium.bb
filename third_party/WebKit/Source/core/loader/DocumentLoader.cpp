@@ -43,6 +43,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -196,8 +197,10 @@ const KURL& DocumentLoader::Url() const {
 }
 
 Resource* DocumentLoader::StartPreload(Resource::Type type,
-                                       FetchParameters& params) {
+                                       FetchParameters& params,
+                                       CSSPreloaderResourceClient* client) {
   Resource* resource = nullptr;
+  DCHECK(!client || type == Resource::kCSSStyleSheet);
   switch (type) {
     case Resource::kImage:
       if (frame_)
@@ -208,7 +211,7 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
       resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
       break;
     case Resource::kCSSStyleSheet:
-      resource = CSSStyleSheetResource::Fetch(params, Fetcher(), nullptr);
+      resource = CSSStyleSheetResource::Fetch(params, Fetcher(), client);
       break;
     case Resource::kFont:
       resource = FontResource::Fetch(params, Fetcher());

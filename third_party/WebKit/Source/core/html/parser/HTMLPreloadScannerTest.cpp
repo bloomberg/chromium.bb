@@ -124,7 +124,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
                                   Document* document,
                                   const char* expected_referrer) {
     PreloadRequestVerification(type, url, base_url, width, referrer_policy);
-    Resource* resource = preload_request_->Start(document);
+    Resource* resource = preload_request_->Start(document, nullptr);
     ASSERT_TRUE(resource);
     EXPECT_EQ(expected_referrer, resource->GetResourceRequest().HttpReferrer());
   }
@@ -144,7 +144,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
       network::mojom::FetchRequestMode request_mode,
       network::mojom::FetchCredentialsMode credentials_mode) {
     ASSERT_TRUE(preload_request_.get());
-    Resource* resource = preload_request_->Start(document);
+    Resource* resource = preload_request_->Start(document, nullptr);
     ASSERT_TRUE(resource);
     EXPECT_EQ(request_mode,
               resource->GetResourceRequest().GetFetchRequestMode());

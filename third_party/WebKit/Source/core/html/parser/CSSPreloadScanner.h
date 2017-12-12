@@ -106,7 +106,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
   USING_GARBAGE_COLLECTED_MIXIN(CSSPreloaderResourceClient);
 
  public:
-  CSSPreloaderResourceClient(Resource*, HTMLResourcePreloader*);
+  CSSPreloaderResourceClient(HTMLResourcePreloader*);
   ~CSSPreloaderResourceClient() override;
   void NotifyFinished(Resource*) override;
   void DataReceived(Resource*, const char*, size_t) override;
