@@ -484,6 +484,9 @@ class TestRunner : public WebTestRunner {
                         const std::string& frontend_url);
   void CloseWebInspector();
 
+  void NavigateSecondaryWindow(const GURL& url);
+  void InspectSecondaryWindow();
+
   // Inspect chooser state
   bool IsChooserShown();
 

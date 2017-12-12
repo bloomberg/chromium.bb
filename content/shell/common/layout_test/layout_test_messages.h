@@ -42,6 +42,7 @@ IPC_MESSAGE_ROUTED4(LayoutTestHostMsg_SetPermission,
                     GURL /* origin */,
                     GURL /* embedding_origin */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ResetPermissions)
+IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_InspectSecondaryWindow)
 
 // Notifies the browser that one of renderers has changed layout test runtime
 // flags (i.e. has set dump_as_text).

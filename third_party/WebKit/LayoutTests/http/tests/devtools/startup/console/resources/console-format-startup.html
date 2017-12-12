@@ -1,7 +1,3 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/console-test.js"></script>
 <script type="text/javascript">
   // Global Values
 var globals = [];
@@ -148,7 +144,7 @@ function onload()
     ];
     logTable();
     logCollections();
-    runTest();
+    testRunner.inspectSecondaryWindow();
 }
 
 function logTable()
@@ -291,54 +287,8 @@ function domException()
     }
     return result;
 }
-
-function showInspectorAndRunTest()
-{
-    if (window.testRunner)
-        testRunner.showWebInspector();
-    runTest();
-}
 </script>
-<script>
-async function test() {
-  TestRunner.hideInspectorView();
-  var total = await TestRunner.evaluateInPageRemoteObject('globals.length');
-  loopOverGlobals(0, total);
-  function loopOverGlobals(current, total) {
-    function advance() {
-      var next = current + 1;
-      if (next == total.description)
-        ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
-      else
-        loopOverGlobals(next, total);
-    }
-
-    function onRemoteObjectsLoaded() {
-      ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-      TestRunner.addResult('Expanded all messages');
-      ConsoleTestRunner.expandConsoleMessages(
-          ConsoleTestRunner.expandConsoleMessagesErrorParameters.bind(this, finish), undefined, function(section) {
-            return section.element.firstChild.textContent !== '#text';
-          });
-    }
-
-    function finish() {
-      ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-      TestRunner.completeTest();
-    }
-
-    TestRunner.evaluateInPage('log(' + current + ')');
-    TestRunner.deprecatedRunAfterPendingDispatches(evalInConsole);
-    function evalInConsole() {
-      ConsoleTestRunner.evaluateInConsole('globals[' + current + ']');
-      TestRunner.deprecatedRunAfterPendingDispatches(advance);
-    }
-  }
-}
-</script>
-</head>
 <body onload="onload()">
-<p>Tests console logging for messages that happen before DevTools is open.</p>
 <div id="x"></div>
 <p id="p"></p>
 </body>
@@ -354,4 +304,3 @@ async function test() {
   </form>
 </div>
 </body>
-</html>

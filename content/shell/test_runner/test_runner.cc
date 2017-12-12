@@ -252,6 +252,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetWindowIsKey(bool value);
   void SetXSSAuditorEnabled(bool enabled);
   void ShowWebInspector(gin::Arguments* args);
+  void NavigateSecondaryWindow(const std::string& url);
+  void InspectSecondaryWindow();
   void SimulateWebNotificationClick(gin::Arguments* args);
   void SimulateWebNotificationClose(const std::string& title, bool by_user);
   void UseUnfortunateSynchronousResizeMode();
@@ -599,6 +601,10 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setXSSAuditorEnabled",
                  &TestRunnerBindings::SetXSSAuditorEnabled)
       .SetMethod("showWebInspector", &TestRunnerBindings::ShowWebInspector)
+      .SetMethod("navigateSecondaryWindow",
+                 &TestRunnerBindings::NavigateSecondaryWindow)
+      .SetMethod("inspectSecondaryWindow",
+                 &TestRunnerBindings::InspectSecondaryWindow)
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
       .SetMethod("simulateWebNotificationClose",
@@ -1258,6 +1264,16 @@ void TestRunnerBindings::ShowWebInspector(gin::Arguments* args) {
     args->GetNext(&frontend_url);
     runner_->ShowWebInspector(settings, frontend_url);
   }
+}
+
+void TestRunnerBindings::NavigateSecondaryWindow(const std::string& url) {
+  if (runner_)
+    runner_->NavigateSecondaryWindow(GURL(url));
+}
+
+void TestRunnerBindings::InspectSecondaryWindow() {
+  if (runner_)
+    runner_->InspectSecondaryWindow();
 }
 
 void TestRunnerBindings::CloseWebInspector() {
@@ -2005,6 +2021,14 @@ void TestRunner::SetV8CacheDisabled(bool disabled) {
 void TestRunner::ShowDevTools(const std::string& settings,
                               const std::string& frontend_url) {
   delegate_->ShowDevTools(settings, frontend_url);
+}
+
+void TestRunner::NavigateSecondaryWindow(const GURL& url) {
+  delegate_->NavigateSecondaryWindow(url);
+}
+
+void TestRunner::InspectSecondaryWindow() {
+  delegate_->InspectSecondaryWindow();
 }
 
 class WorkItemBackForward : public TestRunner::WorkItem {

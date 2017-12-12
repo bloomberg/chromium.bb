@@ -137,6 +137,7 @@ class BlinkTestController : public WebContentsObserver,
       int sender_process_host_id,
       const base::DictionaryValue& changed_layout_test_runtime_flags);
   void OnTestFinishedInSecondaryRenderer();
+  void OnInspectSecondaryWindow();
 
   // Makes sure that the potentially new renderer associated with |frame| is 1)
   // initialized for the test, 2) kept up to date wrt test flags and 3)
@@ -209,7 +210,7 @@ class BlinkTestController : public WebContentsObserver,
   void OnOverridePreferences(const WebPreferences& prefs);
   void OnSetPopupBlockingEnabled(bool block_popups);
   void OnTestFinished();
-  void OnClearDevToolsLocalStorage();
+  void OnNavigateSecondaryWindow(const GURL& url);
   void OnShowDevTools(const std::string& settings,
                       const std::string& frontend_url);
   void OnEvaluateInDevTools(int call_id, const std::string& script);

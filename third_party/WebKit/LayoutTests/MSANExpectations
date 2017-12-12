@@ -38,7 +38,7 @@ crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-a
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.js [ Timeout ]
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.js [ Timeout ]
 
-crbug.com/667560 [ Linux ] http/tests/devtools/startup/console/console-format-startup.html [ Timeout Pass ]
+crbug.com/667560 [ Linux ] http/tests/devtools/startup/console/console-format-startup.js [ Timeout Pass ]
 crbug.com/751906 [ Linux ] http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
 
 crbug.com/736370 [ Linux ] external/wpt/editing/run/removeformat.html [ Timeout ]
