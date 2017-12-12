@@ -490,6 +490,8 @@ def main():
   # (which invoke this script) are kept in their own build step.
   util.MarkBuildStepStart('cleanup')
 
+  return 0 if passed else 1
+
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
