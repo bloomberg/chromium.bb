@@ -87,6 +87,7 @@
 #include "content/test/mock_overscroll_observer.h"
 #include "ipc/constants.mojom.h"
 #include "ipc/ipc_security_test_util.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -723,6 +724,42 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+};
+
+// SitePerProcessAutoplayBrowserTest
+
+class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessAutoplayBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kAutoplayPolicy,
+        switches::autoplay::kDocumentUserActivationRequiredPolicy);
+    command_line->AppendSwitchASCII("enable-blink-features",
+                                    "FeaturePolicyAutoplayFeature");
+  }
+
+  bool AutoplayAllowed(const ToRenderFrameHost& adapter,
+                       bool with_user_gesture) {
+    RenderFrameHost* rfh = adapter.render_frame_host();
+    const char* test_script = "attemptPlay();";
+    bool worked = false;
+    if (with_user_gesture) {
+      EXPECT_TRUE(ExecuteScriptAndExtractBool(rfh, test_script, &worked));
+    } else {
+      EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
+          rfh, test_script, &worked));
+    }
+    return worked;
+  }
+
+  void NavigateFrameAndWait(FrameTreeNode* node, const GURL& url) {
+    NavigateFrameToURL(node, url);
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+    EXPECT_EQ(url, node->current_url());
   }
 };
 
@@ -4279,6 +4316,64 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
       "window.domAutomationController.send(location.ancestorOrigins[2]);",
       &result));
   EXPECT_EQ(a_origin, result + "/");
+}
+
+// Test that HasReceivedUserGesture and HasReceivedUserGestureBeforeNavigation
+// are propagated correctly across origins.
+IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
+                       PropagateUserGestureFlag) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "example.com", "/media/autoplay/autoplay-enabled.html"));
+  GURL foo_url(embedded_test_server()->GetURL(
+      "foo.com", "/media/autoplay/autoplay-enabled.html"));
+  GURL bar_url(embedded_test_server()->GetURL(
+      "bar.com", "/media/autoplay/autoplay-enabled.html"));
+  GURL secondary_url(embedded_test_server()->GetURL(
+      "test.example.com", "/media/autoplay/autoplay-enabled.html"));
+  GURL disabled_url(embedded_test_server()->GetURL(
+      "test.example.com", "/media/autoplay/autoplay-disabled.html"));
+
+  // Load a page with an iframe that has autoplay.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), main_url, 1);
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Navigate the subframes to cross-origin pages.
+  NavigateFrameAndWait(root->child_at(0), foo_url);
+  NavigateFrameAndWait(root->child_at(0)->child_at(0), bar_url);
+
+  // Test that all frames can autoplay if there has been a gesture in the top
+  // frame.
+  EXPECT_TRUE(AutoplayAllowed(shell(), true));
+  EXPECT_TRUE(AutoplayAllowed(root->child_at(0), false));
+  EXPECT_TRUE(AutoplayAllowed(root->child_at(0)->child_at(0), false));
+
+  // Navigate to a new page on the same origin.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), secondary_url, 1);
+  root = web_contents()->GetFrameTree()->root();
+
+  // Navigate the subframes to cross-origin pages.
+  NavigateFrameAndWait(root->child_at(0), foo_url);
+  NavigateFrameAndWait(root->child_at(0)->child_at(0), bar_url);
+
+  // Test that all frames can autoplay because the gesture bit has been passed
+  // through the navigation.
+  EXPECT_TRUE(AutoplayAllowed(shell(), false));
+  EXPECT_TRUE(AutoplayAllowed(root->child_at(0), false));
+  EXPECT_TRUE(AutoplayAllowed(root->child_at(0)->child_at(0), false));
+
+  // Navigate to a page with autoplay disabled.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), disabled_url, 1);
+  NavigateFrameAndWait(root->child_at(0), foo_url);
+
+  // Test that autoplay is no longer allowed.
+  EXPECT_TRUE(AutoplayAllowed(shell(), false));
+  EXPECT_FALSE(AutoplayAllowed(root->child_at(0), false));
+
+  // Navigate to another origin and make sure autoplay is disabled.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), foo_url, 1);
+  NavigateFrameAndWait(root->child_at(0), bar_url);
+  EXPECT_FALSE(AutoplayAllowed(shell(), false));
+  EXPECT_FALSE(AutoplayAllowed(shell(), false));
 }
 
 // Check that iframe sandbox flags are replicated correctly.

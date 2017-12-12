@@ -14,7 +14,8 @@ FrameReplicationState::FrameReplicationState()
       scope(blink::WebTreeScopeType::kDocument),
       insecure_request_policy(blink::kLeaveInsecureRequestsAlone),
       has_potentially_trustworthy_unique_origin(false),
-      has_received_user_gesture(false) {}
+      has_received_user_gesture(false),
+      has_received_user_gesture_before_nav(false) {}
 
 FrameReplicationState::FrameReplicationState(
     blink::WebTreeScopeType scope,
@@ -22,7 +23,8 @@ FrameReplicationState::FrameReplicationState(
     const std::string& unique_name,
     blink::WebInsecureRequestPolicy insecure_request_policy,
     bool has_potentially_trustworthy_unique_origin,
-    bool has_received_user_gesture)
+    bool has_received_user_gesture,
+    bool has_received_user_gesture_before_nav)
     : origin(),
       name(name),
       unique_name(unique_name),
@@ -31,7 +33,9 @@ FrameReplicationState::FrameReplicationState(
       insecure_request_policy(insecure_request_policy),
       has_potentially_trustworthy_unique_origin(
           has_potentially_trustworthy_unique_origin),
-      has_received_user_gesture(has_received_user_gesture) {}
+      has_received_user_gesture(has_received_user_gesture),
+      has_received_user_gesture_before_nav(
+          has_received_user_gesture_before_nav) {}
 
 FrameReplicationState::FrameReplicationState(
     const FrameReplicationState& other) = default;

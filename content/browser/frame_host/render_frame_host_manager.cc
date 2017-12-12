@@ -1027,6 +1027,14 @@ void RenderFrameHostManager::OnSetHasReceivedUserGesture() {
   }
 }
 
+void RenderFrameHostManager::OnSetHasReceivedUserGestureBeforeNavigation(
+    bool value) {
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(new FrameMsg_SetHasReceivedUserGestureBeforeNavigation(
+        pair.second->GetRoutingID(), value));
+  }
+}
+
 void RenderFrameHostManager::ActiveFrameCountIsZero(
     SiteInstanceImpl* site_instance) {
   // |site_instance| no longer contains any active RenderFrameHosts, so we don't

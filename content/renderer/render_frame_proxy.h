@@ -233,6 +233,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const gfx::Rect& rect_to_scroll,
       const blink::WebRemoteScrollProperties& properties);
   void OnResizeDueToAutoResize(uint64_t sequence_number);
+  void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
 
 #if defined(USE_AURA)
   // MusEmbeddedFrameDelegate

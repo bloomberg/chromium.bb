@@ -31,7 +31,8 @@ struct CONTENT_EXPORT FrameReplicationState {
                         const std::string& unique_name,
                         blink::WebInsecureRequestPolicy insecure_request_policy,
                         bool has_potentially_trustworthy_unique_origin,
-                        bool has_received_user_gesture);
+                        bool has_received_user_gesture,
+                        bool has_received_user_gesture_before_nav);
   FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
 
@@ -121,6 +122,10 @@ struct CONTENT_EXPORT FrameReplicationState {
 
   // Whether the frame has ever received a user gesture anywhere.
   bool has_received_user_gesture;
+
+  // Whether the frame has received a user gesture in a previous navigation so
+  // long as a the frame has staying on the same eTLD+1.
+  bool has_received_user_gesture_before_nav;
 };
 
 }  // namespace content

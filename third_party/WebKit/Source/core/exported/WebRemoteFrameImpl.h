@@ -78,6 +78,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetHasReceivedUserGesture() override;
   void ScrollRectToVisible(const WebRect&,
                            const WebRemoteScrollProperties&) override;
+  void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);

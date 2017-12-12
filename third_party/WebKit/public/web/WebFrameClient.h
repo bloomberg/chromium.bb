@@ -299,6 +299,10 @@ class BLINK_EXPORT WebFrameClient {
   // Called the first time this frame is the target of a user gesture.
   virtual void SetHasReceivedUserGesture() {}
 
+  // Called if the previous document had a user gesture and is on the same
+  // eTLD+1 as the current document.
+  virtual void SetHasReceivedUserGestureBeforeNavigation(bool value) {}
+
   // Console messages ----------------------------------------------------
 
   // Whether or not we should report a detailed message for the given source.
