@@ -10,18 +10,19 @@ test(function() {
   testElement.style = "width: 60px; border-left-width: 30px;";
 
   var iterator = testElement.attributeStyleMap.entries();
-  var entry = iterator.next();
-  assert_equals(entry.value[0], 'width');
-  assert_equals(entry.value[1].constructor.name, CSSUnitValue.name);
-  assert_equals(entry.value[1].toString(), '60px');
 
   // This shouldn't appear in the iterator.
   testElement.style.borderTopWidth = '10px';
 
-  entry = iterator.next();
+  var entry = iterator.next();
   assert_equals(entry.value[0], 'border-left-width');
   assert_equals(entry.value[1].constructor.name, CSSUnitValue.name);
   assert_equals(entry.value[1].toString(), '30px');
+
+  entry = iterator.next();
+  assert_equals(entry.value[0], 'width');
+  assert_equals(entry.value[1].constructor.name, CSSUnitValue.name);
+  assert_equals(entry.value[1].toString(), '60px');
 
   assert_true(iterator.next().done);
 }, "Adding a property while iterating over entries() doesn't affect iterator");
@@ -30,16 +31,17 @@ test(function() {
   testElement.style = "width: 60px; border-left-width: 30px;";
 
   var iterator = testElement.attributeStyleMap.values();
-  var entry = iterator.next();
-  assert_equals(entry.value.constructor.name, CSSUnitValue.name);
-  assert_equals(entry.value.toString(), '60px');
 
   // This shouldn't appear in the iterator.
   testElement.style.borderTopWidth = '10px';
 
-  entry = iterator.next();
+  var entry = iterator.next();
   assert_equals(entry.value.constructor.name, CSSUnitValue.name);
   assert_equals(entry.value.toString(), '30px');
+
+  entry = iterator.next();
+  assert_equals(entry.value.constructor.name, CSSUnitValue.name);
+  assert_equals(entry.value.toString(), '60px');
 
   assert_true(iterator.next().done);
 }, "Adding a property while iterating over values() doesn't affect current iterator");
@@ -48,14 +50,15 @@ test(function() {
   testElement.style = "width: 60px; border-left-width: 30px;";
 
   var iterator = testElement.attributeStyleMap.keys();
-  var entry = iterator.next();
-  assert_equals(entry.value, 'width');
 
   // This shouldn't appear in the iterator.
   testElement.style.borderTopWidth = '10px';
 
-  entry = iterator.next();
+  var entry = iterator.next();
   assert_equals(entry.value, 'border-left-width');
+
+  entry = iterator.next();
+  assert_equals(entry.value, 'width');
 
   assert_true(iterator.next().done);
 }, "Adding a property while iterating over keys() doesn't affect iterator");

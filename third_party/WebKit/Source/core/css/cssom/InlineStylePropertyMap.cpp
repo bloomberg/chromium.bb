@@ -17,6 +17,15 @@
 
 namespace blink {
 
+namespace {
+bool CompareProperties(const StylePropertyMap::StylePropertyMapEntry a,
+                       const StylePropertyMap::StylePropertyMapEntry b) {
+  if (a.first.StartsWith("--") == b.first.StartsWith("--"))
+    return WTF::CodePointCompareLessThan(a.first, b.first);
+  return b.first.StartsWith("--");
+}
+};  // namespace
+
 const CSSValue* InlineStylePropertyMap::GetProperty(CSSPropertyID property_id) {
   return owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
       property_id);
@@ -58,7 +67,6 @@ void InlineStylePropertyMap::RemoveProperty(CSSPropertyID property_id) {
 
 HeapVector<StylePropertyMap::StylePropertyMapEntry>
 InlineStylePropertyMap::GetIterationEntries() {
-  // TODO(779841): Needs to be sorted.
   HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
   CSSPropertyValueSet& inline_style_set =
       owner_element_->EnsureMutableInlineStyle();
@@ -90,6 +98,7 @@ InlineStylePropertyMap::GetIterationEntries() {
     }
     result.push_back(std::make_pair(name, value));
   }
+  std::sort(result.begin(), result.end(), CompareProperties);
   return result;
 }
 
