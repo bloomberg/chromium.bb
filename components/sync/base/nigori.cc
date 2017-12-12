@@ -20,7 +20,6 @@
 
 using base::Base64Encode;
 using base::Base64Decode;
-using crypto::Encryptor;
 using crypto::HMAC;
 using crypto::SymmetricKey;
 
@@ -119,8 +118,8 @@ bool Nigori::Permute(Type type,
   NigoriStream plaintext;
   plaintext << type << name;
 
-  Encryptor encryptor;
-  if (!encryptor.Init(encryption_key_.get(), Encryptor::CBC,
+  crypto::Encryptor encryptor;
+  if (!encryptor.Init(encryption_key_.get(), crypto::Encryptor::CBC,
                       std::string(kIvSize, 0)))
     return false;
 
@@ -152,8 +151,8 @@ bool Nigori::Encrypt(const std::string& value, std::string* encrypted) const {
   std::string iv;
   crypto::RandBytes(base::WriteInto(&iv, kIvSize + 1), kIvSize);
 
-  Encryptor encryptor;
-  if (!encryptor.Init(encryption_key_.get(), Encryptor::CBC, iv))
+  crypto::Encryptor encryptor;
+  if (!encryptor.Init(encryption_key_.get(), crypto::Encryptor::CBC, iv))
     return false;
 
   std::string ciphertext;
@@ -206,8 +205,8 @@ bool Nigori::Decrypt(const std::string& encrypted, std::string* value) const {
                    expected.size()))
     return false;
 
-  Encryptor encryptor;
-  if (!encryptor.Init(encryption_key_.get(), Encryptor::CBC, iv))
+  crypto::Encryptor encryptor;
+  if (!encryptor.Init(encryption_key_.get(), crypto::Encryptor::CBC, iv))
     return false;
 
   if (!encryptor.Decrypt(ciphertext, value))
