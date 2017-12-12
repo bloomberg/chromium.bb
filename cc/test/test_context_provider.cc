@@ -67,6 +67,12 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
       case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
         *params = 8;
         return;
+      case GL_MAX_TEXTURE_SIZE:
+        *params = 2048;
+        break;
+      case GL_MAX_RENDERBUFFER_SIZE:
+        *params = 2048;
+        break;
       default:
         break;
     }
@@ -241,8 +247,13 @@ class GrContext* TestContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
+  size_t max_resource_cache_bytes;
+  size_t max_glyph_cache_texture_bytes;
+  skia_bindings::GrContextForGLES2Interface::DefaultCacheLimitsForTests(
+      &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
   gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
-      context_gl_.get(), context3d_->test_capabilities());
+      context_gl_.get(), context3d_->test_capabilities(),
+      max_resource_cache_bytes, max_glyph_cache_texture_bytes);
   cache_controller_->SetGrContext(gr_context_->get());
 
   // If GlContext is already lost, also abandon the new GrContext.
