@@ -3176,6 +3176,14 @@ crbug.com/v8/4958 http/tests/devtools/sources/debugger-ui/watch-expressions-pres
 crbug.com/v8/4958 http/tests/devtools/sources/debugger/properties-special.js [ NeedsManualRebaseline ]
 
 crbug.com/v8/4958 http/tests/devtools/console/console-format-es6.js [ NeedsManualRebaseline Timeout ]
+
+# For V8 roll
+crbug.com/v8/7172 fast/events/window-onerror-10.html [ NeedsManualRebaseline ]
+crbug.com/v8/7172 fast/frames/sandboxed-iframe-forms.html [ NeedsManualRebaseline ]
+crbug.com/v8/7172 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]
+crbug.com/v8/7172 security/lazy-event-listener.html [ NeedsManualRebaseline ]
+crbug.com/v8/7172 virtual/mouseevent_fractional/fast/events/window-onerror-10.html [ NeedsManualRebaseline ]
+
 # http/tests/devtools/console/console-format-es6.js and its virtual counterpart needs attention, but is listed as NeedsManualRebaseline directly above for all platforms
 # crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6.js [ Timeout ]
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/editor/text-editor-word-jumps.js [ Timeout ]
