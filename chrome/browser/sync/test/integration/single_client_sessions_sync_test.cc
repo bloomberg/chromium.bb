@@ -379,7 +379,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, SourceTabIDSet) {
 
 // TODO(pavely): This test is flaky. Report failures in
 // https://crbug.com/789129.
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       DISABLED_CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
