@@ -67,11 +67,21 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
  public:
   // Describes the window management actions that could be taken in response to
   // a middle click in the non client area.
-  enum NonClientMiddleClickAction {
-    MIDDLE_CLICK_ACTION_NONE,
-    MIDDLE_CLICK_ACTION_LOWER,
-    MIDDLE_CLICK_ACTION_MINIMIZE,
-    MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE
+  enum NonClientWindowFrameAction {
+    WINDOW_FRAME_ACTION_NONE,
+    WINDOW_FRAME_ACTION_LOWER,
+    WINDOW_FRAME_ACTION_MINIMIZE,
+    WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE,
+    WINDOW_FRAME_ACTION_MENU,
+  };
+
+  // The types of clicks that might invoke a NonClientWindowFrameAction.
+  enum NonClientWindowFrameActionSourceType {
+    WINDOW_FRAME_ACTION_SOURCE_DOUBLE_CLICK = 0,
+    WINDOW_FRAME_ACTION_SOURCE_MIDDLE_CLICK,
+    WINDOW_FRAME_ACTION_SOURCE_RIGHT_CLICK,
+
+    WINDOW_FRAME_ACTION_SOURCE_LAST
   };
 
   typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
@@ -149,9 +159,10 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual void RemoveWindowButtonOrderObserver(
       WindowButtonOrderObserver* observer) = 0;
 
-  // What action we should take when the user middle clicks on non-client
-  // area. The default is lowering the window.
-  virtual NonClientMiddleClickAction GetNonClientMiddleClickAction() = 0;
+  // What action we should take when the user clicks on the non-client area.
+  // |source| describes the type of click.
+  virtual NonClientWindowFrameAction GetNonClientWindowFrameAction(
+      NonClientWindowFrameActionSourceType source) = 0;
 
   // Notifies the window manager that start up has completed.
   // Normally Chromium opens a new window on startup and GTK does this
