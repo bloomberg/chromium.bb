@@ -10,8 +10,8 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -51,8 +51,8 @@ int GenerateLowEntropySource() {
 
 // Records the given |low_entorpy_source_value| in a histogram.
 void LogLowEntropyValue(int low_entropy_source_value) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LowEntropySourceValue",
-                              low_entropy_source_value);
+  base::UmaHistogramSparse("UMA.LowEntropySourceValue",
+                           low_entropy_source_value);
 }
 
 int64_t ReadEnabledDate(PrefService* local_state) {

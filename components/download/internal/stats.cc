@@ -345,8 +345,8 @@ void LogFileLifeTime(const base::TimeDelta& file_life_time,
   UMA_HISTOGRAM_CUSTOM_TIMES("Download.Service.Files.LifeTime", file_life_time,
                              base::TimeDelta::FromSeconds(1),
                              base::TimeDelta::FromDays(8), 100);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Download.Service.Files.Cleanup.Attempts",
-                              num_cleanup_attempts);
+  base::UmaHistogramSparse("Download.Service.Files.Cleanup.Attempts",
+                           num_cleanup_attempts);
 }
 
 void LogFileDirDiskUtilization(int64_t total_disk_space,

@@ -16,8 +16,8 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -612,11 +612,11 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   const int response_code = request->GetResponseCode();
   bool was_https = request->GetURL().SchemeIs(url::kHttpsScheme);
   if (was_https) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "Variations.SeedFetchResponseOrErrorCode",
         status.is_success() ? response_code : status.error());
   } else {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "Variations.SeedFetchResponseOrErrorCode.HTTP",
         status.is_success() ? response_code : status.error());
   }

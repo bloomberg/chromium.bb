@@ -15,8 +15,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -432,8 +432,8 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     // TODO(bengr): Remove once we understand the reasons secure proxy checks
     // are failing. Secure proxy check errors are either due to fetcher-level
     // errors or modified responses. This only tracks the former.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAProxyProbeURLNetError,
-                                std::abs(status.error()));
+    base::UmaHistogramSparse(kUMAProxyProbeURLNetError,
+                             std::abs(status.error()));
   }
 
   bool secure_proxy_allowed_past =

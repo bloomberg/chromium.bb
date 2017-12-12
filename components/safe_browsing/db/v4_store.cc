@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/safe_browsing/db/v4_rice.h"
@@ -700,8 +700,8 @@ StoreReadResult V4Store::ReadFromDisk() {
     return UNEXPECTED_MAGIC_NUMBER_FAILURE;
   }
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SafeBrowsing.V4StoreVersionRead",
-                              file_format.version_number());
+  base::UmaHistogramSparse("SafeBrowsing.V4StoreVersionRead",
+                           file_format.version_number());
   if (file_format.version_number() != kFileVersion) {
     return FILE_VERSION_INCOMPATIBLE_FAILURE;
   }

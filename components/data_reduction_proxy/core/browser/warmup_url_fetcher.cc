@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/warmup_url_fetcher.h"
 
 #include "base/guid.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -95,11 +96,11 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
       "DataReductionProxy.WarmupURL.FetchSuccessful",
       source->GetStatus().status() == net::URLRequestStatus::SUCCESS);
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("DataReductionProxy.WarmupURL.NetError",
-                              std::abs(source->GetStatus().error()));
+  base::UmaHistogramSparse("DataReductionProxy.WarmupURL.NetError",
+                           std::abs(source->GetStatus().error()));
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("DataReductionProxy.WarmupURL.HttpResponseCode",
-                              std::abs(source->GetResponseCode()));
+  base::UmaHistogramSparse("DataReductionProxy.WarmupURL.HttpResponseCode",
+                           std::abs(source->GetResponseCode()));
 
   if (source->GetResponseHeaders()) {
     UMA_HISTOGRAM_BOOLEAN(

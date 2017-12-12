@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/driver_entry.h"
@@ -64,8 +64,7 @@ FailureType FailureTypeFromInterruptReason(
 
 // Logs interrupt reason when download fails.
 void LogDownloadInterruptReason(content::DownloadInterruptReason reason) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Download.Service.Driver.InterruptReason",
-                              reason);
+  base::UmaHistogramSparse("Download.Service.Driver.InterruptReason", reason);
 }
 
 }  // namespace

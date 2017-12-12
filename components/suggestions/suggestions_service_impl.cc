@@ -11,8 +11,8 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -505,8 +505,8 @@ void SuggestionsServiceImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   if (request_status.status() != net::URLRequestStatus::SUCCESS) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Suggestions.FailedRequestErrorCode",
-                                -request_status.error());
+    base::UmaHistogramSparse("Suggestions.FailedRequestErrorCode",
+                             -request_status.error());
     DVLOG(1) << "Suggestions server request failed with error: "
              << request_status.error() << ": "
              << net::ErrorToString(request_status.error());
@@ -516,7 +516,7 @@ void SuggestionsServiceImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   const int response_code = request->GetResponseCode();
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Suggestions.FetchResponseCode", response_code);
+  base::UmaHistogramSparse("Suggestions.FetchResponseCode", response_code);
   if (response_code != net::HTTP_OK) {
     // A non-200 response code means that server has no (longer) suggestions for
     // this user. Aggressively clear the cache.

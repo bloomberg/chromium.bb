@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -240,7 +239,7 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
     events_ |= EVENT_HAD_INITIAL_FORM_OF_PAYMENT;
 
   // Record the events in UMA.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("PaymentRequest.Events", events_);
+  base::UmaHistogramSparse("PaymentRequest.Events", events_);
 
   if (!ukm_recorder_ || !url_.is_valid())
     return;

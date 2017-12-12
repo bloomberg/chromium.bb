@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -178,15 +178,15 @@ void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   DVLOG(2) << "Upload fetch complete response code: " << response_code;
 
   if (request_status.status() != net::URLRequestStatus::SUCCESS) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Rappor.FailedUploadErrorCode",
-                                -request_status.error());
+    base::UmaHistogramSparse("Rappor.FailedUploadErrorCode",
+                             -request_status.error());
     DVLOG(1) << "Rappor server upload failed with error: "
              << request_status.error() << ": "
              << net::ErrorToString(request_status.error());
     DCHECK_EQ(-1, response_code);
   } else {
     // Log a histogram to track response success vs. failure rates.
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Rappor.UploadResponseCode", response_code);
+    base::UmaHistogramSparse("Rappor.UploadResponseCode", response_code);
   }
 
   const bool upload_succeeded = response_code == 200;

@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
@@ -46,8 +47,7 @@ const int kMaxHostsInMemory = 10000;
 // what to return from ::Init (to simplify the call sites). Migration failures
 // are almost always fatal since the database can be in an inconsistent state.
 sql::InitStatus LogMigrationFailure(int from_version) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("History.MigrateFailureFromVersion",
-                              from_version);
+  base::UmaHistogramSparse("History.MigrateFailureFromVersion", from_version);
   LOG(ERROR) << "History failed to migrate from version " << from_version
              << ". History will be disabled.";
   return sql::INIT_FAILURE;
@@ -68,8 +68,8 @@ enum class InitStep {
 };
 
 sql::InitStatus LogInitFailure(InitStep what) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("History.InitializationFailureStep",
-                              static_cast<int>(what));
+  base::UmaHistogramSparse("History.InitializationFailureStep",
+                           static_cast<int>(what));
   return sql::INIT_FAILURE;
 }
 

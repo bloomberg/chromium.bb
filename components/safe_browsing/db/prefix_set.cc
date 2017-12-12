@@ -14,8 +14,7 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 
 namespace safe_browsing {
 
@@ -187,7 +186,7 @@ std::unique_ptr<const PrefixSet> PrefixSet::LoadFile(
     return nullptr;
 
   // Track version read to inform removal of support for older versions.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.PrefixSetVersionRead", header.version);
+  base::UmaHistogramSparse("SB2.PrefixSetVersionRead", header.version);
 
   if (header.version <= kDeprecatedVersion) {
     return nullptr;

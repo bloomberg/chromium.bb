@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -554,8 +553,8 @@ void LogPredictionQualityMetrics(
 
   DCHECK_LE(predicted_type, UINT16_MAX);
   DCHECK_LE(actual_type, UINT16_MAX);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(raw_data_histogram,
-                              (predicted_type << 16) | actual_type);
+  base::UmaHistogramSparse(raw_data_histogram,
+                           (predicted_type << 16) | actual_type);
 
   form_interactions_ukm_logger->LogFieldType(
       form.form_parsed_timestamp(), form.form_signature(),
@@ -1132,8 +1131,8 @@ void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
 // static
 void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
   // A maximum of 50 is enforced to minimize the number of buckets generated.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Autofill.SuggestionAcceptedIndex",
-                              std::min(index, 50));
+  base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex",
+                           std::min(index, 50));
 
   base::RecordAction(base::UserMetricsAction("Autofill_SelectedSuggestion"));
 }
@@ -1141,8 +1140,8 @@ void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
 // static
 void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
   // A maximum of 50 is enforced to minimize the number of buckets generated.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Autofill.SuggestionAcceptedIndex.Autocomplete",
-                              std::min(index, 50));
+  base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.Autocomplete",
+                           std::min(index, 50));
 }
 
 // static

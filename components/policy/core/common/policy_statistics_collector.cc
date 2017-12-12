@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task_runner.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service.h"
@@ -59,7 +59,7 @@ void PolicyStatisticsCollector::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void PolicyStatisticsCollector::RecordPolicyUse(int id) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Enterprise.Policies", id);
+  base::UmaHistogramSparse("Enterprise.Policies", id);
 }
 
 void PolicyStatisticsCollector::CollectStatistics() {

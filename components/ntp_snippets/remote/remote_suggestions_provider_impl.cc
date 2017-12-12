@@ -13,8 +13,8 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -301,8 +301,8 @@ void RemoveIncompleteSuggestions(RemoteSuggestion::PtrVector* suggestions) {
   UMA_HISTOGRAM_BOOLEAN("NewTabPage.Snippets.IncompleteSnippetsAfterFetch",
                         num_suggestions_removed > 0);
   if (num_suggestions_removed > 0) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumIncompleteSnippets",
-                                num_suggestions_removed);
+    base::UmaHistogramSparse("NewTabPage.Snippets.NumIncompleteSnippets",
+                             num_suggestions_removed);
   }
 }
 
@@ -971,7 +971,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     bool response_includes_article_category = false;
     for (FetchedCategory& fetched_category : *fetched_categories) {
       if (fetched_category.category == articles_category_) {
-        UMA_HISTOGRAM_SPARSE_SLOWLY(
+        base::UmaHistogramSparse(
             "NewTabPage.Snippets.NumArticlesFetched",
             std::min(fetched_category.suggestions.size(),
                      static_cast<size_t>(kMaxNormalFetchSuggestionCount)));
@@ -1041,8 +1041,8 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   auto content_it = category_contents_.find(articles_category_);
   DCHECK(content_it != category_contents_.end());
   const CategoryContent& content = content_it->second;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticles",
-                              content.suggestions.size());
+  base::UmaHistogramSparse("NewTabPage.Snippets.NumArticles",
+                           content.suggestions.size());
   if (content.suggestions.empty() && !content.dismissed.empty()) {
     UMA_HISTOGRAM_COUNTS("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded",
                          content.dismissed.size());

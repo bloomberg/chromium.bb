@@ -9,7 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/metrics_hashes.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
@@ -159,8 +159,8 @@ void InfoBarContainer::AddInfoBar(InfoBar* infobar,
 
   // Record the infobar being displayed.
   DCHECK_NE(InfoBarDelegate::INVALID, infobar->delegate()->GetIdentifier());
-  UMA_HISTOGRAM_SPARSE_SLOWLY("InfoBar.Shown",
-                              infobar->delegate()->GetIdentifier());
+  base::UmaHistogramSparse("InfoBar.Shown",
+                           infobar->delegate()->GetIdentifier());
 }
 
 }  // namespace infobars
