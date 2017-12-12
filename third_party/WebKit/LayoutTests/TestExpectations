@@ -3177,6 +3177,7 @@ crbug.com/v8/4958 http/tests/devtools/sources/debugger/properties-special.js [ N
 crbug.com/v8/4958 http/tests/devtools/console/console-format-es6.js [ NeedsManualRebaseline Timeout ]
 
 # For V8 roll
+crbug.com/791334 http/tests/devtools/sources/debugger/debugger-es6-harmony-scopes.js [ NeedsManualRebaseline ]
 crbug.com/v8/7172 fast/events/window-onerror-10.html [ NeedsManualRebaseline ]
 crbug.com/v8/7172 fast/frames/sandboxed-iframe-forms.html [ NeedsManualRebaseline ]
 crbug.com/v8/7172 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]

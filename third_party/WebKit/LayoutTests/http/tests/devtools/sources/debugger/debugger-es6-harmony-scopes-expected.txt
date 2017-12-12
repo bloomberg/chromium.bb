@@ -28,9 +28,6 @@ Closure (window.makeClosure)
     makeClosureDeeperLocalVar: "local.deep.TextParam"
     makeClosureLocalVar: "local.TextParam"
     n: "TextParam"
-Module
-    globalConst: 42
-    globalLet: 41
 Script
     globalScriptConst: 42
     globalScriptLet: 41
