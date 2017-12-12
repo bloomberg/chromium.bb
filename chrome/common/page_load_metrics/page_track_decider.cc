@@ -23,10 +23,6 @@ bool PageTrackDecider::ShouldTrack() {
     if (IsChromeErrorPage())
       return false;
 
-    // Ignore non-HTML documents (e.g. SVG, images).
-    if (!IsHtmlOrXhtmlPage())
-      return false;
-
     // Ignore network error pages (e.g. 4xx, 5xx).
     int http_status_code = GetHttpStatusCode();
     if (http_status_code > 0 &&

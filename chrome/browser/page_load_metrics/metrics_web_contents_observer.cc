@@ -643,8 +643,8 @@ bool MetricsWebContentsObserver::ShouldTrackNavigation(
   DCHECK(!navigation_handle->HasCommitted() ||
          !navigation_handle->IsSameDocument());
 
-  return BrowserPageTrackDecider(embedder_interface_.get(), web_contents(),
-                                 navigation_handle).ShouldTrack();
+  return BrowserPageTrackDecider(embedder_interface_.get(), navigation_handle)
+      .ShouldTrack();
 }
 
 void MetricsWebContentsObserver::AddTestingObserver(TestingObserver* observer) {

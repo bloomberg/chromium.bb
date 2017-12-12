@@ -10,7 +10,6 @@
 
 namespace content {
 class NavigationHandle;
-class WebContents;
 }  // namespace content
 
 namespace page_load_metrics {
@@ -19,11 +18,10 @@ class PageLoadMetricsEmbedderInterface;
 
 class BrowserPageTrackDecider : public PageTrackDecider {
  public:
-  // embedder_interface, web_contents, and navigation_handle are not owned by
+  // embedder_interface and navigation_handle are not owned by
   // BrowserPageTrackDecider, and must outlive the
   // BrowserPageTrackDecider.
   BrowserPageTrackDecider(PageLoadMetricsEmbedderInterface* embedder_interface,
-                          content::WebContents* web_contents,
                           content::NavigationHandle* navigation_handle);
   ~BrowserPageTrackDecider() override;
 
@@ -31,12 +29,10 @@ class BrowserPageTrackDecider : public PageTrackDecider {
   bool IsHttpOrHttpsUrl() override;
   bool IsNewTabPageUrl() override;
   bool IsChromeErrorPage() override;
-  bool IsHtmlOrXhtmlPage() override;
   int GetHttpStatusCode() override;
 
  private:
   PageLoadMetricsEmbedderInterface* const embedder_interface_;
-  content::WebContents* const web_contents_;
   content::NavigationHandle* const navigation_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPageTrackDecider);
