@@ -367,7 +367,9 @@ CrSettingsPeoplePageChangePictureTest.prototype = {
 TEST_F('CrSettingsPeoplePageChangePictureTest', 'All', function() {
   mocha.run();
 });
-GEN('#else');  // !defined(OS_CHROMEOS)
+
+GEN('#else  // !defined(OS_CHROMEOS)');
+
 /**
  * Test fixture for
  * chrome/browser/resources/settings/people_page/manage_profile.html.
@@ -393,7 +395,8 @@ CrSettingsPeoplePageManageProfileTest.prototype = {
 TEST_F('CrSettingsPeoplePageManageProfileTest', 'All', function() {
   mocha.run();
 });
-GEN('#endif');
+
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for
@@ -549,6 +552,7 @@ TEST_F('CrSettingsAppearanceFontsPageTest', 'All', function() {
 });
 
 GEN('#if defined(OS_WIN) and defined(GOOGLE_CHROME_BUILD)');
+
 /**
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -572,7 +576,8 @@ CrSettingsChromeCleanupPageTest.prototype = {
 TEST_F('CrSettingsChromeCleanupPageTest', 'All', function() {
   mocha.run();
 });
-GEN('#endif');
+
+GEN('#endif  // defined(OS_WIN) and defined(GOOGLE_CHROME_BUILD)');
 
 /**
  * @constructor
@@ -599,6 +604,7 @@ TEST_F('CrSettingsDownloadsPageTest', 'All', function() {
 });
 
 GEN('#if !defined(OS_CHROMEOS)');
+
 /**
  * Test fixture for chrome/browser/resources/settings/default_browser_page/.
  * @constructor
@@ -648,7 +654,8 @@ CrSettingsImportDataDialogTest.prototype = {
 TEST_F('CrSettingsImportDataDialogTest', 'All', function() {
   mocha.run();
 });
-GEN('#endif');
+
+GEN('#endif  // !defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for chrome/browser/resources/settings/search_page/.
@@ -703,6 +710,7 @@ TEST_F('CrSettingsSearchEnginesTest', 'All', function() {
 });
 
 GEN('#if defined(USE_NSS_CERTS)');
+
 /**
  * Test fixture for chrome://settings/certificates. This tests the
  * certificate-manager component in the context of the Settings privacy page.
@@ -731,7 +739,8 @@ CrSettingsCertificateManagerTest.prototype = {
 TEST_F('CrSettingsCertificateManagerTest', 'All', function() {
   mocha.run();
 });
-GEN('#endif');
+
+GEN('#endif  // defined(USE_NSS_CERTS)');
 
 /**
  * Test fixture for chrome/browser/resources/settings/privacy_page/.
@@ -1047,6 +1056,7 @@ TEST_F('CrSettingsSiteDataTest', 'All', function() {
 });
 
 GEN('#if defined(OS_CHROMEOS)');
+
 /**
  * Test fixture for device-page.
  * @constructor
@@ -1144,17 +1154,11 @@ CrSettingsInternetPageTest.prototype = {
   ]),
 };
 
-// TODO(crbug.com/729607): deflake. Failing on Linux ChromiumOS Test (dbg)(1).
-GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
-GEN('#define MAYBE_InternetPage DISABLED_InternetPage');
-GEN('#else');
-GEN('#define MAYBE_InternetPage InternetPage');
-GEN('#endif');
-TEST_F('CrSettingsInternetPageTest', 'MAYBE_InternetPage', function() {
+TEST_F('CrSettingsInternetPageTest', 'InternetPage', function() {
   mocha.run();
 });
 
-GEN('#endif');
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for chrome/browser/resources/settings/settings_menu/.
@@ -1226,7 +1230,8 @@ CrSettingsSystemPageTest.prototype = {
 TEST_F('CrSettingsSystemPageTest', 'All', function() {
   mocha.run();
 });
-GEN('#endif');
+
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * @constructor
@@ -1250,6 +1255,7 @@ TEST_F('CrSettingsStartupUrlsPageTest', 'All', function() {
 });
 
 GEN('#if !defined(OS_MACOSX)');
+
 /**
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -1275,7 +1281,8 @@ CrSettingsEditDictionaryPageTest.prototype = {
 TEST_F('CrSettingsEditDictionaryPageTest', 'All', function() {
   mocha.run();
 });
-GEN('#endif');
+
+GEN('#endif  //!defined(OS_MACOSX)');
 
 /**
  * @constructor
@@ -1559,7 +1566,8 @@ TEST_F('CrSettingsMetricsReportingTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif');
+GEN('#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)');
+
 GEN('#if defined(OS_CHROMEOS)');
 
 /**
@@ -1611,7 +1619,7 @@ TEST_F('CrSettingsMultidevicePageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif');
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 GEN('#if defined(OS_CHROMEOS)');
 
@@ -1693,7 +1701,7 @@ TEST_F('CrSettingsGoogleAssistantPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif');
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * @constructor
