@@ -9,6 +9,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -69,6 +70,15 @@ DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
   DCHECK(request);
   if (request->response_info().was_cached)
     return nullptr;
+
+  const GURL& warmup_url = params::GetWarmupURL();
+  if (request->url().host() == warmup_url.host() &&
+      request->url().path() == warmup_url.path()) {
+    // No need to retry fetch of warmup URLs since it is useful to fetch the
+    // warmup URL only via a data saver proxy.
+    return nullptr;
+  }
+
   bool should_retry = false;
   // Consider retrying due to an authentication failure from the Data Reduction
   // Proxy server when using the config service.
