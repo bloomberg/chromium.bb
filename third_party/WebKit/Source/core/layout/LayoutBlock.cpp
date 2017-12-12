@@ -1261,7 +1261,7 @@ PositionWithAffinity LayoutBlock::PositionForPointIfOutsideAtomicInlineLevel(
 static inline bool IsChildHitTestCandidate(LayoutBox* box) {
   return box->Size().Height() &&
          box->Style()->Visibility() == EVisibility::kVisible &&
-         !box->IsFloatingOrOutOfFlowPositioned() && !box->IsLayoutFlowThread();
+         !box->IsOutOfFlowPositioned() && !box->IsLayoutFlowThread();
 }
 
 PositionWithAffinity LayoutBlock::PositionForPoint(const LayoutPoint& point) {
@@ -1302,6 +1302,9 @@ PositionWithAffinity LayoutBlock::PositionForPoint(const LayoutPoint& point) {
         continue;
       LayoutUnit child_logical_bottom =
           LogicalTopForChild(*child_box) + LogicalHeightForChild(*child_box);
+      if (child_box->IsLayoutBlockFlow())
+          child_logical_bottom += ToLayoutBlockFlow(child_box)->LowestFloatLogicalBottom();
+
       // We hit child if our click is above the bottom of its padding box (like
       // IE6/7 and FF3).
       if (point_in_logical_contents.Y() < child_logical_bottom ||
