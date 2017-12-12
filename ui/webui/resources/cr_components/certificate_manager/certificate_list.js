@@ -31,6 +31,15 @@ Polymer({
             loadTimeData.getBoolean('isGuest');
       },
     },
+
+    /** @private */
+    isKiosk_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('isKiosk') &&
+            loadTimeData.getBoolean('isKiosk');
+      },
+    },
   },
 
   behaviors: [I18nBehavior],
@@ -62,7 +71,7 @@ Polymer({
    * @private
    */
   canImport_: function() {
-    return this.certificateType != CertificateType.OTHER;
+    return !this.isKiosk_ && this.certificateType != CertificateType.OTHER;
   },
 
   // <if expr="chromeos">

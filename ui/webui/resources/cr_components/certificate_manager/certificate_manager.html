@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -17,7 +18,7 @@
 
 <dom-module id="certificate-manager">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       :host {
         --paper-tabs-selection-bar-color: var(--paper-blue-500);
       }
@@ -65,8 +66,10 @@
 
     <paper-tabs noink selected="{{selected}}">
       <paper-tab>[[i18n('certificateManagerYourCertificates')]]</paper-tab>
-      <paper-tab>[[i18n('certificateManagerServers')]]</paper-tab>
-      <paper-tab>[[i18n('certificateManagerAuthorities')]]</paper-tab>
+      <paper-tab hidden="[[isKiosk_]]">[[i18n('certificateManagerServers')]]
+      </paper-tab>
+      <paper-tab hidden="[[isKiosk_]]">[[i18n('certificateManagerAuthorities')]]
+      </paper-tab>
       <paper-tab>[[i18n('certificateManagerOthers')]]</paper-tab>
     </paper-tabs>
     <iron-pages selected="[[selected]]">

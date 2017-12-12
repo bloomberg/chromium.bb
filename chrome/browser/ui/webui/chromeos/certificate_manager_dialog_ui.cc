@@ -48,6 +48,10 @@ CertificateManagerDialogUI::CertificateManagerDialogUI(content::WebUI* web_ui)
       "isGuest",
       user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
           user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
+  source->AddBoolean(
+      "isKiosk",
+      user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
+          user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp());
 
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_CERT_MANAGER_DIALOG_HTML);

@@ -96,6 +96,15 @@ Polymer({
      * @private {?HTMLElement}
      */
     activeDialogAnchor_: Object,
+
+    /** @private */
+    isKiosk_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('isKiosk') &&
+            loadTimeData.getBoolean('isKiosk');
+      },
+    },
   },
 
   /** @override */
