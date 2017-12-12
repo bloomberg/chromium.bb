@@ -5,6 +5,7 @@
 #include "chrome/service/cloud_print/print_system.h"
 
 #include "base/guid.h"
+#include "build/build_config.h"
 
 namespace cloud_print {
 
@@ -35,5 +36,11 @@ std::string PrintSystem::GenerateProxyId() {
   return base::GenerateGUID();
 }
 
-}  // namespace cloud_print
+#if defined(OS_LINUX) && !defined(USE_CUPS)
+scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
+    const base::DictionaryValue*) {
+  return nullptr;
+}
+#endif
 
+}  // namespace cloud_print
