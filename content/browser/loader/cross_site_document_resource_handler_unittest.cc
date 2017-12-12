@@ -237,6 +237,32 @@ const TestScenario kScenarios[] = {
         "<html><head>this should sniff as HTML",  // first_chunk
         Verdict::kAllowWithoutSniffing,           // verdict
     },
+    {
+        "Allowed: Cross-site fetch HTML from Flash without CORS", __LINE__,
+        "http://www.b.com/plugin.html",           // target_url
+        RESOURCE_TYPE_PLUGIN_RESOURCE,            // resource_type
+        "http://www.a.com/",                      // initiator_origin
+        OriginHeader::kOmit,                      // cors_request
+        "text/html",                              // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,       // canonical_mime_type
+        false,                                    // include_no_sniff_header
+        AccessControlAllowOriginHeader::kOmit,    // cors_response
+        "<html><head>this should sniff as HTML",  // first_chunk
+        Verdict::kAllowWithoutSniffing,           // verdict
+    },
+    {
+        "Allowed: Cross-site fetch HTML from NaCl with CORS response", __LINE__,
+        "http://www.b.com/plugin.html",      // target_url
+        RESOURCE_TYPE_PLUGIN_RESOURCE,       // resource_type
+        "http://www.a.com/",                 // initiator_origin
+        OriginHeader::kInclude,              // cors_request
+        "text/html",                         // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,  // canonical_mime_type
+        false,                               // include_no_sniff_header
+        AccessControlAllowOriginHeader::kAllowInitiatorOrigin,  // cors_response
+        "<html><head>this should sniff as HTML",                // first_chunk
+        Verdict::kAllowWithoutSniffing,                         // verdict
+    },
 
     // Allowed responses due to sniffing:
     {
@@ -417,6 +443,20 @@ const TestScenario kScenarios[] = {
         "<html><head>this should sniff as HTML",              // first_chunk
         Verdict::kBlockAfterSniffing,                         // verdict
     },
+    {
+        "Blocked: Cross-site fetch HTML from NaCl without CORS response",
+        __LINE__,
+        "http://www.b.com/plugin.html",           // target_url
+        RESOURCE_TYPE_PLUGIN_RESOURCE,            // resource_type
+        "http://www.a.com/",                      // initiator_origin
+        OriginHeader::kInclude,                   // cors_request
+        "text/html",                              // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,       // canonical_mime_type
+        false,                                    // include_no_sniff_header
+        AccessControlAllowOriginHeader::kOmit,    // cors_response
+        "<html><head>this should sniff as HTML",  // first_chunk
+        Verdict::kBlockAfterSniffing,             // verdict
+    },
 };
 
 }  // namespace
@@ -440,12 +480,13 @@ class CrossSiteDocumentResourceHandlerTest
   // ResourceLoader.
   void Initialize(const std::string& target_url,
                   ResourceType resource_type,
-                  const std::string& initiator_origin) {
+                  const std::string& initiator_origin,
+                  OriginHeader cors_request) {
     stream_sink_status_ = net::URLRequestStatus::FromError(net::ERR_IO_PENDING);
 
     // Initialize |request_| from the parameters.
     request_ = context_.CreateRequest(GURL(target_url), net::DEFAULT_PRIORITY,
-                                      nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+                                      &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     ResourceRequestInfo::AllocateForTesting(request_.get(), resource_type,
                                             nullptr,       // context
                                             3,             // render_process_id
@@ -464,8 +505,11 @@ class CrossSiteDocumentResourceHandlerTest
     stream_sink_ = stream_sink->GetWeakPtr();
 
     // Create the CrossSiteDocumentResourceHandler.
+    bool is_nocors_plugin_request =
+        resource_type == RESOURCE_TYPE_PLUGIN_RESOURCE &&
+        cors_request == OriginHeader::kOmit;
     document_blocker_ = std::make_unique<CrossSiteDocumentResourceHandler>(
-        std::move(stream_sink), request_.get());
+        std::move(stream_sink), request_.get(), is_nocors_plugin_request);
 
     // Create a mock loader to drive the CrossSiteDocumentResourceHandler.
     mock_loader_ =
@@ -511,6 +555,7 @@ class CrossSiteDocumentResourceHandlerTest
  protected:
   TestBrowserThreadBundle thread_bundle_;
   net::TestURLRequestContext context_;
+  net::TestDelegate delegate_;
   std::unique_ptr<net::URLRequest> request_;
 
   // |stream_sink_| is the handler that's immediately after |document_blocker_|
@@ -540,9 +585,8 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
   SCOPED_TRACE(testing::Message()
                << "\nScenario at " << __FILE__ << ":" << scenario.source_line);
 
-  // TODO(nick): Set origin header.
   Initialize(scenario.target_url, scenario.resource_type,
-             scenario.initiator_origin);
+             scenario.initiator_origin, scenario.cors_request);
   base::HistogramTester histograms;
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -717,9 +761,8 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, OnWillReadDefer) {
   SCOPED_TRACE(testing::Message()
                << "\nScenario at " << __FILE__ << ":" << scenario.source_line);
 
-  // TODO(nick): Set origin header.
   Initialize(scenario.target_url, scenario.resource_type,
-             scenario.initiator_origin);
+             scenario.initiator_origin, scenario.cors_request);
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));

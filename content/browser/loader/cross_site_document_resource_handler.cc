@@ -98,8 +98,10 @@ class CrossSiteDocumentResourceHandler::OnWillReadController
 
 CrossSiteDocumentResourceHandler::CrossSiteDocumentResourceHandler(
     std::unique_ptr<ResourceHandler> next_handler,
-    net::URLRequest* request)
-    : LayeredResourceHandler(request, std::move(next_handler)) {}
+    net::URLRequest* request,
+    bool is_nocors_plugin_request)
+    : LayeredResourceHandler(request, std::move(next_handler)),
+      is_nocors_plugin_request_(is_nocors_plugin_request) {}
 
 CrossSiteDocumentResourceHandler::~CrossSiteDocumentResourceHandler() {}
 
@@ -374,14 +376,9 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
 
   // Give embedder a chance to skip document blocking for this response.
   if (GetContentClient()->browser()->ShouldBypassDocumentBlocking(
-          initiator, url, GetRequestInfo()->GetResourceType())) {
+          initiator, url, info->GetResourceType())) {
     return false;
   }
-
-  // TODO(creis): Don't block plugin requests with universal access. This could
-  // be done by allowing resource_type_ == RESOURCE_TYPE_PLUGIN_RESOURCE unless
-  // it had an Origin request header and IsValidCorsHeaderSet returned false.
-  // (That would matter for plugins without universal access, which use CORS.)
 
   // Allow the response through if it has valid CORS headers.
   std::string cors_header;
@@ -389,6 +386,16 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
                                               &cors_header);
   if (CrossSiteDocumentClassifier::IsValidCorsHeaderSet(initiator, url,
                                                         cors_header)) {
+    return false;
+  }
+
+  // Don't block plugin requests with universal access (e.g., Flash).  Such
+  // requests are made without CORS, and thus dont have an Origin request
+  // header.  Other plugin requests (e.g., NaCl) are made using CORS and have an
+  // Origin request header.  If they fail the CORS check above, they should be
+  // blocked.
+  if (info->GetResourceType() == RESOURCE_TYPE_PLUGIN_RESOURCE &&
+      is_nocors_plugin_request_) {
     return false;
   }
 

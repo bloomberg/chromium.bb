@@ -1449,7 +1449,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   }
 
   return AddStandardHandlers(request, request_data.resource_type,
-                             resource_context,
+                             resource_context, request_data.fetch_request_mode,
                              request_data.fetch_request_context_type,
                              request_data.fetch_mixed_content_context_type,
                              requester_info->appcache_service(), child_id,
@@ -1478,6 +1478,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     net::URLRequest* request,
     ResourceType resource_type,
     ResourceContext* resource_context,
+    network::mojom::FetchRequestMode fetch_request_mode,
     RequestContextType fetch_request_context_type,
     blink::WebMixedContentContextType fetch_mixed_content_context_type,
     AppCacheService* appcache_service,
@@ -1580,8 +1581,11 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     // Add a handler to block cross-site documents from the renderer process.
     // This should be pre mime-sniffing, since it affects whether the response
     // will be read, and since it looks at the original mime type.
-    handler.reset(
-        new CrossSiteDocumentResourceHandler(std::move(handler), request));
+    bool is_nocors_plugin_request =
+        resource_type == RESOURCE_TYPE_PLUGIN_RESOURCE &&
+        fetch_request_mode == network::mojom::FetchRequestMode::kNoCORS;
+    handler.reset(new CrossSiteDocumentResourceHandler(
+        std::move(handler), request, is_nocors_plugin_request));
   }
 
   return handler;
@@ -2152,10 +2156,12 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
           ->stream()
           ->CreateHandle();
 
+  // Safe to consider navigations as kNoCORS.
   // TODO(davidben): Fix the dependency on child_id/route_id. Those are used
   // by the ResourceScheduler. currently it's a no-op.
   handler = AddStandardHandlers(
       new_request.get(), resource_type, resource_context,
+      network::mojom::FetchRequestMode::kNoCORS,
       info.begin_params->request_context_type,
       info.begin_params->mixed_content_context_type,
       appcache_handle_core ? appcache_handle_core->GetAppCacheService()

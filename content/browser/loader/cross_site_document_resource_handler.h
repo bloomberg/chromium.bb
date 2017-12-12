@@ -63,7 +63,8 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
 
   CrossSiteDocumentResourceHandler(
       std::unique_ptr<ResourceHandler> next_handler,
-      net::URLRequest* request);
+      net::URLRequest* request,
+      bool is_nocors_plugin_request);
   ~CrossSiteDocumentResourceHandler() override;
 
   // LayeredResourceHandler overrides:
@@ -114,6 +115,13 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // response is needed, as well as which type of sniffing to perform.
   CrossSiteDocumentMimeType canonical_mime_type_ =
       CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS;
+
+  // Indicates whether this request was made by a plugin and was not using CORS.
+  // Such requests are exempt from blocking, while other plugin requests must be
+  // blocked if the CORS check fails.
+  // TODO(creis, nick): Replace this with a plugin process ID check to see if
+  // the plugin has universal access.
+  bool is_nocors_plugin_request_;
 
   // Tracks whether OnResponseStarted has been called, to ensure that it happens
   // before OnWillRead and OnReadCompleted.
