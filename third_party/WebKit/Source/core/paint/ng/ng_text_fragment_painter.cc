@@ -4,15 +4,20 @@
 
 #include "core/paint/ng/ng_text_fragment_painter.h"
 
+#include "core/editing/FrameSelection.h"
+#include "core/frame/LocalFrame.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_text_decoration_offset.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/TextPainterBase.h"
 #include "core/paint/ng/ng_paint_fragment.h"
 #include "core/paint/ng/ng_text_painter.h"
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/fonts/CharacterRange.h"
+#include "platform/fonts/shaping/ShapeResultBuffer.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
@@ -38,6 +43,31 @@ inline bool ShouldPaintTextFragment(const NGPhysicalTextFragment& text_fragment,
   return true;
 }
 
+// Copied from Font.cpp
+inline FloatRect PixelSnappedSelectionRect(FloatRect rect) {
+  // Using roundf() rather than ceilf() for the right edge as a compromise to
+  // ensure correct caret positioning.
+  float rounded_x = roundf(rect.X());
+  return FloatRect(rounded_x, rect.Y(), roundf(rect.MaxX() - rounded_x),
+                   rect.Height());
+}
+
+Color SelectionBackgroundColor(const Document& document,
+                               const ComputedStyle& style,
+                               const NGPhysicalTextFragment& text_fragment,
+                               Color text_color) {
+  const Color color = SelectionPaintingUtils::SelectionBackgroundColor(
+      document, style, text_fragment.GetNode());
+  if (!color.Alpha())
+    return Color();
+
+  // If the text color ends up being the same as the selection background,
+  // invert the selection background.
+  if (text_color == color)
+    return Color(0xff - color.Red(), 0xff - color.Green(), 0xff - color.Blue());
+  return color;
+}
+
 }  // namespace
 
 NGTextFragmentPainter::NGTextFragmentPainter(
@@ -46,6 +76,42 @@ NGTextFragmentPainter::NGTextFragmentPainter(
   DCHECK(text_fragment.PhysicalFragment().IsText());
 }
 
+// Logic is copied from InlineTextBoxPainter::PaintSelection.
+// |selection_start| and |selection_end| should be between
+// [text_fragment.StartOffset(), text_fragment.EndOffset()].
+static void PaintSelection(GraphicsContext& context,
+                           const NGPhysicalTextFragment& text_fragment,
+                           const Document& document,
+                           const ComputedStyle& style,
+                           Color text_color,
+                           const LayoutRect& box_rect,
+                           unsigned int selection_start,
+                           unsigned int selection_end) {
+  const Color color =
+      SelectionBackgroundColor(document, style, text_fragment, text_color);
+  if (!color.Alpha())
+    return;
+
+  GraphicsContextStateSaver state_saver(context);
+
+  DCHECK_LE(text_fragment.StartOffset(), selection_start);
+  DCHECK_LE(text_fragment.StartOffset(), selection_end);
+  DCHECK_GE(text_fragment.EndOffset(), selection_start);
+  DCHECK_GE(text_fragment.EndOffset(), selection_end);
+  const ShapeResult* shape_result = text_fragment.TextShapeResult();
+  // TODO(yoichio): Confirm passing TextDirection::kLtr is O.K or not.
+  const CharacterRange& range = ShapeResultBuffer::GetCharacterRange(
+      shape_result, TextDirection::kLtr, shape_result->Width(),
+      selection_start - text_fragment.StartOffset(),
+      selection_end - text_fragment.StartOffset());
+  const FloatRect& selection_rect = PixelSnappedSelectionRect(
+      FloatRect(box_rect.Location().X() + range.start, box_rect.Location().Y(),
+                range.Width(), box_rect.Height().ToFloat()));
+  context.FillRect(selection_rect, color);
+}
+
+// This is copied from InlineTextBoxPainter::PaintSelection() but lucks of
+// ltr, expanding new line wrap or so which uses InlineTextBox functions.
 void NGTextFragmentPainter::Paint(const Document& document,
                                   const PaintInfo& paint_info,
                                   const LayoutPoint& paint_offset) {
@@ -72,7 +138,13 @@ void NGTextFragmentPainter::Paint(const Document& document,
   bool is_printing = paint_info.IsPrinting();
 
   // Determine whether or not we're selected.
-  bool have_selection = false;  // TODO(layout-dev): Implement.
+  int selection_start;
+  int selection_end;
+  std::tie(selection_start, selection_end) =
+      document.GetFrame()->Selection().LayoutSelectionStartEndForNG(
+          text_fragment);
+  DCHECK_LE(selection_start, selection_end);
+  const bool have_selection = selection_start < selection_end;
   if (!have_selection && paint_info.phase == PaintPhase::kSelection) {
     // When only painting the selection, don't bother to paint if there is none.
     return;
@@ -93,20 +165,6 @@ void NGTextFragmentPainter::Paint(const Document& document,
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
 
-  int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
-  LayoutPoint text_origin(box_origin.X(), box_origin.Y() + ascent);
-
-  // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
-  // include selection and composition highlights.
-  if (paint_info.phase != PaintPhase::kSelection &&
-      paint_info.phase != PaintPhase::kTextClip && !is_printing) {
-    // TODO(layout-dev): Implement.
-  }
-
-  // 2. Now paint the foreground, including text and decorations.
-  int selection_start = 0;
-  int selection_end = 0;
-
   LayoutRect box_rect(box_origin, fragment_.Size().ToLayoutSize());
   Optional<GraphicsContextStateSaver> state_saver;
   NGLineOrientation orientation = text_fragment.LineOrientation();
@@ -122,6 +180,18 @@ void NGTextFragmentPainter::Paint(const Document& document,
                       : TextPainterBase::kCounterclockwise));
   }
 
+  // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
+  // include selection and composition highlights.
+  if (have_selection && paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kTextClip && !is_printing) {
+    PaintSelection(context, text_fragment, document, style,
+                   selection_style.fill_color, box_rect, selection_start,
+                   selection_end);
+  }
+
+  // 2. Now paint the foreground, including text and decorations.
+  int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
+  LayoutPoint text_origin(box_origin.X(), box_origin.Y() + ascent);
   NGTextPainter text_painter(context, font, text_fragment, text_origin,
                              box_rect, text_fragment.IsHorizontal());
 
@@ -162,12 +232,15 @@ void NGTextFragmentPainter::Paint(const Document& document,
     int start_offset = text_fragment.StartOffset();
     int end_offset = start_offset + length;
 
-    if (paint_selected_text_separately && selection_start < selection_end) {
-      start_offset = selection_end;
-      end_offset = selection_start;
+    if (have_selection && paint_selected_text_separately) {
+      // Paint only the text that is not selected.
+      if (start_offset < selection_start)
+        text_painter.Paint(start_offset, selection_start, length, text_style);
+      if (selection_end < end_offset)
+        text_painter.Paint(selection_end, end_offset, length, text_style);
+    } else {
+      text_painter.Paint(start_offset, end_offset, length, text_style);
     }
-
-    text_painter.Paint(start_offset, end_offset, length, text_style);
 
     // Paint line-through decoration if needed.
     if (has_line_through_decoration) {
@@ -177,9 +250,9 @@ void NGTextFragmentPainter::Paint(const Document& document,
     }
   }
 
-  if ((paint_selected_text_only || paint_selected_text_separately) &&
-      selection_start < selection_end) {
-    // Paint only the text that is selected
+  if (have_selection &&
+      (paint_selected_text_only || paint_selected_text_separately)) {
+    // Paint only the text that is selected.
     text_painter.Paint(selection_start, selection_end, length, selection_style);
   }
 }
