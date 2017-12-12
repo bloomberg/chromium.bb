@@ -2436,7 +2436,6 @@ crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-child-001.xht [
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-child-002.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
-crbug.com/788337 external/wpt/css/css-multicol/multicol-zero-height-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-fill-balance-001.xht [ Pass Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-gap-negative-001.xht [ Pass Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-overflow-000.xht [ Pass Failure ]
