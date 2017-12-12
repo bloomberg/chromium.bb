@@ -17,6 +17,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/quirks/pref_names.h"
 #include "components/quirks/quirks_client.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -157,7 +158,29 @@ std::unique_ptr<net::URLFetcher> QuirksManager::CreateURLFetcher(
   if (!fake_quirks_fetcher_creator_.is_null())
     return fake_quirks_fetcher_creator_.Run(url, delegate);
 
-  return net::URLFetcher::Create(url, net::URLFetcher::GET, delegate);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("quirks_display_fetcher", R"(
+          semantics {
+            sender: "Quirks"
+            description: "Download custom display calibration file."
+            trigger:
+                "Chrome OS attempts to download monitor calibration files on"
+                "first device login, and then once every 30 days."
+            data: "ICC files to calibrate and improve the quality of a display."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: NO
+            chrome_policy {
+              DeviceQuirksDownloadEnabled {
+                  DeviceQuirksDownloadEnabled: false
+              }
+            }
+          }
+        )");
+
+  return net::URLFetcher::Create(url, net::URLFetcher::GET, delegate,
+                                 traffic_annotation);
 }
 
 void QuirksManager::OnIccFilePathRequestCompleted(
