@@ -83,8 +83,6 @@ const char kArcAvailable[] = "arc-available";
 // Defines how to start ARC. This can take one of the following values:
 // - always-start automatically start with Play Store UI support.
 // - always-start-with-no-play-store automatically start without Play Store UI.
-// In both cases ARC starts after login screen in almost all cases. Secondary
-// profile is an exception where ARC won't start.
 // If it is not set, then ARC is started in default mode.
 const char kArcStartMode[] = "arc-start-mode";
 

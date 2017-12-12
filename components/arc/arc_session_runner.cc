@@ -105,13 +105,6 @@ bool IsRestartNeeded(base::Optional<ArcInstanceMode> target_mode,
 // operation.
 bool IsRequestAllowed(const base::Optional<ArcInstanceMode>& current_mode,
                       ArcInstanceMode request_mode) {
-  if (request_mode == ArcInstanceMode::MINI_INSTANCE &&
-      ShouldArcOnlyStartAfterLogin()) {
-    // Skip starting ARC for now. We'll have another chance to start the full
-    // instance after the user logs in.
-    return false;
-  }
-
   if (!current_mode.has_value()) {
     // This is a request to start a new ARC instance (either mini instance
     // or full instance).
