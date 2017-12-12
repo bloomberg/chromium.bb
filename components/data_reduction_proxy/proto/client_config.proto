@@ -122,6 +122,11 @@ message CreateClientConfigRequest {
 
   // Build version information.
   optional VersionInfo version_info = 2;
+
+  // The MCC/MNC of the telephony network operator. Represented as a string of
+  // the two numbers concatenated. E.g., "310260" for T-Mobile. Empty string if
+  // the user is not on android or if the user is on WiFi.
+  optional string telephony_network_operator = 3;
 }
 
 // Build version information.
