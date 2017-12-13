@@ -887,7 +887,7 @@ def _install_packages(run_dir, cipd_cache_dir, client, packages, timeout):
     for i, (name, version) in enumerate(pin_list):
       insert_pin(subdir, name, version, this_subdir[i][2])
 
-  assert None not in package_pins
+  assert None not in package_pins, (packages, pins, package_pins)
 
   return package_pins
 
