@@ -33,9 +33,6 @@ TextDocument::TextDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
-  UseCounter::Count(*this, WebFeature::kTextDocument);
-  if (!IsInMainFrame())
-    UseCounter::Count(*this, WebFeature::kTextDocumentInFrame);
 }
 
 DocumentParser* TextDocument::CreateParser() {

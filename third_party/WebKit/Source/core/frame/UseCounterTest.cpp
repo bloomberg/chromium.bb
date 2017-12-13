@@ -25,6 +25,12 @@ const char kSVGCSSHistogramName[] = "Blink.UseCounter.SVGImage.CSSProperties";
 const char kSVGAnimatedCSSHistogramName[] =
     "Blink.UseCounter.SVGImage.AnimatedCSSProperties";
 
+const char* kHistogramList[] = {
+    kFeaturesHistogramName,      kCSSHistogramName,
+    kAnimatedCSSHistogramName,   kExtensionFeaturesHistogramName,
+    kSVGCSSHistogramName,        kSVGCSSHistogramName,
+    kSVGAnimatedCSSHistogramName};
+
 // In practice, SVGs always appear to be loaded with an about:blank URL
 const char kSvgUrl[] = "about:blank";
 const char* const kInternalUrl = kSvgUrl;
@@ -49,6 +55,8 @@ class UseCounterTest : public ::testing::Test {
 
  protected:
   LocalFrame* GetFrame() { return &dummy_->GetFrame(); }
+  void SetIsViewSource() { dummy_->GetDocument().SetIsViewSource(true); }
+  void SetURL(const KURL& url) { dummy_->GetDocument().SetURL(url); }
   template <typename T>
   void HistogramBasicTest(const std::string& histogram,
                           T item,
@@ -56,7 +64,7 @@ class UseCounterTest : public ::testing::Test {
                           std::function<bool(T)> counted,
                           std::function<void(T)> count,
                           std::function<int(T)> histogram_map,
-                          std::function<void(KURL)> did_commit_load,
+                          std::function<void(LocalFrame*)> did_commit_load,
                           const std::string& url);
   std::unique_ptr<DummyPageHolder> dummy_;
   HistogramTester histogram_tester_;
@@ -70,16 +78,15 @@ void UseCounterTest::HistogramBasicTest(
     std::function<bool(T)> counted,
     std::function<void(T)> count,
     std::function<int(T)> histogram_map,
-    std::function<void(KURL)> did_commit_load,
+    std::function<void(LocalFrame*)> did_commit_load,
     const std::string& url) {
-  int page_visit_bucket = GetPageVisitsBucketforHistogram(histogram);
+  int page_visits_bucket = GetPageVisitsBucketforHistogram(histogram);
 
   // Test recording a single (arbitrary) counter
   EXPECT_FALSE(counted(item));
   count(item);
   EXPECT_TRUE(counted(item));
   histogram_tester_.ExpectUniqueSample(histogram, histogram_map(item), 1);
-
   // Test that repeated measurements have no effect
   count(item);
   histogram_tester_.ExpectUniqueSample(histogram, histogram_map(item), 1);
@@ -94,10 +101,11 @@ void UseCounterTest::HistogramBasicTest(
 
   // After a page load, the histograms will be updated, even when the URL
   // scheme is internal
-  did_commit_load(URLTestHelpers::ToKURL(url));
+  SetURL(URLTestHelpers::ToKURL(url));
+  did_commit_load(GetFrame());
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 1);
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(second_item), 1);
-  histogram_tester_.ExpectBucketCount(histogram, page_visit_bucket, 1);
+  histogram_tester_.ExpectBucketCount(histogram, page_visits_bucket, 1);
   histogram_tester_.ExpectTotalCount(histogram, 3);
 
   // Now a repeat measurement should get recorded again, exactly once
@@ -110,11 +118,7 @@ void UseCounterTest::HistogramBasicTest(
 
   // For all histograms, no other histograms besides |histogram| should
   // be affected.
-  for (const std::string& unaffected_histogram :
-       {kAnimatedCSSHistogramName, kCSSHistogramName,
-        kExtensionFeaturesHistogramName, kFeaturesHistogramName,
-        kSVGAnimatedCSSHistogramName, kSVGCSSHistogramName,
-        kSVGFeaturesHistogramName}) {
+  for (const std::string& unaffected_histogram : kHistogramList) {
     if (unaffected_histogram == histogram)
       continue;
     // CSS histograms are never created in didCommitLoad when the context is
@@ -147,7 +151,7 @@ TEST_F(UseCounterTest, RecordingFeatures) {
         use_counter.RecordMeasurement(feature, *GetFrame());
       },
       [](WebFeature feature) -> int { return static_cast<int>(feature); },
-      [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kHttpsUrl);
+      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kHttpsUrl);
 }
 
 TEST_F(UseCounterTest, RecordingCSSProperties) {
@@ -163,7 +167,7 @@ TEST_F(UseCounterTest, RecordingCSSProperties) {
       [](CSSPropertyID property) -> int {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },
-      [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kHttpsUrl);
+      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kHttpsUrl);
 }
 
 TEST_F(UseCounterTest, RecordingAnimatedCSSProperties) {
@@ -177,7 +181,7 @@ TEST_F(UseCounterTest, RecordingAnimatedCSSProperties) {
       [](CSSPropertyID property) -> int {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },
-      [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kHttpsUrl);
+      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kHttpsUrl);
 }
 
 TEST_F(UseCounterTest, RecordingExtensions) {
@@ -192,7 +196,8 @@ TEST_F(UseCounterTest, RecordingExtensions) {
         use_counter.RecordMeasurement(feature, *GetFrame());
       },
       [](WebFeature feature) -> int { return static_cast<int>(feature); },
-      [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kExtensionUrl);
+      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); },
+      kExtensionUrl);
 }
 
 TEST_F(UseCounterTest, SVGImageContextFeatures) {
@@ -207,7 +212,7 @@ TEST_F(UseCounterTest, SVGImageContextFeatures) {
         use_counter.RecordMeasurement(feature, *GetFrame());
       },
       [](WebFeature feature) -> int { return static_cast<int>(feature); },
-      [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kSvgUrl);
+      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
 }
 
 TEST_F(UseCounterTest, SVGImageContextCSSProperties) {
@@ -223,7 +228,7 @@ TEST_F(UseCounterTest, SVGImageContextCSSProperties) {
       [](CSSPropertyID property) -> int {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },
-      [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kSvgUrl);
+      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
 }
 
 TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
@@ -237,7 +242,7 @@ TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
       [](CSSPropertyID property) -> int {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },
-      [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kSvgUrl);
+      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
 }
 
 TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
@@ -286,6 +291,22 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
       UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property), 1);
 }
 
+TEST_F(UseCounterTest, DropMeasurementOnViewSourcePages) {
+  UseCounter use_counter;
+  SetIsViewSource();
+  SetURL(URLTestHelpers::ToKURL(kHttpsUrl));
+  use_counter.DidCommitLoad(GetFrame());
+
+  WebFeature feature = WebFeature::kFetch;
+  EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
+  histogram_tester_.ExpectTotalCount(kFeaturesHistogramName, 0);
+  use_counter.RecordMeasurement(feature, *GetFrame());
+  // The feature will be marked as seen.
+  EXPECT_TRUE(use_counter.HasRecordedMeasurement(feature));
+  // But the feature is not recorded to UMA.
+  histogram_tester_.ExpectTotalCount(kFeaturesHistogramName, 0);
+}
+
 void ExpectHistograms(const HistogramTester& histogram_tester,
                       int visits_count,
                       WebFeature feature,
@@ -310,7 +331,6 @@ void ExpectHistograms(const HistogramTester& histogram_tester,
 
 TEST_F(UseCounterTest, MutedDocuments) {
   UseCounter use_counter;
-
   // Counters triggered before any load are always reported.
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
@@ -318,7 +338,8 @@ TEST_F(UseCounterTest, MutedDocuments) {
                    CSSPropertyFontWeight, 1);
 
   // Loading an internal page doesn't bump PageVisits and metrics not reported.
-  use_counter.DidCommitLoad(URLTestHelpers::ToKURL(kInternalUrl));
+  SetURL(URLTestHelpers::ToKURL(kInternalUrl));
+  use_counter.DidCommitLoad(GetFrame());
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(WebFeature::kFetch));
   EXPECT_FALSE(use_counter.IsCounted(CSSPropertyFontWeight));
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
@@ -339,51 +360,56 @@ TEST_F(UseCounterTest, MutedDocuments) {
                    CSSPropertyFontWeight, 1);
 
   // If we now load a real web page, metrics are reported again.
-  use_counter.DidCommitLoad(URLTestHelpers::ToKURL("http://foo.com/"));
+  SetURL(URLTestHelpers::ToKURL("http://foo.com/"));
+  use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester_, 1, WebFeature::kFetch, 2,
                    CSSPropertyFontWeight, 2);
 
   // HTTPs URLs are the same.
-  use_counter.DidCommitLoad(URLTestHelpers::ToKURL(kHttpsUrl));
+  SetURL(URLTestHelpers::ToKURL(kHttpsUrl));
+  use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Extensions aren't counted.
-  use_counter.DidCommitLoad(URLTestHelpers::ToKURL(kExtensionUrl));
+  SetURL(URLTestHelpers::ToKURL(kExtensionUrl));
+  use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Nor is devtools
-  use_counter.DidCommitLoad(
-      URLTestHelpers::ToKURL("chrome-devtools://1238ba908adf/"));
+  SetURL(URLTestHelpers::ToKURL("chrome-devtools://1238ba908adf/"));
+  use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Nor are data URLs
-  use_counter.DidCommitLoad(
-      URLTestHelpers::ToKURL("data:text/plain,thisisaurl"));
+  SetURL(URLTestHelpers::ToKURL("data:text/plain,thisisaurl"));
+  use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Nor are empty URLs (a main frame with no Document)
-  use_counter.DidCommitLoad(NullURL());
+  SetURL(NullURL());
+  use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Or file URLs
-  use_counter.DidCommitLoad(URLTestHelpers::ToKURL("file:///c/autoexec.bat"));
+  SetURL(URLTestHelpers::ToKURL("file:///c/autoexec.bat"));
+  use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,

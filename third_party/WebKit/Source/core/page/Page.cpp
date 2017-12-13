@@ -619,18 +619,12 @@ void Page::UpdateAcceleratedCompositingSettings() {
 
 void Page::DidCommitLoad(LocalFrame* frame) {
   if (main_frame_ == frame) {
-    KURL url;
-    if (frame->GetDocument())
-      url = frame->GetDocument()->Url();
-
+    GetConsoleMessageStorage().Clear();
+    GetUseCounter().DidCommitLoad(frame);
     // TODO(rbyers): Most of this doesn't appear to take into account that each
     // SVGImage gets it's own Page instance.
-    GetConsoleMessageStorage().Clear();
-    if (frame->Client() && frame->Client()->ShouldTrackUseCounter(url))
-      GetUseCounter().DidCommitLoad(url);
     GetDeprecation().ClearSuppression();
     GetVisualViewport().SendUMAMetrics();
-
     // Need to reset visual viewport position here since before commit load we
     // would update the previous history item, Page::didCommitLoad is called
     // after a new history item is created in FrameLoader.

@@ -58,7 +58,6 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer,
   // FIXME: Why do view-source pages need to load in quirks mode?
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
-  UseCounter::Count(*this, WebFeature::kViewSourceDocument);
 }
 
 DocumentParser* HTMLViewSourceDocument::CreateParser() {

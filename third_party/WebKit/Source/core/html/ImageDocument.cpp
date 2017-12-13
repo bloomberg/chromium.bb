@@ -201,9 +201,6 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
                               : kDesktop) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
-  UseCounter::Count(*this, WebFeature::kImageDocument);
-  if (!IsInMainFrame())
-    UseCounter::Count(*this, WebFeature::kImageDocumentInFrame);
 }
 
 DocumentParser* ImageDocument::CreateParser() {
