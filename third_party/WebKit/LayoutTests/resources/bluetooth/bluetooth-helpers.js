@@ -17,7 +17,13 @@ function loadScripts(paths) {
   return chain;
 }
 
-function loadChromiumResources() {
+function performChromiumSetup() {
+  // Make sure we are actually on Chromium.
+  if (!Mojo) {
+    return;
+  }
+
+  // Load the Chromium-specific resources.
   let root = window.location.pathname.match(/.*LayoutTests/);
   let resource_prefix = `${root}/resources`;
   let gen_prefix = 'file:///gen/';
@@ -28,19 +34,29 @@ function loadChromiumResources() {
     `${gen_prefix}/device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.js`,
     `${resource_prefix}/bluetooth/web-bluetooth-test.js`,
     `${resource_prefix}/bluetooth/bluetooth-fake-adapter.js`,
-  ]);
+  ])
+      // Call setBluetoothFakeAdapter() to clean up any fake adapters left over
+      // by legacy tests.
+      // Legacy tests that use setBluetoothFakeAdapter() sometimes fail to clean
+      // their fake adapter. This is not a problem for these tests because the
+      // next setBluetoothFakeAdapter() will clean it up anyway but it is a
+      // problem for the new tests that do not use setBluetoothFakeAdapter().
+      // TODO(crbug.com/569709): Remove once setBluetoothFakeAdapter is no
+      // longer used.
+      .then(() => setBluetoothFakeAdapter ? setBluetoothFakeAdapter('')
+                                          : undefined);
 }
+
 
 // These tests rely on the User Agent providing an implementation of the
 // Web Bluetooth Testing API.
 // https://docs.google.com/document/d/1Nhv_oVDCodd1pEH_jj9k8gF4rPGb_84VYaZ9IG8M_WY/edit?ts=59b6d823#heading=h.7nki9mck5t64
 function bluetooth_test(func, name, properties) {
   Promise.resolve()
-    .then(() => {
-      // Load Chromium specific resources when Mojo bindings are detected.
-      if (Mojo) return loadChromiumResources();
-    })
-    .then(() => promise_test(func, name, properties));
+    .then(() => promise_test(t => Promise.resolve()
+      // Trigger Chromium-specific setup.
+      .then(performChromiumSetup)
+      .then(() => func(t)), name, properties));
 }
 
 // HCI Error Codes. Used for simulateGATT[Dis]ConnectionResponse.
