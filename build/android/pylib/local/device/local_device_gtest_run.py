@@ -469,54 +469,71 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
           device_temp_file.NamedDeviceTemporaryDirectory(
               adb=device.adb, dir='/sdcard/'),
           self._test_instance.gs_test_artifacts_bucket) as test_artifacts_dir:
+        with contextlib_ext.Optional(
+            device_temp_file.DeviceTempFile(
+                adb=device.adb, dir=self._delegate.ResultsDirectory(device)),
+            self._test_instance.chartjson_result_file) as chartjson_result_file:
 
-        flags = list(self._test_instance.flags)
-        if self._test_instance.enable_xml_result_parsing:
-          flags.append('--gtest_output=xml:%s' % device_tmp_results_file.name)
+          flags = list(self._test_instance.flags)
+          if self._test_instance.enable_xml_result_parsing:
+            flags.append('--gtest_output=xml:%s' % device_tmp_results_file.name)
 
-        if self._test_instance.gs_test_artifacts_bucket:
-          flags.append('--test_artifacts_dir=%s' % test_artifacts_dir.name)
+          if self._test_instance.gs_test_artifacts_bucket:
+            flags.append('--test_artifacts_dir=%s' % test_artifacts_dir.name)
 
-        logging.info('flags:')
-        for f in flags:
-          logging.info('  %s', f)
+          if self._test_instance.chartjson_result_file:
+            flags.append('--chartjson_result_file=%s'
+                         % chartjson_result_file.name)
 
-        stream_name = 'logcat_%s_%s_%s' % (
-            hash(tuple(test)),
-            time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
-            device.serial)
+          logging.info('flags:')
+          for f in flags:
+            logging.info('  %s', f)
 
-        with self._env.output_manager.ArchivedTempfile(
-            stream_name, 'logcat') as logcat_file:
-          with logcat_monitor.LogcatMonitor(
-              device.adb,
-              filter_specs=local_device_environment.LOGCAT_FILTERS,
-              output_file=logcat_file.name) as logmon:
-            with contextlib_ext.Optional(
-                trace_event.trace(str(test)),
-                self._env.trace_output):
-              output = self._delegate.Run(
-                  test, device, flags=' '.join(flags),
-                  timeout=timeout, retries=0)
-          logmon.Close()
+          stream_name = 'logcat_%s_%s_%s' % (
+              hash(tuple(test)),
+              time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
+              device.serial)
 
-        if logcat_file.Link():
-          logging.info('Logcat saved to %s', logcat_file.Link())
+          with self._env.output_manager.ArchivedTempfile(
+              stream_name, 'logcat') as logcat_file:
+            with logcat_monitor.LogcatMonitor(
+                device.adb,
+                filter_specs=local_device_environment.LOGCAT_FILTERS,
+                output_file=logcat_file.name) as logmon:
+              with contextlib_ext.Optional(
+                  trace_event.trace(str(test)),
+                  self._env.trace_output):
+                output = self._delegate.Run(
+                    test, device, flags=' '.join(flags),
+                    timeout=timeout, retries=0)
+            logmon.Close()
 
-        if self._test_instance.enable_xml_result_parsing:
-          try:
-            gtest_xml = device.ReadFile(
-                device_tmp_results_file.name,
-                as_root=True)
-          except device_errors.CommandFailedError as e:
-            logging.warning(
-                'Failed to pull gtest results XML file %s: %s',
-                device_tmp_results_file.name,
-                str(e))
-            gtest_xml = None
+          if logcat_file.Link():
+            logging.info('Logcat saved to %s', logcat_file.Link())
 
-        test_artifacts_url = self._UploadTestArtifacts(device,
-                                                       test_artifacts_dir)
+          if self._test_instance.enable_xml_result_parsing:
+            try:
+              gtest_xml = device.ReadFile(
+                  device_tmp_results_file.name,
+                  as_root=True)
+            except device_errors.CommandFailedError as e:
+              logging.warning(
+                  'Failed to pull gtest results XML file %s: %s',
+                  device_tmp_results_file.name,
+                  str(e))
+              gtest_xml = None
+
+          if self._test_instance.chartjson_result_file:
+            try:
+              device.PullFile(chartjson_result_file.name,
+                              self._test_instance.chartjson_result_file)
+            except device_errors.CommandFailedError as e:
+              logging.warning(
+                  'Failed to pull chartjson results %s: %s',
+                  chartjson_result_file.name, str(e))
+
+          test_artifacts_url = self._UploadTestArtifacts(device,
+                                                         test_artifacts_dir)
 
     for s in self._servers[str(device)]:
       s.Reset()
