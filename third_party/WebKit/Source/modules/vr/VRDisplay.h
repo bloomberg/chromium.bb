@@ -194,11 +194,10 @@ class VRDisplay final : public EventTargetWithInlineData,
   void ProcessScheduledAnimations(double timestamp);
   void ProcessScheduledWindowAnimations(double timestamp);
 
-  // In order to help the VR device with scheduling, never request a new VSync
-  // until the current frame is either submitted or abandoned. If vrDisplay.rAF
-  // is called earlier, defer the GetVSync until vrDisplay.submitFrame is
-  // called. If the rAF callback exits without submitting a frame, call it at
-  // that time.
+  // Request delivery of a VSync event for either magic window mode or
+  // presenting mode as applicable. May be called more than once per frame, it
+  // ensures that there's at most one VSync request active at a time.
+  // Does nothing if the web application hasn't requested a rAF callback.
   void RequestVSync();
 
   Member<NavigatorVR> navigator_vr_;
@@ -244,8 +243,9 @@ class VRDisplay final : public EventTargetWithInlineData,
   TraceWrapperMember<ScriptedAnimationController>
       scripted_animation_controller_;
   bool pending_vrdisplay_raf_ = false;
-  bool pending_vsync_ = false;
-  int pending_vsync_id_ = -1;
+  bool pending_presenting_vsync_ = false;
+  bool pending_magic_window_vsync_ = false;
+  int pending_magic_window_vsync_id_ = -1;
   bool in_animation_frame_ = false;
   bool did_submit_this_frame_ = false;
   bool display_blurred_ = false;
