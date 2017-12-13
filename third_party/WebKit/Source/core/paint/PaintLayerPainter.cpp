@@ -267,10 +267,20 @@ void PaintLayerPainter::AdjustForPaintOffsetTranslation(
   if (const auto* properties =
           paint_layer_.GetLayoutObject().FirstFragment().PaintProperties()) {
     if (properties->PaintOffsetTranslation()) {
-      painting_info.root_layer = &paint_layer_;
+      // Map paint_dirty_rect from the original root layer to the current layer,
+      // and make the current layer the new root layer.
       painting_info.paint_dirty_rect =
           properties->PaintOffsetTranslation()->Matrix().Inverse().MapRect(
               painting_info.paint_dirty_rect);
+      // If the original root layer doesn't have PaintOffsetTranslation which
+      // means that paint_layer_'s PaintOffsetTranslation includes root layer's
+      // paint offset, then we need to add the root layer's paint offset.
+      const auto& root_fragment =
+          painting_info.root_layer->GetLayoutObject().FirstFragment();
+      if (!root_fragment.PaintProperties() ||
+          !root_fragment.PaintProperties()->PaintOffsetTranslation())
+        painting_info.paint_dirty_rect.MoveBy(root_fragment.PaintOffset());
+      painting_info.root_layer = &paint_layer_;
 
       // TODO(chrishtr): is this correct for fragmentation?
       painting_info.sub_pixel_accumulation = ToLayoutSize(
