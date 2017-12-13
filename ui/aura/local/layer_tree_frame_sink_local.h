@@ -44,6 +44,10 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
 
   base::WeakPtr<LayerTreeFrameSinkLocal> GetWeakPtr();
 
+  const viz::LocalSurfaceId& local_surface_id() const {
+    return local_surface_id_;
+  }
+
   // cc::LayerTreeFrameSink:
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
