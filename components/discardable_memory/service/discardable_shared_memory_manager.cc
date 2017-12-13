@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/memory_coordinator_client_registry.h"
@@ -29,6 +28,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -617,10 +617,9 @@ void DiscardableSharedMemoryManager::ReleaseMemory(
 
 void DiscardableSharedMemoryManager::BytesAllocatedChanged(
     size_t new_bytes_allocated) const {
-  static const char kTotalDiscardableMemoryAllocatedKey[] =
-      "total-discardable-memory-allocated";
-  base::debug::SetCrashKeyValue(kTotalDiscardableMemoryAllocatedKey,
-                                base::NumberToString(new_bytes_allocated));
+  static crash_reporter::CrashKeyString<24> total_discardable_memory(
+      "total-discardable-memory-allocated");
+  total_discardable_memory.Set(base::NumberToString(new_bytes_allocated));
 }
 
 base::Time DiscardableSharedMemoryManager::Now() const {
