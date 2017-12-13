@@ -5760,8 +5760,8 @@ static int check_best_zero_mv(
     const int16_t mode_context[TOTAL_REFS_PER_FRAME],
     const int16_t compound_mode_context[TOTAL_REFS_PER_FRAME],
     int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME], int this_mode,
-    const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int block,
-    int mi_row, int mi_col) {
+    const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int mi_row,
+    int mi_col) {
   int_mv zeromv[2] = { {.as_int = 0 } };
   int comp_pred_mode = ref_frames[1] > INTRA_FRAME;
   (void)mi_row;
@@ -5787,8 +5787,7 @@ static int check_best_zero_mv(
       frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int &&
       (ref_frames[1] <= INTRA_FRAME ||
        frame_mv[this_mode][ref_frames[1]].as_int == zeromv[1].as_int)) {
-    int16_t rfc =
-        av1_mode_context_analyzer(mode_context, ref_frames, bsize, block);
+    int16_t rfc = av1_mode_context_analyzer(mode_context, ref_frames);
     int c1 = cost_mv_ref(x, NEARMV, rfc);
     int c2 = cost_mv_ref(x, NEARESTMV, rfc);
     int c3 = cost_mv_ref(x, GLOBALMV, rfc);
@@ -8144,8 +8143,8 @@ static int64_t handle_inter_mode(
   if (is_comp_pred)
     mode_ctx = mbmi_ext->compound_mode_context[refs[0]];
   else
-    mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
-                                         mbmi->ref_frame, bsize, -1);
+    mode_ctx =
+        av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
 
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
@@ -9705,7 +9704,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       const MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, second_ref_frame };
       if (!check_best_zero_mv(cpi, x, mbmi_ext->mode_context,
                               mbmi_ext->compound_mode_context, frame_mv,
-                              this_mode, ref_frames, bsize, -1, mi_row, mi_col))
+                              this_mode, ref_frames, bsize, mi_row, mi_col))
         continue;
     }
 

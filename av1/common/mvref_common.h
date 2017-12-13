@@ -361,20 +361,8 @@ static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
 }
 
 static INLINE int16_t av1_mode_context_analyzer(
-    const int16_t *const mode_context, const MV_REFERENCE_FRAME *const rf,
-    BLOCK_SIZE bsize, int block) {
-  int16_t mode_ctx = 0;
-  int8_t ref_frame_type = av1_ref_frame_type(rf);
-
-  if (block >= 0) {
-    mode_ctx = mode_context[rf[0]] & 0x00ff;
-    (void)block;
-    (void)bsize;
-
-    return mode_ctx;
-  }
-
-  return mode_context[ref_frame_type];
+    const int16_t *const mode_context, const MV_REFERENCE_FRAME *const rf) {
+  return mode_context[av1_ref_frame_type(rf)];
 }
 
 static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
