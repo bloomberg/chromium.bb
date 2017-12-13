@@ -100,9 +100,7 @@ ChromotingSession::ChromotingSession(
 
 ChromotingSession::~ChromotingSession() {
   DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
-  if (client_) {
-    ReleaseResources();
-  }
+  ReleaseResources();
 }
 
 void ChromotingSession::Connect() {
@@ -335,6 +333,11 @@ void ChromotingSession::OnConnectionState(
   runtime_->ui_task_runner()->PostTask(
       FROM_HERE, base::Bind(&ChromotingSession::Delegate::OnConnectionState,
                             delegate_, state, error));
+
+  if (state == protocol::ConnectionToHost::CLOSED ||
+      state == protocol::ConnectionToHost::FAILED) {
+    ReleaseResources();
+  }
 }
 
 void ChromotingSession::OnConnectionReady(bool ready) {
@@ -509,7 +512,13 @@ void ChromotingSession::ReleaseResources() {
   client_context_.reset();
   cursor_shape_stub_.reset();
 
-  weak_factory_.InvalidateWeakPtrs();
+  // Weak factory can only be invalidated once (due to DCHECK in it). After that
+  // the instance will no longer be usable. This is a design flaw that makes the
+  // instance no longer reusable after the caller calls Disconnect. Ideally we
+  // should factor out a Core that lives between (Connect, Disconnect).
+  if (weak_ptr_) {
+    weak_factory_.InvalidateWeakPtrs();
+  }
 }
 
 }  // namespace remoting
