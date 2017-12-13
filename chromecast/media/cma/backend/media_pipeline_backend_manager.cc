@@ -33,7 +33,7 @@ namespace media {
 
 namespace {
 
-#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY) || BUILDFLAG(ENABLE_ASSISTANT)
 constexpr int kAudioDecoderLimit = std::numeric_limits<int>::max();
 #else
 constexpr int kAudioDecoderLimit = 1;
