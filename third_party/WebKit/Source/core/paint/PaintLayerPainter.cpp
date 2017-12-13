@@ -868,9 +868,10 @@ PaintResult PaintLayerPainter::PaintChildren(
 
   IntSize scroll_offset_accumulation_for_children =
       painting_info.scroll_offset_accumulation;
-  if (paint_layer_.GetLayoutObject().HasOverflowClip())
+  if (paint_layer_.GetLayoutObject().HasOverflowClip()) {
     scroll_offset_accumulation_for_children +=
         paint_layer_.GetLayoutBox()->ScrolledContentOffset();
+  }
 
   for (; child; child = iterator.Next()) {
     // If this Layer should paint into its own backing or a grouped backing,
