@@ -31,6 +31,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_classic.h"
 #include "base/memory/ptr_util.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/video_detector.mojom.h"
 #include "ui/aura/env.h"
@@ -262,14 +263,21 @@ ShellPortMus::CreateAcceleratorController() {
 
 void ShellPortMus::AddVideoDetectorObserver(
     viz::mojom::VideoDetectorObserverPtr observer) {
-  // We may not have access to the connector in unit tests.
-  if (!window_manager_->connector())
-    return;
+  if (switches::IsMusHostingViz()) {
+    // We may not have access to the connector in unit tests.
+    if (!window_manager_->connector())
+      return;
 
-  ui::mojom::VideoDetectorPtr video_detector;
-  window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
-                                              &video_detector);
-  video_detector->AddObserver(std::move(observer));
+    ui::mojom::VideoDetectorPtr video_detector;
+    window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
+                                                &video_detector);
+    video_detector->AddObserver(std::move(observer));
+  } else {
+    aura::Env::GetInstance()
+        ->context_factory_private()
+        ->GetHostFrameSinkManager()
+        ->AddVideoDetectorObserver(std::move(observer));
+  }
 }
 
 }  // namespace ash
