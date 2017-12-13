@@ -140,8 +140,12 @@ SchemeHostPort::SchemeHostPort(const GURL& url) : port_(0) {
 
   // A valid GURL never returns PORT_INVALID.
   int port = url.EffectiveIntPort();
-  if (port == PORT_UNSPECIFIED)
+  if (port == PORT_UNSPECIFIED) {
     port = 0;
+  } else {
+    DCHECK_GE(port, 0);
+    DCHECK_LE(port, 65535);
+  }
 
   if (!IsValidInput(scheme, host, port, ALREADY_CANONICALIZED))
     return;

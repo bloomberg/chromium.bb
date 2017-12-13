@@ -28,7 +28,9 @@
 
 #include "platform/weborigin/SecurityOrigin.h"
 
+#include <stdint.h>
 #include <memory>
+
 #include "net/base/url_util.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
@@ -48,8 +50,7 @@
 
 namespace blink {
 
-const int kInvalidPort = 0;
-const int kMaxAllowedPort = 65535;
+const uint16_t kInvalidPort = 0;
 
 static URLSecurityOriginMap* g_url_origin_map = nullptr;
 
@@ -535,10 +536,7 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromString(
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
                                                      const String& host,
-                                                     int port) {
-  if (port < 0 || port > kMaxAllowedPort)
-    return CreateUnique();
-
+                                                     uint16_t port) {
   DCHECK_EQ(host, DecodeURLEscapeSequences(host));
 
   String port_part = port ? ":" + String::Number(port) : String();
@@ -547,7 +545,7 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
                                                      const String& host,
-                                                     int port,
+                                                     uint16_t port,
                                                      const String& suborigin) {
   scoped_refptr<SecurityOrigin> origin = Create(protocol, host, port);
   if (!suborigin.IsEmpty())

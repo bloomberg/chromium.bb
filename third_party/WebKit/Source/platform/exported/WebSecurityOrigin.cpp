@@ -45,15 +45,6 @@ WebSecurityOrigin WebSecurityOrigin::Create(const WebURL& url) {
   return WebSecurityOrigin(SecurityOrigin::Create(url));
 }
 
-WebSecurityOrigin WebSecurityOrigin::CreateFromTupleWithSuborigin(
-    const WebString& protocol,
-    const WebString& host,
-    int port,
-    const WebString& suborigin) {
-  return WebSecurityOrigin(
-      SecurityOrigin::Create(protocol, host, port, suborigin));
-}
-
 WebSecurityOrigin WebSecurityOrigin::CreateUnique() {
   return WebSecurityOrigin(SecurityOrigin::CreateUnique());
 }

@@ -29,7 +29,9 @@
 #ifndef SecurityOrigin_h
 #define SecurityOrigin_h
 
+#include <stdint.h>
 #include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/Suborigin.h"
@@ -53,10 +55,10 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   static scoped_refptr<SecurityOrigin> CreateFromString(const String&);
   static scoped_refptr<SecurityOrigin> Create(const String& protocol,
                                               const String& host,
-                                              int port);
+                                              uint16_t port);
   static scoped_refptr<SecurityOrigin> Create(const String& protocol,
                                               const String& host,
-                                              int port,
+                                              uint16_t port,
                                               const String& suborigin);
   static scoped_refptr<SecurityOrigin> CreateFromUrlOrigin(const url::Origin&);
   url::Origin ToUrlOrigin() const;
@@ -92,10 +94,10 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
 
   // Returns 0 if the effective port of this origin is the default for its
   // scheme.
-  unsigned short Port() const { return port_; }
+  uint16_t Port() const { return port_; }
   // Returns the effective port, even if it is the default port for the
   // scheme (e.g. "http" => 80).
-  unsigned short EffectivePort() const { return effective_port_; }
+  uint16_t EffectivePort() const { return effective_port_; }
 
   // Returns true if a given URL is secure, based either directly on its
   // own protocol, or, when relevant, on the protocol of its "inner URL"
@@ -313,8 +315,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   String host_;
   String domain_;
   Suborigin suborigin_;
-  unsigned short port_;
-  unsigned short effective_port_;
+  uint16_t port_;
+  uint16_t effective_port_;
   const bool is_unique_;
   bool universal_access_;
   bool domain_was_set_in_dom_;
