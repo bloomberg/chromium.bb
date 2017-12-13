@@ -1,13 +1,6 @@
 <html>
 <head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/console-test.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.waitUntilDone();
-    testRunner.dumpAsText();
-}
-
 function setupPromise1()
 {
     var p = Promise.reject(new Error('e'));
@@ -35,28 +28,11 @@ function setupPromise2()
     };
     window.onrejectionhandled = function(evt) {
         console.log("onrejectionhandled2");
-        setTimeout(startTest, 0);
+        setTimeout(() => testRunner.inspectSecondaryWindow(), 0);
     };
-    function startTest()
-    {
-        if (window.testRunner)
-            testRunner.showWebInspector();
-        runTest();
-    }
-}
-
-function test() {
-  ConsoleTestRunner.expandConsoleMessages();
-  TestRunner.addResult('----console messages start----');
-  ConsoleTestRunner.dumpConsoleMessages();
-  TestRunner.addResult('----console messages end----');
-  TestRunner.completeTest();
 }
 </script>
 </head>
 <body onload="setupPromise1()">
-<p>
-Tests that evt.preventDefault() in window.onunhandledrejection suppresses console output.
-</p>
 </body>
 </html>

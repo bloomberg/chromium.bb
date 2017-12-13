@@ -1,0 +1,24 @@
+<html>
+<head>
+<script>
+
+function createShadowRoot()
+{
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    var template = document.querySelector('#tmpl');
+    var root = document.querySelector('#host').createShadowRoot();
+    root.appendChild(template.content.cloneNode(true));
+    testRunner.inspectSecondaryWindow();
+}
+</script>
+</head>
+
+<body onload="createShadowRoot()">
+<div id="host"></div>
+<template id="tmpl">
+    <style> .red { color: red; } </style>
+    <div id="inner" class="red">hi!</div>
+</template>
+</body>
+</html>

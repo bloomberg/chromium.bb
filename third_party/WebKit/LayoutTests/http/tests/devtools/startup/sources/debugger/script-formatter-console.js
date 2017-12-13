@@ -1,27 +1,14 @@
-<html>
-<head>
-<script src="../../../../inspector/inspector-test.js"></script>
-<script src="../../../../inspector/console-test.js"></script>
-<script src="../../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function nonFormattedFunction() { var  i = 2 + 2; var a = 4; return a + i; }
+(async function() {
+  await TestRunner.setupStartupTest('resources/script-formatter-console.html');
+  TestRunner.addResult(`Tests that the script formatting changes console line numbers.\n`);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
 
-function f1()
-{
-    console.error("Test message.");
-}
-
-function onload()
-{
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.showWebInspector();
-    }
-    runTest();
-}
-
-var test = function() {
   var panel = UI.panels.sources;
   var sourceFrame;
   var scriptFormatter;
@@ -69,15 +56,4 @@ var test = function() {
       TestRunner.addResult(anchor.textContent);
     }
   }
-};
-
-</script>
-
-</head>
-
-<body onload="onload()">
-<p>Tests that the script formatting changes console line numbers.
-</p>
-
-</body>
-</html>
+})();
