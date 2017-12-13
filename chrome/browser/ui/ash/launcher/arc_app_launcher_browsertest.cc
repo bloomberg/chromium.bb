@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <string>
+#include <tuple>
+
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/shelf.h"
@@ -27,7 +31,10 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/test/fake_app_instance.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/display/types/display_constants.h"
@@ -253,12 +260,14 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
       arc_session_manager()->SetProfile(profile());
       arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
     }
-    app_connection_observer()->OnConnectionReady();
+    app_instance_ = std::make_unique<arc::FakeAppInstance>(app_host());
+    arc_brige_service()->app()->SetInstance(app_instance_.get());
   }
 
   void StopInstance() {
+    if (app_instance_)
+      arc_brige_service()->app()->CloseInstance(app_instance_.get());
     arc_session_manager()->Shutdown();
-    app_connection_observer()->OnConnectionClosed();
   }
 
   ash::ShelfItemDelegate* GetShelfItemDelegate(const std::string& id) {
@@ -282,7 +291,13 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     return arc::ArcSessionManager::Get();
   }
 
+  arc::ArcBridgeService* arc_brige_service() {
+    return arc::ArcServiceManager::Get()->arc_bridge_service();
+  }
+
  private:
+  std::unique_ptr<arc::FakeAppInstance> app_instance_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherBrowserTest);
 };
 
