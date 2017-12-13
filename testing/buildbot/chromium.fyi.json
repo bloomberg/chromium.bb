@@ -4304,7 +4304,6 @@
       },
       {
         "args": [
-          "--enable-surface-synchronization",
           "--enable-viz",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.viz.content_browsertests.filter"
         ],
