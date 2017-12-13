@@ -1,26 +1,15 @@
-<html>
-<head>
-<script src="../../../../inspector/inspector-test.js"></script>
-<script src="../../../../inspector/debugger-test.js"></script>
-<script>// It is important that script starts on line 5 (zero-based 4)
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function nonFormattedFunction() { var  i = 2 + 2; var a = 4; return a + i; }
+(async function() {
+  await TestRunner.setupStartupTest('resources/linkifier.html');
+  TestRunner.addResult(`Tests that Linkifier works correctly.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
 
-function dummyScript()
-{
-    console.log("dummy string");
-}
+  var resourceURL = TestRunner.url('resources/linkifier.html');
 
-function onload()
-{
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.showWebInspector();
-    }
-    runTest();
-}
-
-function test() {
   var scriptFormatter;
   var linkifier;
   var link;
@@ -40,18 +29,18 @@ function test() {
 
   function debuggerTest() {
     for (var scriptCandidate of TestRunner.debuggerModel.scripts()) {
-      if (scriptCandidate.sourceURL === TestRunner.mainTarget.inspectedURL() && scriptCandidate.lineOffset === 4) {
+      if (scriptCandidate.sourceURL === resourceURL && scriptCandidate.lineOffset === 4) {
         script = scriptCandidate;
         break;
       }
     }
 
-    uiSourceCode = Workspace.workspace.uiSourceCodeForURL(TestRunner.mainTarget.inspectedURL());
+    uiSourceCode = Workspace.workspace.uiSourceCodeForURL(resourceURL);
 
     linkifier = new Components.Linkifier();
     var count1 = liveLocationsCount();
     link = linkifier.linkifyScriptLocation(
-        SDK.targetManager.mainTarget(), null, TestRunner.mainTarget.inspectedURL(), 8, 0, 'dummy-class');
+        SDK.targetManager.mainTarget(), null, resourceURL, 8, 0, 'dummy-class');
     var count2 = liveLocationsCount();
 
     TestRunner.addResult('listeners added on raw source code: ' + (count2 - count1));
@@ -60,8 +49,11 @@ function test() {
     scriptFormatter._toggleFormatScriptSource();
   }
 
-  function uiSourceCodeScriptFormatted() {
+  async function uiSourceCodeScriptFormatted() {
     TestRunner.addResult('pretty printed location: ' + link.textContent);
+    var formattedContent = await Sources.sourceFormatter._formattedSourceCodes.get(uiSourceCode).formatData.formattedSourceCode.requestContent();
+    TestRunner.addResult('pretty printed content:');
+    TestRunner.addResult(formattedContent);
     Sources.sourceFormatter.discardFormattedUISourceCode(UI.panels.sources.visibleView.uiSourceCode());
     TestRunner.addResult('reverted location: ' + link.textContent);
 
@@ -79,15 +71,4 @@ function test() {
     var locations = modelData._locations.get(script);
     return locations.size;
   }
-}
-
-</script>
-</head>
-
-<body onload="onload()">
-<p>
-Tests that Linkifier works correctly.
-<p>
-
-</body>
-</html>
+})();
