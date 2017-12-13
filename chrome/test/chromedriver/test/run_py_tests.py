@@ -87,8 +87,6 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'MobileEmulationCapabilityTest.testDeviceName',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabs',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2164
-    'ChromeDriverTest.testSendTextToAlert',
 ]
 
 _VERSION_SPECIFIC_FILTER['64'] = [
@@ -200,8 +198,6 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
         'ChromeDriverTest.testHoverOverElement',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1478
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2164
-        'ChromeDriverTest.testSendTextToAlert',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
@@ -877,6 +873,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                       self._driver.ExecuteScript('return window.confirmed'))
 
   def testSendTextToAlert(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript('prompt = window.prompt()')
     self.assertTrue(self._driver.IsAlertOpen())
     self._driver.HandleAlert(True, 'TextToPrompt')
