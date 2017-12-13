@@ -61,7 +61,6 @@ struct SSLStatus {
   web::SecurityStyle security_style;
   scoped_refptr<net::X509Certificate> certificate;
   net::CertStatus cert_status;
-  int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;
   // Host which was used for |cert_status| calculation. It is not an actual part

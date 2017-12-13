@@ -36,7 +36,6 @@ TEST_F(SSLStatusTest, SSLStatusEqualityTest) {
   SSLStatus status;
   EXPECT_EQ(SECURITY_STYLE_UNKNOWN, status.security_style);
   EXPECT_EQ(0u, status.cert_status);
-  EXPECT_EQ(0, status.connection_status);
   EXPECT_EQ(SSLStatus::NORMAL_CONTENT, status.content_status);
 
   // Verify that the Equals() method returns false if two SSLStatus objects

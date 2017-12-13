@@ -179,7 +179,6 @@ class CredentialManagerBaseTest
     ssl.security_style = security_style;
     ssl.certificate = cert;
     ssl.cert_status = cert_status;
-    ssl.connection_status = net::SSL_CONNECTION_VERSION_SSL3;
     ssl.content_status = content_status;
     ssl.cert_status_host = kHostName;
   }
