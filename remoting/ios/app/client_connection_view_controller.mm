@@ -476,6 +476,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [self.navigationController pushViewController:hostViewController animated:NO];
 }
 
+// TODO(yuweih): Unused. Remove this method and the ClientViewReconnect enum.
 - (void)showReconnect {
   _statusLabel.text =
       [self stringWithHostNameForId:IDS_CONNECTION_CLOSED_FOR_HOST_MESSAGE];
@@ -496,6 +497,12 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 }
 
 - (void)showError {
+  // Error may happen after the session is connected. In this case we should
+  // pop back to the client connection VC.
+  if (self.navigationController.topViewController != self) {
+    [self.navigationController popToViewController:self animated:YES];
+  }
+
   _statusLabel.text =
       [self stringWithHostNameForId:IDS_ERROR_CONNECTING_TO_HOST_MESSAGE];
 
