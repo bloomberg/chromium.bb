@@ -252,6 +252,7 @@ using ios::material::TimingFunction;
                                         font:[MDCTypography subheadFont]
                                    textColor:textColor
                                    tintColor:tintColor];
+  _locationBarView.clipsToBounds = YES;
   _keyboardDelegate = [[ToolbarAssistiveKeyboardDelegateImpl alloc] init];
   _keyboardDelegate.dispatcher = dispatcher;
   _keyboardDelegate.omniboxTextField = _locationBarView.textField;
