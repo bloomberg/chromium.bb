@@ -184,6 +184,12 @@ public abstract class ChromeSwitches {
     /** Switch for enabling the Chrome Home Survey. */
     public static final String CHROME_HOME_FORCE_ENABLE_SURVEY = "force-enable-chrome-home-survey";
 
+    /**
+     * Don't crash on undispatched VIEW intents sent to .Main.
+     * See ChromeTabbedActivity.maybeDispatchExplicitMainViewIntent() for more info.
+     */
+    public static final String DONT_CRASH_ON_VIEW_MAIN_INTENTS = "dont-crash-on-view-main-intents";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }
