@@ -194,7 +194,7 @@ class ProgramArgumentCommandMarshal final : public CommandMarshal {
   // Implements CommandMarshal.
   void ReturnBuffer(net::GrowableIOBuffer* buffer) override {
     DCHECK(!has_failed());
-    std::cout.write(buffer->data(), buffer->offset());
+    std::cout.write(buffer->StartOfBuffer(), buffer->offset());
   }
 
   // Implements CommandMarshal.
