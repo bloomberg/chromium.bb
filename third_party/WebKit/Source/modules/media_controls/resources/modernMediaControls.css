@@ -258,12 +258,20 @@ video::-webkit-media-controls-timeline {
   -webkit-appearance: -internal-media-control;
 
   height: 2px;
-  padding-top: 5px;
   padding-left: 16px;
   padding-right: 16px;
-  padding-bottom: 17px;
   margin: 0;
   background: transparent;
+}
+
+audio::-webkit-media-controls-timeline {
+  padding-top: 26px;
+  padding-bottom: 26px;
+}
+
+video::-webkit-media-controls-timeline {
+  padding-top: 5px;
+  padding-bottom: 17px;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {
