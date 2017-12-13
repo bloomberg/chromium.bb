@@ -35,14 +35,18 @@ bool EncodeAsImage(char* body,
                                        kMaximumEncodeImageHeightInPixels);
   SkBitmap bitmap =
       WebImage::FromData(WebData(body, size), maximum_size).GetSkBitmap();
+  if (bitmap.isNull())
+    return false;
+
   SkImageInfo info =
       SkImageInfo::Make(bitmap.width(), bitmap.height(), kRGBA_8888_SkColorType,
                         kUnpremul_SkAlphaType);
   size_t row_bytes = info.minRowBytes();
   Vector<unsigned char> pixel_storage(info.computeByteSize(row_bytes));
   SkPixmap pixmap(info, pixel_storage.data(), row_bytes);
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
 
-  if (!SkImage::MakeFromBitmap(bitmap)->readPixels(pixmap, 0, 0))
+  if (!image || !image->readPixels(pixmap, 0, 0))
     return false;
 
   ImageDataBuffer image_to_encode = ImageDataBuffer(
