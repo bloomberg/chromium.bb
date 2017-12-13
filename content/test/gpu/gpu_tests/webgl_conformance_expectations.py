@@ -220,6 +220,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/programs/program-test.html',
         ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016)
 
+    # Passthrough command decoder / Win / OpenGL / NVIDIA
+    self.Fail('conformance/renderbuffers/' +
+        'depth-renderbuffer-initialization.html',
+        ['win', 'passthrough', 'opengl', 'nvidia'], bug=794339)
+
     # Win failures
     # TODO(kbr): re-enable suppression for same test below once fixed.
     self.Skip('conformance/glsl/bugs/sampler-struct-function-arg.html',

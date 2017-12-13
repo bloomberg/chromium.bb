@@ -81,6 +81,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
 
+    # The following actually passes on gl_passthrough and also Mac Intel with
+    # command buffer.
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturelodoffset.html',
+        bug=794335)
+
     # Windows only.
     self.Fail('conformance2/buffers/uniform-buffers.html',
         ['win'], bug=757098)
@@ -177,6 +183,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=786716)
     self.Fail('conformance2/rendering/instanced-rendering-bug.html',
         ['win', 'nvidia', 'opengl'], bug=791289)
+    self.Fail('conformance2/rendering/canvas-resizing-with-pbo-bound.html',
+        ['win', 'nvidia', 'opengl'], bug=794613)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
@@ -315,6 +323,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
 
+    # Passthrough command decoder / Win / OpenGL / NVIDIA
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rg32f-rg-float.html',
+        ['win', 'passthrough', 'opengl', 'nvidia'], bug=794340)
+
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
     self.Fail('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
@@ -330,6 +343,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
+        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=794341)
 
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
