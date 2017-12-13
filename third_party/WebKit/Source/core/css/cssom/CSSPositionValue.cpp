@@ -10,15 +10,6 @@
 
 namespace blink {
 
-namespace {
-
-bool IsValidCoordinate(CSSNumericValue* v) {
-  return v->Type().MatchesBaseTypePercentage(
-      CSSNumericValueType::BaseType::kLength);
-}
-
-}  // namespace
-
 CSSPositionValue* CSSPositionValue::Create(CSSNumericValue* x,
                                            CSSNumericValue* y,
                                            ExceptionState& exception_state) {
@@ -60,6 +51,12 @@ const CSSValue* CSSPositionValue::ToCSSValue(
   return CSSValuePair::Create(x_->ToCSSValue(secure_context_mode),
                               y_->ToCSSValue(secure_context_mode),
                               CSSValuePair::kKeepIdenticalValues);
+}
+
+// static
+bool CSSPositionValue::IsValidCoordinate(CSSNumericValue* coord) {
+  return coord->Type().MatchesBaseTypePercentage(
+      CSSNumericValueType::BaseType::kLength);
 }
 
 }  // namespace blink

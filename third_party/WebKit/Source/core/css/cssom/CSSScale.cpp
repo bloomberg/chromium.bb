@@ -11,10 +11,6 @@ namespace blink {
 
 namespace {
 
-bool IsValidCoordinate(CSSNumericValue* value) {
-  return value && value->Type().MatchesNumber();
-}
-
 CSSScale* FromScale(const CSSFunctionValue& value) {
   DCHECK(value.length() == 1U || value.length() == 2U);
   CSSNumericValue* x =
@@ -177,6 +173,11 @@ CSSScale::CSSScale(CSSNumericValue* x,
   DCHECK(IsValidCoordinate(x));
   DCHECK(IsValidCoordinate(y));
   DCHECK(IsValidCoordinate(z));
+}
+
+// static
+bool CSSScale::IsValidCoordinate(CSSNumericValue* coord) {
+  return coord && coord->Type().MatchesNumber();
 }
 
 }  // namespace blink
