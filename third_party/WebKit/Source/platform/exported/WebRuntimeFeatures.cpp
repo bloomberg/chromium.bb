@@ -205,6 +205,7 @@ void WebRuntimeFeatures::EnableNotifications(bool enable) {
 }
 
 void WebRuntimeFeatures::EnableNotificationsWithMojo(bool enable) {
+  RuntimeEnabledFeatures::SetNotificationsWithMojoEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableNavigatorContentUtils(bool enable) {
