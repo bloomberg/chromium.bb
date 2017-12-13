@@ -33,8 +33,6 @@
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
 
 using ash::AccessibilityFocusRingController;
 #endif
@@ -166,23 +164,14 @@ AccessibilityPrivateSetKeyboardListenerFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateDarkenScreenFunction::Run() {
-  ChromeExtensionFunctionDetails details(this);
-  CHECK(extension());
-
 #if defined(OS_CHROMEOS)
-  bool darken;
+  bool darken = false;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &darken));
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-
-  // Called twice to ensure the cros end of the dbus message is in a good
-  // state.
-  client->SetBacklightsForcedOff(!darken);
-  client->SetBacklightsForcedOff(darken);
+  chromeos::AccessibilityManager::Get()->SetDarkenScreen(darken);
   return RespondNow(NoArguments());
-#endif  // defined OS_CHROMEOS
-
+#else
   return RespondNow(Error(kErrorNotSupported));
+#endif
 }
 
 #if defined(OS_CHROMEOS)
