@@ -124,14 +124,6 @@ class WebSecurityOrigin {
 #endif
 
  private:
-  // Present only to facilitate conversion from 'url::Origin'; this constructor
-  // shouldn't be used anywhere else.
-  BLINK_PLATFORM_EXPORT static WebSecurityOrigin CreateFromTupleWithSuborigin(
-      const WebString& protocol,
-      const WebString& host,
-      int port,
-      const WebString& suborigin);
-
   WebPrivatePtr<const SecurityOrigin> private_;
 };
 
