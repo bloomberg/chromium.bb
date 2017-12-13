@@ -52,12 +52,11 @@ void TouchSelectionControllerClientChildFrame::UpdateSelectionBoundsIfNeeded(
     end_edge_bottom.Scale(viewportToDIPScale);
   }
 
-  gfx::Point origin = rwhv_->GetViewOriginInRoot();
-  gfx::Vector2dF offset_v(origin.x(), origin.y());
-  start_edge_top += offset_v;
-  start_edge_bottom += offset_v;
-  end_edge_top += offset_v;
-  end_edge_bottom += offset_v;
+  gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());
+  start_edge_top = rwhv_->TransformPointToRootCoordSpaceF(start_edge_top);
+  start_edge_bottom = rwhv_->TransformPointToRootCoordSpaceF(start_edge_bottom);
+  end_edge_top = rwhv_->TransformPointToRootCoordSpaceF(end_edge_top);
+  end_edge_bottom = rwhv_->TransformPointToRootCoordSpaceF(end_edge_bottom);
 
   viz::Selection<gfx::SelectionBound> transformed_selection(selection);
   transformed_selection.start.SetEdge(start_edge_top, start_edge_bottom);
@@ -78,7 +77,7 @@ void TouchSelectionControllerClientChildFrame::UpdateSelectionBoundsIfNeeded(
 // sending a new compositor frame), we must manually recompute the screen
 // position if requested to do so and it has changed.
 void TouchSelectionControllerClientChildFrame::DidScroll() {
-  gfx::Point origin = rwhv_->GetViewOriginInRoot();
+  gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());
   if (origin != view_origin_at_last_update_) {
     gfx::Vector2dF delta = origin - view_origin_at_last_update_;
     selection_start_.SetEdge(selection_start_.edge_top() + delta,
@@ -93,9 +92,14 @@ void TouchSelectionControllerClientChildFrame::DidScroll() {
 
 gfx::Point TouchSelectionControllerClientChildFrame::ConvertFromRoot(
     const gfx::PointF& point_f) const {
-  gfx::Point origin = rwhv_->GetViewOriginInRoot();
-  return gfx::ToRoundedPoint(
-      gfx::PointF(point_f.x() - origin.x(), point_f.y() - origin.y()));
+  gfx::PointF transformed_point(point_f);
+  RenderWidgetHostViewBase* root_view = rwhv_->GetRootRenderWidgetHostView();
+  if (root_view) {
+    root_view->TransformPointToCoordSpaceForView(point_f, rwhv_,
+                                                 &transformed_point);
+  }
+
+  return gfx::ToRoundedPoint(transformed_point);
 }
 
 bool TouchSelectionControllerClientChildFrame::SupportsAnimation() const {
@@ -198,7 +202,7 @@ void TouchSelectionControllerClientChildFrame::RunContextMenu() {
       manager_->GetTouchSelectionController()->GetRectBetweenBounds();
   gfx::PointF anchor_point =
       gfx::PointF(anchor_rect.CenterPoint().x(), anchor_rect.y());
-  gfx::Point origin = rwhv_->GetViewOriginInRoot();
+  gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());
   anchor_point.Offset(-origin.x(), -origin.y());
   RenderWidgetHostImpl* host = rwhv_->GetRenderWidgetHostImpl();
   host->Send(new ViewMsg_ShowContextMenu(host->GetRoutingID(),
