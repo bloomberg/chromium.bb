@@ -74,7 +74,7 @@ DisplayUIScales GetScalesForDisplay(const ManagedDisplayMode& native_mode) {
       ASSIGN_ARRAY(ret.scales, kUIScalesFor1366);
       ret.default_scale = kDefaultUIScaleFor1366;
       break;
-    case 1980:
+    case 1920:
       ASSIGN_ARRAY(ret.scales, kUIScalesForFHD);
       ret.default_scale = kDefaultUIScaleForFHD;
       break;
