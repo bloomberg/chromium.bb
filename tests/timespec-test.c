@@ -238,6 +238,23 @@ ZUC_TEST(timespec_test, timespec_from_msec)
 	ZUC_ASSERT_EQ(1000000, a.tv_nsec);
 }
 
+ZUC_TEST(timespec_test, timespec_from_proto)
+{
+	struct timespec a;
+
+	timespec_from_proto(&a, 0, 0, 0);
+	ZUC_ASSERT_EQ(0, a.tv_sec);
+	ZUC_ASSERT_EQ(0, a.tv_nsec);
+
+	timespec_from_proto(&a, 0, 1234, 9999);
+	ZUC_ASSERT_EQ(1234, a.tv_sec);
+	ZUC_ASSERT_EQ(9999, a.tv_nsec);
+
+	timespec_from_proto(&a, 0x1234, 0x5678, 1);
+	ZUC_ASSERT_EQ((time_t)0x0000123400005678LL, a.tv_sec);
+	ZUC_ASSERT_EQ(1, a.tv_nsec);
+}
+
 ZUC_TEST(timespec_test, timespec_is_zero)
 {
 	struct timespec zero = { 0 };

@@ -34,6 +34,7 @@
 
 #include "shared/helpers.h"
 #include "shared/xalloc.h"
+#include "shared/timespec-util.h"
 #include "weston-test-client-helper.h"
 #include "presentation-time-client-protocol.h"
 
@@ -84,14 +85,6 @@ struct feedback {
 	uint32_t refresh_nsec;
 	uint32_t flags;
 };
-
-static void
-timespec_from_proto(struct timespec *tm, uint32_t tv_sec_hi,
-		    uint32_t tv_sec_lo, uint32_t tv_nsec)
-{
-	tm->tv_sec = ((uint64_t)tv_sec_hi << 32) + tv_sec_lo;
-	tm->tv_nsec = tv_nsec;
-}
 
 static void
 feedback_sync_output(void *data,

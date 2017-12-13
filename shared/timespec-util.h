@@ -181,6 +181,21 @@ timespec_from_msec(struct timespec *a, int64_t b)
 	timespec_from_nsec(a, b * 1000000);
 }
 
+/* Convert protocol data to timespec
+ *
+ * \param a[out] timespec
+ * \param tv_sec_hi the high bytes of seconds part
+ * \param tv_sec_lo the low bytes of seconds part
+ * \param tv_nsec the nanoseconds part
+ */
+static inline void
+timespec_from_proto(struct timespec *a, uint32_t tv_sec_hi,
+                    uint32_t tv_sec_lo, uint32_t tv_nsec)
+{
+	a->tv_sec = ((uint64_t)tv_sec_hi << 32) + tv_sec_lo;
+	a->tv_nsec = tv_nsec;
+}
+
 /* Check if a timespec is zero
  *
  * \param a timespec

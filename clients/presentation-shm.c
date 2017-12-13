@@ -39,6 +39,7 @@
 #include <wayland-client.h>
 #include "shared/helpers.h"
 #include "shared/zalloc.h"
+#include "shared/timespec-util.h"
 #include "shared/os-compatibility.h"
 #include "presentation-time-client-protocol.h"
 
@@ -381,14 +382,6 @@ static uint32_t
 timespec_to_ms(const struct timespec *ts)
 {
 	return (uint32_t)ts->tv_sec * 1000 + ts->tv_nsec / 1000000;
-}
-
-static void
-timespec_from_proto(struct timespec *tm, uint32_t tv_sec_hi,
-		    uint32_t tv_sec_lo, uint32_t tv_nsec)
-{
-	tm->tv_sec = ((uint64_t)tv_sec_hi << 32) + tv_sec_lo;
-	tm->tv_nsec = tv_nsec;
 }
 
 static int
