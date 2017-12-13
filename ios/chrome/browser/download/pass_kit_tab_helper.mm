@@ -10,6 +10,7 @@
 #import <PassKit/PassKit.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper_delegate.h"
 #import "ios/web/public/download/download_task.h"
@@ -20,6 +21,26 @@
 #endif
 
 DEFINE_WEB_STATE_USER_DATA_KEY(PassKitTabHelper);
+
+const char kUmaDownloadPassKitResult[] = "Download.IOSDownloadPassKitResult";
+
+namespace {
+
+// Returns DownloadPassKitResult for the given competed download task.
+DownloadPassKitResult GetUmaResult(web::DownloadTask* task) {
+  if (task->GetHttpCode() == 401 || task->GetHttpCode() == 403)
+    return DownloadPassKitResult::UnauthorizedFailure;
+
+  if (task->GetMimeType() != kPkPassMimeType)
+    return DownloadPassKitResult::WrongMimeTypeFailure;
+
+  if (task->GetErrorCode())
+    return DownloadPassKitResult::OtherFailure;
+
+  return DownloadPassKitResult::Successful;
+}
+
+}  // namespace
 
 PassKitTabHelper::PassKitTabHelper(web::WebState* web_state,
                                    id<PassKitTabHelperDelegate> delegate)
@@ -70,7 +91,9 @@ void PassKitTabHelper::OnDownloadUpdated(web::DownloadTask* updated_task) {
          presentDialogForPass:pass
                      webState:web_state_];
 
-  // TODO(crbug.com/789735): report UMA if passkit download was not sucessfull.
+  UMA_HISTOGRAM_ENUMERATION(kUmaDownloadPassKitResult,
+                            GetUmaResult(updated_task),
+                            DownloadPassKitResult::Count);
 
   updated_task->RemoveObserver(this);
   tasks_.erase(it);
