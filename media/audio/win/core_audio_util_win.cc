@@ -477,9 +477,27 @@ ComPtr<IMMDeviceEnumerator> CoreAudioUtil::CreateDeviceEnumerator() {
                                         base::BindRepeating(&LogUMAEmptyCb));
 }
 
+std::string CoreAudioUtil::GetDefaultInputDeviceID() {
+  ComPtr<IMMDevice> device(CreateDevice(
+      AudioDeviceDescription::kDefaultDeviceId, eCapture, eConsole));
+  return device.Get() ? GetDeviceID(device.Get()) : std::string();
+}
+
 std::string CoreAudioUtil::GetDefaultOutputDeviceID() {
   ComPtr<IMMDevice> device(CreateDevice(
       AudioDeviceDescription::kDefaultDeviceId, eRender, eConsole));
+  return device.Get() ? GetDeviceID(device.Get()) : std::string();
+}
+
+std::string CoreAudioUtil::GetCommunicationsInputDeviceID() {
+  ComPtr<IMMDevice> device(
+      CreateDevice(std::string(), eCapture, eCommunications));
+  return device.Get() ? GetDeviceID(device.Get()) : std::string();
+}
+
+std::string CoreAudioUtil::GetCommunicationsOutputDeviceID() {
+  ComPtr<IMMDevice> device(
+      CreateDevice(std::string(), eRender, eCommunications));
   return device.Get() ? GetDeviceID(device.Get()) : std::string();
 }
 

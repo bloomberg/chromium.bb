@@ -252,8 +252,20 @@ AudioInputStream* AudioManagerWin::MakeLowLatencyInputStream(
   return new WASAPIAudioInputStream(this, params, device_id, log_callback);
 }
 
+std::string AudioManagerWin::GetDefaultInputDeviceID() {
+  return CoreAudioUtil::GetDefaultInputDeviceID();
+}
+
 std::string AudioManagerWin::GetDefaultOutputDeviceID() {
   return CoreAudioUtil::GetDefaultOutputDeviceID();
+}
+
+std::string AudioManagerWin::GetCommunicationsInputDeviceID() {
+  return CoreAudioUtil::GetCommunicationsInputDeviceID();
+}
+
+std::string AudioManagerWin::GetCommunicationsOutputDeviceID() {
+  return CoreAudioUtil::GetCommunicationsOutputDeviceID();
 }
 
 AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(

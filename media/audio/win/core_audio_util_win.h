@@ -67,9 +67,13 @@ class MEDIA_EXPORT CoreAudioUtil {
   static Microsoft::WRL::ComPtr<IMMDevice>
   CreateDevice(const std::string& device_id, EDataFlow data_flow, ERole role);
 
-  // Returns the device id of the default output device or an empty string
-  // if no such device exists or if the default device has been disabled.
+  // These functions return the device id of the default or communications
+  // input/output device, or an empty string if no such device exists or if the
+  // device has been disabled.
+  static std::string GetDefaultInputDeviceID();
   static std::string GetDefaultOutputDeviceID();
+  static std::string GetCommunicationsInputDeviceID();
+  static std::string GetCommunicationsOutputDeviceID();
 
   // Returns the unique ID and user-friendly name of a given endpoint device.
   // Example: "{0.0.1.00000000}.{8db6020f-18e3-4f25-b6f5-7726c9122574}", and
