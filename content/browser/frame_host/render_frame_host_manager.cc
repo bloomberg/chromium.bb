@@ -710,6 +710,10 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
 RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     const NavigationRequest& request) {
   CHECK(IsBrowserSideNavigationEnabled());
+  DCHECK(!request.common_params().url.SchemeIs(url::kJavaScriptScheme))
+      << "Don't call this method for JavaScript URLs as those create a "
+         "temporary  NavigationRequest and we don't want to reset an ongoing "
+         "navigation's speculative RFH.";
 
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
@@ -1269,9 +1273,10 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
 
 void RenderFrameHostManager::InitializeRenderFrameIfNecessary(
     RenderFrameHostImpl* render_frame_host) {
-  // TODO: this copies some logic inside GetFrameHostForNavigation, which also
-  // duplicates logic in Navigate. They should all use this method, but that
-  // involves slight reordering.
+  // TODO(jam): this copies some logic inside GetFrameHostForNavigation, which
+  // also duplicates logic in Navigate. They should all use this method, but
+  // that involves slight reordering.
+  // http://crbug.com/794229
   if (render_frame_host->IsRenderFrameLive())
     return;
 
@@ -1283,8 +1288,8 @@ void RenderFrameHostManager::InitializeRenderFrameIfNecessary(
 
   EnsureRenderFrameHostVisibilityConsistent();
 
-  // TODO: uncomment this when the method is shared. Not adding the call now
-  // to make merge to 63 easier.
+  // TODO(jam): uncomment this when the method is shared. Not adding the call
+  // now to make merge to 63 easier.
   // EnsureRenderFrameHostPageFocusConsistent();
 
   // TODO(nasko): This is a very ugly hack. The Chrome extensions process

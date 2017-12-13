@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -3524,6 +3525,39 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(url, grandchild->current_url());
   ASSERT_EQ(1U, grandchild->child_count());
   EXPECT_EQ(child_url, grandchild->child_at(0)->current_url());
+}
+
+// Ensures that we don't reset a speculative RFH if a JavaScript URL is loaded
+// while there's an ongoing cross-process navigation. See
+// https://crbug.com/793432.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       JavaScriptLoadDoesntResetSpeculativeRFH) {
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  GURL site1 = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL site2 = embedded_test_server()->GetURL("b.com", "/title2.html");
+
+  NavigateToURL(shell(), site1);
+
+  TestNavigationManager cross_site_navigation(shell()->web_contents(), site2);
+  shell()->LoadURL(site2);
+  EXPECT_TRUE(cross_site_navigation.WaitForRequestStart());
+
+  RenderFrameHostImpl* speculative_rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->render_manager()
+          ->speculative_frame_host();
+  CHECK(speculative_rfh);
+  shell()->web_contents()->GetController().LoadURL(
+      GURL("javascript:(0)"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      std::string());
+
+  cross_site_navigation.ResumeNavigation();
+  // No crash means everything worked!
 }
 
 }  // namespace content
