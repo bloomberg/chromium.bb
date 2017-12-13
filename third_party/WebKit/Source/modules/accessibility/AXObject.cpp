@@ -1097,6 +1097,7 @@ bool AXObject::IsSubWidget(AccessibilityRole role) {
 
 bool AXObject::SupportsARIASetSizeAndPosInSet() const {
   switch (RoleValue()) {
+    case kArticleRole:
     case kListBoxOptionRole:
     case kListItemRole:
     case kMenuItemRole:
