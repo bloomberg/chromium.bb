@@ -34,7 +34,7 @@
   }
 
   function dumpFlameChartRecordsCountForRange(windowLeft, windowRight) {
-    var mainView = timeline._currentView._mainFlameChart;
+    var mainView = timeline._flameChart._mainFlameChart;
     mainView._muteAnimation = true;
     overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
     mainView.update();
