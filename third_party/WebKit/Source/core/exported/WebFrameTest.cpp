@@ -9221,6 +9221,34 @@ TEST_P(WebFrameSwapTest, EventsOnDisconnectedSubDocumentSkipped) {
   main_document->View()->UpdateAllLifecyclePhases();
 }
 
+TEST_P(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
+  WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
+  WebFrame* target_frame = MainFrame()->FirstChild()->NextSibling();
+  EXPECT_TRUE(target_frame);
+  SwapAndVerifySubframeConsistency("local->remote", target_frame, remote_frame);
+
+  WebLocalFrameImpl* local_child =
+      FrameTestHelpers::CreateLocalChild(*remote_frame, "local-inside-remote");
+
+  Document* main_document =
+      WebView()->MainFrameImpl()->GetFrame()->GetDocument();
+
+  // Layout ensures that elements in the local_child frame get LayoutObjects
+  // attached, but doesn't paint, because the child frame needs to not have
+  // been composited for the purpose of this test.
+  local_child->GetFrameView()->UpdateLayout();
+  Document* child_document = local_child->GetFrame()->GetDocument();
+  EventHandlerRegistry& event_registry =
+      main_document->GetPage()->GetEventHandlerRegistry();
+
+  // Add the non-connected body element as having an event.
+  event_registry.DidAddEventHandler(
+      *child_document->body(),
+      EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+  // Passes if this does not crash or DCHECK.
+  main_document->View()->UpdateAllLifecyclePhases();
+}
+
 TEST_P(WebFrameSwapTest, SwapParentShouldDetachChildren) {
   WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
   WebFrame* target_frame = MainFrame()->FirstChild()->NextSibling();

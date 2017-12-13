@@ -1098,17 +1098,16 @@ static void AccumulateDocumentTouchEventTargetRects(
         node->GetDocument().View()->ShouldThrottleRendering())
       continue;
 
+    // Ignore events which apply to a different LocalFrameRoot, as they have
+    // their own lifecycle. Any events that apply to them will get processed
+    // accordingly.
+    if (node->GetDocument().GetFrame()->LocalFrameRoot() !=
+        document->GetFrame()->LocalFrameRoot())
+      continue;
+
     if (node->IsDocumentNode() && node != document) {
-      Document* child_document = ToDocument(node);
-      // Ignore events which apply to
-      // a different LocalFrameRoot, as they have their own lifecycle.
-      // Any events that apply to them will get processed accordingly.
-      if (child_document->GetFrame() &&
-          &child_document->GetFrame()->LocalFrameRoot() ==
-              &document->GetFrame()->LocalFrameRoot()) {
-        AccumulateDocumentTouchEventTargetRects(
-            rects, event_class, child_document, supported_fast_actions);
-      }
+      AccumulateDocumentTouchEventTargetRects(
+          rects, event_class, ToDocument(node), supported_fast_actions);
     } else if (LayoutObject* layout_object = node->GetLayoutObject()) {
       // If the set also contains one of our ancestor nodes then processing
       // this node would be redundant.
