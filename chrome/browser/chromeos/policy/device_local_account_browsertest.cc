@@ -408,7 +408,7 @@ void PolicyChangedCallback(const base::Closure& callback,
 
 class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
                                public user_manager::UserManager::Observer,
-                               public chrome::BrowserListObserver,
+                               public BrowserListObserver,
                                public extensions::AppWindowRegistry::Observer {
  protected:
   DeviceLocalAccountTest()

@@ -320,7 +320,7 @@ void GaiaWebContentsDelegate::HandleKeyboardEvent(
 // Class that listens to changes to the OAuth2Tokens for the active profile,
 // changes to the avatar menu model or browser close notifications.
 class ActiveProfileObserverBridge : public AvatarMenuObserver,
-                                    public chrome::BrowserListObserver,
+                                    public BrowserListObserver,
                                     public OAuth2TokenService::Observer {
  public:
   ActiveProfileObserverBridge(ProfileChooserController* controller,
@@ -389,7 +389,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     }
   }
 
-  // chrome::BrowserListObserver:
+  // BrowserListObserver:
   void OnBrowserClosing(Browser* browser) override {
     if (browser_ == browser) {
       RemoveTokenServiceObserver();

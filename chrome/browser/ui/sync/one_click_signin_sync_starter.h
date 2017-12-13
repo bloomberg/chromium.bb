@@ -32,7 +32,7 @@ class SyncSetupInProgressHandle;
 // starts the sync machine.  Instances of this class delete themselves once
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer,
-                                  public chrome::BrowserListObserver,
+                                  public BrowserListObserver,
                                   public LoginUIService::Observer {
  public:
   enum ProfileMode {
@@ -107,7 +107,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             ConfirmationRequired display_confirmation,
                             Callback callback);
 
-  // chrome::BrowserListObserver override.
+  // BrowserListObserver override.
   void OnBrowserRemoved(Browser* browser) override;
 
   // If the |browser| argument is non-null, returns the pointer directly.

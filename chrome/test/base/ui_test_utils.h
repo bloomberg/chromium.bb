@@ -291,7 +291,7 @@ class HistoryEnumerator {
 // To use create and call WaitForActivation().
 // TODO(warx): check if code base exists the requirement for deactivation sync,
 // this class can be modified to support that.
-class BrowserActivationWaiter : public chrome::BrowserListObserver {
+class BrowserActivationWaiter : public BrowserListObserver {
  public:
   explicit BrowserActivationWaiter(const Browser* browser);
   ~BrowserActivationWaiter() override;
@@ -302,7 +302,7 @@ class BrowserActivationWaiter : public chrome::BrowserListObserver {
   void WaitForActivation();
 
  private:
-  // chrome::BrowserListObserver override:
+  // BrowserListObserver override:
   void OnBrowserSetLastActive(Browser* browser) override;
 
   const Browser* const browser_;

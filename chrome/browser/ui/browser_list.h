@@ -22,9 +22,7 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
 class BrowserListObserver;
-}
 
 // Maintains a list of Browser objects.
 class BrowserList {
@@ -75,8 +73,8 @@ class BrowserList {
   // Adds and removes |observer| from the observer list for all desktops.
   // Observers are responsible for making sure the notifying browser is relevant
   // to them (e.g., on the specific desktop they care about if any).
-  static void AddObserver(chrome::BrowserListObserver* observer);
-  static void RemoveObserver(chrome::BrowserListObserver* observer);
+  static void AddObserver(BrowserListObserver* observer);
+  static void RemoveObserver(BrowserListObserver* observer);
 
   // Moves all the browsers that show on workspace |new_workspace| to the end of
   // the browser list (i.e. the browsers that were "activated" most recently).
@@ -165,8 +163,8 @@ class BrowserList {
 
   // A list of observers which will be notified of every browser addition and
   // removal across all BrowserLists.
-  static base::LazyInstance<
-      base::ObserverList<chrome::BrowserListObserver>>::Leaky observers_;
+  static base::LazyInstance<base::ObserverList<BrowserListObserver>>::Leaky
+      observers_;
 
   static BrowserList* instance_;
 

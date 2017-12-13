@@ -198,7 +198,7 @@ void SetAsDefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
 // is displayed on a dialog.
 class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
                                       public ResponseDelegate,
-                                      public chrome::BrowserListObserver {
+                                      public BrowserListObserver {
  public:
   explicit SetAsDefaultBrowserDialogImpl(Profile* profile);
   ~SetAsDefaultBrowserDialogImpl() override;

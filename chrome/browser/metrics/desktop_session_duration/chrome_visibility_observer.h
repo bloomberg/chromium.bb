@@ -11,7 +11,7 @@
 
 namespace metrics {
 // Observer for tracking browser visibility events.
-class ChromeVisibilityObserver : public chrome::BrowserListObserver {
+class ChromeVisibilityObserver : public BrowserListObserver {
  public:
   ChromeVisibilityObserver();
   ~ChromeVisibilityObserver() override;
@@ -26,7 +26,7 @@ class ChromeVisibilityObserver : public chrome::BrowserListObserver {
   // short gap.
   void CancelVisibilityChange();
 
-  // chrome::BrowserListObserver:
+  // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
   void OnBrowserNoLongerActive(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;

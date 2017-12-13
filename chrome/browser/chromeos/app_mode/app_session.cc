@@ -153,7 +153,7 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
   DISALLOW_COPY_AND_ASSIGN(AppWindowHandler);
 };
 
-class AppSession::BrowserWindowHandler : public chrome::BrowserListObserver {
+class AppSession::BrowserWindowHandler : public BrowserListObserver {
  public:
   BrowserWindowHandler() {
     BrowserList::AddObserver(this);
@@ -172,7 +172,7 @@ class AppSession::BrowserWindowHandler : public chrome::BrowserListObserver {
     browser->window()->Close();
   }
 
-  // chrome::BrowserListObserver overrides:
+  // BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

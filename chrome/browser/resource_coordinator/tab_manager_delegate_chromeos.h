@@ -54,7 +54,7 @@ enum class ProcessType {
 // renderers' scores up to date in /proc/<pid>/oom_score_adj.
 class TabManagerDelegate : public wm::ActivationChangeObserver,
                            public content::NotificationObserver,
-                           public chrome::BrowserListObserver {
+                           public BrowserListObserver {
  public:
   class MemoryStat;
 

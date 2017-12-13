@@ -463,7 +463,7 @@ TEST_F(ToolbarControllerRTLTest, ElementOrder) {
   }
 }
 
-class BrowserRemovedObserver : public chrome::BrowserListObserver {
+class BrowserRemovedObserver : public BrowserListObserver {
  public:
   BrowserRemovedObserver() { BrowserList::AddObserver(this); }
   ~BrowserRemovedObserver() override { BrowserList::RemoveObserver(this); }

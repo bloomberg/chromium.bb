@@ -209,7 +209,7 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorTest);
 };
 
-class OpenURLsPopupObserver : public chrome::BrowserListObserver {
+class OpenURLsPopupObserver : public BrowserListObserver {
  public:
   OpenURLsPopupObserver() : added_browser_(NULL) { }
 

@@ -26,7 +26,7 @@ class TabStripModelObserver;
 // BrowserListObserver in the constructor. OnBrowserAdded() and
 // OnBrowserRemoved() are only called if the delegate indicates the browser
 // should be tracked.
-class BrowserTabStripTracker : public chrome::BrowserListObserver {
+class BrowserTabStripTracker : public BrowserListObserver {
  public:
   // See class description for details. You only need specify a
   // TabStripModelObserver. |delegate| and |browser_list_observer| are

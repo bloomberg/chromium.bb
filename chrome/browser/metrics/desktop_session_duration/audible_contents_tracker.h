@@ -14,7 +14,7 @@
 namespace metrics {
 
 // BrowserList / TabStripModelObserver used for tracking audio status.
-class AudibleContentsTracker : public chrome::BrowserListObserver,
+class AudibleContentsTracker : public BrowserListObserver,
                                public TabStripModelObserver {
  public:
   // Interface for an observer of the AudibleContentsTracker. The only client
@@ -42,7 +42,7 @@ class AudibleContentsTracker : public chrome::BrowserListObserver,
   ~AudibleContentsTracker() override;
 
  private:
-  // chrome::BrowserListObserver:
+  // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 

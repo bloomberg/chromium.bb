@@ -26,7 +26,7 @@ namespace extensions {
 
 class ExtensionRegistry;
 
-class ExtensionMessageBubbleController : public chrome::BrowserListObserver,
+class ExtensionMessageBubbleController : public BrowserListObserver,
                                          public ExtensionRegistryObserver {
  public:
   // UMA histogram constants.

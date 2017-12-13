@@ -13,7 +13,7 @@
 
 class ChromeSigninStatusMetricsProviderDelegate
     : public SigninStatusMetricsProviderDelegate,
-      public chrome::BrowserListObserver,
+      public BrowserListObserver,
       public SigninManagerFactory::Observer {
  public:
   ChromeSigninStatusMetricsProviderDelegate();
@@ -28,7 +28,7 @@ class ChromeSigninStatusMetricsProviderDelegate
   AccountsStatus GetStatusOfAllAccounts() override;
   std::vector<SigninManager*> GetSigninManagersForAllAccounts() override;
 
-  // chrome::BrowserListObserver:
+  // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
 
   // SigninManagerFactoryObserver:

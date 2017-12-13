@@ -16,7 +16,7 @@ class Profile;
 // Delegate of the bookmark bubble to load the sign in page in a browser
 // when the sign in link is clicked.
 class BookmarkBubbleSignInDelegate : public BubbleSyncPromoDelegate,
-                                     public chrome::BrowserListObserver {
+                                     public BrowserListObserver {
  public:
   explicit BookmarkBubbleSignInDelegate(Browser* browser);
 
@@ -26,7 +26,7 @@ class BookmarkBubbleSignInDelegate : public BubbleSyncPromoDelegate,
   // BubbleSyncPromoDelegate:
   void OnSignInLinkClicked() override;
 
-  // chrome::BrowserListObserver:
+  // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 
   // Makes sure |browser_| points to a valid browser.

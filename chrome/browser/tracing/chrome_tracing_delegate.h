@@ -13,7 +13,7 @@
 class PrefRegistrySimple;
 
 class ChromeTracingDelegate : public content::TracingDelegate,
-                              public chrome::BrowserListObserver {
+                              public BrowserListObserver {
  public:
   ChromeTracingDelegate();
   ~ChromeTracingDelegate() override;
@@ -38,7 +38,7 @@ class ChromeTracingDelegate : public content::TracingDelegate,
   content::MetadataFilterPredicate GetMetadataFilterPredicate() override;
 
  private:
-  // chrome::BrowserListObserver implementation.
+  // BrowserListObserver implementation.
   void OnBrowserAdded(Browser* browser) override;
 
   bool incognito_launched_;

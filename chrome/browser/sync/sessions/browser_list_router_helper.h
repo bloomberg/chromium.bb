@@ -15,7 +15,7 @@ namespace sync_sessions {
 // multi-window scenarios(e.g. tab movement between windows). Android doesn't
 // have a BrowserList or TabStrip, so it doesn't compile the needed
 // dependencies, nor would it benefit from the added tracking.
-class BrowserListRouterHelper : public chrome::BrowserListObserver,
+class BrowserListRouterHelper : public BrowserListObserver,
                                 public TabStripModelObserver {
  public:
   explicit BrowserListRouterHelper(SyncSessionsWebContentsRouter* router,
@@ -23,7 +23,7 @@ class BrowserListRouterHelper : public chrome::BrowserListObserver,
   ~BrowserListRouterHelper() override;
 
  private:
-  // chrome::BrowserListObserver implementation.
+  // BrowserListObserver implementation.
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
   // TabStripModelObserver implementation.

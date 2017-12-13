@@ -28,7 +28,7 @@ namespace metrics {
 //     TabStatsTracker::SetInstance(
 //         std::make_unique<TabStatsTracker>(g_browser_process->local_state()));
 class TabStatsTracker : public TabStripModelObserver,
-                        public chrome::BrowserListObserver,
+                        public BrowserListObserver,
                         public base::PowerObserver {
  public:
   // Constructor. |pref_service| must outlive this object.
@@ -96,7 +96,7 @@ class TabStatsTracker : public TabStripModelObserver,
     daily_event_.reset(daily_event);
   }
 
-  // chrome::BrowserListObserver:
+  // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 

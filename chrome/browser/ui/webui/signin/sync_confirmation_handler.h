@@ -19,7 +19,7 @@ class ListValue;
 
 class SyncConfirmationHandler : public content::WebUIMessageHandler,
                                 public AccountTrackerService::Observer,
-                                public chrome::BrowserListObserver {
+                                public BrowserListObserver {
  public:
   explicit SyncConfirmationHandler(Browser* browser);
   ~SyncConfirmationHandler() override;
@@ -30,7 +30,7 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // AccountTrackerService::Observer:
   void OnAccountUpdated(const AccountInfo& info) override;
 
-  // chrome::BrowserListObserver:
+  // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 
  protected:
