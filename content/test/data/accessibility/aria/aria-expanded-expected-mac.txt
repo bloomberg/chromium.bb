@@ -4,3 +4,6 @@ AXWebArea
 ++++AXMenuItem AXTitle='Open' AXExpanded='1'
 ++++AXMenuItem AXTitle='Save' AXExpanded='0'
 ++++AXMenuItem AXTitle='Quit' AXExpanded='1'
+++AXSplitter
+++AXSplitter
+++AXSplitter

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <body>
-<a aria-expanded="true" id="title" href="#" on>Toggle</a>
-<ul id="list">
+<a role="link" aria-expanded="false" id="title" href="#" onclick="go()">Toggle</a>
+<ul id="list" style="visibility: hidden;">
   <li>ListItem 1</li>
   <li>ListItem 2</li>
   <li>ListItem 3</li>
@@ -21,6 +21,10 @@
   }
   function go() {
     toggle('list', 'title');
+  }
+
+  window.onload = function() {
+    go();
   }
 </script>
 </body>
