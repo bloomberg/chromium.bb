@@ -29,6 +29,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,6 +86,9 @@ class PerfContextProvider : public viz::ContextProvider {
       : context_gl_(new PerfGLES2Interface),
         cache_controller_(&support_, nullptr) {
     capabilities_.sync_query = true;
+
+    raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
+        context_gl_.get(), capabilities_);
   }
 
   gpu::ContextResult BindToCurrentThread() override {
@@ -97,6 +101,9 @@ class PerfContextProvider : public viz::ContextProvider {
     return gpu_feature_info_;
   }
   gpu::gles2::GLES2Interface* ContextGL() override { return context_gl_.get(); }
+  gpu::raster::RasterInterface* RasterContext() override {
+    return raster_context_.get();
+  }
   gpu::ContextSupport* ContextSupport() override { return &support_; }
   class GrContext* GrContext() override {
     if (gr_context_)
@@ -122,6 +129,7 @@ class PerfContextProvider : public viz::ContextProvider {
   ~PerfContextProvider() override = default;
 
   std::unique_ptr<PerfGLES2Interface> context_gl_;
+  std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
   sk_sp<class GrContext> gr_context_;
   TestContextSupport support_;
   viz::ContextCacheController cache_controller_;

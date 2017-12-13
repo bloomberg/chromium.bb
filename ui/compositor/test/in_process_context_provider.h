@@ -53,6 +53,7 @@ class InProcessContextProvider : public viz::ContextProvider {
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::raster::RasterInterface* RasterContext() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   viz::ContextCacheController* CacheController() override;
@@ -91,6 +92,7 @@ class InProcessContextProvider : public viz::ContextProvider {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
+  std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
 
   const bool support_locking_ ALLOW_UNUSED_TYPE;

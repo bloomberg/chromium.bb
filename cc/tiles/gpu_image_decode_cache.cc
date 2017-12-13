@@ -23,7 +23,7 @@
 #include "cc/tiles/mipmap_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu_image_decode_cache.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -1324,7 +1324,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     if (image_data->mode == DecodedDataMode::GPU) {
       // Notify the discardable system of this image so it will count against
       // budgets.
-      context_->ContextGL()->InitializeDiscardableTextureCHROMIUM(
+      context_->RasterContext()->InitializeDiscardableTextureCHROMIUM(
           image_data->upload.gl_id());
     }
   }
@@ -1387,15 +1387,15 @@ void GpuImageDecodeCache::RunPendingContextThreadOperations() {
   images_pending_complete_lock_.clear();
 
   for (auto* image : images_pending_unlock_) {
-    context_->ContextGL()->UnlockDiscardableTextureCHROMIUM(
+    context_->RasterContext()->UnlockDiscardableTextureCHROMIUM(
         GlIdFromSkImage(image));
   }
   images_pending_unlock_.clear();
 
   for (auto& image : images_pending_deletion_) {
     uint32_t texture_id = GlIdFromSkImage(image.get());
-    if (context_->ContextGL()->LockDiscardableTextureCHROMIUM(texture_id)) {
-      context_->ContextGL()->DeleteTextures(1, &texture_id);
+    if (context_->RasterContext()->LockDiscardableTextureCHROMIUM(texture_id)) {
+      context_->RasterContext()->DeleteTextures(1, &texture_id);
     }
   }
   images_pending_deletion_.clear();
@@ -1418,7 +1418,7 @@ bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
     return true;
 
   if (have_context_lock == HaveContextLock::kYes &&
-      context_->ContextGL()->LockDiscardableTextureCHROMIUM(
+      context_->RasterContext()->LockDiscardableTextureCHROMIUM(
           data->upload.gl_id())) {
     // If |have_context_lock|, we can immediately lock the image and send
     // the lock command to the GPU process.

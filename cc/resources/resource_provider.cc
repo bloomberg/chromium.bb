@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -648,7 +649,7 @@ void ResourceProvider::EnableReadLockFencesForTesting(viz::ResourceId id) {
   resource->read_lock_fences_enabled = true;
 }
 
-ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
+ResourceProvider::ScopedWriteLockGpu::ScopedWriteLockGpu(
     ResourceProvider* resource_provider,
     viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
@@ -667,7 +668,7 @@ ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
   allocated_ = resource->allocated;
 }
 
-ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
+ResourceProvider::ScopedWriteLockGpu::~ScopedWriteLockGpu() {
   viz::internal::Resource* resource =
       resource_provider_->GetResource(resource_id_);
   DCHECK(resource->locked_for_write);
@@ -683,16 +684,11 @@ ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
   resource_provider_->UnlockForWrite(resource);
 }
 
-GrPixelConfig ResourceProvider::ScopedWriteLockGL::PixelConfig() const {
+GrPixelConfig ResourceProvider::ScopedWriteLockGpu::PixelConfig() const {
   return ToGrPixelConfig(format_);
 }
 
-GLuint ResourceProvider::ScopedWriteLockGL::GetTexture() {
-  LazyAllocate(resource_provider_->ContextGL(), texture_id_);
-  return texture_id_;
-}
-
-void ResourceProvider::ScopedWriteLockGL::CreateMailbox() {
+void ResourceProvider::ScopedWriteLockGpu::CreateMailbox() {
   if (!mailbox_.IsZero())
     return;
   gpu::gles2::GLES2Interface* gl = resource_provider_->ContextGL();
@@ -701,17 +697,16 @@ void ResourceProvider::ScopedWriteLockGL::CreateMailbox() {
   gl->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_.name);
 }
 
-GLuint ResourceProvider::ScopedWriteLockGL::ConsumeTexture(
-    gpu::gles2::GLES2Interface* gl) {
-  DCHECK(gl);
-  DCHECK(!mailbox_.IsZero());
+ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
+    ResourceProvider* resource_provider,
+    viz::ResourceId resource_id)
+    : ScopedWriteLockGpu(resource_provider, resource_id) {}
 
-  GLuint texture_id = gl->CreateAndConsumeTextureCHROMIUM(mailbox_.name);
-  DCHECK(texture_id);
+ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {}
 
-  LazyAllocate(gl, texture_id);
-
-  return texture_id;
+GLuint ResourceProvider::ScopedWriteLockGL::GetTexture() {
+  LazyAllocate(resource_provider_->ContextGL(), texture_id_);
+  return texture_id_;
 }
 
 void ResourceProvider::ScopedWriteLockGL::LazyAllocate(
@@ -750,6 +745,47 @@ void ResourceProvider::ScopedWriteLockGL::LazyAllocate(
     gl->TexImage2D(target_, 0, GLInternalFormat(format_), size_.width(),
                    size_.height(), 0, GLDataFormat(format_),
                    GLDataType(format_), nullptr);
+  }
+}
+
+ResourceProvider::ScopedWriteLockRaster::ScopedWriteLockRaster(
+    ResourceProvider* resource_provider,
+    viz::ResourceId resource_id)
+    : ScopedWriteLockGpu(resource_provider, resource_id) {}
+
+ResourceProvider::ScopedWriteLockRaster::~ScopedWriteLockRaster() {}
+
+GLuint ResourceProvider::ScopedWriteLockRaster::ConsumeTexture(
+    gpu::raster::RasterInterface* ri) {
+  DCHECK(ri);
+  DCHECK(!mailbox_.IsZero());
+
+  GLuint texture_id = ri->CreateAndConsumeTextureCHROMIUM(mailbox_.name);
+  DCHECK(texture_id);
+
+  LazyAllocate(ri, texture_id);
+
+  return texture_id;
+}
+
+void ResourceProvider::ScopedWriteLockRaster::LazyAllocate(
+    gpu::raster::RasterInterface* ri,
+    GLuint texture_id) {
+  // ETC1 resources cannot be preallocated.
+  if (format_ == viz::ETC1)
+    return;
+
+  if (allocated_)
+    return;
+  allocated_ = true;
+
+  ri->BindTexture(target_, texture_id);
+  ri->TexStorageForRaster(
+      target_, format_, size_.width(), size_.height(),
+      is_overlay_ ? gpu::raster::kOverlay : gpu::raster::kNone);
+  if (is_overlay_ && color_space_.IsValid()) {
+    ri->SetColorSpaceMetadataCHROMIUM(
+        texture_id, reinterpret_cast<GLColorSpace>(&color_space_));
   }
 }
 
@@ -1011,6 +1047,24 @@ gpu::SyncToken ResourceProvider::GenerateSyncTokenHelper(
 
   DCHECK(sync_token.HasData() ||
          gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
+
+  return sync_token;
+}
+
+gpu::SyncToken ResourceProvider::GenerateSyncTokenHelper(
+    gpu::raster::RasterInterface* ri) {
+  DCHECK(ri);
+  const uint64_t fence_sync = ri->InsertFenceSyncCHROMIUM();
+
+  // Barrier to sync worker context output to cc context.
+  ri->OrderingBarrierCHROMIUM();
+
+  // Generate sync token after the barrier for cross context synchronization.
+  gpu::SyncToken sync_token;
+  ri->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
+  DCHECK(sync_token.HasData() ||
+         ri->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
 
   return sync_token;
 }

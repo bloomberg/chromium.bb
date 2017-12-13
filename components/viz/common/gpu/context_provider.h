@@ -26,8 +26,12 @@ class Lock;
 namespace gpu {
 class ContextSupport;
 struct GpuFeatureInfo;
+
 namespace gles2 {
 class GLES2Interface;
+}
+namespace raster {
+class RasterInterface;
 }
 }  // namespace gpu
 
@@ -50,6 +54,10 @@ class VIZ_COMMON_EXPORT ContextProvider
       return context_provider_->ContextGL();
     }
 
+    gpu::raster::RasterInterface* RasterContext() {
+      return context_provider_->RasterContext();
+    }
+
    private:
     ContextProvider* const context_provider_;
     base::AutoLock context_lock_;
@@ -64,9 +72,27 @@ class VIZ_COMMON_EXPORT ContextProvider
   // can be used to provide access from multiple threads.
   virtual gpu::ContextResult BindToCurrentThread() = 0;
 
+  // Get a GLES2 interface to the 3d context.  Returns nullptr if the context
+  // provider was not bound to a thread, or if the GLES2 interface is not
+  // supported by this context.
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+
+  // Get a Raster interface to the 3d context.  Returns nullptr if the context
+  // provider was not bound to a thread, or if the Raster interface is not
+  // supported by this context.
+  virtual gpu::raster::RasterInterface* RasterContext() = 0;
+
+  // Get a ContextSupport interface to the 3d context.  Returns nullptr if the
+  // context provider was not bound to a thread.
   virtual gpu::ContextSupport* ContextSupport() = 0;
+
+  // Get a Raster interface to the 3d context.  Returns nullptr if the context
+  // provider was not bound to a thread, or if a GrContext fails to initialize
+  // on this context.
   virtual class GrContext* GrContext() = 0;
+
+  // Get a CacheController interface to the 3d context.  Returns nullptr if the
+  // context provider was not bound to a thread.
   virtual ContextCacheController* CacheController() = 0;
 
   // Invalidates the cached OpenGL state in GrContext.

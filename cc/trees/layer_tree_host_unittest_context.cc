@@ -38,6 +38,7 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/media.h"
 
 using media::VideoFrame;
@@ -1629,8 +1630,8 @@ class LayerTreeHostContextTestWorkerContextLostRecovery : public LayerTreeTest {
     did_lose_context = true;
     viz::ContextProvider::ScopedContextLock scoped_context(
         host_impl->layer_tree_frame_sink()->worker_context_provider());
-    gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
-    gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+    gpu::raster::RasterInterface* ri = scoped_context.RasterContext();
+    ri->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                             GL_INNOCENT_CONTEXT_RESET_ARB);
   }
 

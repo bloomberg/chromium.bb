@@ -14,6 +14,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/framebuffer_completeness_cache.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -83,6 +84,12 @@ gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
 
 gpu::gles2::GLES2Interface* InProcessContextProvider::ContextGL() {
   return context_->GetImplementation();
+}
+
+gpu::raster::RasterInterface* InProcessContextProvider::RasterContext() {
+  // RasterContext use isn't expected in viz compositor context.
+  DLOG(ERROR) << "Unexpected access to RasterContext()";
+  return nullptr;
 }
 
 gpu::ContextSupport* InProcessContextProvider::ContextSupport() {

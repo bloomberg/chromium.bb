@@ -621,7 +621,9 @@ void GpuChannel::OnCreateCommandBuffer(
 
   std::unique_ptr<CommandBufferStub> stub;
   if (gpu_channel_manager_->gpu_preferences().enable_raster_decoder &&
-      init_params.attribs.enable_oop_rasterization) {
+      init_params.attribs.enable_oop_rasterization &&
+      init_params.attribs.enable_raster_interface &&
+      !init_params.attribs.enable_gles2_interface) {
     stub = std::make_unique<RasterCommandBufferStub>(
         this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
   } else {
