@@ -1909,6 +1909,16 @@ void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
   BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
   PREDICTION_MODE mode =
       interintra_to_intra_mode[xd->mi[0]->mbmi.interintra_mode];
+#if CONFIG_EXT_INTRA
+  xd->mi[0]->mbmi.angle_delta[0] = 0;
+  xd->mi[0]->mbmi.angle_delta[1] = 0;
+#endif  // CONFIG_EXT_INTRA
+#if CONFIG_FILTER_INTRA
+  xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra = 0;
+#endif  // CONFIG_FILTER_INTRA
+#if CONFIG_INTRABC
+  xd->mi[0]->mbmi.use_intrabc = 0;
+#endif
 
   av1_predict_intra_block(
       cm, xd, pd->width, pd->height, get_max_rect_tx_size(plane_bsize, 0), mode,

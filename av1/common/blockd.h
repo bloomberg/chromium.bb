@@ -1094,6 +1094,7 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int plane, TX_SIZE tx_size, int has_eob, int aoff,
                       int loff);
 
+#define MAX_INTERINTRA_SB_SQUARE 32 * 32
 static INLINE int is_interintra_allowed_bsize(const BLOCK_SIZE bsize) {
   return (bsize >= BLOCK_8X8) && (bsize <= BLOCK_32X32);
 }
@@ -1124,7 +1125,8 @@ static INLINE int is_interintra_allowed_bsize_group(int group) {
 }
 
 static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
-  return (mbmi->ref_frame[1] == INTRA_FRAME) && is_interintra_allowed(mbmi);
+  return mbmi->ref_frame[0] > INTRA_FRAME &&
+         mbmi->ref_frame[1] == INTRA_FRAME && is_interintra_allowed(mbmi);
 }
 
 static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
