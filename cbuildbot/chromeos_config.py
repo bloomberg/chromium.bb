@@ -2361,6 +2361,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'leon',
       'link',
       'lumpy',
+      'moblab-generic-vm',
       'monroe',
       'nyan_big',
       'nyan_kitty',
@@ -2419,7 +2420,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
-      'moblab-generic-vm', # contact:pprabhu@
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598

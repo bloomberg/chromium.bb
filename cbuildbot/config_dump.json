@@ -35618,7 +35618,6 @@
         ],
         "buildslave_type": "baremetal",
         "image_test": false,
-        "important": false,
         "moblab_vm_tests": [
             "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
         ],
@@ -35643,7 +35642,6 @@
         ],
         "hw_tests_override": null,
         "image_test": false,
-        "important": false,
         "moblab_vm_tests": [
             "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
         ],
