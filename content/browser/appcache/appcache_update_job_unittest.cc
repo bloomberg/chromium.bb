@@ -318,7 +318,7 @@ class MockFrontend : public AppCacheFrontend {
 
   void OnSetSubresourceFactory(
       int host_id,
-      mojo::MessagePipeHandle loader_factory_pipe_handle) override {}
+      mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
   void AddExpectedEvent(const std::vector<int>& host_ids,
       AppCacheEventID event_id) {

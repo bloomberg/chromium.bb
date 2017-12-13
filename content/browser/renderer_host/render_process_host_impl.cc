@@ -1932,8 +1932,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(base::BindRepeating(
       &AppCacheDispatcherHost::Create,
-      base::Unretained(storage_partition_impl_->GetAppCacheService()), GetID(),
-      instance_weak_factory_->GetWeakPtr()));
+      base::Unretained(storage_partition_impl_->GetAppCacheService()),
+      GetID()));
 
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
 

@@ -4,15 +4,13 @@
 
 #include "content/renderer/appcache/appcache_backend_proxy.h"
 #include "content/common/appcache.mojom.h"
-#include "content/common/appcache_messages.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
-AppCacheBackendProxy::AppCacheBackendProxy(IPC::Sender* sender)
-    : sender_(sender) {}
+AppCacheBackendProxy::AppCacheBackendProxy() = default;
 AppCacheBackendProxy::~AppCacheBackendProxy() = default;
 
 mojom::AppCacheBackend* AppCacheBackendProxy::GetAppCacheBackendPtr() {

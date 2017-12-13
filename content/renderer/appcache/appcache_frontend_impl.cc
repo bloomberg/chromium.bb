@@ -91,10 +91,10 @@ void AppCacheFrontendImpl::OnContentBlocked(int host_id,
 
 void AppCacheFrontendImpl::OnSetSubresourceFactory(
     int host_id,
-    mojo::MessagePipeHandle loader_factory_pipe_handle) {
+    mojom::URLLoaderFactoryPtr url_loader_factory) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
-    host->SetSubresourceFactory(loader_factory_pipe_handle);
+    host->SetSubresourceFactory(std::move(url_loader_factory));
 }
 
 // Ensure that enum values never get out of sync with the

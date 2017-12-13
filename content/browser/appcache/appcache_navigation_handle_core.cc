@@ -125,7 +125,7 @@ void AppCacheNavigationHandleCore::OnContentBlocked(int host_id,
 
 void AppCacheNavigationHandleCore::OnSetSubresourceFactory(
     int host_id,
-    mojo::MessagePipeHandle loader_factory_pipe_handle) {
+    mojom::URLLoaderFactoryPtr url_loader_factory) {
   // Should never be called.
   DCHECK(false);
 }

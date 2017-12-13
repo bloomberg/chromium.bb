@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/public/common/appcache_info.mojom";
+import "content/public/common/url_loader_factory.mojom";
 import "url/mojo/url.mojom";
 
 enum AppCacheEventID {
@@ -100,5 +101,39 @@ interface AppCacheBackend {
   // Gets resource list from appcache synchronously.
   [Sync]
   GetResourceList(int32 host_id) => (array<AppCacheResourceInfo> resources);
+};
+
+// AppCache messages sent from the browser to the renderer process.
+interface AppCacheFrontend {
+  // Notifies the renderer of the appcache that has been selected for a
+  // a particular host. This is sent in reply to AppCacheHostMsg_SelectCache.
+  CacheSelected(int32 host_id, AppCacheInfo info);
+
+  // Notifies the renderer of an AppCache status change.
+  StatusChanged(array<int32> host_ids, AppCacheStatus status);
+
+  // Notifies the renderer of an AppCache event other than the
+  // progress event which has a seperate message.
+  EventRaised(array<int32> host_ids, AppCacheEventID event_id);
+
+  // Notifies the renderer of an AppCache progress event.
+  ProgressEventRaised(array<int32> host_ids,
+                      url.mojom.Url url,
+                      int32 total,
+                      int32 complete);
+
+  // Notifies the renderer of an AppCache error event.
+  ErrorEventRaised(array<int32> host_ids, AppCacheErrorDetails error_details);
+
+  // Notifies the renderer of an AppCache logging message.
+  LogMessage(int32 host_id, int32 log_level, string message);
+
+  // Notifies the renderer of the fact that AppCache access was blocked.
+  ContentBlocked(int32 host_id, url.mojom.Url manifest_url);
+
+  // In the network service world this message sets the URLLoaderFactory to be
+  // used for subresources.
+  SetSubresourceFactory(int32 host_id,
+                        URLLoaderFactory url_loader_factory);
 };
 

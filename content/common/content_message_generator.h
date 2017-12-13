@@ -10,11 +10,6 @@
 #ifndef CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
 #error "Failed to include content/common/accessibility_messages.h"
 #endif
-#undef CONTENT_COMMON_APPCACHE_MESSAGES_H_
-#include "content/common/appcache_messages.h"
-#ifndef CONTENT_COMMON_APPCACHE_MESSAGES_H_
-#error "Failed to include content/common/appcache_messages.h"
-#endif
 #undef CONTENT_COMMON_BROWSER_PLUGIN_BROWSER_PLUGIN_MESSAGES_H_
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #ifndef CONTENT_COMMON_BROWSER_PLUGIN_BROWSER_PLUGIN_MESSAGES_H_
