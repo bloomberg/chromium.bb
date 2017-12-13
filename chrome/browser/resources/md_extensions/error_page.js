@@ -108,6 +108,12 @@ cr.define('extensions', function() {
       extensions.navigation.navigateTo({page: Page.LIST});
     },
 
+    /** @private */
+    onClearAllTap_: function() {
+      const ids = this.entries_.map(entry => entry.id);
+      this.delegate.deleteErrors(this.data.id, ids);
+    },
+
     /**
      * @param {!ManifestError|!RuntimeError} error
      * @return {string}
