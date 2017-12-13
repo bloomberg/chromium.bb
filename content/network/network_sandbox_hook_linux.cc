@@ -14,8 +14,10 @@ using sandbox::syscall_broker::MakeBrokerCommandSet;
 namespace content {
 
 bool NetworkPreSandboxHook(service_manager::SandboxLinux::Options options) {
+  auto* instance = service_manager::SandboxLinux::GetInstance();
+
   // TODO(tsepez): remove universal permission under filesytem root.
-  service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
+  instance->StartBrokerProcess(
       MakeBrokerCommandSet({
           sandbox::syscall_broker::COMMAND_ACCESS,
           sandbox::syscall_broker::COMMAND_MKDIR,
@@ -29,6 +31,7 @@ bool NetworkPreSandboxHook(service_manager::SandboxLinux::Options options) {
       {BrokerFilePermission::ReadWriteCreateRecursive("/")},
       service_manager::SandboxLinux::PreSandboxHook(), options);
 
+  instance->EngageNamespaceSandbox(false /* from_zygote */);
   return true;
 }
 
