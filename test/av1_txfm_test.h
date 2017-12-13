@@ -46,8 +46,8 @@ void reference_adst_1d(const double *in, double *out, int size);
 
 void reference_hybrid_1d(double *in, double *out, int size, int type);
 
-void reference_hybrid_2d(double *in, double *out, int size, int type0,
-                         int type1);
+void reference_hybrid_2d(double *in, double *out, int tx_width, int tx_height,
+                         int type0, int type1);
 template <typename Type1, typename Type2>
 static double compute_avg_abs_error(const Type1 *a, const Type2 *b,
                                     const int size) {
@@ -60,13 +60,13 @@ static double compute_avg_abs_error(const Type1 *a, const Type2 *b,
 }
 
 template <typename Type>
-void fliplr(Type *dest, int stride, int length);
+void fliplr(Type *dest, int width, int height, int stride);
 
 template <typename Type>
-void flipud(Type *dest, int stride, int length);
+void flipud(Type *dest, int width, int height, int stride);
 
 template <typename Type>
-void fliplrud(Type *dest, int stride, int length);
+void fliplrud(Type *dest, int width, int height, int stride);
 
 typedef void (*TxfmFunc)(const int32_t *in, int32_t *out, const int8_t *cos_bit,
                          const int8_t *range_bit);
@@ -81,27 +81,21 @@ static const int input_base = (1 << bd);
 #if CONFIG_AV1_ENCODER
 
 static const Fwd_Txfm2d_Func fwd_txfm_func_ls[TX_SIZES_ALL] = {
-  av1_fwd_txfm2d_4x4_c,
-  av1_fwd_txfm2d_8x8_c,
-  av1_fwd_txfm2d_16x16_c,
+  av1_fwd_txfm2d_4x4_c,   av1_fwd_txfm2d_8x8_c,   av1_fwd_txfm2d_16x16_c,
   av1_fwd_txfm2d_32x32_c,
 #if CONFIG_TX64X64
   av1_fwd_txfm2d_64x64_c,
 #endif  // CONFIG_TX64X64
-  av1_fwd_txfm2d_4x8_c,
-  av1_fwd_txfm2d_8x4_c,
-  av1_fwd_txfm2d_8x16_c,
-  av1_fwd_txfm2d_16x8_c,
-  av1_fwd_txfm2d_16x32_c,
-  av1_fwd_txfm2d_32x16_c,
+  av1_fwd_txfm2d_4x8_c,   av1_fwd_txfm2d_8x4_c,   av1_fwd_txfm2d_8x16_c,
+  av1_fwd_txfm2d_16x8_c,  av1_fwd_txfm2d_16x32_c, av1_fwd_txfm2d_32x16_c,
 #if CONFIG_TX64X64
-  av1_fwd_txfm2d_32x64_c,
-  av1_fwd_txfm2d_64x32_c,
+  av1_fwd_txfm2d_32x64_c, av1_fwd_txfm2d_64x32_c,
 #endif  // CONFIG_TX64X64
-  NULL,
-  NULL,
-  NULL,
-  NULL,
+  av1_fwd_txfm2d_4x16_c,  av1_fwd_txfm2d_16x4_c,  av1_fwd_txfm2d_8x32_c,
+  av1_fwd_txfm2d_32x8_c,
+#if CONFIG_TX64X64
+  av1_fwd_txfm2d_16x64_c, av1_fwd_txfm2d_64x16_c,
+#endif  // CONFIG_TX64X64
 };
 #endif
 

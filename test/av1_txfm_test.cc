@@ -106,35 +106,40 @@ void reference_hybrid_1d(double *in, double *out, int size, int type) {
     reference_adst_1d(in, out, size);
 }
 
-void reference_hybrid_2d(double *in, double *out, int size, int type0,
-                         int type1) {
-  double *tempOut = new double[size * size];
+void reference_hybrid_2d(double *in, double *out, int tx_width, int tx_height,
+                         int type0, int type1) {
+  double *const temp_in = new double[AOMMAX(tx_width, tx_height)];
+  double *const temp_out = new double[AOMMAX(tx_width, tx_height)];
+  double *const out_interm = new double[tx_width * tx_height];
+  const int stride = tx_width;
 
-  for (int r = 0; r < size; r++) {
-    // out ->tempOut
-    for (int c = 0; c < size; c++) {
-      tempOut[r * size + c] = in[c * size + r];
+  // Transform columns.
+  for (int c = 0; c < tx_width; ++c) {
+    for (int r = 0; r < tx_height; ++r) {
+      temp_in[r] = in[r * stride + c];
+    }
+    reference_hybrid_1d(temp_in, temp_out, tx_height, type0);
+    for (int r = 0; r < tx_height; ++r) {
+      out_interm[r * stride + c] = temp_out[r];
     }
   }
 
-  // dct each row: in -> out
-  for (int r = 0; r < size; r++) {
-    reference_hybrid_1d(tempOut + r * size, out + r * size, size, type0);
+  // Transform rows.
+  for (int r = 0; r < tx_height; ++r) {
+    reference_hybrid_1d(out_interm + r * stride, out + r * stride, tx_width,
+                        type1);
   }
 
-  for (int r = 0; r < size; r++) {
-    // out ->tempOut
-    for (int c = 0; c < size; c++) {
-      tempOut[r * size + c] = out[c * size + r];
-    }
-  }
-
-  for (int r = 0; r < size; r++) {
-    reference_hybrid_1d(tempOut + r * size, out + r * size, size, type1);
-  }
+  delete[] temp_in;
+  delete[] temp_out;
+  delete[] out_interm;
 
 #if CONFIG_TX64X64
-  if (size == 64) {  // tx_size == TX64X64
+  // These transforms use an approximate 2D DCT transform, by only keeping the
+  // top-left quarter of the coefficients, and repacking them in the first
+  // quarter indices.
+  // TODO(urvang): Refactor this code.
+  if (tx_width == 64 && tx_height == 64) {  // tx_size == TX_64X64
     // Zero out top-right 32x32 area.
     for (int row = 0; row < 32; ++row) {
       memset(out + row * 64 + 32, 0, 32 * sizeof(*out));
@@ -145,50 +150,72 @@ void reference_hybrid_2d(double *in, double *out, int size, int type0,
     for (int row = 1; row < 32; ++row) {
       memcpy(out + row * 32, out + row * 64, 32 * sizeof(*out));
     }
+  } else if (tx_width == 32 && tx_height == 64) {  // tx_size == TX_32X64
+    // Zero out the bottom 32x32 area.
+    memset(out + 32 * 32, 0, 32 * 32 * sizeof(*out));
+    // Note: no repacking needed here.
+  } else if (tx_width == 64 && tx_height == 32) {  // tx_size == TX_64X32
+    // Zero out right 32x32 area.
+    for (int row = 0; row < 32; ++row) {
+      memset(out + row * 64 + 32, 0, 32 * sizeof(*out));
+    }
+    // Re-pack non-zero coeffs in the first 32x32 indices.
+    for (int row = 1; row < 32; ++row) {
+      memcpy(out + row * 32, out + row * 64, 32 * sizeof(*out));
+    }
+  } else if (tx_width == 16 && tx_height == 64) {  // tx_size == TX_16X64
+    // Zero out the bottom 16x32 area.
+    memset(out + 16 * 32, 0, 16 * 32 * sizeof(*out));
+    // Note: no repacking needed here.
+  } else if (tx_width == 64 && tx_height == 16) {  // tx_size == TX_64X16
+    // Zero out right 32x16 area.
+    for (int row = 0; row < 16; ++row) {
+      memset(out + row * 64 + 32, 0, 32 * sizeof(*out));
+    }
+    // Re-pack non-zero coeffs in the first 32x16 indices.
+    for (int row = 1; row < 16; ++row) {
+      memcpy(out + row * 32, out + row * 64, 32 * sizeof(*out));
+    }
   }
 #endif  // CONFIG_TX_64X64
-  delete[] tempOut;
 }
 
 template <typename Type>
-void fliplr(Type *dest, int stride, int length) {
-  int i, j;
-  for (i = 0; i < length; ++i) {
-    for (j = 0; j < length / 2; ++j) {
-      const Type tmp = dest[i * stride + j];
-      dest[i * stride + j] = dest[i * stride + length - 1 - j];
-      dest[i * stride + length - 1 - j] = tmp;
+void fliplr(Type *dest, int width, int height, int stride) {
+  for (int r = 0; r < height; ++r) {
+    for (int c = 0; c < width / 2; ++c) {
+      const Type tmp = dest[r * stride + c];
+      dest[r * stride + c] = dest[r * stride + width - 1 - c];
+      dest[r * stride + width - 1 - c] = tmp;
     }
   }
 }
 
 template <typename Type>
-void flipud(Type *dest, int stride, int length) {
-  int i, j;
-  for (j = 0; j < length; ++j) {
-    for (i = 0; i < length / 2; ++i) {
-      const Type tmp = dest[i * stride + j];
-      dest[i * stride + j] = dest[(length - 1 - i) * stride + j];
-      dest[(length - 1 - i) * stride + j] = tmp;
+void flipud(Type *dest, int width, int height, int stride) {
+  for (int c = 0; c < width; ++c) {
+    for (int r = 0; r < height / 2; ++r) {
+      const Type tmp = dest[r * stride + c];
+      dest[r * stride + c] = dest[(height - 1 - r) * stride + c];
+      dest[(height - 1 - r) * stride + c] = tmp;
     }
   }
 }
 
 template <typename Type>
-void fliplrud(Type *dest, int stride, int length) {
-  int i, j;
-  for (i = 0; i < length / 2; ++i) {
-    for (j = 0; j < length; ++j) {
-      const Type tmp = dest[i * stride + j];
-      dest[i * stride + j] = dest[(length - 1 - i) * stride + length - 1 - j];
-      dest[(length - 1 - i) * stride + length - 1 - j] = tmp;
+void fliplrud(Type *dest, int width, int height, int stride) {
+  for (int r = 0; r < height / 2; ++r) {
+    for (int c = 0; c < width; ++c) {
+      const Type tmp = dest[r * stride + c];
+      dest[r * stride + c] = dest[(height - 1 - r) * stride + width - 1 - c];
+      dest[(height - 1 - r) * stride + width - 1 - c] = tmp;
     }
   }
 }
 
-template void fliplr<double>(double *dest, int stride, int length);
-template void flipud<double>(double *dest, int stride, int length);
-template void fliplrud<double>(double *dest, int stride, int length);
+template void fliplr<double>(double *dest, int width, int height, int stride);
+template void flipud<double>(double *dest, int width, int height, int stride);
+template void fliplrud<double>(double *dest, int width, int height, int stride);
 
 int bd_arr[BD_NUM] = { 8, 10, 12 };
 

@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 #include "test/acm_random.h"
 #include "test/util.h"
@@ -25,6 +26,8 @@ using libaom_test::bd;
 using libaom_test::compute_avg_abs_error;
 using libaom_test::Fwd_Txfm2d_Func;
 using libaom_test::TYPE_TXFM;
+
+using std::vector;
 
 namespace {
 #if CONFIG_HIGHBITDEPTH
@@ -41,19 +44,30 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
     count_ = 500;
     TXFM_2D_FLIP_CFG fwd_txfm_flip_cfg;
     av1_get_fwd_txfm_cfg(tx_type_, tx_size_, &fwd_txfm_flip_cfg);
-    // TODO(sarahparker) this test will need to be updated when these
-    // functions are extended to support rectangular transforms
-    int amplify_bit = fwd_txfm_flip_cfg.row_cfg->shift[0] +
-                      fwd_txfm_flip_cfg.row_cfg->shift[1] +
-                      fwd_txfm_flip_cfg.row_cfg->shift[2];
+    tx_width_ = fwd_txfm_flip_cfg.row_cfg->txfm_size;
+    tx_height_ = fwd_txfm_flip_cfg.col_cfg->txfm_size;
+    const int8_t *shift = (tx_width_ > tx_height_)
+                              ? fwd_txfm_flip_cfg.row_cfg->shift
+                              : fwd_txfm_flip_cfg.col_cfg->shift;
+    const int amplify_bit = shift[0] + shift[1] + shift[2];
     ud_flip_ = fwd_txfm_flip_cfg.ud_flip;
     lr_flip_ = fwd_txfm_flip_cfg.lr_flip;
     amplify_factor_ =
         amplify_bit >= 0 ? (1 << amplify_bit) : (1.0 / (1 << -amplify_bit));
 
+    // For rectangular transforms, we need to multiply by an extra factor.
+    const int rect_type = get_rect_tx_log_ratio(tx_width_, tx_height_);
+    if (abs(rect_type) == 1) {
+      amplify_factor_ *= pow(2, 0.5);
+    } else if (abs(rect_type) == 2) {
+      const int tx_max_dim = AOMMAX(tx_width_, tx_height_);
+      const int rect_type2_shift =
+          tx_max_dim == 64 ? 3 : tx_max_dim == 32 ? 2 : 1;
+      amplify_factor_ *= pow(2, rect_type2_shift);
+    }
+
     fwd_txfm_ = libaom_test::fwd_txfm_func_ls[tx_size_];
-    txfm1d_size_ = libaom_test::get_txfm1d_size(tx_size_);
-    txfm2d_size_ = txfm1d_size_ * txfm1d_size_;
+    txfm2d_size_ = tx_width_ * tx_height_;
     get_txfm1d_type(tx_type_, &type0_, &type1_);
     input_ = reinterpret_cast<int16_t *>(
         aom_memalign(16, sizeof(input_[0]) * txfm2d_size_));
@@ -76,33 +90,40 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
         ref_output_[ni] = 0;
       }
 
-      fwd_txfm_(input_, output_, txfm1d_size_, tx_type_, bd);
+      fwd_txfm_(input_, output_, tx_width_, tx_type_, bd);
 
-      if (lr_flip_ && ud_flip_)
-        libaom_test::fliplrud(ref_input_, txfm1d_size_, txfm1d_size_);
-      else if (lr_flip_)
-        libaom_test::fliplr(ref_input_, txfm1d_size_, txfm1d_size_);
-      else if (ud_flip_)
-        libaom_test::flipud(ref_input_, txfm1d_size_, txfm1d_size_);
+      if (lr_flip_ && ud_flip_) {
+        libaom_test::fliplrud(ref_input_, tx_width_, tx_height_, tx_width_);
+      } else if (lr_flip_) {
+        libaom_test::fliplr(ref_input_, tx_width_, tx_height_, tx_width_);
+      } else if (ud_flip_) {
+        libaom_test::flipud(ref_input_, tx_width_, tx_height_, tx_width_);
+      }
 
-      reference_hybrid_2d(ref_input_, ref_output_, txfm1d_size_, type0_,
-                          type1_);
+      reference_hybrid_2d(ref_input_, ref_output_, tx_width_, tx_height_,
+                          type0_, type1_);
 
+      double actual_max_error = 0;
       for (int ni = 0; ni < txfm2d_size_; ++ni) {
         ref_output_[ni] = round(ref_output_[ni] * amplify_factor_);
-        EXPECT_GE(max_error_,
-                  fabs(output_[ni] - ref_output_[ni]) / amplify_factor_);
+        const double this_error =
+            fabs(output_[ni] - ref_output_[ni]) / amplify_factor_;
+        actual_max_error = AOMMAX(actual_max_error, this_error);
       }
+      EXPECT_GE(max_error_, actual_max_error)
+          << "tx_size = " << tx_size_ << ", tx_type = " << tx_type_;
+      if (actual_max_error > max_error_) {  // exit early.
+        break;
+      }
+
       avg_abs_error += compute_avg_abs_error<int32_t, double>(
           output_, ref_output_, txfm2d_size_);
     }
 
     avg_abs_error /= amplify_factor_;
     avg_abs_error /= count_;
-    // max_abs_avg_error comes from upper bound of avg_abs_error
-    // printf("type0: %d type1: %d txfm_size: %d accuracy_avg_abs_error:
-    // %f\n", type0_, type1_, txfm1d_size_, avg_abs_error);
-    EXPECT_GE(max_avg_error_, avg_abs_error);
+    EXPECT_GE(max_avg_error_, avg_abs_error)
+        << "tx_size = " << tx_size_ << ", tx_type = " << tx_type_;
   }
 
   virtual void TearDown() {
@@ -119,7 +140,8 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
   double amplify_factor_;
   TX_TYPE tx_type_;
   TX_SIZE tx_size_;
-  int txfm1d_size_;
+  int tx_width_;
+  int tx_height_;
   int txfm2d_size_;
   Fwd_Txfm2d_Func fwd_txfm_;
   TYPE_TXFM type0_;
@@ -132,51 +154,44 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
   int lr_flip_;  // flip left to right
 };
 
-TEST_P(AV1FwdTxfm2d, RunFwdAccuracyCheck) { RunFwdAccuracyCheck(); }
-const AV1FwdTxfm2dParam av1_fwd_txfm2d_param_c[] = {
-  AV1FwdTxfm2dParam(FLIPADST_DCT, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(DCT_FLIPADST, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(FLIPADST_FLIPADST, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(ADST_FLIPADST, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(FLIPADST_ADST, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(FLIPADST_DCT, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(DCT_FLIPADST, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(FLIPADST_FLIPADST, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(ADST_FLIPADST, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(FLIPADST_ADST, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(FLIPADST_DCT, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(DCT_FLIPADST, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(FLIPADST_FLIPADST, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(ADST_FLIPADST, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(FLIPADST_ADST, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(FLIPADST_DCT, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(DCT_FLIPADST, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(FLIPADST_FLIPADST, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(ADST_FLIPADST, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(FLIPADST_ADST, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(DCT_DCT, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(ADST_DCT, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(DCT_ADST, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(ADST_ADST, TX_4X4, 2, 0.2),
-  AV1FwdTxfm2dParam(DCT_DCT, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(ADST_DCT, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(DCT_ADST, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(ADST_ADST, TX_8X8, 5, 0.6),
-  AV1FwdTxfm2dParam(DCT_DCT, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(ADST_DCT, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(DCT_ADST, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(ADST_ADST, TX_16X16, 11, 1.5),
-  AV1FwdTxfm2dParam(DCT_DCT, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(ADST_DCT, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(DCT_ADST, TX_32X32, 70, 7),
-  AV1FwdTxfm2dParam(ADST_ADST, TX_32X32, 70, 7),
+vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
+  vector<AV1FwdTxfm2dParam> param_list;
+  for (int t = 0; t <= FLIPADST_ADST; ++t) {
+    const TX_TYPE tx_type = static_cast<TX_TYPE>(t);
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X4, 2, 0.2));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X8, 5, 0.6));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X16, 11, 1.5));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X32, 70, 7));
+
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 2.5, 0.4));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 2.5, 0.4));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X16, 6, 1));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X8, 6, 1));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X32, 30, 7));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X16, 30, 7));
+
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X16, 5, 0.6));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X4, 5, 0.6));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X32, 11, 1.6));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X8, 11, 1.6));
+
 #if CONFIG_TX64X64
-  AV1FwdTxfm2dParam(DCT_DCT, TX_64X64, 70, 7),
+    if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X64, 70, 7));
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X64, 136, 7));
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X32, 136, 7));
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X64, 16, 1.6));
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X16, 16, 1.6));
+    }
 #endif  // CONFIG_TX64X64
-};
+  }
+  return param_list;
+}
 
 INSTANTIATE_TEST_CASE_P(C, AV1FwdTxfm2d,
-                        ::testing::ValuesIn(av1_fwd_txfm2d_param_c));
+                        ::testing::ValuesIn(GetTxfm2dParamList()));
+
+TEST_P(AV1FwdTxfm2d, RunFwdAccuracyCheck) { RunFwdAccuracyCheck(); }
 
 TEST(AV1FwdTxfm2d, CfgTest) {
   for (int bd_idx = 0; bd_idx < BD_NUM; ++bd_idx) {
