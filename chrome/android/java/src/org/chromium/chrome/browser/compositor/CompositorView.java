@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
-import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
@@ -334,8 +333,7 @@ public class CompositorView
      * @param provider               Provides the layout to be rendered.
      * @param forRotation            Whether or not this is a special draw during a rotation.
      */
-    public void finalizeLayers(final LayoutProvider provider, boolean forRotation,
-            final DrawingInfo progressBarDrawingInfo) {
+    public void finalizeLayers(final LayoutProvider provider, boolean forRotation) {
         TraceEvent.begin("CompositorView:finalizeLayers");
         Layout layout = provider.getActiveLayout();
         if (layout == null || mNativeCompositorView == 0) {
