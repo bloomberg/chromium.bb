@@ -57,4 +57,44 @@ TEST_F(FormJsTest, FormSubmitMainFrame) {
   EXPECT_EQ("form1", info->form_name);
 }
 
+// Tests that focus event from same-origin iframe correctly delivered to
+// WebStateObserver.
+TEST_F(FormJsTest, FocusSameOriginIFrame) {
+  TestWebStateObserver observer(web_state());
+  LoadHtml(@"<iframe id='frame1'></iframe>");
+  ExecuteJavaScript(
+      @"document.getElementById('frame1').contentDocument.body.innerHTML = "
+       "'<form>"
+       "<input type=\"text\" name=\"username\" id=\"id1\">"
+       "<input type=\"password\" name=\"password\" id=\"id2\">"
+       "</form>'");
+
+  ExecuteJavaScript(
+      @"document.getElementById('frame1').contentDocument.getElementById('id1')"
+      @".focus()");
+  TestFormActivityInfo* info = observer.form_activity_info();
+  ASSERT_TRUE(info);
+  EXPECT_EQ("focus", info->form_activity.type);
+  EXPECT_FALSE(info->form_activity.input_missing);
+}
+
+// Tests that submit event from same-origin iframe correctly delivered to
+// WebStateObserver.
+TEST_F(FormJsTest, FormSameOriginIFrame) {
+  TestWebStateObserver observer(web_state());
+  LoadHtml(@"<iframe id='frame1'></iframe>");
+  ExecuteJavaScript(
+      @"document.getElementById('frame1').contentDocument.body.innerHTML = "
+       "'<form id=\"form1\">"
+       "<input type=\"password\" name=\"password\" id=\"id2\">"
+       "<input type=\"submit\" id=\"submit_input\"/>"
+       "</form>'");
+  ExecuteJavaScript(
+      @"document.getElementById('frame1').contentDocument.getElementById('"
+      @"submit_input').click();");
+  TestSubmitDocumentInfo* info = observer.submit_document_info();
+  ASSERT_TRUE(info);
+  EXPECT_EQ("form1", info->form_name);
+}
+
 }  // namespace web
