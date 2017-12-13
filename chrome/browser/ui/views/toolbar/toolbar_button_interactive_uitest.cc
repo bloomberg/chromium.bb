@@ -36,9 +36,9 @@ class ToolbarButtonUITest : public ViewEventTestBase {
     // Usually a BackForwardMenuModel is used, but that needs a Browser*. Make
     // something simple with at least one item so a menu gets shown. Note that
     // ToolbarButton takes ownership of the |model|.
-    ui::SimpleMenuModel* model = new ui::SimpleMenuModel(nullptr);
+    auto model = std::make_unique<ui::SimpleMenuModel>(nullptr);
     model->AddItem(0, base::string16());
-    button_ = new ToolbarButton(&profile_, nullptr, model);
+    button_ = new ToolbarButton(&profile_, nullptr, std::move(model));
     return button_;
   }
   void DoTestOnMessageLoop() override {}

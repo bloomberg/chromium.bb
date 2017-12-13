@@ -26,12 +26,10 @@
 
 ToolbarButton::ToolbarButton(Profile* profile,
                              views::ButtonListener* listener,
-                             ui::MenuModel* model)
+                             std::unique_ptr<ui::MenuModel> model)
     : views::ImageButton(listener),
       profile_(profile),
-      model_(model),
-      menu_showing_(false),
-      y_position_on_lbuttondown_(0),
+      model_(std::move(model)),
       show_menu_factory_(this) {
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);

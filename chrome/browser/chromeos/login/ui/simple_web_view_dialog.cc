@@ -126,11 +126,6 @@ class StubBubbleModelDelegate : public ContentSettingBubbleModelDelegate {
 
 SimpleWebViewDialog::SimpleWebViewDialog(Profile* profile)
     : profile_(profile),
-      back_(NULL),
-      forward_(NULL),
-      reload_(NULL),
-      location_bar_(NULL),
-      web_view_(NULL),
       bubble_model_delegate_(new StubBubbleModelDelegate) {
   command_updater_.reset(new CommandUpdater(this));
   command_updater_->UpdateCommandEnabled(IDC_BACK, true);
@@ -143,7 +138,7 @@ SimpleWebViewDialog::SimpleWebViewDialog(Profile* profile)
 
 SimpleWebViewDialog::~SimpleWebViewDialog() {
   if (web_view_ && web_view_->web_contents())
-    web_view_->web_contents()->SetDelegate(NULL);
+    web_view_->web_contents()->SetDelegate(nullptr);
 }
 
 void SimpleWebViewDialog::StartLoad(const GURL& url) {
@@ -192,8 +187,8 @@ void SimpleWebViewDialog::Init() {
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
   // Location bar.
-  location_bar_ =
-      new LocationBarView(NULL, profile_, command_updater_.get(), this, true);
+  location_bar_ = new LocationBarView(nullptr, profile_, command_updater_.get(),
+                                      this, true);
 
   // Reload button.
   reload_ = new ReloadButton(profile_, command_updater_.get());
@@ -260,14 +255,14 @@ content::WebContents* SimpleWebViewDialog::OpenURL(
     const content::OpenURLParams& params) {
   // As there are no Browsers right now, this could not actually ever work.
   NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 void SimpleWebViewDialog::NavigationStateChanged(
     WebContents* source,
     content::InvalidateTypes changed_flags) {
   if (location_bar_) {
-    location_bar_->Update(NULL);
+    location_bar_->Update(nullptr);
     UpdateButtons();
   }
 }
@@ -280,7 +275,7 @@ void SimpleWebViewDialog::LoadingStateChanged(WebContents* source,
 }
 
 WebContents* SimpleWebViewDialog::GetWebContents() {
-  return NULL;
+  return nullptr;
 }
 
 ToolbarModel* SimpleWebViewDialog::GetToolbarModel() {
@@ -365,7 +360,7 @@ void SimpleWebViewDialog::UpdateButtons() {
 void SimpleWebViewDialog::UpdateReload(bool is_loading, bool force) {
   if (reload_) {
     reload_->ChangeMode(
-        is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD,
+        is_loading ? ReloadButton::Mode::kStop : ReloadButton::Mode::kReload,
         force);
   }
 }

@@ -27,7 +27,7 @@ class ReloadButton : public ToolbarButton,
                      public views::ButtonListener,
                      public ui::SimpleMenuModel::Delegate {
  public:
-  enum Mode { MODE_RELOAD = 0, MODE_STOP };
+  enum class Mode { kReload = 0, kStop };
 
   // The button's class name.
   static const char kViewClassName[];
@@ -68,7 +68,7 @@ class ReloadButton : public ToolbarButton,
  private:
   friend class ReloadButtonTest;
 
-  ui::SimpleMenuModel* CreateMenuModel();
+  std::unique_ptr<ui::SimpleMenuModel> CreateMenuModel();
 
   void ExecuteBrowserCommand(int command, int event_flags);
   void ChangeModeInternal(Mode mode);
@@ -86,10 +86,10 @@ class ReloadButton : public ToolbarButton,
   CommandUpdater* command_updater_;
 
   // The mode we should be in assuming no timers are running.
-  Mode intended_mode_;
+  Mode intended_mode_ = Mode::kReload;
 
   // The currently-visible mode - this may differ from the intended mode.
-  Mode visible_mode_;
+  Mode visible_mode_ = Mode::kReload;
 
   // The delay times for the timers.  These are members so that tests can modify
   // them.
@@ -97,14 +97,14 @@ class ReloadButton : public ToolbarButton,
   base::TimeDelta mode_switch_timer_delay_;
 
   // Indicates if reload menu is enabled.
-  bool menu_enabled_;
+  bool menu_enabled_ = false;
 
   // TESTING ONLY
   // True if we should pretend the button is hovered.
-  bool testing_mouse_hovered_;
+  bool testing_mouse_hovered_ = false;
   // Increments when we would tell the browser to "reload", so
   // test code can tell whether we did so (as there may be no |browser_|).
-  int testing_reload_count_;
+  int testing_reload_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ReloadButton);
 };

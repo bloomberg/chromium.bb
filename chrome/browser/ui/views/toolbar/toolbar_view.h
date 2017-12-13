@@ -193,14 +193,15 @@ class ToolbarView : public views::AccessiblePaneView,
   void OnShowHomeButtonChanged();
 
   // Controls. Most of these can be null, e.g. in popup windows. Only
-  // |location_bar_| is guaranteed to exist.
-  ToolbarButton* back_;
-  ToolbarButton* forward_;
-  ReloadButton* reload_;
-  HomeButton* home_;
-  LocationBarView* location_bar_;
-  BrowserActionsContainer* browser_actions_;
-  AppMenuButton* app_menu_button_;
+  // |location_bar_| is guaranteed to exist. These pointers are owned by the
+  // view hierarchy.
+  ToolbarButton* back_ = nullptr;
+  ToolbarButton* forward_ = nullptr;
+  ReloadButton* reload_ = nullptr;
+  HomeButton* home_ = nullptr;
+  LocationBarView* location_bar_ = nullptr;
+  BrowserActionsContainer* browser_actions_ = nullptr;
+  AppMenuButton* app_menu_button_ = nullptr;
 
   Browser* const browser_;
 

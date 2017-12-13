@@ -60,26 +60,26 @@ void ReloadButtonTest::CheckState(bool enabled,
 TEST_F(ReloadButtonTest, Basic) {
   // The stop/reload button starts in the "enabled reload" state with no timers
   // running.
-  CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
-             false);
+  CheckState(true, ReloadButton::Mode::kReload, ReloadButton::Mode::kReload,
+             false, false);
 
   // Press the button.  This should start the double-click timer.
   ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    ui::EventTimeForNow(), 0, 0);
   reload()->ButtonPressed(reload(), e);
-  CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, true,
-             false);
+  CheckState(true, ReloadButton::Mode::kReload, ReloadButton::Mode::kReload,
+             true, false);
 
   // Now change the mode (as if the browser had started loading the page).  This
   // should cancel the double-click timer since the button is not hovered.
-  reload()->ChangeMode(ReloadButton::MODE_STOP, false);
-  CheckState(true, ReloadButton::MODE_STOP, ReloadButton::MODE_STOP, false,
+  reload()->ChangeMode(ReloadButton::Mode::kStop, false);
+  CheckState(true, ReloadButton::Mode::kStop, ReloadButton::Mode::kStop, false,
              false);
 
   // Press the button again.  This should change back to reload.
   reload()->ButtonPressed(reload(), e);
-  CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
-             false);
+  CheckState(true, ReloadButton::Mode::kReload, ReloadButton::Mode::kReload,
+             false, false);
 }
 
 TEST_F(ReloadButtonTest, DoubleClickTimer) {
@@ -92,20 +92,20 @@ TEST_F(ReloadButtonTest, DoubleClickTimer) {
   // running.
   int original_reload_count = reload_count();
   reload()->ButtonPressed(reload(), e);
-  CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, true,
-             false);
+  CheckState(true, ReloadButton::Mode::kReload, ReloadButton::Mode::kReload,
+             true, false);
   EXPECT_EQ(original_reload_count, reload_count());
 
   // Hover the button, and change mode.  The visible mode should not change,
   // again because the timer is running.
   set_mouse_hovered(true);
-  reload()->ChangeMode(ReloadButton::MODE_STOP, false);
-  CheckState(true, ReloadButton::MODE_STOP, ReloadButton::MODE_RELOAD, true,
+  reload()->ChangeMode(ReloadButton::Mode::kStop, false);
+  CheckState(true, ReloadButton::Mode::kStop, ReloadButton::Mode::kReload, true,
              false);
 
   // Now fire the timer.  This should complete the mode change.
   base::RunLoop().RunUntilIdle();
-  CheckState(true, ReloadButton::MODE_STOP, ReloadButton::MODE_STOP, false,
+  CheckState(true, ReloadButton::Mode::kStop, ReloadButton::Mode::kStop, false,
              false);
 }
 
@@ -114,22 +114,22 @@ TEST_F(ReloadButtonTest, DisableOnHover) {
   ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    ui::EventTimeForNow(), 0, 0);
   reload()->ButtonPressed(reload(), e);
-  reload()->ChangeMode(ReloadButton::MODE_STOP, false);
+  reload()->ChangeMode(ReloadButton::Mode::kStop, false);
   set_mouse_hovered(true);
 
   // Now change back to reload.  This should result in a disabled stop button
   // due to the hover.
-  reload()->ChangeMode(ReloadButton::MODE_RELOAD, false);
-  CheckState(false, ReloadButton::MODE_RELOAD, ReloadButton::MODE_STOP, false,
-             true);
+  reload()->ChangeMode(ReloadButton::Mode::kReload, false);
+  CheckState(false, ReloadButton::Mode::kReload, ReloadButton::Mode::kStop,
+             false, true);
 
   // Un-hover the button, which should allow it to reset.
   set_mouse_hovered(false);
   ui::MouseEvent e2(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                     ui::EventTimeForNow(), 0, 0);
   reload()->OnMouseExited(e2);
-  CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
-             false);
+  CheckState(true, ReloadButton::Mode::kReload, ReloadButton::Mode::kReload,
+             false, false);
 }
 
 TEST_F(ReloadButtonTest, ResetOnClick) {
@@ -137,14 +137,14 @@ TEST_F(ReloadButtonTest, ResetOnClick) {
   ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    ui::EventTimeForNow(), 0, 0);
   reload()->ButtonPressed(reload(), e);
-  reload()->ChangeMode(ReloadButton::MODE_STOP, false);
+  reload()->ChangeMode(ReloadButton::Mode::kStop, false);
   set_mouse_hovered(true);
 
   // Press the button.  This should change back to reload despite the hover,
   // because it's a direct user action.
   reload()->ButtonPressed(reload(), e);
-  CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
-             false);
+  CheckState(true, ReloadButton::Mode::kReload, ReloadButton::Mode::kReload,
+             false, false);
 }
 
 TEST_F(ReloadButtonTest, ResetOnTimer) {
@@ -152,12 +152,12 @@ TEST_F(ReloadButtonTest, ResetOnTimer) {
   ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    ui::EventTimeForNow(), 0, 0);
   reload()->ButtonPressed(reload(), e);
-  reload()->ChangeMode(ReloadButton::MODE_STOP, false);
+  reload()->ChangeMode(ReloadButton::Mode::kStop, false);
   set_mouse_hovered(true);
-  reload()->ChangeMode(ReloadButton::MODE_RELOAD, false);
+  reload()->ChangeMode(ReloadButton::Mode::kReload, false);
 
   // Now fire the stop-to-reload timer.  This should reset the button.
   base::RunLoop().RunUntilIdle();
-  CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
-             false);
+  CheckState(true, ReloadButton::Mode::kReload, ReloadButton::Mode::kReload,
+             false, false);
 }

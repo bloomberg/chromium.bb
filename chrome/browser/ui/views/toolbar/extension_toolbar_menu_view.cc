@@ -31,8 +31,6 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
     : browser_(browser),
       app_menu_(app_menu),
       menu_item_(menu_item),
-      container_(nullptr),
-      max_height_(0),
       toolbar_actions_bar_observer_(this),
       weak_factory_(this) {
   // Use a transparent background so that the menu's background shows through.

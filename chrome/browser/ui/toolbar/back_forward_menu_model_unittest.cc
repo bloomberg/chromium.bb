@@ -100,12 +100,12 @@ class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(BackFwdMenuModelTest, BasicCase) {
-  std::unique_ptr<BackForwardMenuModel> back_model(
-      new BackForwardMenuModel(NULL, BackForwardMenuModel::BACKWARD_MENU));
+  std::unique_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
+      nullptr, BackForwardMenuModel::ModelType::kBackward));
   back_model->set_test_web_contents(web_contents());
 
-  std::unique_ptr<BackForwardMenuModel> forward_model(
-      new BackForwardMenuModel(NULL, BackForwardMenuModel::FORWARD_MENU));
+  std::unique_ptr<BackForwardMenuModel> forward_model(new BackForwardMenuModel(
+      nullptr, BackForwardMenuModel::ModelType::kForward));
   forward_model->set_test_web_contents(web_contents());
 
   EXPECT_EQ(0, back_model->GetItemCount());
@@ -168,12 +168,12 @@ TEST_F(BackFwdMenuModelTest, BasicCase) {
 }
 
 TEST_F(BackFwdMenuModelTest, MaxItemsTest) {
-  std::unique_ptr<BackForwardMenuModel> back_model(
-      new BackForwardMenuModel(NULL, BackForwardMenuModel::BACKWARD_MENU));
+  std::unique_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
+      nullptr, BackForwardMenuModel::ModelType::kBackward));
   back_model->set_test_web_contents(web_contents());
 
-  std::unique_ptr<BackForwardMenuModel> forward_model(
-      new BackForwardMenuModel(NULL, BackForwardMenuModel::FORWARD_MENU));
+  std::unique_ptr<BackForwardMenuModel> forward_model(new BackForwardMenuModel(
+      nullptr, BackForwardMenuModel::ModelType::kForward));
   forward_model->set_test_web_contents(web_contents());
 
   // Seed the controller with 32 URLs
@@ -250,12 +250,12 @@ TEST_F(BackFwdMenuModelTest, MaxItemsTest) {
 }
 
 TEST_F(BackFwdMenuModelTest, ChapterStops) {
-  std::unique_ptr<BackForwardMenuModel> back_model(
-      new BackForwardMenuModel(NULL, BackForwardMenuModel::BACKWARD_MENU));
+  std::unique_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
+      nullptr, BackForwardMenuModel::ModelType::kBackward));
   back_model->set_test_web_contents(web_contents());
 
-  std::unique_ptr<BackForwardMenuModel> forward_model(
-      new BackForwardMenuModel(NULL, BackForwardMenuModel::FORWARD_MENU));
+  std::unique_ptr<BackForwardMenuModel> forward_model(new BackForwardMenuModel(
+      nullptr, BackForwardMenuModel::ModelType::kForward));
   forward_model->set_test_web_contents(web_contents());
 
   // Seed the controller with 32 URLs.
@@ -461,8 +461,8 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
 }
 
 TEST_F(BackFwdMenuModelTest, EscapeLabel) {
-  std::unique_ptr<BackForwardMenuModel> back_model(
-      new BackForwardMenuModel(NULL, BackForwardMenuModel::BACKWARD_MENU));
+  std::unique_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
+      nullptr, BackForwardMenuModel::ModelType::kBackward));
   back_model->set_test_web_contents(web_contents());
 
   EXPECT_EQ(0, back_model->GetItemCount());
@@ -499,8 +499,8 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
       CreateBrowserWithTestWindowForParams(&native_params));
   FaviconDelegate favicon_delegate;
 
-  BackForwardMenuModel back_model(
-      browser.get(), BackForwardMenuModel::BACKWARD_MENU);
+  BackForwardMenuModel back_model(browser.get(),
+                                  BackForwardMenuModel::ModelType::kBackward);
   back_model.set_test_web_contents(controller().GetWebContents());
   back_model.SetMenuModelDelegate(&favicon_delegate);
 

@@ -16,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -60,7 +61,7 @@ class HomePageUndoBubble : public views::BubbleDialogDelegateView,
 };
 
 // static
-HomePageUndoBubble* HomePageUndoBubble::home_page_undo_bubble_ = NULL;
+HomePageUndoBubble* HomePageUndoBubble::home_page_undo_bubble_ = nullptr;
 
 void HomePageUndoBubble::ShowBubble(Browser* browser,
                                     bool undo_value_is_ntp,
@@ -138,7 +139,7 @@ void HomePageUndoBubble::WindowClosing() {
   // window is hidden but not destroyed, GetWidget()->Close() would be
   // called twice.
   DCHECK_EQ(this, home_page_undo_bubble_);
-  home_page_undo_bubble_ = NULL;
+  home_page_undo_bubble_ = nullptr;
 }
 
 }  // namespace
