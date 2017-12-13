@@ -342,7 +342,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
-    const gfx::Rect& rect,
+    const gfx::Rect& rect_in,
     unsigned background_color,
     unsigned edge_aa_mask,
     float opacity,
@@ -350,7 +350,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     : io_surface(io_surface),
       cv_pixel_buffer(cv_pixel_buffer),
       contents_rect(contents_rect),
-      rect(rect),
+      rect(rect_in),
       background_color(background_color),
       ca_edge_aa_mask(0),
       opacity(opacity),
@@ -403,6 +403,31 @@ CARendererLayerTree::ContentLayer::ContentLayer(
           kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange &&
       contents_rect == gfx::RectF(0, 0, 1, 1)) {
     use_av_layer = true;
+
+    // If the layer's aspect ratio could be made to match the video's aspect
+    // ratio by expanding either dimension by a fractional pixel, do so. The
+    // mismatch probably resulted from rounding the dimensions to integers.
+    // This works around a macOS 10.13 bug which breaks detached fullscreen
+    // playback of slightly distorted videos (https://crbug.com/792632).
+    const auto av_rect(cv_pixel_buffer
+                           ? gfx::RectF(CVPixelBufferGetWidth(cv_pixel_buffer),
+                                        CVPixelBufferGetHeight(cv_pixel_buffer))
+                           : gfx::RectF(IOSurfaceGetWidth(io_surface),
+                                        IOSurfaceGetHeight(io_surface)));
+    const CGFloat av_ratio = av_rect.width() / av_rect.height();
+    const CGFloat layer_ratio = rect.width() / rect.height();
+    const CGFloat ratio_error = av_ratio / layer_ratio;
+
+    if (ratio_error > 1) {
+      const float width_correction = rect.width() * ratio_error - rect.width();
+      if (width_correction < 1)
+        rect.Inset(-width_correction / 2, 0);
+    } else if (ratio_error < 1) {
+      const float height_correction =
+          rect.height() / ratio_error - rect.height();
+      if (height_correction < 1)
+        rect.Inset(0, -height_correction / 2);
+    }
   }
 }
 
