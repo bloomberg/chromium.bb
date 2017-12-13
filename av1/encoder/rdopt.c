@@ -9284,6 +9284,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
+  int64_t dist_refs[TOTAL_REFS_PER_FRAME];
+  int dist_order_refs[TOTAL_REFS_PER_FRAME];
+  int num_available_refs = 0;
+  memset(dist_refs, -1, sizeof(dist_refs));
+  memset(dist_order_refs, -1, sizeof(dist_order_refs));
+
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
@@ -9553,6 +9559,18 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     ref_frame = av1_mode_order[mode_index].ref_frame[0];
     second_ref_frame = av1_mode_order[mode_index].ref_frame[1];
     mbmi->ref_mv_idx = 0;
+
+    if (sf->drop_ref) {
+      if (ref_frame > INTRA_FRAME && second_ref_frame > INTRA_FRAME) {
+        if (num_available_refs > 2) {
+          if ((ref_frame == dist_order_refs[0] &&
+               second_ref_frame == dist_order_refs[1]) ||
+              (ref_frame == dist_order_refs[1] &&
+               second_ref_frame == dist_order_refs[0]))
+            continue;
+        }
+      }
+    }
 
     if (ref_frame > INTRA_FRAME && second_ref_frame == INTRA_FRAME) {
       // Mode must by compatible
@@ -10420,6 +10438,40 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
       if (hybrid_rd < best_pred_rd[REFERENCE_MODE_SELECT])
         best_pred_rd[REFERENCE_MODE_SELECT] = hybrid_rd;
+    }
+
+    if (sf->drop_ref) {
+      if (second_ref_frame == NONE_FRAME) {
+        const int idx = ref_frame - LAST_FRAME;
+        if (idx && distortion2 > dist_refs[idx]) {
+          dist_refs[idx] = distortion2;
+          dist_order_refs[idx] = ref_frame;
+        }
+
+        // Reach the last single ref prediction mode
+        if (ref_frame == ALTREF_FRAME && this_mode == GLOBALMV) {
+          // bubble sort dist_refs and the order index
+          for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) {
+            for (k = i + 1; k < TOTAL_REFS_PER_FRAME; ++k) {
+              if (dist_refs[i] < dist_refs[k]) {
+                int64_t tmp_dist = dist_refs[i];
+                dist_refs[i] = dist_refs[k];
+                dist_refs[k] = tmp_dist;
+
+                int tmp_idx = dist_order_refs[i];
+                dist_order_refs[i] = dist_order_refs[k];
+                dist_order_refs[k] = tmp_idx;
+              }
+            }
+          }
+
+          for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) {
+            if (dist_refs[i] == -1) break;
+            num_available_refs = i;
+          }
+          num_available_refs++;
+        }
+      }
     }
 
     if (x->skip && !comp_pred) break;

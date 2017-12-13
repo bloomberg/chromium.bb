@@ -519,6 +519,9 @@ typedef struct SPEED_FEATURES {
   // Do limited interpolation filter search for dual filters, since best choice
   // usually includes EIGHTTAP_REGULAR.
   int use_fast_interpolation_filter_search;
+
+  // flag to drop some ref frames in compound motion search
+  int drop_ref;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
