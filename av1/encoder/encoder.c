@@ -91,9 +91,6 @@ FRAME_COUNTS aggregate_fc_per_type[FRAME_CONTEXTS];
                                        // chosen.
 
 // #define OUTPUT_YUV_REC
-#ifdef OUTPUT_YUV_DENOISED
-FILE *yuv_denoised_file = NULL;
-#endif
 #ifdef OUTPUT_YUV_SKINMAP
 FILE *yuv_skinmap_file = NULL;
 #endif

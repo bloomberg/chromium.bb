@@ -77,11 +77,7 @@ typedef struct PC_TREE {
   PICK_MODE_CONTEXT horizontal4[4];
   PICK_MODE_CONTEXT vertical4[4];
 #endif
-  // TODO(jingning): remove leaf_split[] when cb4x4 experiment flag is removed.
-  union {
-    struct PC_TREE *split[4];
-    PICK_MODE_CONTEXT *leaf_split[4];
-  };
+  struct PC_TREE *split[4];
 } PC_TREE;
 
 void av1_setup_pc_tree(struct AV1Common *cm, struct ThreadData *td);

@@ -344,10 +344,6 @@ typedef struct AV1Common {
   qm_val_t *v_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
 
   // Encoder
-  qm_val_t *y_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-  qm_val_t *u_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-  qm_val_t *v_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-
   int using_qmatrix;
   int min_qmlevel;
   int max_qmlevel;
