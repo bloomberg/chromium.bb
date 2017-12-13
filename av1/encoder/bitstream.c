@@ -2838,8 +2838,17 @@ static void write_tile_info(const AV1_COMMON *const cm,
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+  if (cm->tile_cols > 1) {
+    aom_wb_write_bit(wb, cm->loop_filter_across_tiles_v_enabled);
+  }
+  if (cm->tile_rows > 1) {
+    aom_wb_write_bit(wb, cm->loop_filter_across_tiles_h_enabled);
+  }
+#else
   if (cm->tile_cols * cm->tile_rows > 1)
     aom_wb_write_bit(wb, cm->loop_filter_across_tiles_enabled);
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 }
 

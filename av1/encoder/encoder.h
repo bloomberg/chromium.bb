@@ -265,7 +265,12 @@ typedef struct AV1EncoderConfig {
   int dependent_horz_tiles;
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+  int loop_filter_across_tiles_v_enabled;
+  int loop_filter_across_tiles_h_enabled;
+#else
   int loop_filter_across_tiles_enabled;
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
   int max_threads;

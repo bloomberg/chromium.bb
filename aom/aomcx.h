@@ -553,6 +553,21 @@ enum aome_enc_control_id {
   */
   AV1E_SET_DISABLE_TEMPMV,
 
+  /*!\brief Codec control function to set loop_filter_across_tiles_v_enabled
+   * and loop_filter_across_tiles_h_enabled.
+   * In encoding and decoding, AV1 allows disabling loop filter across tile
+   * boundary The parameter for this control describes the value of this flag,
+   * which has a valid range [0, 1]:
+   *            0 = disable loop filter across tile boundary
+   *            1 = enable loop filter across tile boundary
+   *
+   * By default, the value is 1, i.e. enable loop filter across tile boundary.
+   *
+   * Experiment: LOOPFILTERING_ACROSS_TILES_EXT
+   */
+  AV1E_SET_TILE_LOOPFILTER_V,
+  AV1E_SET_TILE_LOOPFILTER_H,
+
   /*!\brief Codec control function to set loop_filter_across_tiles_enabled.
    *
    * In encoding and decoding, AV1 allows disabling loop filter across tile
@@ -726,6 +741,10 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TILE_ROWS, int)
 AOM_CTRL_USE_TYPE(AV1E_SET_TILE_DEPENDENT_ROWS, int)
 #define AOM_CTRL_AV1E_SET_TILE_DEPENDENT_ROWS
 
+AOM_CTRL_USE_TYPE(AV1E_SET_TILE_LOOPFILTER_V, int)
+#define AOM_CTRL_AV1E_SET_TILE_LOOPFILTER_V
+AOM_CTRL_USE_TYPE(AV1E_SET_TILE_LOOPFILTER_H, int)
+#define AOM_CTRL_AV1E_SET_TILE_LOOPFILTER_H
 AOM_CTRL_USE_TYPE(AV1E_SET_TILE_LOOPFILTER, int)
 #define AOM_CTRL_AV1E_SET_TILE_LOOPFILTER
 

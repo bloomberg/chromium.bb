@@ -279,7 +279,9 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
   return r;
 }
 
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+// this function should only be called when loop_filter_across_tile flag is
+// set to 0
 void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
                                          const TileInfo *const tile_info) {
   if (cm->tile_cols * cm->tile_rows > 1) {
@@ -292,9 +294,14 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
     const int col_diff = tile_info->mi_col_end - tile_info->mi_col_start;
     int row, col;
 
-#if CONFIG_DEPENDENT_HORZTILES
+// when CONFIG_LOOPFILTERING_ACROSS_TILES_EXT is enabled, whether tile
+// is dependent horizontal tile or not is ignored. tile boundary is always
+// initialized based on the actual tile boundary.
+#if CONFIG_DEPENDENT_HORZTILES && !CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     if (!cm->dependent_horz_tiles || tile_info->tg_horz_boundary)
-#endif  // CONFIG_DEPENDENT_HORZTILES
+#elif CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+    if (cm->loop_filter_across_tiles_h_enabled == 0)
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     {
       mi = mi_start;
       for (col = 0; col < col_diff; ++col) {
@@ -303,32 +310,50 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
       }
     }
 
-    mi = mi_start;
-    for (row = 0; row < row_diff; ++row) {
-      mi->mbmi.boundary_info |= TILE_LEFT_BOUNDARY;
-      mi += cm->mi_stride;
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+    if (cm->loop_filter_across_tiles_v_enabled == 0)
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+    {
+      mi = mi_start;
+      for (row = 0; row < row_diff; ++row) {
+        mi->mbmi.boundary_info |= TILE_LEFT_BOUNDARY;
+        mi += cm->mi_stride;
+      }
     }
 
-    mi = mi_start + (row_diff - 1) * cm->mi_stride;
-
-    // explicit bounds checking
-    assert(mi + col_diff <= cm->mip + cm->mi_alloc_size);
-
-    for (col = 0; col < col_diff; ++col) {
-      mi->mbmi.boundary_info |= TILE_BOTTOM_BOUNDARY;
-      mi += 1;
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+    if (cm->loop_filter_across_tiles_h_enabled == 0)
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+    {
+      mi = mi_start + (row_diff - 1) * cm->mi_stride;
+      // explicit bounds checking
+      assert(mi + col_diff <= cm->mip + cm->mi_alloc_size);
+      for (col = 0; col < col_diff; ++col) {
+        mi->mbmi.boundary_info |= TILE_BOTTOM_BOUNDARY;
+        mi += 1;
+      }
     }
 
-    mi = mi_start + col_diff - 1;
-    for (row = 0; row < row_diff; ++row) {
-      mi->mbmi.boundary_info |= TILE_RIGHT_BOUNDARY;
-      mi += cm->mi_stride;
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+    if (cm->loop_filter_across_tiles_v_enabled == 0)
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+    {
+      mi = mi_start + col_diff - 1;
+      for (row = 0; row < row_diff; ++row) {
+        mi->mbmi.boundary_info |= TILE_RIGHT_BOUNDARY;
+        mi += cm->mi_stride;
+      }
     }
-  }
+  }  // end of cm->tile_cols * cm->tile_rows > 1
 }
 
 int av1_disable_loopfilter_on_tile_boundary(const struct AV1Common *cm) {
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+  return ((!cm->loop_filter_across_tiles_v_enabled ||
+           !cm->loop_filter_across_tiles_h_enabled) &&
+#else
   return (!cm->loop_filter_across_tiles_enabled &&
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
           (cm->tile_cols * cm->tile_rows > 1));
 }
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES

@@ -434,8 +434,17 @@ static const arg_def_t tile_dependent_rows =
     ARG_DEF(NULL, "tile-dependent-rows", 1, "Enable dependent Tile rows");
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+static const arg_def_t tile_loopfilter_v =
+    ARG_DEF(NULL, "tile-loopfilter-v", 1,
+            "Enable loop filter across vertical tile boundary");
+static const arg_def_t tile_loopfilter_h =
+    ARG_DEF(NULL, "tile-loopfilter-h", 1,
+            "Enable loop filter across horizontal tile boundary");
+#else
 static const arg_def_t tile_loopfilter = ARG_DEF(
     NULL, "tile-loopfilter", 1, "Enable loop filter across tile boundary");
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 static const arg_def_t lossless =
     ARG_DEF(NULL, "lossless", 1, "Lossless mode (0: false (default), 1: true)");
@@ -579,7 +588,12 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &tile_dependent_rows,
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+                                       &tile_loopfilter_v,
+                                       &tile_loopfilter_h,
+#else
                                        &tile_loopfilter,
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
                                        &arnr_maxframes,
                                        &arnr_strength,
@@ -638,7 +652,12 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_TILE_DEPENDENT_ROWS,
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+                                        AV1E_SET_TILE_LOOPFILTER_V,
+                                        AV1E_SET_TILE_LOOPFILTER_H,
+#else
                                         AV1E_SET_TILE_LOOPFILTER,
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
                                         AOME_SET_ARNR_MAXFRAMES,
                                         AOME_SET_ARNR_STRENGTH,

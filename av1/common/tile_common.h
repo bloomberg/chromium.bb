@@ -54,7 +54,7 @@ typedef struct { int left, top, right, bottom; } AV1PixelRect;
 AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info,
                                const struct AV1Common *cm, int is_uv);
 
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 void av1_setup_across_tile_boundary_info(const struct AV1Common *const cm,
                                          const TileInfo *const tile_info);
 int av1_disable_loopfilter_on_tile_boundary(const struct AV1Common *cm);

@@ -72,7 +72,12 @@ class AVxEncoderThreadTest
     if (!encoder_initialized_) {
       SetTileSize(encoder);
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+      encoder->Control(AV1E_SET_TILE_LOOPFILTER_V, 0);
+      encoder->Control(AV1E_SET_TILE_LOOPFILTER_H, 0);
+#else
       encoder->Control(AV1E_SET_TILE_LOOPFILTER, 0);
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       if (encoding_mode_ != ::libaom_test::kRealTime) {

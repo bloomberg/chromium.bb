@@ -1016,8 +1016,15 @@ static void set_tile_info(AV1_COMP *cpi) {
 #endif
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+  cm->loop_filter_across_tiles_v_enabled =
+      cpi->oxcf.loop_filter_across_tiles_v_enabled;
+  cm->loop_filter_across_tiles_h_enabled =
+      cpi->oxcf.loop_filter_across_tiles_h_enabled;
+#else
   cm->loop_filter_across_tiles_enabled =
       cpi->oxcf.loop_filter_across_tiles_enabled;
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 }
 

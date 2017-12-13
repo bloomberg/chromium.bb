@@ -285,6 +285,7 @@ EXPERIMENT_LIST="
     parallel_deblocking
     deblock_13tap
     loopfiltering_across_tiles
+    loopfiltering_across_tiles_ext
     tempmv_signaling
     rd_debug
     reference_buffer
@@ -550,6 +551,7 @@ post_process_cmdline() {
     enabled loopfilter_level && enable_feature ext_delta_q
     enabled striped_loop_restoration && enable_feature loop_restoration
     enabled adapt_scan && enable_feature lv_map
+    enabled loopfiltering_across_tiles_ext && enable_feature loopfiltering_across_tiles
 
     soft_enable daala_tx_dst32
 

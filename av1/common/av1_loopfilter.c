@@ -1018,7 +1018,7 @@ static void build_y_mask(AV1_COMMON *const cm,
     *int_4x4_y |= (size_mask[block_size] & 0xffffffffffffffffULL) << shift_y;
 }
 
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 // This function update the bit masks for the entire 64x64 region represented
 // by mi_row, mi_col. In case one of the edge is a tile boundary, loop filtering
 // for that edge is disabled. This function only check the tile boundary info
@@ -1281,7 +1281,7 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
     }
   }
 
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
   if (av1_disable_loopfilter_on_tile_boundary(cm)) {
     update_tile_boundary_filter_mask(cm, mi_row, mi_col, lfm);
   }
@@ -1595,7 +1595,7 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
 
     // Disable filtering on the leftmost column or tile boundary
     unsigned int border_mask = ~(mi_col == 0 ? 1 : 0);
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     MODE_INFO *const mi = cm->mi + (mi_row + idx_r) * cm->mi_stride + mi_col;
     if (av1_disable_loopfilter_on_tile_boundary(cm) &&
         ((mi->mbmi.boundary_info & TILE_LEFT_BOUNDARY) != 0)) {
@@ -1643,7 +1643,7 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
                                       &lfl[r][0], &mask_4x4_int, NULL,
                                       &row_masks, NULL);
 
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     // Disable filtering on the abovemost row or tile boundary
     const MODE_INFO *mi = cm->mi + (mi_row + idx_r) * cm->mi_stride + mi_col;
     if ((av1_disable_loopfilter_on_tile_boundary(cm) &&
@@ -2111,13 +2111,15 @@ static void set_lpf_parameters(
     uint32_t level = curr_level;
     // prepare outer edge parameters. deblock the edge if it's an edge of a TU
     if (coord) {
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
+#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
       MODE_INFO *const mi_bound = cm->mi + mi_row * cm->mi_stride + mi_col;
-      if (!av1_disable_loopfilter_on_tile_boundary(cm) ||
-          ((VERT_EDGE == edge_dir) &&
-           (0 == (mi_bound->mbmi.boundary_info & TILE_LEFT_BOUNDARY))) ||
-          ((HORZ_EDGE == edge_dir) &&
-           (0 == (mi_bound->mbmi.boundary_info & TILE_ABOVE_BOUNDARY))))
+      // here, assuming bounfary_info is set correctly based on the
+      // loop_filter_across_tiles_enabled flag, i.e, tile boundary should
+      // only be set to true when this flag is set to 0.
+      int left_boundary = (mi_bound->mbmi.boundary_info & TILE_LEFT_BOUNDARY);
+      int top_boundary = (mi_bound->mbmi.boundary_info & TILE_ABOVE_BOUNDARY);
+      if (((VERT_EDGE == edge_dir) && (0 == left_boundary)) ||
+          ((HORZ_EDGE == edge_dir) && (0 == top_boundary)))
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
       {
         const int32_t tu_edge =
