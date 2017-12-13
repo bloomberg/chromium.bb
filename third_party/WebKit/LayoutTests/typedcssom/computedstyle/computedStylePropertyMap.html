@@ -11,9 +11,10 @@ var computedStyle = getComputedStyle(testElement);
 
 test(function() {
   var properties = computedStyleMap.getProperties();
+  var computedStyleProperties = [...computedStyle].sort();
   assert_equals(properties.length, computedStyle.length);
   for (var i = 0; i < computedStyle.length; ++i) {
-    assert_equals(properties[i], computedStyle[i]);
+    assert_equals(properties[i], computedStyleProperties[i]);
   }
 }, "Computed StyleMap.getProperties returns the same list of property names as ComputedStyle");
 

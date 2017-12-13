@@ -34,6 +34,10 @@ class FilteredComputedStylePropertyMapTest : public PageTestBase {
 };
 
 TEST_F(FilteredComputedStylePropertyMapTest, GetProperties) {
+  GetDocument().documentElement()->SetInnerHTMLFromString(
+      "<div id='test' style='--foo: 1; --bar: banana'></div>");
+  Element* test_element = GetDocument().getElementById("test");
+
   Vector<CSSPropertyID> native_properties(
       {CSSPropertyColor, CSSPropertyAlignItems});
   Vector<CSSPropertyID> empty_native_properties;
@@ -41,20 +45,24 @@ TEST_F(FilteredComputedStylePropertyMapTest, GetProperties) {
   Vector<AtomicString> empty_custom_properties;
 
   FilteredComputedStylePropertyMap* map =
-      FilteredComputedStylePropertyMap::Create(PageNode(), native_properties,
+      FilteredComputedStylePropertyMap::Create(test_element, native_properties,
                                                custom_properties);
   EXPECT_TRUE(map->getProperties().Contains("color"));
   EXPECT_TRUE(map->getProperties().Contains("align-items"));
   EXPECT_TRUE(map->getProperties().Contains("--foo"));
   EXPECT_TRUE(map->getProperties().Contains("--bar"));
 
-  map = FilteredComputedStylePropertyMap::Create(PageNode(), native_properties,
-                                                 empty_custom_properties);
+  map = FilteredComputedStylePropertyMap::Create(
+      test_element, native_properties, empty_custom_properties);
   EXPECT_TRUE(map->getProperties().Contains("color"));
   EXPECT_TRUE(map->getProperties().Contains("align-items"));
+  EXPECT_FALSE(map->getProperties().Contains("--foo"));
+  EXPECT_FALSE(map->getProperties().Contains("--bar"));
 
   map = FilteredComputedStylePropertyMap::Create(
-      PageNode(), empty_native_properties, custom_properties);
+      test_element, empty_native_properties, custom_properties);
+  EXPECT_FALSE(map->getProperties().Contains("color"));
+  EXPECT_FALSE(map->getProperties().Contains("align-items"));
   EXPECT_TRUE(map->getProperties().Contains("--foo"));
   EXPECT_TRUE(map->getProperties().Contains("--bar"));
 }

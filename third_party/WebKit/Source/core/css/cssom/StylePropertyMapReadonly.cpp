@@ -5,9 +5,13 @@
 #include "core/css/cssom/StylePropertyMapReadonly.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/CSSPropertyNames.h"
+#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css/cssom/CSSUnparsedValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
+#include "core/css/properties/CSSProperty.h"
 
 namespace blink {
 
@@ -46,6 +50,12 @@ class StylePropertyMapIterationSource final
   const HeapVector<StylePropertyMapReadonly::StylePropertyMapEntry> values_;
 };
 
+bool ComparePropertyNames(const String& a, const String& b) {
+  if (a.StartsWith("--") == b.StartsWith("--"))
+    return WTF::CodePointCompareLessThan(a, b);
+  return b.StartsWith("--");
+}
+
 }  // namespace
 
 CSSStyleValue* StylePropertyMapReadonly::get(const String& property_name,
@@ -78,9 +88,45 @@ bool StylePropertyMapReadonly::has(const String& property_name,
   return !getAll(property_name, exception_state).IsEmpty();
 }
 
+Vector<String> StylePropertyMapReadonly::getProperties() {
+  Vector<String> result;
+
+  ForEachProperty([&result](const String& name, const CSSValue&) {
+    result.push_back(name);
+  });
+
+  std::sort(result.begin(), result.end(), ComparePropertyNames);
+  return result;
+}
+
 StylePropertyMapReadonly::IterationSource*
 StylePropertyMapReadonly::StartIteration(ScriptState*, ExceptionState&) {
-  return new StylePropertyMapIterationSource(GetIterationEntries());
+  HeapVector<StylePropertyMapReadonly::StylePropertyMapEntry> result;
+
+  ForEachProperty([&result](const String& property_name,
+                            const CSSValue& css_value) {
+    const auto property_id = cssPropertyID(property_name);
+    CSSStyleValueOrCSSStyleValueSequence value;
+    if (property_id == CSSPropertyVariable) {
+      const CSSCustomPropertyDeclaration& decl =
+          ToCSSCustomPropertyDeclaration(css_value);
+      DCHECK(decl.Value());
+      value.SetCSSStyleValue(CSSUnparsedValue::FromCSSValue(*decl.Value()));
+    } else {
+      auto style_value_vector =
+          StyleValueFactory::CssValueToStyleValueVector(property_id, css_value);
+      if (style_value_vector.size() == 1)
+        value.SetCSSStyleValue(style_value_vector[0]);
+      else
+        value.SetCSSStyleValueSequence(style_value_vector);
+    }
+    result.emplace_back(property_name, value);
+  });
+
+  std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) {
+    return ComparePropertyNames(a.first, b.first);
+  });
+  return new StylePropertyMapIterationSource(result);
 }
 
 }  // namespace blink

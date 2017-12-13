@@ -4,27 +4,11 @@
 
 #include "core/css/cssom/InlineStylePropertyMap.h"
 
-#include "bindings/core/v8/Iterable.h"
-#include "core/CSSPropertyNames.h"
-#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/MutableCSSPropertyValueSet.h"
-#include "core/css/cssom/CSSUnparsedValue.h"
-#include "core/css/cssom/StyleValueFactory.h"
-#include "core/css/properties/CSSProperty.h"
 
 namespace blink {
-
-namespace {
-bool CompareProperties(const StylePropertyMap::StylePropertyMapEntry a,
-                       const StylePropertyMap::StylePropertyMapEntry b) {
-  if (a.first.StartsWith("--") == b.first.StartsWith("--"))
-    return WTF::CodePointCompareLessThan(a.first, b.first);
-  return b.first.StartsWith("--");
-}
-};  // namespace
 
 const CSSValue* InlineStylePropertyMap::GetProperty(CSSPropertyID property_id) {
   return owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
@@ -37,25 +21,6 @@ const CSSValue* InlineStylePropertyMap::GetCustomProperty(
       property_name);
 }
 
-Vector<String> InlineStylePropertyMap::getProperties() {
-  Vector<String> result;
-  CSSPropertyValueSet& inline_style_set =
-      owner_element_->EnsureMutableInlineStyle();
-  for (unsigned i = 0; i < inline_style_set.PropertyCount(); i++) {
-    CSSPropertyID property_id = inline_style_set.PropertyAt(i).Id();
-    if (property_id == CSSPropertyVariable) {
-      CSSPropertyValueSet::PropertyReference property_reference =
-          inline_style_set.PropertyAt(i);
-      const CSSCustomPropertyDeclaration& custom_declaration =
-          ToCSSCustomPropertyDeclaration(property_reference.Value());
-      result.push_back(custom_declaration.GetName());
-    } else {
-      result.push_back(getPropertyNameString(property_id));
-    }
-  }
-  return result;
-}
-
 void InlineStylePropertyMap::SetProperty(CSSPropertyID property_id,
                                          const CSSValue* value) {
   owner_element_->SetInlineStyleProperty(property_id, value);
@@ -65,37 +30,21 @@ void InlineStylePropertyMap::RemoveProperty(CSSPropertyID property_id) {
   owner_element_->RemoveInlineStyleProperty(property_id);
 }
 
-HeapVector<StylePropertyMap::StylePropertyMapEntry>
-InlineStylePropertyMap::GetIterationEntries() {
-  HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
+void InlineStylePropertyMap::ForEachProperty(
+    const IterationCallback& callback) {
   CSSPropertyValueSet& inline_style_set =
       owner_element_->EnsureMutableInlineStyle();
   for (unsigned i = 0; i < inline_style_set.PropertyCount(); i++) {
-    CSSPropertyValueSet::PropertyReference property_reference =
-        inline_style_set.PropertyAt(i);
-    CSSPropertyID property_id = property_reference.Id();
-    String name;
-    CSSStyleValueOrCSSStyleValueSequence value;
-    if (property_id == CSSPropertyVariable) {
-      const CSSCustomPropertyDeclaration& decl =
+    const auto& property_reference = inline_style_set.PropertyAt(i);
+    if (property_reference.Id() == CSSPropertyVariable) {
+      const auto& decl =
           ToCSSCustomPropertyDeclaration(property_reference.Value());
-      name = decl.GetName();
-      DCHECK(decl.Value());
-      value.SetCSSStyleValue(CSSUnparsedValue::FromCSSValue(*decl.Value()));
+      callback(decl.GetName(), property_reference.Value());
     } else {
-      name = getPropertyNameString(property_id);
-      CSSStyleValueVector style_value_vector =
-          StyleValueFactory::CssValueToStyleValueVector(
-              property_id, property_reference.Value());
-      if (style_value_vector.size() == 1)
-        value.SetCSSStyleValue(style_value_vector[0]);
-      else
-        value.SetCSSStyleValueSequence(style_value_vector);
+      callback(getPropertyNameAtomicString(property_reference.Id()),
+               property_reference.Value());
     }
-    result.push_back(std::make_pair(name, value));
   }
-  std::sort(result.begin(), result.end(), CompareProperties);
-  return result;
 }
 
 }  // namespace blink

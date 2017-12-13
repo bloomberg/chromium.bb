@@ -21,8 +21,8 @@ class CORE_EXPORT StylePropertyMapReadonly
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  typedef std::pair<String, CSSStyleValueOrCSSStyleValueSequence>
-      StylePropertyMapEntry;
+  using StylePropertyMapEntry =
+      std::pair<String, CSSStyleValueOrCSSStyleValueSequence>;
 
   virtual ~StylePropertyMapReadonly() = default;
 
@@ -30,7 +30,7 @@ class CORE_EXPORT StylePropertyMapReadonly
   CSSStyleValueVector getAll(const String& property_name, ExceptionState&);
   bool has(const String& property_name, ExceptionState&);
 
-  virtual Vector<String> getProperties() = 0;
+  Vector<String> getProperties();
 
  protected:
   StylePropertyMapReadonly() = default;
@@ -38,7 +38,11 @@ class CORE_EXPORT StylePropertyMapReadonly
   virtual const CSSValue* GetProperty(CSSPropertyID) = 0;
   virtual const CSSValue* GetCustomProperty(AtomicString) = 0;
 
-  virtual HeapVector<StylePropertyMapEntry> GetIterationEntries() = 0;
+  using IterationCallback =
+      std::function<void(const AtomicString&, const CSSValue&)>;
+  virtual void ForEachProperty(const IterationCallback&) = 0;
+
+ private:
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
  private:

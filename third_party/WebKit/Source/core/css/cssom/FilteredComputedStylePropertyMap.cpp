@@ -4,6 +4,8 @@
 
 #include "core/css/cssom/FilteredComputedStylePropertyMap.h"
 
+#include "core/css/CSSCustomPropertyDeclaration.h"
+
 namespace blink {
 
 FilteredComputedStylePropertyMap::FilteredComputedStylePropertyMap(
@@ -36,17 +38,30 @@ const CSSValue* FilteredComputedStylePropertyMap::GetCustomProperty(
   return ComputedStylePropertyMap::GetCustomProperty(property_name);
 }
 
-Vector<String> FilteredComputedStylePropertyMap::getProperties() {
-  Vector<String> result;
-  for (const auto& native_property : native_properties_) {
-    result.push_back(getPropertyNameString(native_property));
+void FilteredComputedStylePropertyMap::ForEachProperty(
+    const IterationCallback& callback) {
+  // FIXME: We should be filtering out properties from ComputedStylePropertyMap,
+  // but native_properties_ may contain invalid properties (e.g. shorthands).
+  // The correct behaviour would be to ignore invalid properties, but there
+  // are a few tests that rely on this.
+  for (const auto property_id : native_properties_) {
+    const CSSValue* value = GetProperty(property_id);
+    if (value)
+      callback(getPropertyNameAtomicString(property_id), *value);
   }
 
-  for (const auto& custom_property : custom_properties_) {
-    result.push_back(custom_property);
+  for (const auto& name : custom_properties_) {
+    const CSSValue* value = GetCustomProperty(name);
+    // FIXME: If custom_properties_ contains an invalid custom property, the
+    // current behaviour is to treat it as valid. The best we can do here is
+    // returning a dummy 'initial' value until we fix this.
+    if (value) {
+      callback(name, *value);
+    } else {
+      callback(name,
+               *CSSCustomPropertyDeclaration::Create(name, CSSValueInitial));
+    }
   }
-
-  return result;
 }
 
 }  // namespace blink
