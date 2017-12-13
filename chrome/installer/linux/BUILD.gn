@@ -61,6 +61,8 @@ packaging_files = packaging_files_binaries + [
                     "$root_out_dir/xdg-mime",
                     "$root_out_dir/xdg-settings",
                     "$root_out_dir/locales/en-US.pak",
+                    "$root_out_dir/MEIPreload/manifest.json",
+                    "$root_out_dir/MEIPreload/preloaded_data.pb",
                   ]
 
 action_foreach("calculate_deb_dependencies") {
@@ -348,6 +350,7 @@ group("installer_deps") {
     ":theme_files",
     "//chrome",
     "//chrome:packed_resources",
+    "//chrome/browser/resources/media/mei_preload:component",
     "//sandbox/linux:chrome_sandbox",
   ]
   if (enable_nacl) {

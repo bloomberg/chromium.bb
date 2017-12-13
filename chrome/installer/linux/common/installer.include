@@ -185,6 +185,13 @@ stage_install_common() {
     cp -a '{}' "${STAGEDIR}/${INSTALLDIR}/locales/" \;
   find "${STAGEDIR}/${INSTALLDIR}/locales" -type f -exec chmod 644 '{}' \;
 
+  # MEI Preload
+  if [ -f "${BUILDDIR}/MEIPreload/manifest.json" ]; then
+    install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/MEIPreload/"
+    install -m 644 "${BUILDDIR}/MEIPreload/manifest.json" "${STAGEDIR}/${INSTALLDIR}/MEIPreload/"
+    install -m 644 "${BUILDDIR}/MEIPreload/preloaded_data.pb" "${STAGEDIR}/${INSTALLDIR}/MEIPreload/"
+  fi
+
   # Widevine CDM.
   if [ -f "${BUILDDIR}/libwidevinecdmadapter.so" ]; then
     install -m ${SHLIB_PERMS} -s "${BUILDDIR}/libwidevinecdmadapter.so" "${STAGEDIR}/${INSTALLDIR}/"
