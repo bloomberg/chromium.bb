@@ -237,6 +237,33 @@ ImageData* ImageData::Create(const IntSize& size,
   return data_array ? new ImageData(size, data_array, color_settings) : nullptr;
 }
 
+ImageDataColorSettings CanvasColorParamsToImageDataColorSettings(
+    const CanvasColorParams& color_params) {
+  ImageDataColorSettings color_settings;
+  switch (color_params.ColorSpace()) {
+    case kSRGBCanvasColorSpace:
+      color_settings.setColorSpace(kSRGBCanvasColorSpaceName);
+      break;
+    case kRec2020CanvasColorSpace:
+      color_settings.setColorSpace(kRec2020CanvasColorSpaceName);
+      break;
+    case kP3CanvasColorSpace:
+      color_settings.setColorSpace(kP3CanvasColorSpaceName);
+      break;
+  }
+  color_settings.setStorageFormat(kUint8ClampedArrayStorageFormatName);
+  if (color_params.PixelFormat() == kF16CanvasPixelFormat)
+    color_settings.setStorageFormat(kFloat32ArrayStorageFormatName);
+  return color_settings;
+}
+
+ImageData* ImageData::Create(const IntSize& size,
+                             const CanvasColorParams& color_params) {
+  ImageDataColorSettings color_settings =
+      CanvasColorParamsToImageDataColorSettings(color_params);
+  return ImageData::Create(size, &color_settings);
+}
+
 ImageData* ImageData::Create(const IntSize& size,
                              CanvasColorSpace color_space,
                              ImageDataStorageFormat storage_format) {
@@ -276,6 +303,100 @@ ImageData* ImageData::Create(const IntSize& size,
                                                color_settings))
     return nullptr;
   return new ImageData(size, data_array.View(), color_settings);
+}
+
+static SkImageInfo GetImageInfo(scoped_refptr<StaticBitmapImage> image) {
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
+  SkColorType color_type = kN32_SkColorType;
+  if (skia_image->colorSpace() && skia_image->colorSpace()->gammaIsLinear())
+    color_type = kRGBA_F16_SkColorType;
+  return SkImageInfo::Make(skia_image->width(), skia_image->height(),
+                           color_type, skia_image->alphaType(),
+                           skia_image->refColorSpace());
+}
+
+ImageData* ImageData::Create(scoped_refptr<StaticBitmapImage> image,
+                             AlphaDisposition alpha_disposition) {
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
+  DCHECK(skia_image);
+  SkImageInfo image_info = GetImageInfo(image);
+  CanvasColorParams color_params(image_info);
+  bool premul_needed = (image_info.alphaType() == kUnpremul_SkAlphaType) &&
+                       (alpha_disposition == kPremultiplyAlpha);
+  bool unpremul_needed = (image_info.alphaType() == kPremul_SkAlphaType) &&
+                         (alpha_disposition == kUnpremultiplyAlpha);
+
+  if (image_info.colorType() != kRGBA_F16_SkColorType) {
+    ImageData* image_data = Create(image->Size(), color_params);
+    if (!image_data)
+      return nullptr;
+    image_info = image_info.makeColorType(kRGBA_8888_SkColorType);
+    if (premul_needed)
+      image_info = image_info.makeAlphaType(kPremul_SkAlphaType);
+    else if (unpremul_needed)
+      image_info = image_info.makeAlphaType(kUnpremul_SkAlphaType);
+    skia_image->readPixels(image_info, image_data->data()->Data(),
+                           image_info.minRowBytes(), 0, 0);
+    return image_data;
+  }
+
+  skia_image = skia_image->makeNonTextureImage();
+  SkPixmap pixmap;
+  if (!skia_image->peekPixels(&pixmap)) {
+    DCHECK(false);
+    return nullptr;
+  }
+
+  // If alpha_disposition is kDontChangeAlpha or it mathces the alpha type of
+  // the input image, we don't need to do anything.
+  // If alpha_disposition is kPremultiplyAlpha and image is unpremul, we can do
+  // premul while converting half float to float 32 in SkColorSpacXform::apply.
+  // If alpha_disposition is kUnpremultiplyAlpha and image is premul, we can't
+  // do unpremul in SkColorSpaceXform::apply. Hence, we need to unpremul the
+  // pixmap beforehand.
+  SkAlphaType xform_alpha_type = kUnpremul_SkAlphaType;  // doesn't touch alpha
+  DOMUint16Array* f16_array = nullptr;
+  if (premul_needed) {
+    xform_alpha_type = kPremul_SkAlphaType;
+  } else if (unpremul_needed) {
+    image_info = image_info.makeAlphaType(kUnpremul_SkAlphaType);
+    f16_array = ImageData::AllocateAndValidateUint16Array(
+        image->width() * image->height() * 4, nullptr);
+    if (!f16_array)
+      return nullptr;
+    if (!pixmap.readPixels(image_info, f16_array->Data(),
+                           image_info.minRowBytes(), 0, 0,
+                           SkTransferFunctionBehavior::kIgnore)) {
+      NOTREACHED();
+      return nullptr;
+    }
+    pixmap.reset(image_info, f16_array->Data(), image_info.minRowBytes());
+  }
+
+  // If the input image uses half float storage, we need to convert the pixels
+  // to float32. Since SkColorType does not support float 32, we have to use
+  // SkColorSpaceXform for this conversion.
+  DOMFloat32Array* f32_array = ImageData::AllocateAndValidateFloat32Array(
+      image->width() * image->height() * 4, nullptr);
+  if (!f32_array)
+    return nullptr;
+
+  SkColorSpaceXform::ColorFormat src_color_format =
+      SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+  SkColorSpaceXform::ColorFormat dst_color_format =
+      SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
+  std::unique_ptr<SkColorSpaceXform> xform =
+      SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
+                             SkColorSpace::MakeSRGBLinear().get());
+  bool color_converison_successful = xform->apply(
+      dst_color_format, f32_array->Data(), src_color_format, pixmap.addr(),
+      image->width() * image->height(), xform_alpha_type);
+  DCHECK(color_converison_successful);
+
+  ImageDataColorSettings color_settings =
+      CanvasColorParamsToImageDataColorSettings(color_params);
+  return Create(image->Size(), NotShared<blink::DOMArrayBufferView>(f32_array),
+                &color_settings);
 }
 
 ImageData* ImageData::Create(unsigned width,

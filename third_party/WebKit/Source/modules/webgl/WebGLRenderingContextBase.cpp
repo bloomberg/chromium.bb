@@ -5453,7 +5453,7 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
     pixel_data_ptr = static_cast<uint8_t*>(pixmap.writable_addr());
   } else {
     pixel_data = bitmap->CopyBitmapData(
-        bitmap->IsPremultiplied() ? kPremultiplyAlpha : kDontPremultiplyAlpha);
+        bitmap->IsPremultiplied() ? kPremultiplyAlpha : kUnpremultiplyAlpha);
     pixel_data_ptr = pixel_data->Data();
   }
   Vector<uint8_t> data;

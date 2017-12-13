@@ -254,6 +254,9 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
 scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
     scoped_refptr<StaticBitmapImage>&& image,
     AlphaDisposition alpha_disposition) {
+  DCHECK(alpha_disposition != kDontChangeAlpha);
+  if (alpha_disposition == kDontChangeAlpha)
+    return image;
   SkAlphaType alpha_type = (alpha_disposition == kPremultiplyAlpha)
                                ? kPremul_SkAlphaType
                                : kUnpremul_SkAlphaType;
@@ -360,7 +363,7 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
       !ShouldAvoidPremul(parsed_options) ||
       parsed_options.resize_quality != kHigh_SkFilterQuality) {
     auto sk_image = image->PaintImageForCurrentFrame().GetSkImage();
-    AlphaDisposition alpha_disposition = kDontPremultiplyAlpha;
+    AlphaDisposition alpha_disposition = kDontChangeAlpha;
     if (image_info.alphaType() == kUnpremul_SkAlphaType &&
         !ShouldAvoidPremul(parsed_options))
       alpha_disposition = kPremultiplyAlpha;
@@ -406,9 +409,9 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
 
   // resize
   auto resized_rgb_image =
-      ScaleSkImage(rgb_image, parsed_options, kDontPremultiplyAlpha);
+      ScaleSkImage(rgb_image, parsed_options, kDontChangeAlpha);
   auto resized_alpha_image =
-      ScaleSkImage(alpha_image, parsed_options, kDontPremultiplyAlpha);
+      ScaleSkImage(alpha_image, parsed_options, kDontChangeAlpha);
 
   // Merge two resized rgb and alpha SkImages together.
   // A better solution would be using SkImageFilter and SkBlendMode to merge
@@ -589,7 +592,7 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   result = GetImageWithAlphaDisposition(std::move(result),
                                         parsed_options.premultiply_alpha
                                             ? kPremultiplyAlpha
-                                            : kDontPremultiplyAlpha);
+                                            : kUnpremultiplyAlpha);
 
   return result;
 }
@@ -752,7 +755,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
           parsed_options.color_params.PixelFormat(), image_pixels->Data(),
           kN32ColorType, &src_rect,
           parsed_options.premultiply_alpha ? kPremultiplyAlpha
-                                           : kDontPremultiplyAlpha))
+                                           : kUnpremultiplyAlpha))
     return;
 
   // Create Image object
@@ -919,8 +922,7 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
       StaticBitmapImage::Create(std::move(skia_image));
   DCHECK(IsMainThread());
   if (!parsed_options->premultiply_alpha) {
-    image =
-        GetImageWithAlphaDisposition(std::move(image), kDontPremultiplyAlpha);
+    image = GetImageWithAlphaDisposition(std::move(image), kUnpremultiplyAlpha);
   }
   if (!image) {
     resolver->Reject(
@@ -1053,6 +1055,7 @@ CanvasColorParams ImageBitmap::GetCanvasColorParams() {
 scoped_refptr<Uint8Array> ImageBitmap::CopyBitmapData(
     AlphaDisposition alpha_op,
     DataU8ColorType u8_color_type) {
+  DCHECK(alpha_op != kDontChangeAlpha);
   SkImageInfo info = GetSkImageInfo(image_);
   auto color_type = info.colorType();
   if (color_type == kN32_SkColorType && u8_color_type == kRGBAColorType)

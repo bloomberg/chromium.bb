@@ -40,6 +40,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasColorParams.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/Compiler.h"
@@ -71,12 +72,15 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
  public:
   static ImageData* Create(const IntSize&,
                            const ImageDataColorSettings* = nullptr);
+  static ImageData* Create(const IntSize&, const CanvasColorParams&);
   static ImageData* Create(const IntSize&,
                            CanvasColorSpace,
                            ImageDataStorageFormat);
   static ImageData* Create(const IntSize&,
                            NotShared<DOMArrayBufferView>,
                            const ImageDataColorSettings* = nullptr);
+  static ImageData* Create(scoped_refptr<StaticBitmapImage>,
+                           AlphaDisposition = kDontChangeAlpha);
 
   static ImageData* Create(unsigned width, unsigned height, ExceptionState&);
   static ImageData* Create(NotShared<DOMUint8ClampedArray>,
@@ -144,7 +148,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
       unsigned char* converted_pixels,
       DataU8ColorType,
       const IntRect* = nullptr,
-      const AlphaDisposition = kDontPremultiplyAlpha);
+      const AlphaDisposition = kUnpremultiplyAlpha);
 
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override { return size_; }

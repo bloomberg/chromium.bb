@@ -37,7 +37,8 @@ namespace blink {
 
 enum AlphaDisposition {
   kPremultiplyAlpha,
-  kDontPremultiplyAlpha,
+  kUnpremultiplyAlpha,
+  kDontChangeAlpha,
 };
 
 enum DataU8ColorType {
