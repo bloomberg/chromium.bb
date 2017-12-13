@@ -9,7 +9,7 @@
 
             function start()
             {
-                setSrcByTagName("video", "content/test.ogv");
+                setSrcByTagName("video", findMediaFile("video", "content/test"));
                 video = document.getElementsByTagName('video')[0];
                 video.load();
                 video.play();

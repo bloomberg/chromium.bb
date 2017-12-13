@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <title>Tests that removing an active cue does not crash the browser.</title>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 
     // Add a text track to the video element.
     video.addTextTrack("captions", "regular captions track", "en");

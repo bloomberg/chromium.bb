@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that line height of cue element isn't overridden by author CSS.</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -12,7 +13,7 @@ body { line-height: 108px; }
 <script>
 async_test(function(t) {
     var video = document.querySelector('video');
-    video.src = '../content/test.ogv';
+    video.src = findMediaFile('video', '../content/test');
 
     video.onseeked = t.step_func_done(function() {
         var multiLineCueDisplayElement = textTrackDisplayElement(video);

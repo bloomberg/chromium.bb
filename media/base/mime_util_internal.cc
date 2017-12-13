@@ -518,6 +518,25 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
   return AreSupportedCodecs(parsed_results, mime_type_lower_case, is_encrypted);
 }
 
+void MimeUtil::RemoveProprietaryMediaTypesAndCodecs() {
+  for (const auto& container : proprietary_media_containers_)
+    media_format_map_.erase(container);
+
+  // TODO(chcunningham): Delete this hack (really this whole test-only method).
+  // This is done as short term workaround for LayoutTests to pass. MP4 is no
+  // longer proprietary, but may still contain proprietary codecs (e.g. AVC).
+  // Many  layout tests only check for container support and may break (absent
+  // this  hack) if run on a non-proprietary build. This mess is being fixed in
+  // https://chromium-review.googlesource.com/c/chromium/src/+/807604
+  media_format_map_.erase("video/mp4");
+  media_format_map_.erase("audio/mp4");
+  media_format_map_.erase("audio/mpeg");
+  media_format_map_.erase("audio/mp3");
+  media_format_map_.erase("audio/x-mp3");
+
+  allow_proprietary_codecs_ = false;
+}
+
 // static
 bool MimeUtil::IsCodecSupportedOnAndroid(
     Codec codec,

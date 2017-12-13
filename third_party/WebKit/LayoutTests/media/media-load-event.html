@@ -2,6 +2,7 @@
 <title>Test that media file is not reloaded when an element is inserted into the DOM.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <div id="parent"></div>
 <script>
 async_test(function(t) {
@@ -19,7 +20,7 @@ async_test(function(t) {
     audio.onplay = t.step_func(function() {});
     audio.onloadeddata = t.step_func(function() {});
 
-    audio.src = "content/test.oga";
+    audio.src = findMediaFile("audio", "content/test");
     audio.load();
 })
 </script>

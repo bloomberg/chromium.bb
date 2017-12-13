@@ -2,11 +2,12 @@
 <title>Tests that the media player will send the relevant cookies when requesting the media file.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
 <body>
 <video></video>
 <script>
 async_test(function(t) {
-    var movie = "resources/test.ogv";
+    var movie = findMediaFile("video", "resources/test");
     var frame = document.createElement("iframe");
     document.body.appendChild(frame);
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that cue text is mutable.</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -67,6 +68,6 @@ async_test(function(t) {
         t.done();
     }
 
-    video.src = "../content/counting.ogv";
+    video.src = findMediaFile("video", "../content/counting");
 });
 </script>

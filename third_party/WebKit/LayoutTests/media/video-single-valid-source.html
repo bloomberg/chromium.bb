@@ -2,6 +2,7 @@
 <title>Test that a single valid "source" element loads correctly.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -9,7 +10,7 @@ async_test(function(t) {
 
     // The first source should load.
     var source = document.createElement("source");
-    source.src = "content/test.ogv";;
+    source.src = findMediaFile("video", "content/test");;
     video.appendChild(source);
 
     // The second source is bogus and won't load, but it should never be processed.

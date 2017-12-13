@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that the cue is styled properly throughout its lifetime.</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -14,9 +15,9 @@ async_test(function(t) {
     var step = 0.4;
     var initialTime = 0.6;
     var endTime = 3.0
-
+    
     var video = document.querySelector('video');
-    video.src = '../content/test.ogv';
+    video.src = findMediaFile('video', '../content/test');
 
     var track = document.createElement('track');
     track.src = 'captions-webvtt/styling-lifetime.vtt';
@@ -38,7 +39,7 @@ async_test(function(t) {
         else
             video.currentTime = seekTime;
     });
-
+    
     video.currentTime = initialTime;
 });
 </script>

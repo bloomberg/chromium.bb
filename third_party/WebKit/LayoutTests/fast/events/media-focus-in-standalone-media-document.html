@@ -2,11 +2,12 @@
 <title>This tests that  media element in a standalone media document cannot be focused directly using focus() method or by mouse click.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../media/media-file.js"></script>
 <iframe width="380" height="330"></iframe>
 <script>
 async_test(function(t) {
     var iframe = document.querySelector("iframe");
-    iframe.src = "../../media/" + "content/test.ogv";
+    iframe.src = "../../media/" + findMediaFile("video", "content/test");
 
     iframe.onload = t.step_func(function() {
         var standaloneMediaDocument = iframe.contentDocument;

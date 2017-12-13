@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<title>Test HTMLMediaElement's "canPlayType" method with invalid MIME types.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video></video>
+<script>
+test(function() {
+    var video = document.querySelector("video");
+
+    assert_throws(new TypeError, function() { video.canPlayType(); });
+    assert_equals(video.canPlayType("video/"), "");
+    assert_equals(video.canPlayType("video/blahblah"), "");
+    assert_equals(video.canPlayType("video/blahblah; codecs=\"blah,  , blah\""), "");
+    assert_equals(video.canPlayType("video/blahblah; codecs=blah"), "");
+    assert_equals(video.canPlayType("video/blahblah; codecs=\"blah\""), "");
+    assert_equals(video.canPlayType("video/blahblah; codecs=\"badcontent"), "");
+    assert_equals(video.canPlayType("video/blahblah; codecs=badcontent\""), "");
+    assert_equals(video.canPlayType("video/blahblah; codecs=&quot;badcontent&quot;"), "");
+});
+</script>

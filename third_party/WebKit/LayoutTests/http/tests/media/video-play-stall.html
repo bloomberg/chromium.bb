@@ -126,7 +126,7 @@ async_test(t => {
 
 
     // Find a supported media file.
-    var mediaFile = "content/test.ogv";
+    var mediaFile = findMediaFile("video", "content/test");
     var mimeType = mimeTypeForFile(mediaFile);
     // URL will load part of the file, pause for 8 seconds, then load the rest.
     // The delay of 8 seconds is chosen to reduce flakiness in waiting for the

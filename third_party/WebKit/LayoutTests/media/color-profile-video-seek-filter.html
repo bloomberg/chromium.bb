@@ -38,7 +38,7 @@ window.onload = function() {
     video.pause();
   }, false);
 
-  setSrcByTagName('video', 'content/test.ogv');
+  setSrcByTagName('video', findMediaFile('video', 'content/test'));
   seek(video, 1.0);
 };
 

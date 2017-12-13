@@ -2,11 +2,12 @@
 <title>Box-less VTTCue attached to VTTRegion should not crash</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../media-file.js"></script>
 <video></video>
 <script>
 setup(function() {
   window.video = document.querySelector('video');
-  video.src = '../../content/test.ogv';
+  video.src = findMediaFile('video', '../../content/test');
 });
 async_test(function(t) {
   let track = video.addTextTrack('subtitles');

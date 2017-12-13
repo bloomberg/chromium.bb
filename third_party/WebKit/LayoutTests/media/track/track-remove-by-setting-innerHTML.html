@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>This test makes sure that removing a track by setting video.innerHTML doesn't crash (https://bugs.webkit.org/show_bug.cgi?id=100981). If this test does not crash, it passes.</title>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <video>
@@ -23,8 +24,8 @@ async_test(function(t) {
         video.currentTime = 7.9;
         firstSeek = false;
     });
-
+    
     video.currentTime = 0.5;
-    video.src = '../content/counting.ogv';
+    video.src = findMediaFile('video', '../content/counting');
 });
 </script>

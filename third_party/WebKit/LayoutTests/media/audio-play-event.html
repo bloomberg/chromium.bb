@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
 <title>Test that a 'play' event is fired by a new audio element on playing.</title>
+<script src="media-file.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
@@ -10,7 +11,7 @@ async_test(function(t) {
     audio.oncanplay = t.step_func(function() {});
     audio.onplaying = t.step_func_done();
     audio.onerror = t.unreached_func("Should not fire 'error' event");
-    audio.src = "content/test.oga";
+    audio.src = findMediaFile("audio", "content/test");
     audio.play();
 });
 </script>

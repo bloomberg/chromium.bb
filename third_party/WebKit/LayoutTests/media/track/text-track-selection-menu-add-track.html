@@ -2,6 +2,7 @@
 <title>Test that we can add a track dynamically and it is displayed on the track selection menu.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <!-- Width should be large enough to display closed captions button. -->
 <video controls style="width: 500px">
@@ -30,6 +31,6 @@ async_test(function(t) {
         assert_equals(textTrackDisplayElement(video).innerText, trackCueText);
     });
 
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 })
 </script>

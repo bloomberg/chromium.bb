@@ -2,6 +2,7 @@
 <title>Test that seeking attribute is true immediately after a seek, goes back to false when seeking completes, and that a "seeked" event is fired for each seek.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -23,7 +24,7 @@ async_test(function(t) {
         assert_true(video.seeking);
     });
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
     video.currentTime = 0.5;
 });
 </script>

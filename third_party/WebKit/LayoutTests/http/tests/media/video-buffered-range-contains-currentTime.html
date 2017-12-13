@@ -23,7 +23,7 @@ video.onloadedmetadata = function() {
     video.currentTime = video.duration - 0.5;
 };
 
-var mediaFile = "../../../media/content/test.oga";
+var mediaFile = findMediaFile("audio", "../../../media/content/test");
 var type = mimeTypeForExtension(mediaFile.split(".").pop());
 video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?name=" + mediaFile + "&throttle=5000&nph=1&type=" + type;
 </script>

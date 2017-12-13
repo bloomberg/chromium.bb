@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that TextTrack's cues are rendered correctly when the snap to lines flag is not set.</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -10,7 +11,7 @@
 async_test(function(t) {
     var video = document.querySelector("video");
     var testTrack = document.querySelector("track");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 
     // In Chromium it is the enclosure element, which provides the controls height, otherwise the panel;
     // both are the second child in the shadow DOM.

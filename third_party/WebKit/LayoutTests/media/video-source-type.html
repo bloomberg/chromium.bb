@@ -2,10 +2,12 @@
 <title>Test "source" element "type" attribute.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video>
     <source src=content/error.mpeg type=video/blahblah>
     <source src=test.mp4 type=video/x-chicken-face>
     <source src=test.ogv type=audio/x-higglety-pigglety>
+    <source src=content/test.mp4 type=video/mp4>
     <source src=content/test.ogv type=video/ogg>
     <source src=content/error2.mpeg type=video/mpeg>
 </video>
@@ -15,7 +17,7 @@ async_test(function(t) {
 
     video.onloadstart = t.step_func_done(function() {
         var url = video.currentSrc;
-        assert_equals(url.substr(url.lastIndexOf("/media/") + 7), "content/test.ogv");
+        assert_equals(url.substr(url.lastIndexOf("/media/") + 7), findMediaFile("video", "content/test"));
     });
 });
 </script>

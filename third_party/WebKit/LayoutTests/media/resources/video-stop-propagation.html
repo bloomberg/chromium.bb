@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+<script src="../media-file.js"></script>
 <!--Padding ensures the overflow menu is visible for the tests. -->
 <body style="padding-top: 100px; padding-left: 100px">
 <video controls width=60></video>
@@ -7,7 +8,7 @@
 <script>
   // Set up video
   var video = document.querySelector("video");
-  video.src = "../content/test.ogv";
+  video.src = findMediaFile("video", "../content/test");
   // Add captions
   var track = video.addTextTrack("captions");
 

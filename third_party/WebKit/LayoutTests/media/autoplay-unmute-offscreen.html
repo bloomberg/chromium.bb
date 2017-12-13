@@ -2,6 +2,7 @@
 <title>Test that unmuting offscreen video will not allow it to autoplay</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <body>
 <script>
   window.internals.settings.setAutoplayPolicy('user-gesture-required');
@@ -12,7 +13,7 @@
     {
       var video = document.createElement('video');
       video.id = 'offscreen-unmute';
-      video.src = 'content/test.ogv';
+      video.src = findMediaFile('video', 'content/test');
       video.muted = true;
       video.autoplay = true;
       video.loop = true;
@@ -25,7 +26,7 @@
     {
       var video = document.createElement('video');
       video.id = 'offscreen-mute';
-      video.src = 'content/test.ogv';
+      video.src = findMediaFile('video', 'content/test');
       video.muted = true;
       video.autoplay = true;
       video.loop = true;

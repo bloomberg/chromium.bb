@@ -3,6 +3,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="media-controls.js"></script>
+<script src="media-file.js"></script>
 <script src="overflow-menu.js"></script>
 
 <!--Padding ensures the overflow menu is visible for the tests. -->
@@ -12,7 +13,7 @@
 async_test(function(t) {
   // Set up video
   var video = document.querySelector("video");
-  video.src = "content/test.ogv";
+  video.src = findMediaFile("video", "content/test");
   video.setAttribute("width", "60");
 
   video.onloadeddata = t.step_func_done(function() {

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<title>Test HTMLMediaElement's "canPlayType" method with multiple video mpeg4 MIME types.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video></video>
+<script>
+test(function() {
+    var video = document.querySelector("video");
+    // Currently no platform supports the below formats.
+    assert_equals(video.canPlayType("video/x-m4v"), "");
+    assert_equals(video.canPlayType("video/mp4"), "");
+    assert_equals(video.canPlayType("video/mp4; Codecs=\"avc1.4D400C\""), "");
+    assert_equals(video.canPlayType("Video/MP4; CODECS=\"mp4v.20.8, mp4a.40.2\""), "");
+});
+</script>

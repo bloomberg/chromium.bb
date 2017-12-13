@@ -7,8 +7,8 @@ function fullscreen_test()
         var v1 = document.createElement("video");
         var v2 = document.createElement("video");
         v1.controls = v2.controls = true;
-        v1.src = "content/test.ogv";
-        v2.src = "content/test.oga";
+        v1.src = findMediaFile("video", "content/test");
+        v2.src = findMediaFile("audio", "content/test");
         document.body.appendChild(v1);
         document.body.appendChild(v2);
 
@@ -41,7 +41,7 @@ function fullscreen_iframe_test()
         var doc = iframe.contentDocument;
         var v = doc.createElement("video");
         v.controls = true;
-        v.src = "content/test.ogv";
+        v.src = findMediaFile("video", "content/test");
         doc.body.appendChild(v);
 
         v.addEventListener("loadeddata", t.step_func_done(function()
@@ -58,7 +58,7 @@ function fullscreen_not_supported_test()
     {
         var v = document.createElement("video");
         v.controls = true;
-        v.src = "content/test.ogv";
+        v.src = findMediaFile("video", "content/test");
         document.body.appendChild(v);
 
         v.addEventListener("loadeddata", t.step_func_done(function()

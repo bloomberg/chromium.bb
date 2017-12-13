@@ -13,13 +13,8 @@
 test(function() {
  var v = document.getElementById("v");
   assert_equals(
-   v.canPlayType('video/webm; codecs="vp8, BOGUS"'),
-   v.canPlayType('video/webm; codecs="BOGUS, vp8"'),
-   "order of codecs parameters should have no effect");
-
-  assert_equals(
-   v.canPlayType('video/webm; codecs="vp8, opus"'),
-   v.canPlayType('video/webm; codecs="opus, vp8"'),
+   v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"'),
+   v.canPlayType('video/mp4; codecs="mp4a.40.2, avc1.42E01E"'),
    "order of codecs parameters should have no effect");
 });
   </script>

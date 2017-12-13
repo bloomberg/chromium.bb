@@ -2,6 +2,7 @@
 <title>Tests track deletion during setup.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <video>
     <track src="captions-webvtt/metadata.vtt">
 </video>
@@ -23,6 +24,6 @@ async_test(function(t) {
     assert_equals(track.track.mode, "disabled");
     track.track.mode = "hidden";
 
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 });
 </script>

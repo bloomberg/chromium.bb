@@ -2,6 +2,7 @@
 <title>Test that the overlay cast button fades at the right time (neither too soon nor too late).</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <video loop></video>
 <script>
@@ -11,7 +12,7 @@ async_test(function(t) {
     var hideTimeoutLowerBound = controlsMouseMovementTimeoutMs - 500;
 
     var video = document.querySelector("video");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 
     video.onplaying = t.step_func(function() {
         setTimeout(t.step_func(function() {

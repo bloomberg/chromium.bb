@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<title>Test HTMLMediaElement's "canPlayType" method with "application/octet-stream".</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+function check_media_element_canplaytype(elementName) {
+    test(function() {
+    	var mediaElement = document.createElement(elementName);
+        // These tests should always pass as no platform
+        // should support "application/octet-stream".
+        assert_equals(mediaElement.canPlayType("APPLICATION/octet-stream"), "");
+        assert_equals(mediaElement.canPlayType("application/octet-stream;codecs=theora"), "");
+        assert_equals(mediaElement.canPlayType("application/octet-stream;codecs=mp4"), "");
+    }, "check \"canPlayType\" method for " + elementName);
+}
+
+check_media_element_canplaytype("audio");
+check_media_element_canplaytype("video");
+</script>

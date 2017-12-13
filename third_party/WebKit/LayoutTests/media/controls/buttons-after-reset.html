@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <title>Test that resetting the controls after load is a no-op.</title>
+<script src="../media-file.js"></script>
 <video controls width=400>
   <track kind=subtitles src=fake-en-sub.vtt srclang=en label=English>
   <track kind=subtitles src=fake-fr-sub.vtt srclang=fr label=French>
@@ -10,7 +11,7 @@
     testRunner.waitUntilDone();
 
   var video = document.querySelector('video');
-  video.src = '../content/test.ogv';
+  video.src = findMediaFile('video', '../content/test');
   video.addEventListener('loadedmetadata', () => {
     video.controls = false;
     testRunner.layoutAndPaintAsyncThen(() => {

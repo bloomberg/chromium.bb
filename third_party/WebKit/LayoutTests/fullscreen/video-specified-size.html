@@ -7,7 +7,7 @@
     <script src="full-screen-test.js"></script>
     <script src=../media/media-file.js></script>
     <script>
-        setSrcById("video", "../media/content/test.ogv");
+        setSrcById("video", findMediaFile("video", "../media/content/test"));
         var video = document.getElementById('video');
         waitForEventTestAndEnd(document, 'webkitfullscreenchange', "video.clientWidth==document.body.clientWidth");
         runWithKeyDown(function(){video.webkitRequestFullScreen()});

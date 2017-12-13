@@ -56,7 +56,7 @@ for(var i = 0; i < 7; i++) {
 
         function addSource(index) {
             var source = document.createElement("source");
-            source.src = index + "-" + Date.now() + ".ogv";
+            source.src = findMediaFile("video", index + "-" + Date.now());
             source.type = mimeTypeForExtension(source.src.split(".").pop());
             video.appendChild(source);
 

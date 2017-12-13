@@ -2,6 +2,7 @@
 <html>
     <head>
         <!-- LayoutTests location is hard-coded to avoid duplication of code. -->
+        <script src="http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media/media-file.js"></script>
         <script src="http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media/video-test.js"></script>
 
         <script>
@@ -46,7 +47,7 @@
                 video.addEventListener('playing', playing);
 
                 // Use the video file from the svn repository to avoid duplicating the file.
-                video.src = absoluteUrl('http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media/content/test.ogv');
+                video.src = absoluteUrl(findMediaFile('video', 'http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media/content/test'));
                 testRates();
             }
 
@@ -67,7 +68,7 @@
     </head>
 
     <body onload="start()">
-
+        
         <video controls > </video>
         <ul>
             <li>The current 'playbackRate' and 'defaultPlaybackRate' should be logged every time either changes.</li>

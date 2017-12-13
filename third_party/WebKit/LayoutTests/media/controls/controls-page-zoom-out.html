@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <title>Test that media controls are painted corrected when using page zoom.</title>
+<script src="../media-file.js"></script>
 <video controls width="400"></video>
 <script>
   var video = document.querySelector('video');
@@ -22,7 +23,7 @@
       testRunner.notifyDone();
   };
 
-  video.src = "../content/test.ogv";
+  video.src = findMediaFile("video", "../content/test");
   video.play();
 </script>
 </html>

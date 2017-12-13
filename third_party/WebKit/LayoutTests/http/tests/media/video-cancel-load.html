@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Cancel loading a video file and access its properties afterwards.</title>
+<script src="../../media-resources/media-file.js"></script>
 <video></video>
 
 <textarea style="display: none;">
@@ -34,7 +35,7 @@ video.onloadedmetadata = function() {
     doc.close();
 };
 
-var file = "../resources/test.ogv";
+var file = findMediaFile("video", "../resources/test");
 video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?throttle=40&name=" + file;
 
 // Change URL of the current page to a blank page.

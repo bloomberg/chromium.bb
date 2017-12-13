@@ -68,6 +68,7 @@ body {
 
 </style>
 <!-- LayoutTests location is hard-coded to avoid duplication of code. -->
+<script src="http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media/media-file.js"></script>
 <script>
 
 var MEDIA_FILES_LOCATION = 'http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media/content';
@@ -194,8 +195,8 @@ var TESTS = {
 function configureMediaFiles()
 {
     MEDIA_FILES = {
-        'audio': absoluteUrl(MEDIA_FILES_LOCATION + '/test.wav'),
-        'video': absoluteUrl(MEDIA_FILES_LOCATION + '/test.ogv'),
+        'audio': absoluteUrl(findMediaFile('audio', MEDIA_FILES_LOCATION + '/test')),
+        'video': absoluteUrl(findMediaFile('video', MEDIA_FILES_LOCATION + '/test')),
         'video-captioned': absoluteUrl(MEDIA_FILES_LOCATION + '/counting-captioned.mov')
     }
 
