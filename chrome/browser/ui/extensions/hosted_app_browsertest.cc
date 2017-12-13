@@ -727,11 +727,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, IframesInsideHostedApp) {
   // Verify that |same_dir| and |diff_dir| can script each other.
   // (they should - they have the same origin).
   std::string inner_text_from_other_frame;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      diff_dir,
+  const std::string r_script =
       R"( var w = window.open('', 'SameOrigin-SamePath');
-          domAutomationController.send(w.document.body.innerText); )",
-      &inner_text_from_other_frame));
+          domAutomationController.send(w.document.body.innerText); )";
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      diff_dir, r_script, &inner_text_from_other_frame));
   EXPECT_EQ("Simple test page.", inner_text_from_other_frame);
 }
 
