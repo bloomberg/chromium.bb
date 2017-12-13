@@ -92636,6 +92636,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="V8.GCBackgroundMarking" units="ms">
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    Time spent in background tasks doing marking in one GC cycle. It is recorded
+    after each GC.
+  </summary>
+</histogram>
+
+<histogram name="V8.GCBackgroundScavenger" units="ms">
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    Time spent in background tasks doing scavenging in one GC cycle. It is
+    recorded after each GC.
+  </summary>
+</histogram>
+
+<histogram name="V8.GCBackgroundSweeping" units="ms">
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    Time spent in background tasks doing sweeping in one GC cycle. It is
+    recorded after each GC.
+  </summary>
+</histogram>
+
 <histogram name="V8.GCCompactor" units="ms">
   <owner>hpayer@chromium.org</owner>
   <summary>Time spent in mark-sweep phase of GC.</summary>
