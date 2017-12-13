@@ -773,46 +773,46 @@ ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
     """Verify that all model firmware versions can be extracted"""
     self.rc.SetDefaultCmdResult(output='''
 
-flashrom(8): 68935ee2fcfcffa47af81b966269cd2b */build/reef-uni/usr/sbin/flashrom
+flashrom(8): 68935ee2fcfcffa47af81b966269cd2b */build/reef/usr/sbin/flashrom
              ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, for GNU/Linux 2.6.32, BuildID[sha1]=e102cc98d45300b50088999d53775acbeff407dc, stripped
              0.9.9  : bbb2d6a : Jul 28 2017 15:12:34 UTC
 
 Model:        reef
-BIOS image:   1b535280fe688ac284d95276492b06f6 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/image.bin
+BIOS image:   1b535280fe688ac284d95276492b06f6 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/image.bin
 BIOS version: Google_Reef.9042.87.1
-BIOS (RW) image:   0ef265eb8f2d228c09f75b011adbdcbb */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/image.binrw
+BIOS (RW) image:   0ef265eb8f2d228c09f75b011adbdcbb */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/image.binrw
 BIOS (RW) version: Google_Reef.9042.110.0
-EC image:     2e8b4b5fa73cc5dbca4496de97a917a9 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/ec.bin
+EC image:     2e8b4b5fa73cc5dbca4496de97a917a9 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/ec.bin
 EC version:   reef_v1.1.5900-ab1ee51
 EC (RW) version: reef_v1.1.5909-bd1f0c9
 
 Model:        pyro
-BIOS image:   9e62447ebf22a724a4a835018ab6234e */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/pyro/image.bin
+BIOS image:   9e62447ebf22a724a4a835018ab6234e */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/pyro/image.bin
 BIOS version: Google_Pyro.9042.87.1
-BIOS (RW) image:   1897457303c85de99f3e98b2eaa0eccc */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/pyro/image.binrw
+BIOS (RW) image:   1897457303c85de99f3e98b2eaa0eccc */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/pyro/image.binrw
 BIOS (RW) version: Google_Pyro.9042.110.0
-EC image:     44b93ed591733519e752e05aa0529eb5 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/pyro/ec.bin
+EC image:     44b93ed591733519e752e05aa0529eb5 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/pyro/ec.bin
 EC version:   pyro_v1.1.5900-ab1ee51
 EC (RW) version: pyro_v1.1.5909-bd1f0c9
 
 Model:        snappy
-BIOS image:   3ab63ff080596bd7de4e7619f003bb64 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/snappy/image.bin
+BIOS image:   3ab63ff080596bd7de4e7619f003bb64 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/snappy/image.bin
 BIOS version: Google_Snappy.9042.110.0
-EC image:     c4db159e84428391d2ee25368c5fe5b6 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/snappy/ec.bin
+EC image:     c4db159e84428391d2ee25368c5fe5b6 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/snappy/ec.bin
 EC version:   snappy_v1.1.5909-bd1f0c9
 
 Model:        sand
-BIOS image:   387da034a4f0a3f53e278ebfdcc2a412 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/sand/image.bin
+BIOS image:   387da034a4f0a3f53e278ebfdcc2a412 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/sand/image.bin
 BIOS version: Google_Sand.9042.110.0
-EC image:     411562e0589dacec131f5fdfbe95a561 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/sand/ec.bin
+EC image:     411562e0589dacec131f5fdfbe95a561 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/sand/ec.bin
 EC version:   sand_v1.1.5909-bd1f0c9
 
 Model:        electro
-BIOS image:   1b535280fe688ac284d95276492b06f6 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/image.bin
+BIOS image:   1b535280fe688ac284d95276492b06f6 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/image.bin
 BIOS version: Google_Reef.9042.87.1
-BIOS (RW) image:   0ef265eb8f2d228c09f75b011adbdcbb */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/image.binrw
+BIOS (RW) image:   0ef265eb8f2d228c09f75b011adbdcbb */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/image.binrw
 BIOS (RW) version: Google_Reef.9042.110.0
-EC image:     2e8b4b5fa73cc5dbca4496de97a917a9 */build/reef-uni/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/ec.bin
+EC image:     2e8b4b5fa73cc5dbca4496de97a917a9 */build/reef/tmp/portage/chromeos-base/chromeos-firmware-reef-0.0.1-r79/temp/tmp7rHApL.pack_firmware-99001/models/reef/ec.bin
 EC version:   reef_v1.1.5900-ab1ee51
 EC (RW) version: reef_v1.1.5909-bd1f0c9
 

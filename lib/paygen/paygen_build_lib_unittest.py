@@ -45,7 +45,6 @@ class BasePaygenBuildLibTest(cros_test_lib.MockTestCase):
     # Mock a few more to ensure there is no accidental GS interaction.
     self.mockUriList = self.PatchObject(urilib, 'ListFiles')
 
-
   def getParseTestPaygenJson(self):
     """Fetch raw parsed json from our test copy of paygen.json."""
     # TODO: Add caching, so we don't keep loading/parsing the same file.
@@ -54,18 +53,19 @@ class BasePaygenBuildLibTest(cros_test_lib.MockTestCase):
     with open(paygen_json_file, 'r') as fp:
       return json.load(fp)
 
+
 class PaygenJsonTests(BasePaygenBuildLibTest):
   """Test cases that require mocking paygen.json fetching."""
 
   def testGetPaygenJsonCaching(self):
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1361)
+    self.assertEqual(len(result), 1360)
     self.mockGetJson.assert_called_once()
 
     # Validate caching, by proving we don't refetch.
     self.mockGetJson.reset_mock()
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1361)
+    self.assertEqual(len(result), 1360)
     self.mockGetJson.assert_not_called()
 
   def testGetPaygenJsonBoard(self):
@@ -170,7 +170,6 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
         self.target_build.version)
     self.delta_payload_test = paygen_build_lib.PayloadTest(
         self.test_delta_payload)
-
 
   def _GetPaygenBuildInstance(self,
                               dry_run=False,
@@ -821,6 +820,7 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
         [mock.call('gs://crt/foo-channel/foo-board/1.2.3/payloads/signing',
                    recurse=True, ignore_no_match=True)])
 
+
 class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
   """Test CreatePayloads."""
   def setUp(self):
@@ -976,6 +976,7 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
 
     self.assertEqual(self.mockCleanup.call_args_list, [mock.call()])
 
+
 class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
   """Test autotest tarball generation."""
   def setUp(self):
@@ -989,7 +990,6 @@ class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
         side_effect=lambda uri: uri and uri.endswith('stateful.tgz'))
 
     self.mockCopy = self.PatchObject(gslib, 'Copy')
-
 
     # Our images have to exist, and have URIs for autotest.
     self.test_image.uri = 'test_image_uri'

@@ -12422,17 +12422,6 @@
     },
     {
       "board": {
-        "public_codename": "reef-uni",
-        "is_active": true,
-        "builder_name": "reef-uni"
-      },
-      "delta_type": "NO_DELTA",
-      "generate_delta": false,
-      "delta_payload_tests": false,
-      "full_payload_tests": false
-    },
-    {
-      "board": {
         "public_codename": "reks",
         "is_active": true,
         "builder_name": "reks"
