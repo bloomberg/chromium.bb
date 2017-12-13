@@ -852,17 +852,11 @@ int SSLClientSocketImpl::Init() {
   }
 
   switch (ssl_config_.tls13_variant) {
-    case kTLS13VariantDraft:
-      SSL_set_tls13_variant(ssl_.get(), tls13_default);
-      break;
-    case kTLS13VariantExperiment:
-      SSL_set_tls13_variant(ssl_.get(), tls13_experiment);
+    case kTLS13VariantDraft22:
+      SSL_set_tls13_variant(ssl_.get(), tls13_draft22);
       break;
     case kTLS13VariantExperiment2:
       SSL_set_tls13_variant(ssl_.get(), tls13_experiment2);
-      break;
-    case kTLS13VariantExperiment3:
-      SSL_set_tls13_variant(ssl_.get(), tls13_experiment3);
       break;
   }
 

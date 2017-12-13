@@ -761,10 +761,12 @@ const FeatureEntry::Choice kTLS13VariantChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kTLS13VariantDisabled, switches::kTLS13Variant,
      switches::kTLS13VariantDisabled},
-    {flag_descriptions::kTLS13VariantDraft, switches::kTLS13Variant,
-     switches::kTLS13VariantDraft},
-    {flag_descriptions::kTLS13VariantExperiment, switches::kTLS13Variant,
-     switches::kTLS13VariantExperiment},
+    // The Draft 18 variant was deprecated.
+    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
+    // The Experiment variant was deprecated.
+    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
     // The RecordType variant was deprecated.
     {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
      switches::kTLS13VariantDisabled},
@@ -773,8 +775,11 @@ const FeatureEntry::Choice kTLS13VariantChoices[] = {
      switches::kTLS13VariantDisabled},
     {flag_descriptions::kTLS13VariantExperiment2, switches::kTLS13Variant,
      switches::kTLS13VariantExperiment2},
-    {flag_descriptions::kTLS13VariantExperiment3, switches::kTLS13Variant,
-     switches::kTLS13VariantExperiment3},
+    // The Experiment3 variant was deprecated.
+    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
+    {flag_descriptions::kTLS13VariantDraft22, switches::kTLS13Variant,
+     switches::kTLS13VariantDraft22},
 };
 
 #if !defined(OS_ANDROID)

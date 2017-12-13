@@ -3619,27 +3619,15 @@
             ],
             "experiments": [
                 {
-                    "name": "Experiment2V2",
+                    "name": "Experiment2V3",
                     "params": {
                         "variant": "experiment2"
                     }
                 },
                 {
-                    "name": "ExperimentV2",
+                    "name": "Draft22V3",
                     "params": {
-                        "variant": "experiment"
-                    }
-                },
-                {
-                    "name": "Draft",
-                    "params": {
-                        "variant": "draft"
-                    }
-                },
-                {
-                    "name": "Experiment3V2",
-                    "params": {
-                        "variant": "experiment3"
+                        "variant": "draft22"
                     }
                 }
             ]
