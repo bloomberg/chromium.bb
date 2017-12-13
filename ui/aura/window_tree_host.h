@@ -252,11 +252,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
- protected:
-  const base::ObserverList<WindowTreeHostObserver>& observers() const {
-    return observers_;
-  }
-
  private:
   friend class test::WindowTreeHostTestApi;
 

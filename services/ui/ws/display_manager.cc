@@ -96,8 +96,6 @@ bool DisplayManager::SetDisplayConfiguration(
   bool found_internal_display = false;
 
   // Check the mirrors before potentially passing them to a unified display.
-  DCHECK(window_server_->is_hosting_viz() || mirrors.empty())
-      << "The window server only handles mirrors specially when hosting viz.";
   for (const auto& mirror : mirrors) {
     if (mirror.id() == display::kInvalidDisplayId) {
       LOG(ERROR) << "SetDisplayConfiguration passed invalid display id";

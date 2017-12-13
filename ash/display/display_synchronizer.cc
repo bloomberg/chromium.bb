@@ -4,13 +4,11 @@
 
 #include "ash/display/display_synchronizer.h"
 
-#include "ash/display/mirror_window_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/shell.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 
@@ -62,24 +60,10 @@ void DisplaySynchronizer::SendDisplayConfigurationToServer() {
     displays.push_back(display_manager->GetDisplayAt(i));
     metrics.push_back(GetMetricsForDisplay(displays[i].id()));
   }
-  std::vector<display::Display> mirrors;
-  MirrorWindowController* mirror_window_controller =
-      Shell::Get()->window_tree_host_manager()->mirror_window_controller();
-  for (const auto& mirror :
-       display_manager->software_mirroring_display_list()) {
-    if (::switches::IsMusHostingViz()) {
-      // If mus is hosting viz, the window server handle mirrors internally.
-      mirrors.push_back(mirror);
-      metrics.push_back(GetMetricsForDisplay(mirror.id()));
-    } else if (mirror_window_controller->GetAshWindowTreeHostForDisplayId(
-                   mirror.id())) {
-      // Otherwise, if MirrorWindowController constructed a window tree host
-      // the window server should construct a normal ws::Display for the mirror.
-      displays.push_back(mirror);
-      metrics.push_back(GetMetricsForDisplay(mirror.id()));
-    }
-  }
-
+  const std::vector<display::Display>& mirrors =
+      display_manager->software_mirroring_display_list();
+  for (size_t i = 0; i < mirrors.size(); ++i)
+    metrics.push_back(GetMetricsForDisplay(mirrors[i].id()));
   window_manager_client_->SetDisplayConfiguration(
       displays, std::move(metrics),
       WindowTreeHostManager::GetPrimaryDisplayId(), mirrors);

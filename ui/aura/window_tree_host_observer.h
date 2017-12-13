@@ -29,9 +29,6 @@ class AURA_EXPORT WindowTreeHostObserver {
   // Called when the native window system sends the host request to close.
   virtual void OnHostCloseRequested(WindowTreeHost* host) {}
 
-  // Called when the accelerated widget is overridden for the host.
-  virtual void OnAcceleratedWidgetOverridden(WindowTreeHost* host) {}
-
  protected:
   virtual ~WindowTreeHostObserver() {}
 };

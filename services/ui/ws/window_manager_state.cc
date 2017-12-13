@@ -296,6 +296,8 @@ void WindowManagerState::DeleteWindowManagerDisplayRoot(
       return;
     }
   }
+
+  NOTREACHED();
 }
 
 const UserId& WindowManagerState::user_id() const {

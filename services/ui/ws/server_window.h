@@ -86,15 +86,8 @@ class ServerWindow : public viz::HostFrameSinkClient {
     return current_local_surface_id_;
   }
 
-  // Add the child to this window.
   void Add(ServerWindow* child);
-
-  // Removes the child window, but does not delete it.
   void Remove(ServerWindow* child);
-
-  // Removes all child windows from this window, but does not delete them.
-  void RemoveAllChildren();
-
   void Reorder(ServerWindow* relative, mojom::OrderDirection diretion);
   void StackChildAtBottom(ServerWindow* child);
   void StackChildAtTop(ServerWindow* child);
