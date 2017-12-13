@@ -64,8 +64,7 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   CSSTranslation(CSSNumericValue* x,
                  CSSNumericValue* y,
                  CSSNumericValue* z,
-                 bool is2D)
-      : CSSTransformComponent(is2D), x_(x), y_(y), z_(z) {}
+                 bool is2D);
 
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;

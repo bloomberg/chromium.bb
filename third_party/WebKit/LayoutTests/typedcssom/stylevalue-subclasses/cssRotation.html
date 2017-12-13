@@ -65,7 +65,7 @@ test(() => {
   assert_style_value_equals(result.x, CSS.number(-3.14));
   assert_style_value_equals(result.y, CSS.number(3.14));
   assert_style_value_equals(result.z, CSS.number(3.14));
-  assert_style_value_equals(result.angle, angle);
+  assert_style_value_equals(result.angle, CSS.deg(3.14));
   assert_false(result.is2D);
 }, 'CSSRotation can be constructed from numberish coordinates');
 
@@ -74,12 +74,12 @@ test(() => {
     new CSSMathSum(-3.14),
     new CSSMathProduct(3.14),
     new CSSMathNegate(-3.14),
-    new CSSMathInvert(CSS.deg(3.14))
+    new CSSMathMax(CSS.deg(3.14))
   );
   assert_style_value_equals(result.x, new CSSMathSum(-3.14));
   assert_style_value_equals(result.y, new CSSMathProduct(3.14));
   assert_style_value_equals(result.z, new CSSMathNegate(-3.14));
-  assert_style_value_equals(result.angle, new CSSMathInvert(CSS.deg(3.14)));
+  assert_style_value_equals(result.angle, new CSSMathMax(CSS.deg(3.14)));
   assert_false(result.is2D);
 }, 'CSSRotation can be constructed from CSSMathValues');
 
