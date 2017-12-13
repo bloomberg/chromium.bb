@@ -168,15 +168,18 @@ class TestPlatformInfo(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.make_info(fake_sys('win32'), executive=fake_executive('6.1.1234'))
 
-    def _assert_file_implies_linux_distribution(self, file_path, distribution):
-        info = self.make_info(sys_module=fake_sys('linux2'), filesystem_module=MockFileSystem({file_path: ''}))
+    def _assert_files_imply_linux_distribution(self, file_paths, distribution):
+        fs_module = MockFileSystem({file_path: '' for file_path in file_paths})
+        info = self.make_info(sys_module=fake_sys('linux2'), filesystem_module=fs_module)
         self.assertEqual(info.linux_distribution(), distribution)
 
     def test_linux_distro_detection(self):
-        self._assert_file_implies_linux_distribution('/etc/arch-release', 'arch')
-        self._assert_file_implies_linux_distribution('/etc/debian_version', 'debian')
-        self._assert_file_implies_linux_distribution('/etc/redhat-release', 'redhat')
-        self._assert_file_implies_linux_distribution('/etc/mock-release', 'unknown')
+        self._assert_files_imply_linux_distribution(['/etc/arch-release'], 'arch')
+        self._assert_files_imply_linux_distribution(['/etc/debian_version'], 'debian')
+        self._assert_files_imply_linux_distribution(['/etc/fedora-release'], 'fedora')
+        self._assert_files_imply_linux_distribution(['/etc/fedora-release', '/etc/redhat-release'], 'fedora')
+        self._assert_files_imply_linux_distribution(['/etc/redhat-release'], 'redhat')
+        self._assert_files_imply_linux_distribution(['/etc/mock-release'], 'unknown')
 
     def test_display_name(self):
         info = self.make_info(fake_sys('darwin'))
