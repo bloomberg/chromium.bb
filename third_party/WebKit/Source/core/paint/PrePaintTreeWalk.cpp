@@ -156,10 +156,6 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
 
   PaintLayer& paint_layer = *ToLayoutBoxModelObject(object).Layer();
 
-  // Ignore clips across transform boundaries.
-  if (object.StyleRef().HasTransform())
-    context.tree_builder_context->clip_changed = false;
-
   if (!context.tree_builder_context->clip_changed)
     return;
 
@@ -231,6 +227,11 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
 
   PrePaintTreeWalkContext context(parent_context,
                                   needs_tree_builder_context_update);
+
+  // Ignore clip changes from ancestor across transform boundaries.
+  if (context.tree_builder_context && object.StyleRef().HasTransform())
+    context.tree_builder_context->clip_changed = false;
+
   WalkInternal(object, context);
 
   for (const LayoutObject* child = object.SlowFirstChild(); child;
