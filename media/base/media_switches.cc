@@ -366,4 +366,9 @@ const base::Feature kOverflowIconsForMediaControls{
 const base::Feature kUseModernMediaControls{"UseModernMediaControls",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows Media Engagement to use preloaded data to decide whether an origin has
+// a high media engagement.
+const base::Feature kPreloadMediaEngagementData{
+    "PreloadMediaEngagementData", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace media
