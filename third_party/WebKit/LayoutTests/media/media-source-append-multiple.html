@@ -2,7 +2,6 @@
 <title>Test that a media element doesn't reload on removing the current source element and inserting a new source element.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <audio></audio>
 <script>
 async_test(function(t) {
@@ -19,9 +18,9 @@ async_test(function(t) {
     });
 
     var sourceA = document.createElement("source");
-    sourceA.src = findMediaFile("audio", "content/test");
+    sourceA.src = "content/test.oga";
     var sourceB = document.createElement("source");
-    sourceB.src = findMediaFile("audio", "content/silence");
+    sourceB.src = "content/silence.oga";
     audio.appendChild(sourceA);
 });
 </script>

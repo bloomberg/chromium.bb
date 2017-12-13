@@ -2,7 +2,6 @@
 <title>Test "video" element size with and without "src" and "poster" attributes.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <body>
 <script>
 var movieInfo = [
@@ -35,7 +34,7 @@ var movieInfo = [
         videoHeight: 0
     },
     {
-        src: "content/test",
+        src: "content/test.ogv",
         poster: "content/abe.png",
         description: "'poster' and 'src', should be 'video' size",
         width: 320,
@@ -44,7 +43,7 @@ var movieInfo = [
         videoHeight: 240
     },
     {
-        src: "content/bogus",
+        src: "content/bogus.ogv",
         poster: "content/greenbox.png",
         description: "'poster' and invalid 'src', should be 'poster' size",
         width: 25,
@@ -74,7 +73,7 @@ movieInfo.forEach(function(movie) {
             }
 
             if (movie.src)
-                video.src = findMediaFile("video", movie.src);
+                video.src = movie.src;
 
             if (movie.poster)
                 video.poster = movie.poster;

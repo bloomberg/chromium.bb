@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <title>Test that user preference for text track kind is honored.</title>
-<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -21,7 +20,7 @@ async_test(function(t) {
         internals.settings.setTextTrackKindUserPreference("default");
     });
     internals.setUserPreferredLanguages(["jp", "es", "en", "fr"]);
-    video.src = findMediaFile("video", "../content/test");
+    video.src = "../content/test.ogv";
 
     var tracks;
     var expectedTrack;

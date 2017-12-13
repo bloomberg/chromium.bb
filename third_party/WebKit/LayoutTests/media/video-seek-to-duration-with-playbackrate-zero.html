@@ -2,13 +2,12 @@
 <title>Test behavior when seeking to the duration and the playback rate equals 0.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
     video.load();
     video.onseeking = t.step_func(function() {});
 

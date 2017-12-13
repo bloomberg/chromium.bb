@@ -2,7 +2,6 @@
 <title>Test visibiblity of controls when focusing video.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <video controls autoplay></video>
 <script>
@@ -22,6 +21,6 @@ async_test(function(t) {
         }), video);
     });
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

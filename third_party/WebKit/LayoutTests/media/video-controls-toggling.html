@@ -2,7 +2,6 @@
 <title>Test rendering of volume slider of video tag.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <video controls></video>
 <script>
@@ -14,7 +13,7 @@ async_test(function(t) {
     video.onplay = t.step_func(function() {
         panel = mediaControlsButton(video, "panel");
         muteButtonCoordinates = mediaControlsButtonCoordinates(video, "mute-button");
-        
+
         // Move mouse somewhere over the panel.
         eventSender.mouseMoveTo(muteButtonCoordinates[0], muteButtonCoordinates[1]);
 
@@ -43,7 +42,7 @@ async_test(function(t) {
         t.done();
     }
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
     video.play();
 });
 </script>

@@ -2,7 +2,6 @@
 <title>Test media "autoplay" attribute set via DOM.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -16,6 +15,6 @@ async_test(function(t) {
         assert_false(video.paused);
     });
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

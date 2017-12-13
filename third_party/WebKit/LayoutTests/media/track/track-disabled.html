@@ -3,7 +3,6 @@
 <video>
     <track kind="subtitles" src="captions-webvtt/captions.vtt"/>
 </video>
-<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
@@ -23,7 +22,7 @@ async_test(function(t) {
           t.done();
     });
 
-    video.src = findMediaFile("video", "../content/test");
+    video.src = "../content/test.ogv";
     video.play();
 });
 </script>

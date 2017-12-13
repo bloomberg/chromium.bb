@@ -2,12 +2,11 @@
 <title>Moving media element to other document to bypass autoplay</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <body>
 <script>
   function createAndMoveVideo() {
     var v = document.implementation.createHTMLDocument().createElement('video');
-    v.src = findMediaFile('video', 'content/test');
+    v.src = 'content/test.ogv';
     document.body.appendChild(v);
     return v;
   }

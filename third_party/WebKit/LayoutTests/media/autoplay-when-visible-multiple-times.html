@@ -2,7 +2,6 @@
 <title>Test behaviour of autoplay muted videos with regards to visibility</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <body>
 <script>
   window.internals.settings.setAutoplayPolicy('user-gesture-required');
@@ -39,7 +38,7 @@
     // Create a video off screen.
     {
       video = document.createElement('video');
-      video.src = findMediaFile('video', 'content/test');
+      video.src = 'content/test.ogv';
       video.muted = true;
       video.autoplay = true;
       video.loop = true;

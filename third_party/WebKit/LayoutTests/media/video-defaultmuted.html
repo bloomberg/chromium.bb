@@ -2,7 +2,6 @@
 <title>Test "defaultMuted" IDL, "muted" IDL and content attributes.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <script>
 test(function() {
     var video = document.createElement("video");
@@ -32,6 +31,6 @@ async_test(function(t) {
         assert_false(video.muted);
     });
 
-    video.src = findMediaFile("audio", "content/test");
+    video.src = "content/test.oga";
 }, "Test 'muted' content and IDL attributes on video load");
 </script>

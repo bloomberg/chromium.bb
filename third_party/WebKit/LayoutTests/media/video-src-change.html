@@ -2,7 +2,6 @@
 <title>Test that an invalid "src" fires an error event and changing "src" to a valid one triggers media load.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 // 1. Test that an invalid src attribute fires an error when the file fails to load.
@@ -23,7 +22,7 @@ async_test(function(t) {
             return;
         }
 
-        mediaFile = findMediaFile("video", "content/counting");
+        mediaFile = "content/counting.ogv";
         video.src = mediaFile;
     });
 
@@ -33,7 +32,7 @@ async_test(function(t) {
         assert_equals(url.substr(url.lastIndexOf("/media/")+7), "bogus");
         assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
         assert_equals(video.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
-        mediaFile = findMediaFile("video", "content/test");
+        mediaFile = "content/test.ogv";
         video.src = mediaFile;
     });
 

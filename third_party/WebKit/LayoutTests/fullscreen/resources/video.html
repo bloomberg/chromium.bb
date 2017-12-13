@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<script src="../../media/media-file.js"></script>
 <script>
 function canplaythrough() {
     parent.postMessage("Video loaded", "*");
@@ -11,7 +10,7 @@ function fullscreenChanged() {
 
 onload = function() {
     var video = document.getElementById('video');
-    var mediaFile = findMediaFile("video", "../../media/content/test");
+    var mediaFile = "../../media/content/test.ogv";
     video.src = mediaFile;
     video.addEventListener('canplaythrough', canplaythrough);
     video.addEventListener('webkitfullscreenchange', fullscreenChanged);

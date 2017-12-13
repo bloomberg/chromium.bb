@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <title>video with -webkit-appearance media-play-button</title>
-<script src="media-file.js"></script>
 <style>
 video {
   -webkit-appearance: media-play-button;
@@ -9,7 +8,7 @@ video {
 <video></video>
 <script>
 var video = document.querySelector('video');
-video.src = findMediaFile('video', 'content/test');
+video.src = 'content/test.ogv';
 
 if (window.testRunner) {
   testRunner.waitUntilDone();

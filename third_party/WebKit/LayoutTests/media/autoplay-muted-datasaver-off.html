@@ -4,8 +4,7 @@
   <title>Test muted autoplay videos interaction with data saver on</title>
   <script src="../resources/testharness.js"></script>
   <script src="../resources/testharnessreport.js"></script>
-  <script src="media-file.js"></script>
-</head>
+  </head>
 <body>
 <script>
   window.internals.settings.setAutoplayPolicy('user-gesture-required');
@@ -15,7 +14,7 @@
   promise_test(function(t)
   {
     var video = document.createElement('video');
-    video.src = findMediaFile('video', 'content/test');
+    video.src = 'content/test.ogv';
     video.muted = true;
     return video.play();
   });
