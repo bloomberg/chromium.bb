@@ -2097,7 +2097,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_RD_DEBUG
       } else {
 #if CONFIG_LV_MAP
-        av1_write_coeffs_mb(cm, x, w, plane);
+        av1_write_coeffs_mb(cm, x, w, plane, bsize);
 #else
         const TX_SIZE tx = av1_get_tx_size(plane, xd);
         const int bkw = tx_size_wide_unit[tx];

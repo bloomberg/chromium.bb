@@ -533,33 +533,35 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #endif
 }
 
-void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
-                         aom_writer *w, int plane) {
+typedef struct encode_txb_args {
+  const AV1_COMMON *cm;
+  MACROBLOCK *x;
+  aom_writer *w;
+} ENCODE_TXB_ARGS;
+
+static void av1_write_coeffs_txb_wrap(int plane, int block, int blk_row,
+                                      int blk_col, BLOCK_SIZE plane_bsize,
+                                      TX_SIZE tx_size, void *arg) {
+  (void)plane_bsize;
+  ENCODE_TXB_ARGS *enc_args = (ENCODE_TXB_ARGS *)arg;
+  const AV1_COMMON *cm = enc_args->cm;
+  MACROBLOCK *x = enc_args->x;
   MACROBLOCKD *xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  BLOCK_SIZE bsize = mbmi->sb_type;
-  struct macroblockd_plane *pd = &xd->plane[plane];
-  const BLOCK_SIZE plane_bsize =
-      AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-  const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
-  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-  const int bkw = tx_size_wide_unit[tx_size];
-  const int bkh = tx_size_high_unit[tx_size];
-  const int step = tx_size_wide_unit[tx_size] * tx_size_high_unit[tx_size];
-  int row, col;
-  int block = 0;
-  for (row = 0; row < max_blocks_high; row += bkh) {
-    for (col = 0; col < max_blocks_wide; col += bkw) {
-      tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
-      uint16_t eob = x->mbmi_ext->eobs[plane][block];
-      TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
-                          x->mbmi_ext->dc_sign_ctx[plane][block] };
-      av1_write_coeffs_txb(cm, xd, w, row, col, block, plane, tx_size, tcoeff,
-                           eob, &txb_ctx);
-      block += step;
-    }
-  }
+  aom_writer *w = enc_args->w;
+  tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
+  uint16_t eob = x->mbmi_ext->eobs[plane][block];
+  TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
+                      x->mbmi_ext->dc_sign_ctx[plane][block] };
+  av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, block, plane, tx_size,
+                       tcoeff, eob, &txb_ctx);
+}
+
+void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
+                         aom_writer *w, int plane, BLOCK_SIZE bsize) {
+  ENCODE_TXB_ARGS enc_args = { cm, x, w };
+  MACROBLOCKD *xd = &x->e_mbd;
+  av1_foreach_transformed_block_in_plane(xd, bsize, plane,
+                                         av1_write_coeffs_txb_wrap, &enc_args);
 }
 
 static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
