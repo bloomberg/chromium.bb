@@ -29,7 +29,7 @@ class ProgressClient : public EmptyLocalFrameClient {
 class ProgressTrackerTest : public ::testing::Test {
  public:
   ProgressTrackerTest()
-      : response_(KURL("http://example.com"), "text/html", 1024, g_null_atom) {}
+      : response_(KURL("http://example.com"), "text/html", 1024) {}
 
   void SetUp() override {
     client_ = new ProgressClient;

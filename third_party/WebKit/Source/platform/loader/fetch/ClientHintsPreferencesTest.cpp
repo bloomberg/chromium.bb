@@ -92,12 +92,11 @@ TEST_F(ClientHintsPreferencesTest, PersistentHints) {
 
     const KURL kurl(String::FromUTF8("https://www.google.com/"));
 
-    ResourceResponse response;
+    ResourceResponse response(kurl);
     response.SetHTTPHeaderField(HTTPNames::Accept_CH,
                                 test.accept_ch_header_value);
     response.SetHTTPHeaderField(HTTPNames::Accept_CH_Lifetime,
                                 test.accept_lifetime_header_value);
-    response.SetURL(kurl);
 
     ClientHintsPreferences::UpdatePersistentHintsFromHeaders(
         response, nullptr, enabled_types, &persist_duration);

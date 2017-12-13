@@ -128,14 +128,13 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
   KURL ran_url(NullURL(), "https://example-ran.test");
 
   dummy_page_holder->GetFrame().GetDocument()->SetURL(main_resource_url);
-  ResourceResponse response1;
-  response1.SetURL(ran_url);
+  ResourceResponse response1(ran_url);
   EXPECT_CALL(*client, DidRunContentWithCertificateErrors(ran_url));
   MixedContentChecker::HandleCertificateError(
       &dummy_page_holder->GetFrame(), response1, WebURLRequest::kFrameTypeNone,
       WebURLRequest::kRequestContextScript);
 
-  ResourceResponse response2;
+  ResourceResponse response2(displayed_url);
   WebURLRequest::RequestContext request_context =
       WebURLRequest::kRequestContextImage;
   ASSERT_EQ(
@@ -144,7 +143,6 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
           request_context, dummy_page_holder->GetFrame()
                                .GetSettings()
                                ->GetStrictMixedContentCheckingForPlugin()));
-  response2.SetURL(displayed_url);
   EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors(displayed_url));
   MixedContentChecker::HandleCertificateError(
       &dummy_page_holder->GetFrame(), response2, WebURLRequest::kFrameTypeNone,

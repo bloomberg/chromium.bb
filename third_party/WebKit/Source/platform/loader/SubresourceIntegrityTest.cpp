@@ -241,9 +241,8 @@ class SubresourceIntegrityTest : public ::testing::Test {
     ResourceRequest request;
     request.SetURL(url);
 
-    ResourceResponse response;
+    ResourceResponse response(url);
     response.SetHTTPStatusCode(200);
-    response.SetURL(url);
 
     if (allow_origin_url) {
       request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);

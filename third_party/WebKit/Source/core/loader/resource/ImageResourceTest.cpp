@@ -181,10 +181,8 @@ void ReceiveResponse(ImageResource* image_resource,
                      const AtomicString& mime_type,
                      const char* data,
                      size_t data_size) {
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url, mime_type);
   response.SetHTTPStatusCode(200);
-  response.SetMimeType(mime_type);
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
   image_resource->ResponseReceived(response, nullptr);
@@ -225,7 +223,7 @@ void TestThatReloadIsStartedThenServeReload(
 
   // Does Reload.
   image_resource->Loader()->DidReceiveResponse(WrappedResourceResponse(
-      ResourceResponse(test_url, "image/jpeg", kDataLength, g_null_atom)));
+      ResourceResponse(test_url, "image/jpeg", kDataLength)));
   image_resource->Loader()->DidReceiveData(data, kDataLength);
   image_resource->Loader()->DidFinishLoading(0.0, kDataLength, kDataLength,
                                              kDataLength);
@@ -270,8 +268,8 @@ void TestThatIsPlaceholderRequestAndServeResponse(
   EXPECT_EQ(0, observer->ImageChangedCount());
 
   // Serves partial response that is sufficient for creating a placeholder.
-  ResourceResponse response(
-      url, "image/jpeg", kJpegImageSubrangeWithDimensionsLength, g_null_atom);
+  ResourceResponse response(url, "image/jpeg",
+                            kJpegImageSubrangeWithDimensionsLength);
   response.SetHTTPStatusCode(206);
   response.SetHTTPHeaderField(
       "content-range", BuildContentRange(kJpegImageSubrangeWithDimensionsLength,
@@ -318,7 +316,7 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
 
   // Serves full response.
   image_resource->Loader()->DidReceiveResponse(WrappedResourceResponse(
-      ResourceResponse(url, "image/jpeg", sizeof(kJpegImage), g_null_atom)));
+      ResourceResponse(url, "image/jpeg", sizeof(kJpegImage))));
   image_resource->Loader()->DidReceiveData(
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
   image_resource->Loader()->DidFinishLoading(
@@ -367,8 +365,7 @@ TEST(ImageResourceTest, MultipartImage) {
   // Send the multipart response. No image or data buffer is created. Note that
   // the response must be routed through ResourceLoader to ensure the load is
   // flagged as multipart.
-  ResourceResponse multipart_response(NullURL(), "multipart/x-mixed-replace", 0,
-                                      g_null_atom);
+  ResourceResponse multipart_response(NullURL(), "multipart/x-mixed-replace");
   multipart_response.SetMultipartBoundary("boundary", strlen("boundary"));
   image_resource->Loader()->DidReceiveResponse(
       WrappedResourceResponse(multipart_response), nullptr);
@@ -445,8 +442,7 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
   image_resource->SetIdentifier(CreateUniqueIdentifier());
   fetcher->StartLoad(image_resource);
 
-  ResourceResponse multipart_response(NullURL(), "multipart/x-mixed-replace", 0,
-                                      g_null_atom);
+  ResourceResponse multipart_response(NullURL(), "multipart/x-mixed-replace");
   multipart_response.SetMultipartBoundary("boundary", strlen("boundary"));
   image_resource->Loader()->DidReceiveResponse(
       WrappedResourceResponse(multipart_response), nullptr);
@@ -542,9 +538,7 @@ TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
 
   // Send the image response.
   image_resource->ResponseReceived(
-      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage),
-                       g_null_atom),
-      nullptr);
+      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage)), nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
@@ -571,13 +565,10 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
 
   // Send the image response.
   image_resource->ResponseReceived(
-      ResourceResponse(NullURL(), "multipart/x-mixed-replace", 0, g_null_atom),
-      nullptr);
+      ResourceResponse(NullURL(), "multipart/x-mixed-replace"), nullptr);
 
   image_resource->ResponseReceived(
-      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage),
-                       g_null_atom),
-      nullptr);
+      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage)), nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   EXPECT_NE(0u, image_resource->EncodedSizeMemoryUsageForTesting());
@@ -615,9 +606,7 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
 
   // Send the image response.
   image_resource->ResponseReceived(
-      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage),
-                       g_null_atom),
-      nullptr);
+      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage)), nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   image_resource->FinishForTest();
@@ -656,7 +645,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
 
   // Send the image response.
   ResourceResponse resource_response(NullURL(), "image/jpeg",
-                                     sizeof(kJpegImage), g_null_atom);
+                                     sizeof(kJpegImage));
   resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
@@ -704,7 +693,7 @@ TEST_P(ImageResourceReloadTest,
 
   // Send the image response.
   ResourceResponse resource_response(NullURL(), "image/jpeg",
-                                     sizeof(kJpegImage), g_null_atom);
+                                     sizeof(kJpegImage));
   resource_response.AddHTTPHeaderField("chrome-proxy", "q=low");
 
   image_resource->ResponseReceived(resource_response, nullptr);
@@ -754,9 +743,7 @@ TEST_P(ImageResourceReloadTest,
 
   // Send the image response, without any LoFi image response headers.
   image_resource->ResponseReceived(
-      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage),
-                       g_null_atom),
-      nullptr);
+      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage)), nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   image_resource->FinishForTest();
@@ -800,7 +787,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
 
   // Send the image response.
   ResourceResponse resource_response(NullURL(), "image/jpeg",
-                                     sizeof(kJpegImage), g_null_atom);
+                                     sizeof(kJpegImage));
   resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
@@ -871,8 +858,8 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderDuringResponse) {
       MockImageResourceObserver::Create(image_resource->GetContent());
 
   // Send the image response.
-  ResourceResponse resource_response(test_url, "image/jpeg", sizeof(kJpegImage),
-                                     g_null_atom);
+  ResourceResponse resource_response(test_url, "image/jpeg",
+                                     sizeof(kJpegImage));
   resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
@@ -1049,8 +1036,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
             image_resource->GetContent()->GetImage()->height());
 
   image_resource->SetRevalidatingRequest(ResourceRequest(url));
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(304);
 
   image_resource->ResponseReceived(response, nullptr);
@@ -1085,8 +1071,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
   EXPECT_EQ(200, image_resource->GetContent()->GetImage()->height());
 
   image_resource->SetRevalidatingRequest(ResourceRequest(url));
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(304);
   image_resource->ResponseReceived(response, nullptr);
 
@@ -1277,8 +1262,7 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
       MockImageResourceObserver::Create(image_resource->GetContent());
 
   image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(
-          ResourceResponse(test_url, "image/jpeg", 18, g_null_atom)),
+      WrappedResourceResponse(ResourceResponse(test_url, "image/jpeg", 18)),
       nullptr);
 
   EXPECT_EQ(0, observer->ImageChangedCount());
@@ -1304,8 +1288,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
       MockImageResourceObserver::Create(image_resource->GetContent());
 
   image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(
-          ResourceResponse(test_url, "image/jpeg", 0, g_null_atom)),
+      WrappedResourceResponse(ResourceResponse(test_url, "image/jpeg")),
       nullptr);
 
   EXPECT_EQ(ResourceStatus::kPending, image_resource->GetStatus());
@@ -1337,8 +1320,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
       MockImageResourceObserver::Create(image_resource->GetContent());
 
   ResourceResponse partial_response(test_url, "image/jpeg",
-                                    kJpegImageSubrangeWithoutDimensionsLength,
-                                    g_null_atom);
+                                    kJpegImageSubrangeWithoutDimensionsLength);
   partial_response.SetHTTPStatusCode(206);
   partial_response.SetHTTPHeaderField(
       "content-range",
@@ -1464,8 +1446,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
 
   const char kBadData[] = "notanimageresponse";
 
-  ResourceResponse bad_response(test_url, "image/jpeg", sizeof(kBadData),
-                                g_null_atom);
+  ResourceResponse bad_response(test_url, "image/jpeg", sizeof(kBadData));
   bad_response.SetHTTPStatusCode(206);
   bad_response.SetHTTPHeaderField(
       "content-range", BuildContentRange(sizeof(kBadData), sizeof(kJpegImage)));
@@ -1507,8 +1488,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
 
   const char kBadData[] = "notanimageresponse";
 
-  ResourceResponse bad_response(test_url, "image/jpeg", sizeof(kBadData),
-                                g_null_atom);
+  ResourceResponse bad_response(test_url, "image/jpeg", sizeof(kBadData));
   bad_response.SetHTTPStatusCode(206);
   bad_response.SetHTTPHeaderField(
       "content-range", BuildContentRange(sizeof(kBadData), sizeof(kJpegImage)));
@@ -1569,9 +1549,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
 
     // TODO(hiroshige): Make the range request header and partial content length
     // consistent. https://crbug.com/689760.
-    ResourceResponse partial_response(test_url, "image/jpeg",
-                                      kJpegImageSubrangeWithoutDimensionsLength,
-                                      g_null_atom);
+    ResourceResponse partial_response(
+        test_url, "image/jpeg", kJpegImageSubrangeWithoutDimensionsLength);
     partial_response.SetHTTPStatusCode(206);
     partial_response.SetHTTPHeaderField(
         "content-range",
@@ -1718,8 +1697,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
     std::unique_ptr<MockImageResourceObserver> observer =
         MockImageResourceObserver::Create(image_resource->GetContent());
 
-    ResourceResponse response(test_url, "image/jpeg", sizeof(kJpegImage),
-                              g_null_atom);
+    ResourceResponse response(test_url, "image/jpeg", sizeof(kJpegImage));
     response.SetHTTPStatusCode(test.status_code);
     if (test.content_range != g_null_atom)
       response.SetHTTPHeaderField("content-range", test.content_range);
@@ -1777,8 +1755,7 @@ TEST(ImageResourceTest,
     std::unique_ptr<MockImageResourceObserver> observer =
         MockImageResourceObserver::Create(image_resource->GetContent());
 
-    ResourceResponse response(test_url, "image/jpeg", test.data_size,
-                              g_null_atom);
+    ResourceResponse response(test_url, "image/jpeg", test.data_size);
     response.SetHTTPStatusCode(test.status_code);
     if (test.content_range != g_null_atom)
       response.SetHTTPHeaderField("content-range", test.content_range);
@@ -1812,8 +1789,7 @@ TEST(ImageResourceTest,
 
     static const char kBadImageData[] = "bad image data";
 
-    ResourceResponse response(test_url, "image/jpeg", sizeof(kBadImageData),
-                              g_null_atom);
+    ResourceResponse response(test_url, "image/jpeg", sizeof(kBadImageData));
     response.SetHTTPStatusCode(status_code);
     image_resource->Loader()->DidReceiveResponse(
         WrappedResourceResponse(response));
@@ -1844,7 +1820,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
 
   // Send the image response.
   ResourceResponse resource_response(NullURL(), "image/jpeg",
-                                     sizeof(kJpegImage2), g_null_atom);
+                                     sizeof(kJpegImage2));
 
   image_resource->ResponseReceived(resource_response, nullptr);
 

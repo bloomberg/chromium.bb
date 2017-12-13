@@ -145,28 +145,25 @@ TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   AtomicString origin_domain = "http://127.0.0.1:8000";
   Vector<ResourceResponse> redirect_chain;
   KURL url(origin_domain + "/foo.html");
-  ResourceResponse final_response;
-  ResourceResponse redirect_response1;
-  redirect_response1.SetURL(url);
-  ResourceResponse redirect_response2;
-  redirect_response2.SetURL(url);
+  ResourceResponse redirect_response1(url);
+  ResourceResponse redirect_response2(url);
   redirect_chain.push_back(redirect_response1);
   redirect_chain.push_back(redirect_response2);
   scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::Create(url);
   // When finalResponse is an empty object.
-  EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
+  ResourceResponse empty_final_response;
+  EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, empty_final_response,
                                     *security_origin.get(),
                                     GetExecutionContext()));
-  final_response.SetURL(url);
+  ResourceResponse final_response(url);
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
                                    *security_origin.get(),
                                    GetExecutionContext()));
   // When there exist cross-origin redirects.
   AtomicString cross_origin_domain = "http://126.0.0.1:8000";
   KURL redirect_url(cross_origin_domain + "/bar.html");
-  ResourceResponse redirect_response3;
-  redirect_response3.SetURL(redirect_url);
+  ResourceResponse redirect_response3(redirect_url);
   redirect_chain.push_back(redirect_response3);
   EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
                                     *security_origin.get(),

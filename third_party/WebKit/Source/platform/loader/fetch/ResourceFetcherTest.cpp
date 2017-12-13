@@ -128,8 +128,7 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
 
   KURL url("http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   RegisterMockedURLLoadWithCustomResponse(url, response);
@@ -149,8 +148,7 @@ TEST_F(ResourceFetcherTest, Vary) {
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
   GetMemoryCache()->Add(resource);
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.SetHTTPHeaderField(HTTPNames::Vary, "*");
@@ -170,8 +168,7 @@ TEST_F(ResourceFetcherTest, Vary) {
 
 TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
   KURL url("http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
 
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
@@ -194,8 +191,7 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
 
   // When there are redirects.
   KURL redirect_url("http://127.0.0.1:8000/redirect.html");
-  ResourceResponse redirect_response;
-  redirect_response.SetURL(redirect_url);
+  ResourceResponse redirect_response(redirect_url);
   redirect_response.SetHTTPStatusCode(200);
   long long redirect_encoded_data_length = 123;
   redirect_response.SetEncodedDataLength(redirect_encoded_data_length);
@@ -211,8 +207,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
   GetMemoryCache()->Add(resource);
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.SetHTTPHeaderField(HTTPNames::Vary, "*");
@@ -232,8 +227,7 @@ TEST_F(ResourceFetcherTest, VaryResource) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
 
   KURL url("http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.SetHTTPHeaderField(HTTPNames::Vary, "*");
@@ -290,8 +284,7 @@ class RequestSameResourceOnComplete
 
 TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   KURL url("http://127.0.0.1:8000/foo.png");
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.SetHTTPHeaderField(HTTPNames::ETag, "1234567890");
@@ -690,8 +683,7 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
   GetMemoryCache()->Add(resource);
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(304);
   response.SetHTTPHeaderField("etag", "1234567890");
   resource->ResponseReceived(response, nullptr);
@@ -750,8 +742,7 @@ TEST_F(ResourceFetcherTest, ContentTypeDataURL) {
 // resources. Please see https://crbug.com/739658.
 TEST_F(ResourceFetcherTest, ContentIdURL) {
   KURL url("cid:0123456789@example.com");
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   RegisterMockedURLLoadWithCustomResponse(url, response);
 

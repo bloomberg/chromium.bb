@@ -148,10 +148,11 @@ class PLATFORM_EXPORT ResourceResponse final {
   std::unique_ptr<CrossThreadResourceResponseData> CopyData() const;
 
   ResourceResponse();
-  ResourceResponse(const KURL&,
-                   const AtomicString& mime_type,
-                   long long expected_length,
-                   const AtomicString& text_encoding_name);
+  explicit ResourceResponse(
+      const KURL&,
+      const AtomicString& mime_type = g_null_atom,
+      long long expected_length = 0,
+      const AtomicString& text_encoding_name = g_null_atom);
   ResourceResponse(const ResourceResponse&);
   ResourceResponse& operator=(const ResourceResponse&);
 
