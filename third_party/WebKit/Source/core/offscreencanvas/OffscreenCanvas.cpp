@@ -394,19 +394,11 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   CanvasAsyncBlobCreator* async_creator = nullptr;
-  if (context_->Is3d() &&
-      !context_->CreationAttributes().premultipliedAlpha()) {
-    ImageData* image_data = context_->ToImageData(kSnapshotReasonUnknown);
-    async_creator = CanvasAsyncBlobCreator::Create(
-        image_data->data(), encoding_mime_type, image_data->Size(), start_time,
-        ExecutionContext::From(script_state), resolver);
-  } else {
-    scoped_refptr<StaticBitmapImage> snapshot =
-        context_->GetImage(kPreferNoAcceleration, kSnapshotReasonUnknown);
-    async_creator = CanvasAsyncBlobCreator::Create(
-        snapshot, encoding_mime_type, start_time,
-        ExecutionContext::From(script_state), resolver);
-  }
+  scoped_refptr<StaticBitmapImage> snapshot =
+      context_->GetImage(kPreferNoAcceleration, kSnapshotReasonUnknown);
+  async_creator = CanvasAsyncBlobCreator::Create(
+      snapshot, encoding_mime_type, start_time,
+      ExecutionContext::From(script_state), resolver);
   async_creator->ScheduleAsyncBlobCreation(options.quality());
   return resolver->Promise();
 }

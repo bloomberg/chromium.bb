@@ -61,10 +61,6 @@ namespace viz {
 class SharedBitmap;
 }
 
-namespace WTF {
-class ArrayBufferContents;
-}
-
 namespace blink {
 class CanvasColorParams;
 class Extensions3DUtil;
@@ -215,10 +211,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                              const IntRect& src_sub_rectangle,
                              SourceDrawingBuffer);
 
-  bool PaintRenderingResultsToImageData(int&,
-                                        int&,
-                                        SourceDrawingBuffer,
-                                        WTF::ArrayBufferContents&);
+  scoped_refptr<Uint8Array> PaintRenderingResultsToDataArray(
+      SourceDrawingBuffer);
 
   int SampleCount() const { return sample_count_; }
   bool ExplicitResolveOfMultisampleData() const {

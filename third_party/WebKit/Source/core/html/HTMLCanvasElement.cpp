@@ -760,9 +760,24 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
     return nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap = nullptr;
   if (Is3d()) {
-    context_->PaintRenderingResultsToCanvas(source_buffer);
-    if (GetImageBuffer())
-      image_bitmap = GetImageBuffer()->NewImageSnapshot(hint, reason);
+    if (context_->CreationAttributes().premultipliedAlpha()) {
+      context_->PaintRenderingResultsToCanvas(source_buffer);
+      if (GetImageBuffer())
+        image_bitmap = GetImageBuffer()->NewImageSnapshot(hint, reason);
+    } else {
+      scoped_refptr<Uint8Array> data_array =
+          context_->PaintRenderingResultsToDataArray(source_buffer);
+      if (data_array) {
+        // If the accelerated canvas is too big, there is a logic in WebGL code
+        // path that scales down the drawing buffer to the maximum supported
+        // size. Hence, we need to query the adjusted size of DrawingBuffer.
+        IntSize adjusted_size = context_->DrawingBufferSize();
+        SkImageInfo info =
+            SkImageInfo::Make(adjusted_size.Width(), adjusted_size.Height(),
+                              kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+        image_bitmap = StaticBitmapImage::Create(std::move(data_array), info);
+      }
+    }
   } else if (context_ || PlaceholderFrame()) {
     DCHECK(Is2d() || PlaceholderFrame());
     if (GetImageBuffer()) {
@@ -775,24 +790,6 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
   if (!image_bitmap)
     image_bitmap = CreateTransparentImage(size_);
   return image_bitmap;
-}
-
-ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
-                                          SnapshotReason reason) const {
-  // Using ImageData requires pixel read back and converting the color
-  // components from half float to float32 if the context is using a wide color
-  // gamut. Therefore, we do this only if the context is texture backed and
-  // premultipledAlpha is set to false by the user.
-  DCHECK(Is3d() && !context_->CreationAttributes().premultipliedAlpha());
-  if (Size().IsEmpty())
-    return nullptr;
-  ImageData* image_data;
-  // Get non-premultiplied data because of inaccurate premultiplied alpha
-  // conversion of buffer()->toDataURL().
-  image_data = context_->PaintRenderingResultsToImageData(source_buffer);
-  if (image_data)
-    return image_data;
-  return ImageData::Create(size_);
 }
 
 String HTMLCanvasElement::ToDataURLInternal(
@@ -826,20 +823,10 @@ String HTMLCanvasElement::ToDataURLInternal(
     NOTREACHED();
   }
 
-  if (Is3d() && !context_->CreationAttributes().premultipliedAlpha()) {
-    ImageData* image_data = ToImageData(source_buffer, kSnapshotReasonToBlob);
-    if (image_data) {
-      return ImageDataBuffer(image_data->Size(), image_data->data()->Data())
-          .ToDataURL(encoding_mime_type, quality);
-    }
-  } else {
-    scoped_refptr<StaticBitmapImage> image_bitmap = ToStaticBitmapImage(
-        source_buffer, kPreferNoAcceleration, kSnapshotReasonToBlob);
-    if (image_bitmap) {
-      return ImageDataBuffer(image_bitmap)
-          .ToDataURL(encoding_mime_type, quality);
-    }
-  }
+  scoped_refptr<StaticBitmapImage> image_bitmap = ToStaticBitmapImage(
+      source_buffer, kPreferNoAcceleration, kSnapshotReasonToBlob);
+  if (image_bitmap)
+    return ImageDataBuffer(image_bitmap).ToDataURL(encoding_mime_type, quality);
   return String("data:,");
 }
 
@@ -894,14 +881,6 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
       mime_type, ImageEncoderUtils::kEncodeReasonToBlobCallback);
 
   CanvasAsyncBlobCreator* async_creator = nullptr;
-  if (Is3d() && !context_->CreationAttributes().premultipliedAlpha()) {
-    ImageData* image_data = ToImageData(kBackBuffer, kSnapshotReasonToBlob);
-    if (image_data) {
-      async_creator = CanvasAsyncBlobCreator::Create(
-          image_data->data(), encoding_mime_type, image_data->Size(), callback,
-          start_time, &GetDocument());
-    }
-  } else {
     scoped_refptr<StaticBitmapImage> image_bitmap = ToStaticBitmapImage(
         kBackBuffer, kPreferNoAcceleration, kSnapshotReasonToBlob);
     if (image_bitmap) {
@@ -909,7 +888,6 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
           CanvasAsyncBlobCreator::Create(image_bitmap, encoding_mime_type,
                                          callback, start_time, &GetDocument());
     }
-  }
 
   if (async_creator) {
     async_creator->ScheduleAsyncBlobCreation(quality);
