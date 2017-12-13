@@ -1296,6 +1296,9 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
 // generated from this type of devices.
 TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
        TimerBasedPhaseInfo) {
+  rwhv_mac_->set_mouse_wheel_wheel_phase_handler_timeout(
+      base::TimeDelta::FromMilliseconds(100));
+
   // Send a wheel event without phase information for scrolling by 3 lines.
   NSEvent* wheelEvent = MockScrollWheelEventWithoutPhase(3);
   [rwhv_mac_->cocoa_view() scrollWheel:wheelEvent];
@@ -1384,7 +1387,7 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(100));
+      kMaximumTimeBetweenPhaseEndedAndMomentumPhaseBegan);
   run_loop.Run();
 }
 
