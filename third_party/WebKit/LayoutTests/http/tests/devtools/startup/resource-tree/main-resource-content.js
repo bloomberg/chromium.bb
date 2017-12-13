@@ -1,19 +1,12 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/resources-test.js"></script>
-<script src="../../../inspector/resource-tree/resource-tree-test.js"></script>
-<script>
-function onload()
-{
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.showWebInspector();
-    }
-    runTest();
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  await TestRunner.setupStartupTest('resources/main-resource-content.html');
+  TestRunner.addResult(`Tests main resource content is correctly loaded and decoded using correct encoding.\n`);
+  await TestRunner.loadModule('application_test_runner');
+
   ApplicationTestRunner.runAfterResourcesAreFinished(
       ['main-resource-content-frame-utf8.php', 'main-resource-content-frame.html'], step2);
 
@@ -35,14 +28,4 @@ function test() {
     TestRunner.addResult('Resource content: ' + content);
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="onload()">
-<iframe src="resources/main-resource-content-frame.html"></iframe>
-<iframe src="resources/main-resource-content-frame-utf8.php"></iframe>
-<p>
-Tests main resource content is correctly loaded and decoded using correct encoding.
-</p>
-</body>
-</html>
+})();

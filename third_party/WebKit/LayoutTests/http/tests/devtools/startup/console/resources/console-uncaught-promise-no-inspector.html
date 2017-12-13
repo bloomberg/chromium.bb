@@ -1,9 +1,4 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/console-test.js"></script>
 <script>
-
 function createRejectedPromises()
 {
     Promise.reject(new Error("err1"))
@@ -41,45 +36,12 @@ function rejectWithDOMException()
 
     function throwDOMException()
     {
-        setTimeout(showWebInspector, 0);
+        setTimeout(() => testRunner.inspectSecondaryWindow(), 0);
         var a = document.createElement("div");
         var b = document.createElement("div");
         a.removeChild(b);
     }
 }
 
-function onload()
-{
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    createRejectedPromises();
-}
-
-function showWebInspector()
-{
-    if (window.testRunner)
-        testRunner.showWebInspector();
-    runTest();
-}
-
-function test() {
-  ConsoleTestRunner.expandConsoleMessages(onExpanded);
-
-  function onExpanded() {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-    TestRunner.completeTest();
-  }
-}
-
+createRejectedPromises();
 </script>
-</head>
-
-<body onload="onload()">
-<p>
-Tests that uncaught promise rejection messages have line numbers when the inspector is closed and stack traces are not collected.
-</p>
-
-</body>
-</html>

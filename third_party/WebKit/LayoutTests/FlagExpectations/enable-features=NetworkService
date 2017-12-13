@@ -182,7 +182,7 @@ crbug.com/764474 fast/loader/reload-zero-byte-plugin.html [ Failure ]
 crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeout ]
 
 # DevTools crbug.com/783982
-crbug.com/783982 http/tests/devtools/startup/console/console-uncaught-promise-no-inspector.html [ Failure ]
+crbug.com/783982 http/tests/devtools/startup/console/console-uncaught-promise-no-inspector.js [ Failure ]
 crbug.com/783982 http/tests/devtools/elements/styles-2/property-ui-location.js [ Failure ]
 crbug.com/783982 http/tests/devtools/elements/styles-1/empty-background-url.js [ Failure ]
 
