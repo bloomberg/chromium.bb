@@ -796,11 +796,16 @@ crbug.com/538697 [ Win ] virtual/threaded/printing/webgl-oversized-printing.html
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 # ====== Out of Blink CORS related tests BEGIN ======
-# TODO(toyoshim, tyoshino, kinuko): Make following tests pass. See crbug.com/736308.
+# TODO(toyoshim, tyoshino, kinuko): Make following tests pass.
+# See crbug.com/736308 for more details. Since outofblink-cors is still under
+# development, just marking failed tests here is fine enough for tests under
+# virtual/outofblink-cors.
+#
 # ./Tools/Scripts/run-webkit-tests virtual/outofblink-cors
 # Found 2061 tests; running 2060, skipping 1.
 # 2060 tests ran as expected (1968 passed, 92 didn't).
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/upload-onprogress-event.html [ Pass Crash ]
+
+# Crashing tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-cors-xhr.https.html [ Failure Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-network-error.https.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-request-fallback.https.html [ Crash Failure ]
@@ -810,14 +815,17 @@ crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/referer.https.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/referrer-policy-header.https.html [ Crash ]
 
+crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-onload-event.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-onloadend-event-after-abort.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-onloadend-event-after-load.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-onloadstart-event.html [ Pass Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-onprogress-event.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-progress-events.html [ Crash Timeout Pass ]
+crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/upload-onprogress-event.html [ Pass Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Crash ]
 
+# Timeout tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight-status.any.html [ Pass Timeout ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.html [ Pass Timeout ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-location.html [ Pass Timeout ]
@@ -829,6 +837,7 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/http-cache/status.ht
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Timeout ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Timeout ]
 
+# Failing tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-cache.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-referrer-policy.https.html [ Failure ]
