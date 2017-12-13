@@ -161,7 +161,7 @@ void AudioManagerBase::GetAudioDeviceDescriptions(
   for (const auto& name : device_names) {
     if (name.unique_id == real_default_device_id)
       real_default_name = name.device_name;
-    else if (name.unique_id == real_communications_device_id)
+    if (name.unique_id == real_communications_device_id)
       real_communications_name = name.device_name;
   }
 
