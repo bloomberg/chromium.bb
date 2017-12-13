@@ -1656,7 +1656,10 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
       }
       break;
     }
-
+    case CSSPropertyDisplay:
+      if (value_id == CSSValueContents)
+        context.Count(WebFeature::kCSSValueDisplayContents);
+      break;
     default:
       break;
   }
