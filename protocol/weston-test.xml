@@ -89,6 +89,15 @@
 		provided buffer.
 	  </description>
     </event>
+    <request name="send_touch">
+      <arg name="tv_sec_hi" type="uint"/>
+      <arg name="tv_sec_lo" type="uint"/>
+      <arg name="tv_nsec" type="uint"/>
+      <arg name="touch_id" type="int"/>
+      <arg name="x" type="fixed"/>
+      <arg name="y" type="fixed"/>
+      <arg name="touch_type" type="uint"/>
+    </request>
   </interface>
 
   <interface name="weston_test_runner" version="1">

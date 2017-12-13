@@ -500,6 +500,21 @@ capture_screenshot(struct wl_client *client,
 				     capture_screenshot_done, resource);
 }
 
+static void
+send_touch(struct wl_client *client, struct wl_resource *resource,
+	   uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec,
+	   int32_t touch_id, wl_fixed_t x, wl_fixed_t y, uint32_t touch_type)
+{
+	struct weston_test *test = wl_resource_get_user_data(resource);
+	struct weston_seat *seat = get_seat(test);
+	struct timespec time;
+
+	timespec_from_proto(&time, tv_sec_hi, tv_sec_lo, tv_nsec);
+
+	notify_touch(seat, &time, touch_id, wl_fixed_to_double(x),
+		     wl_fixed_to_double(y), touch_type);
+}
+
 static const struct weston_test_interface test_implementation = {
 	move_surface,
 	move_pointer,
@@ -509,6 +524,7 @@ static const struct weston_test_interface test_implementation = {
 	device_release,
 	device_add,
 	capture_screenshot,
+	send_touch,
 };
 
 static void

@@ -1233,7 +1233,8 @@ weston_tests =					\
 	roles.weston				\
 	subsurface.weston			\
 	subsurface-shot.weston			\
-	devices.weston
+	devices.weston				\
+	touch.weston
 
 ivi_tests =
 
@@ -1427,6 +1428,10 @@ nodist_viewporter_weston_SOURCES =		\
 	protocol/viewporter-client-protocol.h
 viewporter_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 viewporter_weston_LDADD = libtest-client.la
+
+touch_weston_SOURCES = tests/touch-test.c
+touch_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+touch_weston_LDADD = libtest-client.la
 
 if ENABLE_XWAYLAND_TEST
 weston_tests +=	xwayland-test.weston

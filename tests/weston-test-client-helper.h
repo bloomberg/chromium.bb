@@ -120,6 +120,9 @@ struct touch {
 	int up_id; /* id of last wl_touch.up event */
 	int frame_no;
 	int cancel_no;
+	uint32_t down_time_msec;
+	uint32_t up_time_msec;
+	uint32_t motion_time_msec;
 };
 
 struct output {

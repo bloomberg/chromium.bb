@@ -315,14 +315,16 @@ static const struct wl_keyboard_listener keyboard_listener = {
 
 static void
 touch_handle_down(void *data, struct wl_touch *wl_touch,
-		  uint32_t serial, uint32_t time, struct wl_surface *surface,
-		  int32_t id, wl_fixed_t x_w, wl_fixed_t y_w)
+		  uint32_t serial, uint32_t time_msec,
+		  struct wl_surface *surface, int32_t id,
+		  wl_fixed_t x_w, wl_fixed_t y_w)
 {
 	struct touch *touch = data;
 
 	touch->down_x = wl_fixed_to_int(x_w);
 	touch->down_y = wl_fixed_to_int(y_w);
 	touch->id = id;
+	touch->down_time_msec = time_msec;
 
 	fprintf(stderr, "test-client: got touch down %d %d, surf: %p, id: %d\n",
 		touch->down_x, touch->down_y, surface, id);
@@ -330,21 +332,24 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 
 static void
 touch_handle_up(void *data, struct wl_touch *wl_touch,
-		uint32_t serial, uint32_t time, int32_t id)
+		uint32_t serial, uint32_t time_msec, int32_t id)
 {
 	struct touch *touch = data;
 	touch->up_id = id;
+	touch->up_time_msec = time_msec;
 
 	fprintf(stderr, "test-client: got touch up, id: %d\n", id);
 }
 
 static void
 touch_handle_motion(void *data, struct wl_touch *wl_touch,
-		    uint32_t time, int32_t id, wl_fixed_t x_w, wl_fixed_t y_w)
+		    uint32_t time_msec, int32_t id,
+		    wl_fixed_t x_w, wl_fixed_t y_w)
 {
 	struct touch *touch = data;
 	touch->x = wl_fixed_to_int(x_w);
 	touch->y = wl_fixed_to_int(y_w);
+	touch->motion_time_msec = time_msec;
 
 	fprintf(stderr, "test-client: got touch motion, %d %d, id: %d\n",
 		touch->x, touch->y, id);
