@@ -37,15 +37,45 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   void Run(bool update_legacy = true);
 
  private:
+  // Information needed to position descendant within a containing block.
+  // Geometry expressed here is complicated:
+  // There are two types of containing blocks:
+  // 1) Default containing block (DCB)
+  //    Containing block passed in NGOutOfFlowLayoutPart constructor.
+  //    It is the block element inside which this algorighm runs.
+  //    All OOF descendants not in inline containing block are placed in DCB.
+  // 2) Inline containing block
+  //    OOF descendants might be positioned wrt inline containing block.
+  //    Inline containing block is positioned wrt default containing block.
+  struct ContainingBlockInfo {
+    STACK_ALLOCATED();
+    // Containing block style.
+    const ComputedStyle* style;
+    // Logical in containing block coordinates.
+    NGLogicalSize content_size;
+    // Content offset wrt border box.
+    NGLogicalOffset content_offset;
+    // Physical content offset wrt border box.
+    NGPhysicalOffset content_physical_offset;
+    // Logical offset wrt default containing block.
+    NGLogicalOffset default_container_offset;
+  };
+
+  ContainingBlockInfo GetContainingBlockInfo(
+      const NGOutOfFlowPositionedDescendant&) const;
+
+  void ComputeInlineContainingBlocks(Vector<NGOutOfFlowPositionedDescendant>);
+
   scoped_refptr<NGLayoutResult> LayoutDescendant(
-      NGBlockNode descendant,
-      NGStaticPosition static_position,
+      const NGOutOfFlowPositionedDescendant&,
       NGLogicalOffset* offset);
 
-  bool IsContainingBlockForDescendant(const ComputedStyle& descendant_style);
+  bool IsContainingBlockForDescendant(
+      const NGOutOfFlowPositionedDescendant& descendant);
 
   scoped_refptr<NGLayoutResult> GenerateFragment(
       NGBlockNode node,
+      const ContainingBlockInfo&,
       const Optional<LayoutUnit>& block_estimate,
       const NGAbsolutePhysicalPosition node_position);
 
@@ -54,10 +84,12 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   bool contains_absolute_;
   bool contains_fixed_;
+  ContainingBlockInfo default_containing_block_;
   NGLogicalOffset content_offset_;
   NGPhysicalOffset content_physical_offset_;
   NGLogicalSize container_size_;
   NGPhysicalSize icb_size_;
+  HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;
 };
 
 }  // namespace blink
