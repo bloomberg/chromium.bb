@@ -94,11 +94,13 @@ source_set("zlib_inflate_chunk_simd") {
         "contrib/optimizations/inflate.c",
       ]
 
-      if (!is_debug) {
-        # Use optimize_speed (-O3) to output the _smallest_ code.
-        configs -= [ "//build/config/compiler:default_optimization" ]
-        configs += [ "//build/config/compiler:optimize_speed" ]
-      }
+      # TODO(772870) back off from -O3 while investigating Android
+      # One perf bot PNG decode regression.
+      # if (!is_debug) {
+      #  # Use optimize_speed (-O3) to output the _smallest_ code.
+      #  configs -= [ "//build/config/compiler:default_optimization" ]
+      #  configs += [ "//build/config/compiler:optimize_speed" ]
+      # }
     }
   }
 
