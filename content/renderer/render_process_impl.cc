@@ -156,6 +156,7 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfNotFeature(features::kAsmJsToWebAssembly, "--no-validate-asm");
   SetV8FlagIfNotFeature(features::kWebAssembly,
                         "--wasm-disable-structured-cloning");
+  SetV8FlagIfFeature(features::kV8BackgroundCompile, "--background-compile");
 
   SetV8FlagIfFeature(features::kV8VmFuture, "--future");
   SetV8FlagIfNotFeature(features::kV8VmFuture, "--no-future");
