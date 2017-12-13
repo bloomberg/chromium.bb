@@ -10,7 +10,6 @@ import os
 import shutil
 import re
 import sys
-import textwrap
 
 from util import build_utils
 from util import md5_check
@@ -52,14 +51,6 @@ def ColorJavacOutput(output):
     return line
 
   return '\n'.join(map(ApplyColor, output.split('\n')))
-
-
-def _FilterJavaFiles(paths, filters):
-  return [f for f in paths
-          if not filters or build_utils.MatchesGlob(f, filters)]
-
-
-_MAX_MANIFEST_LINE_LEN = 72
 
 
 def _ExtractClassFiles(jar_path, dest_dir, java_files):
@@ -161,9 +152,6 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
 
   with build_utils.TempDir() as temp_dir:
     srcjars = options.java_srcjars
-    # The .excluded.jar contains .class files excluded from the main jar.
-    # It is used for incremental compiles.
-    excluded_jar_path = options.jar_path.replace('.jar', '.excluded.jar')
 
     classes_dir = os.path.join(temp_dir, 'classes')
     os.makedirs(classes_dir)
@@ -206,7 +194,6 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
                                for f in changes.IterChangedSubpaths(srcjar))
         build_utils.ExtractAll(srcjar, path=java_dir, pattern='*.java')
       jar_srcs = build_utils.FindInDirectory(java_dir, '*.java')
-      jar_srcs = _FilterJavaFiles(jar_srcs, options.javac_includes)
       java_files.extend(jar_srcs)
       if changed_paths:
         # Set the mtime of all sources to 0 since we use the absence of .class
@@ -219,8 +206,6 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
         changed_java_files = [p for p in java_files if p in changed_paths]
         if os.path.exists(options.jar_path):
           _ExtractClassFiles(options.jar_path, classes_dir, changed_java_files)
-        if os.path.exists(excluded_jar_path):
-          _ExtractClassFiles(excluded_jar_path, classes_dir, changed_java_files)
         # Add the extracted files to the classpath. This is required because
         # when compiling only a subset of files, classes that haven't changed
         # need to be findable.
@@ -263,18 +248,8 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
       # Make sure output exists.
       build_utils.Touch(pdb_path)
 
-    glob = options.jar_excluded_classes
-    inclusion_predicate = lambda f: not build_utils.MatchesGlob(f, glob)
-    exclusion_predicate = lambda f: not inclusion_predicate(f)
-
     jar.JarDirectory(classes_dir,
                      options.jar_path,
-                     predicate=inclusion_predicate,
-                     provider_configurations=options.provider_configurations,
-                     additional_files=options.additional_jar_files)
-    jar.JarDirectory(classes_dir,
-                     excluded_jar_path,
-                     predicate=exclusion_predicate,
                      provider_configurations=options.provider_configurations,
                      additional_files=options.additional_jar_files)
 
@@ -290,9 +265,6 @@ def _ParseOptions(argv):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
 
-  parser.add_option(
-      '--src-gendirs',
-      help='Directories containing generated java files.')
   parser.add_option(
       '--java-srcjars',
       action='append',
@@ -320,15 +292,6 @@ def _ParseOptions(argv):
       action='store_true',
       help='Whether to re-use .class files rather than recompiling them '
            '(when possible).')
-  parser.add_option(
-      '--javac-includes',
-      default='',
-      help='A list of file patterns. If provided, only java files that match'
-      'one of the patterns will be compiled.')
-  parser.add_option(
-      '--jar-excluded-classes',
-      default='',
-      help='List of .class file patterns to exclude from the jar.')
   parser.add_option(
       '--processors',
       action='append',
@@ -365,7 +328,6 @@ def _ParseOptions(argv):
       '--use-errorprone-path',
       help='Use the Errorprone compiler at this path.')
   parser.add_option('--jar-path', help='Jar output path.')
-  parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option(
       '--javac-arg',
       action='append',
@@ -400,13 +362,6 @@ def _ParseOptions(argv):
     additional_jar_files.append((filepath, jar_filepath))
   options.additional_jar_files = additional_jar_files
 
-  if options.src_gendirs:
-    options.src_gendirs = build_utils.ParseGnList(options.src_gendirs)
-
-  options.javac_includes = build_utils.ParseGnList(options.javac_includes)
-  options.jar_excluded_classes = (
-      build_utils.ParseGnList(options.jar_excluded_classes))
-
   java_files = []
   for arg in args:
     # Interpret a path prefixed with @ as a file containing a list of sources.
@@ -423,11 +378,6 @@ def main(argv):
 
   argv = build_utils.ExpandFileArgs(argv)
   options, java_files = _ParseOptions(argv)
-
-  if options.src_gendirs:
-    java_files += build_utils.FindInDirectories(options.src_gendirs, '*.java')
-
-  java_files = _FilterJavaFiles(java_files, options.javac_includes)
 
   if options.use_errorprone_path:
     javac_path = options.use_errorprone_path
@@ -488,7 +438,6 @@ def main(argv):
 
   output_paths = [
       options.jar_path,
-      options.jar_path.replace('.jar', '.excluded.jar'),
   ]
   if options.incremental:
     output_paths.append(options.jar_path + '.pdb')
