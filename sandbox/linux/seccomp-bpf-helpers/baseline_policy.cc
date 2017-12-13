@@ -268,9 +268,10 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
 
 }  // namespace.
 
-// Unfortunately C++03 doesn't allow delegated constructors.
-// Call other constructor when C++11 lands.
-BaselinePolicy::BaselinePolicy() : BaselinePolicy(EPERM) {}
+BaselinePolicy::BaselinePolicy() : BaselinePolicy(EPERM) {
+  // Allocate crash keys set by Seccomp signal handlers.
+  AllocateCrashKeys();
+}
 
 BaselinePolicy::BaselinePolicy(int fs_denied_errno)
     : fs_denied_errno_(fs_denied_errno), policy_pid_(sys_getpid()) {
