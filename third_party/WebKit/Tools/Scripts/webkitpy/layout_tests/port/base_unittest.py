@@ -808,6 +808,7 @@ class PortTest(unittest.TestCase):
         self._assert_config_file_for_platform(port, 'linux', 'apache2-httpd-2.2.conf')
         self._assert_config_file_for_linux_distribution(port, 'arch', 'arch-httpd-2.2.conf')
         self._assert_config_file_for_linux_distribution(port, 'debian', 'debian-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'fedora', 'fedora-httpd-2.2.conf')
         self._assert_config_file_for_linux_distribution(port, 'slackware', 'apache2-httpd-2.2.conf')
         self._assert_config_file_for_linux_distribution(port, 'redhat', 'redhat-httpd-2.2.conf')
 
