@@ -341,7 +341,9 @@ weston_presentation_feedback_present(
 {
 	struct wl_client *client = wl_resource_get_client(feedback->resource);
 	struct wl_resource *o;
-	uint64_t secs;
+	uint32_t tv_sec_hi;
+	uint32_t tv_sec_lo;
+	uint32_t tv_nsec;
 
 	wl_resource_for_each(o, &output->resource_list) {
 		if (wl_resource_get_client(o) != client)
@@ -350,10 +352,9 @@ weston_presentation_feedback_present(
 		wp_presentation_feedback_send_sync_output(feedback->resource, o);
 	}
 
-	secs = ts->tv_sec;
+	timespec_to_proto(ts, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
 	wp_presentation_feedback_send_presented(feedback->resource,
-						secs >> 32, secs & 0xffffffff,
-						ts->tv_nsec,
+						tv_sec_hi, tv_sec_lo, tv_nsec,
 						refresh_nsec,
 						seq >> 32, seq & 0xffffffff,
 						flags | feedback->psf_flags);

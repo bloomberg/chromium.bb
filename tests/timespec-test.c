@@ -79,6 +79,35 @@ ZUC_TEST(timespec_test, timespec_to_msec)
 	ZUC_ASSERT_EQ(timespec_to_msec(&a), (4000ULL) + 4);
 }
 
+ZUC_TEST(timespec_test, timespec_to_proto)
+{
+	struct timespec a;
+	uint32_t tv_sec_hi;
+	uint32_t tv_sec_lo;
+	uint32_t tv_nsec;
+
+	a.tv_sec = 0;
+	a.tv_nsec = 0;
+	timespec_to_proto(&a, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
+	ZUC_ASSERT_EQ(0, tv_sec_hi);
+	ZUC_ASSERT_EQ(0, tv_sec_lo);
+	ZUC_ASSERT_EQ(0, tv_nsec);
+
+	a.tv_sec = 1234;
+	a.tv_nsec = NSEC_PER_SEC - 1;
+	timespec_to_proto(&a, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
+	ZUC_ASSERT_EQ(0, tv_sec_hi);
+	ZUC_ASSERT_EQ(1234, tv_sec_lo);
+	ZUC_ASSERT_EQ(NSEC_PER_SEC - 1, tv_nsec);
+
+	a.tv_sec = (time_t)0x7000123470005678LL;
+	a.tv_nsec = 1;
+	timespec_to_proto(&a, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
+	ZUC_ASSERT_EQ((uint64_t)a.tv_sec >> 32, tv_sec_hi);
+	ZUC_ASSERT_EQ(0x70005678, tv_sec_lo);
+	ZUC_ASSERT_EQ(1, tv_nsec);
+}
+
 ZUC_TEST(timespec_test, millihz_to_nsec)
 {
 	ZUC_ASSERT_EQ(millihz_to_nsec(60000), 16666666);
