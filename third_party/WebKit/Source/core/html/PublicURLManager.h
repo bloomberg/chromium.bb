@@ -29,6 +29,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -49,16 +50,9 @@ class PublicURLManager final
   // Generates a new Blob URL and registers the URLRegistrable to the
   // corresponding URLRegistry with the Blob URL. Returns the serialization
   // of the Blob URL.
-  //
-  // |uuid| can be used for revoke() to revoke all URLs associated with the
-  // |uuid|. It's not the UUID generated and appended to the BlobURL, but an
-  // identifier for the object to which URL(s) are generated e.g. ones
-  // returned by blink::Blob::uuid().
-  String RegisterURL(ExecutionContext*, URLRegistrable*, const String& uuid);
+  String RegisterURL(ExecutionContext*, URLRegistrable*);
   // Revokes the given URL.
   void Revoke(const KURL&);
-  // Revokes all URLs associated with |uuid|.
-  void Revoke(const String& uuid);
 
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
@@ -68,16 +62,11 @@ class PublicURLManager final
  private:
   explicit PublicURLManager(ExecutionContext*);
 
-  // One or more URLs can be associated with the same unique ID.
-  // Objects need be revoked by unique ID in some cases.
   typedef String URLString;
-  typedef HashMap<URLString, String> URLMap;
-  // Map from URLRegistry instances to the maps which store association
-  // between URLs registered with the URLRegistry and UUIDs assigned for
-  // each of the URLs.
-  typedef HashMap<URLRegistry*, URLMap> RegistryURLMap;
+  // Map from URLs to the URLRegistry they are registered with.
+  typedef HashMap<URLString, URLRegistry*> URLToRegistryMap;
+  URLToRegistryMap url_to_registry_;
 
-  RegistryURLMap registry_to_url_;
   bool is_stopped_;
 };
 
