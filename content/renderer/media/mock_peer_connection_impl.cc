@@ -155,6 +155,11 @@ void FakeRtpReceiver::SetObserver(
   NOTIMPLEMENTED();
 }
 
+std::vector<webrtc::RtpSource> FakeRtpReceiver::GetSources() const {
+  NOTIMPLEMENTED();
+  return std::vector<webrtc::RtpSource>();
+}
+
 const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
 const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 
