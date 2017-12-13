@@ -227,9 +227,9 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
   // Note that this is a completely synchronous operation: The CT Log Verifier
   // gets all the data it needs for SCT verification and does not do any
   // external communication.
-  cert_transparency_verifier_->Verify(cert_.get(), std::string(), cert_sct,
-                                      &verify_details_->ct_verify_result.scts,
-                                      net_log_);
+  cert_transparency_verifier_->Verify(
+      hostname, cert_.get(), std::string(), cert_sct,
+      &verify_details_->ct_verify_result.scts, net_log_);
 
   // We call VerifySignature first to avoid copying of server_config and
   // signature.

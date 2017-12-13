@@ -822,6 +822,13 @@ class BlockableHostResolver : public HostResolver {
     return ERR_DNS_CACHE_MISS;
   }
 
+  bool HasCached(base::StringPiece hostname,
+                 HostCache::Entry::Source* source_out,
+                 HostCache::EntryStaleness* stale_out) const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   void IncreaseNumOfCancelledRequests() { num_cancelled_requests_++; }
 
   void SetAction(const base::Callback<void(void)>& action) { action_ = action; }

@@ -1198,7 +1198,9 @@ void ProfileIOData::Init(
   ct_verifier->AddLogs(io_thread_globals->ct_logs);
 
   ct_tree_tracker_.reset(new certificate_transparency::TreeStateTracker(
-      io_thread_globals->ct_logs, io_thread->net_log()));
+      io_thread_globals->ct_logs,
+      io_thread_globals->system_request_context->host_resolver(),
+      io_thread->net_log()));
   ct_verifier->SetObserver(ct_tree_tracker_.get());
 
   builder->set_ct_verifier(std::move(ct_verifier));

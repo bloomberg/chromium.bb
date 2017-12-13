@@ -34,6 +34,7 @@ const base::Feature kCTLogAuditing = {"CertificateTransparencyLogAuditing",
 
 TreeStateTracker::TreeStateTracker(
     std::vector<scoped_refptr<const CTLogVerifier>> ct_logs,
+    net::HostResolver* host_resolver,
     net::NetLog* net_log) {
   if (!base::FeatureList::IsEnabled(kCTLogAuditing))
     return;
@@ -48,20 +49,21 @@ TreeStateTracker::TreeStateTracker(
 
   for (const auto& log : ct_logs) {
     tree_trackers_[log->key_id()].reset(
-        new SingleTreeTracker(log, dns_client_.get(), net_log));
+        new SingleTreeTracker(log, dns_client_.get(), host_resolver, net_log));
   }
 }
 
 TreeStateTracker::~TreeStateTracker() {}
 
-void TreeStateTracker::OnSCTVerified(X509Certificate* cert,
+void TreeStateTracker::OnSCTVerified(base::StringPiece hostname,
+                                     X509Certificate* cert,
                                      const SignedCertificateTimestamp* sct) {
   auto it = tree_trackers_.find(sct->log_id);
   // Ignore if the SCT is from an unknown log.
   if (it == tree_trackers_.end())
     return;
 
-  it->second->OnSCTVerified(cert, sct);
+  it->second->OnSCTVerified(hostname, cert, sct);
 }
 
 void TreeStateTracker::NewSTHObserved(const SignedTreeHead& sth) {

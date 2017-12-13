@@ -21,17 +21,20 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
+#include "net/cert/ct_verifier.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/simple_connection_listener.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -70,10 +73,11 @@ class TestURLFetcherDelegate : public net::URLFetcherDelegate {
 };
 
 // Runs a task on the IOThread and waits for it to complete.
-void RunOnIOThreadBlocking(const base::Closure& task) {
+void RunOnIOThreadBlocking(base::OnceClosure task) {
   base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE, task, run_loop.QuitClosure());
+  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
+                                           FROM_HERE, std::move(task),
+                                           run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -107,6 +111,13 @@ void CheckEffectiveConnectionType(IOThread* io_thread,
   EXPECT_EQ(expected,
             io_thread->globals()
                 ->network_quality_estimator->GetEffectiveConnectionType());
+}
+
+void CheckSCTsAreSentToTreeTracker(IOThread* io_thread) {
+  EXPECT_EQ(io_thread->ct_tree_tracker(),
+            io_thread->globals()
+                ->system_request_context->cert_transparency_verifier()
+                ->GetObserver());
 }
 
 class IOThreadBrowserTest : public InProcessBrowserTest {
@@ -191,6 +202,12 @@ IN_PROC_BROWSER_TEST_F(IOThreadBrowserTest, UpdateDelegateWhitelist) {
   RunOnIOThreadBlocking(
       base::Bind(&CheckCanDelegate,
                  base::Unretained(g_browser_process->io_thread()), true, url));
+}
+
+IN_PROC_BROWSER_TEST_F(IOThreadBrowserTest, SCTsAreSentToTreeTracker) {
+  RunOnIOThreadBlocking(
+      base::BindOnce(&CheckSCTsAreSentToTreeTracker,
+                     base::Unretained(g_browser_process->io_thread())));
 }
 
 class IOThreadEctCommandLineBrowserTest : public IOThreadBrowserTest {

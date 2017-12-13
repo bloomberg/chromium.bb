@@ -220,6 +220,8 @@ class IOThread : public content::BrowserThreadDelegate {
   // in-process NetworkService that lives on the IO thread.
   content::mojom::NetworkService* GetNetworkServiceOnUIThread();
 
+  certificate_transparency::TreeStateTracker* ct_tree_tracker() const;
+
  private:
   // BrowserThreadDelegate implementation, runs on the IO thread.
   // This handles initialization and destruction of state that must

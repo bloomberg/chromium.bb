@@ -7780,6 +7780,7 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Obtained valid inclusion proof"/>
   <int value="1" label="Failed getting inclusion proof"/>
   <int value="2" label="Obtained inclusion proof is invalid"/>
+  <int value="3" label="DNS configuration is invalid"/>
 </enum>
 
 <enum name="CTRequirementCompliance">
@@ -37374,6 +37375,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Requires newer STH"/>
   <int value="2" label="Can be checked for inclusion"/>
   <int value="3" label="Queue is full"/>
+  <int value="4" label="No DNS lookup performed"/>
 </enum>
 
 <enum name="SCTOrigin">

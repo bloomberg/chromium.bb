@@ -180,6 +180,16 @@ class NET_EXPORT HostCache {
            base::TimeTicks now,
            base::TimeDelta ttl);
 
+  // Checks whether an entry exists for |hostname|.
+  // If so, returns true and writes the source (e.g. DNS, HOSTS file, etc.) to
+  // |source_out| and the staleness to |stale_out| (if they are not null).
+  // It tries using two common address_family and host_resolver_flag
+  // combinations when performing lookups in the cache; this means false
+  // negatives are possible, but unlikely.
+  bool HasEntry(base::StringPiece hostname,
+                HostCache::Entry::Source* source_out,
+                HostCache::EntryStaleness* stale_out);
+
   // Marks all entries as stale on account of a network change.
   void OnNetworkChange();
 

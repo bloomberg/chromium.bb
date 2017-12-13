@@ -2111,6 +2111,15 @@ HostCache* HostResolverImpl::GetHostCache() {
   return cache_.get();
 }
 
+bool HostResolverImpl::HasCached(base::StringPiece hostname,
+                                 HostCache::Entry::Source* source_out,
+                                 HostCache::EntryStaleness* stale_out) const {
+  if (!cache_)
+    return false;
+
+  return cache_->HasEntry(hostname, source_out, stale_out);
+}
+
 std::unique_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
   // Check if async DNS is disabled.
   if (!dns_client_.get())

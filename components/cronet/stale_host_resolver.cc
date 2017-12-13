@@ -404,6 +404,13 @@ int StaleHostResolver::ResolveFromCache(const RequestInfo& info,
   return inner_resolver_->ResolveFromCache(info, addresses, net_log);
 }
 
+bool StaleHostResolver::HasCached(
+    base::StringPiece hostname,
+    net::HostCache::Entry::Source* source_out,
+    net::HostCache::EntryStaleness* stale_out) const {
+  return inner_resolver_->HasCached(hostname, source_out, stale_out);
+}
+
 void StaleHostResolver::SetDnsClientEnabled(bool enabled) {
   inner_resolver_->SetDnsClientEnabled(enabled);
 }

@@ -187,6 +187,17 @@ class NET_EXPORT HostResolver {
   // Used primarily to clear the cache and for getting debug information.
   virtual HostCache* GetHostCache();
 
+  // Checks whether this HostResolver has cached a resolution for the given
+  // hostname (or IP address literal). If so, returns true and writes the source
+  // of the resolution (e.g. DNS, HOSTS file, etc.) to |source_out| and the
+  // staleness of the resolution to |stale_out| (if they are not null).
+  // It tries using two common address_family and host_resolver_flag
+  // combinations when checking the cache; this means false negatives are
+  // possible, but unlikely.
+  virtual bool HasCached(base::StringPiece hostname,
+                         HostCache::Entry::Source* source_out,
+                         HostCache::EntryStaleness* stale_out) const = 0;
+
   // Returns the current DNS configuration |this| is using, as a Value, or
   // nullptr if it's configured to always use the system host resolver.
   virtual std::unique_ptr<base::Value> GetDnsConfigAsValue() const;

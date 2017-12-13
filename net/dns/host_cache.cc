@@ -551,4 +551,31 @@ void HostCache::RecordEraseAll(EraseReason reason, base::TimeTicks now) {
     RecordErase(reason, now, it.second);
 }
 
+bool HostCache::HasEntry(base::StringPiece hostname,
+                         HostCache::Entry::Source* source_out,
+                         HostCache::EntryStaleness* stale_out) {
+  net::HostCache::Key cache_key;
+  hostname.CopyToString(&cache_key.hostname);
+
+  const HostCache::Entry* entry =
+      LookupStale(cache_key, base::TimeTicks::Now(), stale_out);
+  if (!entry) {
+    // Might not have found the cache entry because the address_family or
+    // host_resolver_flags in cache_key do not match those used for the
+    // original DNS lookup. Try another common combination of address_family
+    // and host_resolver_flags in an attempt to find a matching cache entry.
+    cache_key.address_family = net::ADDRESS_FAMILY_IPV4;
+    cache_key.host_resolver_flags =
+        net::HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
+    entry = LookupStale(cache_key, base::TimeTicks::Now(), stale_out);
+    if (!entry)
+      return false;
+  }
+
+  if (source_out != nullptr)
+    *source_out = entry->source();
+
+  return true;
+}
+
 }  // namespace net

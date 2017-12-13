@@ -507,17 +507,6 @@ void IOThread::Init() {
   globals_->network_quality_observer = content::CreateNetworkQualityObserver(
       globals_->network_quality_estimator.get());
 
-  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
-      net::ct::CreateLogVerifiersForKnownLogs());
-
-  globals_->ct_logs.assign(ct_logs.begin(), ct_logs.end());
-
-  ct_tree_tracker_ =
-      std::make_unique<certificate_transparency::TreeStateTracker>(
-          globals_->ct_logs, net_log_);
-  // Register the ct_tree_tracker_ as observer for new STHs.
-  RegisterSTHObserver(ct_tree_tracker_.get());
-
   globals_->dns_probe_service =
       std::make_unique<chrome_browser_net::DnsProbeService>();
 
@@ -545,6 +534,21 @@ void IOThread::Init() {
   ConstructSystemRequestContext();
 
   UpdateDnsClientEnabled();
+
+  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
+      net::ct::CreateLogVerifiersForKnownLogs());
+
+  globals_->ct_logs.assign(ct_logs.begin(), ct_logs.end());
+
+  ct_tree_tracker_ =
+      std::make_unique<certificate_transparency::TreeStateTracker>(
+          globals_->ct_logs, globals_->system_request_context->host_resolver(),
+          net_log_);
+  // Register the ct_tree_tracker_ as observer for new STHs.
+  RegisterSTHObserver(ct_tree_tracker_.get());
+  // Register the ct_tree_tracker_ as observer for verified SCTs.
+  globals_->system_request_context->cert_transparency_verifier()->SetObserver(
+      ct_tree_tracker_.get());
 }
 
 void IOThread::CleanUp() {
@@ -743,6 +747,10 @@ content::mojom::NetworkService* IOThread::GetNetworkServiceOnUIThread() {
   }
 }
 
+certificate_transparency::TreeStateTracker* IOThread::ct_tree_tracker() const {
+  return ct_tree_tracker_.get();
+}
+
 void IOThread::ConstructSystemRequestContext() {
   DCHECK(network_service_request_.is_pending());
 
@@ -795,10 +803,6 @@ void IOThread::ConstructSystemRequestContext() {
       base::MakeUnique<net::MultiLogCTVerifier>();
   // Add built-in logs
   ct_verifier->AddLogs(globals_->ct_logs);
-
-  // Register the ct_tree_tracker_ as observer for verified SCTs.
-  ct_verifier->SetObserver(ct_tree_tracker_.get());
-
   builder->set_ct_verifier(std::move(ct_verifier));
 
   SetUpProxyService(builder.get());
