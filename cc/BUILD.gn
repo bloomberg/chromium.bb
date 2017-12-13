@@ -654,6 +654,7 @@ cc_test("cc_unittests") {
     "tiles/picture_layer_tiling_set_unittest.cc",
     "tiles/picture_layer_tiling_unittest.cc",
     "tiles/software_image_decode_cache_unittest.cc",
+    "tiles/software_image_decode_cache_unittest_combinations.cc",
     "tiles/tile_manager_unittest.cc",
     "tiles/tile_priority_unittest.cc",
     "trees/damage_tracker_unittest.cc",
@@ -710,6 +711,13 @@ cc_test("cc_unittests") {
     data = [
       "//components/viz/test/data/",
     ]
+  }
+
+  if (is_win) {
+    # TODO(vmpstr): Some SoftwareImageDecodeCacheTests use virtual inheritance,
+    # which MSVC doesn't like. Suppress "Foo inherits Bar via dominance"
+    # warnings for now.
+    cflags = [ "/wd4250" ]
   }
 
   # TODO(khushalsagar): Remove once crbug.com/683263 is fixed.
