@@ -2351,6 +2351,10 @@ const char kDSEGeolocationSettingDeprecated[] = "dse_geolocation_setting";
 // that they can be restored if the DSE is ever changed.
 const char kDSEPermissionsSettings[] = "dse_permissions_settings";
 
+// A boolean indicating whether the DSE was previously disabled by enterprise
+// policy.
+const char kDSEWasDisabledByPolicy[] = "dse_was_disabled_by_policy";
+
 // A dictionary of manifest URLs of Web Share Targets to a dictionary containing
 // attributes of its share_target field found in its manifest. Each key in the
 // dictionary is the name of the attribute, and the value is the corresponding

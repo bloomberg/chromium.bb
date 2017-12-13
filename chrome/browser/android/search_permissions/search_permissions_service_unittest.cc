@@ -152,8 +152,10 @@ class SearchPermissionsServiceTest : public testing::Test {
   // |clear_pref| is true, then it simulates the first time the service is ever
   // created.
   void ReinitializeService(bool clear_pref) {
-    if (clear_pref)
+    if (clear_pref) {
       profile()->GetPrefs()->ClearPref(prefs::kDSEPermissionsSettings);
+      profile()->GetPrefs()->ClearPref(prefs::kDSEWasDisabledByPolicy);
+    }
 
     GetService()->OnDSEChanged();
   }
@@ -532,13 +534,14 @@ TEST_F(SearchPermissionsServiceTest, DSEChangedButDisabled) {
       CONTENT_SETTING_ASK,
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
-  // Now disable enterprise policy. We revert to the default ALLOW behavior.
+  // Now disable enterprise policy. The settings will be BLOCK because we don't
+  // know what the user's previous DSE setting was.
   test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(
-      CONTENT_SETTING_ALLOW,
+      CONTENT_SETTING_BLOCK,
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 }
 
@@ -581,12 +584,16 @@ TEST_F(SearchPermissionsServiceTest, DSEInitializedButDisabled) {
   EXPECT_FALSE(
       profile()->GetPrefs()->HasPrefPath(prefs::kDSEPermissionsSettings));
 
-  // Re-enabling the DSE origin should revert to the default ALLOW behavior.
+  // Re-enabling the DSE origin should set the permissions to BLOCK for safety,
+  // except for notifications where the user had manually granted permission.
+  SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_ALLOW);
+
   test_delegate()->set_dse_origin(kGoogleAusURL);
   ReinitializeService(/*clear_pref=*/false);
 
   EXPECT_EQ(
-      CONTENT_SETTING_ALLOW,
+      CONTENT_SETTING_BLOCK,
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
