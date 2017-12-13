@@ -248,6 +248,11 @@ void ArcBridgeHostImpl::OnTtsInstanceReady(mojom::TtsInstancePtr tts_ptr) {
   OnInstanceReady(arc_bridge_service_->tts(), std::move(tts_ptr));
 }
 
+void ArcBridgeHostImpl::OnUsbHostInstanceReady(
+    mojom::UsbHostInstancePtr usb_host_ptr) {
+  OnInstanceReady(arc_bridge_service_->usb_host(), std::move(usb_host_ptr));
+}
+
 void ArcBridgeHostImpl::OnVideoInstanceReady(
     mojom::VideoInstancePtr video_ptr) {
   OnInstanceReady(arc_bridge_service_->video(), std::move(video_ptr));

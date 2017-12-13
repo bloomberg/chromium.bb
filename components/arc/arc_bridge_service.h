@@ -69,6 +69,8 @@ class StorageManagerInstance;
 class TracingInstance;
 class TtsHost;
 class TtsInstance;
+class UsbHostHost;
+class UsbHostInstance;
 class VideoHost;
 class VideoInstance;
 class VoiceInteractionArcHomeHost;
@@ -184,6 +186,9 @@ class ArcBridgeService {
   }
   ConnectionHolder<mojom::TracingInstance>* tracing() { return &tracing_; }
   ConnectionHolder<mojom::TtsInstance, mojom::TtsHost>* tts() { return &tts_; }
+  ConnectionHolder<mojom::UsbHostInstance, mojom::UsbHostHost>* usb_host() {
+    return &usb_host_;
+  }
   ConnectionHolder<mojom::VideoInstance, mojom::VideoHost>* video() {
     return &video_;
   }
@@ -247,6 +252,7 @@ class ArcBridgeService {
   ConnectionHolder<mojom::StorageManagerInstance> storage_manager_;
   ConnectionHolder<mojom::TracingInstance> tracing_;
   ConnectionHolder<mojom::TtsInstance, mojom::TtsHost> tts_;
+  ConnectionHolder<mojom::UsbHostInstance, mojom::UsbHostHost> usb_host_;
   ConnectionHolder<mojom::VideoInstance, mojom::VideoHost> video_;
   ConnectionHolder<mojom::VoiceInteractionArcHomeInstance,
                    mojom::VoiceInteractionArcHomeHost>

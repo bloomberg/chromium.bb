@@ -86,6 +86,7 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
       mojom::StorageManagerInstancePtr storage_manager_ptr) override;
   void OnTracingInstanceReady(mojom::TracingInstancePtr trace_ptr) override;
   void OnTtsInstanceReady(mojom::TtsInstancePtr tts_ptr) override;
+  void OnUsbHostInstanceReady(mojom::UsbHostInstancePtr usb_host_ptr) override;
   void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
   void OnVoiceInteractionArcHomeInstanceReady(
       mojom::VoiceInteractionArcHomeInstancePtr home_ptr) override;
