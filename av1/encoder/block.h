@@ -147,6 +147,7 @@ typedef struct {
   uint16_t eob;
 #if CONFIG_LV_MAP
   uint16_t entropy_context;
+  uint8_t txb_entropy_ctx;
 #else
   uint8_t entropy_context;
 #endif

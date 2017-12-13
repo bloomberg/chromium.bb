@@ -3700,6 +3700,9 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     rd_stats->rate += rd_info_array[tx_type].rate;
     rd_stats->skip &= rd_info_array[tx_type].eob == 0;
     p->eobs[block] = rd_info_array[tx_type].eob;
+#if CONFIG_LV_MAP
+    p->txb_entropy_ctx[block] = rd_info_array[tx_type].txb_entropy_ctx;
+#endif
     return;
   }
 
@@ -3830,6 +3833,9 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     rd_info_array[tx_type].dist = cur_dist;
     rd_info_array[tx_type].rate = cur_rate;
     rd_info_array[tx_type].eob = eob;
+#if CONFIG_LV_MAP
+    rd_info_array[tx_type].txb_entropy_ctx = p->txb_entropy_ctx[block];
+#endif
   }
 
   rd_stats->dist += cur_dist;

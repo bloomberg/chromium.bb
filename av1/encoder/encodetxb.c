@@ -2042,9 +2042,14 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
 
   const int update = optimize_txb(&txb_info, &txb_costs, NULL, 0, fast_mode);
 
-  if (update) p->eobs[block] = txb_info.eob;
+  if (update) {
+    p->eobs[block] = txb_info.eob;
+    p->txb_entropy_ctx[block] =
+        av1_get_txb_entropy_context(qcoeff, scan_order, txb_info.eob);
+  }
   return txb_info.eob;
 }
+
 int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
                                 const SCAN_ORDER *scan_order, int eob) {
   const int16_t *const scan = scan_order->scan;
