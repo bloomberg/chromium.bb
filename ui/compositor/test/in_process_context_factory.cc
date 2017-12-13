@@ -4,7 +4,6 @@
 
 #include "ui/compositor/test/in_process_context_factory.h"
 
-#include <limits>
 #include <utility>
 
 #include "base/bind.h"
@@ -46,8 +45,8 @@
 namespace ui {
 namespace {
 // The client_id used here should not conflict with the client_id generated
-// from RenderWidgetHostImpl and client_id(0) used by aura::WindowPortMus.
-constexpr uint32_t kDefaultClientId = std::numeric_limits<uint32_t>::max();
+// from RenderWidgetHostImpl.
+constexpr uint32_t kDefaultClientId = 0u;
 
 class FakeReflector : public Reflector {
  public:
