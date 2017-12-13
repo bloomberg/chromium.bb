@@ -61,9 +61,12 @@ bool DeleteCache(const base::FilePath& path) {
 
 bool CheckCacheIntegrity(const base::FilePath& path,
                          bool new_eviction,
+                         int max_size,
                          uint32_t mask) {
   std::unique_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
       path, mask, base::ThreadTaskRunnerHandle::Get(), NULL));
+  if (max_size)
+    cache->SetMaxSize(max_size);
   if (!cache.get())
     return false;
   if (new_eviction)

@@ -1473,6 +1473,12 @@ void DiskCacheBackendTest::BackendTrimInvalidEntry2() {
   ANNOTATE_IGNORE_READS_AND_WRITES_BEGIN();
   EXPECT_GE(30, cache_->GetEntryCount());
   ANNOTATE_IGNORE_READS_AND_WRITES_END();
+
+  // For extra messiness, the integrity check for the cache can actually cause
+  // evictions if it's over-capacity, which would race with above. So change the
+  // size we pass to CheckCacheIntegrity (but don't mess with existing backend's
+  // state.
+  size_ = 0;
 }
 
 // We'll be leaking memory from this test.
@@ -2168,7 +2174,7 @@ void DiskCacheBackendTest::BackendTransaction(const std::string& name,
   cache_.reset();
   cache_impl_ = NULL;
 
-  ASSERT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask));
+  ASSERT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, MaxSize(), mask));
   success_ = true;
 }
 
@@ -2427,7 +2433,8 @@ TEST_F(DiskCacheBackendTest, DeleteOld) {
   ASSERT_THAT(cb.GetResult(rv), IsOk());
   base::ThreadRestrictions::SetIOAllowed(prev);
   cache_.reset();
-  EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
+  EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, /*max_size = */ 0,
+                                  mask_));
 }
 #endif
 
