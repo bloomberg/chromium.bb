@@ -17,11 +17,6 @@
 namespace ui {
 namespace {
 
-// Using a small epsilon when comparing slop distances allows pixel perfect
-// slop determination when using fractional DIP coordinates (assuming the slop
-// region and DPI scale are reasonably proportioned).
-const float kSlopEpsilon = .05f;
-
 // Minimum distance a scroll must have traveled from the last scroll/focal point
 // to trigger an |OnScroll| callback.
 const float kScrollEpsilon = .1f;
@@ -426,6 +421,12 @@ void GestureDetector::SetDoubleTapListener(
 
 void GestureDetector::Init(const Config& config) {
   DCHECK(listener_);
+
+  // Using a small epsilon when comparing slop distances allows pixel
+  // perfect slop determination when using fractional DIP coordinates
+  // (assuming the slop region and DPI scale are reasonably
+  // proportioned).
+  const float kSlopEpsilon = .05f;
 
   const float touch_slop = config.touch_slop + kSlopEpsilon;
   const float double_tap_touch_slop = touch_slop;
