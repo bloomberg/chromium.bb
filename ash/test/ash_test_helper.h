@@ -63,6 +63,9 @@ class AshTestHelper {
   explicit AshTestHelper(AshTestEnvironment* ash_test_environment);
   ~AshTestHelper();
 
+  // This is intended to be called from TestSuites, not individual configs.
+  static void set_config(Config config) { config_ = config; }
+
   // Returns the configuration that tests are run in. See ash::Config enum for
   // details.
   static Config config() { return config_; }

@@ -30,7 +30,11 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/config.h"
+#include "ash/test/ash_test_helper.h"
 #include "chromeos/chromeos_paths.h"
+#include "ui/aura/env.h"
+#include "ui/aura/test/aura_test_context_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -107,6 +111,16 @@ void ChromeUnitTestSuite::Initialize() {
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   ProfileShortcutManager::DisableForUnitTests();
+
+#if defined(OS_CHROMEOS)
+  aura::Env* env = aura::Env::GetInstance();
+  if (env->mode() == aura::Env::Mode::MUS) {
+    ash::AshTestHelper::set_config(ash::Config::MUS);
+    context_factory_ = std::make_unique<aura::test::AuraTestContextFactory>();
+    env->set_context_factory(context_factory_.get());
+    env->set_context_factory_private(nullptr);
+  }
+#endif
 }
 
 void ChromeUnitTestSuite::Shutdown() {
