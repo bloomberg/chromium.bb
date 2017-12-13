@@ -36,6 +36,27 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'metrics',
+      'dependencies': [
+        'native_layer',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'cloud_print_interface',
+      'dependencies': [
+        'native_layer',
+        'data/compiled_resources2.gyp:cloud_parsers',
+        'data/compiled_resources2.gyp:destination',
+        'data/compiled_resources2.gyp:document_info',
+        'data/compiled_resources2.gyp:invitation',
+        'data/compiled_resources2.gyp:user_info',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'native_layer',
       'dependencies': [
         'data/compiled_resources2.gyp:destination',

@@ -407,6 +407,7 @@ content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
   }
   AddPrintPreviewImages(source);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_NEW_HTML);
+  AddPrintPreviewFlags(source, profile);
   return source;
 }
 

@@ -191,12 +191,11 @@ cr.define('cloudprint', function() {
      * Sends a Google Cloud Print submit API request.
      * @param {!print_preview.Destination} destination Cloud destination to
      *     print to.
-     * @param {!print_preview.PrintTicketStore} printTicketStore Contains the
-     *     print ticket to print.
+     * @param {string} printTicket The print ticket to print.
      * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      * @param {string} data Base64 encoded data of the document.
      */
-    submit(destination, printTicketStore, documentInfo, data) {
+    submit(destination, printTicket, documentInfo, data) {
       const result = VERSION_REGEXP_.exec(navigator.userAgent);
       let chromeVersion = 'unknown';
       if (result && result.length == 2) {
@@ -206,8 +205,7 @@ cr.define('cloudprint', function() {
         new HttpParam('printerid', destination.id),
         new HttpParam('contentType', 'dataUrl'),
         new HttpParam('title', documentInfo.title),
-        new HttpParam(
-            'ticket', printTicketStore.createPrintTicket(destination)),
+        new HttpParam('ticket', printTicket),
         new HttpParam('content', 'data:application/pdf;base64,' + data),
         new HttpParam('tag', '__google__chrome_version=' + chromeVersion),
         new HttpParam('tag', '__google__os=' + navigator.platform)

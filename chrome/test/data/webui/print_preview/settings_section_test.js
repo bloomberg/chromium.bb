@@ -83,7 +83,7 @@ cr.define('settings_sections_tests', function() {
     function setPdfDocument(isPdf) {
       const info = new print_preview.DocumentInfo();
       info.init(!isPdf, 'title', false);
-      page.set('documentInfo', info);
+      page.set('documentInfo_', info);
     }
 
     function setPdfDestination() {
@@ -94,7 +94,7 @@ cr.define('settings_sections_tests', function() {
           loadTimeData.getString('printToPDF'), false /*isRecent*/,
           print_preview.DestinationConnectionStatus.ONLINE);
       saveAsPdfDestination.capabilities = getCdd();
-      page.set('destination', saveAsPdfDestination);
+      page.set('destination_', saveAsPdfDestination);
     }
 
     test(assert(TestNames.Copies), function() {
@@ -106,7 +106,7 @@ cr.define('settings_sections_tests', function() {
       delete capabilities.printer.copies;
 
       // Copies section should now be hidden.
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(true, copiesElement.hidden);
     });
 
@@ -130,13 +130,13 @@ cr.define('settings_sections_tests', function() {
         capabilities = getCdd();
         capabilities.printer.page_orientation = layoutCap;
         // Layout section should now be hidden.
-        page.set('destination.capabilities', capabilities);
+        page.set('destination_.capabilities', capabilities);
         expectEquals(true, layoutElement.hidden);
       });
 
       // Reset full capabilities
       capabilities = getCdd();
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(false, layoutElement.hidden);
 
       // Test with PDF - should be hidden.
@@ -165,7 +165,7 @@ cr.define('settings_sections_tests', function() {
         capabilities = getCdd();
         capabilities.printer.color = colorCap;
         // Layout section should now be hidden.
-        page.set('destination.capabilities', capabilities);
+        page.set('destination_.capabilities', capabilities);
         expectEquals(true, colorElement.hidden);
       });
 
@@ -174,7 +174,7 @@ cr.define('settings_sections_tests', function() {
       capabilities.printer.color =
         {option: [{ type: 'CUSTOM_COLOR', is_default: true },
                   { type: 'CUSTOM_MONOCHROME' }]};
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(false, colorElement.hidden);
     });
 
@@ -187,12 +187,12 @@ cr.define('settings_sections_tests', function() {
       delete capabilities.printer.media_size;
 
       // Section should now be hidden.
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(true, mediaSizeElement.hidden);
 
       // Reset
       capabilities = getCdd();
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
 
       // Set PDF document type.
       setPdfDocument(true);
@@ -228,13 +228,13 @@ cr.define('settings_sections_tests', function() {
       delete capabilities.printer.dpi;
 
       // Section should now be hidden.
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(true, dpiElement.hidden);
 
       // Does not show up for only 1 option.
       capabilities = getCdd();
       capabilities.printer.dpi.option.pop();
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(true, dpiElement.hidden);
     });
 
@@ -274,7 +274,7 @@ cr.define('settings_sections_tests', function() {
       // Start with HTML + duplex capability.
       setPdfDocument(false);
       let capabilities = getCdd();
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(false, optionsElement.hidden);
       expectEquals(false, headerFooter.hidden);
       expectEquals(false, duplex.hidden);
@@ -285,14 +285,14 @@ cr.define('settings_sections_tests', function() {
       // Add a selection.
       let info = new print_preview.DocumentInfo();
       info.init(true, 'title', true);
-      page.set('documentInfo', info);
+      page.set('documentInfo_', info);
       expectEquals(false, optionsElement.hidden);
       expectEquals(false, selectionOnly.hidden);
 
       // Remove duplex capability.
       capabilities = getCdd();
       delete capabilities.printer.duplex;
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(false, optionsElement.hidden);
       expectEquals(true, duplex.hidden);
 
@@ -308,13 +308,13 @@ cr.define('settings_sections_tests', function() {
       // Add a selection - should do nothing for PDFs.
       info = new print_preview.DocumentInfo();
       info.init(false, 'title', true);
-      page.set('documentInfo', info);
+      page.set('documentInfo_', info);
       expectEquals(cr.isWindows || cr.isMac, optionsElement.hidden);
       expectEquals(true, selectionOnly.hidden);
 
       // Add duplex.
       capabilities = getCdd();
-      page.set('destination.capabilities', capabilities);
+      page.set('destination_.capabilities', capabilities);
       expectEquals(false, optionsElement.hidden);
       expectEquals(false, duplex.hidden);
     });

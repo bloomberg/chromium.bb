@@ -812,9 +812,10 @@ cr.define('print_preview', function() {
       assert(
           this.cloudPrintInterface_ != null,
           'Google Cloud Print is not enabled');
-      assert(this.destinationStore_.selectedDestination != null);
+      const destination = this.destinationStore_.selectedDestination;
+      assert(destination != null);
       this.cloudPrintInterface_.submit(
-          this.destinationStore_.selectedDestination, this.printTicketStore_,
+          destination, this.printTicketStore_.createPrintTicket(destination),
           this.documentInfo_, data);
     },
 

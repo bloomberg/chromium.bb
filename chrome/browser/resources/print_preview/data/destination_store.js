@@ -5,6 +5,17 @@
 cr.exportPath('print_preview');
 
 /**
+ * @typedef {{id: string,
+ *            origin: print_preview.DestinationOrigin,
+ *            account: string,
+ *            capabilities: ?print_preview.Cdd,
+ *            displayName: string,
+ *            extensionId: string,
+ *            extensionName: string}}
+ */
+print_preview.RecentDestination;
+
+/**
  * Printer search statuses used by the destination store.
  * @enum {string}
  */
@@ -263,7 +274,7 @@ cr.define('print_preview', function() {
 
       /**
        * The recent print destinations, set when the store is initialized.
-       * @private {!Array<!print_preview.AppStateRecentDestination>}
+       * @private {!Array<!print_preview.RecentDestination>}
        */
       this.recentDestinations_ = [];
 
@@ -347,7 +358,7 @@ cr.define('print_preview', function() {
 
     /**
      * @param {(?print_preview.Destination |
-     *          ?print_preview.AppStateRecentDestination)} destination
+     *          ?print_preview.RecentDestination)} destination
      * @return {boolean} Whether the destination is valid.
      */
     isDestinationValid(destination) {
@@ -364,7 +375,7 @@ cr.define('print_preview', function() {
      *     destination.
      * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
      *     default destination selection rules.
-     * @param {!Array<!print_preview.AppStateRecentDestination>}
+     * @param {!Array<!print_preview.RecentDestination>}
      *     recentDestinations The recent print destinations.
      */
     init(

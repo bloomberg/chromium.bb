@@ -385,6 +385,9 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_WEBUI_LISTENER_BEHAVIOR"
                  file="html/web_ui_listener_behavior.html" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_HTML_WEBUI_LISTENER_TRACKER"
+                 file="html/webui_listener_tracker.html" type="chrome_html"
+                 compress="gzip" />
 
       <structure name="IDR_WEBUI_JS_ACTION_LINK"
                  file="js/action_link.js" type="chrome_html" compress="gzip" />

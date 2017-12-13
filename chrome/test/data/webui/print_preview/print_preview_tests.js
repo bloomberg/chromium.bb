@@ -1712,5 +1712,6 @@ cr.define('print_preview_test', function() {
 
   return {
     suiteName: suiteName,
+    getCddTemplate: getCddTemplate,
   };
 });
