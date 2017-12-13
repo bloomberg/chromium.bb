@@ -57,16 +57,6 @@ class FakeBluetooth {
   // hand Windows 10 is a platform that does support LE, even if there is no
   // Bluetooth radio present.
   async setLESupported(supported) {
-    // Call setBluetoothFakeAdapter() to clean up any fake adapters left over
-    // by legacy tests.
-    // Legacy tests that use setBluetoothFakeAdapter() sometimes fail to clean
-    // their fake adapter. This is not a problem for these tests because the
-    // next setBluetoothFakeAdapter() will clean it up anyway but it is a
-    // problem for the new tests that do not use setBluetoothFakeAdapter().
-    // TODO(crbug.com/569709): Remove once setBluetoothFakeAdapter is no
-    // longer used.
-    await setBluetoothFakeAdapter('');
-
     if (typeof supported !== 'boolean') throw 'Type Not Supported';
     await this.fake_bluetooth_ptr_.setLESupported(supported);
   }
