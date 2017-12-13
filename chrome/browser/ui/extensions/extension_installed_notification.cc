@@ -47,22 +47,17 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, extension_id_,
       base::UTF8ToUTF16(extension->name()),
       l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_INSTALLED),
-      gfx::Image(gfx::CreateVectorIcon(vector_icons::kCheckCircleIcon, 40,
-                                       gfx::kGoogleGreen700)),
+      gfx::Image(),
       l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE),
       GURL(extension_urls::kChromeWebstoreBaseURL) /* origin_url */,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierId),
       {}, this);
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification.set_icon(gfx::Image());
-    notification.set_accent_color(
-        message_center::kSystemNotificationColorNormal);
-    notification.set_small_image(gfx::Image(
-        gfx::CreateVectorIcon(kNotificationInstalledIcon,
-                              message_center::kSystemNotificationColorNormal)));
-    notification.set_vector_small_image(kNotificationInstalledIcon);
-  }
+  notification.set_accent_color(message_center::kSystemNotificationColorNormal);
+  notification.set_small_image(gfx::Image(
+      gfx::CreateVectorIcon(kNotificationInstalledIcon,
+                            message_center::kSystemNotificationColorNormal)));
+  notification.set_vector_small_image(kNotificationInstalledIcon);
   NotificationDisplayService::GetForProfile(profile_)->Display(
       NotificationHandler::Type::TRANSIENT, notification);
 }

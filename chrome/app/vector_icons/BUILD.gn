@@ -39,8 +39,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "extension.icon",
     "extension_crashed.icon",
     "file_download.icon",
-    "file_download_incognito.1x.icon",
-    "file_download_incognito.icon",
     "file_download_shelf.icon",
     "folder.icon",
     "folder_managed.1x.icon",

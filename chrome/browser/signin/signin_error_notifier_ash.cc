@@ -99,23 +99,17 @@ void SigninErrorNotifier::OnErrorChanged() {
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
       l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
-      GetMessageBody(),
-      message_center::IsNewStyleNotificationEnabled()
-          ? gfx::Image()
-          : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                IDR_NOTIFICATION_ALERT),
+      GetMessageBody(), gfx::Image(),
       l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
       GURL(notification_id_), notifier_id, data,
       new message_center::HandleNotificationClickDelegate(
           base::Bind(&HandleNotificationClick)));
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification.set_accent_color(
-        message_center::kSystemNotificationColorWarning);
-    notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-        kNotificationWarningIcon, message_center::kSmallImageSizeMD,
-        message_center::kSystemNotificationColorWarning)));
-    notification.set_vector_small_image(kNotificationWarningIcon);
-  }
+  notification.set_accent_color(
+      message_center::kSystemNotificationColorWarning);
+  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
+      kNotificationWarningIcon, message_center::kSmallImageSizeMD,
+      message_center::kSystemNotificationColorWarning)));
+  notification.set_vector_small_image(kNotificationWarningIcon);
   notification.SetSystemPriority();
 
   // Update or add the notification.

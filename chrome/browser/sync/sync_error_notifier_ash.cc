@@ -140,22 +140,16 @@ void SyncErrorNotifier::OnErrorChanged() {
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
       l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE),
       l10n_util::GetStringUTF16(IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE),
-      message_center::IsNewStyleNotificationEnabled()
-          ? gfx::Image()
-          : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                IDR_NOTIFICATION_ALERT),
-      l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
+      gfx::Image(), l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
       GURL(notification_id_), notifier_id,
       message_center::RichNotificationData(),
       new SyncNotificationDelegate(profile_));
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification.set_accent_color(
-        message_center::kSystemNotificationColorWarning);
-    notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-        kNotificationWarningIcon, message_center::kSmallImageSizeMD,
-        message_center::kSystemNotificationColorWarning)));
-    notification.set_vector_small_image(kNotificationWarningIcon);
-  }
+  notification.set_accent_color(
+      message_center::kSystemNotificationColorWarning);
+  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
+      kNotificationWarningIcon, message_center::kSmallImageSizeMD,
+      message_center::kSystemNotificationColorWarning)));
+  notification.set_vector_small_image(kNotificationWarningIcon);
 
   display_service->Display(NotificationHandler::Type::TRANSIENT, notification);
   notification_displayed_ = true;
