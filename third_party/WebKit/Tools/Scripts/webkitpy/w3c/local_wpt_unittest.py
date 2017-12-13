@@ -105,6 +105,17 @@ class LocalWPTTest(unittest.TestCase):
 
         self.assertEqual(local_wpt.test_patch('dummy patch'), (False, 'MOCK failed applying patch'))
 
+    def test_commits_in_range(self):
+        host = MockHost()
+        host.executive = mock_git_commands({
+            'rev-list': '34ab6c3f5aee8bf05207b674edbcb6affb179545 Fix presubmit errors\n'
+                        '8c596b820634a623dfd7a2b0f36007ce2f7a0c9f test\n'
+        }, strict=True)
+        local_wpt = LocalWPT(host, 'token')
+
+        self.assertTrue(local_wpt.commits_in_range('HEAD~2', 'HEAD'))
+        self.assertEqual(host.executive.calls, [['git', 'rev-list', '--pretty=oneline', 'HEAD~2..HEAD']])
+
     def test_is_commit_affecting_directory(self):
         host = MockHost()
         # return_exit_code=True is passed to run() in the method under test,
@@ -114,14 +125,6 @@ class LocalWPTTest(unittest.TestCase):
 
         self.assertTrue(local_wpt.is_commit_affecting_directory('HEAD', 'css/'))
         self.assertEqual(host.executive.calls, [['git', 'diff-tree', '--quiet', '--no-commit-id', 'HEAD', '--', 'css/']])
-
-    def test_commit_subject(self):
-        host = MockHost()
-        host.executive = mock_git_commands({'show': 'Fake subject\n'}, strict=True)
-        local_wpt = LocalWPT(host, 'token')
-
-        self.assertTrue(local_wpt.commit_subject('HEAD'), 'Fake subject')
-        self.assertEqual(host.executive.calls, [['git', 'show', '--format=%s', '-q', 'HEAD']])
 
     def test_seek_change_id(self):
         host = MockHost()

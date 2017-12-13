@@ -18,6 +18,7 @@ import re
 
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from webkitpy.w3c.monorail import MonorailAPI, MonorailIssue
 from webkitpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
 
 _log = logging.getLogger(__name__)
@@ -38,7 +39,8 @@ class ImportNotifier(object):
         self.owners_extractor = DirectoryOwnersExtractor(host.filesystem)
         self.new_failures_by_directory = defaultdict(list)
 
-    def main(self, wpt_revision_start, wpt_revision_end, rebaselined_tests, test_expectations, issue, patchset):
+    def main(self, wpt_revision_start, wpt_revision_end, rebaselined_tests, test_expectations, issue, patchset,
+             dry_run=True, service_account_key_json=None):
         """Files bug reports for new failures.
 
         Args:
@@ -51,6 +53,11 @@ class ImportNotifier(object):
                 be rebaselined to a list of new test expectation lines.
             issue: The issue number of the import CL (a string).
             patchset: The patchset number of the import CL (a string).
+            dry_run: If True, no bugs will be actually filed to crbug.com.
+            service_account_key_json: The path to a JSON private key of a
+                service account for accessing Monorail. If None, try to load
+                from the default location, i.e. the path stored in the
+                environment variable GOOGLE_APPLICATION_CREDENTIALS.
 
         Note: "test names" are paths of the tests relative to LayoutTests.
         """
@@ -61,7 +68,8 @@ class ImportNotifier(object):
         self.examine_baseline_changes(changed_test_baselines, gerrit_url_with_ps)
         self.examine_new_test_expectations(test_expectations)
 
-        self.file_new_failures(wpt_revision_start, wpt_revision_end, issue, gerrit_url)
+        bugs = self.create_bugs_from_new_failures(wpt_revision_start, wpt_revision_end, gerrit_url)
+        self.file_bugs(bugs, dry_run, service_account_key_json)
 
     def find_changed_baselines_of_tests(self, rebaselined_tests):
         """Finds the corresponding changed baselines of each test.
@@ -137,9 +145,7 @@ class ImportNotifier(object):
                                 expectation_line=expectation_line)
                 )
 
-    # TODO(robertma): This method should populate a MonorailIssue (TBD) so that
-    # it can be passed to Monorail API and easily tested.
-    def file_new_failures(self, wpt_revision_start, wpt_revision_end, issue, gerrit_url):
+    def create_bugs_from_new_failures(self, wpt_revision_start, wpt_revision_end, gerrit_url):
         """Files bug reports for new failures.
 
         Args:
@@ -147,26 +153,27 @@ class ImportNotifier(object):
                 (exclusive), i.e. the last imported revision.
             wpt_revision_end: The end of the imported WPT revision range
                 (inclusive), i.e. the current imported revision.
-            issue: The issue number of the import CL (a string).
             gerrit_url: Gerrit URL of the CL.
+
+        Return:
+            A list of MonorailIssue objects that should be filed.
         """
-        commits_in_range = self.local_wpt.commits_in_range(wpt_revision_start, wpt_revision_end)
-        imported_commits = [commit_hash for commit_hash, _ in commits_in_range]
+        imported_commits = self.local_wpt.commits_in_range(wpt_revision_start, wpt_revision_end)
+        bugs = []
         for directory, failures in self.new_failures_by_directory.iteritems():
-            title = '[WPT] New failures introduced in {} by import {}'.format(directory, issue)
-            _log.info(title)
+            summary = '[WPT] New failures introduced in {} by import {}'.format(directory, gerrit_url)
 
             full_directory = self.host.filesystem.join(self.finder.layout_tests_dir(), directory)
             owners_file = self.host.filesystem.join(full_directory, 'OWNERS')
             is_wpt_notify_enabled = self.owners_extractor.is_wpt_notify_enabled(owners_file)
-            _log.info("WPT-NOTIFY: %s", str(is_wpt_notify_enabled))
 
             owners = self.owners_extractor.extract_owners(owners_file)
-            _log.info("Owners: %s", ' '.join(owners))
+            # owners may be empty but not None.
+            cc = owners + ['robertma@chromium.org']
 
             component = self.owners_extractor.extract_component(owners_file)
             # component could be None.
-            _log.info("Component: %s", str(component))
+            components = [component] if component else None
 
             prologue = ('WPT import {} introduced new failures in {}:\n\n'
                         'List of new failures:\n'.format(gerrit_url, directory))
@@ -180,7 +187,16 @@ class ImportNotifier(object):
             commit_list = self.format_commit_list(imported_commits, full_directory)
 
             description = prologue + failure_list + epilogue + commit_list
-            _log.info(description)
+
+            bug = MonorailIssue.new_chromium_issue(summary, description, cc, components)
+            _log.info(str(bug))
+
+            if is_wpt_notify_enabled:
+                _log.info("WPT-NOTIFY enabled in this directory; adding the bug to the pending list.")
+                bugs.append(bug)
+            else:
+                _log.info("WPT-NOTIFY disabled in this directory; discarding the bug.")
+        return bugs
 
     def format_commit_list(self, imported_commits, directory):
         """Formats the list of imported WPT commits.
@@ -188,7 +204,7 @@ class ImportNotifier(object):
         Imports affecting the given directory will be highlighted.
 
         Args:
-            imported_commits: A list of imported WPT commits (SHAs).
+            imported_commits: A list of (SHA, commit subject) pairs.
             directory: The directory for which the list is formatted (a path
                 relative to the root of Chromium repo).
 
@@ -196,9 +212,9 @@ class ImportNotifier(object):
             A multi-line string.
         """
         commit_list = ''
-        for commit in imported_commits:
-            line = '{}: {}'.format(self.local_wpt.commit_subject(commit), GITHUB_COMMIT_PREFIX + commit)
-            if self.local_wpt.is_commit_affecting_directory(commit, directory):
+        for sha, subject in imported_commits:
+            line = '{}: {}'.format(subject, GITHUB_COMMIT_PREFIX + sha)
+            if self.local_wpt.is_commit_affecting_directory(sha, directory):
                 line += ' [affecting this directory]'
             commit_list += line + '\n'
         return commit_list
@@ -224,6 +240,28 @@ class ImportNotifier(object):
         owned_directory = self.host.filesystem.dirname(owners_file)
         short_directory = self.host.filesystem.relpath(owned_directory, self.finder.layout_tests_dir())
         return short_directory
+
+    def file_bugs(self, bugs, dry_run, service_account_key_json=None):
+        """Files a list of bugs to Monorail.
+
+        Args:
+            bugs: A list of MonorailIssue objects.
+            dry_run: A boolean, whether we are in dry run mode.
+            service_account_key_json: Optional, see docs for main().
+        """
+        # TODO(robertma): Better error handling in this method.
+        if dry_run:
+            _log.info('[dry_run] Would have filed the %d bugs in the pending list.', len(bugs))
+            return
+
+        _log.info('Filing %d bugs in the pending list to Monorail', len(bugs))
+        api = self._get_monorail_api(service_account_key_json)
+        for index, bug in enumerate(bugs, start=1):
+            response = api.insert_issue(bug)
+            _log.info('[%d] Filed bug: %s', index, MonorailIssue.crbug_link(response['id']))
+
+    def _get_monorail_api(self, service_account_key_json):
+        return MonorailAPI(service_account_key_json=service_account_key_json)
 
 
 class TestFailure(object):

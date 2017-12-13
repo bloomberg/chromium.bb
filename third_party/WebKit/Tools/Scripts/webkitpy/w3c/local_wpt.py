@@ -186,11 +186,6 @@ class LocalWPT(object):
                              return_exit_code=True)
         return exit_code == 1
 
-    def commit_subject(self, commit):
-        """Returns the subject of a commit."""
-        output = self.run(['git', 'show', '--format=%s', '-q', commit])
-        return output.strip()
-
     # Note: the regexes in the two following methods use the start-of-line
     # anchor ^ to prevent matching quoted text in commit messages. The end-of-
     # line anchor $ is omitted to accommodate trailing whitespaces and non-

@@ -165,7 +165,7 @@ class TestImporter(object):
         if not self.run_commit_queue_for_cl():
             return 1
 
-        if not self.send_notifications(local_wpt):
+        if not self.send_notifications(local_wpt, options.auto_file_bugs, options.monorail_auth_json):
             return 1
 
         return 0
@@ -272,6 +272,9 @@ class TestImporter(object):
             '--auto-update', action='store_true',
             help='upload a CL, update expectations, and trigger CQ')
         parser.add_argument(
+            '--auto-file-bugs', action='store_true',
+            help='file new failures automatically to crbug.com')
+        parser.add_argument(
             '--auth-refresh-token-json',
             help='authentication refresh token JSON file used for try jobs, '
                  'generally not necessary on developer machines')
@@ -279,6 +282,11 @@ class TestImporter(object):
             '--credentials-json',
             help='A JSON file with GitHub credentials, '
                  'generally not necessary on developer machines')
+        parser.add_argument(
+            '--monorail-auth-json',
+            help='A JSON file containing the private key of a service account '
+                 'to access Monorail (crbug.com), only needed when '
+                 '--auto-file-bugs is used')
 
         return parser.parse_args(argv)
 
@@ -621,12 +629,13 @@ class TestImporter(object):
             _log.error('Cannot find last WPT import.')
             return None
 
-    def send_notifications(self, local_wpt):
+    def send_notifications(self, local_wpt, auto_file_bugs, monorail_auth_json):
         issue = self.git_cl.run(['status', '--field=id']).strip()
         patchset = self.git_cl.run(['status', '--field=patch']).strip()
         # Construct the notifier here so that any errors won't affect the import.
         notifier = ImportNotifier(self.host, self.chromium_git, local_wpt)
         notifier.main(self.last_wpt_revision, self.wpt_revision,
                       self.rebaselined_tests, self.new_test_expectations,
-                      issue, patchset)
+                      issue, patchset,
+                      dry_run=not auto_file_bugs, service_account_key_json=monorail_auth_json)
         return True
