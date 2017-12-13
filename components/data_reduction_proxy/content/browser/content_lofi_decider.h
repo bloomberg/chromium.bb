@@ -6,7 +6,10 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CONTENT_BROWSER_CONTENT_LOFI_DECIDER_H_
 
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
+
 #include "base/macros.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "content/public/common/previews_state.h"
 
 class GURL;
 
@@ -31,6 +34,14 @@ class ContentLoFiDecider : public LoFiDecider {
  public:
   ContentLoFiDecider();
   ~ContentLoFiDecider() override;
+
+  // Returns an updated PreviewsState with respect to server previews
+  // given the main frame's committed |request| and the |initial_state|
+  // of enabled previews. |request| must have already been updated with
+  // respect to the main frame response headers.
+  static content::PreviewsState DetermineCommittedServerPreviewsState(
+      const net::URLRequest& request,
+      content::PreviewsState initial_state);
 
   // LoFiDecider implementation:
   bool IsUsingLoFi(const net::URLRequest& request) const override;

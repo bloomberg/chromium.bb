@@ -46,6 +46,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -793,21 +794,27 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
         request, info->GetWebContentsGetterForRequest());
 
   // Update the PreviewsState for main frame response if needed.
-  // TODO(dougarnett): Add more comprehensive update for crbug.com/782922
   if (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
       request->url().SchemeIsHTTPOrHTTPS()) {
-    content::PreviewsState previews_state = response->head.previews_state;
-    if (previews_state != 0) {
-      if (!request->url().SchemeIs(url::kHttpsScheme)) {
-        // Clear https-only previews types.
-        previews_state &= ~(content::NOSCRIPT_ON);
-      }
-      // Update previews state in response to renderer.
-      response->head.previews_state = previews_state;
-      // Update previews state in nav data to UI.
-      ChromeNavigationData* data =
-          ChromeNavigationData::GetDataAndCreateIfNecessary(request);
-      data->set_previews_state(previews_state);
+    content::PreviewsState committed_state =
+        DetermineCommittedPreviews(request, response->head.previews_state);
+    // Update previews state in response to renderer.
+    response->head.previews_state = committed_state;
+    // Update previews state in nav data to UI.
+    ChromeNavigationData* data =
+        ChromeNavigationData::GetDataAndCreateIfNecessary(request);
+    data->set_previews_state(committed_state);
+    // Capture committed previews type, if any, in PreviewsUserData.
+    // Note: this is for the subset of previews types that are decided upon
+    // navigation commit. Previews types that are determined prior to
+    // navigation (such as for offline pages or for redirecting to another
+    // url), are not set here.
+    previews::PreviewsType committed_type =
+        previews::GetMainFramePreviewsType(committed_state);
+    if (committed_type != previews::PreviewsType::NONE) {
+      previews::PreviewsUserData* previews_user_data =
+          previews::PreviewsUserData::GetData(*request);
+      previews_user_data->SetCommittedPreviewsType(committed_type);
     }
   }
 
@@ -900,7 +907,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
 }
 
 content::PreviewsState
-ChromeResourceDispatcherHostDelegate::DeterminePreviewsState(
+ChromeResourceDispatcherHostDelegate::DetermineEnabledPreviews(
     net::URLRequest* url_request,
     content::ResourceContext* resource_context,
     content::PreviewsState previews_to_allow) {
@@ -922,7 +929,7 @@ ChromeResourceDispatcherHostDelegate::DeterminePreviewsState(
 
     // Check for enabled client-side previews if data saver is enabled.
     if (data_reduction_proxy_io_data->IsEnabled()) {
-      previews_state |= previews::DetermineClientPreviewsState(
+      previews_state |= previews::DetermineEnabledClientPreviewsState(
           *url_request, previews_io_data);
     }
   }
@@ -979,4 +986,19 @@ ChromeResourceDispatcherHostDelegate::CreateClientCertStore(
     content::ResourceContext* resource_context) {
   return ProfileIOData::FromResourceContext(resource_context)->
       CreateClientCertStore();
+}
+
+// static
+content::PreviewsState
+ChromeResourceDispatcherHostDelegate::DetermineCommittedPreviews(
+    const net::URLRequest* request,
+    content::PreviewsState initial_state) {
+  if (!previews::HasEnabledPreviews(initial_state))
+    return content::PREVIEWS_OFF;
+
+  content::PreviewsState previews_state =
+      data_reduction_proxy::ContentLoFiDecider::
+          DetermineCommittedServerPreviewsState(*request, initial_state);
+  return previews::DetermineCommittedClientPreviewsState(*request,
+                                                         previews_state);
 }

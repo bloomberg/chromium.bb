@@ -11,12 +11,14 @@ namespace previews {
 
 const void* const kPreviewsUserDataKey = &kPreviewsUserDataKey;
 
-PreviewsUserData::PreviewsUserData(uint64_t page_id) : page_id_(page_id) {}
+PreviewsUserData::PreviewsUserData(uint64_t page_id)
+    : page_id_(page_id), committed_previews_type_(PreviewsType::NONE) {}
 
 PreviewsUserData::~PreviewsUserData() {}
 
 std::unique_ptr<PreviewsUserData> PreviewsUserData::DeepCopy() const {
   std::unique_ptr<PreviewsUserData> copy(new PreviewsUserData(page_id_));
+  copy->SetCommittedPreviewsType(committed_previews_type_);
   return copy;
 }
 
@@ -36,6 +38,12 @@ PreviewsUserData* PreviewsUserData::Create(net::URLRequest* request,
   data = new PreviewsUserData(page_id);
   request->SetUserData(kPreviewsUserDataKey, base::WrapUnique(data));
   return data;
+}
+
+void PreviewsUserData::SetCommittedPreviewsType(
+    previews::PreviewsType previews_type) {
+  DCHECK(committed_previews_type_ == PreviewsType::NONE);
+  committed_previews_type_ = previews_type;
 }
 
 }  // namespace previews

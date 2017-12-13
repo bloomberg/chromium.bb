@@ -213,16 +213,17 @@ bool IsValidatedSCT(
   return sct_status.status == net::ct::SCT_STATUS_OK;
 }
 
-// Returns the PreviewsState after requesting it from the delegate. The
-// PreviewsState is a bitmask of potentially several Previews optimizations.
+// Returns the PreviewsState for enabled previews after requesting it from
+// the delegate. The PreviewsState is a bitmask of potentially several
+// Previews optimizations that are initially enabled for a navigation.
 // If previews_to_allow is set to anything other than PREVIEWS_UNSPECIFIED,
 // it is either the values passed in for a sub-frame to use, or if this is
 // the main frame, it is a limitation on which previews to allow.
-PreviewsState DeterminePreviewsState(PreviewsState previews_to_allow,
-                                     ResourceDispatcherHostDelegate* delegate,
-                                     net::URLRequest* request,
-                                     ResourceContext* resource_context,
-                                     bool is_main_frame) {
+PreviewsState DetermineEnabledPreviews(PreviewsState previews_to_allow,
+                                       ResourceDispatcherHostDelegate* delegate,
+                                       net::URLRequest* request,
+                                       ResourceContext* resource_context,
+                                       bool is_main_frame) {
   // If previews have already been turned off, or we are inheriting values on a
   // sub-frame, don't check any further.
   if (previews_to_allow & PREVIEWS_OFF ||
@@ -232,7 +233,7 @@ PreviewsState DeterminePreviewsState(PreviewsState previews_to_allow,
   }
 
   // Get the mask of previews we could apply to the current navigation.
-  PreviewsState previews_state = delegate->DeterminePreviewsState(
+  PreviewsState previews_state = delegate->DetermineEnabledPreviews(
       request, resource_context, previews_to_allow);
 
   return previews_state;
@@ -1325,7 +1326,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   // Update the previews state, but only if this is not using PlzNavigate.
   PreviewsState previews_state = request_data.previews_state;
   if (!IsBrowserSideNavigationEnabled()) {
-    previews_state = DeterminePreviewsState(
+    previews_state = DetermineEnabledPreviews(
         request_data.previews_state, delegate_, new_request.get(),
         resource_context,
         request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME);
@@ -2103,7 +2104,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
             .get()));
   }
 
-  PreviewsState previews_state = DeterminePreviewsState(
+  PreviewsState previews_state = DetermineEnabledPreviews(
       info.common_params.previews_state, delegate_, new_request.get(),
       resource_context, info.is_main_frame);
 

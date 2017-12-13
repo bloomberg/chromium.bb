@@ -82,8 +82,9 @@ class ChromeResourceDispatcherHostDelegate
                            content::ResourceContext* resource_context,
                            content::ResourceResponse* response) override;
   void RequestComplete(net::URLRequest* url_request) override;
-  // Returns a bitmask of potentially several Previews optimizations.
-  content::PreviewsState DeterminePreviewsState(
+  // Returns a bitmask of potentially several Previews optimizations at the
+  // start of a navigation.
+  content::PreviewsState DetermineEnabledPreviews(
       net::URLRequest* url_request,
       content::ResourceContext* resource_context,
       content::PreviewsState previews_to_allow) override;
@@ -106,12 +107,21 @@ class ChromeResourceDispatcherHostDelegate
       std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles);
 
  private:
+  friend class ChromeResourceDispatcherHostDelegateTest;
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   struct StreamTargetInfo {
     std::string extension_id;
     std::string view_id;
   };
 #endif
+
+  // Returns an updated bitmask of Previews for a committed navigation.
+  // The value is updated from |intial_state| considering navigation data
+  // attached to |request|.
+  static content::PreviewsState DetermineCommittedPreviews(
+      const net::URLRequest* request,
+      content::PreviewsState initial_state);
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_;

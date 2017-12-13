@@ -87,29 +87,21 @@ class PreviewsInfoBarTabHelperUnitTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void SetPreviewsState(content::PreviewsState previews_state) {
+  void SetCommittedPreviewsType(previews::PreviewsType previews_type) {
     ChromeNavigationData* nav_data =
         static_cast<ChromeNavigationData*>(test_handle_->GetNavigationData());
-    if (nav_data) {
-      nav_data->set_previews_state(previews_state);
+    if (nav_data && nav_data->previews_user_data()) {
+      nav_data->previews_user_data()->SetCommittedPreviewsType(previews_type);
       return;
     }
     std::unique_ptr<ChromeNavigationData> chrome_nav_data(
         new ChromeNavigationData());
-    chrome_nav_data->set_previews_state(previews_state);
+    std::unique_ptr<previews::PreviewsUserData> previews_user_data(
+        new previews::PreviewsUserData(1));
+    previews_user_data->SetCommittedPreviewsType(previews_type);
+    chrome_nav_data->set_previews_user_data(std::move(previews_user_data));
     content::WebContentsTester::For(web_contents())
         ->SetNavigationData(test_handle_.get(), std::move(chrome_nav_data));
-  }
-
-  void SimulateWillProcessResponseWithProxyHeader() {
-    std::string headers = base::StringPrintf(
-        "HTTP/1.1 200 OK\n%s: %s\n\n",
-        data_reduction_proxy::chrome_proxy_content_transform_header(),
-        data_reduction_proxy::lite_page_directive());
-    test_handle_->CallWillProcessResponseForTesting(
-        main_rfh(),
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-    SimulateCommit();
   }
 
   void SimulateWillProcessResponse() {
@@ -150,13 +142,14 @@ class PreviewsInfoBarTabHelperUnitTest
       drp_test_context_;
 };
 
-TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateLitePageInfoBar) {
+TEST_F(PreviewsInfoBarTabHelperUnitTest,
+       DidFinishNavigationCreatesLitePageInfoBar) {
   PreviewsInfoBarTabHelper* infobar_tab_helper =
       PreviewsInfoBarTabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 
-  SetPreviewsState(content::SERVER_LITE_PAGE_ON);
-  SimulateWillProcessResponseWithProxyHeader();
+  SetCommittedPreviewsType(previews::PreviewsType::LITE_PAGE);
+  SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
   InfoBarService* infobar_service =
@@ -171,39 +164,41 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateLitePageInfoBar) {
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 }
 
-TEST_F(PreviewsInfoBarTabHelperUnitTest, NoLitePageInfoBarWithoutProxyHeader) {
+TEST_F(PreviewsInfoBarTabHelperUnitTest,
+       DidFinishNavigationCreatesNoScriptPreviewsInfoBar) {
   PreviewsInfoBarTabHelper* infobar_tab_helper =
       PreviewsInfoBarTabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 
-  SetPreviewsState(content::SERVER_LITE_PAGE_ON);
+  SetCommittedPreviewsType(previews::PreviewsType::NOSCRIPT);
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents());
+  EXPECT_EQ(1U, infobar_service->infobar_count());
+  EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
+
+  // Navigate to reset the displayed state.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+}
+
+TEST_F(PreviewsInfoBarTabHelperUnitTest,
+       DidFinishNavigationDoesNotCreateLoFiPreviewsInfoBar) {
+  PreviewsInfoBarTabHelper* infobar_tab_helper =
+      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+
+  SetCommittedPreviewsType(previews::PreviewsType::LOFI);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents());
   EXPECT_EQ(0U, infobar_service->infobar_count());
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
-}
-
-TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateNoScriptPreviewsInfoBar) {
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
-
-  SetPreviewsState(content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON);
-  SimulateWillProcessResponse();
-  CallDidFinishNavigation();
-
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  EXPECT_EQ(1U, infobar_service->infobar_count());
-  EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
-
-  // Navigate to reset the displayed state.
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
-
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 }
 

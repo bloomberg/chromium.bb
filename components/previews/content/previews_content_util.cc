@@ -8,7 +8,13 @@
 
 namespace previews {
 
-content::PreviewsState DetermineClientPreviewsState(
+bool HasEnabledPreviews(content::PreviewsState previews_state) {
+  return previews_state != content::PREVIEWS_UNSPECIFIED &&
+         !(previews_state & content::PREVIEWS_OFF) &&
+         !(previews_state & content::PREVIEWS_NO_TRANSFORM);
+}
+
+content::PreviewsState DetermineEnabledClientPreviewsState(
     const net::URLRequest& url_request,
     previews::PreviewsDecider* previews_decider) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
@@ -38,6 +44,42 @@ content::PreviewsState DetermineClientPreviewsState(
     return previews_state;
   }
 
+  return previews_state;
+}
+
+content::PreviewsState DetermineCommittedClientPreviewsState(
+    const net::URLRequest& url_request,
+    content::PreviewsState previews_state) {
+  bool is_https = url_request.url().SchemeIs(url::kHttpsScheme);
+
+  // If a server preview is set, retain only the bits determined for the server.
+  // |previes_state| must already have been updated for server previews from the
+  // main frame response headers (so if they are set here, then they are the
+  // specify the committed preview).
+  if (previews_state &
+      (content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON)) {
+    return previews_state & (content::SERVER_LITE_PAGE_ON |
+                             content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON);
+  }
+
+  // Make priority decision among allow client preview types that can be decided
+  // at Commit time.
+  if (previews_state & content::NOSCRIPT_ON) {
+    if (is_https) {
+      return content::NOSCRIPT_ON;
+    } else {
+      previews_state &= ~(content::NOSCRIPT_ON);
+    }
+  }
+  if (previews_state & content::CLIENT_LOFI_ON) {
+    return content::CLIENT_LOFI_ON;
+  }
+
+  if (!previews_state) {
+    return content::PREVIEWS_OFF;
+  }
+
+  NOTREACHED() << previews_state;
   return previews_state;
 }
 

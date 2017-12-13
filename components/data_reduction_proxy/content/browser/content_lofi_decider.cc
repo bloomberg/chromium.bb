@@ -15,7 +15,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/core/previews_decider.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -27,6 +26,38 @@ namespace data_reduction_proxy {
 ContentLoFiDecider::ContentLoFiDecider() {}
 
 ContentLoFiDecider::~ContentLoFiDecider() {}
+
+// Static
+content::PreviewsState
+ContentLoFiDecider::DetermineCommittedServerPreviewsState(
+    const net::URLRequest& request,
+    content::PreviewsState initial_state) {
+  DCHECK_EQ(
+      content::RESOURCE_TYPE_MAIN_FRAME,
+      content::ResourceRequestInfo::ForRequest(&request)->GetResourceType())
+      << "Request was not for main frame";
+  data_reduction_proxy::DataReductionProxyData* drp_data =
+      data_reduction_proxy::DataReductionProxyData::GetData(request);
+  if (!drp_data) {
+    return initial_state &=
+           ~(content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON);
+  }
+  content::PreviewsState updated_state = initial_state;
+  if (!drp_data->lite_page_received()) {
+    // Turn off LitePage bit.
+    updated_state &= ~(content::SERVER_LITE_PAGE_ON);
+  }
+  if (!drp_data->lofi_requested()) {
+    // Turn off LoFi bit(s).
+    updated_state &= ~(content::SERVER_LOFI_ON);
+    if (drp_data->used_data_reduction_proxy()) {
+      // Turn off Client LoFi bit also if using proxy but proxy did not
+      // request LoFi.
+      updated_state &= ~(content::CLIENT_LOFI_ON);
+    }
+  }
+  return updated_state;
+}
 
 bool ContentLoFiDecider::IsUsingLoFi(const net::URLRequest& request) const {
   const content::ResourceRequestInfo* request_info =

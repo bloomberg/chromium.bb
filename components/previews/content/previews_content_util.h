@@ -10,13 +10,24 @@
 
 namespace previews {
 
+// Returns whether |previews_state| has any enabled previews.
+bool HasEnabledPreviews(content::PreviewsState previews_state);
+
 // Returns the bitmask of enabled client-side previews for |url_request| and
 // the current effective network connection given |previews_decider|.
 // This handles the mapping of previews::PreviewsType enum values to bitmask
 // definitions for content::PreviewsState.
-content::PreviewsState DetermineClientPreviewsState(
+content::PreviewsState DetermineEnabledClientPreviewsState(
     const net::URLRequest& url_request,
     previews::PreviewsDecider* previews_decider);
+
+// Returns an updated PreviewsState given |previews_state| that has already
+// been updated wrt server previews. This should be called at Navigation Commit
+// time. It will defer to any server preview set, otherwise it chooses which
+// client preview bits to retain for processing the main frame response.
+content::PreviewsState DetermineCommittedClientPreviewsState(
+    const net::URLRequest& url_request,
+    content::PreviewsState previews_state);
 
 // Returns the effective PreviewsType known on a main frame basis given the
 // |previews_state| bitmask for the committed main frame. Will return NONE
