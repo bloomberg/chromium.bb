@@ -44,6 +44,8 @@
 #include "ios/chrome/browser/net/ios_chrome_http_user_agent_settings.h"
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
+#import "ios/net/cookies/system_cookie_store.h"
+#include "ios/web/public/system_cookie_store_util.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -67,6 +69,10 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -102,7 +108,7 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
 
   params->proxy_config_service = ProxyServiceFactory::CreateProxyConfigService(
       browser_state->GetProxyConfigTracker());
-
+  params->system_cookie_store = web::CreateSystemCookieStore(browser_state);
   params->browser_state = browser_state;
   profile_params_.reset(params.release());
 
@@ -172,8 +178,7 @@ ChromeBrowserStateIOData::ProfileParams::~ProfileParams() {}
 
 ChromeBrowserStateIOData::ChromeBrowserStateIOData(
     ios::ChromeBrowserStateType browser_state_type)
-    : initialized_(false),
-      browser_state_type_(browser_state_type) {
+    : initialized_(false), browser_state_type_(browser_state_type) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 }
 
@@ -212,8 +217,8 @@ ChromeBrowserStateIOData::~ChromeBrowserStateIOData() {
     transport_security_state_->SetReportSender(nullptr);
   certificate_report_sender_.reset();
 
-  // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
-  // are already done in the URLRequestContext destructor.
+  // TODO(crbug.com/787061): These AssertNoURLRequests() calls are unnecessary
+  // since they are already done in the URLRequestContext destructor.
   if (main_request_context_)
     main_request_context_->AssertNoURLRequests();
 

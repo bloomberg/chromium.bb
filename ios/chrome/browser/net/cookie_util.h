@@ -18,6 +18,7 @@ class ChromeBrowserState;
 namespace net {
 class CookieCryptoDelegate;
 class CookieStore;
+class SystemCookieStore;
 }
 
 namespace cookie_util {
@@ -73,7 +74,8 @@ struct CookieStoreConfig {
 // Creates a cookie store which is internally either a CookieMonster or a
 // CookieStoreIOS.
 std::unique_ptr<net::CookieStore> CreateCookieStore(
-    const CookieStoreConfig& config);
+    const CookieStoreConfig& config,
+    std::unique_ptr<net::SystemCookieStore> system_cookie_store);
 
 // Returns true if the cookies should be cleared.
 // Current implementation returns true if the device has rebooted since the

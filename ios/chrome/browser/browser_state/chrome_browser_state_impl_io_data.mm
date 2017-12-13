@@ -29,7 +29,9 @@
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/net/cookies/cookie_store_ios.h"
+#import "ios/net/cookies/cookie_store_ios.h"
+#import "ios/net/cookies/ns_http_system_cookie_store.h"
+#import "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/cache_type.h"
 #include "net/cookies/cookie_store.h"
@@ -230,7 +232,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
       cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
       cookie_util::CookieStoreConfig::COOKIE_STORE_IOS,
       cookie_config::GetCookieCryptoDelegate());
-  main_cookie_store_ = cookie_util::CreateCookieStore(ios_cookie_config);
+  main_cookie_store_ = cookie_util::CreateCookieStore(
+      ios_cookie_config, std::move(profile_params->system_cookie_store));
 
   if (profile_params->path.BaseName().value() ==
       kIOSChromeInitialBrowserState) {
@@ -307,8 +310,10 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
       base::FilePath(),
       cookie_util::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
       cookie_util::CookieStoreConfig::COOKIE_STORE_IOS, nullptr);
+  // TODO(crbug.com/779106): Check if cookiestore type should be changed.
   std::unique_ptr<net::CookieStore> cookie_store =
-      cookie_util::CreateCookieStore(ios_cookie_config);
+      cookie_util::CreateCookieStore(
+          ios_cookie_config, base::MakeUnique<net::NSHTTPSystemCookieStore>());
 
   // Transfer ownership of the ChannelIDStore, HttpNetworkSession, cookies, and
   // cache to AppRequestContext.
