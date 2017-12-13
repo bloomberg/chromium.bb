@@ -29,8 +29,56 @@
 namespace data_reduction_proxy {
 
 namespace {
+
 static const char kDataReductionCoreProxy[] = "proxy.googlezip.net";
+
+// Adds data reduction proxies to |result|, where applicable, if result
+// otherwise uses a direct connection for |url|, and the data reduction proxy is
+// not bypassed. Also, configures |result| to proceed directly to the origin if
+// |result|'s current proxy is the data reduction proxy.
+void OnResolveProxyHandler(
+    const GURL& url,
+    const std::string& method,
+    const net::ProxyConfig& proxy_config,
+    const net::ProxyRetryInfoMap& proxy_retry_info,
+    const DataReductionProxyConfig& data_reduction_proxy_config,
+    DataReductionProxyIOData* io_data,
+    net::ProxyInfo* result) {
+  DCHECK(result->is_empty() || result->is_direct() ||
+         !data_reduction_proxy_config.IsDataReductionProxy(
+             result->proxy_server(), nullptr));
+
+  if (!util::EligibleForDataReductionProxy(*result, url, method))
+    return;
+
+  net::ProxyInfo data_reduction_proxy_info;
+  bool data_saver_proxy_used = util::ApplyProxyConfigToProxyInfo(
+      proxy_config, proxy_retry_info, url, &data_reduction_proxy_info);
+  if (data_saver_proxy_used)
+    result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
+
+  if (io_data && io_data->resource_type_provider()) {
+    ResourceTypeProvider::ContentType content_type =
+        io_data->resource_type_provider()->GetContentType(url);
+    DCHECK_GT(ResourceTypeProvider::CONTENT_TYPE_MAX, content_type);
+    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.ResourceContentType",
+                              content_type,
+                              ResourceTypeProvider::CONTENT_TYPE_MAX);
+  }
+
+  // The |proxy_config| must be valid otherwise the proxy cannot be used.
+  DCHECK(proxy_config.is_valid() || !data_saver_proxy_used);
+
+  if (data_reduction_proxy_config.enabled_by_user_and_reachable() &&
+      url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url.host_piece()) &&
+      !params::IsIncludedInHoldbackFieldTrial()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "DataReductionProxy.ConfigService.HTTPRequests",
+        !data_reduction_proxy_config.GetProxiesForHttp().empty());
+  }
 }
+
+}  // namespace
 
 DataReductionProxyDelegate::DataReductionProxyDelegate(
     DataReductionProxyConfig* config,
@@ -236,48 +284,6 @@ void DataReductionProxyDelegate::OnIPAddressChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   first_data_saver_request_recorded_ = false;
   last_network_change_time_ = tick_clock_->NowTicks();
-}
-
-void OnResolveProxyHandler(
-    const GURL& url,
-    const std::string& method,
-    const net::ProxyConfig& proxy_config,
-    const net::ProxyRetryInfoMap& proxy_retry_info,
-    const DataReductionProxyConfig& data_reduction_proxy_config,
-    DataReductionProxyIOData* io_data,
-    net::ProxyInfo* result) {
-  DCHECK(result->is_empty() || result->is_direct() ||
-         !data_reduction_proxy_config.IsDataReductionProxy(
-             result->proxy_server(), nullptr));
-
-  if (!util::EligibleForDataReductionProxy(*result, url, method))
-    return;
-
-  net::ProxyInfo data_reduction_proxy_info;
-  bool data_saver_proxy_used = util::ApplyProxyConfigToProxyInfo(
-      proxy_config, proxy_retry_info, url, &data_reduction_proxy_info);
-  if (data_saver_proxy_used)
-    result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
-
-  if (io_data && io_data->resource_type_provider()) {
-    ResourceTypeProvider::ContentType content_type =
-        io_data->resource_type_provider()->GetContentType(url);
-    DCHECK_GT(ResourceTypeProvider::CONTENT_TYPE_MAX, content_type);
-    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.ResourceContentType",
-                              content_type,
-                              ResourceTypeProvider::CONTENT_TYPE_MAX);
-  }
-
-  // The |proxy_config| must be valid otherwise the proxy cannot be used.
-  DCHECK(proxy_config.is_valid() || !data_saver_proxy_used);
-
-  if (data_reduction_proxy_config.enabled_by_user_and_reachable() &&
-      url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url.host_piece()) &&
-      !params::IsIncludedInHoldbackFieldTrial()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "DataReductionProxy.ConfigService.HTTPRequests",
-        !data_reduction_proxy_config.GetProxiesForHttp().empty());
-  }
 }
 
 }  // namespace data_reduction_proxy

@@ -583,29 +583,9 @@ class DataReductionProxyDelegateTest : public testing::Test {
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
 };
 
-TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
+TEST_F(DataReductionProxyDelegateTest, OnResolveProxy) {
   GURL url("http://www.google.com/");
   params()->UseNonSecureProxiesForHttp();
-  net::ProxyList proxy_list;
-  proxy_list.AddProxyServer(
-      params()->proxies_for_http().front().proxy_server());
-  proxy_list.AddProxyServer(net::ProxyServer::Direct());
-  net::ProxyInfo data_reduction_proxy_info;
-  data_reduction_proxy_info.UseProxyList(proxy_list);
-  EXPECT_FALSE(data_reduction_proxy_info.is_empty());
-
-  // Data reduction proxy config
-  net::ProxyConfig data_reduction_proxy_config;
-  data_reduction_proxy_config.proxy_rules().ParseFromString(
-      "http=" +
-      params()
-          ->proxies_for_http()
-          .front()
-          .proxy_server()
-          .host_port_pair()
-          .ToString() +
-      ",direct://;");
-  data_reduction_proxy_config.set_id(1);
 
   // Other proxy info
   net::ProxyInfo other_proxy_info;
@@ -626,14 +606,14 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   retry_info.current_delay = base::TimeDelta::FromSeconds(1000);
   retry_info.bad_until = base::TimeTicks().Now() + retry_info.current_delay;
   retry_info.try_while_bad = false;
-  data_reduction_proxy_retry_info[data_reduction_proxy_info.proxy_server()
-                                      .ToURI()] = retry_info;
+  data_reduction_proxy_retry_info
+      [params()->proxies_for_http().front().proxy_server().ToURI()] =
+          retry_info;
 
   net::ProxyInfo result;
   // Another proxy is used. It should be used afterwards.
   result.Use(other_proxy_info);
-  OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                        empty_proxy_retry_info, *config(), nullptr, &result);
+  proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info, &result);
   EXPECT_EQ(other_proxy_info.proxy_server(), result.proxy_server());
 
   // A direct connection is used. The data reduction proxy should be used
@@ -641,9 +621,9 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   // Another proxy is used. It should be used afterwards.
   result.Use(direct_proxy_info);
   net::ProxyConfig::ID prev_id = result.config_id();
-  OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                        empty_proxy_retry_info, *config(), nullptr, &result);
-  EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
+  proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info, &result);
+  EXPECT_EQ(params()->proxies_for_http().front().proxy_server(),
+            result.proxy_server());
   // Only the proxy list should be updated, not the proxy info.
   EXPECT_EQ(result.config_id(), prev_id);
 
@@ -651,41 +631,36 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   // list. A direct connection should be used afterwards.
   result.Use(direct_proxy_info);
   prev_id = result.config_id();
-  OnResolveProxyHandler(
-      GURL("ws://echo.websocket.org/"), "GET", data_reduction_proxy_config,
-      data_reduction_proxy_retry_info, *config(), nullptr, &result);
+  proxy_delegate()->OnResolveProxy(GURL("ws://echo.websocket.org/"), "GET",
+                                   data_reduction_proxy_retry_info, &result);
   EXPECT_TRUE(result.proxy_server().is_direct());
   EXPECT_EQ(result.config_id(), prev_id);
 
   // Test that ws:// and wss:// URLs bypass the data reduction proxy.
   result.UseDirect();
-  OnResolveProxyHandler(GURL("wss://echo.websocket.org/"), "GET",
-                        data_reduction_proxy_config, empty_proxy_retry_info,
-                        *config(), nullptr, &result);
+  proxy_delegate()->OnResolveProxy(GURL("wss://echo.websocket.org/"), "GET",
+                                   empty_proxy_retry_info, &result);
   EXPECT_TRUE(result.is_direct());
 
   result.UseDirect();
-  OnResolveProxyHandler(GURL("wss://echo.websocket.org/"), "GET",
-                        data_reduction_proxy_config, empty_proxy_retry_info,
-                        *config(), nullptr, &result);
+  proxy_delegate()->OnResolveProxy(GURL("wss://echo.websocket.org/"), "GET",
+                                   empty_proxy_retry_info, &result);
   EXPECT_TRUE(result.is_direct());
 
   // POST methods go direct.
   result.UseDirect();
-  OnResolveProxyHandler(url, "POST", data_reduction_proxy_config,
-                        empty_proxy_retry_info, *config(), nullptr, &result);
+  proxy_delegate()->OnResolveProxy(url, "POST", empty_proxy_retry_info,
+                                   &result);
   EXPECT_TRUE(result.is_direct());
 
   // Without DataCompressionProxyCriticalBypass Finch trial set, the
   // BYPASS_DATA_REDUCTION_PROXY load flag should be ignored.
   result.UseDirect();
-  OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                        empty_proxy_retry_info, *config(), nullptr, &result);
+  proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info, &result);
   EXPECT_FALSE(result.is_direct());
 
-  OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                        empty_proxy_retry_info, *config(), nullptr,
-                        &other_proxy_info);
+  proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info,
+                                   &other_proxy_info);
   EXPECT_FALSE(other_proxy_info.is_direct());
 }
 
@@ -695,69 +670,34 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
   const struct {
     const char* url;
     bool enabled_by_user;
-    bool use_direct_proxy;
     bool expect_histogram;
   } test_cases[] = {
       {
           // Request should not be logged because data saver is disabled.
-          "http://www.example.com/", false, true, false,
+          "http://www.example.com/", false, false,
       },
       {
-          "http://www.example.com/", true, true, true,
-      },
-      {
-          "http://www.example.com/", true, false, true,
-      },
-      {
-          "https://www.example.com/", false, true, false,
+          "http://www.example.com/", true, true,
       },
       {
           // Request should not be logged because request is HTTPS.
-          "https://www.example.com/", true, true, false,
+          "https://www.example.com/", true, false,
       },
       {
           // Request to localhost should not be logged.
-          "http://127.0.0.1/", true, true, false,
+          "http://127.0.0.1/", true, false,
       },
       {
           // Special use IPv4 address for testing purposes (RFC 5735).
-          "http://198.51.100.1/", true, true, true,
+          "http://198.51.100.1/", true, true,
       },
   };
 
   for (const auto& test : test_cases) {
-    ASSERT_TRUE(test.use_direct_proxy || test.enabled_by_user);
     ASSERT_TRUE(test.enabled_by_user || !test.expect_histogram);
     base::HistogramTester histogram_tester;
     GURL url(test.url);
 
-    net::ProxyInfo data_reduction_proxy_info;
-    if (!test.use_direct_proxy) {
-      net::ProxyList proxy_list;
-      proxy_list.AddProxyServer(
-          params()->proxies_for_http().front().proxy_server());
-      proxy_list.AddProxyServer(net::ProxyServer::Direct());
-      data_reduction_proxy_info.UseProxyList(proxy_list);
-    }
-    EXPECT_EQ(test.use_direct_proxy, data_reduction_proxy_info.is_empty());
-
-    net::ProxyConfig data_reduction_proxy_config;
-    if (test.use_direct_proxy) {
-      data_reduction_proxy_config = net::ProxyConfig::CreateDirect();
-
-    } else {
-      data_reduction_proxy_config.proxy_rules().ParseFromString(
-          "http=" +
-          params()
-              ->proxies_for_http()
-              .front()
-              .proxy_server()
-              .host_port_pair()
-              .ToString() +
-          ",direct://;");
-      data_reduction_proxy_config.set_id(1);
-    }
-    EXPECT_NE(test.use_direct_proxy, data_reduction_proxy_config.is_valid());
     config()->UpdateConfigForTesting(test.enabled_by_user /* enabled */,
                                      false /* secure_proxies_allowed */,
                                      true /* insecure_proxies_allowed */);
@@ -770,8 +710,8 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
 
     net::ProxyInfo result;
     result.Use(direct_proxy_info);
-    OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                          empty_proxy_retry_info, *config(), nullptr, &result);
+    proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info,
+                                     &result);
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.ConfigService.HTTPRequests",
         test.expect_histogram ? 1 : 0);
