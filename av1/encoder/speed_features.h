@@ -276,6 +276,12 @@ typedef enum {
   GM_DISABLE_SEARCH
 } GM_SEARCH_TYPE;
 
+typedef enum {
+  NO_TRELLIS_OPT,         // No trellis optimization
+  FULL_TRELLIS_OPT,       // Trellis optimization in all stages
+  FINAL_PASS_TRELLIS_OPT  // Trellis optimization in only the final encode pass
+} TRELLIS_OPT_TYPE;
+
 typedef struct SPEED_FEATURES {
   MV_SPEED_FEATURES mv;
 
@@ -284,8 +290,8 @@ typedef struct SPEED_FEATURES {
 
   RECODE_LOOP_TYPE recode_loop;
 
-  // Trellis (dynamic programming) optimization of quantized values (+1, 0).
-  int optimize_coefficients;
+  // Trellis (dynamic programming) optimization of quantized values
+  TRELLIS_OPT_TYPE optimize_coefficients;
 
   // Always set to 0. If on it enables 0 cost background transmission
   // (except for the initial transmission of the segmentation). The feature is

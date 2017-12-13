@@ -269,7 +269,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 
   if (speed >= 6) {
     int i;
-    sf->optimize_coefficients = 0;
+    sf->optimize_coefficients = NO_TRELLIS_OPT;
     sf->mv.search_method = HEX;
     sf->disable_filter_search_var_thresh = 500;
     for (i = 0; i < TX_SIZES; ++i) {
@@ -552,13 +552,13 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 #if !CONFIG_XIPHRC
   // Slow quant, dct and trellis not worthwhile for first pass
   // so make sure they are always turned off.
-  if (oxcf->pass == 1) sf->optimize_coefficients = 0;
+  if (oxcf->pass == 1) sf->optimize_coefficients = NO_TRELLIS_OPT;
 #endif
 
   // No recode for 1 pass.
   if (oxcf->pass == 0) {
     sf->recode_loop = DISALLOW_RECODE;
-    sf->optimize_coefficients = 0;
+    sf->optimize_coefficients = NO_TRELLIS_OPT;
   }
 
   if (sf->mv.subpel_search_method == SUBPEL_TREE) {
@@ -571,7 +571,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned_evenmore;
   }
 
-  x->optimize = sf->optimize_coefficients == 1 && oxcf->pass != 1;
+  x->optimize =
+      sf->optimize_coefficients == FULL_TRELLIS_OPT && oxcf->pass != 1;
 #if CONFIG_AOM_QM
   // FIXME: trellis not very efficient for quantisation matrices
   if (cm->using_qmatrix) x->optimize = 0;
