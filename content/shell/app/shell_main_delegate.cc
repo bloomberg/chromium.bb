@@ -197,9 +197,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     if (!command_line.HasSwitch(switches::kForceDeviceScaleFactor))
       command_line.AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1.0");
 
-    command_line.AppendSwitchASCII(
-        switches::kAutoplayPolicy,
-        switches::autoplay::kNoUserGestureRequiredPolicy);
+    if (!command_line.HasSwitch(switches::kAutoplayPolicy)) {
+      command_line.AppendSwitchASCII(
+          switches::kAutoplayPolicy,
+          switches::autoplay::kNoUserGestureRequiredPolicy);
+    }
 
     if (!command_line.HasSwitch(switches::kStableReleaseMode)) {
       command_line.AppendSwitch(

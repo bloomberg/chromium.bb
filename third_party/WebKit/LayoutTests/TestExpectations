@@ -3695,3 +3695,8 @@ crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/dou
 
 # Sheriff faulures 2017-12-12
 crbug.com/794180 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure Pass ]
+
+# These tests require Unified Autoplay.
+crbug.com/779087 external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
+crbug.com/779087 external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
+crbug.com/779087 external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]

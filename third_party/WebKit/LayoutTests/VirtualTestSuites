@@ -613,5 +613,10 @@
     "prefix": "modern-media-controls",
     "base": "media/controls/modern",
     "args": ["--enable-features=UseModernMediaControls"]
+  },
+  {
+    "prefix": "unified-autoplay",
+    "base": "external/wpt/feature-policy",
+    "args": ["--autoplay-policy=document-user-activation-required"]
   }
 ]
