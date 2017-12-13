@@ -92,7 +92,7 @@ button {
 
 body.hide-fakebox-logo #logo,
 body.hide-fakebox-logo #fakebox {
-  visibility: hidden;
+  opacity: 0;
 }
 
 #logo {
