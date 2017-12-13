@@ -71,6 +71,10 @@
 
 // Presents PKAddPassesViewController.
 - (void)presentAddPassUI {
+  if (![PKAddPassesViewController canAddPasses]) {
+    [self stop];
+    return;
+  }
   _viewController = [[PKAddPassesViewController alloc] initWithPass:self.pass];
   _viewController.delegate = self;
   [self.baseViewController presentViewController:_viewController

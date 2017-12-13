@@ -27,6 +27,7 @@
 #endif
 
 using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForUIElementTimeout;
 
 // Test fixture for PassKitCoordinator class.
 class PassKitCoordinatorTest : public PlatformTest {
@@ -57,11 +58,6 @@ class PassKitCoordinatorTest : public PlatformTest {
 // Tests that PassKitCoordinator presents PKAddPassesViewController for the
 // valid PKPass object.
 TEST_F(PassKitCoordinatorTest, ValidPassKitObject) {
-  if (IsIPadIdiom()) {
-    // Wallet app is not supported on iPads.
-    return;
-  }
-
   std::string data = testing::GetTestPass();
   NSData* nsdata = [NSData dataWithBytes:data.c_str() length:data.size()];
   PKPass* pass = [[PKPass alloc] initWithData:nsdata error:nil];
@@ -72,16 +68,21 @@ TEST_F(PassKitCoordinatorTest, ValidPassKitObject) {
       presentDialogForPass:pass
                   webState:web_state_.get()];
 
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
-    return [base_view_controller_.presentedViewController class] ==
-           [PKAddPassesViewController class];
-  }));
+  if (IsIPadIdiom()) {
+    // Wallet app is not supported on iPads.
+  } else {
+    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+      return [base_view_controller_.presentedViewController class] ==
+             [PKAddPassesViewController class];
+    }));
 
-  [coordinator_ stop];
+    [coordinator_ stop];
 
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
-    return base_view_controller_.presentedViewController == nil;
-  }));
+    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+      return base_view_controller_.presentedViewController == nil;
+    }));
+  }
+
   EXPECT_FALSE(coordinator_.webState);
   EXPECT_FALSE(coordinator_.pass);
 }
