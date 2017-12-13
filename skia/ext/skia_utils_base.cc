@@ -8,44 +8,11 @@
 
 #include "base/pickle.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkImageDeserializer.h"
-#include "third_party/skia/include/core/SkPixelSerializer.h"
-#include "third_party/skia/include/core/SkWriteBuffer.h"
-#include "third_party/skia/src/core/SkValidatingReadBuffer.h"
+#include "third_party/skia/include/core/SkEncodedImageFormat.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSerialProcs.h"
 
 namespace skia {
-namespace {
-
-class CodecDecodingPixelSerializer : public SkPixelSerializer {
- public:
-  CodecDecodingPixelSerializer() = default;
-  ~CodecDecodingPixelSerializer() override = default;
-
- protected:
-  // Disallowing serializing the encoded data.
-  bool onUseEncodedData(const void* data, size_t len) override { return false; }
-
-  // Don't return any encoded data to ensure the decoded bitmap is serialized.
-  SkData* onEncode(const SkPixmap&) override { return nullptr; }
-};
-
-class CodecDisallowingImageDeserializer : public SkImageDeserializer {
- public:
-  ~CodecDisallowingImageDeserializer() override = default;
-
-  sk_sp<SkImage> makeFromData(SkData*, const SkIRect* subset) override {
-    LOG(ERROR) << "Encoded image rejected during SkFlattenable deserialization";
-    return nullptr;
-  }
-  sk_sp<SkImage> makeFromMemory(const void* data,
-                                size_t length,
-                                const SkIRect* subset) override {
-    LOG(ERROR) << "Encoded image rejected during SkFlattenable deserialization";
-    return nullptr;
-  }
-};
-
-}  // namespace
 
 bool ReadSkString(base::PickleIterator* iter, SkString* str) {
   int reply_length;
@@ -115,22 +82,24 @@ void WriteSkFontStyle(base::Pickle* pickle, SkFontStyle style) {
 }
 
 sk_sp<SkData> ValidatingSerializeFlattenable(SkFlattenable* flattenable) {
-  SkBinaryWriteBuffer writer;
-  writer.setPixelSerializer(sk_make_sp<CodecDecodingPixelSerializer>());
-  writer.writeFlattenable(flattenable);
-  size_t size = writer.bytesWritten();
-  auto data = SkData::MakeUninitialized(size);
-  writer.writeToMemory(data->writable_data());
-  return data;
+  SkSerialProcs procs;
+  procs.fImageProc = [](SkImage* image, void*) {
+    // We choose to not trust natively encoded images, but we are fine to force
+    // a "clean" encoded version for transport.
+    return image->encodeToData(SkEncodedImageFormat::kPNG, 100);
+  };
+  return flattenable->serialize(&procs);
 }
 
 SkFlattenable* ValidatingDeserializeFlattenable(const void* data,
                                                 size_t size,
                                                 SkFlattenable::Type type) {
-  SkValidatingReadBuffer buffer(data, size);
-  CodecDisallowingImageDeserializer image_deserializer;
-  buffer.setImageDeserializer(&image_deserializer);
-  return buffer.readFlattenable(type);
+  SkDeserialProcs procs;
+  procs.fImageProc = [](const void* data, size_t length, void*) {
+    // Our custom encode is standard, so we can just call Skia to deserialize
+    return SkImage::MakeFromEncoded(SkData::MakeWithCopy(data, length));
+  };
+  return SkFlattenable::Deserialize(type, data, size, &procs).release();
 }
 
 }  // namespace skia
