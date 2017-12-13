@@ -865,6 +865,11 @@ TEST(GURLTest, EqualsIgnoringRef) {
       {"filesystem:http://a.com#foo", "filesystem:http://a.com#foo", true},
       {"filesystem:http://a.com#foo", "filesystem:http://a.com#bar", true},
       {"filesystem:http://a.com#foo", "filesystem:http://b.com#bar", false},
+
+      // Data URLs
+      {"data:text/html,a#foo", "data:text/html,a#bar", true},
+      {"data:text/html,a#foo", "data:text/html,a#foo", true},
+      {"data:text/html,a#foo", "data:text/html,b#foo", false},
   };
 
   for (const auto& test_case : kTestCases) {
