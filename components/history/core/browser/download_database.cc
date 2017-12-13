@@ -478,14 +478,8 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
     if (!ConvertIntToDownloadId(signed_id, &id))
       continue;
 
-    // Note that these DCHECKs may trip as a result of corrupted databases.
-    // We have them because in debug builds the chances are higher there's
-    // an actual bug than that the database is corrupt, but we handle the
-    // DB corruption case in production code.
-
     // Confirm the id has already been seen--if it hasn't, discard the
     // record.
-    DCHECK(base::ContainsKey(info_map, id));
     if (!base::ContainsKey(info_map, id))
       continue;
 
@@ -493,6 +487,10 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
     // if not, fill in with null or discard record.
     int current_chain_size = static_cast<int>(info_map[id]->url_chain.size());
     std::vector<GURL>* url_chain(&info_map[id]->url_chain);
+    // Note that this DCHECK may trip as a result of corrupted databases.
+    // It exists because in debug builds the chances are higher there's
+    // an actual bug than that the database is corrupt. The DB corruption
+    // case in handled in production code.
     DCHECK_EQ(chain_index, current_chain_size);
     while (current_chain_size < chain_index) {
       url_chain->push_back(GURL());
