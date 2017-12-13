@@ -616,9 +616,14 @@ void PdfConverterUtilityProcessHostClient::Stop() {
         base::Bind(&PdfConverterUtilityProcessHostClient::Stop, this));
     return;
   }
-  // Disconnect the PdfToEmfConverterPtr, it will lead to the closing of the
-  // utility process.
   pdf_to_emf_converter_.reset();
+  // Once this becomes a Mojo service, simply disconnecting
+  // pdf_to_emf_converter_ above will lead to the utility process stopping.
+  // In the meantime we need to explictly terminate it.
+  if (utility_process_host_) {
+    utility_process_host_->Send(
+        new ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop());
+  }
 }
 
 void PdfConverterUtilityProcessHostClient::OnProcessCrashed(int exit_code) {

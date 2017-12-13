@@ -31,6 +31,9 @@ class PrintingHandler : public UtilityMessageHandler {
 
  private:
   // IPC message handlers.
+#if defined(OS_WIN)
+  void OnRenderPDFPagesToMetafileStop();
+#endif  // OS_WIN
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
   void OnGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
