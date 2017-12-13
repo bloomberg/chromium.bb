@@ -125,8 +125,9 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
 
     PreviewsInfoBarDelegate::Create(
         web_contents(), previews::PreviewsType::OFFLINE,
-        base::Time() /* previews_freshness */, false /* is_reload */,
+        base::Time() /* previews_freshness */,
         data_reduction_proxy_settings && data_saver_enabled,
+        false /* is_reload */,
         base::Bind(&AddPreviewNavigationCallback,
                    web_contents()->GetBrowserContext(),
                    navigation_handle->GetRedirectChain()[0],
