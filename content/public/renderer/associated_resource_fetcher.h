@@ -64,7 +64,7 @@ class CONTENT_EXPORT AssociatedResourceFetcher {
       blink::WebURLRequest::RequestContext request_context,
       network::mojom::FetchRequestMode fetch_request_mode,
       network::mojom::FetchCredentialsMode fetch_credentials_mode,
-      network::mojom::RequestContextFrameType frame_type,
+      blink::WebURLRequest::FrameType frame_type,
       const Callback& callback) = 0;
 
   // Manually cancel the request.

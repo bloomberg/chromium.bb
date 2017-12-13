@@ -17,11 +17,11 @@
 #include "content/browser/service_worker/service_worker_url_loader_job.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -54,7 +54,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       bool keepalive,
       ResourceType resource_type,
       RequestContextType request_context_type,
-      network::mojom::RequestContextFrameType frame_type,
+      RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body);
   ~ServiceWorkerControlleeRequestHandler() override;
 
@@ -131,7 +131,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   std::string integrity_;
   const bool keepalive_;
   RequestContextType request_context_type_;
-  network::mojom::RequestContextFrameType frame_type_;
+  RequestContextFrameType frame_type_;
   scoped_refptr<ResourceRequestBody> body_;
   ResourceContext* resource_context_;
   GURL stripped_url_;

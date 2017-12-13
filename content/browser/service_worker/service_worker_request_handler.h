@@ -16,12 +16,12 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 
 namespace net {
 class NetworkDelegate;
@@ -59,7 +59,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       bool skip_service_worker,
       ResourceType resource_type,
       RequestContextType request_context_type,
-      network::mojom::RequestContextFrameType frame_type,
+      RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
       scoped_refptr<ResourceRequestBody> body,
       const base::Callback<WebContents*(void)>& web_contents_getter);
@@ -76,7 +76,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       bool skip_service_worker,
       ResourceType resource_type,
       RequestContextType request_context_type,
-      network::mojom::RequestContextFrameType frame_type,
+      RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
       scoped_refptr<ResourceRequestBody> body,
       const base::Callback<WebContents*(void)>& web_contents_getter);
@@ -101,7 +101,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       bool keepalive,
       ResourceType resource_type,
       RequestContextType request_context_type,
-      network::mojom::RequestContextFrameType frame_type,
+      RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body);
 
   // Returns the handler attached to |request|. This may return NULL

@@ -59,7 +59,6 @@
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
@@ -253,12 +252,12 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
  protected:
   void ExpectUpgrade(const char* input, const char* expected) {
     ExpectUpgrade(input, WebURLRequest::kRequestContextScript,
-                  network::mojom::RequestContextFrameType::kNone, expected);
+                  WebURLRequest::kFrameTypeNone, expected);
   }
 
   void ExpectUpgrade(const char* input,
                      WebURLRequest::RequestContext request_context,
-                     network::mojom::RequestContextFrameType frame_type,
+                     WebURLRequest::FrameType frame_type,
                      const char* expected) {
     const KURL input_url(input);
     const KURL expected_url(expected);
@@ -277,10 +276,9 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     EXPECT_EQ(expected_url.GetPath(), resource_request.Url().GetPath());
   }
 
-  void ExpectUpgradeInsecureRequestHeader(
-      const char* input,
-      network::mojom::RequestContextFrameType frame_type,
-      bool should_prefer) {
+  void ExpectUpgradeInsecureRequestHeader(const char* input,
+                                          WebURLRequest::FrameType frame_type,
+                                          bool should_prefer) {
     const KURL input_url(input);
 
     ResourceRequest resource_request(input_url);
@@ -304,7 +302,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
   void ExpectSetRequiredCSPRequestHeader(
       const char* input,
-      network::mojom::RequestContextFrameType frame_type,
+      WebURLRequest::FrameType frame_type,
       const AtomicString& expected_required_csp) {
     const KURL input_url(input);
     ResourceRequest resource_request(input_url);
@@ -317,11 +315,10 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
               resource_request.HttpHeaderField(HTTPNames::Sec_Required_CSP));
   }
 
-  void SetFrameOwnerBasedOnFrameType(
-      network::mojom::RequestContextFrameType frame_type,
-      HTMLIFrameElement* iframe,
-      const AtomicString& potential_value) {
-    if (frame_type != network::mojom::RequestContextFrameType::kNested) {
+  void SetFrameOwnerBasedOnFrameType(WebURLRequest::FrameType frame_type,
+                                     HTMLIFrameElement* iframe,
+                                     const AtomicString& potential_value) {
+    if (frame_type != WebURLRequest::kFrameTypeNested) {
       document->GetFrame()->SetOwner(nullptr);
       return;
     }
@@ -365,38 +362,30 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
 
     // We always upgrade for FrameTypeNone and FrameTypeNested.
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
-                  network::mojom::RequestContextFrameType::kNone,
-                  test.upgraded);
+                  WebURLRequest::kFrameTypeNone, test.upgraded);
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
-                  network::mojom::RequestContextFrameType::kNested,
-                  test.upgraded);
+                  WebURLRequest::kFrameTypeNested, test.upgraded);
 
     // We do not upgrade for FrameTypeTopLevel or FrameTypeAuxiliary...
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
-                  network::mojom::RequestContextFrameType::kTopLevel,
-                  test.original);
+                  WebURLRequest::kFrameTypeTopLevel, test.original);
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
-                  network::mojom::RequestContextFrameType::kAuxiliary,
-                  test.original);
+                  WebURLRequest::kFrameTypeAuxiliary, test.original);
 
     // unless the request context is RequestContextForm.
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextForm,
-                  network::mojom::RequestContextFrameType::kTopLevel,
-                  test.upgraded);
+                  WebURLRequest::kFrameTypeTopLevel, test.upgraded);
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextForm,
-                  network::mojom::RequestContextFrameType::kAuxiliary,
-                  test.upgraded);
+                  WebURLRequest::kFrameTypeAuxiliary, test.upgraded);
 
     // Or unless the host of the resource is in the document's
     // InsecureNavigationsSet:
     document->AddInsecureNavigationUpgrade(
         example_origin->Host().Impl()->GetHash());
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
-                  network::mojom::RequestContextFrameType::kTopLevel,
-                  test.upgraded);
+                  WebURLRequest::kFrameTypeTopLevel, test.upgraded);
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
-                  network::mojom::RequestContextFrameType::kAuxiliary,
-                  test.upgraded);
+                  WebURLRequest::kFrameTypeAuxiliary, test.upgraded);
   }
 }
 
@@ -430,24 +419,21 @@ TEST_F(FrameFetchContextModifyRequestTest,
 TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
   struct TestCase {
     const char* to_request;
-    network::mojom::RequestContextFrameType frame_type;
+    WebURLRequest::FrameType frame_type;
     bool should_prefer;
-  } tests[] = {{"http://example.test/page.html",
-                network::mojom::RequestContextFrameType::kAuxiliary, true},
-               {"http://example.test/page.html",
-                network::mojom::RequestContextFrameType::kNested, true},
-               {"http://example.test/page.html",
-                network::mojom::RequestContextFrameType::kNone, false},
-               {"http://example.test/page.html",
-                network::mojom::RequestContextFrameType::kTopLevel, true},
-               {"https://example.test/page.html",
-                network::mojom::RequestContextFrameType::kAuxiliary, true},
-               {"https://example.test/page.html",
-                network::mojom::RequestContextFrameType::kNested, true},
-               {"https://example.test/page.html",
-                network::mojom::RequestContextFrameType::kNone, false},
-               {"https://example.test/page.html",
-                network::mojom::RequestContextFrameType::kTopLevel, true}};
+  } tests[] = {
+      {"http://example.test/page.html", WebURLRequest::kFrameTypeAuxiliary,
+       true},
+      {"http://example.test/page.html", WebURLRequest::kFrameTypeNested, true},
+      {"http://example.test/page.html", WebURLRequest::kFrameTypeNone, false},
+      {"http://example.test/page.html", WebURLRequest::kFrameTypeTopLevel,
+       true},
+      {"https://example.test/page.html", WebURLRequest::kFrameTypeAuxiliary,
+       true},
+      {"https://example.test/page.html", WebURLRequest::kFrameTypeNested, true},
+      {"https://example.test/page.html", WebURLRequest::kFrameTypeNone, false},
+      {"https://example.test/page.html", WebURLRequest::kFrameTypeTopLevel,
+       true}};
 
   // This should work correctly both when the FrameFetchContext has a Document,
   // and when it doesn't (e.g. during main frame navigations), so run through
@@ -478,15 +464,12 @@ TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
 TEST_F(FrameFetchContextModifyRequestTest, SendRequiredCSPHeader) {
   struct TestCase {
     const char* to_request;
-    network::mojom::RequestContextFrameType frame_type;
-  } tests[] = {{"https://example.test/page.html",
-                network::mojom::RequestContextFrameType::kAuxiliary},
-               {"https://example.test/page.html",
-                network::mojom::RequestContextFrameType::kNested},
-               {"https://example.test/page.html",
-                network::mojom::RequestContextFrameType::kNone},
-               {"https://example.test/page.html",
-                network::mojom::RequestContextFrameType::kTopLevel}};
+    WebURLRequest::FrameType frame_type;
+  } tests[] = {
+      {"https://example.test/page.html", WebURLRequest::kFrameTypeAuxiliary},
+      {"https://example.test/page.html", WebURLRequest::kFrameTypeNested},
+      {"https://example.test/page.html", WebURLRequest::kFrameTypeNone},
+      {"https://example.test/page.html", WebURLRequest::kFrameTypeTopLevel}};
 
   HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
   const AtomicString& required_csp = AtomicString("default-src 'none'");
@@ -496,15 +479,14 @@ TEST_F(FrameFetchContextModifyRequestTest, SendRequiredCSPHeader) {
     SetFrameOwnerBasedOnFrameType(test.frame_type, iframe, required_csp);
     ExpectSetRequiredCSPRequestHeader(
         test.to_request, test.frame_type,
-        test.frame_type == network::mojom::RequestContextFrameType::kNested
-            ? required_csp
-            : g_null_atom);
+        test.frame_type == WebURLRequest::kFrameTypeNested ? required_csp
+                                                           : g_null_atom);
 
     SetFrameOwnerBasedOnFrameType(test.frame_type, iframe,
                                   another_required_csp);
     ExpectSetRequiredCSPRequestHeader(
         test.to_request, test.frame_type,
-        test.frame_type == network::mojom::RequestContextFrameType::kNested
+        test.frame_type == WebURLRequest::kFrameTypeNested
             ? another_required_csp
             : g_null_atom);
   }
@@ -807,27 +789,25 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
     const char* document_url;
     bool document_sandboxed;
     const char* requestor_origin;  // "" => null
-    network::mojom::RequestContextFrameType frame_type;
+    WebURLRequest::FrameType frame_type;
     const char* serialized_origin;  // "" => null
   } cases[] = {
       // No document origin => unique request origin
-      {"", false, "", network::mojom::RequestContextFrameType::kNone, "null"},
-      {"", true, "", network::mojom::RequestContextFrameType::kNone, "null"},
+      {"", false, "", WebURLRequest::kFrameTypeNone, "null"},
+      {"", true, "", WebURLRequest::kFrameTypeNone, "null"},
 
       // Document origin => request origin
-      {"http://example.test", false, "",
-       network::mojom::RequestContextFrameType::kNone, "http://example.test"},
-      {"http://example.test", true, "",
-       network::mojom::RequestContextFrameType::kNone, "http://example.test"},
+      {"http://example.test", false, "", WebURLRequest::kFrameTypeNone,
+       "http://example.test"},
+      {"http://example.test", true, "", WebURLRequest::kFrameTypeNone,
+       "http://example.test"},
 
       // If the request already has a requestor origin, then
       // 'SetFirstPartyCookieAndRequestorOrigin' leaves it alone:
       {"http://example.test", false, "http://not-example.test",
-       network::mojom::RequestContextFrameType::kNone,
-       "http://not-example.test"},
+       WebURLRequest::kFrameTypeNone, "http://not-example.test"},
       {"http://example.test", true, "http://not-example.test",
-       network::mojom::RequestContextFrameType::kNone,
-       "http://not-example.test"},
+       WebURLRequest::kFrameTypeNone, "http://not-example.test"},
   };
 
   int index = 0;
@@ -943,9 +923,8 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
               DispatchDidLoadResourceFromMemoryCache(
                   ::testing::AllOf(
                       ::testing::Property(&ResourceRequest::Url, url),
-                      ::testing::Property(
-                          &ResourceRequest::GetFrameType,
-                          network::mojom::RequestContextFrameType::kNone),
+                      ::testing::Property(&ResourceRequest::GetFrameType,
+                                          WebURLRequest::kFrameTypeNone),
                       ::testing::Property(&ResourceRequest::GetRequestContext,
                                           WebURLRequest::kRequestContextImage)),
                   ResourceResponse()));
@@ -1151,7 +1130,7 @@ TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
   dummy_page_holder = nullptr;
 
   fetch_context->DispatchDidReceiveResponse(
-      3, response, network::mojom::RequestContextFrameType::kTopLevel,
+      3, response, WebURLRequest::kFrameTypeTopLevel,
       WebURLRequest::kRequestContextFetch, resource,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
   // Should not crash.

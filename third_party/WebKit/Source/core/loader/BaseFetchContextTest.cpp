@@ -61,7 +61,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   void CountDeprecation(WebFeature) const override {}
   bool ShouldBlockFetchByMixedContentCheck(
       WebURLRequest::RequestContext,
-      network::mojom::RequestContextFrameType,
+      WebURLRequest::FrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override {

@@ -16,6 +16,7 @@
 namespace mojo {
 
 using blink::mojom::FetchRedirectMode;
+using blink::mojom::RequestContextFrameType;
 using blink::mojom::RequestContextType;
 
 FetchRedirectMode
@@ -46,6 +47,45 @@ bool EnumTraits<FetchRedirectMode, blink::WebURLRequest::FetchRedirectMode>::
       return true;
     case FetchRedirectMode::MANUAL:
       *out = blink::WebURLRequest::kFetchRedirectModeManual;
+      return true;
+  }
+
+  return false;
+}
+
+RequestContextFrameType
+EnumTraits<RequestContextFrameType, blink::WebURLRequest::FrameType>::ToMojom(
+    blink::WebURLRequest::FrameType input) {
+  switch (input) {
+    case blink::WebURLRequest::kFrameTypeAuxiliary:
+      return RequestContextFrameType::AUXILIARY;
+    case blink::WebURLRequest::kFrameTypeNested:
+      return RequestContextFrameType::NESTED;
+    case blink::WebURLRequest::kFrameTypeNone:
+      return RequestContextFrameType::NONE;
+    case blink::WebURLRequest::kFrameTypeTopLevel:
+      return RequestContextFrameType::TOP_LEVEL;
+  }
+
+  NOTREACHED();
+  return RequestContextFrameType::NONE;
+}
+
+bool EnumTraits<RequestContextFrameType, blink::WebURLRequest::FrameType>::
+    FromMojom(RequestContextFrameType input,
+              blink::WebURLRequest::FrameType* out) {
+  switch (input) {
+    case RequestContextFrameType::AUXILIARY:
+      *out = blink::WebURLRequest::kFrameTypeAuxiliary;
+      return true;
+    case RequestContextFrameType::NESTED:
+      *out = blink::WebURLRequest::kFrameTypeNested;
+      return true;
+    case RequestContextFrameType::NONE:
+      *out = blink::WebURLRequest::kFrameTypeNone;
+      return true;
+    case RequestContextFrameType::TOP_LEVEL:
+      *out = blink::WebURLRequest::kFrameTypeTopLevel;
       return true;
   }
 
@@ -327,7 +367,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
          blink::WebServiceWorkerRequest* out) {
   network::mojom::FetchRequestMode mode;
   blink::WebURLRequest::RequestContext requestContext;
-  network::mojom::RequestContextFrameType frameType;
+  blink::WebURLRequest::FrameType frameType;
   blink::KURL url;
   WTF::String method;
   WTF::HashMap<WTF::String, WTF::String> headers;

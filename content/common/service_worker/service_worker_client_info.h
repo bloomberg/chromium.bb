@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_CLIENT_INFO_H_
 
 #include "base/time/time.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
+#include "content/public/common/request_context_frame_type.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "url/gurl.h"
@@ -25,7 +25,7 @@ struct ServiceWorkerClientInfo {
       blink::mojom::PageVisibilityState page_visibility_state,
       bool is_focused,
       const GURL& url,
-      network::mojom::RequestContextFrameType frame_type,
+      RequestContextFrameType frame_type,
       base::TimeTicks last_focus_time,
       base::TimeTicks create_time,
       blink::mojom::ServiceWorkerClientType client_type);
@@ -42,7 +42,7 @@ struct ServiceWorkerClientInfo {
   blink::mojom::PageVisibilityState page_visibility_state;
   bool is_focused;
   GURL url;
-  network::mojom::RequestContextFrameType frame_type;
+  RequestContextFrameType frame_type;
   base::TimeTicks last_focus_time;
   base::TimeTicks create_time;
   blink::mojom::ServiceWorkerClientType client_type;

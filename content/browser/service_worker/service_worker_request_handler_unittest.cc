@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -21,7 +22,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,7 +80,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
         false /* keepalive */, resource_type, REQUEST_CONTEXT_TYPE_HYPERLINK,
-        network::mojom::RequestContextFrameType::kTopLevel, nullptr);
+        REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL, nullptr);
   }
 
   static ServiceWorkerRequestHandler* GetHandler(net::URLRequest* request) {

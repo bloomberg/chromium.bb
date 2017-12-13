@@ -8,12 +8,12 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
@@ -56,6 +56,8 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
 FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
     const blink::WebURLRequest& request);
 std::string GetFetchIntegrityForWebURLRequest(
+    const blink::WebURLRequest& request);
+RequestContextFrameType GetRequestContextFrameTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
