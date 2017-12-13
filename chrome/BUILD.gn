@@ -301,7 +301,10 @@ if (!is_android && !is_mac) {
         deps += [ "//third_party/adobe/flash:flapper_binaries" ]
       }
 
-      data_deps += [ "//third_party/widevine/cdm:widevinecdmadapter" ]
+      data_deps += [
+        "//chrome/browser/resources/media/mei_preload:component",
+        "//third_party/widevine/cdm:widevinecdmadapter",
+      ]
 
       if (is_multi_dll_chrome) {
         defines += [ "CHROME_MULTIPLE_DLL" ]
@@ -649,7 +652,9 @@ if (is_win) {
     }
 
     foreach(locale, locales_as_mac_outputs) {
-      outputs += [ "$target_gen_dir/app_infoplist_strings/$locale.lproj/InfoPlist.strings" ]
+      outputs += [
+        "$target_gen_dir/app_infoplist_strings/$locale.lproj/InfoPlist.strings",
+      ]
     }
 
     args =
@@ -1207,9 +1212,7 @@ if (is_win) {
       if (enable_nacl) {
         framework_contents += [ "Internet Plug-Ins" ]
       }
-      if (_should_bundle_widevine) {
-        framework_contents += [ "Libraries" ]
-      }
+      framework_contents += [ "Libraries" ]
     }
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -1233,6 +1236,7 @@ if (is_win) {
       ":widevine_cdm_library",
       "//build/config:exe_and_shlib_deps",
       "//chrome/app/nibs:chrome_xibs",
+      "//chrome/browser/resources/media/mei_preload:component_bundle",
     ]
 
     if (is_chrome_branded) {
