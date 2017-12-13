@@ -57,11 +57,9 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   void GetAssociatedCacheInfo(CacheInfo* info) override;
   int GetHostID() const override;
 
-  // In the network service world, the |loader_factory_pipe| parameter contains
-  // the message pipe for the URLLoaderFactory instance to be used for
-  // subresource requests.
+  // Set the URLLoaderFactory instance to be used for subresource requests.
   virtual void SetSubresourceFactory(
-      mojo::MessagePipeHandle loader_factory_pipe_handle) {}
+      mojom::URLLoaderFactoryPtr url_loader_factory) {}
 
  private:
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };

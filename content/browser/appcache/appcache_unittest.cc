@@ -34,7 +34,7 @@ class MockAppCacheFrontend : public AppCacheFrontend {
   void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
   void OnSetSubresourceFactory(
       int host_id,
-      mojo::MessagePipeHandle loader_factory_pipe_handle) override {}
+      mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 };
 
 }  // namespace

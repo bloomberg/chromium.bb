@@ -54,7 +54,7 @@ class TestAppCacheFrontend : public content::AppCacheFrontend {
 
   void OnSetSubresourceFactory(
       int host_id,
-      mojo::MessagePipeHandle loader_factory_pipe_handle) override {}
+      content::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
   int last_host_id_;
   int64_t last_cache_id_;

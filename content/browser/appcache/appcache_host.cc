@@ -540,8 +540,7 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
       service()->url_loader_factory_getter(), GetWeakPtr(), &factory_ptr);
 
-  frontend_->OnSetSubresourceFactory(
-      host_id(), factory_ptr.PassInterface().PassHandle().release());
+  frontend_->OnSetSubresourceFactory(host_id(), std::move(factory_ptr));
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(

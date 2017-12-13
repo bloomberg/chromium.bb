@@ -10,7 +10,6 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
-#include "content/common/appcache_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -19,20 +18,13 @@ namespace content {
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     ChromeAppCacheService* appcache_service,
-    int process_id,
-    base::WeakPtr<IPC::Sender> sender)
+    int process_id)
     : appcache_service_(appcache_service),
-      frontend_proxy_(this),
-      process_id_(process_id),
-      sender_(std::move(sender)),
-      weak_factory_(this) {}
-
-void AppCacheDispatcherHost::InitBackend() {
-  if (!appcache_service_.get())
-    return;
-
-  backend_impl_.Initialize(appcache_service_.get(), &frontend_proxy_,
-                           process_id_);
+      frontend_proxy_(process_id),
+      weak_factory_(this) {
+  if (appcache_service) {
+    backend_impl_.Initialize(appcache_service, &frontend_proxy_, process_id);
+  }
 }
 
 AppCacheDispatcherHost::~AppCacheDispatcherHost() = default;
@@ -40,30 +32,10 @@ AppCacheDispatcherHost::~AppCacheDispatcherHost() = default;
 // static
 void AppCacheDispatcherHost::Create(ChromeAppCacheService* appcache_service,
                                     int process_id,
-                                    base::WeakPtr<IPC::Sender> sender,
                                     mojom::AppCacheBackendRequest request) {
-  auto* appcache_dispatcher_host = new AppCacheDispatcherHost(
-      appcache_service, process_id, std::move(sender));
-
-  appcache_dispatcher_host->InitBackend();
-  mojo::MakeStrongBinding(base::WrapUnique(appcache_dispatcher_host),
-                          std::move(request));
-}
-
-void SendOnUIThread(base::WeakPtr<IPC::Sender> sender,
-                    std::unique_ptr<IPC::Message> msg) {
-  if (sender) {
-    sender->Send(msg.release());
-  }
-}
-
-bool AppCacheDispatcherHost::Send(IPC::Message* msg) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&SendOnUIThread, sender_, base::WrapUnique(msg)));
-  // The callers of this send method are ignoring the result anyway.
-  return true;
+  mojo::MakeStrongBinding(
+      std::make_unique<AppCacheDispatcherHost>(appcache_service, process_id),
+      std::move(request));
 }
 
 void AppCacheDispatcherHost::RegisterHost(int32_t host_id) {

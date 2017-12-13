@@ -84,7 +84,7 @@ class CONTENT_EXPORT AppCacheFrontend {
   // parameter.
   virtual void OnSetSubresourceFactory(
       int host_id,
-      mojo::MessagePipeHandle loader_factory_pipe_handle) = 0;
+      mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
 
   virtual ~AppCacheFrontend() {}
 };

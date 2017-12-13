@@ -26,22 +26,15 @@ class ChromeAppCacheService;
 // its child processes. There is a distinct host for each child process.
 // Messages are handled on the IO thread. The RenderProcessHostImpl creates
 // an instance and delegates calls to it.
-class AppCacheDispatcherHost : public IPC::Sender,
-                               public mojom::AppCacheBackend {
+class AppCacheDispatcherHost : public mojom::AppCacheBackend {
  public:
   AppCacheDispatcherHost(ChromeAppCacheService* appcache_service,
-                         int process_id,
-                         base::WeakPtr<IPC::Sender> sender);
+                         int process_id);
   ~AppCacheDispatcherHost() override;
 
   static void Create(ChromeAppCacheService* appcache_service,
                      int process_id,
-                     base::WeakPtr<IPC::Sender> sender,
                      mojom::AppCacheBackendRequest request);
-
-  void InitBackend();
-
-  bool Send(IPC::Message* msg) override;
 
  private:
   // mojom::AppCacheHost
@@ -66,11 +59,6 @@ class AppCacheDispatcherHost : public IPC::Sender,
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   AppCacheFrontendProxy frontend_proxy_;
   AppCacheBackendImpl backend_impl_;
-
-  // The corresponding ChildProcessHost object's id().
-  int process_id_;
-
-  base::WeakPtr<IPC::Sender> sender_;
 
   base::WeakPtrFactory<AppCacheDispatcherHost> weak_factory_;
 
