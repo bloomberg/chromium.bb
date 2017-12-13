@@ -32,15 +32,15 @@ const char kDefaultExperimentalServerAddress[] =
 void AddVariationHeaders(const std::unique_ptr<net::URLFetcher>& fetcher) {
   net::HttpRequestHeaders headers;
   // Add Chrome experiment state to the request headers.
-  // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does
-  // not affect transmission of experiments coming from the variations server.
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
+  // transmission of experiments coming from the variations server.
   //
-  // Note: It's OK to pass |is_incognito| false since we are expected to be in
+  // Note: It's OK to pass InIncognito::kNo since we are expected to be in
   // non-incognito state here (i.e. contextual sugestions are not served in
   // incognito mode).
   variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
-                                     /*incognito=*/false, /*uma_enabled=*/false,
-                                     /*is_signed_in=*/false, &headers);
+                                     variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo, &headers);
   for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();) {
     fetcher->AddExtraRequestHeader(it.name() + ":" + it.value());
   }

@@ -189,11 +189,10 @@ std::string
 OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetExtraRequestHeaders(
     const GURL& url) const {
   net::HttpRequestHeaders headers;
-  // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does
-  // not affect transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(url,
-                                     /*incognito=*/false, /*uma_enabled=*/false,
-                                     /*is_signed_in=*/false, &headers);
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
+  // transmission of experiments coming from the variations server.
+  variations::AppendVariationHeaders(url, variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo, &headers);
   return headers.ToString();
 }
 
