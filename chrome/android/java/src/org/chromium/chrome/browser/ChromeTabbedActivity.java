@@ -12,6 +12,7 @@ import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ShortcutManager;
 import android.graphics.Color;
@@ -149,6 +150,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -445,6 +447,28 @@ public class ChromeTabbedActivity
                 IntentHandler.ExternalAppId externalId =
                         IntentHandler.determineExternalIntentSource(getPackageName(), intent);
                 sUndispatchedExplicitMainViewIntentSource.record(externalId.ordinal());
+
+                // Crash if intent came from us, but only in debug builds and only if we weren't
+                // explicitly told not to. Hopefully we'll get enough reports to find where
+                // these intents come from.
+                if (externalId == IntentHandler.ExternalAppId.CHROME
+                        && 0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE)
+                        && CommandLine.isInitialized()
+                        && !CommandLine.getInstance().hasSwitch(
+                                   ChromeSwitches.DONT_CRASH_ON_VIEW_MAIN_INTENTS)) {
+                    String intentInfo = intent.toString();
+                    Bundle extras = intent.getExtras();
+                    if (extras != null) {
+                        intentInfo +=
+                                ", extras.keySet = [" + TextUtils.join(", ", extras.keySet()) + "]";
+                    }
+                    String message = String.format((Locale) null,
+                            "VIEW intent sent to .Main activity alias was not dispatched. PLEASE "
+                                    + "report the following info to crbug.com/789732: \"%s\". Use "
+                                    + "--%s flag to disable this check.",
+                            intentInfo, ChromeSwitches.DONT_CRASH_ON_VIEW_MAIN_INTENTS);
+                    throw new IllegalStateException(message);
+                }
             }
             return action;
         }
