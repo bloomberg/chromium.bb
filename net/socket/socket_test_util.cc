@@ -928,11 +928,9 @@ int MockTCPClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
     const CompletionCallback& callback,
-    const NetworkTrafficAnnotationTag& traffic_annotation) {
+    const NetworkTrafficAnnotationTag& /* traffic_annotation */) {
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
-
-  // TODO(crbug.com/656607): Handle traffic annotation.
 
   if (!connected_ || !data_)
     return ERR_UNEXPECTED;
@@ -1356,11 +1354,9 @@ int MockUDPClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
     const CompletionCallback& callback,
-    const NetworkTrafficAnnotationTag& traffic_annotation) {
+    const NetworkTrafficAnnotationTag& /* traffic_annotation */) {
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
-
-  // TODO(crbug.com/656607): Handle traffic annotation.
 
   if (!connected_ || !data_)
     return ERR_UNEXPECTED;

@@ -36,6 +36,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -432,13 +433,15 @@ class QuicProxyClientSocketTest
     scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(len));
     memcpy(buf->data(), data, len);
     EXPECT_EQ(rv,
-              sock_->Write(buf.get(), buf->size(), write_callback_.callback()));
+              sock_->Write(buf.get(), buf->size(), write_callback_.callback(),
+                           TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
   void AssertSyncWriteSucceeds(const char* data, int len) {
     scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(len));
     memcpy(buf->data(), data, len);
-    EXPECT_THAT(sock_->Write(buf.get(), buf->size(), CompletionCallback()),
+    EXPECT_THAT(sock_->Write(buf.get(), buf->size(), CompletionCallback(),
+                             TRAFFIC_ANNOTATION_FOR_TESTS),
                 IsOk());
   }
 

@@ -518,11 +518,11 @@ int TCPSocketWin::ReadIfReady(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int TCPSocketWin::Write(IOBuffer* buf,
-                        int buf_len,
-                        const CompletionCallback& callback,
-                        const NetworkTrafficAnnotationTag& traffic_annotation) {
-  // TODO(crbug.com/656607): Handle traffic annotation.
+int TCPSocketWin::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& /* traffic_annotation */) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!waiting_write_);

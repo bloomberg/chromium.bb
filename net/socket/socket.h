@@ -81,15 +81,6 @@ class NET_EXPORT Socket {
   // Note: changing this value can affect the TCP window size on some platforms.
   // Returns a net error code.
   virtual int SetSendBufferSize(int32_t size) = 0;
-
- private:
-  void SetTrafficAnnotation(
-      const NetworkTrafficAnnotationTag& traffic_annotation) {
-    traffic_annotation_ =
-        MutableNetworkTrafficAnnotationTag(traffic_annotation);
-  }
-
-  MutableNetworkTrafficAnnotationTag traffic_annotation_;
 };
 
 }  // namespace net

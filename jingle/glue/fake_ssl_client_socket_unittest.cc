@@ -23,7 +23,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -185,10 +185,9 @@ class FakeSSLClientSocketTest : public testing::Test {
 
         scoped_refptr<net::IOBuffer> write_buf(
             new net::StringIOBuffer(kWriteTestData));
-        int write_status =
-            fake_ssl_client_socket.Write(write_buf.get(),
-                                         arraysize(kWriteTestData),
-                                         test_completion_callback.callback());
+        int write_status = fake_ssl_client_socket.Write(
+            write_buf.get(), arraysize(kWriteTestData),
+            test_completion_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
         ExpectStatus(mode, arraysize(kWriteTestData), write_status,
                      &test_completion_callback);
       } else {
