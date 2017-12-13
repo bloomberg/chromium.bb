@@ -17,6 +17,7 @@
 namespace net {
 class NetLog;
 class CTLogVerifier;
+class HostResolver;
 class X509Certificate;
 
 namespace ct {
@@ -45,12 +46,14 @@ class TreeStateTracker : public net::CTVerifier::Observer,
   // during the object's life time.
   // Observed STHs from logs not in this list will be simply ignored.
   TreeStateTracker(std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs,
+                   net::HostResolver* host_resolver,
                    net::NetLog* net_log);
   ~TreeStateTracker() override;
 
   // net::ct::CTVerifier::Observer implementation.
   // Delegates to the tree tracker corresponding to the log that issued the SCT.
-  void OnSCTVerified(net::X509Certificate* cert,
+  void OnSCTVerified(base::StringPiece hostname,
+                     net::X509Certificate* cert,
                      const net::ct::SignedCertificateTimestamp* sct) override;
 
   // net::ct::STHObserver implementation.

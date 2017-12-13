@@ -111,6 +111,15 @@ HostCache* HostResolverMojo::GetHostCache() {
   return host_cache_.get();
 }
 
+bool HostResolverMojo::HasCached(base::StringPiece hostname,
+                                 HostCache::Entry::Source* source_out,
+                                 HostCache::EntryStaleness* stale_out) const {
+  if (!host_cache_)
+    return false;
+
+  return host_cache_->HasEntry(hostname, source_out, stale_out);
+}
+
 int HostResolverMojo::ResolveFromCacheInternal(const RequestInfo& info,
                                                const HostCache::Key& key,
                                                AddressList* addresses) {

@@ -13,12 +13,14 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "net/base/net_errors.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/merkle_tree_leaf.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
 #include "net/test/ct_test_util.h"
@@ -34,6 +36,9 @@ using net::ct::GetX509CertSCT;
 
 const base::Feature kCTLogAuditing = {"CertificateTransparencyLogAuditing",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+constexpr char kHostname[] = "example.test";
+constexpr base::TimeDelta kZeroTTL;
 
 namespace certificate_transparency {
 
@@ -57,6 +62,7 @@ class TreeStateTrackerTest : public ::testing::Test {
  protected:
   base::MessageLoopForIO message_loop_;
   scoped_refptr<const net::CTLogVerifier> log_;
+  net::MockCachingHostResolver host_resolver_;
   std::unique_ptr<TreeStateTracker> tree_tracker_;
   scoped_refptr<net::X509Certificate> chain_;
   scoped_refptr<SignedCertificateTimestamp> cert_sct_;
@@ -74,7 +80,19 @@ TEST_F(TreeStateTrackerTest, TestDelegatesCorrectly) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kCTLogAuditing);
 
-  tree_tracker_ = base::MakeUnique<TreeStateTracker>(verifiers, &net_log_);
+  tree_tracker_ =
+      base::MakeUnique<TreeStateTracker>(verifiers, &host_resolver_, &net_log_);
+
+  // Add a cache entry for kHostname that indicates it was looked up over DNS.
+  // SingleTreeTracker requires this before it will request an inclusion proof,
+  // as otherwise it would reveal to the DNS resolver which server a user
+  // visited. If the server was already looked up via DNS though, that that
+  // information is already known to the DNS resolver so there is then no harm.
+  host_resolver_.GetHostCache()->Set(
+      net::HostCache::Key(kHostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0),
+      net::HostCache::Entry(net::OK, net::AddressList(),
+                            net::HostCache::Entry::SOURCE_DNS),
+      base::TimeTicks::Now(), kZeroTTL);
 
   SignedTreeHead sth;
   GetSampleSignedTreeHead(&sth);
@@ -82,7 +100,7 @@ TEST_F(TreeStateTrackerTest, TestDelegatesCorrectly) {
   tree_tracker_->NewSTHObserved(sth);
 
   ASSERT_EQ(log_->key_id(), cert_sct_->log_id);
-  tree_tracker_->OnSCTVerified(chain_.get(), cert_sct_.get());
+  tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
   base::RunLoop().RunUntilIdle();
 
   net::ct::MerkleTreeLeaf leaf;

@@ -23,6 +23,7 @@
 namespace net {
 
 class CTLogVerifier;
+class HostResolver;
 class X509Certificate;
 
 namespace ct {
@@ -79,21 +80,35 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
     SCT_INCLUDED_IN_LOG,
   };
 
+  // Tracks new STHs and SCTs received that were issued by |ct_log|.
+  // The |dns_client| will be used to obtain inclusion proofs for these SCTs,
+  // where possible. It is not optional.
+  // The |host_resolver| will be used to ensure that DNS requests performed to
+  // obtain inclusion proofs do not compromise the user's privacy. It is not
+  // optional. It is assumed that it caches DNS lookups.
   SingleTreeTracker(scoped_refptr<const net::CTLogVerifier> ct_log,
                     LogDnsClient* dns_client,
+                    net::HostResolver* host_resolver,
                     net::NetLog* net_log);
   ~SingleTreeTracker() override;
 
   // net::ct::CTVerifier::Observer implementation.
-
   // TODO(eranm): Extract CTVerifier::Observer to SCTObserver
-  // Performs an inclusion check for the given certificate if the latest
-  // STH known for this log is older than sct.timestamp + Maximum Merge Delay,
-  // enqueues the SCT for future checking later on.
+  // Enqueues |sct| for later inclusion checking of the given |cert|, so long as
+  // both of the following are true:
+  // a) The latest STH known for this log is older than |sct.timestamp| +
+  //    Maximum Merge Delay.
+  // b) The |hostname| for which this certificate was issued has previously been
+  //    resolved to an IP address using a DNS lookup, and the network has not
+  //    changed since. This ensures that performing an inclusion check over DNS
+  //    will not leak information to the DNS resolver.
   // Should only be called with SCTs issued by the log this instance tracks.
+  // Hostname may be an IP literal, but a DNS lookup will not have been
+  // performed in this case so inclusion checking will not be performed.
   // TODO(eranm): Make sure not to perform any synchronous, blocking operation
   // here as this callback is invoked during certificate validation.
-  void OnSCTVerified(net::X509Certificate* cert,
+  void OnSCTVerified(base::StringPiece hostname,
+                     net::X509Certificate* cert,
                      const net::ct::SignedCertificateTimestamp* sct) override;
 
   // net::ct::STHObserver implementation.
@@ -155,6 +170,10 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
 
   void LogAuditResultToNetLog(const EntryToAudit& entry, bool success);
 
+  // Returns true if |hostname| has previously been looked up using DNS, and the
+  // network has not changed since.
+  bool WasLookedUpOverDNS(base::StringPiece hostname) const;
+
   // Holds the latest STH fetched and verified for this log.
   net::ct::SignedTreeHead verified_sth_;
 
@@ -177,6 +196,8 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
       checked_entries_;
 
   LogDnsClient* dns_client_;
+
+  net::HostResolver* host_resolver_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 

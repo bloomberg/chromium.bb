@@ -132,6 +132,13 @@ class HangingHostResolverWithCancel : public HostResolver {
     return ERR_UNEXPECTED;
   }
 
+  bool HasCached(base::StringPiece hostname,
+                 HostCache::Entry::Source* source_out,
+                 HostCache::EntryStaleness* stale_out) const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   void RemoveRequest(Request* req) {
     EXPECT_TRUE(HasOutstandingRequest());
     EXPECT_EQ(outstanding_request_, req);

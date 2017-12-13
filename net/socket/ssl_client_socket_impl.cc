@@ -1506,8 +1506,8 @@ int SSLClientSocketImpl::VerifyCT() {
   // gets all the data it needs for SCT verification and does not do any
   // external communication.
   cert_transparency_verifier_->Verify(
-      server_cert_verify_result_.verified_cert.get(), ocsp_response, sct_list,
-      &ct_verify_result_.scts, net_log_);
+      host_and_port().host(), server_cert_verify_result_.verified_cert.get(),
+      ocsp_response, sct_list, &ct_verify_result_.scts, net_log_);
 
   SCTList verified_scts =
       ct::SCTsMatchingStatus(ct_verify_result_.scts, ct::SCT_STATUS_OK);

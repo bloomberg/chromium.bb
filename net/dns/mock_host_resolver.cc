@@ -159,6 +159,16 @@ HostCache* MockHostResolverBase::GetHostCache() {
   return cache_.get();
 }
 
+bool MockHostResolverBase::HasCached(
+    base::StringPiece hostname,
+    HostCache::Entry::Source* source_out,
+    HostCache::EntryStaleness* stale_out) const {
+  if (!cache_)
+    return false;
+
+  return cache_->HasEntry(hostname, source_out, stale_out);
+}
+
 void MockHostResolverBase::ResolveAllPending() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ondemand_mode_);
@@ -499,6 +509,13 @@ int HangingHostResolver::ResolveFromCache(const RequestInfo& info,
                                           AddressList* addresses,
                                           const NetLogWithSource& net_log) {
   return ERR_DNS_CACHE_MISS;
+}
+
+bool HangingHostResolver::HasCached(
+    base::StringPiece hostname,
+    HostCache::Entry::Source* source_out,
+    HostCache::EntryStaleness* stale_out) const {
+  return false;
 }
 
 //-----------------------------------------------------------------------------

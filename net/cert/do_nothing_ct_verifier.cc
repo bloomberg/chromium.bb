@@ -12,6 +12,7 @@ DoNothingCTVerifier::DoNothingCTVerifier() = default;
 DoNothingCTVerifier::~DoNothingCTVerifier() = default;
 
 void DoNothingCTVerifier::Verify(
+    base::StringPiece hostname,
     X509Certificate* cert,
     base::StringPiece stapled_ocsp_response,
     base::StringPiece sct_list_from_tls_extension,
@@ -21,5 +22,9 @@ void DoNothingCTVerifier::Verify(
 }
 
 void DoNothingCTVerifier::SetObserver(Observer* observer) {}
+
+CTVerifier::Observer* DoNothingCTVerifier::GetObserver() const {
+  return nullptr;
+}
 
 }  // namespace net

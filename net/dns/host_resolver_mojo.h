@@ -44,6 +44,9 @@ class HostResolverMojo : public HostResolver {
                        AddressList* addresses,
                        const NetLogWithSource& source_net_log) override;
   HostCache* GetHostCache() override;
+  bool HasCached(base::StringPiece hostname,
+                 HostCache::Entry::Source* source_out,
+                 HostCache::EntryStaleness* stale_out) const override;
 
  private:
   class Job;

@@ -22,6 +22,7 @@
 #include "net/cert/merkle_tree_leaf.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/host_resolver.h"
 #include "net/log/net_log.h"
 
 using net::SHA256HashValue;
@@ -77,6 +78,11 @@ enum SCTCanBeCheckedForInclusion {
   // This SCT was not audited because the queue of pending entries was
   // full.
   NOT_AUDITED_QUEUE_FULL = 3,
+
+  // This SCT was not audited because no DNS lookup was done when first
+  // visiting the website that supplied it. It could compromise the user's
+  // privacy to do an inclusion check over DNS in this scenario.
+  NOT_AUDITED_NO_DNS_LOOKUP = 4,
 
   SCT_CAN_BE_CHECKED_MAX
 };
@@ -249,10 +255,12 @@ bool SingleTreeTracker::OrderByTimestamp::operator()(
 SingleTreeTracker::SingleTreeTracker(
     scoped_refptr<const net::CTLogVerifier> ct_log,
     LogDnsClient* dns_client,
+    net::HostResolver* host_resolver,
     net::NetLog* net_log)
     : ct_log_(std::move(ct_log)),
       checked_entries_(kCheckedEntriesCacheSize),
       dns_client_(dns_client),
+      host_resolver_(host_resolver),
       net_log_(net::NetLogWithSource::Make(
           net_log,
           net::NetLogSourceType::CT_TREE_STATE_TRACKER)),
@@ -264,9 +272,24 @@ SingleTreeTracker::SingleTreeTracker(
 
 SingleTreeTracker::~SingleTreeTracker() = default;
 
-void SingleTreeTracker::OnSCTVerified(net::X509Certificate* cert,
+void SingleTreeTracker::OnSCTVerified(base::StringPiece hostname,
+                                      net::X509Certificate* cert,
                                       const SignedCertificateTimestamp* sct) {
   DCHECK_EQ(ct_log_->key_id(), sct->log_id);
+
+  // Check that a DNS lookup for hostname has already occurred (i.e. the DNS
+  // resolver already knows that the user has been accessing that host). If not,
+  // the DNS resolver may not know that the user has been accessing that host,
+  // but performing an inclusion check would reveal that information so abort to
+  // preserve the user's privacy.
+  //
+  // It's ok to do this now, even though the inclusion check may not happen for
+  // some time, because SingleTreeTracker will discard the SCT if the network
+  // changes.
+  if (!WasLookedUpOverDNS(hostname)) {
+    LogCanBeCheckedForInclusionToUMA(NOT_AUDITED_NO_DNS_LOOKUP);
+    return;
+  }
 
   EntryToAudit entry(sct->timestamp);
   if (!GetLogEntryLeafHash(cert, sct, &entry.leaf_hash))
@@ -509,6 +532,14 @@ void SingleTreeTracker::LogAuditResultToNetLog(const EntryToAudit& entry,
 
   net_log_.AddEvent(net::NetLogEventType::CT_LOG_ENTRY_AUDITED,
                     net_log_callback);
+}
+
+bool SingleTreeTracker::WasLookedUpOverDNS(base::StringPiece hostname) const {
+  net::HostCache::Entry::Source source;
+  net::HostCache::EntryStaleness staleness;
+  return host_resolver_->HasCached(hostname, &source, &staleness) &&
+         source == net::HostCache::Entry::SOURCE_DNS &&
+         staleness.network_changes == 0;
 }
 
 }  // namespace certificate_transparency
