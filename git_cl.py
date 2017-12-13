@@ -5056,6 +5056,10 @@ def CMDsplit(parser, args):
                          "$directory will be replaced by each CL's directory.")
   parser.add_option("-c", "--comment", dest="comment_file",
                     help="A text file containing a CL comment.")
+  parser.add_option("-n", "--dry-run", dest="dry_run", action='store_true',
+                    default=False,
+                    help="List the files and reviewers for each CL that would "
+                         "be created, but don't create branches or CLs.")
   options, _ = parser.parse_args(args)
 
   if not options.description_file:
@@ -5065,7 +5069,7 @@ def CMDsplit(parser, args):
     return CMDupload(OptionParser(), args)
 
   return split_cl.SplitCl(options.description_file, options.comment_file,
-                          Changelist, WrappedCMDupload)
+                          Changelist, WrappedCMDupload, options.dry_run)
 
 
 @subcommand.usage('DEPRECATED')
