@@ -30,7 +30,7 @@ namespace extensions {
 // - A source may not be accessed too frequently by an extension.
 class LogSourceAccessManager {
  public:
-  using ReadLogSourceCallback = base::Callback<void(
+  using ReadLogSourceCallback = base::OnceCallback<void(
       std::unique_ptr<api::feedback_private::ReadLogSourceResult>)>;
 
   explicit LogSourceAccessManager(content::BrowserContext* context);
@@ -52,7 +52,7 @@ class LogSourceAccessManager {
   // feedback_private.idl for more info about the actual parameters.
   bool FetchFromSource(const api::feedback_private::ReadLogSourceParams& params,
                        const std::string& extension_id,
-                       const ReadLogSourceCallback& callback);
+                       ReadLogSourceCallback callback);
 
   // Each log source may not have more than this number of readers accessing it,
   // regardless of extension.
@@ -111,7 +111,7 @@ class LogSourceAccessManager {
       const std::string& extension_id,
       ResourceId resource_id,
       bool delete_source,
-      const ReadLogSourceCallback& callback,
+      ReadLogSourceCallback callback,
       std::unique_ptr<system_logs::SystemLogsResponse> response);
 
   // Removes an existing log source handle indicated by |id| from

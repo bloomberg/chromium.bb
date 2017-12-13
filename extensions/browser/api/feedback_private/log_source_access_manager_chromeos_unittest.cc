@@ -21,6 +21,8 @@ using api::feedback_private::ReadLogSourceParams;
 constexpr int kMaxReadersPerSource =
     LogSourceAccessManager::kMaxReadersPerSource;
 
+void DummyCallback(std::unique_ptr<ReadLogSourceResult>) {}
+
 }  // namespace
 
 using LogSourceAccessManagerTest = FeedbackPrivateApiUnittestBase;
@@ -31,10 +33,6 @@ TEST_F(LogSourceAccessManagerTest, MaxNumberOfOpenLogSourcesSameExtension) {
 
   LogSourceAccessManager manager(browser_context());
 
-  // Create a dummy callback to pass to FetchFromSource().
-  LogSourceAccessManager::ReadLogSourceCallback callback =
-      base::Bind([](std::unique_ptr<ReadLogSourceResult>) {});
-
   const std::string extension_id = "extension";
 
   // Open 10 readers for LOG_SOURCE_MESSAGES from the same extension.
@@ -42,8 +40,8 @@ TEST_F(LogSourceAccessManagerTest, MaxNumberOfOpenLogSourcesSameExtension) {
   messages_params.incremental = false;
   messages_params.source = LOG_SOURCE_MESSAGES;
   for (size_t i = 0; i < kMaxReadersPerSource; ++i) {
-    EXPECT_TRUE(
-        manager.FetchFromSource(messages_params, extension_id, callback))
+    EXPECT_TRUE(manager.FetchFromSource(messages_params, extension_id,
+                                        base::BindOnce(&DummyCallback)))
         << base::StringPrintf("Unable to read from log source with i=%zu", i);
     EXPECT_EQ(i + 1,
               manager.GetNumActiveResourcesForSource(LOG_SOURCE_MESSAGES));
@@ -55,8 +53,8 @@ TEST_F(LogSourceAccessManagerTest, MaxNumberOfOpenLogSourcesSameExtension) {
   ui_latest_params.incremental = false;
   ui_latest_params.source = LOG_SOURCE_UILATEST;
   for (size_t i = 0; i < kMaxReadersPerSource; ++i) {
-    EXPECT_TRUE(
-        manager.FetchFromSource(ui_latest_params, extension_id, callback))
+    EXPECT_TRUE(manager.FetchFromSource(ui_latest_params, extension_id,
+                                        base::BindOnce(&DummyCallback)))
         << base::StringPrintf("Unable to read from log source with i=%zu", i);
     EXPECT_EQ(i + 1,
               manager.GetNumActiveResourcesForSource(LOG_SOURCE_UILATEST));
@@ -64,10 +62,10 @@ TEST_F(LogSourceAccessManagerTest, MaxNumberOfOpenLogSourcesSameExtension) {
   EXPECT_EQ(10U, manager.GetNumActiveResourcesForSource(LOG_SOURCE_MESSAGES));
 
   // Can't open more readers for LOG_SOURCE_MESSAGES or LOG_SOURCE_UILATEST.
-  EXPECT_FALSE(
-      manager.FetchFromSource(messages_params, extension_id, callback));
-  EXPECT_FALSE(
-      manager.FetchFromSource(ui_latest_params, extension_id, callback));
+  EXPECT_FALSE(manager.FetchFromSource(messages_params, extension_id,
+                                       base::BindOnce(&DummyCallback)));
+  EXPECT_FALSE(manager.FetchFromSource(ui_latest_params, extension_id,
+                                       base::BindOnce(&DummyCallback)));
   EXPECT_EQ(10U, manager.GetNumActiveResourcesForSource(LOG_SOURCE_MESSAGES));
   EXPECT_EQ(10U, manager.GetNumActiveResourcesForSource(LOG_SOURCE_UILATEST));
 
@@ -82,10 +80,6 @@ TEST_F(LogSourceAccessManagerTest,
 
   LogSourceAccessManager manager(browser_context());
 
-  // Create a dummy callback to pass to FetchFromSource().
-  LogSourceAccessManager::ReadLogSourceCallback callback =
-      base::Bind([](std::unique_ptr<ReadLogSourceResult>) {});
-
   int count = 0;
 
   // Open 10 readers for LOG_SOURCE_MESSAGES from different extensions.
@@ -94,7 +88,8 @@ TEST_F(LogSourceAccessManagerTest,
   messages_params.source = LOG_SOURCE_MESSAGES;
   for (size_t i = 0; i < kMaxReadersPerSource; ++i, ++count) {
     EXPECT_TRUE(manager.FetchFromSource(
-        messages_params, base::StringPrintf("extension %d", count), callback))
+        messages_params, base::StringPrintf("extension %d", count),
+        base::BindOnce(&DummyCallback)))
         << base::StringPrintf(
                "Unable to read from log source with i=%zu and count=%d", i,
                count);
@@ -109,7 +104,8 @@ TEST_F(LogSourceAccessManagerTest,
   ui_latest_params.source = LOG_SOURCE_UILATEST;
   for (size_t i = 0; i < kMaxReadersPerSource; ++i, ++count) {
     EXPECT_TRUE(manager.FetchFromSource(
-        ui_latest_params, base::StringPrintf("extension %d", count), callback))
+        ui_latest_params, base::StringPrintf("extension %d", count),
+        base::BindOnce(&DummyCallback)))
         << base::StringPrintf(
                "Unable to read from log source with i=%zu and count=%d", i,
                count);
@@ -120,13 +116,15 @@ TEST_F(LogSourceAccessManagerTest,
 
   // Can't open more readers for LOG_SOURCE_MESSAGES.
   EXPECT_FALSE(manager.FetchFromSource(
-      messages_params, base::StringPrintf("extension %d", count), callback));
+      messages_params, base::StringPrintf("extension %d", count),
+      base::BindOnce(&DummyCallback)));
   EXPECT_EQ(10U, manager.GetNumActiveResourcesForSource(LOG_SOURCE_MESSAGES));
   EXPECT_EQ(10U, manager.GetNumActiveResourcesForSource(LOG_SOURCE_UILATEST));
 
   // Can't open more readers for LOG_SOURCE_UILATEST.
   EXPECT_FALSE(manager.FetchFromSource(
-      ui_latest_params, base::StringPrintf("extension %d", count), callback));
+      ui_latest_params, base::StringPrintf("extension %d", count),
+      base::BindOnce(&DummyCallback)));
   EXPECT_EQ(10U, manager.GetNumActiveResourcesForSource(LOG_SOURCE_MESSAGES));
   EXPECT_EQ(10U, manager.GetNumActiveResourcesForSource(LOG_SOURCE_UILATEST));
 

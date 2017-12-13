@@ -49,7 +49,7 @@ class TestSingleLogSource : public SystemLogsSource {
   // sequence: "a", " bb", "  ccc", until 25 spaces followed by 26 z's. After
   // that, it returns |kDummyMacAddress| before repeating the entire process.
   // It will never return an empty result.
-  void Fetch(const system_logs::SysLogsSourceCallback& callback) override {
+  void Fetch(system_logs::SysLogsSourceCallback callback) override {
     std::string result = GetNextLogResult();
     DCHECK_GT(result.size(), 0U);
 
@@ -60,7 +60,7 @@ class TestSingleLogSource : public SystemLogsSource {
     // log sources actually work. Instead, simulate the asynchronous operation
     // of a SystemLogsSource by invoking the callback separately.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, std::move(result_map)));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(result_map)));
   }
 
  private:

@@ -20,7 +20,7 @@ DBusLogSource::DBusLogSource() : SystemLogsSource("DBus") {
 DBusLogSource::~DBusLogSource() {
 }
 
-void DBusLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void DBusLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -31,7 +31,7 @@ void DBusLogSource::Fetch(const SysLogsSourceCallback& callback) {
   response->emplace(kDBusLogEntryLong, dbus::statistics::GetAsString(
                                            dbus::statistics::SHOW_METHOD,
                                            dbus::statistics::FORMAT_TOTALS));
-  callback.Run(std::move(response));
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace system_logs

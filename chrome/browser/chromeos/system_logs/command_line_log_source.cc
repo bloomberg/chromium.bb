@@ -98,7 +98,7 @@ CommandLineLogSource::CommandLineLogSource() : SystemLogsSource("CommandLine") {
 CommandLineLogSource::~CommandLineLogSource() {
 }
 
-void CommandLineLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void CommandLineLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -107,7 +107,7 @@ void CommandLineLogSource::Fetch(const SysLogsSourceCallback& callback) {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&ExecuteCommandLines, response_ptr),
-      base::BindOnce(callback, std::move(response)));
+      base::BindOnce(std::move(callback), std::move(response)));
 }
 
 }  // namespace system_logs

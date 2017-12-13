@@ -57,7 +57,7 @@ class SingleLogFileLogSource : public SystemLogsSource {
   static void SetChromeStartTimeForTesting(const base::Time* start_time);
 
   // system_logs::SystemLogsSource:
-  void Fetch(const SysLogsSourceCallback& callback) override;
+  void Fetch(SysLogsSourceCallback callback) override;
 
  private:
   friend class SingleLogFileLogSourceTest;

@@ -26,9 +26,6 @@ class SingleDebugDaemonLogSourceTest : public ::testing::Test {
   SingleDebugDaemonLogSourceTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        fetch_callback_(
-            base::Bind(&SingleDebugDaemonLogSourceTest::OnFetchComplete,
-                       base::Unretained(this))),
         num_callback_calls_(0) {}
 
   void SetUp() override {
@@ -44,8 +41,9 @@ class SingleDebugDaemonLogSourceTest : public ::testing::Test {
   }
 
  protected:
-  const SysLogsSourceCallback& fetch_callback() const {
-    return fetch_callback_;
+  SysLogsSourceCallback fetch_callback() {
+    return base::BindOnce(&SingleDebugDaemonLogSourceTest::OnFetchComplete,
+                          base::Unretained(this));
   }
 
   int num_callback_calls() const { return num_callback_calls_; }
@@ -66,10 +64,6 @@ class SingleDebugDaemonLogSourceTest : public ::testing::Test {
   // Creates the necessary browser threads. Defined after
   // |scoped_task_environment_| in order to use the MessageLoop it created.
   content::TestBrowserThreadBundle browser_thread_bundle_;
-
-  // Pre-made callback object for passing OnFetchComplete() to an asynchronous
-  // function.
-  const SysLogsSourceCallback fetch_callback_;
 
   // Used to verify that OnFetchComplete was called the correct number of times.
   int num_callback_calls_;

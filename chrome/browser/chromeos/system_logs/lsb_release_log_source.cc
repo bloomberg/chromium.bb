@@ -16,7 +16,7 @@ LsbReleaseLogSource::LsbReleaseLogSource() : SystemLogsSource("LsbRelease") {
 LsbReleaseLogSource::~LsbReleaseLogSource() {
 }
 
-void LsbReleaseLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void LsbReleaseLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK(!callback.is_null());
   auto response = std::make_unique<SystemLogsResponse>();
   const base::SysInfo::LsbReleaseMap& lsb_map =
@@ -25,7 +25,7 @@ void LsbReleaseLogSource::Fetch(const SysLogsSourceCallback& callback) {
        iter != lsb_map.end(); ++iter) {
     (*response)[iter->first] = iter->second;
   }
-  callback.Run(std::move(response));
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace system_logs

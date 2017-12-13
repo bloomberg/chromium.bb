@@ -32,7 +32,7 @@ BasicLogSource::BasicLogSource(content::BrowserContext* browser_context)
 
 BasicLogSource::~BasicLogSource() = default;
 
-void BasicLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void BasicLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -41,7 +41,7 @@ void BasicLogSource::Fetch(const SysLogsSourceCallback& callback) {
   PopulateVersionStrings(response.get());
   PopulateExtensionInfoLogs(response.get());
 
-  callback.Run(std::move(response));
+  std::move(callback).Run(std::move(response));
 }
 
 void BasicLogSource::PopulateVersionStrings(SystemLogsResponse* response) {

@@ -16,7 +16,7 @@ class LsbReleaseLogSource : public SystemLogsSource {
   ~LsbReleaseLogSource() override;
 
   // SystemLogsSource override.
-  void Fetch(const SysLogsSourceCallback& callback) override;
+  void Fetch(SysLogsSourceCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LsbReleaseLogSource);

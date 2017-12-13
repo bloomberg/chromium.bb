@@ -86,10 +86,9 @@ void LogSourceAccessManager::SetRateLimitingTimeoutForTesting(
   g_rate_limiting_timeout = timeout;
 }
 
-bool LogSourceAccessManager::FetchFromSource(
-    const ReadLogSourceParams& params,
-    const std::string& extension_id,
-    const ReadLogSourceCallback& callback) {
+bool LogSourceAccessManager::FetchFromSource(const ReadLogSourceParams& params,
+                                             const std::string& extension_id,
+                                             ReadLogSourceCallback callback) {
   int requested_resource_id =
       params.reader_id ? *params.reader_id : kInvalidResourceId;
   ApiResourceManager<LogSourceResource>* resource_manager =
@@ -113,7 +112,7 @@ bool LogSourceAccessManager::FetchFromSource(
   // perspective, there is no new data. There is no need for the caller to keep
   // track of the time since last access.
   if (!UpdateSourceAccessTime(resource_id)) {
-    callback.Run(
+    std::move(callback).Run(
         std::make_unique<api::feedback_private::ReadLogSourceResult>());
     return true;
   }
@@ -124,9 +123,10 @@ bool LogSourceAccessManager::FetchFromSource(
   // later access indicates that the source should be closed afterwards.
   const bool delete_resource_when_done = !params.incremental;
 
-  resource->GetLogSource()->Fetch(base::Bind(
-      &LogSourceAccessManager::OnFetchComplete, weak_factory_.GetWeakPtr(),
-      extension_id, resource_id, delete_resource_when_done, callback));
+  resource->GetLogSource()->Fetch(
+      base::BindOnce(&LogSourceAccessManager::OnFetchComplete,
+                     weak_factory_.GetWeakPtr(), extension_id, resource_id,
+                     delete_resource_when_done, std::move(callback)));
   return true;
 }
 
@@ -134,7 +134,7 @@ void LogSourceAccessManager::OnFetchComplete(
     const std::string& extension_id,
     ResourceId resource_id,
     bool delete_resource,
-    const ReadLogSourceCallback& callback,
+    ReadLogSourceCallback callback,
     std::unique_ptr<SystemLogsResponse> response) {
   auto result = std::make_unique<ReadLogSourceResult>();
 
@@ -151,7 +151,7 @@ void LogSourceAccessManager::OnFetchComplete(
       FROM_HERE,
       base::BindOnce(AnonymizeResults, anonymizer_container_,
                      base::Unretained(result_ptr)),
-      base::BindOnce(callback, std::move(result)));
+      base::BindOnce(std::move(callback), std::move(result)));
 
   if (delete_resource) {
     // This should also remove the entry from |sources_|.
