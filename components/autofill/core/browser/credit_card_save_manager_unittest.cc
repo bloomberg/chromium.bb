@@ -162,48 +162,27 @@ class TestAutofillManager : public AutofillManager {
                       TestPersonalDataManager* personal_data)
       : AutofillManager(driver, client, personal_data),
         personal_data_(personal_data),
-        context_getter_(driver->GetURLRequestContext()),
         test_form_data_importer_(
             new TestFormDataImporter(client,
                                      payments_client,
                                      credit_card_save_manager,
                                      personal_data,
-                                     "en-US")),
-        autofill_enabled_(true),
-        credit_card_enabled_(true),
-        expected_observed_submission_(true),
-        call_parent_upload_form_data_(false) {
+                                     "en-US")) {
     set_payments_client(payments_client);
     set_form_data_importer(test_form_data_importer_);
   }
   ~TestAutofillManager() override {}
 
-  bool IsAutofillEnabled() const override { return autofill_enabled_; }
-
-  void set_autofill_enabled(bool autofill_enabled) {
-    autofill_enabled_ = autofill_enabled;
-  }
+  bool IsAutofillEnabled() const override { return true; }
 
   bool IsCreditCardAutofillEnabled() override { return credit_card_enabled_; }
 
-  void set_credit_card_enabled(bool credit_card_enabled) {
+  void SetCreditCardEnabled(bool credit_card_enabled) {
     credit_card_enabled_ = credit_card_enabled;
-    if (!credit_card_enabled_)
+    if (!credit_card_enabled_) {
       // Credit card data is refreshed when this pref is changed.
       personal_data_->ClearCreditCards();
-  }
-
-  void set_expected_submitted_field_types(
-      const std::vector<ServerFieldTypeSet>& expected_types) {
-    expected_submitted_field_types_ = expected_types;
-  }
-
-  void set_expected_observed_submission(bool expected) {
-    expected_observed_submission_ = expected;
-  }
-
-  void set_call_parent_upload_form_data(bool value) {
-    call_parent_upload_form_data_ = value;
+    }
   }
 
   void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
@@ -213,7 +192,7 @@ class TestAutofillManager : public AutofillManager {
                                    bool observed_submission) override {
     run_loop_->Quit();
 
-    EXPECT_EQ(expected_observed_submission_, observed_submission);
+    EXPECT_TRUE(observed_submission);
 
     // If we have expected field types set, make sure they match.
     if (!expected_submitted_field_types_.empty()) {
@@ -243,73 +222,18 @@ class TestAutofillManager : public AutofillManager {
 
   // Resets the run loop so that it can wait for an asynchronous form
   // submission to complete.
-  void ResetRunLoop() { run_loop_.reset(new base::RunLoop()); }
+  void ResetRunLoop() { run_loop_ = std::make_unique<base::RunLoop>(); }
 
   // Wait for the asynchronous calls within StartUploadProcess() to complete.
   void WaitForAsyncUploadProcess() { run_loop_->Run(); }
 
-  void UploadFormData(const FormStructure& submitted_form,
-                      bool observed_submission) override {
-    submitted_form_signature_ = submitted_form.FormSignatureAsStr();
-
-    if (call_parent_upload_form_data_)
-      AutofillManager::UploadFormData(submitted_form, observed_submission);
-  }
-
-  const std::string GetSubmittedFormSignature() {
-    return submitted_form_signature_;
-  }
-
-  AutofillProfile* GetProfileWithGUID(const char* guid) {
-    return personal_data_->GetProfileWithGUID(guid);
-  }
-
-  CreditCard* GetCreditCardWithGUID(const char* guid) {
-    return personal_data_->GetCreditCardWithGUID(guid);
-  }
-
-  std::vector<CreditCard*> GetLocalCreditCards() const {
-    return personal_data_->GetLocalCreditCards();
-  }
-
-  std::vector<CreditCard*> GetCreditCards() const {
-    return personal_data_->GetCreditCards();
-  }
-
-  void AddProfile(std::unique_ptr<AutofillProfile> profile) {
-    personal_data_->AddProfile(*profile);
-  }
-
-  void AddCreditCard(const CreditCard& credit_card) {
-    personal_data_->AddCreditCard(credit_card);
-  }
-
-  int GetPackedCreditCardID(int credit_card_id) {
-    std::string credit_card_guid =
-        base::StringPrintf("00000000-0000-0000-0000-%012d", credit_card_id);
-
-    return MakeFrontendID(credit_card_guid, std::string());
-  }
-
-  void AddSeenForm(std::unique_ptr<FormStructure> form) {
-    form->set_form_parsed_timestamp(base::TimeTicks::Now());
-    form_structures()->push_back(std::move(form));
-  }
-
-  void ClearFormStructures() { form_structures()->clear(); }
-
  private:
   TestPersonalDataManager* personal_data_;        // Weak reference.
-  net::URLRequestContextGetter* context_getter_;  // Weak reference.
   TestFormDataImporter* test_form_data_importer_;
-  bool autofill_enabled_;
-  bool credit_card_enabled_;
-  bool expected_observed_submission_;
-  bool call_parent_upload_form_data_;
+  bool credit_card_enabled_ = true;
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  std::string submitted_form_signature_;
   std::vector<ServerFieldTypeSet> expected_submitted_field_types_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
@@ -327,9 +251,7 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
                               payments_client,
                               "en-US",
                               personal_data_manager),
-        test_payments_client_(payments_client),
-        credit_card_upload_enabled_(false),
-        credit_card_was_uploaded_(false) {
+        test_payments_client_(payments_client) {
     if (test_payments_client_) {
       test_payments_client_->SetSaveDelegate(this);
     }
@@ -366,8 +288,8 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
   };
 
   TestPaymentsClient* test_payments_client_;  // Weak reference.
-  bool credit_card_upload_enabled_;
-  bool credit_card_was_uploaded_;
+  bool credit_card_upload_enabled_ = false;
+  bool credit_card_was_uploaded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCreditCardSaveManager);
 };
@@ -671,7 +593,7 @@ TEST_F(CreditCardSaveManagerTest, InvalidCreditCardNumberIsNotSaved) {
 
 TEST_F(CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
   personal_data_.ClearProfiles();
-  autofill_manager_->set_credit_card_enabled(false);
+  autofill_manager_->SetCreditCardEnabled(false);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -740,7 +662,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
   EXPECT_TRUE(credit_card_save_manager_->GetActiveExperiments().empty());
 
   // Server did not send a server_id, expect copy of card is not stored.
-  EXPECT_TRUE(autofill_manager_->GetCreditCards().empty());
+  EXPECT_TRUE(personal_data_.GetCreditCards().empty());
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
                                  AutofillMetrics::UPLOAD_OFFERED);
@@ -824,13 +746,13 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
   FormSubmitted(credit_card_form);
 
   EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
-  EXPECT_TRUE(autofill_manager_->GetLocalCreditCards().empty());
+  EXPECT_TRUE(personal_data_.GetLocalCreditCards().empty());
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // See |OfferStoreUnmaskedCards|
-  EXPECT_TRUE(autofill_manager_->GetCreditCards().empty());
+  EXPECT_TRUE(personal_data_.GetCreditCards().empty());
 #else
-  ASSERT_EQ(1U, autofill_manager_->GetCreditCards().size());
-  const CreditCard* const saved_card = autofill_manager_->GetCreditCards()[0];
+  ASSERT_EQ(1U, personal_data_.GetCreditCards().size());
+  const CreditCard* const saved_card = personal_data_.GetCreditCards()[0];
   EXPECT_EQ(CreditCard::OK, saved_card->GetServerStatus());
   EXPECT_EQ(base::ASCIIToUTF16("1111"), saved_card->LastFourDigits());
   EXPECT_EQ(kVisaCard, saved_card->network());
