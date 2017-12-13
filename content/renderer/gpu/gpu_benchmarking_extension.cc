@@ -54,14 +54,12 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
-#include "third_party/skia/include/core/SkPixelSerializer.h"
+#include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkStream.h"
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN) && !defined(NDEBUG)
@@ -80,59 +78,6 @@ using blink::WebView;
 namespace content {
 
 namespace {
-
-class EncodingSerializer : public SkPixelSerializer {
- protected:
-  bool onUseEncodedData(const void* data, size_t len) override { return true; }
-
-  SkData* onEncode(const SkPixmap& pixmap) override {
-    std::vector<uint8_t> vector;
-
-    const base::CommandLine& commandLine =
-        *base::CommandLine::ForCurrentProcess();
-    if (commandLine.HasSwitch(switches::kSkipReencodingOnSKPCapture)) {
-        // In this case, we just want to store some useful information
-        // about the image to replace the missing encoded data.
-
-        // First make sure that the data does not accidentally match any
-        // image signatures.
-        vector.push_back(0xFF);
-        vector.push_back(0xFF);
-        vector.push_back(0xFF);
-        vector.push_back(0xFF);
-
-        // Save the width and height.
-        uint32_t width = pixmap.width();
-        uint32_t height = pixmap.height();
-        vector.push_back(width & 0xFF);
-        vector.push_back((width >> 8) & 0xFF);
-        vector.push_back((width >> 16) & 0xFF);
-        vector.push_back((width >> 24) & 0xFF);
-        vector.push_back(height & 0xFF);
-        vector.push_back((height >> 8) & 0xFF);
-        vector.push_back((height >> 16) & 0xFF);
-        vector.push_back((height >> 24) & 0xFF);
-
-        // Save any additional information about the bitmap that may be
-        // interesting.
-        vector.push_back(pixmap.colorType());
-        vector.push_back(pixmap.alphaType());
-        return SkData::MakeWithCopy(&vector.front(), vector.size()).release();
-    } else {
-      SkBitmap bm;
-      // The const_cast is fine, since we only read from the bitmap.
-      if (bm.installPixels(pixmap.info(),
-                           const_cast<void*>(pixmap.addr()),
-                           pixmap.rowBytes())) {
-        if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &vector)) {
-          return SkData::MakeWithCopy(&vector.front(), vector.size()).release();
-        }
-      }
-    }
-    return nullptr;
-  }
-};
-
 class SkPictureSerializer {
  public:
   explicit SkPictureSerializer(const base::FilePath& dirpath)
@@ -163,8 +108,21 @@ class SkPictureSerializer {
       SkFILEWStream file(filepath.c_str());
       DCHECK(file.isValid());
 
-      EncodingSerializer serializer;
-      picture->serialize(&file, &serializer);
+      SkSerialProcs procs;
+      procs.fImageProc = [](SkImage* image, void*) {
+        auto data = image->refEncodedData();
+        if (!data) {
+          const base::CommandLine& commandLine =
+              *base::CommandLine::ForCurrentProcess();
+          if (commandLine.HasSwitch(switches::kSkipReencodingOnSKPCapture)) {
+            data = SkData::MakeEmpty();
+          }
+          // else data is null, which triggers skia's default PNG encode
+        }
+        return data;
+      };
+      auto data = picture->serialize(procs);
+      file.write(data->data(), data->size());
       file.fsync();
     }
   }
