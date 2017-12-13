@@ -300,53 +300,49 @@ if (NOT CONFIG_CDEF_SINGLEPASS)
       "${AOM_ROOT}/av1/common/clpf_neon.c")
 endif ()
 
-if (CONFIG_CONVOLVE_ROUND)
-  set(AOM_AV1_COMMON_INTRIN_SSE2
-      ${AOM_AV1_COMMON_INTRIN_SSE2}
-      "${AOM_ROOT}/av1/common/x86/convolve_2d_sse2.c")
+set(AOM_AV1_COMMON_INTRIN_SSE2
+    ${AOM_AV1_COMMON_INTRIN_SSE2}
+    "${AOM_ROOT}/av1/common/x86/convolve_2d_sse2.c")
 
+set(AOM_AV1_COMMON_INTRIN_AVX2
+    ${AOM_AV1_COMMON_INTRIN_AVX2}
+    "${AOM_ROOT}/av1/common/x86/convolve_2d_avx2.c")
+
+if (CONFIG_HIGHBITDEPTH)
   set(AOM_AV1_COMMON_INTRIN_AVX2
       ${AOM_AV1_COMMON_INTRIN_AVX2}
-      "${AOM_ROOT}/av1/common/x86/convolve_2d_avx2.c")
+      "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_avx2.c")
 
-  if (CONFIG_HIGHBITDEPTH)
-    set(AOM_AV1_COMMON_INTRIN_AVX2
-        ${AOM_AV1_COMMON_INTRIN_AVX2}
-        "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_avx2.c")
+  set(AOM_AV1_COMMON_INTRIN_SSSE3
+      ${AOM_AV1_COMMON_INTRIN_SSSE3}
+      "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_ssse3.c")
+endif ()
 
-    set(AOM_AV1_COMMON_INTRIN_SSSE3
-        ${AOM_AV1_COMMON_INTRIN_SSSE3}
-        "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_ssse3.c")
-  endif ()
+if (CONFIG_JNT_COMP)
+  set(AOM_AV1_COMMON_INTRIN_SSE4_1
+      ${AOM_AV1_COMMON_INTRIN_SSE4_1}
+      "${AOM_ROOT}/av1/common/x86/convolve_2d_sse4.c")
+endif ()
 
-  if (CONFIG_JNT_COMP)
-    set(AOM_AV1_COMMON_INTRIN_SSE4_1
-        ${AOM_AV1_COMMON_INTRIN_SSE4_1}
-        "${AOM_ROOT}/av1/common/x86/convolve_2d_sse4.c")
-  endif ()
-
-  if(NOT CONFIG_COMPOUND_ROUND)
-    set(AOM_AV1_COMMON_INTRIN_SSE4_1
-        ${AOM_AV1_COMMON_INTRIN_SSE4_1}
-        "${AOM_ROOT}/av1/common/x86/av1_convolve_scale_sse4.c")
-  endif()
+set(AOM_AV1_COMMON_INTRIN_SSE4_1
+    ${AOM_AV1_COMMON_INTRIN_SSE4_1}
+    "${AOM_ROOT}/av1/common/x86/av1_convolve_scale_sse4.c")
 
   set(AOM_AV1_COMMON_INTRIN_SSE2
       ${AOM_AV1_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/av1/common/x86/convolve_sse2.c")
 
-  set(AOM_AV1_COMMON_INTRIN_AVX2
-      ${AOM_AV1_COMMON_INTRIN_AVX2}
-      "${AOM_ROOT}/av1/common/x86/convolve_avx2.c")
-endif ()
+set(AOM_AV1_COMMON_INTRIN_AVX2
+    ${AOM_AV1_COMMON_INTRIN_AVX2}
+    "${AOM_ROOT}/av1/common/x86/convolve_avx2.c")
 
-  set(AOM_AV1_ENCODER_SOURCES
-      ${AOM_AV1_ENCODER_SOURCES}
-      "${AOM_ROOT}/av1/encoder/wedge_utils.c")
+set(AOM_AV1_ENCODER_SOURCES
+    ${AOM_AV1_ENCODER_SOURCES}
+    "${AOM_ROOT}/av1/encoder/wedge_utils.c")
 
-  set(AOM_AV1_ENCODER_INTRIN_SSE2
-      ${AOM_AV1_ENCODER_INTRIN_SSE2}
-      "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
+set(AOM_AV1_ENCODER_INTRIN_SSE2
+    ${AOM_AV1_ENCODER_INTRIN_SSE2}
+    "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
 
 if (CONFIG_ACCOUNTING)
   set(AOM_AV1_DECODER_SOURCES

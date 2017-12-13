@@ -427,7 +427,6 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                               int16_t beta, int16_t gamma, int16_t delta) {
   int32_t tmp[15 * 8];
   int i, j, k, l, m;
-#if CONFIG_CONVOLVE_ROUND
   const int use_conv_params = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   const int reduce_bits_horiz =
       use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
@@ -445,14 +444,6 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
     conv_params->do_post_rounding = 1;
   }
   assert(FILTER_BITS == WARPEDPIXEL_FILTER_BITS);
-#else
-  const int reduce_bits_horiz = HORSHEAR_REDUCE_PREC_BITS;
-  const int max_bits_horiz =
-      bd + WARPEDPIXEL_FILTER_BITS + 1 - HORSHEAR_REDUCE_PREC_BITS;
-  const int offset_bits_horiz = bd + WARPEDPIXEL_FILTER_BITS - 1;
-  const int offset_bits_vert =
-      bd + 2 * WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS;
-#endif
   (void)max_bits_horiz;
 
   for (i = p_row; i < p_row + p_height; i += 8) {
@@ -524,7 +515,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
-#if CONFIG_CONVOLVE_ROUND
+
           if (use_conv_params) {
             CONV_BUF_TYPE *p =
                 &conv_params
@@ -555,9 +546,6 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
               *p = sum;
 #endif  // CONFIG_JNT_COMP
           } else {
-#else
-          {
-#endif
             uint16_t *p =
                 &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
             sum = ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS);
@@ -748,7 +736,6 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
   int32_t tmp[15 * 8];
   int i, j, k, l, m;
   const int bd = 8;
-#if CONFIG_CONVOLVE_ROUND
   const int use_conv_params = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   const int reduce_bits_horiz =
       use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
@@ -766,14 +753,6 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
     conv_params->do_post_rounding = 1;
   }
   assert(FILTER_BITS == WARPEDPIXEL_FILTER_BITS);
-#else
-  const int reduce_bits_horiz = HORSHEAR_REDUCE_PREC_BITS;
-  const int max_bits_horiz =
-      bd + WARPEDPIXEL_FILTER_BITS + 1 - HORSHEAR_REDUCE_PREC_BITS;
-  const int offset_bits_horiz = bd + WARPEDPIXEL_FILTER_BITS - 1;
-  const int offset_bits_vert =
-      bd + 2 * WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS;
-#endif
   (void)max_bits_horiz;
 
   for (i = p_row; i < p_row + p_height; i += 8) {
@@ -851,7 +830,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
-#if CONFIG_CONVOLVE_ROUND
+
           if (use_conv_params) {
             CONV_BUF_TYPE *p =
                 &conv_params
@@ -882,9 +861,6 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
               *p = sum;
 #endif  // CONFIG_JNT_COMP
           } else {
-#else
-          {
-#endif
             uint8_t *p =
                 &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
             sum = ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS);

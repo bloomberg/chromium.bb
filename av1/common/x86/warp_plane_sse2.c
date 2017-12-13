@@ -24,7 +24,6 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
   __m128i tmp[15];
   int i, j, k;
   const int bd = 8;
-#if CONFIG_CONVOLVE_ROUND
   const int use_conv_params = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   const int reduce_bits_horiz =
       use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
@@ -34,10 +33,6 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
     conv_params->do_post_rounding = 1;
   }
   assert(FILTER_BITS == WARPEDPIXEL_FILTER_BITS);
-#else
-  const int reduce_bits_horiz = HORSHEAR_REDUCE_PREC_BITS;
-  const int offset_bits_horiz = bd + WARPEDPIXEL_FILTER_BITS - 1;
-#endif
 
   /* Note: For this code to work, the left/right frame borders need to be
      extended by at least 13 pixels each. By the time we get here, other
@@ -298,7 +293,6 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
         __m128i res_lo = _mm_unpacklo_epi32(res_even, res_odd);
         __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
 
-#if CONFIG_CONVOLVE_ROUND
         if (use_conv_params) {
           __m128i *const p =
               (__m128i *)&conv_params
@@ -320,9 +314,6 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
             _mm_storeu_si128(p + 1, res_hi);
           }
         } else {
-#else
-        {
-#endif
           // Round and pack into 8 bits
           const __m128i round_const =
               _mm_set1_epi32(-(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1)) +

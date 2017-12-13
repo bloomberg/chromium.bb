@@ -17,7 +17,6 @@
 #include "aom_dsp/aom_filter.h"
 #include "av1/common/convolve.h"
 
-#if !CONFIG_COMPOUND_ROUND
 void av1_convolve_y_sse2(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
                          int dst_stride, int w, int h,
                          InterpFilterParams *filter_params_x,
@@ -207,4 +206,3 @@ void av1_convolve_x_sse2(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
     }
   }
 }
-#endif

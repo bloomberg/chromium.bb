@@ -55,14 +55,10 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
     // TODO(afergs, debargha): Use a different scale convolve function
     // that uses higher precision for subpel_x, subpel_y, xs, ys
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
-#if CONFIG_CONVOLVE_ROUND
       av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
                              interp_filters, subpel_x, xs, subpel_y, ys, 1,
                              conv_params);
       conv_params->do_post_rounding = 1;
-#else
-      assert(0);
-#endif  // CONFIG_CONVOLVE_ROUND
     } else {
       assert(conv_params->round == CONVOLVE_OPT_ROUND);
       av1_convolve_scale(src, src_stride, dst, dst_stride, w, h, interp_filters,
@@ -78,14 +74,10 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
     assert(xs <= SUBPEL_SHIFTS);
     assert(ys <= SUBPEL_SHIFTS);
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
-#if CONFIG_CONVOLVE_ROUND
       av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
                              interp_filters, subpel_x, xs, subpel_y, ys, 0,
                              conv_params);
       conv_params->do_post_rounding = 1;
-#else
-      assert(0);
-#endif  // CONFIG_CONVOLVE_ROUND
     } else {
       assert(conv_params->round == CONVOLVE_OPT_ROUND);
 
@@ -131,14 +123,10 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
 
   if (has_scale(xs, ys)) {
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
-#if CONFIG_CONVOLVE_ROUND
       av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
                                     interp_filters, subpel_x, xs, subpel_y, ys,
                                     1, conv_params, bd);
       conv_params->do_post_rounding = 1;
-#else
-      assert(0);
-#endif  // CONFIG_CONVOLVE_ROUND
     } else {
       av1_highbd_convolve_scale(src, src_stride, dst, dst_stride, w, h,
                                 interp_filters, subpel_x, xs, subpel_y, ys, avg,
@@ -154,14 +142,10 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
     assert(xs <= SUBPEL_SHIFTS);
     assert(ys <= SUBPEL_SHIFTS);
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
-#if CONFIG_CONVOLVE_ROUND
       av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
                                     interp_filters, subpel_x, xs, subpel_y, ys,
                                     0, conv_params, bd);
       conv_params->do_post_rounding = 1;
-#else
-      assert(0);
-#endif  // CONFIG_CONVOLVE_ROUND
     } else {
       InterpFilterParams filter_params_x, filter_params_y;
 #if CONFIG_SHORT_FILTER

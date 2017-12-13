@@ -14,7 +14,6 @@
 #include "aom_dsp/aom_dsp_common.h"
 #include "./av1_rtcd.h"
 
-#if CONFIG_CONVOLVE_ROUND
 static const uint32_t sindex[8] = { 0, 4, 1, 5, 2, 6, 3, 7 };
 
 // 16 epi16 pixels
@@ -339,4 +338,3 @@ void av1_highbd_convolve_rounding_avx2(const int32_t *src, int src_stride,
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_CONVOLVE_ROUND

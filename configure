@@ -252,8 +252,6 @@ EXPERIMENT_LIST="
     rect_tx_ext_intra
     short_filter
     dual_filter
-    convolve_round
-    compound_round
     tx64x64
     ext_intra
     filter_intra
@@ -496,7 +494,6 @@ post_process_cmdline() {
       soft_enable intra_edge
       soft_enable mv_compress
       soft_enable dual_filter
-      soft_enable convolve_round
       soft_enable aom_qm
       soft_enable dist_8x8
       soft_enable loop_restoration
@@ -540,7 +537,6 @@ post_process_cmdline() {
     enabled lv_map_multi && soft_enable lv_map
     enabled eob_first && enable_feature lv_map
     enabled txk_sel && soft_enable lv_map
-    enabled compound_round && soft_enable convolve_round
     enabled ext_intra_mod && enable_feature intra_edge
     enabled intra_edge && enable_feature ext_intra
     enabled mfmv && enable_feature frame_marker

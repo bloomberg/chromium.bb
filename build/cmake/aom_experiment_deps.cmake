@@ -32,12 +32,6 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
-  if (CONFIG_COMPOUND_ROUND)
-    if (NOT CONFIG_CONVOLVE_ROUND)
-	    change_config_and_warn(CONVOLVE_ROUND 1 CONFIG_COMPOUND_ROUND)
-    endif ()
-  endif ()
-
   if (CONFIG_EOB_FIRST)
     if (NOT CONFIG_LV_MAP)
       change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_EOB_FIRST)

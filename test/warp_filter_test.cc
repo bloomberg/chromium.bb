@@ -22,7 +22,7 @@ using libaom_test::AV1HighbdWarpFilter::AV1HighbdWarpFilterTest;
 
 namespace {
 
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND && HAVE_SSE4_1
+#if CONFIG_JNT_COMP && HAVE_SSE4_1
 TEST_P(AV1WarpFilterTest, CheckOutput) { RunCheckOutput(GET_PARAM(3)); }
 
 INSTANTIATE_TEST_CASE_P(
@@ -38,7 +38,7 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdWarpFilterTest,
                         libaom_test::AV1HighbdWarpFilter::GetDefaultParams());
 #endif
 
-#else  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND && HAVE_SSE4_1
+#else  // CONFIG_JNT_COMP && HAVE_SSE4_1
 TEST_P(AV1WarpFilterTest, CheckOutput) { RunCheckOutput(GET_PARAM(3)); }
 
 INSTANTIATE_TEST_CASE_P(

@@ -113,10 +113,8 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   int32_t mat[8];
   int16_t alpha, beta, gamma, delta;
   ConvolveParams conv_params = get_conv_params(0, 0, 0);
-#if CONFIG_CONVOLVE_ROUND
   int32_t *dsta = new int32_t[output_n];
   int32_t *dstb = new int32_t[output_n];
-#endif
 
   for (i = 0; i < num_iters; ++i) {
     // Generate an input block and extend its borders horizontally
@@ -126,17 +124,15 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
       memset(input + r * stride - border, input[r * stride], border);
       memset(input + r * stride + w, input[r * stride + (w - 1)], border);
     }
-#if CONFIG_CONVOLVE_ROUND
+
     const int use_no_round = rnd_.Rand8() & 1;
-#endif
     for (sub_x = 0; sub_x < 2; ++sub_x)
       for (sub_y = 0; sub_y < 2; ++sub_y) {
         generate_model(mat, &alpha, &beta, &gamma, &delta);
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#if CONFIG_JNT_COMP
         for (int ii = 0; ii < 2; ++ii) {
           for (int jj = 0; jj < 5; ++jj) {
-#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
-#if CONFIG_CONVOLVE_ROUND
+#endif  // CONFIG_JNT_COMP
             if (use_no_round) {
               // Prepare two copies of the destination
               for (j = 0; j < out_w * out_h; ++j) {
@@ -148,8 +144,7 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
             } else {
               conv_params = get_conv_params(0, 0, 0);
             }
-#endif
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#if CONFIG_JNT_COMP
             if (jj >= 4) {
               conv_params.use_jnt_comp_avg = 0;
             } else {
@@ -157,17 +152,15 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
-#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#endif  // CONFIG_JNT_COMP
 
             av1_warp_affine_c(mat, input, w, h, stride, output, 32, 32, out_w,
                               out_h, out_w, sub_x, sub_y, &conv_params, alpha,
                               beta, gamma, delta);
-#if CONFIG_CONVOLVE_ROUND
             if (use_no_round) {
               conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w);
             }
-#endif
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#if CONFIG_JNT_COMP
             if (jj >= 4) {
               conv_params.use_jnt_comp_avg = 0;
             } else {
@@ -175,12 +168,11 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
-#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#endif  // CONFIG_JNT_COMP
             test_impl(mat, input, w, h, stride, output2, 32, 32, out_w, out_h,
                       out_w, sub_x, sub_y, &conv_params, alpha, beta, gamma,
                       delta);
 
-#if CONFIG_CONVOLVE_ROUND
             if (use_no_round) {
               for (j = 0; j < out_w * out_h; ++j)
                 ASSERT_EQ(dsta[j], dstb[j])
@@ -192,25 +184,17 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
                     << "Pixel mismatch at index " << j << " = (" << (j % out_w)
                     << ", " << (j / out_w) << ") on iteration " << i;
             }
-#else
-        for (j = 0; j < out_w * out_h; ++j)
-          ASSERT_EQ(output[j], output2[j])
-              << "Pixel mismatch at index " << j << " = (" << (j % out_w)
-              << ", " << (j / out_w) << ") on iteration " << i;
-#endif
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#if CONFIG_JNT_COMP
           }
         }
-#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#endif  // CONFIG_JNT_COMP
       }
   }
   delete[] input_;
   delete[] output;
   delete[] output2;
-#if CONFIG_CONVOLVE_ROUND
   delete[] dsta;
   delete[] dstb;
-#endif
 }
 }  // namespace AV1WarpFilter
 
@@ -320,10 +304,8 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
   int32_t mat[8];
   int16_t alpha, beta, gamma, delta;
   ConvolveParams conv_params = get_conv_params(0, 0, 0);
-#if CONFIG_CONVOLVE_ROUND
   int32_t *dsta = new int32_t[output_n];
   int32_t *dstb = new int32_t[output_n];
-#endif
 
   for (i = 0; i < num_iters; ++i) {
     // Generate an input block and extend its borders horizontally
@@ -335,17 +317,14 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
         input[r * stride + w + c] = input[r * stride + (w - 1)];
       }
     }
-#if CONFIG_CONVOLVE_ROUND
     const int use_no_round = rnd_.Rand8() & 1;
-#endif
     for (sub_x = 0; sub_x < 2; ++sub_x)
       for (sub_y = 0; sub_y < 2; ++sub_y) {
         generate_model(mat, &alpha, &beta, &gamma, &delta);
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#if CONFIG_JNT_COMP
         for (int ii = 0; ii < 2; ++ii) {
           for (int jj = 0; jj < 5; ++jj) {
-#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
-#if CONFIG_CONVOLVE_ROUND
+#endif  // CONFIG_JNT_COMP
             if (use_no_round) {
               // Prepare two copies of the destination
               for (j = 0; j < out_w * out_h; ++j) {
@@ -357,8 +336,7 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
             } else {
               conv_params = get_conv_params(0, 0, 0);
             }
-#endif
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#if CONFIG_JNT_COMP
             if (jj >= 4) {
               conv_params.use_jnt_comp_avg = 0;
             } else {
@@ -366,18 +344,16 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
-#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#endif  // CONFIG_JNT_COMP
             av1_highbd_warp_affine_c(mat, input, w, h, stride, output, 32, 32,
                                      out_w, out_h, out_w, sub_x, sub_y, bd,
                                      &conv_params, alpha, beta, gamma, delta);
-#if CONFIG_CONVOLVE_ROUND
             if (use_no_round) {
               // TODO(angiebird): Change this to test_impl once we have SIMD
               // implementation
               conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w);
             }
-#endif
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#if CONFIG_JNT_COMP
             if (jj >= 4) {
               conv_params.use_jnt_comp_avg = 0;
             } else {
@@ -385,12 +361,11 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
-#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#endif  // CONFIG_JNT_COMP
             test_impl(mat, input, w, h, stride, output2, 32, 32, out_w, out_h,
                       out_w, sub_x, sub_y, bd, &conv_params, alpha, beta, gamma,
                       delta);
 
-#if CONFIG_CONVOLVE_ROUND
             if (use_no_round) {
               for (j = 0; j < out_w * out_h; ++j)
                 ASSERT_EQ(dsta[j], dstb[j])
@@ -402,26 +377,18 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
                     << "Pixel mismatch at index " << j << " = (" << (j % out_w)
                     << ", " << (j / out_w) << ") on iteration " << i;
             }
-#else
-        for (j = 0; j < out_w * out_h; ++j)
-          ASSERT_EQ(output[j], output2[j])
-              << "Pixel mismatch at index " << j << " = (" << (j % out_w)
-              << ", " << (j / out_w) << ") on iteration " << i;
-#endif
-#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#if CONFIG_JNT_COMP
           }
         }
-#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+#endif  // CONFIG_JNT_COMP
       }
   }
 
   delete[] input_;
   delete[] output;
   delete[] output2;
-#if CONFIG_CONVOLVE_ROUND
   delete[] dsta;
   delete[] dstb;
-#endif
 }
 }  // namespace AV1HighbdWarpFilter
 #endif  // CONFIG_HIGHBITDEPTH

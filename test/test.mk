@@ -227,16 +227,11 @@ LIBAOM_TEST_SRCS-$(HAVE_SSE2) += hiprec_convolve_test.cc
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += hiprec_convolve_test_util.cc
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += selfguided_filter_test.cc
 endif
-ifeq ($(CONFIG_CONVOLVE_ROUND),yes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += av1_convolve_2d_test_util.h
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += av1_convolve_2d_test.cc
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += av1_convolve_2d_test_util.cc
 LIBAOM_TEST_SRCS-yes          += convolve_round_test.cc
-endif
-
-ifeq (yesx,$(CONFIG_CONVOLVE_ROUND)x$(CONFIG_COMPOUND_ROUND))
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += av1_convolve_scale_test.cc
-endif
 
 ifeq ($(CONFIG_AV1_ENCODER),yes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += corner_match_test.cc
