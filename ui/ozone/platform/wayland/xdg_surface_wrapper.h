@@ -57,6 +57,8 @@ class XDGSurfaceWrapper {
   virtual void SetWindowGeometry(const gfx::Rect& bounds) = 0;
 };
 
+bool CheckIfWlArrayHasValue(struct wl_array* wl_array, uint32_t value);
+
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_WAYLAND_XDG_SURFACE_WRAPPER_H_

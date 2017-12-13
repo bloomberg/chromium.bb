@@ -89,8 +89,17 @@ void XDGSurfaceWrapperV5::Configure(void* data,
                                     wl_array* states,
                                     uint32_t serial) {
   XDGSurfaceWrapperV5* surface = static_cast<XDGSurfaceWrapperV5*>(data);
+
+  bool is_maximized =
+      CheckIfWlArrayHasValue(states, XDG_SURFACE_STATE_MAXIMIZED);
+  bool is_fullscreen =
+      CheckIfWlArrayHasValue(states, XDG_SURFACE_STATE_FULLSCREEN);
+  bool is_activated =
+      CheckIfWlArrayHasValue(states, XDG_SURFACE_STATE_ACTIVATED);
+
   surface->pending_configure_serial_ = serial;
-  surface->wayland_window_->HandleSurfaceConfigure(width, height);
+  surface->wayland_window_->HandleSurfaceConfigure(width, height, is_maximized,
+                                                   is_fullscreen, is_activated);
 }
 
 // static
