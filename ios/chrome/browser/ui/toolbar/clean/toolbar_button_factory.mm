@@ -236,6 +236,20 @@ const int styleCount = 2;
   return contractToolbarButton;
 }
 
+- (ToolbarButton*)locationBarLeadingButton {
+  ToolbarButton* locationBarLeadingButton;
+  if (self.style == INCOGNITO) {
+    locationBarLeadingButton = [ToolbarButton
+        toolbarButtonWithImageForNormalState:
+            [UIImage imageNamed:@"incognito_marker_typing"]
+                    imageForHighlightedState:nil
+                       imageForDisabledState:
+                           [UIImage imageNamed:@"incognito_marker_typing"]];
+    locationBarLeadingButton.enabled = NO;
+  }
+  return locationBarLeadingButton;
+}
+
 #pragma mark - Helpers
 
 - (NSArray<UIImage*>*)voiceSearchImages {

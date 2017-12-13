@@ -57,6 +57,7 @@
 @property(nonatomic, strong) ToolbarButton* voiceSearchButton;
 @property(nonatomic, strong) ToolbarButton* bookmarkButton;
 @property(nonatomic, strong) ToolbarButton* contractButton;
+@property(nonatomic, strong) ToolbarButton* locationBarLeadingButton;
 @property(nonatomic, assign) BOOL voiceSearchEnabled;
 @property(nonatomic, strong) MDCProgressView* progressBar;
 @property(nonatomic, strong) UIStackView* locationBarContainerStackView;
@@ -111,6 +112,7 @@
 @synthesize voiceSearchButton = _voiceSearchButton;
 @synthesize bookmarkButton = _bookmarkButton;
 @synthesize contractButton = _contractButton;
+@synthesize locationBarLeadingButton = _locationBarLeadingButton;
 @synthesize voiceSearchEnabled = _voiceSearchEnabled;
 @synthesize progressBar = _progressBar;
 @synthesize locationBarContainerStackView = _locationBarContainerStackView;
@@ -158,12 +160,12 @@
                                  [self
                                      setHorizontalTranslationOffset:
                                          kToolbarButtonAnimationOffset
-                                                         forButtons:
+                                                           forViews:
                                                   self.leadingStackViewButtons];
                                  [self
                                      setHorizontalTranslationOffset:
                                          -kToolbarButtonAnimationOffset
-                                                         forButtons:
+                                                           forViews:
                                                  self.trailingStackViewButtons];
                                  [self setAllToolbarButtonsOpacity:0];
                                }
@@ -175,11 +177,24 @@
     self.fullBleedShadowView.alpha = 1;
     self.locationBarShadow.alpha = 0;
   }];
+
+  // If locationBarLeadingButton exists fade it in.
+  if (self.locationBarLeadingButton) {
+    [self setHorizontalTranslationOffset:-kToolbarButtonAnimationOffset
+                                forViews:@[ self.locationBarLeadingButton ]];
+    [animator addAnimations:^{
+      [self setHorizontalTranslationOffset:0
+                                  forViews:@[ self.locationBarLeadingButton ]];
+      self.locationBarLeadingButton.alpha = 1;
+    }
+                delayFactor:ios::material::kDuration2];
+  }
+
   // When the locationBarContainer has been expanded the Contract button will
   // fade in.
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     [self setHorizontalTranslationOffset:kToolbarButtonAnimationOffset
-                              forButtons:@[ self.contractButton ]];
+                                forViews:@[ self.contractButton ]];
 
     [UIViewPropertyAnimator
         runningPropertyAnimatorWithDuration:ios::material::kDuration1
@@ -189,9 +204,9 @@
                                    self.contractButton.alpha = 1;
                                    [self
                                        setHorizontalTranslationOffset:0
-                                                           forButtons:@[
-                                                             self.contractButton
-                                                           ]];
+                                                             forViews:@[
+                                                            self.contractButton
+                                                             ]];
                                  }
                                  completion:nil];
   }];
@@ -208,6 +223,29 @@
 - (void)addToolbarContractionAnimations:(UIViewPropertyAnimator*)animator {
   // iPad should never try to animate.
   DCHECK(!IsIPadIdiom());
+
+  // If locationBarLeadingButton exists fade it out before the rest of the
+  // Toolbar is contracted.
+  if (self.locationBarLeadingButton) {
+    [UIViewPropertyAnimator
+        runningPropertyAnimatorWithDuration:ios::material::kDuration2
+        delay:0
+        options:UIViewAnimationOptionCurveEaseIn
+        animations:^{
+          self.locationBarLeadingButton.alpha = 0;
+          [self setHorizontalTranslationOffset:-kToolbarButtonAnimationOffset
+                                      forViews:@[
+                                        self.locationBarLeadingButton
+                                      ]];
+        }
+        completion:^(UIViewAnimatingPosition finalPosition) {
+          [self setHorizontalTranslationOffset:0
+                                      forViews:@[
+                                        self.locationBarLeadingButton
+                                      ]];
+        }];
+  }
+
   [NSLayoutConstraint deactivateConstraints:self.expandedToolbarConstraints];
   [NSLayoutConstraint activateConstraints:self.regularToolbarConstraints];
   // Change the Toolbar buttons opacity to 0 since these will fade in once the
@@ -221,13 +259,15 @@
     self.shadowView.alpha = 1;
     self.fullBleedShadowView.alpha = 0;
     self.locationBarShadow.alpha = 1;
+    self.locationBarLeadingButton.hidden = YES;
   }];
+
   // Once the locationBarContainer has been contracted fade in ToolbarButtons.
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     [self setHorizontalTranslationOffset:kToolbarButtonAnimationOffset
-                              forButtons:self.leadingStackViewButtons];
+                                forViews:self.leadingStackViewButtons];
     [self setHorizontalTranslationOffset:-kToolbarButtonAnimationOffset
-                              forButtons:self.trailingStackViewButtons];
+                                forViews:self.trailingStackViewButtons];
     [UIViewPropertyAnimator
         runningPropertyAnimatorWithDuration:ios::material::kDuration1
                                       delay:ios::material::kDuration4
@@ -236,12 +276,12 @@
                                    [self.view layoutIfNeeded];
                                    [self
                                        setHorizontalTranslationOffset:0
-                                                           forButtons:
-                                                 self.leadingStackViewButtons];
+                                                             forViews:
+                                                  self.leadingStackViewButtons];
                                    [self
                                        setHorizontalTranslationOffset:0
-                                                           forButtons:
-                                                self.trailingStackViewButtons];
+                                                             forViews:
+                                                 self.trailingStackViewButtons];
                                    [self setAllToolbarButtonsOpacity:1];
                                  }
                                  completion:nil];
@@ -364,6 +404,12 @@
   } else {
     [self.locationBarContainerStackView addArrangedSubview:self.contractButton];
   }
+  // If |self.locationBarLeadingButton| exists add it to the StackView.
+  if (self.locationBarLeadingButton) {
+    [self.locationBarContainerStackView
+        insertArrangedSubview:self.locationBarLeadingButton
+                      atIndex:0];
+  }
   [self.locationBarContainer addSubview:self.locationBarContainerStackView];
 }
 
@@ -460,24 +506,8 @@
   [self.regularToolbarConstraints
       addObjectsFromArray:locationBarRegularConstraints];
   [NSLayoutConstraint activateConstraints:locationBarRegularConstraints];
-
-  // LocationBarStackView constraints. The StackView inside the
-  // LocationBarContainer View.
-  UILayoutGuide* locationBarContainerSafeAreaGuide =
-      SafeAreaLayoutGuideForView(self.locationBarContainer);
-  NSLayoutConstraint* locationBarContainerStackViewTopConstraint =
-      [self.locationBarContainerStackView.topAnchor
-          constraintEqualToAnchor:self.locationBarContainer.topAnchor];
+  // LocationBarContainer shadow constraints.
   [NSLayoutConstraint activateConstraints:@[
-    [self.locationBarContainerStackView.bottomAnchor
-        constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
-    [self.locationBarContainerStackView.leadingAnchor
-        constraintEqualToAnchor:locationBarContainerSafeAreaGuide
-                                    .leadingAnchor],
-    [self.locationBarContainerStackView.trailingAnchor
-        constraintEqualToAnchor:locationBarContainerSafeAreaGuide
-                                    .trailingAnchor],
-    locationBarContainerStackViewTopConstraint,
     [self.locationBarShadow.heightAnchor
         constraintEqualToConstant:kLocationBarShadowHeight],
     [self.locationBarShadow.leadingAnchor
@@ -489,6 +519,25 @@
     [self.locationBarShadow.topAnchor
         constraintEqualToAnchor:self.locationBarContainer.bottomAnchor
                        constant:-kLocationBarBorderWidth],
+  ]];
+
+  // LocationBarStackView constraints. The StackView inside the
+  // LocationBarContainer View.
+  UILayoutGuide* locationBarContainerSafeAreaGuide =
+      SafeAreaLayoutGuideForView(self.locationBarContainer);
+  NSLayoutConstraint* locationBarContainerStackViewTopConstraint =
+      [self.locationBarContainerStackView.topAnchor
+          constraintEqualToAnchor:self.locationBarContainer.topAnchor];
+  [NSLayoutConstraint activateConstraints:@[
+    [self.locationBarContainerStackView.bottomAnchor
+        constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
+    [self.locationBarContainerStackView.trailingAnchor
+        constraintEqualToAnchor:locationBarContainerSafeAreaGuide
+                                    .trailingAnchor],
+    [self.locationBarContainerStackView.leadingAnchor
+        constraintEqualToAnchor:locationBarContainerSafeAreaGuide
+                                    .leadingAnchor],
+    locationBarContainerStackViewTopConstraint,
   ]];
   [self.regularToolbarConstraints
       addObject:locationBarContainerStackViewTopConstraint];
@@ -655,6 +704,19 @@
       setContentHuggingPriority:UILayoutPriorityDefaultLow
                         forAxis:UILayoutConstraintAxisHorizontal];
   self.locationBarContainer = locationBarContainer;
+
+  // LocationBar LeadingButton
+  self.locationBarLeadingButton = [self.buttonFactory locationBarLeadingButton];
+  self.locationBarLeadingButton.visibilityMask =
+      ToolbarComponentVisibilityCompactWidth |
+      ToolbarComponentVisibilityRegularWidth;
+  self.locationBarLeadingButton.alpha = 0;
+  self.locationBarLeadingButton.hidden = YES;
+  [self.locationBarLeadingButton.widthAnchor
+      constraintEqualToConstant:kLeadingLocationBarButtonWidth]
+      .active = YES;
+  self.locationBarLeadingButton.imageEdgeInsets =
+      UIEdgeInsetsMakeDirected(0, kLeadingLocationBarButtonImageInset, 0, 0);
 }
 
 - (void)setUpProgressBar {
@@ -1007,13 +1069,14 @@
   }
 }
 
-// Offsets the horizontal translation transform of all visible Toolbar Buttons
-// in |array| by |offset|. If the button is hidden it will assign the
+// Offsets the horizontal translation transform of all visible UIViews
+// in |array| by |offset|. If the View is hidden it will assign the
 // IdentityTransform. Used for fade in animations.
 - (void)setHorizontalTranslationOffset:(LayoutOffset)offset
-                            forButtons:(NSArray<ToolbarButton*>*)array {
-  for (UIButton* button in array) {
-    button.transform = (offset != 0 && !button.hidden)
+                              forViews:(NSArray<UIView*>*)array {
+  for (UIView* view in array) {
+    if (!view.hidden)
+      view.transform = (offset != 0 && !view.hidden)
                            ? CGAffineTransformMakeTranslation(offset, 0)
                            : CGAffineTransformIdentity;
   }
