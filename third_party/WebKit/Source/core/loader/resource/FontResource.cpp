@@ -35,6 +35,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/wtf/Time.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 
@@ -77,7 +78,7 @@ static void RecordPackageFormatHistogram(FontPackageFormat format) {
 FontResource* FontResource::Fetch(FetchParameters& params,
                                   ResourceFetcher* fetcher) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            WebURLRequest::kFrameTypeNone);
+            network::mojom::RequestContextFrameType::kNone);
   params.SetRequestContext(WebURLRequest::kRequestContextFont);
   return ToFontResource(
       fetcher->RequestResource(params, FontResourceFactory(), nullptr));

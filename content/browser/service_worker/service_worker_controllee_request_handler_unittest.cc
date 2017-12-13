@@ -23,7 +23,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
@@ -34,6 +33,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
@@ -72,7 +72,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               false /* keepalive */,
               type,
               REQUEST_CONTEXT_TYPE_HYPERLINK,
-              REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+              network::mojom::RequestContextFrameType::kTopLevel,
               scoped_refptr<ResourceRequestBody>())),
           job_(nullptr) {}
 

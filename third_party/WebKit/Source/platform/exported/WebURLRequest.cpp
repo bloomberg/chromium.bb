@@ -217,7 +217,7 @@ WebURLRequest::RequestContext WebURLRequest::GetRequestContext() const {
   return resource_request_->GetRequestContext();
 }
 
-WebURLRequest::FrameType WebURLRequest::GetFrameType() const {
+network::mojom::RequestContextFrameType WebURLRequest::GetFrameType() const {
   return resource_request_->GetFrameType();
 }
 
@@ -241,7 +241,8 @@ void WebURLRequest::SetRequestContext(RequestContext request_context) {
   resource_request_->SetRequestContext(request_context);
 }
 
-void WebURLRequest::SetFrameType(FrameType frame_type) {
+void WebURLRequest::SetFrameType(
+    network::mojom::RequestContextFrameType frame_type) {
   resource_request_->SetFrameType(frame_type);
 }
 

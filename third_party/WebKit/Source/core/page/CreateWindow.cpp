@@ -49,6 +49,7 @@
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebWindowFeatures.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 
@@ -350,7 +351,7 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          opener_frame.GetDocument()->Url().IsEmpty());
   DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
-            WebURLRequest::kFrameTypeAuxiliary);
+            network::mojom::RequestContextFrameType::kAuxiliary);
   probe::windowOpen(opener_frame.GetDocument(),
                     request.GetResourceRequest().Url(), request.FrameName(),
                     features, Frame::HasTransientUserActivation(&opener_frame));
@@ -436,7 +437,7 @@ DOMWindow* CreateWindow(const String& url_string,
   frame_request.SetShouldSetOpener(window_features.noopener ? kNeverSetOpener
                                                             : kMaybeSetOpener);
   frame_request.GetResourceRequest().SetFrameType(
-      WebURLRequest::kFrameTypeAuxiliary);
+      network::mojom::RequestContextFrameType::kAuxiliary);
 
   // Normally, FrameLoader would take care of setting the referrer for a
   // navigation that is triggered from javascript. However, creating a window

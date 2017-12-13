@@ -11,7 +11,6 @@
 namespace mojo {
 
 using blink::mojom::FetchRedirectMode;
-using blink::mojom::RequestContextFrameType;
 using blink::mojom::RequestContextType;
 using blink::mojom::ServiceWorkerFetchType;
 using network::mojom::FetchRequestMode;
@@ -44,45 +43,6 @@ bool EnumTraits<FetchRedirectMode, content::FetchRedirectMode>::FromMojom(
       return true;
     case FetchRedirectMode::MANUAL:
       *out = content::FetchRedirectMode::MANUAL_MODE;
-      return true;
-  }
-
-  return false;
-}
-
-RequestContextFrameType
-EnumTraits<RequestContextFrameType, content::RequestContextFrameType>::ToMojom(
-    content::RequestContextFrameType input) {
-  switch (input) {
-    case content::REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY:
-      return RequestContextFrameType::AUXILIARY;
-    case content::REQUEST_CONTEXT_FRAME_TYPE_NESTED:
-      return RequestContextFrameType::NESTED;
-    case content::REQUEST_CONTEXT_FRAME_TYPE_NONE:
-      return RequestContextFrameType::NONE;
-    case content::REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL:
-      return RequestContextFrameType::TOP_LEVEL;
-  }
-
-  NOTREACHED();
-  return RequestContextFrameType::NONE;
-}
-
-bool EnumTraits<RequestContextFrameType, content::RequestContextFrameType>::
-    FromMojom(RequestContextFrameType input,
-              content::RequestContextFrameType* out) {
-  switch (input) {
-    case RequestContextFrameType::AUXILIARY:
-      *out = content::REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY;
-      return true;
-    case RequestContextFrameType::NESTED:
-      *out = content::REQUEST_CONTEXT_FRAME_TYPE_NESTED;
-      return true;
-    case RequestContextFrameType::NONE:
-      *out = content::REQUEST_CONTEXT_FRAME_TYPE_NONE;
-      return true;
-    case RequestContextFrameType::TOP_LEVEL:
-      *out = content::REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL;
       return true;
   }
 
