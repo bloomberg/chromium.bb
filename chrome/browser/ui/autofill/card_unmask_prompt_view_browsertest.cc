@@ -183,6 +183,9 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViewBrowserTest);
 };
 
+// Note: Although the following tests all just call RunDialog(), they execute
+// different behavior based on the test name's suffix. See ShowDialog().
+
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, InvokeDialog_expired) {
   RunDialog();
 }
