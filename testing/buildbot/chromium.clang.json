@@ -4730,7 +4730,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -4752,7 +4753,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "content_unittests"
       },
@@ -4972,7 +4974,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "net_unittests"
       },
@@ -5082,7 +5085,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 5
         },
         "test": "unit_tests"
       },
@@ -5283,7 +5287,8 @@
               "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -5307,7 +5312,8 @@
               "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "content_unittests"
       },
@@ -5511,7 +5517,8 @@
               "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "net_unittests"
       },
@@ -5607,7 +5614,8 @@
               "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "shards": 5
         },
         "test": "unit_tests"
       },
@@ -5655,7 +5663,8 @@
               "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "shards": 7
         },
         "test": "webview_instrumentation_test_apk"
       }
