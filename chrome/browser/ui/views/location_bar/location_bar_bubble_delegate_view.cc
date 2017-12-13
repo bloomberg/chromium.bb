@@ -108,10 +108,6 @@ void LocationBarBubbleDelegateView::Observe(
   CloseBubble();
 }
 
-void LocationBarBubbleDelegateView::CloseBubble() {
-  GetWidget()->Close();
-}
-
 void LocationBarBubbleDelegateView::AdjustForFullscreen(
     const gfx::Rect& screen_bounds) {
   if (GetAnchorView())
@@ -123,4 +119,8 @@ void LocationBarBubbleDelegateView::AdjustForFullscreen(
                         ? (screen_bounds.x() + horizontal_offset)
                         : (screen_bounds.right() - horizontal_offset);
   SetAnchorRect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
+}
+
+void LocationBarBubbleDelegateView::CloseBubble() {
+  GetWidget()->Close();
 }

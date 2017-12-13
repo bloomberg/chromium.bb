@@ -9239,8 +9239,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MANAGE_PASSWORDS_UNDO" desc="The text that is used in the manage passwords bubble when a password is deleted.">
         Undo
       </message>
+      <message name="IDS_MANAGE_PASSWORDS_UNDO_TOOLTIP" desc="Tooltip text for restoring a deleted password (undoing removal)">
+        Restore deleted password for <ph name="USERNAME">$1<ex>user@gmail.com</ex></ph>
+      </message>
       <message name="IDS_MANAGE_PASSWORDS_DELETE" desc="The tooltip of a button that is used in the manage passwords bubble for removing the credential.">
-        Delete
+        Delete password for <ph name="USERNAME">$1<ex>user@gmail.com</ex></ph>
       </message>
 
       <message name="IDS_MANAGE_PASSWORDS_SHOW_PASSWORD" desc="The tooltip of a button that is used in the manage pending password bubble for revealing the password.">

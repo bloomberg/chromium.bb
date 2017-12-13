@@ -50,7 +50,7 @@ PWAConfirmationView::~PWAConfirmationView() {}
 
 gfx::Size PWAConfirmationView::CalculatePreferredSize() const {
   int bubble_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_MODAL_DIALOG_WIDTH_CONTAINING_MULTILINE_TEXT);
+      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
 
   gfx::Size size = views::DialogDelegateView::CalculatePreferredSize();
   size.SetToMin(gfx::Size(bubble_width - margins().width(), size.height()));

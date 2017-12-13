@@ -2787,6 +2787,8 @@ split_static_library("ui") {
       "views/passwords/credentials_selection_view.h",
       "views/passwords/manage_password_items_view.cc",
       "views/passwords/manage_password_items_view.h",
+      "views/passwords/manage_passwords_bubble_delegate_view_base.cc",
+      "views/passwords/manage_passwords_bubble_delegate_view_base.h",
       "views/passwords/manage_passwords_bubble_view.cc",
       "views/passwords/manage_passwords_bubble_view.h",
       "views/payments/contact_info_editor_view_controller.cc",

@@ -67,8 +67,8 @@ class ManagePasswordsBubbleModel {
   // Called by the view code when the "OK" button is clicked by the user.
   void OnOKClicked();
 
-  // Called by the view code when the manage link is clicked by the user.
-  void OnManageLinkClicked();
+  // Called by the view code when the manage button is clicked by the user.
+  void OnManageClicked();
 
   // Called by the view code when the navigate to passwords.google.com link is
   // clicked by the user.

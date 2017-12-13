@@ -302,7 +302,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   PretendManagingPasswords();
 
   EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
-  model()->OnManageLinkClicked();
+  model()->OnManageClicked();
 
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, model()->state());
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_MANAGE);
@@ -492,7 +492,7 @@ class ManagePasswordsBubbleModelManageLinkTest
     : public ManagePasswordsBubbleModelTest,
       public ::testing::WithParamInterface<TestSyncService::SyncedTypes> {};
 
-TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageLinkClicked) {
+TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageClicked) {
   TestSyncService* sync_service = static_cast<TestSyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(), &TestingSyncFactoryFunction));
@@ -502,7 +502,7 @@ TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageLinkClicked) {
 
   EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
 
-  model()->OnManageLinkClicked();
+  model()->OnManageClicked();
 }
 
 INSTANTIATE_TEST_CASE_P(Default,
