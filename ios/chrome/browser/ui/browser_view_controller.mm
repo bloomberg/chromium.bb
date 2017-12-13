@@ -3295,7 +3295,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     // TODO(crbug.com/778822): This can be cleaned up when the new fullscreen
     // is enabled.
     if (IsSafeAreaCompatibleToolbarEnabled() &&
-        header.view == _toolbarCoordinator.toolbarViewController.view) {
+        header.view == _toolbarCoordinator.toolbarViewController.view &&
+        !IsIPadIdiom()) {
       self.toolbarOffsetConstraint.constant = yOrigin;
     }
     CGRect frame = [header.view frame];
