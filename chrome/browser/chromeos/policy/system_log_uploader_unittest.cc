@@ -21,6 +21,10 @@ namespace policy {
 
 namespace {
 
+// Pseudo-location of policy dump file.
+constexpr char kPolicyDumpFileLocation[] = "/var/log/policy_dump.json";
+constexpr char kPolicyDump[] = "{}";
+
 // The list of tested system log file names.
 const char* const kTestSystemLogFileNames[] = {"name1.txt", "name32.txt"};
 
@@ -81,7 +85,11 @@ void MockUploadJob::AddDataSegment(
                                file_index_ + 1),
             name);
 
-  EXPECT_EQ(kTestSystemLogFileNames[file_index_], filename);
+  if (file_index_ == max_files_ - 1) {
+    EXPECT_EQ(kPolicyDumpFileLocation, filename);
+  } else {
+    EXPECT_EQ(kTestSystemLogFileNames[file_index_], filename);
+  }
 
   EXPECT_EQ(2U, header_entries.size());
   EXPECT_EQ(
@@ -90,7 +98,11 @@ void MockUploadJob::AddDataSegment(
   EXPECT_EQ(SystemLogUploader::kContentTypePlainText,
             header_entries.find(net::HttpRequestHeaders::kContentType)->second);
 
-  EXPECT_EQ(kTestSystemLogFileNames[file_index_], *data);
+  if (file_index_ == max_files_ - 1) {
+    EXPECT_EQ(kPolicyDump, *data);
+  } else {
+    EXPECT_EQ(kTestSystemLogFileNames[file_index_], *data);
+  }
 
   file_index_++;
 }
@@ -117,9 +129,11 @@ class MockSystemLogDelegate : public SystemLogUploader::Delegate {
       : is_upload_error_(is_upload_error), system_logs_(system_logs) {}
   ~MockSystemLogDelegate() override {}
 
-  void LoadSystemLogs(const LogUploadCallback& upload_callback) override {
+  std::string GetPolicyAsJSON() override { return kPolicyDump; }
+
+  void LoadSystemLogs(LogUploadCallback upload_callback) override {
     EXPECT_TRUE(is_upload_allowed_);
-    upload_callback.Run(
+    std::move(upload_callback).Run(
         base::MakeUnique<SystemLogUploader::SystemLogs>(system_logs_));
   }
 
@@ -127,7 +141,7 @@ class MockSystemLogDelegate : public SystemLogUploader::Delegate {
       const GURL& url,
       UploadJob::Delegate* delegate) override {
     return base::MakeUnique<MockUploadJob>(url, delegate, is_upload_error_,
-                                           system_logs_.size());
+                                           system_logs_.size() + 1);
   }
 
   void set_upload_allowed(bool is_upload_allowed) {

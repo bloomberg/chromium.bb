@@ -1025,6 +1025,8 @@ split_static_library("browser") {
     "policy/managed_bookmarks_policy_handler.h",
     "policy/network_prediction_policy_handler.cc",
     "policy/network_prediction_policy_handler.h",
+    "policy/policy_conversions.cc",
+    "policy/policy_conversions.h",
     "policy/policy_helpers.cc",
     "policy/policy_helpers.h",
     "policy/profile_policy_connector.cc",
