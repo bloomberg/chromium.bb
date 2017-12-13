@@ -454,7 +454,9 @@ def main():
   if args.output_json:
     with open(json_file) as original_json_file:
       json_object = json.load(original_json_file)
-      json_object['links'] = {'result_details': result_details_link}
+      json_object['links'] = {
+          'result_details (logcats, flakiness links)': result_details_link
+      }
       with open(args.output_json, 'w') as f:
         json.dump(json_object, f)
   else:
