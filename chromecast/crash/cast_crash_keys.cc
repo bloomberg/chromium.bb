@@ -32,10 +32,6 @@ size_t RegisterCastCrashKeys() {
       {"shutdown-type", ::crash_keys::kSmallSize},
       {"browser-unpin-trace", ::crash_keys::kMediumSize},
 
-      // content/:
-      {"discardable-memory-allocated", ::crash_keys::kSmallSize},
-      {"discardable-memory-free", ::crash_keys::kSmallSize},
-      {"total-discardable-memory-allocated", ::crash_keys::kSmallSize},
       {"view-count", ::crash_keys::kSmallSize},
 
       // media/:
