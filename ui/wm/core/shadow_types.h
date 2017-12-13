@@ -37,4 +37,12 @@ WM_CORE_EXPORT extern const aura::WindowProperty<ShadowElevation>* const
 
 }  // namespace wm
 
+// Declaring the template specialization here to make sure that the
+// compiler in all builds, including jumbo builds, always knows about
+// the specialization before the first template instance use (for
+// instance in shadw_controller.cc). Using a template instance before
+// its specialization is declared in a translation unit is a C++
+// error.
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(WM_CORE_EXPORT, ::wm::ShadowElevation);
+
 #endif  // UI_WM_CORE_SHADOW_TYPES_H_
