@@ -825,18 +825,7 @@
       'Nougat Phone Tester': [
         'args',
       ],
-      'x64 Device Tester': [
-        'args',
-      ],
       'x86 Cloud Tester': [
-        'args',
-      ],
-      # chromium.clang
-      'ToTAndroid x64': [
-        'args',
-      ],
-      # chromium.fyi
-      'Out of Process Profiling Android': [
         'args',
       ],
     },
@@ -1452,21 +1441,7 @@
       'Nougat Phone Tester': [
         'args',
       ],
-      'x64 Device Tester': [
-        'args',
-      ],
       'x86 Cloud Tester': [
-        'args',
-      ],
-      # chromium.clang
-      'ToTAndroid x64': [
-        'args',
-      ],
-      'ToTAndroidCFI': [
-        'args',
-      ],
-      # chromium.fyi
-      'Out of Process Profiling Android': [
         'args',
       ],
     },
@@ -4583,14 +4558,7 @@
       'Nougat Phone Tester': [
         'args',
       ],
-      'x64 Device Tester': [
-        'args',
-      ],
       'x86 Cloud Tester': [
-        'args',
-      ],
-      # chromium.clang
-      'ToTAndroidCFI': [
         'args',
       ],
     },

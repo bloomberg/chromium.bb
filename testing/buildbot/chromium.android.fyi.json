@@ -3957,7 +3957,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "content_unittests"
       },
@@ -4537,7 +4538,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 5
         },
         "test": "unit_tests"
       },
@@ -4597,7 +4599,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 7
         },
         "test": "webview_instrumentation_test_apk"
       },
