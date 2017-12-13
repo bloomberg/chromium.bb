@@ -1,5 +1,8 @@
-<!DOCTYPE html>
-<script src="../../../../../resources/js-test.js"></script>
+<!DOCTYPE HTML>
+<script src="../../../../../resources/testharness.js"></script>
+<script src="../../../../../resources/testharnessreport.js"></script>
+<script src="../scroll-animation.js"></script>
+<title>The first programmatic smooth scroll runs on compositor</title>
 <style>
 
 html {
@@ -10,31 +13,25 @@ html {
 </style>
 <script>
 
-var jsTestIsAsync = true;
+function inputDrivenScroll() {
+  return new Promise((resolve, reject) => {
+    eventSender.keyDown("ArrowLeft");
+    resolve();
+  });
+}
 
-description("This test verifies that both input-driven and programmatic " +
+promise_test(t => {
+  return inputDrivenScroll()
+  .then(waitForWindowScrollEnd.bind(this, -40, ''))
+  .then(() => {
+    assert_equals(scrollX, -40);
+    scrollBy({left: 40, behavior: "smooth"});})
+  .then(waitForWindowScrollEnd.bind(this, 0, ''))
+  .then(() => {
+    assert_equals(scrollX, 0);
+  });
+}, "This test verifies that both input-driven and programmatic " +
     "smooth scrolls serviced by the compositor thread go to the correct " +
     "scroll position on RTL pages with horizontal overflow.");
-
-onload = function() {
-    if (!window.eventSender) {
-        debug("This test requires window.eventSender.")
-        finishJSTest();
-        return;
-    }
-
-    // Start scrolled due to http://crbug.com/592799.
-    scrollBy(-120, 0);
-
-    // Click scrollbar stepper.
-    eventSender.mouseMoveTo(795, 595);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-
-    shouldBecomeEqual("scrollX", "-80", function() {
-        scrollBy({left: 40, behavior: "smooth"});
-        shouldBecomeEqual("scrollX", "-40", finishJSTest);
-    });
-};
 
 </script>
