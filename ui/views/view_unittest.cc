@@ -262,6 +262,8 @@ class TestView : public View {
 
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
+  void OnAccessibilityEvent(ui::AXEvent event_type) override;
+
   // OnBoundsChanged.
   bool did_change_bounds_;
   gfx::Rect new_bounds_;
@@ -288,6 +290,9 @@ class TestView : public View {
 
   // Value to return from CanProcessEventsWithinSubtree().
   bool can_process_events_within_subtree_;
+
+  // Accessibility events
+  ui::AXEvent last_a11y_event_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -322,6 +327,31 @@ TEST_F(ViewTest, LayoutCalledInvalidateAndOriginChanges) {
 ////////////////////////////////////////////////////////////////////////////////
 // OnBoundsChanged
 ////////////////////////////////////////////////////////////////////////////////
+
+void TestView::OnAccessibilityEvent(ui::AXEvent event_type) {
+  last_a11y_event_ = event_type;
+}
+
+TEST_F(ViewTest, OnBoundsChangedFiresA11yEvent) {
+  TestView v;
+
+  // Should change when scaled or moved.
+  gfx::Rect initial(0, 0, 200, 200);
+  gfx::Rect scaled(0, 0, 250, 250);
+  gfx::Rect moved(100, 100, 250, 250);
+
+  v.last_a11y_event_ = ui::AX_EVENT_NONE;
+  v.SetBoundsRect(initial);
+  EXPECT_EQ(v.last_a11y_event_, ui::AX_EVENT_LOCATION_CHANGED);
+
+  v.last_a11y_event_ = ui::AX_EVENT_NONE;
+  v.SetBoundsRect(scaled);
+  EXPECT_EQ(v.last_a11y_event_, ui::AX_EVENT_LOCATION_CHANGED);
+
+  v.last_a11y_event_ = ui::AX_EVENT_NONE;
+  v.SetBoundsRect(moved);
+  EXPECT_EQ(v.last_a11y_event_, ui::AX_EVENT_LOCATION_CHANGED);
+}
 
 void TestView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   did_change_bounds_ = true;

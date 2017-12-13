@@ -124,6 +124,10 @@ void AXWindowObjWrapper::OnWindowBoundsChanged(
 
   Widget* widget = Widget::GetWidgetForNativeView(window);
   if (widget) {
+    AXAuraObjCache::GetInstance()->FireEvent(
+        AXAuraObjCache::GetInstance()->GetOrCreate(widget),
+        ui::AX_EVENT_LOCATION_CHANGED);
+
     views::View* root_view = widget->GetRootView();
     if (root_view)
       root_view->NotifyAccessibilityEvent(ui::AX_EVENT_LOCATION_CHANGED, true);

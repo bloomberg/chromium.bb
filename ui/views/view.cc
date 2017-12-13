@@ -1464,7 +1464,11 @@ void View::NotifyAccessibilityEvent(
     if (native_view_accessibility_)
       native_view_accessibility_->NotifyAccessibilityEvent(event_type);
   }
+
+  OnAccessibilityEvent(event_type);
 }
+
+void View::OnAccessibilityEvent(ui::AXEvent event_type) {}
 
 // Scrolling -------------------------------------------------------------------
 
@@ -2283,6 +2287,8 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   }
 
   OnBoundsChanged(previous_bounds);
+  if (bounds_ != previous_bounds)
+    NotifyAccessibilityEvent(ui::AX_EVENT_LOCATION_CHANGED, false);
 
   if (needs_layout_ || previous_bounds.size() != size()) {
     needs_layout_ = false;
