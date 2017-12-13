@@ -20,6 +20,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/socket/app_firewall_hole_manager.h"
@@ -120,6 +121,8 @@ class Socket : public ApiResource {
   static void IPEndPointToStringAndPort(const net::IPEndPoint& address,
                                         std::string* ip_address_str,
                                         uint16_t* port);
+
+  static net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag();
 
  protected:
   explicit Socket(const std::string& owner_extension_id_);
