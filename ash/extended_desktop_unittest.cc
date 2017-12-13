@@ -336,6 +336,10 @@ TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
 }
 
 TEST_F(ExtendedDesktopTest, Capture) {
+  // This test deals with input events but not visuals so don't throttle input
+  // on visuals.
+  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
+
   UpdateDisplay("1000x600,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
@@ -819,6 +823,9 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
 }
 
 TEST_F(ExtendedDesktopTest, PassiveGrab) {
+  // This test deals with input events but not visuals so don't throttle input
+  // on visuals.
+  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
   EventLocationRecordingEventHandler event_handler;
   ash::Shell::Get()->AddPreTargetHandler(&event_handler);
 
