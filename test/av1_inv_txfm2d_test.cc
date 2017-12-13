@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 #include "./av1_rtcd.h"
 #include "test/acm_random.h"
@@ -25,6 +26,8 @@ using libaom_test::bd;
 using libaom_test::compute_avg_abs_error;
 using libaom_test::Fwd_Txfm2d_Func;
 using libaom_test::Inv_Txfm2d_Func;
+
+using std::vector;
 
 namespace {
 
@@ -76,17 +79,21 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
       ASSERT_LE(txfm2d_size, NELEMENTS(actual));
       inv_txfm_func(coeffs, actual, tx_w, tx_type_, bd);
 
+      double actual_max_error = 0;
       for (int ni = 0; ni < txfm2d_size; ++ni) {
-        EXPECT_GE(max_error_, abs(expected[ni] - actual[ni]));
+        const double this_error = abs(expected[ni] - actual[ni]);
+        actual_max_error = AOMMAX(actual_max_error, this_error);
+      }
+      EXPECT_GE(max_error_, actual_max_error)
+          << " tx_w: " << tx_w << " tx_h " << tx_h << " tx_type: " << tx_type_;
+      if (actual_max_error > max_error_) {  // exit early.
+        break;
       }
       avg_abs_error += compute_avg_abs_error<int16_t, uint16_t>(
           expected, actual, txfm2d_size);
     }
 
     avg_abs_error /= count;
-    // max_abs_avg_error comes from upper bound of
-    // printf("txfm1d_size: %d accuracy_avg_abs_error: %f\n",
-    // txfm1d_size_, avg_abs_error);
     EXPECT_GE(max_avg_error_, avg_abs_error)
         << " tx_w: " << tx_w << " tx_h " << tx_h << " tx_type: " << tx_type_;
   }
@@ -98,94 +105,46 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
   TX_SIZE tx_size_;
 };
 
-TEST_P(AV1InvTxfm2d, RunRoundtripCheck) { RunRoundtripCheck(); }
+vector<AV1InvTxfm2dParam> GetInvTxfm2dParamList() {
+  vector<AV1InvTxfm2dParam> param_list;
+  for (int t = 0; t <= FLIPADST_ADST; ++t) {
+    const TX_TYPE tx_type = static_cast<TX_TYPE>(t);
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_4X4, 2, 0.002));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X8, 2, 0.02));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X16, 2, 0.04));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X32, 4, 0.4));
 
-const AV1InvTxfm2dParam av1_inv_txfm2d_param[] = {
-  AV1InvTxfm2dParam(DCT_DCT, TX_4X8, 2, 0.007),
-  AV1InvTxfm2dParam(ADST_DCT, TX_4X8, 2, 0.012),
-  AV1InvTxfm2dParam(DCT_ADST, TX_4X8, 2, 0.012),
-  AV1InvTxfm2dParam(ADST_ADST, TX_4X8, 2, 0.012),
-  AV1InvTxfm2dParam(FLIPADST_DCT, TX_4X8, 2, 0.012),
-  AV1InvTxfm2dParam(DCT_FLIPADST, TX_4X8, 2, 0.012),
-  AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_4X8, 2, 0.012),
-  AV1InvTxfm2dParam(ADST_FLIPADST, TX_4X8, 2, 0.012),
-  AV1InvTxfm2dParam(FLIPADST_ADST, TX_4X8, 2, 0.012),
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_4X8, 2, 0.012));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X4, 2, 0.012));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X16, 2, 0.033));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X8, 2, 0.033));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X32, 2, 0.4));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X16, 2, 0.4));
 
-  AV1InvTxfm2dParam(DCT_DCT, TX_8X4, 2, 0.007),
-  AV1InvTxfm2dParam(ADST_DCT, TX_8X4, 2, 0.012),
-  AV1InvTxfm2dParam(DCT_ADST, TX_8X4, 2, 0.012),
-  AV1InvTxfm2dParam(ADST_ADST, TX_8X4, 2, 0.012),
-  AV1InvTxfm2dParam(FLIPADST_DCT, TX_8X4, 2, 0.007),
-  AV1InvTxfm2dParam(DCT_FLIPADST, TX_8X4, 2, 0.012),
-  AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_8X4, 2, 0.012),
-  AV1InvTxfm2dParam(ADST_FLIPADST, TX_8X4, 2, 0.012),
-  AV1InvTxfm2dParam(FLIPADST_ADST, TX_8X4, 2, 0.012),
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_4X16, 2, 0.1));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X4, 2, 0.1));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X32, 2, 0.1));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X8, 2, 0.1));
 
-  AV1InvTxfm2dParam(DCT_DCT, TX_8X16, 2, 0.025),
-  AV1InvTxfm2dParam(ADST_DCT, TX_8X16, 2, 0.020),
-  AV1InvTxfm2dParam(DCT_ADST, TX_8X16, 2, 0.027),
-  AV1InvTxfm2dParam(ADST_ADST, TX_8X16, 2, 0.023),
-  AV1InvTxfm2dParam(FLIPADST_DCT, TX_8X16, 2, 0.020),
-  AV1InvTxfm2dParam(DCT_FLIPADST, TX_8X16, 2, 0.027),
-  AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_8X16, 2, 0.032),
-  AV1InvTxfm2dParam(ADST_FLIPADST, TX_8X16, 2, 0.023),
-  AV1InvTxfm2dParam(FLIPADST_ADST, TX_8X16, 2, 0.023),
-
-  AV1InvTxfm2dParam(DCT_DCT, TX_16X8, 2, 0.007),
-  AV1InvTxfm2dParam(ADST_DCT, TX_16X8, 2, 0.012),
-  AV1InvTxfm2dParam(DCT_ADST, TX_16X8, 2, 0.024),
-  AV1InvTxfm2dParam(ADST_ADST, TX_16X8, 2, 0.033),
-  AV1InvTxfm2dParam(FLIPADST_DCT, TX_16X8, 2, 0.015),
-  AV1InvTxfm2dParam(DCT_FLIPADST, TX_16X8, 2, 0.032),
-  AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_16X8, 2, 0.032),
-  AV1InvTxfm2dParam(ADST_FLIPADST, TX_16X8, 2, 0.033),
-  AV1InvTxfm2dParam(FLIPADST_ADST, TX_16X8, 2, 0.032),
-
-  AV1InvTxfm2dParam(FLIPADST_DCT, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(DCT_FLIPADST, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(ADST_FLIPADST, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(FLIPADST_ADST, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(FLIPADST_DCT, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(DCT_FLIPADST, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(ADST_FLIPADST, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(FLIPADST_ADST, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(FLIPADST_DCT, TX_16X16, 2, 0.04),
-  AV1InvTxfm2dParam(DCT_FLIPADST, TX_16X16, 2, 0.04),
-  AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_16X16, 11, 0.04),
-  AV1InvTxfm2dParam(ADST_FLIPADST, TX_16X16, 2, 0.04),
-  AV1InvTxfm2dParam(FLIPADST_ADST, TX_16X16, 2, 0.04),
-  AV1InvTxfm2dParam(FLIPADST_DCT, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(DCT_FLIPADST, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(FLIPADST_FLIPADST, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(ADST_FLIPADST, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(FLIPADST_ADST, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(DCT_DCT, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(ADST_DCT, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(DCT_ADST, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(ADST_ADST, TX_4X4, 2, 0.002),
-  AV1InvTxfm2dParam(DCT_DCT, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(ADST_DCT, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(DCT_ADST, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(ADST_ADST, TX_8X8, 2, 0.02),
-  AV1InvTxfm2dParam(DCT_DCT, TX_16X16, 2, 0.04),
-  AV1InvTxfm2dParam(ADST_DCT, TX_16X16, 2, 0.04),
-  AV1InvTxfm2dParam(DCT_ADST, TX_16X16, 2, 0.04),
-  AV1InvTxfm2dParam(ADST_ADST, TX_16X16, 2, 0.04),
-  AV1InvTxfm2dParam(DCT_DCT, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(ADST_DCT, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(DCT_ADST, TX_32X32, 4, 0.4),
-  AV1InvTxfm2dParam(ADST_ADST, TX_32X32, 4, 0.4),
 #if CONFIG_TX64X64
-  // Large round trip error expected, because of inherent approximation in the
-  // transform.
-  AV1InvTxfm2dParam(DCT_DCT, TX_64X64, 900, 214),
+    if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
+      // Large round trip errors expected for these, because of inherent
+      // approximation in the transforms.
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X64, 900, 214));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X64, 750, 175));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X32, 750, 175));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X64, 1025, 350));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X16, 1025, 350));
+    }
 #endif  // CONFIG_TX64X64
-};
+  }
+  return param_list;
+}
 
 INSTANTIATE_TEST_CASE_P(C, AV1InvTxfm2d,
-                        ::testing::ValuesIn(av1_inv_txfm2d_param));
+                        ::testing::ValuesIn(GetInvTxfm2dParamList()));
+
+TEST_P(AV1InvTxfm2d, RunRoundtripCheck) { RunRoundtripCheck(); }
 
 TEST(AV1InvTxfm2d, CfgTest) {
   for (int bd_idx = 0; bd_idx < BD_NUM; ++bd_idx) {
