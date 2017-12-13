@@ -95,6 +95,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 void av1_set_coeff_buffer(const AV1_COMP *const cpi, MACROBLOCK *const x,
                           int mi_row, int mi_col);
 
+void hbt_destroy();
 int av1_optimize_txb(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int blk_row,
                      int blk_col, int block, TX_SIZE tx_size, TXB_CTX *txb_ctx,
                      int fast_mode, int *rate_cost);

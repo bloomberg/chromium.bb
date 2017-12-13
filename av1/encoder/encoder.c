@@ -3988,6 +3988,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   for (i = 0; i < FRAME_BUFFERS; ++i) {
     av1_hash_table_destroy(&cm->buffer_pool->frame_bufs[i].hash_table);
   }
+  if (cpi->sf.use_hash_based_trellis) hbt_destroy();
 #endif  // CONFIG_HASH_ME
   av1_free_ref_frame_buffers(cm->buffer_pool);
   aom_free(cpi);
