@@ -344,7 +344,6 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
   }
 
   Display* display = display_manager()->GetDisplayById(display_to_create.id());
-  const bool display_already_existed = display != nullptr;
   if (!display) {
     // Create a display if the window manager is extending onto a new display.
     display = display_manager()->AddDisplayForWindowManager(
@@ -363,7 +362,7 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
       display->GetWindowManagerDisplayRootForUser(
           window_manager_state_->user_id());
   DCHECK(display_root);
-  display_root->root()->RemoveAllChildren();
+  DCHECK(display_root->root()->children().empty());
 
   // NOTE: this doesn't resize the window in any way. We assume the client takes
   // care of any modifications it needs to do.
@@ -375,13 +374,6 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
   if (is_moving_to_new_display) {
     DCHECK(old_parent);
     window_manager_state_->DeleteWindowManagerDisplayRoot(old_parent);
-  }
-  if (display_already_existed &&
-      display->platform_display()->GetAcceleratedWidget()) {
-    // Notify the window manager that the dispay's accelerated widget is already
-    // available, if the display is being reused for a new window tree host.
-    window_manager_internal_->WmOnAcceleratedWidgetForDisplay(
-        display->GetId(), display->platform_display()->GetAcceleratedWidget());
   }
   return window;
 }

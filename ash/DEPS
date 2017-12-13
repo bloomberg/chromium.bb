@@ -106,9 +106,6 @@ specific_include_rules = {
   "touch_transformer_controller\.*": [
     "+ash/host"
   ],
-  "window_manager.cc": [
-    "+ash/host/ash_window_tree_host.h"
-  ],
   "window_manager_service.cc": [
     "+chromeos/cryptohome"
   ],
