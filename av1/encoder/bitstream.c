@@ -4126,8 +4126,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     write_frame_size(cm, wb);
 #endif
     write_sb_size(cm, wb);
-
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
+#if CONFIG_INTRABC
+    if (cm->allow_screen_content_tools) aom_wb_write_bit(wb, cm->allow_intrabc);
+#endif  // CONFIG_INTRABC
 #if CONFIG_AMVR
     if (cm->allow_screen_content_tools) {
       if (cm->seq_force_integer_mv == 2) {
@@ -4139,7 +4141,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
 #endif
   } else if (cm->frame_type == INTRA_ONLY_FRAME) {
-    if (cm->intra_only) aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (!cm->error_resilient_mode) {
       if (cm->intra_only) {
@@ -4157,6 +4158,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #else
       write_frame_size(cm, wb);
 #endif
+      aom_wb_write_bit(wb, cm->allow_screen_content_tools);
+#if CONFIG_INTRABC
+      if (cm->allow_screen_content_tools)
+        aom_wb_write_bit(wb, cm->allow_intrabc);
+#endif  // CONFIG_INTRABC
     }
   } else if (cm->frame_type == INTER_FRAME) {
     MV_REFERENCE_FRAME ref_frame;
