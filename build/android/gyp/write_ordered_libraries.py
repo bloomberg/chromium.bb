@@ -28,10 +28,11 @@ import sys
 from util import build_utils
 
 _readelf = None
-_library_dirs = None
 
 _library_re = re.compile(
     '.*NEEDED.*Shared library: \[(?P<library_name>.+)\]')
+
+_library_path_map = {}
 
 
 def SetReadelfPath(path):
@@ -39,81 +40,53 @@ def SetReadelfPath(path):
   _readelf = path
 
 
-def SetLibraryDirs(dirs):
-  global _library_dirs
-  _library_dirs = dirs
-
-
-def FullLibraryPath(library_name):
-  assert _library_dirs is not None
-  for directory in _library_dirs:
-    path = '%s/%s' % (directory, library_name)
-    if os.path.exists(path):
-      return path
-  return library_name
-
-
-def IsSystemLibrary(library_name):
-  # If the library doesn't exist in the libraries directory, assume that it is
-  # an Android system library.
-  return not os.path.exists(FullLibraryPath(library_name))
-
-
 def CallReadElf(library_or_executable):
   assert _readelf is not None
-  readelf_cmd = [_readelf,
-                 '-d',
-                 FullLibraryPath(library_or_executable)]
+  readelf_cmd = [_readelf, '-d', library_or_executable]
   return build_utils.CheckOutput(readelf_cmd)
 
 
 def GetDependencies(library_or_executable):
   elf = CallReadElf(library_or_executable)
-  return set(_library_re.findall(elf))
-
-
-def GetNonSystemDependencies(library_name):
-  all_deps = GetDependencies(library_name)
-  return set((lib for lib in all_deps if not IsSystemLibrary(lib)))
+  deps = set()
+  for l in _library_re.findall(elf):
+    p = _library_path_map.get(l)
+    if p is not None:
+      deps.add(p)
+  return deps
 
 
 def GetSortedTransitiveDependencies(libraries):
   """Returns all transitive library dependencies in dependency order."""
   return build_utils.GetSortedTransitiveDependencies(
-      libraries, GetNonSystemDependencies)
-
-
-def GetSortedTransitiveDependenciesForBinaries(binaries):
-  if binaries[0].endswith('.so'):
-    libraries = [os.path.basename(lib) for lib in binaries]
-  else:
-    assert len(binaries) == 1
-    all_deps = GetDependencies(binaries[0])
-    libraries = [lib for lib in all_deps if not IsSystemLibrary(lib)]
-
-  return GetSortedTransitiveDependencies(libraries)
+      libraries, GetDependencies)
 
 
 def main():
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
 
-  parser.add_option('--input-libraries',
-      help='A list of top-level input libraries.')
-  parser.add_option('--libraries-dir',
-      help='The directory which contains shared libraries.')
   parser.add_option('--readelf', help='Path to the readelf binary.')
+  parser.add_option('--runtime-deps',
+      help='A file created for the target using write_runtime_deps.')
   parser.add_option('--output', help='Path to the generated .json file.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
   options, _ = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
   SetReadelfPath(options.readelf)
-  SetLibraryDirs(options.libraries_dir.split(','))
 
-  libraries = build_utils.ParseGnList(options.input_libraries)
-  if len(libraries):
-    libraries = GetSortedTransitiveDependenciesForBinaries(libraries)
+  unsorted_lib_paths = []
+  for f in open(options.runtime_deps):
+    f = f[:-1]
+    if f.endswith('.so'):
+      p = f.replace('lib.unstripped/', '')
+      unsorted_lib_paths.append(p)
+      _library_path_map[os.path.basename(p)] = p
+
+  lib_paths = GetSortedTransitiveDependencies(unsorted_lib_paths)
+
+  libraries = [os.path.basename(l) for l in lib_paths]
 
   # Convert to "base" library names: e.g. libfoo.so -> foo
   java_libraries_list = (
@@ -121,7 +94,7 @@ def main():
 
   out_json = {
       'libraries': libraries,
-      'lib_paths': [FullLibraryPath(l) for l in libraries],
+      'lib_paths': lib_paths,
       'java_libraries_list': java_libraries_list
       }
   build_utils.WriteJson(
