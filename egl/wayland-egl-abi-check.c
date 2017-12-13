@@ -91,7 +91,7 @@ struct wl_egl_window_v3 {
     int attached_width;
     int attached_height;
 
-    void *private;
+    void *driver_private;
     void (*resize_callback)(struct wl_egl_window *, void *);
     void (*destroy_window_callback)(void *);
 
@@ -208,7 +208,7 @@ int main(int argc, char **argv)
     CHECK_MEMBER        (_v2, _v3, dy);
     CHECK_MEMBER        (_v2, _v3, attached_width);
     CHECK_MEMBER        (_v2, _v3, attached_height);
-    CHECK_MEMBER        (_v2, _v3, private);
+    CHECK_RENAMED_MEMBER(_v2, _v3, private, driver_private);
     CHECK_MEMBER        (_v2, _v3, resize_callback);
     CHECK_MEMBER        (_v2, _v3, destroy_window_callback);
 
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
     CHECK_MEMBER_CURRENT(_v3, dy);
     CHECK_MEMBER_CURRENT(_v3, attached_width);
     CHECK_MEMBER_CURRENT(_v3, attached_height);
-    CHECK_MEMBER_CURRENT(_v3, private);
+    CHECK_MEMBER_CURRENT(_v3, driver_private);
     CHECK_MEMBER_CURRENT(_v3, resize_callback);
     CHECK_MEMBER_CURRENT(_v3, destroy_window_callback);
     CHECK_MEMBER_CURRENT(_v3, surface);

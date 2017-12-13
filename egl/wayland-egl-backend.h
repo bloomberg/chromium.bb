@@ -53,7 +53,7 @@ struct wl_egl_window {
 	int attached_width;
 	int attached_height;
 
-	void *private;
+	void *driver_private;
 	void (*resize_callback)(struct wl_egl_window *, void *);
 	void (*destroy_window_callback)(void *);
 

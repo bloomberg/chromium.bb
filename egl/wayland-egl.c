@@ -49,7 +49,7 @@ wl_egl_window_resize(struct wl_egl_window *egl_window,
 	egl_window->dy     = dy;
 
 	if (egl_window->resize_callback)
-		egl_window->resize_callback(egl_window, egl_window->private);
+		egl_window->resize_callback(egl_window, egl_window->driver_private);
 }
 
 WL_EXPORT struct wl_egl_window *
@@ -89,7 +89,7 @@ WL_EXPORT void
 wl_egl_window_destroy(struct wl_egl_window *egl_window)
 {
 	if (egl_window->destroy_window_callback)
-		egl_window->destroy_window_callback(egl_window->private);
+		egl_window->destroy_window_callback(egl_window->driver_private);
 	free(egl_window);
 }
 
