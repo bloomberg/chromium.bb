@@ -31,10 +31,9 @@ namespace {
 // in Windows 10 still has black text, but (since the user wants high contrast)
 // the grey text shades in Harmony should not be used.
 bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
-#if defined(OS_WIN)
-  if (ui::NativeThemeWin::IsUsingHighContrastTheme())
+  if (theme.UsesHighContrastColors())
     return true;
-#endif
+
   constexpr auto kTestColorId = ui::NativeTheme::kColorId_LabelEnabledColor;
   return theme.GetSystemColor(kTestColorId) != SK_ColorBLACK;
 }

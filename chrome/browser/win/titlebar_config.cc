@@ -14,7 +14,7 @@ bool ShouldCustomDrawSystemTitlebar() {
   // mode so that we can correctly draw the caption buttons on the left in RTL
   // mode. But they require a different style and color selection that isn't
   // currently implemented.
-  return !ui::NativeThemeWin::IsUsingHighContrastTheme() &&
+  return !ui::NativeTheme::GetInstanceForNativeUi()->UsesHighContrastColors() &&
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kWindows10CustomTitlebar) &&
          base::win::GetVersion() >= base::win::VERSION_WIN10;

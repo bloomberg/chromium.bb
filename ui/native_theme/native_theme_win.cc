@@ -10,6 +10,7 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/win/scoped_gdi_object.h"
@@ -28,6 +29,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -150,11 +152,6 @@ NativeTheme* NativeTheme::GetInstanceForNativeUi() {
 }
 
 // static
-bool NativeThemeWin::IsUsingHighContrastTheme() {
-  return instance()->IsUsingHighContrastThemeInternal();
-}
-
-// static
 void NativeThemeWin::CloseHandles() {
   instance()->CloseHandlesInternal();
 }
@@ -272,7 +269,7 @@ NativeThemeWin::~NativeThemeWin() {
   }
 }
 
-bool NativeThemeWin::IsUsingHighContrastThemeInternal() {
+bool NativeThemeWin::IsUsingHighContrastThemeInternal() const {
   if (is_using_high_contrast_valid_)
     return is_using_high_contrast_;
   HIGHCONTRAST result;
@@ -514,8 +511,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TreeSelectionBackgroundFocused:
       return system_colors_[COLOR_HIGHLIGHT];
     case kColorId_TreeSelectionBackgroundUnfocused:
-      return system_colors_[IsUsingHighContrastTheme() ?
-                              COLOR_MENUHIGHLIGHT : COLOR_BTNFACE];
+      return system_colors_[UsesHighContrastColors() ? COLOR_MENUHIGHLIGHT
+                                                     : COLOR_BTNFACE];
 
     // Table
     case kColorId_TableBackground:
@@ -529,8 +526,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TableSelectionBackgroundFocused:
       return system_colors_[COLOR_HIGHLIGHT];
     case kColorId_TableSelectionBackgroundUnfocused:
-      return system_colors_[IsUsingHighContrastTheme() ?
-                              COLOR_MENUHIGHLIGHT : COLOR_BTNFACE];
+      return system_colors_[UsesHighContrastColors() ? COLOR_MENUHIGHLIGHT
+                                                     : COLOR_BTNFACE];
     case kColorId_TableGroupingIndicatorColor:
       return system_colors_[COLOR_GRAYTEXT];
 
@@ -623,6 +620,12 @@ gfx::Size NativeThemeWin::GetNinePatchCanvasSize(Part part) const {
 gfx::Rect NativeThemeWin::GetNinePatchAperture(Part part) const {
   NOTREACHED() << "NativeThemeWin doesn't support nine-patch resources.";
   return gfx::Rect();
+}
+
+bool NativeThemeWin::UsesHighContrastColors() const {
+  bool force_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceHighContrast);
+  return force_enabled || IsUsingHighContrastThemeInternal();
 }
 
 void NativeThemeWin::PaintIndirect(cc::PaintCanvas* destination_canvas,

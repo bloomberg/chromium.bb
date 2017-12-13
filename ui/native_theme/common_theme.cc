@@ -20,6 +20,31 @@ namespace ui {
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,
                      const NativeTheme* base_theme) {
+  // High contrast overrides the normal colors for certain ColorIds to be much
+  // darker or lighter.
+  if (base_theme->UsesHighContrastColors()) {
+    switch (color_id) {
+      case NativeTheme::kColorId_ButtonEnabledColor:
+      case NativeTheme::kColorId_ButtonHoverColor:
+        return SK_ColorBLACK;
+      case NativeTheme::kColorId_MenuBorderColor:
+      case NativeTheme::kColorId_MenuSeparatorColor:
+        return SK_ColorBLACK;
+      case NativeTheme::kColorId_SeparatorColor:
+        return SK_ColorBLACK;
+      case NativeTheme::kColorId_FocusedBorderColor:
+        return gfx::kGoogleBlue900;
+      case NativeTheme::kColorId_UnfocusedBorderColor:
+        return SK_ColorBLACK;
+      case NativeTheme::kColorId_TabBottomBorder:
+        return SK_ColorBLACK;
+      case NativeTheme::kColorId_ProminentButtonColor:
+        return gfx::kGoogleBlue900;
+      default:
+        break;
+    }
+  }
+
   // Second wave of MD colors (colors that only appear in secondary UI).
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     static const SkColor kPrimaryTextColor = SK_ColorBLACK;
