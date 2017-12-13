@@ -9,8 +9,6 @@
 #include "base/macros.h"
 #include "media/base/media_export.h"
 
-class GURL;
-
 namespace media {
 
 // Interface to handle media related permission checks and requests.
@@ -32,14 +30,12 @@ class MEDIA_EXPORT MediaPermission {
   // |false| if the permission has never been set.
   virtual void HasPermission(
       Type type,
-      const GURL& security_origin,
       const PermissionStatusCB& permission_status_cb) = 0;
 
   // Requests |type| permission for |security_origion|. This may trigger user
   // interaction (e.g. permission prompt) if the permission has never been set.
   virtual void RequestPermission(
       Type type,
-      const GURL& security_origin,
       const PermissionStatusCB& permission_status_cb) = 0;
 
   // Whether to allow the use of Encrypted Media Extensions (EME), except for

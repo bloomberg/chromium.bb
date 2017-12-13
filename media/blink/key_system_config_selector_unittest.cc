@@ -197,14 +197,12 @@ class FakeMediaPermission : public MediaPermission {
  public:
   // MediaPermission implementation.
   void HasPermission(Type type,
-                     const GURL& security_origin,
                      const PermissionStatusCB& permission_status_cb) override {
     permission_status_cb.Run(is_granted);
   }
 
   void RequestPermission(
       Type type,
-      const GURL& security_origin,
       const PermissionStatusCB& permission_status_cb) override {
     requests++;
     permission_status_cb.Run(is_granted);
