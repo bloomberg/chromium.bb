@@ -35,14 +35,34 @@ source_set("language_code_locator") {
   ]
 }
 
-source_set("unit_tests") {
-  testonly = true
+static_library("browser") {
   sources = [
-    "language_code_locator_unittest.cc",
+    "geo_language_provider.cc",
+    "geo_language_provider.h",
   ]
+
   deps = [
     ":language_code_locator",
     "//base",
+    "//net",
+    "//services/device/public/interfaces:interfaces",
+    "//services/service_manager/public/cpp",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "geo_language_provider_unittest.cc",
+    "language_code_locator_unittest.cc",
+  ]
+  deps = [
+    ":browser",
+    ":language_code_locator",
+    "//base",
+    "//base/test:test_support",
+    "//services/device/public/interfaces:interfaces",
+    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]
