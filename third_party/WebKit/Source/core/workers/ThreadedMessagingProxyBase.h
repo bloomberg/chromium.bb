@@ -78,7 +78,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
       const KURL& script_url,
       const v8_inspector::V8StackTraceId&,
       const String& source_code = String());
-  virtual void WorkerThreadCreated();
 
   ThreadableLoadingContext* CreateThreadableLoadingContext() const;
 
