@@ -80,7 +80,7 @@ class UnitTestPlatformDelegate {
                              int launch_flags) = 0;
 
  protected:
-  ~UnitTestPlatformDelegate() {}
+  ~UnitTestPlatformDelegate() = default;
 };
 
 // Runs tests serially, each in its own process.

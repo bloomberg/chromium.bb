@@ -40,8 +40,8 @@ typedef base::Callback<bool(const char* category_group_name,
 // class must implement this interface.
 class BASE_EXPORT ConvertableToTraceFormat {
  public:
-  ConvertableToTraceFormat() {}
-  virtual ~ConvertableToTraceFormat() {}
+  ConvertableToTraceFormat() = default;
+  virtual ~ConvertableToTraceFormat() = default;
 
   // Append the class info to the provided |out| string. The appended
   // data must be a valid JSON object. Strings must be properly quoted, and

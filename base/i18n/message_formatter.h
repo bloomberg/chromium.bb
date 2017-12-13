@@ -118,7 +118,7 @@ class BASE_I18N_EXPORT MessageFormatter {
       const internal::MessageArg& arg6 = internal::MessageArg());
 
  private:
-  MessageFormatter() {}
+  MessageFormatter() = delete;
   DISALLOW_COPY_AND_ASSIGN(MessageFormatter);
 };
 

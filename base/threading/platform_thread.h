@@ -130,7 +130,7 @@ class BASE_EXPORT PlatformThread {
     virtual void ThreadMain() = 0;
 
    protected:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
   };
 
   // Gets the current thread id, which may be useful for logging purposes.

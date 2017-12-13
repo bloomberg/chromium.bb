@@ -161,7 +161,7 @@ class BASE_EXPORT CallbackBaseCopyable : public CallbackBase {
  protected:
   explicit CallbackBaseCopyable(BindStateBase* bind_state)
       : CallbackBase(bind_state) {}
-  ~CallbackBaseCopyable() {}
+  ~CallbackBaseCopyable() = default;
 };
 
 }  // namespace internal

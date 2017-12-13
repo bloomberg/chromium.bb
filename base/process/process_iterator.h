@@ -68,7 +68,7 @@ class ProcessFilter {
   virtual bool Includes(const ProcessEntry& entry) const = 0;
 
  protected:
-  virtual ~ProcessFilter() {}
+  virtual ~ProcessFilter() = default;
 };
 
 // This class provides a way to iterate through a list of processes on the

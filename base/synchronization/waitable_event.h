@@ -155,7 +155,7 @@ class BASE_EXPORT WaitableEvent {
     virtual bool Compare(void* tag) = 0;
 
    protected:
-    virtual ~Waiter() {}
+    virtual ~Waiter() = default;
   };
 
  private:

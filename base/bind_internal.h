@@ -484,7 +484,7 @@ struct BindState final : BindStateBase {
     DCHECK(!IsNull(functor_));
   }
 
-  ~BindState() {}
+  ~BindState() = default;
 
   static void Destroy(const BindStateBase* self) {
     delete static_cast<const BindState*>(self);

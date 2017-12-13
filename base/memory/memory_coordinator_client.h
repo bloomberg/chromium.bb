@@ -71,7 +71,7 @@ class BASE_EXPORT MemoryCoordinatorClient {
   virtual void OnPurgeMemory() {}
 
  protected:
-  virtual ~MemoryCoordinatorClient() {}
+  virtual ~MemoryCoordinatorClient() = default;
 };
 
 }  // namespace base

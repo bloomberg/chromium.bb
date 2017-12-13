@@ -17,7 +17,7 @@ namespace base {
 // and destroyed from the same thread as construction.
 class BASE_EXPORT SingleSampleMetric {
  public:
-  virtual ~SingleSampleMetric() {}
+  virtual ~SingleSampleMetric() = default;
 
   virtual void SetSample(HistogramBase::Sample sample) = 0;
 };
@@ -34,7 +34,7 @@ class BASE_EXPORT SingleSampleMetric {
 // base/metrics/histogram.h for full parameter definitions.
 class BASE_EXPORT SingleSampleMetricsFactory {
  public:
-  virtual ~SingleSampleMetricsFactory() {}
+  virtual ~SingleSampleMetricsFactory() = default;
 
   // Returns the factory provided by SetFactory(), or if no factory has been set
   // a default factory will be provided (future calls to SetFactory() will fail
@@ -63,8 +63,8 @@ class BASE_EXPORT SingleSampleMetricsFactory {
 class BASE_EXPORT DefaultSingleSampleMetricsFactory
     : public SingleSampleMetricsFactory {
  public:
-  DefaultSingleSampleMetricsFactory() {}
-  ~DefaultSingleSampleMetricsFactory() override {}
+  DefaultSingleSampleMetricsFactory() = default;
+  ~DefaultSingleSampleMetricsFactory() override = default;
 
   // SingleSampleMetricsFactory:
   std::unique_ptr<SingleSampleMetric> CreateCustomCountsMetric(

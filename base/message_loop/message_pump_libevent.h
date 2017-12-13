@@ -32,7 +32,7 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
     virtual void OnFileCanWriteWithoutBlocking(int fd) = 0;
 
    protected:
-    virtual ~Watcher() {}
+    virtual ~Watcher() = default;
   };
 
   // Object returned by WatchFileDescriptor to manage further watching.
