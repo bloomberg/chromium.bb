@@ -17,11 +17,6 @@
 
 namespace {
 
-// The maximum number of video frame buffers in-flight at any one time
-// If all buffers are still in use by consumers when new frames are produced
-// those frames get dropped.
-static const int kMaxBufferCount = 3;
-
 void OnNewBufferHandleAcknowleged(
     video_capture::mojom::VirtualDevice::RequestFrameBufferCallback callback,
     int32_t buffer_id) {
@@ -48,6 +43,11 @@ VirtualDeviceMojoAdapter::~VirtualDeviceMojoAdapter() {
 }
 
 int VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count() {
+  // The maximum number of video frame buffers in-flight at any one time
+  // If all buffers are still in use by consumers when new frames are produced
+  // those frames get dropped.
+  static const int kMaxBufferCount = 3;
+
   return kMaxBufferCount;
 }
 
