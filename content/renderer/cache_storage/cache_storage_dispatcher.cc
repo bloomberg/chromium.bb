@@ -42,7 +42,7 @@ static base::LazyInstance<base::ThreadLocalPointer<CacheStorageDispatcher>>::
 
 namespace {
 
-CacheStorageDispatcher* const kHasBeenDeleted =
+CacheStorageDispatcher* const kDeletedCacheStorageDispatcherMarker =
     reinterpret_cast<CacheStorageDispatcher*>(0x1);
 
 ServiceWorkerFetchRequest FetchRequestFromWebRequest(
@@ -200,12 +200,14 @@ CacheStorageDispatcher::~CacheStorageDispatcher() {
   ClearCallbacksMapWithErrors(&cache_keys_callbacks_);
   ClearCallbacksMapWithErrors(&cache_batch_callbacks_);
 
-  g_cache_storage_dispatcher_tls.Pointer()->Set(kHasBeenDeleted);
+  g_cache_storage_dispatcher_tls.Pointer()->Set(
+      kDeletedCacheStorageDispatcherMarker);
 }
 
 CacheStorageDispatcher* CacheStorageDispatcher::ThreadSpecificInstance(
     ThreadSafeSender* thread_safe_sender) {
-  if (g_cache_storage_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
+  if (g_cache_storage_dispatcher_tls.Pointer()->Get() ==
+      kDeletedCacheStorageDispatcherMarker) {
     NOTREACHED() << "Re-instantiating TLS CacheStorageDispatcher.";
     g_cache_storage_dispatcher_tls.Pointer()->Set(nullptr);
   }
