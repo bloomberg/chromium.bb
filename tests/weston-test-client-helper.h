@@ -107,6 +107,7 @@ struct keyboard {
 		int rate;
 		int delay;
 	} repeat_info;
+	uint32_t key_time_msec;
 };
 
 struct touch {

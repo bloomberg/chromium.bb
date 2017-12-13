@@ -57,6 +57,9 @@
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
     </request>
     <request name="send_key">
+      <arg name="tv_sec_hi" type="uint"/>
+      <arg name="tv_sec_lo" type="uint"/>
+      <arg name="tv_nsec" type="uint"/>
       <arg name="key" type="uint"/>
       <arg name="state" type="uint"/>
     </request>

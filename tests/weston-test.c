@@ -208,13 +208,14 @@ activate_surface(struct wl_client *client, struct wl_resource *resource,
 
 static void
 send_key(struct wl_client *client, struct wl_resource *resource,
+	 uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec,
 	 uint32_t key, enum wl_keyboard_key_state state)
 {
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
 	struct timespec time;
 
-	timespec_from_msec(&time, 100);
+	timespec_from_proto(&time, tv_sec_hi, tv_sec_lo, tv_nsec);
 
 	notify_key(seat, &time, key, state, STATE_UPDATE_AUTOMATIC);
 }
