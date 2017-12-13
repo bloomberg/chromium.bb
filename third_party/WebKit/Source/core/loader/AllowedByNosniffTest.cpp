@@ -88,8 +88,7 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
 
     const KURL url("https://bla.com/");
     doc()->SetSecurityOrigin(SecurityOrigin::Create(url));
-    ResourceResponse response;
-    response.SetURL(url);
+    ResourceResponse response(url);
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
     EXPECT_EQ(testcase.allowed,
@@ -135,8 +134,7 @@ TEST_F(AllowedByNosniffTest, Counters) {
                  << testcase.origin << "\n  mime type: " << testcase.mimetype
                  << "\n  webfeature: " << testcase.expected);
     doc()->SetSecurityOrigin(SecurityOrigin::Create(KURL(testcase.origin)));
-    ResourceResponse response;
-    response.SetURL(KURL(testcase.url));
+    ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
     AllowedByNosniff::MimeTypeAsScript(doc(), response);

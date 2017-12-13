@@ -943,10 +943,9 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
     resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
     resource_request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
-    ResourceResponse response;
+    ResourceResponse response(url);
     response.SetHTTPHeaderField("accept-ch", "dpr");
     response.SetHTTPHeaderField("accept-ch-lifetime", "3600");
-    response.SetURL(url);
     Resource* resource = MockResource::Create(resource_request);
     resource->SetResponse(response);
     fetch_context->DispatchDidReceiveResponse(
@@ -966,10 +965,9 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
     resource_request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
 
-    ResourceResponse response;
+    ResourceResponse response(http_url);
     response.SetHTTPHeaderField("accept-ch", "dpr");
     response.SetHTTPHeaderField("accept-ch-lifetime", "3600");
-    response.SetURL(http_url);
     Resource* resource = MockResource::Create(resource_request);
     resource->SetResponse(response);
     fetch_context->DispatchDidReceiveResponse(
@@ -992,8 +990,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHasMajorCertificateErrors(true);
   Resource* resource = MockResource::Create(resource_request);
   resource->SetResponse(response);

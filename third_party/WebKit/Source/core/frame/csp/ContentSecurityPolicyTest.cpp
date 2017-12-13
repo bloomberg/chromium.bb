@@ -939,8 +939,7 @@ TEST_F(ContentSecurityPolicyTest, ShouldEnforceEmbeddersPolicy) {
   };
 
   for (const auto& test : cases) {
-    ResourceResponse response;
-    response.SetURL(KURL(test.resource_url));
+    ResourceResponse response(KURL(test.resource_url));
     EXPECT_EQ(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
                   response, secure_origin.get()),
               test.inherits);

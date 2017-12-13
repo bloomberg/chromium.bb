@@ -117,9 +117,8 @@ TEST_F(ResourceLoaderTest, DetermineCORSStatus) {
     ResourceRequest request;
     request.SetURL(test.target);
 
-    ResourceResponse response;
+    ResourceResponse response(test.target);
     response.SetHTTPStatusCode(200);
-    response.SetURL(test.target);
 
     if (test.allow_origin_url) {
       request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);

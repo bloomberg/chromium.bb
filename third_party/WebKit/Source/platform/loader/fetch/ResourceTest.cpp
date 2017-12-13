@@ -39,8 +39,7 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
 };
 
 ResourceResponse CreateTestResourceResponse() {
-  ResourceResponse response;
-  response.SetURL(URLTestHelpers::ToKURL("https://example.com/"));
+  ResourceResponse response(URLTestHelpers::ToKURL("https://example.com/"));
   response.SetHTTPStatusCode(200);
   return response;
 }
@@ -78,8 +77,7 @@ TEST(
 TEST(ResourceTest, RevalidateWithFragment) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
   KURL url("http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
@@ -89,8 +87,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   // shouldn't trigger a securiy check.
   url.SetFragmentIdentifier("bar");
   resource->SetRevalidatingRequest(ResourceRequest(url));
-  ResourceResponse revalidating_response;
-  revalidating_response.SetURL(url);
+  ResourceResponse revalidating_response(url);
   revalidating_response.SetHTTPStatusCode(304);
   resource->ResponseReceived(revalidating_response, nullptr);
 }
@@ -98,8 +95,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
 TEST(ResourceTest, Vary) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
   KURL url("http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
 
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
@@ -295,8 +291,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
       platform_;
   Resource* resource =
       MockResource::Create(ResourceRequest("https://example.com/1"));
-  ResourceResponse response;
-  response.SetURL(KURL("https://example.com/1"));
+  ResourceResponse response(KURL("https://example.com/1"));
   response.SetHTTPStatusCode(200);
   resource->ResponseReceived(response, nullptr);
   const char kData[5] = "abcd";
@@ -322,8 +317,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   resource->AddClient(client);
 
   // The revalidating request is redirected.
-  ResourceResponse redirect_response;
-  redirect_response.SetURL(KURL("https://example.com/1"));
+  ResourceResponse redirect_response(KURL("https://example.com/1"));
   redirect_response.SetHTTPHeaderField("location", "https://example.com/2");
   redirect_response.SetHTTPStatusCode(308);
   ResourceRequest redirected_revalidating_request("https://example.com/2");
@@ -336,8 +330,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
             resource->LastResourceRequest().Url().GetString());
 
   // The final response is received.
-  ResourceResponse revalidating_response;
-  revalidating_response.SetURL(KURL("https://example.com/2"));
+  ResourceResponse revalidating_response(KURL("https://example.com/2"));
   revalidating_response.SetHTTPStatusCode(200);
   resource->ResponseReceived(revalidating_response, nullptr);
   const char kData2[4] = "xyz";

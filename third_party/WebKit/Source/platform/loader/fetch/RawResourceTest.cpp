@@ -151,11 +151,7 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
 
 TEST_F(RawResourceTest, AddClientDuringCallback) {
   Resource* raw = RawResource::CreateForTest("data:text/html,", Resource::kRaw);
-
-  // Create a non-null response.
-  ResourceResponse response = raw->GetResponse();
-  response.SetURL(KURL("http://600.613/"));
-  raw->SetResponse(response);
+  raw->SetResponse(ResourceResponse(KURL("http://600.613/")));
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
 
@@ -196,11 +192,7 @@ class RemovingClient : public GarbageCollectedFinalized<RemovingClient>,
 
 TEST_F(RawResourceTest, RemoveClientDuringCallback) {
   Resource* raw = RawResource::CreateForTest("data:text/html,", Resource::kRaw);
-
-  // Create a non-null response.
-  ResourceResponse response = raw->GetResponse();
-  response.SetURL(KURL("http://600.613/"));
-  raw->SetResponse(response);
+  raw->SetResponse(ResourceResponse(KURL("http://600.613/")));
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
 

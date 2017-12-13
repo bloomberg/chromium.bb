@@ -204,8 +204,7 @@ TEST_F(CSSPreloadScannerTest, ReferrerPolicyHeader) {
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(ResourceResponse()), "");
 
-  ResourceResponse response;
-  response.SetURL(url);
+  ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField("referrer-policy", "unsafe-url");
 
