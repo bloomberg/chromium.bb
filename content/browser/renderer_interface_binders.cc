@@ -140,6 +140,8 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetPlatformNotificationContext()
             ->CreateService(host->GetID(), origin, std::move(request));
       }));
+  parameterized_binder_registry_.AddInterface(
+      base::BindRepeating(&BackgroundFetchServiceImpl::Create));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {
