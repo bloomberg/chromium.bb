@@ -56,50 +56,27 @@ ContentPreviewsRenderFrameObserver::ContentPreviewsRenderFrameObserver(
 ContentPreviewsRenderFrameObserver::~ContentPreviewsRenderFrameObserver() =
     default;
 
-content::PreviewsState
-ContentPreviewsRenderFrameObserver::GetPreviewsStateFromResponse(
-    content::PreviewsState original_state,
+// Static
+bool ContentPreviewsRenderFrameObserver::ValidatePreviewsStateWithResponse(
+    content::PreviewsState previews_state,
     const blink::WebURLResponse& web_url_response) {
-  if (original_state == content::PREVIEWS_UNSPECIFIED) {
-    return content::PREVIEWS_OFF;
-  }
-
-  // Don't update the state if server previews were not enabled.
-  if (!(original_state & content::SERVER_LITE_PAGE_ON)) {
-    return original_state;
-  }
-
-  // At this point, this is a proxy main frame response for which the
-  // PreviewsState needs to be updated from what was enabled/accepted by the
-  // client to what the client should actually do based on the server response.
-
-  content::PreviewsState updated_state = original_state;
-
-  // Clear the Lite Page bit if Lite Page transformation did not occur.
-  // TODO(megjablon): Leverage common code in drp_headers.
-  if (web_url_response
+  bool has_lite_page_state = previews_state & content::SERVER_LITE_PAGE_ON;
+  bool has_lite_page_directive =
+      web_url_response
           .HttpHeaderField(blink::WebString::FromUTF8(
               chrome_proxy_content_transform_header()))
-          .Utf8() != lite_page_directive()) {
-    updated_state &= ~(content::SERVER_LITE_PAGE_ON);
-  }
+          .Utf8() == lite_page_directive();
+  DCHECK_EQ(has_lite_page_state, has_lite_page_directive)
+      << "Inconsistent PreviewsState ServerLitePage:" << has_lite_page_state
+      << " header:" << has_lite_page_directive;
+  bool has_lofi_state = previews_state & content::SERVER_LOFI_ON;
+  bool has_empty_image_directive = HasEmptyImageDirective(web_url_response);
+  DCHECK_EQ(has_lofi_state, has_empty_image_directive)
+      << "Inconsistent PreviewsState ServerLoFi:" << has_lofi_state
+      << " header:" << has_empty_image_directive;
 
-  // Determine whether to keep or clear Lo-Fi bits. We need to receive the
-  // empty-image policy directive and have SERVER_LOFI_ON in order to retain
-  // Lo-Fi bits.
-  if (!(original_state & content::SERVER_LOFI_ON)) {
-    // Server Lo-Fi not enabled so ensure Client Lo-Fi off for this request.
-    updated_state &= ~(content::CLIENT_LOFI_ON);
-  } else if (!HasEmptyImageDirective(web_url_response)) {
-    updated_state &= ~(content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON);
-  }
-
-  // If we are left with no previews bits set, return the off state.
-  if (updated_state == content::PREVIEWS_UNSPECIFIED) {
-    return content::PREVIEWS_OFF;
-  }
-
-  return updated_state;
+  return (has_lite_page_state == has_lite_page_directive) &&
+         (has_lofi_state == has_empty_image_directive);
 }
 
 void ContentPreviewsRenderFrameObserver::OnDestruct() {
@@ -112,12 +89,15 @@ void ContentPreviewsRenderFrameObserver::DidCommitProvisionalLoad(
   if (is_same_document_navigation)
     return;
 
-  content::PreviewsState original_state = render_frame()->GetPreviewsState();
+  content::PreviewsState previews_state = render_frame()->GetPreviewsState();
+  if (previews_state == 0 || previews_state == content::PREVIEWS_OFF)
+    return;
+
   const blink::WebURLResponse& web_url_response =
       render_frame()->GetWebFrame()->GetDocumentLoader()->GetResponse();
-
-  render_frame()->SetPreviewsState(
-      GetPreviewsStateFromResponse(original_state, web_url_response));
+  // TODO(dougarnett): Remove this once proven stable to complete
+  // crbug.com/782922.
+  DCHECK(ValidatePreviewsStateWithResponse(previews_state, web_url_response));
 }
 
 }  // namespace data_reduction_proxy

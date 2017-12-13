@@ -137,37 +137,20 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  // Check headers for server preview.
-  // TODO(dougarnett): Clean this up when PreviewsState update for response
-  // is pulled up out of renderer (crbug.com/782922) or look to use
-  // PreviewsUserData when it is available.
-  const net::HttpResponseHeaders* headers =
-      navigation_handle->GetResponseHeaders();
-  if (headers && data_reduction_proxy::IsLitePagePreview(*headers)) {
-    base::Time previews_freshness;
-    headers->GetDateValue(&previews_freshness);
-    PreviewsInfoBarDelegate::Create(
-        web_contents(), previews::PreviewsType::LITE_PAGE, previews_freshness,
-        true /* is_data_saver_user */, is_reload,
-        base::Bind(&AddPreviewNavigationCallback,
-                   web_contents()->GetBrowserContext(),
-                   navigation_handle->GetRedirectChain()[0],
-                   previews::PreviewsType::LITE_PAGE, page_id),
-        previews_ui_service);
-    return;
-  }
-
-  // Check for client previews.
-  if (nav_data) {
-    if (nav_data->previews_state() & content::NOSCRIPT_ON) {
+  // Check for committed main frame preview.
+  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType()) {
+    previews::PreviewsType main_frame_preview =
+        previews_user_data_->GetCommittedPreviewsType();
+    if (main_frame_preview != previews::PreviewsType::NONE &&
+        main_frame_preview != previews::PreviewsType::LOFI) {
       PreviewsInfoBarDelegate::Create(
-          web_contents(), previews::PreviewsType::NOSCRIPT,
+          web_contents(), main_frame_preview,
           base::Time() /* previews_freshness */, true /* is_data_saver_user */,
           is_reload,
           base::Bind(&AddPreviewNavigationCallback,
                      web_contents()->GetBrowserContext(),
                      navigation_handle->GetRedirectChain()[0],
-                     previews::PreviewsType::NOSCRIPT, page_id),
+                     main_frame_preview, page_id),
           previews_ui_service);
     }
   }
