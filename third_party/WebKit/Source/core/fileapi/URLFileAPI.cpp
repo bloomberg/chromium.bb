@@ -23,7 +23,7 @@ String URLFileAPI::createObjectURL(ScriptState* script_state,
   DCHECK(execution_context);
 
   UseCounter::Count(execution_context, WebFeature::kCreateObjectURLBlob);
-  return DOMURL::CreatePublicURL(execution_context, blob, blob->Uuid());
+  return DOMURL::CreatePublicURL(execution_context, blob);
 }
 
 // static
