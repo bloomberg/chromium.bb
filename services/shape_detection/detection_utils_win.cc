@@ -1,0 +1,63 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "services/shape_detection/detection_utils_win.h"
+
+#include "base/numerics/checked_math.h"
+#include "base/win/winrt_storage_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+
+namespace shape_detection {
+
+Microsoft::WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
+    ISoftwareBitmapStatics* bitmap_factory,
+    BitmapPixelFormat pixel_format,
+    const SkBitmap& bitmap) {
+  DCHECK(bitmap_factory);
+  DCHECK_EQ(bitmap.colorType(), kN32_SkColorType);
+  if (!base::CheckedNumeric<uint32_t>(bitmap.computeByteSize()).IsValid()) {
+    DLOG(ERROR) << "Data overflow.";
+    return nullptr;
+  }
+
+  // Create IBuffer from bitmap data.
+  Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> buffer;
+  HRESULT hr = base::win::CreateIBufferFromData(
+      static_cast<uint8_t*>(bitmap.getPixels()),
+      static_cast<UINT32>(bitmap.computeByteSize()), &buffer);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Create IBuffer from bitmap data failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return nullptr;
+  }
+
+  Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap;
+  const BitmapPixelFormat pixelFormat =
+      (kN32_SkColorType == kRGBA_8888_SkColorType)
+          ? ABI::Windows::Graphics::Imaging::BitmapPixelFormat_Rgba8
+          : ABI::Windows::Graphics::Imaging::BitmapPixelFormat_Bgra8;
+  // Create ISoftwareBitmap from SKBitmap that is kN32_SkColorType and copy the
+  // IBuffer into it.
+  hr = bitmap_factory->CreateCopyFromBuffer(buffer.Get(), pixelFormat,
+                                            bitmap.width(), bitmap.height(),
+                                            win_bitmap.GetAddressOf());
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Create ISoftwareBitmap from buffer failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return nullptr;
+  }
+
+  // Convert Rgba8/Bgra8 to Gray8/Nv12 SoftwareBitmap.
+  hr = bitmap_factory->Convert(win_bitmap.Get(), pixel_format,
+                               win_bitmap.GetAddressOf());
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Convert Rgba8/Bgra8 to Gray8/Nv12 failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return nullptr;
+  }
+
+  return win_bitmap;
+}
+
+}  // namespace shape_detection

@@ -31,6 +31,7 @@ source_set("lib") {
     sources -= [ "face_detection_provider_impl.h" ]
     sources += [
       "barcode_detection_impl.cc",
+      "detection_utils_win.cc",
       "detection_utils_win.h",
       "face_detection_impl_win.cc",
       "face_detection_impl_win.h",
