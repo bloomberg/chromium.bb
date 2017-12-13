@@ -56,9 +56,13 @@ class ScriptStreamingTest : public ::testing::Test {
         url, WrappedResourceResponse(ResourceResponse()), "");
     pending_script_ = ClassicPendingScript::Fetch(
         url, dummy_page_holder_->GetDocument(), ScriptFetchOptions(),
-        WTF::TextEncoding(), element, FetchParameters::kNoDefer);
+        UTF8Encoding(), element, FetchParameters::kNoDefer);
     ScriptStreamer::SetSmallScriptThresholdForTesting(0);
     Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url);
+
+    ResourceResponse response(url);
+    response.SetHTTPStatusCode(200);
+    GetResource()->SetResponse(response);
   }
 
   ~ScriptStreamingTest() {
