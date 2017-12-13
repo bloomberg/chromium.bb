@@ -942,7 +942,7 @@ void KeySystemConfigSelector::SelectConfigInternal(
           GURL security_origin(url::Origin(request->security_origin).GetURL());
           DVLOG(3) << "Request permission.";
           media_permission_->RequestPermission(
-              MediaPermission::PROTECTED_MEDIA_IDENTIFIER, security_origin,
+              MediaPermission::PROTECTED_MEDIA_IDENTIFIER,
               base::Bind(&KeySystemConfigSelector::OnPermissionResult,
                          weak_factory_.GetWeakPtr(), base::Passed(&request)));
         }

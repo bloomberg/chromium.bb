@@ -68,17 +68,14 @@ void MediaPermissionDispatcher::OnNavigation() {
   OnConnectionError();
 }
 
-// TODO(crbug.com/793684): |security_origin| is no longer used; remove it.
 void MediaPermissionDispatcher::HasPermission(
     Type type,
-    const GURL& security_origin,
     const PermissionStatusCB& permission_status_cb) {
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaPermissionDispatcher::HasPermission, weak_ptr_,
-                       type, security_origin,
-                       media::BindToCurrentLoop(permission_status_cb)));
+                       type, media::BindToCurrentLoop(permission_status_cb)));
     return;
   }
 
@@ -93,17 +90,14 @@ void MediaPermissionDispatcher::HasPermission(
                      request_id));
 }
 
-// TODO(crbug.com/793684): |security_origin| is no longer used; remove it.
 void MediaPermissionDispatcher::RequestPermission(
     Type type,
-    const GURL& security_origin,
     const PermissionStatusCB& permission_status_cb) {
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaPermissionDispatcher::RequestPermission, weak_ptr_,
-                       type, security_origin,
-                       media::BindToCurrentLoop(permission_status_cb)));
+                       type, media::BindToCurrentLoop(permission_status_cb)));
     return;
   }
 

@@ -82,13 +82,11 @@ class MockMediaPermission : public media::MediaPermission {
 
   void RequestPermission(
       Type type,
-      const GURL& security_origin,
       const PermissionStatusCB& permission_status_cb) override {
     NOTIMPLEMENTED();
   }
 
   void HasPermission(Type type,
-                     const GURL& security_origin,
                      const PermissionStatusCB& permission_status_cb) override {
     if (type == MediaPermission::AUDIO_CAPTURE) {
       DCHECK(mic_callback_.is_null());
