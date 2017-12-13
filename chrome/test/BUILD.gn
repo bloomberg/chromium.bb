@@ -355,6 +355,7 @@ test("browser_tests") {
 
   data_deps = [
     "//testing/buildbot/filters:browser_tests_filters",
+    "//tools/media_engagement_preload:generator",
   ]
 
   data = []

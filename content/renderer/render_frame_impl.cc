@@ -3029,13 +3029,6 @@ void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
 // blink::mojom::MediaEngagementClient implementation --------------------------
 
 void RenderFrameImpl::SetHasHighMediaEngagement(const url::Origin& origin) {
-  // Set the HasHighMediaEngagement bit on |frame| if the origin matches
-  // the one we were provided.
-  if (frame_ && url::Origin(frame_->GetSecurityOrigin()) == origin) {
-    frame_->SetHasHighMediaEngagement(true);
-    return;
-  }
-
   high_media_engagement_origin_ = origin;
 }
 

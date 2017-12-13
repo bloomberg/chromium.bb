@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 
 namespace base {
 class FilePath;
@@ -20,6 +21,8 @@ class Origin;
 
 class MediaEngagementPreloadedList {
  public:
+  static MediaEngagementPreloadedList* GetInstance();
+
   MediaEngagementPreloadedList();
   ~MediaEngagementPreloadedList();
 
@@ -31,10 +34,10 @@ class MediaEngagementPreloadedList {
   bool CheckOriginIsPresent(const url::Origin& origin) const;
 
   // Check whether we have loaded a list.
-  bool loaded() const { return is_loaded_; }
+  bool loaded() const;
 
   // Check whether the list we have loaded is empty.
-  bool empty() const { return dafsa_.empty(); }
+  bool empty() const;
 
  protected:
   friend class MediaEngagementPreloadedListTest;
@@ -114,6 +117,8 @@ class MediaEngagementPreloadedList {
 
   // If a list has been successfully loaded.
   bool is_loaded_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementPreloadedList);
 };

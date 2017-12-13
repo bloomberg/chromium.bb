@@ -6,13 +6,14 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
-#include "build/build_config.h"
+#include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "media/base/media_switches.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/public/platform/media_engagement.mojom.h"
 
@@ -490,7 +491,22 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* handle) {
   // TODO(beccahughes): Convert MEI API to using origin.
   GURL url = handle->GetWebContents()->GetURL();
-  if (service_->HasHighEngagement(url)) {
+  MediaEngagementScore score = service_->CreateEngagementScore(url);
+  bool has_high_engagement = score.high_score();
+
+  // If the preloaded feature flag is enabled and the number of visits is less
+  // than the number of visits required to have an MEI score we should check the
+  // global data.
+  if (!has_high_engagement &&
+      score.visits() < MediaEngagementScore::GetScoreMinVisits() &&
+      base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData)) {
+    has_high_engagement =
+        MediaEngagementPreloadedList::GetInstance()->CheckOriginIsPresent(
+            url::Origin::Create(url));
+  }
+
+  // If we have high media engagement then we should send that to Blink.
+  if (has_high_engagement) {
     SendEngagementLevelToFrame(url::Origin::Create(handle->GetURL()),
                                handle->GetRenderFrameHost());
   }
