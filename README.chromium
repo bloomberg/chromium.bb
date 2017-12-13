@@ -263,6 +263,10 @@ D. Local Modifications
   - patches/u8tou8.patch
   - upstream bug: https://ssl.icu-project.org/trac/ticket/13510
 
+  German AM/PM marker fix in CLDR 32.0.1
+  - patches/de_ampm.patch
+  - upstream bug: https://unicode.org/cldr/trac/ticket/10735
+
 6. Fix -Wsign-compare warning in EnumSet::isValidEnum()
 
   - patches/isvalidenum.patch
