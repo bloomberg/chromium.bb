@@ -152,6 +152,7 @@ class SystemModalContainerEventFilter;
 class SystemTray;
 class SystemTrayController;
 class SystemTrayNotifier;
+class TimeToFirstPresentRecorder;
 class ToplevelWindowEventHandler;
 class ToastManager;
 class TouchDevicesController;
@@ -430,6 +431,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   TabletModeController* tablet_mode_controller() {
     return tablet_mode_controller_.get();
   }
+  TimeToFirstPresentRecorder* time_to_first_present_recorder() {
+    return time_to_first_present_recorder_.get();
+  }
   ToastManager* toast_manager() { return toast_manager_.get(); }
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
@@ -665,6 +669,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<ToastManager> toast_manager_;
   std::unique_ptr<TouchDevicesController> touch_devices_controller_;
+  std::unique_ptr<TimeToFirstPresentRecorder> time_to_first_present_recorder_;
   std::unique_ptr<TrayAction> tray_action_;
   std::unique_ptr<VoiceInteractionController> voice_interaction_controller_;
   std::unique_ptr<VpnList> vpn_list_;

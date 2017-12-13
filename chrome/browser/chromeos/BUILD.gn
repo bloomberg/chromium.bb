@@ -117,6 +117,7 @@ source_set("chromeos") {
     "//components/storage_monitor",
     "//components/sync_preferences",
     "//components/sync_wifi",
+    "//components/startup_metric_utils/browser:lib",
     "//components/toolbar",
     "//components/tracing:startup_tracing",
     "//components/ukm/content",

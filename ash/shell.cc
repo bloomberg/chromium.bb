@@ -50,6 +50,7 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media_controller.h"
 #include "ash/message_center/message_center_controller.h"
+#include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -966,6 +967,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
   window_tree_host_manager_->Start();
   AshWindowTreeHostInitParams ash_init_params;
   window_tree_host_manager_->CreatePrimaryHost(ash_init_params);
+
+  time_to_first_present_recorder_ =
+      std::make_unique<TimeToFirstPresentRecorder>(GetPrimaryRootWindow());
 
   root_window_for_new_windows_ = GetPrimaryRootWindow();
 
