@@ -266,16 +266,17 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordFallbackTime() {
   if (blank_paint_time_ <= 0)
     return;
   int duration = static_cast<int>(CurrentTimeMS() - blank_paint_time_);
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, blank_text_shown_time_histogram,
-                      ("WebFont.BlankTextShownTime", 0, 10000, 50));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
+                                  blank_text_shown_time_histogram,
+                                  ("WebFont.BlankTextShownTime", 0, 10000, 50));
   blank_text_shown_time_histogram.Count(duration);
   blank_paint_time_ = -1;
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
     const FontResource* font) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, cache_hit_histogram,
-                      ("WebFont.CacheHit", kCacheHitEnumMax));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, cache_hit_histogram,
+                                  ("WebFont.CacheHit", kCacheHitEnumMax));
   cache_hit_histogram.Count(DataSourceMetricsValue());
 
   if (data_source_ == kFromDiskCache || data_source_ == kFromNetwork) {
@@ -286,8 +287,8 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
     enum { kCORSFail, kCORSSuccess, kCORSEnumMax };
     int cors_value =
         font->IsSameOriginOrCORSSuccessful() ? kCORSSuccess : kCORSFail;
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, cors_histogram,
-                        ("WebFont.CORSSuccess", kCORSEnumMax));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, cors_histogram,
+                                    ("WebFont.CORSSuccess", kCORSEnumMax));
     cors_histogram.Count(cors_value);
   }
 }
@@ -311,9 +312,10 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
   CHECK_NE(kFromUnknown, data_source_);
 
   if (font->ErrorOccurred()) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, load_error_histogram,
-                        ("WebFont.DownloadTime.LoadError", 0, 10000, 50));
-    DEFINE_STATIC_LOCAL(
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, load_error_histogram,
+        ("WebFont.DownloadTime.LoadError", 0, 10000, 50));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, missed_cache_load_error_histogram,
         ("WebFont.MissedCache.DownloadTime.LoadError", 0, 10000, 50));
     load_error_histogram.Count(duration);
@@ -324,9 +326,10 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
 
   unsigned size = font->EncodedSize();
   if (size < 10 * 1024) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, under10k_histogram,
-                        ("WebFont.DownloadTime.0.Under10KB", 0, 10000, 50));
-    DEFINE_STATIC_LOCAL(
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, under10k_histogram,
+        ("WebFont.DownloadTime.0.Under10KB", 0, 10000, 50));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, missed_cache_under10k_histogram,
         ("WebFont.MissedCache.DownloadTime.0.Under10KB", 0, 10000, 50));
     under10k_histogram.Count(duration);
@@ -335,9 +338,10 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
     return;
   }
   if (size < 50 * 1024) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, under50k_histogram,
-                        ("WebFont.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
-    DEFINE_STATIC_LOCAL(
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, under50k_histogram,
+        ("WebFont.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, missed_cache_under50k_histogram,
         ("WebFont.MissedCache.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
     under50k_histogram.Count(duration);
@@ -346,9 +350,10 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
     return;
   }
   if (size < 100 * 1024) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, under100k_histogram,
-                        ("WebFont.DownloadTime.2.50KBTo100KB", 0, 10000, 50));
-    DEFINE_STATIC_LOCAL(
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, under100k_histogram,
+        ("WebFont.DownloadTime.2.50KBTo100KB", 0, 10000, 50));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, missed_cache_under100k_histogram,
         ("WebFont.MissedCache.DownloadTime.2.50KBTo100KB", 0, 10000, 50));
     under100k_histogram.Count(duration);
@@ -357,9 +362,10 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
     return;
   }
   if (size < 1024 * 1024) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, under1mb_histogram,
-                        ("WebFont.DownloadTime.3.100KBTo1MB", 0, 10000, 50));
-    DEFINE_STATIC_LOCAL(
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, under1mb_histogram,
+        ("WebFont.DownloadTime.3.100KBTo1MB", 0, 10000, 50));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, missed_cache_under1mb_histogram,
         ("WebFont.MissedCache.DownloadTime.3.100KBTo1MB", 0, 10000, 50));
     under1mb_histogram.Count(duration);
@@ -367,9 +373,10 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
       missed_cache_under1mb_histogram.Count(duration);
     return;
   }
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, over1mb_histogram,
-                      ("WebFont.DownloadTime.4.Over1MB", 0, 10000, 50));
-  DEFINE_STATIC_LOCAL(
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, over1mb_histogram,
+      ("WebFont.DownloadTime.4.Over1MB", 0, 10000, 50));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, missed_cache_over1mb_histogram,
       ("WebFont.MissedCache.DownloadTime.4.Over1MB", 0, 10000, 50));
   over1mb_histogram.Count(duration);

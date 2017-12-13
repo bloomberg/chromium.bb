@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/loader/resource/FontResource.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontCustomPlatformData.h"
@@ -97,7 +98,11 @@ FontResource* CSSFontFaceSrcValue::Fetch(ExecutionContext* context) const {
       params.SetCrossOriginAccessControl(security_origin,
                                          kCrossOriginAttributeAnonymous);
     }
-
+    // For Workers, Fetcher is lazily loaded, so we must ensure it's available
+    // here.
+    if (context->IsWorkerGlobalScope()) {
+      ToWorkerGlobalScope(context)->EnsureFetcher();
+    }
     FontResource* resource = FontResource::Fetch(params, context->Fetcher());
     if (!resource)
       return nullptr;
