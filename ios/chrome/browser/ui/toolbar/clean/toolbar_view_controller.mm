@@ -165,7 +165,7 @@
                                          -kToolbarButtonAnimationOffset
                                                          forButtons:
                                                  self.trailingStackViewButtons];
-                                 [self setAllVisibleToolbarButtonsOpacity:0];
+                                 [self setAllToolbarButtonsOpacity:0];
                                }
                                completion:nil];
 
@@ -212,7 +212,7 @@
   [NSLayoutConstraint activateConstraints:self.regularToolbarConstraints];
   // Change the Toolbar buttons opacity to 0 since these will fade in once the
   // locationBarContainer has been contracted.
-  [self setAllVisibleToolbarButtonsOpacity:0];
+  [self setAllToolbarButtonsOpacity:0];
   [animator addAnimations:^{
     self.locationBarContainer.layer.borderWidth = kLocationBarBorderWidth;
     [self.view layoutIfNeeded];
@@ -242,7 +242,7 @@
                                        setHorizontalTranslationOffset:0
                                                            forButtons:
                                                 self.trailingStackViewButtons];
-                                   [self setAllVisibleToolbarButtonsOpacity:1];
+                                   [self setAllToolbarButtonsOpacity:1];
                                  }
                                  completion:nil];
   }];
@@ -999,24 +999,23 @@
   [self.dispatcher startVoiceSearch:command];
 }
 
-// Sets all Visible Toolbar Buttons opacity to |alpha|.
-- (void)setAllVisibleToolbarButtonsOpacity:(CGFloat)alpha {
+// Sets all Toolbar Buttons opacity to |alpha|.
+- (void)setAllToolbarButtonsOpacity:(CGFloat)alpha {
   for (UIButton* button in [self.leadingStackViewButtons
            arrayByAddingObjectsFromArray:self.trailingStackViewButtons]) {
-    if (!button.hidden)
       button.alpha = alpha;
   }
 }
 
 // Offsets the horizontal translation transform of all visible Toolbar Buttons
-// in |array| by |offset|. Used for fade in animations.
+// in |array| by |offset|. If the button is hidden it will assign the
+// IdentityTransform. Used for fade in animations.
 - (void)setHorizontalTranslationOffset:(LayoutOffset)offset
                             forButtons:(NSArray<ToolbarButton*>*)array {
   for (UIButton* button in array) {
-    if (!button.hidden)
-      button.transform = (offset != 0)
-                             ? CGAffineTransformMakeTranslation(offset, 0)
-                             : CGAffineTransformIdentity;
+    button.transform = (offset != 0 && !button.hidden)
+                           ? CGAffineTransformMakeTranslation(offset, 0)
+                           : CGAffineTransformIdentity;
   }
 }
 
