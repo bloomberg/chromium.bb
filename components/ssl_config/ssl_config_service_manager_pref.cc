@@ -199,17 +199,11 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   const char* experiment_value = nullptr;
   if (tls13_variant == "disabled") {
     tls13_value = switches::kTLS13VariantDisabled;
-  } else if (tls13_variant == "draft") {
-    tls13_value = switches::kTLS13VariantDraft;
-    experiment_value = switches::kSSLVersionTLSv13;
-  } else if (tls13_variant == "experiment") {
-    tls13_value = switches::kTLS13VariantExperiment;
+  } else if (tls13_variant == "draft22") {
+    tls13_value = switches::kTLS13VariantDraft22;
     experiment_value = switches::kSSLVersionTLSv13;
   } else if (tls13_variant == "experiment2") {
     tls13_value = switches::kTLS13VariantExperiment2;
-    experiment_value = switches::kSSLVersionTLSv13;
-  } else if (tls13_variant == "experiment3") {
-    tls13_value = switches::kTLS13VariantExperiment3;
     experiment_value = switches::kSSLVersionTLSv13;
   }
 
@@ -327,14 +321,10 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   if (tls13_variant_str == switches::kTLS13VariantDisabled) {
     if (config->version_max > net::SSL_PROTOCOL_VERSION_TLS1_2)
       config->version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
-  } else if (tls13_variant_str == switches::kTLS13VariantDraft) {
-    config->tls13_variant = net::kTLS13VariantDraft;
-  } else if (tls13_variant_str == switches::kTLS13VariantExperiment) {
-    config->tls13_variant = net::kTLS13VariantExperiment;
+  } else if (tls13_variant_str == switches::kTLS13VariantDraft22) {
+    config->tls13_variant = net::kTLS13VariantDraft22;
   } else if (tls13_variant_str == switches::kTLS13VariantExperiment2) {
     config->tls13_variant = net::kTLS13VariantExperiment2;
-  } else if (tls13_variant_str == switches::kTLS13VariantExperiment3) {
-    config->tls13_variant = net::kTLS13VariantExperiment3;
   }
 
   config->disabled_cipher_suites = disabled_cipher_suites_;

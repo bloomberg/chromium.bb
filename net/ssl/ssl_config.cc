@@ -12,7 +12,7 @@ const uint16_t kDefaultSSLVersionMin = SSL_PROTOCOL_VERSION_TLS1;
 
 const uint16_t kDefaultSSLVersionMax = SSL_PROTOCOL_VERSION_TLS1_2;
 
-const TLS13Variant kDefaultTLS13Variant = kTLS13VariantDraft;
+const TLS13Variant kDefaultTLS13Variant = kTLS13VariantDraft22;
 
 SSLConfig::CertAndStatus::CertAndStatus() = default;
 SSLConfig::CertAndStatus::CertAndStatus(scoped_refptr<X509Certificate> cert_arg,
