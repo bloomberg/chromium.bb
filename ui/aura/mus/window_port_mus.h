@@ -12,12 +12,14 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/local/layer_tree_frame_sink_local.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/window_port.h"
@@ -280,6 +282,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void UpdatePrimarySurfaceId();
   void UpdateClientSurfaceEmbedder();
 
+  void OnSurfaceChanged(const viz::SurfaceInfo& surface_info);
+
   WindowTreeClient* window_tree_client_;
 
   Window* window_ = nullptr;
@@ -305,7 +309,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // When a frame sink is created
   // for a local aura::Window, we need keep a weak ptr of it, so we can update
   // the local surface id when necessary.
-  base::WeakPtr<viz::ClientLayerTreeFrameSink> local_layer_tree_frame_sink_;
+  base::WeakPtr<cc::LayerTreeFrameSink> local_layer_tree_frame_sink_;
+  bool is_frame_sink_id_added_to_compositor_ = false;
+
+  base::WeakPtrFactory<WindowPortMus> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPortMus);
 };
