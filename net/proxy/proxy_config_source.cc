@@ -14,7 +14,6 @@ const char* const kSourceNames[] = {
   "UNKNOWN",
   "SYSTEM",
   "SYSTEM FAILED",
-  "GCONF",
   "GSETTINGS",
   "KDE",
   "ENV",

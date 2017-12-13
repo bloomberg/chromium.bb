@@ -163,7 +163,7 @@ class ChromeBrowserStateIOData {
     scoped_refptr<net::SSLConfigService> ssl_config_service;
 
     // We need to initialize the ProxyConfigService from the UI thread
-    // because on linux it relies on initializing things through gconf,
+    // because on linux it relies on initializing things through gsettings,
     // and needs to be on the main thread.
     std::unique_ptr<net::ProxyConfigService> proxy_config_service;
 

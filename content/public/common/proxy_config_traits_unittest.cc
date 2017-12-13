@@ -36,7 +36,8 @@ TEST(ProxyConfigTraitsTest, AutoDetect) {
 TEST(ProxyConfigTraitsTest, Direct) {
   net::ProxyConfig proxy_config = net::ProxyConfig::CreateDirect();
   proxy_config.set_id(2);
-  proxy_config.set_source(net::ProxyConfigSource::PROXY_CONFIG_SOURCE_GCONF);
+  proxy_config.set_source(
+      net::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS);
   EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));
 }
 

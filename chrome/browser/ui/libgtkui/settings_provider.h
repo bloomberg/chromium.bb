@@ -10,7 +10,7 @@
 
 namespace libgtkui {
 
-// This class is just a switch between SettingsProviderGconf and
+// This class is just a switch between SettingsProviderGSettings and
 // SettingsProviderGtk3.  Currently, it is empty and it's only purpose is so
 // that GtkUi can store just a std::unique_ptr<SettingsProvider> and not have to
 // have the two impls each guarded by their own macros.
@@ -20,7 +20,7 @@ class SettingsProvider {
 
  protected:
   // Even though this class is not pure virtual, it should not be instantiated
-  // directly.  Use SettingsProviderGconf or SettingsProviderGtk3 instead.
+  // directly.  Use SettingsProviderGSettings or SettingsProviderGtk3 instead.
   SettingsProvider() {}
 };
 

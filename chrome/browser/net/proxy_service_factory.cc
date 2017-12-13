@@ -19,7 +19,7 @@ using content::BrowserThread;
 // static
 std::unique_ptr<net::ProxyConfigService>
 ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
-  // The linux gconf-based proxy settings getter relies on being initialized
+  // The linux gsettings-based proxy settings getter relies on being initialized
   // from the UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

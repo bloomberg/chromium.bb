@@ -641,11 +641,9 @@ void BrowserMainLoop::EarlyInitialization() {
   // version for 2.36, hence do not call g_type_init starting 2.35.
   // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
 #if !GLIB_CHECK_VERSION(2, 35, 0)
-  // GLib type system initialization. Needed at least for gconf,
-  // used in net/proxy/proxy_config_service_linux.cc. Most likely
-  // this is superfluous as gtk_init() ought to do this. It's
-  // definitely harmless, so retained as a reminder of this
-  // requirement for gconf.
+  // GLib type system initialization. It's unclear if it's still required for
+  // any remaining code. Most likely this is superfluous as gtk_init() ought
+  // to do this. It's definitely harmless, so it's retained here.
   g_type_init();
 #endif  // !GLIB_CHECK_VERSION(2, 35, 0)
 

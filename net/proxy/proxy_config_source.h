@@ -17,7 +17,6 @@ enum ProxyConfigSource {
   PROXY_CONFIG_SOURCE_SYSTEM,        // System settings (Win/Mac).
   PROXY_CONFIG_SOURCE_SYSTEM_FAILED, // Default settings after failure to
                                      // determine system settings.
-  PROXY_CONFIG_SOURCE_GCONF,         // GConf (Linux)
   PROXY_CONFIG_SOURCE_GSETTINGS,     // GSettings (Linux).
   PROXY_CONFIG_SOURCE_KDE,           // KDE (Linux).
   PROXY_CONFIG_SOURCE_ENV,           // Environment variables.

@@ -116,8 +116,6 @@ EnumTraits<content::mojom::ProxyConfigSource, net::ProxyConfigSource>::ToMojom(
     case net::PROXY_CONFIG_SOURCE_SYSTEM_FAILED:
       return content::mojom::ProxyConfigSource::
           PROXY_CONFIG_SOURCE_SYSTEM_FAILED;
-    case net::PROXY_CONFIG_SOURCE_GCONF:
-      return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GCONF;
     case net::PROXY_CONFIG_SOURCE_GSETTINGS:
       return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS;
     case net::PROXY_CONFIG_SOURCE_KDE:
@@ -146,9 +144,6 @@ bool EnumTraits<content::mojom::ProxyConfigSource, net::ProxyConfigSource>::
       return true;
     case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM_FAILED:
       *out = net::PROXY_CONFIG_SOURCE_SYSTEM_FAILED;
-      return true;
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GCONF:
-      *out = net::PROXY_CONFIG_SOURCE_GCONF;
       return true;
     case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS:
       *out = net::PROXY_CONFIG_SOURCE_GSETTINGS;

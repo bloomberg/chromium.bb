@@ -80,7 +80,7 @@ void ClearAuraTransientParent(GtkWidget* dialog);
 // Parses |button_string| into |leading_buttons| and
 // |trailing_buttons|.  The string is of the format
 // "<button>*:<button*>", for example, "close:minimize:maximize".
-// This format is used by GTK3 settings and several gconf settings.
+// This format is used by GTK3 settings and gsettings.
 void ParseButtonLayout(const std::string& button_string,
                        std::vector<views::FrameButton>* leading_buttons,
                        std::vector<views::FrameButton>* trailing_buttons);
