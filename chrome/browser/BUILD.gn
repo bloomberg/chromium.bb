@@ -1624,6 +1624,7 @@ split_static_library("browser") {
     "//components/infobars/core",
     "//components/invalidation/impl",
     "//components/keyed_service/content",
+    "//components/language/content/browser",
     "//components/language/core/browser",
     "//components/metrics:call_stacks",
     "//components/metrics:component_metrics",

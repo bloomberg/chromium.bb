@@ -1,3 +1,6 @@
 include_rules = [
-  "+content/public/browser",
+  "+device/geolocation/public/interfaces",
+  "+net",
+  "+services/device/public/interfaces",
+  "+services/service_manager/public",
 ]
