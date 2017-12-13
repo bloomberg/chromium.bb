@@ -259,6 +259,10 @@ D. Local Modifications
   - patches/calendar.patch - has a local addition to terminate strings.
   - upstream fix: https://ssl.icu-project.org/trac/changeset/40670
 
+  UTF8 to UTF8 conversion bug
+  - patches/u8tou8.patch
+  - upstream bug: https://ssl.icu-project.org/trac/ticket/13510
+
 6. Fix -Wsign-compare warning in EnumSet::isValidEnum()
 
   - patches/isvalidenum.patch
