@@ -15,6 +15,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import retry_util
+from chromite.lib import timeout_util
 
 # Location of swarming_client.py that is used to send swarming requests
 _DIR_NAME = os.path.dirname(os.path.abspath(__file__))
@@ -90,7 +91,18 @@ def RunSwarmingCommand(cmd, swarming_server, task_name=None,
     swarming_cmd += cmd
 
     try:
-      result = cros_build_lib.RunCommand(swarming_cmd, *args, **kwargs)
+      result = None
+      while True:
+        try:
+          # Add a timeout limit of 1.5 hours here to avoid
+          # buildbot salency check.
+          with timeout_util.Timeout(5400):
+            logging.info('Re-run swarming_cmd to avoid buildbot salency check.')
+            result = cros_build_lib.RunCommand(swarming_cmd, *args, **kwargs)
+            break
+        except timeout_util.TimeoutError:
+          pass
+
       return SwarmingCommandResult.CreateSwarmingCommandResult(
           task_summary_json_path=temp_json_path, command_result=result)
     except cros_build_lib.RunCommandError as e:
