@@ -211,6 +211,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool migrate_sessions_early,
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
+      base::TimeDelta max_time_on_non_default_network,
       bool allow_server_migration,
       bool race_cert_verification,
       bool estimate_initial_rtt,
@@ -505,6 +506,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if early migration should be attempted after probing when the
   // connection experiences poor connectivity.
   const bool migrate_sessions_early_v2_;
+
+  // Maximum time sessions could use on non-default network before try to
+  // migrate back to default network.
+  const base::TimeDelta max_time_on_non_default_network_;
 
   // Set if migration should be attempted on active sessions when primary
   // interface changes.

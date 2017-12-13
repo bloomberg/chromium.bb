@@ -125,6 +125,8 @@ HttpNetworkSession::Params::Params()
       quic_migrate_sessions_early(false),
       quic_migrate_sessions_on_network_change_v2(false),
       quic_migrate_sessions_early_v2(false),
+      quic_max_time_on_non_default_network(
+          base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs)),
       quic_allow_server_migration(false),
       quic_allow_remote_alt_svc(false),
       quic_disable_bidirectional_streams(false),
@@ -206,6 +208,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_migrate_sessions_early,
           params.quic_migrate_sessions_on_network_change_v2,
           params.quic_migrate_sessions_early_v2,
+          params.quic_max_time_on_non_default_network,
           params.quic_allow_server_migration,
           params.quic_race_cert_verification,
           params.quic_estimate_initial_rtt,
@@ -361,6 +364,8 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_migrate_sessions_on_network_change_v2);
   dict->SetBoolean("migrate_sessions_early_v2",
                    params_.quic_migrate_sessions_early_v2);
+  dict->SetInteger("max_time_on_non_default_network_seconds",
+                   params_.quic_max_time_on_non_default_network.InSeconds());
   dict->SetBoolean("allow_server_migration",
                    params_.quic_allow_server_migration);
   dict->SetBoolean("estimate_initial_rtt", params_.quic_estimate_initial_rtt);
