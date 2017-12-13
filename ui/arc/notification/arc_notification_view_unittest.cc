@@ -18,12 +18,15 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
+
+using message_center::MessageCenter;
+using message_center::Notification;
 
 namespace arc {
 
@@ -88,56 +91,11 @@ class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
 };
 
 std::unique_ptr<message_center::MessageView> CreateCustomMessageViewForTest(
-    message_center::MessageViewDelegate* controller,
-    const message_center::Notification& notification) {
+    const Notification& notification) {
   return std::make_unique<ArcNotificationView>(
       std::make_unique<TestNotificationContentsView>(),
-      std::make_unique<TestContentViewDelegate>(), controller, notification);
+      std::make_unique<TestContentViewDelegate>(), notification);
 }
-
-class TestMessageViewDelegate : public message_center::MessageViewDelegate {
- public:
-  TestMessageViewDelegate() = default;
-
-  // MessageViewDelegate
-  void ClickOnNotification(const std::string& notification_id) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
-
-  void RemoveNotification(const std::string& notification_id,
-                          bool by_user) override {
-    removed_ids_.insert(notification_id);
-  }
-
-  void ClickOnNotificationButton(const std::string& notification_id,
-                                 int button_index) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
-
-  void ClickOnNotificationButtonWithReply(
-      const std::string& notification_id,
-      int button_index,
-      const base::string16& reply) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
-
-  void ClickOnSettingsButton(const std::string& notification_id) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
-
-  bool IsRemoved(const std::string& notification_id) const {
-    return (removed_ids_.find(notification_id) != removed_ids_.end());
-  }
-
- private:
-  std::set<std::string> removed_ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMessageViewDelegate);
-};
 
 class TestTextInputClient : public ui::DummyTextInputClient {
  public:
@@ -164,10 +122,12 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
+    MessageCenter::Initialize();
+
     message_center::MessageViewFactory::SetCustomNotificationViewFactory(
         base::Bind(&CreateCustomMessageViewForTest));
 
-    notification_ = std::make_unique<message_center::Notification>(
+    notification_ = std::make_unique<Notification>(
         message_center::NOTIFICATION_TYPE_CUSTOM,
         std::string("notification id"), base::UTF8ToUTF16("title"),
         base::UTF8ToUTF16("message"), gfx::Image(),
@@ -177,9 +137,9 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
         message_center::RichNotificationData(), nullptr);
 
     notification_view_.reset(static_cast<ArcNotificationView*>(
-        message_center::MessageViewFactory::Create(controller(), *notification_,
-                                                   true)));
+        message_center::MessageViewFactory::Create(*notification_, true)));
     notification_view_->set_owned_by_client();
+    UpdateNotificationViews();
 
     views::Widget::InitParams init_params(
         CreateParams(views::Widget::InitParams::TYPE_POPUP));
@@ -194,6 +154,7 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
     widget()->Close();
     notification_view_.reset();
     views::ViewsTestBase::TearDown();
+    MessageCenter::Shutdown();
   }
 
   SkColor GetBackgroundColor() const {
@@ -224,6 +185,8 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
   }
 
   void UpdateNotificationViews() {
+    MessageCenter::Get()->AddNotification(
+        std::make_unique<Notification>(*notification()));
     notification_view()->UpdateWithNotification(*notification());
   }
 
@@ -232,6 +195,10 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
         ->transform()
         .To2dTranslation()
         .x();
+  }
+
+  bool IsRemoved(const std::string& notification_id) const {
+    return !MessageCenter::Get()->FindVisibleNotificationById(notification_id);
   }
 
   void DispatchGesture(const ui::GestureEventDetails& details) {
@@ -254,8 +221,7 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0));
   }
 
-  TestMessageViewDelegate* controller() { return &controller_; }
-  message_center::Notification* notification() { return notification_.get(); }
+  Notification* notification() { return notification_.get(); }
   TestNotificationContentsView* contents_view() {
     return static_cast<TestNotificationContentsView*>(
         notification_view_->contents_view_);
@@ -264,8 +230,7 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
   ArcNotificationView* notification_view() { return notification_view_.get(); }
 
  private:
-  TestMessageViewDelegate controller_;
-  std::unique_ptr<message_center::Notification> notification_;
+  std::unique_ptr<Notification> notification_;
   std::unique_ptr<ArcNotificationView> notification_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationViewTest);
@@ -299,47 +264,45 @@ TEST_F(ArcNotificationViewTest, SlideOut) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
-  UpdateNotificationViews();
   std::string notification_id = notification()->id();
 
   BeginScroll();
   ScrollBy(-10);
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_TRUE(controller()->IsRemoved(notification_id));
+  EXPECT_TRUE(IsRemoved(notification_id));
 }
 
 TEST_F(ArcNotificationViewTest, SlideOutNested) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
-  UpdateNotificationViews();
   notification_view()->SetIsNested();
   std::string notification_id = notification()->id();
 
   BeginScroll();
   ScrollBy(-10);
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_TRUE(controller()->IsRemoved(notification_id));
+  EXPECT_TRUE(IsRemoved(notification_id));
 }
 
 // Pinning notification is ChromeOS only feature.
@@ -355,10 +318,10 @@ TEST_F(ArcNotificationViewTest, SlideOutPinned) {
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_LT(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -373,9 +336,9 @@ TEST_F(ArcNotificationViewTest, PressBackspaceKey) {
   input_method->SetFocusedTextInputClient(&text_input_client);
   ASSERT_EQ(&text_input_client, input_method->GetTextInputClient());
 
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   PerformKeyEvents(ui::VKEY_BACK);
-  EXPECT_TRUE(controller()->IsRemoved(notification_id));
+  EXPECT_TRUE(IsRemoved(notification_id));
 
   input_method->SetFocusedTextInputClient(nullptr);
 }
@@ -392,9 +355,9 @@ TEST_F(ArcNotificationViewTest, PressBackspaceKeyOnEditBox) {
 
   text_input_client.set_text_input_type(ui::TEXT_INPUT_TYPE_TEXT);
 
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
   PerformKeyEvents(ui::VKEY_BACK);
-  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemoved(notification_id));
 
   input_method->SetFocusedTextInputClient(nullptr);
 }

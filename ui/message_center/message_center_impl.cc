@@ -299,8 +299,12 @@ void MessageCenterImpl::RemoveNotificationImmediately(
   if (notification == NULL)
     return;
 
-  if (by_user && notification->pinned())
+  if (by_user && notification->pinned()) {
+    // When pinned, a popup will not be removed completely but moved into the
+    // message center bubble.
+    MarkSinglePopupAsShown(id, true);
     return;
+  }
 
   // In many cases |id| is a reference to an existing notification instance
   // but the instance can be destructed in this method. Hence copies the id
@@ -564,7 +568,7 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
 // necessary.
 
 #if !defined(OS_CHROMEOS)
-  return this->RemoveNotification(id, false);
+  RemoveNotification(id, false);
 #else
   notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
   {

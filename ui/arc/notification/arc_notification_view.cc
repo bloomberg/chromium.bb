@@ -13,7 +13,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -28,9 +27,8 @@ const char ArcNotificationView::kViewClassName[] = "ArcNotificationView";
 ArcNotificationView::ArcNotificationView(
     std::unique_ptr<views::View> contents_view,
     std::unique_ptr<ArcNotificationContentViewDelegate> contents_view_delegate,
-    message_center::MessageViewDelegate* delegate,
     const message_center::Notification& notification)
-    : message_center::MessageView(delegate, notification),
+    : message_center::MessageView(notification),
       contents_view_(contents_view.get()),
       contents_view_delegate_(std::move(contents_view_delegate)) {
   DCHECK_EQ(message_center::NOTIFICATION_TYPE_CUSTOM, notification.type());

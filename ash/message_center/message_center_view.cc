@@ -473,35 +473,6 @@ void MessageCenterView::OnQuietModeChanged(bool is_quiet_mode) {
   button_bar_->SetQuietModeState(is_quiet_mode);
 }
 
-void MessageCenterView::ClickOnNotification(
-    const std::string& notification_id) {
-  message_center_->ClickOnNotification(notification_id);
-}
-
-void MessageCenterView::RemoveNotification(const std::string& notification_id,
-                                           bool by_user) {
-  message_center_->RemoveNotification(notification_id, by_user);
-}
-
-void MessageCenterView::ClickOnNotificationButton(
-    const std::string& notification_id,
-    int button_index) {
-  message_center_->ClickOnNotificationButton(notification_id, button_index);
-}
-
-void MessageCenterView::ClickOnNotificationButtonWithReply(
-    const std::string& notification_id,
-    int button_index,
-    const base::string16& reply) {
-  message_center_->ClickOnNotificationButtonWithReply(notification_id,
-                                                      button_index, reply);
-}
-
-void MessageCenterView::ClickOnSettingsButton(
-    const std::string& notification_id) {
-  message_center_->ClickOnSettingsButton(notification_id);
-}
-
 void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
 
@@ -549,7 +520,7 @@ void MessageCenterView::OnViewPreferredSizeChanged(views::View* observed_view) {
 void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
   MessageView* view = message_center::MessageViewFactory::Create(
-      this, notification, false);  // Not top-level.
+      notification, false);  // Not top-level.
   view->AddObserver(this);
 
   // TODO(yoshiki): Temporarily disable context menu on custom (arc)

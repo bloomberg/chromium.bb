@@ -69,57 +69,8 @@ MessagePopupCollection::~MessagePopupCollection() {
   CloseAllWidgets();
 }
 
-void MessagePopupCollection::ClickOnNotification(
-    const std::string& notification_id) {
-  message_center_->ClickOnNotification(notification_id);
-}
-
-void MessagePopupCollection::RemoveNotification(
-    const std::string& notification_id,
-    bool by_user) {
-  NotificationList::PopupNotifications notifications =
-      message_center_->GetPopupNotifications();
-  for (NotificationList::PopupNotifications::iterator iter =
-           notifications.begin();
-       iter != notifications.end(); ++iter) {
-    Notification* notification = *iter;
-    DCHECK(notification);
-
-    if (notification->id() != notification_id)
-      continue;
-
-    // Don't remove the notification only when it's not pinned.
-    if (!notification->pinned())
-      message_center_->RemoveNotification(notification_id, by_user);
-    else
-      message_center_->MarkSinglePopupAsShown(notification_id, true /* read */);
-
-    break;
-  }
-}
-
-void MessagePopupCollection::ClickOnNotificationButton(
-    const std::string& notification_id,
-    int button_index) {
-  message_center_->ClickOnNotificationButton(notification_id, button_index);
-}
-
-void MessagePopupCollection::ClickOnNotificationButtonWithReply(
-    const std::string& notification_id,
-    int button_index,
-    const base::string16& reply) {
-  message_center_->ClickOnNotificationButtonWithReply(notification_id,
-                                                      button_index, reply);
-}
-
-void MessagePopupCollection::ClickOnSettingsButton(
-    const std::string& notification_id) {
-  message_center_->ClickOnSettingsButton(notification_id);
-}
-
 void MessagePopupCollection::OnViewPreferredSizeChanged(
     views::View* observed_view) {
-  DCHECK_EQ(MessageView::kViewClassName, observed_view->GetClassName());
   OnNotificationUpdated(
       static_cast<MessageView*>(observed_view)->notification_id());
 }
@@ -195,7 +146,7 @@ void MessagePopupCollection::UpdateWidgets() {
 #endif
 
     // Create top-level notification.
-    MessageView* view = MessageViewFactory::Create(nullptr, notification, true);
+    MessageView* view = MessageViewFactory::Create(notification, true);
     observed_views_.Add(view);
 #if defined(OS_CHROMEOS)
     // Disable pinned feature since this is a popup.
@@ -225,7 +176,6 @@ void MessagePopupCollection::UpdateWidgets() {
     // There will be no contents already since this is a new ToastContentsView.
     toast->SetContents(view, /*a11y_feedback_for_updates=*/false);
     toasts_.push_back(toast);
-    view->set_delegate(toast);
 
     gfx::Size preferred_size = toast->GetPreferredSize();
     gfx::Point origin(

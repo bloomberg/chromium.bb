@@ -28,7 +28,6 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/constants.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_button.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -176,10 +175,8 @@ void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateActionButtonViews(notification);
 }
 
-NotificationView::NotificationView(MessageViewDelegate* delegate,
-                                   const Notification& notification)
-    : MessageView(delegate, notification),
-      clickable_(notification.clickable()) {
+NotificationView::NotificationView(const Notification& notification)
+    : MessageView(notification), clickable_(notification.clickable()) {
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
   // close button.
@@ -364,7 +361,7 @@ void NotificationView::ButtonPressed(views::Button* sender,
   // See if the button pressed was an action button.
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender == action_buttons_[i]) {
-      delegate()->ClickOnNotificationButton(id, i);
+      MessageCenter::Get()->ClickOnNotificationButton(id, i);
       return;
     }
   }

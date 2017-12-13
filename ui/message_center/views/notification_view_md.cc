@@ -25,7 +25,6 @@
 #include "ui/message_center/vector_icons.h"
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/constants.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -439,10 +438,8 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateActionButtonViews(notification);
 }
 
-NotificationViewMD::NotificationViewMD(MessageViewDelegate* controller,
-                                       const Notification& notification)
-    : MessageView(controller, notification),
-      clickable_(notification.clickable()) {
+NotificationViewMD::NotificationViewMD(const Notification& notification)
+    : MessageView(notification), clickable_(notification.clickable()) {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
 
@@ -647,7 +644,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
       Layout();
       SchedulePaint();
     } else {
-      delegate()->ClickOnNotificationButton(id, i);
+      MessageCenter::Get()->ClickOnNotificationButton(id, i);
     }
     return;
   }
@@ -655,8 +652,8 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
 
 void NotificationViewMD::OnNotificationInputSubmit(size_t index,
                                                    const base::string16& text) {
-  delegate()->ClickOnNotificationButtonWithReply(notification_id(), index,
-                                                 text);
+  MessageCenter::Get()->ClickOnNotificationButtonWithReply(notification_id(),
+                                                           index, text);
 }
 
 bool NotificationViewMD::IsCloseButtonFocused() const {

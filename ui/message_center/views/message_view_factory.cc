@@ -25,8 +25,7 @@ base::LazyInstance<MessageViewFactory::CustomMessageViewFactoryFunction>::Leaky
 }  // namespace
 
 // static
-MessageView* MessageViewFactory::Create(MessageViewDelegate* controller,
-                                        const Notification& notification,
+MessageView* MessageViewFactory::Create(const Notification& notification,
                                         bool top_level) {
   MessageView* notification_view = nullptr;
   switch (notification.type()) {
@@ -37,13 +36,13 @@ MessageView* MessageViewFactory::Create(MessageViewDelegate* controller,
     case NOTIFICATION_TYPE_PROGRESS:
       // All above roads lead to the generic NotificationView.
       if (IsNewStyleNotificationEnabled())
-        notification_view = new NotificationViewMD(controller, notification);
+        notification_view = new NotificationViewMD(notification);
       else
-        notification_view = new NotificationView(controller, notification);
+        notification_view = new NotificationView(notification);
       break;
     case NOTIFICATION_TYPE_CUSTOM:
       notification_view =
-          g_custom_view_factory.Get().Run(controller, notification).release();
+          g_custom_view_factory.Get().Run(notification).release();
       break;
     default:
       // If the caller asks for an unrecognized kind of view (entirely possible
@@ -54,7 +53,7 @@ MessageView* MessageViewFactory::Create(MessageViewDelegate* controller,
       LOG(WARNING) << "Unable to fulfill request for unrecognized or"
                    << "unsupported notification type " << notification.type()
                    << ". Falling back to simple notification type.";
-      notification_view = new NotificationView(controller, notification);
+      notification_view = new NotificationView(notification);
   }
 
 #if defined(OS_LINUX)

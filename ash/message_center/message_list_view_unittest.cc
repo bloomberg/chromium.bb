@@ -16,12 +16,10 @@
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/test/views_test_base.h"
 
 using ::testing::ElementsAre;
-using message_center::MessageViewDelegate;
 using message_center::Notification;
 using message_center::NotificationView;
 using message_center::NotifierId;
@@ -47,9 +45,7 @@ class MockNotificationView : public NotificationView {
     virtual void RegisterCall(CallType type) = 0;
   };
 
-  MockNotificationView(MessageViewDelegate* controller,
-                       const Notification& notification,
-                       Test* test);
+  MockNotificationView(const Notification& notification, Test* test);
   ~MockNotificationView() override;
 
   gfx::Size CalculatePreferredSize() const override;
@@ -62,10 +58,9 @@ class MockNotificationView : public NotificationView {
   DISALLOW_COPY_AND_ASSIGN(MockNotificationView);
 };
 
-MockNotificationView::MockNotificationView(MessageViewDelegate* controller,
-                                           const Notification& notification,
+MockNotificationView::MockNotificationView(const Notification& notification,
                                            Test* test)
-    : NotificationView(controller, notification), test_(test) {
+    : NotificationView(notification), test_(test) {
   // Calling SetPaintToLayer() to ensure that this view has its own layer.
   // This layer is needed to enable adding/removal animations.
   SetPaintToLayer();
@@ -97,8 +92,7 @@ void MockNotificationView::Layout() {
 
 class MessageListViewTest : public AshTestBase,
                             public MockNotificationView::Test,
-                            public MessageListView::Observer,
-                            public MessageViewDelegate {
+                            public MessageListView::Observer {
  public:
   MessageListViewTest() = default;
 
@@ -153,7 +147,7 @@ class MessageListViewTest : public AshTestBase,
 
   MockNotificationView* CreateNotificationView(
       const Notification& notification) {
-    return new MockNotificationView(this, notification, this);
+    return new MockNotificationView(notification, this);
   }
 
   void RunPendingAnimations() {
@@ -175,18 +169,6 @@ class MessageListViewTest : public AshTestBase,
   void OnAllNotificationsCleared() override {
     is_on_all_notifications_cleared_called_ = true;
   }
-
-  // MessageViewDelegate override:
-  void ClickOnNotification(const std::string& notification_id) override {}
-  void RemoveNotification(const std::string& notification_id,
-                          bool by_user) override {}
-  void ClickOnNotificationButton(const std::string& notification_id,
-                                 int button_index) override {}
-  void ClickOnNotificationButtonWithReply(
-      const std::string& notification_id,
-      int button_index,
-      const base::string16& reply) override {}
-  void ClickOnSettingsButton(const std::string& notification_id) override {}
 
   // Widget to host a MessageListView.
   std::unique_ptr<views::Widget> widget_;

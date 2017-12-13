@@ -332,41 +332,6 @@ const char* ToastContentsView::GetClassName() const {
   return kViewClassName;
 }
 
-void ToastContentsView::ClickOnNotification(
-    const std::string& notification_id) {
-  if (collection_)
-    collection_->ClickOnNotification(notification_id);
-}
-
-void ToastContentsView::ClickOnSettingsButton(
-    const std::string& notification_id) {
-  if (collection_)
-    collection_->ClickOnSettingsButton(notification_id);
-}
-
-void ToastContentsView::RemoveNotification(
-    const std::string& notification_id,
-    bool by_user) {
-  if (collection_)
-    collection_->RemoveNotification(notification_id, by_user);
-}
-
-void ToastContentsView::ClickOnNotificationButton(
-    const std::string& notification_id,
-    int button_index) {
-  if (collection_)
-    collection_->ClickOnNotificationButton(notification_id, button_index);
-}
-
-void ToastContentsView::ClickOnNotificationButtonWithReply(
-    const std::string& notification_id,
-    int button_index,
-    const base::string16& reply) {
-  if (collection_)
-    collection_->ClickOnNotificationButtonWithReply(notification_id,
-                                                    button_index, reply);
-}
-
 void ToastContentsView::CreateWidget(
     PopupAlignmentDelegate* alignment_delegate) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);

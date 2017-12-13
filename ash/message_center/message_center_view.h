@@ -15,7 +15,6 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/views/message_view_context_menu_controller.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
@@ -43,7 +42,6 @@ class NotifierSettingsView;
 class ASH_EXPORT MessageCenterView
     : public views::View,
       public message_center::MessageCenterObserver,
-      public message_center::MessageViewDelegate,
       public SessionObserver,
       public MessageListView::Observer,
       public gfx::AnimationDelegate,
@@ -100,17 +98,6 @@ class ASH_EXPORT MessageCenterView
   void OnNotificationRemoved(const std::string& id, bool by_user) override;
   void OnNotificationUpdated(const std::string& id) override;
   void OnQuietModeChanged(bool is_quiet_mode) override;
-
-  // Overridden from MessageViewDelegate:
-  void ClickOnNotification(const std::string& notification_id) override;
-  void RemoveNotification(const std::string& notification_id,
-                          bool by_user) override;
-  void ClickOnNotificationButton(const std::string& notification_id,
-                                 int button_index) override;
-  void ClickOnNotificationButtonWithReply(const std::string& notification_id,
-                                          int button_index,
-                                          const base::string16& reply) override;
-  void ClickOnSettingsButton(const std::string& notification_id) override;
 
   // Overridden from SessionObserver:
   void OnLockStateChanged(bool locked) override;

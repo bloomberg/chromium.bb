@@ -157,7 +157,7 @@ class NotificationInputMD : public views::Textfield,
   NotificationInputDelegate* const delegate_;
 
   // |index_| is the notification action index that should be passed as the
-  // argument of MessageViewDelegate::ClickOnNotificationButtonWithReply.
+  // argument of ClickOnNotificationButtonWithReply.
   size_t index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationInputMD);
@@ -173,8 +173,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
       public views::ButtonListener,
       public views::ViewTargeterDelegate {
  public:
-  NotificationViewMD(MessageViewDelegate* controller,
-                     const Notification& notification);
+  explicit NotificationViewMD(const Notification& notification);
   ~NotificationViewMD() override;
 
   void Activate();
