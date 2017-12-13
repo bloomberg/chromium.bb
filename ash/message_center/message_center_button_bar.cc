@@ -47,7 +47,7 @@ namespace {
 
 constexpr SkColor kTextColor = SkColorSetARGB(0xFF, 0x0, 0x0, 0x0);
 constexpr SkColor kButtonSeparatorColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
-constexpr int kTextFontSize = 14;
+constexpr int kTextFontSizeDelta = 2;
 constexpr int kSeparatorHeight = 24;
 constexpr gfx::Insets kSeparatorPadding(12, 0, 12, 0);
 constexpr gfx::Insets kButtonBarBorder(4, 18, 4, 0);
@@ -124,9 +124,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   notification_label_->SetEnabledColor(kTextColor);
   // "Roboto-Medium, 14sp" is specified in the mock.
-  notification_label_->SetFontList(
-      message_center_style::GetFontListForSizeAndWeight(
-          kTextFontSize, gfx::Font::Weight::MEDIUM));
+  notification_label_->SetFontList(gfx::FontList().Derive(
+      kTextFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   AddChildView(notification_label_);
 
   button_container_ = new views::View;
