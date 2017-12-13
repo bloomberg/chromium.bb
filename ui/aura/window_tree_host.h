@@ -302,9 +302,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   gfx::Insets output_surface_padding_in_pixels_;
 
-  // Set to true if the next CompositorFrame will block on a new child surface.
-  bool synchronizing_with_child_on_next_frame_ = false;
-
   // Set to the time the synchronization event began.
   base::TimeTicks synchronization_start_time_;
 

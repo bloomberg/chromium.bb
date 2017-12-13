@@ -420,21 +420,10 @@ void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
   dispatcher()->OnCursorMovedToRootLocation(root_location);
 }
 
-void WindowTreeHost::OnCompositingDidCommit(ui::Compositor* compositor) {}
-
-void WindowTreeHost::OnCompositingStarted(ui::Compositor* compositor,
-                                          base::TimeTicks start_time) {
-  if (!synchronizing_with_child_on_next_frame_)
-    return;
-  synchronizing_with_child_on_next_frame_ = false;
-  synchronization_start_time_ = base::TimeTicks::Now();
-  dispatcher_->HoldPointerMoves();
-  holding_pointer_moves_ = true;
-}
-
-void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
+void WindowTreeHost::OnCompositingDidCommit(ui::Compositor* compositor) {
   if (!holding_pointer_moves_)
     return;
+
   dispatcher_->ReleasePointerMoves();
   holding_pointer_moves_ = false;
   DCHECK(!synchronization_start_time_.is_null());
@@ -442,11 +431,20 @@ void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
                       base::TimeTicks::Now() - synchronization_start_time_);
 }
 
+void WindowTreeHost::OnCompositingStarted(ui::Compositor* compositor,
+                                          base::TimeTicks start_time) {}
+
+void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {}
+
 void WindowTreeHost::OnCompositingLockStateChanged(ui::Compositor* compositor) {
 }
 
 void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
-  synchronizing_with_child_on_next_frame_ = true;
+  if (!Env::GetInstance()->throttle_input_on_resize() || holding_pointer_moves_)
+    return;
+  synchronization_start_time_ = base::TimeTicks::Now();
+  dispatcher_->HoldPointerMoves();
+  holding_pointer_moves_ = true;
 }
 
 void WindowTreeHost::OnCompositingShuttingDown(ui::Compositor* compositor) {

@@ -78,26 +78,24 @@ TEST_F(WindowTreeHostTest, DPIWindowSize) {
 }
 
 TEST_F(WindowTreeHostTest, HoldPointerMovesOnChildResizing) {
-  // Signal to the ui::Compositor that a child is resizing. This will
-  // trigger input throttling on the next BeginFrame.
-  host()->compositor()->OnChildResizing();
-
-  // Wait for a CompositorFrame to be submitted.
-  ui::DrawWaiterForTest::WaitForCompositingStarted(host()->compositor());
   aura::WindowEventDispatcher* dispatcher = host()->dispatcher();
 
   aura::test::WindowEventDispatcherTestApi dispatcher_api(dispatcher);
 
-  // Pointer moves should be throttled until Viz ACKs. If surface
-  // synchronization is on, this may happen several BeginFrames later.
-  // This rate limits further resizing while Viz tries to synchronize
-  // the visuals of multiple clients.
+  EXPECT_FALSE(dispatcher_api.HoldingPointerMoves());
+
+  // Signal to the ui::Compositor that a child is resizing. This will
+  // immediately trigger input throttling.
+  host()->compositor()->OnChildResizing();
+
+  // Pointer moves should be throttled until the next commit. This has the
+  // effect of prioritizing the resize event above other operations in aura.
   EXPECT_TRUE(dispatcher_api.HoldingPointerMoves());
 
-  // Wait until Viz ACKs the submitted CompositorFrame.
-  ui::DrawWaiterForTest::WaitForCompositingEnded(host()->compositor());
+  // Wait for a CompositorFrame to be submitted.
+  ui::DrawWaiterForTest::WaitForCompositingStarted(host()->compositor());
 
-  // Pointer moves should be routed normally after the ACK.
+  // Pointer moves should be routed normally after commit.
   EXPECT_FALSE(dispatcher_api.HoldingPointerMoves());
 }
 

@@ -2113,6 +2113,8 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
 }
 
 TEST_F(SplitViewWindowSelectorTest, Dragging) {
+  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
+
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   std::unique_ptr<aura::Window> right_window = CreateTestWindow();

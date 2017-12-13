@@ -299,8 +299,12 @@ void DelegatedFrameHost::OnAggregatedSurfaceDamage(
 }
 
 void DelegatedFrameHost::WasResized() {
+  const viz::SurfaceId* primary_surface_id =
+      client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
   if (enable_surface_synchronization_ &&
-      client_->DelegatedFrameHostIsVisible()) {
+      client_->DelegatedFrameHostIsVisible() &&
+      (!primary_surface_id || primary_surface_id->local_surface_id() !=
+                                  client_->GetLocalSurfaceId())) {
     current_frame_size_in_dip_ = client_->DelegatedFrameHostDesiredSizeInDIP();
 
     viz::SurfaceId surface_id(frame_sink_id_, client_->GetLocalSurfaceId());
