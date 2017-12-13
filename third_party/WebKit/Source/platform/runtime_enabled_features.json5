@@ -683,7 +683,7 @@
     },
     {
       name: "NetInfoSaveData",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NetworkService",

@@ -620,6 +620,7 @@ interface NetworkInformation : EventTarget
     getter effectiveType
     getter onchange
     getter rtt
+    getter saveData
     method constructor
     setter onchange
 interface Notification : EventTarget
