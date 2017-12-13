@@ -56,7 +56,7 @@ ClipboardHostImpl::ClipboardHostImpl(
 
 void ClipboardHostImpl::Create(
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-    mojom::ClipboardHostRequest request) {
+    blink::mojom::ClipboardHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mojo::MakeStrongBinding(
       base::WrapUnique<ClipboardHostImpl>(

@@ -16,9 +16,6 @@ class WebURL;
 
 namespace content {
 
-CONTENT_EXPORT std::string URLToMarkup(const blink::WebURL& url,
-                                       const blink::WebString& title);
-
 CONTENT_EXPORT std::string URLToImageMarkup(const blink::WebURL& url,
                                             const blink::WebString& title);
 

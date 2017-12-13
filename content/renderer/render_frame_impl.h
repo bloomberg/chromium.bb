@@ -90,6 +90,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if defined(OS_MACOSX)
+#include "third_party/WebKit/common/clipboard/clipboard.mojom.h"
+#endif
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/plugin_power_saver_helper.h"
 #endif
@@ -1600,6 +1604,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // scrolled and focused editable node.
   bool has_scrolled_focused_editable_node_into_rect_ = false;
   gfx::Rect rect_for_scrolled_focused_editable_node_;
+
+#if defined(OS_MACOSX)
+  // Return the mojo interface for making ClipboardHost calls.
+  blink::mojom::ClipboardHostPtr clipboard_host_;
+#endif
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

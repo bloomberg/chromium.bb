@@ -509,8 +509,6 @@ target(link_target_type, "renderer") {
     "web_ui_extension.h",
     "web_ui_extension_data.cc",
     "web_ui_extension_data.h",
-    "webclipboard_impl.cc",
-    "webclipboard_impl.h",
     "webfileutilities_impl.cc",
     "webfileutilities_impl.h",
     "webgraphicscontext3d_provider_impl.cc",

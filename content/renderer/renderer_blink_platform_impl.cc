@@ -75,7 +75,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
 #include "content/renderer/web_database_observer_impl.h"
-#include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webfileutilities_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
@@ -417,10 +416,8 @@ blink::WebClipboard* RendererBlinkPlatformImpl::Clipboard() {
       GetContentClient()->renderer()->OverrideWebClipboard();
   if (clipboard)
     return clipboard;
-  if (!clipboard_) {
-    clipboard_ = std::make_unique<WebClipboardImpl>(GetClipboardHost());
-  }
-  return clipboard_.get();
+
+  return BlinkPlatformImpl::Clipboard();
 }
 
 blink::WebFileUtilities* RendererBlinkPlatformImpl::GetFileUtilities() {
@@ -1438,13 +1435,6 @@ void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
 blink::mojom::WebDatabaseHost& RendererBlinkPlatformImpl::GetWebDatabaseHost() {
   InitializeWebDatabaseHostIfNeeded();
   return **web_database_host_;
-}
-
-mojom::ClipboardHost& RendererBlinkPlatformImpl::GetClipboardHost() {
-  if (!clipboard_host_) {
-    GetConnector()->BindInterface(mojom::kBrowserServiceName, &clipboard_host_);
-  }
-  return *clipboard_host_;
 }
 
 }  // namespace content

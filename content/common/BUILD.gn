@@ -543,7 +543,6 @@ mojom("mojo_bindings") {
     "child.mojom",
     "child_control.mojom",
     "child_memory_coordinator.mojom",
-    "clipboard.mojom",
     "color_chooser.mojom",
     "devtools.mojom",
     "field_trial_recorder.mojom",

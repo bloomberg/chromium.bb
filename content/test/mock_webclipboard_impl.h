@@ -49,8 +49,6 @@ class MockWebClipboardImpl : public blink::WebMockClipboard {
                  const blink::WebURL& url,
                  const blink::WebString& plainText,
                  bool writeSmartPaste) override;
-  virtual void writeURL(
-      const blink::WebURL& url, const blink::WebString& title);
   void WriteImage(const blink::WebImage& image,
                   const blink::WebURL& url,
                   const blink::WebString& title) override;
