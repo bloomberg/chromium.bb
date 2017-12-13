@@ -218,7 +218,9 @@ class AliveCheckerTest : public testing::Test {
 };
 
 // Start and Stop the checker, verify that we get no dead detection.
-TEST_F(AliveCheckerTest, StartStop) {
+// TODO(crbug.com/789804): Fix the test not to be flaky, e.g. by switching to
+// using a mocked clock, and re-enable it.
+TEST_F(AliveCheckerTest, DISABLED_StartStop) {
   CreateAliveChecker(false, false);
 
   StartAliveChecker();
@@ -263,7 +265,9 @@ TEST_F(AliveCheckerTest, NoAliveNotificationsDetectTwice) {
 
 // Start the checker, notify that the client is alive several times, then stop
 // the checker. Verify that it doesn't detect dead.
-TEST_F(AliveCheckerTest, NotifyThenStop) {
+// TODO(crbug.com/789804): Fix the test not to be flaky, e.g. by switching to
+// using a mocked clock, and re-enable it.
+TEST_F(AliveCheckerTest, DISABLED_NotifyThenStop) {
   CreateAliveChecker(false, false);
 
   StartAliveChecker();
