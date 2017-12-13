@@ -568,6 +568,60 @@ TEST_F(UpdateCheckerTest, UpdateCheckLastActive) {
                               "<ping rd=\"3383\" ping_freshness="));
 }
 
+TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+
+  IdToComponentPtrMap components;
+  components[kUpdateItemId] = MakeComponent();
+
+  auto& component = components[kUpdateItemId];
+  auto& crx_component = const_cast<CrxComponent&>(component->crx_component());
+
+  update_checker_->CheckForUpdates(
+      std::vector<std::string>{kUpdateItemId}, components, "", false,
+      base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
+                     base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_EQ(string::npos,
+            post_interceptor_->GetRequests()[0].find("intallsource="));
+
+  component->set_on_demand(true);
+  update_checker_->CheckForUpdates(
+      std::vector<std::string>{kUpdateItemId}, components, "", false,
+      base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
+                     base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
+                              "installsource=\"ondemand\""));
+
+  component->set_on_demand(false);
+  crx_component.install_source = "webstore";
+  update_checker_->CheckForUpdates(
+      std::vector<std::string>{kUpdateItemId}, components, "", false,
+      base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
+                     base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[2].find(
+                              "installsource=\"webstore\""));
+
+  component->set_on_demand(true);
+  crx_component.install_source = "sideload";
+  update_checker_->CheckForUpdates(
+      std::vector<std::string>{kUpdateItemId}, components, "", false,
+      base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
+                     base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[3].find(
+                              "installsource=\"sideload\""));
+}
+
 TEST_F(UpdateCheckerTest, ComponentDisabled) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
