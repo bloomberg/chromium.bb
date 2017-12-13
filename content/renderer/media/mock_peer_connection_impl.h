@@ -191,6 +191,7 @@ class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
   webrtc::RtpParameters GetParameters() const override;
   bool SetParameters(const webrtc::RtpParameters& parameters) override;
   void SetObserver(webrtc::RtpReceiverObserverInterface* observer) override;
+  std::vector<webrtc::RtpSource> GetSources() const override;
 
  private:
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
