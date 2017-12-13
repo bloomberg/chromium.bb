@@ -12,7 +12,7 @@ Are you a Google employee? See
 
 ## System requirements
 
-* A 64-bit Mac running 10.11+.
+* A 64-bit Mac running 10.12.6 or later.
 * [Xcode](https://developer.apple.com/xcode) 9.0+.
 * The current version of the JDK (required for the Closure compiler).
 
@@ -225,6 +225,10 @@ command line, you can use `iossim`. For example, to run a debug build of
 ```shell
 $ out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/Chromium.app
 ```
+
+With Xcode 9, `iossim` no longer automatically launches the Simulator. This must now
+be done manually from within Xcode (`Xcode > Open Developer Tool > Simulator`), and
+also must be done *after* running `iossim`.
 
 ### Passing arguments
 
