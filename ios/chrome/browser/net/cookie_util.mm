@@ -16,6 +16,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/net/cookies/cookie_store_ios_persistent.h"
+#import "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -86,7 +87,8 @@ CookieStoreConfig::CookieStoreConfig(const base::FilePath& path,
 CookieStoreConfig::~CookieStoreConfig() {}
 
 std::unique_ptr<net::CookieStore> CreateCookieStore(
-    const CookieStoreConfig& config) {
+    const CookieStoreConfig& config,
+    std::unique_ptr<net::SystemCookieStore> system_cookie_store) {
   if (config.cookie_store_type == CookieStoreConfig::COOKIE_MONSTER)
     return CreateCookieMonster(config);
 
@@ -99,7 +101,7 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
         config.crypto_delegate);
   }
   return base::MakeUnique<net::CookieStoreIOSPersistent>(
-      persistent_store.get());
+      persistent_store.get(), std::move(system_cookie_store));
 }
 
 bool ShouldClearSessionCookies() {

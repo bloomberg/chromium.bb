@@ -36,8 +36,8 @@ source_set("browser_state_impl") {
     "chrome_browser_state_impl.h",
     "chrome_browser_state_impl_io_data.h",
     "chrome_browser_state_impl_io_data.mm",
-    "chrome_browser_state_io_data.cc",
     "chrome_browser_state_io_data.h",
+    "chrome_browser_state_io_data.mm",
     "chrome_browser_state_manager_impl.cc",
     "chrome_browser_state_manager_impl.h",
     "chrome_browser_state_removal_controller.h",
@@ -117,6 +117,7 @@ source_set("browser_state_impl") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/web",
+    "//ios/web/net/cookies",
     "//net",
     "//net:extras",
   ]

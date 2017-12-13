@@ -25,6 +25,11 @@ CookieStoreIOSPersistent::CookieStoreIOSPersistent(
     : CookieStoreIOS(persistent_store,
                      base::MakeUnique<net::NSHTTPSystemCookieStore>()) {}
 
+CookieStoreIOSPersistent::CookieStoreIOSPersistent(
+    net::CookieMonster::PersistentCookieStore* persistent_store,
+    std::unique_ptr<SystemCookieStore> system_store)
+    : CookieStoreIOS(persistent_store, std::move(system_store)) {}
+
 CookieStoreIOSPersistent::~CookieStoreIOSPersistent() {}
 
 #pragma mark -
