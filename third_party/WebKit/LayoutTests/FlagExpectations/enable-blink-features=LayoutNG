@@ -2858,8 +2858,6 @@ crbug.com/591099 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/591099 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/voice_object/voice_font_properties.html [ Failure ]
 crbug.com/591099 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/voice_object/voice_font_shorthand.html [ Failure ]
 crbug.com/591099 external/wpt/workers/Worker_terminate_event_queue.htm [ Pass Timeout ]
-crbug.com/591099 external/wpt/workers/semantics/navigation/001.html [ Pass ]
-crbug.com/591099 external/wpt/workers/semantics/navigation/002.html [ Pass ]
 crbug.com/591099 fast/animation/scroll-animations/scrolltimeline-currenttime.html [ Failure ]
 crbug.com/591099 fast/autoresize/basic.html [ Failure ]
 crbug.com/591099 fast/autoresize/turn-off-autoresize.html [ Failure ]
