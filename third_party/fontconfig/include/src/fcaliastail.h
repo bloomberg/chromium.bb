@@ -148,6 +148,8 @@ extern __typeof (FcDirSave) FcDirSave __attribute((alias("IA__FcDirSave"), visib
 extern __typeof (FcDirCacheLoad) FcDirCacheLoad __attribute((alias("IA__FcDirCacheLoad"), visibility("default")));
 #endif /* __fccache__ */
 #ifdef __fcdir__
+# undef FcDirCacheRescan
+extern __typeof (FcDirCacheRescan) FcDirCacheRescan __attribute((alias("IA__FcDirCacheRescan"), visibility("default")));
 # undef FcDirCacheRead
 extern __typeof (FcDirCacheRead) FcDirCacheRead __attribute((alias("IA__FcDirCacheRead"), visibility("default")));
 #endif /* __fcdir__ */
@@ -330,6 +332,8 @@ extern __typeof (FcPatternAdd) FcPatternAdd __attribute((alias("IA__FcPatternAdd
 extern __typeof (FcPatternAddWeak) FcPatternAddWeak __attribute((alias("IA__FcPatternAddWeak"), visibility("default")));
 # undef FcPatternGet
 extern __typeof (FcPatternGet) FcPatternGet __attribute((alias("IA__FcPatternGet"), visibility("default")));
+# undef FcPatternGetWithBinding
+extern __typeof (FcPatternGetWithBinding) FcPatternGetWithBinding __attribute((alias("IA__FcPatternGetWithBinding"), visibility("default")));
 # undef FcPatternDel
 extern __typeof (FcPatternDel) FcPatternDel __attribute((alias("IA__FcPatternDel"), visibility("default")));
 # undef FcPatternRemove
@@ -348,6 +352,8 @@ extern __typeof (FcPatternAddCharSet) FcPatternAddCharSet __attribute((alias("IA
 extern __typeof (FcPatternAddBool) FcPatternAddBool __attribute((alias("IA__FcPatternAddBool"), visibility("default")));
 # undef FcPatternAddLangSet
 extern __typeof (FcPatternAddLangSet) FcPatternAddLangSet __attribute((alias("IA__FcPatternAddLangSet"), visibility("default")));
+# undef FcPatternAddRange
+extern __typeof (FcPatternAddRange) FcPatternAddRange __attribute((alias("IA__FcPatternAddRange"), visibility("default")));
 # undef FcPatternGetInteger
 extern __typeof (FcPatternGetInteger) FcPatternGetInteger __attribute((alias("IA__FcPatternGetInteger"), visibility("default")));
 # undef FcPatternGetDouble
@@ -362,6 +368,8 @@ extern __typeof (FcPatternGetCharSet) FcPatternGetCharSet __attribute((alias("IA
 extern __typeof (FcPatternGetBool) FcPatternGetBool __attribute((alias("IA__FcPatternGetBool"), visibility("default")));
 # undef FcPatternGetLangSet
 extern __typeof (FcPatternGetLangSet) FcPatternGetLangSet __attribute((alias("IA__FcPatternGetLangSet"), visibility("default")));
+# undef FcPatternGetRange
+extern __typeof (FcPatternGetRange) FcPatternGetRange __attribute((alias("IA__FcPatternGetRange"), visibility("default")));
 # undef FcPatternVaBuild
 extern __typeof (FcPatternVaBuild) FcPatternVaBuild __attribute((alias("IA__FcPatternVaBuild"), visibility("default")));
 # undef FcPatternBuild
@@ -371,6 +379,24 @@ extern __typeof (FcPatternBuild) FcPatternBuild __attribute((alias("IA__FcPatter
 # undef FcPatternFormat
 extern __typeof (FcPatternFormat) FcPatternFormat __attribute((alias("IA__FcPatternFormat"), visibility("default")));
 #endif /* __fcformat__ */
+#ifdef __fcrange__
+# undef FcRangeCreateDouble
+extern __typeof (FcRangeCreateDouble) FcRangeCreateDouble __attribute((alias("IA__FcRangeCreateDouble"), visibility("default")));
+# undef FcRangeCreateInteger
+extern __typeof (FcRangeCreateInteger) FcRangeCreateInteger __attribute((alias("IA__FcRangeCreateInteger"), visibility("default")));
+# undef FcRangeDestroy
+extern __typeof (FcRangeDestroy) FcRangeDestroy __attribute((alias("IA__FcRangeDestroy"), visibility("default")));
+# undef FcRangeCopy
+extern __typeof (FcRangeCopy) FcRangeCopy __attribute((alias("IA__FcRangeCopy"), visibility("default")));
+# undef FcRangeGetDouble
+extern __typeof (FcRangeGetDouble) FcRangeGetDouble __attribute((alias("IA__FcRangeGetDouble"), visibility("default")));
+#endif /* __fcrange__ */
+#ifdef __fcweight__
+# undef FcWeightFromOpenType
+extern __typeof (FcWeightFromOpenType) FcWeightFromOpenType __attribute((alias("IA__FcWeightFromOpenType"), visibility("default")));
+# undef FcWeightToOpenType
+extern __typeof (FcWeightToOpenType) FcWeightToOpenType __attribute((alias("IA__FcWeightToOpenType"), visibility("default")));
+#endif /* __fcweight__ */
 #ifdef __fcstr__
 # undef FcStrCopy
 extern __typeof (FcStrCopy) FcStrCopy __attribute((alias("IA__FcStrCopy"), visibility("default")));
@@ -430,6 +456,8 @@ extern __typeof (FcStrListDone) FcStrListDone __attribute((alias("IA__FcStrListD
 #ifdef __fcxml__
 # undef FcConfigParseAndLoad
 extern __typeof (FcConfigParseAndLoad) FcConfigParseAndLoad __attribute((alias("IA__FcConfigParseAndLoad"), visibility("default")));
+# undef FcConfigParseAndLoadFromMemory
+extern __typeof (FcConfigParseAndLoadFromMemory) FcConfigParseAndLoadFromMemory __attribute((alias("IA__FcConfigParseAndLoadFromMemory"), visibility("default")));
 #endif /* __fcxml__ */
 #ifdef __fccfg__
 # undef FcConfigGetRescanInverval

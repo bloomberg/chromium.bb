@@ -26,7 +26,6 @@ if (use_bundled_fontconfig) {
       "src/src/fcformat.c",
       "src/src/fcfreetype.c",
       "src/src/fcfs.c",
-      "src/src/fchash.c",
       "src/src/fcinit.c",
       "src/src/fclang.c",
       "src/src/fclist.c",
@@ -35,9 +34,11 @@ if (use_bundled_fontconfig) {
       "src/src/fcname.c",
       "src/src/fcobjs.c",
       "src/src/fcpat.c",
+      "src/src/fcrange.c",
       "src/src/fcserialize.c",
       "src/src/fcstat.c",
       "src/src/fcstr.c",
+      "src/src/fcweight.c",
       "src/src/fcxml.c",
       "src/src/ftglue.c",
       "src/src/ftglue.h",
@@ -66,8 +67,13 @@ if (use_bundled_fontconfig) {
     public_configs = [ ":fontconfig_config" ]
 
     if (is_clang) {
-      # Work around a null-conversion warning. See crbug.com/358852.
-      cflags = [ "-Wno-non-literal-null-conversion" ]
+      cflags = [
+        # Work around a null-conversion warning. See crbug.com/358852.
+        "-Wno-non-literal-null-conversion",
+
+        # Work around a pointer-to-bool conversion.
+        "-Wno-pointer-bool-conversion",
+      ]
     }
   }
 } else {
