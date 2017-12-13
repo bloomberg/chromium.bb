@@ -18,6 +18,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -70,15 +71,13 @@ void AshTestSuite::Initialize() {
   env_ = aura::Env::CreateInstance(is_mus || is_mash ? aura::Env::Mode::MUS
                                                      : aura::Env::Mode::LOCAL);
 
-  if (is_mus || is_mash) {
+  if (is_mash) {
     context_factory_ = std::make_unique<aura::test::AuraTestContextFactory>();
     env_->set_context_factory(context_factory_.get());
     env_->set_context_factory_private(nullptr);
     // mus needs to host viz, because ash by itself cannot.
-    if (is_mash) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kMus, switches::kMusHostVizValue);
-    }
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kMus, switches::kMusHostVizValue);
   }
 }
 
