@@ -492,6 +492,7 @@ class BidirectionalStreamQuicImplTest
         /*migrate_session_early*/ false,
         /*migrate_session_on_network_change_v2*/ false,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
+        kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,

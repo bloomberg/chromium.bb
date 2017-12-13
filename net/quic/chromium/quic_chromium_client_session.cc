@@ -659,6 +659,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     bool migrate_session_early_v2,
     bool migrate_sessions_on_network_change_v2,
     base::TimeDelta max_time_on_non_default_network,
+    int max_migrations_to_non_default_network_on_path_degrading,
     int yield_after_packets,
     QuicTime::Delta yield_after_duration,
     int cert_verify_flags,
@@ -681,6 +682,9 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       migrate_session_on_network_change_v2_(
           migrate_sessions_on_network_change_v2),
       max_time_on_non_default_network_(max_time_on_non_default_network),
+      max_migrations_to_non_default_network_on_path_degrading_(
+          max_migrations_to_non_default_network_on_path_degrading),
+      current_migrations_to_non_default_network_on_path_degrading_(0),
       clock_(clock),
       yield_after_packets_(yield_after_packets),
       yield_after_duration_(yield_after_duration),
@@ -1653,13 +1657,16 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
   if (network == default_network_) {
     DVLOG(1) << "Client successfully migrated to default network.";
     CancelMigrateBackToDefaultNetworkTimer();
-  } else if (!migrate_back_to_default_timer_.IsRunning()) {
-    // We get off the |default_network|, stay on |network| for now but
-    // try to migrate back to default network after 1 second.
+  } else {
     DVLOG(1) << "Client successfully got off default network after "
              << "successful probing network: " << network << ".";
-    StartMigrateBackToDefaultNetworkTimer(
-        base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs));
+    current_migrations_to_non_default_network_on_path_degrading_++;
+    if (!migrate_back_to_default_timer_.IsRunning()) {
+      // Session gets off the |default_network|, stay on |network| for now but
+      // try to migrate back to default network after 1 second.
+      StartMigrateBackToDefaultNetworkTimer(
+          base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs));
+    }
   }
 }
 
@@ -1769,6 +1776,7 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
                                migration_net_log);
     return;
   }
+  current_migrations_to_non_default_network_on_path_degrading_ = 0;
 
   // Connection migration v2.
   // If we are already on the new network.
@@ -1850,12 +1858,22 @@ void QuicChromiumClientSession::OnPathDegrading() {
           stream_factory_->FindAlternateNetwork(
               GetDefaultSocket()->GetBoundNetwork());
       if (alternate_network != NetworkChangeNotifier::kInvalidNetworkHandle) {
-        // Probe alternative network, we will migrate to the probed network
-        // and decide whether we want to migrate back to the default network
-        // on success.
-        StartProbeNetwork(alternate_network,
-                          connection()->peer_address().impl().socket_address(),
-                          migration_net_log);
+        if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
+            current_migrations_to_non_default_network_on_path_degrading_ >=
+                max_migrations_to_non_default_network_on_path_degrading_) {
+          HistogramAndLogMigrationFailure(
+              migration_net_log, MIGRATION_STATUS_ON_PATH_DEGRADING_DISABLED,
+              connection_id(),
+              "Exceeds maximum number of migrations on path degrading");
+        } else {
+          // Probe alternative network, session will migrate to the probed
+          // network and decide whether it wants to migrate back to the default
+          // network on success.
+          StartProbeNetwork(
+              alternate_network,
+              connection()->peer_address().impl().socket_address(),
+              migration_net_log);
+        }
       } else {
         HistogramAndLogMigrationFailure(
             migration_net_log, MIGRATION_STATUS_DISABLED, connection_id(),
