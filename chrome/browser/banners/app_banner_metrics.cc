@@ -4,8 +4,8 @@
 
 #include "chrome/browser/banners/app_banner_metrics.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/installable/installable_logging.h"
 
 namespace banners {
@@ -24,19 +24,19 @@ const char kInstallDisplayModeHistogram[] = "Webapp.Install.DisplayMode";
 void TrackDismissEvent(int event) {
   DCHECK_LT(DISMISS_EVENT_MIN, event);
   DCHECK_LT(event, DISMISS_EVENT_MAX);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kDismissEventHistogram, event);
+  base::UmaHistogramSparse(kDismissEventHistogram, event);
 }
 
 void TrackDisplayEvent(int event) {
   DCHECK_LT(DISPLAY_EVENT_MIN, event);
   DCHECK_LT(event, DISPLAY_EVENT_MAX);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kDisplayEventHistogram, event);
+  base::UmaHistogramSparse(kDisplayEventHistogram, event);
 }
 
 void TrackInstallEvent(int event) {
   DCHECK_LT(INSTALL_EVENT_MIN, event);
   DCHECK_LT(event, INSTALL_EVENT_MAX);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kInstallEventHistogram, event);
+  base::UmaHistogramSparse(kInstallEventHistogram, event);
 }
 
 void TrackMinutesFromFirstVisitToBannerShown(int minutes) {
@@ -50,13 +50,13 @@ void TrackMinutesFromFirstVisitToBannerShown(int minutes) {
 void TrackUserResponse(int event) {
   DCHECK_LT(USER_RESPONSE_MIN, event);
   DCHECK_LT(event, USER_RESPONSE_MAX);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kUserResponseHistogram, event);
+  base::UmaHistogramSparse(kUserResponseHistogram, event);
 }
 
 void TrackBeforeInstallEvent(int event) {
   DCHECK_LT(BEFORE_INSTALL_EVENT_MIN, event);
   DCHECK_LT(event, BEFORE_INSTALL_EVENT_MAX);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kBeforeInstallEventHistogram, event);
+  base::UmaHistogramSparse(kBeforeInstallEventHistogram, event);
 }
 
 void TrackInstallableStatusCode(InstallableStatusCode code) {
@@ -64,7 +64,7 @@ void TrackInstallableStatusCode(InstallableStatusCode code) {
   DCHECK_LT(code, MAX_ERROR_CODE);
   if (code != IN_INCOGNITO) {
     // Do not log that we are in incognito to UMA.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kInstallableStatusCodeHistogram, code);
+    base::UmaHistogramSparse(kInstallableStatusCodeHistogram, code);
   }
 }
 

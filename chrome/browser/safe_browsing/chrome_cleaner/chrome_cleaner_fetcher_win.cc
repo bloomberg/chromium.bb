@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -272,7 +273,7 @@ void ChromeCleanerFetcher::PostCallbackAndDeleteSelf(
 
 void ChromeCleanerFetcher::MaybeRetryDownloadingCleaner(int net_error) {
   ++attempts_to_download_;
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kDownloadStatusErrorCodeHistogramName, net_error);
+  base::UmaHistogramSparse(kDownloadStatusErrorCodeHistogramName, net_error);
   if (attempts_to_download_ == kMaxCleanerDownloadAttempts) {
     RecordTimeToCompleteDownload(
         FetchCompletedReasonHistogramSuffix::kNetworkError);
@@ -301,8 +302,8 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   const int response_code = source->GetResponseCode();
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kDownloadStatusErrorCodeHistogramName,
-                              response_code);
+  base::UmaHistogramSparse(kDownloadStatusErrorCodeHistogramName,
+                           response_code);
   const FetchCompletedReasonHistogramSuffix suffix =
       response_code == net::HTTP_OK
           ? FetchCompletedReasonHistogramSuffix::kDownloadSuccess

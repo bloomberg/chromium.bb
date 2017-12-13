@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "chrome/grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -57,15 +57,14 @@ void FileTypePolicies::RecordUpdateMetrics(UpdateResult result,
                                            const std::string& src_name) {
   lock_.AssertAcquired();
   // src_name should be "ResourceBundle" or "DynamicUpdate".
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "SafeBrowsing.FileTypeUpdate." + src_name + "Result",
-      static_cast<unsigned int>(result));
+  base::UmaHistogramSparse("SafeBrowsing.FileTypeUpdate." + src_name + "Result",
+                           static_cast<unsigned int>(result));
 
   if (result == UpdateResult::SUCCESS) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "SafeBrowsing.FileTypeUpdate." + src_name + "Version",
         config_->version_id());
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "SafeBrowsing.FileTypeUpdate." + src_name + "TypeCount",
         config_->file_types().size());
   }

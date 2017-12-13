@@ -5,7 +5,7 @@
 #include "chrome/browser/download/download_danger_prompt.h"
 
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -96,12 +96,12 @@ void DownloadDangerPrompt::RecordDownloadDangerPrompt(
           download.GetTargetFilePath());
   content::DownloadDangerType danger_type = download.GetDangerType();
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       base::StringPrintf("%s.%s.Shown", kDownloadDangerPromptPrefix,
                          GetDangerTypeString(danger_type)),
       file_type_uma_value);
   if (did_proceed) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         base::StringPrintf("%s.%s.Proceed", kDownloadDangerPromptPrefix,
                            GetDangerTypeString(danger_type)),
         file_type_uma_value);

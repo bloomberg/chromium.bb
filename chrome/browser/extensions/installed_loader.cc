@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -143,7 +143,7 @@ void RecordCreationFlags(const Extension* extension) {
 // Helper to record a single disable reason histogram value (see
 // RecordDisableReasons below).
 void RecordDisbleReasonHistogram(int reason) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.DisableReason", reason);
+  base::UmaHistogramSparse("Extensions.DisableReason", reason);
 }
 
 // Records the disable reasons for a single extension grouped by

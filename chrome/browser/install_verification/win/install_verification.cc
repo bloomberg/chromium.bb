@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
@@ -25,7 +25,7 @@
 namespace {
 
 void ReportModuleMatch(size_t module_id) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("InstallVerifier.ModuleMatch", module_id);
+  base::UmaHistogramSparse("InstallVerifier.ModuleMatch", module_id);
 }
 
 base::FilePath GetExeFilePathForProcess(const base::Process& process) {
@@ -68,7 +68,7 @@ void ReportParentProcessName() {
     }
   }
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Windows.ParentProcessNameHash", hash);
+  base::UmaHistogramSparse("Windows.ParentProcessNameHash", hash);
 }
 
 }  // namespace

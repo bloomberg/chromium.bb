@@ -13,8 +13,8 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -308,8 +308,8 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
     CloudPolicyClient* cloud_policy_client) {
   DCHECK_EQ(client(), cloud_policy_client);
   if (waiting_for_initial_policy_fetch_) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAInitialFetchClientError,
-                                cloud_policy_client->status());
+    base::UmaHistogramSparse(kUMAInitialFetchClientError,
+                             cloud_policy_client->status());
   }
   switch (client()->status()) {
     case DM_STATUS_SUCCESS:
@@ -420,8 +420,8 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
     if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
       // Network errors are negative in the code, but the histogram data type
       // expects the corresponding positive value.
-      UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAInitialFetchOAuth2NetworkError,
-                                  -error.network_error());
+      base::UmaHistogramSparse(kUMAInitialFetchOAuth2NetworkError,
+                               -error.network_error());
     }
     // Failed to get a token, stop waiting if policy is not required for this
     // user.

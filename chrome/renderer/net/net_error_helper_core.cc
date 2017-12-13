@@ -21,8 +21,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -364,19 +364,19 @@ std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
 void ReportAutoReloadSuccess(const error_page::Error& error, size_t count) {
   if (error.domain() != net::kErrorDomain)
     return;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtSuccess", -error.reason());
+  base::UmaHistogramSparse("Net.AutoReload.ErrorAtSuccess", -error.reason());
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess",
                        static_cast<base::HistogramBase::Sample>(count));
   if (count == 1) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtFirstSuccess",
-                                -error.reason());
+    base::UmaHistogramSparse("Net.AutoReload.ErrorAtFirstSuccess",
+                             -error.reason());
   }
 }
 
 void ReportAutoReloadFailure(const error_page::Error& error, size_t count) {
   if (error.domain() != net::kErrorDomain)
     return;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtStop", -error.reason());
+  base::UmaHistogramSparse("Net.AutoReload.ErrorAtStop", -error.reason());
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
                        static_cast<base::HistogramBase::Sample>(count));
 }

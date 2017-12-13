@@ -4,8 +4,8 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/time/clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,7 +35,7 @@ bool ReportCompareFunc(const CertificateReportingService::Report& item1,
 // Records an UMA histogram of the net errors when certificate reports
 // fail to send.
 void RecordUMAOnFailure(int net_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.CertificateErrorReportFailure", -net_error);
+  base::UmaHistogramSparse("SSL.CertificateErrorReportFailure", -net_error);
 }
 
 void RecordUMAEvent(CertificateReportingService::ReportOutcome outcome) {

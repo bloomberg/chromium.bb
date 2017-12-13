@@ -12,8 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -465,12 +465,12 @@ void ClientSideDetectionService::HandleMalwareVerdict(
     int response_code,
     const std::string& data) {
   if (status.is_success()) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "SBClientMalware.IPBlacklistRequestResponseCode", response_code);
+    base::UmaHistogramSparse("SBClientMalware.IPBlacklistRequestResponseCode",
+                             response_code);
   }
   // status error is negative, so we put - in front of it.
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "SBClientMalware.IPBlacklistRequestNetError", -status.error());
+  base::UmaHistogramSparse("SBClientMalware.IPBlacklistRequestNetError",
+                           -status.error());
 
   ClientMalwareResponse response;
   std::unique_ptr<ClientMalwareReportInfo> info =

@@ -10,8 +10,8 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
@@ -276,7 +276,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
                       [&data_types](BrowsingDataType type) {
                         return data_types.find(type) != data_types.end();
                       });
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "History.ClearBrowsingData.PasswordsDeletion.AdditionalDatatypesCount",
         checked_other_types);
   }

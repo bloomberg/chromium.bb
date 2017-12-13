@@ -14,6 +14,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -188,7 +189,7 @@ LaunchMode GetLaunchMode() {
 // LaunchMode enum for the actual values of the buckets.
 void RecordLaunchModeHistogram(LaunchMode mode) {
   int bucket = (mode == LM_TO_BE_DECIDED) ? GetLaunchMode() : mode;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Launch.Modes", bucket);
+  base::UmaHistogramSparse("Launch.Modes", bucket);
 }
 
 void UrlsToTabs(const std::vector<GURL>& urls, StartupTabs* tabs) {

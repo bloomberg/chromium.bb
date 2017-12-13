@@ -10,8 +10,8 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
@@ -291,11 +291,11 @@ void AutoEnrollmentClient::HandleRequestCompletion(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kUMARequestStatus, status);
+  base::UmaHistogramSparse(kUMARequestStatus, status);
   if (status != DM_STATUS_SUCCESS) {
     LOG(ERROR) << "Auto enrollment error: " << status;
     if (status == DM_STATUS_REQUEST_FAILED)
-      UMA_HISTOGRAM_SPARSE_SLOWLY(kUMANetworkErrorCode, -net_error);
+      base::UmaHistogramSparse(kUMANetworkErrorCode, -net_error);
     request_job_.reset();
 
     // Abort if CancelAndDeleteSoon has been called meanwhile.

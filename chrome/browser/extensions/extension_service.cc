@@ -15,6 +15,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -462,7 +463,7 @@ void ExtensionService::EnableZipUnpackerExtension() {
   const std::string& id = extension_misc::kZIPUnpackerExtensionId;
   const Extension* extension = registry_->disabled_extensions().GetByID(id);
   if (extension && CanEnableExtension(extension)) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "ExtensionService.ZipUnpackerDisabledReason",
         extension_prefs_->GetDisableReasons(extension->id()));
     EnableExtension(id);

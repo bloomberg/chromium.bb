@@ -12,8 +12,8 @@
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -285,7 +285,7 @@ void ChromeExpectCTReporter::SendPreflight(
 void ChromeExpectCTReporter::OnReportFailure(const GURL& report_uri,
                                              int net_error,
                                              int http_response_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.ExpectCTReportFailure2", -net_error);
+  base::UmaHistogramSparse("SSL.ExpectCTReportFailure2", -net_error);
   if (!failure_callback_.is_null())
     failure_callback_.Run();
 }

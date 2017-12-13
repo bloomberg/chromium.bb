@@ -81,7 +81,7 @@ void UpdateAuthTiming(const char* histogram_name,
 }
 
 void UpdateAuthCheckinAttempts(int32_t num_attempts) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("ArcAuth.CheckinAttempts", num_attempts);
+  base::UmaHistogramSparse("ArcAuth.CheckinAttempts", num_attempts);
 }
 
 void UpdateAuthAccountCheckStatus(mojom::AccountCheckStatus status) {
@@ -92,13 +92,12 @@ void UpdateAuthAccountCheckStatus(mojom::AccountCheckStatus status) {
 }
 
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Arc.OptInSilentAuthCode",
-                              static_cast<int>(state));
+  base::UmaHistogramSparse("Arc.OptInSilentAuthCode", static_cast<int>(state));
 }
 
 void UpdateReauthorizationSilentAuthCodeUMA(OptInSilentAuthCode state) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Arc.OptInSilentAuthCode.Reauthorization",
-                              static_cast<int>(state));
+  base::UmaHistogramSparse("Arc.OptInSilentAuthCode.Reauthorization",
+                           static_cast<int>(state));
 }
 
 std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result) {

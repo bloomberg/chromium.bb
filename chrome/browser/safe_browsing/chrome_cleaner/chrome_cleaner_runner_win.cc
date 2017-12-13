@@ -12,7 +12,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -187,7 +187,7 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread() {
         LaunchStatus::kLaunchSucceededFailedToWaitForCompletion);
   }
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       "SoftwareReporter.Cleaner.ExitCodeFromConnectedProcess", exit_code);
   return ProcessStatus(LaunchStatus::kSuccess, exit_code);
 }
