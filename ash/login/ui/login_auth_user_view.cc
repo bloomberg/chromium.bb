@@ -204,8 +204,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   // case, then render the user view as if it was always focused, since clicking
   // on it will not do anything (such as swapping users).
   user_view_->SetForceOpaque(has_password);
-  user_view_->SetFocusBehavior(has_password ? FocusBehavior::NEVER
-                                            : FocusBehavior::ALWAYS);
+  user_view_->SetTapEnabled(!has_password);
 
   PreferredSizeChanged();
 }
