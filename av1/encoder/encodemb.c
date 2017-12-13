@@ -678,8 +678,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_MISMATCH_DEBUG
   if (dry_run == OUTPUT_ENABLED) {
     int pixel_c, pixel_r;
-    int blk_w = block_size_wide[plane_bsize];
-    int blk_h = block_size_high[plane_bsize];
+    BLOCK_SIZE bsize = txsize_to_bsize[tx_size];
+    int blk_w = block_size_wide[bsize];
+    int blk_h = block_size_high[bsize];
     mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, blk_col, blk_row,
                     pd->subsampling_x, pd->subsampling_y);
     mismatch_record_block_tx(dst, pd->dst.stride, plane, pixel_c, pixel_r,

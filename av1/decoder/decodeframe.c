@@ -282,8 +282,8 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
                             max_scan_line, eob, cm->reduced_tx_set_used);
 #if CONFIG_MISMATCH_DEBUG
     int pixel_c, pixel_r;
-    int blk_w = block_size_wide[plane_bsize];
-    int blk_h = block_size_high[plane_bsize];
+    int blk_w = block_size_wide[bsize];
+    int blk_h = block_size_high[bsize];
     mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, blk_col, blk_row,
                     pd->subsampling_x, pd->subsampling_y);
     mismatch_check_block_tx(dst, pd->dst.stride, plane, pixel_c, pixel_r, blk_w,
