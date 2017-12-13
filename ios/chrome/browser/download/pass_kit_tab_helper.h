@@ -18,6 +18,26 @@ class DownloadTask;
 class WebState;
 }  // namespace web
 
+// Key of the UMA Download.IOSDownloadPassKitResult histogram.
+extern const char kUmaDownloadPassKitResult[];
+
+// Enum for the Download.IOSDownloadPassKitResult UMA histogram to report the
+// results of the PassKit download.
+// Note: This enum is used to back an UMA histogram, and should be treated as
+// append-only.
+enum class DownloadPassKitResult {
+  Successful = 0,
+  // PassKit download failed for a reason other than wrong MIME type or 401/403
+  // HTTP response.
+  OtherFailure,
+  // PassKit download failed due to either a 401 or 403 HTTP response.
+  UnauthorizedFailure,
+  // PassKit download did not download the correct MIME type. This can happen
+  // when web server redirects to login page instead of returning PassKit data.
+  WrongMimeTypeFailure,
+  Count
+};
+
 // TabHelper which downloads pkpass file, constructs PKPass object and passes
 // that PKPass to the delegate.
 class PassKitTabHelper : public web::WebStateUserData<PassKitTabHelper>,
