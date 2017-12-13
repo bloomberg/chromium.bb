@@ -49,6 +49,10 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // ContentBrowserClient::GetOriginsRequiringDedicatedProcess.
   static std::vector<url::Origin> GetIsolatedOrigins();
 
+  // Records metrics about which site isolation command-line flags are present.
+  // This should be called once on browser startup.
+  static void RecordSiteIsolationFlagUsage();
+
  private:
   SiteIsolationPolicy();  // Not instantiable.
 
