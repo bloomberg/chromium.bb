@@ -18181,6 +18181,20 @@ Called by update_net_error_codes.py.-->
       label="File was dropped because no embedded profile was found."/>
 </enum>
 
+<enum name="FileMetricsProviderHappening">
+  <int value="0" label="OnDidCreateMetricsLog"/>
+  <int value="1" label="ScheduleSourcesCheck"/>
+  <int value="2" label="CheckAndMergeMetricSources"/>
+  <int value="3" label="RecordSourcesChecked"/>
+  <int value="4" label="CheckAndMapSource"/>
+  <int value="5" label="FinishedWithSource"/>
+  <int value="6" label="RecordSourceAsRead"/>
+  <int value="7" label="DeleteFileAsync"/>
+  <int value="8" label="MergeHistogramDeltasFromSource"/>
+  <int value="9" label="RecordHistogramSnapshotsFromSource"/>
+  <int value="10" label="ProvideIndependentMetrics"/>
+</enum>
+
 <enum name="FileReaderSyncWorkerType">
   <int value="0" label="Other"/>
   <int value="1" label="Dedicated Worker"/>
