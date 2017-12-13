@@ -96,8 +96,8 @@ class EmptyNotificationView : public views::View {
         l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_NO_MESSAGES));
     label->SetEnabledColor(message_center_style::kEmptyViewColor);
     // "Roboto-Medium, 12sp" is specified in the mock.
-    label->SetFontList(message_center_style::GetFontListForSizeAndWeight(
-        message_center_style::kEmptyLabelSize, gfx::Font::Weight::MEDIUM));
+    label->SetFontList(
+        gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
     label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     AddChildView(label);
   }

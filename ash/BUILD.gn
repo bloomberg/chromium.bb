@@ -307,7 +307,6 @@ component("ash") {
     "message_center/message_center_button_bar.h",
     "message_center/message_center_controller.cc",
     "message_center/message_center_controller.h",
-    "message_center/message_center_style.cc",
     "message_center/message_center_style.h",
     "message_center/message_center_view.cc",
     "message_center/message_center_view.h",
