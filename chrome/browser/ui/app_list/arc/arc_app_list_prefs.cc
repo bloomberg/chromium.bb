@@ -818,6 +818,9 @@ void ArcAppListPrefs::OnConnectionReady() {
   // Note, sync_service_ may be nullptr in testing.
   sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
   is_initialized_ = false;
+
+  if (!app_list_refreshed_callback_.is_null())
+    std::move(app_list_refreshed_callback_).Run();
 }
 
 void ArcAppListPrefs::OnConnectionClosed() {
@@ -834,6 +837,7 @@ void ArcAppListPrefs::OnConnectionClosed() {
 
   is_initialized_ = false;
   package_list_initial_refreshed_ = false;
+  app_list_refreshed_callback_.Reset();
 }
 
 void ArcAppListPrefs::HandleTaskCreated(const base::Optional<std::string>& name,
@@ -1033,6 +1037,16 @@ void ArcAppListPrefs::RemovePackageFromPrefs(PrefService* prefs,
 
 void ArcAppListPrefs::OnAppListRefreshed(
     std::vector<arc::mojom::AppInfoPtr> apps) {
+  DCHECK(app_list_refreshed_callback_.is_null());
+  if (!app_connection_holder_->IsConnected()) {
+    LOG(ERROR) << "App instance is not connected. Delaying app list refresh. "
+               << "See b/70566216.";
+    app_list_refreshed_callback_ =
+        base::BindOnce(&ArcAppListPrefs::OnAppListRefreshed,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(apps));
+    return;
+  }
+
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
   std::vector<std::string> old_apps = GetAppIds();
 

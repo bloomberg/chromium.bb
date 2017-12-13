@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -474,6 +475,9 @@ class ArcAppListPrefs : public KeyedService,
   base::Closure default_apps_ready_callback_;
   int last_shown_batch_installation_revision_ = -1;
   int current_batch_installation_revision_ = 0;
+
+  // TODO (b/70566216): Remove this once fixed.
+  base::OnceClosure app_list_refreshed_callback_;
 
   base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_;
 
