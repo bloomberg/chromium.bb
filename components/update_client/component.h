@@ -28,6 +28,7 @@
 namespace update_client {
 
 class ActionRunner;
+class Configurator;
 struct CrxUpdateItem;
 struct UpdateContext;
 
@@ -118,6 +119,8 @@ class Component {
   int diff_extra_code1() const { return diff_extra_code1_; }
 
   std::string action_run() const { return action_run_; }
+
+  scoped_refptr<Configurator> config() const;
 
  private:
   friend class FakePingManagerImpl;

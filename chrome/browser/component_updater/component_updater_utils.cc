@@ -13,6 +13,8 @@ namespace component_updater {
 
 bool IsPerUserInstall() {
 #if defined(OS_WIN)
+  // The installer computes and caches this value in memory during the
+  // process start up.
   return InstallUtil::IsPerUserInstall();
 #else
   return true;
