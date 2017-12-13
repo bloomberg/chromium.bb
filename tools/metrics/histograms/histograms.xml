@@ -81696,6 +81696,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteIsolation.Flags.IsolateOrigins" enum="BooleanEnabled">
+  <owner>alexmos@chromium.org</owner>
+  <summary>
+    True if the --isolate-origins mode was enabled from the command line,
+    about:flags, or enterprise policy.  Recorded on browser startup.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.Flags.SitePerProcess" enum="BooleanEnabled">
+  <owner>alexmos@chromium.org</owner>
+  <summary>
+    True if the --site-per-process mode was enabled from the command line,
+    about:flags, or enterprise policy.  Recorded on browser startup.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.IsolateAllSitesProcessCountEstimate">
   <owner>creis@chromium.org</owner>
   <summary>
