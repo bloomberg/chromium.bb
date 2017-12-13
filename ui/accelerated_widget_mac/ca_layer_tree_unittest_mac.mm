@@ -758,6 +758,31 @@ TEST_F(CALayerTreeTest, AVLayer) {
   }
 
   properties.gl_image = CreateGLImage(
+      gfx::Size(513, 512), gfx::BufferFormat::YUV_420_BIPLANAR, true);
+
+  // Pass a frame with a CVPixelBuffer which, when scaled down, will have a
+  // fractional dimension.
+  {
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+    // Validate the tree structure.
+    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[root_layer sublayers] count]);
+    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+    content_layer3 = [[transform_layer sublayers] objectAtIndex:0];
+
+    // Validate that the layer's size is adjusted to include the fractional
+    // width, which works around a macOS bug (https://crbug.com/792632).
+    CGSize layer_size = content_layer3.bounds.size;
+    EXPECT_EQ(256.5, layer_size.width);
+    EXPECT_EQ(256, layer_size.height);
+  }
+
+  properties.gl_image = CreateGLImage(
       gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, false);
 
   // Pass a frame that is clipped.

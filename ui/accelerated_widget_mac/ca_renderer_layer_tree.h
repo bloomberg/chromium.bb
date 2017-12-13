@@ -174,7 +174,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     const base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
     scoped_refptr<SolidColorContents> solid_color_contents;
     gfx::RectF contents_rect;
-    gfx::Rect rect;
+    gfx::RectF rect;
     unsigned background_color = 0;
     // Note that the CoreAnimation edge antialiasing mask is not the same as
     // the edge antialiasing mask passed to the constructor.
