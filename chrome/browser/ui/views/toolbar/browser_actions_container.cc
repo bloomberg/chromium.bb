@@ -75,16 +75,10 @@ BrowserActionsContainer::BrowserActionsContainer(
     : toolbar_actions_bar_(new ToolbarActionsBar(
           this,
           browser,
-          main_container ?
-              main_container->toolbar_actions_bar_.get() : nullptr)),
+          main_container ? main_container->toolbar_actions_bar_.get()
+                         : nullptr)),
       browser_(browser),
-      main_container_(main_container),
-      resize_area_(NULL),
-      added_to_view_(false),
-      resize_starting_width_(-1),
-      resize_amount_(0),
-      animation_target_size_(0),
-      active_bubble_(nullptr) {
+      main_container_(main_container) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
   if (!ShownInsideMenu()) {

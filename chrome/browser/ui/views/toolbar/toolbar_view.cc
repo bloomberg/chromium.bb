@@ -102,14 +102,7 @@ const char ToolbarView::kViewClassName[] = "ToolbarView";
 // ToolbarView, public:
 
 ToolbarView::ToolbarView(Browser* browser)
-    : back_(nullptr),
-      forward_(nullptr),
-      reload_(nullptr),
-      home_(nullptr),
-      location_bar_(nullptr),
-      browser_actions_(nullptr),
-      app_menu_button_(nullptr),
-      browser_(browser),
+    : browser_(browser),
       app_menu_icon_controller_(browser->profile(), this),
       display_mode_(browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)
                         ? DISPLAYMODE_NORMAL
@@ -147,7 +140,8 @@ void ToolbarView::Init() {
 
   back_ = new ToolbarButton(
       browser_->profile(), this,
-      new BackForwardMenuModel(browser_, BackForwardMenuModel::BACKWARD_MENU));
+      std::make_unique<BackForwardMenuModel>(
+          browser_, BackForwardMenuModel::ModelType::kBackward));
   back_->set_hide_ink_drop_when_showing_context_menu(false);
   back_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -159,7 +153,8 @@ void ToolbarView::Init() {
 
   forward_ = new ToolbarButton(
       browser_->profile(), this,
-      new BackForwardMenuModel(browser_, BackForwardMenuModel::FORWARD_MENU));
+      std::make_unique<BackForwardMenuModel>(
+          browser_, BackForwardMenuModel::ModelType::kForward));
   forward_->set_hide_ink_drop_when_showing_context_menu(false);
   forward_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -189,7 +184,7 @@ void ToolbarView::Init() {
 
   browser_actions_ = new BrowserActionsContainer(
       browser_,
-      NULL);  // No master container for this one (it is master).
+      nullptr);  // No master container for this one (it is master).
 
   app_menu_button_ = new AppMenuButton(this);
   app_menu_button_->EnableCanvasFlippingForRTLUI(true);
@@ -388,7 +383,7 @@ ToolbarView::GetContentSettingBubbleModelDelegate() {
 // ToolbarView, CommandObserver implementation:
 
 void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
-  views::Button* button = NULL;
+  views::Button* button = nullptr;
   switch (id) {
     case IDC_BACK:
       button = back_;

@@ -250,7 +250,7 @@ class BrowserActionsContainer : public views::View,
   BrowserActionsContainer* main_container_;
 
   // The resize area for the container.
-  views::ResizeArea* resize_area_;
+  views::ResizeArea* resize_area_ = nullptr;
 
   // The painter used when we are highlighting a subset of extensions.
   std::unique_ptr<views::Painter> warning_highlight_painter_;
@@ -259,27 +259,27 @@ class BrowserActionsContainer : public views::View,
   std::unique_ptr<gfx::SlideAnimation> resize_animation_;
 
   // True if the container has been added to the parent view.
-  bool added_to_view_;
+  bool added_to_view_ = false;
 
   // When the container is resizing, this is the width at which it started.
   // If the container is not resizing, -1.
-  int resize_starting_width_;
+  int resize_starting_width_ = -1;
 
   // This is used while the user is resizing (and when the animations are in
   // progress) to know how wide the delta is between the current state and what
   // we should draw.
-  int resize_amount_;
+  int resize_amount_ = 0;
 
   // Keeps track of the absolute pixel width the container should have when we
   // are done animating.
-  int animation_target_size_;
+  int animation_target_size_ = 0;
 
   // The DropPosition for the current drag-and-drop operation, or NULL if there
   // is none.
   std::unique_ptr<DropPosition> drop_position_;
 
   // The extension bubble that is actively showing, if any.
-  views::BubbleDialogDelegateView* active_bubble_;
+  views::BubbleDialogDelegateView* active_bubble_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

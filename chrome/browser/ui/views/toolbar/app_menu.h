@@ -151,7 +151,7 @@ class AppMenu : public views::MenuDelegate,
   int ModelIndexFromCommandId(int command_id) const;
 
   // The views menu. Owned by |menu_runner_|.
-  views::MenuItemView* root_;
+  views::MenuItemView* root_ = nullptr;
 
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
@@ -166,24 +166,24 @@ class AppMenu : public views::MenuDelegate,
   // If |selected_menu_model_| is non-null after the menu completes
   // ActivatedAt is invoked. This is done so that ActivatedAt isn't invoked
   // while the message loop is nested.
-  ui::ButtonMenuItemModel* selected_menu_model_;
-  int selected_index_;
+  ui::ButtonMenuItemModel* selected_menu_model_ = nullptr;
+  int selected_index_ = 0;
 
   // Used for managing the bookmark menu items.
   std::unique_ptr<BookmarkMenuDelegate> bookmark_menu_delegate_;
 
   // Menu corresponding to IDC_BOOKMARKS_MENU.
-  views::MenuItemView* bookmark_menu_;
+  views::MenuItemView* bookmark_menu_ = nullptr;
 
   // Menu corresponding to IDC_FEEDBACK.
-  views::MenuItemView* feedback_menu_item_;
+  views::MenuItemView* feedback_menu_item_ = nullptr;
 
   // Menu corresponding to IDC_TAKE_SCREENSHOT.
-  views::MenuItemView* screenshot_menu_item_;
+  views::MenuItemView* screenshot_menu_item_ = nullptr;
 
   // The view within the IDC_EXTENSIONS_OVERFLOW_MENU item (only present with
   // the toolbar action redesign enabled).
-  ExtensionToolbarMenuView* extension_toolbar_;
+  ExtensionToolbarMenuView* extension_toolbar_ = nullptr;
 
   // Used for managing "Recent tabs" menu items.
   std::unique_ptr<RecentTabsMenuModelDelegate> recent_tabs_menu_model_delegate_;
