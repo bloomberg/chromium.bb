@@ -2762,10 +2762,6 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const PREDICTION_MODE mode =
       (plane == AOM_PLANE_Y) ? mbmi->mode : get_uv_mode(mbmi->uv_mode);
 
-  av1_predict_intra_block(cm, xd, pd->width, pd->height,
-                          txsize_to_bsize[tx_size], mode, dst, dst_stride, dst,
-                          dst_stride, blk_col, blk_row, plane);
-
 #if CONFIG_CFL
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
 #if CONFIG_DEBUG
@@ -2777,9 +2773,26 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
     assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
     assert(block_size_high[plane_bsize] == tx_size_high[tx_size]);
 #endif
+    CFL_CTX *const cfl = &xd->cfl;
+    CFL_PRED_TYPE pred_plane = get_cfl_pred_type(plane);
+    if (cfl->dc_pred_is_cached[pred_plane] == 0) {
+      av1_predict_intra_block(cm, xd, pd->width, pd->height,
+                              txsize_to_bsize[tx_size], mode, dst, dst_stride,
+                              dst, dst_stride, blk_col, blk_row, plane);
+      if (cfl->use_dc_pred_cache) {
+        cfl_store_dc_pred(xd, dst, pred_plane, tx_size_wide[tx_size]);
+        cfl->dc_pred_is_cached[pred_plane] = 1;
+      }
+    } else {
+      cfl_load_dc_pred(xd, dst, dst_stride, tx_size, pred_plane);
+    }
     cfl_predict_block(xd, dst, dst_stride, tx_size, plane);
+    return;
   }
 #endif
+  av1_predict_intra_block(cm, xd, pd->width, pd->height,
+                          txsize_to_bsize[tx_size], mode, dst, dst_stride, dst,
+                          dst_stride, blk_col, blk_row, plane);
 }
 
 // Copy the given row of dst into the equivalent row of ref, saving
