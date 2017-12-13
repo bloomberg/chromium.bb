@@ -5,7 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_KEYBOARD_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_KEYBOARD_H_
 
+#include "ui/events/event_modifiers.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
+#include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
 namespace ui {
@@ -21,7 +23,7 @@ class WaylandKeyboard {
     connection_ = connection;
   }
 
-  int modifiers() { return modifiers_; }
+  int modifiers() { return modifiers_.GetModifierFlags(); }
 
  private:
   // wl_keyboard_listener
@@ -60,7 +62,9 @@ class WaylandKeyboard {
   WaylandConnection* connection_ = nullptr;
   wl::Object<wl_keyboard> obj_;
   EventDispatchCallback callback_;
-  int modifiers_ = 0;
+
+  EventModifiers modifiers_;
+  KeyboardEvdev evdev_keyboard_;
 };
 
 }  // namespace ui
