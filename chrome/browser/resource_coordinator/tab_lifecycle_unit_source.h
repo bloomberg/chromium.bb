@@ -82,6 +82,9 @@ class TabLifecycleUnitSource : public BrowserListObserver,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
                      int index) override;
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override;
 
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
