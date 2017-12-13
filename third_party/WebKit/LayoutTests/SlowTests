@@ -292,6 +292,8 @@ crbug.com/623798 virtual/spv175/paint/images/animated-gif-last-frame-crash.html 
 
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
+crbug.com/791659 [ Win Linux ] fast/webgl/webgl-composite-modes-repaint.html [ Slow ]
+
 # Slow on Win Debug in part due to incremental linking.
 crbug.com/647192 [ Win Debug ] fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]
 crbug.com/647192 [ Win Debug ] virtual/stable/webexposed/global-interface-listing.html [ Slow ]
