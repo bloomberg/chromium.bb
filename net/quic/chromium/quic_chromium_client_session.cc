@@ -1651,9 +1651,13 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
   // be acquired by connection and used as default on success.
   if (!MigrateToSocket(std::move(socket), std::move(reader),
                        std::move(writer))) {
+    net_log_.AddEvent(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE_AFTER_PROBING);
     return;
   }
 
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING);
   if (network == default_network_) {
     DVLOG(1) << "Client successfully migrated to default network.";
     CancelMigrateBackToDefaultNetworkTimer();
@@ -1762,6 +1766,8 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
 void QuicChromiumClientSession::OnNetworkMadeDefault(
     NetworkChangeNotifier::NetworkHandle new_network,
     const NetLogWithSource& migration_net_log) {
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_MADE_DEFAULT);
   LogMetricsOnNetworkMadeDefault();
 
   if (!migrate_session_on_network_change_ &&
