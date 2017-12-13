@@ -26,6 +26,7 @@
 
 #include "core/paint/compositing/CompositingRequirementsUpdater.h"
 
+#include "base/macros.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -73,7 +74,6 @@ struct OverlapMapContainers {
 };
 
 class CompositingRequirementsUpdater::OverlapMap {
-  WTF_MAKE_NONCOPYABLE(OverlapMap);
 
  public:
   OverlapMap() {
@@ -140,6 +140,7 @@ class CompositingRequirementsUpdater::OverlapMap {
 
  private:
   Vector<OverlapMapContainers> overlap_stack_;
+  DISALLOW_COPY_AND_ASSIGN(OverlapMap);
 };
 
 class CompositingRequirementsUpdater::RecursionData {

@@ -30,9 +30,9 @@
 #ifndef PaintLayerResourceInfo_h
 #define PaintLayerResourceInfo_h
 
+#include "base/macros.h"
 #include "core/svg/SVGResourceClient.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -51,7 +51,6 @@ class PaintLayer;
 class PaintLayerResourceInfo final
     : public GarbageCollectedFinalized<PaintLayerResourceInfo>,
       public SVGResourceClient {
-  WTF_MAKE_NONCOPYABLE(PaintLayerResourceInfo);
   USING_GARBAGE_COLLECTED_MIXIN(PaintLayerResourceInfo);
 
  public:
@@ -75,6 +74,7 @@ class PaintLayerResourceInfo final
   // |clearLayer| must be called before *m_layer becomes invalid.
   PaintLayer* layer_;
   Member<FilterEffect> last_effect_;
+  DISALLOW_COPY_AND_ASSIGN(PaintLayerResourceInfo);
 };
 
 }  // namespace blink

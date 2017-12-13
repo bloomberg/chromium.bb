@@ -45,6 +45,7 @@
 #define PaintLayerScrollableArea_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/layout/ScrollAnchor.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
@@ -68,13 +69,13 @@ class StickyPositionScrollingConstraints;
 class SubtreeLayoutScope;
 
 struct CORE_EXPORT PaintLayerScrollableAreaRareData {
-  WTF_MAKE_NONCOPYABLE(PaintLayerScrollableAreaRareData);
   USING_FAST_MALLOC(PaintLayerScrollableAreaRareData);
 
  public:
   PaintLayerScrollableAreaRareData();
 
   StickyConstraintsMap sticky_constraints_map_;
+  DISALLOW_COPY_AND_ASSIGN(PaintLayerScrollableAreaRareData);
 };
 
 // PaintLayerScrollableArea represents the scrollable area of a LayoutBox.

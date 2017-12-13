@@ -6,6 +6,7 @@
 #define ObjectPaintProperties_h
 
 #include <memory>
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
@@ -33,7 +34,6 @@ namespace blink {
 // are important for catching property tree structure changes which require
 // updating descendant's parent pointers.
 class CORE_EXPORT ObjectPaintProperties {
-  WTF_MAKE_NONCOPYABLE(ObjectPaintProperties);
   USING_FAST_MALLOC(ObjectPaintProperties);
 
  public:
@@ -317,6 +317,8 @@ class CORE_EXPORT ObjectPaintProperties {
   scoped_refptr<TransformPaintPropertyNode> svg_local_to_border_box_transform_;
   scoped_refptr<ScrollPaintPropertyNode> scroll_;
   scoped_refptr<TransformPaintPropertyNode> scroll_translation_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObjectPaintProperties);
 };
 
 }  // namespace blink

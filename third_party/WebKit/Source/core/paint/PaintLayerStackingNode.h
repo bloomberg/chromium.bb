@@ -46,9 +46,9 @@
 #define PaintLayerStackingNode_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -92,7 +92,6 @@ class LayoutBoxModelObject;
 // elements.
 class CORE_EXPORT PaintLayerStackingNode {
   USING_FAST_MALLOC(PaintLayerStackingNode);
-  WTF_MAKE_NONCOPYABLE(PaintLayerStackingNode);
 
  public:
   explicit PaintLayerStackingNode(PaintLayer*);
@@ -203,6 +202,8 @@ class CORE_EXPORT PaintLayerStackingNode {
   bool layer_list_mutation_allowed_ : 1;
   PaintLayerStackingNode* stacking_parent_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(PaintLayerStackingNode);
 };
 
 inline void PaintLayerStackingNode::ClearZOrderLists() {

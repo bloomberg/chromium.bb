@@ -5,6 +5,7 @@
 #ifndef FramePaintTiming_h
 #define FramePaintTiming_h
 
+#include "base/macros.h"
 #include "core/frame/LocalFrame.h"
 #include "core/paint/PaintTiming.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -15,7 +16,6 @@ namespace blink {
 
 class FramePaintTiming {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(FramePaintTiming);
 
  public:
   FramePaintTiming(GraphicsContext& context, const LocalFrame* frame)
@@ -34,6 +34,7 @@ class FramePaintTiming {
  private:
   GraphicsContext& context_;
   Member<const LocalFrame> frame_;
+  DISALLOW_COPY_AND_ASSIGN(FramePaintTiming);
 };
 
 }  // namespace blink
