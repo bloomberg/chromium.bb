@@ -31,7 +31,7 @@ class OnStringConversionError {
   };
 
  private:
-  OnStringConversionError();
+  OnStringConversionError() = delete;
 };
 
 // Converts between UTF-16 strings and the encoding specified.  If the

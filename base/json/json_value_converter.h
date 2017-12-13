@@ -96,7 +96,7 @@ template<typename StructType>
 class FieldConverterBase {
  public:
   explicit FieldConverterBase(const std::string& path) : field_path_(path) {}
-  virtual ~FieldConverterBase() {}
+  virtual ~FieldConverterBase() = default;
   virtual bool ConvertField(const base::Value& value, StructType* obj)
       const = 0;
   const std::string& field_path() const { return field_path_; }
@@ -109,7 +109,7 @@ class FieldConverterBase {
 template <typename FieldType>
 class ValueConverter {
  public:
-  virtual ~ValueConverter() {}
+  virtual ~ValueConverter() = default;
   virtual bool Convert(const base::Value& value, FieldType* field) const = 0;
 };
 
@@ -140,7 +140,7 @@ class BasicValueConverter;
 template <>
 class BASE_EXPORT BasicValueConverter<int> : public ValueConverter<int> {
  public:
-  BasicValueConverter() {}
+  BasicValueConverter() = default;
 
   bool Convert(const base::Value& value, int* field) const override;
 
@@ -152,7 +152,7 @@ template <>
 class BASE_EXPORT BasicValueConverter<std::string>
     : public ValueConverter<std::string> {
  public:
-  BasicValueConverter() {}
+  BasicValueConverter() = default;
 
   bool Convert(const base::Value& value, std::string* field) const override;
 
@@ -164,7 +164,7 @@ template <>
 class BASE_EXPORT BasicValueConverter<string16>
     : public ValueConverter<string16> {
  public:
-  BasicValueConverter() {}
+  BasicValueConverter() = default;
 
   bool Convert(const base::Value& value, string16* field) const override;
 
@@ -175,7 +175,7 @@ class BASE_EXPORT BasicValueConverter<string16>
 template <>
 class BASE_EXPORT BasicValueConverter<double> : public ValueConverter<double> {
  public:
-  BasicValueConverter() {}
+  BasicValueConverter() = default;
 
   bool Convert(const base::Value& value, double* field) const override;
 
@@ -186,7 +186,7 @@ class BASE_EXPORT BasicValueConverter<double> : public ValueConverter<double> {
 template <>
 class BASE_EXPORT BasicValueConverter<bool> : public ValueConverter<bool> {
  public:
-  BasicValueConverter() {}
+  BasicValueConverter() = default;
 
   bool Convert(const base::Value& value, bool* field) const override;
 
@@ -235,7 +235,7 @@ class CustomFieldConverter : public ValueConverter<FieldType> {
 template <typename NestedType>
 class NestedValueConverter : public ValueConverter<NestedType> {
  public:
-  NestedValueConverter() {}
+  NestedValueConverter() = default;
 
   bool Convert(const base::Value& value, NestedType* field) const override {
     return converter_.Convert(value, field);
@@ -250,7 +250,7 @@ template <typename Element>
 class RepeatedValueConverter
     : public ValueConverter<std::vector<std::unique_ptr<Element>>> {
  public:
-  RepeatedValueConverter() {}
+  RepeatedValueConverter() = default;
 
   bool Convert(const base::Value& value,
                std::vector<std::unique_ptr<Element>>* field) const override {
@@ -286,7 +286,7 @@ template <typename NestedType>
 class RepeatedMessageConverter
     : public ValueConverter<std::vector<std::unique_ptr<NestedType>>> {
  public:
-  RepeatedMessageConverter() {}
+  RepeatedMessageConverter() = default;
 
   bool Convert(const base::Value& value,
                std::vector<std::unique_ptr<NestedType>>* field) const override {

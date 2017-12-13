@@ -27,7 +27,7 @@ class BASE_EXPORT DiscardableMemoryAllocator {
       size_t size) = 0;
 
  protected:
-  virtual ~DiscardableMemoryAllocator() {}
+  virtual ~DiscardableMemoryAllocator() = default;
 };
 
 }  // namespace base

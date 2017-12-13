@@ -208,7 +208,7 @@ class CallbackList<void(Args...)>
  public:
   typedef Callback<void(Args...)> CallbackType;
 
-  CallbackList() {}
+  CallbackList() = default;
 
   template <typename... RunArgs>
   void Notify(RunArgs&&... args) {

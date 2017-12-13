@@ -81,7 +81,7 @@ class BASE_EXPORT ScopedCrashKeyString {
 // set using the function below.
 class CrashKeyImplementation {
  public:
-  virtual ~CrashKeyImplementation() {}
+  virtual ~CrashKeyImplementation() = default;
 
   virtual CrashKeyString* Allocate(const char name[], CrashKeySize size) = 0;
   virtual void Set(CrashKeyString* crash_key, base::StringPiece value) = 0;

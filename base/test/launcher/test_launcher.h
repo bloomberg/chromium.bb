@@ -80,7 +80,7 @@ class TestLauncherDelegate {
 // LaunchChildGTestProcess.
 class ProcessLifetimeObserver {
  public:
-  virtual ~ProcessLifetimeObserver() {}
+  virtual ~ProcessLifetimeObserver() = default;
 
   // Invoked once the child process is started. |handle| is a handle to the
   // child process and |id| is its pid. NOTE: this method is invoked on the

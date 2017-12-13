@@ -47,7 +47,7 @@ class BASE_EXPORT ImportantFileWriter {
     virtual bool SerializeData(std::string* data) = 0;
 
    protected:
-    virtual ~DataSerializer() {}
+    virtual ~DataSerializer() = default;
   };
 
   // Save |data| to |path| in an atomic manner. Blocks and writes data on the

@@ -23,7 +23,7 @@ class CheckedNumeric {
  public:
   using type = T;
 
-  constexpr CheckedNumeric() {}
+  constexpr CheckedNumeric() = default;
 
   // Copy constructor.
   template <typename Src>

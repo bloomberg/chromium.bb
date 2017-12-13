@@ -15,7 +15,7 @@ namespace base {
 // the given histogram should be recorded.
 class BASE_EXPORT RecordHistogramChecker {
  public:
-  virtual ~RecordHistogramChecker() {}
+  virtual ~RecordHistogramChecker() = default;
 
   // Returns true iff the given histogram should be recorded.
   // This method may be called on any thread, so it should not mutate any state.

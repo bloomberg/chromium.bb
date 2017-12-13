@@ -57,7 +57,7 @@ class BASE_EXPORT TraceBufferChunk {
 // TraceBuffer holds the events as they are collected.
 class BASE_EXPORT TraceBuffer {
  public:
-  virtual ~TraceBuffer() {}
+  virtual ~TraceBuffer() = default;
 
   virtual std::unique_ptr<TraceBufferChunk> GetChunk(size_t* index) = 0;
   virtual void ReturnChunk(size_t index,
