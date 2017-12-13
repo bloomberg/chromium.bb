@@ -138,7 +138,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
       return;
     }
     int32_t mount_id = -1;
-    if (!reader.PopInt32(&mount_id) || mount_id <= 0) {
+    if (!reader.PopInt32(&mount_id) || mount_id < 0) {
       DLOG(ERROR) << "Mount: failed to parse mount id";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED, -1);
       return;
