@@ -2510,8 +2510,6 @@ crbug.com/655458 external/wpt/workers/semantics/multiple-workers/003.html [ Fail
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/005.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/006.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Failure Timeout ]
-crbug.com/655458 external/wpt/workers/semantics/navigation/001.html [ Failure Timeout ]
-crbug.com/655458 external/wpt/workers/semantics/navigation/002.html [ Failure Timeout ]
 
 crbug.com/655458 external/wpt/workers/semantics/structured-clone/dedicated.html [ Crash Failure Timeout ]
 crbug.com/655458 external/wpt/workers/semantics/structured-clone/shared.html [ Crash Failure Timeout ]
