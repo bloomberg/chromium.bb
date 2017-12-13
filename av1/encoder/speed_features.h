@@ -520,6 +520,10 @@ typedef struct SPEED_FEATURES {
   // usually includes EIGHTTAP_REGULAR.
   int use_fast_interpolation_filter_search;
 
+  // Use a hash table to store previously computed optimized qcoeffs from
+  // expensive calls to optimize_txb.
+  int use_hash_based_trellis;
+
   // flag to drop some ref frames in compound motion search
   int drop_ref;
 } SPEED_FEATURES;

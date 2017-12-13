@@ -4453,8 +4453,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_CFL
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
-      av1_encode_intra_block_plane((AV1_COMMON *)cm, x, bsize, plane, 1, mi_row,
-                                   mi_col);
+      av1_encode_intra_block_plane(cpi, x, bsize, plane, 1, mi_row, mi_col);
     }
 #if CONFIG_CFL
     xd->cfl.store_y = 0;
@@ -4519,7 +4518,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     }
 #endif
 
-    av1_encode_sb((AV1_COMMON *)cm, x, bsize, mi_row, mi_col, dry_run);
+    av1_encode_sb(cpi, x, bsize, mi_row, mi_col, dry_run);
     if (mbmi->skip) mbmi->min_tx_size = mbmi->tx_size;
     av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, bsize, rate,
                           tile_data->allow_update_cdf);

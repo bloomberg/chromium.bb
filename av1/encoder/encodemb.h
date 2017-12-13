@@ -26,7 +26,7 @@ struct optimize_ctx {
 };
 
 struct encode_b_args {
-  AV1_COMMON *cm;
+  const struct AV1_COMP *cpi;
   MACROBLOCK *x;
   struct optimize_ctx *ctx;
   int8_t *skip;
@@ -43,15 +43,15 @@ typedef enum AV1_XFORM_QUANT {
   AV1_XFORM_QUANT_TYPES,
 } AV1_XFORM_QUANT;
 
-void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
-                   int mi_col, RUN_TYPE dry_run);
+void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
+                   int mi_row, int mi_col, RUN_TYPE dry_run);
 void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
                      TX_SIZE tx_size, AV1_XFORM_QUANT xform_quant_idx);
 
-int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int blk_row,
-                   int blk_col, int block, BLOCK_SIZE plane_bsize,
+int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
+                   int blk_row, int blk_col, int block, BLOCK_SIZE plane_bsize,
                    TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
                    const ENTROPY_CONTEXT *l, int fast_mode);
 
@@ -66,7 +66,7 @@ void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
 void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                             BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg);
 
-void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
+void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                   BLOCK_SIZE bsize, int plane,
                                   int enable_optimize_b, int mi_row,
                                   int mi_col);

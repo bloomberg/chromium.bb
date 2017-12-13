@@ -419,8 +419,8 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 }
 #endif  // !CONFIG_LV_MAP
 
-int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int blk_row,
-                   int blk_col, int block, BLOCK_SIZE plane_bsize,
+int av1_optimize_b(const AV1_COMP *const cpi, MACROBLOCK *mb, int plane,
+                   int blk_row, int blk_col, int block, BLOCK_SIZE plane_bsize,
                    TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
                    const ENTROPY_CONTEXT *l, int fast_mode) {
   MACROBLOCKD *const xd = &mb->e_mbd;
@@ -434,12 +434,13 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int blk_row,
   (void)blk_row;
   (void)blk_col;
   int ctx = get_entropy_context(tx_size, a, l);
+  const AV1_COMMON *const cm = &cpi->common;
   return optimize_b_greedy(cm, mb, plane, blk_row, blk_col, block, tx_size, ctx,
                            fast_mode);
 #else   // !CONFIG_LV_MAP
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  return av1_optimize_txb(cm, mb, plane, blk_row, blk_col, block, tx_size,
+  return av1_optimize_txb(cpi, mb, plane, blk_row, blk_col, block, tx_size,
                           &txb_ctx, fast_mode);
 #endif  // !CONFIG_LV_MAP
 }
@@ -556,7 +557,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   (void)mi_col;
   (void)dry_run;
   struct encode_b_args *const args = arg;
-  AV1_COMMON *cm = args->cm;
+  const AV1_COMMON *const cm = &args->cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
@@ -587,8 +588,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     p->eobs[block] = 0;
   }
 
-  av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size, a,
-                 l, CONFIG_LV_MAP);
+  av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
+                 tx_size, a, l, CONFIG_LV_MAP);
 
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
@@ -738,13 +739,13 @@ void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
                                          encode_block_pass1, &args);
 }
 
-void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
-                   int mi_col, RUN_TYPE dry_run) {
+void av1_encode_sb(const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
+                   int mi_row, int mi_col, RUN_TYPE dry_run) {
   (void)dry_run;
   MACROBLOCKD *const xd = &x->e_mbd;
   struct optimize_ctx ctx;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  struct encode_b_args arg = { cm, x, &ctx, &mbmi->skip, NULL, NULL, 1 };
+  struct encode_b_args arg = { cpi, x, &ctx, &mbmi->skip, NULL, NULL, 1 };
   int plane;
 
   mbmi->skip = 1;
@@ -844,7 +845,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                             BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                             void *arg) {
   struct encode_b_args *const args = arg;
-  AV1_COMMON *cm = args->cm;
+  const AV1_COMMON *const cm = &args->cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
@@ -885,8 +886,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   if (args->enable_optimize_b) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_FP);
-    av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l, CONFIG_LV_MAP);
+    av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
+                   tx_size, a, l, CONFIG_LV_MAP);
 
 #if CONFIG_TXK_SEL
     if (plane == 0 && p->eobs[block] == 0) {
@@ -913,7 +914,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_CFL
 }
 
-void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
+void av1_encode_intra_block_plane(const AV1_COMP *const cpi, MACROBLOCK *x,
                                   BLOCK_SIZE bsize, int plane,
                                   int enable_optimize_b, int mi_row,
                                   int mi_col) {
@@ -922,7 +923,7 @@ void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
   ENTROPY_CONTEXT tl[2 * MAX_MIB_SIZE] = { 0 };
 
   struct encode_b_args arg = {
-    cm, x, NULL, &xd->mi[0]->mbmi.skip, ta, tl, enable_optimize_b
+    cpi, x, NULL, &xd->mi[0]->mbmi.skip, ta, tl, enable_optimize_b
   };
 
   if (!is_chroma_reference(mi_row, mi_col, bsize,

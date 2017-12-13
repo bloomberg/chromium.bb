@@ -149,6 +149,10 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 #if CONFIG_DUAL_FILTER
     sf->use_fast_interpolation_filter_search = 1;
 #endif  // CONFIG_DUAL_FILTER
+#if 0   // CONFIG_HASH_ME && CONFIG_LV_MAP && CONFIG_LV_MAP_MULTI
+    // TODO(mfo): Activate feature once it gives positive results.
+    sf->use_hash_based_trellis = 1;
+#endif  // CONFIG_HASH_ME && CONFIG_LV_MAP && CONFIG_LV_MAP_MULTI
   }
 
   if (speed >= 2) {
@@ -515,6 +519,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_transform_domain_distortion = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
   sf->use_fast_interpolation_filter_search = 0;
+  sf->use_hash_based_trellis = 0;
 
   set_dev_sf(cpi, sf, oxcf->dev_sf);
 

@@ -18,10 +18,24 @@
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodetxb.h"
+#include "av1/encoder/hash.h"
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/tokenize.h"
 
 #define TEST_OPTIMIZE_TXB 0
+
+static int hbt_hash_needs_init = 1;
+static CRC_CALCULATOR crc_calculator;
+static CRC_CALCULATOR crc_calculator2;
+static const int HBT_HASH_EOB = 16;  // also the length in opt_qcoeff
+
+typedef struct OptTxbQcoeff {
+  uint32_t hbt_hash_match;
+  double hits;
+  tran_low_t opt_qcoeff[16];
+} OptTxbQcoeff;
+
+OptTxbQcoeff hbt_hash_table[65536][16];
 
 typedef struct LevelDownStats {
   int update;
@@ -291,6 +305,16 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
   stats->update = 0;
   stats->rd_low = 0;
   stats->rd = 0;
+// TODO(mfo): explore if there's a better way to prevent compiler init
+// warnings
+#if CONFIG_LV_MAP_MULTI
+  stats->nz_rd = 0;
+#else
+  stats->nz_rate = 0;
+#endif
+  stats->dist_low = 0;
+  stats->rate_low = 0;
+  stats->low_qc = 0;
 
   const tran_low_t tqc = txb_info->tcoeff[coeff_idx];
   const int dqv = txb_info->dequant[coeff_idx != 0];
@@ -2196,9 +2220,215 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
   { 17, 13 }, { 16, 10 },
 };
 
-int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
+void hbt_hash_init() {
+  av1_crc_calculator_init(&crc_calculator, 16, 0x5D6DCB);   // ctx 16 bit hash
+  av1_crc_calculator_init(&crc_calculator2, 16, 0x5D6DCB);  // qc 16 bit hash
+  memset(hbt_hash_table, 0, sizeof(hbt_hash_table[0][0]) * 65536 * 16);
+  hbt_hash_needs_init = 0;
+}
+
+int hbt_hash_miss(int found_index, uint16_t hbt_hash_index,
+                  uint32_t hbt_hash_match, TxbInfo *txb_info,
+                  const LV_MAP_COEFF_COST *txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                  const LV_MAP_EOB_COST *txb_eob_costs,
+#endif
+                  const struct macroblock_plane *p, int block, int fast_mode) {
+  const int16_t *scan = txb_info->scan_order->scan;
+
+  av1_txb_init_levels(txb_info->qcoeff, txb_info->width, txb_info->height,
+                      txb_info->levels);
+  // The hash_based_trellis speed feature requires lv_map_multi, so always true.
+  const int update = optimize_txb(txb_info, txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                                  txb_eob_costs,
+#endif
+                                  NULL, 0, fast_mode);
+
+  if (update) {
+    // Overwrite old lowest entry
+    hbt_hash_table[hbt_hash_index][found_index].hbt_hash_match = hbt_hash_match;
+    hbt_hash_table[hbt_hash_index][found_index].hits = 1.0;
+    for (int i = 0; i < txb_info->eob; i++) {
+      hbt_hash_table[hbt_hash_index][found_index].opt_qcoeff[i] =
+          txb_info->qcoeff[scan[i]];
+    }
+    for (int i = txb_info->eob; i < HBT_HASH_EOB; i++) {
+      hbt_hash_table[hbt_hash_index][found_index].opt_qcoeff[i] = 0;
+    }
+
+    p->eobs[block] = txb_info->eob;
+    p->txb_entropy_ctx[block] = av1_get_txb_entropy_context(
+        txb_info->qcoeff, txb_info->scan_order, txb_info->eob);
+  }
+  return txb_info->eob;
+}
+
+int hbt_hash_hit(uint16_t hbt_hash_index, int found_index, TxbInfo *txb_info,
+                 const struct macroblock_plane *p, int block) {
+  const int16_t *scan = txb_info->scan_order->scan;
+  int new_eob = 0;
+  int update = 0;
+
+  for (int i = 0; i < txb_info->eob; i++) {
+    if (txb_info->qcoeff[scan[i]] !=
+        hbt_hash_table[hbt_hash_index][found_index].opt_qcoeff[i]) {
+      txb_info->qcoeff[scan[i]] =
+          hbt_hash_table[hbt_hash_index][found_index].opt_qcoeff[i];
+      update = 1;
+      update_coeff(scan[i], txb_info->qcoeff[scan[i]], txb_info);
+    }
+
+    if (txb_info->qcoeff[scan[i]]) new_eob = i + 1;
+  }
+
+  if (update) {
+    txb_info->eob = new_eob;
+    p->eobs[block] = txb_info->eob;
+    p->txb_entropy_ctx[block] = av1_get_txb_entropy_context(
+        txb_info->qcoeff, txb_info->scan_order, txb_info->eob);
+  }
+  return txb_info->eob;
+}
+
+int search_hbt_hash_match(uint16_t hbt_hash_index, uint32_t hbt_hash_match,
+                          TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                          const LV_MAP_EOB_COST *txb_eob_costs,
+#endif
+                          const struct macroblock_plane *p, int block,
+                          int fast_mode) {
+  // Decay all hits
+  double lowest_hits = 1.0;
+  int lowest_index = 0;
+
+  for (int i = 0; i < 16; i++) {
+    hbt_hash_table[hbt_hash_index][i].hits *= 31.0;
+    hbt_hash_table[hbt_hash_index][i].hits /= 32.0;
+
+    if (hbt_hash_table[hbt_hash_index][i].hits < lowest_hits) {
+      lowest_hits = hbt_hash_table[hbt_hash_index][i].hits;
+      lowest_index = i;
+    }
+  }
+
+  // Search soft hash vector for qcoeff match
+  int found_index = -1;
+  for (int i = 0; i < 16; i++) {  // OptTxbQcoeff array has fixed size of 16.
+    if (hbt_hash_table[hbt_hash_index][i].hbt_hash_match == hbt_hash_match) {
+      found_index = i;
+      hbt_hash_table[hbt_hash_index][i].hits += 1.0;
+      break;  // Found a match and it's at found_index
+    }
+  }
+
+  if (found_index == -1) {  // Add new OptTxbQcoeff into array.
+    return hbt_hash_miss(lowest_index, hbt_hash_index, hbt_hash_match, txb_info,
+                         txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                         txb_eob_costs,
+#endif
+                         p, block, fast_mode);
+  } else {  // Retrieve data from array.
+    return hbt_hash_hit(hbt_hash_index, found_index, txb_info, p, block);
+  }
+}
+
+int hash_based_trellis_mode(TxbInfo *txb_info,
+                            const LV_MAP_COEFF_COST *txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                            const LV_MAP_EOB_COST *txb_eob_costs,
+#endif
+                            const struct macroblock_plane *p, int block,
+                            int fast_mode, TXB_CTX *txb_ctx) {
+  // Initialize hash table if needed.
+  if (hbt_hash_needs_init) {
+    hbt_hash_init();
+  }
+
+  //// Hash creation
+  // TODO(mfo): use exact length once input finalized
+  uint8_t txb_hash_data[256];
+  const int16_t *scan = txb_info->scan_order->scan;
+  uint8_t chunk = 0;
+
+  uint16_t ctx_hash = 0;
+  uint32_t qc_hash = 0;
+
+  int hash_data_index = 0;
+  for (int i = 0; i < txb_info->eob; i++) {
+    // Data softening: data from -3 -> 3 is left alone,
+    // while 'large' data is put into buckets of 16s
+    // Consider bucketing less than 16 down to 4 instead of 0
+    // if(txb_info->qcoeff[scan[i]] < 4 && txb_info->qcoeff[scan[i]] > -4)
+    chunk = (txb_info->qcoeff[scan[i]]) & 0xff;
+    /*else if(txb_info->qcoeff[scan[i]] < 16 && txb_info->qcoeff[scan[i]] > -16)
+      chunk = (txb_info->qcoeff[scan[i]]) & 0xfc; //
+    else
+      chunk = (txb_info->qcoeff[scan[i]]) & 0xf0; // greater than 16*/
+    txb_hash_data[hash_data_index++] = chunk;
+
+    chunk = ((txb_info->qcoeff[scan[i]]) & 0xff00) >> 8;
+    txb_hash_data[hash_data_index++] = chunk;
+  }
+  assert(hash_data_index <= 256);
+  // 16 bit
+  qc_hash = av1_get_crc_value(&crc_calculator2, txb_hash_data, hash_data_index);
+
+  hash_data_index = 0;
+  // tcoeff
+  for (int i = 0; i < txb_info->eob; i++) {
+    chunk = (txb_info->tcoeff[scan[i]] - txb_info->dqcoeff[scan[i]]) & 0xff;
+    txb_hash_data[hash_data_index++] = chunk;
+  }
+  // txb_ctx
+  chunk = txb_ctx->txb_skip_ctx & 0xff;
+  txb_hash_data[hash_data_index++] = chunk;
+  chunk = txb_ctx->dc_sign_ctx & 0xff;
+  txb_hash_data[hash_data_index++] = chunk;
+  // dequant
+  chunk = txb_info->dequant[0] & 0xff;
+  txb_hash_data[hash_data_index++] = chunk;
+  chunk = (txb_info->dequant[0] & 0xff00) >> 8;
+  txb_hash_data[hash_data_index++] = chunk;
+  chunk = txb_info->dequant[1] & 0xff;
+  txb_hash_data[hash_data_index++] = chunk;
+  chunk = (txb_info->dequant[1] & 0xff00) >> 8;
+  txb_hash_data[hash_data_index++] = chunk;
+  // txb_skip_cost
+  /*for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < TXB_SKIP_CONTEXTS; j++) {
+      chunk = (txb_costs->txb_skip_cost[j][i] & 0xff00) >> 8;
+      txb_hash_data[hash_data_index++] = chunk;
+    }
+  }
+  // base_eob_cost
+  for (int i = 1; i < 3; i++) {  // i = 0 are softened away
+    for (int j = 0; j < SIG_COEF_CONTEXTS_EOB; j++) {
+      chunk = (txb_costs->base_eob_cost[j][i] & 0xff00) >> 8;
+      txb_hash_data[hash_data_index++] = chunk;
+    }
+  }*/
+  assert(hash_data_index <= 256);
+  // Gives 16 bit hash for ctx
+  ctx_hash = av1_get_crc_value(&crc_calculator, txb_hash_data, hash_data_index);
+
+  uint16_t hbt_hash_index = ctx_hash;  // 16 bit ctx_hash: index to table
+  uint32_t hbt_hash_match = qc_hash;   // 16 bit qc_hash: matched in array
+  //// End hash creation
+
+  return search_hbt_hash_match(hbt_hash_index, hbt_hash_match, txb_info,
+                               txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                               txb_eob_costs,
+#endif
+                               p, block, fast_mode);
+}
+
+int av1_optimize_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                      int blk_row, int blk_col, int block, TX_SIZE tx_size,
                      TXB_CTX *txb_ctx, int fast_mode) {
+  const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
@@ -2265,6 +2495,17 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
     rdmult,
     &cm->coeff_ctx_table
   };
+
+  // Hash based trellis (hbt) speed feature: avoid expensive optimize_txb calls
+  // by storing the optimized coefficients in a hash table.
+  // Currently disabled in speedfeatures.c
+  if (eob <= HBT_HASH_EOB && eob > 0 && cpi->sf.use_hash_based_trellis) {
+    return hash_based_trellis_mode(&txb_info, &txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                                   &txb_eob_costs,
+#endif
+                                   p, block, fast_mode, txb_ctx);
+  }
 
   av1_txb_init_levels(qcoeff, width, height, levels);
 
@@ -2623,7 +2864,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     } else {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);
-      av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize,
+      av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1);
     }
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
@@ -2662,7 +2903,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     } else {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);
-      av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize,
+      av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1);
     }
 
