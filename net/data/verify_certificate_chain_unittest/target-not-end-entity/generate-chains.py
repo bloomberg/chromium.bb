@@ -7,18 +7,18 @@
 end-entity certificate (based on the basic constraints extension)."""
 
 import sys
-sys.path += ['..']
+sys.path += ['../..']
 
-import common
+import gencerts
 
 # Self-signed root certificate.
-root = common.create_self_signed_root_certificate('Root')
+root = gencerts.create_self_signed_root_certificate('Root')
 
 # Intermediate certificate.
-intermediate = common.create_intermediate_certificate('Intermediate', root)
+intermediate = gencerts.create_intermediate_certificate('Intermediate', root)
 
 # Target certificate (is also a CA)
-target = common.create_intermediate_certificate('Target', intermediate)
+target = gencerts.create_intermediate_certificate('Target', intermediate)
 
 chain = [target, intermediate, root]
-common.write_chain(__doc__, chain, 'chain.pem')
+gencerts.write_chain(__doc__, chain, 'chain.pem')

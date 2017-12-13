@@ -7,20 +7,20 @@
 that indicates it is NOT a CA."""
 
 import sys
-sys.path += ['..']
+sys.path += ['../..']
 
-import common
+import gencerts
 
 # Self-signed root certificate.
-root = common.create_self_signed_root_certificate('Root')
+root = gencerts.create_self_signed_root_certificate('Root')
 
 # Intermediate with incorrect basic constraints.
-intermediate = common.create_intermediate_certificate('Intermediate', root)
+intermediate = gencerts.create_intermediate_certificate('Intermediate', root)
 intermediate.get_extensions().set_property('basicConstraints',
                                            'critical,CA:false')
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediate)
+target = gencerts.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate, root]
-common.write_chain(__doc__, chain, 'chain.pem')
+gencerts.write_chain(__doc__, chain, 'chain.pem')

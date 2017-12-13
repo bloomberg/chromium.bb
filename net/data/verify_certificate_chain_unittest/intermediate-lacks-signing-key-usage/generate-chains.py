@@ -6,20 +6,20 @@
 """Certificate chain where the intermediate lacks a keyUsage extension."""
 
 import sys
-sys.path += ['..']
+sys.path += ['../..']
 
-import common
+import gencerts
 
 # Self-signed root certificate.
-root = common.create_self_signed_root_certificate('Root')
+root = gencerts.create_self_signed_root_certificate('Root')
 
 # Intermediate that is missing keyCertSign.
-intermediate = common.create_intermediate_certificate('Intermediate', root)
+intermediate = gencerts.create_intermediate_certificate('Intermediate', root)
 intermediate.get_extensions().set_property('keyUsage',
     'critical,digitalSignature,keyEncipherment')
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediate)
+target = gencerts.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate, root]
-common.write_chain(__doc__, chain, 'chain.pem')
+gencerts.write_chain(__doc__, chain, 'chain.pem')

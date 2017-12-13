@@ -13,22 +13,24 @@ certificates, making it easy to violate just its validity.
 
 
 import sys
-sys.path += ['..']
+sys.path += ['../..']
 
-import common
+import gencerts
 
 # Self-signed root certificate.
-root = common.create_self_signed_root_certificate('Root')
-root.set_validity_range(common.MARCH_1_2015_UTC, common.SEPTEMBER_1_2015_UTC)
+root = gencerts.create_self_signed_root_certificate('Root')
+root.set_validity_range(gencerts.MARCH_1_2015_UTC,
+                        gencerts.SEPTEMBER_1_2015_UTC)
 
 # Intermediate certificate.
-intermediate = common.create_intermediate_certificate('Intermediate', root)
-intermediate.set_validity_range(common.JANUARY_1_2015_UTC,
-                                common.JANUARY_1_2016_UTC)
+intermediate = gencerts.create_intermediate_certificate('Intermediate', root)
+intermediate.set_validity_range(gencerts.JANUARY_1_2015_UTC,
+                                gencerts.JANUARY_1_2016_UTC)
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediate)
-target.set_validity_range(common.JANUARY_1_2015_UTC, common.JANUARY_1_2016_UTC)
+target = gencerts.create_end_entity_certificate('Target', intermediate)
+target.set_validity_range(gencerts.JANUARY_1_2015_UTC,
+                          gencerts.JANUARY_1_2016_UTC)
 
 chain = [target, intermediate, root]
-common.write_chain(__doc__, chain, 'chain.pem')
+gencerts.write_chain(__doc__, chain, 'chain.pem')

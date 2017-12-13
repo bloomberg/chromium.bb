@@ -25,10 +25,9 @@ import sys
 import os
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path += [os.path.join(script_dir, '..',
-                          'verify_certificate_chain_unittest')]
+sys.path += [os.path.join(script_dir, '..')]
 
-import common
+import gencerts
 
 import os
 import sys
@@ -86,7 +85,7 @@ def fixup_pem_file(path, actual_errors):
   """Updates the ERRORS block in the test .pem file"""
   contents = read_file_to_string(path)
 
-  errors_block_text = '\n' + common.text_data_to_pem('ERRORS', actual_errors)
+  errors_block_text = '\n' + gencerts.text_data_to_pem('ERRORS', actual_errors)
   # Strip the trailing newline.
   errors_block_text = errors_block_text[:-1]
 

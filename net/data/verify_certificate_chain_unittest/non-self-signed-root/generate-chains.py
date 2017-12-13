@@ -7,20 +7,20 @@
 self-issued for that matter)."""
 
 import sys
-sys.path += ['..']
+sys.path += ['../..']
 
-import common
+import gencerts
 
-shadow_root = common.create_self_signed_root_certificate('ShadowRoot')
+shadow_root = gencerts.create_self_signed_root_certificate('ShadowRoot')
 
 # Non-self-signed root certificate.
-root = common.create_intermediate_certificate('Root', shadow_root)
+root = gencerts.create_intermediate_certificate('Root', shadow_root)
 
 # Intermediate certificate.
-intermediate = common.create_intermediate_certificate('Intermediate', root)
+intermediate = gencerts.create_intermediate_certificate('Intermediate', root)
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediate)
+target = gencerts.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate, root]
-common.write_chain(__doc__, chain, 'chain.pem')
+gencerts.write_chain(__doc__, chain, 'chain.pem')

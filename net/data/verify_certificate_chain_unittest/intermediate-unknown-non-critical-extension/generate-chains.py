@@ -7,19 +7,19 @@
 extension."""
 
 import sys
-sys.path += ['..']
+sys.path += ['../..']
 
-import common
+import gencerts
 
 # Self-signed root certificate.
-root = common.create_self_signed_root_certificate('Root')
-intermediate = common.create_intermediate_certificate('Intermediate', root)
+root = gencerts.create_self_signed_root_certificate('Root')
+intermediate = gencerts.create_intermediate_certificate('Intermediate', root)
 
 # Intermediate that has an unknown non-critical extension.
 intermediate.get_extensions().add_property('1.2.3.4', 'DER:01:02:03:04')
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediate)
+target = gencerts.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate, root]
-common.write_chain(__doc__, chain, 'chain.pem')
+gencerts.write_chain(__doc__, chain, 'chain.pem')
