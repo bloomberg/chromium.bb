@@ -179,10 +179,15 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
     case kMinContent:
     case kMaxContent:
     case kFitContent:
+#if DCHECK_IS_ON()
       // Due to how content_size is calculated, it should always include border
-      // and padding.
-      if (content_size != LayoutUnit(-1))
+      // and padding. We cannot check for this if we are block-fragmented,
+      // though, because then the block-start border/padding may be in a
+      // different fragmentainer than the block-end border/padding.
+      if (content_size != LayoutUnit(-1) &&
+          !constraint_space.HasBlockFragmentation())
         DCHECK_GE(content_size, border_and_padding.BlockSum());
+#endif  // DCHECK_IS_ON()
       return content_size;
     case kDeviceWidth:
     case kDeviceHeight:
