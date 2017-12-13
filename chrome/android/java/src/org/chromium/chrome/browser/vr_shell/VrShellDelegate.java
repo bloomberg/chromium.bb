@@ -763,7 +763,7 @@ public class VrShellDelegate
         // Note that we don't want to dispatch vrdisplayactivate for auto-present and vr intents.
         boolean tentativeWebVrMode =
                 mListeningForWebVrActivateBeforePause && !mRequestedWebVr && !mEnterVrOnStartup;
-        if (tentativeWebVrMode) {
+        if (tentativeWebVrMode && !mAutopresentWebVr) {
             // Before we fire DisplayActivate, we need focus to propagate to the WebContents we're
             // about to send DisplayActivate to. Focus propagates during onResume, which is when
             // this function is called, so if we post DisplayActivate to fire after onResume, focus
