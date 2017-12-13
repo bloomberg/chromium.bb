@@ -1824,9 +1824,6 @@ external/wpt/css/css-color/t425-hsla-parsing-f.xht [ WontFix ]
 external/wpt/css/mediaqueries/device-aspect-ratio-001.html [ WontFix ]
 external/wpt/css/mediaqueries/device-aspect-ratio-005.html [ WontFix ]
 
-# https://github.com/w3c/web-platform-tests/pull/8631
-external/wpt/css/css-style-attr/style-attr-urls-003.xht [ WontFix ]
-
 # https://github.com/w3c/web-platform-tests/issues/8633
 external/wpt/css/css-style-attr/style-attr-braces-002-quirks.htm [ WontFix ]
 
