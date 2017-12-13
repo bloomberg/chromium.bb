@@ -31,6 +31,17 @@
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/SimpleFontData.h"
 
+namespace {
+// An excessive amount of SimpleFontData objects is generated from
+// CSSFontFaceSource if a lot of varying FontDescriptions point to a web
+// font. These FontDescriptions can vary in size, font-feature-settings or
+// font-variation settings. Well known cases are animations of font-variation
+// settings, compare crbug.com/778352. For a start, let's reduce this number to
+// 1024, which is still a large number and should have enough steps for font
+// animations from the same font face source, but avoids unbounded growth.
+const size_t kMaxCachedFontData = 1024;
+}  // namespace
+
 namespace blink {
 
 CSSFontFaceSource::~CSSFontFaceSource() = default;
@@ -53,9 +64,26 @@ scoped_refptr<SimpleFontData> CSSFontFaceSource::GetFontData(
       font_data_table_.insert(key, nullptr).stored_value->value;
   if (!font_data)
     font_data = CreateFontData(font_description, font_selection_capabilities);
+
+  font_cache_key_age.PrependOrMoveToFirst(key);
+  PruneOldestIfNeeded();
+
+  DCHECK_LE(font_data_table_.size(), kMaxCachedFontData);
   // No release, because fontData is a reference to a RefPtr that is held in the
   // font_data_table_.
   return font_data;
+}
+
+void CSSFontFaceSource::PruneOldestIfNeeded() {
+  if (font_cache_key_age.size() > kMaxCachedFontData) {
+    DCHECK_EQ(font_cache_key_age.size() - 1, kMaxCachedFontData);
+    FontCacheKey& key = font_cache_key_age.back();
+    font_cache_key_age.pop_back();
+    auto font_data_entry = font_data_table_.Take(key);
+    DCHECK_EQ(font_cache_key_age.size(), kMaxCachedFontData);
+    if (font_data_entry && font_data_entry->GetCustomFontData())
+      font_data_entry->GetCustomFontData()->ClearFontFaceSource();
+  }
 }
 
 void CSSFontFaceSource::PruneTable() {
@@ -67,6 +95,7 @@ void CSSFontFaceSource::PruneTable() {
     if (font_data && font_data->GetCustomFontData())
       font_data->GetCustomFontData()->ClearFontFaceSource();
   }
+  font_cache_key_age.clear();
   font_data_table_.clear();
 }
 
