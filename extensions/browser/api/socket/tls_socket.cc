@@ -138,7 +138,8 @@ int TLSSocket::WriteImpl(net::IOBuffer* io_buffer,
   if (!IsConnected()) {
     return net::ERR_SOCKET_NOT_CONNECTED;
   }
-  return tls_socket_->Write(io_buffer, io_buffer_size, callback);
+  return tls_socket_->Write(io_buffer, io_buffer_size, callback,
+                            Socket::GetNetworkTrafficAnnotationTag());
 }
 
 bool TLSSocket::SetKeepAlive(bool enable, int delay) {

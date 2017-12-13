@@ -55,10 +55,9 @@ void Socket::WriteData() {
   DCHECK(request.byte_count >= request.bytes_written);
   io_buffer_write_ = new net::WrappedIOBuffer(request.io_buffer->data() +
                                               request.bytes_written);
-  int result =
-      WriteImpl(io_buffer_write_.get(),
-                request.byte_count - request.bytes_written,
-                base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
+  int result = WriteImpl(
+      io_buffer_write_.get(), request.byte_count - request.bytes_written,
+      base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
 
   if (result != net::ERR_IO_PENDING)
     OnWriteComplete(result);
@@ -139,5 +138,35 @@ Socket::WriteRequest::WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
 Socket::WriteRequest::WriteRequest(const WriteRequest& other) = default;
 
 Socket::WriteRequest::~WriteRequest() {}
+
+// static
+net::NetworkTrafficAnnotationTag Socket::GetNetworkTrafficAnnotationTag() {
+  return net::DefineNetworkTrafficAnnotation("chrome_apps_socket_api", R"(
+        semantics {
+          sender: "Chrome Apps Socket API"
+          description:
+            "Chrome Apps can use this API to send and receive data over "
+            "the network using TCP and UDP connections."
+          trigger: "A request from a Chrome App."
+          data: "Any data that the app sends."
+          destination: OTHER
+          destination_other:
+            "Data can be sent to any destination included in the app manifest."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "No settings control. Chrome Connectivity Diagnostics component "
+            "uses this API. Other than that, this request will not be sent if "
+            "the user does not install a Chrome App that uses the Socket API."
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              ExtensionInstallBlacklist: {
+                entries: '*'
+              }
+            }
+          }
+        })");
+}
 
 }  // namespace extensions
