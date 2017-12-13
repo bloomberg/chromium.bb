@@ -19,11 +19,6 @@ using base::TimeTicks;
 namespace ui {
 namespace {
 
-// Using a small epsilon when comparing slop distances allows pixel perfect
-// slop determination when using fractional DPI coordinates (assuming the slop
-// region and DPI scale are reasonably proportioned).
-const float kSlopEpsilon = .05f;
-
 const float kScaleFactor = .5f;
 
 }  // namespace
@@ -60,6 +55,13 @@ ScaleGestureDetector::ScaleGestureDetector(const Config& config,
       anchored_scale_mode_(ANCHORED_SCALE_MODE_NONE),
       event_before_or_above_starting_gesture_event_(false) {
   DCHECK(listener_);
+
+  // Using a small epsilon when comparing slop distances allows pixel
+  // perfect slop determination when using fractional DPI coordinates
+  // (assuming the slop region and DPI scale are reasonably
+  // proportioned).
+  const float kSlopEpsilon = .05f;
+
   span_slop_ = config.span_slop + kSlopEpsilon;
   min_span_ = config.min_scaling_span + kSlopEpsilon;
 }
