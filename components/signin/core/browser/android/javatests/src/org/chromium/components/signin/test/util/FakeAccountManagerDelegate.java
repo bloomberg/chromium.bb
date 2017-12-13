@@ -7,7 +7,6 @@ package org.chromium.components.signin.test.util;
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
-import android.content.Context;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
@@ -17,7 +16,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -117,20 +115,9 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     private boolean mRegisterObserversCalled;
     private FakeProfileDataSource mFakeProfileDataSource;
 
-    @VisibleForTesting
     public FakeAccountManagerDelegate(@ProfileDataSourceFlag int profileDataSourceFlag) {
         if (profileDataSourceFlag == ENABLE_PROFILE_DATA_SOURCE) {
             mFakeProfileDataSource = new FakeProfileDataSource();
-        }
-    }
-
-    /** Will be removed after fixing downstream clients. */
-    @Deprecated
-    public FakeAccountManagerDelegate(Context context, Account... accounts) {
-        if (accounts != null) {
-            for (Account account : accounts) {
-                mAccounts.add(AccountHolder.builder(account).alwaysAccept(true).build());
-            }
         }
     }
 
