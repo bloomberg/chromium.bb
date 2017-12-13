@@ -111,6 +111,7 @@ nofor word atabek 1-2345-1-12-15-13
 noback endword ation 16
 endword ations 16-234
 nofor after conabr after voyabr endword ation 16
+
 noback always au 13
 nofor before voyabr3 midword aufr 13-16
 nofor endword eau 15-13
@@ -165,6 +166,8 @@ nofor endword bres 23-156
 nofor partword brown 23-135-2456-1345
 
 nofor endword çaux 12346-13-1346
+nofor endword çant 12346-1456
+nofor endword çants 12346-1456-234
 
 partword ch 12356
 nofor before conabr begmidword chau 12356-13
@@ -183,10 +186,14 @@ nofor before voyabr2 midword cl 146
 nofor before con begword clô 146-1456
 nofor always clou 146-1256
 nofor partword clow 146-135-2456
+nofor endword clable 146-45
+nofor endword clables 146-45-234
 
-before con begword com 36
-nofor before conabr begword com 36
-nofor midword comt 14-2456-2345
+nofor before con begword cock 14-135-14-13
+
+before bmp begword com 36
+nofor before bmpabr begword com 36
+begmidword comt 14-2456-2345
 
 noback before con always con 25
 nofor before conabr begmidword con 25
@@ -200,6 +207,7 @@ noback before voy always cr 25
 nofor before voyabr3 begmidword cr 25
 nofor always crai 25-34
 nofor before conabr begmidword cran 25-2
+nofor endword crait 25-146
 nofor endword crant 25-1456
 nofor endword crants 25-1456-234
 nofor always crau 25-13
@@ -212,6 +220,8 @@ nofor endword crablement 25-45-134
 noback before con begword dis 256
 nofor before conabr begword dis 256
 
+nofor before con begword dock 145-135-14-13
+
 noback before voy always dr 1456
 nofor before voyabr begmidword dr 1456
 nofor always drai 1456-34
@@ -222,12 +232,15 @@ nofor before voyabr2 midword dr 1456
 nofor begword drôl 145-1235-1456-123
 nofor begword drou 1456-1256
 
+nofor endword éau 123456-13
+nofor endword éaux 123456-13-1346
 nofor after conabr midword êch 126-12356
 nofor before voyabr3 midword èdr 2346-1456
 nofor before voyabr3 midword ègr 2346-12456
 nofor midword ekk 15-13-13
 endword elle 456
 endword elles 456-234
+nofor midword ëll 1246-456
 
 noback before con always em 345
 nofor before bmpabr always em 345
@@ -278,6 +291,7 @@ always eü 15-1256
 noback before con always eur 46
 nofor after conabr before conabr midword eur 46
 endword eur 46
+endword eurs 46-234
 nofor before punctuation midendword eur 46
 nofor before voyabr3 always eur 5-1235
 
@@ -318,9 +332,12 @@ nofor before voyabr3 begmidword frangl 16-2-345
 nofor before conabr begword frê 16-126
 nofor begmidword frui 16-23
 nofor before conabr always fran 16-2
+nofor endword frait 16-146
+nofor endword frent 16-126
 nofor endword frant 16-1456
 nofor endword frants 16-1456-234
 nofor before conabr begmidword frin 16-35
+
 nofor before voyabr2 midword fl 126
 nofor always frou 16-1256
 nofor always frêl 16-126-123
@@ -350,6 +367,8 @@ nofor before voyabr2 midword gr 12456
 nofor always grâc 12456-16-14
 nofor always grê 12456-126
 nofor always grou 12456-1256
+word grant 12456-1456
+word grants 12456-1456-234
 nofor before con midword grui 12456-23
 
 nofor endword güe 1245-1256-15
@@ -357,6 +376,7 @@ nofor endword gües 1245-1256-156
 
 nofor partword akaw 1-13-1-2456
 nofor begword kaw 13-1-2456
+nofor begword kno 13-1345-135
 nofor always kh 13-125
 nofor midword kk 13-13
 nofor after voyabr before voyabr always k 13
@@ -393,6 +413,7 @@ nofor before conabr midword ion 3456
 endword ion 3456
 endword ition 246
 endword itions 246-234
+nofor midword îch 146-12356
 nofor always ît 146-2345
 nofor always îtr 146-356
 
@@ -427,12 +448,13 @@ nofor before voyabr3 always oaut 135-13-2345
 nofor midword œo 246-135
 
 noback before con always om 2456
-nofor before bmpabr always om 2456
+nofor before bmpabr begmidword om 2456
 nofor after conabr midword omh 2456-125
 nofor before voyabr3 always ombr 2456-23
 nofor before voyabr3 always omn 2456-1345
-after conabr endword om 2456
-after conabr endword oms 2456-234
+nofor after conabr endword om 2456
+nofor after conabr endword oms 2456-234
+nofor after conabr midword oms 2456-234
 before con midword öl 246-123 
 before con midword öm 246-134 
 endword öm 246-134 
@@ -465,6 +487,7 @@ nofor word oui 1256-24
 before con always our 12346
 nofor before voyabr always ourgn 12346-2356
 nofor midendword ourch 12346-12356 
+nofor midword ourdr 12346-1456
 nofor midword ourpr 12346-235
 endword our 12346
 
@@ -477,6 +500,8 @@ nofor before voyabr begmidword pl 1246
 nofor begmidword plâ 1246-16
 nofor midendword plable 1246-45
 nofor always plai 1246-34
+nofor endword plait 1246-146
+nofor word plait 1246-146
 nofor begmidword plien 1246-256
 nofor always plin 1246-35
 nofor always plou 1246-1256
@@ -579,7 +604,7 @@ nofor partword week 2456-15-15-13
 nofor endword yen 13456-26
 nofor endword zz 1356-1356
 
-nofor begmidword zw 1356-2456
+nofor before voyabr3 begmidword zw 1356-2456
 
 endword bilité 12-123-2345
 endword bilités 12-123-2345-234
@@ -833,8 +858,14 @@ word besogneusement		12-2356-234-134
 word besogneux		12-2356-1346
 word besoin		12-35
 word besoins		12-35-234
-prfword bête		12-126
-prfword bêtes		12-126-234
+noback prfword bête		12-126
+noback prfword bêtes		12-126-234
+nofor word bête 12-126
+nofor word bêtes 12-126-234
+nofor word bébête 12-123456-12-126
+nofor word bébêtes 12-123456-12-126-234
+nofor word embête 345-12-126
+nofor word embêtes 345-12-126-234
 contraction bê 12-126
 prfword bêtement		12-126-134
 prfword bêtements		12-126-134-234
@@ -902,6 +933,7 @@ contraction cc 14-14
 word cela		14-1
 contraction ca	14-1
 word celle		14-123
+contraction cl 14-123
 word celles		14-123-234
 word celui-ci		36-36-14-24
 word celui-là		36-36-123-12356
@@ -1168,7 +1200,7 @@ noback prfword différents		145-26-234
 nofor word différent 145-26
 nofor word différents 145-26-324
 nofor word indifférent 35-145-26
-nofor word différents 35-145-26-324
+nofor word indifférents 35-145-26-234
 prfword différente		145-26-15
 prfword différentes	145-26-156
 word difficile		145-124
@@ -1233,6 +1265,8 @@ word élémentaires	123456-123-1235-234
 word encore		26-14
 word endroit		26-145
 word endroits		26-145-234
+word end 15-1345-145
+word ends 15-1345-145-234
 word énergie		123456-1345
 word énergies		123456-1345-234
 word énergique		123456-1345-12345
@@ -1264,8 +1298,12 @@ word espèce		156-1234
 word espèces		156-1234-234
 prfword espérance		156-1235-14
 prfword espérances		156-1235-14-234
-prfword espoir		156-1235
-prfword espoirs		156-1235-234
+noback prfword espoir		156-1235
+noback prfword espoirs		156-1235-234
+nofor word espoir 156-1235
+nofor word espoirs 156-1235-234
+word désespoir 145-123456-234-156-1235
+word désespoirs  145-123456-234-156-1235-234
 word esprit		15-235
 word esprits		15-235-234
 word essentiel		156-123
@@ -1772,6 +1810,9 @@ word mesdames		134-145-234
 word mesdemoiselles	134-134-234
 word messieurs		134-1235-234
 prfword mettre		134-356
+nofor word mettre 356-134-356
+nofor word promettre 235-134-356
+nofor word transmettre 356-134-356
 word mieux		134-1346
 noback prfword mission		134-3456
 noback prfword missions		134-3456-234
@@ -1903,6 +1944,7 @@ word observation	135-12
 word observations	135-12-234
 word occasion		135-14
 word occasions		135-14-234
+contraction oc 135-14
 word occasionnel	135-14-123
 word occasionnels	135-14-123-234
 word occasionnelle	135-14-123-123
@@ -2020,8 +2062,12 @@ word populaires		1234-1234-1235-234
 word populairement	1234-1234-1235-134
 word popularité		1234-1234-1235-2345
 word popularités	1234-1234-1235-2345-234
-prfword population		1234-1234
+noback prfword population		1234-1234
 prfword populations	1234-1234-234
+nofor word population 1234-1234
+nofor word dépopulation 145-123456-1234-1234
+nofor word repopulation 3-1234-1234
+nofor word surpopulation 234-136-1235-1234-1234
 word pp 56-1234-1234
 word populeuse		1234-1234-234-15
 word populeuses		1234-1234-234-156
@@ -2150,6 +2196,8 @@ word quelconque		12345-14
 word quelconques	12345-14-234
 word quelque		12345-12345
 word quelques		12345-12345-234
+word quelqu'un 12345-12345-3-136
+word quelqu'une 12345-12345-3-136-15
 word quelquefois	12345-124
 word question		12345-3456
 word questions		12345-3456-234
@@ -2195,6 +2243,7 @@ prfword réelles		1235-123-123-234
 prfword réellement		1235-123-134
 noback prfword réflexion		1235-124
 noback prfword réflexions		1235-124-234
+contraction rf 1235-124
 nofor word réflexion		1235-124
 nofor word réflexions		1235-124-234
 nofor word irréflexion		24-1235-1235-124
@@ -2475,9 +2524,18 @@ word inutilisation	35-136-123-16
 word inutilisations	35-136-123-16-234
 word utilitaire		136-123-2345-1235
 word utilitaires	136-123-2345-1235-234
-prfword utilité		136-123-2345
-prfword utilités		136-123-2345-234
-contraction utm 136-2345-134
+noback prfword utilité		136-123-2345
+noback prfword utilités		136-123-2345-234
+nofor word désutilité 145-123456-234-136-123-2345
+nofor word désutilités 145-123456-234-136-123-2345-234
+nofor word futilité 124-136-123-2345
+nofor word futilités 124-136-123-2345-234
+nofor word utilité 136-123-2345
+nofor word utilités 136-123-2345-234
+nofor word inutilité 35-136-123-2345
+nofor word inutilités 35-136-123-2345-234
+
+word utm 56-136-2345-134
 
 word valeur		1236-46
 word valeurs		1236-46-234
@@ -2615,8 +2673,10 @@ word haïk 125-1-12456-13
 begword haïss 125-1-12456-2346
 begword héraï 125-123456-1235-1-12456
 begword ïamb 12456-1-134-12
-prfword ouïe 126-12456-15
-prfword ouïes 126-12456-156
+word ouïe 1256-12456-15
+word ouïes 1256-12456-156
+word inouïe 35-1256-12456-15
+word inouïes 35-1256-12456-156
 word krishnaïsme 13-1235-24-234-125-1345-1-12456-234-134-15
 word laïc 123-1-12456-14
 word laïcs 123-1-12456-14-234
@@ -2628,9 +2688,9 @@ nofor word aïoli 1-12456-135-123-24
 partword aïoli 1-12456-135-123-24
 sufword maïor 134-1-12456-135-1235
 word maïzena 134-1-12456-1356-15-1345-1
-word naïade 1345-1-12456-1-145-15
-word naïades 1345-1-12456-1-145-156
+begword naïad 1345-1-12456-1-145
 sufword paranoï 1234-a-1235-1-1345-135-12456
+nofor partword oïev 135-12456-15-1236
 word tsaï 2345-234-1-12456
 sufword qaraï 12345-1-1235-1-12456
 word raïa 1235-1-12456-1
@@ -2700,7 +2760,7 @@ begword	déwatt	145-123456-2456-1-2456
 word	diwan	145-24-2456-1-1345
 prfword	wall	2456-1-123-123
 prfword	walls	2456-1-123-123-234
-endword wire 2456-24-1235-15
+#nofor after voy endword wire 2456-24-1235-15
 begword	gewurz	1245-15-2456-136-1235-1356
 word	grauwacke	12456-13-2456-1-14-13-15
 word	grewia	12456-15-2456-24-1
@@ -2721,7 +2781,7 @@ word	kiwi	13-24-2456-24
 word	kiwis	13-24-2456-24-234
 word	rapakiwi	1235-1-1234-1-13-24-2456-24
 word	rapakiwis	1235-1-1234-1-13-24-2456-24-234
-begword	koweït	13-135-2456-15-12456-2345
+begword	koweï	13-135-2456-15-12456
 word	kwa	13-2456-1
 begword	kwa	13-2456-1
 word	lewandowsky	123-15-2456-2-145-135-2456-234-13-13456
@@ -2752,6 +2812,9 @@ word	zelkowa	1356-15-123-13-135-2456-1
 
 #Mots finissant par "z"
 word barometz 56-12-1-1235-135-134-15-2345-1356
+word benz 12-26-1356
+word berlioz 12-236-123-24-135-1356
+word biarritz 12-24-4-1235-24-2345-1356
 word binz 12-35-1356
 word biz 12-24-1356
 word bletz 45-15-2345-1356
@@ -2759,10 +2822,13 @@ word blitz 45-24-2345-1356
 word breitschwanz 23-15-24-2345-234-12356-2456-2-1356
 word buchholz 12-136-12356-125-135-123-1356
 word chintz 12356-35-2345-1356
+word cruz 25-136-1356
 word cz 56-14-1356
 word ersatz 15-1235-234-1-2345-1356
+word franz 16-2-1356
 word fritz 56-124-1235-24-2345-1356
 word graetz 12456-1-15-2345-1356
+word grosz 12456-234-1356
 word günz 1245-1256-1345-1356
 word hafiz 125-1-124-24-1356
 prfword hertz 125-236-2345-1356
@@ -2774,7 +2840,10 @@ word kronprinz 13-1235-346-235-35-1356
 word leibniz 123-15-24-12-1345-24-1356
 word lenz 56-123-15-1345-1356
 word lorentz 123-135-1235-15-1345-2345-1356
+word lodz 56-123-135-145-1356
 word lutz 56-123-136-2345-1356
+word metz 56-134-15-2345-1356
+word neiertz 1345-15-24-236-2345-1356
 word noz 1345-135-1356
 word oghouz 135-1245-125-135-136-1356
 word oz 56-135-1356
@@ -2793,6 +2862,7 @@ word seltz 234-15-123-2345-1356
 word slivovitz 234-123-24-1236-135-1236-24-2345-1356
 word solonetz 234-135-123-135-1345-15-2345-1356
 word spitz 234-1234-24-2345-1356
+begword taiw 2345-34-2456
 word trez 356-1356
 prfword witz 2456-24-2345-1356
 
@@ -2801,8 +2871,10 @@ prfword	abdomen	1-12-145-135-134-26
 word	achéen	1-12356-123456-26
 word	acheuléen	1-12356-5-123-123456-26
 word	achilléen	1-12356-24-456-123456-26
+word agen 1-1245-26
 word	albumen	1-123-12-136-134-26
 word	alizéen	1-123-24-1356-123456-26
+word allen 1-456-26
 word	amen	1-134-15-1345
 word	appaméen	1-1234-1234-1-134-123456-26
 word	arachnéen	1-1235-1-12356-1345-123456-26
@@ -2810,10 +2882,12 @@ word	araméen	1-1235-1-134-123456-26
 word	archéen	4-12356-123456-26
 word	aryen	1-1235-13456-26
 word	ascolichen	1-234-14-135-123-24-12356-26
+word assen 1-2346-26
 word	assidéen	1-2346-24-145-123456-26
 word	aven	1-1236-15-1345
 word	azuréen	1-1356-136-1235-123456-26
 word	baboen	12-1-12-135-26
+word baden 12-1-145-26
 word	Hagen	125-1-1245-26
 word	bigouden	12-24-1245-1256-145-26
 word	biscaïen	12-24-234-14-1-12456-26
@@ -2824,6 +2898,7 @@ word	bren	12-1235-26
 word	Bunsen	12-136-1345-234-26
 word	businessmen	12-136-234-24-1345-15-2346-134-26
 word	cadméen	14-1-145-134-123456-26
+word caen 14-1-15-1345
 word	calcanéen	12-1-123-14-1-1345-123456-26
 word	cananéen	14-1-1345-1-1345-123456-26
 word	caribéen	14-1-1235-24-12-123456-26
@@ -2842,6 +2917,7 @@ word	citizen	14-24-2345-24-1356-26
 word	citoyen	14-24-2345-135-13456-26
 word	clinamen	146-24-1345-1-134-26
 word	cognomen	14-135-2356-135-134-26
+word cohen 14-135-125-26
 word	collinéen	14-135-456-24-1345-123456-26
 word	concitoyen	25-14-24-2345-135-13456-26
 word	confucéen	25-124-136-14-123456-26
@@ -2932,7 +3008,7 @@ word	naziréen	1345-1-1356-24-1235-123456-26
 word	nicaraguayen	1345-24-14-1-1235-1-1245-136-1-13456-26
 word	nietzschéen	1345-24-15-2345-1356-12356-123456-26
 word	numen	1345-136-134-26
-word	open	135-1234-26
+word	open	135-1234-15-1345
 word	ostéichtyen	135-234-2345-123456-24-12356-2345-13456-26
 word	ourartéen	1256-1235-4-2345-123456-26
 word	païen	1234-1-12456-26
@@ -2959,6 +3035,7 @@ word	sabéen	234-1-12-123456-26
 word	sadducéen	234-1-145-145-136-14-123456-26
 word	saducéen	234-1-145-136-14-123456-26
 word	schlieren	234-12356-123-24-15-1235-26
+word sen 234-15-1345
 word	shamisen	234-125-1-134-24-234-26
 word	sidéen	234-24-145-123456-26
 word	solen	234-135-123-26
@@ -2985,9 +3062,94 @@ word	yachtmen	13456-1-2345-12356-134-26
 word	yachtsmen	13456-1-2345-12356-234-134-26
 word	yémen	13456-123456-134-26
 word	yeomen	13456-15-135-134-26
+word yen 13456-26
+word yens 13456-26-234
 word	zazen	1356-1-1356-26
 word	zéen	1356-123456-26
 word	zimbabwéen	1356-24-134-12-1-12-1256-123456-26
+
+#Différencier au mieux "k et "au" en désabréviation
+word (au) 236-13-356
+word (k) 56-236-13-356
+nofor partword bok 12-135-13
+nofor partword drink 1456-35-13
+nofor partword folkl 124-135-123-13-123
+nofor begword frankl 16-2-13-123
+nofor begword ginkg 1245-35-13-1245
+nofor begword jackp 245-1-14-13-1234
+nofor partword jork 245-56-13
+nofor word ken 1-26
+nofor word kg 13-1245
+nofor begword klep 13-123-15-1234
+nofor begword klip 13-123-24-1234
+nofor word km 13-134
+nofor before conabr partword kom 13-2456
+nofor before conabr partword kour 13-12346
+nofor begword knei 13-1345-15-24
+nofor begword knick 13-1345-24-14-13
+nofor before conabr begword krem 13-1235-345
+nofor word krypton 13-1235-13456-1234-2345-346
+nofor word ksar 13-234-4
+nofor word kw 13-2456
+nofor word kwh 13-2456-125
+nofor begword milk 134-24-123-13
+nofor begword nomenk 1345-135-134-26-13
+nofor endword politik 1234-135-123-24-2345-24-13
+nofor word rock 1235-135-14-13
+nofor word rocks 1235-135-14-13-234
+nofor begword sanskri 234-2-234-13-1235-24
+nofor word svastika 234-1236-1-234-2345-24-13-1
+nofor word svastikas 234-1236-1-234-2345-24-13-1-234
+nofor begword thanks 2345-125-2-13-234
+
+nofor begword bau 12-13
+nofor before voyabr begmidword hau 125-13
+nofor partword bau 12-13
+nofor begword klei 13-123-15-24
+word bk 56-12-13
+nofor word boucau 12-1256-14-13
+nofor word boucaux 12-1256-14-13-1346
+nofor word burgau 12-136-1235-1245-13
+nofor word burgaux 12-136-1235-1245-13-1346
+nofor sufword chateau 12356-1-2345-15-13
+nofor sufword château 12356-16-2345-15-13
+nofor partword quau 12345-13
+nofor word laue 123-13-15
+nofor word donau 145-135-1345-13
+nofor word fau 124-13
+nofor word gau 1245-13
+nofor before voyabr begword glott 345-135-2456
+nofor word gluau 345-136-13
+nofor word gruau 12456-136-13
+nofor word grau 12456-13
+nofor word huau 125-136-13
+nofor word kaunakês 13-13-1345-1-13-126-234
+nofor word knautia 13-1345-13-2345-24-1
+nofor word kraurosis 13-1235-13-1235-135-234-24-234 
+nofor word landau 123-2-145-13
+nofor endword ernau 236-1345-13
+nofor word lauan 123-13-1-1345
+nofor partword orvandiau 56-1236-2-145-24-31
+nofor endword arrau 4-1235-13
+nofor partword eauist 15-13-24-234-2345
+nofor partword lopiau 123-135-1234-24-13
+nofor word senau 234-15-1345-13
+nofor partword shké 234-125-13-123456
+nofor word tau 2345-13
+nofor word tauon 2345-13-346
+nofor partword illau 24-456-13
+nofor word touchau 2345-1256-12356-13
+nofor partword ussau 136-2346-13
+nofor word unau 136-1345-13
+nofor word vindau 1236-35-145-13
+nofor partword okm 135-13-134
+nofor always clark 146-4-13
+nofor word desk 145-15-234-13
+nofor begword desk 145-15-234-13
+nofor word diktat 145-24-13-2345-1-2345
+nofor word diktats 145-24-13-2345-1-2345-234
+nofor partword uiker 23-13-236
+nofor begword ekta 15-13-2345-1
 
 #mots finissant par "ê"
 word boulê 56-12-135-136-123-126
@@ -4014,9 +4176,12 @@ word burqa 12-136-1235-12345-1
 word cinq 14-35-12345
 word	coq	56-14-135-12345
 word	coqs	56-14-135-12345-234
+nofor word eurêka 5-1235-126-13-1
 word faq 124-1-12345
 word f.a.q. 124-256-1-256-12345-256
 word fiqh 124-24-12345-125
+nofor prfword mark 134-4-13
+nofor prfword marks 134-4-13-234
 word nasdaq 1345-1-234-145-1-12345
 word nastaliq 1345-1-234-2345-1-123-24-12345
 word romestecq 1235-135-134-15-234-2345-15-14-12345
@@ -4027,6 +4192,7 @@ word	videcoqs	56-1236-24-145-15-14-135-12345-234
 
 
 #Quelques mots ou suites de caractères difficiles à intégrer dans les règles ci-dessus"
+word allô 56-1-123-123-1456
 word auer 1-136-15-1235
 word à-peu-près 12356-36-1234-5-36-235-234
 word bau 12-13
@@ -4042,8 +4208,13 @@ word doña 145-135-12456-1
 nofor begword folk 124-135-123-13
 nofor word folk 124-135-123-13
 nofor word çà 12346-12356
+nofor before con begword new 1345-15-2456
 nofor before con begword pick 1234-24-14-13
+word prof 235-135-124
+word profs 235-135-124-234
 nofor begword wh 2456-125
+word sos 56-234-135-234
+sufword york 13456-56-13
 nofor word zyklon 1356-13456-13-123-346
 nofor word € 45-15
 always (o) 236-135-356
@@ -4088,7 +4259,7 @@ word \x00bb 56-2356
 
 word / 6-34
 word * 6-35
-#noback always -\s 56-36-0
+noback always -\s 56-36-0
 word - 56-36
 #noback always --\s 36-36-0
 word ? 56-26
@@ -4112,6 +4283,10 @@ nofor correct $ls["t.t."] "tient."
 
 #Quelques corrections après traitement
 nofor pass3 [@36-134-356] @14-135-134-134-15-2345-2345-1235-15
+#ici
+nofor pass3 [@236]@56$l @56-236
+nofor correct $l[""]"(" ?
+
 nofor pass2 $a[@36-3-36]$a @36-123-1-36
 nofor correct "grèo" "ïsso"
 nofor correct $l["-te-"]"il" "-t-"

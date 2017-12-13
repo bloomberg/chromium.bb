@@ -5,8 +5,8 @@ tests:
     - ["=", "⠠⠶"]
     - ["1er", "⠠⠡⠰⠑⠗"]
     - ["4me", "⠠⠹⠰⠍⠑"]
-    - ["- Item 1", "⠤ ⠨⠊⠞⠑⠍ ⠠⠡"]
-    - ["- item 1", "⠤ ⠊⠞⠑⠍ ⠠⠡"]
+    - ["- Item 1", "⠰⠤ ⠨⠊⠞⠑⠍ ⠠⠡"]
+    - ["- item 1", "⠰⠤ ⠊⠞⠑⠍ ⠠⠡"]
   # ⠡ -> fr, ation (terminaison)
     - ["fruit", "⠡⠆⠞"]
     - ["cardiofréquencemètre,", "⠉⠈⠙⠊⠕⠡⠿⠟⠢⠉⠑⠍⠮⠴⠑⠂"]
@@ -64,7 +64,7 @@ tests:
   # ⠺ -> om, tt (entre voyelles)
     - ["omnipotence", "⠺⠝⠊⠏⠕⠞⠢⠉⠑"]
     - ["réescompte", "⠗⠿⠑⠎⠉⠺⠏⠞⠑"]
-    - ["pronom", "⠖⠝⠺"]
+    - ["pronom", "⠖⠝⠕⠍"]
     - ["rémittence", "⠗⠿⠍⠊⠺⠢⠉⠑"]
     - ["désembattre", "⠙⠿⠎⠜⠃⠁⠞⠴⠑"]
     - ["rickettsie", "⠗⠊⠉⠅⠑⠞⠞⠎⠊⠑"]
@@ -1195,7 +1195,7 @@ tests:
   # ⠺ -> om, tt (entre voyelles)
     - ["⠺⠝⠊⠏⠕⠞⠢⠉⠑", "omnipotence"]
     - ["⠗⠿⠑⠎⠉⠺⠏⠞⠑", "réescompte"]
-    - ["⠖⠝⠺", "pronom"]
+    - ["⠖⠝⠕⠍", "pronom"]
     - ["⠗⠿⠍⠊⠺⠢⠉⠑", "rémittence"]
     - ["⠙⠿⠎⠜⠃⠁⠞⠴⠑", "désembattre"]
     - ["⠗⠊⠉⠅⠑⠞⠞⠎⠊⠑", "rickettsie"]
