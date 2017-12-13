@@ -213,8 +213,13 @@ void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
 }
 
 void Viewport::PinchEnd(const gfx::Point& anchor, bool snap_to_min) {
-  if (snap_to_min) {
-    LayerTreeImpl* active_tree = host_impl_->active_tree();
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+  // TODO(mcnee): Remove the InnerViewportScrollLayer() check (and add a
+  // DCHECK instead), after we no longer send GesturePinch events to
+  // OOPIF renderers. https://crbug.com/787924
+  // Snap-to-min only makes sense for mainframes, so we use the lack of an
+  // InnerViewportScrollLayer() to detect if this is an OOPIF.
+  if (snap_to_min && active_tree->InnerViewportScrollLayer()) {
     const float kMaxZoomForSnapToMin = 1.05f;
     const base::TimeDelta kSnapToMinZoomAnimationDuration =
         base::TimeDelta::FromMilliseconds(200);
