@@ -167,12 +167,12 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     if fails:
       self.failure_mock.assert_called_once()
     else:
-      self.assertFalse(self.failure_mock.called)
+      self.failure_mock.assert_not_called()
 
     if warns:
       self.warning_mock.assert_called_once()
     else:
-      self.assertFalse(self.warning_mock.called)
+      self.warning_mock.assert_not_called()
 
     mock_report.assert_not_called()
 

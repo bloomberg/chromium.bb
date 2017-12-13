@@ -733,11 +733,11 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
     configs = ['test-pre-cq', 'lumpy-pre-cq']
     self.assertDictEqual(self.sync_stage._LaunchTrybots(mock_pool, configs), {})
-    self.assertTrue(mock_pool.HandleNoConfigTargetFailure.assert_not_called())
+    mock_pool.HandleNoConfigTargetFailure.assert_not_called()
 
     self.assertDictEqual(self.sync_stage._LaunchTrybots(
         mock_pool, configs, plan=[change]), {})
-    self.assertTrue(mock_pool.HandleNoConfigTargetFailure.assert_called_once())
+    mock_pool.HandleNoConfigTargetFailure.assert_called_once()
 
   def testLaunchSanityPreCQs(self):
     """Test LaunchSanityPreCQs."""
