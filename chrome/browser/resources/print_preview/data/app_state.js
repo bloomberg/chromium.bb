@@ -27,21 +27,10 @@ print_preview.AppStateField = {
 };
 
 /**
- * @typedef {{id: string,
- *            origin: print_preview.DestinationOrigin,
- *            account: string,
- *            capabilities: ?print_preview.Cdd,
- *            displayName: string,
- *            extensionId: string,
- *            extensionName: string}}
- */
-print_preview.AppStateRecentDestination;
-
-/**
- * Creates a |AppStateRecentDestination| to represent |destination| in the app
+ * Creates a |RecentDestination| to represent |destination| in the app
  * state.
  * @param {!print_preview.Destination} destination The destination to store.
- * @return {!print_preview.AppStateRecentDestination}
+ * @return {!print_preview.RecentDestination}
  */
 function makeRecentDestination(destination) {
   return {
@@ -103,7 +92,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {?print_preview.AppStateRecentDestination} The most recent
+     * @return {?print_preview.RecentDestination} The most recent
      *     destination, which is currently the selected destination.
      */
     get selectedDestination() {
@@ -114,7 +103,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {?Array<!print_preview.AppStateRecentDestination>} The
+     * @return {?Array<!print_preview.RecentDestination>} The
      *     AppState.NUM_DESTINATIONS_ most recent destinations.
      */
     get recentDestinations() {

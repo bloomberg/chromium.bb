@@ -1,5 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/webui_listener_tracker.html">
+<link rel="import" href="../native_layer.html">
+<link rel="import" href="../data/destination.html">
+<link rel="import" href="../data/destination_store.html">
+<link rel="import" href="../data/document_info.html">
+<link rel="import" href="../data/measurement_system.html">
+<link rel="import" href="../data/user_info.html">
+<link rel="import" href="settings_behavior.html">
 <link rel="import" href="model.html">
 <link rel="import" href="header.html">
 <link rel="import" href="destination_settings.html">
@@ -48,16 +57,16 @@
       }
     </style>
     <print-preview-model id="model" settings="{{settings}}"
-        destination="{{destination}}" document-info="{{documentInfo}}"
-        state="{{state}}"></print-preview-model>
+        destination="{{destination_}}" document-info="{{documentInfo_}}">
+    </print-preview-model>
     <div id="sidebar">
-      <print-preview-header destination="[[destination]]" state="[[state]]"
+      <print-preview-header destination="[[destination_]]" state="[[state_]]"
           settings="[[settings]]"></print-preview-header>
       <div id="settings-sections">
-        <print-preview-destination-settings destination="[[destination]]">
+        <print-preview-destination-settings destination="[[destination_]]">
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
-            document-info="[[documentInfo]]"
+            document-info="[[documentInfo_]]"
             hidden$="[[!settings.pages.available]]">
         </print-preview-pages-settings>
         <print-preview-copies-settings settings="{{settings}}"
@@ -70,18 +79,18 @@
             hidden$="[[!settings.color.available]]">
         </print-preview-color-settings>
         <print-preview-media-size-settings settings="{{settings}}"
-            capability="[[destination.capabilities.printer.media_size]]"
+            capability="[[destination_.capabilities.printer.media_size]]"
             hidden$="[[!settings.mediaSize.available]]">
         </print-preview-media-size-settings>
         <print-preview-margins-settings settings="{{settings}}"
             hidden$="[[!settings.margins.available]]">
         </print-preview-margins-settings>
         <print-preview-dpi-settings settings="{{settings}}"
-            capability="[[destination.capabilities.printer.dpi]]"
+            capability="[[destination_.capabilities.printer.dpi]]"
             hidden$="[[!settings.dpi.available]]">
         </print-preview-dpi-settings>
         <print-preview-scaling-settings settings="{{settings}}"
-            document-info="[[documentInfo]]"
+            document-info="[[documentInfo_]]"
             hidden$="[[!settings.scaling.available]]">
         </print-preview-scaling-settings>
         <print-preview-other-options-settings settings="{{settings}}"

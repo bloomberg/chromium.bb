@@ -103,6 +103,7 @@ PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
     return super.extraLibraries.concat([
       '../test_browser_proxy.js',
       'native_layer_stub.js',
+      'print_preview_tests.js',
       'restore_state_test.js',
     ]);
   }

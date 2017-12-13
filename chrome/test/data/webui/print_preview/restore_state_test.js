@@ -71,6 +71,9 @@ cr.define('restore_state_test', function() {
       initialSettings.serializedAppStateStr = JSON.stringify(stickySettings);
 
       nativeLayer.setInitialSettings(initialSettings);
+      nativeLayer.setLocalDestinationCapabilities(
+          print_preview_test.getCddTemplate(initialSettings.printerName));
+
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
