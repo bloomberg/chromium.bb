@@ -154,8 +154,8 @@ void PostProcessingPipelineImpl::SetPostProcessorConfig(
               [&name](PostProcessorInfo& p) { return p.name == name; });
   if (it != processors_.end()) {
     it->ptr->UpdateParameters(config);
-    LOG(INFO) << "Config string: " << config
-              << " was delivered to postprocessor " << name;
+    VLOG(1) << "Config string: " << config << " was delivered to postprocessor "
+            << name;
   }
 }
 
