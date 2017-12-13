@@ -22,6 +22,7 @@
 #include "components/sessions/core/session_types.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
@@ -377,6 +378,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, SourceTabIDSet) {
   EXPECT_EQ(new_tab_helper->source_tab_id(), source_tab_id);
 }
 
+void DumpSessionsOnServer(fake_server::FakeServer* fake_server) {
+  auto entities = fake_server->GetSyncEntitiesByModelType(syncer::SESSIONS);
+  for (const auto& entity : entities) {
+    DVLOG(0) << "Session entity:\n" << *syncer::SyncEntityToValue(entity, true);
+  }
+}
+
 // TODO(pavely): This test is flaky. Report failures in
 // https://crbug.com/789129.
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
@@ -410,6 +418,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
                          true, 1);
   }
 
+  // Log sessions entities on fake server to verify that the last known tab's
+  // url is kURL1.
+  DumpSessionsOnServer(GetFakeServer());
+
   // Trigger a cookie jar change (user signing in to content area).
   // Updating the cookie jar has to travel to the sync engine. It is possible
   // something is already running or scheduled to run on the sync thread. We
@@ -429,6 +441,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
     // Verify the cookie jar mismatch bool is set to false.
     ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
     ASSERT_FALSE(message.commit().config_params().cookie_jar_mismatch());
+    // Log last commit message to verify that commit message was triggered by
+    // navigation to kURL2.
+    DVLOG(0) << "Commit message:\n"
+             << *syncer::ClientToServerMessageToValue(message, true);
 
     // Verify the histograms were recorded properly.
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",

@@ -132,14 +132,12 @@ AssertionResult FakeServerVerifier::VerifySessions(
   std::map<int, int> tab_ids_to_window_ids;
   std::map<int, std::string> tab_ids_to_urls;
   std::string session_tag;
-  for (std::vector<sync_pb::SyncEntity>::const_iterator it = sessions.begin();
-       it != sessions.end(); ++it) {
-    sync_pb::SyncEntity entity = *it;
+  for (const auto& entity : sessions) {
     sync_pb::SessionSpecifics session_specifics = entity.specifics().session();
 
     // Ensure that all session tags match the first entity. Only one session is
     // supported for verification at this time.
-    if (it == sessions.begin())
+    if (session_tag.empty())
       session_tag = session_specifics.session_tag();
     else if (session_specifics.session_tag() != session_tag)
       return AssertionFailure() << "Multiple session tags found.";
@@ -169,16 +167,9 @@ AssertionResult FakeServerVerifier::VerifySessions(
   // the SessionHeader also ensures its data corresponds to the data stored in
   // each SessionTab.
   SessionsHierarchy actual_sessions;
-  ::google::protobuf::RepeatedPtrField<sync_pb::SessionWindow>::const_iterator
-      window_it;
-  for (window_it = session_header.window().begin();
-       window_it != session_header.window().end(); ++window_it) {
-    sync_pb::SessionWindow window = *window_it;
+  for (const auto& window : session_header.window()) {
     std::multiset<std::string> tab_urls;
-    ::google::protobuf::RepeatedField<int>::const_iterator tab_it;
-    for (tab_it = window.tab().begin(); tab_it != window.tab().end();
-         ++tab_it) {
-      int tab_id = *tab_it;
+    for (int tab_id : window.tab()) {
       if (tab_ids_to_window_ids.find(tab_id) == tab_ids_to_window_ids.end()) {
         return AssertionFailure() << "Malformed data: Tab entity not found.";
       }
