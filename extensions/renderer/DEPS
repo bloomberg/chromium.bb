@@ -24,3 +24,11 @@ include_rules = [
   "+services/service_manager/public/cpp",
 ]
 
+specific_include_rules = {
+  ".*(test|test_util)\.(cc|h)$": [
+    # Temporarily allowed testing includes.  See above.
+    # TODO(devlin): Ideally, we'd remove these (or move the tests into
+    # //chrome). See https://crbug.com/773004.
+    "+chrome/test/base/chrome_render_view_test.h",
+  ],
+}

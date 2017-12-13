@@ -37,26 +37,5 @@ include_rules = [
 specific_include_rules = {
   ".*(test|test_util)\.(cc|h)$": [
     "+content/public/test",
-    "+storage/browser/test",
-
-    # Temporarily allowed testing includes.  See above.
-    # TODO(jamescook): Remove these. http://crbug.com/162530
-    "+chrome/browser/apps/app_browsertest_util.h",
-    "+chrome/browser/extensions/api/management/management_api.h",
-    "+chrome/browser/extensions/api/permissions/permissions_api.h",
-    "+chrome/browser/extensions/extension_apitest.h",
-    "+chrome/browser/extensions/extension_function_test_utils.h",
-    "+chrome/browser/extensions/extension_service.h",
-    "+chrome/browser/extensions/extension_service_test_base.h",
-    "+chrome/browser/extensions/extension_test_message_listener.h",
-    "+chrome/browser/extensions/test_extension_dir.h",
-    "+chrome/browser/extensions/test_extension_prefs.h",
-    "+chrome/browser/extensions/test_extension_system.h",
-    "+chrome/browser/ui/browser.h",
-    "+chrome/common/chrome_switches.h",
-    "+chrome/common/extensions/features/feature_channel.h",
-    "+chrome/test/base/chrome_render_view_test.h",
-    "+chrome/test/base/testing_profile.h",
-    "+chrome/test/base/ui_test_utils.h",
   ],
 }
