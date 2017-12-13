@@ -2084,8 +2084,7 @@
                     },
                     "enable_features": [
                         "DoodlesOnLocalNtp",
-                        "UseGoogleLocalNtp",
-                        "VoiceSearchOnLocalNtp"
+                        "UseGoogleLocalNtp"
                     ]
                 }
             ]
