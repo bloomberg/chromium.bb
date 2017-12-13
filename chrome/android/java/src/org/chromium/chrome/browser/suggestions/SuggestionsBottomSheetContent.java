@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
@@ -70,6 +71,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private final LogoView mLogoView;
     private final LogoDelegateImpl mLogoDelegate;
     private final LocationBarPhone mLocationBar;
+    private final BottomToolbarPhone mToolbarView;
     private final ViewGroup mControlContainerView;
     private final View mToolbarPullHandle;
     private final View mToolbarShadow;
@@ -231,6 +233,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mRecyclerView.setOnTouchListener(touchListener);
 
         mControlContainerView = (ViewGroup) activity.findViewById(R.id.control_container);
+        mToolbarView = (BottomToolbarPhone) activity.findViewById(R.id.toolbar);
         mToolbarPullHandle = activity.findViewById(R.id.toolbar_handle);
         mToolbarShadow = activity.findViewById(R.id.bottom_toolbar_shadow);
         mLogoDelegate = new LogoDelegateImpl(navigationDelegate, mLogoView, profile);
@@ -407,6 +410,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             mControlContainerView.setTranslationY(0);
             mToolbarPullHandle.setTranslationY(0);
             mToolbarShadow.setTranslationY(0);
+            mToolbarView.setShownInNtp(false);
             ViewUtils.setAncestorsShouldClipChildren(mControlContainerView, true);
             mRecyclerView.setAlpha(1.0f);
             mRecyclerView.setVisibility(View.VISIBLE);
@@ -446,6 +450,12 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mControlContainerView.setTranslationY(toolbarOffset);
         mToolbarPullHandle.setTranslationY(-toolbarOffset);
         mToolbarShadow.setTranslationY(-toolbarOffset);
+
+        if (toolbarOffset == 0.0f || toolbarOffset == sheetHeightPx) {
+            mToolbarView.setShownInNtp(false);
+        } else {
+            mToolbarView.setShownInNtp(true);
+        }
 
         // Fade out the whole RecyclerView when the URL bar is focused, and fade it in when it loses
         // focus.
