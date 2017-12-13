@@ -1535,9 +1535,6 @@
             "experiments": [
                 {
                     "name": "Enabled",
-                    "params": {
-                        "engagement_threshold_for_flash": "101"
-                    },
                     "enable_features": [
                         "PreferHtmlOverPlugins"
                     ]
