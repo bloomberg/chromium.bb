@@ -29,6 +29,7 @@ const CGFloat kProgressBarHeight = 2.0f;
 
 const CGFloat kToolsMenuButtonWidth = 44.0f;
 const CGFloat kToolbarButtonWidth = 48.0f;
+const CGFloat kLeadingLocationBarButtonWidth = 40.0f;
 const CGFloat kToolbarButtonTitleNormalColor = 0x555555;
 const CGFloat kIncognitoLocationBarBorderColor = 0x4C4C4C;
 const CGFloat kToolbarButtonTitleHighlightedColor = 0x4285F4;
@@ -36,6 +37,7 @@ const CGFloat kIncognitoToolbarButtonTitleNormalColor = 0xEEEEEE;
 const CGFloat kIncognitoToolbarButtonTitleHighlightedColor = 0x888a8c;
 const CGFloat kBackButtonImageInset = -9;
 const CGFloat kForwardButtonImageInset = -7;
+const CGFloat kLeadingLocationBarButtonImageInset = 15;
 
 const NSInteger kShowTabStripButtonMaxTabCount = 99;
 
