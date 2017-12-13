@@ -6,11 +6,11 @@
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/crash/core/common/crash_key.h"
 #include "jni/AwDebug_jni.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -43,12 +43,20 @@ static void JNI_AwDebug_InitCrashKeysForWebViewTesting(
   crash_keys::InitCrashKeysForWebViewTesting();
 }
 
-static void JNI_AwDebug_SetCrashKeyValue(JNIEnv* env,
-                                         const JavaParamRef<jclass>& clazz,
-                                         const JavaParamRef<jstring>& key,
-                                         const JavaParamRef<jstring>& value) {
-  base::debug::SetCrashKeyValue(ConvertJavaStringToUTF8(env, key),
-                                ConvertJavaStringToUTF8(env, value));
+static void JNI_AwDebug_SetWhiteListedKeyForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
+  static ::crash_reporter::CrashKeyString<32> crash_key(
+      "AW_WHITELISTED_DEBUG_KEY");
+  crash_key.Set("AW_DEBUG_VALUE");
+}
+
+static void JNI_AwDebug_SetNonWhiteListedKeyForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
+  static ::crash_reporter::CrashKeyString<32> crash_key(
+      "AW_NONWHITELISTED_DEBUG_KEY");
+  crash_key.Set("AW_DEBUG_VALUE");
 }
 
 }  // namespace android_webview
