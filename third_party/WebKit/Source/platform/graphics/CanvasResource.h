@@ -120,7 +120,7 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
  private:
   void TearDown();
   GLenum TextureTarget() const final;
-  bool IsOverlayCandidate() const final { return false; }
+  bool IsOverlayCandidate() const final { return true; }
 
   CanvasResource_GpuMemoryBuffer(
       const IntSize&,
