@@ -63,7 +63,9 @@ class SymbolMap {
   Entry* GetForAddress(void* address);
 
  private:
-  static const size_t kMaxMapEntries = 64;
+  // Component builds of Chrome pull about 250 shared libraries (on Linux), so
+  // 512 entries should be enough in most cases.
+  static const size_t kMaxMapEntries = 512;
 
   void Populate();
 
@@ -116,7 +118,6 @@ void SymbolMap::Populate() {
   }
 
   // Retrieve the debug info struct.
-  constexpr size_t map_capacity = sizeof(entries_);
   uintptr_t debug_addr;
   status = zx_object_get_property(process, ZX_PROP_PROCESS_DEBUG_ADDR,
                                   &debug_addr, sizeof(debug_addr));
@@ -135,7 +136,7 @@ void SymbolMap::Populate() {
 
   // Copy the contents of the link map linked list to |entries_|.
   while (lmap != nullptr) {
-    if (count_ == map_capacity) {
+    if (count_ >= arraysize(entries_)) {
       break;
     }
     SymbolMap::Entry* next_entry = &entries_[count_];
