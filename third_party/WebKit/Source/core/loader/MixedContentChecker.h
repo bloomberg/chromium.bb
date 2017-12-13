@@ -67,7 +67,7 @@ class CORE_EXPORT MixedContentChecker final {
  public:
   static bool ShouldBlockFetch(LocalFrame*,
                                WebURLRequest::RequestContext,
-                               network::mojom::RequestContextFrameType,
+                               WebURLRequest::FrameType,
                                ResourceRequest::RedirectStatus,
                                const KURL&,
                                SecurityViolationReportingPolicy =
@@ -76,7 +76,7 @@ class CORE_EXPORT MixedContentChecker final {
   static bool ShouldBlockFetchOnWorker(WorkerOrWorkletGlobalScope*,
                                        WebWorkerFetchContext*,
                                        WebURLRequest::RequestContext,
-                                       network::mojom::RequestContextFrameType,
+                                       WebURLRequest::FrameType,
                                        ResourceRequest::RedirectStatus,
                                        const KURL&,
                                        SecurityViolationReportingPolicy);
@@ -102,13 +102,12 @@ class CORE_EXPORT MixedContentChecker final {
 
   // Returns the frame that should be considered the effective frame
   // for a mixed content check for the given frame type.
-  static Frame* EffectiveFrameForFrameType(
-      LocalFrame*,
-      network::mojom::RequestContextFrameType);
+  static Frame* EffectiveFrameForFrameType(LocalFrame*,
+                                           WebURLRequest::FrameType);
 
   static void HandleCertificateError(LocalFrame*,
                                      const ResourceResponse&,
-                                     network::mojom::RequestContextFrameType,
+                                     WebURLRequest::FrameType,
                                      WebURLRequest::RequestContext);
 
   // Receive information about mixed content found externally.
@@ -123,11 +122,10 @@ class CORE_EXPORT MixedContentChecker final {
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);
 
-  static Frame* InWhichFrameIsContentMixed(
-      Frame*,
-      network::mojom::RequestContextFrameType,
-      const KURL&,
-      const LocalFrame*);
+  static Frame* InWhichFrameIsContentMixed(Frame*,
+                                           WebURLRequest::FrameType,
+                                           const KURL&,
+                                           const LocalFrame*);
 
   static void LogToConsoleAboutFetch(ExecutionContext*,
                                      const KURL&,

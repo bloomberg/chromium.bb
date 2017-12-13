@@ -247,8 +247,7 @@ bool ResourceLoader::WillFollowRedirect(
   // The following parameters never change during the lifetime of a request.
   WebURLRequest::RequestContext request_context =
       initial_request.GetRequestContext();
-  network::mojom::RequestContextFrameType frame_type =
-      initial_request.GetFrameType();
+  WebURLRequest::FrameType frame_type = initial_request.GetFrameType();
   network::mojom::FetchRequestMode fetch_request_mode =
       initial_request.GetFetchRequestMode();
   network::mojom::FetchCredentialsMode fetch_credentials_mode =

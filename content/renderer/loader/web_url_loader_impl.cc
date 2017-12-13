@@ -56,7 +56,6 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_data_job.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
@@ -590,8 +589,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // tests load HTML directly through a data url which will be handled by the
   // block above.
   DCHECK(!IsBrowserSideNavigationEnabled() || stream_override_ ||
-         request.GetFrameType() ==
-             network::mojom::RequestContextFrameType::kNone);
+         request.GetFrameType() == WebURLRequest::kFrameTypeNone);
 
   GURL referrer_url(
       request.HttpHeaderField(WebString::FromASCII("Referer")).Latin1());
@@ -642,7 +640,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->fetch_mixed_content_context_type =
       GetMixedContentContextTypeForWebURLRequest(request);
 
-  resource_request->fetch_frame_type = request.GetFrameType();
+  resource_request->fetch_frame_type =
+      GetRequestContextFrameTypeForWebURLRequest(request);
   resource_request->request_body =
       GetRequestBodyForWebURLRequest(request).get();
   resource_request->download_to_file = request.DownloadToFile();
@@ -668,8 +667,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (stream_override_) {
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
-    DCHECK_NE(network::mojom::RequestContextFrameType::kNone,
-              request.GetFrameType());
+    DCHECK_NE(WebURLRequest::kFrameTypeNone, request.GetFrameType());
     if (stream_override_->url_loader_client_endpoints) {
       url_loader_client_endpoints =
           std::move(stream_override_->url_loader_client_endpoints);
@@ -989,17 +987,14 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
   // need to be loaded locally.
   // For PlzNavigate, navigation requests were already checked in the browser.
   if (resource_dispatcher_ &&
-      request.GetFrameType() ==
-          network::mojom::RequestContextFrameType::kTopLevel) {
+      request.GetFrameType() == WebURLRequest::kFrameTypeTopLevel) {
     if (!IsBrowserSideNavigationEnabled())
       return false;
   }
 #endif
 
-  if (request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kTopLevel &&
-      request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kNested)
+  if (request.GetFrameType() != WebURLRequest::kFrameTypeTopLevel &&
+      request.GetFrameType() != WebURLRequest::kFrameTypeNested)
     return true;
 
   std::string mime_type, unused_charset;

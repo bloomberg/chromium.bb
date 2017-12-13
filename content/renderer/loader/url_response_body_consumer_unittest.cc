@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/resource_messages.h"
+#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/renderer/request_peer.h"
@@ -20,7 +21,6 @@
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -113,7 +113,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test,
     request->priority = net::LOW;
     request->appcache_host_id = 0;
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
-    request->fetch_frame_type = network::mojom::RequestContextFrameType::kNone;
+    request->fetch_frame_type = REQUEST_CONTEXT_FRAME_TYPE_NONE;
 
     const RequestExtraData extra_data;
     extra_data.CopyToResourceRequest(request.get());

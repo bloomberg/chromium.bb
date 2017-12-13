@@ -102,7 +102,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "public/web/WebFrameLoadType.h"
 #include "public/web/WebHistoryItem.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 
 using blink::WebURLRequest;
 
@@ -274,9 +273,9 @@ void FrameLoader::Init() {
 
   ResourceRequest initial_request{KURL(g_empty_string)};
   initial_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
-  initial_request.SetFrameType(
-      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                            : network::mojom::RequestContextFrameType::kNested);
+  initial_request.SetFrameType(frame_->IsMainFrame()
+                                   ? WebURLRequest::kFrameTypeTopLevel
+                                   : WebURLRequest::kFrameTypeNested);
 
   provisional_document_loader_ =
       Client()->CreateDocumentLoader(frame_, initial_request, SubstituteData(),
@@ -911,7 +910,7 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
       return;  // Navigation/download will be handled by the client.
     } else if (ShouldNavigateTargetFrame(policy)) {
       request.GetResourceRequest().SetFrameType(
-          network::mojom::RequestContextFrameType::kAuxiliary);
+          WebURLRequest::kFrameTypeAuxiliary);
       CreateWindowForRequest(request, *frame_, policy);
       return;  // Navigation will be handled by the new frame/window.
     }
@@ -1500,9 +1499,9 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
       frame_load_request.TriggeringEvent());
   resource_request.SetRequestContext(
       DetermineRequestContextFromNavigationType(navigation_type));
-  resource_request.SetFrameType(
-      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                            : network::mojom::RequestContextFrameType::kNested);
+  resource_request.SetFrameType(frame_->IsMainFrame()
+                                    ? WebURLRequest::kFrameTypeTopLevel
+                                    : WebURLRequest::kFrameTypeNested);
 
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();
@@ -1699,8 +1698,7 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#feature-detect
-  if (resource_request.GetFrameType() !=
-      network::mojom::RequestContextFrameType::kNone) {
+  if (resource_request.GetFrameType() != WebURLRequest::kFrameTypeNone) {
     // Early return if the request has already been upgraded.
     if (!resource_request.HttpHeaderField(HTTPNames::Upgrade_Insecure_Requests)
              .IsNull()) {
@@ -1713,8 +1711,7 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
 
   // PlzNavigate: Upgrading subframe requests is handled by the browser process.
   Settings* settings = frame_->GetSettings();
-  if (resource_request.GetFrameType() ==
-          network::mojom::RequestContextFrameType::kNested &&
+  if (resource_request.GetFrameType() == WebURLRequest::kFrameTypeNested &&
       settings && settings->GetBrowserSideNavigationEnabled()) {
     return;
   }
@@ -1740,10 +1737,8 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
     // 1. Are for subresources (including nested frames).
     // 2. Are form submissions.
     // 3. Whose hosts are contained in the document's InsecureNavigationSet.
-    if (resource_request.GetFrameType() ==
-            network::mojom::RequestContextFrameType::kNone ||
-        resource_request.GetFrameType() ==
-            network::mojom::RequestContextFrameType::kNested ||
+    if (resource_request.GetFrameType() == WebURLRequest::kFrameTypeNone ||
+        resource_request.GetFrameType() == WebURLRequest::kFrameTypeNested ||
         resource_request.GetRequestContext() ==
             WebURLRequest::kRequestContextForm ||
         (!url.Host().IsNull() &&

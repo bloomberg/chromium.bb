@@ -38,7 +38,6 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/text/TextEncoding.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 
@@ -46,7 +45,7 @@ CSSStyleSheetResource* CSSStyleSheetResource::Fetch(FetchParameters& params,
                                                     ResourceFetcher* fetcher,
                                                     ResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
+            WebURLRequest::kFrameTypeNone);
   params.SetRequestContext(WebURLRequest::kRequestContextStyle);
   CSSStyleSheetResource* resource = ToCSSStyleSheetResource(
       fetcher->RequestResource(params, CSSStyleSheetResourceFactory(), client));

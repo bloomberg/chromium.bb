@@ -28,7 +28,6 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 
@@ -36,7 +35,7 @@ DocumentResource* DocumentResource::FetchSVGDocument(FetchParameters& params,
                                                      ResourceFetcher* fetcher,
                                                      ResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
+            WebURLRequest::kFrameTypeNone);
   params.SetRequestContext(WebURLRequest::kRequestContextImage);
   return ToDocumentResource(
       fetcher->RequestResource(params, SVGDocumentResourceFactory(), client));

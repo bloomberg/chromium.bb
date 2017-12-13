@@ -72,7 +72,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     bool skip_service_worker,
     ResourceType resource_type,
     RequestContextType request_context_type,
-    network::mojom::RequestContextFrameType frame_type,
+    RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
     scoped_refptr<ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
@@ -131,7 +131,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     bool skip_service_worker,
     ResourceType resource_type,
     RequestContextType request_context_type,
-    network::mojom::RequestContextFrameType frame_type,
+    RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
     scoped_refptr<ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
@@ -190,7 +190,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     bool keepalive,
     ResourceType resource_type,
     RequestContextType request_context_type,
-    network::mojom::RequestContextFrameType frame_type,
+    RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body) {
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.

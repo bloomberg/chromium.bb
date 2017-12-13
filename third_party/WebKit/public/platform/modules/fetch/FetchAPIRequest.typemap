@@ -8,11 +8,10 @@ public_headers = [
   "//third_party/WebKit/public/platform/WebURLRequest.h",
   "//third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h",
 ]
-traits_headers = [
-  "//third_party/WebKit/Source/platform/mojo/FetchAPIRequestStructTraits.h",
-]
+traits_headers = [ "//third_party/WebKit/Source/platform/mojo/FetchAPIRequestStructTraits.h" ]
 type_mappings = [
   "blink.mojom.FetchRedirectMode=::blink::WebURLRequest::FetchRedirectMode",
   "blink.mojom.FetchAPIRequest=::blink::WebServiceWorkerRequest",
+  "blink.mojom.RequestContextFrameType=::blink::WebURLRequest::FrameType",
   "blink.mojom.RequestContextType=::blink::WebURLRequest::RequestContext",
 ]

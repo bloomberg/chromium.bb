@@ -161,7 +161,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "ppapi/features/features.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
@@ -4653,7 +4652,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
 
   // Renderer process transfers apply only to navigational requests.
   bool is_navigational_request =
-      request.GetFrameType() != network::mojom::RequestContextFrameType::kNone;
+      request.GetFrameType() != WebURLRequest::kFrameTypeNone;
   if (is_navigational_request) {
     extra_data->set_transferred_request_child_id(
         navigation_state->start_params().transferred_request_child_id);
@@ -6382,8 +6381,8 @@ void RenderFrameImpl::NavigateInternal(
       common_params, request_params, std::move(stream_params),
       frame_->IsViewSourceModeEnabled(), is_same_document);
   request.SetFrameType(IsTopLevelNavigation(frame_)
-                           ? network::mojom::RequestContextFrameType::kTopLevel
-                           : network::mojom::RequestContextFrameType::kNested);
+                           ? blink::WebURLRequest::kFrameTypeTopLevel
+                           : blink::WebURLRequest::kFrameTypeNested);
 
   if (IsBrowserSideNavigationEnabled() && common_params.post_data) {
     request.SetHTTPBody(GetWebHTTPBodyForRequestBody(common_params.post_data));
@@ -6744,8 +6743,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
 
   // Set SiteForCookies.
   WebDocument frame_document = frame_->GetDocument();
-  if (request.GetFrameType() ==
-      network::mojom::RequestContextFrameType::kTopLevel)
+  if (request.GetFrameType() == blink::WebURLRequest::kFrameTypeTopLevel)
     request.SetSiteForCookies(request.Url());
   else
     request.SetSiteForCookies(frame_document.SiteForCookies());
@@ -6784,11 +6782,11 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   DCHECK(GetFetchRedirectModeForWebURLRequest(info.url_request) ==
          FetchRedirectMode::MANUAL_MODE);
   DCHECK(frame_->Parent() ||
-         info.url_request.GetFrameType() ==
-             network::mojom::RequestContextFrameType::kTopLevel);
+         GetRequestContextFrameTypeForWebURLRequest(info.url_request) ==
+             REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
   DCHECK(!frame_->Parent() ||
-         info.url_request.GetFrameType() ==
-             network::mojom::RequestContextFrameType::kNested);
+         GetRequestContextFrameTypeForWebURLRequest(info.url_request) ==
+             REQUEST_CONTEXT_FRAME_TYPE_NESTED);
 
   DCHECK(!info.url_request.RequestorOrigin().IsNull());
   base::Optional<url::Origin> initiator_origin =
