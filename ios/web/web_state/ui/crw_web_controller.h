@@ -158,11 +158,6 @@ class WebStateImpl;
 // to generate an overlay placeholder view.
 - (BOOL)canUseViewForGeneratingOverlayPlaceholderView;
 
-// Notifies delegate that |currentNavItem| will be loaded with |url|.
-// TODO(crbug.com/674991): Remove this method when CRWWebDelegate is no longer
-// used.
-- (void)willLoadCurrentItemWithURL:(const GURL&)URL;
-
 // Loads the URL indicated by current session state.
 - (void)loadCurrentURL;
 

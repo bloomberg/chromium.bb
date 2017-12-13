@@ -262,7 +262,6 @@ void NavigationManagerImpl::LoadURLWithParams(
     added_item->SetShouldSkipRepostFormConfirmation(true);
   }
 
-  delegate_->WillLoadCurrentItemWithUrl(params.url);
   delegate_->LoadCurrentItem();
 }
 

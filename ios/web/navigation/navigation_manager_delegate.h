@@ -9,7 +9,6 @@
 
 
 @protocol CRWWebViewNavigationProxy;
-class GURL;
 
 namespace web {
 
@@ -37,10 +36,6 @@ class NavigationManagerDelegate {
   // Instructs the delegate to perform book keeping in preparation for a new
   // navigation using a different user agent type.
   virtual void WillChangeUserAgentType() = 0;
-
-  // Instructs the delegate to notify its delegates that the current navigation
-  // item will be loaded.
-  virtual void WillLoadCurrentItemWithUrl(const GURL&) = 0;
 
   // Instructs the delegate to load the current navigation item.
   virtual void LoadCurrentItem() = 0;

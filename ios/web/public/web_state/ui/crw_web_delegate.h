@@ -37,15 +37,6 @@ class GURL;
 - (void)webController:(CRWWebController*)webController
     retrievePlaceholderOverlayImage:(void (^)(UIImage*))block;
 
-// ---------------------------------------------------------------------
-// TODO(rohitrao): Eliminate as many of the following delegate methods as
-// possible.  They only exist because the Tab and CRWWebController logic was
-// very intertwined. We should streamline the logic to jump between classes
-// less, then remove any delegate method that becomes unnecessary as a result.
-
-// Called when a page is loaded using loadWithParams.
-- (void)webDidUpdateSessionForLoadWithURL:(const GURL&)URL;
-
 @optional
 
 // Called to ask CRWWebDelegate if |CRWWebController| should open the given URL.

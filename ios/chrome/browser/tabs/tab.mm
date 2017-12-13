@@ -444,10 +444,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
 }
 
-- (void)webDidUpdateSessionForLoadWithURL:(const GURL&)URL {
-  // TODO(crbug.com/674991): Remove this method.
-}
-
 // Halt the tab, which amounts to halting its webController.
 - (void)terminateNetworkActivity {
   [self.webController terminateNetworkActivity];

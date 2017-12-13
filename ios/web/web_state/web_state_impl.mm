@@ -783,10 +783,6 @@ void WebStateImpl::WillChangeUserAgentType() {
   [web_controller_ requirePageReconstruction];
 }
 
-void WebStateImpl::WillLoadCurrentItemWithUrl(const GURL& url) {
-  [web_controller_ willLoadCurrentItemWithURL:url];
-}
-
 void WebStateImpl::LoadCurrentItem() {
   [web_controller_ loadCurrentURL];
 }

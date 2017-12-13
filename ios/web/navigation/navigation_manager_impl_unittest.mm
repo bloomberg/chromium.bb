@@ -73,7 +73,6 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD0(ClearTransientContent, void());
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
   MOCK_METHOD0(UpdateHtml5HistoryState, void());
-  MOCK_METHOD1(WillLoadCurrentItemWithUrl, void(const GURL&));
   MOCK_METHOD0(WillChangeUserAgentType, void());
   MOCK_METHOD0(LoadCurrentItem, void());
   MOCK_METHOD0(LoadIfNecessary, void());
@@ -2128,8 +2127,6 @@ TEST_P(NavigationManagerTest, LoadURLWithParamsWithExtraHeadersAndPostData) {
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem())
       .Times(1);
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent()).Times(1);
-  EXPECT_CALL(navigation_manager_delegate(),
-              WillLoadCurrentItemWithUrl(::testing::Ref(params.url)));
   EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem()).Times(1);
 
   navigation_manager()->LoadURLWithParams(params);
@@ -2161,8 +2158,6 @@ TEST_P(NavigationManagerTest, LoadURLWithParamsSavesStateOnCurrentItem) {
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem())
       .Times(1);
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent()).Times(1);
-  EXPECT_CALL(navigation_manager_delegate(),
-              WillLoadCurrentItemWithUrl(::testing::Ref(params.url)));
   EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem()).Times(1);
 
   navigation_manager()->LoadURLWithParams(params);

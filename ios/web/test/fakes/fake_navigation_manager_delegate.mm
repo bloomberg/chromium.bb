@@ -15,7 +15,6 @@ namespace web {
 void FakeNavigationManagerDelegate::ClearTransientContent() {}
 void FakeNavigationManagerDelegate::RecordPageStateInNavigationItem() {}
 void FakeNavigationManagerDelegate::UpdateHtml5HistoryState() {}
-void FakeNavigationManagerDelegate::WillLoadCurrentItemWithUrl(const GURL&) {}
 void FakeNavigationManagerDelegate::WillChangeUserAgentType() {}
 void FakeNavigationManagerDelegate::LoadCurrentItem() {}
 void FakeNavigationManagerDelegate::LoadIfNecessary() {}

@@ -1792,10 +1792,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
                               withCompletionHandler:completionHandler];
 }
 
-- (void)willLoadCurrentItemWithURL:(const GURL&)URL {
-  [_delegate webDidUpdateSessionForLoadWithURL:URL];
-}
-
 - (void)loadCurrentURL {
   // If the content view doesn't exist, the tab has either been evicted, or
   // never displayed. Bail, and let the URL be loaded when the tab is shown.
