@@ -33,6 +33,7 @@
 #include "extensions/browser/test_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/aura/env.h"
 
 namespace {
 
@@ -130,9 +131,11 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
         proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery);
 
     chromeos::DBusThreadManager::Initialize();
-    bluez::BluezDBusManager::Initialize(
-        chromeos::DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingFakes());
+    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL) {
+      bluez::BluezDBusManager::Initialize(
+          chromeos::DBusThreadManager::Get()->GetSystemBus(),
+          chromeos::DBusThreadManager::Get()->IsUsingFakes());
+    }
     client_ = chromeos::DBusThreadManager::Get()->GetEasyUnlockClient();
 
     extensions::ExtensionApiUnittest::SetUp();
@@ -141,7 +144,8 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
   void TearDown() override {
     extensions::ExtensionApiUnittest::TearDown();
 
-    bluez::BluezDBusManager::Shutdown();
+    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+      bluez::BluezDBusManager::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
