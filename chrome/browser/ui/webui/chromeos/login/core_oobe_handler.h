@@ -115,6 +115,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleSetDeviceRequisition(const std::string& requisition);
   void HandleScreenAssetsLoaded(const std::string& screen_async_load_id);
   void HandleSkipToLoginForTesting(const base::ListValue* args);
+  void HandleSkipToUpdateForTesting();
   void HandleLaunchHelpApp(double help_topic_id);
   void HandleToggleResetScreen();
   void HandleEnableDebuggingScreen();
