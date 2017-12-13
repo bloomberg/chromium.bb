@@ -615,6 +615,128 @@ TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
             controller->timer().GetCurrentDelay());
 }
 
+// Tests that on device resume from sleep, the NightLight status is updated
+// correctly if the time has changed meanwhile.
+TEST_F(NightLightTest, TestCustomScheduleOnResume) {
+  NightLightController* controller = GetController();
+  // Now is 4:00 PM.
+  delegate()->SetFakeNow(TimeOfDay(16 * 60));
+  SetNightLightEnabled(false);
+  // Start time is at 6:00 PM and end time is at 10:00 PM. NightLight should be
+  // off.
+  //      16:00         18:00         22:00
+  // <----- + ----------- + ----------- + ----->
+  //        |             |             |
+  //       now          start          end
+  //
+  controller->SetColorTemperature(0.4f);
+  controller->SetCustomStartTime(TimeOfDay(18 * 60));
+  controller->SetCustomEndTime(TimeOfDay(22 * 60));
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+
+  EXPECT_FALSE(controller->GetEnabled());
+  TestCompositorsTemperature(0.0f);
+  EXPECT_TRUE(controller->timer().IsRunning());
+  // NightLight should start in 2 hours.
+  EXPECT_EQ(base::TimeDelta::FromHours(2),
+            controller->timer().GetCurrentDelay());
+
+  // Now simulate that the device was suspended for 3 hours, and the time now
+  // is 7:00 PM when the devices was resumed. Expect that NightLight turns on.
+  delegate()->SetFakeNow(TimeOfDay(19 * 60));
+  controller->SuspendDone(base::TimeDelta::Max());
+
+  EXPECT_TRUE(controller->GetEnabled());
+  TestCompositorsTemperature(0.4f);
+  EXPECT_TRUE(controller->timer().IsRunning());
+  // NightLight should end in 3 hours.
+  EXPECT_EQ(base::TimeDelta::FromHours(3),
+            controller->timer().GetCurrentDelay());
+}
+
+// The following tests ensure that the NightLight schedule is correctly
+// refreshed when the start and end times are inverted (i.e. the "start time" as
+// a time of day today is in the future with respect to the "end time" also as a
+// time of day today).
+//
+// Case 1: "Now" is less than both "end" and "start".
+TEST_F(NightLightTest, TestCustomScheduleInvertedStartAndEndTimesCase1) {
+  NightLightController* controller = GetController();
+  // Now is 4:00 AM.
+  delegate()->SetFakeNow(TimeOfDay(4 * 60));
+  SetNightLightEnabled(false);
+  // Start time is at 9:00 PM and end time is at 6:00 AM. "Now" is less than
+  // both. NightLight should be on.
+  //       4:00          6:00         21:00
+  // <----- + ----------- + ----------- + ----->
+  //        |             |             |
+  //       now           end          start
+  //
+  controller->SetColorTemperature(0.4f);
+  controller->SetCustomStartTime(TimeOfDay(21 * 60));
+  controller->SetCustomEndTime(TimeOfDay(6 * 60));
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+
+  EXPECT_TRUE(controller->GetEnabled());
+  TestCompositorsTemperature(0.4f);
+  EXPECT_TRUE(controller->timer().IsRunning());
+  // NightLight should end in two hours.
+  EXPECT_EQ(base::TimeDelta::FromHours(2),
+            controller->timer().GetCurrentDelay());
+}
+
+// Case 2: "Now" is between "end" and "start".
+TEST_F(NightLightTest, TestCustomScheduleInvertedStartAndEndTimesCase2) {
+  NightLightController* controller = GetController();
+  // Now is 6:00 AM.
+  delegate()->SetFakeNow(TimeOfDay(6 * 60));
+  SetNightLightEnabled(false);
+  // Start time is at 9:00 PM and end time is at 4:00 AM. "Now" is between both.
+  // NightLight should be off.
+  //       4:00          6:00         21:00
+  // <----- + ----------- + ----------- + ----->
+  //        |             |             |
+  //       end           now          start
+  //
+  controller->SetColorTemperature(0.4f);
+  controller->SetCustomStartTime(TimeOfDay(21 * 60));
+  controller->SetCustomEndTime(TimeOfDay(4 * 60));
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+
+  EXPECT_FALSE(controller->GetEnabled());
+  TestCompositorsTemperature(0.0f);
+  EXPECT_TRUE(controller->timer().IsRunning());
+  // NightLight should start in 15 hours.
+  EXPECT_EQ(base::TimeDelta::FromHours(15),
+            controller->timer().GetCurrentDelay());
+}
+
+// Case 3: "Now" is greater than both "start" and "end".
+TEST_F(NightLightTest, TestCustomScheduleInvertedStartAndEndTimesCase3) {
+  NightLightController* controller = GetController();
+  // Now is 11:00 PM.
+  delegate()->SetFakeNow(TimeOfDay(23 * 60));
+  SetNightLightEnabled(false);
+  // Start time is at 9:00 PM and end time is at 4:00 AM. "Now" is greater than
+  // both. NightLight should be on.
+  //       4:00         21:00         23:00
+  // <----- + ----------- + ----------- + ----->
+  //        |             |             |
+  //       end          start          now
+  //
+  controller->SetColorTemperature(0.4f);
+  controller->SetCustomStartTime(TimeOfDay(21 * 60));
+  controller->SetCustomEndTime(TimeOfDay(4 * 60));
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+
+  EXPECT_TRUE(controller->GetEnabled());
+  TestCompositorsTemperature(0.4f);
+  EXPECT_TRUE(controller->timer().IsRunning());
+  // NightLight should end in 5 hours.
+  EXPECT_EQ(base::TimeDelta::FromHours(5),
+            controller->timer().GetCurrentDelay());
+}
+
 }  // namespace
 
 }  // namespace ash

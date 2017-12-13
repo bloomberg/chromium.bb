@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -27,9 +28,11 @@ class ColorTemperatureAnimation;
 
 // Controls the NightLight feature that adjusts the color temperature of the
 // screen.
-class ASH_EXPORT NightLightController : public mojom::NightLightController,
-                                        public WindowTreeHostManager::Observer,
-                                        public SessionObserver {
+class ASH_EXPORT NightLightController
+    : public mojom::NightLightController,
+      public WindowTreeHostManager::Observer,
+      public SessionObserver,
+      public chromeos::PowerManagerClient::Observer {
  public:
   using ScheduleType = mojom::NightLightController::ScheduleType;
 
@@ -124,6 +127,9 @@ class ASH_EXPORT NightLightController : public mojom::NightLightController,
   // ash::mojom::NightLightController:
   void SetCurrentGeoposition(mojom::SimpleGeopositionPtr position) override;
   void SetClient(mojom::NightLightClientPtr client) override;
+
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 
