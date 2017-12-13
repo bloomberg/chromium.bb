@@ -937,9 +937,18 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
 }
 
 static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
-  return object.StyleRef().HasBorderRadius() &&
-         // IsLayoutEmbeddedContent() is for iframes with border-radius.
-         (object.IsLayoutEmbeddedContent() || NeedsOverflowClip(object));
+  if (!object.StyleRef().HasBorderRadius())
+    return false;
+  // An iframe with border-radius applies border-radius clip on the subdocument.
+  if (object.IsLayoutEmbeddedContent())
+    return true;
+  if (NeedsOverflowClip(object))
+    return true;
+  // LayoutReplaced applies inner border-radius clip on the foreground. This
+  // doesn't apply to SVGRoot which uses the NeedsOverflowClip() rule above.
+  if (object.IsLayoutReplaced() && !object.IsSVGRoot())
+    return true;
+  return false;
 }
 
 static bool NeedsControlClipFragmentationAdjustment(const LayoutBox& box) {

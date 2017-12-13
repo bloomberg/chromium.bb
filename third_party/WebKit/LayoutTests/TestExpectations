@@ -76,7 +76,6 @@ crbug.com/769942 virtual/spv175/paint/invalidation/svg/js-late-clipPath-and-obje
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/js-late-clipPath-creation.svg [ Failure ]
 
 crbug.com/771643 virtual/spv175/compositing/geometry/repaint-foreground-layer.html [ Crash ]
-crbug.com/771643 virtual/spv175/compositing/images/direct-image-dynamic-border-radius.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/overflow/scroll-neg-z-index-and-composited-child.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/squashing/squash-overflow-hidden-scrolltop.html [ Failure ]
