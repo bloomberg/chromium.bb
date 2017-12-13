@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: ac3cc1b884e0f91d189618f69bafee40c64967b0
+Revision: 0924e567514fc577e725b56cd602808467b317a9
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -36,5 +36,3 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
  - codereview.settings has been excluded.
- - ProcessInfo.OtherProcess disabled due to flake, investigation pending.
-   See https://crbug.com/792619.
