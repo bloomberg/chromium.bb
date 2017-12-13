@@ -50,10 +50,22 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
 
   // StartEvent() should be called at the beginning of an event. It returns an
   // event id. The event id should be passed to EndEvent() when the event has
-  // finished.
+  // finished. If there are pending tasks queued by PushPendingTask(), they will
+  // run in order synchronouslly in StartEvent().
   // See the class comment to know when |abort_callback| runs.
   int StartEvent(base::OnceCallback<void(int /* event_id */)> abort_callback);
   void EndEvent(int event_id);
+
+  // Pushes a task which is expected to run after any event starts again to a
+  // pending task queue. The tasks will run at the next StartEvent() call.
+  // PushPendingTask() should be called if the idle timeout occurred
+  // (did_idle_timeout() returns true).
+  void PushPendingTask(base::OnceClosure pending_task);
+
+  // Returns true if the timer thinks no events ran for a while, and has
+  // triggered the |idle_callback| passed to the constructor. It'll be reset to
+  // false again when StartEvent() is called.
+  bool did_idle_timeout() const { return did_idle_timeout_; }
 
   // Idle timeout duration since the last event has finished.
   static constexpr base::TimeDelta kIdleDelay =
@@ -98,6 +110,14 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   // For idle timeouts. Invoked when UpdateStatus() is called after
   // |idle_time_|.
   base::RepeatingClosure idle_callback_;
+
+  // Set to true once |idle_callback_| has been invoked. Set to false when
+  // StartEvent() is called.
+  bool did_idle_timeout_ = false;
+
+  // Tasks waiting for the timer getting the next request to start an event
+  // by StartEvent().
+  base::queue<base::OnceClosure> pending_tasks_;
 
   // |timer_| invokes UpdateEventStatus() periodically.
   base::RepeatingTimer timer_;
