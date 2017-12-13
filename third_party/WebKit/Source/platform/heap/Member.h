@@ -249,6 +249,8 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
 
  protected:
   ALWAYS_INLINE void WriteBarrier(const T* value) const {
+// TODO(mlippautz): Replace with proper build flag.
+#if 0
     if (value) {
       // The following method for retrieving a page works as allocation of
       // mixins on large object pages is prohibited.
@@ -258,6 +260,7 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
         ThreadState::Current()->Heap().WriteBarrierInternal(page, value);
       }
     }
+#endif
   }
 };
 

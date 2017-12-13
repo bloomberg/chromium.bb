@@ -10,6 +10,9 @@
 #include "platform/heap/TraceTraits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(mlippautz): Replace with proper build flag.
+#if 0
+
 namespace blink {
 namespace incremental_marking_test {
 
@@ -210,3 +213,5 @@ TEST(IncrementalMarkingTest, NoWriteBarrierOnMarkedMixinApplication) {
 
 }  // namespace incremental_marking_test
 }  // namespace blink
+
+#endif

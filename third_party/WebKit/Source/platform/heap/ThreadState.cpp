@@ -364,10 +364,15 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
 }
 
 bool ThreadState::ShouldScheduleIncrementalMarking() const {
-  // TODO(mluppautz): For now immediately schedule incremental marking if
+// TODO(mlippautz): Replace with proper build flag.
+#if 0
+  // TODO(mlippautz): For now immediately schedule incremental marking if
   // the runtime flag is provided, basically exercising a stress test.
   return (GcState() == kNoGCScheduled || GcState() == kSweeping) &&
          RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled();
+#else
+  return false;
+#endif
 }
 
 bool ThreadState::ShouldScheduleIdleGC() {
