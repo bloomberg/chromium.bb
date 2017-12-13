@@ -29,9 +29,11 @@ void CacheTestFillBuffer(char* buffer, size_t len, bool no_nulls);
 // Generates a random key of up to 200 bytes.
 std::string GenerateKey(bool same_length);
 
-// Returns true if the cache is not corrupt.
+// Returns true if the cache is not corrupt. Assumes blockfile cache.
+// |max_size|, if non-zero, will be set as its size.
 bool CheckCacheIntegrity(const base::FilePath& path,
                          bool new_eviction,
+                         int max_size,
                          uint32_t mask);
 
 // -----------------------------------------------------------------------

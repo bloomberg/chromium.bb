@@ -117,7 +117,7 @@ void DiskCacheTestWithCache::SimulateCrash() {
   cache_impl_->ClearRefCountForTest();
 
   cache_.reset();
-  EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
+  EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, size_, mask_));
 
   CreateBackend(disk_cache::kNoRandom);
 }
@@ -287,7 +287,7 @@ void DiskCacheTestWithCache::TearDown() {
   cache_.reset();
 
   if (!memory_only_ && !simple_cache_mode_ && integrity_) {
-    EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
+    EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, size_, mask_));
   }
   scoped_task_env_->RunUntilIdle();
   if (simple_cache_mode_ && simple_file_tracker_)

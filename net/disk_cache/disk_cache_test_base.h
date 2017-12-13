@@ -108,6 +108,9 @@ class DiskCacheTestWithCache : public DiskCacheTest {
 
   void SetMaxSize(int size);
 
+  // Returns value last given to SetMaxSize (or 0).
+  int MaxSize() const { return size_; }
+
   // Deletes and re-creates the files on initialization errors.
   void SetForceCreation() {
     force_creation_ = true;

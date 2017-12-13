@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "base/barrier_closure.h"
@@ -40,6 +41,17 @@ using base::Time;
 
 namespace {
 
+const size_t kNumEntries = 10000;
+const int kHeadersSize = 2000;
+
+const int kBodySize = 72 * 1024 - 1;
+
+// HttpCache likes this chunk size.
+const int kChunkSize = 32 * 1024;
+
+// As of 2017-01-12, this is a typical per-tab limit on HTTP connections.
+const int kMaxParallelOperations = 10;
+
 void MaybeSetFdLimit(unsigned int max_descriptors) {
 #if defined(OS_POSIX)
   base::SetFdLimit(max_descriptors);
@@ -49,6 +61,11 @@ void MaybeSetFdLimit(unsigned int max_descriptors) {
 struct TestEntry {
   std::string key;
   int data_len;
+};
+
+enum class WhatToRead {
+  HEADERS_ONLY,
+  HEADERS_AND_BODY,
 };
 
 class DiskCachePerfTest : public DiskCacheTestWithCache {
@@ -65,25 +82,28 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
       MaybeSetFdLimit(saved_fd_limit_);
   }
 
+  const std::vector<TestEntry>& entries() const { return entries_; }
+
  protected:
-  enum class WhatToRead {
-    HEADERS_ONLY,
-    HEADERS_AND_BODY,
-  };
 
   // Helper methods for constructing tests.
-  bool TimeWrite();
-  bool TimeRead(WhatToRead what_to_read, const char* timer_message);
+  bool TimeWrites();
+  bool TimeReads(WhatToRead what_to_read, const char* timer_message);
   void ResetAndEvictSystemDiskCache();
+
+  // Callbacks used within tests for intermediate operations.
+  void WriteCallback(const net::CompletionCallback& final_callback,
+                     scoped_refptr<net::IOBuffer> headers_buffer,
+                     scoped_refptr<net::IOBuffer> body_buffer,
+                     disk_cache::Entry* cache_entry,
+                     int entry_index,
+                     size_t write_offset,
+                     int result);
 
   // Complete perf tests.
   void CacheBackendPerformance();
 
   const size_t kFdLimitForCacheTests = 8192;
-
-  const int kNumEntries = 1000;
-  const int kHeadersSize = 800;
-  const int kBodySize = 256 * 1024 - 1;
 
   std::vector<TestEntry> entries_;
 
@@ -92,109 +112,291 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-// Creates num_entries on the cache, and writes kHeaderSize bytes of metadata
-// and up to kBodySize of data to each entry.
-bool DiskCachePerfTest::TimeWrite() {
-  // TODO(gavinp): This test would be significantly more realistic if it didn't
-  // do single reads and writes. Perhaps entries should be written 64kb at a
-  // time. As well, not all entries should be created and written essentially
-  // simultaneously; some number of entries in flight at a time would be a
-  // likely better testing load.
-  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kHeadersSize));
-  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kBodySize));
+class WriteHandler {
+ public:
+  WriteHandler(const DiskCachePerfTest* test,
+               disk_cache::Backend* cache,
+               net::CompletionCallback final_callback)
+      : test_(test), cache_(cache), final_callback_(final_callback) {
+    CacheTestFillBuffer(headers_buffer_->data(), kHeadersSize, false);
+    CacheTestFillBuffer(body_buffer_->data(), kChunkSize, false);
+  }
 
-  CacheTestFillBuffer(buffer1->data(), kHeadersSize, false);
-  CacheTestFillBuffer(buffer2->data(), kBodySize, false);
+  void Run();
 
-  int expected = 0;
+ protected:
+  void CreateNextEntry();
 
-  MessageLoopHelper helper;
-  CallbackTest callback(&helper, true);
+  void CreateCallback(std::unique_ptr<disk_cache::Entry*> unique_entry_ptr,
+                      int data_len,
+                      int result);
+  void WriteDataCallback(disk_cache::Entry* entry,
+                         int next_offset,
+                         int data_len,
+                         int expected_result,
+                         int result);
 
-  base::PerfTimeLogger timer("Write disk cache entries");
+ private:
+  bool CheckForErrorAndCancel(int result);
 
-  for (int i = 0; i < kNumEntries; i++) {
+  const DiskCachePerfTest* test_;
+  disk_cache::Backend* cache_;
+  net::CompletionCallback final_callback_;
+
+  size_t next_entry_index_ = 0;
+  size_t pending_operations_count_ = 0;
+
+  int pending_result_ = net::OK;
+
+  scoped_refptr<net::IOBuffer> headers_buffer_ =
+      new net::IOBuffer(kHeadersSize);
+  scoped_refptr<net::IOBuffer> body_buffer_ = new net::IOBuffer(kChunkSize);
+};
+
+void WriteHandler::Run() {
+  for (int i = 0; i < kMaxParallelOperations; ++i) {
+    ++pending_operations_count_;
+    CreateNextEntry();
+  }
+}
+
+void WriteHandler::CreateNextEntry() {
+  ASSERT_GT(kNumEntries, next_entry_index_);
+  TestEntry test_entry = test_->entries()[next_entry_index_++];
+  disk_cache::Entry** entry_ptr = new disk_cache::Entry*();
+  std::unique_ptr<disk_cache::Entry*> unique_entry_ptr(entry_ptr);
+  net::CompletionCallback callback =
+      base::Bind(&WriteHandler::CreateCallback, base::Unretained(this),
+                 base::Passed(&unique_entry_ptr), test_entry.data_len);
+  int result = cache_->CreateEntry(test_entry.key, entry_ptr, callback);
+  if (result != net::ERR_IO_PENDING)
+    callback.Run(result);
+}
+
+void WriteHandler::CreateCallback(std::unique_ptr<disk_cache::Entry*> entry_ptr,
+                                  int data_len,
+                                  int result) {
+  if (CheckForErrorAndCancel(result))
+    return;
+
+  disk_cache::Entry* entry = *entry_ptr;
+
+  net::CompletionCallback callback =
+      base::Bind(&WriteHandler::WriteDataCallback, base::Unretained(this),
+                 entry, 0, data_len, kHeadersSize);
+  int new_result = entry->WriteData(0, 0, headers_buffer_.get(), kHeadersSize,
+                                    callback, false);
+  if (new_result != net::ERR_IO_PENDING)
+    callback.Run(new_result);
+}
+
+void WriteHandler::WriteDataCallback(disk_cache::Entry* entry,
+                                     int next_offset,
+                                     int data_len,
+                                     int expected_result,
+                                     int result) {
+  if (CheckForErrorAndCancel(result)) {
+    entry->Close();
+    return;
+  }
+  DCHECK_LE(next_offset, data_len);
+  if (next_offset == data_len) {
+    entry->Close();
+    if (next_entry_index_ < kNumEntries) {
+      CreateNextEntry();
+    } else {
+      --pending_operations_count_;
+      if (pending_operations_count_ == 0)
+        final_callback_.Run(net::OK);
+    }
+    return;
+  }
+
+  int write_size = std::min(kChunkSize, data_len - next_offset);
+  net::CompletionCallback callback =
+      base::Bind(&WriteHandler::WriteDataCallback, base::Unretained(this),
+                 entry, next_offset + write_size, data_len, write_size);
+  int new_result = entry->WriteData(1, next_offset, body_buffer_.get(),
+                                    write_size, callback, true);
+  if (new_result != net::ERR_IO_PENDING)
+    callback.Run(new_result);
+}
+
+bool WriteHandler::CheckForErrorAndCancel(int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+  if (result != net::OK && !(result > 0))
+    pending_result_ = result;
+  if (pending_result_ != net::OK) {
+    --pending_operations_count_;
+    if (pending_operations_count_ == 0)
+      final_callback_.Run(pending_result_);
+    return true;
+  }
+  return false;
+}
+
+class ReadHandler {
+ public:
+  ReadHandler(const DiskCachePerfTest* test,
+              WhatToRead what_to_read,
+              disk_cache::Backend* cache,
+              net::CompletionCallback final_callback)
+      : test_(test),
+        what_to_read_(what_to_read),
+        cache_(cache),
+        final_callback_(final_callback) {
+    for (int i = 0; i < kMaxParallelOperations; ++i)
+      read_buffers_[i] = new net::IOBuffer(std::max(kHeadersSize, kChunkSize));
+  }
+
+  void Run();
+
+ protected:
+  void OpenNextEntry(int parallel_operation_index);
+
+  void OpenCallback(int parallel_operation_index,
+                    std::unique_ptr<disk_cache::Entry*> unique_entry_ptr,
+                    int data_len,
+                    int result);
+  void ReadDataCallback(int parallel_operation_index,
+                        disk_cache::Entry* entry,
+                        int next_offset,
+                        int data_len,
+                        int expected_result,
+                        int result);
+
+ private:
+  bool CheckForErrorAndCancel(int result);
+
+  const DiskCachePerfTest* test_;
+  const WhatToRead what_to_read_;
+
+  disk_cache::Backend* cache_;
+  net::CompletionCallback final_callback_;
+
+  size_t next_entry_index_ = 0;
+  size_t pending_operations_count_ = 0;
+
+  int pending_result_ = net::OK;
+
+  scoped_refptr<net::IOBuffer> read_buffers_[kMaxParallelOperations];
+};
+
+void ReadHandler::Run() {
+  for (int i = 0; i < kMaxParallelOperations; ++i) {
+    OpenNextEntry(pending_operations_count_);
+    ++pending_operations_count_;
+  }
+}
+
+void ReadHandler::OpenNextEntry(int parallel_operation_index) {
+  ASSERT_GT(kNumEntries, next_entry_index_);
+  TestEntry test_entry = test_->entries()[next_entry_index_++];
+  disk_cache::Entry** entry_ptr = new disk_cache::Entry*();
+  std::unique_ptr<disk_cache::Entry*> unique_entry_ptr(entry_ptr);
+  net::CompletionCallback callback =
+      base::Bind(&ReadHandler::OpenCallback, base::Unretained(this),
+                 parallel_operation_index, base::Passed(&unique_entry_ptr),
+                 test_entry.data_len);
+  int result = cache_->OpenEntry(test_entry.key, entry_ptr, callback);
+  if (result != net::ERR_IO_PENDING)
+    callback.Run(result);
+}
+
+void ReadHandler::OpenCallback(int parallel_operation_index,
+                               std::unique_ptr<disk_cache::Entry*> entry_ptr,
+                               int data_len,
+                               int result) {
+  if (CheckForErrorAndCancel(result))
+    return;
+
+  disk_cache::Entry* entry = *entry_ptr;
+
+  EXPECT_EQ(data_len, entry->GetDataSize(1));
+
+  net::CompletionCallback callback =
+      base::Bind(&ReadHandler::ReadDataCallback, base::Unretained(this),
+                 parallel_operation_index, entry, 0, data_len, kHeadersSize);
+  int new_result =
+      entry->ReadData(0, 0, read_buffers_[parallel_operation_index].get(),
+                      kChunkSize, callback);
+  if (new_result != net::ERR_IO_PENDING)
+    callback.Run(new_result);
+}
+
+void ReadHandler::ReadDataCallback(int parallel_operation_index,
+                                   disk_cache::Entry* entry,
+                                   int next_offset,
+                                   int data_len,
+                                   int expected_result,
+                                   int result) {
+  if (CheckForErrorAndCancel(result)) {
+    entry->Close();
+    return;
+  }
+  DCHECK_LE(next_offset, data_len);
+  if (what_to_read_ == WhatToRead::HEADERS_ONLY || next_offset == data_len) {
+    entry->Close();
+    if (next_entry_index_ < kNumEntries) {
+      OpenNextEntry(parallel_operation_index);
+    } else {
+      --pending_operations_count_;
+      if (pending_operations_count_ == 0)
+        final_callback_.Run(net::OK);
+    }
+    return;
+  }
+
+  int expected_read_size = std::min(kChunkSize, data_len - next_offset);
+  net::CompletionCallback callback = base::Bind(
+      &ReadHandler::ReadDataCallback, base::Unretained(this),
+      parallel_operation_index, entry, next_offset + expected_read_size,
+      data_len, expected_read_size);
+  int new_result = entry->ReadData(
+      1, next_offset, read_buffers_[parallel_operation_index].get(), kChunkSize,
+      callback);
+  if (new_result != net::ERR_IO_PENDING)
+    callback.Run(new_result);
+}
+
+bool ReadHandler::CheckForErrorAndCancel(int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+  if (result != net::OK && !(result > 0))
+    pending_result_ = result;
+  if (pending_result_ != net::OK) {
+    --pending_operations_count_;
+    if (pending_operations_count_ == 0)
+      final_callback_.Run(pending_result_);
+    return true;
+  }
+  return false;
+}
+
+bool DiskCachePerfTest::TimeWrites() {
+  for (size_t i = 0; i < kNumEntries; i++) {
     TestEntry entry;
     entry.key = GenerateKey(true);
     entry.data_len = base::RandInt(0, kBodySize);
     entries_.push_back(entry);
-
-    disk_cache::Entry* cache_entry;
-    net::TestCompletionCallback cb;
-    int rv = cache_->CreateEntry(entry.key, &cache_entry, cb.callback());
-    if (net::OK != cb.GetResult(rv))
-      break;
-    int ret = cache_entry->WriteData(
-        0, 0, buffer1.get(), kHeadersSize,
-        base::Bind(&CallbackTest::Run, base::Unretained(&callback)), false);
-    if (net::ERR_IO_PENDING == ret)
-      expected++;
-    else if (kHeadersSize != ret)
-      break;
-
-    ret = cache_entry->WriteData(
-        1, 0, buffer2.get(), entry.data_len,
-        base::Bind(&CallbackTest::Run, base::Unretained(&callback)), false);
-    if (net::ERR_IO_PENDING == ret)
-      expected++;
-    else if (entry.data_len != ret)
-      break;
-    cache_entry->Close();
   }
 
-  helper.WaitUntilCacheIoFinished(expected);
-  timer.Done();
+  net::TestCompletionCallback cb;
 
-  return expected == helper.callbacks_called();
+  base::PerfTimeLogger timer("Write disk cache entries");
+
+  WriteHandler write_handler(this, cache_.get(), cb.callback());
+  write_handler.Run();
+  return cb.WaitForResult() == net::OK;
 }
 
-// Reads the data and metadata from each entry listed on |entries|.
-bool DiskCachePerfTest::TimeRead(WhatToRead what_to_read,
-                                 const char* timer_message) {
-  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kHeadersSize));
-  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kBodySize));
-
-  CacheTestFillBuffer(buffer1->data(), kHeadersSize, false);
-  CacheTestFillBuffer(buffer2->data(), kBodySize, false);
-
-  int expected = 0;
-
-  MessageLoopHelper helper;
-  CallbackTest callback(&helper, true);
-
+bool DiskCachePerfTest::TimeReads(WhatToRead what_to_read,
+                                  const char* timer_message) {
   base::PerfTimeLogger timer(timer_message);
 
-  for (int i = 0; i < kNumEntries; i++) {
-    disk_cache::Entry* cache_entry;
-    net::TestCompletionCallback cb;
-    int rv = cache_->OpenEntry(entries_[i].key, &cache_entry, cb.callback());
-    if (net::OK != cb.GetResult(rv))
-      break;
-    int ret = cache_entry->ReadData(
-        0, 0, buffer1.get(), kHeadersSize,
-        base::Bind(&CallbackTest::Run, base::Unretained(&callback)));
-    if (net::ERR_IO_PENDING == ret)
-      expected++;
-    else if (kHeadersSize != ret)
-      break;
-
-    if (what_to_read == WhatToRead::HEADERS_AND_BODY) {
-      ret = cache_entry->ReadData(
-          1, 0, buffer2.get(), entries_[i].data_len,
-          base::Bind(&CallbackTest::Run, base::Unretained(&callback)));
-      if (net::ERR_IO_PENDING == ret)
-        expected++;
-      else if (entries_[i].data_len != ret)
-        break;
-    }
-
-    cache_entry->Close();
-  }
-
-  helper.WaitUntilCacheIoFinished(expected);
-  timer.Done();
-
-  return (expected == helper.callbacks_called());
+  net::TestCompletionCallback cb;
+  ReadHandler read_handler(this, what_to_read, cache_.get(), cb.callback());
+  read_handler.Run();
+  return cb.WaitForResult() == net::OK;
 }
 
 TEST_F(DiskCachePerfTest, BlockfileHashes) {
@@ -233,26 +435,28 @@ void DiskCachePerfTest::ResetAndEvictSystemDiskCache() {
 }
 
 void DiskCachePerfTest::CacheBackendPerformance() {
+  LOG(ERROR) << "Using cache at:" << cache_path_.MaybeAsASCII();
+  SetMaxSize(500 * 1024 * 1024);
   InitCache();
-  EXPECT_TRUE(TimeWrite());
+  EXPECT_TRUE(TimeWrites());
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
-  EXPECT_TRUE(TimeRead(WhatToRead::HEADERS_ONLY,
-                       "Read disk cache headers only (cold)"));
-  EXPECT_TRUE(TimeRead(WhatToRead::HEADERS_ONLY,
-                       "Read disk cache headers only (warm)"));
+  EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_ONLY,
+                        "Read disk cache headers only (cold)"));
+  EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_ONLY,
+                        "Read disk cache headers only (warm)"));
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
-  EXPECT_TRUE(
-      TimeRead(WhatToRead::HEADERS_AND_BODY, "Read disk cache entries (cold)"));
-  EXPECT_TRUE(
-      TimeRead(WhatToRead::HEADERS_AND_BODY, "Read disk cache entries (warm)"));
+  EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_AND_BODY,
+                        "Read disk cache entries (cold)"));
+  EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_AND_BODY,
+                        "Read disk cache entries (warm)"));
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::RunLoop().RunUntilIdle();
