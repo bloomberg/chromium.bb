@@ -16,6 +16,7 @@
 #include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -77,16 +78,27 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
       local_paint_info.phase != PaintPhase::kClippingMask)
     return;
 
-  if (local_paint_info.phase == PaintPhase::kSelection)
-    if (layout_replaced_.GetSelectionState() == SelectionState::kNone)
-      return;
+  if (local_paint_info.phase == PaintPhase::kSelection &&
+      layout_replaced_.GetSelectionState() == SelectionState::kNone)
+    return;
 
   {
     Optional<RoundedInnerRectClipper> clipper;
+    Optional<ScopedPaintChunkProperties> chunk_properties;
     bool completely_clipped_out = false;
     if (layout_replaced_.Style()->HasBorderRadius()) {
       if (border_rect.IsEmpty()) {
         completely_clipped_out = true;
+      } else if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+        if (!layout_replaced_.IsSVGRoot()) {
+          const auto* properties =
+              layout_replaced_.FirstFragment().PaintProperties();
+          DCHECK(properties && properties->InnerBorderRadiusClip());
+          chunk_properties.emplace(
+              local_paint_info.context.GetPaintController(),
+              properties->InnerBorderRadiusClip(), layout_replaced_,
+              DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
+        }
       } else if (ShouldApplyViewportClip(layout_replaced_)) {
         // Push a clip if we have a border radius, since we want to round the
         // foreground content that gets painted.
