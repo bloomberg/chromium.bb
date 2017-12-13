@@ -2628,7 +2628,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"password-export", flag_descriptions::kPasswordExportName,
      flag_descriptions::kPasswordExportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordExport)},
-    {"password-import", flag_descriptions::kPasswordImportName,
+    {"PasswordImport", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
 #if defined(OS_CHROMEOS)

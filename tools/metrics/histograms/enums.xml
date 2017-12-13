@@ -24812,6 +24812,7 @@ from previous Chrome versions.
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1559789642" label="RunAllFlashInAllowMode:enabled"/>
   <int value="-1557527869" label="LoadingWithMojo:disabled"/>
+  <int value="-1555510175" label="PasswordImport:enabled"/>
   <int value="-1553477903" label="ash-disable-text-filtering-in-overview-mode"/>
   <int value="-1549871007" label="OneGoogleBarOnLocalNtp:disabled"/>
   <int value="-1546903171" label="enable-touch-drag-drop"/>
@@ -25497,6 +25498,7 @@ from previous Chrome versions.
   <int value="360391863" label="NTPOfflineBadge:enabled"/>
   <int value="360599302" label="enable-gpu-rasterization"/>
   <int value="365467768" label="prefetch-search-results"/>
+  <int value="367063319" label="PasswordImport:disabled"/>
   <int value="368854020" label="ash-screen-rotation-animation"/>
   <int value="369352033" label="GenericSensorExtraClasses:enabled"/>
   <int value="370486304" label="enable-origin-chip-on-srp"/>
