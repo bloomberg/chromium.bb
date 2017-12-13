@@ -618,9 +618,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   options->SetDouble("height", page_size.height);
   options->SetDouble("topMargin", page_layout.margin_top);
   options->SetDouble("bottomMargin", page_layout.margin_bottom);
-  options->SetString("pageNumber",
-                     base::StringPrintf("%d/%d", page_number, total_pages));
-
+  options->SetInteger("pageNumber", page_number);
+  options->SetInteger("totalPages", total_pages);
   options->SetString("url", params.url);
   base::string16 title = source_frame.GetDocument().Title().Utf16();
   options->SetString("title", title.empty() ? params.title : title);
