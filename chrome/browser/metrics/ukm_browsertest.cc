@@ -10,10 +10,12 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/ukm_service.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -77,7 +79,6 @@ class UkmBrowserTest : public SyncTest {
     SyncTest::SetUp();
   }
 
- protected:
   bool ukm_enabled() const {
     auto* service = ukm_service();
     return service ? service->recording_enabled_ : false;
@@ -96,6 +97,7 @@ class UkmBrowserTest : public SyncTest {
       service->UpdateSourceURL(1, GURL("http://example.com"));
   }
 
+ protected:
   std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
       Profile* profile) {
     browser_sync::ProfileSyncService* sync_service =
@@ -129,6 +131,29 @@ class UkmBrowserTest : public SyncTest {
     return g_browser_process->GetMetricsServicesManager()->GetUkmService();
   }
   base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class UkmEnabledChecker : public SingleClientStatusChangeChecker {
+ public:
+  UkmEnabledChecker(UkmBrowserTest* test,
+                    browser_sync::ProfileSyncService* service,
+                    bool want_enabled)
+      : SingleClientStatusChangeChecker(service),
+        test_(test),
+        want_enabled_(want_enabled) {}
+
+  // StatusChangeChecker:
+  bool IsExitConditionSatisfied() override {
+    return test_->ukm_enabled() == want_enabled_;
+  }
+  std::string GetDebugMessage() const override {
+    return std::string("waiting for ukm_enabled=") +
+           (want_enabled_ ? "true" : "false");
+  }
+
+ private:
+  UkmBrowserTest* const test_;
+  const bool want_enabled_;
 };
 
 // Make sure that UKM is disabled while an incognito window is open.
@@ -237,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
 }
 
-// Make sure that UKM is disabled while an non-sync window is open.
+// Make sure that UKM is disabled when an open sync window disables it.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DisableSyncCheck) {
   // Enable metrics recording and update MetricsServicesManager.
   bool metrics_enabled = true;
@@ -260,6 +285,61 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DisableSyncCheck) {
   EXPECT_TRUE(ukm_enabled());
   // Client ID should be reset.
   EXPECT_NE(original_client_id, client_id());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+// Make sure that UKM is disabled when an secondary passphrase is set.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SecondaryPassphraseCheck) {
+  // Enable metrics recording and update MetricsServicesManager.
+  bool metrics_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &metrics_enabled);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
+  uint64_t original_client_id = client_id();
+
+  // Setting an encryption passphrase is done on the "sync" thread meaning the
+  // method only posts a task and returns. That task, when executed, will
+  // set the passphrase and notify observers (which disables UKM).
+  harness->service()->SetEncryptionPassphrase("foo",
+                                              syncer::SyncService::EXPLICIT);
+  UkmEnabledChecker checker(this, harness->service(), false);
+  EXPECT_TRUE(checker.Wait());
+
+  // Client ID should be reset.
+  EXPECT_NE(original_client_id, client_id());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+// Make sure that UKM is disabled when user signs out of Sync.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SyncSignoutCheck) {
+  // Enable metrics recording and update MetricsServicesManager.
+  bool metrics_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &metrics_enabled);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
+
+  harness->SignoutSyncService();
+  EXPECT_FALSE(ukm_enabled());
 
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
