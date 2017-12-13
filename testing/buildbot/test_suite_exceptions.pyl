@@ -571,6 +571,13 @@
         ],
       },
       # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 30,
+        },
+      },
       'Linux Chromium OS ASan LSan Tests (1)': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/browser_tests_cros_asan.filter',
@@ -1210,6 +1217,14 @@
           'shards': 1,
         },
       },
+      # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 5,
+        },
+      },
     },
   },
   'compositor_unittests': {
@@ -1371,6 +1386,13 @@
         },
       },
       # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 4,
+        },
+      },
       'Mac ASan 64 Tests (1)': {
         'swarming': {
           'shards': 2,
@@ -1578,6 +1600,14 @@
       'Site Isolation Android': {
         'swarming': {
           'hard_timeout': 0,
+        },
+      },
+      # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        # These are slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 2,
         },
       },
     },
@@ -2272,8 +2302,10 @@
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
+        # These are slow on the ASAN trybot for some reason.
+        # crbug.com/794372
         'swarming': {
-          'shards': 3,
+          'shards': 6,
         },
       },
       'Linux CFI': {
@@ -2978,8 +3010,10 @@
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
         'swarming': {
-          'shards': 4,
+          'shards': 16,
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
@@ -3865,8 +3899,10 @@
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
+        # These are slow on the ASAN trybot for some reason.
+        # crbug.com/794372
         'swarming': {
-          'shards': 2,
+          'shards': 4,
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
@@ -4504,6 +4540,14 @@
       'WebKit Mac10.12': {
         'swarming': {
           'can_use_on_swarming_builders': False,
+        },
+      },
+      # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 5,
         },
       },
     },
