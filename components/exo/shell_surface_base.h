@@ -266,6 +266,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // In the coordinate system of the parent root window.
   gfx::Point GetMouseLocation() const;
 
+  // In the local coordinate system of the window.
+  virtual gfx::Rect GetShadowBounds() const;
+
   // Attempt to start a drag operation. The type of drag operation to start is
   // determined by |component|.
   void AttemptToStartDrag(int component);

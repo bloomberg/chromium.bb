@@ -49,7 +49,7 @@ class ShellSurface : public ShellSurfaceBase {
   // surface should be resized.
   void Resize(int component);
 
-  // Overridden from ShellsurfaceBase:
+  // Overridden from ShellSurfaceBase:
   void InitializeWindowState(ash::wm::WindowState* window_state) override;
 
  private:

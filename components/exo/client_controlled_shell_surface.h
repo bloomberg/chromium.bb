@@ -38,10 +38,17 @@ class ClientControlledShellSurface
       public ash::WindowTreeHostManager::Observer,
       public ui::CompositorLockClient {
  public:
+  using GeometryChangedCallback =
+      base::RepeatingCallback<void(const gfx::Rect& geometry)>;
+
   ClientControlledShellSurface(Surface* surface,
                                bool can_minimize,
                                int container);
   ~ClientControlledShellSurface() override;
+
+  void set_geometry_changed_callback(const GeometryChangedCallback& callback) {
+    geometry_changed_callback_ = callback;
+  }
 
   // Called when the client was maximized.
   void SetMaximized();
@@ -84,6 +91,9 @@ class ClientControlledShellSurface
 
   // Set top inset for surface.
   void SetTopInset(int height);
+
+  // Set resize outset for surface.
+  void SetResizeOutset(int outset);
 
   // Sends the window state change event to client.
   void OnWindowStateChangeEvent(ash::mojom::WindowStateType old_state,
@@ -130,6 +140,7 @@ class ClientControlledShellSurface
  private:
   // Overridden from ShellSurface:
   void SetWidgetBounds(const gfx::Rect& bounds) override;
+  gfx::Rect GetShadowBounds() const override;
   void InitializeWindowState(ash::wm::WindowState* window_state) override;
   void UpdateBackdrop() override;
   float GetScale() const override;
@@ -150,6 +161,7 @@ class ClientControlledShellSurface
 
   ash::wm::WindowState* GetWindowState();
 
+  GeometryChangedCallback geometry_changed_callback_;
   int64_t primary_display_id_;
 
   int top_inset_height_ = 0;
