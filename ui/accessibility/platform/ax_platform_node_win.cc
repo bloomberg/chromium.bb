@@ -4035,6 +4035,11 @@ int AXPlatformNodeWin::GetHypertextOffsetFromEndpoint(
 
 bool AXPlatformNodeWin::IsSameHypertextCharacter(size_t old_char_index,
                                                  size_t new_char_index) {
+  if (old_char_index >= old_hypertext_.hypertext.size() ||
+      new_char_index >= hypertext_.hypertext.size()) {
+    return false;
+  }
+
   // For anything other than the "embedded character", we just compare the
   // characters directly.
   base::char16 old_ch = old_hypertext_.hypertext[old_char_index];
@@ -4078,7 +4083,7 @@ void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(int* start,
   *new_len = 0;
 
   const base::string16& old_text = old_hypertext_.hypertext;
-  const base::string16& new_text = GetText();
+  const base::string16& new_text = hypertext_.hypertext;
 
   size_t common_prefix = 0;
   while (common_prefix < old_text.size() && common_prefix < new_text.size() &&

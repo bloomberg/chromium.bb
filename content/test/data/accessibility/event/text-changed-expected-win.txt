@@ -4,3 +4,8 @@ EVENT_OBJECT_SHOW on role=ROLE_SYSTEM_STATICTEXT name="Modified Para"
 EVENT_OBJECT_NAMECHANGE on role=ROLE_SYSTEM_STATICTEXT name="Modified Heading"
 IA2_EVENT_TEXT_INSERTED on role=ROLE_SYSTEM_STATICTEXT name="Modified Heading" new_text={'Modified ' start=0 end=9}
 IA2_EVENT_TEXT_INSERTED on role=H2 name="Heading" new_text={'Modified ' start=0 end=9}
+EVENT_OBJECT_NAMECHANGE on role=ROLE_SYSTEM_STATICTEXT name="Text modified"
+IA2_EVENT_TEXT_REMOVED on role=ROLE_SYSTEM_STATICTEXT name="Text modified" old_text={'Div' start=0 end=3}
+IA2_EVENT_TEXT_INSERTED on role=ROLE_SYSTEM_STATICTEXT name="Text modified" new_text={'Text modified' start=0 end=13}
+IA2_EVENT_TEXT_REMOVED on role=DIV name="div" old_text={'Div' start=0 end=3}
+IA2_EVENT_TEXT_INSERTED on role=DIV name="div" new_text={'Text modified' start=0 end=13}
