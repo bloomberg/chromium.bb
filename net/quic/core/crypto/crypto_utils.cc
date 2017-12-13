@@ -94,8 +94,8 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
                              Diversification diversification,
                              CrypterPair* crypters,
                              string* subkey_secret) {
-  crypters->encrypter.reset(QuicEncrypter::Create(aead));
-  crypters->decrypter.reset(QuicDecrypter::Create(aead));
+  crypters->encrypter = QuicEncrypter::Create(aead);
+  crypters->decrypter = QuicDecrypter::Create(aead);
   size_t key_bytes = crypters->encrypter->GetKeySize();
   size_t nonce_prefix_bytes = crypters->encrypter->GetNoncePrefixSize();
   size_t subkey_secret_bytes =

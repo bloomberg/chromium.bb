@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_export.h"
@@ -18,7 +19,7 @@ class QUIC_EXPORT_PRIVATE QuicDecrypter {
  public:
   virtual ~QuicDecrypter() {}
 
-  static QuicDecrypter* Create(QuicTag algorithm);
+  static std::unique_ptr<QuicDecrypter> Create(QuicTag algorithm);
 
   // Creates an IETF QuicDecrypter based on |cipher_suite| which must be an id
   // returned by SSL_CIPHER_get_id. The caller is responsible for taking
