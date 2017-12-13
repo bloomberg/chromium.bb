@@ -3550,7 +3550,7 @@ crbug.com/776201 [ Win7 Debug ] virtual/longtask-v2/http/tests/performance-timin
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
 crbug.com/777222 http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
 crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
-crbug.com/777222 http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Failure Timeout ]
+crbug.com/777222 http/tests/devtools/startup/console-log-before-frame-navigation.js [ Pass Failure Timeout ]
 
 crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
 

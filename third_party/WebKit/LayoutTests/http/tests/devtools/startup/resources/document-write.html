@@ -17,11 +17,11 @@ function onload()
     script.textContent = "console.log(\"script element\")";
     document.head.appendChild(script);
     document.write("<scrip" + "t>console.log(\"document.write from onload\");</sc" + "ript>");
+    testRunner.inspectSecondaryWindow();
 }
 
 </script>
 </head>
-
 <body onload="console.log('Line 25'); onload();">
 <p>
 Tests that console reports zero line number for scripts generated with document.write. See https://bugs.webkit.org/show_bug.cgi?id=71099.

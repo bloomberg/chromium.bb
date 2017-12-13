@@ -1,28 +1,13 @@
-<html>
-<head>
-<script src="../../../../inspector/inspector-test.js"></script>
-<script src="../../../../inspector/debugger-test.js"></script>
-<script src="../../../../inspector/sources/debugger/resources/unformatted4.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
+(async function() {
+  await TestRunner.setupStartupTest('resources/script-formatter-breakpoints-4.html');
+  TestRunner.addResult(`Tests the script formatting is working fine with breakpoints.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
 
-function f1()
-{
-    var a=0;var b=1;var c=3;var d=4;var e=5;
-    var f=0;
-    return 0;
-}
-
-function onload()
-{
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.showWebInspector();
-    }
-    runTest();
-}
-
-var test = function() {
   Bindings.breakpointManager._storage._breakpoints = {};
   var panel = UI.panels.sources;
   var scriptFormatter;
@@ -42,7 +27,7 @@ var test = function() {
         TestRunner.addResult('Adding breakpoint.');
         TestRunner.addSniffer(
             Bindings.BreakpointManager.ModelBreakpoint.prototype, '_addResolvedLocation', breakpointResolved);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 11, '', true);
+        SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
       }
 
       function breakpointResolved() {
@@ -55,7 +40,7 @@ var test = function() {
       function uiSourceCodeScriptFormatted() {
         TestRunner.addResult('Removing breakpoint.');
         var formattedSourceFrame = panel.visibleView;
-        SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 13);
+        SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 11);
         TestRunner.addResult('Unformatting.');
         Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
         var breakpoints = Bindings.breakpointManager._storage._setting.get();
@@ -64,12 +49,4 @@ var test = function() {
       }
     }
   ]);
-
-};
-</script>
-</head>
-<body onload="onload()">
-<p>Tests the script formatting is working fine with breakpoints.
-</p>
-</body>
-</html>
+})();

@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 1: Done.
 Verify that cached resource has metadata.
 
 Last modified: 1989-12-01T08:00:00.000Z

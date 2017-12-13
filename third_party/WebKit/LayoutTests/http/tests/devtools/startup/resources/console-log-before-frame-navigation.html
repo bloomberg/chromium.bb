@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script>
+window.addEventListener("message", receiveMessage, false);
+
+function receiveMessage(event) {
+    if (event.data != "frameReloaded") {
+        testFailed("Unexpected message: " + event.data);
+        if (window.testRunner)
+            testRunner.notifyDone();
+        return;
+    }
+    testRunner.inspectSecondaryWindow();
+}
+</script>
+</head>
+<body>
+<iframe id="theFrame" src="console-log-frame-before-navigation.html"></iframe>
+</body>
+</html>
