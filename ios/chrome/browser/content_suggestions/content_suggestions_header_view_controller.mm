@@ -194,6 +194,7 @@ const CGFloat kHintLabelSidePadding = 12;
     // safeAreaInsets.  Since this situation is universally called for the full
     // screen new tab animation, it's safe to check the rootViewController's
     // view instead.
+    // TODO(crbug.com/791784) : Remove use of rootViewController.
     UIView* insetsView = self.headerView;
     if (!self.headerView.window) {
       insetsView =
