@@ -276,8 +276,8 @@ IPC_STRUCT_END()
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 // Parameters to describe a rendered page.
-IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintPage_Params)
-  // A shared memory handle to the EMF data. This data can be quite large so a
+IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintDocument_Params)
+  // A shared memory handle to the PDF data. This data can be quite large so a
   // memory map needs to be used.
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
 
@@ -286,9 +286,6 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintPage_Params)
 
   // Cookie for the document to ensure correctness.
   IPC_STRUCT_MEMBER(int, document_cookie)
-
-  // Page number.
-  IPC_STRUCT_MEMBER(int, page_number)
 
   // The size of the page the page author specified.
   IPC_STRUCT_MEMBER(gfx::Size, page_size)
@@ -375,11 +372,11 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetDocumentCookie,
 // Tells the browser that the print dialog has been shown.
 IPC_MESSAGE_ROUTED0(PrintHostMsg_DidShowPrintDialog)
 
-// Sends back to the browser the rendered "printed page" that was requested by
-// a PrintMsg_PrintPages message or from scripted printing. The memory handle in
+// Sends back to the browser the rendered document that was requested by a
+// PrintMsg_PrintPages message or from scripted printing. The memory handle in
 // this message is already valid in the browser process.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPrintPage,
-                    PrintHostMsg_DidPrintPage_Params /* page content */)
+IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPrintDocument,
+                    PrintHostMsg_DidPrintDocument_Params /* page content */)
 
 // The renderer wants to know the default print settings.
 IPC_SYNC_MESSAGE_ROUTED0_1(PrintHostMsg_GetDefaultPrintSettings,

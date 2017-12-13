@@ -66,8 +66,6 @@ std::string HeadlessPrintManager::PrintResultToString(PrintResult result) {
       return "Invalid memory handle";
     case METAFILE_MAP_ERROR:
       return "Map to shared memory error";
-    case UNEXPECTED_VALID_MEMORY_HANDLE:
-      return "Unexpected valide memory handle";
     case METAFILE_INVALID_HEADER:
       return "Invalid metafile header";
     case METAFILE_GET_DATA_ERROR:
@@ -238,7 +236,7 @@ bool HeadlessPrintManager::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(HeadlessPrintManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
                         OnShowInvalidPrinterSettingsError)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         PrintHostMsg_GetDefaultPrintSettings, &helper,
         FrameDispatchHelper::OnGetDefaultPrintSettings)
@@ -288,41 +286,21 @@ void HeadlessPrintManager::OnPrintingFailed(int cookie) {
   ReleaseJob(PRINTING_FAILED);
 }
 
-void HeadlessPrintManager::OnDidGetPrintedPagesCount(int cookie,
-                                                     int number_pages) {
-  PrintManager::OnDidGetPrintedPagesCount(cookie, number_pages);
-  if (!print_params_->pages.empty())
-    number_pages_ = print_params_->pages.size();
-}
-
-void HeadlessPrintManager::OnDidPrintPage(
-    const PrintHostMsg_DidPrintPage_Params& params) {
-  const bool metafile_must_be_valid = expecting_first_page_;
-  expecting_first_page_ = false;
-
-  if (metafile_must_be_valid) {
-    if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
-      ReleaseJob(INVALID_MEMORY_HANDLE);
-      return;
-    }
-    auto shared_buf =
-        std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
-    if (!shared_buf->Map(params.data_size)) {
-      ReleaseJob(METAFILE_MAP_ERROR);
-      return;
-    }
-    data_ = std::string(static_cast<const char*>(shared_buf->memory()),
-                        params.data_size);
-  } else {
-    if (base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
-      base::SharedMemory::CloseHandle(params.metafile_data_handle);
-      ReleaseJob(UNEXPECTED_VALID_MEMORY_HANDLE);
-      return;
-    }
+void HeadlessPrintManager::OnDidPrintDocument(
+    const PrintHostMsg_DidPrintDocument_Params& params) {
+  if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
+    ReleaseJob(INVALID_MEMORY_HANDLE);
+    return;
   }
-
-  if (--number_pages_ == 0)
-    ReleaseJob(PRINT_SUCCESS);
+  auto shared_buf =
+      std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
+  if (!shared_buf->Map(params.data_size)) {
+    ReleaseJob(METAFILE_MAP_ERROR);
+    return;
+  }
+  data_ = std::string(static_cast<const char*>(shared_buf->memory()),
+                      params.data_size);
+  ReleaseJob(PRINT_SUCCESS);
 }
 
 void HeadlessPrintManager::Reset() {
@@ -332,8 +310,6 @@ void HeadlessPrintManager::Reset() {
   page_ranges_text_.clear();
   ignore_invalid_page_ranges_ = false;
   data_.clear();
-  expecting_first_page_ = true;
-  number_pages_ = 0;
 }
 
 void HeadlessPrintManager::ReleaseJob(PrintResult result) {

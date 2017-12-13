@@ -15,7 +15,7 @@
 #include "headless/public/headless_export.h"
 #include "printing/print_settings.h"
 
-struct PrintHostMsg_DidPrintPage_Params;
+struct PrintHostMsg_DidPrintDocument_Params;
 struct PrintHostMsg_ScriptedPrint_Params;
 struct PrintMsg_PrintPages_Params;
 
@@ -48,7 +48,6 @@ class HeadlessPrintManager
     INVALID_PRINTER_SETTINGS,
     INVALID_MEMORY_HANDLE,
     METAFILE_MAP_ERROR,
-    UNEXPECTED_VALID_MEMORY_HANDLE,
     METAFILE_INVALID_HEADER,
     METAFILE_GET_DATA_ERROR,
     SIMULTANEOUS_PRINT_ACTIVE,
@@ -101,8 +100,7 @@ class HeadlessPrintManager
                        IPC::Message* reply_msg);
   void OnShowInvalidPrinterSettingsError();
   void OnPrintingFailed(int cookie) override;
-  void OnDidGetPrintedPagesCount(int cookie, int number_pages) override;
-  void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
+  void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params);
 
   void Reset();
   void ReleaseJob(PrintResult result);
@@ -113,9 +111,6 @@ class HeadlessPrintManager
   std::string page_ranges_text_;
   bool ignore_invalid_page_ranges_ = false;
   std::string data_;
-
-  // Set to true when OnDidPrintPage() should be expecting the first page.
-  bool expecting_first_page_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessPrintManager);
 };

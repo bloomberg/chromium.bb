@@ -1676,11 +1676,13 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   PdfMetafileSkia metafile(print_params.printed_doc_type);
   CHECK(metafile.Init());
 
-  std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
-  std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
-  for (size_t i = 0; i < printed_pages.size(); ++i) {
+  PrintHostMsg_DidPrintDocument_Params page_params;
+  PrintPageInternal(print_params, printed_pages[0], page_count, frame,
+                    &metafile, &page_params.page_size,
+                    &page_params.content_area);
+  for (size_t i = 1; i < printed_pages.size(); ++i) {
     PrintPageInternal(print_params, printed_pages[i], page_count, frame,
-                      &metafile, &page_size_in_dpi[i], &content_area_in_dpi[i]);
+                      &metafile, nullptr, nullptr);
   }
 
   // blink::printEnd() for PDF should be called before metafile is closed.
@@ -1688,7 +1690,6 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 
   metafile.FinishDocument();
 
-  PrintHostMsg_DidPrintPage_Params page_params;
   if (!CopyMetafileDataToSharedMem(metafile,
                                    &page_params.metafile_data_handle)) {
     return false;
@@ -1699,18 +1700,7 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 #if defined(OS_WIN)
   page_params.physical_offsets = printer_printable_area_.origin();
 #endif
-  for (size_t i = 0; i < printed_pages.size(); ++i) {
-    page_params.page_number = printed_pages[i];
-    page_params.page_size = page_size_in_dpi[i];
-    page_params.content_area = content_area_in_dpi[i];
-    Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
-    // Send the rest of the pages with an invalid metafile handle.
-    // TODO(erikchen): Fix semantics. See https://crbug.com/640840
-    if (page_params.metafile_data_handle.IsValid()) {
-      page_params.metafile_data_handle = base::SharedMemoryHandle();
-      page_params.data_size = 0;
-    }
-  }
+  Send(new PrintHostMsg_DidPrintDocument(routing_id(), page_params));
   return true;
 }
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)

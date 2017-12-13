@@ -81,7 +81,6 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
       printing_rfh_(nullptr),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
-      expecting_first_page_(true),
       queue_(g_browser_process->print_job_manager()->queue()),
       weak_ptr_factory_(this) {
   DCHECK(queue_.get());
@@ -133,7 +132,7 @@ void PrintViewManagerBase::OnDidGetPrintedPagesCount(int cookie,
 }
 
 void PrintViewManagerBase::OnComposePdfDone(
-    const PrintHostMsg_DidPrintPage_Params& params,
+    const PrintHostMsg_DidPrintDocument_Params& params,
     mojom::PdfCompositor::Status status,
     mojo::ScopedSharedBufferHandle handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -142,17 +141,11 @@ void PrintViewManagerBase::OnComposePdfDone(
     return;
   }
 
-  UpdateForPrintedPage(params, true, GetShmFromMojoHandle(std::move(handle)));
+  UpdateForPrintedDocument(params, GetShmFromMojoHandle(std::move(handle)));
 }
 
-void PrintViewManagerBase::OnDidPrintPage(
-    const PrintHostMsg_DidPrintPage_Params& params) {
-// TODO(rbpotter): Remove this check once there are no more spurious
-// DidPrintPage messages.
-#if !defined(OS_WIN)
-  if (!expecting_first_page_)
-    return;
-#endif
+void PrintViewManagerBase::OnDidPrintDocument(
+    const PrintHostMsg_DidPrintDocument_Params& params) {
   // Ready to composite. Starting a print job.
   if (!OpportunisticallyCreatePrintJob(params.document_cookie))
     return;
@@ -164,96 +157,77 @@ void PrintViewManagerBase::OnDidPrintPage(
     return;
   }
 
-  const bool metafile_must_be_valid = expecting_first_page_;
-  expecting_first_page_ = false;
-
-  // Only used when |metafile_must_be_valid| is true.
-  std::unique_ptr<base::SharedMemory> shared_buf;
-  if (metafile_must_be_valid) {
-    if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
-      NOTREACHED() << "invalid memory handle";
-      web_contents()->Stop();
-      return;
-    }
-
-    auto* client = PrintCompositeClient::FromWebContents(web_contents());
-    if (IsOopifEnabled() && !client->for_preview() &&
-        !document->settings().is_modifiable()) {
-      client->DoComposite(
-          params.metafile_data_handle, params.data_size,
-          base::BindOnce(&PrintViewManagerBase::OnComposePdfDone,
-                         weak_ptr_factory_.GetWeakPtr(), params));
-      return;
-    }
-    shared_buf =
-        std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
-    if (!shared_buf->Map(params.data_size)) {
-      NOTREACHED() << "couldn't map";
-      web_contents()->Stop();
-      return;
-    }
-  } else {
-    if (base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
-      NOTREACHED() << "unexpected valid memory handle";
-      web_contents()->Stop();
-      base::SharedMemory::CloseHandle(params.metafile_data_handle);
-      return;
-    }
+  if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
+    NOTREACHED() << "invalid memory handle";
+    web_contents()->Stop();
+    return;
   }
 
-  UpdateForPrintedPage(params, metafile_must_be_valid, std::move(shared_buf));
+  auto* client = PrintCompositeClient::FromWebContents(web_contents());
+  if (IsOopifEnabled() && !client->for_preview() &&
+      !document->settings().is_modifiable()) {
+    client->DoComposite(params.metafile_data_handle, params.data_size,
+                        base::BindOnce(&PrintViewManagerBase::OnComposePdfDone,
+                                       weak_ptr_factory_.GetWeakPtr(), params));
+    return;
+  }
+
+  std::unique_ptr<base::SharedMemory> shared_buf =
+      std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
+  if (!shared_buf->Map(params.data_size)) {
+    NOTREACHED() << "couldn't map";
+    web_contents()->Stop();
+    return;
+  }
+
+  UpdateForPrintedDocument(params, std::move(shared_buf));
 }
 
-void PrintViewManagerBase::UpdateForPrintedPage(
-    const PrintHostMsg_DidPrintPage_Params& params,
-    bool has_valid_page_data,
+void PrintViewManagerBase::UpdateForPrintedDocument(
+    const PrintHostMsg_DidPrintDocument_Params& params,
     std::unique_ptr<base::SharedMemory> shared_buf) {
   PrintedDocument* document = print_job_->document();
   if (!document)
     return;
 
 #if defined(OS_WIN)
-  print_job_->AppendPrintedPage(params.page_number);
-  if (has_valid_page_data) {
-    scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(
-        reinterpret_cast<const unsigned char*>(shared_buf->memory()),
-        shared_buf->mapped_size()));
+  scoped_refptr<base::RefCountedBytes> bytes =
+      base::MakeRefCounted<base::RefCountedBytes>(
+          reinterpret_cast<const unsigned char*>(shared_buf->memory()),
+          shared_buf->mapped_size());
 
-    if (PrintedDocument::HasDebugDumpPath())
-      document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
+  if (PrintedDocument::HasDebugDumpPath())
+    document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
 
-    const auto& settings = document->settings();
-    if (settings.printer_is_textonly()) {
-      print_job_->StartPdfToTextConversion(bytes, params.page_size);
-    } else if ((settings.printer_is_ps2() || settings.printer_is_ps3()) &&
-               !base::FeatureList::IsEnabled(
-                   features::kDisablePostScriptPrinting)) {
-      print_job_->StartPdfToPostScriptConversion(bytes, params.content_area,
-                                                 params.physical_offsets,
-                                                 settings.printer_is_ps2());
-    } else {
-      // TODO(thestig): Figure out why rendering text with GDI results in random
-      // missing characters for some users. https://crbug.com/658606
-      // Update : The missing letters seem to have been caused by the same
-      // problem as https://crbug.com/659604 which was resolved. GDI printing
-      // seems to work with the fix for this bug applied.
-      bool print_text_with_gdi =
-          settings.print_text_with_gdi() && !settings.printer_is_xps() &&
-          base::FeatureList::IsEnabled(features::kGdiTextPrinting);
-      print_job_->StartPdfToEmfConversion(
-          bytes, params.page_size, params.content_area, print_text_with_gdi);
-    }
+  const auto& settings = document->settings();
+  if (settings.printer_is_textonly()) {
+    print_job_->StartPdfToTextConversion(bytes, params.page_size);
+  } else if ((settings.printer_is_ps2() || settings.printer_is_ps3()) &&
+             !base::FeatureList::IsEnabled(
+                 features::kDisablePostScriptPrinting)) {
+    print_job_->StartPdfToPostScriptConversion(bytes, params.content_area,
+                                               params.physical_offsets,
+                                               settings.printer_is_ps2());
+  } else {
+    // TODO(thestig): Figure out why rendering text with GDI results in random
+    // missing characters for some users. https://crbug.com/658606
+    // Update : The missing letters seem to have been caused by the same
+    // problem as https://crbug.com/659604 which was resolved. GDI printing
+    // seems to work with the fix for this bug applied.
+    bool print_text_with_gdi =
+        settings.print_text_with_gdi() && !settings.printer_is_xps() &&
+        base::FeatureList::IsEnabled(features::kGdiTextPrinting);
+    print_job_->StartPdfToEmfConversion(
+        bytes, params.page_size, params.content_area, print_text_with_gdi);
   }
 #else
   std::unique_ptr<PdfMetafileSkia> metafile =
       std::make_unique<PdfMetafileSkia>(SkiaDocumentType::PDF);
-  if (has_valid_page_data) {
-    if (!metafile->InitFromData(shared_buf->memory(),
-                                shared_buf->mapped_size())) {
-      NOTREACHED() << "Invalid metafile header";
-      web_contents()->Stop();
-      return;
-    }
+  if (!metafile->InitFromData(shared_buf->memory(),
+                              shared_buf->mapped_size())) {
+    NOTREACHED() << "Invalid metafile header";
+    web_contents()->Stop();
+    return;
   }
 
   // Update the rendered document. It will send notifications to the listener.
@@ -331,7 +305,7 @@ bool PrintViewManagerBase::OnMessageReceived(
     content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBase, message)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
                         OnShowInvalidPrinterSettingsError)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -422,7 +396,7 @@ bool PrintViewManagerBase::RenderAllMissingPagesNow() {
   // PrintJob will send a ALL_PAGES_REQUESTED after having received all the
   // pages it needs. RunLoop::QuitCurrentWhenIdleDeprecated() will be called as
   // soon as print_job_->document()->IsComplete() is true on either
-  // ALL_PAGES_REQUESTED or in DidPrintPage(). The check is done in
+  // ALL_PAGES_REQUESTED or in DidPrintDocument(). The check is done in
   // ShouldQuitFromInnerMessageLoop().
   // BLOCKS until all the pages are received. (Need to enable recursive task)
   if (!RunInnerMessageLoop()) {
@@ -489,7 +463,6 @@ void PrintViewManagerBase::DisconnectFromCurrentPrintJob() {
     // DO NOT wait for the job to finish.
     ReleasePrintJob();
   }
-  expecting_first_page_ = true;
 }
 
 void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
