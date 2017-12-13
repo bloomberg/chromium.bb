@@ -6,6 +6,7 @@
 #define SVGFilterPainter_h
 
 #include <memory>
+#include "base/macros.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/wtf/Allocator.h"
@@ -17,7 +18,6 @@ class LayoutSVGResourceFilter;
 
 class SVGFilterRecordingContext {
   USING_FAST_MALLOC(SVGFilterRecordingContext);
-  WTF_MAKE_NONCOPYABLE(SVGFilterRecordingContext);
 
  public:
   explicit SVGFilterRecordingContext(GraphicsContext& initial_context)
@@ -33,6 +33,7 @@ class SVGFilterRecordingContext {
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<GraphicsContext> context_;
   GraphicsContext& initial_context_;
+  DISALLOW_COPY_AND_ASSIGN(SVGFilterRecordingContext);
 };
 
 class SVGFilterPainter {

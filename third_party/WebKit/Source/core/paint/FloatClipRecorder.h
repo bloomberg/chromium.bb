@@ -5,17 +5,16 @@
 #ifndef FloatClipRecorder_h
 #define FloatClipRecorder_h
 
+#include "base/macros.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class FloatClipRecorder {
   USING_FAST_MALLOC(FloatClipRecorder);
-  WTF_MAKE_NONCOPYABLE(FloatClipRecorder);
 
  public:
   FloatClipRecorder(GraphicsContext&,
@@ -33,6 +32,7 @@ class FloatClipRecorder {
   GraphicsContext& context_;
   const DisplayItemClient& client_;
   DisplayItem::Type clip_type_;
+  DISALLOW_COPY_AND_ASSIGN(FloatClipRecorder);
 };
 
 }  // namespace blink

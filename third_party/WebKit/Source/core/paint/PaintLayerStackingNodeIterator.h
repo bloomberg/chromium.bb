@@ -31,8 +31,8 @@
 #ifndef PaintLayerStackingNodeIterator_h
 #define PaintLayerStackingNodeIterator_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -55,7 +55,6 @@ class PaintLayer;
 // NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
 class PaintLayerStackingNodeIterator {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeIterator);
 
  public:
   PaintLayerStackingNodeIterator(const PaintLayerStackingNode& root,
@@ -68,13 +67,13 @@ class PaintLayerStackingNodeIterator {
   unsigned remaining_children_;
   unsigned index_;
   PaintLayer* current_normal_flow_child_;
+  DISALLOW_COPY_AND_ASSIGN(PaintLayerStackingNodeIterator);
 };
 
 // This iterator is similar to PaintLayerStackingNodeIterator but it walks the
 // lists in reverse order (from the last item to the first one).
 class PaintLayerStackingNodeReverseIterator {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeReverseIterator);
 
  public:
   PaintLayerStackingNodeReverseIterator(const PaintLayerStackingNode& root,
@@ -92,6 +91,7 @@ class PaintLayerStackingNodeReverseIterator {
   unsigned remaining_children_;
   int index_;
   PaintLayer* current_normal_flow_child_;
+  DISALLOW_COPY_AND_ASSIGN(PaintLayerStackingNodeReverseIterator);
 };
 
 }  // namespace blink
