@@ -20,6 +20,7 @@ const SkColor kChromeIconGrey = SkColorSetRGB(0x5A, 0x5A, 0x5A);
 const SkColor kGoogleBlue300 = SkColorSetRGB(0x7B, 0xAA, 0xF7);
 const SkColor kGoogleBlue500 = SkColorSetRGB(0x42, 0x85, 0xF4);
 const SkColor kGoogleBlue700 = SkColorSetRGB(0x33, 0x67, 0xD6);
+const SkColor kGoogleBlue900 = SkColorSetRGB(0x1C, 0x3A, 0xA9);
 const SkColor kGoogleRed300 = SkColorSetRGB(0xE6, 0x7C, 0x73);
 const SkColor kGoogleRed700 = SkColorSetRGB(0xC5, 0x39, 0x29);
 const SkColor kGoogleGreen300 = SkColorSetRGB(0x57, 0xBB, 0x8A);

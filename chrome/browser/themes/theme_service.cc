@@ -492,7 +492,7 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
           ui::GetAuraColor(id == ThemeProperties::COLOR_TAB_THROBBER_SPINNING
                                ? ui::NativeTheme::kColorId_ThrobberSpinningColor
                                : ui::NativeTheme::kColorId_ThrobberWaitingColor,
-                           nullptr);
+                           ui::NativeTheme::GetInstanceForNativeUi());
       color_utils::HSL hsl = GetTint(ThemeProperties::TINT_BUTTONS, incognito);
       return color_utils::HSLShift(base_color, hsl);
     }

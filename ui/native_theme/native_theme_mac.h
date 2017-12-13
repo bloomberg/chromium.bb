@@ -45,6 +45,7 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       State state,
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;
+  bool UsesHighContrastColors() const override;
 
   // Paints the styled button shape used for default controls on Mac. The basic
   // style is used for dialog buttons, comboboxes, and tabbed pane tabs.
