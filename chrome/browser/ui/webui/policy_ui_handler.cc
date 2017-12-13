@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -174,39 +175,6 @@ void ExtractDomainFromUsername(base::DictionaryValue* dict) {
   dict->GetString("username", &username);
   if (!username.empty())
     dict->SetString("domain", gaia::ExtractDomainName(username));
-}
-
-// Utility function that returns a JSON serialization of the given |dict|.
-std::unique_ptr<base::Value> DictionaryToJSONString(
-    const base::DictionaryValue& dict) {
-  std::string json_string;
-  base::JSONWriter::WriteWithOptions(dict,
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json_string);
-  return std::make_unique<base::Value>(json_string);
-}
-
-// Returns a copy of |value|. If necessary (which is specified by
-// |convert_values|), converts some values to a representation that
-// i18n_template.js will display.
-std::unique_ptr<base::Value> CopyAndMaybeConvert(const base::Value* value,
-                                                 bool convert_values) {
-  if (!convert_values)
-    return value->CreateDeepCopy();
-  const base::DictionaryValue* dict = NULL;
-  if (value->GetAsDictionary(&dict))
-    return DictionaryToJSONString(*dict);
-
-  std::unique_ptr<base::Value> copy = value->CreateDeepCopy();
-  base::ListValue* list = NULL;
-  if (copy->GetAsList(&list)) {
-    for (size_t i = 0; i < list->GetSize(); ++i) {
-      if (list->GetDictionary(i, &dict))
-        list->Set(i, DictionaryToJSONString(*dict));
-    }
-  }
-
-  return copy;
 }
 
 }  // namespace
@@ -765,91 +733,13 @@ void PolicyUIHandler::SendPolicyNames() const {
   web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyNames", names);
 }
 
-std::unique_ptr<base::DictionaryValue> PolicyUIHandler::GetAllPolicyValues(
-    bool convert_values) const {
-  base::DictionaryValue all_policies;
-
-  // Add Chrome policy values.
-  auto chrome_policies = std::make_unique<base::DictionaryValue>();
-  GetChromePolicyValues(chrome_policies.get(), convert_values);
-  all_policies.Set("chromePolicies", std::move(chrome_policies));
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Add extension policy values.
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()));
-  auto extension_values = std::make_unique<base::DictionaryValue>();
-
-  for (const scoped_refptr<const extensions::Extension>& extension :
-       registry->enabled_extensions()) {
-    // Skip this extension if it's not an enterprise extension.
-    if (!extension->manifest()->HasPath(
-        extensions::manifest_keys::kStorageManagedSchema))
-      continue;
-    auto extension_policies = std::make_unique<base::DictionaryValue>();
-    policy::PolicyNamespace policy_namespace = policy::PolicyNamespace(
-        policy::POLICY_DOMAIN_EXTENSIONS, extension->id());
-    policy::PolicyErrorMap empty_error_map;
-    GetPolicyValues(GetPolicyService()->GetPolicies(policy_namespace),
-                    &empty_error_map, extension_policies.get(), convert_values);
-    extension_values->Set(extension->id(), std::move(extension_policies));
-  }
-  all_policies.Set("extensionPolicies", std::move(extension_values));
-#endif
-  return std::make_unique<base::DictionaryValue>(std::move(all_policies));
-}
-
 void PolicyUIHandler::SendPolicyValues() const {
   std::unique_ptr<base::DictionaryValue> all_policies =
-      GetAllPolicyValues(true);
+      policy::GetAllPolicyValuesAsDictionary(
+          web_ui()->GetWebContents()->GetBrowserContext(),
+          true /* with_user_policies */, true /* convert_values */);
   web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyValues",
                                          *all_policies);
-}
-
-void PolicyUIHandler::GetPolicyValues(const policy::PolicyMap& map,
-                                      policy::PolicyErrorMap* errors,
-                                      base::DictionaryValue* values,
-                                      bool convert_values) const {
-  for (const auto& entry : map) {
-    std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-    value->Set("value",
-               CopyAndMaybeConvert(entry.second.value.get(), convert_values));
-    if (entry.second.scope == policy::POLICY_SCOPE_USER)
-      value->SetString("scope", "user");
-    else
-      value->SetString("scope", "machine");
-    if (entry.second.level == policy::POLICY_LEVEL_RECOMMENDED)
-      value->SetString("level", "recommended");
-    else
-      value->SetString("level", "mandatory");
-    value->SetString("source", kPolicySources[entry.second.source].key);
-    base::string16 error = errors->GetErrors(entry.first);
-    if (!error.empty())
-      value->SetString("error", error);
-    values->SetWithoutPathExpansion(entry.first, std::move(value));
-  }
-}
-
-void PolicyUIHandler::GetChromePolicyValues(base::DictionaryValue* values,
-                                            bool convert_values) const {
-  policy::PolicyService* policy_service = GetPolicyService();
-  policy::PolicyMap map;
-
-  // Make a copy that can be modified, since some policy values are modified
-  // before being displayed.
-  map.CopyFrom(policy_service->GetPolicies(
-      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())));
-
-  // Get a list of all the errors in the policy values.
-  const policy::ConfigurationPolicyHandlerList* handler_list =
-      g_browser_process->browser_policy_connector()->GetHandlerList();
-  policy::PolicyErrorMap errors;
-  handler_list->ApplyPolicySettings(map, NULL, &errors);
-
-  // Convert dictionary values to strings for display.
-  handler_list->PrepareForDisplaying(&map);
-
-  GetPolicyValues(map, &errors, values, convert_values);
 }
 
 void PolicyUIHandler::SendStatus() const {
@@ -909,10 +799,9 @@ void DoWritePoliciesToJSONFile(const base::FilePath& path,
 
 void PolicyUIHandler::WritePoliciesToJSONFile(
     const base::FilePath& path) const {
-  std::unique_ptr<base::DictionaryValue> all_policies =
-      GetAllPolicyValues(false);
-  std::string json_policies =
-      DictionaryToJSONString(*all_policies)->GetString();
+  std::string json_policies = policy::GetAllPolicyValuesAsJSON(
+      web_ui()->GetWebContents()->GetBrowserContext(),
+      true /* with_user_policies */);
 
   base::PostTaskWithTraits(
       FROM_HERE,
