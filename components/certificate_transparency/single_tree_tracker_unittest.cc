@@ -174,10 +174,9 @@ void AddCacheEntry(net::HostCache* cache,
                    const std::string& hostname,
                    net::HostCache::Entry::Source source,
                    base::TimeDelta ttl) {
-  CHECK(cache);
-  const net::HostCache::Key key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
-  const net::HostCache::Entry entry(net::OK, net::AddressList(), source);
-  cache->Set(key, entry, base::TimeTicks::Now(), ttl);
+  cache->Set(net::HostCache::Key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0),
+             net::HostCache::Entry(net::OK, net::AddressList(), source),
+             base::TimeTicks::Now(), ttl);
 }
 
 }  // namespace
