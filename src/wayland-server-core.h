@@ -214,6 +214,9 @@ wl_display_run(struct wl_display *display);
 void
 wl_display_flush_clients(struct wl_display *display);
 
+void
+wl_display_destroy_clients(struct wl_display *display);
+
 struct wl_client;
 
 typedef void (*wl_global_bind_func_t)(struct wl_client *client, void *data,

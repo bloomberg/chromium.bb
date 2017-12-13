@@ -1279,6 +1279,44 @@ wl_display_flush_clients(struct wl_display *display)
 	}
 }
 
+/** Destroy all clients connected to the display
+ *
+ * \param display The display object
+ *
+ * This function should be called right before wl_display_destroy() to ensure
+ * all client resources are closed properly. Destroying a client from within
+ * wl_display_destroy_clients() is safe, but creating one will leak resources
+ * and raise a warning.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT void
+wl_display_destroy_clients(struct wl_display *display)
+{
+	struct wl_list tmp_client_list, *pos;
+	struct wl_client *client;
+
+	/* Move the whole client list to a temporary head because some new clients
+	 * might be added to the original head. */
+	wl_list_init(&tmp_client_list);
+	wl_list_insert_list(&tmp_client_list, &display->client_list);
+	wl_list_init(&display->client_list);
+
+	/* wl_list_for_each_safe isn't enough here: it fails if the next client is
+	 * destroyed by the destroy handler of the current one. */
+	while (!wl_list_empty(&tmp_client_list)) {
+		pos = tmp_client_list.next;
+		client = wl_container_of(pos, client, link);
+
+		wl_client_destroy(client);
+	}
+
+	if (!wl_list_empty(&display->client_list)) {
+		wl_log("wl_display_destroy_clients: cannot destroy all clients because "
+			   "new ones were created by destroy callbacks\n");
+	}
+}
+
 static int
 socket_data(int fd, uint32_t mask, void *data)
 {
