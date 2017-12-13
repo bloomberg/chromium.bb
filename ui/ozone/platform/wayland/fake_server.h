@@ -57,6 +57,8 @@ class MockXdgSurface : public ServerObject {
                void(int32_t x, int32_t y, int32_t widht, int32_t height));
   MOCK_METHOD0(SetMaximized, void());
   MOCK_METHOD0(UnsetMaximized, void());
+  MOCK_METHOD0(SetFullscreen, void());
+  MOCK_METHOD0(UnsetFullscreen, void());
   MOCK_METHOD0(SetMinimized, void());
 
   // Used when xdg v6 is used.

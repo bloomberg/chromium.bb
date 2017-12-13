@@ -69,6 +69,17 @@ class WaylandWindowTest : public WaylandTest {
     return xdg_surface->xdg_toplevel.get();
   }
 
+  void SetWlArrayWithState(uint32_t state, wl_array* states) {
+    uint32_t* s;
+    s = static_cast<uint32_t*>(wl_array_add(states, sizeof *s));
+    *s = state;
+  }
+
+  void InitializeWlArrayWithActivatedState(wl_array* states) {
+    wl_array_init(states);
+    SetWlArrayWithState(XDG_SURFACE_STATE_ACTIVATED, states);
+  }
+
   wl::MockXdgSurface* xdg_surface;
 
   MouseEvent test_mouse_event;
@@ -82,9 +93,20 @@ TEST_P(WaylandWindowTest, SetTitle) {
   window.SetTitle(base::ASCIIToUTF16("hello"));
 }
 
-TEST_P(WaylandWindowTest, Maximize) {
+TEST_P(WaylandWindowTest, MaximizeAndRestore) {
+  uint32_t serial = 12;
+  wl_array states;
+  InitializeWlArrayWithActivatedState(&states);
+
+  SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
+
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
+  EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
   window.Maximize();
+  SendConfigureEvent(0, 0, serial, &states);
+  Sync();
+
+  window.Restore();
 }
 
 TEST_P(WaylandWindowTest, Minimize) {
@@ -92,8 +114,40 @@ TEST_P(WaylandWindowTest, Minimize) {
   window.Minimize();
 }
 
-TEST_P(WaylandWindowTest, Restore) {
+TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
+  wl_array states;
+  InitializeWlArrayWithActivatedState(&states);
+
+  SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
+
+  EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
+  EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
+  window.ToggleFullscreen();
+  SendConfigureEvent(0, 0, 1, &states);
+  Sync();
+
+  window.Restore();
+}
+
+TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
+  wl_array states;
+  InitializeWlArrayWithActivatedState(&states);
+
+  EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
+  EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
+  EXPECT_CALL(*GetXdgSurface(), SetMaximized());
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
+
+  window.Maximize();
+  SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
+  SendConfigureEvent(0, 0, 2, &states);
+  Sync();
+
+  window.ToggleFullscreen();
+  SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
+  SendConfigureEvent(0, 0, 3, &states);
+  Sync();
+
   window.Restore();
 }
 

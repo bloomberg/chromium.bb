@@ -14,7 +14,6 @@
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v5.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v6.h"
-#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
@@ -48,7 +47,8 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate),
       connection_(connection),
       xdg_shell_objects_factory_(new XDGShellObjectFactory()),
-      bounds_(bounds) {}
+      bounds_(bounds),
+      state_(ui::PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {}
 
 WaylandWindow::~WaylandWindow() {
   if (xdg_surface_) {
@@ -142,23 +142,51 @@ void WaylandWindow::ReleaseCapture() {
 }
 
 void WaylandWindow::ToggleFullscreen() {
-  NOTIMPLEMENTED();
+  DCHECK(xdg_surface_);
+  DCHECK(!IsMinimized());
+
+  // TODO(msisov, tonikitoo): add multiscreen support. As the documentation says
+  // if xdg_surface_set_fullscreen() is not provided with wl_output, it's up to
+  // the compositor to choose which display will be used to map this surface.
+  if (!IsFullscreen())
+    xdg_surface_->SetFullscreen();
+  else
+    xdg_surface_->UnSetFullscreen();
+  connection_->ScheduleFlush();
 }
 
 void WaylandWindow::Maximize() {
   DCHECK(xdg_surface_);
+  DCHECK(!IsMaximized());
+
+  if (IsFullscreen())
+    ToggleFullscreen();
+
   xdg_surface_->SetMaximized();
   connection_->ScheduleFlush();
 }
 
 void WaylandWindow::Minimize() {
   DCHECK(xdg_surface_);
+  DCHECK(!IsMinimized());
+
+  DCHECK(xdg_surface_);
   xdg_surface_->SetMinimized();
   connection_->ScheduleFlush();
+
+  // Wayland doesn't say if a window is minimized. Handle this case manually
+  // here. We can track if the window was unminimized once wayland sends the
+  // window is activated, and the previous state was minimized.
+  state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
 }
 
 void WaylandWindow::Restore() {
   DCHECK(xdg_surface_);
+
+  // Unfullscreen the window if it is fullscreen.
+  if (IsFullscreen())
+    ToggleFullscreen();
+
   xdg_surface_->UnSetMaximized();
   connection_->ScheduleFlush();
 }
@@ -207,7 +235,27 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 
-void WaylandWindow::HandleSurfaceConfigure(int32_t width, int32_t height) {
+void WaylandWindow::HandleSurfaceConfigure(int32_t width,
+                                           int32_t height,
+                                           bool is_maximized,
+                                           bool is_fullscreen,
+                                           bool is_activated) {
+  // Change the window state only if the window is activated, because it's the
+  // only way to know if the window is not minimized.
+  if (is_activated) {
+    bool was_minimized = IsMinimized();
+
+    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL;
+    if (is_maximized && !is_fullscreen)
+      state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+    else if (is_fullscreen)
+      state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+
+    // Do not flood the WindowServer unless the previous state was minimized.
+    if (was_minimized)
+      delegate_->OnWindowStateChanged(state_);
+  }
+
   // Width or height set 0 means that we should decide on width and height by
   // ourselves, but we don't want to set to anything else. Use previous size.
   if (width == 0 || height == 0) {
@@ -224,6 +272,18 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width, int32_t height) {
 
 void WaylandWindow::OnCloseRequest() {
   NOTIMPLEMENTED();
+}
+
+bool WaylandWindow::IsMinimized() const {
+  return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+}
+
+bool WaylandWindow::IsMaximized() const {
+  return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+}
+
+bool WaylandWindow::IsFullscreen() const {
+  return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
 }
 
 }  // namespace ui

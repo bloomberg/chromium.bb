@@ -124,7 +124,16 @@ void XDGSurfaceWrapperV6::ConfigureTopLevel(
     int32_t height,
     struct wl_array* states) {
   XDGSurfaceWrapperV6* surface = static_cast<XDGSurfaceWrapperV6*>(data);
-  surface->wayland_window_->HandleSurfaceConfigure(width, height);
+
+  bool is_maximized =
+      CheckIfWlArrayHasValue(states, ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED);
+  bool is_fullscreen =
+      CheckIfWlArrayHasValue(states, ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN);
+  bool is_activated =
+      CheckIfWlArrayHasValue(states, ZXDG_TOPLEVEL_V6_STATE_ACTIVATED);
+
+  surface->wayland_window_->HandleSurfaceConfigure(width, height, is_maximized,
+                                                   is_fullscreen, is_activated);
 }
 
 // static

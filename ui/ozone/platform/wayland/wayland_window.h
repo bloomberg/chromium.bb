@@ -11,6 +11,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
@@ -69,11 +70,19 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
-  void HandleSurfaceConfigure(int32_t widht, int32_t height);
+  void HandleSurfaceConfigure(int32_t widht,
+                              int32_t height,
+                              bool is_maximized,
+                              bool is_fullscreen,
+                              bool is_activated);
 
   void OnCloseRequest();
 
  private:
+  bool IsMinimized() const;
+  bool IsMaximized() const;
+  bool IsFullscreen() const;
+
   // Creates a surface window, which is visible as a main window.
   void CreateXdgSurface();
 
@@ -96,6 +105,9 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   gfx::Rect pending_bounds_;
   bool has_pointer_focus_ = false;
   bool has_keyboard_focus_ = false;
+
+  // Stores current states of the window.
+  ui::PlatformWindowState state_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };
