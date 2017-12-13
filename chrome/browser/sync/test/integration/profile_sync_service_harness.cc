@@ -275,6 +275,12 @@ bool ProfileSyncServiceHarness::RestartSyncService() {
   return true;
 }
 
+void ProfileSyncServiceHarness::SignoutSyncService() {
+  DCHECK(!username_.empty());
+  service()->GoogleSignedOut(service()->signin()->GetAuthenticatedAccountId(),
+                             username_);
+}
+
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
     ProfileSyncServiceHarness* partner) {
   std::vector<ProfileSyncServiceHarness*> harnesses;
