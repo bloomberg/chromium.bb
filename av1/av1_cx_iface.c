@@ -1518,6 +1518,9 @@ static aom_codec_err_t ctrl_set_color_space(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.color_space = CAST(AV1E_SET_COLOR_SPACE, args);
+#if CONFIG_MONO_VIDEO
+  ctx->cfg.monochrome = (extra_cfg.color_space == AOM_CS_MONOCHROME);
+#endif
   return update_extra_cfg(ctx, &extra_cfg);
 }
 

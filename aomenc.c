@@ -1005,6 +1005,22 @@ static struct stream_state *new_stream(struct AvxEncoderConfig *global,
   return stream;
 }
 
+static void set_config_arg_ctrls(struct stream_config *config, int key,
+                                 const struct arg *arg) {
+  int j;
+  /* Point either to the next free element or the first instance of this
+   * control.
+   */
+  for (j = 0; j < config->arg_ctrl_cnt; j++)
+    if (config->arg_ctrls[j][0] == key) break;
+
+  /* Update/insert */
+  assert(j < (int)ARG_CTRL_CNT_MAX);
+  config->arg_ctrls[j][0] = key;
+  config->arg_ctrls[j][1] = arg_parse_enum_or_int(arg);
+  if (j == config->arg_ctrl_cnt) config->arg_ctrl_cnt++;
+}
+
 static int parse_stream_params(struct AvxEncoderConfig *global,
                                struct stream_state *stream, char **argv) {
   char **argi, **argj;
@@ -1177,27 +1193,19 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.tile_height_count =
           arg_parse_list(&arg, config->cfg.tile_heights, MAX_TILE_HEIGHTS);
 #endif
+#if CONFIG_MONO_VIDEO
+    } else if (arg_match(&arg, &input_color_space, argi)) {
+      aom_color_space_t color_space = arg_parse_enum_or_int(&arg);
+      config->cfg.monochrome = (color_space == AOM_CS_MONOCHROME);
+      set_config_arg_ctrls(config, AV1E_SET_COLOR_SPACE, &arg);
+#endif
     } else {
       int i, match = 0;
       for (i = 0; ctrl_args[i]; i++) {
         if (arg_match(&arg, ctrl_args[i], argi)) {
-          int j;
           match = 1;
-
-          /* Point either to the next free element or the first
-           * instance of this control.
-           */
-          for (j = 0; j < config->arg_ctrl_cnt; j++)
-            if (ctrl_args_map != NULL &&
-                config->arg_ctrls[j][0] == ctrl_args_map[i])
-              break;
-
-          /* Update/insert */
-          assert(j < (int)ARG_CTRL_CNT_MAX);
-          if (ctrl_args_map != NULL && j < (int)ARG_CTRL_CNT_MAX) {
-            config->arg_ctrls[j][0] = ctrl_args_map[i];
-            config->arg_ctrls[j][1] = arg_parse_enum_or_int(&arg);
-            if (j == config->arg_ctrl_cnt) config->arg_ctrl_cnt++;
+          if (ctrl_args_map) {
+            set_config_arg_ctrls(config, ctrl_args_map[i], &arg);
           }
         }
       }
