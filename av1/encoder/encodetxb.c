@@ -315,14 +315,14 @@ static INLINE void av1_txb_init_levels(const tran_low_t *const coeff,
 }
 
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-                          aom_writer *w, int blk_row, int blk_col, int block,
-                          int plane, TX_SIZE tx_size, const tran_low_t *tcoeff,
+                          aom_writer *w, int blk_row, int blk_col, int plane,
+                          TX_SIZE tx_size, const tran_low_t *tcoeff,
                           uint16_t eob, TXB_CTX *txb_ctx) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *const scan = scan_order->scan;
   const int seg_eob = av1_get_max_eob(tx_size);
@@ -350,8 +350,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   av1_txb_init_levels(tcoeff, width, height, levels);
 
 #if CONFIG_TXK_SEL
-  av1_write_tx_type(cm, xd, blk_row, blk_col, block, plane,
-                    get_min_tx_size(tx_size), w);
+  av1_write_tx_type(cm, xd, blk_row, blk_col, plane, get_min_tx_size(tx_size),
+                    w);
 #endif
 
   int eob_extra, dummy;
@@ -549,8 +549,8 @@ static void av1_write_coeffs_txb_wrap(int plane, int block, int blk_row,
   uint16_t eob = x->mbmi_ext->eobs[plane][block];
   TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
                       x->mbmi_ext->dc_sign_ctx[plane][block] };
-  av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, block, plane, tx_size,
-                       tcoeff, eob, &txb_ctx);
+  av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, plane, tx_size, tcoeff, eob,
+                       &txb_ctx);
 }
 
 void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
@@ -593,7 +593,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *p = &x->plane[plane];
   const int eob = p->eobs[block];
@@ -1996,7 +1996,7 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
@@ -2073,7 +2073,7 @@ void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   const PLANE_TYPE plane_type = pd->plane_type;
   const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   (void)plane_bsize;
 
@@ -2099,7 +2099,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
   const int segment_id = mbmi->segment_id;
   const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *const scan = scan_order->scan;
   const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
@@ -2136,8 +2136,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   av1_txb_init_levels(tcoeff, width, height, levels);
 
 #if CONFIG_TXK_SEL
-  av1_update_tx_type_count(cm, xd, blk_row, blk_col, block, plane,
-                           mbmi->sb_type, get_min_tx_size(tx_size), td->counts,
+  av1_update_tx_type_count(cm, xd, blk_row, blk_col, plane, mbmi->sb_type,
+                           get_min_tx_size(tx_size), td->counts,
                            allow_update_cdf);
 #endif
 
@@ -2362,8 +2362,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   for (tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (plane == 0)
       mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = tx_type;
-    TX_TYPE ref_tx_type = av1_get_tx_type(get_plane_type(plane), xd, blk_row,
-                                          blk_col, block, tx_size);
+    TX_TYPE ref_tx_type =
+        av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size);
     if (tx_type != ref_tx_type) {
       // use av1_get_tx_type() to check if the tx_type is valid for the current
       // mode if it's not, we skip it here.

@@ -1044,7 +1044,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
         set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
         const MOTION_MODE motion_allowed =
-            motion_mode_allowed(0, xd->global_motion, xd, mi);
+            motion_mode_allowed(xd->global_motion, xd, mi);
         if (mbmi->ref_frame[1] != INTRA_FRAME) {
           if (motion_allowed == WARPED_CAUSAL) {
 #if CONFIG_EXT_WARPED_MOTION
@@ -4582,7 +4582,7 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
 
 void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_TXK_SEL
-                              int blk_row, int blk_col, int block, int plane,
+                              int blk_row, int blk_col, int plane,
 #endif
                               BLOCK_SIZE bsize, TX_SIZE tx_size,
                               FRAME_COUNTS *counts, uint8_t allow_update_cdf) {
@@ -4601,7 +4601,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
   // Only y plane's tx_type is updated
   if (plane > 0) return;
   TX_TYPE tx_type =
-      av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col, tx_size);
 #endif
   if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
       cm->base_qindex > 0 && !mbmi->skip &&
@@ -4696,11 +4696,11 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
           if (!dry_run)
-            av1_tokenize_color_map(x, plane, 0, t, bsize, mbmi->tx_size,
+            av1_tokenize_color_map(x, plane, t, bsize, mbmi->tx_size,
                                    PALETTE_MAP);
           else if (dry_run == DRY_RUN_COSTCOEFFS)
-            rate += av1_cost_color_map(x, plane, 0, bsize, mbmi->tx_size,
-                                       PALETTE_MAP);
+            rate +=
+                av1_cost_color_map(x, plane, bsize, mbmi->tx_size, PALETTE_MAP);
         }
       }
     }

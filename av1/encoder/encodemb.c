@@ -146,7 +146,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   const int16_t *const dequant_ptr = p->dequant_QTX;
   const uint8_t *const band_translate = get_band_translate(tx_size);
   const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
   const SCAN_ORDER *const scan_order =
       get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
   const int16_t *const scan = scan_order->scan;
@@ -492,8 +492,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   struct macroblockd_plane *const pd = &xd->plane[plane];
 #endif
   PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
 
 #if CONFIG_NEW_QUANT
   const int is_inter = is_inter_block(mbmi);
@@ -657,7 +656,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
   {
     TX_TYPE tx_type =
-        av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, block, tx_size);
+        av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, tx_size);
     av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
                                 pd->dst.stride, p->eobs[block],
                                 cm->reduced_tx_set_used);
@@ -931,14 +930,13 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
   uint16_t *eob = &p->eobs[block];
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
 
-  av1_predict_intra_block_facade(cm, xd, plane, block, blk_col, blk_row,
-                                 tx_size);
+  av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
 
   av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
 

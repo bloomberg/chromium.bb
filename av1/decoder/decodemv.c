@@ -295,7 +295,7 @@ static MOTION_MODE read_motion_mode(MACROBLOCKD *xd, MODE_INFO *mi,
 #endif  // CONFIG_EXT_SKIP
 
   const MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(0, xd->global_motion, xd, mi);
+      motion_mode_allowed(xd->global_motion, xd, mi);
   int motion_mode;
   FRAME_COUNTS *counts = xd->counts;
 
@@ -942,8 +942,7 @@ static void read_intra_angle_info(MACROBLOCKD *const xd, aom_reader *r) {
 
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_TXK_SEL
-                      int blk_row, int blk_col, int block, int plane,
-                      TX_SIZE tx_size,
+                      int blk_row, int blk_col, int plane, TX_SIZE tx_size,
 #endif
                       aom_reader *r) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -962,7 +961,6 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #else
   // only y plane's tx_type is transmitted
   if (plane > 0) return;
-  (void)block;
   TX_TYPE *tx_type = &mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col];
 #endif
 
@@ -1608,17 +1606,15 @@ static INLINE int is_mv_valid(const MV *mv) {
 
 static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                             PREDICTION_MODE mode,
-                            MV_REFERENCE_FRAME ref_frame[2], int block,
-                            int_mv mv[2], int_mv ref_mv[2],
-                            int_mv nearest_mv[2], int_mv near_mv[2], int mi_row,
-                            int mi_col, int is_compound, int allow_hp,
-                            aom_reader *r) {
+                            MV_REFERENCE_FRAME ref_frame[2], int_mv mv[2],
+                            int_mv ref_mv[2], int_mv nearest_mv[2],
+                            int_mv near_mv[2], int mi_row, int mi_col,
+                            int is_compound, int allow_hp, aom_reader *r) {
   int ret = 1;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   int_mv *pred_mv = mbmi->pred_mv;
-  (void)block;
   (void)ref_frame;
   (void)cm;
   (void)mi_row;
@@ -1663,7 +1659,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     case GLOBALMV: {
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv, bsize,
-                                          mi_col, mi_row, block
+                                          mi_col, mi_row
 #if CONFIG_AMVR
                                           ,
                                           cm->cur_frame_force_integer_mv
@@ -1673,7 +1669,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       if (is_compound)
         mv[1].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
                                             cm->allow_high_precision_mv, bsize,
-                                            mi_col, mi_row, block
+                                            mi_col, mi_row
 #if CONFIG_AMVR
                                             ,
                                             cm->cur_frame_force_integer_mv
@@ -1759,7 +1755,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       assert(is_compound);
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv, bsize,
-                                          mi_col, mi_row, block
+                                          mi_col, mi_row
 #if CONFIG_AMVR
                                           ,
                                           cm->cur_frame_force_integer_mv
@@ -1768,7 +1764,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                          .as_int;
       mv[1].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
                                           cm->allow_high_precision_mv, bsize,
-                                          mi_col, mi_row, block
+                                          mi_col, mi_row
 #if CONFIG_AMVR
                                           ,
                                           cm->cur_frame_force_integer_mv
@@ -1905,7 +1901,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       av1_set_ref_frame(rf, ref_frame);
       zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
                                               cm->allow_high_precision_mv,
-                                              bsize, mi_col, mi_row, 0
+                                              bsize, mi_col, mi_row
 #if CONFIG_AMVR
                                               ,
                                               cm->cur_frame_force_integer_mv
@@ -1916,7 +1912,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
           (rf[1] != NONE_FRAME)
               ? gm_get_motion_vector(&cm->global_motion[rf[1]],
                                      cm->allow_high_precision_mv, bsize, mi_col,
-                                     mi_row, 0
+                                     mi_row
 #if CONFIG_AMVR
                                      ,
                                      cm->cur_frame_force_integer_mv
@@ -2117,7 +2113,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   } else {
 #endif  // CONFIG_EXT_SKIP
     int mv_corrupted_flag =
-        !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, 0, mbmi->mv, ref_mv,
+        !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, mbmi->mv, ref_mv,
                    nearestmv, nearmv, mi_row, mi_col, is_compound, allow_hp, r);
     aom_merge_corrupted_flag(&xd->corrupted, mv_corrupted_flag);
 #if CONFIG_EXT_SKIP

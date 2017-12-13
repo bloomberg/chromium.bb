@@ -389,11 +389,6 @@ static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {
 }
 #endif
 
-static INLINE PREDICTION_MODE get_y_mode(const MODE_INFO *mi, int block) {
-  (void)block;
-  return mi->mbmi.mode;
-}
-
 #if CONFIG_CFL
 static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
   assert(mode < UV_INTRA_MODES);
@@ -465,13 +460,14 @@ PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
 PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
                                      const MODE_INFO *above_mi, int b);
 
-static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
+static INLINE int is_global_mv_block(const MODE_INFO *mi,
                                      TransformationType type) {
-  PREDICTION_MODE mode = get_y_mode(mi, block);
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const PREDICTION_MODE mode = mbmi->mode;
 #if GLOBAL_SUB8X8_USED
   const int block_size_allowed = 1;
 #else
-  const BLOCK_SIZE bsize = mi->mbmi.sb_type;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
   const int block_size_allowed =
       AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
 #endif  // GLOBAL_SUB8X8_USED
@@ -1012,7 +1008,7 @@ static INLINE int av1_raster_order_to_block_index(TX_SIZE tx_size,
 }
 
 static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
-                                          const MACROBLOCKD *xd, int block_idx,
+                                          const MACROBLOCKD *xd,
                                           TX_SIZE tx_size) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
@@ -1021,7 +1017,7 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
     return DCT_DCT;
 
   return intra_mode_to_tx_type_context[plane_type == PLANE_TYPE_Y
-                                           ? get_y_mode(xd->mi[0], block_idx)
+                                           ? mbmi->mode
                                            : get_uv_mode(mbmi->uv_mode)];
 }
 
@@ -1032,7 +1028,7 @@ get_plane_block_size(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
 
 static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
                                       const MACROBLOCKD *xd, int blk_row,
-                                      int blk_col, int block, TX_SIZE tx_size) {
+                                      int blk_col, TX_SIZE tx_size) {
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   (void)blk_row;
@@ -1076,8 +1072,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
 #endif  // CONFIG_TXK_SEL
 
 #if FIXED_TX_TYPE
-  const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
-  return get_default_tx_type(plane_type, xd, block_raster_idx, tx_size);
+  return get_default_tx_type(plane_type, xd, tx_size);
 #endif  // FIXED_TX_TYPE
 
 #if CONFIG_DAALA_TX_DST32
@@ -1102,7 +1097,6 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   }
 
   // UV Intra only
-  (void)block;
   TX_TYPE intra_type =
       intra_mode_to_tx_type_context[get_uv_mode(mbmi->uv_mode)];
   if (!av1_ext_tx_used[tx_set_type][intra_type]) return DCT_DCT;
@@ -1282,14 +1276,14 @@ static INLINE int check_num_overlappable_neighbors(const MB_MODE_INFO *mbmi) {
 }
 
 static INLINE MOTION_MODE
-motion_mode_allowed(int block, const WarpedMotionParams *gm_params,
-                    const MACROBLOCKD *xd, const MODE_INFO *mi) {
+motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
+                    const MODE_INFO *mi) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 #if CONFIG_AMVR
   if (xd->cur_frame_force_integer_mv == 0) {
 #endif
     const TransformationType gm_type = gm_params[mbmi->ref_frame[0]].wmtype;
-    if (is_global_mv_block(mi, block, gm_type)) return SIMPLE_TRANSLATION;
+    if (is_global_mv_block(mi, gm_type)) return SIMPLE_TRANSLATION;
 #if CONFIG_AMVR
   }
 #endif
@@ -1313,12 +1307,12 @@ motion_mode_allowed(int block, const WarpedMotionParams *gm_params,
   }
 }
 
-static INLINE void assert_motion_mode_valid(MOTION_MODE mode, int block,
+static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
                                             const WarpedMotionParams *gm_params,
                                             const MACROBLOCKD *xd,
                                             const MODE_INFO *mi) {
   const MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(block, gm_params, xd, mi);
+      motion_mode_allowed(gm_params, xd, mi);
 
   // Check that the input mode is not illegal
   if (last_motion_mode_allowed < mode)

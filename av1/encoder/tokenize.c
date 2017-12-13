@@ -259,8 +259,7 @@ static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   const PLANE_TYPE type = pd->plane_type;
-  const TX_TYPE tx_type =
-      av1_get_tx_type(type, xd, blk_row, blk_col, block, tx_size);
+  const TX_TYPE tx_type = av1_get_tx_type(type, xd, blk_row, blk_col, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int rate = av1_cost_coeffs(
       cpi, x, plane, blk_row, blk_col, block, tx_size, scan_order,
@@ -366,10 +365,9 @@ static void get_palette_params(const MACROBLOCK *const x, int plane,
 }
 
 static void get_color_map_params(const MACROBLOCK *const x, int plane,
-                                 int block, BLOCK_SIZE bsize, TX_SIZE tx_size,
+                                 BLOCK_SIZE bsize, TX_SIZE tx_size,
                                  COLOR_MAP_TYPE type,
                                  Av1ColorMapParam *params) {
-  (void)block;
   (void)tx_size;
   memset(params, 0, sizeof(*params));
   switch (type) {
@@ -378,22 +376,20 @@ static void get_color_map_params(const MACROBLOCK *const x, int plane,
   }
 }
 
-int av1_cost_color_map(const MACROBLOCK *const x, int plane, int block,
-                       BLOCK_SIZE bsize, TX_SIZE tx_size, COLOR_MAP_TYPE type) {
+int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
+                       TX_SIZE tx_size, COLOR_MAP_TYPE type) {
   assert(plane == 0 || plane == 1);
   Av1ColorMapParam color_map_params;
-  get_color_map_params(x, plane, block, bsize, tx_size, type,
-                       &color_map_params);
+  get_color_map_params(x, plane, bsize, tx_size, type, &color_map_params);
   return cost_and_tokenize_map(&color_map_params, NULL, 1);
 }
 
-void av1_tokenize_color_map(const MACROBLOCK *const x, int plane, int block,
+void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
                             TOKENEXTRA **t, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             COLOR_MAP_TYPE type) {
   assert(plane == 0 || plane == 1);
   Av1ColorMapParam color_map_params;
-  get_color_map_params(x, plane, block, bsize, tx_size, type,
-                       &color_map_params);
+  get_color_map_params(x, plane, bsize, tx_size, type, &color_map_params);
   // The first color index does not use context or entropy.
   (*t)->token = color_map_params.color_map[0];
   (*t)->color_map_cdf = NULL;
@@ -423,8 +419,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   const int segment_id = mbmi->segment_id;
   const int16_t *scan, *nb;
-  const TX_TYPE tx_type =
-      av1_get_tx_type(type, xd, blk_row, blk_col, block, tx_size);
+  const TX_TYPE tx_type = av1_get_tx_type(type, xd, blk_row, blk_col, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int ref = is_inter_block(mbmi);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;

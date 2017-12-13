@@ -230,7 +230,7 @@ static INLINE void integer_mv_precision(MV *mv) {
 // represents an integer)
 static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
                                           int allow_hp, BLOCK_SIZE bsize,
-                                          int mi_col, int mi_row, int block_idx
+                                          int mi_col, int mi_row
 #if CONFIG_AMVR
                                           ,
                                           int is_integer
@@ -239,7 +239,6 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
   int_mv res;
   const int32_t *mat = gm->wmmat;
   int x, y, tx, ty;
-  (void)block_idx;
 
   if (gm->wmtype == TRANSLATION) {
     // All global motion vectors are stored with WARPEDMODEL_PREC_BITS (16)

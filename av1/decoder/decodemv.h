@@ -31,8 +31,7 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
 
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_TXK_SEL
-                      int blk_row, int blk_col, int block, int plane,
-                      TX_SIZE tx_size,
+                      int blk_row, int blk_col, int plane, TX_SIZE tx_size,
 #endif
                       aom_reader *r);
 

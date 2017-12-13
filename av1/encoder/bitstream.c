@@ -315,7 +315,7 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 
   MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(0, cm->global_motion, xd, mi);
+      motion_mode_allowed(cm->global_motion, xd, mi);
   switch (last_motion_mode_allowed) {
     case SIMPLE_TRANSLATION: break;
     case OBMC_CAUSAL:
@@ -524,8 +524,8 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
     uint16_t eob = x->mbmi_ext->eobs[plane][block];
     TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
                         x->mbmi_ext->dc_sign_ctx[plane][block] };
-    av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, block, plane, tx_size,
-                         tcoeff, eob, &txb_ctx);
+    av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, plane, tx_size, tcoeff,
+                         eob, &txb_ctx);
 #if CONFIG_RD_DEBUG
     token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
     token_stats->cost += tmp_token_stats.cost;
@@ -1096,8 +1096,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #if CONFIG_TXK_SEL
-                       int blk_row, int blk_col, int block, int plane,
-                       TX_SIZE tx_size,
+                       int blk_row, int blk_col, int plane, TX_SIZE tx_size,
 #endif
                        aom_writer *w) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -1117,8 +1116,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   // Only y plane's tx_type is transmitted
   if (plane > 0) return;
   PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
 #endif
 
   if (!FIXED_TX_TYPE) {

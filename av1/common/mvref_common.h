@@ -132,17 +132,14 @@ static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
 // This function returns either the appropriate sub block or block's mv
 // on whether the block_size < 8x8 and we have check_sub_blocks set.
 static INLINE int_mv get_sub_block_mv(const MODE_INFO *candidate, int which_mv,
-                                      int search_col, int block_idx) {
+                                      int search_col) {
   (void)search_col;
-  (void)block_idx;
   return candidate->mbmi.mv[which_mv];
 }
 
 static INLINE int_mv get_sub_block_pred_mv(const MODE_INFO *candidate,
-                                           int which_mv, int search_col,
-                                           int block_idx) {
+                                           int which_mv, int search_col) {
   (void)search_col;
-  (void)block_idx;
   return candidate->mbmi.mv[which_mv];
 }
 
@@ -448,8 +445,8 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
 // This function keeps a mode count for a given MB/SB
 void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
-                           int_mv *mv_ref_list, int block, int mi_row,
-                           int mi_col, int16_t *mode_context);
+                           int_mv *mv_ref_list, int mi_row, int mi_col,
+                           int16_t *mode_context);
 
 #if CONFIG_EXT_WARPED_MOTION
 int sortSamples(int *pts_mv, MV *mv, int *pts, int *pts_inref, int len);

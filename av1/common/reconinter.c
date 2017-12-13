@@ -73,7 +73,7 @@ static INLINE void av1_make_inter_predictor(
   (void)xd;
 
   // Make sure the selected motion mode is valid for this configuration
-  assert_motion_mode_valid(mi->mbmi.motion_mode, 0, xd->global_motion, xd, mi);
+  assert_motion_mode_valid(mi->mbmi.motion_mode, xd->global_motion, xd, mi);
 
   WarpedMotionParams final_warp_params;
   const int do_warp =
@@ -950,9 +950,9 @@ void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
 
 static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           int plane, const MODE_INFO *mi,
-                                          int build_for_obmc, int block, int bw,
-                                          int bh, int x, int y, int w, int h,
-                                          int mi_x, int mi_y) {
+                                          int build_for_obmc, int bw, int bh,
+                                          int x, int y, int w, int h, int mi_x,
+                                          int mi_y) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   int is_compound = has_second_ref(&mi->mbmi);
   int ref;
@@ -964,10 +964,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   for (ref = 0; ref < 1 + is_compound; ++ref) {
     const WarpedMotionParams *const wm =
         &xd->global_motion[mi->mbmi.ref_frame[ref]];
-    is_global[ref] = is_global_mv_block(mi, block, wm->wmtype);
+    is_global[ref] = is_global_mv_block(mi, wm->wmtype);
   }
 
-  (void)block;
   (void)cm;
 
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
@@ -1301,7 +1300,7 @@ static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
                              pd->subsampling_y))
       continue;
 
-    build_inter_predictors(cm, xd, plane, xd->mi[0], 0, 0, bw, bh, 0, 0, bw, bh,
+    build_inter_predictors(cm, xd, plane, xd->mi[0], 0, bw, bh, 0, 0, bw, bh,
                            mi_x, mi_y);
   }
 }
@@ -1658,8 +1657,8 @@ static INLINE void build_prediction_by_above_pred(MACROBLOCKD *xd,
                    block_size_high[BLOCK_64X64] >> (pd->subsampling_y + 1));
 
     if (skip_u4x4_pred_in_obmc(bsize, pd, 0)) continue;
-    build_inter_predictors(ctxt->cm, xd, j, above_mi, 1, 0, bw, bh, 0, 0, bw,
-                           bh, mi_x, mi_y);
+    build_inter_predictors(ctxt->cm, xd, j, above_mi, 1, bw, bh, 0, 0, bw, bh,
+                           mi_x, mi_y);
   }
   *above_mbmi = backup_mbmi;
 }
@@ -1745,7 +1744,7 @@ static INLINE void build_prediction_by_left_pred(MACROBLOCKD *xd,
     int bh = (left_mi_height << MI_SIZE_LOG2) >> pd->subsampling_y;
 
     if (skip_u4x4_pred_in_obmc(bsize, pd, 1)) continue;
-    build_inter_predictors(ctxt->cm, xd, j, left_mi, 1, 0, bw, bh, 0, 0, bw, bh,
+    build_inter_predictors(ctxt->cm, xd, j, left_mi, 1, bw, bh, 0, 0, bw, bh,
                            mi_x, mi_y);
   }
   *left_mbmi = backup_mbmi;
@@ -2139,7 +2138,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   WarpTypesAllowed warp_types;
   const WarpedMotionParams *const wm =
       &xd->global_motion[mi->mbmi.ref_frame[ref]];
-  warp_types.global_warp_allowed = is_global_mv_block(mi, block, wm->wmtype);
+  warp_types.global_warp_allowed = is_global_mv_block(mi, wm->wmtype);
   warp_types.local_warp_allowed = mi->mbmi.motion_mode == WARPED_CAUSAL;
 
   if (is_scaled) {

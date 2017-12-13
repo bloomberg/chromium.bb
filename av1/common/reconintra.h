@@ -22,8 +22,8 @@ extern "C" {
 
 void av1_init_intra_predictors(void);
 void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int plane, int block_idx, int blk_col,
-                                    int blk_row, TX_SIZE tx_size);
+                                    int plane, int blk_col, int blk_row,
+                                    TX_SIZE tx_size);
 void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int bw, int bh, BLOCK_SIZE bsize,
                              PREDICTION_MODE mode, const uint8_t *ref,

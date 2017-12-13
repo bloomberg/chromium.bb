@@ -55,7 +55,7 @@ static INLINE int rec_eob_pos(const int eob_token, const int extra) {
 
 uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             aom_reader *const r, const int blk_row,
-                            const int blk_col, const int block, const int plane,
+                            const int blk_col, const int plane,
                             const TXB_CTX *const txb_ctx, const TX_SIZE tx_size,
                             int16_t *const max_scan_line, int *const eob) {
   FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
@@ -107,11 +107,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   (void)blk_row;
   (void)blk_col;
 #if CONFIG_TXK_SEL
-  av1_read_tx_type(cm, xd, blk_row, blk_col, block, plane,
-                   get_min_tx_size(tx_size), r);
+  av1_read_tx_type(cm, xd, blk_row, blk_col, plane, get_min_tx_size(tx_size),
+                   r);
 #endif
   const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *const scan = scan_order->scan;
   int dummy;
@@ -370,10 +370,12 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   return cul_level;
 }
 
-uint8_t av1_read_coeffs_txb_facade(
-    const AV1_COMMON *const cm, MACROBLOCKD *const xd, aom_reader *const r,
-    const int row, const int col, const int block, const int plane,
-    const TX_SIZE tx_size, int16_t *const max_scan_line, int *const eob) {
+uint8_t av1_read_coeffs_txb_facade(const AV1_COMMON *const cm,
+                                   MACROBLOCKD *const xd, aom_reader *const r,
+                                   const int row, const int col,
+                                   const int plane, const TX_SIZE tx_size,
+                                   int16_t *const max_scan_line,
+                                   int *const eob) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   struct macroblockd_plane *const pd = &xd->plane[plane];
 
@@ -384,11 +386,11 @@ uint8_t av1_read_coeffs_txb_facade(
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + col,
               pd->left_context + row, &txb_ctx);
-  uint8_t cul_level = av1_read_coeffs_txb(
-      cm, xd, r, row, col, block, plane, &txb_ctx, tx_size, max_scan_line, eob);
+  uint8_t cul_level = av1_read_coeffs_txb(cm, xd, r, row, col, plane, &txb_ctx,
+                                          tx_size, max_scan_line, eob);
 #if CONFIG_ADAPT_SCAN
   PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, block, tx_size);
+  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size);
   const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
 
   if (xd->counts && *eob > 0)

@@ -21,7 +21,7 @@ PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
   if (b == 0 || b == 2) {
     if (!left_mi || is_inter_block(&left_mi->mbmi)) return DC_PRED;
 
-    return get_y_mode(left_mi, b + 1);
+    return left_mi->mbmi.mode;
   } else {
     assert(b == 1 || b == 3);
     return cur_mi->bmi[b - 1].as_mode;
@@ -33,7 +33,7 @@ PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
   if (b == 0 || b == 1) {
     if (!above_mi || is_inter_block(&above_mi->mbmi)) return DC_PRED;
 
-    return get_y_mode(above_mi, b + 2);
+    return above_mi->mbmi.mode;
   } else {
     assert(b == 2 || b == 3);
     return cur_mi->bmi[b - 2].as_mode;

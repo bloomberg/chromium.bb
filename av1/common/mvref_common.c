@@ -68,7 +68,7 @@ static uint8_t add_ref_mv_candidate(
     const MODE_INFO *const candidate_mi, const MB_MODE_INFO *const candidate,
     const MV_REFERENCE_FRAME rf[2], uint8_t *refmv_count,
     uint8_t *ref_match_count, CANDIDATE_MV *ref_mv_stack, const int use_hp,
-    int len, int block,
+    int len,
 #if USE_CUR_GM_REFMV
     int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params,
 #endif  // USE_CUR_GM_REFMV
@@ -140,11 +140,11 @@ static uint8_t add_ref_mv_candidate(
         } else {
 #endif  // CONFIG_EXT_WARPED_MOTION
 #if USE_CUR_GM_REFMV
-          if (is_global_mv_block(candidate_mi, block, gm_params[rf[0]].wmtype))
+          if (is_global_mv_block(candidate_mi, gm_params[rf[0]].wmtype))
             this_refmv = gm_mv_candidates[0];
           else
 #endif  // USE_CUR_GM_REFMV
-            this_refmv = get_sub_block_mv(candidate_mi, ref, col, block);
+            this_refmv = get_sub_block_mv(candidate_mi, ref, col);
 #if CONFIG_AMVR
           lower_mv_precision(&this_refmv.as_mv, use_hp, is_integer);
 #else
@@ -163,7 +163,7 @@ static uint8_t add_ref_mv_candidate(
         if (index == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
           ref_mv_stack[index].this_mv = this_refmv;
           ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
-              get_sub_block_pred_mv(candidate_mi, ref, col, block), this_refmv);
+              get_sub_block_pred_mv(candidate_mi, ref, col), this_refmv);
           ref_mv_stack[index].weight = weight * len;
           ++(*refmv_count);
 
@@ -184,11 +184,11 @@ static uint8_t add_ref_mv_candidate(
 
       for (ref = 0; ref < 2; ++ref) {
 #if USE_CUR_GM_REFMV
-        if (is_global_mv_block(candidate_mi, block, gm_params[rf[ref]].wmtype))
+        if (is_global_mv_block(candidate_mi, gm_params[rf[ref]].wmtype))
           this_refmv[ref] = gm_mv_candidates[ref];
         else
 #endif  // USE_CUR_GM_REFMV
-          this_refmv[ref] = get_sub_block_mv(candidate_mi, ref, col, block);
+          this_refmv[ref] = get_sub_block_mv(candidate_mi, ref, col);
 #if CONFIG_AMVR
         lower_mv_precision(&this_refmv[ref].as_mv, use_hp, is_integer);
 #else
@@ -208,9 +208,9 @@ static uint8_t add_ref_mv_candidate(
         ref_mv_stack[index].this_mv = this_refmv[0];
         ref_mv_stack[index].comp_mv = this_refmv[1];
         ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
-            get_sub_block_pred_mv(candidate_mi, 0, col, block), this_refmv[0]);
+            get_sub_block_pred_mv(candidate_mi, 0, col), this_refmv[0]);
         ref_mv_stack[index].pred_diff[1] = av1_get_pred_diff_ctx(
-            get_sub_block_pred_mv(candidate_mi, 1, col, block), this_refmv[1]);
+            get_sub_block_pred_mv(candidate_mi, 1, col), this_refmv[1]);
         ref_mv_stack[index].weight = weight * len;
         ++(*refmv_count);
 
@@ -228,7 +228,7 @@ static uint8_t add_ref_mv_candidate(
 }
 
 static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                             int mi_row, int mi_col, int block,
+                             int mi_row, int mi_col,
                              const MV_REFERENCE_FRAME rf[2], int row_offset,
                              CANDIDATE_MV *ref_mv_stack, uint8_t *refmv_count,
                              uint8_t *ref_match_count,
@@ -276,7 +276,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_AMVR
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
-        cm->allow_high_precision_mv, len, block,
+        cm->allow_high_precision_mv, len,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
@@ -286,7 +286,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
-        cm->allow_high_precision_mv, len, block,
+        cm->allow_high_precision_mv, len,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
@@ -301,7 +301,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                             int mi_row, int mi_col, int block,
+                             int mi_row, int mi_col,
                              const MV_REFERENCE_FRAME rf[2], int col_offset,
                              CANDIDATE_MV *ref_mv_stack, uint8_t *refmv_count,
                              uint8_t *ref_match_count,
@@ -348,7 +348,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_AMVR
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
-        cm->allow_high_precision_mv, len, block,
+        cm->allow_high_precision_mv, len,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
@@ -358,7 +358,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
-        cm->allow_high_precision_mv, len, block,
+        cm->allow_high_precision_mv, len,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
@@ -372,7 +372,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                             const int mi_row, const int mi_col, int block,
+                             const int mi_row, const int mi_col,
                              const MV_REFERENCE_FRAME rf[2], int row_offset,
                              int col_offset, CANDIDATE_MV *ref_mv_stack,
                              uint8_t *ref_match_count,
@@ -397,7 +397,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_AMVR
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
-        cm->allow_high_precision_mv, len, block,
+        cm->allow_high_precision_mv, len,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
@@ -407,7 +407,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
-        cm->allow_high_precision_mv, len, block,
+        cm->allow_high_precision_mv, len,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
@@ -685,8 +685,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if USE_CUR_GM_REFMV
                               int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
-                              int block, int mi_row, int mi_col,
-                              int16_t *mode_context) {
+                              int mi_row, int mi_col, int16_t *mode_context) {
 #if CONFIG_TMV
   const int prev_frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
   const int tmi_row = mi_row & 0xfffe;
@@ -745,24 +744,24 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   // Scan the first above row mode info. row_offset = -1;
   if (abs(max_row_offset) >= 1)
-    newmv_count += scan_row_mbmi(cm, xd, mi_row, mi_col, block, rf, -1,
-                                 ref_mv_stack, refmv_count, &ref_match_count,
+    newmv_count += scan_row_mbmi(cm, xd, mi_row, mi_col, rf, -1, ref_mv_stack,
+                                 refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                                  gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                                  max_row_offset, &processed_rows);
   // Scan the first left column mode info. col_offset = -1;
   if (abs(max_col_offset) >= 1)
-    newmv_count += scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, -1,
-                                 ref_mv_stack, refmv_count, &ref_match_count,
+    newmv_count += scan_col_mbmi(cm, xd, mi_row, mi_col, rf, -1, ref_mv_stack,
+                                 refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                                  gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                                  max_col_offset, &processed_cols);
   // Check top-right boundary
   if (has_tr)
-    newmv_count += scan_blk_mbmi(cm, xd, mi_row, mi_col, block, rf, -1,
-                                 xd->n8_w, ref_mv_stack, &ref_match_count,
+    newmv_count += scan_blk_mbmi(cm, xd, mi_row, mi_col, rf, -1, xd->n8_w,
+                                 ref_mv_stack, &ref_match_count,
 #if USE_CUR_GM_REFMV
                                  gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -856,7 +855,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_MFMV
 
   // Scan the second outer area.
-  scan_blk_mbmi(cm, xd, mi_row, mi_col, block, rf, -1, -1, ref_mv_stack,
+  scan_blk_mbmi(cm, xd, mi_row, mi_col, rf, -1, -1, ref_mv_stack,
                 &ref_match_count,
 #if USE_CUR_GM_REFMV
                 gm_mv_candidates,
@@ -868,7 +867,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     if (abs(row_offset) <= abs(max_row_offset) &&
         abs(row_offset) > processed_rows)
-      scan_row_mbmi(cm, xd, mi_row, mi_col, block, rf, row_offset, ref_mv_stack,
+      scan_row_mbmi(cm, xd, mi_row, mi_col, rf, row_offset, ref_mv_stack,
                     refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                     gm_mv_candidates,
@@ -877,7 +876,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     if (abs(col_offset) <= abs(max_col_offset) &&
         abs(col_offset) > processed_cols)
-      scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, col_offset, ref_mv_stack,
+      scan_col_mbmi(cm, xd, mi_row, mi_col, rf, col_offset, ref_mv_stack,
                     refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                     gm_mv_candidates,
@@ -888,7 +887,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int col_offset = -(MVREF_COLS << 1) + 1 + col_adj;
   if (abs(col_offset) <= abs(max_col_offset) &&
       abs(col_offset) > processed_cols)
-    scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, col_offset, ref_mv_stack,
+    scan_col_mbmi(cm, xd, mi_row, mi_col, rf, col_offset, ref_mv_stack,
                   refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                   gm_mv_candidates,
@@ -994,10 +993,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 // to try and find candidate reference vectors.
 static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
-                             int_mv *mv_ref_list, int block, int mi_row,
-                             int mi_col, find_mv_refs_sync sync,
-                             void *const data, int16_t *mode_context,
-                             int_mv zeromv) {
+                             int_mv *mv_ref_list, int mi_row, int mi_col,
+                             find_mv_refs_sync sync, void *const data,
+                             int16_t *mode_context, int_mv zeromv) {
   const int *ref_sign_bias = cm->ref_frame_sign_bias;
   const int sb_mi_size = mi_size_wide[cm->sb_size];
   int i, refmv_count = 0;
@@ -1106,10 +1104,10 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       different_ref_found = 1;
 
       if (candidate->ref_frame[0] == ref_frame)
-        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 0, mv_ref->col, block),
+        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 0, mv_ref->col),
                         refmv_count, mv_ref_list, bw, bh, xd, Done);
       else if (candidate->ref_frame[1] == ref_frame)
-        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 1, mv_ref->col, block),
+        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 1, mv_ref->col),
                         refmv_count, mv_ref_list, bw, bh, xd, Done);
     }
   }
@@ -1234,8 +1232,8 @@ Done:
 // This function keeps a mode count for a given MB/SB
 void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
-                           int_mv *mv_ref_list, int block, int mi_row,
-                           int mi_col, int16_t *mode_context) {
+                           int_mv *mv_ref_list, int mi_row, int mi_col,
+                           int16_t *mode_context) {
   int i, refmv_count = 0;
   int context_counter = 0;
   const int bw = block_size_wide[mi->mbmi.sb_type];
@@ -1268,10 +1266,10 @@ void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       context_counter += mode_2_counter[candidate->mode];
 
       if (candidate->ref_frame[0] == ref_frame) {
-        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 0, mv_ref->col, block),
+        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 0, mv_ref->col),
                         refmv_count, mv_ref_list, bw, bh, xd, Done);
       } else if (candidate->ref_frame[1] == ref_frame) {
-        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 1, mv_ref->col, block),
+        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 1, mv_ref->col),
                         refmv_count, mv_ref_list, bw, bh, xd, Done);
       }
     }
@@ -1294,24 +1292,24 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int idx, all_zero = 1;
   MV_REFERENCE_FRAME rf[2];
 
-  av1_update_mv_context(cm, xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col,
+  av1_update_mv_context(cm, xd, mi, ref_frame, mv_ref_list, mi_row, mi_col,
                         compound_mode_context);
 
   if (!CONFIG_INTRABC || ref_frame != INTRA_FRAME) {
     av1_set_ref_frame(rf, ref_frame);
-    zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
-                                            cm->allow_high_precision_mv, bsize,
-                                            mi_col, mi_row, 0
+    zeromv[0].as_int =
+        gm_get_motion_vector(&cm->global_motion[rf[0]],
+                             cm->allow_high_precision_mv, bsize, mi_col, mi_row
 #if CONFIG_AMVR
-                                            ,
-                                            cm->cur_frame_force_integer_mv
+                             ,
+                             cm->cur_frame_force_integer_mv
 #endif
-                                            )
-                           .as_int;
+                             )
+            .as_int;
     zeromv[1].as_int = (rf[1] != NONE_FRAME)
                            ? gm_get_motion_vector(&cm->global_motion[rf[1]],
                                                   cm->allow_high_precision_mv,
-                                                  bsize, mi_col, mi_row, 0
+                                                  bsize, mi_col, mi_row
 #if CONFIG_AMVR
                                                   ,
                                                   cm->cur_frame_force_integer_mv
@@ -1324,14 +1322,14 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   if (ref_frame <= ALTREF_FRAME)
-    find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col,
-                     sync, data, mode_context, zeromv[0]);
+    find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, mi_row, mi_col, sync,
+                     data, mode_context, zeromv[0]);
 
   setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack, mv_ref_list,
 #if USE_CUR_GM_REFMV
                     zeromv,
 #endif  // USE_CUR_GM_REFMV
-                    -1, mi_row, mi_col, mode_context);
+                    mi_row, mi_col, mode_context);
   /* Note: If global motion is enabled, then we want to set the ALL_ZERO flag
      iff all of the MVs we could generate with NEARMV/NEARESTMV are equivalent
      to the global motion vector.
