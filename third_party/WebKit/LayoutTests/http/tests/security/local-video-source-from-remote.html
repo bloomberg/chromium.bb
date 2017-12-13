@@ -14,13 +14,13 @@
                 consoleWrite("<br>END OF TEST");
                 testEnded = true;
                 if (window.testRunner)
-                    testRunner.notifyDone();     
+                    testRunner.notifyDone();
             }
             function hanged()
             {
                 consoleWrite("FAIL: timed out");
                 if (window.testRunner)
-                    testRunner.notifyDone();  
+                    testRunner.notifyDone();
             }
 
             function logConsole()
@@ -31,7 +31,7 @@
                 }
                 return console;
             }
-            
+
             function consoleWrite(text)
             {
                 if (testEnded)
@@ -60,24 +60,25 @@
                 endTest();
             }
 
-            var localMovie = "file:///tmp/LayoutTests/media/content/test.mp4";
-            var remoteUrl = "http://localhost:8000/resources/test";
+            var localMovie = "file:///tmp/LayoutTests/media/content/test.ogv";
+            var remoteUrl = "http://localhost:8000/resources/test.ogv";
 
-            function loadedmetadata(evt) 
-            { 
+            function loadedmetadata(evt)
+            {
                 var src = video.currentSrc;
-                var localFile = localMovie.substring(localMovie.lastIndexOf("/")+1, localMovie.length)
-                var remoteFile = remoteUrl.substring(remoteUrl.lastIndexOf("/")+1, remoteUrl.length)
 
                 logEvent(evt);
-                if (src.indexOf(localFile) > 0)
+                if (src == localMovie)
                     logResult("local movie loaded", false);
-                else if (src.indexOf(remoteFile) > 0)
+                else if (src == remoteUrl)
                     logResult("remote movie loaded, local movie failed to load", true);
+                else
+                    logResult("video failed to load any movie", false);
+
                 endTest();
             }
 
-            if (window.testRunner) 
+            if (window.testRunner)
             {
                 localMovie = testRunner.pathToLocalResource(localMovie);
                 testRunner.dumpAsText();
@@ -85,7 +86,7 @@
             }
             setTimeout(hanged, 10000);
 
-            function test() 
+            function test()
             {
                 video = document.getElementById("vid");
 
@@ -97,15 +98,6 @@
                 var src1 = document.createElement("source");
                 src1.setAttribute("src", localMovie);
 
-                if (video.canPlayType("video/mp4"))
-                    remoteUrl += ".mp4";
-                else if (video.canPlayType("video/ogg"))
-                    remoteUrl += ".ogv";
-                else {
-                    logResult("Missing test movie for this platform???", false);
-                    endTest();
-                }
-
                 var src2 = document.createElement("source");
                 src2.setAttribute("src", remoteUrl);
 
@@ -113,7 +105,7 @@
                 video.appendChild(src2);
             }
         </script>
-    
+
     </head>
 
     <body onLoad="test()">

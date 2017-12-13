@@ -2,7 +2,6 @@
 <title>Test autoplay muted behaviour in various system conditions.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <body></body>
 <script>
 var tests = [
@@ -128,7 +127,7 @@ function runTest(t, test) {
     });
 
     media.muted = true;
-    media.src = findMediaFile('video', 'content/test');
+    media.src = 'content/test.ogv';
 
     if (type == 'attribute')
       media.autoplay = true;

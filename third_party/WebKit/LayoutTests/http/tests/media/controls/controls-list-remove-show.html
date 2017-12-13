@@ -2,7 +2,6 @@
 <title>Test removing keywords from controlsList shows buttons</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="../../media-resources/media-file.js"></script>
 <script src="../../media-resources/media-controls.js"></script>
 <video controlslist="nodownload nofullscreen" id="disabled-controls" width="500px"></video>
 <script>
@@ -28,7 +27,7 @@ async_test(t => {
     }));
   }));
 
-  v.src = findMediaFile('video', '../resources/test');
+  v.src = '../resources/test.ogv';
 }, 'Test enabling controls on the video element with them enabled.');
 </script>
 

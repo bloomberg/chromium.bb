@@ -4,14 +4,13 @@
         <title>AudioTrackList &amp; VideoTrackList after load()</title>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
-        <script src="../media-file.js"></script>
-    </head>
+            </head>
     <body>
         <script>
             async_test(function(t)
             {
                 var video = document.createElement("video");
-                video.src = findMediaFile("video", "../content/test");
+                video.src = "../content/test.ogv";
 
                 video.addEventListener("loadedmetadata", t.step_func_done(function()
                 {

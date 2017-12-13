@@ -2,7 +2,6 @@
 <title>Test media element's "played" attribute and ranges.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <script src="video-played.js"></script>
 <video></video>
 <script>
@@ -53,6 +52,6 @@ async_test(function(t) {
         waitForPauseAndContinue(t, null, true, expectedStartTimes, expectedEndTimes);
     }
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

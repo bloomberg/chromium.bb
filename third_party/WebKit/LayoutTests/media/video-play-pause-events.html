@@ -2,7 +2,6 @@
 <title>Test that calling play() and pause() triggers async play, timeupdate and pause events.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -31,7 +30,7 @@ async_test(function(t) {
         assert_true(video.paused);
     });
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
     video.play();
     video.pause();
 });

@@ -2,7 +2,6 @@
 <title>Test adding keywords to controlsList hides buttons</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="../../media-resources/media-file.js"></script>
 <script src="../../media-resources/media-controls.js"></script>
 <video controls id="enabled-controls" width="500px"></video>
 <script>
@@ -27,6 +26,6 @@ async_test(t => {
     }));
   }));
 
-  v.src = findMediaFile('video', '../resources/test');
+  v.src = '../resources/test.ogv';
 }, 'Test disabling controls on the video element with all controls.');
 </script>

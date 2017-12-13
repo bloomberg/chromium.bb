@@ -3,7 +3,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="media-controls.js"></script>
-<script src="media-file.js"></script>
 <video controls></video>
 <script>
 async_test(function(t) {
@@ -25,6 +24,6 @@ async_test(function(t) {
         }), video);
     });
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

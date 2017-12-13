@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <title>Overflow menu always visible</title>
-<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <style>
   .container {
@@ -18,7 +17,7 @@
     testRunner.waitUntilDone();
 
   var video = document.querySelector('video');
-  video.src = findMediaFile('video', '../content/test');
+  video.src = '../content/test.ogv';
   video.addTextTrack('captions', 'foo');
   video.addTextTrack('captions', 'bar');
 

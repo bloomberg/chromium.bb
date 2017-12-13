@@ -2,7 +2,6 @@
 <title>Test that an explicit load() to a media element whose preload is set to "none" still loads the video.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video preload="none"></video>
 <script>
 async_test(function(t) {
@@ -20,6 +19,6 @@ async_test(function(t) {
         video.load();
     }, 300);
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

@@ -2,7 +2,6 @@
 <title>Test event dispatches and attribute changes for seek to middle.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../../media-resources/media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -46,7 +45,7 @@ async_test(function(t) {
         assert_false(video.paused);
     }
 
-    video.src = findMediaFile("video", "resources/test");
+    video.src = "resources/test.ogv";
     video.play();
 });
 </script>

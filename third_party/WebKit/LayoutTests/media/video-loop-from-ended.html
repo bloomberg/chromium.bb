@@ -2,7 +2,6 @@
 <title>Test looping edge case to verify http://crbug.com/364442.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 // Seek towards end of video (for faster testing).
@@ -50,6 +49,6 @@ async_test(function(t) {
         video.play();
     });
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>
