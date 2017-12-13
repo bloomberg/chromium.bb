@@ -176,13 +176,10 @@ std::string ContextualJsonRequest::Builder::BuildHeaders() const {
     headers.SetHeader("Authorization", auth_header_);
   }
   // Add X-Client-Data header with experiment IDs from field trials.
-  // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does
-  // not affect transmission of experiments coming from the variations server.
-  bool is_signed_in = false;
-  variations::AppendVariationHeaders(url_,
-                                     false,  // incognito
-                                     false,  // uma_enabled
-                                     is_signed_in, &headers);
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
+  // transmission of experiments coming from the variations server.
+  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo, &headers);
   return headers.ToString();
 }
 

@@ -158,12 +158,13 @@ void FeedbackUploader::DispatchReport() {
       fetcher, data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER);
   // Tell feedback server about the variation state of this install.
   net::HttpRequestHeaders headers;
-  // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does
-  // not affect transmission of experiments coming from the variations server.
-  const bool is_signed_in = false;
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
+  // transmission of experiments coming from the variations server.
   variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
-                                     context_->IsOffTheRecord(), false,
-                                     is_signed_in, &headers);
+                                     context_->IsOffTheRecord()
+                                         ? variations::InIncognito::kYes
+                                         : variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
 
   fetcher->SetUploadData(kProtoBufMimeType, report_being_dispatched_->data());
