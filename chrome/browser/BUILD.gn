@@ -2579,6 +2579,8 @@ split_static_library("browser") {
       "resource_coordinator/tab_lifecycle_unit.h",
       "resource_coordinator/tab_lifecycle_unit_external.cc",
       "resource_coordinator/tab_lifecycle_unit_external.h",
+      "resource_coordinator/tab_lifecycle_unit_source.cc",
+      "resource_coordinator/tab_lifecycle_unit_source.h",
       "resource_coordinator/tab_manager.cc",
       "resource_coordinator/tab_manager.h",
       "resource_coordinator/tab_manager_delegate_chromeos.cc",
