@@ -7,6 +7,9 @@
 /* The normal alignment of `double', in bytes. */
 #define ALIGNOF_DOUBLE 8
 
+/* The normal alignment of `void *', in bytes. */
+#define ALIGNOF_VOID_P 8
+
 /* Use libxml2 instead of Expat */
 #define ENABLE_LIBXML2 1
 
@@ -18,6 +21,9 @@
 
 /* System font directory */
 #define FC_DEFAULT_FONTS "/usr/share/fonts"
+
+/* The type of len parameter of the gperf hash/lookup function */
+#define FC_GPERF_SIZE_T unsigned int
 
 /* Define to nothing if C supports flexible array members, and to 1 if it does
    not. That way, with a declaration like `struct s { int n; double
@@ -101,6 +107,9 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
 
+/* Define to 1 if you have the `mkdtemp' function. */
+#define HAVE_MKDTEMP 1
+
 /* Define to 1 if you have the `mkostemp' function. */
 #define HAVE_MKOSTEMP 1
 
@@ -134,27 +143,8 @@
 /* Define to 1 if you have the `rand_r' function. */
 #define HAVE_RAND_R 1
 
-/* Define to 1 if you have the `regcomp' function. */
-#define HAVE_REGCOMP 1
-
-/* Define to 1 if you have the `regerror' function. */
-#define HAVE_REGERROR 1
-
-/* Define to 1 if you have the `regexec' function. */
-#define HAVE_REGEXEC 1
-
-/* Define to 1 if you have the <regex.h> header file. */
-#define HAVE_REGEX_H 1
-
-/* Define to 1 if you have the `regfree' function. */
-#define HAVE_REGFREE 1
-
-/* Define to 1 if you have the 'scandir' function. */
-#define HAVE_SCANDIR 1
-
-/* Define to 1 if you have the 'scandir' function with int (* compar)(const
-   void *, const void *) */
-/* #undef HAVE_SCANDIR_VOID_P */
+/* Define to 1 if you have the `readlink' function. */
+#define HAVE_READLINK 1
 
 /* Define to 1 if you have the <sched.h> header file. */
 /* #undef HAVE_SCHED_H */
@@ -192,6 +182,9 @@
 /* Define to 1 if `f_fstypename' is a member of `struct statvfs'. */
 /* #undef HAVE_STRUCT_STATVFS_F_FSTYPENAME */
 
+/* Define to 1 if `st_mtim' is a member of `struct stat'. */
+#define HAVE_STRUCT_STAT_ST_MTIM 1
+
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
 /* #undef HAVE_SYS_DIR_H */
@@ -209,6 +202,9 @@
 /* Define to 1 if you have the <sys/statfs.h> header file. */
 #define HAVE_SYS_STATFS_H 1
 
+/* Define to 1 if you have the <sys/statvfs.h> header file. */
+#define HAVE_SYS_STATVFS_H 1
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
 
@@ -217,6 +213,12 @@
 
 /* Define to 1 if you have the <sys/vfs.h> header file. */
 #define HAVE_SYS_VFS_H 1
+
+/* Define to 1 if `usLowerOpticalPointSize' is a member of `TT_OS2'. */
+#define HAVE_TT_OS2_USLOWEROPTICALPOINTSIZE 1
+
+/* Define to 1 if `usUpperOpticalPointSize' is a member of `TT_OS2'. */
+#define HAVE_TT_OS2_USUPPEROPTICALPOINTSIZE 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
@@ -236,8 +238,7 @@
 /* Define to 1 if you have the `_mktemp_s' function. */
 /* #undef HAVE__MKTEMP_S */
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
@@ -250,7 +251,7 @@
 #define PACKAGE_NAME "fontconfig"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "fontconfig 2.11.0"
+#define PACKAGE_STRING "fontconfig 2.12.6"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "fontconfig"
@@ -259,7 +260,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.11.0"
+#define PACKAGE_VERSION "2.12.6"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -289,9 +290,6 @@
 /* Use iconv. */
 #define USE_ICONV 0
 
-/* Use regex */
-#define USE_REGEX /**/
-
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # define _ALL_SOURCE 1
@@ -315,7 +313,7 @@
 
 
 /* Version number of package */
-#define VERSION "2.11.0"
+#define VERSION "2.12.6"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
@@ -327,6 +325,11 @@
 # ifndef WORDS_BIGENDIAN
 /* #  undef WORDS_BIGENDIAN */
 # endif
+#endif
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
 #endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */

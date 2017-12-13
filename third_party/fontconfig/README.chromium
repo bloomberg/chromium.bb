@@ -1,6 +1,6 @@
 Name: fontconfig
 URL: http://www.freedesktop.org/wiki/Software/fontconfig/
-Version: 2.11.0
+Version: 2.12.6
 License: MIT
 License File: src/COPYING
 Security Critical: yes
@@ -12,7 +12,7 @@ Modifications:
 - None
 
 To import a new snapshot of fontconfig:
-- Checkout the latest release tag: git checkout 2.11.0
+- Checkout the latest release tag: git checkout 2.12.6
 - Change the DEPS entry to the newly checked out commit.
 - Update generated files:
     ./autogen.sh --enable-libxml2 && make

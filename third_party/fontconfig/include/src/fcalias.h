@@ -130,6 +130,8 @@ extern __typeof (FcDirSave) IA__FcDirSave __attribute((visibility("hidden")));
 #define FcDirSave IA__FcDirSave
 extern __typeof (FcDirCacheLoad) IA__FcDirCacheLoad __attribute((visibility("hidden")));
 #define FcDirCacheLoad IA__FcDirCacheLoad
+extern __typeof (FcDirCacheRescan) IA__FcDirCacheRescan __attribute((visibility("hidden")));
+#define FcDirCacheRescan IA__FcDirCacheRescan
 extern __typeof (FcDirCacheRead) IA__FcDirCacheRead __attribute((visibility("hidden")));
 #define FcDirCacheRead IA__FcDirCacheRead
 extern __typeof (FcDirCacheLoadFile) IA__FcDirCacheLoadFile __attribute((visibility("hidden")));
@@ -290,6 +292,8 @@ extern __typeof (FcPatternAddWeak) IA__FcPatternAddWeak __attribute((visibility(
 #define FcPatternAddWeak IA__FcPatternAddWeak
 extern __typeof (FcPatternGet) IA__FcPatternGet __attribute((visibility("hidden")));
 #define FcPatternGet IA__FcPatternGet
+extern __typeof (FcPatternGetWithBinding) IA__FcPatternGetWithBinding __attribute((visibility("hidden")));
+#define FcPatternGetWithBinding IA__FcPatternGetWithBinding
 extern __typeof (FcPatternDel) IA__FcPatternDel __attribute((visibility("hidden")));
 #define FcPatternDel IA__FcPatternDel
 extern __typeof (FcPatternRemove) IA__FcPatternRemove __attribute((visibility("hidden")));
@@ -308,6 +312,8 @@ extern __typeof (FcPatternAddBool) IA__FcPatternAddBool __attribute((visibility(
 #define FcPatternAddBool IA__FcPatternAddBool
 extern __typeof (FcPatternAddLangSet) IA__FcPatternAddLangSet __attribute((visibility("hidden")));
 #define FcPatternAddLangSet IA__FcPatternAddLangSet
+extern __typeof (FcPatternAddRange) IA__FcPatternAddRange __attribute((visibility("hidden")));
+#define FcPatternAddRange IA__FcPatternAddRange
 extern __typeof (FcPatternGetInteger) IA__FcPatternGetInteger __attribute((visibility("hidden")));
 #define FcPatternGetInteger IA__FcPatternGetInteger
 extern __typeof (FcPatternGetDouble) IA__FcPatternGetDouble __attribute((visibility("hidden")));
@@ -322,12 +328,28 @@ extern __typeof (FcPatternGetBool) IA__FcPatternGetBool __attribute((visibility(
 #define FcPatternGetBool IA__FcPatternGetBool
 extern __typeof (FcPatternGetLangSet) IA__FcPatternGetLangSet __attribute((visibility("hidden")));
 #define FcPatternGetLangSet IA__FcPatternGetLangSet
+extern __typeof (FcPatternGetRange) IA__FcPatternGetRange __attribute((visibility("hidden")));
+#define FcPatternGetRange IA__FcPatternGetRange
 extern __typeof (FcPatternVaBuild) IA__FcPatternVaBuild __attribute((visibility("hidden")));
 #define FcPatternVaBuild IA__FcPatternVaBuild
 extern __typeof (FcPatternBuild) IA__FcPatternBuild __attribute((visibility("hidden")));
 #define FcPatternBuild IA__FcPatternBuild
 extern __typeof (FcPatternFormat) IA__FcPatternFormat __attribute((visibility("hidden")));
 #define FcPatternFormat IA__FcPatternFormat
+extern __typeof (FcRangeCreateDouble) IA__FcRangeCreateDouble __attribute((visibility("hidden")));
+#define FcRangeCreateDouble IA__FcRangeCreateDouble
+extern __typeof (FcRangeCreateInteger) IA__FcRangeCreateInteger __attribute((visibility("hidden")));
+#define FcRangeCreateInteger IA__FcRangeCreateInteger
+extern __typeof (FcRangeDestroy) IA__FcRangeDestroy __attribute((visibility("hidden")));
+#define FcRangeDestroy IA__FcRangeDestroy
+extern __typeof (FcRangeCopy) IA__FcRangeCopy __attribute((visibility("hidden")));
+#define FcRangeCopy IA__FcRangeCopy
+extern __typeof (FcRangeGetDouble) IA__FcRangeGetDouble __attribute((visibility("hidden")));
+#define FcRangeGetDouble IA__FcRangeGetDouble
+extern __typeof (FcWeightFromOpenType) IA__FcWeightFromOpenType __attribute((visibility("hidden")));
+#define FcWeightFromOpenType IA__FcWeightFromOpenType
+extern __typeof (FcWeightToOpenType) IA__FcWeightToOpenType __attribute((visibility("hidden")));
+#define FcWeightToOpenType IA__FcWeightToOpenType
 extern __typeof (FcStrCopy) IA__FcStrCopy __attribute((visibility("hidden")));
 #define FcStrCopy IA__FcStrCopy
 extern __typeof (FcStrCopyFilename) IA__FcStrCopyFilename __attribute((visibility("hidden")));
@@ -384,6 +406,8 @@ extern __typeof (FcStrListDone) IA__FcStrListDone __attribute((visibility("hidde
 #define FcStrListDone IA__FcStrListDone
 extern __typeof (FcConfigParseAndLoad) IA__FcConfigParseAndLoad __attribute((visibility("hidden")));
 #define FcConfigParseAndLoad IA__FcConfigParseAndLoad
+extern __typeof (FcConfigParseAndLoadFromMemory) IA__FcConfigParseAndLoadFromMemory __attribute((visibility("hidden")));
+#define FcConfigParseAndLoadFromMemory IA__FcConfigParseAndLoadFromMemory
 extern __typeof (FcConfigGetRescanInverval) IA__FcConfigGetRescanInverval __attribute((visibility("hidden")));
 #define FcConfigGetRescanInverval IA__FcConfigGetRescanInverval
 extern __typeof (FcConfigSetRescanInverval) IA__FcConfigSetRescanInverval __attribute((visibility("hidden")));
