@@ -553,6 +553,8 @@ post_process_cmdline() {
     enabled striped_loop_restoration && enable_feature loop_restoration
     enabled adapt_scan && enable_feature lv_map
 
+    soft_enable daala_tx_dst32
+
     if enabled daala_tx; then
       enable_feature highbitdepth
       enable_feature daala_tx4
@@ -560,7 +562,6 @@ post_process_cmdline() {
       enable_feature daala_tx16
       enable_feature daala_tx32
       enable_feature daala_tx64
-      ! disabled daala_tx_dst32 && enable_feature daala_tx_dst32
     fi
     if enabled daala_tx64 && ! enabled tx64x64; then
       log_echo "daala_tx64 requires tx64x64, so disabling daala_tx64"

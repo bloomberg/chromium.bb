@@ -51,7 +51,6 @@ macro (fix_experiment_configs)
      set(CONFIG_DAALA_TX16 1)
      set(CONFIG_DAALA_TX32 1)
      set(CONFIG_DAALA_TX64 1)
-     set(CONFIG_DAALA_TX_DST32 1)
   endif ()
 
   if (CONFIG_DAALA_TX_DST8)
