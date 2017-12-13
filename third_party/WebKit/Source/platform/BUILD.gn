@@ -554,6 +554,8 @@ jumbo_component("platform") {
     "exported/WebCORSPreflightResultCache.cpp",
     "exported/WebCache.cpp",
     "exported/WebCanvasCaptureHandler.cpp",
+    "exported/WebClipboardImpl.cpp",
+    "exported/WebClipboardImpl.h",
     "exported/WebCoalescedInputEvent.cpp",
     "exported/WebContentDecryptionModule.cpp",
     "exported/WebContentDecryptionModuleAccess.cpp",

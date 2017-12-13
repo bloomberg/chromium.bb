@@ -16,10 +16,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
-#include "content/common/clipboard.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "third_party/WebKit/common/clipboard/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 
 class GURL;
@@ -37,13 +37,13 @@ namespace content {
 class ChromeBlobStorageContext;
 class ClipboardHostImplTest;
 
-class CONTENT_EXPORT ClipboardHostImpl : public mojom::ClipboardHost {
+class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
  public:
   ~ClipboardHostImpl() override;
 
   static void Create(
       scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-      mojom::ClipboardHostRequest request);
+      blink::mojom::ClipboardHostRequest request);
 
  private:
   friend class ClipboardHostImplTest;

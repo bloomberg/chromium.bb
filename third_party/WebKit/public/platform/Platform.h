@@ -165,7 +165,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual WebCookieJar* CookieJar() { return nullptr; }
 
   // Must return non-null.
-  virtual WebClipboard* Clipboard() { return nullptr; }
+  virtual WebClipboard* Clipboard();
 
   // Must return non-null.
   virtual WebFileUtilities* GetFileUtilities() { return nullptr; }

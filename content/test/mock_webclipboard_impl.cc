@@ -145,16 +145,6 @@ void MockWebClipboardImpl::WritePlainText(const blink::WebString& plain_text) {
   ++m_sequenceNumber;
 }
 
-void MockWebClipboardImpl::writeURL(const blink::WebURL& url,
-                                    const blink::WebString& title) {
-  clear();
-
-  m_htmlText = base::NullableString16(
-      base::UTF8ToUTF16(URLToMarkup(url, title)), false /* is_null */);
-  m_plainText = WebString::ToNullableString16(url.GetString());
-  ++m_sequenceNumber;
-}
-
 void MockWebClipboardImpl::WriteImage(const blink::WebImage& image,
                                       const blink::WebURL& url,
                                       const blink::WebString& title) {
