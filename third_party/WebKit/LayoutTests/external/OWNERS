@@ -1,3 +1,5 @@
+# Please do not remove this file. It is needed by webkitpy/w3c/directory_owners_extractor.py
+
 # TEAM: ecosystem-infra@chromium.org
 # COMPONENT: Blink>Infra>Ecosystem
 foolip@chromium.org
