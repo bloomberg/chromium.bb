@@ -18,6 +18,7 @@
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "third_party/WebKit/public/public_features.h"
 
 namespace {
@@ -150,9 +151,9 @@ class HttpOverAdbSocket {
         new net::StringIOBuffer(request_);
 
     result = socket_->Write(
-        request_buffer.get(),
-        request_buffer->size(),
-        base::Bind(&HttpOverAdbSocket::ReadResponse, base::Unretained(this)));
+        request_buffer.get(), request_buffer->size(),
+        base::Bind(&HttpOverAdbSocket::ReadResponse, base::Unretained(this)),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     if (result != net::ERR_IO_PENDING)
       ReadResponse(result);
   }
@@ -408,8 +409,8 @@ class AdbSendFileSocket : AdbClientSocket {
 
     scoped_refptr<net::StringIOBuffer> request_buffer =
         new net::StringIOBuffer(buffer);
-    int result =
-        socket_->Write(request_buffer.get(), request_buffer->size(), callback);
+    int result = socket_->Write(request_buffer.get(), request_buffer->size(),
+                                callback, TRAFFIC_ANNOTATION_FOR_TESTS);
     if (result != net::ERR_IO_PENDING)
       callback.Run(result);
   }
@@ -527,13 +528,11 @@ void AdbClientSocket::SendCommand(const std::string& command,
                                   const CommandCallback& callback) {
   scoped_refptr<net::StringIOBuffer> request_buffer =
       new net::StringIOBuffer(EncodeMessage(command));
-  int result = socket_->Write(request_buffer.get(),
-                              request_buffer->size(),
-                              base::Bind(&AdbClientSocket::ReadResponse,
-                                         base::Unretained(this),
-                                         callback,
-                                         is_void,
-                                         has_length));
+  int result = socket_->Write(
+      request_buffer.get(), request_buffer->size(),
+      base::Bind(&AdbClientSocket::ReadResponse, base::Unretained(this),
+                 callback, is_void, has_length),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
   if (result != net::ERR_IO_PENDING)
     ReadResponse(callback, is_void, has_length, result);
 }

@@ -22,6 +22,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/socket/socket_posix.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/host/security_key/security_key_auth_handler.h"
 #include "remoting/host/security_key/security_key_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -125,9 +126,9 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
     net::TestCompletionCallback write_callback;
     int bytes_written = 0;
     while (bytes_written < request_len) {
-      int write_result = client_socket->Write(request_buffer.get(),
-                                              request_buffer->BytesRemaining(),
-                                              write_callback.callback());
+      int write_result = client_socket->Write(
+          request_buffer.get(), request_buffer->BytesRemaining(),
+          write_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
       write_result = write_callback.GetResult(write_result);
       ASSERT_GT(write_result, 0);
       bytes_written += write_result;

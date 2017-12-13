@@ -266,12 +266,10 @@ class SynchronousErrorStreamSocket : public WrappedStreamSocket {
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   const CompletionCallback& callback) override;
-  // TODO(crbug.com/656607): Remove default value.
   int Write(IOBuffer* buf,
             int buf_len,
             const CompletionCallback& callback,
-            const NetworkTrafficAnnotationTag& traffic_annotation =
-                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
+            const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   // Sets the next Read() call and all future calls to return |error|.
   // If there is already a pending asynchronous read, the configured error
@@ -347,12 +345,10 @@ class FakeBlockingStreamSocket : public WrappedStreamSocket {
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   const CompletionCallback& callback) override;
-  // TODO(crbug.com/656607): Remove default value.
   int Write(IOBuffer* buf,
             int buf_len,
             const CompletionCallback& callback,
-            const NetworkTrafficAnnotationTag& traffic_annotation =
-                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
+            const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   int pending_read_result() const { return pending_read_result_; }
   IOBuffer* pending_read_buf() const { return pending_read_buf_.get(); }

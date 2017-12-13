@@ -90,14 +90,13 @@ int FuzzedSocket::Read(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int FuzzedSocket::Write(IOBuffer* buf,
-                        int buf_len,
-                        const CompletionCallback& callback,
-                        const NetworkTrafficAnnotationTag& traffic_annotation) {
+int FuzzedSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& /* traffic_annotation */) {
   DCHECK(!connect_pending_);
   DCHECK(!write_pending_);
-
-  // TODO(crbug.com/656607): Handle traffic annotation.
 
   bool sync;
   int result;

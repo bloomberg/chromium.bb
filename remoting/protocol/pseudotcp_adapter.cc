@@ -159,13 +159,12 @@ int PseudoTcpAdapter::Core::Write(
     const scoped_refptr<net::IOBuffer>& buffer,
     int buffer_size,
     const net::CompletionCallback& callback,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    const net::NetworkTrafficAnnotationTag& /*traffic_annotation*/) {
   DCHECK(write_callback_.is_null());
 
   // Reference the Core in case a callback deletes the adapter.
   scoped_refptr<Core> core(this);
 
-  // TODO(crbug.com/656607): Handle traffic annotation.
   int result = pseudo_tcp_.Send(buffer->data(), buffer_size);
   if (result < 0) {
     result = net::MapSystemError(pseudo_tcp_.GetError());

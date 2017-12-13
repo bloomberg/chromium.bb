@@ -407,11 +407,11 @@ int UDPSocketWin::RecvFrom(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int UDPSocketWin::Write(IOBuffer* buf,
-                        int buf_len,
-                        const CompletionCallback& callback,
-                        const NetworkTrafficAnnotationTag& traffic_annotation) {
-  // TODO(crbug.com/656607): Handle traffic annotation.
+int UDPSocketWin::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& /* traffic_annotation */) {
   return SendToOrWrite(buf, buf_len, remote_address_.get(), callback);
 }
 

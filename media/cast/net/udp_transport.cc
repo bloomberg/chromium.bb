@@ -258,8 +258,10 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
     // If we called Connect() before we must call Write() instead of
     // SendTo(). Otherwise on some platforms we might get
     // ERR_SOCKET_IS_CONNECTED.
-    result = udp_socket_->Write(
-        buf.get(), static_cast<int>(packet->data.size()), callback);
+    // TODO(crbug.com/656607): Add proper annotation.
+    result =
+        udp_socket_->Write(buf.get(), static_cast<int>(packet->data.size()),
+                           callback, NO_TRAFFIC_ANNOTATION_BUG_656607);
   } else if (!IsEmpty(remote_addr_)) {
     result = udp_socket_->SendTo(buf.get(),
                                  static_cast<int>(packet->data.size()),

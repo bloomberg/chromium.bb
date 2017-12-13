@@ -67,6 +67,7 @@ test("cast_net_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//net",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

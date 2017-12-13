@@ -137,11 +137,9 @@ int FuzzedDatagramClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
     const CompletionCallback& callback,
-    const NetworkTrafficAnnotationTag& traffic_annotation) {
+    const NetworkTrafficAnnotationTag& /* traffic_annotation */) {
   CHECK(!callback.is_null());
   CHECK(!write_pending_);
-
-  // TODO(crbug.com/656607): Handle traffic annotation.
 
   // Normally this is allowed, but code really shouldn't be doing this - if it
   // is, it's best to figure out why, and fix it.
