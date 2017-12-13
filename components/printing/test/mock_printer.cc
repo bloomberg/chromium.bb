@@ -194,13 +194,12 @@ void MockPrinter::SetPrintedPagesCount(int cookie, int number_pages) {
   pages_.clear();
 }
 
-void MockPrinter::PrintPage(const PrintHostMsg_DidPrintPage_Params& params) {
+void MockPrinter::PrintPage(
+    const PrintHostMsg_DidPrintDocument_Params& params) {
   // Verify the input parameter and update the printer status so that the
   // RenderViewTest class can verify the this function finishes without errors.
   EXPECT_EQ(PRINTER_PRINTING, printer_status_);
   EXPECT_EQ(document_cookie_, params.document_cookie);
-  EXPECT_EQ(page_number_, params.page_number);
-  EXPECT_LE(params.page_number, number_pages_);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Load the data sent from a RenderView object and create a PageData object.

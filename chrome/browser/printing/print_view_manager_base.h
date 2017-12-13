@@ -20,7 +20,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/features/features.h"
 
-struct PrintHostMsg_DidPrintPage_Params;
+struct PrintHostMsg_DidPrintDocument_Params;
 
 namespace base {
 class SharedMemory;
@@ -91,15 +91,15 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void OnDidGetPrintedPagesCount(int cookie, int number_pages) override;
   void OnPrintingFailed(int cookie) override;
   void OnShowInvalidPrinterSettingsError();
-  void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
+  void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params);
 
-  // Handle extra tasks once a page or doc is printed.
-  void UpdateForPrintedPage(const PrintHostMsg_DidPrintPage_Params& params,
-                            bool has_valid_page_data,
-                            std::unique_ptr<base::SharedMemory> shared_buf);
+  // Handle extra tasks once the document is printed.
+  void UpdateForPrintedDocument(
+      const PrintHostMsg_DidPrintDocument_Params& params,
+      std::unique_ptr<base::SharedMemory> shared_buf);
 
   // IPC message handlers for service.
-  void OnComposePdfDone(const PrintHostMsg_DidPrintPage_Params& params,
+  void OnComposePdfDone(const PrintHostMsg_DidPrintDocument_Params& params,
                         mojom::PdfCompositor::Status status,
                         mojo::ScopedSharedBufferHandle handle);
 
@@ -113,7 +113,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
   // Quits the current message loop if these conditions hold true: a document is
   // loaded and is complete and waiting_for_pages_to_be_rendered_ is true. This
-  // function is called in DidPrintPage() or on ALL_PAGES_REQUESTED
+  // function is called in DidPrintDocument() or on ALL_PAGES_REQUESTED
   // notification. The inner message loop is created was created by
   // RenderAllMissingPagesNow().
   void ShouldQuitFromInnerMessageLoop();
@@ -169,9 +169,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // we are _blocking_ until all the necessary pages have been rendered or the
   // print settings are being loaded.
   bool inside_inner_message_loop_;
-
-  // Set to true when OnDidPrintPage() should be expecting the first page.
-  bool expecting_first_page_;
 
   // Whether printing is enabled.
   BooleanPrefMember printing_enabled_;

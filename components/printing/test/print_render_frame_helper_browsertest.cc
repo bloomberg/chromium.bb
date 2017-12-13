@@ -219,9 +219,9 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   void VerifyPrintedPageSize(const gfx::Size& expected_page_size) {
     const IPC::Message* print_msg =
         render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_DidPrintPage::ID);
-    PrintHostMsg_DidPrintPage::Param post_did_print_page_param;
-    PrintHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
+            PrintHostMsg_DidPrintDocument::ID);
+    PrintHostMsg_DidPrintDocument::Param post_did_print_page_param;
+    PrintHostMsg_DidPrintDocument::Read(print_msg, &post_did_print_page_param);
     gfx::Size page_size_received =
         std::get<0>(post_did_print_page_param).page_size;
     EXPECT_EQ(expected_page_size, page_size_received);
@@ -232,13 +232,13 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   void VerifyPagesPrinted(bool expect_printed) {
     const IPC::Message* print_msg =
         render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_DidPrintPage::ID);
+            PrintHostMsg_DidPrintDocument::ID);
     bool did_print = !!print_msg;
     ASSERT_EQ(expect_printed, did_print);
     if (did_print) {
-      PrintHostMsg_DidPrintPage::Param post_did_print_page_param;
-      PrintHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
-      EXPECT_EQ(0, std::get<0>(post_did_print_page_param).page_number);
+      PrintHostMsg_DidPrintDocument::Param post_did_print_page_param;
+      PrintHostMsg_DidPrintDocument::Read(print_msg,
+                                          &post_did_print_page_param);
     }
   }
 

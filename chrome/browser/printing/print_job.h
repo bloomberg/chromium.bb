@@ -89,9 +89,6 @@ class PrintJob : public PrintJobWorkerOwner,
   PrintedDocument* document() const;
 
 #if defined(OS_WIN)
-  // Let the PrintJob know the 0-based |page_number| of a given printed page.
-  void AppendPrintedPage(int page_number);
-
   void StartPdfToEmfConversion(
       const scoped_refptr<base::RefCountedMemory>& bytes,
       const gfx::Size& page_size,
