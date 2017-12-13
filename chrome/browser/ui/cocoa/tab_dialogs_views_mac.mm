@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
@@ -64,7 +64,7 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
   // earlier because the bubble is shown on mouse release (but dismissed on
   // mouse pressed). A Cocoa browser does both on mouse pressed, so a check
   // when showing is sufficient.
-  if (ManagePasswordsBubbleView::manage_password_bubble())
+  if (ManagePasswordsBubbleDelegateViewBase::manage_password_bubble())
     return;
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
@@ -79,8 +79,10 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
   LocationBarBubbleDelegateView::DisplayReason reason =
       user_action ? LocationBarBubbleDelegateView::USER_GESTURE
                   : LocationBarBubbleDelegateView::AUTOMATIC;
-  ManagePasswordsBubbleView* bubble_view = new ManagePasswordsBubbleView(
-      web_contents(), nullptr, anchor_point, reason);
+
+  ManagePasswordsBubbleDelegateViewBase* bubble_view =
+      ManagePasswordsBubbleDelegateViewBase::CreateBubble(
+          web_contents(), nullptr, anchor_point, reason);
   bubble_view->set_arrow(views::BubbleBorder::TOP_RIGHT);
   bubble_view->set_parent_window(parent);
   views::BubbleDialogDelegateView::CreateBubble(bubble_view);
@@ -94,10 +96,11 @@ void TabDialogsViewsMac::HideManagePasswordsBubble() {
     TabDialogsCocoa::HideManagePasswordsBubble();
     return;
   }
-  if (!ManagePasswordsBubbleView::manage_password_bubble())
+  if (!ManagePasswordsBubbleDelegateViewBase::manage_password_bubble())
     return;
-  content::WebContents* bubble_web_contents =
-      ManagePasswordsBubbleView::manage_password_bubble()->web_contents();
+  const content::WebContents* bubble_web_contents =
+      ManagePasswordsBubbleDelegateViewBase::manage_password_bubble()
+          ->GetWebContents();
   if (web_contents() == bubble_web_contents)
-    ManagePasswordsBubbleView::CloseCurrentBubble();
+    ManagePasswordsBubbleDelegateViewBase::CloseCurrentBubble();
 }

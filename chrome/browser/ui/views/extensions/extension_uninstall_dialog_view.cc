@@ -227,7 +227,7 @@ bool ExtensionUninstallDialogDelegateView::Cancel() {
 
 gfx::Size ExtensionUninstallDialogDelegateView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_MODAL_DIALOG_WIDTH_CONTAINING_MULTILINE_TEXT);
+      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
