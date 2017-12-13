@@ -253,6 +253,11 @@ struct CrxComponent {
 
   // Reasons why this component/extension is disabled.
   std::vector<int> disabled_reasons;
+
+  // Information about where the component/extension was installed from.
+  // For extension, this information is set from the update service, which
+  // gets the install source from the update URL.
+  std::string install_source;
 };
 
 // Called when a non-blocking call of UpdateClient completes.

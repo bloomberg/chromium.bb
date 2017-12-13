@@ -300,7 +300,10 @@ std::string BuildUpdateCheckRequest(
                         crx_component.version.GetString().c_str());
     if (!brand.empty())
       base::StringAppendF(&app, " brand=\"%s\"", brand.c_str());
-    if (component.on_demand())
+    if (!crx_component.install_source.empty())
+      base::StringAppendF(&app, " installsource=\"%s\"",
+                          crx_component.install_source.c_str());
+    else if (component.on_demand())
       base::StringAppendF(&app, " installsource=\"ondemand\"");
     for (const auto& attr : installer_attributes) {
       base::StringAppendF(&app, " %s=\"%s\"", attr.first.c_str(),
