@@ -1187,10 +1187,12 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
 
   // Navigate the b.com frame back to a.com. It is no longer a cross-site iframe
   navigation_observer.Wait();
+  const std::string r_script =
+      R"( document.getElementById('frame1').src='/title1.html';
+          document.title='aac'; )";
   ASSERT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-      R"( document.getElementById('frame1').src='/title1.html';
-          document.title='aac'; )"));
+      r_script));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("aac")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   if (!ShouldExpectSubframes()) {
