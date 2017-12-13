@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/containers/span.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -34,6 +35,7 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
   uint32_t id_;
   const SkPixmap* const pixmap_;
   size_t size_ = 0;
+  static base::AtomicSequenceNumber s_next_id_;
 };
 
 class CC_PAINT_EXPORT ServiceImageTransferCacheEntry

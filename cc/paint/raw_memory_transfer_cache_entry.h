@@ -5,9 +5,11 @@
 #ifndef CC_PAINT_RAW_MEMORY_TRANSFER_CACHE_ENTRY_H_
 #define CC_PAINT_RAW_MEMORY_TRANSFER_CACHE_ENTRY_H_
 
+#include "cc/paint/transfer_cache_entry.h"
+
 #include <vector>
 
-#include "cc/paint/transfer_cache_entry.h"
+#include "base/atomic_sequence_num.h"
 
 namespace cc {
 
@@ -26,6 +28,7 @@ class CC_PAINT_EXPORT ClientRawMemoryTransferCacheEntry
  private:
   uint32_t id_;
   std::vector<uint8_t> data_;
+  static base::AtomicSequenceNumber s_next_id_;
 };
 
 class CC_PAINT_EXPORT ServiceRawMemoryTransferCacheEntry
