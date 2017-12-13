@@ -581,15 +581,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-av.webm", kWebMVorbisAudioVP8Video);
 }
 
-// TODO(crbug.com/794102) Fix flakiness
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_Playback_VideoClearAudio_WebM \
-  DISABLED_Playback_VideoClearAudio_WebM
-#else
-#define MAYBE_Playback_VideoClearAudio_WebM Playback_VideoClearAudio_WebM
-#endif
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       MAYBE_Playback_VideoClearAudio_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMVorbisAudioVP8Video);
 }
 
@@ -798,13 +790,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
                        kUnitTestSuccess);
 }
 
-// TODO(crbug.com/794039) Test is flaky on linux asan.
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_Renewal DISABLED_Renewal
-#else
-#define MAYBE_Renewal Renewal
-#endif
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_Renewal) {
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Renewal) {
   TestPlaybackCase(kExternalClearKeyRenewalKeySystem, kNoSessionToLoad,
                    media::kEnded);
 
