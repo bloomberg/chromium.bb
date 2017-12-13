@@ -22,8 +22,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -387,8 +387,7 @@ void RegisterSwReporterComponentWithParams(
       if (cleaner_key.HasValue(chrome_cleaner::kVersionValueName)) {
         DWORD version;
         cleaner_key.ReadValueDW(chrome_cleaner::kVersionValueName, &version);
-        UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.Version",
-                                    version);
+        base::UmaHistogramSparse("SoftwareReporter.Cleaner.Version", version);
         cleaner_key.DeleteValue(chrome_cleaner::kVersionValueName);
       }
       // Get start & end time. If we don't have an end time, we can assume the
@@ -414,8 +413,8 @@ void RegisterSwReporterComponentWithParams(
       DWORD exit_code = chrome_cleaner::kSwReporterNothingFound;
       if (cleaner_key.HasValue(chrome_cleaner::kExitCodeValueName)) {
         cleaner_key.ReadValueDW(chrome_cleaner::kExitCodeValueName, &exit_code);
-        UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.ExitCode",
-                                    exit_code);
+        base::UmaHistogramSparse("SoftwareReporter.Cleaner.ExitCode",
+                                 exit_code);
         cleaner_key.DeleteValue(chrome_cleaner::kExitCodeValueName);
       }
       cleaner_key.DeleteValue(chrome_cleaner::kStartTimeValueName);

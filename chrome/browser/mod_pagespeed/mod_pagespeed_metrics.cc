@@ -8,8 +8,8 @@
 
 #include <string>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
 
@@ -101,9 +101,9 @@ void RecordMetrics(const content::ResourceType resource_type,
         // which is the catch-all "unknown version number" bucket.
         int bucket = GetXModPagespeedBucketFromVersion(value);
         if (bucket > 0) {
-          UMA_HISTOGRAM_SPARSE_SLOWLY(kPagespeedVersionHistogram, bucket);
+          base::UmaHistogramSparse(kPagespeedVersionHistogram, bucket);
         } else {
-          UMA_HISTOGRAM_SPARSE_SLOWLY(kPagespeedVersionHistogram, 1);
+          base::UmaHistogramSparse(kPagespeedVersionHistogram, 1);
         }
       }
       break;
@@ -121,7 +121,7 @@ void RecordMetrics(const content::ResourceType resource_type,
           UMA_HISTOGRAM_ENUMERATION(kPagespeedServerHistogram,
                                     PAGESPEED_NGX_PAGESPEED_SERVER,
                                     PAGESPEED_SERVER_MAXIMUM);
-          UMA_HISTOGRAM_SPARSE_SLOWLY(kPagespeedVersionHistogram, bucket);
+          base::UmaHistogramSparse(kPagespeedVersionHistogram, bucket);
         } else if (IsPageSpeedServiceVersionNumber(value)) {
           // Bucket 3 counts occurences of the X-Page-Speed header with a
           // value in the PageSpeed Service version number format.

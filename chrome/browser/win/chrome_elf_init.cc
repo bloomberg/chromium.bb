@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_version.h"
@@ -85,7 +85,7 @@ void ReportSuccessfulBlocks() {
     base::WideToUTF8(blocked_dlls[i], wcslen(blocked_dlls[i]), &dll_name_utf8);
     int uma_hash = DllNameToHash(dll_name_utf8);
 
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Blacklist.Blocked", uma_hash);
+    base::UmaHistogramSparse("Blacklist.Blocked", uma_hash);
   }
 }
 

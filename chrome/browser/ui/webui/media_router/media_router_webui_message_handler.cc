@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -712,8 +712,8 @@ void MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex(
     DVLOG(1) << "Unable to extract args.";
     return;
   }
-  UMA_HISTOGRAM_SPARSE_SLOWLY("MediaRouter.Ui.Action.StartLocalPosition",
-                              std::min(index, 100));
+  base::UmaHistogramSparse("MediaRouter.Ui.Action.StartLocalPosition",
+                           std::min(index, 100));
 }
 
 void MediaRouterWebUIMessageHandler::OnReportFilter(const base::ListValue*) {
@@ -802,8 +802,8 @@ void MediaRouterWebUIMessageHandler::OnReportSelectedCastMode(
     return;
   }
   DCHECK(IsValidCastModeNum(cast_mode_type));
-  UMA_HISTOGRAM_SPARSE_SLOWLY("MediaRouter.Ui.Navigate.SourceSelection",
-                              cast_mode_type);
+  base::UmaHistogramSparse("MediaRouter.Ui.Navigate.SourceSelection",
+                           cast_mode_type);
   media_router_ui_->RecordCastModeSelection(
       static_cast<MediaCastMode>(cast_mode_type));
 }

@@ -7,8 +7,7 @@
 #include <stdint.h>
 
 #include "base/hash.h"
-#include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/features/features.h"
@@ -34,8 +33,8 @@ bool LogWebUIUrl(const GURL& web_ui_url) {
 
   if (should_log) {
     uint32_t hash = base::Hash(web_ui_url.GetOrigin().spec());
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kWebUICreatedForUrl,
-                                static_cast<base::HistogramBase::Sample>(hash));
+    base::UmaHistogramSparse(kWebUICreatedForUrl,
+                             static_cast<base::HistogramBase::Sample>(hash));
   }
 
   return should_log;

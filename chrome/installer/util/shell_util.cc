@@ -33,7 +33,7 @@
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -786,8 +786,8 @@ bool LaunchDefaultAppsSettingsModernDialog(const wchar_t* protocol) {
     }
     if (SUCCEEDED(hr))
       return true;
-    UMA_HISTOGRAM_SPARSE_SLOWLY("DefaultBrowser.ActivateSettings.ErrorHresult",
-                                hr);
+    base::UmaHistogramSparse("DefaultBrowser.ActivateSettings.ErrorHresult",
+                             hr);
   }
   return false;
 }

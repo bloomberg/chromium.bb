@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <sys/utsname.h>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "sandbox/sandbox_features.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
@@ -40,7 +40,7 @@ void ReportKernelVersion() {
     int major, minor;
     if (sscanf(uts.release, "%d.%d", &major, &minor) == 2) {
       int version = ((major & 0xFFFF) << 16) | (minor & 0xFFFF);
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Android.KernelVersion", version);
+      base::UmaHistogramSparse("Android.KernelVersion", version);
     }
   }
 }

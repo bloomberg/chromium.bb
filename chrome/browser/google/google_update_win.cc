@@ -19,8 +19,8 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -416,10 +416,10 @@ UpdateCheckDriver::~UpdateCheckDriver() {
     UMA_HISTOGRAM_ENUMERATION("GoogleUpdate.UpdateErrorCode", error_code_,
                               NUM_ERROR_CODES);
     if (FAILED(hresult_))
-      UMA_HISTOGRAM_SPARSE_SLOWLY("GoogleUpdate.ErrorHresult", hresult_);
+      base::UmaHistogramSparse("GoogleUpdate.ErrorHresult", hresult_);
     if (installer_exit_code_ != -1) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("GoogleUpdate.InstallerExitCode",
-                                  installer_exit_code_);
+      base::UmaHistogramSparse("GoogleUpdate.InstallerExitCode",
+                               installer_exit_code_);
     }
   }
 
@@ -755,7 +755,7 @@ bool UpdateCheckDriver::IsIntermediateState(
     case STATE_ERROR:
     default:
       NOTREACHED();
-      UMA_HISTOGRAM_SPARSE_SLOWLY("GoogleUpdate.UnexpectedState", state_value);
+      base::UmaHistogramSparse("GoogleUpdate.UnexpectedState", state_value);
       return false;
   }
   return true;

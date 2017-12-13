@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/media_router_metrics.h"
 
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
@@ -106,7 +107,7 @@ void MediaRouterMetrics::RecordRouteCreationOutcome(
 
 // static
 void MediaRouterMetrics::RecordMediaRouterCastingSource(MediaCastMode source) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kHistogramMediaRouterCastingSource, source);
+  base::UmaHistogramSparse(kHistogramMediaRouterCastingSource, source);
 }
 
 // static

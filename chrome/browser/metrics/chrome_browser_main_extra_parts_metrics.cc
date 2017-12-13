@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sys_info.h"
@@ -199,8 +200,8 @@ void RecordMicroArchitectureStats() {
                               UMA_ANDROID_ARM_FPU_COUNT);
   }
 #endif  // defined(OS_ANDROID) && defined(__arm__)
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Platform.LogicalCpuCount",
-                              base::SysInfo::NumberOfProcessors());
+  base::UmaHistogramSparse("Platform.LogicalCpuCount",
+                           base::SysInfo::NumberOfProcessors());
 }
 
 // Called on a background thread, with low priority to avoid slowing down
@@ -335,7 +336,7 @@ void RecordLinuxDistro() {
     }
   }
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Linux.Distro", distro_result);
+  base::UmaHistogramSparse("Linux.Distro", distro_result);
 }
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
@@ -360,7 +361,7 @@ void RecordLinuxGlibcVersion() {
       }
     }
   }
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Linux.GlibcVersion", glibc_version_result);
+  base::UmaHistogramSparse("Linux.GlibcVersion", glibc_version_result);
 #endif
 }
 

@@ -57,7 +57,7 @@ std::string AddHistogramSuffix(const ClientId& client_id,
 }
 
 void RecordErrorCauseUMA(const ClientId& client_id, int error_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       AddHistogramSuffix(client_id,
                          "OfflinePages.Background.LoadingErrorStatusCode"),
       error_code);

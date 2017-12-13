@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/pe_image.h"
@@ -251,7 +251,7 @@ bool EnumRelocsCallback(const base::win::PEImage& mem_peimage,
     default:
       // TODO(robertshield): Find a reliable description of the behaviour of the
       // remaining types of relocation and handle them.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("SafeBrowsing.ModuleBaseRelocation", type);
+      base::UmaHistogramSparse("SafeBrowsing.ModuleBaseRelocation", type);
       state->unknown_reloc_type = true;
       break;
   }

@@ -9,8 +9,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/md5.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "components/safe_browsing/db/prefix_set.h"
 
 namespace safe_browsing {
@@ -241,7 +241,7 @@ int ReadAndVerifyHeader(const base::FilePath& filename,
     return kInvalidVersion;
 
   // Track version read to inform removal of support for older versions.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.StoreVersionRead", header->version);
+  base::UmaHistogramSparse("SB2.StoreVersionRead", header->version);
 
   if (header->version != kFileVersion)
     return kInvalidVersion;

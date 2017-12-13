@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -113,7 +114,7 @@ void RecordStoredSessionLength() {
   const int floored = std::min(session_length.InMinutes(),
                                base::TimeDelta::FromHours(24).InMinutes()) /
                       10 * 10;
-  UMA_HISTOGRAM_SPARSE_SLOWLY(metric_name, floored);
+  base::UmaHistogramSparse(metric_name, floored);
 }
 
 }  // namespace enterprise_user_session_metrics

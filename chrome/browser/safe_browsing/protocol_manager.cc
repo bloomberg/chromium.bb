@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -216,7 +216,7 @@ void SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
     const char* metric_name,
     const net::URLRequestStatus& status,
     int response_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       metric_name, status.is_success() ? response_code : status.error());
 }
 

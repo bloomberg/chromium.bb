@@ -22,7 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -563,7 +563,7 @@ std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
   uint32_t major_version = 0;
   if (full_version.IsValid())
     major_version = full_version.components()[0];
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Apps.AppShimErrorVersion", major_version);
+  base::UmaHistogramSparse("Apps.AppShimErrorVersion", major_version);
 
   return BuildShortcutInfoFromBundle(bundle_path);
 }

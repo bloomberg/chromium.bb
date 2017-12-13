@@ -22,7 +22,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/scoped_generic.h"
@@ -173,7 +173,7 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
 
   if (pref_value > 0) {
     // Logs the number of previous tries that didn't complete.
-    UMA_HISTOGRAM_SPARSE_SLOWLY("OSX.KeychainReauthorizeIfNeeded", pref_value);
+    base::UmaHistogramSparse("OSX.KeychainReauthorizeIfNeeded", pref_value);
   }
 
   ++pref_value;
@@ -221,8 +221,8 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
   bool stub_result = [user_defaults boolForKey:success_pref_key];
   // Logs the try number (1, 2) that succeeded.
   if (stub_result) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("OSX.KeychainReauthorizeIfNeededSuccess",
-                                pref_value);
+    base::UmaHistogramSparse("OSX.KeychainReauthorizeIfNeededSuccess",
+                             pref_value);
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/chrome_bubble_manager.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_delegate.h"
@@ -72,34 +72,34 @@ static void LogBubbleCloseReason(BubbleReference bubble,
   int bubble_id = GetBubbleId(bubble);
   switch (reason) {
     case BUBBLE_CLOSE_FORCED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Forced", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.Forced", bubble_id);
       return;
     case BUBBLE_CLOSE_FOCUS_LOST:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.FocusLost", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.FocusLost", bubble_id);
       return;
     case BUBBLE_CLOSE_TABSWITCHED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.TabSwitched", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.TabSwitched", bubble_id);
       return;
     case BUBBLE_CLOSE_TABDETACHED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.TabDetached", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.TabDetached", bubble_id);
       return;
     case BUBBLE_CLOSE_USER_DISMISSED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.UserDismissed", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.UserDismissed", bubble_id);
       return;
     case BUBBLE_CLOSE_NAVIGATED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Navigated", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.Navigated", bubble_id);
       return;
     case BUBBLE_CLOSE_FULLSCREEN_TOGGLED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.FullscreenToggled", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.FullscreenToggled", bubble_id);
       return;
     case BUBBLE_CLOSE_ACCEPTED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Accepted", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.Accepted", bubble_id);
       return;
     case BUBBLE_CLOSE_CANCELED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Canceled", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.Canceled", bubble_id);
       return;
     case BUBBLE_CLOSE_FRAME_DESTROYED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.FrameDestroyed", bubble_id);
+      base::UmaHistogramSparse("Bubbles.Close.FrameDestroyed", bubble_id);
       return;
   }
 
@@ -166,7 +166,7 @@ void ChromeBubbleManager::NavigationEntryCommitted(
 
 void ChromeBubbleManager::ChromeBubbleMetrics::OnBubbleNeverShown(
     BubbleReference bubble) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.NeverShown", GetBubbleId(bubble));
+  base::UmaHistogramSparse("Bubbles.NeverShown", GetBubbleId(bubble));
 }
 
 void ChromeBubbleManager::ChromeBubbleMetrics::OnBubbleClosed(
