@@ -38,6 +38,15 @@ SyncControlVSyncProvider::~SyncControlVSyncProvider() {}
 
 void SyncControlVSyncProvider::GetVSyncParameters(
     const UpdateVSyncCallback& callback) {
+  base::TimeTicks timebase;
+  base::TimeDelta interval;
+  if (GetVSyncParametersIfAvailable(&timebase, &interval))
+    callback.Run(timebase, interval);
+}
+
+bool SyncControlVSyncProvider::GetVSyncParametersIfAvailable(
+    base::TimeTicks* timebase_out,
+    base::TimeDelta* interval_out) {
   TRACE_EVENT0("gpu", "SyncControlVSyncProvider::GetVSyncParameters");
 #if defined(OS_LINUX)
   // The actual clock used for the system time returned by glXGetSyncValuesOML
@@ -51,7 +60,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   int64_t media_stream_counter;
   int64_t swap_buffer_counter;
   if (!GetSyncValues(&system_time, &media_stream_counter, &swap_buffer_counter))
-    return;
+    return false;
 
   // Both Intel and Mali drivers will return TRUE for GetSyncValues
   // but a value of 0 for MSC if they cannot access the CRTC data structure
@@ -61,7 +70,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   if (invalid_msc_) {
     LOG_IF(ERROR, !prev_invalid_msc) << "glXGetSyncValuesOML "
         "should not return TRUE with a media stream counter of 0.";
-    return;
+    return false;
   }
 
   struct timespec real_time;
@@ -90,7 +99,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   // Return if |system_time| is more than 1 frames in the future.
   int64_t interval_in_microseconds = last_good_interval_.InMicroseconds();
   if (system_time > monotonic_time_in_microseconds + interval_in_microseconds)
-    return;
+    return false;
 
   // If |system_time| is slightly in the future, adjust it to the previous
   // frame and use the last frame counter to prevent issues in the callback.
@@ -100,7 +109,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   }
   if (monotonic_time_in_microseconds - system_time >
       base::Time::kMicrosecondsPerSecond)
-    return;
+    return false;
 
   const base::TimeTicks timebase =
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(system_time);
@@ -154,8 +163,20 @@ void SyncControlVSyncProvider::GetVSyncParameters(
 
   last_timebase_ = timebase;
   last_media_stream_counter_ = media_stream_counter;
-  callback.Run(timebase, last_good_interval_);
+  *timebase_out = timebase;
+  *interval_out = last_good_interval_;
+  return true;
+#else
+  return false;
 #endif  // defined(OS_LINUX)
+}
+
+bool SyncControlVSyncProvider::SupportGetVSyncParametersIfAvailable() {
+#if defined(OS_LINUX)
+  return true;
+#else
+  return false;
+#endif
 }
 
 }  // namespace gl

@@ -663,6 +663,16 @@ void GpuVSyncProviderWin::GetVSyncParameters(
   // thread.
 }
 
+bool GpuVSyncProviderWin::GetVSyncParametersIfAvailable(
+    base::TimeTicks* timebase,
+    base::TimeDelta* interval) {
+  return false;
+}
+
+bool GpuVSyncProviderWin::SupportGetVSyncParametersIfAvailable() {
+  return false;
+}
+
 void GpuVSyncProviderWin::OnVSync(base::TimeTicks timestamp,
                                   base::TimeDelta interval) {
   DCHECK(vsync_worker_->BelongsToWorkerThread());
