@@ -29,7 +29,7 @@ class Browser;
 // active tab changes.
 class BrowserStatusMonitor : public wm::ActivationChangeObserver,
                              public BrowserTabStripTrackerDelegate,
-                             public chrome::BrowserListObserver,
+                             public BrowserListObserver,
                              public TabStripModelObserver {
  public:
   explicit BrowserStatusMonitor(ChromeLauncherController* launcher_controller);
@@ -62,7 +62,7 @@ class BrowserStatusMonitor : public wm::ActivationChangeObserver,
   // BrowserTabStripTrackerDelegate overrides:
   bool ShouldTrackBrowser(Browser* browser) override;
 
-  // chrome::BrowserListObserver overrides:
+  // BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 

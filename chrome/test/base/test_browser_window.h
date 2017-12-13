@@ -189,7 +189,7 @@ class TestBrowserWindow : public BrowserWindow {
 
 // Handles destroying a TestBrowserWindow when the Browser it is attached to is
 // destroyed.
-class TestBrowserWindowOwner : public chrome::BrowserListObserver {
+class TestBrowserWindowOwner : public BrowserListObserver {
  public:
   explicit TestBrowserWindowOwner(TestBrowserWindow* window);
   ~TestBrowserWindowOwner() override;

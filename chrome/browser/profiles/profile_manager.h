@@ -366,12 +366,12 @@ class ProfileManager : public content::NotificationObserver,
   // See kLastActiveUser in UserManagerBase.
   void UpdateLastUser(Profile* last_active);
 
-  class BrowserListObserver : public chrome::BrowserListObserver {
+  class BrowserListObserver : public ::BrowserListObserver {
    public:
     explicit BrowserListObserver(ProfileManager* manager);
     ~BrowserListObserver() override;
 
-    // chrome::BrowserListObserver implementation.
+    // ::BrowserListObserver implementation.
     void OnBrowserAdded(Browser* browser) override;
     void OnBrowserRemoved(Browser* browser) override;
     void OnBrowserSetLastActive(Browser* browser) override;

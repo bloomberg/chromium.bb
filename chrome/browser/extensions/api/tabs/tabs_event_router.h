@@ -39,7 +39,7 @@ namespace extensions {
 // extension processes in the same profile.
 class TabsEventRouter : public TabStripModelObserver,
                         public BrowserTabStripTrackerDelegate,
-                        public chrome::BrowserListObserver,
+                        public BrowserListObserver,
                         public favicon::FaviconDriverObserver,
                         public zoom::ZoomObserver,
                         public resource_coordinator::TabLifecycleObserver {
@@ -50,7 +50,7 @@ class TabsEventRouter : public TabStripModelObserver,
   // BrowserTabStripTrackerDelegate:
   bool ShouldTrackBrowser(Browser* browser) override;
 
-  // chrome::BrowserListObserver:
+  // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
 
   // TabStripModelObserver:

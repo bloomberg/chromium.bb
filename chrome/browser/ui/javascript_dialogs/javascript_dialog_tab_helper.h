@@ -43,7 +43,7 @@ class JavaScriptDialogTabHelper
     : public content::JavaScriptDialogManager,
       public content::WebContentsObserver,
 #if !defined(OS_ANDROID)
-      public chrome::BrowserListObserver,
+      public BrowserListObserver,
       public TabStripModelObserver,
 #endif
       public content::WebContentsUserData<JavaScriptDialogTabHelper> {

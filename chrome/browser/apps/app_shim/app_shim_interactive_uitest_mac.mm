@@ -119,7 +119,7 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
 };
 
 // Watches for a hosted app browser window to open.
-class HostedAppBrowserListObserver : public chrome::BrowserListObserver {
+class HostedAppBrowserListObserver : public BrowserListObserver {
  public:
   explicit HostedAppBrowserListObserver(const std::string& app_id)
       : app_id_(app_id), observed_add_(false), observed_removed_(false) {

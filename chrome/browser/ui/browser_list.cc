@@ -39,7 +39,7 @@ BrowserList::BrowserVector GetBrowsersToClose(Profile* profile) {
 }  // namespace
 
 // static
-base::LazyInstance<base::ObserverList<chrome::BrowserListObserver>>::Leaky
+base::LazyInstance<base::ObserverList<BrowserListObserver>>::Leaky
     BrowserList::observers_ = LAZY_INSTANCE_INITIALIZER;
 
 // static
@@ -75,7 +75,7 @@ void BrowserList::AddBrowser(Browser* browser) {
       content::Source<Browser>(browser),
       content::NotificationService::NoDetails());
 
-  for (chrome::BrowserListObserver& observer : observers_.Get())
+  for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserAdded(browser);
 }
 
@@ -93,7 +93,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 
   RemoveBrowserFrom(browser, &browser_list->browsers_);
 
-  for (chrome::BrowserListObserver& observer : observers_.Get())
+  for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserRemoved(browser);
 
   browser->UnregisterKeepAlive();
@@ -114,12 +114,12 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 }
 
 // static
-void BrowserList::AddObserver(chrome::BrowserListObserver* observer) {
+void BrowserList::AddObserver(BrowserListObserver* observer) {
   observers_.Get().AddObserver(observer);
 }
 
 // static
-void BrowserList::RemoveObserver(chrome::BrowserListObserver* observer) {
+void BrowserList::RemoveObserver(BrowserListObserver* observer) {
   observers_.Get().RemoveObserver(observer);
 }
 
@@ -230,7 +230,7 @@ void BrowserList::MoveBrowsersInWorkspaceToFront(
 
   Browser* new_last_active = instance->GetLastActive();
   if (old_last_active != new_last_active) {
-    for (chrome::BrowserListObserver& observer : observers_.Get())
+    for (BrowserListObserver& observer : observers_.Get())
       observer.OnBrowserSetLastActive(new_last_active);
   }
 }
@@ -242,13 +242,13 @@ void BrowserList::SetLastActive(Browser* browser) {
   RemoveBrowserFrom(browser, &GetInstance()->last_active_browsers_);
   GetInstance()->last_active_browsers_.push_back(browser);
 
-  for (chrome::BrowserListObserver& observer : observers_.Get())
+  for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserSetLastActive(browser);
 }
 
 // static
 void BrowserList::NotifyBrowserNoLongerActive(Browser* browser) {
-  for (chrome::BrowserListObserver& observer : observers_.Get())
+  for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserNoLongerActive(browser);
 }
 
@@ -256,7 +256,7 @@ void BrowserList::NotifyBrowserNoLongerActive(Browser* browser) {
 void BrowserList::NotifyBrowserCloseStarted(Browser* browser) {
   GetInstance()->currently_closing_browsers_.insert(browser);
 
-  for (chrome::BrowserListObserver& observer : observers_.Get())
+  for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserClosing(browser);
 }
 

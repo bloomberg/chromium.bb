@@ -82,8 +82,7 @@ struct BrowserInfo {
 // Tabs are identified by a unique ID vended by this component. These IDs are
 // not reused in a session. They are stable for a given conceptual tab, and will
 // follow it through discards, reloads, tab strip operations, etc.
-class TabManager : public TabStripModelObserver,
-                   public chrome::BrowserListObserver {
+class TabManager : public TabStripModelObserver, public BrowserListObserver {
  public:
   // Forward declaration of resource coordinator signal observer.
   class ResourceCoordinatorSignalObserver;

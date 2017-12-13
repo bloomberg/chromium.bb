@@ -30,7 +30,7 @@ class BrowserShutdownBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserShutdownBrowserTest);
 };
 
-class BrowserClosingObserver : public chrome::BrowserListObserver {
+class BrowserClosingObserver : public BrowserListObserver {
  public:
   BrowserClosingObserver() {}
   MOCK_METHOD1(OnBrowserClosing, void(Browser* browser));

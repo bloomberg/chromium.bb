@@ -43,7 +43,7 @@ namespace apps {
 class ExtensionAppShimHandler : public AppShimHandler,
                                 public content::NotificationObserver,
                                 public AppLifetimeMonitor::Observer,
-                                public chrome::BrowserListObserver {
+                                public BrowserListObserver {
  public:
   class Delegate {
    public:
@@ -143,7 +143,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // chrome::BrowserListObserver overrides;
+  // BrowserListObserver overrides;
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 

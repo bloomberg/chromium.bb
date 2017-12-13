@@ -60,7 +60,7 @@ struct SessionWindow;
 // browser.
 class SessionService : public sessions::BaseSessionServiceDelegate,
                        public KeyedService,
-                       public chrome::BrowserListObserver {
+                       public BrowserListObserver {
   friend class SessionServiceTestHelper;
  public:
   // Used to distinguish an application from a ordinary content window.
@@ -244,7 +244,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   bool RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
                           Browser* browser);
 
-  // chrome::BrowserListObserver
+  // BrowserListObserver
   void OnBrowserAdded(Browser* browser) override {}
   void OnBrowserRemoved(Browser* browser) override {}
   void OnBrowserSetLastActive(Browser* browser) override;

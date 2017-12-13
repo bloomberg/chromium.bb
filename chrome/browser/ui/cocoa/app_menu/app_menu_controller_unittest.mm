@@ -87,7 +87,7 @@ class DummyRouter : public sync_sessions::LocalSessionEventRouter {
   void Stop() override {}
 };
 
-class BrowserRemovedObserver : public chrome::BrowserListObserver {
+class BrowserRemovedObserver : public BrowserListObserver {
  public:
   BrowserRemovedObserver() { BrowserList::AddObserver(this); }
   ~BrowserRemovedObserver() override { BrowserList::RemoveObserver(this); }
