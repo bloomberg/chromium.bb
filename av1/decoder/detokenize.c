@@ -39,8 +39,6 @@
     if (counts) ++coef_counts[band][ctx][token]; \
   } while (0)
 
-#define READ_COEFF(counts, prob_name, cdf_name, num, r) \
-  read_coeff(counts, cdf_name, num, r);
 static INLINE int read_coeff(FRAME_COUNTS *counts,
                              const aom_cdf_prob *const *cdf, int n,
                              aom_reader *r) {
@@ -72,25 +70,19 @@ static int token_to_value(FRAME_COUNTS *counts, aom_reader *const r, int token,
     case THREE_TOKEN:
     case FOUR_TOKEN: return token;
     case CATEGORY1_TOKEN:
-      return CAT1_MIN_VAL +
-             READ_COEFF(counts, av1_cat1_prob, av1_cat1_cdf, 1, r);
+      return CAT1_MIN_VAL + read_coeff(counts, av1_cat1_cdf, 1, r);
     case CATEGORY2_TOKEN:
-      return CAT2_MIN_VAL +
-             READ_COEFF(counts, av1_cat2_prob, av1_cat2_cdf, 2, r);
+      return CAT2_MIN_VAL + read_coeff(counts, av1_cat2_cdf, 2, r);
     case CATEGORY3_TOKEN:
-      return CAT3_MIN_VAL +
-             READ_COEFF(counts, av1_cat3_prob, av1_cat3_cdf, 3, r);
+      return CAT3_MIN_VAL + read_coeff(counts, av1_cat3_cdf, 3, r);
     case CATEGORY4_TOKEN:
-      return CAT4_MIN_VAL +
-             READ_COEFF(counts, av1_cat4_prob, av1_cat4_cdf, 4, r);
+      return CAT4_MIN_VAL + read_coeff(counts, av1_cat4_cdf, 4, r);
     case CATEGORY5_TOKEN:
-      return CAT5_MIN_VAL +
-             READ_COEFF(counts, av1_cat5_prob, av1_cat5_cdf, 5, r);
+      return CAT5_MIN_VAL + read_coeff(counts, av1_cat5_cdf, 5, r);
     case CATEGORY6_TOKEN: {
       const int skip_bits = (int)sizeof(av1_cat6_prob) -
                             av1_get_cat6_extrabits_size(tx_size, bit_depth);
-      return CAT6_MIN_VAL + READ_COEFF(counts, av1_cat6_prob + skip_bits,
-                                       av1_cat6_cdf, 18 - skip_bits, r);
+      return CAT6_MIN_VAL + read_coeff(counts, av1_cat6_cdf, 18 - skip_bits, r);
     }
     default:
       assert(0);  // Invalid token.
