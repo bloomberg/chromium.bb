@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -55,6 +56,7 @@ import java.util.List;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=AndroidSigninPromos"})
+@RetryOnFailure(message = "crbug.com/789531")
 public class BookmarkPersonalizedSigninPromoTest {
     private static final String TEST_ACCOUNT_NAME = "test@gmail.com";
     private static final String TEST_FULL_NAME = "Test Account";
