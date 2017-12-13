@@ -54,6 +54,7 @@
 #include "cc/paint/display_item_list.h"  // nogncheck
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/transfer_cache_entry.h"
+#include "cc/paint/transfer_cache_serialize_helper.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #endif
@@ -100,6 +101,34 @@ static base::AtomicSequenceNumber g_flush_id;
 uint32_t GenerateNextFlushId() {
   return static_cast<uint32_t>(g_flush_id.GetNext());
 }
+
+#if !defined(OS_NACL)
+class TransferCacheSerializeHelperImpl
+    : public cc::TransferCacheSerializeHelper {
+ public:
+  TransferCacheSerializeHelperImpl(GLES2Implementation* gl) : gl_(gl) {}
+  ~TransferCacheSerializeHelperImpl() final = default;
+
+ private:
+  bool LockEntryInternal(cc::TransferCacheEntryType type, uint32_t id) final {
+    return gl_->ThreadsafeLockTransferCacheEntry(type, id);
+  }
+
+  void CreateEntryInternal(const cc::ClientTransferCacheEntry& entry) final {
+    gl_->CreateTransferCacheEntry(entry);
+  }
+
+  void FlushEntriesInternal(
+      const std::set<std::pair<cc::TransferCacheEntryType, uint32_t>>& entries)
+      final {
+    // TODO(vmpstr): Add a bulk unlock API instead.
+    for (auto& entry : entries)
+      gl_->UnlockTransferCacheEntry(entry.first, entry.second);
+  }
+
+  GLES2Implementation* gl_;
+};
+#endif  // defined(OS_NACL)
 
 }  // anonymous namespace
 
@@ -7225,6 +7254,7 @@ struct PaintOpSerializer {
     size_t size = op->Serialize(memory + written_bytes_, free_bytes_, options);
     if (!size) {
       SendSerializedData();
+      options.transfer_cache->FlushEntries();
       transfer_buffer_.Reset(kBlockAlloc);
       memory = static_cast<char*>(transfer_buffer_.address());
       free_bytes_ = transfer_buffer_.size();
@@ -7307,10 +7337,15 @@ void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   PaintOpSerializer op_serializer(free_size, transfer_buffer_, helper_);
   cc::PaintOpBufferSerializer::SerializeCallback serialize_cb = base::Bind(
       &PaintOpSerializer::Serialize, base::Unretained(&op_serializer));
-  cc::PaintOpBufferSerializer serializer(serialize_cb, nullptr);
+  TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
+  cc::PaintOpBufferSerializer serializer(serialize_cb, nullptr,
+                                         &transfer_cache_serialize_helper);
   serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
   DCHECK(serializer.valid());
+  // TODO(vmpstr): Refactor this so that we don't have to repeat the flush calls
+  // in two spots.
   op_serializer.SendSerializedData();
+  transfer_cache_serialize_helper.FlushEntries();
 
   CheckGLError();
 #endif

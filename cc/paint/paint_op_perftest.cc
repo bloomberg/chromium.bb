@@ -9,6 +9,7 @@
 #include "cc/base/lap_timer.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_op_buffer_serializer.h"
+#include "cc/test/transfer_cache_test_helper.h"
 #include "testing/perf/perf_test.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -39,17 +40,20 @@ class PaintOpPerfTest : public testing::Test {
                                PaintOpBuffer::PaintOpAlign))) {}
 
   void RunTest(const std::string& name, const PaintOpBuffer& buffer) {
+    TransferCacheTestHelper helper;
     PaintOp::SerializeOptions serialize_options;
+    serialize_options.transfer_cache = &helper;
     PaintOp::DeserializeOptions deserialize_options;
+    deserialize_options.transfer_cache = &helper;
 
     size_t bytes_written = 0u;
     PaintOpBufferSerializer::Preamble preamble;
 
     timer_.Reset();
     do {
-      SimpleBufferSerializer serializer(serialized_data_.get(),
-                                        kMaxSerializedBufferBytes,
-                                        serialize_options.image_provider);
+      SimpleBufferSerializer serializer(
+          serialized_data_.get(), kMaxSerializedBufferBytes,
+          serialize_options.image_provider, serialize_options.transfer_cache);
       serializer.Serialize(&buffer, nullptr, preamble);
       bytes_written = serializer.written();
       timer_.NextLap();

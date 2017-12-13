@@ -78,8 +78,11 @@ cc_component("paint") {
     "skia_paint_image_generator.h",
     "solid_color_analyzer.cc",
     "solid_color_analyzer.h",
+    "transfer_cache_deserialize_helper.h",
     "transfer_cache_entry.cc",
     "transfer_cache_entry.h",
+    "transfer_cache_serialize_helper.cc",
+    "transfer_cache_serialize_helper.h",
   ]
 
   defines = [ "CC_PAINT_IMPLEMENTATION=1" ]
@@ -123,6 +126,7 @@ fuzzer_test("paint_op_buffer_eq_fuzzer") {
   libfuzzer_options = [ "max_len=4096" ]
 
   deps = [
+    "//cc:test_support",
     "//cc/paint",
   ]
 }

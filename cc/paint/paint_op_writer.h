@@ -18,6 +18,7 @@ namespace cc {
 
 class ImageProvider;
 class PaintShader;
+class TransferCacheSerializeHelper;
 
 class CC_PAINT_EXPORT PaintOpWriter {
  public:
@@ -49,7 +50,8 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const PaintImage& image, ImageProvider* image_provider);
   void Write(const sk_sp<SkData>& data);
   void Write(const PaintShader* shader);
-  void Write(const scoped_refptr<PaintTextBlob>& blob);
+  void Write(const scoped_refptr<PaintTextBlob>& blob,
+             TransferCacheSerializeHelper* transfer_cache);
   void Write(SkColorType color_type);
 
   void Write(SkClipOp op) { Write(static_cast<uint8_t>(op)); }
@@ -69,17 +71,13 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void WriteSimple(const T& val);
 
   void WriteFlattenable(const SkFlattenable* val);
-  void Write(const std::vector<PaintTypeface>& typefaces);
-  void Write(const sk_sp<SkTextBlob>& blob);
-
-  static void TypefaceCataloger(SkTypeface* typeface, void* ctx);
+  void Write(const sk_sp<SkTextBlob>& blob,
+             TransferCacheSerializeHelper* transfer_cache);
 
   char* memory_ = nullptr;
   size_t size_ = 0u;
   size_t remaining_bytes_ = 0u;
   bool valid_ = true;
-  // This is here for DCHECKs.
-  std::unordered_set<SkFontID> last_serialized_typeface_ids_;
 };
 
 }  // namespace cc

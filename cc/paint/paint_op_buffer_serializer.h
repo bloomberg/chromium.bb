@@ -11,13 +11,15 @@
 
 namespace cc {
 
+class TransferCacheSerializeHelper;
 class CC_PAINT_EXPORT PaintOpBufferSerializer {
  public:
   using SerializeCallback =
       base::Callback<size_t(const PaintOp*, const PaintOp::SerializeOptions&)>;
 
   PaintOpBufferSerializer(SerializeCallback serialize_cb,
-                          ImageProvider* image_provider);
+                          ImageProvider* image_provider,
+                          TransferCacheSerializeHelper* transfer_cache);
   virtual ~PaintOpBufferSerializer();
 
   struct Preamble {
@@ -54,6 +56,7 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   SerializeCallback serialize_cb_;
   SkNoDrawCanvas canvas_;
   ImageProvider* image_provider_;
+  TransferCacheSerializeHelper* transfer_cache_;
   bool valid_ = true;
 };
 
@@ -62,7 +65,8 @@ class CC_PAINT_EXPORT SimpleBufferSerializer : public PaintOpBufferSerializer {
  public:
   SimpleBufferSerializer(void* memory,
                          size_t size,
-                         ImageProvider* image_provider);
+                         ImageProvider* image_provider,
+                         TransferCacheSerializeHelper* transfer_cache);
   ~SimpleBufferSerializer() override;
 
   size_t written() const { return written_; }

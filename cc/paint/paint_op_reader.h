@@ -16,6 +16,7 @@ class PaintShader;
 
 // PaintOpReader takes garbage |memory| and clobbers it with successive
 // read functions.
+class TransferCacheDeserializeHelper;
 class CC_PAINT_EXPORT PaintOpReader {
  public:
   PaintOpReader(const volatile void* memory, size_t size)
@@ -51,7 +52,8 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(PaintFlags* flags);
   void Read(PaintImage* image);
   void Read(sk_sp<SkData>* data);
-  void Read(scoped_refptr<PaintTextBlob>* blob);
+  void Read(scoped_refptr<PaintTextBlob>* blob,
+            TransferCacheDeserializeHelper* transfer_cache);
   void Read(sk_sp<PaintShader>* shader);
   void Read(SkMatrix* matrix);
   void Read(SkColorType* color_type);
@@ -91,10 +93,6 @@ class CC_PAINT_EXPORT PaintOpReader {
 
   template <typename T>
   void ReadFlattenable(sk_sp<T>* val);
-
-  void Read(std::vector<PaintTypeface>* typefaces);
-  void Read(const std::vector<PaintTypeface>& typefaces,
-            sk_sp<SkTextBlob>* blob);
 
   void SetInvalid();
 
