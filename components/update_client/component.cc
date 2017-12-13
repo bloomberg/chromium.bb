@@ -174,6 +174,10 @@ Component::Component(const UpdateContext& update_context, const std::string& id)
 
 Component::~Component() {}
 
+scoped_refptr<Configurator> Component::config() const {
+  return update_context_.config;
+}
+
 void Component::Handle(CallbackHandleComplete callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_);
@@ -756,9 +760,7 @@ void Component::StateRun::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const auto& component = State::component();
-  action_runner_ = base::MakeUnique<ActionRunner>(
-      component, component.update_context_.config->GetRunActionKeyHash());
-
+  action_runner_ = base::MakeUnique<ActionRunner>(component);
   action_runner_->Run(
       base::BindOnce(&StateRun::ActionRunComplete, base::Unretained(this)));
 }

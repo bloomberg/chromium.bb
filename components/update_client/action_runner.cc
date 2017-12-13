@@ -15,15 +15,14 @@
 #include "base/logging.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/update_client/component.h"
+#include "components/update_client/configurator.h"
 #include "components/update_client/task_traits.h"
 #include "components/update_client/update_client.h"
 
 namespace update_client {
 
-ActionRunner::ActionRunner(const Component& component,
-                           const std::vector<uint8_t>& key_hash)
+ActionRunner::ActionRunner(const Component& component)
     : component_(component),
-      key_hash_(key_hash),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 ActionRunner::~ActionRunner() {
@@ -46,7 +45,9 @@ void ActionRunner::Unpack() {
   base::FilePath file_path;
   installer->GetInstalledFile(component_.action_run(), &file_path);
 
-  auto unpacker = base::MakeRefCounted<ComponentUnpacker>(key_hash_, file_path,
+  // Contains the key hash of the CRX this object is allowed to run.
+  const auto key_hash = component_.config()->GetRunActionKeyHash();
+  auto unpacker = base::MakeRefCounted<ComponentUnpacker>(key_hash, file_path,
                                                           installer, nullptr);
   unpacker->Unpack(
       base::BindOnce(&ActionRunner::UnpackComplete, base::Unretained(this)));
