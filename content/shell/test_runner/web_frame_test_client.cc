@@ -243,9 +243,6 @@ void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
     case blink::kWebAXEventActiveDescendantChanged:
       event_name = "ActiveDescendantChanged";
       break;
-    case blink::kWebAXEventAlert:
-      event_name = "Alert";
-      break;
     case blink::kWebAXEventAriaAttributeChanged:
       event_name = "AriaAttributeChanged";
       break;
@@ -326,12 +323,6 @@ void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
       break;
     case blink::kWebAXEventTextChanged:
       event_name = "TextChanged";
-      break;
-    case blink::kWebAXEventTextInserted:
-      event_name = "TextInserted";
-      break;
-    case blink::kWebAXEventTextRemoved:
-      event_name = "TextRemoved";
       break;
     case blink::kWebAXEventValueChanged:
       event_name = "ValueChanged";

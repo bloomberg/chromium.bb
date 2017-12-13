@@ -58,7 +58,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   enum AXNotification {
     kAXActiveDescendantChanged,
-    kAXAlert,
     kAXAriaAttributeChanged,
     kAXAutocorrectionOccured,
     kAXBlur,
@@ -87,8 +86,6 @@ class MODULES_EXPORT AXObjectCacheImpl
     kAXSelectedTextChanged,
     kAXShow,
     kAXTextChanged,
-    kAXTextInserted,
-    kAXTextRemoved,
     kAXValueChanged
   };
 

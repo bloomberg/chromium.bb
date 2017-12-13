@@ -1292,7 +1292,6 @@ void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {
 
 STATIC_ASSERT_ENUM(kWebAXEventActiveDescendantChanged,
                    AXObjectCacheImpl::kAXActiveDescendantChanged);
-STATIC_ASSERT_ENUM(kWebAXEventAlert, AXObjectCacheImpl::kAXAlert);
 STATIC_ASSERT_ENUM(kWebAXEventAriaAttributeChanged,
                    AXObjectCacheImpl::kAXAriaAttributeChanged);
 STATIC_ASSERT_ENUM(kWebAXEventAutocorrectionOccured,
@@ -1340,8 +1339,6 @@ STATIC_ASSERT_ENUM(kWebAXEventSelectedTextChanged,
                    AXObjectCacheImpl::kAXSelectedTextChanged);
 STATIC_ASSERT_ENUM(kWebAXEventShow, AXObjectCacheImpl::kAXShow);
 STATIC_ASSERT_ENUM(kWebAXEventTextChanged, AXObjectCacheImpl::kAXTextChanged);
-STATIC_ASSERT_ENUM(kWebAXEventTextInserted, AXObjectCacheImpl::kAXTextInserted);
-STATIC_ASSERT_ENUM(kWebAXEventTextRemoved, AXObjectCacheImpl::kAXTextRemoved);
 STATIC_ASSERT_ENUM(kWebAXEventValueChanged, AXObjectCacheImpl::kAXValueChanged);
 
 }  // namespace blink
