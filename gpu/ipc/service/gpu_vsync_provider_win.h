@@ -31,6 +31,9 @@ class GPU_EXPORT GpuVSyncProviderWin : public gfx::VSyncProvider {
   // This class ignores this method and updates VSync directly via a
   // worker thread IPC call.
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
+  bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
+                                     base::TimeDelta* interval) override;
+  bool SupportGetVSyncParametersIfAvailable() override;
 
  private:
   void OnVSync(base::TimeTicks timestamp, base::TimeDelta interval);

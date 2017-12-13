@@ -26,6 +26,7 @@
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_visual_picker_glx.h"
 #include "ui/gl/sync_control_vsync_provider.h"
@@ -288,7 +289,7 @@ class SGIVideoSyncProviderThreadShim {
         base::TimeDelta::FromSeconds(1) / 60;
 
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(callback, now, kDefaultInterval));
+                           base::BindOnce(callback, now, kDefaultInterval));
   }
 
  private:
@@ -325,8 +326,8 @@ class SGIVideoSyncVSyncProvider
         cancel_vsync_flag_(shim_->cancel_vsync_flag()),
         vsync_lock_(shim_->vsync_lock()) {
     vsync_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&SGIVideoSyncProviderThreadShim::Initialize,
-                              base::Unretained(shim_.get())));
+        FROM_HERE, base::BindOnce(&SGIVideoSyncProviderThreadShim::Initialize,
+                                  base::Unretained(shim_.get())));
   }
 
   ~SGIVideoSyncVSyncProvider() override {
@@ -347,13 +348,20 @@ class SGIVideoSyncVSyncProvider
           new gfx::VSyncProvider::UpdateVSyncCallback(callback));
       vsync_thread_->task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(
-              &SGIVideoSyncProviderThreadShim::GetVSyncParameters,
-              base::Unretained(shim_.get()),
-              base::Bind(&SGIVideoSyncVSyncProvider::PendingCallbackRunner,
-                         AsWeakPtr())));
+          base::BindOnce(&SGIVideoSyncProviderThreadShim::GetVSyncParameters,
+                         base::Unretained(shim_.get()),
+                         base::BindRepeating(
+                             &SGIVideoSyncVSyncProvider::PendingCallbackRunner,
+                             AsWeakPtr())));
     }
   }
+
+  bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
+                                     base::TimeDelta* interval) override {
+    return false;
+  }
+
+  bool SupportGetVSyncParametersIfAvailable() override { return false; }
 
  private:
   void PendingCallbackRunner(const base::TimeTicks timebase,
@@ -558,11 +566,9 @@ NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
       window_(0),
       glx_window_(0),
       config_(nullptr),
-      visual_id_(CopyFromParent) {}
-
-GLXDrawable NativeViewGLSurfaceGLX::GetDrawableHandle() const {
-  return glx_window_;
-}
+      visual_id_(CopyFromParent),
+      waiting_for_vsync_parameters_(false),
+      weak_ptr_factory_(this) {}
 
 bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   XWindowAttributes attributes;
@@ -619,12 +625,23 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
         base::TimeDelta::FromSeconds(1) / 59.9;
     vsync_provider_.reset(
         new gfx::FixedVSyncProvider(kDefaultTimebase, kDefaultInterval));
+    vsync_timebase_ = kDefaultTimebase;
+    vsync_interval_ = kDefaultInterval;
   }
 
   return true;
 }
 
 void NativeViewGLSurfaceGLX::Destroy() {
+  // Discard pending frames and run presentation callback with empty
+  // PresentationFeedback.
+  for (auto& frame : pending_frames_) {
+    bool has_context = gl_context_->IsCurrent(this);
+    frame.timer->Destroy(has_context);
+    frame.callback.Run(gfx::PresentationFeedback());
+  }
+  pending_frames_.clear();
+
   vsync_provider_.reset();
   if (glx_window_) {
     glXDestroyWindow(g_display, glx_window_);
@@ -655,10 +672,11 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 
 gfx::SwapResult NativeViewGLSurfaceGLX::SwapBuffers(
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceGLX:RealSwapBuffers", "width",
                GetSize().width(), "height", GetSize().height());
+  PreSwapBuffers(callback);
   glXSwapBuffers(g_display, GetDrawableHandle());
+  PostSwapBuffers();
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -668,6 +686,10 @@ gfx::Size NativeViewGLSurfaceGLX::GetSize() {
 
 void* NativeViewGLSurfaceGLX::GetHandle() {
   return reinterpret_cast<void*>(GetDrawableHandle());
+}
+
+bool NativeViewGLSurfaceGLX::SupportsPresentationCallback() {
+  return true;
 }
 
 bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
@@ -694,10 +716,34 @@ gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
     int width,
     int height,
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
   DCHECK(g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
+  PreSwapBuffers(callback);
   glXCopySubBufferMESA(g_display, GetDrawableHandle(), x, y, width, height);
+  PostSwapBuffers();
   return gfx::SwapResult::SWAP_ACK;
+}
+
+bool NativeViewGLSurfaceGLX::OnMakeCurrent(GLContext* context) {
+  if (context == gl_context_)
+    return GLSurfaceGLX::OnMakeCurrent(context);
+
+  // If context is changed, we assume SwapBuffers issued for previous context
+  // will be discarded.
+  if (gpu_timing_client_) {
+    gpu_timing_client_ = nullptr;
+    for (auto& frame : pending_frames_) {
+      frame.timer->Destroy(false /* has_context */);
+      frame.callback.Run(gfx::PresentationFeedback());
+    }
+    pending_frames_.clear();
+  }
+
+  gl_context_ = context;
+  gpu_timing_client_ = context->CreateGPUTimingClient();
+  if (!gpu_timing_client_->IsAvailable())
+    gpu_timing_client_ = nullptr;
+
+  return GLSurfaceGLX::OnMakeCurrent(context);
 }
 
 gfx::VSyncProvider* NativeViewGLSurfaceGLX::GetVSyncProvider() {
@@ -720,6 +766,180 @@ bool NativeViewGLSurfaceGLX::CanHandleEvent(XEvent* event) {
   return event->type == Expose &&
          event->xexpose.window == static_cast<Window>(window_);
 }
+
+GLXDrawable NativeViewGLSurfaceGLX::GetDrawableHandle() const {
+  return glx_window_;
+}
+
+void NativeViewGLSurfaceGLX::PreSwapBuffers(
+    const PresentationCallback& callback) {
+  std::unique_ptr<GPUTimer> timer;
+  if (gpu_timing_client_) {
+    timer = gpu_timing_client_->CreateGPUTimer(false /* prefer_elapsed_time */);
+    timer->QueryTimeStamp();
+  }
+  pending_frames_.push_back(Frame(std::move(timer), callback));
+}
+
+void NativeViewGLSurfaceGLX::PostSwapBuffers() {
+  if (!waiting_for_vsync_parameters_)
+    CheckPendingFrames();
+}
+
+void NativeViewGLSurfaceGLX::CheckPendingFrames() {
+  DCHECK(gl_context_ || pending_frames_.empty());
+  // VSync parameters are fixed.
+  bool fixed_vsync =
+      !(g_glx_oml_sync_control_supported || g_glx_sgi_video_sync_supported);
+  // VSyncProvier::GetVSyncParameters returns VSync parameters via callback
+  // immediatelly.
+  bool get_vsync_parameters_return_immediately =
+      vsync_provider_->SupportGetVSyncParametersIfAvailable();
+  // The VSync timestamp is from the driver.
+  bool hw_clock = g_glx_oml_sync_control_supported;
+
+  if (get_vsync_parameters_return_immediately && !fixed_vsync) {
+    if (!vsync_provider_->GetVSyncParametersIfAvailable(&vsync_timebase_,
+                                                        &vsync_interval_)) {
+      vsync_timebase_ = base::TimeTicks();
+      vsync_interval_ = base::TimeDelta();
+      LOG(ERROR) << "GetVSyncParametersIfAvailable() failed!";
+    }
+  }
+
+  if (pending_frames_.empty())
+    return;
+
+  bool disjoint_occurred =
+      gpu_timing_client_ && gpu_timing_client_->CheckAndResetTimerErrors();
+  if (disjoint_occurred || !gpu_timing_client_) {
+    // If GPUTimer is not avaliable or disjoint occurred, we just run
+    // presentation callback with current system time.
+    for (auto& frame : pending_frames_) {
+      frame.callback.Run(gfx::PresentationFeedback(
+          base::TimeTicks::Now(), vsync_interval_, 0 /* flags */));
+    }
+    pending_frames_.clear();
+    return;
+  }
+
+  bool need_update_vsync = false;
+  while (!pending_frames_.empty()) {
+    auto& frame = pending_frames_.front();
+    if (!frame.timer->IsAvailable())
+      break;
+
+    int64_t start = 0;
+    int64_t end = 0;
+    frame.timer->GetStartEndTimestamps(&start, &end);
+    auto timestamp =
+        base::TimeTicks() + base::TimeDelta::FromMicroseconds(start);
+
+    // Helper lambda for running the presentation callback and releasing the
+    // frame.
+    auto frame_presentation_callback =
+        [this, &frame](const gfx::PresentationFeedback& feedback) {
+          frame.timer->Destroy(true /* has_context */);
+          frame.callback.Run(feedback);
+          pending_frames_.pop_front();
+        };
+
+    if (vsync_interval_.is_zero() || fixed_vsync) {
+      // If VSync parameters are fixed or not avaliable, we just run
+      // presentation callbacks with timestamp from GPUTimers.
+      frame_presentation_callback(
+          gfx::PresentationFeedback(timestamp, vsync_interval_, 0 /* flags */));
+    } else if (timestamp < vsync_timebase_) {
+      // We got a VSync whose timestamp is after GPU finished renderering this
+      // back buffer.
+      uint32_t flags = gfx::PresentationFeedback::kVSync |
+                       gfx::PresentationFeedback::kHWCompletion;
+      auto delta = vsync_timebase_ - timestamp;
+      if (delta < vsync_interval_) {
+        // The |vsync_timebase_| is the closest VSync's timestamp after the GPU
+        // finished renderering.
+        timestamp = vsync_timebase_;
+        if (hw_clock)
+          flags |= gfx::PresentationFeedback::kHWClock;
+      } else {
+        // The |vsync_timebase_| isn't the closest VSync's timestamp after the
+        // GPU finished renderering. We have to compute the closest VSync's
+        // timestmp.
+        timestamp =
+            timestamp.SnappedToNextTick(vsync_timebase_, vsync_interval_);
+      }
+      frame_presentation_callback(
+          gfx::PresentationFeedback(timestamp, vsync_interval_, flags));
+    } else {
+      // The |vsync_timebase_| is earlier than |timestamp| of the current
+      // pending frame. We need update vsync parameters.
+      need_update_vsync = true;
+      // We compute the next VSync's timestamp and use it to run
+      // callback.
+      auto delta = timestamp - vsync_timebase_;
+      auto offset = delta % vsync_interval_;
+      timestamp += vsync_interval_ - offset;
+      uint32_t flags = gfx::PresentationFeedback::kVSync;
+      frame_presentation_callback(
+          gfx::PresentationFeedback(timestamp, vsync_interval_, flags));
+    }
+  }
+
+  if (waiting_for_vsync_parameters_ || !need_update_vsync ||
+      pending_frames_.empty())
+    return;
+
+  waiting_for_vsync_parameters_ = true;
+  if (!get_vsync_parameters_return_immediately) {
+    // In this case, the |vsync_provider_| will call the callback when the next
+    // VSync is received.
+    vsync_provider_->GetVSyncParameters(
+        base::BindRepeating(&NativeViewGLSurfaceGLX::UpdateVSyncCallback,
+                            weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // If the |vsync_provider_| can not notify us for the next VSync
+  // asynchronically, we have to compute the next VSync time and post a delayed
+  // task so we can check the VSync later.
+  base::TimeDelta interval = vsync_interval_.is_zero()
+                                 ? base::TimeDelta::FromSeconds(1) / 60
+                                 : vsync_interval_;
+  auto now = base::TimeTicks::Now();
+  auto next_vsync = now.SnappedToNextTick(vsync_timebase_, interval);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&NativeViewGLSurfaceGLX::CheckPendingFramesCallback,
+                     weak_ptr_factory_.GetWeakPtr()),
+      next_vsync - now);
+}  // namespace gl
+
+void NativeViewGLSurfaceGLX::CheckPendingFramesCallback() {
+  DCHECK(waiting_for_vsync_parameters_);
+  waiting_for_vsync_parameters_ = false;
+  CheckPendingFrames();
+}
+
+void NativeViewGLSurfaceGLX::UpdateVSyncCallback(
+    const base::TimeTicks timebase,
+    const base::TimeDelta interval) {
+  DCHECK(waiting_for_vsync_parameters_);
+  waiting_for_vsync_parameters_ = false;
+  vsync_timebase_ = timebase;
+  vsync_interval_ = interval;
+  CheckPendingFrames();
+}
+
+NativeViewGLSurfaceGLX::Frame::Frame(Frame&& other) = default;
+
+NativeViewGLSurfaceGLX::Frame::Frame(std::unique_ptr<GPUTimer>&& timer,
+                                     const PresentationCallback& callback)
+    : timer(std::move(timer)), callback(callback) {}
+
+NativeViewGLSurfaceGLX::Frame::~Frame() = default;
+
+NativeViewGLSurfaceGLX::Frame& NativeViewGLSurfaceGLX::Frame::operator=(
+    Frame&& other) = default;
 
 UnmappedNativeViewGLSurfaceGLX::UnmappedNativeViewGLSurfaceGLX(
     const gfx::Size& size)

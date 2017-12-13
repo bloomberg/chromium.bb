@@ -31,6 +31,13 @@ class FakeVSyncProvider : public gfx::VSyncProvider {
     call_count_++;
   }
 
+  bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
+                                     base::TimeDelta* interval) override {
+    return false;
+  }
+
+  bool SupportGetVSyncParametersIfAvailable() override { return false; }
+
   int call_count() const { return call_count_; }
 
   void set_timebase(base::TimeTicks timebase) { timebase_ = timebase; }

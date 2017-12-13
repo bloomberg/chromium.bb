@@ -136,7 +136,7 @@ class GL_EXPORT GPUTimingClient
   // CheckAndResetTimerErrors has to be called before reading timestamps
   // from GPUTimers instances and after making sure all the timers
   // were available.
-  // If the returned value is false, all the previous timers should be
+  // If the returned value is true, all the previous timers should be
   // discarded.
   bool CheckAndResetTimerErrors();
 
