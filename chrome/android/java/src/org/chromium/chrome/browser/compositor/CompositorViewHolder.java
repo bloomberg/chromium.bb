@@ -227,6 +227,13 @@ public class CompositorViewHolder extends FrameLayout
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // Have content pick up the size and browser control information when the content
+                // view got laid out. Successive calls with the same values are ignored by
+                // ViewAndroid that stores the size.
+                View view = getActiveView();
+                if (view != null) {
+                    setSize(getActiveWebContents(), view, view.getWidth(), view.getHeight());
+                }
                 onViewportChanged();
 
                 // If there's an event that needs to occur after the keyboard is hidden, post
@@ -702,16 +709,7 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        if (changed) {
-            onViewportChanged();
-        } else {
-            // Have content pick up the size and browser control information
-            // when the content view got laid out with non-zero dimension after
-            // initialization. Successive calls with the same values are ignored
-            // by ViewAndroid that stores the size.
-            View v = getActiveView();
-            if (v != null) setSize(getActiveWebContents(), v, v.getWidth(), v.getHeight());
-        }
+        if (changed) onViewportChanged();
         super.onLayout(changed, l, t, r, b);
 
         invalidateAccessibilityProvider();
