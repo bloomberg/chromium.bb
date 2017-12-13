@@ -32,6 +32,7 @@ extern const base::Feature kChromeHomePersistentIph;
 extern const base::Feature kChromeHomePromo;
 extern const base::Feature kChromeHomePromoInfoOnly;
 extern const base::Feature kChromeHomePromoOnStartup;
+extern const base::Feature kChromeHomePullToRefreshIphAtTop;
 extern const base::Feature kChromeHomeOptOutSnackbar;
 extern const base::Feature kChromeHomeShowGoogleGWhenUrlCleared;
 extern const base::Feature kChromeHomeSurvey;
