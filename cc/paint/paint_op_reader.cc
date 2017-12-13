@@ -11,6 +11,7 @@
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
+#include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -19,30 +20,27 @@
 namespace cc {
 namespace {
 
-uint32_t kMaxTypefacesCount = 128;
-
 // If we have more than this many colors, abort deserialization.
 const size_t kMaxShaderColorsSupported = 10000;
 
 struct TypefacesCatalog {
-  const std::vector<PaintTypeface>* typefaces;
+  TransferCacheDeserializeHelper* transfer_cache;
   bool had_null = false;
 };
 
 sk_sp<SkTypeface> ResolveTypeface(uint32_t id, void* ctx) {
   TypefacesCatalog* catalog = static_cast<TypefacesCatalog*>(ctx);
-  auto typeface_it = std::find_if(
-      catalog->typefaces->begin(), catalog->typefaces->end(),
-      [id](const PaintTypeface& typeface) { return typeface.sk_id() == id; });
-  // TODO(vmpstr): The !*typeface check is here because not all typefaces are
-  // supported right now. Instead of making the reader invalid during the
-  // typeface deserialization, which results in an invalid op, instead just make
-  // the textblob be null by setting |had_null| to true.
-  if (typeface_it == catalog->typefaces->end() || !*typeface_it) {
+  auto* entry = catalog->transfer_cache
+                    ->GetEntryAs<ServicePaintTypefaceTransferCacheEntry>(id);
+  // TODO(vmpstr): The !entry->typeface() check is here because not all
+  // typefaces are supported right now. Instead of making the reader invalid
+  // during the typeface deserialization, which results in an invalid op,
+  // instead just make the textblob be null by setting |had_null| to true.
+  if (!entry || !entry->typeface()) {
     catalog->had_null = true;
     return nullptr;
   }
-  return typeface_it->ToSkTypeface();
+  return entry->typeface().ToSkTypeface();
 }
 
 bool IsValidPaintShaderType(PaintShader::Type type) {
@@ -266,34 +264,8 @@ void PaintOpReader::Read(sk_sp<SkData>* data) {
   remaining_bytes_ -= bytes;
 }
 
-void PaintOpReader::Read(std::vector<PaintTypeface>* typefaces) {
-  uint32_t typefaces_count;
-  ReadSimple(&typefaces_count);
-  if (!valid_ || typefaces_count > kMaxTypefacesCount) {
-    SetInvalid();
-    return;
-  }
-  typefaces->reserve(typefaces_count);
-  for (uint32_t i = 0; i < typefaces_count; ++i) {
-    // TODO(vmpstr): This is meant to be transferred via a transfer cache, but
-    // for now just utilize the deserialization that the cache entry provides.
-    ServicePaintTypefaceTransferCacheEntry entry;
-    bool success = entry.Deserialize(
-        nullptr,
-        base::make_span(reinterpret_cast<uint8_t*>(const_cast<char*>(memory_)),
-                        remaining_bytes_));
-    if (!success) {
-      valid_ = false;
-      return;
-    }
-    typefaces->emplace_back(entry.typeface());
-    memory_ += entry.CachedSize();
-    remaining_bytes_ -= entry.CachedSize();
-  }
-}
-
-void PaintOpReader::Read(const std::vector<PaintTypeface>& typefaces,
-                         sk_sp<SkTextBlob>* blob) {
+void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob,
+                         TransferCacheDeserializeHelper* transfer_cache) {
   sk_sp<SkData> data;
   Read(&data);
   if (!data || !valid_)
@@ -307,27 +279,19 @@ void PaintOpReader::Read(const std::vector<PaintTypeface>& typefaces,
   }
 
   TypefacesCatalog catalog;
-  catalog.typefaces = &typefaces;
-  *blob = SkTextBlob::Deserialize(data->data(), data->size(), &ResolveTypeface,
-                                  &catalog);
-  if (catalog.had_null)
-    *blob = nullptr;
-}
-
-void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
-  std::vector<PaintTypeface> typefaces;
-  sk_sp<SkTextBlob> blob;
-
-  Read(&typefaces);
-  Read(typefaces, &blob);
+  catalog.transfer_cache = transfer_cache;
+  sk_sp<SkTextBlob> blob = SkTextBlob::Deserialize(data->data(), data->size(),
+                                                   &ResolveTypeface, &catalog);
   // TODO(vmpstr): If we couldn't serialize |blob|, we should make |paint_blob|
   // nullptr. However, this causes GL errors right now, because not all
   // typefaces are serialized. Fix this once we serialize everything. For now
   // the behavior is that the |paint_blob| op exists and is valid, but
   // internally it has a nullptr SkTextBlob which skia ignores.
   // See also: TODO in paint_op_buffer_eq_fuzzer.
-  *paint_blob = base::MakeRefCounted<PaintTextBlob>(std::move(blob),
-                                                    std::move(typefaces));
+  if (catalog.had_null)
+    blob = nullptr;
+  *paint_blob = base::MakeRefCounted<PaintTextBlob>(
+      std::move(blob), std::vector<PaintTypeface>());
 }
 
 void PaintOpReader::Read(sk_sp<PaintShader>* shader) {

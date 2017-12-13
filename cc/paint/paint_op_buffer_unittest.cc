@@ -16,6 +16,7 @@
 #include "cc/test/paint_op_helper.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
+#include "cc/test/transfer_cache_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkWriteBuffer.h"
@@ -1219,6 +1220,7 @@ class SimpleSerializer {
       bytes_written_[i] = 0;
 
     PaintOp::SerializeOptions options;
+    options.transfer_cache = &transfer_cache_helper_;
 
     size_t op_idx = 0;
     for (const auto* op : PaintOpBuffer::Iterator(&buffer)) {
@@ -1244,21 +1246,26 @@ class SimpleSerializer {
 
   const std::vector<size_t>& bytes_written() const { return bytes_written_; }
   size_t TotalBytesWritten() const { return output_size_ - remaining_; }
+  TransferCacheTestHelper* transfer_cache() { return &transfer_cache_helper_; }
 
  private:
   char* current_ = nullptr;
   size_t output_size_ = 0u;
   size_t remaining_ = 0u;
   std::vector<size_t> bytes_written_;
+  TransferCacheTestHelper transfer_cache_helper_;
 };
 
 class DeserializerIterator {
  public:
-  DeserializerIterator(const void* input, size_t input_size)
+  DeserializerIterator(const void* input,
+                       size_t input_size,
+                       TransferCacheDeserializeHelper* transfer_cache)
       : DeserializerIterator(input,
                              static_cast<const char*>(input),
                              input_size,
-                             input_size) {}
+                             input_size,
+                             transfer_cache) {}
 
   DeserializerIterator(DeserializerIterator&&) = default;
   DeserializerIterator& operator=(DeserializerIterator&&) = default;
@@ -1267,11 +1274,13 @@ class DeserializerIterator {
 
   DeserializerIterator begin() {
     return DeserializerIterator(input_, static_cast<const char*>(input_),
-                                input_size_, input_size_);
+                                input_size_, input_size_,
+                                options_.transfer_cache);
   }
   DeserializerIterator end() {
-    return DeserializerIterator(
-        input_, static_cast<const char*>(input_) + input_size_, input_size_, 0);
+    return DeserializerIterator(input_,
+                                static_cast<const char*>(input_) + input_size_,
+                                input_size_, 0, options_.transfer_cache);
   }
   bool operator!=(const DeserializerIterator& other) {
     return input_ != other.input_ || current_ != other.current_ ||
@@ -1298,11 +1307,13 @@ class DeserializerIterator {
   DeserializerIterator(const void* input,
                        const char* current,
                        size_t input_size,
-                       size_t remaining)
+                       size_t remaining,
+                       TransferCacheDeserializeHelper* transfer_cache)
       : input_(input),
         current_(current),
         input_size_(input_size),
         remaining_(remaining) {
+    options_.transfer_cache = transfer_cache;
     data_.reset(static_cast<char*>(base::AlignedAlloc(
         sizeof(LargestPaintOp), PaintOpBuffer::PaintOpAlign)));
     DeserializeCurrentOp();
@@ -1322,7 +1333,7 @@ class DeserializerIterator {
       return;
     deserialized_op_ = PaintOp::Deserialize(current_, remaining_, data_.get(),
                                             sizeof(LargestPaintOp),
-                                            &last_bytes_read_, options);
+                                            &last_bytes_read_, options_);
   }
 
   const void* input_ = nullptr;
@@ -1330,7 +1341,7 @@ class DeserializerIterator {
   size_t input_size_ = 0u;
   size_t remaining_ = 0u;
   size_t last_bytes_read_ = 0u;
-  PaintOp::DeserializeOptions options;
+  PaintOp::DeserializeOptions options_;
   std::unique_ptr<char, base::AlignedFreeDeleter> data_;
   PaintOp* deserialized_op_ = nullptr;
 };
@@ -1691,7 +1702,8 @@ TEST_P(PaintOpSerializationTest, SmokeTest) {
   PaintOpBuffer::Iterator iter(&buffer_);
   size_t i = 0;
   for (auto* base_written :
-       DeserializerIterator(output_.get(), serializer.TotalBytesWritten())) {
+       DeserializerIterator(output_.get(), serializer.TotalBytesWritten(),
+                            serializer.transfer_cache())) {
     SCOPED_TRACE(base::StringPrintf(
         "%s #%zu", PaintOpTypeToString(GetParamType()).c_str(), i));
     ASSERT_EQ(!*iter, !base_written);
@@ -1718,6 +1730,7 @@ TEST_P(PaintOpSerializationTest, SerializationFailures) {
   std::vector<size_t> bytes_written = serializer.bytes_written();
 
   PaintOp::SerializeOptions options;
+  options.transfer_cache = serializer.transfer_cache();
 
   size_t op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer_); iter; ++iter, ++op_idx) {
@@ -1760,6 +1773,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialize_buffer_(
       static_cast<char*>(base::AlignedAlloc(kOutputOpSize, kAlign)));
   PaintOp::DeserializeOptions deserialize_options;
+  deserialize_options.transfer_cache = serializer.transfer_cache();
 
   size_t op_idx = 0;
   size_t total_read = 0;
@@ -1829,8 +1843,11 @@ TEST_P(PaintOpSerializationTest, UsesOverridenFlags) {
   PushTestOps(GetParamType());
   ResizeOutputBuffer();
 
+  TransferCacheTestHelper transfer_cache_helper;
   PaintOp::SerializeOptions options;
+  options.transfer_cache = &transfer_cache_helper;
   PaintOp::DeserializeOptions deserialize_options;
+  deserialize_options.transfer_cache = &transfer_cache_helper;
   size_t deserialized_size = sizeof(LargestPaintOp) + PaintOp::kMaxSkip;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
       static_cast<char*>(
@@ -1875,12 +1892,15 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
+  TransferCacheTestHelper transfer_cache_helper;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+                                    PaintOpBuffer::kInitialBufferSize, nullptr,
+                                    &transfer_cache_helper);
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
   PaintOp::DeserializeOptions deserialized_options;
+  deserialized_options.transfer_cache = &transfer_cache_helper;
   auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
       memory.get(), serializer.written(), deserialized_options);
   ASSERT_TRUE(deserialized_buffer);
@@ -1940,12 +1960,15 @@ TEST(PaintOpSerializationTest, Preamble) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
+  TransferCacheTestHelper transfer_cache_helper;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+                                    PaintOpBuffer::kInitialBufferSize, nullptr,
+                                    &transfer_cache_helper);
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
   PaintOp::DeserializeOptions deserialized_options;
+  deserialized_options.transfer_cache = &transfer_cache_helper;
   auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
       memory.get(), serializer.written(), deserialized_options);
   ASSERT_TRUE(deserialized_buffer);
@@ -2024,13 +2047,16 @@ TEST(PaintOpSerializationTest, SerializesNestedRecords) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
+  TransferCacheTestHelper transfer_cache_helper;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+                                    PaintOpBuffer::kInitialBufferSize, nullptr,
+                                    &transfer_cache_helper);
   PaintOpBufferSerializer::Preamble preamble;
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
   PaintOp::DeserializeOptions deserialized_options;
+  deserialized_options.transfer_cache = &transfer_cache_helper;
   auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
       memory.get(), serializer.written(), deserialized_options);
   ASSERT_TRUE(deserialized_buffer);
@@ -2074,13 +2100,16 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
+  TransferCacheTestHelper transfer_cache_helper;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+                                    PaintOpBuffer::kInitialBufferSize, nullptr,
+                                    &transfer_cache_helper);
   PaintOpBufferSerializer::Preamble preamble;
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
   PaintOp::DeserializeOptions deserialized_options;
+  deserialized_options.transfer_cache = &transfer_cache_helper;
   auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
       memory.get(), serializer.written(), deserialized_options);
   ASSERT_TRUE(deserialized_buffer);
@@ -2138,12 +2167,15 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
+  TransferCacheTestHelper transfer_cache_helper;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+                                    PaintOpBuffer::kInitialBufferSize, nullptr,
+                                    &transfer_cache_helper);
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
   PaintOp::DeserializeOptions deserialized_options;
+  deserialized_options.transfer_cache = &transfer_cache_helper;
   auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
       memory.get(), serializer.written(), deserialized_options);
   ASSERT_TRUE(deserialized_buffer);

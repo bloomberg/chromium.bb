@@ -24,13 +24,17 @@ class CC_PAINT_EXPORT TransferCacheDeserializeHelper {
   // entry is missing or of the wrong type.
   template <typename T>
   T* GetEntryAs(uint32_t id) {
-    ServiceTransferCacheEntry* entry = GetEntryInternal(T::kType, id);
+    // There is a bit of a weirdness if we use T::kType directly in the DCHECK
+    // below. Specifically, the linker can't seem to find that symbol ¯\_(ツ)_/¯
+    // so instead save off the type into a local variable and use that.
+    auto entry_type = T::kType;
+    ServiceTransferCacheEntry* entry = GetEntryInternal(entry_type, id);
     if (entry == nullptr) {
       return nullptr;
     }
     // The service side entry is created using T::kType, so the class created is
     // guaranteed to make the entry type.
-    DCHECK_EQ(entry->Type(), T::kType);
+    DCHECK_EQ(entry->Type(), entry_type);
     return static_cast<T*>(entry);
   }
 

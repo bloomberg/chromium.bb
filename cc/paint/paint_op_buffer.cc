@@ -262,10 +262,13 @@ PlaybackParams::PlaybackParams(ImageProvider* image_provider,
 
 PaintOp::SerializeOptions::SerializeOptions() = default;
 
-PaintOp::SerializeOptions::SerializeOptions(ImageProvider* image_provider,
-                                            SkCanvas* canvas,
-                                            const SkMatrix& original_ctm)
+PaintOp::SerializeOptions::SerializeOptions(
+    ImageProvider* image_provider,
+    TransferCacheSerializeHelper* transfer_cache,
+    SkCanvas* canvas,
+    const SkMatrix& original_ctm)
     : image_provider(image_provider),
+      transfer_cache(transfer_cache),
       canvas(canvas),
       original_ctm(original_ctm) {}
 
@@ -481,7 +484,7 @@ size_t DrawTextBlobOp::Serialize(const PaintOp* base_op,
   helper.AlignMemory(alignof(SkScalar));
   helper.Write(op->x);
   helper.Write(op->y);
-  helper.Write(op->blob);
+  helper.Write(op->blob, options.transfer_cache);
   return helper.size();
 }
 
@@ -871,7 +874,7 @@ PaintOp* DrawTextBlobOp::Deserialize(const volatile void* input,
   helper.AlignMemory(alignof(SkScalar));
   helper.Read(&op->x);
   helper.Read(&op->y);
-  helper.Read(&op->blob);
+  helper.Read(&op->blob, options.transfer_cache);
   if (!helper.valid() || !op->IsValid()) {
     op->~DrawTextBlobOp();
     return nullptr;

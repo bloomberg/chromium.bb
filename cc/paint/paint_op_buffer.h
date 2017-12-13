@@ -21,6 +21,7 @@
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
+#include "cc/paint/transfer_cache_serialize_helper.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -117,10 +118,12 @@ class CC_PAINT_EXPORT PaintOp {
   struct CC_PAINT_EXPORT SerializeOptions {
     SerializeOptions();
     SerializeOptions(ImageProvider* image_provider,
+                     TransferCacheSerializeHelper* transfer_cache,
                      SkCanvas* canvas,
                      const SkMatrix& original_ctm);
 
     ImageProvider* image_provider = nullptr;
+    TransferCacheSerializeHelper* transfer_cache = nullptr;
     SkCanvas* canvas = nullptr;
     SkMatrix original_ctm = SkMatrix::I();
     // The flags to use when serializing this op. This can be used to override

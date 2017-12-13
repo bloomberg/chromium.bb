@@ -7,6 +7,7 @@
 
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/test/transfer_cache_test_helper.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -25,7 +26,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   SkCanvas* canvas = surface->getCanvas();
 
   cc::PlaybackParams params(nullptr, canvas->getTotalMatrix());
+  cc::TransferCacheTestHelper transfer_cache_helper;
   cc::PaintOp::DeserializeOptions deserialize_options;
+  deserialize_options.transfer_cache = &transfer_cache_helper;
 
   // Need 4 bytes to be able to read the type/skip.
   while (size >= 4) {

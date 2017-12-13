@@ -7,10 +7,17 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
+#include "cc/paint/transfer_cache_serialize_helper.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
+namespace {
+void TypefaceCataloger(SkTypeface* typeface, void* ctx) {
+  static_cast<TransferCacheSerializeHelper*>(ctx)->AssertLocked(
+      TransferCacheEntryType::kPaintTypeface, typeface->uniqueID());
+}
+}  // namespace
 
 PaintOpWriter::PaintOpWriter(void* memory, size_t size)
     : memory_(static_cast<char*>(memory) + HeaderBytes()),
@@ -141,54 +148,29 @@ void PaintOpWriter::Write(const sk_sp<SkData>& data) {
   }
 }
 
-void PaintOpWriter::Write(const std::vector<PaintTypeface>& typefaces) {
-  WriteSimple(static_cast<uint32_t>(typefaces.size()));
-  for (const auto& typeface : typefaces) {
-    DCHECK(typeface);
-    // TODO(vmpstr): This is meant to be sent via a transfer cache, but for now
-    // just use the serialization of the client transfer cache entry.
-    ClientPaintTypefaceTransferCacheEntry entry(typeface);
-    size_t size = entry.SerializedSize();
-    if (size > remaining_bytes_) {
-      valid_ = false;
-      return;
-    }
-    bool success = entry.Serialize(
-        base::make_span(reinterpret_cast<uint8_t*>(memory_), size));
-    if (!success) {
-      valid_ = false;
-      return;
-    }
-
-    memory_ += size;
-    remaining_bytes_ -= size;
-
-#if DCHECK_IS_ON()
-    last_serialized_typeface_ids_.insert(typeface.sk_id());
-#endif
-  }
-}
-
-// static
-void PaintOpWriter::TypefaceCataloger(SkTypeface* typeface, void* ctx) {
-  DCHECK(static_cast<PaintOpWriter*>(ctx)->last_serialized_typeface_ids_.count(
-             typeface->uniqueID()) != 0);
-}
-
-void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
-  auto data = blob->serialize(&PaintOpWriter::TypefaceCataloger, this);
+void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob,
+                          TransferCacheSerializeHelper* transfer_cache) {
+  auto data = blob->serialize(&TypefaceCataloger, transfer_cache);
   Write(data);
-
-#if DCHECK_IS_ON()
-  last_serialized_typeface_ids_.clear();
-#endif
 }
 
-void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& blob) {
-  Write(blob->typefaces());
+void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& blob,
+                          TransferCacheSerializeHelper* transfer_cache) {
   if (!valid_)
     return;
-  Write(blob->ToSkTextBlob());
+
+  for (auto& typeface : blob->typefaces()) {
+    auto locked = transfer_cache->LockEntry(
+        TransferCacheEntryType::kPaintTypeface, typeface.sk_id());
+    if (locked)
+      continue;
+    transfer_cache->CreateEntry(
+        ClientPaintTypefaceTransferCacheEntry(typeface));
+    transfer_cache->AssertLocked(TransferCacheEntryType::kPaintTypeface,
+                                 typeface.sk_id());
+  }
+
+  Write(blob->ToSkTextBlob(), transfer_cache);
 }
 
 void PaintOpWriter::Write(const PaintShader* shader) {
