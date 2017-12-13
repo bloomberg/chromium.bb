@@ -31,7 +31,6 @@
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
-#include "content/renderer/background_sync/background_sync_type_converters.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
@@ -1289,7 +1288,7 @@ void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
 
 void ServiceWorkerContextClient::DispatchSyncEvent(
     const std::string& tag,
-    blink::mojom::BackgroundSyncEventLastChance last_chance,
+    bool last_chance,
     DispatchSyncEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchSyncEvent");
@@ -1297,15 +1296,10 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
       CreateAbortCallback(&context_->sync_event_callbacks));
   context_->sync_event_callbacks.emplace(request_id, std::move(callback));
 
-  // TODO(shimazu): Use typemap when this is moved to blink-side.
-  blink::WebServiceWorkerContextProxy::LastChanceOption web_last_chance =
-      mojo::ConvertTo<blink::WebServiceWorkerContextProxy::LastChanceOption>(
-          last_chance);
-
   // TODO(jkarlin): Make this blink::WebString::FromUTF8Lenient once
   // https://crrev.com/1768063002/ lands.
   proxy_->DispatchSyncEvent(request_id, blink::WebString::FromUTF8(tag),
-                            web_last_chance);
+                            last_chance);
 }
 
 void ServiceWorkerContextClient::DispatchAbortPaymentEvent(

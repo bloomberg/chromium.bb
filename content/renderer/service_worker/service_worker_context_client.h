@@ -333,10 +333,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       DispatchNotificationCloseEventCallback callback) override;
   void DispatchPushEvent(const PushEventPayload& payload,
                          DispatchPushEventCallback callback) override;
-  void DispatchSyncEvent(
-      const std::string& tag,
-      blink::mojom::BackgroundSyncEventLastChance last_chance,
-      DispatchSyncEventCallback callback) override;
+  void DispatchSyncEvent(const std::string& tag,
+                         bool last_chance,
+                         DispatchSyncEventCallback callback) override;
   void DispatchAbortPaymentEvent(
       int payment_request_id,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
