@@ -59,10 +59,9 @@ class TabUsageRecorderTest : public PlatformTest {
                                         WebStateInMemoryOption in_memory) {
     auto test_navigation_manager =
         std::make_unique<web::TestNavigationManager>();
-    test_navigation_manager->AddItem(GURL(url), ui::PAGE_TRANSITION_LINK);
-    test_navigation_manager->SetLastCommittedItem(
-        test_navigation_manager->GetItemAtIndex(
-            test_navigation_manager->GetLastCommittedItemIndex()));
+    web::NavigationItem* item =
+        InsertItemToTestNavigationManager(test_navigation_manager.get(), url);
+    test_navigation_manager->SetLastCommittedItem(item);
 
     auto test_web_state = std::make_unique<web::TestWebState>();
     test_web_state->SetNavigationManager(std::move(test_navigation_manager));
@@ -74,6 +73,16 @@ class TabUsageRecorderTest : public PlatformTest {
 
     return static_cast<web::TestWebState*>(
         web_state_list_.GetWebStateAt(insertion_index));
+  }
+
+  web::NavigationItem* InsertItemToTestNavigationManager(
+      web::TestNavigationManager* test_navigation_manager,
+      const char* url) {
+    test_navigation_manager->AddItem(GURL(), ui::PAGE_TRANSITION_LINK);
+    web::NavigationItem* item = test_navigation_manager->GetItemAtIndex(
+        test_navigation_manager->GetLastCommittedItemIndex());
+    item->SetVirtualURL(GURL(url));
+    return item;
   }
 
   void AddTimeToDequeInTabUsageRecorder(base::TimeTicks time) {
@@ -138,6 +147,7 @@ TEST_F(TabUsageRecorderTest, CountPageLoadsBeforeEvictedTab) {
                                        kNumReloads, 1);
 }
 
+// Tests that chrome:// URLs are not counted in page load stats.
 TEST_F(TabUsageRecorderTest, CountNativePageLoadsBeforeEvictedTab) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kNativeURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kNativeURL, NOT_IN_MEMORY);
@@ -147,7 +157,26 @@ TEST_F(TabUsageRecorderTest, CountNativePageLoadsBeforeEvictedTab) {
   for (int i = 0; i < kNumReloads; i++) {
     tab_usage_recorder_.RecordPageLoadStart(mock_tab_a);
   }
+
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  histogram_tester_.ExpectTotalCount(kPageLoadsBeforeEvictedTabSelected, 0);
+}
+
+// Tests that page load stats is not updated for an evicted tab that has a
+// pending chrome:// URL.
+TEST_F(TabUsageRecorderTest, CountPendingNativePageLoadBeforeEvictedTab) {
+  web::TestWebState* old_tab = InsertTestWebState(kURL, IN_MEMORY);
+  web::TestWebState* new_evicted_tab = InsertTestWebState(kURL, NOT_IN_MEMORY);
+
+  tab_usage_recorder_.RecordPageLoadStart(old_tab);
+
+  auto* test_navigation_manager = static_cast<web::TestNavigationManager*>(
+      new_evicted_tab->GetNavigationManager());
+  web::NavigationItem* item =
+      InsertItemToTestNavigationManager(test_navigation_manager, kNativeURL);
+  test_navigation_manager->SetPendingItem(item);
+
+  tab_usage_recorder_.RecordTabSwitched(old_tab, new_evicted_tab);
   histogram_tester_.ExpectTotalCount(kPageLoadsBeforeEvictedTabSelected, 0);
 }
 

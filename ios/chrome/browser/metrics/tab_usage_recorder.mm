@@ -370,7 +370,7 @@ bool TabUsageRecorder::ShouldIgnoreWebState(web::WebState* web_state) {
   web::NavigationItem* pending_item =
       web_state->GetNavigationManager()->GetPendingItem();
   if (pending_item)
-    return pending_item->GetURL().SchemeIs(kChromeUIScheme);
+    return pending_item->GetVirtualURL().SchemeIs(kChromeUIScheme);
 
   web::NavigationItem* last_committed_item =
       web_state->GetNavigationManager()->GetLastCommittedItem();
