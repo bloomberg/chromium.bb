@@ -1252,27 +1252,12 @@ void ShellSurfaceBase::UpdateShadow() {
   } else {
     wm::SetShadowElevation(window, wm::ShadowElevation::DEFAULT);
 
-    gfx::Rect shadow_bounds;
-    if (shadow_bounds_->IsEmpty()) {
-      shadow_bounds = gfx::Rect(window->bounds().size());
-    } else {
-      shadow_bounds =
-          gfx::ScaleToEnclosedRect(*shadow_bounds_, 1.f / GetScale());
-
-      // Convert from screen to display coordinates.
-      shadow_bounds -= origin_offset_;
-      wm::ConvertRectFromScreen(window->parent(), &shadow_bounds);
-
-      // Convert from display to window coordinates.
-      shadow_bounds -= window->bounds().OffsetFromOrigin();
-    }
-
     wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
     // Maximized/Fullscreen window does not create a shadow.
     if (!shadow)
       return;
 
-    shadow->SetContentBounds(shadow_bounds);
+    shadow->SetContentBounds(GetShadowBounds());
     // Surfaces that can't be activated are usually menus and tooltips. Use a
     // small style shadow for them.
     if (!activatable_)
@@ -1299,6 +1284,12 @@ gfx::Point ShellSurfaceBase::GetMouseLocation() const {
   aura::Window::ConvertPointToTarget(
       root_window, widget_->GetNativeWindow()->parent(), &location);
   return location;
+}
+
+gfx::Rect ShellSurfaceBase::GetShadowBounds() const {
+  return shadow_bounds_->IsEmpty()
+             ? gfx::Rect(widget_->GetNativeWindow()->bounds().size())
+             : gfx::ScaleToEnclosedRect(*shadow_bounds_, 1.f / GetScale());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -169,7 +169,7 @@ bool IsPinned(const ash::wm::WindowState* window_state) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellSurface, public:
+// ClientControlledShellSurface, public:
 
 ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
                                                            bool can_minimize,
@@ -316,6 +316,14 @@ void ClientControlledShellSurface::SetTopInset(int height) {
   pending_top_inset_height_ = height;
 }
 
+void ClientControlledShellSurface::SetResizeOutset(int outset) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetResizeOutset", "outset",
+               outset);
+
+  if (root_surface())
+    root_surface()->SetInputOutset(outset);
+}
+
 void ClientControlledShellSurface::OnWindowStateChangeEvent(
     ash::mojom::WindowStateType current_state,
     ash::mojom::WindowStateType next_state) {
@@ -328,6 +336,10 @@ void ClientControlledShellSurface::OnWindowStateChangeEvent(
 
 void ClientControlledShellSurface::OnSurfaceCommit() {
   ShellSurfaceBase::OnSurfaceCommit();
+
+  if (!geometry_changed_callback_.is_null())
+    geometry_changed_callback_.Run(GetVisibleBounds());
+
   if (widget_) {
     // Apply new top inset height.
     if (pending_top_inset_height_ != top_inset_height_) {
@@ -464,7 +476,7 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 // ShellSurface overrides:
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
-  if (!resizer_) {
+  if (!resizer_ || resizer_->details().window_component != HTCAPTION) {
     client_controlled_state_->set_bounds_locally(true);
     widget_->SetBounds(bounds);
     client_controlled_state_->set_bounds_locally(false);
@@ -490,6 +502,23 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 
   // Render phantom windows when beyond the current display.
   resizer_->Drag(GetMouseLocation(), 0);
+}
+
+gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
+  gfx::Rect shadow_bounds = ShellSurfaceBase::GetShadowBounds();
+
+  if (geometry_changed_callback_.is_null()) {
+    aura::Window* window = widget_->GetNativeWindow();
+
+    // Convert from screen to display coordinates.
+    shadow_bounds -= origin_offset_;
+    wm::ConvertRectFromScreen(window->parent(), &shadow_bounds);
+
+    // Convert from display to window coordinates.
+    shadow_bounds -= window->bounds().OffsetFromOrigin();
+  }
+
+  return shadow_bounds;
 }
 
 void ClientControlledShellSurface::InitializeWindowState(
@@ -527,15 +556,21 @@ ClientControlledShellSurface::CreateWindowResizer(aura::Window* window,
                                                   int component) {
   ash::wm::WindowState* window_state = GetWindowState();
   DCHECK(!window_state->drag_details());
-  DCHECK(component == HTCAPTION);
   window_state->CreateDragDetails(GetMouseLocation(), component,
                                   wm::WINDOW_MOVE_SOURCE_MOUSE);
 
-  // Chained with a CustomWindowResizer, DragWindowResizer does not handle
-  // dragging. It only renders phantom windows and moves the window to the
-  // target root window when dragging ends.
-  return std::unique_ptr<ash::WindowResizer>(ash::DragWindowResizer::Create(
-      new CustomWindowResizer(window_state), window_state));
+  std::unique_ptr<ash::WindowResizer> resizer =
+      std::make_unique<CustomWindowResizer>(window_state);
+
+  if (component == HTCAPTION) {
+    // Chained with a CustomWindowResizer, DragWindowResizer does not handle
+    // dragging. It only renders phantom windows and moves the window to the
+    // target root window when dragging ends.
+    resizer.reset(
+        ash::DragWindowResizer::Create(resizer.release(), window_state));
+  }
+
+  return resizer;
 }
 
 bool ClientControlledShellSurface::OnMouseDragged(const ui::MouseEvent&) {
@@ -546,13 +581,14 @@ bool ClientControlledShellSurface::OnMouseDragged(const ui::MouseEvent&) {
 }
 
 gfx::Point ClientControlledShellSurface::GetWidgetOrigin() const {
-  return origin_ - GetSurfaceOrigin().OffsetFromOrigin();
+  return GetVisibleBounds().origin() - origin_offset_;
 }
 
 gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
   DCHECK(resize_component_ == HTCAPTION);
-  gfx::Rect visible_bounds = GetVisibleBounds();
-  return origin_ + origin_offset_ - visible_bounds.OffsetFromOrigin();
+  if (!geometry_changed_callback_.is_null())
+    return gfx::Point();
+  return gfx::Point() - GetWidgetOrigin().OffsetFromOrigin();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

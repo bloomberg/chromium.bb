@@ -2029,6 +2029,17 @@ void remote_surface_set_window_type(wl_client* client,
   }
 }
 
+void remote_surface_resize(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ShellSurface>(resource)->Resize(HTBORDER);
+}
+
+void remote_surface_set_resize_outset(wl_client* client,
+                                      wl_resource* resource,
+                                      int32_t outset) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetResizeOutset(
+      outset);
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -2055,7 +2066,9 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_ack_configure,
     remote_surface_move,
     remote_surface_set_orientation,
-    remote_surface_set_window_type};
+    remote_surface_set_window_type,
+    remote_surface_resize,
+    remote_surface_set_resize_outset};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -2107,6 +2120,10 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     helper->RemoveTabletModeObserver(this);
     helper->RemoveActivationObserver(this);
     display::Screen::GetScreen()->RemoveObserver(this);
+  }
+
+  bool HasRelativeSurfaceHierarchy() const {
+    return wl_resource_get_version(remote_shell_resource_) >= 9;
   }
 
   std::unique_ptr<ClientControlledShellSurface> CreateShellSurface(
@@ -2334,6 +2351,14 @@ uint32_t HandleRemoteSurfaceConfigureCallback(
   return serial;
 }
 
+void HandleRemoteSurfaceGeometryChangedCallback(wl_resource* resource,
+                                                const gfx::Rect& geometry) {
+  zcr_remote_surface_v1_send_window_geometry_changed(
+      resource, geometry.x(), geometry.y(), geometry.width(),
+      geometry.height());
+  wl_client_flush(wl_resource_get_client(resource));
+}
+
 void remote_shell_get_remote_surface(wl_client* client,
                                      wl_resource* resource,
                                      uint32_t id,
@@ -2367,6 +2392,11 @@ void remote_shell_get_remote_surface(wl_client* client,
   shell_surface->set_configure_callback(
       base::Bind(&HandleRemoteSurfaceConfigureCallback,
                  base::Unretained(remote_surface_resource)));
+  if (shell->HasRelativeSurfaceHierarchy()) {
+    shell_surface->set_geometry_changed_callback(
+        base::BindRepeating(&HandleRemoteSurfaceGeometryChangedCallback,
+                            base::Unretained(remote_surface_resource)));
+  }
 
   SetImplementation(remote_surface_resource, &remote_surface_implementation,
                     std::move(shell_surface));
@@ -2405,7 +2435,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 8;
+const uint32_t remote_shell_version = 9;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

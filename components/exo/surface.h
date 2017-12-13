@@ -101,6 +101,10 @@ class Surface final : public ui::PropertyHandler {
   // events. The region is clipped to the surface bounds.
   void SetInputRegion(const cc::Region& region);
 
+  // This overrides the input region to the surface bounds with an outset.
+  // TODO(domlaskowski): Remove this once client-driven resizing is removed.
+  void SetInputOutset(int outset);
+
   // This sets the scaling factor used to interpret the contents of the buffer
   // attached to the surface. Note that if the scale is larger than 1, then you
   // have to attach a buffer that is larger (by a factor of scale in each
@@ -247,6 +251,7 @@ class Surface final : public ui::PropertyHandler {
 
     cc::Region opaque_region;
     cc::Region input_region;
+    int input_outset = 0;
     float buffer_scale = 1.0f;
     Transform buffer_transform = Transform::NORMAL;
     gfx::Size viewport;
