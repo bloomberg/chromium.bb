@@ -51,14 +51,20 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
       FrameTreeNode* frame_tree_node);
 
+  // This method does not climb up to the suitable parent frame,
+  // so only use it when we are sure the frame will be a local root.
+  // Prefer GetOrCreateFor instead.
+  static scoped_refptr<DevToolsAgentHost> GetOrCreateForDangling(
+      FrameTreeNode* frame_tree_node);
+
   static void OnCancelPendingNavigation(RenderFrameHost* pending,
                                         RenderFrameHost* current);
   static void OnBeforeNavigation(RenderFrameHost* current,
                                  RenderFrameHost* pending);
   static void OnResetNavigationRequest(NavigationRequest* navigation_request);
 
-  static std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
-      NavigationHandle* navigation_handle);
+  static std::vector<std::unique_ptr<NavigationThrottle>>
+  CreateNavigationThrottles(NavigationHandle* navigation_handle);
   static bool IsNetworkHandlerEnabled(FrameTreeNode* frame_tree_node);
   static void AppendDevToolsHeaders(FrameTreeNode* frame_tree_node,
                                     net::HttpRequestHeaders* headers);
