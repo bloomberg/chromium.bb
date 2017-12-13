@@ -4,10 +4,11 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//components/sync/protocol/protocol_sources.gni")
 import("//testing/test.gni")
 
-static_library("sync") {
+jumbo_static_library("sync") {
   sources = [
     "base/attachment_id_proto.cc",
     "base/attachment_id_proto.h",
