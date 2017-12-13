@@ -1080,17 +1080,6 @@ ui::TextInputType RenderWidgetHostViewChildFrame::GetTextInputType() const {
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
-gfx::Point RenderWidgetHostViewChildFrame::GetViewOriginInRoot() const {
-  if (frame_connector_) {
-    auto origin = GetViewBounds().origin() -
-                  frame_connector_->GetRootRenderWidgetHostView()
-                      ->GetViewBounds()
-                      .origin();
-    return gfx::Point(origin.x(), origin.y());
-  }
-  return gfx::Point();
-}
-
 RenderWidgetHostViewBase*
 RenderWidgetHostViewChildFrame::GetRootRenderWidgetHostView() const {
   return frame_connector_ ? frame_connector_->GetRootRenderWidgetHostView()

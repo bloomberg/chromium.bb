@@ -399,9 +399,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   EXPECT_TRUE(ExecuteScriptAndExtractString(child->current_frame_host(),
                                             "get_point_inside_text()", &str));
   JSONToPoint(str, &point_f);
-  gfx::Point origin = child_view->GetViewOriginInRoot();
-  gfx::Vector2dF origin_vec(origin.x(), origin.y());
-  point_f += origin_vec;
+  point_f = child_view->TransformPointToRootCoordSpaceF(point_f);
 
   // Initiate selection with a sequence of events that go through the targeting
   // system.
@@ -421,10 +419,12 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   parent_selection_controller_client->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_CLEARED);
   if (GetParam()) {
-    gfx::PointF point_outside_iframe = gfx::PointF(-1.f, -1.f) + origin_vec;
+    gfx::PointF point_outside_iframe =
+        child_view->TransformPointToRootCoordSpaceF(gfx::PointF(-1.f, -1.f));
     SimpleTap(gfx::Point(point_outside_iframe.x(), point_outside_iframe.y()));
   } else {
-    gfx::PointF point_inside_iframe = gfx::PointF(+1.f, +1.f) + origin_vec;
+    gfx::PointF point_inside_iframe =
+        child_view->TransformPointToRootCoordSpaceF(gfx::PointF(+1.f, +1.f));
     SimpleTap(gfx::Point(point_inside_iframe.x(), point_inside_iframe.y()));
   }
   parent_selection_controller_client->Wait();
@@ -515,9 +515,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   EXPECT_TRUE(ExecuteScriptAndExtractString(child->current_frame_host(),
                                             "get_point_inside_text()", &str));
   JSONToPoint(str, &point_f);
-  gfx::Point origin = child_view->GetViewOriginInRoot();
-  gfx::Vector2dF origin_vec(origin.x(), origin.y());
-  point_f += origin_vec;
+  point_f = child_view->TransformPointToRootCoordSpaceF(point_f);
 
   // Initiate selection with a sequence of events that go through the targeting
   // system.

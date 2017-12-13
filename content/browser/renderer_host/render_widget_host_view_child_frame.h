@@ -230,9 +230,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   ui::TextInputType GetTextInputType() const;
   bool GetSelectionRange(gfx::Range* range) const;
-  // This returns the origin of this views's bounding rect in the coordinates
-  // of the root RenderWidgetHostView.
-  gfx::Point GetViewOriginInRoot() const;
 
   RenderWidgetHostViewBase* GetRootRenderWidgetHostView() const;
 

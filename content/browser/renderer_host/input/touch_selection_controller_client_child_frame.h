@@ -63,7 +63,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientChildFrame
   gfx::SelectionBound selection_start_;
   gfx::SelectionBound selection_end_;
   // Keep track of the view origin as of the last time selection was updated.
-  gfx::Point view_origin_at_last_update_;
+  gfx::PointF view_origin_at_last_update_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientChildFrame);
 };

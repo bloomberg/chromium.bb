@@ -12262,18 +12262,12 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
             parent_view->touch_selection_controller()->active_status());
   // Find the location of some text to select.
-  auto* manager = static_cast<TouchSelectionControllerClientManagerAndroid*>(
-      parent_view->GetTouchSelectionControllerClientManager());
-  float page_scale_factor = manager->page_scale_factor();
   gfx::PointF point_f;
   std::string str;
   EXPECT_TRUE(ExecuteScriptAndExtractString(child->current_frame_host(),
                                             "get_point_inside_text()", &str));
   ConvertJSONToPoint(str, &point_f);
-  gfx::Point origin = child_view->GetViewOriginInRoot();
-  gfx::Vector2dF origin_vec(origin.x(), origin.y());
-  point_f += origin_vec;
-  point_f.Scale(page_scale_factor);
+  point_f = child_view->TransformPointToRootCoordSpaceF(point_f);
 
   // Initiate selection with a sequence of events that go through the targeting
   // system.
@@ -12294,8 +12288,8 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   // Since Android tests may run with page_scale_factor < 1, use an offset a
   // bigger than +/-1 for doing the inside/outside taps to cancel the selection
   // handles.
-  gfx::PointF point_inside_iframe = gfx::PointF(+5.f, +5.f) + origin_vec;
-  point_inside_iframe.Scale(page_scale_factor);
+  gfx::PointF point_inside_iframe =
+      child_view->TransformPointToRootCoordSpaceF(gfx::PointF(+5.f, +5.f));
   SimpleTap(gfx::Point(point_inside_iframe.x(), point_inside_iframe.y()));
   selection_controller_client->Wait();
 
@@ -12326,8 +12320,8 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   // Since Android tests may run with page_scale_factor < 1, use an offset a
   // bigger than +/-1 for doing the inside/outside taps to cancel the selection
   // handles.
-  gfx::PointF point_outside_iframe = gfx::PointF(-5.f, -5.f) + origin_vec;
-  point_outside_iframe.Scale(page_scale_factor);
+  gfx::PointF point_outside_iframe =
+      child_view->TransformPointToRootCoordSpaceF(gfx::PointF(-5.f, -5.f));
   SimpleTap(gfx::Point(point_outside_iframe.x(), point_outside_iframe.y()));
   selection_controller_client->Wait();
 
