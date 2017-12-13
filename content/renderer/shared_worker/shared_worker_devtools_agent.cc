@@ -17,7 +17,7 @@ using blink::WebString;
 
 namespace content {
 
-static const size_t kMaxMessageChunkSize =
+static const size_t kMaxSharedWorkerDevToolsMessageChunkSize =
     IPC::Channel::kMaximumMessageSize / 4;
 
 SharedWorkerDevToolsAgent::SharedWorkerDevToolsAgent(
@@ -55,7 +55,7 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
   chunk.message_size = message.size();
   chunk.is_first = true;
 
-  if (message.length() < kMaxMessageChunkSize) {
+  if (message.length() < kMaxSharedWorkerDevToolsMessageChunkSize) {
     chunk.data.swap(message);
     chunk.session_id = session_id;
     chunk.call_id = call_id;
@@ -66,12 +66,14 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
     return;
   }
 
-  for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
-    chunk.is_last = pos + kMaxMessageChunkSize >= message.length();
+  for (size_t pos = 0; pos < message.length();
+       pos += kMaxSharedWorkerDevToolsMessageChunkSize) {
+    chunk.is_last =
+        pos + kMaxSharedWorkerDevToolsMessageChunkSize >= message.length();
     chunk.session_id = chunk.is_last ? session_id : 0;
     chunk.call_id = chunk.is_last ? call_id : 0;
     chunk.post_state = chunk.is_last ? post_state : std::string();
-    chunk.data = message.substr(pos, kMaxMessageChunkSize);
+    chunk.data = message.substr(pos, kMaxSharedWorkerDevToolsMessageChunkSize);
     Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
         route_id_, chunk));
     chunk.is_first = false;

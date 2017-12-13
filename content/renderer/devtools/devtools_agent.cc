@@ -45,7 +45,7 @@ namespace {
 
 // TODO(dgozman): somehow get this from a mojo config.
 // See kMaximumMojoMessageSize in services/service_manager/embedder/main.cc.
-const size_t kMaxMessageChunkSize = 128 * 1024 * 1024 / 4;
+const size_t kMaxDevToolsMessageChunkSize = 128 * 1024 * 1024 / 4;
 const char kPageGetAppManifest[] = "Page.getAppManifest";
 
 class WebKitClientMessageLoopImpl
@@ -321,16 +321,18 @@ void DevToolsAgent::SendChunkedProtocolMessage(int session_id,
   if (it == hosts_.end())
     return;
 
-  bool single_chunk = message.length() < kMaxMessageChunkSize;
-  for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
+  bool single_chunk = message.length() < kMaxDevToolsMessageChunkSize;
+  for (size_t pos = 0; pos < message.length();
+       pos += kMaxDevToolsMessageChunkSize) {
     mojom::DevToolsMessageChunkPtr chunk = mojom::DevToolsMessageChunk::New();
     chunk->is_first = pos == 0;
     chunk->message_size = chunk->is_first ? message.size() : 0;
-    chunk->is_last = pos + kMaxMessageChunkSize >= message.length();
+    chunk->is_last = pos + kMaxDevToolsMessageChunkSize >= message.length();
     chunk->call_id = chunk->is_last ? call_id : 0;
     chunk->post_state = chunk->is_last ? std::move(post_state) : std::string();
-    chunk->data = single_chunk ? std::move(message)
-                               : message.substr(pos, kMaxMessageChunkSize);
+    chunk->data = single_chunk
+                      ? std::move(message)
+                      : message.substr(pos, kMaxDevToolsMessageChunkSize);
     it->second->DispatchProtocolMessage(std::move(chunk));
   }
 }
