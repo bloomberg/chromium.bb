@@ -176,9 +176,13 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
   frame_sink_manager_->UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                                     child_frame_sink_id);
 
+  // The reference parent_data will become invalid when the container is
+  // modified. So we have to call IsEmpty() in advance.
+  bool parent_data_is_empty = parent_data.IsEmpty();
   if (child_data.IsEmpty())
     frame_sink_data_map_.erase(child_frame_sink_id);
-  if (parent_data.IsEmpty())
+
+  if (parent_data_is_empty)
     frame_sink_data_map_.erase(parent_frame_sink_id);
 }
 
