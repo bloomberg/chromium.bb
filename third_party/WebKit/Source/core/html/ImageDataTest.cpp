@@ -262,6 +262,137 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
   delete[] f32_pixels;
 }
 
+// This test examines ImageData::Create(StaticBitmapImage)
+TEST_F(ImageDataTest, TestCreateImageDataFromStaticBitmapImage) {
+  // Enable experimental canvas features for this test.
+  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
+
+  const unsigned kNumColorComponents = 16;
+  const unsigned kNumPixels = kNumColorComponents / 4;
+  const unsigned kWidth = 2;
+  const unsigned kHeight = 2;
+
+  // Preparing source pixels
+  uint8_t expected_u8_pixels_unpremul[] = {
+      255, 0,   0,   255,  // Red
+      0,   0,   0,   0,    // Transparent
+      255, 192, 128, 64,   // Decreasing values
+      93,  117, 205, 41};  // Random values
+
+  uint8_t expected_u8_pixels_premul[kNumColorComponents];
+  uint16_t expected_f16_pixels_unpremul[kNumColorComponents];
+  uint16_t expected_f16_pixels_premul[kNumColorComponents];
+  float expected_f32_pixels_unpremul[kNumColorComponents];
+  float expected_f32_pixels_premul[kNumColorComponents];
+
+  auto prepareSourcePixels = [&expected_u8_pixels_unpremul, &kNumPixels](
+                                 auto buffer, bool is_premul, auto color_type) {
+    auto xform = SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
+                                        SkColorSpace::MakeSRGBLinear().get());
+    EXPECT_TRUE(
+        xform->apply(color_type, buffer,
+                     SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat,
+                     expected_u8_pixels_unpremul, kNumPixels,
+                     is_premul ? kPremul_SkAlphaType : kUnpremul_SkAlphaType));
+  };
+
+  prepareSourcePixels(expected_u8_pixels_premul, true,
+                      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat);
+  prepareSourcePixels(expected_f16_pixels_unpremul, false,
+                      SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat);
+  prepareSourcePixels(expected_f16_pixels_premul, true,
+                      SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat);
+  prepareSourcePixels(expected_f32_pixels_unpremul, false,
+                      SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat);
+  prepareSourcePixels(expected_f32_pixels_premul, true,
+                      SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat);
+
+  // Preparing ArrayBufferContents objects
+  auto createBufferContent = [](auto& array, unsigned size) {
+    WTF::ArrayBufferContents contents(
+        size, 1, WTF::ArrayBufferContents::kNotShared,
+        WTF::ArrayBufferContents::kDontInitialize);
+    std::memcpy(contents.Data(), array, size);
+    return contents;
+  };
+
+  auto contents_u8_premul =
+      createBufferContent(expected_u8_pixels_premul, kNumColorComponents);
+  auto contents_u8_unpremul =
+      createBufferContent(expected_u8_pixels_unpremul, kNumColorComponents);
+  auto contents_f16_premul =
+      createBufferContent(expected_f16_pixels_premul, kNumColorComponents * 2);
+  auto contents_f16_unpremul = createBufferContent(expected_f16_pixels_unpremul,
+                                                   kNumColorComponents * 2);
+
+  // Preparing StaticBitmapImage objects
+  auto info_u8_premul = SkImageInfo::Make(
+      kWidth, kHeight, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+  auto info_u8_unpremul = info_u8_premul.makeAlphaType(kUnpremul_SkAlphaType);
+  auto info_f16_premul = info_u8_premul.makeColorType(kRGBA_F16_SkColorType)
+                             .makeColorSpace(SkColorSpace::MakeSRGBLinear());
+  auto info_f16_unpremul = info_f16_premul.makeAlphaType(kUnpremul_SkAlphaType);
+
+  auto image_u8_premul =
+      StaticBitmapImage::Create(contents_u8_premul, info_u8_premul);
+  auto image_u8_unpremul =
+      StaticBitmapImage::Create(contents_u8_unpremul, info_u8_unpremul);
+  auto image_f16_premul =
+      StaticBitmapImage::Create(contents_f16_premul, info_f16_premul);
+  auto image_f16_unpremul =
+      StaticBitmapImage::Create(contents_f16_unpremul, info_f16_unpremul);
+
+  // Creating ImageData objects
+  ImageData* actual_image_data_u8[4];
+  ImageData* actual_image_data_f32[4];
+  // u8 premul
+  actual_image_data_u8[0] = ImageData::Create(image_u8_premul);
+  actual_image_data_u8[1] =
+      ImageData::Create(image_u8_unpremul, kPremultiplyAlpha);
+  // u8 unpremul
+  actual_image_data_u8[2] = ImageData::Create(image_u8_unpremul);
+  actual_image_data_u8[3] =
+      ImageData::Create(image_u8_premul, kUnpremultiplyAlpha);
+
+  // ImageData does not support half float storage. Therefore, ImageData
+  // objects that are created from half-float backed StaticBitmapImage objects
+  // will contain float 32 data items.
+
+  // f32 premul
+  actual_image_data_f32[0] = ImageData::Create(image_f16_premul);
+  actual_image_data_f32[1] =
+      ImageData::Create(image_f16_unpremul, kPremultiplyAlpha);
+  // f32 unpremul
+  actual_image_data_f32[2] = ImageData::Create(image_f16_unpremul);
+  actual_image_data_f32[3] =
+      ImageData::Create(image_f16_premul, kUnpremultiplyAlpha);
+
+  // Associating expected color component arrays
+  uint8_t* expected_pixel_arrays_u8[4] = {
+      expected_u8_pixels_premul, expected_u8_pixels_premul,
+      expected_u8_pixels_unpremul, expected_u8_pixels_unpremul};
+  float* expected_pixel_arrays_f32[4] = {
+      expected_f32_pixels_premul, expected_f32_pixels_premul,
+      expected_f32_pixels_unpremul, expected_f32_pixels_unpremul};
+
+  // Comparing ImageData with the source StaticBitmapImage
+  for (unsigned i = 0; i < 4; i++) {
+    ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+        expected_pixel_arrays_u8[i],
+        actual_image_data_u8[i]->BufferBase()->Data(), kNumPixels,
+        kUint8ClampedArrayStorageFormat, kAlphaUnmultiplied,
+        kUnpremulRoundTripTolerance);
+  }
+
+  for (unsigned i = 0; i < 4; i++) {
+    ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+        expected_pixel_arrays_f32[i],
+        actual_image_data_f32[i]->BufferBase()->Data(), kNumPixels,
+        kFloat32ArrayStorageFormat, kAlphaUnmultiplied,
+        kUnpremulRoundTripTolerance);
+  }
+}
+
 // This test examines ImageData::CropRect()
 TEST_F(ImageDataTest, TestCropRect) {
   // Enable experimental canvas features for this test.
