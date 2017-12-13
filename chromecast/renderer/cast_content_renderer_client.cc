@@ -104,12 +104,12 @@ void CastContentRendererClient::RenderThreadStarted() {
   std::string last_launched_app =
       command_line->GetSwitchValueNative(switches::kLastLaunchedApp);
   if (!last_launched_app.empty())
-    base::debug::SetCrashKeyValue(crash_keys::kLastApp, last_launched_app);
+    crash_keys::last_app.Set(last_launched_app);
 
   std::string previous_app =
       command_line->GetSwitchValueNative(switches::kPreviousApp);
   if (!previous_app.empty())
-    base::debug::SetCrashKeyValue(crash_keys::kPreviousApp, previous_app);
+    crash_keys::previous_app.Set(previous_app);
 #endif  // !defined(OS_FUCHSIA)
 }
 
