@@ -7905,4 +7905,23 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, HistoryBackInUnloadCancelsReload) {
             html_content);
 }
 
+// Data URLs can have a reference fragment like any other URLs. In this test,
+// there are two navigations with the same data URL, but with a different
+// reference. The second navigation must be classified as "same-document".
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DataURLSameDocumentNavigation) {
+  GURL url_first("data:text/html,body#foo");
+  GURL url_second("data:text/html,body#bar");
+  EXPECT_TRUE(url_first.EqualsIgnoringRef(url_second));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_first));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameNavigateParamsCapturer capturer(root);
+  shell()->LoadURL(url_second);
+  capturer.Wait();
+  EXPECT_TRUE(capturer.is_same_document());
+}
+
 }  // namespace content
