@@ -567,9 +567,9 @@ def _HandleOutputFromProcess(process, symbols_mapping):
   # Back-trace line matcher/parser assumes that 'pc' is always present, and
   # expects that 'sp' and ('binary','pc_offset') may also be provided.
   backtrace_entry = re.compile(
-      r'pc 0(?:x[0-9a-f]+)? ' +
-      r'(?:sp 0x[0-9a-f]+ )?' +
-      r'(?:\((?P<binary>\S+),(?P<pc_offset>0x[0-9a-f]+)\))?$')
+      r'pc 0(?:x[0-9a-f]+)?' +
+      r'(?: sp 0x[0-9a-f]+)?' +
+      r'(?: \((?P<binary>\S+),(?P<pc_offset>0x[0-9a-f]+)\))?$')
 
   # A buffer of backtrace entries awaiting symbolization, stored as dicts:
   # raw: The original back-trace line that followed the prefix.
