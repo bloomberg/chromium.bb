@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
@@ -40,6 +42,8 @@ using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
+
+typedef NSString* (^ExpectedTextLabelCallback)(NSString* identityEmail);
 
 namespace {
 
@@ -286,34 +290,74 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       performAction:grey_tap()];
 }
 
-- (void)testMDMError {
+// Checks if the sync cell is correctly configured with the expected detail text
+// label and an image.
+- (void)checkSyncCellWithExpectedTextLabelCallback:
+    (ExpectedTextLabelCallback)callback {
+  NSAssert(callback, @"Need callback");
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService* fakeChromeIdentityService =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
   fakeChromeIdentityService->AddIdentity(identity);
-  fakeChromeIdentityService->SetFakeMDMError(true);
 
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
   [[EarlGrey selectElementWithMatcher:ButtonWithIdentity(identity)]
       performAction:grey_tap()];
   AcceptAccountConsistencyPopup();
+
+  NSString* expectedDetailTextLabel = callback([identity userEmail]);
   [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
-  // Check that account sync button display the sync error.
-  GREYPerformBlock block = ^(id element, NSError* __strong* errorOrNil) {
+  // Check that account sync button displays the expected detail text label and
+  // an image.
+  GREYPerformBlock block = ^BOOL(id element, NSError* __strong* errorOrNil) {
     GREYAssertTrue([element isKindOfClass:[AccountControlCell class]],
                    @"Should be AccountControlCell type");
     AccountControlCell* cell = static_cast<AccountControlCell*>(element);
-    NSString* expectedString =
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_ERROR);
-    return [cell.detailTextLabel.text isEqualToString:expectedString];
+    return
+        [cell.detailTextLabel.text isEqualToString:expectedDetailTextLabel] &&
+        cell.imageView.image != nil;
   };
   [[EarlGrey selectElementWithMatcher:AccountsSyncButton()]
       performAction:[GREYActionBlock
                         actionWithName:@"Invoke clearStateForTest selector"
                           performBlock:block]];
+}
+
+// Tests the sync cell is correctly configured when having a MDM error.
+- (void)testMDMError {
+  ios::FakeChromeIdentityService* fakeChromeIdentityService =
+      ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
+  fakeChromeIdentityService->SetFakeMDMError(true);
+  ExpectedTextLabelCallback callback = ^(NSString* identityEmail) {
+    return l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_ERROR);
+  };
+  [self checkSyncCellWithExpectedTextLabelCallback:callback];
+}
+
+// Tests the sync cell is correctly configured when no error.
+- (void)testSyncItemWithSyncingMessage {
+  ExpectedTextLabelCallback callback = ^(NSString* identityEmail) {
+    return l10n_util::GetNSStringF(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNCING,
+                                   base::SysNSStringToUTF16(identityEmail));
+  };
+  [self checkSyncCellWithExpectedTextLabelCallback:callback];
+}
+
+// Tests the sync cell is correctly configured when the passphrase is required.
+- (void)testSyncItemWithPassphraseRequired {
+  ExpectedTextLabelCallback callback = ^(NSString* identityEmail) {
+    ios::ChromeBrowserState* browser_state =
+        chrome_test_util::GetOriginalBrowserState();
+    browser_sync::ProfileSyncService* profile_sync_service =
+        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+    profile_sync_service->GetEncryptionObserverForTest()->OnPassphraseRequired(
+        syncer::REASON_DECRYPTION, sync_pb::EncryptedData());
+    return l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_DESCRIPTION);
+  };
+  [self checkSyncCellWithExpectedTextLabelCallback:callback];
 }
 
 @end
