@@ -245,9 +245,6 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_NEWTAB_WEBSTORE_THUMBNAIL" file="ntp_webstore_thumb.png" />
       <if expr="chromeos">
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ALERT" file="common/notification_alert.png" />
-      </if>
-      <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DRIVE" file="cros/notification_drive.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_FINGERPRINT" file="cros/notification_fingerprint.png" />
         <structure type="chrome_scaled_image" name="IDR_PORTAL_DETECTION_ALERT" file="cros/captive_portal_icon.png" />

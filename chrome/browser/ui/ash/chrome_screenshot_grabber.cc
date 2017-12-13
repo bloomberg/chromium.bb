@@ -609,14 +609,10 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
       new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
                                                 screenshot_path));
   notification.set_clickable(success);
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification.set_accent_color(
-        message_center::kSystemNotificationColorNormal);
-    notification.set_small_image(gfx::Image(
-        gfx::CreateVectorIcon(kNotificationImageIcon,
-                              message_center::kSystemNotificationColorNormal)));
-    notification.set_vector_small_image(kNotificationImageIcon);
-  }
+  notification.set_accent_color(message_center::kSystemNotificationColorNormal);
+  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
+      kNotificationImageIcon, message_center::kSystemNotificationColorNormal)));
+  notification.set_vector_small_image(kNotificationImageIcon);
 
   NotificationDisplayService::GetForProfile(GetProfile())
       ->Display(NotificationHandler::Type::TRANSIENT, notification);
