@@ -61,17 +61,6 @@ class FlashPermissionBrowserTest : public PermissionsBrowserTest {
         switches::kOverridePluginPowerSaverForTesting, "never");
   }
 
-  void SetUpOnMainThread() override {
-    // Set a high engagement threshhold so it doesn't interfere with testing the
-    // permission.
-    std::map<std::string, std::string> parameters;
-    parameters["engagement_threshold_for_flash"] = "100";
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kPreferHtmlOverPlugins, parameters);
-
-    PermissionsBrowserTest::SetUpOnMainThread();
-  }
-
   void TriggerPrompt() override {
     if (prompt_factory()->response_type() ==
         PermissionRequestManager::ACCEPT_ALL) {

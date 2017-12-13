@@ -64349,6 +64349,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Plugin.Flash.Engagement">
+  <obsolete>
+    Deprecated 12/2017 in Issue 781644 as we no longer use Site Engagement Index
+    as a signal for Flash display.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <summary>
     The engagement score of origins which have passed through a site engagement
@@ -107475,6 +107479,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="PluginFlashEngagement" separator=".">
+  <obsolete>
+    Deprecated 12/2017 in Issue 781644.
+  </obsolete>
   <suffix name="ContentSettingAllowed" label="Engagement when Flash allowed."/>
   <suffix name="ContentSettingBlocked" label="Engagement when Flash blocked."/>
   <suffix name="NoSetting" label="Engagement when no content setting set."/>
