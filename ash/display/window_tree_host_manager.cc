@@ -284,7 +284,10 @@ aura::Window* WindowTreeHostManager::GetRootWindowForDisplayId(int64_t id) {
 AshWindowTreeHost* WindowTreeHostManager::GetAshWindowTreeHostForDisplayId(
     int64_t display_id) {
   const auto host = window_tree_hosts_.find(display_id);
-  return host == window_tree_hosts_.end() ? nullptr : host->second;
+  if (host != window_tree_hosts_.end())
+    return host->second;
+  return mirror_window_controller_->GetAshWindowTreeHostForDisplayId(
+      display_id);
 }
 
 aura::Window::Windows WindowTreeHostManager::GetAllRootWindows() {
