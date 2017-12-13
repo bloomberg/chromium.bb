@@ -23,8 +23,8 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
         {'status': 'fail', 'waterfall': 'chromeos'},
         {'status': 'pass', 'waterfall': 'chromiumos'},
         {'status': 'fail', 'waterfall': 'chromiumos'},
-        {'status': 'pass', 'waterfall': 'chromiumos.tryserver'},
-        {'status': 'fail', 'waterfall': 'chromiumos.tryserver'},
+        {'status': 'pass', 'waterfall': 'chromiumos.release'},
+        {'status': 'fail', 'waterfall': 'chromiumos.release'},
         {'status': 'pass', 'waterfall': 'bogus'},
         {'status': 'fail', 'waterfall': 'bogus'},
     ]
