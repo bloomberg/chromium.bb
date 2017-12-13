@@ -147,6 +147,17 @@ void TabLifecycleUnitSource::TabReplacedAt(TabStripModel* tab_strip_model,
   tabs_[new_contents] = std::move(lifecycle_unit);
 }
 
+void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,
+                                          int index,
+                                          TabChangeType change_type) {
+  if (change_type != TabChangeType::kAll)
+    return;
+  auto it = tabs_.find(contents);
+  DCHECK(it != tabs_.end());
+  TabLifecycleUnit* lifecycle_unit = it->second.get();
+  lifecycle_unit->SetRecentlyAudible(contents->WasRecentlyAudible());
+}
+
 void TabLifecycleUnitSource::OnBrowserSetLastActive(Browser* browser) {
   UpdateFocusedTab();
 }

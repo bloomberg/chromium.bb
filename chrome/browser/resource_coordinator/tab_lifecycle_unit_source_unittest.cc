@@ -8,13 +8,16 @@
 
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_impl.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,6 +52,19 @@ class MockLifecycleUnitSourceObserver : public LifecycleUnitSourceObserver {
   DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitSourceObserver);
 };
 
+class MockTabLifecycleObserver : public TabLifecycleObserver {
+ public:
+  MockTabLifecycleObserver() = default;
+
+  MOCK_METHOD2(OnDiscardedStateChange,
+               void(content::WebContents* contents, bool is_discarded));
+  MOCK_METHOD2(OnAutoDiscardableStateChange,
+               void(content::WebContents* contents, bool is_auto_discardable));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTabLifecycleObserver);
+};
+
 bool IsFocused(LifecycleUnit* lifecycle_unit) {
   return lifecycle_unit->GetSortKey().last_focused_time ==
          base::TimeTicks::Max();
@@ -62,7 +78,8 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
  protected:
   TabLifecycleUnitSourceTest()
       : scoped_set_tick_clock_for_testing_(&test_clock_) {
-    source_.AddObserver(&observer_);
+    source_.AddObserver(&source_observer_);
+    source_.AddTabLifecycleObserver(&tab_observer_);
   }
 
   void SetUp() override {
@@ -73,6 +90,11 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
+    // Expect notifications when tabs are closed.
+    EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(testing::_))
+        .Times(tab_strip_model_->count());
+    tab_strip_model_->CloseAllTabs();
+
     tab_strip_model_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -89,7 +111,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
 
     // Add a foreground tab to the tab strip.
     test_clock_.Advance(kShortDelay);
-    EXPECT_CALL(observer_, OnLifecycleUnitCreated(testing::_))
+    EXPECT_CALL(source_observer_, OnLifecycleUnitCreated(testing::_))
         .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit) {
           *first_lifecycle_unit = lifecycle_unit;
 
@@ -98,15 +120,15 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
           else
             EXPECT_TRUE(WasNeverFocused(*first_lifecycle_unit));
         }));
-    content::WebContents* first_web_contents = CreateTestWebContents();
+    content::WebContents* first_web_contents = CreateAndNavigateWebContents();
     tab_strip_model_->AppendWebContents(first_web_contents, true);
-    testing::Mock::VerifyAndClear(&observer_);
+    testing::Mock::VerifyAndClear(&source_observer_);
     EXPECT_TRUE(source_.GetTabLifecycleUnitExternal(first_web_contents));
 
     // Add another foreground tab to the focused tab strip.
     test_clock_.Advance(kShortDelay);
     auto time_before_second_tab = test_clock_.NowTicks();
-    EXPECT_CALL(observer_, OnLifecycleUnitCreated(testing::_))
+    EXPECT_CALL(source_observer_, OnLifecycleUnitCreated(testing::_))
         .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit) {
           *second_lifecycle_unit = lifecycle_unit;
 
@@ -119,10 +141,13 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
             EXPECT_TRUE(WasNeverFocused(*second_lifecycle_unit));
           }
         }));
-    content::WebContents* second_web_contents = CreateTestWebContents();
+    content::WebContents* second_web_contents = CreateAndNavigateWebContents();
     tab_strip_model_->AppendWebContents(second_web_contents, true);
-    testing::Mock::VerifyAndClear(&observer_);
+    testing::Mock::VerifyAndClear(&source_observer_);
     EXPECT_TRUE(source_.GetTabLifecycleUnitExternal(second_web_contents));
+
+    // TabStripModel doesn't update the visibility of its WebContents by itself.
+    first_web_contents->WasHidden();
   }
 
   void TestAppendTabsToTabStrip(bool focus_tab_strip) {
@@ -137,7 +162,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
     // Add a background tab to the focused tab strip.
     test_clock_.Advance(kShortDelay);
     LifecycleUnit* third_lifecycle_unit = nullptr;
-    EXPECT_CALL(observer_, OnLifecycleUnitCreated(testing::_))
+    EXPECT_CALL(source_observer_, OnLifecycleUnitCreated(testing::_))
         .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit) {
           third_lifecycle_unit = lifecycle_unit;
 
@@ -151,24 +176,36 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
           }
           EXPECT_TRUE(WasNeverFocused(third_lifecycle_unit));
         }));
-    content::WebContents* third_web_contents = CreateTestWebContents();
+    content::WebContents* third_web_contents = CreateAndNavigateWebContents();
     tab_strip_model_->AppendWebContents(third_web_contents, false);
-    testing::Mock::VerifyAndClear(&observer_);
+    testing::Mock::VerifyAndClear(&source_observer_);
     EXPECT_TRUE(source_.GetTabLifecycleUnitExternal(third_web_contents));
 
     // Expect notifications when tabs are closed.
-    EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
-    EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(second_lifecycle_unit));
-    EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(third_lifecycle_unit));
+    EXPECT_CALL(source_observer_,
+                OnLifecycleUnitDestroyed(first_lifecycle_unit));
+    EXPECT_CALL(source_observer_,
+                OnLifecycleUnitDestroyed(second_lifecycle_unit));
+    EXPECT_CALL(source_observer_,
+                OnLifecycleUnitDestroyed(third_lifecycle_unit));
     tab_strip_model_->CloseAllTabs();
   }
 
   TabLifecycleUnitSource source_;
-  testing::StrictMock<MockLifecycleUnitSourceObserver> observer_;
+  testing::StrictMock<MockLifecycleUnitSourceObserver> source_observer_;
+  testing::StrictMock<MockTabLifecycleObserver> tab_observer_;
   std::unique_ptr<TabStripModel> tab_strip_model_;
   base::SimpleTestTickClock test_clock_;
 
  private:
+  content::TestWebContents* CreateAndNavigateWebContents() {
+    content::TestWebContents* web_contents =
+        content::TestWebContents::Create(profile(), nullptr);
+    // Commit an URL to allow discarding.
+    web_contents->NavigateAndCommit(GURL("https://www.example.com"));
+    return web_contents;
+  }
+
   NoUnloadListenerTabStripModelDelegate tab_strip_model_delegate_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
 
@@ -200,8 +237,9 @@ TEST_F(TabLifecycleUnitSourceTest, SwitchTabInFocusedTabStrip) {
             second_lifecycle_unit->GetSortKey().last_focused_time);
 
   // Expect notifications when tabs are closed.
-  EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
-  EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(second_lifecycle_unit));
+  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
+  EXPECT_CALL(source_observer_,
+              OnLifecycleUnitDestroyed(second_lifecycle_unit));
   tab_strip_model_->CloseAllTabs();
 }
 
@@ -213,13 +251,14 @@ TEST_F(TabLifecycleUnitSourceTest, CloseTabInFocusedTabStrip) {
 
   // Close the second tab. The first tab should be focused.
   test_clock_.Advance(kShortDelay);
-  EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(second_lifecycle_unit));
+  EXPECT_CALL(source_observer_,
+              OnLifecycleUnitDestroyed(second_lifecycle_unit));
   tab_strip_model_->CloseWebContentsAt(1, 0);
-  testing::Mock::VerifyAndClear(&observer_);
+  testing::Mock::VerifyAndClear(&source_observer_);
   EXPECT_TRUE(IsFocused(first_lifecycle_unit));
 
   // Expect notifications when tabs are closed.
-  EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
+  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
   tab_strip_model_->CloseAllTabs();
 }
 
@@ -246,9 +285,123 @@ TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
   delete original_web_contents;
 
   // Expect notifications when tabs are closed.
-  EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
-  EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(second_lifecycle_unit));
+  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
+  EXPECT_CALL(source_observer_,
+              OnLifecycleUnitDestroyed(second_lifecycle_unit));
   tab_strip_model_->CloseAllTabs();
+}
+
+// Tab discarding is tested here rather than in TabLifecycleUnitTest because
+// collaboration from the TabLifecycleUnitSource is required to replace the
+// WebContents in the TabLifecycleUnit.
+
+TEST_F(TabLifecycleUnitSourceTest, DiscardAndActivate) {
+  LifecycleUnit* background_lifecycle_unit = nullptr;
+  LifecycleUnit* foreground_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
+                &foreground_lifecycle_unit);
+  content::WebContents* initial_web_contents =
+      tab_strip_model_->GetWebContentsAt(0);
+
+  // Discard the tab.
+  EXPECT_EQ(LifecycleUnit::State::LOADED,
+            background_lifecycle_unit->GetState());
+  EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
+  background_lifecycle_unit->Discard(DiscardReason::kProactive);
+  testing::Mock::VerifyAndClear(&tab_observer_);
+  EXPECT_EQ(LifecycleUnit::State::DISCARDED,
+            background_lifecycle_unit->GetState());
+  EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
+  EXPECT_FALSE(
+      tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
+
+  // Focus the tab. Expect the state to be LOADED.
+  EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, false));
+  tab_strip_model_->ActivateTabAt(0, true);
+  testing::Mock::VerifyAndClear(&tab_observer_);
+  EXPECT_EQ(LifecycleUnit::State::LOADED,
+            background_lifecycle_unit->GetState());
+  EXPECT_TRUE(
+      tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
+}
+
+TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload) {
+  LifecycleUnit* background_lifecycle_unit = nullptr;
+  LifecycleUnit* foreground_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
+                &foreground_lifecycle_unit);
+  content::WebContents* initial_web_contents =
+      tab_strip_model_->GetWebContentsAt(0);
+
+  // Discard the tab.
+  EXPECT_EQ(LifecycleUnit::State::LOADED,
+            background_lifecycle_unit->GetState());
+  EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
+  background_lifecycle_unit->Discard(DiscardReason::kProactive);
+  testing::Mock::VerifyAndClear(&tab_observer_);
+  EXPECT_EQ(LifecycleUnit::State::DISCARDED,
+            background_lifecycle_unit->GetState());
+  EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
+  EXPECT_FALSE(
+      tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
+
+  // Explicitly reload the tab. Expect the state to be LOADED.
+  EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, false));
+  tab_strip_model_->GetWebContentsAt(0)->GetController().Reload(
+      content::ReloadType::NORMAL, false);
+  testing::Mock::VerifyAndClear(&tab_observer_);
+  EXPECT_EQ(LifecycleUnit::State::LOADED,
+            background_lifecycle_unit->GetState());
+  EXPECT_TRUE(
+      tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
+}
+
+TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce) {
+  LifecycleUnit* background_lifecycle_unit = nullptr;
+  LifecycleUnit* foreground_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
+                &foreground_lifecycle_unit);
+  content::WebContents* initial_web_contents =
+      tab_strip_model_->GetWebContentsAt(0);
+  test_clock_.Advance(kTabFocusedProtectionTime);
+
+  // It should be possible to discard the background tab.
+  EXPECT_TRUE(background_lifecycle_unit->CanDiscard(DiscardReason::kExternal));
+  EXPECT_TRUE(background_lifecycle_unit->CanDiscard(DiscardReason::kProactive));
+  EXPECT_TRUE(background_lifecycle_unit->CanDiscard(DiscardReason::kUrgent));
+
+  // Discard the tab.
+  EXPECT_EQ(LifecycleUnit::State::LOADED,
+            background_lifecycle_unit->GetState());
+  EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
+  background_lifecycle_unit->Discard(DiscardReason::kProactive);
+  testing::Mock::VerifyAndClear(&tab_observer_);
+  EXPECT_EQ(LifecycleUnit::State::DISCARDED,
+            background_lifecycle_unit->GetState());
+  EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
+  EXPECT_FALSE(
+      tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
+
+  // Explicitly reload the tab. Expect the state to be LOADED.
+  EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, false));
+  tab_strip_model_->GetWebContentsAt(0)->GetController().Reload(
+      content::ReloadType::NORMAL, false);
+  testing::Mock::VerifyAndClear(&tab_observer_);
+  EXPECT_EQ(LifecycleUnit::State::LOADED,
+            background_lifecycle_unit->GetState());
+  EXPECT_TRUE(
+      tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
+
+  // It shouldn't be possible to discard the background tab again, except for an
+  // urgent discard on ChromeOS.
+  EXPECT_FALSE(background_lifecycle_unit->CanDiscard(DiscardReason::kExternal));
+  EXPECT_FALSE(
+      background_lifecycle_unit->CanDiscard(DiscardReason::kProactive));
+#if defined(OS_CHROMEOS)
+  EXPECT_TRUE(background_lifecycle_unit->CanDiscard(DiscardReason::kUrgent));
+#else
+  EXPECT_FALSE(background_lifecycle_unit->CanDiscard(DiscardReason::kUrgent));
+#endif
 }
 
 }  // namespace resource_coordinator
