@@ -191,7 +191,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       "fake agent",
       // JSON encoded experimental options.
       "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true,"
-      "\"migrate_sessions_early_v2\":true}}",
+      "\"migrate_sessions_early_v2\":true,"
+      "\"max_time_on_non_default_network_seconds\":10}}",
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
@@ -214,6 +215,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
 
   EXPECT_TRUE(params->quic_migrate_sessions_on_network_change_v2);
   EXPECT_TRUE(params->quic_migrate_sessions_early_v2);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(10),
+            params->quic_max_time_on_non_default_network);
 }
 
 TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {

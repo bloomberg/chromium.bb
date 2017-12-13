@@ -57,6 +57,8 @@ const char kQuicMigrateSessionsOnNetworkChange[] =
     "migrate_sessions_on_network_change";
 const char kQuicMigrateSessionsOnNetworkChangeV2[] =
     "migrate_sessions_on_network_change_v2";
+const char kQuicMaxTimeOnNonDefaultNetworkSeconds[] =
+    "max_time_on_non_default_network_seconds";
 const char kQuicUserAgentId[] = "user_agent_id";
 const char kQuicMigrateSessionsEarly[] = "migrate_sessions_early";
 const char kQuicMigrateSessionsEarlyV2[] = "migrate_sessions_early_v2";
@@ -301,10 +303,18 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       }
 
       bool quic_migrate_sessions_on_network_change_v2 = false;
+      int quic_max_time_on_non_default_network_seconds = 0;
       if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChangeV2,
                                 &quic_migrate_sessions_on_network_change_v2)) {
         session_params->quic_migrate_sessions_on_network_change_v2 =
             quic_migrate_sessions_on_network_change_v2;
+        if (quic_args->GetInteger(
+                kQuicMaxTimeOnNonDefaultNetworkSeconds,
+                &quic_max_time_on_non_default_network_seconds)) {
+          session_params->quic_max_time_on_non_default_network =
+              base::TimeDelta::FromSeconds(
+                  quic_max_time_on_non_default_network_seconds);
+        }
       }
 
       bool quic_migrate_sessions_early_v2 = false;

@@ -332,6 +332,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       bool migrate_session_on_network_change,
       bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
+      base::TimeDelta max_time_on_non_default_network,
       int yield_after_packets,
       QuicTime::Delta yield_after_duration,
       int cert_verify_flags,
@@ -669,6 +670,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool migrate_session_on_network_change_;
   bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
+  base::TimeDelta max_time_on_non_default_network_;
   QuicClock* clock_;  // Unowned.
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;
