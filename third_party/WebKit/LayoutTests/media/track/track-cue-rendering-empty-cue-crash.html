@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <title>Tests that having empty cues does not crash the browser.</title>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
 test(function() {
     var video = document.createElement("video");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
     video.addTextTrack("captions", "regular captions track", "en");
     video.textTracks[0].addCue(new VTTCue(0, 4, ""));
     video.play();

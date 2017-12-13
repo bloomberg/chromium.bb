@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Tests that events are triggered for missed (skipped) cues during normal playback.</title>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <video>
@@ -10,8 +11,8 @@ async_test(function(t) {
     var video = document.querySelector("video");
     var testTrack = document.querySelector("track");
 
-    video.src = "../content/test.ogv";
-
+    video.src = findMediaFile("video", "../content/test");
+    
     video.onended = t.step_func_done();
 
     video.oncanplaythrough = t.step_func(function() {

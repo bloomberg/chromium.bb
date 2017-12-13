@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <title>Test, rendering vertical line-positioned cues with Japanese text.</title>
+<script src="../media-file.js"></script>
 <video>
     <track src="captions-webvtt/captions-snap-to-lines-set.vtt" kind="captions" default>
 </video>
 <script>
 var video = document.querySelector("video");
-video.src = "../content/test.ogv";
+video.src = findMediaFile("video", "../content/test");
 
 testRunner.waitUntilDone();
 video.onseeked = function() {

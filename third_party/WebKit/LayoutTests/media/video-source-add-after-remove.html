@@ -2,6 +2,7 @@
 <title>Test adding "source" after removing failed candidate loads media normally.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video>
     <source></source>
 </video>
@@ -13,7 +14,7 @@ async_test(function(t) {
     source.onerror = t.step_func(function() {
         video.removeChild(video.firstChild);
         var newSource = document.createElement("source");
-        newSource.src = "content/test.ogv";
+        newSource.src = findMediaFile("video", "content/test");
         video.appendChild(newSource);
         video.onloadedmetadata = t.step_func_done();
     });

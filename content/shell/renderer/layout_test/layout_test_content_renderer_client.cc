@@ -132,6 +132,13 @@ LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {
 }
 
 void LayoutTestContentRendererClient::RenderThreadStarted() {
+// Unless/until WebM files are added to the media layout tests, we need to
+// avoid removing MP4/H264/AAC so that layout tests can run on Android.
+// TODO(chcunningham): We should fix the tests to always use non-proprietary
+// codecs and just delete this code. http://crbug.com/787575
+#if !defined(OS_ANDROID)
+  media::RemoveProprietaryMediaTypesAndCodecsForTests();
+#endif
   ShellContentRendererClient::RenderThreadStarted();
   shell_observer_.reset(new LayoutTestRenderThreadObserver());
 }

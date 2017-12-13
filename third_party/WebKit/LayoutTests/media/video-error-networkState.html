@@ -2,6 +2,7 @@
 <title>Test media element networkState value in an error corner case.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -27,7 +28,7 @@ async_test(function(t) {
       }), 0);
     });
 
-    video.src = "content/corrupt.ogv";
+    video.src = findMediaFile("video", "content/corrupt");
     video.play();
 });
 </script>

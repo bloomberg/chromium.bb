@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <title>Tests default rendering for TextTrackCues that belong to a VTTRegion.</title>
 <script src="../../media-controls.js"></script>
+<script src="../../media-file.js"></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <video controls></video>
@@ -32,7 +33,7 @@ function countVisibleLines(cueElement)
 
 async_test(function() {
     var video = document.querySelector('video');
-    video.src = '../../content/test.ogv';
+    video.src = findMediaFile('video', '../../content/test');
     var testTrack = document.createElement('track');
     testTrack.onload = this.step_func(function() {
         video.oncanplaythrough = this.step_func(function() {

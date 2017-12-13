@@ -2,6 +2,7 @@
 <title>Test for autoplay of video once the media stream is set to null</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script>
     test(function() {
         assert_true(!!window.internals && !!window.internals.settings,
@@ -16,7 +17,7 @@
 
         setTimeout(t.step_func(function() {
             v.srcObject = null;
-            v.src = 'content/test.ogv';
+            v.src = findMediaFile('video', 'content/test');
 
             v.play()
                 .then(t.unreached_func('The video must not play without user gesture.'))

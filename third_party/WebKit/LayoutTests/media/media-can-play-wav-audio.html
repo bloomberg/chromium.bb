@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<title>Test HTMLMediaElement's "canPlayType" method with multiple .wav MIME types.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<audio></audio>
+<script>
+test(function() {
+    var audio = document.querySelector("audio");
+    // These tests may be expected to fail if the platform does not support the format.
+    assert_equals(audio.canPlayType("audio/wav"), "maybe");
+    assert_equals(audio.canPlayType("audio/x-wav"), "maybe");
+
+    // WAV codec 1 is basic PCM, refer to http://tools.ietf.org/html/rfc2361
+    assert_equals(audio.canPlayType("audio/wav; codecs=1"), "probably");
+    assert_equals(audio.canPlayType("audio/x-wav; codecs=1"), "probably");
+});
+</script>

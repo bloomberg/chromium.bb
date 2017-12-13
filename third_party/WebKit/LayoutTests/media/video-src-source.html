@@ -2,13 +2,14 @@
 <title>Test that a "source" element is not used when "src" attribute is set.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video>
     <source></source>
 </video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    var mediaFile = "content/test.ogv";
+    var mediaFile = findMediaFile("video", "content/test");
 
     video.onloadstart = t.step_func_done(function() {
         var url = video.currentSrc;

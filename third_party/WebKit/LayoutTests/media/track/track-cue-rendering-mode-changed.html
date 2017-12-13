@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <title>Test that cues are rendered when only the track mode is changed.</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
     var video = document.createElement('video');
-    video.src = '../content/test.ogv';
+    video.src = findMediaFile('video', '../content/test');
 
     video.oncanplaythrough = t.step_func_done(function() {
         addTracks();

@@ -2,12 +2,13 @@
 <title>Verify that a media element's currentSrc is correctly set to source element's src</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
     assert_equals(video.currentSrc, "");
-    var mediaFile = "content/test.ogv";
+    var mediaFile = findMediaFile("video", "content/test");
     var source = document.createElement("source");
     source.src = mediaFile;
     video.appendChild(source);

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that style to all cues is applied correctly.</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -18,8 +19,8 @@ video::cue {
 <script>
 async_test(function(t) {
     var video = document.querySelector('video');
-    video.src = '../content/test.ogv';
-
+    video.src = findMediaFile('video', '../content/test');
+    
     var track = document.createElement('track');
     track.src = 'captions-webvtt/styling.vtt';
     track.kind = 'captions';

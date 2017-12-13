@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+<script src="../media-file.js"></script>
 <div>
   <audio controls muted></audio>
 </div>
@@ -15,10 +16,10 @@
 <script>
   var audios = document.querySelectorAll('audio');
   for (var i = 0; i < audios.length; ++i)
-    audios[i].src = '../content/test.oga';
+    audios[i].src = findMediaFile('audio', '../content/test');
 
   var videos = document.querySelectorAll('video');
   for (var i = 0; i < videos.length; ++i)
-    videos[i].src = '../content/test.ogv';
+    videos[i].src = findMediaFile('video', '../content/test');
 </script>
 </html>

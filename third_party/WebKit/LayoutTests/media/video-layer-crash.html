@@ -12,7 +12,7 @@
         &nbsp;<video style="transform:scale(0.5)"></video><br>
         &nbsp;<video style="transform:skew(20deg)"></video><br>
         <script>
-            setSrcByTagName('video', 'content/test.ogv');
+            setSrcByTagName('video', findMediaFile('video', 'content/test'));
             document.body.removeChild(document.getElementById('one')); document.body.offsetLeft;
             init();
         </script>

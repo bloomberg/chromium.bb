@@ -8,7 +8,7 @@
     <script src="../../../fullscreen/full-screen-test.js"></script>
     <script src="../../../media/media-file.js"></script>
     <script>
-        setSrcById("video", "../../../media/content/test.ogv");
+        setSrcById("video", findMediaFile("video", "../../../media/content/test"));
         var video = document.getElementById('video');
         // Bail out early if the full screen API is not enabled or is missing:
         if (Element.prototype.webkitRequestFullScreen == undefined) {

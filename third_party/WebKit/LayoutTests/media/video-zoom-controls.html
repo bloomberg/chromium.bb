@@ -13,7 +13,7 @@
     <script src="media-file.js"></script>
     <script src="video-paint-test.js"></script>
 </head>
-<body onload="setSrcByTagName('video', 'content/test.ogv'); init()">
+<body onload="setSrcByTagName('video', findMediaFile('video', 'content/test')); init()">
     <p>Zoomed video with controls.</p>
     <video width="160" height="120" controls></video>
     <video class="rotated" width="160" height="120" controls></video>

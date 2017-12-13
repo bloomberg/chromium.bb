@@ -2,10 +2,11 @@
 <title>Test loading video twice.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
 <body>
 <script>
 async_test(function(t) {
-    var file = "http://127.0.0.1:8000/resources/test.ogv";
+    var file = findMediaFile("video", "http://127.0.0.1:8000/resources/test");
     createAndLoadVideo(false);
     function createAndLoadVideo(endTest) {
         var video = document.createElement("video");

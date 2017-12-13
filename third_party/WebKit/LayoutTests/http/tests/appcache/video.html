@@ -3,6 +3,7 @@
 <title>Test that "video" can be loaded from the application cache.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="/media-resources/media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -18,14 +19,14 @@ async_test(function(t) {
         // Setting "src" to file specified in manifest. This file should load.
         video.ondurationchange = t.step_func(test2);
         video.onerror = t.unreached_func();
-        video.src = "/media-resources/content/test.ogv";
+        video.src = "/media-resources/content/" + findMediaFile("video", "test");
     }
 
     function test2() {
         // Setting "src" to valid media file not in manifest. This file should fail to load.
         video.ondurationchange = t.unreached_func();
         video.onerror = t.step_func(test3);
-        video.src = "/media-resources/content/silence.oga";
+        video.src = "/media-resources/content/" + findMediaFile("audio", "silence");
     }
 
     function test3() {

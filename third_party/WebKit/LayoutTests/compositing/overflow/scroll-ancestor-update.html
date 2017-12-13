@@ -3,7 +3,7 @@
 <html>
 <head>
     <style type="text/css" media="screen">
-
+        
         body {
             margin: 0;
         }
@@ -12,7 +12,7 @@
             width: 100px;
             height: 100px;
         }
-
+        
         .container {
             position: absolute;
             top: 50px;
@@ -20,18 +20,18 @@
             height: 200px;
             width: 200px;
         }
-
+        
         #scroller {
             overflow-y: scroll;
             height: 200px;
             width: 200px;
             border: 1px solid black;
         }
-
+        
         .content {
             height: 500px;
         }
-
+        
         .box {
             height: 100px;
             width: 100px;
@@ -42,7 +42,7 @@
             margin-top: 50px;
             background-color: green;
         }
-
+        
         .indicator {
             position: absolute;
             left: 50px;
@@ -52,7 +52,8 @@
     </style>
 
     <script src="../resources/media-testing.js"></script>
-        <script type="text/javascript" charset="utf-8">
+    <script src="../../media/media-file.js"></script>
+    <script type="text/javascript" charset="utf-8">
       function testDone()
       {
         document.getElementById('scroller').scrollTop = 50;
@@ -63,12 +64,12 @@
       function doTest()
       {
         var video = document.getElementsByTagName('video')[0];
-        setupVideo(video, '../resources/video.ogv', testDone);
+        setupVideo(video, '../resources/video', testDone);
       }
     </script>
 </head>
 <body onload="doTest()">
-
+  
   <div class="indicator box"></div>
 
   <div class="container">
@@ -79,7 +80,7 @@
     </div>
     <p>The green box should obscure the red box, and move when you drag the scrollbar.</p>
   </div>
-
+  
   <video></video>
 
 </body>

@@ -7,7 +7,8 @@
     </script>
     <script src="full-screen-test.js"></script>
     <script src="../media/media-controls.js"></script>
-        <script>
+    <script src="../media/media-file.js"></script>
+    <script>
         var video = document.getElementById('video');
         var timeline;
 
@@ -32,6 +33,6 @@
             runWithKeyDown(function(){video.webkitRequestFullScreen()});
         });
 
-        video.src = '../media/content/test.ogv';
+        video.src = findMediaFile('video', '../media/content/test');
     </script>
 </body>

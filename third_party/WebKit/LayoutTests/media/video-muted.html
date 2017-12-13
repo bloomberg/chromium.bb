@@ -2,6 +2,7 @@
 <title>Test "muted" attribute.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -16,6 +17,6 @@ async_test(function(t) {
         assert_false(video.muted);
     });
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
 });
 </script>

@@ -23,7 +23,7 @@ function test_remove_source(testFunction) {
 
         function addSource(index) {
             source = document.createElement("source");
-            source.src = index + "-" + Date.now() + ".ogv";
+            source.src = findMediaFile("video", index + "-" + Date.now());
             source.type = mimeTypeForExtension(source.src.split(".").pop());
             video.appendChild(source);
         }

@@ -1,11 +1,12 @@
 <!DOCTYPE  html>
 <title>Tests that inserting a track element immediately after a load() doesn't crash.</title>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
     var video = document.createElement('video');
-    video.src = '../content/test.ogv';
+    video.src = findMediaFile('video', '../content/test');
     video.load();
     video.appendChild(document.createElement('track'));
     video.onloadedmetadata = t.step_func_done();

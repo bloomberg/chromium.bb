@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Tests that a track appended after the initial track configuration does not change other tracks.</title>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <video>
@@ -13,7 +14,7 @@ async_test(function(t) {
     assert_equals(track1.readyState, HTMLTrackElement.NONE);
     assert_equals(track1.track.mode, 'disabled');
 
-    video.src = '../content/test.ogv';
+    video.src = findMediaFile('video', '../content/test');
     video.oncanplaythrough = t.step_func(canplaythrough);
     track1.onload = t.step_func(metadataTrackLoaded);
 

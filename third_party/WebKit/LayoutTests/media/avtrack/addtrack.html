@@ -4,7 +4,8 @@
         <title>AudioTrackList &amp; VideoTrackList addtrack event</title>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
-            </head>
+        <script src="../media-file.js"></script>
+    </head>
     <body>
         <script>
             function addtrack_test(tagName, src, label)
@@ -53,10 +54,10 @@
                 }, tagName + " : " + label);
             }
 
-            addtrack_test("audio", "../content/test.oga", "audio-only");
-            addtrack_test("audio", "../content/test.ogv", "audio-video");
-            addtrack_test("video", "../content/test.oga", "audio-only");
-            addtrack_test("video", "../content/test.ogv", "audio-video");
+            addtrack_test("audio", findMediaFile("audio", "../content/test"), "audio-only");
+            addtrack_test("audio", findMediaFile("video", "../content/test"), "audio-video");
+            addtrack_test("video", findMediaFile("audio", "../content/test"), "audio-only");
+            addtrack_test("video", findMediaFile("video", "../content/test"), "audio-video");
         </script>
     </body>
 </html>

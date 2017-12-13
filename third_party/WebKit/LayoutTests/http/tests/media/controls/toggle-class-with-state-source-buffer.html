@@ -15,7 +15,7 @@ async_test(t => {
     checkControlsClassName(video, "phase-ready state-buffering");
   });
 
-  const mediaFile = "../../../media/" + "content/test.ogv";
+  const mediaFile = "../../../media/" + findMediaFile("video", "content/test");
   const mimeType = mimeTypeForFile(mediaFile);
   video.src = "http://127.0.0.1:8000/resources/load-and-stall.php?name="
     + mediaFile + "&mimeType=" + mimeType + "&stallAt=100000&stallFor=8";

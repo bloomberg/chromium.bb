@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that Audio() sets "preload" attribute.</title>
+<script src="media-file.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
@@ -15,7 +16,7 @@ async_test(function(t) {
         assert_equals(audio.preload, "auto");
     });
 
-    audio.src = "content/test.oga";
+    audio.src = findMediaFile("audio", "content/test");
     audio.load();
 });
 </script>

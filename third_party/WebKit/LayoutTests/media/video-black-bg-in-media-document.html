@@ -2,6 +2,7 @@
 <title>Test that video media documents have a black background.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <iframe></iframe>
 <script>
 async_test(function(t) {
@@ -14,6 +15,6 @@ async_test(function(t) {
         assert_equals(iframeBodyStyle.backgroundColor, "rgb(0, 0, 0)");
     });
 
-    iframe.src = "content/counting.ogv";
+    iframe.src = findMediaFile("video", "content/counting");
 });
 </script>

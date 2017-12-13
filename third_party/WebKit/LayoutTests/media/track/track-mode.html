@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Tests that the TextTrack mode attribute is appropriately set.</title>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <video>
@@ -32,7 +33,7 @@ async_test(function(t) {
         // Set to known values.
         setModeAndCheck("disabled");
 
-        video.src = "../content/test.ogv";
+        video.src = findMediaFile("video", "../content/test");
         video.play();
         // Wait for end of first cue (no events should fire while track is disabled).
         setTimeout(testHiddenAndShowing, 400);

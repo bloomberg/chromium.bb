@@ -2,6 +2,7 @@
 <title>Tests that the closed captions button enables track switching.</title>
 <script src='../../resources/testharness.js'></script>
 <script src='../../resources/testharnessreport.js'></script>
+<script src='../media-file.js'></script>
 <script src='../media-controls.js'></script>
 <video controls>
   <track src='../track/captions-webvtt/captions-fast.vtt' kind='captions'>
@@ -66,6 +67,6 @@ async_test(t => {
     clickTextTrackAtIndex(video, 0);
   });
 
-  video.src = '../content/counting.ogv';
+  video.src = findMediaFile('video', '../content/counting');
 });
 </script>

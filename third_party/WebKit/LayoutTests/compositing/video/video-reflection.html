@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <title>Test "-webkit-box-reflect" property on a video element.</title>
 <script src="../../resources/run-after-layout-and-paint.js"></script>
+<script src="../../media/media-file.js"></script>
 <style>
 video {
     -webkit-box-reflect: below 0px;
@@ -18,6 +19,6 @@ video.onseeked = function() {
     runAfterLayoutAndPaint(function() {}, true);
 };
 
-video.src = '../../media/content/test.ogv';
+video.src = findMediaFile('video', '../../media/content/test');
 video.currentTime = 1;
 </script>
