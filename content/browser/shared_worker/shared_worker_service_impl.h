@@ -5,13 +5,13 @@
 #ifndef CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SERVICE_IMPL_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/unique_ptr_comparator.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
@@ -53,15 +53,12 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id);
 
-  void DestroyHost(int process_id, int route_id);
+  void DestroyHost(SharedWorkerHost* host);
 
  private:
   friend struct base::DefaultSingletonTraits<SharedWorkerServiceImpl>;
   friend class SharedWorkerServiceImplTest;
   friend class SharedWorkerService;
-
-  using WorkerID = std::pair<int /* process_id */, int /* route_id */>;
-  using WorkerHostMap = std::map<WorkerID, std::unique_ptr<SharedWorkerHost>>;
 
   SharedWorkerServiceImpl();
   ~SharedWorkerServiceImpl() override;
@@ -79,7 +76,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   SharedWorkerHost* FindAvailableSharedWorkerHost(
       const SharedWorkerInstance& instance);
 
-  WorkerHostMap worker_hosts_;
+  std::set<std::unique_ptr<SharedWorkerHost>, base::UniquePtrComparator>
+      worker_hosts_;
   base::OnceClosure terminate_all_workers_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);
