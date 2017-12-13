@@ -15,6 +15,7 @@ void ClientTransferCache::CreateCacheEntry(
     gles2::GLES2CmdHelper* helper,
     MappedMemoryManager* mapped_memory,
     const cc::ClientTransferCacheEntry& entry) {
+  base::AutoLock hold(lock_);
   ScopedMappedMemoryPtr mapped_alloc(entry.SerializedSize(), helper,
                                      mapped_memory);
   DCHECK(mapped_alloc.valid());
@@ -39,6 +40,7 @@ void ClientTransferCache::CreateCacheEntry(
 bool ClientTransferCache::LockTransferCacheEntry(
     cc::TransferCacheEntryType type,
     uint32_t id) {
+  base::AutoLock hold(lock_);
   auto discardable_handle_id = FindDiscardableHandleId(type, id);
   if (discardable_handle_id.is_null())
     return false;
@@ -55,6 +57,7 @@ void ClientTransferCache::UnlockTransferCacheEntry(
     gles2::GLES2CmdHelper* helper,
     cc::TransferCacheEntryType type,
     uint32_t id) {
+  base::AutoLock hold(lock_);
   DCHECK(!FindDiscardableHandleId(type, id).is_null());
   helper->UnlockTransferCacheEntryINTERNAL(static_cast<uint32_t>(type), id);
 }
@@ -63,6 +66,7 @@ void ClientTransferCache::DeleteTransferCacheEntry(
     gles2::GLES2CmdHelper* helper,
     cc::TransferCacheEntryType type,
     uint32_t id) {
+  base::AutoLock hold(lock_);
   auto discardable_handle_id = FindDiscardableHandleId(type, id);
   if (discardable_handle_id.is_null())
     return;
@@ -75,6 +79,7 @@ void ClientTransferCache::DeleteTransferCacheEntry(
 ClientDiscardableHandle::Id ClientTransferCache::FindDiscardableHandleId(
     cc::TransferCacheEntryType type,
     uint32_t id) {
+  lock_.AssertAcquired();
   const auto& id_map = DiscardableHandleIdMap(type);
   auto id_map_it = id_map.find(id);
   if (id_map_it == id_map.end())
@@ -85,6 +90,7 @@ ClientDiscardableHandle::Id ClientTransferCache::FindDiscardableHandleId(
 std::map<uint32_t, ClientDiscardableHandle::Id>&
 ClientTransferCache::DiscardableHandleIdMap(
     cc::TransferCacheEntryType entry_type) {
+  lock_.AssertAcquired();
   DCHECK_LE(static_cast<uint32_t>(entry_type),
             static_cast<uint32_t>(cc::TransferCacheEntryType::kLast));
   return discardable_handle_id_map_[static_cast<uint32_t>(entry_type)];
