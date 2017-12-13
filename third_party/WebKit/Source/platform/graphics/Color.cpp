@@ -73,23 +73,23 @@ RGBA32 MakeRGBA32FromFloats(float r, float g, float b, float a) {
 
 static double CalcHue(double temp1, double temp2, double hue_val) {
   if (hue_val < 0.0)
-    hue_val++;
-  else if (hue_val > 1.0)
-    hue_val--;
-  if (hue_val * 6.0 < 1.0)
-    return temp1 + (temp2 - temp1) * hue_val * 6.0;
-  if (hue_val * 2.0 < 1.0)
+    hue_val += 6.0;
+  else if (hue_val >= 6.0)
+    hue_val -= 6.0;
+  if (hue_val < 1.0)
+    return temp1 + (temp2 - temp1) * hue_val;
+  if (hue_val < 3.0)
     return temp2;
-  if (hue_val * 3.0 < 2.0)
-    return temp1 + (temp2 - temp1) * (2.0 / 3.0 - hue_val) * 6.0;
+  if (hue_val < 4.0)
+    return temp1 + (temp2 - temp1) * (4.0 - hue_val);
   return temp1;
 }
 
-// Explanation of this algorithm can be found in the CSS3 Color Module
-// specification at http://www.w3.org/TR/css3-color/#hsl-color with further
-// explanation available at http://en.wikipedia.org/wiki/HSL_color_space
+// Explanation of this algorithm can be found in the CSS Color 4 Module
+// specification at https://drafts.csswg.org/css-color-4/#hsl-to-rgb with
+// further explanation available at http://en.wikipedia.org/wiki/HSL_color_space
 
-// all values are in the range of 0 to 1.0
+// Hue is in the range of 0 to 6.0, the remainder are in the range 0 to 1.0
 RGBA32 MakeRGBAFromHSLA(double hue,
                         double saturation,
                         double lightness,
@@ -102,15 +102,15 @@ RGBA32 MakeRGBAFromHSLA(double hue,
                     static_cast<int>(alpha * scale_factor));
   }
 
-  double temp2 = lightness < 0.5
+  double temp2 = lightness <= 0.5
                      ? lightness * (1.0 + saturation)
                      : lightness + saturation - lightness * saturation;
   double temp1 = 2.0 * lightness - temp2;
 
   return MakeRGBA(
-      static_cast<int>(CalcHue(temp1, temp2, hue + 1.0 / 3.0) * scale_factor),
+      static_cast<int>(CalcHue(temp1, temp2, hue + 2.0) * scale_factor),
       static_cast<int>(CalcHue(temp1, temp2, hue) * scale_factor),
-      static_cast<int>(CalcHue(temp1, temp2, hue - 1.0 / 3.0) * scale_factor),
+      static_cast<int>(CalcHue(temp1, temp2, hue - 2.0) * scale_factor),
       static_cast<int>(alpha * scale_factor));
 }
 
