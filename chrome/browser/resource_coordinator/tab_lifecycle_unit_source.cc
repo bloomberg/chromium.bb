@@ -16,13 +16,35 @@
 
 namespace resource_coordinator {
 
+namespace {
+TabLifecycleUnitSource* instance_ = nullptr;
+}  // namespace
+
 TabLifecycleUnitSource::TabLifecycleUnitSource()
     : browser_tab_strip_tracker_(this, nullptr, this) {
+  DCHECK(!instance_);
   DCHECK(BrowserList::GetInstance()->empty());
   browser_tab_strip_tracker_.Init();
+  instance_ = this;
 }
 
-TabLifecycleUnitSource::~TabLifecycleUnitSource() = default;
+TabLifecycleUnitSource::~TabLifecycleUnitSource() {
+  DCHECK_EQ(instance_, this);
+  instance_ = nullptr;
+}
+
+// static
+TabLifecycleUnitSource* TabLifecycleUnitSource::GetInstance() {
+  return instance_;
+}
+
+TabLifecycleUnitExternal* TabLifecycleUnitSource::GetTabLifecycleUnitExternal(
+    content::WebContents* web_contents) const {
+  auto it = tabs_.find(web_contents);
+  if (it == tabs_.end())
+    return nullptr;
+  return it->second.get();
+}
 
 void TabLifecycleUnitSource::AddTabLifecycleObserver(
     TabLifecycleObserver* observer) {

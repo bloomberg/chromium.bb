@@ -101,6 +101,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
     content::WebContents* first_web_contents = CreateTestWebContents();
     tab_strip_model_->AppendWebContents(first_web_contents, true);
     testing::Mock::VerifyAndClear(&observer_);
+    EXPECT_TRUE(source_.GetTabLifecycleUnitExternal(first_web_contents));
 
     // Add another foreground tab to the focused tab strip.
     test_clock_.Advance(kShortDelay);
@@ -121,6 +122,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
     content::WebContents* second_web_contents = CreateTestWebContents();
     tab_strip_model_->AppendWebContents(second_web_contents, true);
     testing::Mock::VerifyAndClear(&observer_);
+    EXPECT_TRUE(source_.GetTabLifecycleUnitExternal(second_web_contents));
   }
 
   void TestAppendTabsToTabStrip(bool focus_tab_strip) {
@@ -152,6 +154,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
     content::WebContents* third_web_contents = CreateTestWebContents();
     tab_strip_model_->AppendWebContents(third_web_contents, false);
     testing::Mock::VerifyAndClear(&observer_);
+    EXPECT_TRUE(source_.GetTabLifecycleUnitExternal(third_web_contents));
 
     // Expect notifications when tabs are closed.
     EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
@@ -217,6 +220,34 @@ TEST_F(TabLifecycleUnitSourceTest, CloseTabInFocusedTabStrip) {
 
   // Expect notifications when tabs are closed.
   EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
+  tab_strip_model_->CloseAllTabs();
+}
+
+TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
+  LifecycleUnit* first_lifecycle_unit = nullptr;
+  LifecycleUnit* second_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &first_lifecycle_unit,
+                &second_lifecycle_unit);
+
+  // Replace the WebContents in the active tab with a second WebContents. Expect
+  // GetTabLifecycleUnitExternal() to return the TabLifecycleUnitExternal when
+  // called with the second WebContents as argument.
+  content::WebContents* original_web_contents =
+      tab_strip_model_->GetWebContentsAt(1);
+  TabLifecycleUnitExternal* tab_lifecycle_unit_external =
+      source_.GetTabLifecycleUnitExternal(original_web_contents);
+  content::WebContents* new_web_contents = CreateTestWebContents();
+  EXPECT_EQ(original_web_contents,
+            tab_strip_model_->ReplaceWebContentsAt(1, new_web_contents));
+  EXPECT_FALSE(source_.GetTabLifecycleUnitExternal(original_web_contents));
+  EXPECT_EQ(tab_lifecycle_unit_external,
+            source_.GetTabLifecycleUnitExternal(new_web_contents));
+
+  delete original_web_contents;
+
+  // Expect notifications when tabs are closed.
+  EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
+  EXPECT_CALL(observer_, OnLifecycleUnitDestroyed(second_lifecycle_unit));
   tab_strip_model_->CloseAllTabs();
 }
 
