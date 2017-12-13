@@ -4,21 +4,14 @@
 
 #include "chromecast/crash/cast_crash_keys.h"
 
+#include "base/debug/crash_logging.h"
 #include "components/crash/core/common/crash_keys.h"
 
 namespace chromecast {
 namespace crash_keys {
 
-const char kLastApp[] = "last_app";
-const char kCurrentApp[] = "current_app";
-const char kPreviousApp[] = "previous_app";
-
 size_t RegisterCastCrashKeys() {
   const base::debug::CrashKey fixed_keys[] = {
-      {kLastApp, ::crash_keys::kSmallSize},
-      {kCurrentApp, ::crash_keys::kSmallSize},
-      {kPreviousApp, ::crash_keys::kSmallSize},
-
       // TODO(sanfin): The following crash keys are copied from
       // chrome/common/crash_keys.cc. When http://crbug.com/598854 is fixed,
       // remove these and refactor as necessary.
@@ -47,6 +40,10 @@ size_t RegisterCastCrashKeys() {
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),
                                     ::crash_keys::kChunkMaxLength);
 }
+
+crash_reporter::CrashKeyString<64> last_app("last_app");
+
+crash_reporter::CrashKeyString<64> previous_app("previous_app");
 
 }  // namespace crash_keys
 }  // namespace chromecast

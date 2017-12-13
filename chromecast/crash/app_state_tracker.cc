@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "chromecast/crash/cast_crash_keys.h"
+#include "components/crash/core/common/crash_key.h"
 
 namespace {
 
@@ -45,9 +46,7 @@ std::string AppStateTracker::GetPreviousApp() {
 void AppStateTracker::SetLastLaunchedApp(const std::string& app_id) {
   GetAppState()->last_launched_app = app_id;
 
-  // TODO(slan): Currently SetCrashKeyValue is a no-op on chromecast until
-  // we add call to InitCrashKeys
-  base::debug::SetCrashKeyValue(crash_keys::kLastApp, app_id);
+  crash_keys::last_app.Set(app_id);
 }
 
 // static
@@ -56,9 +55,10 @@ void AppStateTracker::SetCurrentApp(const std::string& app_id) {
   app_state->previous_app = app_state->current_app;
   app_state->current_app = app_id;
 
-  base::debug::SetCrashKeyValue(crash_keys::kCurrentApp, app_id);
-  base::debug::SetCrashKeyValue(crash_keys::kPreviousApp,
-                                app_state->previous_app);
+  static crash_reporter::CrashKeyString<64> current_app("current_app");
+  current_app.Set(app_id);
+
+  crash_keys::previous_app.Set(app_state->previous_app);
 }
 
 }  // namespace chromecast
