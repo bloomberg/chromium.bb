@@ -8,6 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -25,6 +26,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -235,6 +237,7 @@ public class ChromeHomeAppMenuTest {
     @Test
     @SmallTest
     @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CHROME_HOME_PROMO})
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1, message = "crbug.com/786454")
     public void testPromoAppMenuHeader() throws InterruptedException, TimeoutException {
         // Create a callback to be notified when the dialog is shown.
         final CallbackHelper dialogShownCallback = new CallbackHelper();
