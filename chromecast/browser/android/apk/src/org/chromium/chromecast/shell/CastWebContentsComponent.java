@@ -44,6 +44,11 @@ public class CastWebContentsComponent {
 
     private class ActivityDelegate implements Delegate {
         private static final String TAG = "cr_CastWebComponent_AD";
+        private boolean mEnableTouchInput;
+
+        public ActivityDelegate(boolean enableTouchInput) {
+            mEnableTouchInput = enableTouchInput;
+        }
 
         @Override
         public void start(Context context, WebContents webContents) {
@@ -52,6 +57,7 @@ public class CastWebContentsComponent {
             Intent intent = new Intent(Intent.ACTION_VIEW, getInstanceUri(mInstanceId), context,
                     CastWebContentsActivity.class);
             intent.putExtra(ACTION_EXTRA_WEB_CONTENTS, webContents);
+            intent.putExtra(ACTION_EXTRA_TOUCH_INPUT_ENABLED, mEnableTouchInput);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             context.startActivity(intent);
         }
@@ -119,6 +125,8 @@ public class CastWebContentsComponent {
     static final String ACTION_DATA_AUTHORITY = "webcontents";
     static final String ACTION_EXTRA_WEB_CONTENTS =
             "com.google.android.apps.castshell.intent.extra.WEB_CONTENTS";
+    static final String ACTION_EXTRA_TOUCH_INPUT_ENABLED =
+            "com.google.android.apps.castshell.intent.extra.ENABLE_TOUCH";
 
     private static final String TAG = "cr_CastWebComponent";
     private static final boolean DEBUG = false;
@@ -139,14 +147,14 @@ public class CastWebContentsComponent {
 
     public CastWebContentsComponent(String instanceId,
             OnComponentClosedHandler onComponentClosedHandler, OnKeyDownHandler onKeyDownHandler,
-            boolean isHeadless) {
+            boolean isHeadless, boolean enableTouchInput) {
         mComponentClosedHandler = onComponentClosedHandler;
         mKeyDownHandler = onKeyDownHandler;
         mInstanceId = instanceId;
         if (BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE || isHeadless) {
             mDelegate = new ServiceDelegate();
         } else {
-            mDelegate = new ActivityDelegate();
+            mDelegate = new ActivityDelegate(enableTouchInput);
         }
     }
 

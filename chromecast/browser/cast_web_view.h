@@ -49,7 +49,8 @@ class CastWebView : content::WebContentsObserver, content::WebContentsDelegate {
               scoped_refptr<content::SiteInstance> site_instance,
               bool transparent,
               bool allow_media_access,
-              bool is_headless);
+              bool is_headless,
+              bool enable_touch_input);
   ~CastWebView() override;
 
   shell::CastContentWindow* window() const { return window_.get(); }

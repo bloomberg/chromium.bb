@@ -19,7 +19,8 @@ namespace shell {
 // static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
     CastContentWindow::Delegate* delegate,
-    bool is_headless) {
+    bool is_headless,
+    bool enable_touch_input) {
   DCHECK(delegate);
   return base::WrapUnique(new CastContentWindowAura());
 }
