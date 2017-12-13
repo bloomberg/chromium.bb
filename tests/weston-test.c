@@ -146,6 +146,7 @@ move_surface(struct wl_client *client, struct wl_resource *resource,
 
 static void
 move_pointer(struct wl_client *client, struct wl_resource *resource,
+	     uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec,
 	     int32_t x, int32_t y)
 {
 	struct weston_test *test = wl_resource_get_user_data(resource);
@@ -160,7 +161,7 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 		.dy = wl_fixed_to_double(wl_fixed_from_int(y) - pointer->y),
 	};
 
-	timespec_from_msec(&time, 100);
+	timespec_from_proto(&time, tv_sec_hi, tv_sec_lo, tv_nsec);
 
 	notify_motion(seat, &time, &event);
 
@@ -169,6 +170,7 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 
 static void
 send_button(struct wl_client *client, struct wl_resource *resource,
+	    uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec,
 	    int32_t button, uint32_t state)
 {
 	struct timespec time;
@@ -176,7 +178,7 @@ send_button(struct wl_client *client, struct wl_resource *resource,
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
 
-	timespec_from_msec(&time, 100);
+	timespec_from_proto(&time, tv_sec_hi, tv_sec_lo, tv_nsec);
 
 	notify_button(seat, &time, button, state);
 }

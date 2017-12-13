@@ -97,7 +97,7 @@ TEST(internal_screenshot)
 	 */
 
 	/* Move the pointer away from the screenshot area. */
-	weston_test_move_pointer(client->test->weston_test, 0, 0);
+	weston_test_move_pointer(client->test->weston_test, 0, 1, 0, 0, 0);
 
 	buf = create_shm_buffer_a8r8g8b8(client, 100, 100);
 	draw_stuff(buf->image);

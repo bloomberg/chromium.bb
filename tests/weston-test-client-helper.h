@@ -90,6 +90,8 @@ struct pointer {
 	int y;
 	uint32_t button;
 	uint32_t state;
+	uint32_t motion_time_msec;
+	uint32_t button_time_msec;
 };
 
 struct keyboard {

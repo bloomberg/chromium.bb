@@ -28,7 +28,35 @@
 
 #include <linux/input.h>
 
+#include "shared/timespec-util.h"
 #include "weston-test-client-helper.h"
+
+static const struct timespec t0 = { .tv_sec = 0, .tv_nsec = 100000000 };
+static const struct timespec t1 = { .tv_sec = 1, .tv_nsec = 1000001 };
+static const struct timespec t2 = { .tv_sec = 2, .tv_nsec = 2000001 };
+
+static void
+send_motion(struct client *client, const struct timespec *time, int x, int y)
+{
+	uint32_t tv_sec_hi, tv_sec_lo, tv_nsec;
+
+	timespec_to_proto(time, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
+	weston_test_move_pointer(client->test->weston_test, tv_sec_hi, tv_sec_lo,
+				 tv_nsec, x, y);
+	client_roundtrip(client);
+}
+
+static void
+send_button(struct client *client, const struct timespec *time,
+	    uint32_t button, uint32_t state)
+{
+	uint32_t tv_sec_hi, tv_sec_lo, tv_nsec;
+
+	timespec_to_proto(time, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
+	weston_test_send_button(client->test->weston_test, tv_sec_hi, tv_sec_lo,
+				tv_nsec, button, state);
+	client_roundtrip(client);
+}
 
 static void
 check_pointer(struct client *client, int x, int y)
@@ -64,8 +92,7 @@ check_pointer(struct client *client, int x, int y)
 static void
 check_pointer_move(struct client *client, int x, int y)
 {
-	weston_test_move_pointer(client->test->weston_test, x, y);
-	client_roundtrip(client);
+	send_motion(client, &t0, x, y);
 	check_pointer(client, x, y);
 }
 
@@ -303,10 +330,10 @@ TEST(pointer_motion_events)
 								 100, 100);
 	struct pointer *pointer = client->input->pointer;
 
-	weston_test_move_pointer(client->test->weston_test, 150, 150);
-	client_roundtrip(client);
+	send_motion(client, &t1, 150, 150);
 	assert(pointer->x == 50);
 	assert(pointer->y == 50);
+	assert(pointer->motion_time_msec == timespec_to_msec(&t1));
 }
 
 TEST(pointer_button_events)
@@ -318,15 +345,13 @@ TEST(pointer_button_events)
 	assert(pointer->button == 0);
 	assert(pointer->state == 0);
 
-	weston_test_send_button(client->test->weston_test, BTN_LEFT,
-			    WL_POINTER_BUTTON_STATE_PRESSED);
-	client_roundtrip(client);
+	send_button(client, &t1, BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
 	assert(pointer->button == BTN_LEFT);
 	assert(pointer->state == WL_POINTER_BUTTON_STATE_PRESSED);
+	assert(pointer->button_time_msec == timespec_to_msec(&t1));
 
-	weston_test_send_button(client->test->weston_test, BTN_LEFT,
-			    WL_POINTER_BUTTON_STATE_RELEASED);
-	client_roundtrip(client);
+	send_button(client, &t2, BTN_LEFT, WL_POINTER_BUTTON_STATE_RELEASED);
 	assert(pointer->button == BTN_LEFT);
 	assert(pointer->state == WL_POINTER_BUTTON_STATE_RELEASED);
+	assert(pointer->button_time_msec == timespec_to_msec(&t2));
 }

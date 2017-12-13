@@ -40,10 +40,16 @@
       <arg name="y" type="int"/>
     </request>
     <request name="move_pointer">
+      <arg name="tv_sec_hi" type="uint"/>
+      <arg name="tv_sec_lo" type="uint"/>
+      <arg name="tv_nsec" type="uint"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
     </request>
     <request name="send_button">
+      <arg name="tv_sec_hi" type="uint"/>
+      <arg name="tv_sec_lo" type="uint"/>
+      <arg name="tv_nsec" type="uint"/>
       <arg name="button" type="int"/>
       <arg name="state" type="uint"/>
     </request>

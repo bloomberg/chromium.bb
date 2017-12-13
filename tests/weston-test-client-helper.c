@@ -148,12 +148,13 @@ pointer_handle_leave(void *data, struct wl_pointer *wl_pointer,
 
 static void
 pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
-		      uint32_t time, wl_fixed_t x, wl_fixed_t y)
+		      uint32_t time_msec, wl_fixed_t x, wl_fixed_t y)
 {
 	struct pointer *pointer = data;
 
 	pointer->x = wl_fixed_to_int(x);
 	pointer->y = wl_fixed_to_int(y);
+	pointer->motion_time_msec = time_msec;
 
 	fprintf(stderr, "test-client: got pointer motion %d %d\n",
 		pointer->x, pointer->y);
@@ -161,13 +162,14 @@ pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
 
 static void
 pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
-		      uint32_t serial, uint32_t time, uint32_t button,
+		      uint32_t serial, uint32_t time_msec, uint32_t button,
 		      uint32_t state)
 {
 	struct pointer *pointer = data;
 
 	pointer->button = button;
 	pointer->state = state;
+	pointer->button_time_msec = time_msec;
 
 	fprintf(stderr, "test-client: got pointer button %u %u\n",
 		button, state);

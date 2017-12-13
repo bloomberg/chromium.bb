@@ -200,7 +200,7 @@ TEST(subsurface_z_order)
 	subco = get_subcompositor(client);
 
 	/* move the pointer clearly away from our screenshooting area */
-	weston_test_move_pointer(client->test->weston_test, 2, 30);
+	weston_test_move_pointer(client->test->weston_test, 0, 1, 0, 2, 30);
 
 	/* make the parent surface red */
 	surf[0] = client->surface->wl_surface;
