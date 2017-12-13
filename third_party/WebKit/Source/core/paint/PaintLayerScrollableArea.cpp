@@ -782,10 +782,9 @@ void PaintLayerScrollableArea::UpdateScrollOrigin() {
   // that.
   if (OverflowRect().IsEmpty())
     return;
-  LayoutPoint scrollable_overflow =
-      overflow_rect_.Location() -
-      LayoutSize(Box().BorderLeft(), Box().BorderTop());
-  SetScrollOrigin(FlooredIntPoint(-scrollable_overflow) +
+  LayoutRect scrollable_overflow(overflow_rect_);
+  scrollable_overflow.Move(-Box().BorderLeft(), -Box().BorderTop());
+  SetScrollOrigin(-scrollable_overflow.PixelSnappedLocation() +
                   Box().OriginAdjustmentForScrollbars());
 }
 

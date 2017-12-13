@@ -77,7 +77,7 @@ layer at (8,1902) size 74x310 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
     LayoutText {#text} at (55,1) size 18x714
       text run at (55,1) width 714 RTL override: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-layer at (8,2273) size 31x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollY 457.00 scrollHeight 766
+layer at (8,2273) size 31x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollY 458.00 scrollHeight 766
   LayoutBlockFlow {DIV} at (0,2265.03) size 31x310 [border: (1px solid #000000)]
     LayoutText {#text} at (12,123) size 18x186
       text run at (12,123) width 186 RTL override: "Lorem ipsum dolor sit amet, "

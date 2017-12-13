@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,107) size 784x18
         LayoutText {#text} at (0,0) size 37x18
           text run at (0,0) width 37: "PASS"
-layer at (24,45) size 113x13 scrollX 1.00 scrollWidth 115
+layer at (24,45) size 113x13 scrollX 2.00 scrollWidth 115
   LayoutBlockFlow {DIV} at (0,0) size 113x13
     LayoutText {#text} at (-1,0) size 115x13
       text run at (-1,0) width 21 RTL: " \x{5D5}\x{5D6}\x{5D4}\x{5D5}"

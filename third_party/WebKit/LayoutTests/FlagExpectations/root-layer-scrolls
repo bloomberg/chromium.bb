@@ -2,7 +2,6 @@ crbug.com/417782 compositing/iframes/become-composited-nested-iframes.html [ Fai
 crbug.com/417782 compositing/squashing/squash-above-fixed-1.html [ Failure ]
 crbug.com/417782 compositing/squashing/squash-above-fixed-3.html [ Failure ]
 crbug.com/417782 compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
-crbug.com/417782 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Failure ]
 crbug.com/417782 fast/events/clientXY-in-zoom-and-scroll.html [ Failure ]
 crbug.com/417782 fast/events/scale-and-scroll-iframe-window.html [ Failure ]
 crbug.com/417782 fast/frames/iframe-scaling-with-scroll.html [ Failure ]
