@@ -1502,6 +1502,9 @@
     'usb': {
       'filepath': '/usb/',
     },
+    'v4l2': {
+      'filepath': 'media/gpu/v4l2',
+    },
     'vaapi': {
       'filepath': 'media/gpu/vaapi',
     },
@@ -1526,9 +1529,6 @@
                   '|media/capture/'\
                   '|media/muxers/'\
                   '|services/video_capture/',
-    },
-    'video_vaapi': {
-      'filepath': 'media/gpu/.*vaapi.*',
     },
     'views': {
       # Applies to all files and subdirs within this directory.
@@ -2281,6 +2281,7 @@
     'usb': ['cco3+watch@chromium.org',
             'mattreynolds+watch@chromium.org',
             'scheib+watch@chromium.org'],
+    'v4l2': ['acourbot+watch@chromium.org'],
     'vaapi': ['vaapi-reviews@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org'],
@@ -2288,7 +2289,6 @@
                          'gab+watch@chromium.org'],
     'video': ['posciak+watch@chromium.org'],
     'video_capture': ['chfremer+watch@chromium.org'],
-    'video_vaapi': ['acourbot+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['blakeo+virtualkb@chromium.org',
                          'dfaden+virtualkb@google.com',
