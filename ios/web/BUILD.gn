@@ -606,7 +606,9 @@ js_compile_bundle("all_frames_web_bundle") {
   sources = [
     "web_state/js/resources/all_frames_web_bundle.js",
     "web_state/js/resources/base.js",
+    "web_state/js/resources/common.js",
     "web_state/js/resources/form.js",
+    "web_state/js/resources/message.js",
   ]
 }
 

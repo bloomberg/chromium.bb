@@ -67,7 +67,7 @@ __gCrWeb['message'] = __gCrWeb.message;
 
   function sendQueue_(queueObject) {
     // Do nothing if windowId has not been set.
-    if (typeof __gCrWeb.windowId != 'string') {
+    if (typeof window.top.__gCrWeb.windowId != 'string') {
       return;
     }
     // Some pages/plugins implement Object.prototype.toJSON, which can result
@@ -84,7 +84,7 @@ __gCrWeb['message'] = __gCrWeb.message;
         delete window['webkit'];
         window.webkit.messageHandlers[queueObject.scheme].postMessage({
             "crwCommand": command,
-            "crwWindowId": __gCrWeb['windowId']
+            "crwWindowId": window.top.__gCrWeb['windowId']
         });
         window.webkit = oldWebkit;
     });

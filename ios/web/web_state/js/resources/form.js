@@ -10,6 +10,8 @@
 
 goog.provide('__crWeb.form');
 
+goog.require('__crWeb.message');
+
 /** Beginning of anonymous object */
 (function() {
   // Skip iframes that have the same origin as the main frame. For such frames
@@ -42,15 +44,13 @@ goog.provide('__crWeb.form');
 
     var msg = {
       'command': 'form.activity',
-      'formName': window.top.__gCrWeb.common.
-                      getFormIdentifier(evt.srcElement.form),
-      'fieldName': window.top.__gCrWeb.common.
-                      getFieldIdentifier(srcElement),
+      'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement.form),
+      'fieldName': __gCrWeb.common.getFieldIdentifier(srcElement),
       'fieldType': fieldType,
       'type': evt.type,
       'value': value
     };
-    window.top.__gCrWeb.message.invokeOnHost(msg);
+    __gCrWeb.message.invokeOnHost(msg);
   };
 
   /**
@@ -80,10 +80,9 @@ goog.provide('__crWeb.form');
     if (!action) {
       action = document.location.href;
     }
-    window.top.__gCrWeb.message.invokeOnHost({
+    __gCrWeb.message.invokeOnHost({
              'command': 'document.submit',
-            'formName': window.top.__gCrWeb.common.
-                            getFormIdentifier(evt.srcElement),
+            'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement),
                 'href': getFullyQualifiedUrl_(action)
     });
   }, false);
@@ -98,8 +97,8 @@ goog.provide('__crWeb.form');
   };
 
   /** Flush the message queue. */
-  if (window.top.__gCrWeb.message) {
-    window.top.__gCrWeb.message.invokeQueues();
+  if (__gCrWeb.message) {
+    __gCrWeb.message.invokeQueues();
   }
 
 }());  // End of anonymous object

@@ -571,7 +571,8 @@ __gCrWeb['common'] = __gCrWeb.common;
     if (!form)
       return '';
     var name = form.getAttribute('name');
-    if (name && name.length != 0 && document.forms.namedItem(name) === form) {
+    if (name && name.length != 0 &&
+        form.ownerDocument.forms.namedItem(name) === form) {
       return name;
     }
     name = form.getAttribute('id');
