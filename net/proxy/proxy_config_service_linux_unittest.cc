@@ -58,12 +58,12 @@ struct EnvVarValues {
 #undef TRUE
 #undef FALSE
 
-// So as to distinguish between an unset gconf boolean variable and
+// So as to distinguish between an unset boolean variable and
 // one that is false.
 enum BoolSettingValue { UNSET = 0, TRUE, FALSE };
 
-// Set of values for all gconf settings that we might query.
-struct GConfValues {
+// Set of values for all gsettings settings that we might query.
+struct GSettingsValues {
   // strings
   const char* mode;
   const char* autoconfig_url;
@@ -85,7 +85,7 @@ struct GConfValues {
 };
 
 // Mapping from a setting name to the location of the corresponding
-// value (inside a EnvVarValues or GConfValues struct).
+// value (inside a EnvVarValues or GSettingsValues struct).
 template <typename key_type, typename value_type>
 struct SettingsTable {
   typedef std::map<key_type, value_type*> map_type;
@@ -192,7 +192,7 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
 
   // Zeros all environment values.
   void Reset() {
-    GConfValues zero_values = {0};
+    GSettingsValues zero_values = {0};
     values = zero_values;
   }
 
@@ -259,7 +259,7 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
   bool MatchHostsUsingSuffixMatching() override { return false; }
 
   // Intentionally public, for convenience when setting up a test.
-  GConfValues values;
+  GSettingsValues values;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -302,7 +302,7 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
     Wait();
   }
 
-  // Does gconf setup and initial fetch of the proxy config,
+  // Does gsettings setup and initial fetch of the proxy config,
   // all on the calling thread (meant to be the thread with the
   // default glib main loop, which is the glib thread).
   void SetupAndInitialFetch() {
@@ -449,7 +449,7 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
 // Builds an identifier for each test in an array.
 #define TEST_DESC(desc) base::StringPrintf("at line %d <%s>", __LINE__, desc)
 
-TEST_F(ProxyConfigServiceLinuxTest, BasicGConfTest) {
+TEST_F(ProxyConfigServiceLinuxTest, BasicGSettingsTest) {
   std::vector<std::string> empty_ignores;
 
   std::vector<std::string> google_ignores;
@@ -462,7 +462,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicGConfTest) {
     std::string description;
 
     // Input.
-    GConfValues values;
+    GSettingsValues values;
 
     // Expected outputs (availability and fields of ProxyConfig).
     ProxyConfigService::ConfigAvailability availability;
@@ -1099,7 +1099,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
   }
 }
 
-TEST_F(ProxyConfigServiceLinuxTest, GconfNotification) {
+TEST_F(ProxyConfigServiceLinuxTest, GSettingsNotification) {
   std::unique_ptr<MockEnvironment> env(new MockEnvironment);
   MockSettingGetter* setting_getter = new MockSettingGetter;
   ProxyConfigServiceLinux* service =

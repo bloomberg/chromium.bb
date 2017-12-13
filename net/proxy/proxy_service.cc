@@ -1502,7 +1502,7 @@ ProxyService::CreateSystemProxyConfigService(
 
   // Assume we got called on the thread that runs the default glib
   // main loop, so the current thread is where we should be running
-  // gconf calls from.
+  // gsettings calls from.
   scoped_refptr<base::SingleThreadTaskRunner> glib_thread_task_runner =
       base::ThreadTaskRunnerHandle::Get();
 
