@@ -150,6 +150,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
                              IDS_EXTENSIONS_INSTALL_DROP_TARGET);
   source->AddLocalizedString("errorsPageHeading",
                              IDS_MD_EXTENSIONS_ERROR_PAGE_HEADING);
+  source->AddLocalizedString("clearAll", IDS_MD_EXTENSIONS_ERROR_CLEAR_ALL);
   source->AddLocalizedString("anonymousFunction",
                              IDS_MD_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION);
   source->AddLocalizedString("openInDevtool",

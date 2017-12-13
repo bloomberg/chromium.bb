@@ -59,10 +59,17 @@
       }
 
       #heading {
+        align-items: center;
+        display: flex;
         height: 40px;
         margin-bottom: 30px;
         padding: 8px 12px 0;
         @apply(--cr-title-text);
+      }
+
+      #heading span {
+        flex: 1;
+        margin: 0 10px;
       }
 
       #errors-list {
@@ -171,6 +178,9 @@
               class="icon-arrow-back no-overlap" on-tap="onCloseButtonTap_">
           </button>
           <span>$i18n{errorsPageHeading}</span>
+          <paper-button on-tap="onClearAllTap_" hidden="[[!entries_.length]]">
+            $i18n{clearAll}
+          </paper-button>
         </div>
         <div class="section">
           <extensions-code-section id="code-section"
