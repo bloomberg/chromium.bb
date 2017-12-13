@@ -22,7 +22,7 @@ class SystemTrayView;
 
 class SystemTrayBubble {
  public:
-  SystemTrayBubble(SystemTray* tray, SystemTrayView* view);
+  SystemTrayBubble(SystemTray* tray);
   virtual ~SystemTrayBubble();
 
   // Change the items displayed in the bubble.
@@ -32,6 +32,8 @@ class SystemTrayBubble {
   // Creates |bubble_view_| and a child views for each member of |items_|.
   // Also creates |bubble_wrapper_|. |init_params| may be modified.
   void InitView(views::View* anchor,
+                const std::vector<ash::SystemTrayItem*>& items,
+                SystemTrayView::SystemTrayType system_tray_type,
                 LoginStatus login_status,
                 views::TrayBubbleView::InitParams* init_params);
 
@@ -57,8 +59,12 @@ class SystemTrayBubble {
   void CreateItemViews(LoginStatus login_status);
 
   ash::SystemTray* tray_;
-  SystemTrayView* system_tray_view_;
-  views::TrayBubbleView* bubble_view_;
+
+  // View for system tray content. This is only the direct child of
+  // |bubble_view_|.
+  SystemTrayView* system_tray_view_ = nullptr;
+  // Content view of the bubble.
+  views::TrayBubbleView* bubble_view_ = nullptr;
 
   // Tracks the views created in the last call to CreateItemViews().
   std::map<SystemTrayItem::UmaType, views::View*> tray_item_view_map_;

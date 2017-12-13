@@ -202,9 +202,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // Bubble for SystemTrayViews.
   std::unique_ptr<SystemBubbleWrapper> system_bubble_;
 
-  // View for system tray content. This lifetime is same as |system_bubble_|.
-  std::unique_ptr<SystemTrayView> system_tray_view_;
-
   // Keep track of the default view height so that when we create detailed
   // views directly (e.g. from a notification) we know what height to use.
   int default_bubble_height_ = 0;
