@@ -13,15 +13,6 @@
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "services/video_capture/receiver_mojo_to_media_adapter.h"
 
-namespace {
-
-// The maximum number of video frame buffers in-flight at any one time.
-// If all buffers are still in use by consumers when new frames are produced
-// those frames get dropped.
-static const int kMaxBufferCount = 3;
-
-}  // anonymous namespace
-
 namespace video_capture {
 
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
@@ -140,6 +131,11 @@ void DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose() {
 
 // static
 int DeviceMediaToMojoAdapter::max_buffer_pool_buffer_count() {
+  // The maximum number of video frame buffers in-flight at any one time.
+  // If all buffers are still in use by consumers when new frames are produced
+  // those frames get dropped.
+  static const int kMaxBufferCount = 3;
+
   return kMaxBufferCount;
 }
 
