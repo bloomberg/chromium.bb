@@ -69,7 +69,6 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD0(ClearTransientContent, void());
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
   MOCK_METHOD0(UpdateHtml5HistoryState, void());
-  MOCK_METHOD1(WillLoadCurrentItemWithUrl, void(const GURL&));
   MOCK_METHOD0(WillChangeUserAgentType, void());
   MOCK_METHOD0(LoadCurrentItem, void());
   MOCK_METHOD0(LoadIfNecessary, void());
@@ -577,7 +576,6 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   items.push_back(std::move(item0));
   items.push_back(std::move(item1));
 
-  EXPECT_CALL(delegate_, WillLoadCurrentItemWithUrl(testing::_)).Times(1);
   manager_->Restore(0 /* last_committed_item_index */, std::move(items));
 
   NavigationItem* pending_item = manager_->GetPendingItem();
@@ -656,7 +654,6 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
 
 // Tests that Restore() accepts empty session history and performs no-op.
 TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithEmptyHistory) {
-  EXPECT_CALL(delegate_, WillLoadCurrentItemWithUrl(testing::_)).Times(0);
   manager_->Restore(-1 /* last_committed_item_index */,
                     std::vector<std::unique_ptr<NavigationItem>>());
 
