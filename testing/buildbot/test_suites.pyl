@@ -1254,7 +1254,6 @@
   'mojo_chromiumos_specific_gtests': {
     'viz_content_browsertests': {
       'args': [
-        '--enable-surface-synchronization',
         '--enable-viz',
         '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.viz.content_browsertests.filter',
       ],

@@ -14,9 +14,10 @@ const base::Feature kEnableSurfaceSynchronization{
     "SurfaceSynchronization", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSurfaceSynchronizationEnabled() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
   return base::FeatureList::IsEnabled(kEnableSurfaceSynchronization) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableSurfaceSynchronization);
+         command_line->HasSwitch(switches::kEnableSurfaceSynchronization) ||
+         command_line->HasSwitch(switches::kEnableViz);
 }
 
 }  // namespace features
