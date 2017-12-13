@@ -179,7 +179,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
               system_notifier::kNotifierDeprecatedAccelerator),
           message_center::RichNotificationData(),
           new DeprecatedAcceleratorNotificationDelegate,
-          kNotificationSettingsIcon, SystemNotificationWarningLevel::NORMAL);
+          kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
   notification->set_clickable(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
