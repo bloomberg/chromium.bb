@@ -185,7 +185,8 @@ function runTest(testModule, testName) {
  */
 function elementIsVisible(elem) {
   return elem && elem.offsetWidth > 0 && elem.offsetHeight > 0 &&
-      window.getComputedStyle(elem).visibility != 'hidden';
+      window.getComputedStyle(elem).visibility != 'hidden' &&
+      window.getComputedStyle(elem).opacity > 0;
 }
 
 
