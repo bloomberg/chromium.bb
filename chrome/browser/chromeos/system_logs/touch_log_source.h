@@ -17,7 +17,7 @@ class TouchLogSource : public SystemLogsSource {
 
  private:
   // Overridden from SystemLogsSource:
-  void Fetch(const SysLogsSourceCallback& callback) override;
+  void Fetch(SysLogsSourceCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(TouchLogSource);
 };

@@ -21,7 +21,7 @@ class BasicLogSource : public SystemLogsSource {
   ~BasicLogSource() override;
 
   // SystemLogsSource:
-  void Fetch(const SysLogsSourceCallback& request) override;
+  void Fetch(SysLogsSourceCallback request) override;
 
  private:
   void PopulateVersionStrings(SystemLogsResponse* response);

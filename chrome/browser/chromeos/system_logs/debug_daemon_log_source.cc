@@ -42,12 +42,12 @@ DebugDaemonLogSource::DebugDaemonLogSource(bool scrub)
 
 DebugDaemonLogSource::~DebugDaemonLogSource() {}
 
-void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void DebugDaemonLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
   DCHECK(callback_.is_null());
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
 
@@ -153,7 +153,8 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
     (*response_)[kUserLogFileKeyName] = kNotAvailable;
     auto response = std::make_unique<SystemLogsResponse>();
     std::swap(response, response_);
-    callback_.Run(std::move(response));
+    DCHECK(!callback_.is_null());
+    std::move(callback_).Run(std::move(response));
   }
 }
 
@@ -186,7 +187,8 @@ void DebugDaemonLogSource::MergeUserLogFilesResponse(
   response_->insert(response->begin(), response->end());
   auto response_to_return = std::make_unique<SystemLogsResponse>();
   std::swap(response_to_return, response_);
-  callback_.Run(std::move(response_to_return));
+  DCHECK(!callback_.is_null());
+  std::move(callback_).Run(std::move(response_to_return));
 }
 
 void DebugDaemonLogSource::RequestCompleted() {

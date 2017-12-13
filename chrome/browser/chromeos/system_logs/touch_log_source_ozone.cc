@@ -136,7 +136,7 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
 // This is the end of the whole touch log collection process.
 void OnEventLogCollected(
     std::unique_ptr<system_logs::SystemLogsResponse> response,
-    const system_logs::SysLogsSourceCallback& callback,
+    system_logs::SysLogsSourceCallback callback,
     const std::vector<base::FilePath>& log_paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -144,7 +144,7 @@ void OnEventLogCollected(
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&PackEventLog, response_ptr, log_paths),
-      base::BindOnce(callback, std::move(response)));
+      base::BindOnce(std::move(callback), std::move(response)));
 }
 
 // Callback for handing the outcome of GetTouchDeviceStatus().
@@ -153,7 +153,7 @@ void OnEventLogCollected(
 // collect touch event logs.
 void OnStatusLogCollected(
     std::unique_ptr<system_logs::SystemLogsResponse> response,
-    const system_logs::SysLogsSourceCallback& callback,
+    system_logs::SysLogsSourceCallback callback,
     const std::string& log) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (*response)[kDeviceStatusLogDataKey] = log;
@@ -163,8 +163,8 @@ void OnStatusLogCollected(
   ui::InputDeviceControllerClient* input_device_controller_client =
       g_browser_process->platform_part()->GetInputDeviceControllerClient();
   input_device_controller_client->GetTouchEventLog(
-      kBaseLogPath,
-      base::BindOnce(&OnEventLogCollected, std::move(response), callback));
+      kBaseLogPath, base::BindOnce(&OnEventLogCollected, std::move(response),
+                                   std::move(callback)));
 }
 
 // Collect touch HUD debug logs. This needs to be done on the UI thread.
@@ -184,7 +184,7 @@ void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
 
 namespace system_logs {
 
-void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void TouchLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -194,8 +194,8 @@ void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
   // Collect touch device status logs.
   ui::InputDeviceControllerClient* input_device_controller_client =
       g_browser_process->platform_part()->GetInputDeviceControllerClient();
-  input_device_controller_client->GetTouchDeviceStatus(
-      base::BindOnce(&OnStatusLogCollected, std::move(response), callback));
+  input_device_controller_client->GetTouchDeviceStatus(base::BindOnce(
+      &OnStatusLogCollected, std::move(response), std::move(callback)));
 }
 
 }  // namespace system_logs

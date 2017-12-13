@@ -18,7 +18,7 @@ class ChromeInternalLogSource : public SystemLogsSource {
   ~ChromeInternalLogSource() override;
 
   // SystemLogsSource override.
-  void Fetch(const SysLogsSourceCallback& request) override;
+  void Fetch(SysLogsSourceCallback request) override;
 
  private:
   void PopulateSyncLogs(SystemLogsResponse* response);

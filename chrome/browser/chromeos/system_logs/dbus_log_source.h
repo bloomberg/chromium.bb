@@ -17,7 +17,7 @@ class DBusLogSource : public SystemLogsSource {
   ~DBusLogSource() override;
 
   // SystemLogsSource override.
-  void Fetch(const SysLogsSourceCallback& request) override;
+  void Fetch(SysLogsSourceCallback request) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DBusLogSource);

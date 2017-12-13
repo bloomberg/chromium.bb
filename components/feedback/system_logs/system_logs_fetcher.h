@@ -24,7 +24,7 @@ namespace system_logs {
 
 // Callback that the SystemLogsFetcher uses to return data.
 using SysLogsFetcherCallback =
-    base::Callback<void(std::unique_ptr<SystemLogsResponse>)>;
+    base::OnceCallback<void(std::unique_ptr<SystemLogsResponse>)>;
 
 // The SystemLogsFetcher fetches key-value data from a list of log sources.
 //
@@ -52,7 +52,7 @@ class SystemLogsFetcher {
 
   // Starts the fetch process. After the fetch completes, this instance calls
   // |callback|, then schedules itself to be deleted.
-  void Fetch(const SysLogsFetcherCallback& callback);
+  void Fetch(SysLogsFetcherCallback callback);
 
  private:
   // Callback passed to all the data sources. May call Scrub(), then calls

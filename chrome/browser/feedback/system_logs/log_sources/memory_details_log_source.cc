@@ -13,8 +13,8 @@ namespace system_logs {
 // Reads Chrome memory usage.
 class SystemLogsMemoryHandler : public MemoryDetails {
  public:
-  explicit SystemLogsMemoryHandler(const SysLogsSourceCallback& callback)
-      : callback_(callback) {}
+  explicit SystemLogsMemoryHandler(SysLogsSourceCallback callback)
+      : callback_(std::move(callback)) {}
 
   // Sends the data to the callback.
   // MemoryDetails override.
@@ -23,7 +23,8 @@ class SystemLogsMemoryHandler : public MemoryDetails {
 
     auto response = std::make_unique<SystemLogsResponse>();
     (*response)["mem_usage"] = ToLogString();
-    callback_.Run(std::move(response));
+    DCHECK(!callback_.is_null());
+    std::move(callback_).Run(std::move(response));
   }
 
  private:
@@ -40,12 +41,12 @@ MemoryDetailsLogSource::MemoryDetailsLogSource()
 MemoryDetailsLogSource::~MemoryDetailsLogSource() {
 }
 
-void MemoryDetailsLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void MemoryDetailsLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  scoped_refptr<SystemLogsMemoryHandler>
-      handler(new SystemLogsMemoryHandler(callback));
+  scoped_refptr<SystemLogsMemoryHandler> handler(
+      new SystemLogsMemoryHandler(std::move(callback)));
   handler->StartFetch();
 }
 

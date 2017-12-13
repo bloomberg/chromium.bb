@@ -111,7 +111,7 @@ ChromeInternalLogSource::ChromeInternalLogSource()
 ChromeInternalLogSource::~ChromeInternalLogSource() {
 }
 
-void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -156,10 +156,10 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&GetEntriesAsync, response_ptr),
-      base::BindOnce(callback, std::move(response)));
+      base::BindOnce(std::move(callback), std::move(response)));
 #else
   // On other platforms, we're done. Invoke the callback.
-  callback.Run(std::move(response));
+  std::move(callback).Run(std::move(response));
 #endif  // defined(OS_CHROMEOS)
 }
 

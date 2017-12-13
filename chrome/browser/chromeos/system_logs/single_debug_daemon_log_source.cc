@@ -43,22 +43,22 @@ SingleDebugDaemonLogSource::SingleDebugDaemonLogSource(
 
 SingleDebugDaemonLogSource::~SingleDebugDaemonLogSource() {}
 
-void SingleDebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void SingleDebugDaemonLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
 
-  client->GetLog(
-      source_name(),
-      base::BindOnce(&SingleDebugDaemonLogSource::OnFetchComplete,
-                     weak_ptr_factory_.GetWeakPtr(), source_name(), callback));
+  client->GetLog(source_name(),
+                 base::BindOnce(&SingleDebugDaemonLogSource::OnFetchComplete,
+                                weak_ptr_factory_.GetWeakPtr(), source_name(),
+                                std::move(callback)));
 }
 
 void SingleDebugDaemonLogSource::OnFetchComplete(
     const std::string& log_name,
-    const SysLogsSourceCallback& callback,
+    SysLogsSourceCallback callback,
     base::Optional<std::string> result) const {
   // |result| and |response| are the same type, but |result| is passed in from
   // DebugDaemonClient, which does not use the SystemLogsResponse alias.
@@ -67,7 +67,7 @@ void SingleDebugDaemonLogSource::OnFetchComplete(
   if (result.has_value())
     response->emplace(log_name, result.value());
 
-  callback.Run(std::move(response));
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace system_logs

@@ -33,10 +33,11 @@ CrashIdsSource::CrashIdsSource()
 
 CrashIdsSource::~CrashIdsSource() {}
 
-void CrashIdsSource::Fetch(const SysLogsSourceCallback& callback) {
+void CrashIdsSource::Fetch(SysLogsSourceCallback callback) {
   // Unretained since we own these callbacks.
-  pending_requests_.emplace_back(base::Bind(
-      &CrashIdsSource::RespondWithCrashIds, base::Unretained(this), callback));
+  pending_requests_.emplace_back(
+      base::BindOnce(&CrashIdsSource::RespondWithCrashIds,
+                     base::Unretained(this), std::move(callback)));
 
   if (pending_crash_list_loading_)
     return;
@@ -70,19 +71,18 @@ void CrashIdsSource::OnUploadListAvailable() {
     }
   }
 
-  for (const auto& request : pending_requests_)
-    request.Run();
+  for (auto& request : pending_requests_)
+    std::move(request).Run();
 
   pending_requests_.clear();
 }
 
-void CrashIdsSource::RespondWithCrashIds(
-    const SysLogsSourceCallback& callback) const {
+void CrashIdsSource::RespondWithCrashIds(SysLogsSourceCallback callback) const {
   auto response = std::make_unique<SystemLogsResponse>();
   (*response)[feedback::FeedbackReport::kCrashReportIdsKey] = crash_ids_list_;
 
   // We must respond anyways.
-  callback.Run(std::move(response));
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace system_logs

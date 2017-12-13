@@ -93,7 +93,7 @@ void SingleLogFileLogSource::SetChromeStartTimeForTesting(
   g_chrome_start_time_for_test = start_time;
 }
 
-void SingleLogFileLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void SingleLogFileLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -105,7 +105,7 @@ void SingleLogFileLogSource::Fetch(const SysLogsSourceCallback& callback) {
       base::BindOnce(&SingleLogFileLogSource::ReadFile,
                      weak_ptr_factory_.GetWeakPtr(),
                      kMaxNumAllowedLogRotationsDuringFileRead, response_ptr),
-      base::BindOnce(callback, std::move(response)));
+      base::BindOnce(std::move(callback), std::move(response)));
 }
 
 base::FilePath SingleLogFileLogSource::GetLogFilePath() const {

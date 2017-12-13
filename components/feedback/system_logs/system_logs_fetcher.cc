@@ -71,12 +71,12 @@ void SystemLogsFetcher::AddSource(std::unique_ptr<SystemLogsSource> source) {
   num_pending_requests_++;
 }
 
-void SystemLogsFetcher::Fetch(const SysLogsFetcherCallback& callback) {
+void SystemLogsFetcher::Fetch(SysLogsFetcherCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   for (size_t i = 0; i < data_sources_.size(); ++i) {
     VLOG(1) << "Fetching SystemLogSource: " << data_sources_[i]->source_name();
     data_sources_[i]->Fetch(base::Bind(&SystemLogsFetcher::OnFetched,
@@ -122,7 +122,9 @@ void SystemLogsFetcher::AddResponse(
   if (num_pending_requests_ > 0)
     return;
 
-  callback_.Run(std::move(response_));
+  DCHECK(!callback_.is_null());
+  std::move(callback_).Run(std::move(response_));
+
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
 }
 
