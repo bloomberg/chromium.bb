@@ -12,8 +12,10 @@
 
 #include "ash/accelerators/accelerator_handler.h"
 #include "ash/accelerators/accelerator_ids.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/event_matcher_util.h"
+#include "ash/host/ash_window_tree_host.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_pin_type.h"
@@ -337,10 +339,13 @@ void WindowManager::OnWmConnected() {
 void WindowManager::OnWmAcceleratedWidgetAvailableForDisplay(
     int64_t display_id,
     gfx::AcceleratedWidget widget) {
-  auto* window = Shell::GetRootWindowForDisplayId(display_id);
-  if (window) {
-    auto* host = static_cast<aura::WindowTreeHostMus*>(window->GetHost());
-    host->OverrideAcceleratedWidget(widget);
+  WindowTreeHostManager* manager = Shell::Get()->window_tree_host_manager();
+  AshWindowTreeHost* host =
+      manager->GetAshWindowTreeHostForDisplayId(display_id);
+  // The display may have been destroyed before getting this async callback.
+  if (host && host->AsWindowTreeHost()) {
+    static_cast<aura::WindowTreeHostMus*>(host->AsWindowTreeHost())
+        ->OverrideAcceleratedWidget(widget);
   }
 }
 

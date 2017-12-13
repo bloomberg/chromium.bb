@@ -178,6 +178,11 @@ void ServerWindow::Remove(ServerWindow* child) {
     observer.OnWindowHierarchyChanged(child, nullptr, this);
 }
 
+void ServerWindow::RemoveAllChildren() {
+  while (!children_.empty())
+    Remove(children_[0]);
+}
+
 void ServerWindow::Reorder(ServerWindow* relative,
                            mojom::OrderDirection direction) {
   parent_->children_.erase(
