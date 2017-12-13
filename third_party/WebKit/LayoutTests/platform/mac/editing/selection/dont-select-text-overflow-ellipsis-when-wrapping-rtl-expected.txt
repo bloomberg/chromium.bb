@@ -10,7 +10,7 @@ layer at (0,0) size 800x102
         LayoutBlockFlow {DT} at (0,22) size 384x22
           LayoutText {#text} at (0,0) size 214x22
             text run at (0,0) width 214: "Lorem ipsum dolor sit amet"
-layer at (208,50) size 344x22 scrollX 877.00 scrollWidth 1222
+layer at (208,50) size 344x22 scrollX 878.00 scrollWidth 1222
   LayoutBlockFlow {DD} at (0,0) size 344x22
     LayoutText {#text} at (-877,0) size 1222x22
       text run at (-877,0) width 4 RTL: "."
