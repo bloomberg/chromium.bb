@@ -68,6 +68,9 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSKill();
 SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSFutex();
 SANDBOX_EXPORT bpf_dsl::ResultExpr RewriteSchedSIGSYS();
 
+// Allocates a crash key so that Seccomp information can be recorded.
+void AllocateCrashKeys();
+
 // Following four functions return substrings of error messages used
 // in the above four functions. They are useful in death tests.
 SANDBOX_EXPORT const char* GetErrorMessageContentForTests();

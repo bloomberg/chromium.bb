@@ -65,11 +65,6 @@ size_t RegisterChromeCrashKeys() {
 
     {kViewCount, kSmallSize},
 
-    // sandbox/:
-#if defined(OS_LINUX)
-    {"seccomp-sigsys", kMediumSize},
-#endif
-
     // Temporary for https://crbug.com/685996.
     {kUserCloudPolicyManagerConnectTrace, kMediumSize},
 
