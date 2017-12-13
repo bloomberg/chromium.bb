@@ -15,6 +15,7 @@
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamTrack.h"
 
@@ -98,7 +99,9 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
 
   if (media_element_->HasVideo()) {
     Platform::Current()->CreateHTMLVideoElementCapturer(
-        &web_stream, media_element_->GetWebMediaPlayer());
+        &web_stream, media_element_->GetWebMediaPlayer(),
+        media_element_->GetExecutionContext()->GetTaskRunner(
+            TaskType::kUnthrottled));
   }
   if (media_element_->HasAudio()) {
     Platform::Current()->CreateHTMLAudioElementCapturer(
@@ -189,7 +192,8 @@ MediaStream* HTMLMediaElementCapture::captureStream(
 
   if (element.HasVideo()) {
     Platform::Current()->CreateHTMLVideoElementCapturer(
-        &web_stream, element.GetWebMediaPlayer());
+        &web_stream, element.GetWebMediaPlayer(),
+        element.GetExecutionContext()->GetTaskRunner(TaskType::kUnthrottled));
   }
   if (element.HasAudio()) {
     Platform::Current()->CreateHTMLAudioElementCapturer(

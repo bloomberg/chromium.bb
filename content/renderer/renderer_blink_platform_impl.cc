@@ -980,13 +980,15 @@ RendererBlinkPlatformImpl::CreateCanvasCaptureHandler(
 
 void RendererBlinkPlatformImpl::CreateHTMLVideoElementCapturer(
     WebMediaStream* web_media_stream,
-    WebMediaPlayer* web_media_player) {
+    WebMediaPlayer* web_media_player,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(web_media_stream);
   DCHECK(web_media_player);
   AddVideoTrackToMediaStream(
       HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player, content::RenderThread::Get()->GetIOTaskRunner()),
+          web_media_player, content::RenderThread::Get()->GetIOTaskRunner(),
+          task_runner),
       false,  // is_remote
       web_media_stream);
 #endif
