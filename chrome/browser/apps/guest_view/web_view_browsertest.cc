@@ -1084,6 +1084,17 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, AudioStateJavascriptAPI) {
       << message_;
 }
 
+// Test that WebView does not override autoplay policy.
+IN_PROC_BROWSER_TEST_P(WebViewTest, AutoplayPolicy) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAutoplayPolicy,
+      switches::autoplay::kDocumentUserActivationRequiredPolicy);
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autoplay"))
+      << message_;
+}
+
 // This test verifies that hiding the guest triggers WebContents::WasHidden().
 IN_PROC_BROWSER_TEST_P(WebViewVisibilityTest, GuestVisibilityChanged) {
   LoadAppWithGuest("web_view/visibility_changed");
