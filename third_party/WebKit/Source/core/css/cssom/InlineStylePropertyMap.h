@@ -16,8 +16,6 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   explicit InlineStylePropertyMap(Element* owner_element)
       : owner_element_(owner_element) {}
 
-  Vector<String> getProperties() override;
-
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(owner_element_);
     StylePropertyMap::Trace(visitor);
@@ -26,10 +24,9 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
  protected:
   const CSSValue* GetProperty(CSSPropertyID) override;
   const CSSValue* GetCustomProperty(AtomicString) override;
+  void ForEachProperty(const IterationCallback&) override;
   void SetProperty(CSSPropertyID, const CSSValue*) override;
   void RemoveProperty(CSSPropertyID) override;
-
-  HeapVector<StylePropertyMapEntry> GetIterationEntries() override;
 
  private:
   Member<Element> owner_element_;

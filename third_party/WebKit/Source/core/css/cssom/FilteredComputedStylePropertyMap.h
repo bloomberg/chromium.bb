@@ -23,8 +23,6 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
                                                 custom_properties);
   }
 
-  Vector<String> getProperties() override;
-
  private:
   FilteredComputedStylePropertyMap(
       Node*,
@@ -33,6 +31,7 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
 
   const CSSValue* GetProperty(CSSPropertyID) override;
   const CSSValue* GetCustomProperty(AtomicString) override;
+  void ForEachProperty(const IterationCallback&) override;
 
   HashSet<CSSPropertyID> native_properties_;
   HashSet<AtomicString> custom_properties_;
