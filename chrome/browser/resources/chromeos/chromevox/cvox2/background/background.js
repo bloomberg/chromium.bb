@@ -181,15 +181,8 @@ Background = function() {
 
   // Record a metric with the mode we're in on startup.
   var useNext = localStorage['useClassic'] != 'true';
-  chrome.metricsPrivate.recordValue(
-      {
-        metricName: 'Accessibility.CrosChromeVoxNext',
-        type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
-        min: 1,  // According to histogram.h, this should be 1 for enums.
-        max: 2,  // Maximum should be exclusive.
-        buckets: 3
-      },  // Number of buckets: 0, 1 and overflowing 2.
-      useNext ? 1 : 0);
+  chrome.metricsPrivate.recordBoolean(
+      'Accessibility.CrosChromeVoxNext', useNext);
 
   Notifications.onStartup();
 };
