@@ -5,7 +5,6 @@
 module blink.mojom;
 
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
-import "url/mojo/origin.mojom";
 
 enum BackgroundFetchError {
   NONE,
@@ -64,7 +63,6 @@ interface BackgroundFetchService {
   // Creates a new Background Fetch registration identified to the developer by
   // |developer_id|, with the given |options| for the sequence of |requests|.
   Fetch(int64 service_worker_registration_id,
-        url.mojom.Origin origin,
         string developer_id,
         array<FetchAPIRequest> requests,
         BackgroundFetchOptions options)
@@ -80,21 +78,19 @@ interface BackgroundFetchService {
   // the developer's |developer_id|. Fails if the registration had already
   // completed/failed/aborted.
   Abort(int64 service_worker_registration_id,
-        url.mojom.Origin origin,
         string developer_id,
         string unique_id)
       => (BackgroundFetchError error);
 
   // Gets the active Background Fetch registration identified by |developer_id|.
   GetRegistration(int64 service_worker_registration_id,
-                  url.mojom.Origin origin,
                   string developer_id)
       => (BackgroundFetchError error,
           BackgroundFetchRegistration? registration);
 
   // Gets the sequence of |developer_id|s for active Background Fetch
   // registrations given the |service_worker_registration_id|.
-  GetDeveloperIds(int64 service_worker_registration_id, url.mojom.Origin origin)
+  GetDeveloperIds(int64 service_worker_registration_id)
       => (BackgroundFetchError error,
           array<string> developer_ids);
 
