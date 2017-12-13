@@ -94,6 +94,20 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
   InitializeWorkerThread(std::move(global_scope_creation_params),
                          CreateBackingThreadStartupData(ToIsolate(document)),
                          script_url, stack_id, source_code);
+
+  // Post all queued tasks to the worker.
+  for (auto& queued_task : queued_early_tasks_) {
+    WTF::CrossThreadClosure task = CrossThreadBind(
+        &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
+        CrossThreadUnretained(&WorkerObjectProxy()),
+        WTF::Passed(std::move(queued_task.message)),
+        WTF::Passed(std::move(queued_task.channels)),
+        CrossThreadUnretained(GetWorkerThread()), queued_task.stack_id);
+    GetWorkerThread()
+        ->GetTaskRunner(TaskType::kPostedMessage)
+        ->PostTask(BLINK_FROM_HERE, std::move(task));
+  }
+  queued_early_tasks_.clear();
 }
 
 void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
@@ -120,24 +134,6 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
     queued_early_tasks_.push_back(
         QueuedTask{std::move(message), std::move(channels), stack_id});
   }
-}
-
-void DedicatedWorkerMessagingProxy::WorkerThreadCreated() {
-  DCHECK(IsParentContextThread());
-  ThreadedMessagingProxyBase::WorkerThreadCreated();
-
-  for (auto& queued_task : queued_early_tasks_) {
-    WTF::CrossThreadClosure task = CrossThreadBind(
-        &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
-        CrossThreadUnretained(&WorkerObjectProxy()),
-        std::move(queued_task.message),
-        WTF::Passed(std::move(queued_task.channels)),
-        CrossThreadUnretained(GetWorkerThread()), queued_task.stack_id);
-    GetWorkerThread()
-        ->GetTaskRunner(TaskType::kPostedMessage)
-        ->PostTask(BLINK_FROM_HERE, std::move(task));
-  }
-  queued_early_tasks_.clear();
 }
 
 bool DedicatedWorkerMessagingProxy::HasPendingActivity() const {
