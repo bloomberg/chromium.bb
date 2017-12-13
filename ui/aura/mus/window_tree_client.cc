@@ -874,7 +874,8 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
       window_manager_client_->SetDisplayRoot(
           display, display_init_params->viewport_metrics.Clone(),
           display_init_params->is_primary_display, window->server_id(),
-          display_init_params->mirrors,
+          switches::IsMusHostingViz() ? display_init_params->mirrors
+                                      : std::vector<display::Display>(),
           base::Bind(&OnAckMustSucceed, FROM_HERE));
     }
   }

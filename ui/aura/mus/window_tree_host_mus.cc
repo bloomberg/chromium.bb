@@ -13,6 +13,7 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/class_property.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -186,6 +187,9 @@ void WindowTreeHostMus::OverrideAcceleratedWidget(
   OnAcceleratedWidgetAvailable(widget, GetDisplay().device_scale_factor());
   if (was_visible)
     compositor()->SetVisible(true);
+
+  for (WindowTreeHostObserver& observer : observers())
+    observer.OnAcceleratedWidgetOverridden(this);
 }
 
 std::unique_ptr<DisplayInitParams>
