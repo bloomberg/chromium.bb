@@ -15,7 +15,18 @@ class RenderWidgetHostViewBase;
 
 // The duration after which a synthetic wheel with zero deltas and
 // phase = |kPhaseEnded| will be sent after the last wheel event.
-const int64_t kDefaultMouseWheelLatchingTransactionMs = 100;
+constexpr base::TimeDelta kDefaultMouseWheelLatchingTransaction =
+    base::TimeDelta::FromMilliseconds(500);
+
+// Maximum time that the phase handler waits for arrival of a wheel event with
+// momentum_phase = kPhaseBegan before sending its previous wheel event with
+// phase = kPhaseEnded.
+constexpr base::TimeDelta kMaximumTimeBetweenPhaseEndedAndMomentumPhaseBegan =
+    base::TimeDelta::FromMilliseconds(100);
+
+// Maximum allowed difference between coordinates of two mouse wheel events in
+// the same scroll sequence.
+const double kWheelLatchingSlopRegion = 10.0;
 
 // On ChromeOS wheel events don't have phase information; However, whenever the
 // user puts down or lifts their fingers a GFC or GFS is received.
@@ -44,6 +55,11 @@ class MouseWheelPhaseHandler {
   void SendWheelEndIfNeeded();
   void ScrollingMayBegin();
 
+  // Used to set the timer timeout for testing.
+  void set_mouse_wheel_end_dispatch_timeout(base::TimeDelta timeout) {
+    mouse_wheel_end_dispatch_timeout_ = timeout;
+  }
+
   bool HasPendingWheelEndEvent() const {
     return mouse_wheel_end_dispatch_timer_.IsRunning();
   }
@@ -51,13 +67,21 @@ class MouseWheelPhaseHandler {
  private:
   void SendSyntheticWheelEventWithPhaseEnded(
       bool should_route_event);
-  void ScheduleMouseWheelEndDispatching(bool should_route_event);
+  void ScheduleMouseWheelEndDispatching(bool should_route_event,
+                                        const base::TimeDelta timeout);
+  bool IsWithinSlopRegion(blink::WebMouseWheelEvent wheel_event) const;
 
   RenderWidgetHostImpl* const host_;
   RenderWidgetHostViewBase* const host_view_;
   base::OneShotTimer mouse_wheel_end_dispatch_timer_;
+  base::TimeDelta mouse_wheel_end_dispatch_timeout_;
   blink::WebMouseWheelEvent last_mouse_wheel_event_;
   ScrollPhaseState scroll_phase_state_;
+  // This is used to break the timer based latching when the difference between
+  // the locations of the first wheel event and the current wheel event is
+  // larger than some threshold. The variable value is only valid while the
+  // dispatch timer is running.
+  gfx::Vector2dF first_wheel_location_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseWheelPhaseHandler);
 };
