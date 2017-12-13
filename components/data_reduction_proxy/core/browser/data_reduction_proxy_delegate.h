@@ -23,7 +23,6 @@ class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class NetLog;
-class ProxyConfig;
 class ProxyInfo;
 class ProxyServer;
 }
@@ -132,19 +131,6 @@ class DataReductionProxyDelegate
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyDelegate);
 };
 
-// Adds data reduction proxies to |result|, where applicable, if result
-// otherwise uses a direct connection for |url|, and the data reduction proxy is
-// not bypassed. Also, configures |result| to proceed directly to the origin if
-// |result|'s current proxy is the data reduction proxy
-// This is visible for test purposes.
-void OnResolveProxyHandler(
-    const GURL& url,
-    const std::string& method,
-    const net::ProxyConfig& proxy_config,
-    const net::ProxyRetryInfoMap& proxy_retry_info,
-    const DataReductionProxyConfig& data_reduction_proxy_config,
-    DataReductionProxyIOData* io_data,
-    net::ProxyInfo* result);
 }  // namespace data_reduction_proxy
 
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_DELEGATE_H_
