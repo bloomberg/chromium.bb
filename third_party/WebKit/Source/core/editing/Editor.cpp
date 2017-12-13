@@ -250,7 +250,7 @@ bool Editor::HandleTextEvent(TextEvent* event) {
   if (event->IsIncrementalInsertion())
     return false;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -310,25 +310,25 @@ bool Editor::CanEditRichly() const {
 // copy/paste (like divs, or a document body).
 
 bool Editor::CanDHTMLCut() {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   return !IsInPasswordField(GetFrame()
                                 .Selection()
                                 .ComputeVisibleSelectionInDOMTree()
                                 .Start()) &&
-         !DispatchCPPEvent(EventTypeNames::beforecut, kDataTransferNumb);
+         !DispatchClipboardEvent(EventTypeNames::beforecut, kDataTransferNumb);
 }
 
 bool Editor::CanDHTMLCopy() {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   return !IsInPasswordField(GetFrame()
                                 .Selection()
                                 .ComputeVisibleSelectionInDOMTree()
                                 .Start()) &&
-         !DispatchCPPEvent(EventTypeNames::beforecopy, kDataTransferNumb);
+         !DispatchClipboardEvent(EventTypeNames::beforecopy, kDataTransferNumb);
 }
 
 bool Editor::CanCut() const {
@@ -484,31 +484,31 @@ void Editor::PasteAsFragment(DocumentFragment* pasting_fragment,
       GetFrame().DomWindow(), pasting_fragment, smart_replace, match_style));
 }
 
-bool Editor::TryDHTMLCopy() {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+bool Editor::DispatchCopyEvent() {
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (IsInPasswordField(
           GetFrameSelection().ComputeVisibleSelectionInDOMTree().Start()))
-    return false;
+    return true;
 
-  return !DispatchCPPEvent(EventTypeNames::copy, kDataTransferWritable);
+  return DispatchClipboardEvent(EventTypeNames::copy, kDataTransferWritable);
 }
 
-bool Editor::TryDHTMLCut() {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+bool Editor::DispatchCutEvent() {
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (IsInPasswordField(
           GetFrameSelection().ComputeVisibleSelectionInDOMTree().Start()))
-    return false;
+    return true;
 
-  return !DispatchCPPEvent(EventTypeNames::cut, kDataTransferWritable);
+  return DispatchClipboardEvent(EventTypeNames::cut, kDataTransferWritable);
 }
 
-bool Editor::TryDHTMLPaste(PasteMode paste_mode) {
-  return !DispatchCPPEvent(EventTypeNames::paste, kDataTransferReadable,
-                           paste_mode);
+bool Editor::DispatchPasteEvent(PasteMode paste_mode) {
+  return DispatchClipboardEvent(EventTypeNames::paste, kDataTransferReadable,
+                                paste_mode);
 }
 
 void Editor::PasteAsPlainTextWithPasteboard(Pasteboard* pasteboard) {
@@ -538,9 +538,9 @@ void Editor::PasteWithPasteboard(Pasteboard* pasteboard) {
     if (!text.IsEmpty()) {
       chose_plain_text = true;
 
-      // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+      // TODO(editing-dev): Use of UpdateStyleAndLayoutIgnorePendingStylesheets
       // needs to be audited.  See http://crbug.com/590369 for more details.
-      // |selectedRange| requires clean layout for visible selection
+      // |SelectedRange| requires clean layout for visible selection
       // normalization.
       GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -618,11 +618,9 @@ static void WriteImageNodeToPasteboard(Pasteboard* pasteboard,
   pasteboard->WriteImage(image.get(), url, title);
 }
 
-// Returns whether caller should continue with "the default processing", which
-// is the same as the event handler NOT setting the return value to false
-bool Editor::DispatchCPPEvent(const AtomicString& event_type,
-                              DataTransferAccessPolicy policy,
-                              PasteMode paste_mode) {
+bool Editor::DispatchClipboardEvent(const AtomicString& event_type,
+                                    DataTransferAccessPolicy policy,
+                                    PasteMode paste_mode) {
   Element* target = FindEventTargetFromSelection();
   if (!target)
     return true;
@@ -640,7 +638,7 @@ bool Editor::DispatchCPPEvent(const AtomicString& event_type,
     Pasteboard::GeneralPasteboard()->WriteDataObject(
         data_transfer->GetDataObject());
 
-  // invalidate clipboard here for security
+  // Invalidate clipboard here for security.
   data_transfer->SetAccessPolicy(kDataTransferNumb);
 
   return !no_default_processing;
@@ -1126,15 +1124,15 @@ bool Editor::InsertParagraphSeparator() {
 }
 
 void Editor::Cut(EditorCommandSource source) {
-  if (TryDHTMLCut())
-    return;  // DHTML did the whole operation
+  if (!DispatchCutEvent())
+    return;
   if (!CanCut())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  // |tryDHTMLCut| dispatches cut event, which may make layout dirty, but we
-  // need clean layout to obtain the selected content.
+  // A 'cut' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (source == kCommandFromMenuOrKeyBinding &&
@@ -1172,15 +1170,15 @@ void Editor::Cut(EditorCommandSource source) {
 }
 
 void Editor::Copy(EditorCommandSource) {
-  if (TryDHTMLCopy())
-    return;  // DHTML did the whole operation
+  if (!DispatchCopyEvent())
+    return;
   if (!CanCopy())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  // |tryDHTMLCopy| dispatches copy event, which may make layout dirty, but
-  // we need clean layout to obtain the selected content.
+  // A 'copy' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (EnclosingTextControl(
@@ -1202,15 +1200,15 @@ void Editor::Copy(EditorCommandSource) {
 
 void Editor::Paste(EditorCommandSource source) {
   DCHECK(GetFrame().GetDocument());
-  if (TryDHTMLPaste(kAllMimeTypes))
-    return;  // DHTML did the whole operation
+  if (!DispatchPasteEvent(kAllMimeTypes))
+    return;
   if (!CanPaste())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  // |tryDHTMLPaste| dispatches copy event, which may make layout dirty, but
-  // we need clean layout to obtain the selected content.
+  // A 'paste' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (source == kCommandFromMenuOrKeyBinding &&
@@ -1244,15 +1242,15 @@ void Editor::Paste(EditorCommandSource source) {
 }
 
 void Editor::PasteAsPlainText(EditorCommandSource source) {
-  if (TryDHTMLPaste(kPlainTextOnly))
+  if (!DispatchPasteEvent(kPlainTextOnly))
     return;
   if (!CanPaste())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  // |tryDHTMLPaste| dispatches copy event, which may make layout dirty, but
-  // we need clean layout to obtain the selected content.
+  // A 'paste' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (source == kCommandFromMenuOrKeyBinding &&
@@ -1266,9 +1264,9 @@ void Editor::PerformDelete() {
   if (!CanDelete())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  // |selectedRange| requires clean layout for visible selection normalization.
+  // |SelectedRange| requires clean layout for visible selection normalization.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   AddToKillRing(SelectedRange());
@@ -1416,8 +1414,8 @@ void Transpose(LocalFrame& frame) {
 
   Document* const document = frame.GetDocument();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited. see http://crbug.com/590369 for more details.
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
   document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   const EphemeralRange& range = ComputeRangeForTranspose(frame);
@@ -1441,8 +1439,8 @@ void Transpose(LocalFrame& frame) {
   if (frame.GetDocument() != document)
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited. see http://crbug.com/590369 for more details.
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
   document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // 'beforeinput' event handler may change selection, we need to re-calculate
