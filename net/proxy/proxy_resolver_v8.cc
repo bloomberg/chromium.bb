@@ -24,8 +24,8 @@
 #include "gin/v8_initializer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/proxy/pac_js_library.h"
 #include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_resolver_script.h"
 #include "net/proxy/proxy_resolver_script_data.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -34,8 +34,7 @@
 // Notes on the javascript environment:
 //
 // For the majority of the PAC utility functions, we use the same code
-// as Firefox. See the javascript library that proxy_resolver_scipt.h
-// pulls in.
+// as Firefox. See the javascript library that pac_js_library.h pulls in.
 //
 // In addition, we implement a subset of Microsoft's extensions to PAC.
 // - myIpAddressEx()
@@ -573,10 +572,7 @@ class ProxyResolverV8::Context {
     // (This script should never fail, as it is a string literal!)
     // Note that the two string literals are concatenated.
     int rv = RunScript(
-        ASCIILiteralToV8String(
-            isolate_,
-            PROXY_RESOLVER_SCRIPT
-            PROXY_RESOLVER_SCRIPT_EX),
+        ASCIILiteralToV8String(isolate_, PAC_JS_LIBRARY PAC_JS_LIBRARY_EX),
         kPacUtilityResourceName);
     if (rv != OK) {
       NOTREACHED();
