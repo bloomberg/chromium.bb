@@ -319,8 +319,6 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
   switch (event) {
     case blink::kWebAXEventActiveDescendantChanged:
       return ui::AX_EVENT_ACTIVEDESCENDANTCHANGED;
-    case blink::kWebAXEventAlert:
-      return ui::AX_EVENT_ALERT;
     case blink::kWebAXEventAriaAttributeChanged:
       return ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED;
     case blink::kWebAXEventAutocorrectionOccured:
