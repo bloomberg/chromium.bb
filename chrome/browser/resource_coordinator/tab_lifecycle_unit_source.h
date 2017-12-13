@@ -24,6 +24,7 @@ class WebContents;
 namespace resource_coordinator {
 
 class TabLifecycleObserver;
+class TabLifecycleUnitExternal;
 
 // Creates and destroys LifecycleUnits as tabs are created and destroyed.
 class TabLifecycleUnitSource : public BrowserListObserver,
@@ -32,6 +33,13 @@ class TabLifecycleUnitSource : public BrowserListObserver,
  public:
   TabLifecycleUnitSource();
   ~TabLifecycleUnitSource() override;
+
+  static TabLifecycleUnitSource* GetInstance();
+
+  // Returns the TabLifecycleUnitExternal instance associated with
+  // |web_contents|, or nullptr if |web_contents| isn't associated with a tab.
+  TabLifecycleUnitExternal* GetTabLifecycleUnitExternal(
+      content::WebContents* web_contents) const;
 
   // Adds / removes an observer that is notified when the discarded or auto-
   // discardable state of a tab changes.

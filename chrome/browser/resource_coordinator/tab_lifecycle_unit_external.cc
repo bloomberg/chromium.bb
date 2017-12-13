@@ -4,13 +4,17 @@
 
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
+
 namespace resource_coordinator {
 
 // static
 TabLifecycleUnitExternal* TabLifecycleUnitExternal::FromWebContents(
     content::WebContents* web_contents) {
-  // TODO(fdoray): Implement this. https://crbug.com/775644
-  return nullptr;
+  TabLifecycleUnitSource* source = TabLifecycleUnitSource::GetInstance();
+  if (!source)
+    return nullptr;
+  return source->GetTabLifecycleUnitExternal(web_contents);
 }
 
 }  // namespace resource_coordinator
