@@ -19,12 +19,12 @@
 namespace net {
 
 // static
-QuicDecrypter* QuicDecrypter::Create(QuicTag algorithm) {
+std::unique_ptr<QuicDecrypter> QuicDecrypter::Create(QuicTag algorithm) {
   switch (algorithm) {
     case kAESG:
-      return new Aes128Gcm12Decrypter();
+      return std::make_unique<Aes128Gcm12Decrypter>();
     case kCC20:
-      return new ChaCha20Poly1305Decrypter();
+      return std::make_unique<ChaCha20Poly1305Decrypter>();
     default:
       QUIC_LOG(FATAL) << "Unsupported algorithm: " << algorithm;
       return nullptr;
