@@ -21,6 +21,10 @@ for (const {coord, desc} of gInvalidCoordTestCases) {
   }, 'Constructing a CSSTranslation with ' + desc + ' for the coordinates throws a TypeError');
 }
 
+test(() => {
+  assert_throws(new TypeError(), () => new CSSTranslation(CSS.px(0), CSS.px(0), CSS.percent(0)));
+}, 'Constructing a CSSTranslation with a percent for the Z coordinate throws a TypeError');
+
 for (const attr of ['x', 'y', 'z']) {
   for (const {value, desc} of gInvalidCoordTestCases) {
     test(() => {
@@ -30,6 +34,12 @@ for (const attr of ['x', 'y', 'z']) {
     }, 'Updating CSSTranslation.' + attr + ' to ' + desc + ' throws a TypeError');
   }
 }
+
+test(() => {
+  let result = new CSSTranslation(CSS.px(0), CSS.px(0), CSS.px(0));
+  assert_throws(new TypeError(), () => result.z = CSS.percent(0));
+  assert_style_value_equals(result.z, CSS.px(0));
+}, 'Updating CSSTranslation.z to a percent throws a TypeError');
 
 test(() => {
   const result = new CSSTranslation(CSS.px(-3.14), CSS.percent(3.14));
@@ -55,7 +65,7 @@ test(() => {
   assert_true(result.is2D);
 }, 'CSSTranslation can be constructed from CSSMathValues');
 
-for (const attr of ['x', 'y', 'z']) {
+for (const attr of ['x', 'y']) {
   test(() => {
     let result = new CSSTranslation(CSS.px(0), CSS.px(0), CSS.px(0));
     result[attr] = CSS.px(3.14);
@@ -70,12 +80,24 @@ for (const attr of ['x', 'y', 'z']) {
 
   test(() => {
     let result = new CSSTranslation(CSS.px(0), CSS.px(0), CSS.px(0));
-    result[attr] = new CSSMathSum(CSS.percent(3.14));
-    assert_style_value_equals(result[attr], new CSSMathSum(CSS.percent(3.14)));
+    result[attr] = new CSSMathSum(CSS.px(3.14));
+    assert_style_value_equals(result[attr], new CSSMathSum(CSS.px(3.14)));
     result[attr] = new CSSMathSum(CSS.percent(3.14));
     assert_style_value_equals(result[attr], new CSSMathSum(CSS.percent(3.14)));
   }, 'CSSTranslation.' + attr + ' can be updated to a CSSMathValue');
 }
+
+test(() => {
+  let result = new CSSTranslation(CSS.px(0), CSS.px(0), CSS.px(0));
+  result.z = CSS.px(3.14);
+  assert_style_value_equals(result.z, CSS.px(3.14));
+}, 'CSSTranslation.z can be updated to a length');
+
+test(() => {
+  let result = new CSSTranslation(CSS.px(0), CSS.px(0), CSS.px(0));
+  result.z = new CSSMathSum(CSS.px(3.14));
+  assert_style_value_equals(result.z, new CSSMathSum(CSS.px(3.14)));
+}, 'CSSTranslation.z can be updated to a CSSMathValue');
 
 test(() => {
   let result = new CSSTranslation(CSS.px(0), CSS.px(0));

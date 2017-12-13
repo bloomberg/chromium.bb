@@ -14,52 +14,43 @@ namespace blink {
 
 namespace {
 
-bool IsNumberValue(const CSSValue& value) {
-  return value.IsPrimitiveValue() && ToCSSPrimitiveValue(value).IsNumber();
+bool IsValidCoordinate(const CSSNumericValue* value) {
+  return value && value->Type().MatchesNumber();
 }
 
-bool IsCoordValid(CSSNumericValue* value) {
-  // TODO: CSSMathValue are not supported yet
-  if (!value->IsUnitValue())
-    return false;
-  if (value->GetType() != CSSStyleValue::StyleValueType::kNumberType) {
-    return false;
-  }
-  return true;
+bool IsValidAngle(const CSSNumericValue* value) {
+  return value &&
+         value->Type().MatchesBaseType(CSSNumericValueType::BaseType::kAngle);
 }
 
 CSSRotation* FromCSSRotate(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
-  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value.Item(0));
-  if (primitive_value.IsCalculated() || !primitive_value.IsAngle())
-    return nullptr;
-  return CSSRotation::Create(CSSNumericValue::FromCSSValue(primitive_value));
+  CSSNumericValue* angle =
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+  return CSSRotation::Create(angle);
 }
 
 CSSRotation* FromCSSRotate3d(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 4UL);
-  DCHECK(IsNumberValue(value.Item(0)));
-  DCHECK(IsNumberValue(value.Item(1)));
-  DCHECK(IsNumberValue(value.Item(2)));
-  const CSSPrimitiveValue& angle = ToCSSPrimitiveValue(value.Item(3));
-  if (angle.IsCalculated() || !angle.IsAngle())
-    return nullptr;
 
-  double x = ToCSSPrimitiveValue(value.Item(0)).GetDoubleValue();
-  double y = ToCSSPrimitiveValue(value.Item(1)).GetDoubleValue();
-  double z = ToCSSPrimitiveValue(value.Item(2)).GetDoubleValue();
+  CSSNumericValue* x =
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+  CSSNumericValue* y =
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
+  CSSNumericValue* z =
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(2)));
+  CSSNumericValue* angle =
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(3)));
 
-  return CSSRotation::Create(CSSUnitValue::Create(x), CSSUnitValue::Create(y),
-                             CSSUnitValue::Create(z),
-                             CSSNumericValue::FromCSSValue(angle));
+  return CSSRotation::Create(x, y, z, angle);
 }
 
 CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
-  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value.Item(0));
-  if (primitive_value.IsCalculated())
-    return nullptr;
-  CSSNumericValue* angle = CSSNumericValue::FromCSSValue(primitive_value);
+
+  CSSNumericValue* angle =
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+
   switch (value.FunctionType()) {
     case CSSValueRotateX:
       return CSSRotation::Create(CSSUnitValue::Create(1),
@@ -83,7 +74,7 @@ CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
 
 CSSRotation* CSSRotation::Create(CSSNumericValue* angle,
                                  ExceptionState& exception_state) {
-  if (angle->GetType() != CSSStyleValue::StyleValueType::kAngleType) {
+  if (!IsValidAngle(angle)) {
     exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
     return nullptr;
   }
@@ -100,12 +91,12 @@ CSSRotation* CSSRotation::Create(const CSSNumberish& x,
   CSSNumericValue* y_value = CSSNumericValue::FromNumberish(y);
   CSSNumericValue* z_value = CSSNumericValue::FromNumberish(z);
 
-  if (!IsCoordValid(x_value) || !IsCoordValid(y_value) ||
-      !IsCoordValid(z_value)) {
+  if (!IsValidCoordinate(x_value) || !IsValidCoordinate(y_value) ||
+      !IsValidCoordinate(z_value)) {
     exception_state.ThrowTypeError("Must specify an number unit");
     return nullptr;
   }
-  if (angle->GetType() != CSSStyleValue::StyleValueType::kAngleType) {
+  if (!IsValidAngle(angle)) {
     exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
     return nullptr;
   }
@@ -113,7 +104,6 @@ CSSRotation* CSSRotation::Create(const CSSNumberish& x,
 }
 
 CSSRotation* CSSRotation::Create(CSSNumericValue* angle) {
-  DCHECK_EQ(angle->GetType(), CSSStyleValue::StyleValueType::kAngleType);
   return new CSSRotation(CSSUnitValue::Create(0), CSSUnitValue::Create(0),
                          CSSUnitValue::Create(1), angle, true /* is2D */);
 }
@@ -122,7 +112,6 @@ CSSRotation* CSSRotation::Create(CSSNumericValue* x,
                                  CSSNumericValue* y,
                                  CSSNumericValue* z,
                                  CSSNumericValue* angle) {
-  DCHECK_EQ(angle->GetType(), CSSStyleValue::StyleValueType::kAngleType);
   return new CSSRotation(x, y, z, angle, false /* is2D */);
 }
 
@@ -144,12 +133,8 @@ CSSRotation* CSSRotation::FromCSSValue(const CSSFunctionValue& value) {
 
 void CSSRotation::setAngle(CSSNumericValue* angle,
                            ExceptionState& exception_state) {
-  if (angle->GetType() != CSSStyleValue::StyleValueType::kAngleType) {
+  if (!IsValidAngle(angle)) {
     exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
-    return;
-  }
-  if (!angle->IsUnitValue()) {
-    exception_state.ThrowTypeError("Calculated angles are not supported yet");
     return;
   }
   angle_ = angle;
@@ -178,7 +163,6 @@ const DOMMatrix* CSSRotation::AsMatrix(ExceptionState& exception_state) const {
 
 const CSSFunctionValue* CSSRotation::ToCSSValue(
     SecureContextMode secure_context_mode) const {
-  // TODO(meade): Handle calc angles.
   CSSUnitValue* x = x_->to(CSSPrimitiveValue::UnitType::kNumber);
   CSSUnitValue* y = y_->to(CSSPrimitiveValue::UnitType::kNumber);
   CSSUnitValue* z = z_->to(CSSPrimitiveValue::UnitType::kNumber);
@@ -200,7 +184,7 @@ const CSSFunctionValue* CSSRotation::ToCSSValue(
 
 void CSSRotation::setX(const CSSNumberish& x, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(x);
-  if (!IsCoordValid(value)) {
+  if (!IsValidCoordinate(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
     return;
   }
@@ -209,7 +193,7 @@ void CSSRotation::setX(const CSSNumberish& x, ExceptionState& exception_state) {
 
 void CSSRotation::setY(const CSSNumberish& y, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(y);
-  if (!IsCoordValid(value)) {
+  if (!IsValidCoordinate(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
     return;
   }
@@ -218,11 +202,23 @@ void CSSRotation::setY(const CSSNumberish& y, ExceptionState& exception_state) {
 
 void CSSRotation::setZ(const CSSNumberish& z, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(z);
-  if (!IsCoordValid(value)) {
+  if (!IsValidCoordinate(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
     return;
   }
   z_ = value;
+}
+
+CSSRotation::CSSRotation(CSSNumericValue* x,
+                         CSSNumericValue* y,
+                         CSSNumericValue* z,
+                         CSSNumericValue* angle,
+                         bool is2D)
+    : CSSTransformComponent(is2D), angle_(angle), x_(x), y_(y), z_(z) {
+  DCHECK(IsValidCoordinate(x));
+  DCHECK(IsValidCoordinate(y));
+  DCHECK(IsValidCoordinate(z));
+  DCHECK(IsValidAngle(angle));
 }
 
 }  // namespace blink
