@@ -3482,7 +3482,7 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Overlay) {
   resource_provider->DeleteResource(id);
 }
 
-TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox) {
+TEST_P(ResourceProviderTest, ScopedWriteLockRaster_Mailbox) {
   if (GetParam() != viz::ResourceType::kTexture)
     return;
   std::unique_ptr<AllocationTrackingContext3D> context_owned(
@@ -3515,7 +3515,7 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox) {
     EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(kTextureId));
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
     EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    ResourceProvider::ScopedWriteLockRaster lock(resource_provider.get(), id);
     Mock::VerifyAndClearExpectations(context);
 
     EXPECT_CALL(*context, produceTextureDirectCHROMIUM(kTextureId, _));
@@ -3529,7 +3529,7 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox) {
                                      kWidth, kHeight, 0, GLDataFormat(format),
                                      GLDataType(format), nullptr));
     EXPECT_EQ(kWorkerTextureId,
-              lock.ConsumeTexture(context_provider->ContextGL()));
+              lock.ConsumeTexture(context_provider->RasterContext()));
     Mock::VerifyAndClearExpectations(context);
 
     EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));
@@ -3539,21 +3539,21 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox) {
 
   // Subsequent uses will not create mailbox or allocate.
   {
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    ResourceProvider::ScopedWriteLockRaster lock(resource_provider.get(), id);
     lock.CreateMailbox();
     Mock::VerifyAndClearExpectations(context);
 
     EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_))
         .WillOnce(Return(kWorkerTextureId));
     EXPECT_EQ(kWorkerTextureId,
-              lock.ConsumeTexture(context_provider->ContextGL()));
+              lock.ConsumeTexture(context_provider->RasterContext()));
     Mock::VerifyAndClearExpectations(context);
 
     EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));
     context_provider->ContextGL()->DeleteTextures(1, &kWorkerTextureId);
 
     sync_token = ResourceProvider::GenerateSyncTokenHelper(
-        context_provider->ContextGL());
+        context_provider->RasterContext());
     lock.set_sync_token(sync_token);
     Mock::VerifyAndClearExpectations(context);
   }
@@ -3564,7 +3564,7 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox) {
   resource_provider->DeleteResource(id);
 }
 
-TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox_Overlay) {
+TEST_P(ResourceProviderTest, ScopedWriteLockRaster_Mailbox_Overlay) {
   if (GetParam() != viz::ResourceType::kTexture)
     return;
 
@@ -3600,7 +3600,7 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox_Overlay) {
     EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(kTextureId));
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
     EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    ResourceProvider::ScopedWriteLockRaster lock(resource_provider.get(), id);
     Mock::VerifyAndClearExpectations(context);
 
     EXPECT_CALL(*context, produceTextureDirectCHROMIUM(kTextureId, _));
@@ -3614,7 +3614,7 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox_Overlay) {
                                                     GL_SCANOUT_CHROMIUM, kWidth,
                                                     kHeight));
     EXPECT_EQ(kWorkerTextureId,
-              lock.ConsumeTexture(context_provider->ContextGL()));
+              lock.ConsumeTexture(context_provider->RasterContext()));
     Mock::VerifyAndClearExpectations(context);
 
     EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));
@@ -3624,18 +3624,18 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox_Overlay) {
 
   // Subsequent uses will not create mailbox or allocate.
   {
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    ResourceProvider::ScopedWriteLockRaster lock(resource_provider.get(), id);
     lock.CreateMailbox();
     Mock::VerifyAndClearExpectations(context);
 
     EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_))
         .WillOnce(Return(kWorkerTextureId));
     EXPECT_EQ(kWorkerTextureId,
-              lock.ConsumeTexture(context_provider->ContextGL()));
+              lock.ConsumeTexture(context_provider->RasterContext()));
     Mock::VerifyAndClearExpectations(context);
 
     sync_token = ResourceProvider::GenerateSyncTokenHelper(
-        context_provider->ContextGL());
+        context_provider->RasterContext());
     lock.set_sync_token(sync_token);
 
     EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));

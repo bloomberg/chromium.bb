@@ -343,6 +343,8 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   bool should_use_native_gmb_for_backbuffer = false;
   bool own_offscreen_surface = false;
   bool single_buffer = false;
+  bool enable_gles2_interface = true;
+  bool enable_raster_interface = false;
   bool enable_oop_rasterization = false;
   bool enable_swap_timestamps_if_supported = false;
 

@@ -48,7 +48,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   void Shutdown() override;
 
   void PlaybackOnWorkerThread(
-      ResourceProvider::ScopedWriteLockGL* resource_lock,
+      ResourceProvider::ScopedWriteLockRaster* resource_lock,
       const gpu::SyncToken& sync_token,
       bool resource_has_previous_content,
       const RasterSource* raster_source,
@@ -82,7 +82,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
 
    private:
     GpuRasterBufferProvider* const client_;
-    ResourceProvider::ScopedWriteLockGL lock_;
+    ResourceProvider::ScopedWriteLockRaster lock_;
     const bool resource_has_previous_content_;
 
     gpu::SyncToken sync_token_;

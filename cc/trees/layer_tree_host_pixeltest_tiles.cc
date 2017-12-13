@@ -12,7 +12,7 @@
 #include "cc/test/layer_tree_pixel_test.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 
 #if !defined(OS_ANDROID)
 
@@ -183,7 +183,7 @@ class LayerTreeHostTilesTestPartialInvalidation
       return;
 
     viz::ContextProvider::ScopedContextLock lock(context_provider);
-    lock.ContextGL()->Finish();
+    lock.RasterContext()->Finish();
   }
 
  protected:

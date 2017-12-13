@@ -15,6 +15,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/gl_in_process_context.h"
@@ -78,6 +79,9 @@ TestInProcessContextProvider::TestInProcessContextProvider(
       capabilities_.texture_format_bgra8888 = true;
       break;
   }
+
+  raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
+      context_->GetImplementation(), capabilities_);
 }
 
 TestInProcessContextProvider::~TestInProcessContextProvider() = default;
@@ -88,6 +92,10 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
 
 gpu::gles2::GLES2Interface* TestInProcessContextProvider::ContextGL() {
   return context_->GetImplementation();
+}
+
+gpu::raster::RasterInterface* TestInProcessContextProvider::RasterContext() {
+  return raster_context_.get();
 }
 
 gpu::ContextSupport* TestInProcessContextProvider::ContextSupport() {

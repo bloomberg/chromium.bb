@@ -87,6 +87,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -2673,7 +2674,7 @@ void LayerTreeHostImpl::CleanUpTileManagerResources() {
     if (auto* worker_context =
             layer_tree_frame_sink_->worker_context_provider()) {
       viz::ContextProvider::ScopedContextLock hold(worker_context);
-      worker_context->ContextGL()->ShallowFlushCHROMIUM();
+      worker_context->RasterContext()->ShallowFlushCHROMIUM();
     }
   }
 }

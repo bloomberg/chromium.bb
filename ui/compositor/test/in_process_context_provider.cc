@@ -14,6 +14,7 @@
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
@@ -112,6 +113,10 @@ gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
   context_->GetImplementation()->TraceBeginCHROMIUM(
       "gpu_toplevel", unique_context_name.c_str());
 
+  raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
+      context_->GetImplementation(),
+      context_->GetImplementation()->capabilities());
+
   return bind_result_;
 }
 
@@ -129,6 +134,12 @@ gpu::gles2::GLES2Interface* InProcessContextProvider::ContextGL() {
   CheckValidThreadOrLockAcquired();
 
   return context_->GetImplementation();
+}
+
+gpu::raster::RasterInterface* InProcessContextProvider::RasterContext() {
+  CheckValidThreadOrLockAcquired();
+
+  return raster_context_.get();
 }
 
 gpu::ContextSupport* InProcessContextProvider::ContextSupport() {

@@ -22,8 +22,8 @@
 #include "components/viz/common/gpu/context_provider.h"
 
 namespace gpu {
-namespace gles2 {
-class GLES2Interface;
+namespace raster {
+class RasterInterface;
 }
 }
 
@@ -34,7 +34,7 @@ struct StagingBuffer {
   StagingBuffer(const gfx::Size& size, viz::ResourceFormat format);
   ~StagingBuffer();
 
-  void DestroyGLResources(gpu::gles2::GLES2Interface* gl);
+  void DestroyGLResources(gpu::raster::RasterInterface* gl);
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     viz::ResourceFormat format,
                     bool is_free) const;

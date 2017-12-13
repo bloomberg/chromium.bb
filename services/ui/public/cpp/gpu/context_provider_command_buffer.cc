@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
+#include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
@@ -357,9 +358,36 @@ gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
   CheckValidThreadOrLockAcquired();
 
+  if (!attributes_.enable_gles2_interface) {
+    DLOG(ERROR) << "Unexpected access to ContextGL()";
+    return nullptr;
+  }
+
   if (trace_impl_)
     return trace_impl_.get();
   return gles2_impl_.get();
+}
+
+gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterContext() {
+  DCHECK(bind_tried_);
+  DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
+  CheckValidThreadOrLockAcquired();
+
+  if (raster_impl_)
+    return raster_impl_.get();
+
+  if (!attributes_.enable_raster_interface) {
+    DLOG(ERROR) << "Unexpected access to RasterContext()";
+    return nullptr;
+  }
+
+  if (!gles2_impl_.get())
+    return nullptr;
+
+  raster_impl_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
+      gles2_impl_.get(), ContextCapabilities());
+
+  return raster_impl_.get();
 }
 
 gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
@@ -374,19 +402,29 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
+  // TODO(vmiura): crbug.com/793508 Disable access to GrContext if
+  // enable_gles2_interface is disabled, after removing any dependencies on
+  // GrContext in OOP-Raster.
+
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
   skia_bindings::GrContextForGLES2Interface::
       DetermineCacheLimitsFromAvailableMemory(&max_resource_cache_bytes,
                                               &max_glyph_cache_texture_bytes);
+  gpu::gles2::GLES2Interface* gl_interface;
+  if (trace_impl_)
+    gl_interface = trace_impl_.get();
+  else
+    gl_interface = gles2_impl_.get();
+
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
-      ContextGL(), ContextCapabilities(), max_resource_cache_bytes,
+      gl_interface, ContextCapabilities(), max_resource_cache_bytes,
       max_glyph_cache_texture_bytes));
   cache_controller_->SetGrContext(gr_context_->get());
 
   // If GlContext is already lost, also abandon the new GrContext.
   if (gr_context_->get() &&
-      ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
+      gles2_impl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
     gr_context_->get()->abandonContext();
 
   return gr_context_->get();

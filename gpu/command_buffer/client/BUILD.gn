@@ -150,6 +150,17 @@ source_set("gles2_interface") {
   ]
 }
 
+source_set("raster_interface") {
+  sources = [
+    "raster_interface.h",
+  ]
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
+  deps = [
+    "//base",
+    "//components/viz/common:resource_format",
+  ]
+}
+
 # Library emulates GLES2 using command_buffers.
 component("gles2_implementation") {
   sources = gles2_implementation_source_files
@@ -169,9 +180,16 @@ component("gles2_implementation") {
 
   if (!is_nacl) {
     deps += [
+      ":raster_interface",
       "//cc/paint",
+      "//components/viz/common:resource_format",
       "//ui/gfx:color_space",
       "//ui/gfx/ipc/color",
+    ]
+
+    sources += [
+      "raster_implementation_gles.cc",
+      "raster_implementation_gles.h",
     ]
   }
 }

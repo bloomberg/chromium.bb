@@ -50,6 +50,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -405,7 +406,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         // lock.
         viz::ContextProvider::ScopedContextLock lock(
             shared_worker_context_provider_.get());
-        lost = lock.ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
+        lost = lock.RasterContext()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
       }
       if (lost)
         shared_worker_context_provider_ = nullptr;
@@ -413,10 +414,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
     if (!shared_worker_context_provider_) {
       bool need_alpha_channel = false;
-      const bool support_locking = true;
+      bool support_locking = true;
+      bool support_gles2_interface = true;
+      bool support_raster_interface = true;
       shared_worker_context_provider_ = CreateContextCommon(
           gpu_channel_host, gpu::kNullSurfaceHandle, need_alpha_channel,
-          false /* support_stencil */, support_locking, nullptr,
+          false /* support_stencil */, support_locking, support_gles2_interface,
+          support_raster_interface, nullptr,
           ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
       auto result = shared_worker_context_provider_->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
@@ -437,10 +441,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       gpu::SurfaceHandle surface_handle = data->surface_handle;
       bool need_alpha_channel = false;
       bool support_locking = false;
+      bool support_gles2_interface = true;
+      bool support_raster_interface = false;
       context_provider = CreateContextCommon(
           std::move(gpu_channel_host), surface_handle, need_alpha_channel,
-          support_stencil, support_locking,
-          shared_worker_context_provider_.get(),
+          support_stencil, support_locking, support_gles2_interface,
+          support_raster_interface, shared_worker_context_provider_.get(),
           ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
       // On Mac, GpuCommandBufferMsg_SwapBuffersCompleted must be handled in
       // a nested run loop during resize.
@@ -989,9 +995,12 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   // don't step on each other.
   bool need_alpha_channel = false;
   bool support_locking = false;
+  bool support_gles2_interface = true;
+  bool support_raster_interface = false;
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
-      false, support_locking, nullptr,
+      false, support_locking, support_gles2_interface, support_raster_interface,
+      nullptr,
       ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->AddObserver(this);
   auto result = shared_main_thread_contexts_->BindToCurrentThread();
@@ -1078,6 +1087,8 @@ GpuProcessTransportFactory::CreateContextCommon(
     bool need_alpha_channel,
     bool need_stencil_bits,
     bool support_locking,
+    bool support_gles2_interface,
+    bool support_raster_interface,
     ui::ContextProviderCommandBuffer* shared_context_provider,
     ui::command_buffer_metrics::ContextType type) {
   DCHECK(gpu_channel_host);
@@ -1111,6 +1122,8 @@ GpuProcessTransportFactory::CreateContextCommon(
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
   attributes.buffer_preserved = false;
+  attributes.enable_gles2_interface = support_gles2_interface;
+  attributes.enable_raster_interface = support_raster_interface;
 
   constexpr bool automatic_flushes = false;
 

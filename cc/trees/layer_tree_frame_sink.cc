@@ -15,7 +15,7 @@
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 
 namespace cc {
 
@@ -89,8 +89,8 @@ bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
     DCHECK(compositor_task_runner_->BelongsToCurrentThread());
     viz::ContextProvider::ScopedContextLock lock(
         worker_context_provider_.get());
-    if (worker_context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
-        GL_NO_ERROR) {
+    if (worker_context_provider_->RasterContext()
+            ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
       context_provider_->RemoveObserver(this);
       context_provider_ = nullptr;
       return false;

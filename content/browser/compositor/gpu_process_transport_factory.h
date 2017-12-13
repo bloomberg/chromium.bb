@@ -138,6 +138,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       bool need_alpha_channel,
       bool need_stencil_bits,
       bool support_locking,
+      bool support_gles2_interface,
+      bool support_raster_interface,
       ui::ContextProviderCommandBuffer* shared_context_provider,
       ui::command_buffer_metrics::ContextType type);
 
