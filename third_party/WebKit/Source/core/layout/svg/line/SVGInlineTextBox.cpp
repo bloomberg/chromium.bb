@@ -67,29 +67,24 @@ int SVGInlineTextBox::OffsetForPosition(LayoutUnit, bool) const {
 
 int SVGInlineTextBox::OffsetForPositionInFragment(
     const SVGTextFragment& fragment,
-    LayoutUnit position,
-    bool include_partial_glyphs) const {
+    float position) const {
   LineLayoutSVGInlineText line_layout_item =
       LineLayoutSVGInlineText(GetLineLayoutItem());
 
-  float scaling_factor = line_layout_item.ScalingFactor();
-  DCHECK(scaling_factor);
+  // Adjust position for the scaled font size.
+  DCHECK(line_layout_item.ScalingFactor());
+  position *= line_layout_item.ScalingFactor();
 
-  const ComputedStyle& style = line_layout_item.StyleRef();
+  // If this fragment is subjected to 'textLength' glyph adjustments, then
+  // apply the inverse to the position within the fragment.
+  if (fragment.AffectedByTextLength())
+    position /= fragment.length_adjust_scale;
 
-  TextRun text_run = ConstructTextRun(style, fragment);
-
-  // Eventually handle lengthAdjust="spacingAndGlyphs".
-  // FIXME: Handle vertical text.
-  if (fragment.IsTransformed()) {
-    AffineTransform fragment_transform = fragment.BuildFragmentTransform();
-    text_run.SetHorizontalGlyphStretch(
-        clampTo<float>(fragment_transform.XScale()));
-  }
-
+  const bool include_partial_glyphs = true;
+  TextRun text_run = ConstructTextRun(line_layout_item.StyleRef(), fragment);
   return fragment.character_offset - Start() +
          line_layout_item.ScaledFont().OffsetForPosition(
-             text_run, position * scaling_factor, include_partial_glyphs);
+             text_run, position, include_partial_glyphs);
 }
 
 LayoutUnit SVGInlineTextBox::PositionForOffset(int) const {

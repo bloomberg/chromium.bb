@@ -34,9 +34,7 @@ struct ExpectedTextRunSize {
   DISALLOW_NEW();
   const void* pointer;
   int integers[2];
-  float float1;
-  float float2;
-  float float3;
+  float floats[2];
   uint32_t bitfields : 10;
   TabSize tab_size;
 };
