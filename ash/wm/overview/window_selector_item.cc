@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -25,10 +26,12 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -37,9 +40,11 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -108,6 +113,10 @@ static const float kPreCloseScale = 0.02f;
 // Before dragging an overview window, the window will scale up |kPreDragScale|
 // to indicate its selection.
 static const float kDragWindowScale = 0.04f;
+
+// The size in dp of the window icon shown on the overview window next to the
+// title.
+constexpr gfx::Size kIconSize = gfx::Size(16, 16);
 
 // Convenience method to fade in a Window with predefined animation settings.
 // Note: The fade in animation will occur after a delay where the delay is how
@@ -389,15 +398,19 @@ class WindowSelectorItem::RoundedContainerView
 class WindowSelectorItem::CaptionContainerView : public views::View {
  public:
   CaptionContainerView(ButtonListener* listener,
+                       views::ImageView* image_view,
                        views::Label* title_label,
                        views::Label* cannot_snap_label,
                        views::ImageButton* close_button,
                        WindowSelectorItem::RoundedContainerView* background)
       : listener_button_(new ShieldButton(listener, title_label->text())),
         background_(background),
+        image_view_(image_view),
         title_label_(title_label),
         cannot_snap_label_(cannot_snap_label),
         close_button_(close_button) {
+    if (image_view_)
+      background_->AddChildView(image_view_);
     background_->AddChildView(title_label_);
     background_->AddChildView(close_button_);
     listener_button_->AddChildView(background_);
@@ -457,14 +470,20 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     background_->SetBoundsRect(background_bounds);
 
     bounds = background_bounds;
-    bounds.Inset(kHorizontalLabelPadding, 0,
-                 kHorizontalLabelPadding + visible_height, 0);
+    bounds.Inset(kHorizontalLabelPadding + (image_view_ ? visible_height : 0),
+                 0, kHorizontalLabelPadding + visible_height, 0);
     title_label_->SetBoundsRect(bounds);
 
     bounds = background_bounds;
     bounds.set_x(bounds.width() - visible_height);
     bounds.set_width(visible_height);
     close_button_->SetBoundsRect(bounds);
+
+    if (image_view_) {
+      bounds.set_x(0);
+      bounds.ClampToCenteredSize(image_view_->size());
+      image_view_->SetBoundsRect(bounds);
+    }
   }
 
   const char* GetClassName() const override { return "CaptionContainerView"; }
@@ -472,6 +491,7 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
  private:
   ShieldButton* listener_button_;
   WindowSelectorItem::RoundedContainerView* background_;
+  views::ImageView* image_view_;
   views::Label* title_label_;
   views::Label* cannot_snap_label_;
   RoundedRectView* cannot_snap_container_;
@@ -757,6 +777,22 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
     widget_window->parent()->StackChildBelow(widget_window,
                                              transform_window_.window());
   }
+
+  // Create an image view for and scale down the windows window icon, if it
+  // exists.
+  views::ImageView* image_view = nullptr;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshEnableNewOverviewUi)) {
+    gfx::ImageSkia* icon =
+        transform_window_.window()->GetProperty(aura::client::kWindowIconKey);
+    if (icon && !icon->size().IsEmpty()) {
+      image_view = new views::ImageView();
+      image_view->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
+          *icon, skia::ImageOperations::RESIZE_GOOD, kIconSize));
+      image_view->SetSize(kIconSize);
+    }
+  }
+
   label_view_ = new views::Label(title);
   label_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_view_->SetAutoColorReadabilityEnabled(false);
@@ -774,9 +810,9 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   cannot_snap_label_view_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
 
-  caption_container_view_ =
-      new CaptionContainerView(this, label_view_, cannot_snap_label_view_,
-                               close_button_, background_view_);
+  caption_container_view_ = new CaptionContainerView(
+      this, image_view, label_view_, cannot_snap_label_view_, close_button_,
+      background_view_);
   UpdateCannotSnapWarningVisibility();
 
   item_widget_->SetContentsView(caption_container_view_);
