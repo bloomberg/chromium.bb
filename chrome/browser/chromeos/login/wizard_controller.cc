@@ -687,6 +687,13 @@ void WizardController::SkipToLoginForTesting(
   OnDeviceDisabledChecked(false /* device_disabled */);
 }
 
+void WizardController::SkipToUpdateForTesting() {
+  VLOG(1) << "SkipToUpdateForTesting.";
+  StartupUtils::MarkEulaAccepted();
+  PerformPostEulaActions();
+  InitiateOOBEUpdate();
+}
+
 pairing_chromeos::SharkConnectionListener*
 WizardController::GetSharkConnectionListenerForTesting() {
   return shark_connection_listener_.get();

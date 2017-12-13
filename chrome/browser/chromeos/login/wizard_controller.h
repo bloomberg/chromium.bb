@@ -97,8 +97,9 @@ class WizardController : public BaseScreenDelegate,
   // Advances to screen defined by |screen| and shows it.
   void AdvanceToScreen(OobeScreen screen);
 
-  // Advances to login screen. Should be used in for testing only.
+  // Advances to login/update screen. Should be used in for testing only.
   void SkipToLoginForTesting(const LoginScreenContext& context);
+  void SkipToUpdateForTesting();
 
   // Should be used for testing only.
   pairing_chromeos::SharkConnectionListener*
