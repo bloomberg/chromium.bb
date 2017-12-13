@@ -29,9 +29,9 @@ void ControllerServiceWorkerImpl::DispatchFetchEvent(
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   DCHECK(context_client_);
-  context_client_->DispatchFetchEvent(request, nullptr /* preload_handle */,
-                                      std::move(response_callback),
-                                      std::move(callback));
+  context_client_->DispatchOrQueueFetchEvent(
+      request, nullptr /* preload_handle */, std::move(response_callback),
+      std::move(callback));
 }
 
 }  // namespace content

@@ -4,11 +4,22 @@
 
 #include "content/renderer/service_worker/service_worker_context_client.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/resource_request.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/worker_thread_registry.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_test_sink.h"
@@ -72,6 +83,11 @@ class MockWebServiceWorkerContextProxy
     registration_handle_ = std::move(handle);
   }
   bool HasFetchEventHandler() override { return false; }
+  void DispatchFetchEvent(int fetch_event_id,
+                          const blink::WebServiceWorkerRequest& web_request,
+                          bool navigation_preload_sent) override {
+    fetch_events_.emplace_back(fetch_event_id, web_request);
+  }
 
   void DispatchActivateEvent(int event_id) override { NOTREACHED(); }
   void DispatchBackgroundFetchAbortEvent(
@@ -116,11 +132,6 @@ class MockWebServiceWorkerContextProxy
     NOTREACHED();
   }
   void DispatchInstallEvent(int event_id) override { NOTREACHED(); }
-  void DispatchFetchEvent(int fetch_event_id,
-                          const blink::WebServiceWorkerRequest& web_request,
-                          bool navigation_preload_sent) override {
-    NOTREACHED();
-  }
   void DispatchNotificationClickEvent(int event_id,
                                       const blink::WebString& notification_id,
                                       const blink::WebNotificationData&,
@@ -172,10 +183,23 @@ class MockWebServiceWorkerContextProxy
     NOTREACHED();
   }
 
+  const std::vector<
+      std::pair<int /* event_id */, blink::WebServiceWorkerRequest>>&
+  fetch_events() const {
+    return fetch_events_;
+  }
+
  private:
   std::unique_ptr<blink::WebServiceWorkerRegistration::Handle>
       registration_handle_;
+  std::vector<std::pair<int /* event_id */, blink::WebServiceWorkerRequest>>
+      fetch_events_;
 };
+
+base::RepeatingClosure CreateCallbackWithCalledFlag(bool* out_is_called) {
+  return base::BindRepeating([](bool* out_is_called) { *out_is_called = true; },
+                             out_is_called);
+}
 
 }  // namespace
 
@@ -185,6 +209,8 @@ class ServiceWorkerContextClientTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    message_loop_.SetTaskRunner(task_runner_);
     sender_ = base::MakeRefCounted<TestSender>(&ipc_sink_);
     // Use this thread as the worker thread.
     WorkerThreadRegistry::Instance()->DidStartCurrentWorkerThread();
@@ -197,6 +223,12 @@ class ServiceWorkerContextClientTest : public testing::Test {
         ->AllowReinstantiationForTesting();
     // Unregister this thread from worker threads.
     WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
+  }
+
+  void EnableServicification() {
+    feature_list_.InitWithFeatures(
+        {features::kBrowserSideNavigation, features::kNetworkService}, {});
+    ASSERT_TRUE(ServiceWorkerUtils::IsServicificationEnabled());
   }
 
   // Creates an empty struct to initialize ServiceWorkerProviderContext.
@@ -246,18 +278,24 @@ class ServiceWorkerContextClientTest : public testing::Test {
         nullptr /* embedded_worker_client */, sender_, io_task_runner());
   }
 
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner() const {
+    return task_runner_;
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() {
     // Use this thread as the main thread.
-    return message_loop_.task_runner();
+    return task_runner_;
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
     // Use this thread as the IO thread.
-    return message_loop_.task_runner();
+    return task_runner_;
   }
 
   base::MessageLoop message_loop_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::test::ScopedFeatureList feature_list_;
   IPC::TestSink ipc_sink_;
   scoped_refptr<TestSender> sender_;
 };
@@ -269,10 +307,188 @@ TEST_F(ServiceWorkerContextClientTest, Ping) {
   MockWebServiceWorkerContextProxy mock_proxy;
   context_client->WorkerContextStarted(&mock_proxy);
 
-  // Ping() should invoke the passed callback.
-  base::RunLoop loop;
-  pipes.event_dispatcher->Ping(loop.QuitClosure());
-  loop.Run();
+  bool is_called = false;
+  pipes.event_dispatcher->Ping(CreateCallbackWithCalledFlag(&is_called));
+  task_runner()->RunUntilIdle();
+  EXPECT_TRUE(is_called);
+}
+
+TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
+  ContextClientPipes pipes;
+  MockWebServiceWorkerContextProxy mock_proxy;
+  std::unique_ptr<ServiceWorkerContextClient> context_client;
+  context_client = CreateContextClient(&pipes);
+  context_client->WorkerContextStarted(&mock_proxy);
+  context_client->DidEvaluateWorkerScript(true /* success */);
+  task_runner()->RunUntilIdle();
+  EXPECT_TRUE(mock_proxy.fetch_events().empty());
+
+  const GURL expected_url("https://example.com/expected");
+  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request;
+  auto request = std::make_unique<ResourceRequest>();
+  request->url = expected_url;
+  mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+  fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
+  pipes.event_dispatcher->DispatchFetchEvent(
+      *request, nullptr /* preload_handle */, std::move(fetch_callback_ptr),
+      base::BindOnce(
+          [](blink::mojom::ServiceWorkerEventStatus, base::Time) {}));
+  task_runner()->RunUntilIdle();
+
+  ASSERT_EQ(1u, mock_proxy.fetch_events().size());
+  EXPECT_EQ(request->url,
+            static_cast<GURL>(mock_proxy.fetch_events()[0].second.Url()));
+}
+
+TEST_F(ServiceWorkerContextClientTest,
+       DispatchOrQueueFetchEvent_NotRequestedTermination) {
+  EnableServicification();
+  ContextClientPipes pipes;
+  std::unique_ptr<ServiceWorkerContextClient> context_client =
+      CreateContextClient(&pipes);
+  MockWebServiceWorkerContextProxy mock_proxy;
+  context_client->WorkerContextStarted(&mock_proxy);
+  context_client->DidEvaluateWorkerScript(true /* success */);
+  task_runner()->RunUntilIdle();
+  EXPECT_TRUE(mock_proxy.fetch_events().empty());
+
+  bool is_idle = false;
+  auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
+      CreateCallbackWithCalledFlag(&is_idle),
+      task_runner()->GetMockTickClock());
+  context_client->SetTimeoutTimerForTesting(std::move(timer));
+
+  // The dispatched fetch event should be recorded by |mock_proxy|.
+  const GURL expected_url("https://example.com/expected");
+  mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request =
+      mojo::MakeRequest(&fetch_callback_ptr);
+  auto request = std::make_unique<ResourceRequest>();
+  request->url = expected_url;
+  context_client->DispatchOrQueueFetchEvent(
+      *request, nullptr /* preload_handle */, std::move(fetch_callback_ptr),
+      base::BindOnce(
+          [](blink::mojom::ServiceWorkerEventStatus, base::Time) {}));
+  task_runner()->RunUntilIdle();
+
+  EXPECT_FALSE(context_client->RequestedTermination());
+  ASSERT_EQ(1u, mock_proxy.fetch_events().size());
+  EXPECT_EQ(expected_url,
+            static_cast<GURL>(mock_proxy.fetch_events()[0].second.Url()));
+}
+
+TEST_F(ServiceWorkerContextClientTest,
+       DispatchOrQueueFetchEvent_RequestedTerminationAndDie) {
+  EnableServicification();
+  ContextClientPipes pipes;
+  std::unique_ptr<ServiceWorkerContextClient> context_client =
+      CreateContextClient(&pipes);
+  MockWebServiceWorkerContextProxy mock_proxy;
+  context_client->WorkerContextStarted(&mock_proxy);
+  context_client->DidEvaluateWorkerScript(true /* success */);
+  task_runner()->RunUntilIdle();
+  EXPECT_TRUE(mock_proxy.fetch_events().empty());
+
+  bool is_idle = false;
+  auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
+      CreateCallbackWithCalledFlag(&is_idle),
+      task_runner()->GetMockTickClock());
+  context_client->SetTimeoutTimerForTesting(std::move(timer));
+
+  // Ensure the idle state.
+  EXPECT_FALSE(context_client->RequestedTermination());
+  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
+                               ServiceWorkerTimeoutTimer::kUpdateInterval +
+                               base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(context_client->RequestedTermination());
+
+  const GURL expected_url("https://example.com/expected");
+  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request;
+
+  // FetchEvent dispatched directly from the controlled clients through
+  // mojom::ControllerServiceWorker should be queued in the idle state.
+  {
+    mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+    fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
+    auto request = std::make_unique<ResourceRequest>();
+    request->url = expected_url;
+    pipes.controller->DispatchFetchEvent(
+        *request, std::move(fetch_callback_ptr),
+        base::BindOnce(
+            [](blink::mojom::ServiceWorkerEventStatus, base::Time) {}));
+    task_runner()->RunUntilIdle();
+  }
+  EXPECT_TRUE(mock_proxy.fetch_events().empty());
+
+  // Destruction of |context_client| should not hit any DCHECKs.
+  context_client.reset();
+}
+
+TEST_F(ServiceWorkerContextClientTest,
+       DispatchOrQueueFetchEvent_RequestedTerminationAndWakeUp) {
+  EnableServicification();
+  ContextClientPipes pipes;
+  std::unique_ptr<ServiceWorkerContextClient> context_client =
+      CreateContextClient(&pipes);
+  MockWebServiceWorkerContextProxy mock_proxy;
+  context_client->WorkerContextStarted(&mock_proxy);
+  context_client->DidEvaluateWorkerScript(true /* success */);
+  task_runner()->RunUntilIdle();
+  EXPECT_TRUE(mock_proxy.fetch_events().empty());
+  bool is_idle = false;
+  auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
+      CreateCallbackWithCalledFlag(&is_idle),
+      task_runner()->GetMockTickClock());
+  context_client->SetTimeoutTimerForTesting(std::move(timer));
+
+  // Ensure the idle state.
+  EXPECT_FALSE(context_client->RequestedTermination());
+  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
+                               ServiceWorkerTimeoutTimer::kUpdateInterval +
+                               base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(context_client->RequestedTermination());
+
+  const GURL expected_url_1("https://example.com/expected_1");
+  const GURL expected_url_2("https://example.com/expected_2");
+  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request_1;
+  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request_2;
+
+  // FetchEvent dispatched directly from the controlled clients through
+  // mojom::ControllerServiceWorker should be queued in the idle state.
+  {
+    mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+    fetch_callback_request_1 = mojo::MakeRequest(&fetch_callback_ptr);
+    auto request = std::make_unique<ResourceRequest>();
+    request->url = expected_url_1;
+    pipes.controller->DispatchFetchEvent(
+        *request, std::move(fetch_callback_ptr),
+        base::BindOnce(
+            [](blink::mojom::ServiceWorkerEventStatus, base::Time) {}));
+    task_runner()->RunUntilIdle();
+  }
+  EXPECT_TRUE(mock_proxy.fetch_events().empty());
+
+  // Another event dispatched to mojom::ServiceWorkerEventDispatcher wakes up
+  // the context client.
+  {
+    mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+    fetch_callback_request_2 = mojo::MakeRequest(&fetch_callback_ptr);
+    auto request = std::make_unique<ResourceRequest>();
+    request->url = expected_url_2;
+    pipes.event_dispatcher->DispatchFetchEvent(
+        *request, nullptr /* preload_handle */, std::move(fetch_callback_ptr),
+        base::BindOnce(
+            [](blink::mojom::ServiceWorkerEventStatus, base::Time) {}));
+    task_runner()->RunUntilIdle();
+  }
+  EXPECT_FALSE(context_client->RequestedTermination());
+
+  // All events should fire. The order of events should be kept.
+  ASSERT_EQ(2u, mock_proxy.fetch_events().size());
+  EXPECT_EQ(expected_url_1,
+            static_cast<GURL>(mock_proxy.fetch_events()[0].second.Url()));
+  EXPECT_EQ(expected_url_2,
+            static_cast<GURL>(mock_proxy.fetch_events()[1].second.Url()));
 }
 
 }  // namespace content
