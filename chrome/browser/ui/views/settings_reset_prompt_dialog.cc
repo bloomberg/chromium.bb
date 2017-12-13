@@ -32,10 +32,6 @@ void ShowSettingsResetPrompt(
 
 }  // namespace chrome
 
-namespace {
-constexpr int kDialogWidth = 448;
-}  // namespace
-
 SettingsResetPromptDialog::SettingsResetPromptDialog(
     safe_browsing::SettingsResetPromptController* controller)
     : browser_(nullptr), controller_(controller) {
@@ -47,6 +43,7 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
 
   views::StyledLabel* dialog_label =
       new views::StyledLabel(controller_->GetMainText(), /*listener=*/nullptr);
+  dialog_label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
   views::StyledLabel::RangeStyleInfo url_style;
   url_style.text_style = STYLE_EMPHASIZED;
   dialog_label->AddStyleRange(controller_->GetMainTextUrlRange(), url_style);
@@ -79,6 +76,10 @@ ui::ModalType SettingsResetPromptDialog::GetModalType() const {
 }
 
 bool SettingsResetPromptDialog::ShouldShowWindowIcon() const {
+  return false;
+}
+
+bool SettingsResetPromptDialog::ShouldShowCloseButton() const {
   return false;
 }
 
@@ -126,5 +127,8 @@ bool SettingsResetPromptDialog::Close() {
 // View overrides.
 
 gfx::Size SettingsResetPromptDialog::CalculatePreferredSize() const {
-  return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                    margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
 }

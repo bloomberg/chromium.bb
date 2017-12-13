@@ -38,6 +38,7 @@ class SettingsResetPromptDialog : public views::DialogDelegateView {
   ui::ModalType GetModalType() const override;
   bool ShouldShowWindowIcon() const override;
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
 
   // views::DialogDelegate overrides.
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
