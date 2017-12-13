@@ -47,6 +47,12 @@ namespace blink {
 
 namespace {
 
+// Threshold for rejecting stored magic window poses as being too old.
+// If it's exceeded, defer magic window rAF callback execution until
+// a fresh pose is received.
+constexpr WTF::TimeDelta kMagicWindowPoseAgeThreshold =
+    WTF::TimeDelta::FromMilliseconds(250);
+
 VREye StringToVREye(const String& which_eye) {
   if (which_eye == "left")
     return kVREyeLeft;
@@ -220,6 +226,7 @@ void VRDisplay::RequestVSync() {
     return;
 
   if (!is_presenting_) {
+    magic_window_vsync_waiting_for_pose_.Reset();
     magic_window_provider_->GetPose(
         WTF::Bind(&VRDisplay::OnMagicWindowPose, WrapWeakPersistent(this)));
     pending_magic_window_vsync_ = true;
@@ -1044,14 +1051,30 @@ void VRDisplay::OnMagicWindowVSync(double timestamp) {
   pending_magic_window_vsync_ = false;
   pending_magic_window_vsync_id_ = -1;
   vr_frame_id_ = -1;
-  ProcessScheduledAnimations(timestamp);
+  WTF::TimeDelta pose_age = WTF::TimeTicks::Now() - magic_window_pose_time_;
+  if (pose_age < kMagicWindowPoseAgeThreshold) {
+    ProcessScheduledAnimations(timestamp);
+  } else {
+    // The VSync got triggered before ever getting a pose, or the pose is
+    // stale. Defer the animation until a pose arrives to avoid passing null
+    // poses to the application.
+    magic_window_vsync_waiting_for_pose_ =
+        WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
+                  WrapWeakPersistent(this), timestamp);
+  }
 }
 
 void VRDisplay::OnMagicWindowPose(device::mojom::blink::VRPosePtr pose) {
+  magic_window_pose_time_ = WTF::TimeTicks::Now();
   if (!in_animation_frame_) {
     frame_pose_ = std::move(pose);
   } else {
     pending_pose_ = std::move(pose);
+  }
+  if (magic_window_vsync_waiting_for_pose_) {
+    // We have a vsync waiting for a pose, run it now.
+    std::move(magic_window_vsync_waiting_for_pose_).Run();
+    magic_window_vsync_waiting_for_pose_.Reset();
   }
 }
 

@@ -17,7 +17,6 @@ vr_test( (t, mock_service) => {
     var counter = 0;
 
     function onFrame() {
-      display.requestAnimationFrame(onFrame);
       if (counter == 0) {
         t.step( () => {
           assert_false(display.getFrameData(fd));
@@ -27,14 +26,6 @@ vr_test( (t, mock_service) => {
           assert_false(display.getFrameData(fd));
         }, "Does not update within the same frame");
       } else {
-        // TODO(mthiesse): This is a workaround for crbug.com/787196. Either
-        // remove the workaround once fixed or remove this todo.
-        // Let several animation frames get triggered so we're sure to have a
-        // pose
-        if (counter <= 2) {
-          counter++;
-          return;
-        }
         t.step( () => {
           assert_true(display.getFrameData(fd));
           assert_not_equals(fd.pose, null);
@@ -49,6 +40,10 @@ vr_test( (t, mock_service) => {
         t.done();
       }
       counter++;
+      // Use rAF late so that the mock's setPose above can supply its data
+      // before RequestVSync calls GetPose. This is an artifact of the mocking
+      // framework, the real implementation doesn't have this restriction.
+      display.requestAnimationFrame(onFrame);
     }
 
     display.requestAnimationFrame(onFrame);

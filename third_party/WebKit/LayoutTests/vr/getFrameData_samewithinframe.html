@@ -16,16 +16,9 @@ vr_test( (t, mock_service) => {
     var fd1 = new VRFrameData();
     var fd2 = new VRFrameData();
     mock_service.mockVRDisplays_[0].setPose(expected_pose);
-    var numFrames = 0;
 
     function onFrame() {
       display.requestAnimationFrame(onFrame);
-      numFrames++;
-      // Let one rAF run before checking in order to ensure we actually get
-      // frame data
-      if (numFrames == 1) {
-        return;
-      }
 
       t.step( () => {
         assert_true(display.getFrameData(fd1));
