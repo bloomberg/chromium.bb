@@ -150,6 +150,9 @@ class V8MobileBrowsingBenchmark(
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
+        self.DisableBenchmark(
+            [story.expectations.ANDROID_ONE],
+            'crbug.com/788797')
         self.DisableStory(
             'browse:shopping:avito',
             [story.expectations.ANDROID_ONE],
@@ -247,6 +250,9 @@ class V8FutureMobileBrowsingBenchmark(
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
+        self.DisableBenchmark(
+            [story.expectations.ANDROID_ONE],
+            'crbug.com/788797')
         self.DisableStory(
             'browse:shopping:avito',
             [story.expectations.ANDROID_ONE],
