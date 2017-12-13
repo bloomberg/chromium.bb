@@ -35,15 +35,16 @@ import "rotation_lock.mojom";
 import "storage_manager.mojom";
 import "tracing.mojom";
 import "tts.mojom";
+import "usb_host.mojom";
 import "video.mojom";
 import "voice_interaction_arc_home.mojom";
 import "voice_interaction_framework.mojom";
 import "volume_mounter.mojom";
 import "wallpaper.mojom";
 
-// Next MinVersion: 34
+// Next MinVersion: 35
 // Deprecated method IDs: 101, 105
-// Next method ID: 139
+// Next method ID: 140
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -149,6 +150,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the TtsInstance interface is ready.
   [MinVersion=17] OnTtsInstanceReady@123(TtsInstance instance_ptr);
+
+  // Notifies Chrome that the UsbHostInstance interface is ready.
+  [MinVersion=34] OnUsbHostInstanceReady@139(UsbHostInstance instance_ptr);
 
   // Notifies Chrome that the VideoInstance interface is ready.
   [MinVersion=6] OnVideoInstanceReady@107(VideoInstance instance_ptr);

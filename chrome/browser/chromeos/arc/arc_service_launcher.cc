@@ -55,6 +55,7 @@
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/rotation_lock/arc_rotation_lock_bridge.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
+#include "components/arc/usb/usb_host_bridge.h"
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/prefs/pref_member.h"
 #include "ui/arc/notification/arc_notification_manager.h"
@@ -163,6 +164,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcSettingsService::GetForBrowserContext(profile);
   ArcTracingBridge::GetForBrowserContext(profile);
   ArcTtsService::GetForBrowserContext(profile);
+  ArcUsbHostBridge::GetForBrowserContext(profile);
   ArcUserSessionService::GetForBrowserContext(profile);
   ArcVoiceInteractionArcHomeService::GetForBrowserContext(profile);
   ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile);
