@@ -24,13 +24,12 @@ namespace arc {
 namespace {
 
 std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
-    message_center::MessageViewDelegate* controller,
     const message_center::Notification& notification) {
   DCHECK_EQ(notification.notifier_id().type,
             message_center::NotifierId::ARC_APPLICATION);
   auto* arc_delegate =
       static_cast<ArcNotificationDelegate*>(notification.delegate());
-  return arc_delegate->CreateCustomMessageView(controller, notification);
+  return arc_delegate->CreateCustomMessageView(notification);
 }
 
 // Singleton factory for ArcNotificationManager.

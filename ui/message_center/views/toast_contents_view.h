@@ -13,7 +13,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -44,7 +43,6 @@ class PopupAlignmentDelegate;
 class MESSAGE_CENTER_EXPORT ToastContentsView
     : public views::WidgetDelegateView,
       public views::WidgetObserver,
-      public MessageViewDelegate,
       public gfx::AnimationDelegate {
  public:
   static const char kViewClassName[];
@@ -92,17 +90,6 @@ class MESSAGE_CENTER_EXPORT ToastContentsView
 
  private:
   friend class test::MessagePopupCollectionTest;
-
-  // Overridden from MessageViewDelegate:
-  void ClickOnNotification(const std::string& notification_id) override;
-  void RemoveNotification(const std::string& notification_id,
-                          bool by_user) override;
-  void ClickOnNotificationButton(const std::string& notification_id,
-                                 int button_index) override;
-  void ClickOnNotificationButtonWithReply(const std::string& notification_id,
-                                          int button_index,
-                                          const base::string16& reply) override;
-  void ClickOnSettingsButton(const std::string& notification_id) override;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

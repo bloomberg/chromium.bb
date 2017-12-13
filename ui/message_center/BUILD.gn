@@ -128,7 +128,6 @@ component("message_center") {
         "views/message_view.h",
         "views/message_view_context_menu_controller.cc",
         "views/message_view_context_menu_controller.h",
-        "views/message_view_delegate.h",
         "views/message_view_factory.cc",
         "views/message_view_factory.h",
         "views/notification_button.cc",

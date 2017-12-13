@@ -22,7 +22,6 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/widget/widget.h"
@@ -31,7 +30,6 @@ namespace ash {
 
 using message_center::FakeMessageCenter;
 using message_center::MessageCenter;
-using message_center::MessageViewDelegate;
 using message_center::UiController;
 using message_center::MessageView;
 using message_center::Notification;
@@ -64,9 +62,7 @@ class MockNotificationView : public NotificationView {
     virtual void RegisterCall(CallType type) = 0;
   };
 
-  explicit MockNotificationView(MessageViewDelegate* controller,
-                                const Notification& notification,
-                                Test* test);
+  explicit MockNotificationView(const Notification& notification, Test* test);
   ~MockNotificationView() override;
 
   gfx::Size CalculatePreferredSize() const override;
@@ -79,10 +75,9 @@ class MockNotificationView : public NotificationView {
   DISALLOW_COPY_AND_ASSIGN(MockNotificationView);
 };
 
-MockNotificationView::MockNotificationView(MessageViewDelegate* controller,
-                                           const Notification& notification,
+MockNotificationView::MockNotificationView(const Notification& notification,
                                            Test* test)
-    : NotificationView(controller, notification), test_(test) {}
+    : NotificationView(notification), test_(test) {}
 
 MockNotificationView::~MockNotificationView() = default;
 
@@ -164,7 +159,6 @@ void MockMessageCenterView::PreferredSizeChanged() {
 
 class MessageCenterViewTest : public AshTestBase,
                               public MockNotificationView::Test,
-                              public MessageViewDelegate,
                               views::BoundsAnimatorObserver {
  public:
   // Expose the private enum class MessageCenter::Mode for this test.
@@ -188,19 +182,9 @@ class MessageCenterViewTest : public AshTestBase,
   void SetLockedState(bool locked);
   Mode GetMessageCenterViewInternalMode();
   void AddNotification(std::unique_ptr<Notification> notification);
+  void RemoveNotification(const std::string& notification_id, bool by_user);
   void UpdateNotification(const std::string& notification_id,
                           std::unique_ptr<Notification> notification);
-
-  // Overridden from MessageViewDelegate
-  void ClickOnNotification(const std::string& notification_id) override;
-  void RemoveNotification(const std::string& notification_id,
-                          bool by_user) override;
-  void ClickOnNotificationButton(const std::string& notification_id,
-                                 int button_index) override;
-  void ClickOnNotificationButtonWithReply(const std::string& notification_id,
-                                          int button_index,
-                                          const base::string16& reply) override;
-  void ClickOnSettingsButton(const std::string& notification_id) override;
 
   // Overridden from MockNotificationView::Test
   void RegisterCall(CallType type) override;
@@ -344,12 +328,6 @@ void MessageCenterViewTest::SetLockedState(bool locked) {
   GetMessageCenterView()->OnLockStateChanged(locked);
 }
 
-void MessageCenterViewTest::ClickOnNotification(
-    const std::string& notification_id) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
-}
-
 void MessageCenterViewTest::AddNotification(
     std::unique_ptr<Notification> notification) {
   std::string notification_id = notification->id();
@@ -375,27 +353,6 @@ void MessageCenterViewTest::RemoveNotification(
 
   message_center_->SetVisibleNotifications(Notifications());
   message_center_view_->OnNotificationRemoved(notification_id, by_user);
-}
-
-void MessageCenterViewTest::ClickOnNotificationButton(
-    const std::string& notification_id,
-    int button_index) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
-}
-
-void MessageCenterViewTest::ClickOnNotificationButtonWithReply(
-    const std::string& notification_id,
-    int button_index,
-    const base::string16& reply) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
-}
-
-void MessageCenterViewTest::ClickOnSettingsButton(
-    const std::string& notification_id) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
 }
 
 void MessageCenterViewTest::RegisterCall(CallType type) {

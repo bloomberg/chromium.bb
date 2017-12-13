@@ -10,6 +10,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/keyboard.h"
@@ -32,11 +33,13 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/views/test/views_test_base.h"
+
+using message_center::MessageCenter;
+using message_center::Notification;
 
 namespace arc {
 
@@ -122,50 +125,6 @@ class MockArcNotificationItem : public ArcNotificationItem {
   DISALLOW_COPY_AND_ASSIGN(MockArcNotificationItem);
 };
 
-class TestMessageViewDelegate : public message_center::MessageViewDelegate {
- public:
-  TestMessageViewDelegate() = default;
-
-  // MessageViewDelegate
-  void ClickOnNotification(const std::string& notification_id) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
-
-  void RemoveNotification(const std::string& notification_id,
-                          bool by_user) override {
-    removed_ids_.insert(notification_id);
-  }
-
-  void ClickOnNotificationButton(const std::string& notification_id,
-                                 int button_index) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
-
-  void ClickOnNotificationButtonWithReply(
-      const std::string& notification_id,
-      int button_index,
-      const base::string16& reply) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
-
-  void ClickOnSettingsButton(const std::string& notification_id) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-  }
-
-  bool IsRemoved(const std::string& notification_id) const {
-    return (removed_ids_.find(notification_id) != removed_ids_.end());
-  }
-
- private:
-  std::set<std::string> removed_ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMessageViewDelegate);
-};
-
 class DummyEvent : public ui::Event {
  public:
   DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
@@ -217,8 +176,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
     control_buttons_view->ButtonPressed(close_button, dummy_event);
   }
 
-  void CreateAndShowNotificationView(
-      const message_center::Notification& notification) {
+  void CreateAndShowNotificationView(const Notification& notification) {
     DCHECK(!notification_view_);
 
     auto result = CreateNotificationView(notification);
@@ -229,11 +187,10 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
 
   std::pair<std::unique_ptr<ArcNotificationView>,
             std::unique_ptr<views::Widget>>
-  CreateNotificationView(const message_center::Notification& notification) {
+  CreateNotificationView(const Notification& notification) {
     std::unique_ptr<ArcNotificationView> notification_view(
         static_cast<ArcNotificationView*>(
-            message_center::MessageViewFactory::Create(controller(),
-                                                       notification, true)));
+            message_center::MessageViewFactory::Create(notification, true)));
     notification_view->set_owned_by_client();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
 
@@ -269,9 +226,8 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
     surface_->Commit();
   }
 
-  message_center::Notification CreateNotification(
-      MockArcNotificationItem* notification_item) {
-    return message_center::Notification(
+  Notification CreateNotification(MockArcNotificationItem* notification_item) {
+    return Notification(
         message_center::NOTIFICATION_TYPE_CUSTOM,
         notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
         base::UTF8ToUTF16("message"), gfx::Image(), base::UTF8ToUTF16("arc"),
@@ -282,7 +238,6 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
         new ArcNotificationDelegate(notification_item->GetWeakPtr()));
   }
 
-  TestMessageViewDelegate* controller() { return &controller_; }
   ArcNotificationSurfaceManagerImpl* surface_manager() {
     return surface_manager_.get();
   }
@@ -311,7 +266,6 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
   }
 
  private:
-  TestMessageViewDelegate controller_;
   std::unique_ptr<exo::WMHelper> wm_helper_;
   std::unique_ptr<ArcNotificationSurfaceManagerImpl> surface_manager_;
   std::unique_ptr<exo::Buffer> surface_buffer_;
@@ -328,8 +282,7 @@ TEST_F(ArcNotificationContentViewTest, CreateSurfaceAfterNotification) {
 
   auto notification_item =
       std::make_unique<MockArcNotificationItem>(notification_key);
-  message_center::Notification notification =
-      CreateNotification(notification_item.get());
+  Notification notification = CreateNotification(notification_item.get());
 
   PrepareSurface(notification_key);
 
@@ -344,8 +297,7 @@ TEST_F(ArcNotificationContentViewTest, CreateSurfaceBeforeNotification) {
 
   auto notification_item =
       std::make_unique<MockArcNotificationItem>(notification_key);
-  message_center::Notification notification =
-      CreateNotification(notification_item.get());
+  Notification notification = CreateNotification(notification_item.get());
 
   CreateAndShowNotificationView(notification);
   CloseNotificationView();
@@ -356,8 +308,7 @@ TEST_F(ArcNotificationContentViewTest, CreateNotificationWithoutSurface) {
 
   auto notification_item =
       std::make_unique<MockArcNotificationItem>(notification_key);
-  message_center::Notification notification =
-      CreateNotification(notification_item.get());
+  Notification notification = CreateNotification(notification_item.get());
 
   CreateAndShowNotificationView(notification);
   CloseNotificationView();
@@ -369,13 +320,27 @@ TEST_F(ArcNotificationContentViewTest, CloseButton) {
   auto notification_item =
       std::make_unique<MockArcNotificationItem>(notification_key);
   PrepareSurface(notification_key);
-  message_center::Notification notification =
-      CreateNotification(notification_item.get());
+  Notification notification = CreateNotification(notification_item.get());
   CreateAndShowNotificationView(notification);
 
-  EXPECT_FALSE(controller()->IsRemoved(notification_item->GetNotificationId()));
+  // Add a notification with the same ID to the message center so we can verify
+  // it gets removed when the close button is pressed. It's SIMPLE instead of
+  // ARC to avoid surface shutdown issues.
+  auto mc_notification = std::make_unique<Notification>(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
+      base::UTF8ToUTF16("message"), gfx::Image(), base::UTF8ToUTF16("arc"),
+      GURL(),
+      message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
+                                 "ARC_NOTIFICATION"),
+      message_center::RichNotificationData(), nullptr);
+  MessageCenter::Get()->AddNotification(std::move(mc_notification));
+
+  EXPECT_TRUE(MessageCenter::Get()->FindVisibleNotificationById(
+      notification_item->GetNotificationId()));
   PressCloseButton();
-  EXPECT_TRUE(controller()->IsRemoved(notification_item->GetNotificationId()));
+  EXPECT_FALSE(MessageCenter::Get()->FindVisibleNotificationById(
+      notification_item->GetNotificationId()));
 
   CloseNotificationView();
 }
@@ -385,8 +350,7 @@ TEST_F(ArcNotificationContentViewTest, ReuseSurfaceAfterClosing) {
 
   auto notification_item =
       std::make_unique<MockArcNotificationItem>(notification_key);
-  message_center::Notification notification =
-      CreateNotification(notification_item.get());
+  Notification notification = CreateNotification(notification_item.get());
 
   PrepareSurface(notification_key);
 
@@ -408,8 +372,7 @@ TEST_F(ArcNotificationContentViewTest, ReuseAndCloseSurfaceBeforeClosing) {
 
   auto notification_item =
       std::make_unique<MockArcNotificationItem>(notification_key);
-  message_center::Notification notification =
-      CreateNotification(notification_item.get());
+  Notification notification = CreateNotification(notification_item.get());
 
   PrepareSurface(notification_key);
 
@@ -435,8 +398,7 @@ TEST_F(ArcNotificationContentViewTest, ReuseSurfaceBeforeClosing) {
 
   auto notification_item =
       std::make_unique<MockArcNotificationItem>(notification_key);
-  message_center::Notification notification =
-      CreateNotification(notification_item.get());
+  Notification notification = CreateNotification(notification_item.get());
 
   PrepareSurface(notification_key);
 
