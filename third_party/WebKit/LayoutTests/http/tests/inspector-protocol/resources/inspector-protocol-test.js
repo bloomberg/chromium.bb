@@ -25,7 +25,7 @@ var TestRunner = class {
     this._log.call(null, item);
   }
 
-  _logObject(object, title, stabilizeNames = ['id', 'nodeId', 'objectId', 'scriptId', 'timestamp', 'backendNodeId', 'parentId', 'frameId', 'loaderId', 'baseURL', 'documentURL']) {
+  _logObject(object, title, stabilizeNames = ['id', 'nodeId', 'objectId', 'scriptId', 'timestamp', 'backendNodeId', 'parentId', 'frameId', 'loaderId', 'baseURL', 'documentURL', 'styleSheetId']) {
     var lines = [];
 
     function dumpValue(value, prefix, prefixWithName) {
