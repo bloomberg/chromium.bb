@@ -67,7 +67,6 @@ class PLATFORM_EXPORT TextRun final {
       : characters_length_(len),
         len_(len),
         xpos_(xpos),
-        horizontal_glyph_stretch_(1),
         expansion_(expansion),
         expansion_behavior_(expansion_behavior),
         is8_bit_(true),
@@ -92,7 +91,6 @@ class PLATFORM_EXPORT TextRun final {
       : characters_length_(len),
         len_(len),
         xpos_(xpos),
-        horizontal_glyph_stretch_(1),
         expansion_(expansion),
         expansion_behavior_(expansion_behavior),
         is8_bit_(false),
@@ -116,7 +114,6 @@ class PLATFORM_EXPORT TextRun final {
       : characters_length_(string.length()),
         len_(string.length()),
         xpos_(xpos),
-        horizontal_glyph_stretch_(1),
         expansion_(expansion),
         expansion_behavior_(expansion_behavior),
         allow_tabs_(false),
@@ -226,10 +223,6 @@ class PLATFORM_EXPORT TextRun final {
   void SetExpansionBehavior(ExpansionBehavior behavior) {
     expansion_behavior_ = behavior;
   }
-  float HorizontalGlyphStretch() const { return horizontal_glyph_stretch_; }
-  void SetHorizontalGlyphStretch(float scale) {
-    horizontal_glyph_stretch_ = scale;
-  }
 
   bool AllowTabs() const { return allow_tabs_; }
   TabSize GetTabSize() const { return tab_size_; }
@@ -288,7 +281,6 @@ class PLATFORM_EXPORT TextRun final {
   // alignment or center alignment, left start of the text line is not the same
   // as left start of the containing block.
   float xpos_;
-  float horizontal_glyph_stretch_;
 
   float expansion_;
   ExpansionBehavior expansion_behavior_ : 2;

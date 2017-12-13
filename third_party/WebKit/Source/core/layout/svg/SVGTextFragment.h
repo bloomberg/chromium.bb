@@ -82,6 +82,8 @@ struct SVGTextFragment {
     return BuildNormalFragmentTransform();
   }
 
+  bool AffectedByTextLength() const { return length_adjust_scale != 1; }
+
   bool IsTransformed() const {
     return AffectedByTextLength() || !transform.IsIdentity();
   }
@@ -106,7 +108,7 @@ struct SVGTextFragment {
   // (see SVGTextLayoutEngine, which builds this transformation).
   AffineTransform transform;
 
-  // Contains lengthAdjust related transformations, which are not allowd to
+  // Contains lengthAdjust related transformations, which are not allowed to
   // influence the SVGTextQuery code.
   float length_adjust_scale;
   float length_adjust_bias;
@@ -117,8 +119,6 @@ struct SVGTextFragment {
       return BuildTransformForTextOnPath();
     return BuildTransformForTextOnLine();
   }
-
-  bool AffectedByTextLength() const { return length_adjust_scale != 1; }
 
   void TransformAroundOrigin(AffineTransform& result) const {
     // Returns (translate(x, y) * result) * translate(-x, -y).
