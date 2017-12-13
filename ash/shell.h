@@ -307,6 +307,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   AutoclickController* autoclick_controller() {
     return autoclick_controller_.get();
   }
+  BacklightsForcedOffSetter* backlights_forced_off_setter() {
+    return backlights_forced_off_setter_.get();
+  }
   BluetoothPowerController* bluetooth_power_controller() {
     return bluetooth_power_controller_.get();
   }

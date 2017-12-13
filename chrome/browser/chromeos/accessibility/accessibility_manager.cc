@@ -20,6 +20,8 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/system/power/backlights_forced_off_setter.h"
+#include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -780,6 +782,20 @@ void AccessibilityManager::OnMonoAudioChanged() {
   NotifyAccessibilityStatusChanged(details);
 }
 
+void AccessibilityManager::SetDarkenScreen(bool darken) {
+  // TODO(mash): Support forcing backlights off from within Chrome:
+  // https://crbug.com/793112
+  if (GetAshConfig() == ash::Config::MASH)
+    return;
+
+  if (darken && !scoped_backlights_forced_off_) {
+    scoped_backlights_forced_off_ =
+        ash::Shell::Get()->backlights_forced_off_setter()->ForceBacklightsOff();
+  } else if (!darken && scoped_backlights_forced_off_) {
+    scoped_backlights_forced_off_.reset();
+  }
+}
+
 void AccessibilityManager::SetCaretHighlightEnabled(bool enabled) {
   if (!profile_)
     return;
@@ -1460,9 +1476,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
   }
 
   // In case the user darkened the screen, undarken it now.
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->SetBacklightsForcedOff(false);
+  scoped_backlights_forced_off_.reset();
 }
 
 void AccessibilityManager::PostSwitchChromeVoxProfile() {
