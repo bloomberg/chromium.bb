@@ -317,6 +317,12 @@ class MockedCallResults(object):
       return (DictContains(mc.params.kwargs, kwargs) and
               _RecursiveCompare(mc.params.args, args))
 
+    def is_exception(obj):
+      """Returns True if obj is an exception instance or class."""
+      return (
+          isinstance(obj, BaseException) or
+          isinstance(obj, type) and issubclass(obj, BaseException))
+
     self.AssertArgs(args, kwargs)
     if kwargs is None:
       kwargs = {}
@@ -334,6 +340,8 @@ class MockedCallResults(object):
     else:
       raise AssertionError('%s: %r not mocked!' % (self.name, params))
 
+    if is_exception(side_effect):
+      raise side_effect
     if side_effect:
       assert hook_args is not None
       assert hook_kwargs is not None
