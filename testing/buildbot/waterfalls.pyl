@@ -1138,7 +1138,6 @@
         'test_suites': {
           'gtest_tests': 'mojo_windows_gtests',
         },
-        'use_swarming': False,
       },
       'Out of Process Profiling Android': {
         'swarming': {
