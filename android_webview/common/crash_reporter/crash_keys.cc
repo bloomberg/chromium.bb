@@ -29,8 +29,6 @@ const char kZeroEncodeDetails[] = "zero-encode-details";
 
 size_t RegisterWebViewCrashKeys() {
   base::debug::CrashKey fixed_keys[] = {
-      {"AW_WHITELISTED_DEBUG_KEY", kSmallSize},
-      {"AW_NONWHITELISTED_DEBUG_KEY", kSmallSize},
       {kClientId, kSmallSize},
       {kChannel, kSmallSize},
       {kActiveURL, kLargeSize},
