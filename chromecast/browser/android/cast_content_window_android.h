@@ -42,7 +42,8 @@ class CastContentWindowAndroid : public CastContentWindow {
 
   // This class should only be instantiated by CastContentWindow::Create.
   CastContentWindowAndroid(CastContentWindow::Delegate* delegate,
-                           bool isHeadless);
+                           bool isHeadless,
+                           bool enable_touch_input);
 
   CastContentWindow::Delegate* const delegate_;
   base::android::ScopedJavaGlobalRef<jobject> java_window_;

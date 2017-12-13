@@ -57,6 +57,7 @@ public class CastWebContentsActivity extends Activity {
     private ContentViewCore mContentViewCore;
     private ContentView mContentView;
     private boolean mReceivedUserLeave = false;
+    private boolean mIsTouchInputEnabled = false;
 
     private static final int TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS = 300;
 
@@ -171,6 +172,8 @@ public class CastWebContentsActivity extends Activity {
 
         WebContents webContents = (WebContents) intent.getParcelableExtra(
                 CastWebContentsComponent.ACTION_EXTRA_WEB_CONTENTS);
+        mIsTouchInputEnabled = intent.getBooleanExtra(
+                CastWebContentsComponent.ACTION_EXTRA_TOUCH_INPUT_ENABLED, false);
 
         if (webContents == null) {
             Log.e(TAG, "Received null WebContents in intent.");
@@ -325,7 +328,11 @@ public class CastWebContentsActivity extends Activity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        return false;
+        if (mIsTouchInputEnabled) {
+            return super.dispatchTouchEvent(ev);
+        } else {
+            return false;
+        }
     }
 
     @Override

@@ -40,7 +40,8 @@ class CastWebContentsManager {
       scoped_refptr<content::SiteInstance> site_instance,
       bool transparent,
       bool allow_media_access,
-      bool is_headless);
+      bool is_headless,
+      bool enable_touch_input);
 
   // Take ownership of |web_contents| and delete after |time_delta|, or sooner
   // if necessary.

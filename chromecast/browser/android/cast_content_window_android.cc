@@ -18,25 +18,31 @@ namespace chromecast {
 namespace shell {
 
 namespace {
-base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(jlong nativeWindow,
-                                                            bool isHeadless) {
+base::android::ScopedJavaLocalRef<jobject>
+CreateJavaWindow(jlong nativeWindow, bool isHeadless, bool enableTouchInput) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_CastContentWindowAndroid_create(env, nativeWindow, isHeadless);
+  return Java_CastContentWindowAndroid_create(env, nativeWindow, isHeadless,
+                                              enableTouchInput);
 }
 }  // namespace
 
 // static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
     CastContentWindow::Delegate* delegate,
-    bool isHeadless) {
-  return base::WrapUnique(new CastContentWindowAndroid(delegate, isHeadless));
+    bool isHeadless,
+    bool enable_touch_input) {
+  return base::WrapUnique(
+      new CastContentWindowAndroid(delegate, isHeadless, enable_touch_input));
 }
 
 CastContentWindowAndroid::CastContentWindowAndroid(
     CastContentWindow::Delegate* delegate,
-    bool isHeadless)
+    bool isHeadless,
+    bool enable_touch_input)
     : delegate_(delegate),
-      java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this), isHeadless)) {
+      java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this),
+                                    isHeadless,
+                                    enable_touch_input)) {
   DCHECK(delegate_);
 }
 
