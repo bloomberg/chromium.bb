@@ -29,6 +29,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -78,12 +79,6 @@ int GetImageSize(LoginDisplayStyle style) {
 
   NOTREACHED();
   return kLargeUserImageSizeDp;
-}
-
-views::View* MakePreferredSizeView(gfx::Size size) {
-  auto* view = new NonAccessibleView();
-  view->SetPreferredSize(size);
-  return view;
 }
 
 }  // namespace
@@ -193,6 +188,32 @@ class LoginUserView::UserLabel : public NonAccessibleView {
   DISALLOW_COPY_AND_ASSIGN(UserLabel);
 };
 
+// A button embedded inside of LoginUserView, which is activated whenever the
+// user taps anywhere in the LoginUserView. Previously, LoginUserView was a
+// views::Button, but this breaks ChromeVox as it does not expect buttons to
+// have any children (ie, the dropdown button).
+class LoginUserView::TapButton : public views::Button {
+ public:
+  explicit TapButton(LoginUserView* parent)
+      : views::Button(parent), parent_(parent) {}
+  ~TapButton() override = default;
+
+  // views::Button:
+  void OnFocus() override {
+    views::Button::OnFocus();
+    parent_->UpdateOpacity();
+  }
+  void OnBlur() override {
+    views::Button::OnBlur();
+    parent_->UpdateOpacity();
+  }
+
+ private:
+  LoginUserView* const parent_;
+
+  DISALLOW_COPY_AND_ASSIGN(TapButton);
+};
+
 // LoginUserView is defined after LoginUserView::UserLabel so it can access the
 // class members.
 
@@ -210,6 +231,10 @@ const base::string16& LoginUserView::TestApi::displayed_name() const {
 
 views::View* LoginUserView::TestApi::user_label() const {
   return view_->user_label_;
+}
+
+views::View* LoginUserView::TestApi::tap_button() const {
+  return view_->tap_button_;
 }
 
 bool LoginUserView::TestApi::is_opaque() const {
@@ -234,7 +259,7 @@ int LoginUserView::WidthForLayoutStyle(LoginDisplayStyle style) {
 LoginUserView::LoginUserView(LoginDisplayStyle style,
                              bool show_dropdown,
                              const OnTap& on_tap)
-    : views::Button(this), on_tap_(on_tap), display_style_(style) {
+    : on_tap_(on_tap), display_style_(style) {
   // show_dropdown can only be true when the user view is rendering in large
   // mode.
   DCHECK(!show_dropdown || style == LoginDisplayStyle::kLarge);
@@ -251,6 +276,8 @@ LoginUserView::LoginUserView(LoginDisplayStyle style,
         gfx::CreateVectorIcon(kLockScreenDropdownIcon, SK_ColorWHITE));
     user_dropdown_->SetFocusBehavior(FocusBehavior::ALWAYS);
   }
+  tap_button_ = new TapButton(this);
+  SetTapEnabled(true);
 
   switch (style) {
     case LoginDisplayStyle::kLarge:
@@ -276,8 +303,6 @@ LoginUserView::LoginUserView(LoginDisplayStyle style,
   setup_layer(user_label_);
   if (user_dropdown_)
     setup_layer(user_dropdown_);
-
-  SetFocusBehavior(FocusBehavior::ALWAYS);
 
   hover_notifier_ = std::make_unique<HoverNotifier>(
       this, base::Bind(&LoginUserView::OnHover, base::Unretained(this)));
@@ -345,6 +370,11 @@ void LoginUserView::SetForceOpaque(bool force_opaque) {
   UpdateOpacity();
 }
 
+void LoginUserView::SetTapEnabled(bool enabled) {
+  tap_button_->SetFocusBehavior(enabled ? FocusBehavior::ALWAYS
+                                        : FocusBehavior::NEVER);
+}
+
 const char* LoginUserView::GetClassName() const {
   return kUserViewClassName;
 }
@@ -363,17 +393,13 @@ gfx::Size LoginUserView::CalculatePreferredSize() const {
   return gfx::Size();
 }
 
-void LoginUserView::OnFocus() {
-  views::Button::OnFocus();
-  UpdateOpacity();
+void LoginUserView::Layout() {
+  views::View::Layout();
+  tap_button_->SetBoundsRect(GetLocalBounds());
 }
 
-void LoginUserView::OnBlur() {
-  views::Button::OnBlur();
-  UpdateOpacity();
-}
-
-void LoginUserView::ButtonPressed(Button* sender, const ui::Event& event) {
+void LoginUserView::ButtonPressed(views::Button* sender,
+                                  const ui::Event& event) {
   // Handle click on the dropdown arrow.
   if (sender == user_dropdown_) {
     DCHECK(user_dropdown_);
@@ -405,8 +431,13 @@ void LoginUserView::OnHover(bool has_hover) {
 }
 
 void LoginUserView::UpdateCurrentUserState() {
-  SetAccessibleName(
-      base::UTF8ToUTF16(current_user_->basic_user_info->display_email));
+  auto email = base::UTF8ToUTF16(current_user_->basic_user_info->display_email);
+  tap_button_->SetAccessibleName(email);
+  if (user_dropdown_) {
+    user_dropdown_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME, email));
+  }
+
   user_image_->UpdateForUser(current_user_);
   user_label_->UpdateForUser(current_user_);
   Layout();
@@ -414,8 +445,8 @@ void LoginUserView::UpdateCurrentUserState() {
 
 void LoginUserView::UpdateOpacity() {
   bool was_opaque = is_opaque_;
-  is_opaque_ = force_opaque_ || IsMouseHovered() || HasFocus();
-
+  is_opaque_ =
+      force_opaque_ || tap_button_->IsMouseHovered() || tap_button_->HasFocus();
   if (was_opaque == is_opaque_)
     return;
 
@@ -444,52 +475,68 @@ void LoginUserView::UpdateOpacity() {
 }
 
 void LoginUserView::SetLargeLayout() {
-  auto* root_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
-                           kVerticalSpacingBetweenEntriesDp);
-  SetLayoutManager(root_layout);
+  // Add views in tabbing order; they are rendered in a different order below.
+  AddChildView(user_image_);
+  AddChildView(user_label_);
+  AddChildView(tap_button_);
+  if (user_dropdown_)
+    AddChildView(user_dropdown_);
 
-  // Space between top of user view and user icon.
-  AddChildView(MakePreferredSizeView(
-      gfx::Size(0, kDistanceFromTopOfBigUserViewToUserIconDp -
-                       kVerticalSpacingBetweenEntriesDp)));
+  // Use views::GridLayout instead of views::BoxLayout because views::BoxLayout
+  // lays out children according to the view->children order.
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
-  // Centered user image
+  constexpr int kImageColumnId = 0;
+  constexpr int kLabelDropdownColumnId = 1;
   {
-    auto* row = new NonAccessibleView();
-    AddChildView(row);
-
-    auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
-    layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-    row->SetLayoutManager(layout);
-
-    row->AddChildView(user_image_);
+    views::ColumnSet* image = layout->AddColumnSet(kImageColumnId);
+    image->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                     1 /*resize_percent*/, views::GridLayout::USE_PREF,
+                     0 /*fixed_width*/, 0 /*min_width*/);
   }
 
-  // User name, menu dropdown
   {
-    auto* row = new NonAccessibleView();
-    AddChildView(row);
-
-    auto* layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                             kDistanceBetweenUsernameAndDropdownDp);
-    layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-    row->SetLayoutManager(layout);
-
-    // Add an empty view that has the same size as the dropdown so we center on
-    // |user_label_|. This is simpler than doing manual size calculation to take
-    // into account the extra offset.
+    views::ColumnSet* label_dropdown =
+        layout->AddColumnSet(kLabelDropdownColumnId);
+    label_dropdown->AddPaddingColumn(1.0f /*resize_percent*/, 0 /*width*/);
     if (user_dropdown_) {
-      row->AddChildView(
-          MakePreferredSizeView(user_dropdown_->GetPreferredSize()));
+      label_dropdown->AddPaddingColumn(
+          0 /*resize_percent*/, user_dropdown_->GetPreferredSize().width() +
+                                    kDistanceBetweenUsernameAndDropdownDp);
     }
-    row->AddChildView(user_label_);
-    if (user_dropdown_)
-      row->AddChildView(user_dropdown_);
+    label_dropdown->AddColumn(views::GridLayout::CENTER,
+                              views::GridLayout::CENTER, 0 /*resize_percent*/,
+                              views::GridLayout::USE_PREF, 0 /*fixed_width*/,
+                              0 /*min_width*/);
+    if (user_dropdown_) {
+      label_dropdown->AddPaddingColumn(0 /*resize_percent*/,
+                                       kDistanceBetweenUsernameAndDropdownDp);
+      label_dropdown->AddColumn(views::GridLayout::CENTER,
+                                views::GridLayout::CENTER, 0 /*resize_percent*/,
+                                views::GridLayout::USE_PREF, 0 /*fixed_width*/,
+                                0 /*min_width*/);
+    }
+    label_dropdown->AddPaddingColumn(1.0f /*resize_percent*/, 0 /*width*/);
   }
+
+  auto add_padding = [&](int amount) {
+    layout->AddPaddingRow(0 /*vertical_resize*/, amount /*size*/);
+  };
+
+  // Add views in rendering order.
+  add_padding(kDistanceFromTopOfBigUserViewToUserIconDp);
+
+  // Image
+  layout->StartRow(0 /*vertical_resize*/, kImageColumnId);
+  layout->AddView(user_image_);
+
+  add_padding(kVerticalSpacingBetweenEntriesDp);
+
+  // Label/dropdown.
+  layout->StartRow(0 /*vertical_resize*/, kLabelDropdownColumnId);
+  layout->AddView(user_label_);
+  if (user_dropdown_)
+    layout->AddView(user_dropdown_);
 }
 
 void LoginUserView::SetSmallishLayout() {
@@ -500,6 +547,7 @@ void LoginUserView::SetSmallishLayout() {
 
   AddChildView(user_image_);
   AddChildView(user_label_);
+  AddChildView(tap_button_);
 }
 
 }  // namespace ash
