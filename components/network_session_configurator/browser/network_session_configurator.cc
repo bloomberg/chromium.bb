@@ -287,6 +287,19 @@ int GetQuicMaxTimeOnNonDefaultNetworkSeconds(
   return 0;
 }
 
+int GetQuicMaxNumMigrationsToNonDefaultNetworkOnPathDegrading(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(
+              quic_trial_params,
+              "max_migrations_to_non_default_network_on_path_degrading"),
+          &value)) {
+    return value;
+  }
+  return 0;
+}
+
 bool ShouldQuicAllowServerMigration(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -395,6 +408,13 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     if (max_time_on_non_default_network_seconds > 0) {
       params->quic_max_time_on_non_default_network =
           base::TimeDelta::FromSeconds(max_time_on_non_default_network_seconds);
+    }
+    int max_migrations_to_non_default_network_on_path_degrading =
+        GetQuicMaxNumMigrationsToNonDefaultNetworkOnPathDegrading(
+            quic_trial_params);
+    if (max_migrations_to_non_default_network_on_path_degrading > 0) {
+      params->quic_max_migrations_to_non_default_network_on_path_degrading =
+          max_migrations_to_non_default_network_on_path_degrading;
     }
     params->quic_allow_server_migration =
         ShouldQuicAllowServerMigration(quic_trial_params);
