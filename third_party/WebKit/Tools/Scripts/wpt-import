@@ -7,7 +7,6 @@
 
 from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
-
 from webkitpy.w3c.test_importer import TestImporter
 
 

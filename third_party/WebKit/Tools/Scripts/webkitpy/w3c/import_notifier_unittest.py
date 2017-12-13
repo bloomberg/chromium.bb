@@ -130,18 +130,18 @@ class ImportNotifierTest(unittest.TestCase):
         self.assertEqual(self.notifier.new_failures_by_directory, {})
 
     def test_format_commit_list(self):
-        imported_commits = ['SHA1', 'SHA2']
+        imported_commits = [('SHA1', 'Subject 1'), ('SHA2', 'Subject 2')]
 
         def _is_commit_affecting_directory(commit, directory):
-            self.assertIn(commit, imported_commits)
+            self.assertIn(commit, ('SHA1', 'SHA2'))
             self.assertEqual(directory, 'directory')
             return commit == 'SHA1'
 
         self.local_wpt.is_commit_affecting_directory = _is_commit_affecting_directory
         self.assertEqual(
             self.notifier.format_commit_list(imported_commits, 'directory'),
-            'Fake subject: https://github.com/w3c/web-platform-tests/commit/SHA1 [affecting this directory]\n'
-            'Fake subject: https://github.com/w3c/web-platform-tests/commit/SHA2\n'
+            'Subject 1: https://github.com/w3c/web-platform-tests/commit/SHA1 [affecting this directory]\n'
+            'Subject 2: https://github.com/w3c/web-platform-tests/commit/SHA2\n'
         )
 
     def test_find_owned_directory_non_virtual(self):
@@ -158,6 +158,43 @@ class ImportNotifierTest(unittest.TestCase):
             'test@chromium.org'
         )
         self.assertEqual(self.notifier.find_owned_directory('virtual/gpu/external/wpt/foo/bar.html'), 'external/wpt/foo')
+
+    def test_create_bugs_from_new_failures(self):
+        self.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS',
+            '# COMPONENT: Blink>Infra>Ecosystem\n'
+            '# WPT-NOTIFY: true\n'
+            'foolip@chromium.org\n'
+        )
+        self.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/bar/OWNERS',
+            'test@chromium.org'
+        )
+        self.notifier.new_failures_by_directory = {
+            'external/wpt/foo': [TestFailure(TestFailure.NEW_EXPECTATION, 'external/wpt/foo/baz.html',
+                                             expectation_line='crbug.com/12345 external/wpt/foo/baz.html [ Fail ]')],
+            'external/wpt/bar': [TestFailure(TestFailure.NEW_EXPECTATION, 'external/wpt/bar/baz.html',
+                                             expectation_line='crbug.com/12345 external/wpt/bar/baz.html [ Fail ]')]
+        }
+        bugs = self.notifier.create_bugs_from_new_failures('SHA_START', 'SHA_END', 'https://crrev.com/c/12345')
+
+        # Only one directory has WPT-NOTIFY enabled.
+        self.assertEqual(len(bugs), 1)
+        # The formatting of imported commits and new failures are already tested.
+        self.assertEqual(bugs[0].body['cc'], ['foolip@chromium.org', 'robertma@chromium.org'])
+        self.assertEqual(bugs[0].body['components'], ['Blink>Infra>Ecosystem'])
+        self.assertEqual(bugs[0].body['summary'],
+                         '[WPT] New failures introduced in external/wpt/foo by import https://crrev.com/c/12345')
+
+    def test_no_bugs_filed_in_dry_run(self):
+        def unreachable(_):
+            self.fail('MonorailAPI should not be instantiated in dry_run.')
+
+        self.notifier._get_monorail_api = unreachable  # pylint: disable=protected-access
+        self.notifier.file_bugs([], True)
+
+
+class TestFailureTest(unittest.TestCase):
 
     def test_test_failure_to_str_baseline_change(self):
         failure = TestFailure(
