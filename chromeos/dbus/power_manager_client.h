@@ -218,6 +218,8 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   virtual void SetPowerSource(const std::string& id) = 0;
 
   // Forces the display and (if present) keyboard backlights to |forced_off|.
+  // This method doesn't support multiple callers. Instead of calling it
+  // directly, please use ash::BacklightsForcedOffSetter.
   virtual void SetBacklightsForcedOff(bool forced_off) = 0;
 
   // Gets the display and (if present) keyboard backlights' forced-off state. On
