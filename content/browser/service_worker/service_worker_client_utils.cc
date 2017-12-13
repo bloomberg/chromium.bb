@@ -31,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/child_process_host.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "url/gurl.h"
@@ -124,8 +125,9 @@ ServiceWorkerClientInfo GetWindowClientInfoOnUI(
   return ServiceWorkerClientInfo(
       client_uuid, render_frame_host->GetVisibilityState(),
       render_frame_host->IsFocused(), render_frame_host->GetLastCommittedURL(),
-      render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
-                                     : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+      render_frame_host->GetParent()
+          ? network::mojom::RequestContextFrameType::kNested
+          : network::mojom::RequestContextFrameType::kTopLevel,
       render_frame_host->frame_tree_node()->last_focus_time(), create_time,
       blink::mojom::ServiceWorkerClientType::kWindow);
 }
@@ -322,8 +324,8 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
   ServiceWorkerClientInfo client_info(
       host->client_uuid(), blink::mojom::PageVisibilityState::kHidden,
       false,  // is_focused
-      host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE, base::TimeTicks(),
-      host->create_time(), host_client_type);
+      host->document_url(), network::mojom::RequestContextFrameType::kNone,
+      base::TimeTicks(), host->create_time(), host_client_type);
   clients->push_back(client_info);
 }
 
@@ -522,9 +524,9 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
   ServiceWorkerClientInfo client_info(
       provider_host->client_uuid(), blink::mojom::PageVisibilityState::kHidden,
       false,  // is_focused
-      provider_host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE,
-      base::TimeTicks(), provider_host->create_time(),
-      provider_host->client_type());
+      provider_host->document_url(),
+      network::mojom::RequestContextFrameType::kNone, base::TimeTicks(),
+      provider_host->create_time(), provider_host->client_type());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(callback, client_info));
 }

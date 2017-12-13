@@ -21,6 +21,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/common/blob/blob.mojom.h"
@@ -283,18 +284,22 @@ ResourceType WebURLRequestContextToResourceType(
 
 ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
   WebURLRequest::RequestContext request_context = request.GetRequestContext();
-  if (request.GetFrameType() != WebURLRequest::kFrameTypeNone) {
+  if (request.GetFrameType() !=
+      network::mojom::RequestContextFrameType::kNone) {
     DCHECK(request_context == WebURLRequest::kRequestContextForm ||
            request_context == WebURLRequest::kRequestContextFrame ||
            request_context == WebURLRequest::kRequestContextHyperlink ||
            request_context == WebURLRequest::kRequestContextIframe ||
            request_context == WebURLRequest::kRequestContextInternal ||
            request_context == WebURLRequest::kRequestContextLocation);
-    if (request.GetFrameType() == WebURLRequest::kFrameTypeTopLevel ||
-        request.GetFrameType() == WebURLRequest::kFrameTypeAuxiliary) {
+    if (request.GetFrameType() ==
+            network::mojom::RequestContextFrameType::kTopLevel ||
+        request.GetFrameType() ==
+            network::mojom::RequestContextFrameType::kAuxiliary) {
       return RESOURCE_TYPE_MAIN_FRAME;
     }
-    if (request.GetFrameType() == WebURLRequest::kFrameTypeNested)
+    if (request.GetFrameType() ==
+        network::mojom::RequestContextFrameType::kNested)
       return RESOURCE_TYPE_SUB_FRAME;
     NOTREACHED();
     return RESOURCE_TYPE_SUB_RESOURCE;
@@ -516,20 +521,6 @@ FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
 
 std::string GetFetchIntegrityForWebURLRequest(const WebURLRequest& request) {
   return request.GetFetchIntegrity().Utf8();
-}
-
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY,
-                   WebURLRequest::kFrameTypeAuxiliary);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_NESTED,
-                   WebURLRequest::kFrameTypeNested);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_NONE,
-                   WebURLRequest::kFrameTypeNone);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-                   WebURLRequest::kFrameTypeTopLevel);
-
-RequestContextFrameType GetRequestContextFrameTypeForWebURLRequest(
-    const WebURLRequest& request) {
-  return static_cast<RequestContextFrameType>(request.GetFrameType());
 }
 
 STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_UNSPECIFIED,

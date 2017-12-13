@@ -58,6 +58,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/WebKit/common/blob/blob.mojom.h"
 #include "third_party/WebKit/common/blob/blob_registry.mojom.h"
@@ -170,10 +171,6 @@ WebURLRequest::RequestContext GetBlinkRequestContext(
   return static_cast<WebURLRequest::RequestContext>(request_context_type);
 }
 
-WebURLRequest::FrameType GetBlinkFrameType(RequestContextFrameType frame_type) {
-  return static_cast<WebURLRequest::FrameType>(frame_type);
-}
-
 blink::WebServiceWorkerClientInfo
 ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
   DCHECK(client_info.IsValid());
@@ -184,7 +181,7 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
   web_client_info.page_visibility_state = client_info.page_visibility_state;
   web_client_info.is_focused = client_info.is_focused;
   web_client_info.url = client_info.url;
-  web_client_info.frame_type = GetBlinkFrameType(client_info.frame_type);
+  web_client_info.frame_type = client_info.frame_type;
   web_client_info.client_type = client_info.client_type;
 
   return web_client_info;
@@ -219,7 +216,7 @@ void ToWebServiceWorkerRequest(const ResourceRequest& request,
       GetBlinkFetchRedirectMode(request.fetch_redirect_mode));
   web_request->SetRequestContext(
       GetBlinkRequestContext(request.fetch_request_context_type));
-  web_request->SetFrameType(GetBlinkFrameType(request.fetch_frame_type));
+  web_request->SetFrameType(request.fetch_frame_type);
   // TODO(falken): Set client id. The browser needs to pass it to us.
   web_request->SetIsReload(ui::PageTransitionCoreTypeIs(
       request.transition_type, ui::PAGE_TRANSITION_RELOAD));
@@ -258,7 +255,7 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
       GetBlinkFetchRedirectMode(request.redirect_mode));
   web_request->SetRequestContext(
       GetBlinkRequestContext(request.request_context_type));
-  web_request->SetFrameType(GetBlinkFrameType(request.frame_type));
+  web_request->SetFrameType(request.frame_type);
   web_request->SetClientId(blink::WebString::FromUTF8(request.client_id));
   web_request->SetIsReload(request.is_reload);
   web_request->SetIntegrity(blink::WebString::FromUTF8(request.integrity));

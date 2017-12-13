@@ -91,6 +91,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 #include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
 
 namespace blink {
@@ -488,7 +489,7 @@ void FrameFetchContext::DispatchWillSendRequest(
 void FrameFetchContext::DispatchDidReceiveResponse(
     unsigned long identifier,
     const ResourceResponse& response,
-    WebURLRequest::FrameType frame_type,
+    network::mojom::RequestContextFrameType frame_type,
     WebURLRequest::RequestContext request_context,
     Resource* resource,
     ResourceResponseType response_type) {
@@ -892,7 +893,8 @@ void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00#section-2.1.1?
   if (request.SiteForCookies().IsNull()) {
-    if (request.GetFrameType() == WebURLRequest::kFrameTypeTopLevel) {
+    if (request.GetFrameType() ==
+        network::mojom::RequestContextFrameType::kTopLevel) {
       request.SetSiteForCookies(request.Url());
     } else {
       request.SetSiteForCookies(GetSiteForCookies());
@@ -905,7 +907,8 @@ void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
   //   In most of the cases, it is set in the FrameLoadRequest constructor.
   //   Otherwise, it must be set immediately after the request has been created.
   //   See the calls to ResourceRequest::SetRequestorOrigin().
-  if (request.GetFrameType() == WebURLRequest::kFrameTypeNone) {
+  if (request.GetFrameType() ==
+      network::mojom::RequestContextFrameType::kNone) {
     if (!request.RequestorOrigin())
       request.SetRequestorOrigin(GetRequestorOrigin());
   }
@@ -993,7 +996,7 @@ void FrameFetchContext::CountDeprecation(WebFeature feature) const {
 
 bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
     WebURLRequest::RequestContext request_context,
-    WebURLRequest::FrameType frame_type,
+    network::mojom::RequestContextFrameType frame_type,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {

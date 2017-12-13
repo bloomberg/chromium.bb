@@ -38,6 +38,7 @@
 #include "WebSecurityOrigin.h"
 #include "services/network/public/interfaces/cors.mojom-shared.h"
 #include "services/network/public/interfaces/fetch_api.mojom-shared.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
 
 namespace blink {
 
@@ -102,15 +103,6 @@ class WebURLRequest {
     kRequestContextWorker,
     kRequestContextXMLHttpRequest,
     kRequestContextXSLT
-  };
-
-  // Corresponds to Fetch's "context frame type":
-  // http://fetch.spec.whatwg.org/#concept-request-context-frame-type
-  enum FrameType : uint8_t {
-    kFrameTypeAuxiliary,
-    kFrameTypeNested,
-    kFrameTypeNone,
-    kFrameTypeTopLevel
   };
 
   // Corresponds to Fetch request's "redirect mode":
@@ -235,8 +227,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT RequestContext GetRequestContext() const;
   BLINK_PLATFORM_EXPORT void SetRequestContext(RequestContext);
 
-  BLINK_PLATFORM_EXPORT FrameType GetFrameType() const;
-  BLINK_PLATFORM_EXPORT void SetFrameType(FrameType);
+  BLINK_PLATFORM_EXPORT network::mojom::RequestContextFrameType GetFrameType()
+      const;
+  BLINK_PLATFORM_EXPORT void SetFrameType(
+      network::mojom::RequestContextFrameType);
 
   BLINK_PLATFORM_EXPORT WebReferrerPolicy GetReferrerPolicy() const;
 

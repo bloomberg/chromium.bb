@@ -9,6 +9,7 @@
 #include "core/CoreExport.h"
 #include "core/loader/BaseFetchContext.h"
 #include "platform/wtf/Forward.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 
@@ -48,7 +49,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   void CountDeprecation(WebFeature) const override;
   bool ShouldBlockFetchByMixedContentCheck(
       WebURLRequest::RequestContext,
-      WebURLRequest::FrameType,
+      network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override;
@@ -80,7 +81,7 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const FetchInitiatorInfo&) override;
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceResponse&,
-                                  WebURLRequest::FrameType,
+                                  network::mojom::RequestContextFrameType,
                                   WebURLRequest::RequestContext,
                                   Resource*,
                                   ResourceResponseType) override;

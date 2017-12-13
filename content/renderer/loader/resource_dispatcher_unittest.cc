@@ -23,7 +23,6 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_response.h"
@@ -38,6 +37,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
@@ -216,7 +216,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
     request->priority = net::LOW;
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
-    request->fetch_frame_type = REQUEST_CONTEXT_FRAME_TYPE_NONE;
+    request->fetch_frame_type = network::mojom::RequestContextFrameType::kNone;
     request->download_to_file = download_to_file;
 
     const RequestExtraData extra_data;

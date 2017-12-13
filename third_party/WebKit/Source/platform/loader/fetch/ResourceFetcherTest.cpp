@@ -64,6 +64,7 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -176,7 +177,8 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
 
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
   ResourceRequest resource_request(url);
-  resource_request.SetFrameType(WebURLRequest::kFrameTypeNested);
+  resource_request.SetFrameType(
+      network::mojom::RequestContextFrameType::kNested);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextForm);
   FetchParameters fetch_params(resource_request);
   platform_->GetURLLoaderMockFactory()->RegisterURL(url, WebURLResponse(), "");
@@ -761,7 +763,8 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
   {
     ResourceRequest resource_request(url);
     resource_request.SetRequestContext(WebURLRequest::kRequestContextIframe);
-    resource_request.SetFrameType(WebURLRequest::kFrameTypeNested);
+    resource_request.SetFrameType(
+        network::mojom::RequestContextFrameType::kNested);
     FetchParameters fetch_params(resource_request);
     RawResource* resource = RawResource::FetchMainResource(
         fetch_params, fetcher, nullptr, SubstituteData());

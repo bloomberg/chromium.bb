@@ -15,6 +15,7 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/WebString.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 #include "third_party/WebKit/common/service_worker/service_worker_client.mojom-blink.h"
 
 namespace blink {
@@ -70,13 +71,13 @@ String ServiceWorkerClient::frameType(ScriptState* script_state) const {
   UseCounter::Count(ExecutionContext::From(script_state),
                     WebFeature::kServiceWorkerClientFrameType);
   switch (frame_type_) {
-    case WebURLRequest::kFrameTypeAuxiliary:
+    case network::mojom::RequestContextFrameType::kAuxiliary:
       return "auxiliary";
-    case WebURLRequest::kFrameTypeNested:
+    case network::mojom::RequestContextFrameType::kNested:
       return "nested";
-    case WebURLRequest::kFrameTypeNone:
+    case network::mojom::RequestContextFrameType::kNone:
       return "none";
-    case WebURLRequest::kFrameTypeTopLevel:
+    case network::mojom::RequestContextFrameType::kTopLevel:
       return "top-level";
   }
 

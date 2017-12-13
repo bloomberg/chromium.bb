@@ -16,10 +16,10 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_client_info.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -90,7 +90,8 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
       network::mojom::FetchRequestMode::kNoCORS;
   bool is_main_resource_load = false;
   RequestContextType request_context_type = REQUEST_CONTEXT_TYPE_UNSPECIFIED;
-  RequestContextFrameType frame_type = REQUEST_CONTEXT_FRAME_TYPE_NONE;
+  network::mojom::RequestContextFrameType frame_type =
+      network::mojom::RequestContextFrameType::kNone;
   GURL url;
   std::string method;
   ServiceWorkerHeaderMap headers;
