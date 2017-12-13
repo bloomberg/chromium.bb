@@ -55,7 +55,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
-import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -1702,7 +1702,7 @@ public class BottomSheet
      * @return The bottom sheet's help bubble if it exists.
      */
     @VisibleForTesting
-    public @Nullable ViewAnchoredTextBubble getHelpBubbleForTests() {
+    public @Nullable TextBubble getHelpBubbleForTests() {
         return getIphBubbleController().getHelpBubbleForTests();
     }
 }

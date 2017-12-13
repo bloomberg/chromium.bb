@@ -129,7 +129,7 @@ public class TextBubble implements OnTouchListener {
     private final int mAccessibilityStringId;
 
     /**
-     * Constructs a {@link TextBubble} instance.
+     * Constructs a {@link TextBubble} instance using the default arrow drawable background.
      * @param context  Context to draw resources from.
      * @param rootView The {@link View} to use for size calculations and for display.
      * @param stringId The id of the string resource for the text that should be shown.
@@ -137,12 +137,28 @@ public class TextBubble implements OnTouchListener {
      */
     public TextBubble(Context context, View rootView, @StringRes int stringId,
             @StringRes int accessibilityStringId) {
+        this(context, rootView, stringId, accessibilityStringId, true);
+    }
+
+    /**
+     * Constructs a {@link TextBubble} instance.
+     * @param context  Context to draw resources from.
+     * @param rootView The {@link View} to use for size calculations and for display.
+     * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
+     * @param showArrow Whether the bubble should have an arrow.
+     */
+    public TextBubble(Context context, View rootView, @StringRes int stringId,
+            @StringRes int accessibilityStringId, boolean showArrow) {
         mContext = context;
         mRootView = rootView.getRootView();
         mStringId = stringId;
         mAccessibilityStringId = accessibilityStringId;
         mPopupWindow = new PopupWindow(mContext);
+
         mDrawable = new ArrowBubbleDrawable(context);
+        mDrawable.setShowArrow(showArrow);
+
         mHandler = new Handler();
 
         mPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -355,14 +371,19 @@ public class TextBubble implements OnTouchListener {
         // In landscape mode, root view includes the decorations in some devices. So we guard the
         // window dimensions against |mCachedWindowRect.right| instead.
         mX = MathUtils.clamp(mX, mMarginPx, mCachedWindowRect.right - mWidth - mMarginPx);
-        int arrowXOffset = mAnchorRect.centerX() - mX;
 
-        // Force the anchor to be in a reasonable spot w.r.t. the bubble (not over the corners).
-        int minArrowOffset = mDrawable.getArrowLeftSpacing();
-        int maxArrowOffset = mWidth - mDrawable.getArrowRightSpacing();
-        arrowXOffset = MathUtils.clamp(arrowXOffset, minArrowOffset, maxArrowOffset);
+        int arrowXOffset = 0;
+        if (mDrawable.isShowingArrow()) {
+            arrowXOffset = mAnchorRect.centerX() - mX;
 
-        // TODO(dtrainor): Figure out how to move the arrow and bubble to make things look better.
+            // Force the anchor to be in a reasonable spot w.r.t. the bubble (not over the corners).
+            int minArrowOffset = mDrawable.getArrowLeftSpacing();
+            int maxArrowOffset = mWidth - mDrawable.getArrowRightSpacing();
+            arrowXOffset = MathUtils.clamp(arrowXOffset, minArrowOffset, maxArrowOffset);
+        }
+
+        // TODO(dtrainor): Figure out how to move the arrow and bubble to make things look
+        // better.
 
         mDrawable.setPositionProperties(arrowXOffset, positionBelow);
 

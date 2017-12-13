@@ -1052,6 +1052,9 @@ extern const char kChromeHomePersonalizedOmniboxSuggestionsDescription[];
 extern const char kChromeHomePromoName[];
 extern const char kChromeHomePromoDescription[];
 
+extern const char kChromeHomePullToRefreshIphAtTopName[];
+extern const char kChromeHomePullToRefreshIphAtTopDescription[];
+
 extern const char kChromeHomeShowGoogleGName[];
 extern const char kChromeHomeShowGoogleGDescription[];
 

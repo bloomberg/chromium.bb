@@ -1715,6 +1715,11 @@ const char kChromeHomePromoName[] = "Chrome Home Promo";
 const char kChromeHomePromoDescription[] =
     "Enable showing the opt-in/out Chrome Home promo.";
 
+const char kChromeHomePullToRefreshIphAtTopName[] =
+    "Chrome Home Pull-To-Refresh Iph At Top";
+const char kChromeHomePullToRefreshIphAtTopDescription[] =
+    "Show the Chrome Home pull-to-refresh help bubble at the top of the screen";
+
 const char kChromeHomeShowGoogleGName[] = "Chrome Home Show Google G";
 const char kChromeHomeShowGoogleGDescription[] =
     "Show the Google G when the url is cleared. The flag to clear the url "
