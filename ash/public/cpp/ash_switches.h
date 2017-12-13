@@ -29,6 +29,7 @@ ASH_PUBLIC_EXPORT extern const char kAshEnableV1AppBackButton[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableDisplayMoveWindowAccels[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableKeyboardShortcutViewer[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
+ASH_PUBLIC_EXPORT extern const char kAshEnableNewOverviewUi[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableNightLight[];
 ASH_PUBLIC_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableScaleSettingsTray[];
