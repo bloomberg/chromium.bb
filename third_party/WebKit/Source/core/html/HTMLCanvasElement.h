@@ -68,7 +68,6 @@ class Image;
 class ImageBitmapOptions;
 class ImageBuffer;
 class ImageBufferSurface;
-class ImageData;
 class IntSize;
 
 class
@@ -326,7 +325,6 @@ class CORE_EXPORT HTMLCanvasElement final
   scoped_refptr<StaticBitmapImage> ToStaticBitmapImage(SourceDrawingBuffer,
                                                        AccelerationHint,
                                                        SnapshotReason) const;
-  ImageData* ToImageData(SourceDrawingBuffer, SnapshotReason) const;
 
   String ToDataURLInternal(const String& mime_type,
                            const double& quality,
