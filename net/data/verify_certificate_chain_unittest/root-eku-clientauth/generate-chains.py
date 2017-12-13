@@ -7,19 +7,19 @@
 usage to clientAuth."""
 
 import sys
-sys.path += ['..']
+sys.path += ['../..']
 
-import common
+import gencerts
 
 # Self-signed root certificate with extended key usage of clientAuth.
-root = common.create_self_signed_root_certificate('Root')
+root = gencerts.create_self_signed_root_certificate('Root')
 root.get_extensions().set_property('extendedKeyUsage', 'clientAuth')
 
 # Intermediate certificate.
-intermediate = common.create_intermediate_certificate('Intermediate', root)
+intermediate = gencerts.create_intermediate_certificate('Intermediate', root)
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediate)
+target = gencerts.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate, root]
-common.write_chain(__doc__, chain, 'chain.pem')
+gencerts.write_chain(__doc__, chain, 'chain.pem')
