@@ -11,30 +11,38 @@
 
 namespace {
 
-// Forwards |event| to an already-running Chromium process.
+// Extracts the URL from |event| and forwards it to an already-running Chromium
+// process.
 OSErr HandleGURLEvent(const AppleEvent* event,
                       AppleEvent* reply,
                       SRefCon handler_refcon) {
-  // Forwarding the message without |kAENoReply| hangs us, so assume that a
-  // reply is unnecessary as an invariant.
-  DCHECK_EQ(reply->descriptorType, typeNull);
-
   pid_t forwarding_pid = *(reinterpret_cast<pid_t*>(handler_refcon));
   base::mac::ScopedAEDesc<> other_process_pid;
   // Create an address descriptor for the running process.
   AECreateDesc(typeKernelProcessID, &forwarding_pid, sizeof(forwarding_pid),
                other_process_pid.OutPointer());
 
-  // Change the event's address to the running process.
-  AppleEvent* event_copy = const_cast<AppleEvent*>(event);
-  if (AEPutAttributeDesc(event_copy, keyAddressAttr, other_process_pid) ==
-      noErr) {
-    // Send the message back out.
-    AESendMessage(event_copy, reply, kAENoReply, kNoTimeOut);
-    return noErr;
-  }
+  OSErr status = noErr;
+  base::mac::ScopedAEDesc<> event_copy;
+  status = AECreateAppleEvent(kInternetEventClass, kAEGetURL, other_process_pid,
+                              kAutoGenerateReturnID, kAnyTransactionID,
+                              event_copy.OutPointer());
+  if (status != noErr)
+    return status;
 
-  return noErr;
+  base::mac::ScopedAEDesc<> url;
+  // A GURL event's direct object is the URL as a descriptor with type
+  // TEXT.
+  status =
+      AEGetParamDesc(event, keyDirectObject, typeWildCard, url.OutPointer());
+  if (status != noErr)
+    return status;
+
+  status = AEPutParamDesc(event_copy.OutPointer(), keyDirectObject, url);
+  if (status != noErr)
+    return status;
+
+  return AESendMessage(event_copy, reply, kAENoReply, kNoTimeOut);
 }
 
 }  //  namespace
