@@ -30663,6 +30663,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="interstitial.ssl.expiration_and_decision.nonoverridable"
     enum="SSLIsExpiredAndDecision">
+  <obsolete>
+    Deprecated Dec 2017 (M65).
+  </obsolete>
   <owner>jww@chromium.org</owner>
   <summary>
     Records when a user has made a decision to proceed on a nonoverridable SSL
@@ -30673,6 +30676,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="interstitial.ssl.expiration_and_decision.overridable"
     enum="SSLIsExpiredAndDecision">
+  <obsolete>
+    Deprecated Dec 2017 (M65).
+  </obsolete>
   <owner>jww@chromium.org</owner>
   <summary>
     Records when a user has made a decision to proceed on an overridable SSL

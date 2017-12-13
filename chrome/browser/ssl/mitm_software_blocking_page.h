@@ -10,13 +10,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/ssl/ssl_blocking_page_base.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
-#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
 
-class CertReportHelper;
 class GURL;
 
 namespace security_interstitials {
@@ -29,8 +28,7 @@ class MITMSoftwareUI;
 // software that intercepts and rewrites the user's connection. This class
 // creates the interstitial UI using security_interstitials::MITMSoftwareUI and
 // then displays it. It deletes itself when the interstitial page is closed.
-class MITMSoftwareBlockingPage
-    : public security_interstitials::SecurityInterstitialPage {
+class MITMSoftwareBlockingPage : public SSLBlockingPageBase {
  public:
   // Interstitial type, used in tests.
   static const InterstitialPageDelegate::TypeID kTypeForTesting;
@@ -75,7 +73,6 @@ class MITMSoftwareBlockingPage
   base::Callback<void(content::CertificateRequestResultType)> callback_;
   const net::SSLInfo ssl_info_;
 
-  const std::unique_ptr<CertReportHelper> cert_report_helper_;
   const std::unique_ptr<security_interstitials::MITMSoftwareUI>
       mitm_software_ui_;
 

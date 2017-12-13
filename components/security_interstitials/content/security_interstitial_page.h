@@ -35,7 +35,9 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
       std::unique_ptr<SecurityInterstitialControllerClient> controller);
   ~SecurityInterstitialPage() override;
 
-  // Creates an interstitial and shows it.
+  // Creates an interstitial and shows it. This is used for the pre-committed
+  // interstitials code path, when an interstitial is generated as an
+  // overlay.
   virtual void Show();
 
   // Prevents creating the actual interstitial view for testing.
@@ -44,6 +46,10 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // InterstitialPageDelegate method:
   std::string GetHTMLContents() override;
 
+  // Must be called when the interstitial is closed, to give subclasses a chance
+  // to e.g. update metrics.
+  virtual void OnInterstitialClosing() = 0;
+
  protected:
   // Returns true if the interstitial should create a new navigation entry.
   virtual bool ShouldCreateNewNavigation() const = 0;
@@ -51,10 +57,6 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // Populates the strings used to generate the HTML from the template.
   virtual void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) = 0;
-
-  // Gives an opportunity for child classes to react to Show() having run. The
-  // interstitial_page_ will now have a value.
-  virtual void AfterShow() {}
 
   virtual int GetHTMLTemplateId();
 
@@ -71,6 +73,8 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   void UpdateMetricsAfterSecurityInterstitial();
 
  private:
+  void SetUpMetrics();
+
   // The WebContents with which this interstitial page is
   // associated. Not available in ~SecurityInterstitialPage, since it
   // can be destroyed before this class is destroyed.

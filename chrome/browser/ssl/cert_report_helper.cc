@@ -110,8 +110,38 @@ void CertReportHelper::PopulateExtendedReportingOption(
                                  base::UTF8ToUTF16(privacy_link)));
 }
 
-void CertReportHelper::FinishCertCollection(
-    certificate_reporting::ErrorReport::ProceedDecision user_proceeded) {
+void CertReportHelper::SetSSLCertReporterForTesting(
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
+  ssl_cert_reporter_ = std::move(ssl_cert_reporter);
+}
+
+void CertReportHelper::HandleReportingCommands(
+    security_interstitials::SecurityInterstitialCommand command,
+    PrefService* pref_service) {
+  switch (command) {
+    case security_interstitials::CMD_DO_REPORT:
+      safe_browsing::SetExtendedReportingPrefAndMetric(
+          pref_service, true, /* value */
+          safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
+      break;
+    case security_interstitials::CMD_DONT_REPORT:
+      safe_browsing::SetExtendedReportingPrefAndMetric(
+          pref_service, false, /* value */
+          safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
+      break;
+    case security_interstitials::CMD_PROCEED:
+      user_action_ = certificate_reporting::ErrorReport::USER_PROCEEDED;
+      break;
+    case security_interstitials::CMD_DONT_PROCEED:
+      user_action_ = certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED;
+      break;
+    default:
+      // Other commands can be ignored.
+      break;
+  }
+}
+
+void CertReportHelper::FinishCertCollection() {
   if (!ShouldShowCertificateReporterCheckbox())
     return;
 
@@ -143,7 +173,7 @@ void CertReportHelper::FinishCertCollection(
 #endif
 
   report.SetInterstitialInfo(
-      interstitial_reason_, user_proceeded,
+      interstitial_reason_, user_action_,
       overridable_
           ? certificate_reporting::ErrorReport::INTERSTITIAL_OVERRIDABLE
           : certificate_reporting::ErrorReport::INTERSTITIAL_NOT_OVERRIDABLE,
@@ -155,11 +185,6 @@ void CertReportHelper::FinishCertCollection(
   }
 
   ssl_cert_reporter_->ReportInvalidCertificateChain(serialized_report);
-}
-
-void CertReportHelper::SetSSLCertReporterForTesting(
-    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
-  ssl_cert_reporter_ = std::move(ssl_cert_reporter);
 }
 
 bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {

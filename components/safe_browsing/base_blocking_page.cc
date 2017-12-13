@@ -123,7 +123,7 @@ bool BaseBlockingPage::IsMainPageLoadBlocked(
 
 void BaseBlockingPage::OnProceed() {
   set_proceeded(true);
-  UpdateMetricsAfterSecurityInterstitial();
+  OnInterstitialClosing();
 
   // Send the threat details, if we opted to.
   FinishThreatDetails(
@@ -149,7 +149,7 @@ void BaseBlockingPage::OnDontProceed() {
   if (proceeded_)
     return;
 
-  UpdateMetricsAfterSecurityInterstitial();
+  OnInterstitialClosing();
   if (!sb_error_ui_->is_proceed_anyway_disabled()) {
     controller()->metrics_helper()->RecordUserDecision(
         security_interstitials::MetricsHelper::DONT_PROCEED);
@@ -211,6 +211,10 @@ bool BaseBlockingPage::ShouldCreateNewNavigation() const {
 void BaseBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   sb_error_ui_->PopulateStringsForHtml(load_time_data);
+}
+
+void BaseBlockingPage::OnInterstitialClosing() {
+  UpdateMetricsAfterSecurityInterstitial();
 }
 
 void BaseBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,

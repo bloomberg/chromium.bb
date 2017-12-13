@@ -21,6 +21,11 @@ void SSLErrorTabHelper::DidFinishNavigation(
       navigation_handle->GetNavigationId());
 
   if (navigation_handle->HasCommitted()) {
+    if (blocking_page_for_currently_committed_navigation_) {
+      blocking_page_for_currently_committed_navigation_
+          ->OnInterstitialClosing();
+    }
+
     if (it == blocking_pages_for_navigations_.end()) {
       blocking_page_for_currently_committed_navigation_.reset();
     } else {
@@ -30,6 +35,12 @@ void SSLErrorTabHelper::DidFinishNavigation(
 
   if (it != blocking_pages_for_navigations_.end()) {
     blocking_pages_for_navigations_.erase(it);
+  }
+}
+
+void SSLErrorTabHelper::WebContentsDestroyed() {
+  if (blocking_page_for_currently_committed_navigation_) {
+    blocking_page_for_currently_committed_navigation_->OnInterstitialClosing();
   }
 }
 
