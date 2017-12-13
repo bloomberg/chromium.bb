@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "ash/metrics/time_to_first_present_recorder_test_api.h"
 #include "ash/public/interfaces/shelf_test_api.mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.mojom.h"
+#include "ash/public/interfaces/time_to_first_present_recorder_test_api.mojom.h"
 #include "ash/shelf/shelf_test_api.h"
 #include "ash/system/tray/system_tray_test_api.h"
 #include "base/bind.h"
@@ -19,6 +21,7 @@ namespace {
 
 // These functions aren't strictly necessary, but exist to make threading and
 // arguments clearer.
+
 void BindShelfTestApiOnMainThread(mojom::ShelfTestApiRequest request) {
   ShelfTestApi::BindRequest(std::move(request));
 }
@@ -26,6 +29,11 @@ void BindShelfTestApiOnMainThread(mojom::ShelfTestApiRequest request) {
 void BindSystemTrayTestApiOnMainThread(
     mojom::SystemTrayTestApiRequest request) {
   SystemTrayTestApi::BindRequest(std::move(request));
+}
+
+void BindTimeToFirstPresentRecorderTestApiOnMainThread(
+    mojom::TimeToFirstPresentRecorderTestApiRequest request) {
+  TimeToFirstPresentRecorderTestApi::BindRequest(std::move(request));
 }
 
 }  // namespace
@@ -37,6 +45,9 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayTestApiOnMainThread),
                          main_thread_task_runner);
+  registry->AddInterface(
+      base::Bind(&BindTimeToFirstPresentRecorderTestApiOnMainThread),
+      main_thread_task_runner);
 }
 
 }  // namespace mojo_test_interface_factory

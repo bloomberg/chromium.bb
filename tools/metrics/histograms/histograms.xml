@@ -3167,6 +3167,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.ProcessCreationToFirstPresent" units="ms">
+  <owner>sky@chromium.org</owner>
+  <summary>
+    The delta between when chrome main starts to when the Chrome OS system UI
+    (ash) is visible to the user (specifically the first time pixels are lit up
+    on the primary display showing the Chrome OS system UI).
+  </summary>
+</histogram>
+
 <histogram name="Ash.Rotation.AnimationSmoothness" units="%">
   <owner>wutao@chromium.org</owner>
   <summary>

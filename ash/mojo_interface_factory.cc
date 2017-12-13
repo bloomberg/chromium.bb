@@ -15,6 +15,7 @@
 #include "ash/login/login_screen_controller.h"
 #include "ash/media_controller.h"
 #include "ash/message_center/message_center_controller.h"
+#include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -111,6 +112,11 @@ void BindNoteTakingControllerRequestOnMainThread(
   Shell::Get()->note_taking_controller()->BindRequest(std::move(request));
 }
 
+void BindProcessCreationTimeRecorderOnMainThread(
+    mojom::ProcessCreationTimeRecorderRequest request) {
+  Shell::Get()->time_to_first_present_recorder()->Bind(std::move(request));
+}
+
 void BindSessionControllerRequestOnMainThread(
     mojom::SessionControllerRequest request) {
   Shell::Get()->session_controller()->BindRequest(std::move(request));
@@ -195,6 +201,9 @@ void RegisterInterfaces(
   }
   registry->AddInterface(
       base::Bind(&BindNoteTakingControllerRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
+      base::Bind(&BindProcessCreationTimeRecorderOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSessionControllerRequestOnMainThread),
                          main_thread_task_runner);

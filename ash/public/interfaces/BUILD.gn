@@ -30,6 +30,7 @@ mojom("interfaces_internal") {
     "night_light_controller.mojom",
     "note_taking_controller.mojom",
     "pref_connector.mojom",
+    "process_creation_time_recorder.mojom",
     "session_controller.mojom",
     "shelf.mojom",
     "shutdown.mojom",
@@ -71,6 +72,7 @@ mojom("test_interfaces") {
   sources = [
     "shelf_test_api.mojom",
     "system_tray_test_api.mojom",
+    "time_to_first_present_recorder_test_api.mojom",
   ]
   deps = [
     "//mojo/common:common_custom_types",

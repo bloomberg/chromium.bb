@@ -18,7 +18,6 @@ class NativeCursorManagerAsh;
 class ScreenPositionController;
 class Shell;
 class SystemGestureEventFilter;
-class TabletModeWindowManager;
 class WorkspaceController;
 
 // Accesses private data from a Shell for testing.
@@ -33,7 +32,6 @@ class ShellTestApi {
   ScreenPositionController* screen_position_controller();
   NativeCursorManagerAsh* native_cursor_manager_ash();
   DragDropController* drag_drop_controller();
-  TabletModeWindowManager* tablet_mode_window_manager();
 
   // Calls the private method.
   void OnLocalStatePrefServiceInitialized(
