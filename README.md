@@ -3,6 +3,7 @@
 ## Contents
 1. [Building the lib and applications](#building-the-library-and-applications)
     - [Prerequisites](#prerequisites)
+    - [Get the code](#get-the-code)
     - [Basics](#basic-build)
     - [Configuration options](#configuration-options)
     - [Dylib builds](#dylib-builds)
@@ -16,14 +17,25 @@
     - [Basics](#testing-basics)
         - [Unit tests](#1_unit-tests)
         - [Example tests](#2_example-tests)
+        - [Encoder tests](#3_encoder-tests)
     - [IDE hosted tests](#ide-hosted-tests)
     - [Downloading test data](#downloading-the-test-data)
+    - [Additional test data](#additional-test-data)
     - [Sharded testing](#sharded-testing)
         - [Running tests directly](#1_running-test_libaom-directly)
         - [Running tests via CMake](#2_running-the-tests-via-the-cmake-build)
 3. [Coding style](#coding-style)
-4. [Support](#support)
-5. [Bug reports](#bug-reports)
+4. [Submitting patches](#submitting-patches)
+    - [Login cookie](#login-cookie)
+    - [Contributor agreement](#contributor-agreement)
+    - [Testing your code](#testing-your-code)
+    - [Commit message hook](#commit-message-hook)
+    - [Upload your change](#upload-your-change)
+    - [Incorporating Reviewer Comments](#incorporating-reviewer-comments)
+    - [Submitting your change](#submitting-your-change)
+    - [Viewing change status](#viewing-the-status-of-uploaded-changes)
+5. [Support](#support)
+6. [Bug reports](#bug-reports)
 
 ## Building the library and applications
 
@@ -39,6 +51,17 @@
  7. Emscripten builds require the portable
    [EMSDK](https://kripken.github.io/emscripten-site/index.html).
 
+### Get the code
+
+The AV1 library source code is stored in the Alliance for Open Media Git
+repository:
+
+~~~
+    $ git clone https://aomedia.googlesource.com/aom
+    # By default, the above command stores the source in the aom directory:
+    $ cd aom
+~~~
+
 ### Basic build
 
 CMake replaces the configure step typical of many projects. Running CMake will
@@ -46,8 +69,10 @@ produce configuration and build files for the currently selected CMake
 generator. For most systems the default generator is Unix Makefiles. The basic
 form of a makefile build is the following:
 
+~~~
     $ cmake path/to/aom
     $ make
+~~~
 
 The above will generate a makefile build that produces the AV1 library and
 applications for the current host system after the make step completes
@@ -247,7 +272,9 @@ appropriately using the emsdk\_env script.
 
 ### Testing basics
 
-Currently there are two types of tests in the AV1 codec repository.
+There are several methods of testing the AV1 codec. All of these methods require
+the presence of the AV1 source code and a working build of the AV1 library and
+applications.
 
 #### 1. Unit tests:
 
@@ -278,6 +305,57 @@ The example tests require a bash shell and can be run in the following manner:
     $ path/to/aom/test/examples.sh --bin-path examples
 ~~~
 
+#### 3. Encoder tests:
+
+When making a change to the encoder run encoder tests to confirm that your
+change has a positive or negligible impact on encode quality. When running these
+tests the build configuration should be changed to enable internal encoder
+statistics:
+
+~~~
+    $ cmake path/to/aom -DCONFIG_INTERNAL_STATS=1
+    $ make
+~~~
+
+The repository contains scripts intended to make running these tests as simple
+as possible. The following example demonstrates creating a set of baseline clips
+for comparison to results produced after making your change to libaom:
+
+~~~
+    # This will encode all Y4M files in the current directory using the
+    # settings specified to create the encoder baseline statistical data:
+    $ cd path/to/test/inputs
+    # This command line assumes that run_encodes.sh, its helper script
+    # best_encode.sh, and the aomenc you intend to test are all within a
+    # directory in your PATH.
+    $ run_encodes.sh 200 500 50 baseline
+~~~
+
+After making your change and creating the baseline clips, you'll need to run
+encodes that include your change(s) to confirm that things are working as
+intended:
+
+~~~
+    # This will encode all Y4M files in the current directory using the
+    # settings specified to create the statistical data for your change:
+    $ cd path/to/test/inputs
+    # This command line assumes that run_encodes.sh, its helper script
+    # best_encode.sh, and the aomenc you intend to test are all within a
+    # directory in your PATH.
+    $ run_encodes.sh 200 500 50 mytweak
+~~~
+
+After creating both data sets you can use `test/visual_metrics.py` to generate a
+report that can be viewed in a web browser:
+
+~~~
+    $ visual_metrics.py metrics_template.html "*stt" baseline mytweak \
+      > mytweak.html
+~~~
+
+You can view the report by opening mytweak.html in a web browser.
+
+
 ### IDE hosted tests
 
 By default the generated projects files created by CMake will not include the
@@ -307,6 +385,13 @@ rule:
 ~~~
 
 The above make command will only download and verify the test data.
+
+### Additional test data
+
+The test data mentioned above is strictly intended for unit testing.
+
+Additional input data for testing the encoder can be obtained from:
+https://media.xiph.org/video/derf/
 
 ### Sharded testing
 
@@ -347,8 +432,20 @@ is the default maximum value.
 
 ## Coding style
 
+We are using the Google C Coding Style defined by the
+[Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+
 The coding style used by this project is enforced with clang-format using the
-configuration contained in the .clang-format file in the root of the repository.
+configuration contained in the
+[.clang-format](https://chromium.googlesource.com/webm/aom/+/master/.clang-format)
+file in the root of the repository.
+
+You can download clang-format using your system's package manager, or directly
+from [llvm.org](http://llvm.org/releases/download.html). You can also view the
+[documentation](https://clang.llvm.org/docs/ClangFormat.html) on llvm.org.
+Output from clang-format varies by clang-format version, for best results your
+version should match the one used on Jenkins. You can find the clang-format
+version by reading the comment in the `.clang-format` file linked above.
 
 Before pushing changes for review you can format your code with:
 
@@ -361,7 +458,116 @@ Before pushing changes for review you can format your code with:
 Check the .clang-format file for the version used to generate it if there is any
 difference between your local formatting and the review system.
 
-See also: http://clang.llvm.org/docs/ClangFormat.html
+Some Git installations have clang-format integration. Here are some examples:
+
+~~~
+    # Apply clang-format to all staged changes:
+    $ git clang-format
+
+    # Clang format all staged and unstaged changes:
+    $ git clang-format -f
+
+    # Clang format all staged and unstaged changes interactively:
+    $ git clang-format -f -p
+~~~
+
+## Submitting patches
+
+We manage the submission of patches using the
+[Gerrit](https://www.gerritcodereview.com/) code review tool. This tool
+implements a workflow on top of the Git version control system to ensure that
+all changes get peer reviewed and tested prior to their distribution.
+
+### Login cookie
+
+Browse to [AOMedia Git index](https://aomedia.googlesource.com/) and login with
+your account (Gmail credentials, for example). Next, follow the
+`Generate Password` Password link at the top of the page. You’ll be given
+instructions for creating a cookie to use with our Git repos.
+
+### Contributor agreement
+
+You will be required to execute a
+[contributor agreement](http://aomedia.org/license) to ensure that the AOMedia
+Project has the right to distribute your changes.
+
+### Testing your code
+
+The testing basics are covered in the [testing section](#testing-the-av1-codec)
+above.
+
+In addition to the local tests, many more (e.g. asan, tsan, valgrind) will run
+through Jenkins instances upon upload to gerrit.
+
+### Commit message hook
+
+Gerrit requires that each submission include a unique Change-Id. You can assign
+one manually using git commit --amend, but it’s easier to automate it with the
+commit-msg hook provided by Gerrit.
+
+Copy commit-msg to the `.git/hooks` directory of your local repo. Here's an
+example:
+
+~~~
+    $ curl -Lo aom/.git/hooks/commit-msg https://chromium-review.googlesource.com/tools/hooks/commit-msg
+
+    # Next, ensure that the downloaded commit-msg script is executable:
+    $ chmod u+x aom/.git/hooks/commit-msg
+~~~
+
+See the Gerrit
+[documentation](https://gerrit-review.googlesource.com/Documentation/user-changeid.html)
+for more information.
+
+### Upload your change
+
+The command line to upload your patch looks like this:
+
+~~~
+    $ git push https://aomedia-review.googlesource.com/aom HEAD:refs/for/master
+~~~
+
+### Incorporating reviewer comments
+
+If you previously uploaded a change to Gerrit and the Approver has asked for
+changes, follow these steps:
+
+1. Edit the files to make the changes the reviewer has requested.
+2. Recommit your edits using the --amend flag, for example:
+
+~~~
+   $ git commit -a --amend
+~~~
+
+3. Use the same git push command as above to upload to Gerrit again for another
+   review cycle.
+
+In general, you should not rebase your changes when doing updates in response to
+review. Doing so can make it harder to follow the evolution of your change in
+the diff view.
+
+### Submitting your change
+
+Once your change has been Approved and Verified, you can “submit” it through the
+Gerrit UI. This will usually automatically rebase your change onto the branch
+specified.
+
+Sometimes this can’t be done automatically. If you run into this problem, you
+must rebase your changes manually:
+
+~~~
+    $ git fetch
+    $ git rebase origin/branchname
+~~~
+
+If there are any conflicts, resolve them as you normally would with Git. When
+you’re done, reupload your change.
+
+### Viewing the status of uploaded changes
+
+To check the status of a change that you uploaded, open
+[Gerrit](https://aomedia-review.googlesource.com/), sign in, and click My >
+Changes.
 
 ## Support
 
