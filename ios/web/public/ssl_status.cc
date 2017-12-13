@@ -9,7 +9,6 @@ namespace web {
 SSLStatus::SSLStatus()
     : security_style(SECURITY_STYLE_UNKNOWN),
       cert_status(0),
-      connection_status(0),
       content_status(NORMAL_CONTENT) {
 }
 
@@ -17,7 +16,6 @@ SSLStatus::SSLStatus(const SSLStatus& other)
     : security_style(other.security_style),
       certificate(other.certificate),
       cert_status(other.cert_status),
-      connection_status(other.connection_status),
       content_status(other.content_status),
       cert_status_host(other.cert_status_host),
       user_data(other.user_data ? other.user_data->Clone() : nullptr) {}
@@ -26,7 +24,6 @@ SSLStatus& SSLStatus::operator=(SSLStatus other) {
   security_style = other.security_style;
   certificate = other.certificate;
   cert_status = other.cert_status;
-  connection_status = other.connection_status;
   content_status = other.content_status;
   cert_status_host = other.cert_status_host;
   user_data = other.user_data ? other.user_data->Clone() : nullptr;
