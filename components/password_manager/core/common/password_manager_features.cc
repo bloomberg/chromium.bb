@@ -78,7 +78,7 @@ const base::Feature kPasswordExport = {"password-export",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls the ability to import passwords from Chrome's settings page.
-const base::Feature kPasswordImport = {"password-import",
+const base::Feature kPasswordImport = {"PasswordImport",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Control whether users can view and copy passwords. This is only used for
