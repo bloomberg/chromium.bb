@@ -308,6 +308,7 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
     <label id="PASS"><input type="checkbox">Pass <span></span></label>
     <label id="WONTFIX"><input type="checkbox">WontFix <span></span></label>
     <label id="MISSING"><input type="checkbox">Missing <span></span></label>
+    <label id="LEAK"><input type="checkbox">Leak <span></span></label>
   </div>
 </div>
 
@@ -348,13 +349,14 @@ const TestResultInformation = {
   "IMAGE":      { index: 4, text: "Failure", isFailure: true, isSuccess: false },
   "IMAGE+TEXT": { index: 5, text: "Failure", isFailure: true, isSuccess: false },
   "TIMEOUT":    { index: 6, text: "Timeout", isFailure: true, isSuccess: false },
-  "SLOW":       { index: 7, text: "Slow", isFailure: false, isSuccess: true },
-  "SKIP":       { index: 8, text: "Skip", isFailure: false, isSuccess: false },
-  "MISSING":    { index: 9, text: "Missing", isFailure: false, isSuccess: false },
-  "WONTFIX":    { index: 10, text: "WontFix", isFailure: false, isSuccess: false },
-  "NEEDSMANUALREBASELINE": { index: 11, text: "NeedsManualRebaseline", isFailure: false, isSuccess: false },
-  "PASS":       { index: 12, text: "Pass", isFailure: false, isSuccess: true },
-  "NOTRUN":     { index: 13, text: "NOTRUN", isFailure: false, isSuccess: true }
+  "LEAK":       { index: 7, text: "LEAK", isFailure: true, isSuccess: false },
+  "SLOW":       { index: 8, text: "Slow", isFailure: false, isSuccess: true },
+  "SKIP":       { index: 9, text: "Skip", isFailure: false, isSuccess: false },
+  "MISSING":    { index: 10, text: "Missing", isFailure: false, isSuccess: false },
+  "WONTFIX":    { index: 11, text: "WontFix", isFailure: false, isSuccess: false },
+  "NEEDSMANUALREBASELINE": { index: 12, text: "NeedsManualRebaseline", isFailure: false, isSuccess: false },
+  "PASS":       { index: 13, text: "Pass", isFailure: false, isSuccess: true },
+  "NOTRUN":     { index: 14, text: "NOTRUN", isFailure: false, isSuccess: true }
 };
 
 // Sorted from worst to best.
@@ -674,6 +676,10 @@ const Report = {
           toolbars.push(new TextResultsToolbar().createDom(test));
           toolbars.push(new ImageResultsToolbar().createDom(test));
           break;
+        case "LEAK":
+          toolbars.push(new SimpleLinkToolbar().createDom(
+            pathParser.resultLink("-leak-log.txt"), "Leak log", "leak log"));
+          break;
         default:
           console.error("unexpected actual", test.actual);
       }
@@ -858,7 +864,8 @@ const Filters = {
         return false;
       case "CRASH":
       case "TIMEOUT":
-        if (test.expected.indexOf(test.actualFinal) != -1)
+      case "LEAK":
+        if (test.expectedMap.has(test.actualFinal))
           return false;
         break;
       case "TEXT":
