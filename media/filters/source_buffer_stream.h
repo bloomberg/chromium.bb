@@ -225,9 +225,14 @@ class MEDIA_EXPORT SourceBufferStream {
   void PruneTrackBuffer(const DecodeTimestamp timestamp);
 
   // Checks to see if |range_with_new_buffers_itr| can be merged with the range
-  // next to it, and merges them if so.
+  // next to it, and merges them if so while preserving correctness of
+  // |range_for_next_append_| and |selected_range_|.
   void MergeWithAdjacentRangeIfNecessary(
       const typename RangeList::iterator& range_with_new_buffers_itr);
+
+  // Merges any adjacent ranges while preserving correctness of
+  // |range_for_next_append_| and |selected_range_|.
+  void MergeAllAdjacentRanges();
 
   // Returns true if |next_gop_timestamp| follows
   // |highest_timestamp_in_append_sequence_| within fudge room.
@@ -285,8 +290,9 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // Measures the distances between buffer decode timestamps and tracks the max.
   // This enables a reasonable approximation of adjacency fudge room, even for
-  // out-of-order PTS vs DTS sequences.
-  void UpdateMaxInterbufferDtsDistance(const BufferQueue& buffers);
+  // out-of-order PTS vs DTS sequences. Returns true if
+  // |max_interbuffer_distance_| was changed.
+  bool UpdateMaxInterbufferDtsDistance(const BufferQueue& buffers);
 
   // Sets the config ID for each buffer to |append_config_index_|.
   void SetConfigIds(const BufferQueue& buffers);

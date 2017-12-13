@@ -5477,6 +5477,62 @@ TEST_P(SourceBufferStreamTest, RangeIsNextInPTS_OutOfOrder) {
   CheckIsNextInPTSSequenceWithFirstRange(1181, false);
 }
 
+TEST_P(SourceBufferStreamTest, RangeCoalescenceOnFudgeRoomIncrease_1) {
+  // Change the fudge room (by increasing frame duration) and verify coalescence
+  // behavior.
+  NewCodedFrameGroupAppend("0K 10K");
+  NewCodedFrameGroupAppend("100K 110K");
+  NewCodedFrameGroupAppend("500K 510K");
+  CheckExpectedRangesByTimestamp("{ [0,20) [100,120) [500,520) }");
+
+  // Increase the fudge room almost enough to merge the first two buffered
+  // ranges.
+  NewCodedFrameGroupAppend("1000D44K");
+  CheckExpectedRangesByTimestamp("{ [0,20) [100,120) [500,520) [1000,1044) }");
+
+  // Increase the fudge room again to merge the first two buffered ranges.
+  NewCodedFrameGroupAppend("2000D45K");
+  CheckExpectedRangesByTimestamp(
+      "{ [0,120) [500,520) [1000,1044) [2000,2045) }");
+
+  SeekToTimestampMs(0);
+  CheckExpectedBuffers("0K 10K 100K 110K");
+  CheckNoNextBuffer();
+  SeekToTimestampMs(500);
+  CheckExpectedBuffers("500K 510K");
+  CheckNoNextBuffer();
+  SeekToTimestampMs(1000);
+  CheckExpectedBuffers("1000K");
+  CheckNoNextBuffer();
+  SeekToTimestampMs(2000);
+  CheckExpectedBuffers("2000K");
+  CheckNoNextBuffer();
+}
+
+TEST_P(SourceBufferStreamTest, RangeCoalescenceOnFudgeRoomIncrease_2) {
+  // Change the fudge room (by increasing frame duration) and verify coalescence
+  // behavior.
+  NewCodedFrameGroupAppend("0K 10K");
+  NewCodedFrameGroupAppend("40K 50K 60K");
+  CheckExpectedRangesByTimestamp("{ [0,20) [40,70) }");
+
+  // Increase the fudge room to merge the first two buffered ranges.
+  NewCodedFrameGroupAppend("1000D20K");
+  CheckExpectedRangesByTimestamp("{ [0,70) [1000,1020) }");
+
+  // Try to trigger unsorted ranges, as might occur if the first two buffered
+  // ranges were not correctly coalesced.
+  NewCodedFrameGroupAppend("45D10K");
+
+  CheckExpectedRangesByTimestamp("{ [0,70) [1000,1020) }");
+  SeekToTimestampMs(0);
+  CheckExpectedBuffers("0K 10K 40K 45K 60K");
+  CheckNoNextBuffer();
+  SeekToTimestampMs(1000);
+  CheckExpectedBuffers("1000K");
+  CheckNoNextBuffer();
+}
+
 INSTANTIATE_TEST_CASE_P(LegacyByDts,
                         SourceBufferStreamTest,
                         Values(BufferingApi::kLegacyByDts));
