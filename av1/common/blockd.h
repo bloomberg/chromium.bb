@@ -396,6 +396,7 @@ static INLINE PREDICTION_MODE get_y_mode(const MODE_INFO *mi, int block) {
 
 #if CONFIG_CFL
 static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
+  assert(mode < UV_INTRA_MODES);
   static const PREDICTION_MODE uv2y[UV_INTRA_MODES] = {
     DC_PRED,        // UV_DC_PRED
     V_PRED,         // UV_V_PRED
