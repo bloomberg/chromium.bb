@@ -42,7 +42,6 @@ class CSSStyleSheet;
 class Document;
 class EnumerationHistogram;
 class ExecutionContext;
-class KURL;
 class LocalFrame;
 class StyleSheetContents;
 // Definition for UseCounter features can be found in:
@@ -65,6 +64,10 @@ class CORE_EXPORT UseCounter {
   DISALLOW_NEW();
 
  public:
+  // The context determines whether a feature is reported to UMA histograms. For
+  // example, when the context is set to kDisabledContext, no features will be
+  // reported to UMA, but features may still be marked as seen to avoid multiple
+  // console warnings for deprecation.
   enum Context {
     kDefaultContext,
     // Counters for SVGImages (lifetime independent from other pages).
@@ -123,7 +126,7 @@ class CORE_EXPORT UseCounter {
   void AddObserver(Observer*);
 
   // Invoked when a new document is loaded into the main frame of the page.
-  void DidCommitLoad(const KURL&);
+  void DidCommitLoad(const LocalFrame*);
 
   static int MapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID);
 

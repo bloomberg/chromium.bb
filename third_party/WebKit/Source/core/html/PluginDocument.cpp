@@ -166,9 +166,6 @@ PluginDocument::PluginDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer, kPluginDocumentClass) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
-  UseCounter::Count(*this, WebFeature::kPluginDocument);
-  if (!IsInMainFrame())
-    UseCounter::Count(*this, WebFeature::kPluginDocumentInFrame);
 }
 
 DocumentParser* PluginDocument::CreateParser() {

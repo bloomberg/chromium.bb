@@ -1165,9 +1165,8 @@ void LocalFrame::ForceSynchronousDocumentInstall(
   GetDocument()->Parser()->Finish();
 
   // Upon loading of the page, log PageVisits in UseCounter.
-  KURL url = GetDocument()->Url();
-  if (Client() && Client()->ShouldTrackUseCounter(url))
-    GetPage()->GetUseCounter().DidCommitLoad(url);
+  if (GetPage())
+    GetPage()->GetUseCounter().DidCommitLoad(this);
 }
 
 }  // namespace blink
