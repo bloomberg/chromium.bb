@@ -1497,6 +1497,72 @@ bool AXObject::SupportsARIAActiveDescendant() const {
   }
 }
 
+bool AXObject::SupportsARIAExpanded() const {
+  switch (AriaRoleAttribute()) {
+    case kAlertDialogRole:
+    case kAlertRole:
+    case kArticleRole:
+    case kBannerRole:
+    case kButtonRole:
+    case kCellRole:
+    case kColumnHeaderRole:
+    case kComboBoxGroupingRole:
+    case kComboBoxMenuButtonRole:
+    case kComplementaryRole:
+    case kContentInfoRole:
+    case kDefinitionRole:
+    case kDialogRole:
+    case kDirectoryRole:
+    case kDisclosureTriangleRole:
+    case kDocumentRole:
+    case kFeedRole:
+    case kFigureRole:
+    case kFormRole:
+    case kGridRole:
+    case kGroupRole:
+    case kHeadingRole:
+    case kImageRole:
+    case kListRole:
+    case kListBoxRole:
+    case kListBoxOptionRole:
+    case kListItemRole:
+    case kLinkRole:
+    case kLogRole:
+    case kMainRole:
+    case kMarqueeRole:
+    case kMathRole:
+    case kMenuRole:
+    case kMenuBarRole:
+    case kMenuButtonRole:
+    case kMenuItemRole:
+    case kMenuItemCheckBoxRole:
+    case kMenuItemRadioRole:
+    case kNavigationRole:
+    case kNoteRole:
+    case kProgressIndicatorRole:
+    case kRadioGroupRole:
+    case kRegionRole:
+    case kRowRole:
+    case kRowHeaderRole:
+    case kSearchRole:
+    case kStatusRole:
+    case kTabRole:
+    case kTableRole:
+    case kTabPanelRole:
+    case kTermRole:
+    case kTextFieldWithComboBoxRole:
+    case kTimerRole:
+    case kToolbarRole:
+    case kUserInterfaceTooltipRole:
+    case kTreeRole:
+    case kTreeGridRole:
+    case kTreeItemRole:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool AXObject::SupportsARIAAttributes() const {
   return IsLiveRegion() || SupportsARIADragging() || SupportsARIADropping() ||
          SupportsARIAFlowTo() || SupportsARIAOwns() ||

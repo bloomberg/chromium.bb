@@ -1029,6 +1029,9 @@ AXRestriction AXNodeObject::Restriction() const {
 }
 
 AccessibilityExpanded AXNodeObject::IsExpanded() const {
+  if (!SupportsARIAExpanded())
+    return kExpandedUndefined;
+
   if (GetNode() && IsHTMLSummaryElement(*GetNode())) {
     if (GetNode()->parentNode() &&
         IsHTMLDetailsElement(GetNode()->parentNode()))

@@ -4,3 +4,6 @@ rootWebArea
 ++++menuItem haspopup name='Open'
 ++++menuItem collapsed name='Save'
 ++++menuItem name='Quit'
+++splitter horizontal
+++splitter horizontal
+++splitter horizontal
