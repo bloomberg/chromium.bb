@@ -339,17 +339,18 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   bool CanDeleteRange(const EphemeralRange&) const;
 
-  bool TryDHTMLCopy();
-  bool TryDHTMLCut();
-  bool TryDHTMLPaste(PasteMode);
+  // Returns true if Editor should continue with default processing.
+  bool DispatchCopyEvent();
+  bool DispatchCutEvent();
+  bool DispatchPasteEvent(PasteMode);
+  bool DispatchClipboardEvent(const AtomicString&,
+                              DataTransferAccessPolicy,
+                              PasteMode = kAllMimeTypes);
 
   bool CanSmartReplaceWithPasteboard(Pasteboard*);
   void PasteAsPlainTextWithPasteboard(Pasteboard*);
   void PasteWithPasteboard(Pasteboard*);
   void WriteSelectionToPasteboard();
-  bool DispatchCPPEvent(const AtomicString&,
-                        DataTransferAccessPolicy,
-                        PasteMode = kAllMimeTypes);
 
   void RevealSelectionAfterEditingOperation(
       const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded);
