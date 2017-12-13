@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 
 class TabStripModel;
 
@@ -22,7 +23,9 @@ namespace resource_coordinator {
 class TabLifecycleObserver;
 
 // Represents a tab.
-class TabLifecycleUnit : public LifecycleUnit, public TabLifecycleUnitExternal {
+class TabLifecycleUnitSource::TabLifecycleUnit
+    : public LifecycleUnit,
+      public TabLifecycleUnitExternal {
  public:
   // |observers| is a list of observers to notify when the discarded state or
   // the auto-discardable state of this tab changes. It can be modified outside

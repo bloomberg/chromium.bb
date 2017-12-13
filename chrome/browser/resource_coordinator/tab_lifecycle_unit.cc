@@ -14,7 +14,7 @@
 
 namespace resource_coordinator {
 
-TabLifecycleUnit::TabLifecycleUnit(
+TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     base::ObserverList<TabLifecycleObserver>* observers,
     content::WebContents* web_contents,
     TabStripModel* tab_strip_model)
@@ -26,19 +26,21 @@ TabLifecycleUnit::TabLifecycleUnit(
   DCHECK(tab_strip_model_);
 }
 
-TabLifecycleUnit::~TabLifecycleUnit() = default;
+TabLifecycleUnitSource::TabLifecycleUnit::~TabLifecycleUnit() = default;
 
-void TabLifecycleUnit::SetTabStripModel(TabStripModel* tab_strip_model) {
+void TabLifecycleUnitSource::TabLifecycleUnit::SetTabStripModel(
+    TabStripModel* tab_strip_model) {
   DCHECK(tab_strip_model);
   tab_strip_model = tab_strip_model_;
 }
 
-void TabLifecycleUnit::SetWebContents(content::WebContents* web_contents) {
+void TabLifecycleUnitSource::TabLifecycleUnit::SetWebContents(
+    content::WebContents* web_contents) {
   DCHECK(web_contents);
   web_contents_ = web_contents;
 }
 
-void TabLifecycleUnit::SetFocused(bool focused) {
+void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
   const bool was_focused = last_focused_time_ == base::TimeTicks::Max();
   if (focused == was_focused)
     return;
@@ -47,11 +49,11 @@ void TabLifecycleUnit::SetFocused(bool focused) {
   // TODO(fdoray): Reload the tab if discarded. https://crbug.com/775644
 }
 
-base::string16 TabLifecycleUnit::GetTitle() const {
+base::string16 TabLifecycleUnitSource::TabLifecycleUnit::GetTitle() const {
   return GetWebContents()->GetTitle();
 }
 
-std::string TabLifecycleUnit::GetIconURL() const {
+std::string TabLifecycleUnitSource::TabLifecycleUnit::GetIconURL() const {
   auto* last_committed_entry =
       GetWebContents()->GetController().GetLastCommittedEntry();
   if (!last_committed_entry)
@@ -60,38 +62,45 @@ std::string TabLifecycleUnit::GetIconURL() const {
   return favicon.valid ? favicon.url.spec() : std::string();
 }
 
-LifecycleUnit::SortKey TabLifecycleUnit::GetSortKey() const {
+LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
+    const {
   return SortKey(last_focused_time_);
 }
 
-LifecycleUnit::State TabLifecycleUnit::GetState() const {
+LifecycleUnit::State TabLifecycleUnitSource::TabLifecycleUnit::GetState()
+    const {
   return state_;
 }
 
-int TabLifecycleUnit::GetEstimatedMemoryFreedOnDiscardKB() const {
+int TabLifecycleUnitSource::TabLifecycleUnit::
+    GetEstimatedMemoryFreedOnDiscardKB() const {
   // TODO(fdoray): Implement this. https://crbug.com/775644
   return 0;
 }
 
-bool TabLifecycleUnit::CanDiscard(DiscardReason reason) const {
+bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
+    DiscardReason reason) const {
   // TODO(fdoray): Implement this. https://crbug.com/775644
   return false;
 }
 
-bool TabLifecycleUnit::Discard(DiscardReason discard_reason) {
+bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
+    DiscardReason discard_reason) {
   // TODO(fdoray): Implement this. https://crbug.com/775644
   return false;
 }
 
-content::WebContents* TabLifecycleUnit::GetWebContents() const {
+content::WebContents* TabLifecycleUnitSource::TabLifecycleUnit::GetWebContents()
+    const {
   return web_contents_;
 }
 
-bool TabLifecycleUnit::IsAutoDiscardable() const {
+bool TabLifecycleUnitSource::TabLifecycleUnit::IsAutoDiscardable() const {
   return auto_discardable_;
 }
 
-void TabLifecycleUnit::SetAutoDiscardable(bool auto_discardable) {
+void TabLifecycleUnitSource::TabLifecycleUnit::SetAutoDiscardable(
+    bool auto_discardable) {
   if (auto_discardable_ == auto_discardable)
     return;
   auto_discardable_ = auto_discardable;
@@ -99,11 +108,11 @@ void TabLifecycleUnit::SetAutoDiscardable(bool auto_discardable) {
     observer.OnAutoDiscardableStateChange(GetWebContents(), auto_discardable_);
 }
 
-void TabLifecycleUnit::DiscardTab() {
+void TabLifecycleUnitSource::TabLifecycleUnit::DiscardTab() {
   Discard(DiscardReason::kExternal);
 }
 
-bool TabLifecycleUnit::IsDiscarded() const {
+bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {
   return GetState() == State::DISCARDED;
 }
 

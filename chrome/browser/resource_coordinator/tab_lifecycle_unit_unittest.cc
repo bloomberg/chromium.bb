@@ -11,6 +11,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_impl.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
@@ -43,6 +44,8 @@ class MockTabLifecycleObserver : public TabLifecycleObserver {
 
 class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
+  using TabLifecycleUnit = TabLifecycleUnitSource::TabLifecycleUnit;
+
   TabLifecycleUnitTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {
     observers_.AddObserver(&observer_);
   }
