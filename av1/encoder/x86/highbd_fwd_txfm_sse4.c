@@ -13,9 +13,9 @@
 
 #include "./av1_rtcd.h"
 #include "./aom_config.h"
-#include "av1/common/av1_fwd_txfm1d_cfg.h"
 #include "av1/common/av1_txfm.h"
 #include "av1/common/x86/highbd_txfm_utility_sse4.h"
+#include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 #include "aom_dsp/txfm_common.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
 #include "aom_ports/mem.h"

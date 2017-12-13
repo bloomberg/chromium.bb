@@ -15,9 +15,9 @@
 #include "./av1_rtcd.h"
 #include "aom_dsp/txfm_common.h"
 #include "av1/common/enums.h"
-#include "av1/common/av1_fwd_txfm1d.h"
-#include "av1/common/av1_fwd_txfm1d_cfg.h"
 #include "av1/common/av1_txfm.h"
+#include "av1/encoder/av1_fwd_txfm1d.h"
+#include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 
 static INLINE TxfmFunc fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {

@@ -12,7 +12,7 @@
 #ifndef AV1_FWD_TXFM2D_CFG_H_
 #define AV1_FWD_TXFM2D_CFG_H_
 #include "av1/common/enums.h"
-#include "av1/common/av1_fwd_txfm1d.h"
+#include "av1/encoder/av1_fwd_txfm1d.h"
 
 //  ---------------- 4x4 1D constants -----------------------
 // shift

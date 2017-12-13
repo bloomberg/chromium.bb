@@ -12,7 +12,7 @@
 #include "./av1_rtcd.h"
 #include "av1/common/enums.h"
 #include "av1/common/av1_txfm.h"
-#include "av1/common/x86/av1_txfm1d_sse4.h"
+#include "av1/encoder/x86/av1_txfm1d_sse4.h"
 
 static INLINE void int16_array_with_stride_to_int32_array_without_stride(
     const int16_t *input, int stride, int32_t *output, int txfm1d_size) {

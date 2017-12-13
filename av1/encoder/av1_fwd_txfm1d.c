@@ -11,7 +11,7 @@
 
 #include <stdlib.h>
 #include "aom_dsp/inv_txfm.h"
-#include "av1/common/av1_fwd_txfm1d.h"
+#include "av1/encoder/av1_fwd_txfm1d.h"
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
 
 void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,

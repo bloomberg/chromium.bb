@@ -18,13 +18,13 @@
 #include "aom_dsp/fwd_txfm.h"
 #include "aom_ports/mem.h"
 #include "av1/common/blockd.h"
-#include "av1/common/av1_fwd_txfm1d.h"
-#include "av1/common/av1_fwd_txfm1d_cfg.h"
 #include "av1/common/idct.h"
 #if CONFIG_DAALA_TX4 || CONFIG_DAALA_TX8 || CONFIG_DAALA_TX16 || \
     CONFIG_DAALA_TX32 || CONFIG_DAALA_TX64
 #include "av1/common/daala_tx.h"
 #endif
+#include "av1/encoder/av1_fwd_txfm1d.h"
+#include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 
 static INLINE void range_check(const tran_low_t *input, const int size,
                                const int bit) {

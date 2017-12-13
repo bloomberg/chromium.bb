@@ -18,6 +18,10 @@ AV1_CX_SRCS_REMOVE-no  += $(AV1_COMMON_SRCS_REMOVE-no)
 
 AV1_CX_SRCS-yes += av1_cx_iface.c
 
+AV1_CX_SRCS-yes += encoder/av1_fwd_txfm1d.c
+AV1_CX_SRCS-yes += encoder/av1_fwd_txfm1d.h
+AV1_CX_SRCS-yes += encoder/av1_fwd_txfm1d_cfg.h
+AV1_CX_SRCS-yes += encoder/av1_fwd_txfm2d.c
 AV1_CX_SRCS-yes += encoder/av1_quantize.c
 AV1_CX_SRCS-yes += encoder/av1_quantize.h
 AV1_CX_SRCS-yes += encoder/bitstream.c
@@ -137,8 +141,10 @@ endif
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/dct_intrin_sse2.c
 AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/hybrid_fwd_txfm_avx2.c
 
+AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/av1_fwd_txfm1d_sse4.c
+AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/av1_fwd_txfm2d_sse4.c
 AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/av1_highbd_quantize_sse4.c
-
+AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/av1_txfm1d_sse4.h
 AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/highbd_fwd_txfm_sse4.c
 
 AV1_CX_SRCS-yes += encoder/wedge_utils.c

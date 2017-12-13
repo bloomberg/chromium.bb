@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "av1/common/av1_fwd_txfm1d.h"
+#include "av1/encoder/av1_fwd_txfm1d.h"
 #include "test/av1_txfm_test.h"
 
 using libaom_test::ACMRandom;

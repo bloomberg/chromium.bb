@@ -13,8 +13,8 @@
 
 #include "test/av1_txfm_test.h"
 #include "test/util.h"
-#include "av1/common/av1_fwd_txfm1d.h"
 #include "av1/common/av1_inv_txfm1d.h"
+#include "av1/encoder/av1_fwd_txfm1d.h"
 
 using libaom_test::ACMRandom;
 using libaom_test::input_base;

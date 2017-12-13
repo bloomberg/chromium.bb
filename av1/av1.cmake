@@ -15,11 +15,6 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/av1_iface_common.h"
     "${AOM_ROOT}/av1/common/alloccommon.c"
     "${AOM_ROOT}/av1/common/alloccommon.h"
-    # TODO(tomfinegan): Foward transform belongs in encoder.
-    "${AOM_ROOT}/av1/common/av1_fwd_txfm1d.c"
-    "${AOM_ROOT}/av1/common/av1_fwd_txfm1d.h"
-    "${AOM_ROOT}/av1/common/av1_fwd_txfm2d.c"
-    "${AOM_ROOT}/av1/common/av1_fwd_txfm1d_cfg.h"
     "${AOM_ROOT}/av1/common/av1_inv_txfm1d.c"
     "${AOM_ROOT}/av1/common/av1_inv_txfm1d.h"
     "${AOM_ROOT}/av1/common/av1_inv_txfm2d.c"
@@ -106,6 +101,10 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/aq_cyclicrefresh.h"
     "${AOM_ROOT}/av1/encoder/aq_variance.c"
     "${AOM_ROOT}/av1/encoder/aq_variance.h"
+    "${AOM_ROOT}/av1/encoder/av1_fwd_txfm1d.c"
+    "${AOM_ROOT}/av1/encoder/av1_fwd_txfm1d.h"
+    "${AOM_ROOT}/av1/encoder/av1_fwd_txfm1d_cfg.h"
+    "${AOM_ROOT}/av1/encoder/av1_fwd_txfm2d.c"
     "${AOM_ROOT}/av1/encoder/av1_quantize.c"
     "${AOM_ROOT}/av1/encoder/av1_quantize.h"
     "${AOM_ROOT}/av1/encoder/bitstream.c"
@@ -179,8 +178,6 @@ set(AOM_AV1_COMMON_INTRIN_SSSE3
 set(AOM_AV1_COMMON_INTRIN_SSE4_1
     "${AOM_ROOT}/av1/common/x86/av1_txfm_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_txfm_sse4.h"
-    "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm1d_sse4.c"
-    "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm2d_sse4.c"
     "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_sse4.c")
 
 set(AOM_AV1_COMMON_INTRIN_AVX2
@@ -213,6 +210,8 @@ set(AOM_AV1_ENCODER_ASM_SSSE3_X86_64
 
 set(AOM_AV1_ENCODER_INTRIN_SSE4_1
     ${AOM_AV1_ENCODER_INTRIN_SSE4_1}
+    "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm1d_sse4.c"
+    "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm2d_sse4.c"
     "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
     "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
 
