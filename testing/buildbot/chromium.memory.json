@@ -37,7 +37,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 30
         },
         "test": "browser_tests"
       },
@@ -67,19 +67,22 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 5
         },
         "test": "components_unittests"
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 4
         },
         "test": "content_browsertests"
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "content_unittests"
       },
@@ -146,7 +149,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 3
+          "shards": 6
         },
         "test": "interactive_ui_tests"
       },
@@ -183,7 +186,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 4
+          "shards": 16
         },
         "test": "net_unittests"
       },
@@ -250,7 +253,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 4
         },
         "test": "unit_tests"
       },
@@ -268,7 +271,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 5
         },
         "test": "webkit_unit_tests"
       },
