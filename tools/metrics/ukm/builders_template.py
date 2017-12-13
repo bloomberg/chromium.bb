@@ -36,14 +36,14 @@ class {event.name} : public ::ukm::internal::UkmEntryBuilderBase {{
   ~{event.name}() override;
 
   static const char kEntryName[];
-  static const uint64_t kEntryNameHash = UINT64_C({event.hash});
+  static constexpr uint64_t kEntryNameHash = UINT64_C({event.hash});
 
 {metric_code}
 }};
 """,
 metric_template="""
   static const char k{metric.name}Name[];
-  static const uint64_t k{metric.name}NameHash = UINT64_C({metric.hash});
+  static constexpr uint64_t k{metric.name}NameHash = UINT64_C({metric.hash});
   {event.name}& Set{metric.name}(int64_t value);
 """)
 
