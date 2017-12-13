@@ -660,6 +660,11 @@ class SSLUITestBase : public InProcessBrowserTest {
         tab->GetInterstitialPage()->GetDelegateForTesting());
   }
 
+  virtual BadClockBlockingPage* GetBadClockBlockingPage(WebContents* tab) {
+    return static_cast<BadClockBlockingPage*>(
+        tab->GetInterstitialPage()->GetDelegateForTesting());
+  }
+
   // Helper function for testing invalid certificate chain reporting.
   void TestBrokenHTTPSReporting(
       certificate_reporting_test_utils::OptIn opt_in,
@@ -761,8 +766,7 @@ class SSLUITestBase : public InProcessBrowserTest {
             expect_report);
 
     ExpectBadClockInterstitial(tab);
-    BadClockBlockingPage* clock_page = static_cast<BadClockBlockingPage*>(
-        tab->GetInterstitialPage()->GetDelegateForTesting());
+    BadClockBlockingPage* clock_page = GetBadClockBlockingPage(tab);
     clock_page->SetSSLCertReporterForTesting(std::move(ssl_cert_reporter));
 
     EXPECT_EQ(std::string(), reporter_callback.GetLatestHostnameReported());
@@ -883,6 +887,18 @@ class SSLUITest : public SSLUITestBase,
           helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
     }
     return SSLUITestBase::GetSSLBlockingPage(tab);
+  }
+
+  BadClockBlockingPage* GetBadClockBlockingPage(WebContents* tab) override {
+    if (IsCommittedInterstitialTest()) {
+      SSLErrorTabHelper* helper = SSLErrorTabHelper::FromWebContents(tab);
+      if (!helper) {
+        return nullptr;
+      }
+      return static_cast<BadClockBlockingPage*>(
+          helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
+    }
+    return SSLUITestBase::GetBadClockBlockingPage(tab);
   }
 
   bool IsCommittedInterstitialTest() const { return GetParam(); }
@@ -1018,11 +1034,9 @@ class SSLUITestWithExtendedReporting : public SSLUITest {
   }
 };
 
-// TODO(estark): enable these tests for committed interstitials, which requires
-// some refactoring of how reporting and metrics work. https://crbug.com/792324
 INSTANTIATE_TEST_CASE_P(,
                         SSLUITestWithExtendedReporting,
-                        ::testing::Values(false));
+                        ::testing::Values(false, true));
 
 class SSLUITestHSTS : public SSLUITest {
  public:
@@ -2107,6 +2121,49 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestDisplaysInsecureForm) {
   CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
                      CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
+}
+
+// Test that a report is sent if the user closes the tab on an interstitial
+// before making a decision to proceed or go back.
+IN_PROC_BROWSER_TEST_P(SSLUITestWithExtendedReporting,
+                       TestBrokenHTTPSReportingCloseTab) {
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  base::RunLoop run_loop;
+  certificate_reporting_test_utils::SSLCertReporterCallback reporter_callback(
+      &run_loop);
+
+  // Opt in to sending reports for invalid certificate chains.
+  certificate_reporting_test_utils::SetCertReportingOptIn(
+      browser(), certificate_reporting_test_utils::EXTENDED_REPORTING_OPT_IN);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_expired_.GetURL("/title1.html"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab != nullptr);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+
+  std::unique_ptr<SSLCertReporter> ssl_cert_reporter =
+      certificate_reporting_test_utils::CreateMockSSLCertReporter(
+          base::Bind(&certificate_reporting_test_utils::
+                         SSLCertReporterCallback::ReportSent,
+                     base::Unretained(&reporter_callback)),
+          certificate_reporting_test_utils::CERT_REPORT_EXPECTED);
+
+  SSLBlockingPage* interstitial_page = GetSSLBlockingPage(tab);
+  ASSERT_TRUE(interstitial_page);
+  interstitial_page->SetSSLCertReporterForTesting(std::move(ssl_cert_reporter));
+
+  EXPECT_EQ(std::string(), reporter_callback.GetLatestHostnameReported());
+
+  // Leave the interstitial by closing the tab.
+  chrome::CloseWebContents(browser(), tab, false);
+  // Check that the mock reporter received a request to send a report.
+  run_loop.Run();
+  EXPECT_EQ(https_server_expired_.GetURL("/title1.html").host(),
+            reporter_callback.GetLatestHostnameReported());
 }
 
 // Test that if the user proceeds and the checkbox is checked, a report

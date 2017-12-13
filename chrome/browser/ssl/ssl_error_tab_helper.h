@@ -29,6 +29,7 @@ class SSLErrorTabHelper
   // WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void WebContentsDestroyed() override;
 
   // Associates |blocking_page| with an SSLErrorTabHelper for the given
   // |web_contents| and |navigation_id|, to manage the |blocking_page|'s

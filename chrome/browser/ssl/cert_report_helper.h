@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/certificate_reporting/error_report.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
@@ -27,7 +28,12 @@ class MetricsHelper;
 class SSLCertReporter;
 
 // CertReportHelper helps SSL interstitials report invalid certificate
-// chains.
+// chains. Its main methods are:
+// - HandleReportingCommands() which processes commands from the interstitial
+// page that are related to certificate reporting: toggling the preference, and
+// proceeding or going back.
+// - FinishCertCollection() which should be called when an interstitial is
+// closing to send a certificate report.
 class CertReportHelper {
  public:
   // Constants for the HTTPSErrorReporter Finch experiment
@@ -56,15 +62,21 @@ class CertReportHelper {
   // the checkbox.
   void PopulateExtendedReportingOption(base::DictionaryValue* load_time_data);
 
-  // Sends a report about an invalid certificate to the
-  // server. |user_proceeded| indicates whether the user clicked through
-  // the interstitial or not, and will be included in the report.
-  void FinishCertCollection(
-      certificate_reporting::ErrorReport::ProceedDecision user_proceeded);
-
   // Allows tests to inject a mock reporter.
   void SetSSLCertReporterForTesting(
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
+
+  // Handles reporting-related commands from the interstitial page: toggling the
+  // report preference, and sending reports on proceed/do not proceed. For
+  // preference-toggling commands, this method updates the corresponding prefs
+  // in |pref_service|. For proceeding/going back, the user action is saved to
+  // be reported when FinishCertCollection() is called.
+  void HandleReportingCommands(
+      security_interstitials::SecurityInterstitialCommand command,
+      PrefService* pref_service);
+
+  // Sends a report about an invalid certificate to the server.
+  void FinishCertCollection();
 
  private:
   // Checks whether a checkbox should be shown on the page that allows
@@ -96,6 +108,12 @@ class CertReportHelper {
   const base::Time interstitial_time_;
   // Helpful for recording metrics about cert reports.
   security_interstitials::MetricsHelper* metrics_helper_;
+  // Default to DID_NOT_PROCEED. If no user action is processed via
+  // HandleReportingCommands() before FinishCertCollection(), then act as if the
+  // user did not proceed for reporting purposes -- e.g. closing the tab without
+  // taking an action on the interstitial is counted as not proceeding.
+  certificate_reporting::ErrorReport::ProceedDecision user_action_ =
+      certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED;
 
   DISALLOW_COPY_AND_ASSIGN(CertReportHelper);
 };

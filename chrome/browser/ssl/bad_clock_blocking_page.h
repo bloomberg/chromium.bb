@@ -11,13 +11,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/ssl/ssl_blocking_page_base.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
-#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
 
-class CertReportHelper;
 class GURL;
 
 namespace security_interstitials {
@@ -28,8 +27,7 @@ class BadClockUI;
 // occurs when an SSL error is triggered by a clock misconfiguration. It
 // creates the UI using security_interstitials::BadClockUI and then
 // displays it. It deletes itself when the interstitial page is closed.
-class BadClockBlockingPage
-    : public security_interstitials::SecurityInterstitialPage {
+class BadClockBlockingPage : public SSLBlockingPageBase {
  public:
   // Interstitial type, used in tests.
   static const InterstitialPageDelegate::TypeID kTypeForTesting;
@@ -73,7 +71,6 @@ class BadClockBlockingPage
   base::Callback<void(content::CertificateRequestResultType)> callback_;
   const net::SSLInfo ssl_info_;
 
-  const std::unique_ptr<CertReportHelper> cert_report_helper_;
   const std::unique_ptr<security_interstitials::BadClockUI> bad_clock_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(BadClockBlockingPage);
