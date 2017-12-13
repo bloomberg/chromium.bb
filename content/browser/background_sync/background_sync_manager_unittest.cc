@@ -1339,8 +1339,7 @@ TEST_F(BackgroundSyncManagerTest, LastChance) {
   InitFailedSyncEventTest();
 
   EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_EQ(blink::mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
-            test_background_sync_manager_->last_chance());
+  EXPECT_FALSE(test_background_sync_manager_->last_chance());
   EXPECT_TRUE(GetRegistration(sync_options_1_));
 
   // Run it again.
@@ -1348,8 +1347,7 @@ TEST_F(BackgroundSyncManagerTest, LastChance) {
   test_background_sync_manager_->RunDelayedTask();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetRegistration(sync_options_1_));
-  EXPECT_EQ(blink::mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE,
-            test_background_sync_manager_->last_chance());
+  EXPECT_TRUE(test_background_sync_manager_->last_chance());
 }
 
 }  // namespace content

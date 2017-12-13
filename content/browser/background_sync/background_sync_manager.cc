@@ -270,12 +270,7 @@ void BackgroundSyncManager::EmulateDispatchSyncEvent(
     bool last_chance,
     const ServiceWorkerVersion::LegacyStatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DispatchSyncEvent(
-      tag, std::move(active_version),
-      last_chance
-          ? blink::mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE
-          : blink::mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
-      callback);
+  DispatchSyncEvent(tag, std::move(active_version), last_chance, callback);
 }
 
 BackgroundSyncManager::BackgroundSyncManager(
@@ -761,7 +756,7 @@ void BackgroundSyncManager::GetDataFromBackend(
 void BackgroundSyncManager::DispatchSyncEvent(
     const std::string& tag,
     scoped_refptr<ServiceWorkerVersion> active_version,
-    blink::mojom::BackgroundSyncEventLastChance last_chance,
+    bool last_chance,
     const ServiceWorkerVersion::LegacyStatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(active_version);
@@ -998,10 +993,8 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
 
   num_firing_registrations_ += 1;
 
-  blink::mojom::BackgroundSyncEventLastChance last_chance =
-      registration->num_attempts() == parameters_->max_sync_attempts - 1
-          ? blink::mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE
-          : blink::mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
+  const bool last_chance =
+      registration->num_attempts() == parameters_->max_sync_attempts - 1;
 
   HasMainFrameProviderHost(
       service_worker_registration->pattern().GetOrigin(),

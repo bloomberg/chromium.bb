@@ -54,8 +54,6 @@ target(link_target_type, "renderer") {
     "appcache/appcache_frontend_impl.h",
     "appcache/web_application_cache_host_impl.cc",
     "appcache/web_application_cache_host_impl.h",
-    "background_sync/background_sync_type_converters.cc",
-    "background_sync/background_sync_type_converters.h",
     "blob_storage/blob_consolidation.cc",
     "blob_storage/blob_consolidation.h",
     "blob_storage/blob_message_filter.cc",
