@@ -300,6 +300,9 @@ def AddGTestOptions(parser):
       help='Host directory to which app data files will be'
            ' saved. Used with --app-data-file.')
   parser.add_argument(
+      '--chartjson-result-file',
+      help='If present, store chartjson results on this path.')
+  parser.add_argument(
       '--delete-stale-data',
       dest='delete_stale_data', action='store_true',
       help='Delete stale test data on the device.')
@@ -319,6 +322,10 @@ def AddGTestOptions(parser):
            'device for the list of all tests. Speeds up local '
            'development, but is not safe to use on bots ('
            'http://crbug.com/549214')
+  parser.add_argument(
+      '--gs-test-artifacts-bucket',
+      help=('If present, test artifacts will be uploaded to this Google '
+            'Storage bucket.'))
   parser.add_argument(
       '--gtest_also_run_disabled_tests', '--gtest-also-run-disabled-tests',
       dest='run_disabled', action='store_true',
@@ -359,11 +366,6 @@ def AddGTestOptions(parser):
       dest='test_filter_file', type=os.path.realpath,
       help='Path to file that contains googletest-style filter strings. '
            'See also //testing/buildbot/filters/README.md.')
-
-  parser.add_argument(
-      '--gs-test-artifacts-bucket',
-      help=('If present, test artifacts will be uploaded to this Google '
-            'Storage bucket.'))
 
 
 def AddInstrumentationTestOptions(parser):
