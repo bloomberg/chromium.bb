@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SHAPE_DETECTION_FACE_DETECTION_WIN_PROVIDER_H_
-#define SERVICES_SHAPE_DETECTION_FACE_DETECTION_WIN_PROVIDER_H_
+#ifndef SERVICES_SHAPE_DETECTION_FACE_DETECTION_PROVIDER_WIN_H_
+#define SERVICES_SHAPE_DETECTION_FACE_DETECTION_PROVIDER_WIN_H_
 
 #include <windows.foundation.h>
+#include <windows.graphics.imaging.h>
+#include <memory>
+#include <utility>
 
-#include "detection_utils_win.h"
-#include "face_detection_impl_win.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/shape_detection/detection_utils_win.h"
+#include "services/shape_detection/face_detection_impl_win.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
 
 namespace shape_detection {
@@ -17,17 +21,16 @@ namespace shape_detection {
 class FaceDetectionProviderWin
     : public shape_detection::mojom::FaceDetectionProvider {
  public:
-  using IFaceDetectorStatics =
-      ABI::Windows::Media::FaceAnalysis::IFaceDetectorStatics;
   using FaceDetector = ABI::Windows::Media::FaceAnalysis::FaceDetector;
   using IFaceDetector = ABI::Windows::Media::FaceAnalysis::IFaceDetector;
+  using BitmapPixelFormat = ABI::Windows::Graphics::Imaging::BitmapPixelFormat;
 
   FaceDetectionProviderWin();
   ~FaceDetectionProviderWin() override;
 
   static void Create(
       shape_detection::mojom::FaceDetectionProviderRequest request) {
-    auto provider = base::MakeUnique<FaceDetectionProviderWin>();
+    auto provider = std::make_unique<FaceDetectionProviderWin>();
     auto* provider_ptr = provider.get();
     provider_ptr->binding_ =
         mojo::MakeStrongBinding(std::move(provider), std::move(request));
@@ -40,10 +43,10 @@ class FaceDetectionProviderWin
  private:
   void OnFaceDetectorCreated(
       shape_detection::mojom::FaceDetectionRequest request,
-      Microsoft::WRL::ComPtr<IFaceDetectorStatics> factory,
+      BitmapPixelFormat pixel_format,
       AsyncOperation<FaceDetector>::IAsyncOperationPtr async_op);
 
-  FRIEND_TEST_ALL_PREFIXES(FaceDetectionImplWinTest, CreateFaceDetector);
+  FRIEND_TEST_ALL_PREFIXES(FaceDetectionImplWinTest, ScanOneFace);
   mojo::StrongBindingPtr<mojom::FaceDetectionProvider> binding_;
   std::unique_ptr<AsyncOperation<FaceDetector>> async_create_detector_ops_;
 
@@ -52,4 +55,4 @@ class FaceDetectionProviderWin
 
 }  // namespace shape_detection
 
-#endif  // SERVICES_SHAPE_DETECTION_FACE_DETECTION_WIN_PROVIDER_H_
+#endif  // SERVICES_SHAPE_DETECTION_FACE_DETECTION_PROVIDER_WIN_H_
