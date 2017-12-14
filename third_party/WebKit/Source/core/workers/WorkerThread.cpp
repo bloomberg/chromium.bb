@@ -448,7 +448,7 @@ void WorkerThread::InitializeOnWorkerThread(
       global_scope_inspector_creation_params->stack_id);
   GlobalScope()->EvaluateClassicScript(script_url, std::move(source_code),
                                        std::move(cached_meta_data));
-  debugger->ExternalAsyncTaskStarted(
+  debugger->ExternalAsyncTaskFinished(
       global_scope_inspector_creation_params->stack_id);
 }
 
