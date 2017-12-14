@@ -139,10 +139,10 @@ public class BottomSheet
     private static final float SWIPE_ALLOWED_FRACTION = 0.2f;
 
     /**
-     * The maximum swipe velocity (dp/ms) that should be considered as a user opening the bottom
+     * The minimum swipe velocity (dp/ms) that should be considered as a user opening the bottom
      * sheet intentionally. This is specifically for the 'velocity' swipe logic.
      */
-    private static final float SHEET_SWIPE_MAX_DP_PER_MS = 0.2f;
+    private static final float SHEET_SWIPE_MIN_DP_PER_MS = 0.2f;
 
     /**
      * Information about the different scroll states of the sheet. Order is important for these,
@@ -397,7 +397,7 @@ public class BottomSheet
 
             double dpPerMs = scrollDistanceDp / (double) timeDeltaMs;
 
-            if (dpPerMs > SHEET_SWIPE_MAX_DP_PER_MS) {
+            if (dpPerMs < SHEET_SWIPE_MIN_DP_PER_MS) {
                 if (shouldRecordHistogram && !mIsSwipeVelocityRecorded) {
                     recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.Fail",
                             (int) mLastSheetOpenMicrosPerDp);
