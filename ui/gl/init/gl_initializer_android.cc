@@ -11,10 +11,15 @@
 #include "base/native_library.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation_osmesa.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
+
+#if BUILDFLAG(USE_STATIC_ANGLE)
+#include <EGL/egl.h>
+#endif  // BUILDFLAG(USE_STATIC_ANGLE)
 
 namespace gl {
 namespace init {
@@ -22,6 +27,12 @@ namespace init {
 namespace {
 
 bool InitializeStaticEGLInternal() {
+#if BUILDFLAG(USE_STATIC_ANGLE)
+#pragma push_macro("eglGetProcAddress")
+#undef eglGetProcAddress
+  SetGLGetProcAddressProc(&eglGetProcAddress);
+#pragma pop_macro("eglGetProcAddress")
+#else   // BUILDFLAG(USE_STATIC_ANGLE)
   base::NativeLibrary gles_library = LoadLibraryAndPrintError("libGLESv2.so");
   if (!gles_library)
     return false;
@@ -45,6 +56,7 @@ bool InitializeStaticEGLInternal() {
   SetGLGetProcAddressProc(get_proc_address);
   AddGLNativeLibrary(egl_library);
   AddGLNativeLibrary(gles_library);
+#endif  // BUILDFLAG(USE_STATIC_ANGLE)
   SetGLImplementation(kGLImplementationEGLGLES2);
 
   InitializeStaticGLBindingsGL();
