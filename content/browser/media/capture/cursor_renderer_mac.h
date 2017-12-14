@@ -19,13 +19,14 @@
   base::scoped_nsobject<NSView> capturedView_;
 
   // Runs on any mouse interaction from user.
-  base::Closure mouseInteractionObserver_;
+  base::RepeatingClosure mouseInteractionObserver_;
 }
 
 - (instancetype)initWithView:(NSView*)nsView;
 
 // Register an observer for mouse interaction.
-- (void)registerMouseInteractionObserver:(const base::Closure&)observer;
+- (void)registerMouseInteractionObserver:
+    (const base::RepeatingClosure&)observer;
 
 @end
 
@@ -33,10 +34,11 @@ namespace content {
 
 class CONTENT_EXPORT CursorRendererMac : public CursorRenderer {
  public:
-  explicit CursorRendererMac(gfx::NativeView view);
+  explicit CursorRendererMac(CursorDisplaySetting cursor_display);
   ~CursorRendererMac() final;
 
-  // CursorRender implementation.
+  // CursorRenderer implementation.
+  void SetTargetView(gfx::NativeView window) final;
   bool IsCapturedViewActive() final;
   gfx::Size GetCapturedViewSize() final;
   gfx::Point GetCursorPositionInView() final;
@@ -49,7 +51,7 @@ class CONTENT_EXPORT CursorRendererMac : public CursorRenderer {
   // Called for mouse activity events.
   void OnMouseEvent();
 
-  NSView* const view_;
+  NSView* view_ = nil;
 
   base::scoped_nsobject<CursorRendererMouseTracker> mouse_tracker_;
 
