@@ -8,5 +8,8 @@ pfeldman@chromium.org
 per-file browser_protocol.json=set noparent
 per-file browser_protocol.json=dgozman@chromium.org
 per-file browser_protocol.json=pfeldman@chromium.org
+per-file browser_protocol.pdl=set noparent
+per-file browser_protocol.pdl=dgozman@chromium.org
+per-file browser_protocol.pdl=pfeldman@chromium.org
 
 # COMPONENT: Platform>DevTools

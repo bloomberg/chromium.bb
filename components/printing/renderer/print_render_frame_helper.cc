@@ -623,6 +623,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   options->SetString("url", params.url);
   base::string16 title = source_frame.GetDocument().Title().Utf16();
   options->SetString("title", title.empty() ? params.title : title);
+  options->SetString("headerTemplate", params.header_template);
+  options->SetString("footerTemplate", params.footer_template);
 
   ExecuteScript(frame, kPageSetupScriptFormat, *options);
 

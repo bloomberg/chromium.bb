@@ -61,6 +61,8 @@ struct PrintMsg_Print_Params {
   bool display_header_footer;
   base::string16 title;
   base::string16 url;
+  base::string16 header_template;
+  base::string16 footer_template;
   bool should_print_backgrounds;
   printing::SkiaDocumentType printed_doc_type;
 };
@@ -165,6 +167,12 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // URL string to be printed as footer if requested by the user.
   IPC_STRUCT_TRAITS_MEMBER(url)
+
+  // HTML template to use as a print header.
+  IPC_STRUCT_TRAITS_MEMBER(header_template)
+
+  // HTML template to use as a print footer.
+  IPC_STRUCT_TRAITS_MEMBER(footer_template)
 
   // Whether to rasterize a PDF for printing
   IPC_STRUCT_TRAITS_MEMBER(rasterize_pdf)
