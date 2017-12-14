@@ -212,19 +212,21 @@ SearchBox::IconURLHelper::~IconURLHelper() = default;
 SearchBox::SearchBox(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SearchBox>(render_frame),
+      binding_(this),
+      can_run_js_in_renderframe_(false),
       page_seq_no_(0),
       is_focused_(false),
       is_input_in_progress_(false),
       is_key_capture_enabled_(false),
       most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
-      binding_(this),
       weak_ptr_factory_(this) {
-  // Note: This class may execute JS in |render_frame| in response to IPCs (via
-  // the SearchBoxExtension::Dispatch* methods). However, for cross-process
-  // navigations, a "provisional frame" is created at first, and it's illegal
-  // to execute any JS in it before it's actually swapped in, i.e.m before the
-  // navigation has committed. So we only hook up the Mojo interfaces in
-  // RenderFrameObserver::DidCommitProvisionalLoad. See crbug.com/765101.
+  // Connect to the embedded search interface in the browser.
+  chrome::mojom::EmbeddedSearchConnectorAssociatedPtr connector;
+  render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
+  chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo embedded_search_client;
+  binding_.Bind(mojo::MakeRequest(&embedded_search_client));
+  connector->Connect(mojo::MakeRequest(&embedded_search_service_),
+                     std::move(embedded_search_client));
 }
 
 SearchBox::~SearchBox() = default;
@@ -321,8 +323,10 @@ void SearchBox::SetPageSequenceNumber(int page_seq_no) {
 
 void SearchBox::ChromeIdentityCheckResult(const base::string16& identity,
                                           bool identity_match) {
-  SearchBoxExtension::DispatchChromeIdentityCheckResult(
-      render_frame()->GetWebFrame(), identity, identity_match);
+  if (can_run_js_in_renderframe_) {
+    SearchBoxExtension::DispatchChromeIdentityCheckResult(
+        render_frame()->GetWebFrame(), identity, identity_match);
+  }
 }
 
 void SearchBox::FocusChanged(OmniboxFocusState new_focus_state,
@@ -340,21 +344,26 @@ void SearchBox::FocusChanged(OmniboxFocusState new_focus_state,
     if (reason != OMNIBOX_FOCUS_CHANGE_TYPING) {
       is_key_capture_enabled_ = key_capture_enabled;
       DVLOG(1) << render_frame() << " KeyCaptureChange";
-      SearchBoxExtension::DispatchKeyCaptureChange(
-          render_frame()->GetWebFrame());
+      if (can_run_js_in_renderframe_) {
+        SearchBoxExtension::DispatchKeyCaptureChange(
+            render_frame()->GetWebFrame());
+      }
     }
   }
   bool is_focused = new_focus_state == OMNIBOX_FOCUS_VISIBLE;
   if (is_focused != is_focused_) {
     is_focused_ = is_focused;
     DVLOG(1) << render_frame() << " FocusChange";
-    SearchBoxExtension::DispatchFocusChange(render_frame()->GetWebFrame());
+    if (can_run_js_in_renderframe_)
+      SearchBoxExtension::DispatchFocusChange(render_frame()->GetWebFrame());
   }
 }
 
 void SearchBox::HistorySyncCheckResult(bool sync_history) {
-  SearchBoxExtension::DispatchHistorySyncCheckResult(
-      render_frame()->GetWebFrame(), sync_history);
+  if (can_run_js_in_renderframe_) {
+    SearchBoxExtension::DispatchHistorySyncCheckResult(
+        render_frame()->GetWebFrame(), sync_history);
+  }
 }
 
 void SearchBox::MostVisitedChanged(
@@ -367,18 +376,23 @@ void SearchBox::MostVisitedChanged(
   }
 
   most_visited_items_cache_.AddItems(items);
-  SearchBoxExtension::DispatchMostVisitedChanged(render_frame()->GetWebFrame());
+  if (can_run_js_in_renderframe_) {
+    SearchBoxExtension::DispatchMostVisitedChanged(
+        render_frame()->GetWebFrame());
+  }
 }
 
 void SearchBox::SetInputInProgress(bool is_input_in_progress) {
-  if (is_input_in_progress_ != is_input_in_progress) {
-    is_input_in_progress_ = is_input_in_progress;
-    DVLOG(1) << render_frame() << " SetInputInProgress";
-    if (is_input_in_progress_) {
+  if (is_input_in_progress_ == is_input_in_progress)
+    return;
+
+  is_input_in_progress_ = is_input_in_progress;
+  DVLOG(1) << render_frame() << " SetInputInProgress";
+  if (can_run_js_in_renderframe_) {
+    if (is_input_in_progress_)
       SearchBoxExtension::DispatchInputStart(render_frame()->GetWebFrame());
-    } else {
+    else
       SearchBoxExtension::DispatchInputCancel(render_frame()->GetWebFrame());
-    }
   }
 }
 
@@ -388,7 +402,8 @@ void SearchBox::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
     return;
 
   theme_info_ = theme_info;
-  SearchBoxExtension::DispatchThemeChange(render_frame()->GetWebFrame());
+  if (can_run_js_in_renderframe_)
+    SearchBoxExtension::DispatchThemeChange(render_frame()->GetWebFrame());
 }
 
 GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
@@ -398,16 +413,7 @@ GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
 
 void SearchBox::DidCommitProvisionalLoad(bool is_new_navigation,
                                          bool is_same_document_navigation) {
-  if (binding_.is_bound())
-    return;
-
-  // Connect to the embedded search interface in the browser.
-  chrome::mojom::EmbeddedSearchConnectorAssociatedPtr connector;
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
-  chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo embedded_search_client;
-  binding_.Bind(mojo::MakeRequest(&embedded_search_client));
-  connector->Connect(mojo::MakeRequest(&embedded_search_service_),
-                     std::move(embedded_search_client));
+  can_run_js_in_renderframe_ = true;
 }
 
 void SearchBox::OnDestruct() {

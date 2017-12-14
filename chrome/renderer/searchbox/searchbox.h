@@ -143,14 +143,29 @@ class SearchBox : public content::RenderFrameObserver,
   // Returns the URL of the Most Visited item specified by the |item_id|.
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
+  // The connection to the EmbeddedSearch service in the browser process.
+  chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;
+  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearchClient> binding_;
+
+  // Whether it's legal to execute JavaScript in |render_frame()|.
+  // This class may want to execute JS in response to IPCs (via the
+  // SearchBoxExtension::Dispatch* methods). However, for cross-process
+  // navigations, a "provisional frame" is created at first, and it's illegal
+  // to execute any JS in it before it is actually swapped in, i.e. before the
+  // navigation has committed. So this only gets set to true in
+  // RenderFrameObserver::DidCommitProvisionalLoad. See crbug.com/765101.
+  // Note: If crbug.com/794942 ever gets resolved, then it might be possible to
+  // move the mojo connection code from the ctor to DidCommitProvisionalLoad and
+  // avoid this bool.
+  bool can_run_js_in_renderframe_;
+
+  // The Instant state.
   int page_seq_no_;
   bool is_focused_;
   bool is_input_in_progress_;
   bool is_key_capture_enabled_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
   ThemeBackgroundInfo theme_info_;
-  chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;
-  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearchClient> binding_;
 
   base::WeakPtrFactory<SearchBox> weak_ptr_factory_;
 
