@@ -109,6 +109,7 @@ class CONTENT_EXPORT CBORValue {
   // These will all fatally assert if the type doesn't match.
   uint64_t GetUnsigned() const;
   const BinaryValue& GetBytestring() const;
+  // Returned string may contain NUL characters.
   const std::string& GetString() const;
   const ArrayValue& GetArray() const;
   const MapValue& GetMap() const;

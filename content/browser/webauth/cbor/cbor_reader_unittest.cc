@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/browser/webauth/cbor/cbor_reader.h"
-#include "base/strings/stringprintf.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,8 +111,7 @@ TEST(CBORReaderTest, TestReadString) {
 
   for (const StringTestCase& test_case : kStringTestCases) {
     testing::Message scope_message;
-    scope_message << "testing string value : "
-                  << base::StringPrintf("%s", test_case.value.data());
+    scope_message << "testing string value : " << test_case.value;
     SCOPED_TRACE(scope_message);
 
     base::Optional<CBORValue> cbor = CBORReader::Read(test_case.cbor_data);
@@ -121,6 +119,50 @@ TEST(CBORReaderTest, TestReadString) {
     ASSERT_EQ(cbor.value().type(), CBORValue::Type::STRING);
     EXPECT_EQ(cbor.value().GetString(), test_case.value);
   }
+}
+
+TEST(CBORReaderTest, TestReadStringWithNUL) {
+  static const struct {
+    const std::string value;
+    const std::vector<uint8_t> cbor_data;
+  } kStringTestCases[] = {
+      {std::string("string_without_nul"),
+       {0x72, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x5F, 0x77, 0x69, 0x74, 0x68,
+        0x6F, 0x75, 0x74, 0x5F, 0x6E, 0x75, 0x6C}},
+      {std::string("nul_terminated_string\0", 22),
+       {0x76, 0x6E, 0x75, 0x6C, 0x5F, 0x74, 0x65, 0x72, 0x6D, 0x69, 0x6E, 0x61,
+        0x74, 0x65, 0x64, 0x5F, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x00}},
+      {std::string("embedded\0nul", 12),
+       {0x6C, 0x65, 0x6D, 0x62, 0x65, 0x64, 0x64, 0x65, 0x64, 0x00, 0x6E, 0x75,
+        0x6C}},
+      {std::string("trailing_nuls\0\0", 15),
+       {0x6F, 0x74, 0x72, 0x61, 0x69, 0x6C, 0x69, 0x6E, 0x67, 0x5F, 0x6E, 0x75,
+        0x6C, 0x73, 0x00, 0x00}},
+  };
+
+  for (const auto& test_case : kStringTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << "testing string with nul bytes :" << test_case.value);
+
+    base::Optional<CBORValue> cbor = CBORReader::Read(test_case.cbor_data);
+    ASSERT_TRUE(cbor.has_value());
+    ASSERT_EQ(cbor.value().type(), CBORValue::Type::STRING);
+    EXPECT_EQ(cbor.value().GetString(), test_case.value);
+  }
+}
+
+TEST(CBORReaderTest, TestReadStringWithInvalidByteSequenceAfterNUL) {
+  // UTF-8 validation should not stop at the first NUL character in the string.
+  // That is, a string with an invalid byte sequence should fail UTF-8
+  // validation even if the invalid character is located after one or more NUL
+  // characters. Here, 0xA6 is an unexpected continuation byte.
+  static const std::vector<uint8_t> string_with_invalid_continuation_byte = {
+      0x63, 0x00, 0x00, 0xA6};
+  CBORReader::DecoderError error_code;
+  base::Optional<CBORValue> cbor =
+      CBORReader::Read(string_with_invalid_continuation_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::INVALID_UTF8);
 }
 
 TEST(CBORReaderTest, TestReadArray) {
