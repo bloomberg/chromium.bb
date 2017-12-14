@@ -38,6 +38,8 @@ RefCountedBytes::RefCountedBytes(const std::vector<unsigned char>& initializer)
 RefCountedBytes::RefCountedBytes(const unsigned char* p, size_t size)
     : data_(p, p + size) {}
 
+RefCountedBytes::RefCountedBytes(size_t size) : data_(size, 0) {}
+
 scoped_refptr<RefCountedBytes> RefCountedBytes::TakeVector(
     std::vector<unsigned char>* to_destroy) {
   scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes);
