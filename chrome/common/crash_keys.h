@@ -80,11 +80,6 @@ extern const char kPrinterInfo[];
 // Numbers of active views.
 extern const char kViewCount[];
 
-// TEMPORARY: Stack trace for the previous call of the
-// UserCloudPolicyManager::Connect() method. The value is set when we trigger a
-// browser crash due to an attempt to connect twice.  https://crbug.com/685996.
-extern const char kUserCloudPolicyManagerConnectTrace[];
-
 }  // namespace crash_keys
 
 #endif  // CHROME_COMMON_CRASH_KEYS_H_

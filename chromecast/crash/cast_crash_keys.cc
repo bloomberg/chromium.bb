@@ -30,9 +30,6 @@ size_t RegisterCastCrashKeys() {
       // media/:
       {"zero-encode-details", ::crash_keys::kSmallSize},
 
-      // Temporary for https://crbug.com/685996.
-      {"user-cloud-policy-manager-connect-trace", ::crash_keys::kMediumSize},
-
       // TODO(sunnyps): Remove after fixing crbug.com/724999.
       {"gl-context-set-current-stack-trace", ::crash_keys::kMediumSize},
   };
