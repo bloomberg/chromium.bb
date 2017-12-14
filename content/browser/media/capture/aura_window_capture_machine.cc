@@ -189,7 +189,9 @@ void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
 
   DCHECK(!desktop_window_);
   desktop_window_ = window;
-  cursor_renderer_.reset(new CursorRendererAura(window, kCursorAlwaysEnabled));
+  cursor_renderer_.reset(
+      new CursorRendererAura(CursorRenderer::CURSOR_DISPLAYED_ALWAYS));
+  cursor_renderer_->SetTargetView(window);
 
   // Start observing window events.
   desktop_window_->AddObserver(this);
@@ -208,7 +210,6 @@ void AuraWindowCaptureMachine::UpdateCaptureSize() {
      oracle_proxy_->UpdateCaptureSize(ui::ConvertSizeToPixel(
          layer, layer->bounds().size()));
   }
-  cursor_renderer_->Clear();
 }
 
 void AuraWindowCaptureMachine::Capture(base::TimeTicks event_time) {
@@ -354,7 +355,6 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     yuv_readback_pipeline_->SetScaler(std::move(scaler));
   }
 
-  cursor_renderer_->SnapshotCursorState(region_in_frame);
   yuv_readback_pipeline_->ReadbackYUV(
       mailbox, sync_token, result->size(), gfx::Rect(region_in_frame.size()),
       video_frame->stride(media::VideoFrame::kYPlane),
@@ -364,7 +364,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
       video_frame->stride(media::VideoFrame::kVPlane),
       video_frame->data(media::VideoFrame::kVPlane), region_in_frame.origin(),
       base::Bind(&CopyOutputFinishedForVideo, weak_factory_.GetWeakPtr(),
-                 event_time, capture_frame_cb, video_frame,
+                 event_time, capture_frame_cb, video_frame, region_in_frame,
                  base::Passed(&release_callback)));
   media::LetterboxYUV(video_frame.get(), region_in_frame);
   return true;
@@ -378,6 +378,7 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
     base::TimeTicks event_time,
     const CaptureFrameCallback& capture_frame_cb,
     scoped_refptr<media::VideoFrame> target,
+    const gfx::Rect& region_in_frame,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback,
     bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -389,7 +390,8 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
   // still valid).
   if (machine) {
     if (machine->cursor_renderer_ && result)
-      machine->cursor_renderer_->RenderOnVideoFrame(target.get());
+      machine->cursor_renderer_->RenderOnVideoFrame(target.get(),
+                                                    region_in_frame);
   } else {
     VLOG(1) << "Aborting capture: AuraWindowCaptureMachine has gone away.";
     result = false;

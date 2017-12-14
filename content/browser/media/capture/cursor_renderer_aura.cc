@@ -17,25 +17,27 @@ namespace content {
 
 // static
 std::unique_ptr<CursorRenderer> CursorRenderer::Create(
-    gfx::NativeWindow window) {
-  return std::make_unique<CursorRendererAura>(window,
-                                              kCursorEnabledOnMouseMovement);
+    CursorRenderer::CursorDisplaySetting display) {
+  return std::make_unique<CursorRendererAura>(display);
 }
 
-CursorRendererAura::CursorRendererAura(
-    aura::Window* window,
-    CursorDisplaySetting cursor_display_setting)
-    : CursorRenderer(window, cursor_display_setting), window_(window) {
-  if (window_) {
-    window_->AddObserver(this);
-    window_->AddPreTargetHandler(this);
-  }
-}
+CursorRendererAura::CursorRendererAura(CursorDisplaySetting display)
+    : CursorRenderer(display) {}
 
 CursorRendererAura::~CursorRendererAura() {
+  SetTargetView(nullptr);
+}
+
+void CursorRendererAura::SetTargetView(aura::Window* window) {
   if (window_) {
     window_->RemoveObserver(this);
     window_->RemovePreTargetHandler(this);
+  }
+  window_ = window;
+  OnMouseHasGoneIdle();
+  if (window_) {
+    window_->AddObserver(this);
+    window_->AddPreTargetHandler(this);
   }
 }
 
@@ -120,12 +122,12 @@ void CursorRendererAura::OnMouseEvent(ui::MouseEvent* event) {
   gfx::Point mouse_location(event->x(), event->y());
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
-      OnMouseMoved(mouse_location, event->time_stamp());
+      OnMouseMoved(mouse_location);
       break;
     case ui::ET_MOUSE_PRESSED:
     case ui::ET_MOUSE_RELEASED:
     case ui::ET_MOUSEWHEEL:
-      OnMouseClicked(mouse_location, event->time_stamp());
+      OnMouseClicked(mouse_location);
       break;
     default:
       return;

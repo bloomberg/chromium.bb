@@ -1815,8 +1815,6 @@ jumbo_source_set("browser") {
       "media/capture/fake_webcontent_capture_machine.h",
       "media/capture/web_contents_video_capture_device.cc",
       "media/capture/web_contents_video_capture_device.h",
-      "media/capture/window_activity_tracker.cc",
-      "media/capture/window_activity_tracker.h",
     ]
     if (use_aura) {
       sources += [
@@ -1826,16 +1824,12 @@ jumbo_source_set("browser") {
         "media/capture/cursor_renderer_aura.h",
         "media/capture/desktop_capture_device_aura.cc",
         "media/capture/desktop_capture_device_aura.h",
-        "media/capture/window_activity_tracker_aura.cc",
-        "media/capture/window_activity_tracker_aura.h",
       ]
     }
     if (is_mac) {
       sources += [
         "media/capture/cursor_renderer_mac.h",
         "media/capture/cursor_renderer_mac.mm",
-        "media/capture/window_activity_tracker_mac.h",
-        "media/capture/window_activity_tracker_mac.mm",
       ]
       deps += [ "//sandbox/mac:seatbelt" ]
     }

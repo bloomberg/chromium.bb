@@ -39,7 +39,8 @@
   }
 }
 
-- (void)registerMouseInteractionObserver:(const base::Closure&)observer {
+- (void)registerMouseInteractionObserver:
+    (const base::RepeatingClosure&)observer {
   mouseInteractionObserver_ = observer;
 }
 
@@ -59,19 +60,33 @@
 namespace content {
 
 // static
-std::unique_ptr<CursorRenderer> CursorRenderer::Create(gfx::NativeView view) {
-  return std::make_unique<CursorRendererMac>(view);
+std::unique_ptr<CursorRenderer> CursorRenderer::Create(
+    CursorRenderer::CursorDisplaySetting display) {
+  return std::make_unique<CursorRendererMac>(display);
 }
 
-CursorRendererMac::CursorRendererMac(gfx::NativeView view)
-    : CursorRenderer(view, kCursorEnabledOnMouseMovement), view_(view) {
-  mouse_tracker_.reset([[CursorRendererMouseTracker alloc] initWithView:view]);
-  [mouse_tracker_ registerMouseInteractionObserver:
-      base::Bind(&CursorRendererMac::OnMouseEvent, base::Unretained(this))];
-}
+CursorRendererMac::CursorRendererMac(CursorDisplaySetting display)
+    : CursorRenderer(display) {}
 
 CursorRendererMac::~CursorRendererMac() {
-  [mouse_tracker_ stopTracking];
+  SetTargetView(nil);
+}
+
+void CursorRendererMac::SetTargetView(NSView* view) {
+  if (view_) {
+    [mouse_tracker_ stopTracking];
+    mouse_tracker_.reset();
+  }
+  view_ = view;
+  OnMouseHasGoneIdle();
+  if (view_) {
+    mouse_tracker_.reset(
+        [[CursorRendererMouseTracker alloc] initWithView:view_]);
+    [mouse_tracker_
+        registerMouseInteractionObserver:base::BindRepeating(
+                                             &CursorRendererMac::OnMouseEvent,
+                                             base::Unretained(this))];
+  }
 }
 
 bool CursorRendererMac::IsCapturedViewActive() {
@@ -120,7 +135,7 @@ SkBitmap CursorRendererMac::GetLastKnownCursorImage(gfx::Point* hot_point) {
 
 void CursorRendererMac::OnMouseEvent() {
   // Update cursor movement info to CursorRenderer.
-  OnMouseMoved(GetCursorPositionInView(), base::TimeTicks::Now());
+  OnMouseMoved(GetCursorPositionInView());
 }
 
 }  // namespace content

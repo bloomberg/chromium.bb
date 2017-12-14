@@ -15,11 +15,11 @@ class CONTENT_EXPORT CursorRendererAura : public CursorRenderer,
                                           public ui::EventHandler,
                                           public aura::WindowObserver {
  public:
-  explicit CursorRendererAura(aura::Window* window,
-                              CursorDisplaySetting cursor_display);
+  explicit CursorRendererAura(CursorDisplaySetting cursor_display);
   ~CursorRendererAura() final;
 
-  // CursorRender implementation.
+  // CursorRenderer implementation.
+  void SetTargetView(gfx::NativeView window) final;
   bool IsCapturedViewActive() final;
   gfx::Size GetCapturedViewSize() final;
   gfx::Point GetCursorPositionInView() final;
@@ -33,7 +33,7 @@ class CONTENT_EXPORT CursorRendererAura : public CursorRenderer,
   void OnWindowDestroying(aura::Window* window) final;
 
  private:
-  aura::Window* window_;
+  aura::Window* window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CursorRendererAura);
 };

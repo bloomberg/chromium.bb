@@ -102,6 +102,7 @@ class AuraWindowCaptureMachine : public media::VideoCaptureMachine,
       base::TimeTicks event_time,
       const CaptureFrameCallback& capture_frame_cb,
       scoped_refptr<media::VideoFrame> target,
+      const gfx::Rect& region_in_frame,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback,
       bool result);
 
