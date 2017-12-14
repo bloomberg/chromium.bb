@@ -659,8 +659,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
         service_manager::SandboxTypeFromCommandLine(command_line),
         params.sandbox_info));
 #elif defined(OS_MACOSX)
+    // Do not initialize the sandbox at this point if the V2
+    // sandbox is enabled for the process type.
+    bool v2_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableV2Sandbox);
+
     if (process_type == switches::kRendererProcess ||
-        process_type == switches::kPpapiPluginProcess ||
+        process_type == switches::kPpapiPluginProcess || v2_enabled ||
         (delegate_ && delegate_->DelaySandboxInitialization(process_type))) {
       // On OS X the renderer sandbox needs to be initialized later in the
       // startup sequence in RendererMainPlatformDelegate::EnableSandbox().

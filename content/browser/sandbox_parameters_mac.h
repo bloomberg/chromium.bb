@@ -5,16 +5,23 @@
 #ifndef CONTENT_BROWSER_SANDBOX_PARAMETERS_MAC_H_
 #define CONTENT_BROWSER_SANDBOX_PARAMETERS_MAC_H_
 
+namespace base {
+class CommandLine;
+}
+
 namespace sandbox {
 class SeatbeltExecClient;
 }
 
 namespace content {
 
-// Populates the |client| with the parameters that the sandbox needs to
-// resolve information that cannot be known at build time, such as
-// the user's home directory.
+// All of the below functions populate the |client| with the parameters that the
+// sandbox needs to resolve information that cannot be known at build time, such
+// as the user's home directory.
 void SetupRendererSandboxParameters(sandbox::SeatbeltExecClient* client);
+
+void SetupUtilitySandboxParameters(sandbox::SeatbeltExecClient* client,
+                                   const base::CommandLine& command_line);
 
 }  // namespace content
 

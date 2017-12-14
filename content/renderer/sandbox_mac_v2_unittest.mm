@@ -24,6 +24,7 @@
 #include "content/test/test_content_client.h"
 #include "sandbox/mac/sandbox_compiler.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "services/service_manager/sandbox/mac/common_v2.sb.h"
 #include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,8 +92,10 @@ class SandboxV2Test : public base::MultiProcessTest {};
 
 MULTIPROCESS_TEST_MAIN(SandboxProfileProcess) {
   TestContentClient content_client;
-  sandbox::SandboxCompiler compiler(
-      service_manager::kSeatbeltPolicyString_renderer_v2);
+  const std::string profile =
+      std::string(service_manager::kSeatbeltPolicyString_common_v2) +
+      service_manager::kSeatbeltPolicyString_renderer_v2;
+  sandbox::SandboxCompiler compiler(profile);
 
   // Create the logging file and pass /bin/ls as the executable path.
   base::ScopedTempDir temp_dir;
