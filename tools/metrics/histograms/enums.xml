@@ -537,6 +537,24 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Not QUIC, destination different from origin"/>
 </enum>
 
+<enum name="Android.DownloadManager.List.View.Actions">
+  <int value="0" label="OPEN"/>
+  <int value="1" label="RESUME"/>
+  <int value="2" label="PAUSE"/>
+  <int value="3" label="CANCEL"/>
+  <int value="4" label="MENU_SHARE"/>
+  <int value="5" label="MENU_DELETE"/>
+</enum>
+
+<enum name="Android.DownloadManager.Menu.Actions">
+  <int value="0" label="CLOSE"/>
+  <int value="1" label="MULTI_DELETE"/>
+  <int value="2" label="MULTI_SHARE"/>
+  <int value="3" label="SHOW_INFO"/>
+  <int value="4" label="HIDE_INFO"/>
+  <int value="5" label="SEARCH"/>
+</enum>
+
 <enum name="AndroidActivityId">
   <int value="1" label="Unknown"/>
   <int value="2" label="Main"/>

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.ui;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -19,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -39,6 +41,20 @@ import java.util.Locale;
  */
 public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrapper>
         implements ThumbnailProvider.ThumbnailRequest, ListMenuButton.Delegate {
+    // Please treat this list as append only and keep it in sync with
+    // Android.DownloadManager.List.View.Actions in enums.xml.
+    @IntDef({VIEW_ACTION_OPEN, VIEW_ACTION_RESUME, VIEW_ACTION_PAUSE, VIEW_ACTION_CANCEL,
+            VIEW_ACTION_MENU_SHARE, VIEW_ACTION_MENU_DELETE})
+    public @interface ViewAction {}
+
+    private static final int VIEW_ACTION_OPEN = 0;
+    private static final int VIEW_ACTION_RESUME = 1;
+    private static final int VIEW_ACTION_PAUSE = 2;
+    private static final int VIEW_ACTION_CANCEL = 3;
+    private static final int VIEW_ACTION_MENU_SHARE = 4;
+    private static final int VIEW_ACTION_MENU_DELETE = 5;
+    private static final int VIEW_ACTION_BOUNDARY = 6;
+
     private final int mMargin;
     private final int mMarginSubsection;
     private final int mIconBackgroundColor;
@@ -107,8 +123,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public void onItemSelected(Item item) {
         if (item.getTextId() == R.string.share) {
+            recordViewActionHistogram(VIEW_ACTION_MENU_SHARE);
             mItem.share();
         } else if (item.getTextId() == R.string.delete) {
+            recordViewActionHistogram(VIEW_ACTION_MENU_DELETE);
             mItem.startRemove();
         }
     }
@@ -136,12 +154,17 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mMoreButton.setDelegate(this);
         mPauseResumeButton.setOnClickListener(view -> {
             if (mItem.isPaused()) {
+                recordViewActionHistogram(VIEW_ACTION_RESUME);
                 mItem.resume();
             } else if (!mItem.isComplete()) {
+                recordViewActionHistogram(VIEW_ACTION_PAUSE);
                 mItem.pause();
             }
         });
-        mCancelButton.setOnClickListener(view -> mItem.cancel());
+        mCancelButton.setOnClickListener(view -> {
+            recordViewActionHistogram(VIEW_ACTION_CANCEL);
+            mItem.cancel();
+        });
     }
 
     @Override
@@ -272,7 +295,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     @Override
     public void onClick() {
-        if (mItem != null && mItem.isComplete()) mItem.open();
+        if (mItem != null && mItem.isComplete()) {
+            recordViewActionHistogram(VIEW_ACTION_OPEN);
+            mItem.open();
+        }
     }
 
     @Override
@@ -337,5 +363,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             mLayoutContainer.removeView(mMoreButton);
             mLayoutContainer.addView(mMoreButton);
         }
+    }
+
+    private static void recordViewActionHistogram(@ViewAction int action) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.DownloadManager.List.View.Action", action, VIEW_ACTION_BOUNDARY);
     }
 }

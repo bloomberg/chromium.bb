@@ -925,6 +925,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Recorded when a download is opened.</summary>
 </histogram>
 
+<histogram name="Android.DownloadManager.List.View.Action"
+    enum="Android.DownloadManager.List.View.Actions">
+  <owner>dtrainor@chromium.org</owner>
+  <summary>The count of Download Home list entry actions taken.</summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.Menu.Action"
+    enum="Android.DownloadManager.Menu.Actions">
+  <owner>dtrainor@chromium.org</owner>
+  <summary>The count of Download Home top level menu actions taken.</summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.Menu.Delete.SelectedCount">
+  <owner>dtrainor@chromium.org</owner>
+  <summary>
+    The number of items selected when performing a multi-delete action.
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.Menu.Share.SelectedCount">
+  <owner>dtrainor@chromium.org</owner>
+  <summary>
+    The number of items selected when performing a multi-share action.
+  </summary>
+</histogram>
+
 <histogram name="Android.DownloadManager.NotificationInteraction"
     enum="DownloadNotificationInteractions">
   <owner>jming@chromium.org</owner>
