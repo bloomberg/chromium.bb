@@ -1,6 +1,0 @@
--UnifiedMouseWarpControllerTest.BoundaryTestGrid
--UnifiedMouseWarpControllerTest.WarpMouse
--UnifiedMouseWarpControllerTest.BoundaryAndWarpSimpleTest
-
-# When adding new exclusions be sure to file bug with reason. Group with the
-# above if applicable.

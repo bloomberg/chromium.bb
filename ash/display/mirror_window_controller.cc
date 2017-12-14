@@ -197,8 +197,7 @@ void MirrorWindowController::UpdateWindow(
         AshWindowTreeHost* unified_ash_host =
             Shell::Get()
                 ->window_tree_host_manager()
-                ->GetAshWindowTreeHostForDisplayId(
-                    display::Screen::GetScreen()->GetPrimaryDisplay().id());
+                ->GetAshWindowTreeHostForDisplayId(primary.id());
         unified_ash_host->RegisterMirroringHost(host_info->ash_host.get());
         aura::client::SetScreenPositionClient(host->window(),
                                               screen_position_client_.get());

@@ -1127,7 +1127,6 @@
       'override_isolate_target': 'ash_unittests',
       'args': [
         '--mus',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mus.filter',
       ],
     },
     'mus_browser_tests': {
@@ -1167,7 +1166,6 @@
     'ash_unittests-mus': {
       'args': [
         '--mus',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mus.filter',
       ],
       'override_isolate_target': 'ash_unittests',
       'test': 'ash_unittests',

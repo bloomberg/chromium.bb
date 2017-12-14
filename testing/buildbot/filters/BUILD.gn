@@ -21,7 +21,6 @@ source_set("ash_unittests_filters") {
 
   data = [
     "//testing/buildbot/filters/ash_unittests_mash.filter",
-    "//testing/buildbot/filters/ash_unittests_mus.filter",
   ]
 }
 

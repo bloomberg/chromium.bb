@@ -817,8 +817,7 @@
       },
       {
         "args": [
-          "--mus",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mus.filter"
+          "--mus"
         ],
         "name": "ash_unittests-mus",
         "override_isolate_target": "ash_unittests",
