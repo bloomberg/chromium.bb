@@ -8,6 +8,8 @@ import "media/mojo/interfaces/media_types.mojom";
 
 // Interface for decrypting (and decoding) encrypted streams.
 // See media/base/decryptor.h for details.
+// TODO(crbug.com/794326): Deduplicate this interface with audio_decoder.mojom
+// and audio_decoder.mojom.
 interface Decryptor {
   // Status of a decrypt or decrypt-and-decode operation. See decryptor.h for
   // descriptions.
@@ -18,14 +20,15 @@ interface Decryptor {
   [Native]
   enum StreamType;
 
-  // Pass the two data pipes used to transfer DecoderBuffer contents to and
-  // from the Decryptor. |receive_pipe| will be used to receive DecoderBuffer
-  // data on Decrypt(), DecryptAndDecodeAudio(), and DecryptAndDecodeVideo()
-  // calls. |transmit_pipe| will be used to pass the DecoderBuffer data
-  // back with OnDecryptDone() calls. This method must be called before any
-  // methods listed are called.
-  Initialize(handle<data_pipe_consumer> receive_pipe,
-             handle<data_pipe_producer> transmit_pipe);
+  // Pass three data pipes used to transfer compressed DecoderBuffer data for
+  // DecryptAndDecodeAudio(), and DecryptAndDecodeVideo() and Decrypt(),
+  // respectively, and one data pipe to receive DecoderBuffer data for decrypt
+  // result passed back in OnDecryptDone() calls.
+  // This method must be called before any methods listed are called.
+  Initialize(handle<data_pipe_consumer> audio_pipe,
+             handle<data_pipe_consumer> video_pipe,
+             handle<data_pipe_consumer> decrypt_pipe,
+             handle<data_pipe_producer> decrypted_pipe);
 
   // Decrypts the |encrypted| buffer and returns the decrypt |status| and
   // decrypted |buffer|.

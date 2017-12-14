@@ -123,6 +123,10 @@ class MojoAudioDecoderTest : public ::testing::Test {
         std::move(request));
   }
 
+  void SetWriterCapacity(uint32_t capacity) {
+    mojo_audio_decoder_->set_writer_capacity_for_testing(capacity);
+  }
+
   void InitializeAndExpect(bool success) {
     DVLOG(1) << __func__ << ": success=" << success;
     EXPECT_CALL(*this, OnInitialized(success))
@@ -259,7 +263,13 @@ TEST_F(MojoAudioDecoderTest, Decode_MultipleTimes) {
 
 TEST_F(MojoAudioDecoderTest, Reset_DuringDecode) {
   Initialize();
+  DecodeAndReset();
+}
 
+TEST_F(MojoAudioDecoderTest, Reset_DuringDecode_ChunkedWrite) {
+  // Use a small writer capacity to force chunked write.
+  SetWriterCapacity(10);
+  Initialize();
   DecodeAndReset();
 }
 

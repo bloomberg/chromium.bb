@@ -26,7 +26,10 @@ class MojoDecoderBufferWriter;
 // lives on the first time it is used in this class.
 class MojoDecryptor : public Decryptor {
  public:
-  explicit MojoDecryptor(mojom::DecryptorPtr remote_decryptor);
+  // |writer_capacity| can be used for testing. If 0, default writer capacity
+  // will be used.
+  MojoDecryptor(mojom::DecryptorPtr remote_decryptor,
+                uint32_t writer_capacity = 0);
   ~MojoDecryptor() final;
 
   // Decryptor implementation.
@@ -80,17 +83,22 @@ class MojoDecryptor : public Decryptor {
   void OnConnectionError(uint32_t custom_reason,
                          const std::string& description);
 
+  // Helper class to get the correct MojoDecoderBufferWriter;
+  MojoDecoderBufferWriter* GetWriter(StreamType stream_type);
+
   base::ThreadChecker thread_checker_;
 
   mojom::DecryptorPtr remote_decryptor_;
 
-  // Helper class to send DecoderBuffer to the |remote_decryptor_| for decrypt
-  // or decrypt-and-decode.
-  std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
+  // Helper class to send DecoderBuffer to the |remote_decryptor_| for
+  // DecryptAndDecodeAudio(), DecryptAndDecodeVideo() and Decrypt().
+  std::unique_ptr<MojoDecoderBufferWriter> audio_buffer_writer_;
+  std::unique_ptr<MojoDecoderBufferWriter> video_buffer_writer_;
+  std::unique_ptr<MojoDecoderBufferWriter> decrypt_buffer_writer_;
 
   // Helper class to receive decrypted DecoderBuffer from the
-  // |remote_decryptor_|.
-  std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
+  // |remote_decryptor_|, shared by audio and video.
+  std::unique_ptr<MojoDecoderBufferReader> decrypted_buffer_reader_;
 
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;

@@ -46,7 +46,11 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
                      scoped_refptr<ContentDecryptionModule> cdm,
                      bool success);
 
+  // Called by |mojo_decoder_buffer_reader_| when read is finished.
   void OnReadDone(DecodeCallback callback, scoped_refptr<DecoderBuffer> buffer);
+
+  // Called by |mojo_decoder_buffer_reader_| when reset is finished.
+  void OnReaderFlushDone(ResetCallback callback);
 
   // Called by |decoder_| when DecoderBuffer is accepted or rejected.
   void OnDecodeStatus(DecodeCallback callback, media::DecodeStatus status);

@@ -63,9 +63,13 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
   void OnDecoderInitialized(InitializeCallback callback,
                             scoped_refptr<ContentDecryptionModule> cdm,
                             bool success);
-  void OnDecoderRead(DecodeCallback callback,
-                     scoped_refptr<DecoderBuffer> buffer);
+  void OnReaderRead(DecodeCallback callback,
+                    scoped_refptr<DecoderBuffer> buffer);
   void OnDecoderDecoded(DecodeCallback callback, DecodeStatus status);
+
+  // Called by |mojo_decoder_buffer_reader_| when reset is finished.
+  void OnReaderFlushed(ResetCallback callback);
+
   void OnDecoderReset(ResetCallback callback);
   void OnDecoderOutput(const scoped_refptr<VideoFrame>& frame);
 

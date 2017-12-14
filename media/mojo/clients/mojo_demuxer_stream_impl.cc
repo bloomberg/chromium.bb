@@ -45,8 +45,9 @@ void MojoDemuxerStreamImpl::Initialize(InitializeCallback callback) {
   }
 
   mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
-  mojo_decoder_buffer_writer_ =
-      MojoDecoderBufferWriter::Create(stream_->type(), &remote_consumer_handle);
+  mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
+      GetDefaultDecoderBufferConverterCapacity(stream_->type()),
+      &remote_consumer_handle);
 
   std::move(callback).Run(stream_->type(), std::move(remote_consumer_handle),
                           audio_config, video_config);

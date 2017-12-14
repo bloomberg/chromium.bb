@@ -35,7 +35,12 @@ namespace media {
 
 class MojoDecryptorTest : public ::testing::Test {
  public:
-  MojoDecryptorTest() {
+  MojoDecryptorTest() = default;
+  ~MojoDecryptorTest() override = default;
+
+  void SetWriterCapacity(uint32_t capacity) { writer_capacity_ = capacity; }
+
+  void Initialize() {
     decryptor_.reset(new StrictMock<MockDecryptor>());
 
     mojom::DecryptorPtr remote_decryptor;
@@ -44,10 +49,9 @@ class MojoDecryptorTest : public ::testing::Test {
         base::Bind(&MojoDecryptorTest::OnConnectionClosed,
                    base::Unretained(this))));
 
-    mojo_decryptor_.reset(new MojoDecryptor(std::move(remote_decryptor)));
+    mojo_decryptor_.reset(
+        new MojoDecryptor(std::move(remote_decryptor), writer_capacity_));
   }
-
-  ~MojoDecryptorTest() override = default;
 
   void DestroyClient() {
     EXPECT_CALL(*this, OnConnectionClosed());
@@ -108,6 +112,8 @@ class MojoDecryptorTest : public ::testing::Test {
   // Fixture members.
   base::TestMessageLoop message_loop_;
 
+  uint32_t writer_capacity_ = 0;
+
   // The MojoDecryptor that we are testing.
   std::unique_ptr<MojoDecryptor> mojo_decryptor_;
 
@@ -122,7 +128,32 @@ class MojoDecryptorTest : public ::testing::Test {
 };
 
 // DecryptAndDecodeAudio() and ResetDecoder(kAudio) immediately.
-TEST_F(MojoDecryptorTest, ResetDuringDecryptAndDecodeAudio) {
+TEST_F(MojoDecryptorTest, Reset_DuringDecryptAndDecode_Audio) {
+  Initialize();
+
+  {
+    // Make sure calls are made in order.
+    InSequence seq;
+    EXPECT_CALL(*decryptor_, DecryptAndDecodeAudio(_, _))
+        .WillOnce(Invoke(this, &MojoDecryptorTest::ReturnAudioFrames));
+    EXPECT_CALL(*decryptor_, ResetDecoder(Decryptor::kAudio));
+    // The returned status could be success or aborted.
+    EXPECT_CALL(*this, AudioDecoded(_, _));
+  }
+
+  scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
+  mojo_decryptor_->DecryptAndDecodeAudio(
+      std::move(buffer),
+      base::Bind(&MojoDecryptorTest::AudioDecoded, base::Unretained(this)));
+  mojo_decryptor_->ResetDecoder(Decryptor::kAudio);
+  base::RunLoop().RunUntilIdle();
+}
+
+// DecryptAndDecodeAudio() and ResetDecoder(kAudio) immediately.
+TEST_F(MojoDecryptorTest, Reset_DuringDecryptAndDecode_Audio_ChunkedWrite) {
+  SetWriterCapacity(20);
+  Initialize();
+
   {
     // Make sure calls are made in order.
     InSequence seq;
@@ -142,7 +173,9 @@ TEST_F(MojoDecryptorTest, ResetDuringDecryptAndDecodeAudio) {
 }
 
 // DecryptAndDecodeVideo() and ResetDecoder(kVideo) immediately.
-TEST_F(MojoDecryptorTest, ResetDuringDecryptAndDecodeVideo) {
+TEST_F(MojoDecryptorTest, Reset_DuringDecryptAndDecode_Video) {
+  Initialize();
+
   {
     // Make sure calls are made in order.
     InSequence seq;
@@ -163,7 +196,77 @@ TEST_F(MojoDecryptorTest, ResetDuringDecryptAndDecodeVideo) {
   base::RunLoop().RunUntilIdle();
 }
 
+// DecryptAndDecodeVideo() and ResetDecoder(kVideo) immediately.
+TEST_F(MojoDecryptorTest, Reset_DuringDecryptAndDecode_Video_ChunkedWrite) {
+  SetWriterCapacity(20);
+  Initialize();
+
+  {
+    // Make sure calls are made in order.
+    InSequence seq;
+    EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
+        .WillOnce(
+            Invoke(this, &MojoDecryptorTest::ReturnSharedBufferVideoFrame));
+    EXPECT_CALL(*decryptor_, ResetDecoder(Decryptor::kVideo));
+    // The returned status could be success or aborted.
+    EXPECT_CALL(*this, VideoDecoded(_, _));
+    EXPECT_CALL(*this, OnFrameDestroyed());
+  }
+
+  scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
+  mojo_decryptor_->DecryptAndDecodeVideo(
+      std::move(buffer),
+      base::Bind(&MojoDecryptorTest::VideoDecoded, base::Unretained(this)));
+  mojo_decryptor_->ResetDecoder(Decryptor::kVideo);
+  base::RunLoop().RunUntilIdle();
+}
+
+// DecryptAndDecodeAudio(), DecryptAndDecodeVideo(), ResetDecoder(kAudio) and
+// ResetDecoder(kVideo).
+TEST_F(MojoDecryptorTest, Reset_DuringDecryptAndDecode_AudioAndVideo) {
+  // Only test chunked write as it's the most complex and error prone case.
+  SetWriterCapacity(20);
+  Initialize();
+
+  {
+    // Make sure calls are made in order.
+    InSequence seq;
+    EXPECT_CALL(*decryptor_, DecryptAndDecodeAudio(_, _))
+        .WillOnce(Invoke(this, &MojoDecryptorTest::ReturnAudioFrames));
+    EXPECT_CALL(*decryptor_, ResetDecoder(Decryptor::kAudio));
+  }
+
+  {
+    // Make sure calls are made in order.
+    InSequence seq;
+    EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
+        .WillOnce(
+            Invoke(this, &MojoDecryptorTest::ReturnSharedBufferVideoFrame));
+    EXPECT_CALL(*decryptor_, ResetDecoder(Decryptor::kVideo));
+  }
+
+  // The returned status could be success or aborted, and we don't care about
+  // the order.
+  EXPECT_CALL(*this, AudioDecoded(_, _));
+  EXPECT_CALL(*this, VideoDecoded(_, _));
+  EXPECT_CALL(*this, OnFrameDestroyed());
+
+  scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
+
+  mojo_decryptor_->DecryptAndDecodeAudio(
+      std::move(buffer),
+      base::Bind(&MojoDecryptorTest::AudioDecoded, base::Unretained(this)));
+  mojo_decryptor_->DecryptAndDecodeVideo(
+      std::move(buffer),
+      base::Bind(&MojoDecryptorTest::VideoDecoded, base::Unretained(this)));
+  mojo_decryptor_->ResetDecoder(Decryptor::kAudio);
+  mojo_decryptor_->ResetDecoder(Decryptor::kVideo);
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(MojoDecryptorTest, VideoDecodeFreesBuffer) {
+  Initialize();
+
   // Call DecryptAndDecodeVideo(). Once the callback VideoDecoded() completes,
   // the frame will be destroyed, and the buffer will be released.
   {
@@ -182,6 +285,8 @@ TEST_F(MojoDecryptorTest, VideoDecodeFreesBuffer) {
 }
 
 TEST_F(MojoDecryptorTest, VideoDecodeFreesMultipleBuffers) {
+  Initialize();
+
   // Call DecryptAndDecodeVideo() multiple times.
   const int TIMES = 5;
   EXPECT_CALL(*this, VideoDecoded(Decryptor::Status::kSuccess, NotNull()))
@@ -201,6 +306,8 @@ TEST_F(MojoDecryptorTest, VideoDecodeFreesMultipleBuffers) {
 }
 
 TEST_F(MojoDecryptorTest, VideoDecodeHoldThenFreeBuffers) {
+  Initialize();
+
   // Call DecryptAndDecodeVideo() twice. Hang on to the buffers returned,
   // and free them later.
   scoped_refptr<VideoFrame> saved_frame1;
@@ -233,6 +340,8 @@ TEST_F(MojoDecryptorTest, VideoDecodeHoldThenFreeBuffers) {
 }
 
 TEST_F(MojoDecryptorTest, EOSBuffer) {
+  Initialize();
+
   // Call DecryptAndDecodeVideo(), but return an EOS frame (which has no frame
   // data, so no memory needs to be freed).
   EXPECT_CALL(*this, VideoDecoded(Decryptor::Status::kSuccess, NotNull()));
@@ -247,11 +356,13 @@ TEST_F(MojoDecryptorTest, EOSBuffer) {
 }
 
 TEST_F(MojoDecryptorTest, DestroyClient) {
+  Initialize();
   DestroyClient();
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MojoDecryptorTest, DestroyService) {
+  Initialize();
   DestroyService();
   base::RunLoop().RunUntilIdle();
 

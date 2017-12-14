@@ -61,19 +61,25 @@ MojoDecryptorService::MojoDecryptorService(
 MojoDecryptorService::~MojoDecryptorService() = default;
 
 void MojoDecryptorService::Initialize(
-    mojo::ScopedDataPipeConsumerHandle receive_pipe,
-    mojo::ScopedDataPipeProducerHandle transmit_pipe) {
-  mojo_decoder_buffer_writer_.reset(
-      new MojoDecoderBufferWriter(std::move(transmit_pipe)));
-  mojo_decoder_buffer_reader_.reset(
-      new MojoDecoderBufferReader(std::move(receive_pipe)));
+    mojo::ScopedDataPipeConsumerHandle audio_pipe,
+    mojo::ScopedDataPipeConsumerHandle video_pipe,
+    mojo::ScopedDataPipeConsumerHandle decrypt_pipe,
+    mojo::ScopedDataPipeProducerHandle decrypted_pipe) {
+  audio_buffer_reader_.reset(
+      new MojoDecoderBufferReader(std::move(audio_pipe)));
+  video_buffer_reader_.reset(
+      new MojoDecoderBufferReader(std::move(video_pipe)));
+  decrypt_buffer_reader_.reset(
+      new MojoDecoderBufferReader(std::move(decrypt_pipe)));
+  decrypted_buffer_writer_.reset(
+      new MojoDecoderBufferWriter(std::move(decrypted_pipe)));
 }
 
 void MojoDecryptorService::Decrypt(StreamType stream_type,
                                    mojom::DecoderBufferPtr encrypted,
                                    DecryptCallback callback) {
   DVLOG(3) << __func__;
-  mojo_decoder_buffer_reader_->ReadDecoderBuffer(
+  decrypt_buffer_reader_->ReadDecoderBuffer(
       std::move(encrypted),
       base::BindOnce(&MojoDecryptorService::OnReadDone, weak_this_, stream_type,
                      std::move(callback)));
@@ -106,7 +112,7 @@ void MojoDecryptorService::DecryptAndDecodeAudio(
     mojom::DecoderBufferPtr encrypted,
     DecryptAndDecodeAudioCallback callback) {
   DVLOG(3) << __func__;
-  mojo_decoder_buffer_reader_->ReadDecoderBuffer(
+  audio_buffer_reader_->ReadDecoderBuffer(
       std::move(encrypted), base::BindOnce(&MojoDecryptorService::OnAudioRead,
                                            weak_this_, std::move(callback)));
 }
@@ -115,18 +121,28 @@ void MojoDecryptorService::DecryptAndDecodeVideo(
     mojom::DecoderBufferPtr encrypted,
     DecryptAndDecodeVideoCallback callback) {
   DVLOG(3) << __func__;
-  mojo_decoder_buffer_reader_->ReadDecoderBuffer(
+  video_buffer_reader_->ReadDecoderBuffer(
       std::move(encrypted), base::BindOnce(&MojoDecryptorService::OnVideoRead,
                                            weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::ResetDecoder(StreamType stream_type) {
-  DVLOG(1) << __func__;
-  decryptor_->ResetDecoder(stream_type);
+  DVLOG(1) << __func__ << ": stream_type = " << stream_type;
+
+  // Reset the reader so that pending decodes will be dispatched first.
+  if (!GetBufferReader(stream_type))
+    return;
+
+  GetBufferReader(stream_type)
+      ->Flush(base::Bind(&MojoDecryptorService::OnReaderFlushDone, weak_this_,
+                         stream_type));
 }
 
 void MojoDecryptorService::DeinitializeDecoder(StreamType stream_type) {
   DVLOG(1) << __func__;
+  DCHECK(!GetBufferReader(stream_type)->HasPendingReads())
+      << "The decoder should be fully flushed before deinitialized.";
+
   decryptor_->DeinitializeDecoder(stream_type);
 }
 
@@ -157,7 +173,7 @@ void MojoDecryptorService::OnDecryptDone(
   }
 
   mojom::DecoderBufferPtr mojo_buffer =
-      mojo_decoder_buffer_writer_->WriteDecoderBuffer(buffer);
+      decrypted_buffer_writer_->WriteDecoderBuffer(buffer);
   if (!mojo_buffer) {
     std::move(callback).Run(Status::kError, nullptr);
     return;
@@ -205,6 +221,11 @@ void MojoDecryptorService::OnVideoRead(DecryptAndDecodeVideoCallback callback,
                                     weak_this_, base::Passed(&callback)));
 }
 
+void MojoDecryptorService::OnReaderFlushDone(StreamType stream_type) {
+  DVLOG(1) << __func__ << ": stream_type = " << stream_type;
+  decryptor_->ResetDecoder(stream_type);
+}
+
 void MojoDecryptorService::OnAudioDecoded(
     DecryptAndDecodeAudioCallback callback,
     Status status,
@@ -244,6 +265,19 @@ void MojoDecryptorService::OnVideoDecoded(
   }
 
   std::move(callback).Run(status, std::move(frame), std::move(releaser));
+}
+
+MojoDecoderBufferReader* MojoDecryptorService::GetBufferReader(
+    StreamType stream_type) const {
+  switch (stream_type) {
+    case StreamType::kAudio:
+      return audio_buffer_reader_.get();
+    case StreamType::kVideo:
+      return video_buffer_reader_.get();
+  }
+
+  NOTREACHED() << "Unexpected stream_type: " << stream_type;
+  return nullptr;
 }
 
 }  // namespace media

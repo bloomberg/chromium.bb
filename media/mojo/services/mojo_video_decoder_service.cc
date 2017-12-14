@@ -192,7 +192,7 @@ void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
   }
 
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
-      std::move(buffer), base::BindOnce(&MojoVideoDecoderService::OnDecoderRead,
+      std::move(buffer), base::BindOnce(&MojoVideoDecoderService::OnReaderRead,
                                         weak_this_, std::move(callback)));
 }
 
@@ -204,8 +204,10 @@ void MojoVideoDecoderService::Reset(ResetCallback callback) {
     return;
   }
 
-  decoder_->Reset(base::Bind(&MojoVideoDecoderService::OnDecoderReset,
-                             weak_this_, base::Passed(&callback)));
+  // Flush the reader so that pending decodes will be dispatches first.
+  mojo_decoder_buffer_reader_->Flush(
+      base::Bind(&MojoVideoDecoderService::OnReaderFlushed, weak_this_,
+                 base::Passed(&callback)));
 }
 
 void MojoVideoDecoderService::OnDecoderInitialized(
@@ -222,7 +224,7 @@ void MojoVideoDecoderService::OnDecoderInitialized(
                           decoder_->GetMaxDecodeRequests());
 }
 
-void MojoVideoDecoderService::OnDecoderRead(
+void MojoVideoDecoderService::OnReaderRead(
     DecodeCallback callback,
     scoped_refptr<DecoderBuffer> buffer) {
   DVLOG(3) << __func__;
@@ -235,6 +237,11 @@ void MojoVideoDecoderService::OnDecoderRead(
   decoder_->Decode(
       buffer, base::Bind(&MojoVideoDecoderService::OnDecoderDecoded, weak_this_,
                          base::Passed(&callback)));
+}
+
+void MojoVideoDecoderService::OnReaderFlushed(ResetCallback callback) {
+  decoder_->Reset(base::Bind(&MojoVideoDecoderService::OnDecoderReset,
+                             weak_this_, base::Passed(&callback)));
 }
 
 void MojoVideoDecoderService::OnDecoderDecoded(DecodeCallback callback,
