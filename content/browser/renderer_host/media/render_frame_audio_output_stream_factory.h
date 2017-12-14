@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "base/containers/unique_ptr_comparator.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
@@ -33,12 +34,13 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactory
 
  private:
   using OutputStreamProviderSet =
-      base::flat_set<std::unique_ptr<media::mojom::AudioOutputStreamProvider>>;
+      base::flat_set<std::unique_ptr<media::mojom::AudioOutputStreamProvider>,
+                     base::UniquePtrComparator>;
 
   // mojom::RendererAudioOutputStreamFactory implementation.
   void RequestDeviceAuthorization(
       media::mojom::AudioOutputStreamProviderRequest stream_provider,
-      int64_t session_id,
+      int32_t session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) override;
 

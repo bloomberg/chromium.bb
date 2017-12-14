@@ -19,7 +19,6 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/audio_parameters.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -341,40 +340,6 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
   event_handler->OnStreamError(kStreamId);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(delegate_is_destructed);
-}
-
-TEST(RenderFrameAudioOutputStreamFactoryTest, OutOfRangeSessionId_BadMessage) {
-  // This test checks that we get a bad message if session_id is too large
-  // to fit in an integer. This ensures that we don't overflow when casting the
-  // int64_t to an int
-  if (sizeof(int) >= sizeof(int64_t)) {
-    // In this case, any int64_t would fit in an int, and the case we are
-    // checking for is impossible.
-    return;
-  }
-
-  bool got_bad_message = false;
-  mojo::edk::SetDefaultProcessErrorCallback(
-      base::Bind([](bool* got_bad_message,
-                    const std::string& s) { *got_bad_message = true; },
-                 &got_bad_message));
-
-  TestBrowserThreadBundle thread_bundle;
-
-  AudioOutputStreamProviderPtr output_provider;
-  auto factory_context = std::make_unique<MockContext>(true);
-  auto factory_ptr = factory_context->CreateFactory();
-
-  int64_t session_id = std::numeric_limits<int>::max();
-  ++session_id;
-
-  EXPECT_FALSE(got_bad_message);
-  factory_ptr->RequestDeviceAuthorization(
-      mojo::MakeRequest(&output_provider), session_id, "default",
-      base::BindOnce([](media::OutputDeviceStatus,
-                        const media::AudioParameters&, const std::string&) {}));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(got_bad_message);
 }
 
 }  // namespace content
