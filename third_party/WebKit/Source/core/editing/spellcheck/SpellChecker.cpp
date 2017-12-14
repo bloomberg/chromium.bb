@@ -119,18 +119,10 @@ void SpellChecker::ToggleSpellCheckingEnabled() {
   Page* page = GetFrame().GetPage();
   if (!page)
     return;
-  if (IsSpellCheckingEnabled()) {
+  if (IsSpellCheckingEnabled())
     page->SetSpellCheckStatus(Page::SpellCheckStatus::kForcedOff);
-    for (Frame* frame = page->MainFrame(); frame;
-         frame = frame->Tree().TraverseNext()) {
-      if (!frame->IsLocalFrame())
-        continue;
-      ToLocalFrame(frame)->GetDocument()->Markers().RemoveMarkersOfTypes(
-          DocumentMarker::MisspellingMarkers());
-    }
-  } else {
+  else
     page->SetSpellCheckStatus(Page::SpellCheckStatus::kForcedOn);
-  }
 }
 
 void SpellChecker::IgnoreSpelling() {
