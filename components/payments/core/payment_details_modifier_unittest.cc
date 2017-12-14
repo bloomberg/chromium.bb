@@ -57,8 +57,8 @@ TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
       "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}";
   payment_details_modifier.total = std::make_unique<PaymentItem>();
   payment_details_modifier.total->label = "Gratuity";
-  payment_details_modifier.total->amount.currency = "USD";
-  payment_details_modifier.total->amount.value = "139.99";
+  payment_details_modifier.total->amount->currency = "USD";
+  payment_details_modifier.total->amount->value = "139.99";
 
   EXPECT_TRUE(expected_value.Equals(
       payment_details_modifier.ToDictionaryValue().get()));

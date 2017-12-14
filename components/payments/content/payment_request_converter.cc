@@ -16,21 +16,11 @@
 
 namespace payments {
 namespace {
-
-PaymentCurrencyAmount ConvertPaymentCurrencyAmount(
-    const mojom::PaymentCurrencyAmountPtr& amount_entry) {
-  PaymentCurrencyAmount amount;
-  amount.currency = amount_entry->currency;
-  amount.value = amount_entry->value;
-  amount.currency_system = amount_entry->currency_system;
-  return amount;
-}
-
 PaymentItem ConvertPaymentItem(const mojom::PaymentItemPtr& item_entry) {
   PaymentItem item;
   item.label = item_entry->label;
   if (item_entry->amount)
-    item.amount = ConvertPaymentCurrencyAmount(item_entry->amount);
+    item.amount = item_entry->amount.Clone();
   item.pending = item_entry->pending;
   return item;
 }
@@ -61,7 +51,7 @@ PaymentShippingOption ConvertPaymentShippingOption(
   option.id = option_entry->id;
   option.label = option_entry->label;
   if (option_entry->amount)
-    option.amount = ConvertPaymentCurrencyAmount(option_entry->amount);
+    option.amount = option_entry->amount.Clone();
   option.selected = option_entry->selected;
   return option;
 }

@@ -6,11 +6,11 @@
 #define IOS_CHROME_BROWSER_UI_PAYMENTS_JS_PAYMENT_REQUEST_MANAGER_H_
 
 #include "base/strings/string16.h"
+#include "components/payments/mojom/payment_request_data.mojom.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
 namespace payments {
-struct PaymentAddress;
 class PaymentResponse;
 class PaymentShippingOption;
 }  // namespace payments
@@ -80,7 +80,8 @@ class PaymentShippingOption;
 
 // Updates the shippingAddress property on the PaymentRequest object and
 // dispatches a shippingaddresschange event.
-- (void)updateShippingAddress:(const payments::PaymentAddress&)shippingAddress
+- (void)updateShippingAddress:
+            (const payments::mojom::PaymentAddress&)shippingAddress
             completionHandler:(ProceduralBlockWithBool)completionHanlder;
 
 // Updates the shippingOption property on the PaymentRequest object and

@@ -23,8 +23,8 @@ TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
 
   expected.total = std::make_unique<PaymentItem>();
   expected.total->label = "TOTAL";
-  expected.total->amount.currency = "GBP";
-  expected.total->amount.value = "6.66";
+  expected.total->amount->currency = "GBP";
+  expected.total->amount->value = "6.66";
 
   auto total_dict = std::make_unique<base::DictionaryValue>();
   total_dict->SetString("label", "TOTAL");
@@ -48,8 +48,8 @@ TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueFailure) {
   PaymentDetails expected;
   expected.total = std::make_unique<PaymentItem>();
   expected.total->label = "TOTAL";
-  expected.total->amount.currency = "GBP";
-  expected.total->amount.value = "6.66";
+  expected.total->amount->currency = "GBP";
+  expected.total->amount->value = "6.66";
   expected.error = "Error in details";
 
   base::DictionaryValue details_dict;

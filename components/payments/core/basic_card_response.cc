@@ -21,8 +21,9 @@ static const char kCardExpiryYear[] = "expiryYear";
 
 }  // namespace
 
-BasicCardResponse::BasicCardResponse() {}
-BasicCardResponse::BasicCardResponse(const BasicCardResponse& other) = default;
+BasicCardResponse::BasicCardResponse()
+    : billing_address(mojom::PaymentAddress::New()) {}
+
 BasicCardResponse::~BasicCardResponse() = default;
 
 bool BasicCardResponse::operator==(const BasicCardResponse& other) const {
@@ -31,7 +32,7 @@ bool BasicCardResponse::operator==(const BasicCardResponse& other) const {
          expiry_month == other.expiry_month &&
          expiry_year == other.expiry_year &&
          card_security_code == other.card_security_code &&
-         billing_address == other.billing_address;
+         billing_address.Equals(other.billing_address);
 }
 
 bool BasicCardResponse::operator!=(const BasicCardResponse& other) const {
@@ -46,7 +47,8 @@ std::unique_ptr<base::DictionaryValue> BasicCardResponse::ToDictionaryValue()
   result->SetString(kCardExpiryMonth, expiry_month);
   result->SetString(kCardExpiryYear, expiry_year);
   result->SetString(kCardCardSecurityCode, card_security_code);
-  result->Set(kCardBillingAddress, billing_address.ToDictionaryValue());
+  result->Set(kCardBillingAddress,
+              PaymentAddressToDictionaryValue(*billing_address));
 
   return result;
 }

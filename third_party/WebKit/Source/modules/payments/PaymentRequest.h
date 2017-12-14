@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "components/payments/mojom/payment_request_data.mojom-blink.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/events/EventTarget.h"
 #include "modules/ModulesExport.h"

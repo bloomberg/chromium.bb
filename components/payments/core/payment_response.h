@@ -9,14 +9,13 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "components/payments/mojom/payment_request_data.mojom.h"
 
 // C++ bindings for the PaymentRequest API PaymentResponse. Conforms to the
 // following spec:
 // https://www.w3.org/TR/payment-request/#paymentresponse-interface
 
 namespace payments {
-
-struct PaymentAddress;
 
 // Information provided in the Promise returned by a call to
 // PaymentRequest.show().
@@ -42,7 +41,7 @@ class PaymentResponse {
   // If request_shipping was set to true in the PaymentOptions passed to the
   // PaymentRequest constructor, this will be the full and final shipping
   // address chosen by the user.
-  std::unique_ptr<PaymentAddress> shipping_address;
+  mojom::PaymentAddressPtr shipping_address;
 
   // If the request_shipping flag was set to true in the PaymentOptions passed
   // to the PaymentRequest constructor, this will be the id attribute of the

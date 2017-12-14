@@ -15,50 +15,74 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/payments/core/basic_card_response.h"
-#include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_method_data.h"
+#include "components/payments/core/payments_validators.h"
 #include "url/url_constants.h"
 
 namespace payments {
 namespace data_util {
 
-PaymentAddress GetPaymentAddressFromAutofillProfile(
+mojom::PaymentAddressPtr GetPaymentAddressFromAutofillProfile(
     const autofill::AutofillProfile& profile,
     const std::string& app_locale) {
-  PaymentAddress address;
-  address.country = profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY);
-  address.address_line = base::SplitString(
-      profile.GetInfo(autofill::ADDRESS_HOME_STREET_ADDRESS, app_locale),
-      base::ASCIIToUTF16("\n"), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  address.region = profile.GetInfo(autofill::ADDRESS_HOME_STATE, app_locale);
-  address.city = profile.GetInfo(autofill::ADDRESS_HOME_CITY, app_locale);
-  address.dependent_locality =
-      profile.GetInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY, app_locale);
-  address.postal_code = profile.GetInfo(autofill::ADDRESS_HOME_ZIP, app_locale);
-  address.sorting_code =
-      profile.GetInfo(autofill::ADDRESS_HOME_SORTING_CODE, app_locale);
-  address.language_code = base::UTF8ToUTF16(profile.language_code());
-  address.organization = profile.GetInfo(autofill::COMPANY_NAME, app_locale);
-  address.recipient = profile.GetInfo(autofill::NAME_FULL, app_locale);
-  address.phone = profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
+  mojom::PaymentAddressPtr payment_address = mojom::PaymentAddress::New();
 
-  return address;
+  if (profile.IsEmpty(app_locale))
+    return payment_address;
+
+  payment_address->country =
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+  DCHECK(PaymentsValidators::IsValidCountryCodeFormat(payment_address->country,
+                                                      nullptr));
+
+  payment_address->address_line =
+      base::SplitString(base::UTF16ToUTF8(profile.GetInfo(
+                            autofill::ADDRESS_HOME_STREET_ADDRESS, app_locale)),
+                        "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  payment_address->region = base::UTF16ToUTF8(
+      profile.GetInfo(autofill::ADDRESS_HOME_STATE, app_locale));
+  payment_address->city = base::UTF16ToUTF8(
+      profile.GetInfo(autofill::ADDRESS_HOME_CITY, app_locale));
+  payment_address->dependent_locality = base::UTF16ToUTF8(
+      profile.GetInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY, app_locale));
+  payment_address->postal_code = base::UTF16ToUTF8(
+      profile.GetInfo(autofill::ADDRESS_HOME_ZIP, app_locale));
+  payment_address->sorting_code = base::UTF16ToUTF8(
+      profile.GetInfo(autofill::ADDRESS_HOME_SORTING_CODE, app_locale));
+  payment_address->organization =
+      base::UTF16ToUTF8(profile.GetInfo(autofill::COMPANY_NAME, app_locale));
+  payment_address->recipient =
+      base::UTF16ToUTF8(profile.GetInfo(autofill::NAME_FULL, app_locale));
+
+  // The autofill profile |language_code| is the BCP-47 language tag (e.g.,
+  // "ja-Latn"), which can be split into a language code (e.g., "ja") and a
+  // script code (e.g., "Latn").
+  PaymentsValidators::SplitLanguageTag(profile.language_code(),
+                                       &payment_address->language_code,
+                                       &payment_address->script_code);
+
+  // TODO(crbug.com/705945): Format phone number according to spec.
+  payment_address->phone =
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
+
+  return payment_address;
 }
 
-BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
+std::unique_ptr<BasicCardResponse> GetBasicCardResponseFromAutofillCreditCard(
     const autofill::CreditCard& card,
     const base::string16& cvc,
     const autofill::AutofillProfile& billing_profile,
     const std::string& app_locale) {
-  BasicCardResponse response;
-  response.cardholder_name = card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
-  response.card_number = card.GetRawInfo(autofill::CREDIT_CARD_NUMBER);
-  response.expiry_month = card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH);
-  response.expiry_year =
+  std::unique_ptr<BasicCardResponse> response =
+      base::MakeUnique<BasicCardResponse>();
+  response->cardholder_name = card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
+  response->card_number = card.GetRawInfo(autofill::CREDIT_CARD_NUMBER);
+  response->expiry_month = card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH);
+  response->expiry_year =
       card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
-  response.card_security_code = cvc;
+  response->card_security_code = cvc;
 
-  response.billing_address =
+  response->billing_address =
       GetPaymentAddressFromAutofillProfile(billing_profile, app_locale);
 
   return response;

@@ -19,27 +19,32 @@ template <typename T>
 bool ValidateShippingOptionOrPaymentItem(const T& item,
                                          const PaymentItem& total,
                                          std::string* error_message) {
-  if (item.amount.currency.empty()) {
+  if (!item.amount) {
+    *error_message = "Amount required";
+    return false;
+  }
+
+  if (item.amount->currency.empty()) {
     *error_message = "Currency code required";
     return false;
   }
 
-  if (item.amount.value.empty()) {
+  if (item.amount->value.empty()) {
     *error_message = "Currency value required";
     return false;
   }
 
-  if (item.amount.currency_system.empty()) {
+  if (item.amount->currency_system.empty()) {
     *error_message = "Currency system can't be empty";
     return false;
   }
 
   if (!payments::PaymentsValidators::IsValidCurrencyCodeFormat(
-          item.amount.currency, item.amount.currency_system, error_message)) {
+          item.amount->currency, item.amount->currency_system, error_message)) {
     return false;
   }
 
-  if (!payments::PaymentsValidators::IsValidAmountFormat(item.amount.value,
+  if (!payments::PaymentsValidators::IsValidAmountFormat(item.amount->value,
                                                          error_message)) {
     return false;
   }
@@ -98,7 +103,7 @@ bool ValidatePaymentDetailsModifiers(
                                                error_message))
         return false;
 
-      if (modifier.total->amount.value[0] == '-') {
+      if (modifier.total->amount->value[0] == '-') {
         *error_message = "Total amount value should be non-negative";
         return false;
       }
@@ -124,7 +129,7 @@ bool ValidatePaymentDetails(const PaymentDetails& details,
       return false;
     }
 
-    if (details.total->amount.value[0] == '-') {
+    if (details.total->amount->value[0] == '-') {
       *error_message = "Total amount value should be non-negative";
       return false;
     }

@@ -103,7 +103,7 @@ using payments::GetShippingOptionSectionString;
     payments::CurrencyFormatter* currencyFormatter =
         _paymentRequest->GetOrCreateCurrencyFormatter();
     item.detailText = base::SysUTF16ToNSString(
-        currencyFormatter->Format(shippingOption->amount.value));
+        currencyFormatter->Format(shippingOption->amount->value));
     if (_paymentRequest->selected_shipping_option() == shippingOption)
       _selectedItemIndex = index;
 

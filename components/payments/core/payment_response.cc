@@ -14,9 +14,7 @@ PaymentResponse::~PaymentResponse() = default;
 bool PaymentResponse::operator==(const PaymentResponse& other) const {
   return payment_request_id == other.payment_request_id &&
          method_name == other.method_name && details == other.details &&
-         ((!shipping_address && !other.shipping_address) ||
-          (shipping_address && other.shipping_address &&
-           *shipping_address == *other.shipping_address)) &&
+         shipping_address.Equals(other.shipping_address) &&
          shipping_option == other.shipping_option &&
          payer_name == other.payer_name && payer_email == other.payer_email &&
          payer_phone == other.payer_phone;
