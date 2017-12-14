@@ -71,27 +71,26 @@ class FakeStreamCreator {
  public:
   FakeStreamCreator(media::mojom::AudioInputStream* stream,
                     bool initially_muted)
-      : stream_(stream), initially_muted_(initially_muted) {}
+      : stream_(stream), binding_(stream_), initially_muted_(initially_muted) {}
 
-  void Create(media::mojom::AudioInputStreamRequest stream_request,
-              int64_t session_id,
-              media::AudioParameters params,
+  void Create(mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
+              int32_t session_id,
+              const media::AudioParameters& params,
               bool automatic_gain_control,
-              uint32_t total_segments,
-              media::mojom::AudioInputStreamClientPtr client,
-              MojoAudioInputIPC::StreamCreatedCB on_stream_created) {
-    EXPECT_EQ(binding_, base::nullopt);
+              uint32_t total_segments) {
+    EXPECT_FALSE(binding_.is_bound());
     EXPECT_NE(stream_, nullptr);
-    std::swap(client_, client);
-    binding_.emplace(stream_, std::move(stream_request));
+    std::swap(factory_client_, factory_client);
+    media::mojom::AudioInputStreamPtr stream_ptr;
+    binding_.Bind(mojo::MakeRequest(&stream_ptr));
     base::CancelableSyncSocket foreign_socket;
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
-    std::move(on_stream_created)
-        .Run(mojo::SharedBufferHandle::Create(kMemoryLength)
-                 ->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
-             mojo::WrapPlatformFile(foreign_socket.Release()),
-             initially_muted_);
+    factory_client_->StreamCreated(
+        std::move(stream_ptr), mojo::MakeRequest(&stream_client_),
+        mojo::SharedBufferHandle::Create(kMemoryLength)
+            ->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
+        mojo::WrapPlatformFile(foreign_socket.Release()), initially_muted_);
   }
 
   MojoAudioInputIPC::StreamCreatorCB GetCallback() {
@@ -100,19 +99,21 @@ class FakeStreamCreator {
   }
 
   void Rearm() {
-    binding_.reset();
+    if (binding_.is_bound())
+      binding_.Unbind();
     socket_.Close();
   }
 
   void SignalError() {
-    ASSERT_TRUE(client_);
-    client_->OnError();
+    ASSERT_TRUE(stream_client_);
+    stream_client_->OnError();
   }
 
  private:
   media::mojom::AudioInputStream* stream_;
-  media::mojom::AudioInputStreamClientPtr client_;
-  base::Optional<mojo::Binding<media::mojom::AudioInputStream>> binding_;
+  media::mojom::AudioInputStreamClientPtr stream_client_;
+  mojom::RendererAudioInputStreamFactoryClientPtr factory_client_;
+  mojo::Binding<media::mojom::AudioInputStream> binding_;
   bool initially_muted_;
   base::CancelableSyncSocket socket_;
 };
@@ -129,6 +130,25 @@ TEST(MojoAudioInputIPC, OnStreamCreated_Propagates) {
       std::make_unique<MojoAudioInputIPC>(creator.GetCallback());
 
   EXPECT_CALL(delegate, GotOnStreamCreated(false));
+
+  ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+  base::RunLoop().RunUntilIdle();
+
+  ipc->CloseStream();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
+  base::MessageLoopForIO message_loop;
+  StrictMock<MockDelegate> delegate;
+
+  const std::unique_ptr<media::AudioInputIPC> ipc =
+      std::make_unique<MojoAudioInputIPC>(base::BindRepeating(
+          [](mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
+             int32_t session_id, const media::AudioParameters& params,
+             bool automatic_gain_control, uint32_t total_segments) {}));
+
+  EXPECT_CALL(delegate, OnError());
 
   ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
   base::RunLoop().RunUntilIdle();
@@ -219,6 +239,7 @@ TEST(MojoAudioInputIPC, Record_Records) {
   EXPECT_CALL(stream, Record());
 
   ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+  base::RunLoop().RunUntilIdle();
   ipc->RecordStream();
   base::RunLoop().RunUntilIdle();
 
@@ -239,6 +260,7 @@ TEST(MojoAudioInputIPC, SetVolume_SetsVolume) {
   EXPECT_CALL(stream, SetVolume(kNewVolume));
 
   ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+  base::RunLoop().RunUntilIdle();
   ipc->SetVolume(kNewVolume);
   base::RunLoop().RunUntilIdle();
 

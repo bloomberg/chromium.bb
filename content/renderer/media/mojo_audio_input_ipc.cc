@@ -14,8 +14,12 @@ namespace content {
 
 MojoAudioInputIPC::MojoAudioInputIPC(StreamCreatorCB stream_creator)
     : stream_creator_(std::move(stream_creator)),
-      client_binding_(this),
-      weak_factory_(this) {}
+      stream_client_binding_(this),
+      factory_client_binding_(this),
+      weak_factory_(this) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(stream_creator_);
+}
 
 MojoAudioInputIPC::~MojoAudioInputIPC() = default;
 
@@ -24,55 +28,57 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
                                      const media::AudioParameters& params,
                                      bool automatic_gain_control,
                                      uint32_t total_segments) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate);
   DCHECK(!delegate_);
 
   delegate_ = delegate;
 
-  media::mojom::AudioInputStreamClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
-  client_binding_.set_connection_error_handler(base::BindOnce(
+  mojom::RendererAudioInputStreamFactoryClientPtr client;
+  factory_client_binding_.Bind(mojo::MakeRequest(&client));
+  factory_client_binding_.set_connection_error_handler(base::BindOnce(
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
 
-  stream_creator_.Run(mojo::MakeRequest(&stream_), session_id, params,
-                      automatic_gain_control, total_segments, std::move(client),
-                      base::BindOnce(&MojoAudioInputIPC::StreamCreated,
-                                     weak_factory_.GetWeakPtr()));
-
-  // Unretained is safe since |delegate_| is required to remain valid until
-  // CloseStream is called, which closes the binding.
-  stream_.set_connection_error_handler(base::BindOnce(
-      &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
+  stream_creator_.Run(std::move(client), session_id, params,
+                      automatic_gain_control, total_segments);
 }
 
 void MojoAudioInputIPC::RecordStream() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (stream_.is_bound())
-    stream_->Record();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(stream_.is_bound());
+  stream_->Record();
 }
 
 void MojoAudioInputIPC::SetVolume(double volume) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (stream_.is_bound())
-    stream_->SetVolume(volume);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(stream_.is_bound());
+  stream_->SetVolume(volume);
 }
 
 void MojoAudioInputIPC::CloseStream() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_binding_.Close();
-  stream_.reset();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_ = nullptr;
+  if (factory_client_binding_.is_bound())
+    factory_client_binding_.Unbind();
+  if (stream_client_binding_.is_bound())
+    stream_client_binding_.Unbind();
+  stream_.reset();
 }
 
 void MojoAudioInputIPC::StreamCreated(
+    media::mojom::AudioInputStreamPtr stream,
+    media::mojom::AudioInputStreamClientRequest stream_client_request,
     mojo::ScopedSharedBufferHandle shared_memory,
     mojo::ScopedHandle socket,
     bool initially_muted) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_);
   DCHECK(socket.is_valid());
   DCHECK(shared_memory.is_valid());
+  DCHECK(!stream_);
+  DCHECK(!stream_client_binding_.is_bound());
+  stream_ = std::move(stream);
+  stream_client_binding_.Bind(std::move(stream_client_request));
 
   base::PlatformFile socket_handle;
   auto result = mojo::UnwrapPlatformFile(std::move(socket), &socket_handle);
@@ -89,13 +95,13 @@ void MojoAudioInputIPC::StreamCreated(
 }
 
 void MojoAudioInputIPC::OnError() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_);
   delegate_->OnError();
 }
 
 void MojoAudioInputIPC::OnMutedStateChanged(bool is_muted) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_);
   delegate_->OnMuted(is_muted);
 }
