@@ -15,6 +15,11 @@
    without any warranty.
 */
 
+/**
+ * @file
+ * @brief Test helper functions
+ */
+
 #include <config.h>
 #include <assert.h>
 #include <stdio.h>
