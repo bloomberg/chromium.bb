@@ -66,7 +66,7 @@ ExtensionNotifierController::GetNotifierList(Profile* profile) {
         notifier_id, base::UTF8ToUTF16(extension->name()),
         has_advanced_settings_button,
         notifier_state_tracker->IsNotifierEnabled(notifier_id),
-        gfx::ImageSkia()));
+        false /* enforced */, gfx::ImageSkia()));
     app_icon_loader_->FetchImage(extension->id());
   }
 

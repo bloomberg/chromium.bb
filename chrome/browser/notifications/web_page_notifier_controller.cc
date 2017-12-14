@@ -46,9 +46,13 @@ WebPageNotifierController::GetNotifierList(Profile* profile) {
     message_center::NotifierId notifier_id(url);
     NotifierStateTracker* const notifier_state_tracker =
         NotifierStateTrackerFactory::GetForProfile(profile);
+    content_settings::SettingInfo info;
+    HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
+        url, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(), &info);
     notifiers.push_back(ash::mojom::NotifierUiData::New(
-        notifier_id, name, false,
+        notifier_id, name, false /* has_advanced_settings */,
         notifier_state_tracker->IsNotifierEnabled(notifier_id),
+        info.source == content_settings::SETTING_SOURCE_POLICY,
         gfx::ImageSkia()));
     patterns_[url_pattern] = iter->primary_pattern;
     // Note that favicon service obtains the favicon from history. This means

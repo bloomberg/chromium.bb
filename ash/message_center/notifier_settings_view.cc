@@ -61,7 +61,7 @@ using message_center::NotifierId;
 
 namespace {
 
-const int kEntryHeight = 48;
+const int kNotifierButtonWrapperHeight = 48;
 const int kHorizontalMargin = 12;
 const int kEntryIconSize = 20;
 const int kInternalHorizontalSpacing = 16;
@@ -102,23 +102,29 @@ std::unique_ptr<views::Painter> CreateFocusPainter() {
 constexpr gfx::Insets kTopLabelPadding(16, 18, 15, 18);
 const int kQuietModeViewSpacing = 18;
 
-constexpr gfx::Insets kHeaderViewPadding(4, 0, 4, 0);
+constexpr gfx::Insets kHeaderViewPadding(4, 0);
 constexpr gfx::Insets kQuietModeViewPadding(0, 18, 0, 0);
 constexpr gfx::Insets kQuietModeLabelPadding(16, 0, 15, 0);
-constexpr gfx::Insets kQuietModeTogglePadding(0, 14, 0, 14);
-constexpr SkColor kTopLabelColor = SkColorSetRGB(0x42, 0x85, 0xF4);
-constexpr SkColor kLabelColor = SkColorSetARGB(0xDE, 0x0, 0x0, 0x0);
-constexpr SkColor kTopBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
+constexpr gfx::Insets kQuietModeTogglePadding(0, 14);
+constexpr SkColor kTopLabelColor = gfx::kGoogleBlue500;
+constexpr SkColor kLabelColor = SkColorSetA(SK_ColorBLACK, 0xDE);
+constexpr SkColor kTopBorderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
+constexpr SkColor kDisabledNotifierFilterColor =
+    SkColorSetA(SK_ColorWHITE, 0xB8);
 const int kLabelFontSizeDelta = 1;
 
-// EntryView ------------------------------------------------------------------
+// NotifierButtonWrapperView ---------------------------------------------------
 
-// The view to guarantee the 48px height and place the contents at the
-// middle. It also guarantee the left margin.
-class EntryView : public views::View {
+// A wrapper view of NotifierButton to guarantee the fixed height
+// |kNotifierButtonWrapperHeight|. The button is placed in the middle of
+// the wrapper view by giving padding to the top and the bottom.
+// The view is focusable and provides focus painter. When the button is disabled
+// (NotifierUiData.enforced), it also applies filter to make the color of the
+// button dim.
+class NotifierButtonWrapperView : public views::View {
  public:
-  explicit EntryView(views::View* contents);
-  ~EntryView() override;
+  explicit NotifierButtonWrapperView(views::View* contents);
+  ~NotifierButtonWrapperView() override;
 
   // views::View:
   void Layout() override;
@@ -131,60 +137,94 @@ class EntryView : public views::View {
   void OnBlur() override;
 
  private:
+  // Initialize |disabled_filter_|. Should be called once.
+  void CreateDisabledFilter();
+
   std::unique_ptr<views::Painter> focus_painter_;
 
-  DISALLOW_COPY_AND_ASSIGN(EntryView);
+  // NotifierButton to wrap.
+  views::View* contents_;
+
+  // A view to add semi-transparent filter on top of |contents_|.
+  // It is only visible when NotifierButton is disabled (e.g. the setting is
+  // enforced by administrator.) The color of the NotifierButton would be dim
+  // and users notice they can't change the setting.
+  views::View* disabled_filter_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(NotifierButtonWrapperView);
 };
 
-EntryView::EntryView(views::View* contents)
-    : focus_painter_(CreateFocusPainter()) {
+NotifierButtonWrapperView::NotifierButtonWrapperView(views::View* contents)
+    : focus_painter_(CreateFocusPainter()), contents_(contents) {
   AddChildView(contents);
 }
 
-EntryView::~EntryView() = default;
+NotifierButtonWrapperView::~NotifierButtonWrapperView() = default;
 
-void EntryView::Layout() {
-  DCHECK_EQ(1, child_count());
-  views::View* content = child_at(0);
-  int content_width = width();
-  int content_height = content->GetHeightForWidth(content_width);
-  int y = std::max((height() - content_height) / 2, 0);
-  content->SetBounds(0, y, content_width, content_height);
+void NotifierButtonWrapperView::Layout() {
+  int contents_width = width();
+  int contents_height = contents_->GetHeightForWidth(contents_width);
+  int y = std::max((height() - contents_height) / 2, 0);
+  contents_->SetBounds(0, y, contents_width, contents_height);
+
+  // Since normally we don't show |disabled_filter_|, initialize it lazily.
+  if (!contents_->enabled()) {
+    if (!disabled_filter_)
+      CreateDisabledFilter();
+    disabled_filter_->SetVisible(true);
+    gfx::Rect filter_bounds = GetContentsBounds();
+    filter_bounds.set_width(filter_bounds.width() - kEntryIconSize);
+    disabled_filter_->SetBoundsRect(filter_bounds);
+  } else if (disabled_filter_) {
+    disabled_filter_->SetVisible(false);
+  }
+
+  SetFocusBehavior(contents_->enabled() ? FocusBehavior::ALWAYS
+                                        : FocusBehavior::NEVER);
 }
 
-gfx::Size EntryView::CalculatePreferredSize() const {
-  return gfx::Size(kWidth, kEntryHeight);
+gfx::Size NotifierButtonWrapperView::CalculatePreferredSize() const {
+  return gfx::Size(kWidth, kNotifierButtonWrapperHeight);
 }
 
-void EntryView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  DCHECK_EQ(1, child_count());
-  child_at(0)->GetAccessibleNodeData(node_data);
+void NotifierButtonWrapperView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  contents_->GetAccessibleNodeData(node_data);
 }
 
-void EntryView::OnFocus() {
+void NotifierButtonWrapperView::OnFocus() {
   views::View::OnFocus();
   ScrollRectToVisible(GetLocalBounds());
   // We render differently when focused.
   SchedulePaint();
 }
 
-bool EntryView::OnKeyPressed(const ui::KeyEvent& event) {
-  return child_at(0)->OnKeyPressed(event);
+bool NotifierButtonWrapperView::OnKeyPressed(const ui::KeyEvent& event) {
+  return contents_->OnKeyPressed(event);
 }
 
-bool EntryView::OnKeyReleased(const ui::KeyEvent& event) {
-  return child_at(0)->OnKeyReleased(event);
+bool NotifierButtonWrapperView::OnKeyReleased(const ui::KeyEvent& event) {
+  return contents_->OnKeyReleased(event);
 }
 
-void EntryView::OnPaint(gfx::Canvas* canvas) {
+void NotifierButtonWrapperView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
-void EntryView::OnBlur() {
+void NotifierButtonWrapperView::OnBlur() {
   View::OnBlur();
   // We render differently when focused.
   SchedulePaint();
+}
+
+void NotifierButtonWrapperView::CreateDisabledFilter() {
+  DCHECK(!disabled_filter_);
+  disabled_filter_ = new views::View;
+  disabled_filter_->SetBackground(
+      views::CreateSolidBackground(kDisabledNotifierFilterColor));
+  disabled_filter_->set_can_process_events_within_subtree(false);
+  AddChildView(disabled_filter_);
 }
 
 // ScrollContentsView ----------------------------------------------------------
@@ -268,8 +308,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
       notifier_id_(notifier_ui_data.notifier_id),
       icon_view_(new views::ImageView()),
       name_view_(new views::Label(notifier_ui_data.name)),
-      checkbox_(new views::Checkbox(base::string16(), true /* force_md */)),
-      learn_more_(nullptr) {
+      checkbox_(new views::Checkbox(base::string16(), true /* force_md */)) {
   name_view_->SetAutoColorReadabilityEnabled(false);
   name_view_->SetEnabledColor(kLabelColor);
   // "Roboto-Regular, 13sp" is specified in the mock.
@@ -304,10 +343,14 @@ NotifierSettingsView::NotifierButton::NotifierButton(
     // The image itself is quite small, this large invisible border creates a
     // much bigger click target.
     learn_more_->SetBorder(views::CreateEmptyBorder(
-        learn_more_border_height, learn_more_border_width,
-        learn_more_border_height, learn_more_border_width));
+        gfx::Insets(learn_more_border_height, learn_more_border_width)));
     learn_more_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
+  }
+
+  if (notifier_ui_data.enforced) {
+    Button::SetEnabled(false);
+    checkbox_->SetEnabled(false);
   }
 
   UpdateIconImage(notifier_ui_data.icon);
@@ -394,19 +437,27 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   // Add a padding column which contains expandable blank space.
   cs->AddPaddingColumn(1, 0);
 
+  layout->StartRow(0, 0);
+  layout->AddView(checkbox_);
+  layout->AddView(icon_view_);
+  layout->AddView(name_view_);
+
   // Add a column for the learn more button if necessary.
   if (learn_more_) {
     cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
     cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                   GridLayout::USE_PREF, 0, 0);
+    layout->AddView(learn_more_);
   }
 
-  layout->StartRow(0, 0);
-  layout->AddView(checkbox_);
-  layout->AddView(icon_view_);
-  layout->AddView(name_view_);
-  if (learn_more_)
-    layout->AddView(learn_more_);
+  if (!enabled()) {
+    views::ImageView* policy_enforced_icon = new views::ImageView();
+    policy_enforced_icon->SetImage(gfx::CreateVectorIcon(
+        kSystemMenuBusinessIcon, kEntryIconSize, gfx::kChromeIconGrey));
+    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
+                  kEntryIconSize, 0);
+    layout->AddView(policy_enforced_icon);
+  }
 
   Layout();
 }
@@ -534,10 +585,10 @@ void NotifierSettingsView::SetNotifierList(
   size_t notifier_count = ui_data.size();
   for (size_t i = 0; i < notifier_count; ++i) {
     NotifierButton* button = new NotifierButton(*ui_data[i], this);
-    EntryView* entry = new EntryView(button);
+    NotifierButtonWrapperView* wrapper = new NotifierButtonWrapperView(button);
 
-    entry->SetFocusBehavior(FocusBehavior::ALWAYS);
-    contents_view->AddChildView(entry);
+    wrapper->SetFocusBehavior(FocusBehavior::ALWAYS);
+    contents_view->AddChildView(wrapper);
     buttons_.insert(button);
   }
 

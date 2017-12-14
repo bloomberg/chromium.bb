@@ -24,6 +24,9 @@ struct NotifierUiData {
   // True if notifications from the notifier are presently enabled.
   bool enabled;
 
+  // True if the setting is enforced by administrator and the user can't change.
+  bool enforced;
+
   // An icon displayed next to the name.
   gfx.mojom.ImageSkia? icon;
 };
