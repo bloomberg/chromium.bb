@@ -81,6 +81,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
     has_received_upload_progress_ = false;
   }
 
+  mojom::DownloadedTempFilePtr TakeDownloadedTempFile();
   void ClearHasReceivedRedirect();
   // Creates an InterfacePtr, binds it to |*this| and returns it.
   mojom::URLLoaderClientPtr CreateInterfacePtr();
@@ -101,6 +102,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   mojo::Binding<mojom::URLLoaderClient> binding_;
   ResourceResponseHead response_head_;
   base::Optional<net::SSLInfo> ssl_info_;
+  mojom::DownloadedTempFilePtr downloaded_file_;
   net::RedirectInfo redirect_info_;
   std::string cached_metadata_;
   mojo::ScopedDataPipeConsumerHandle response_body_;

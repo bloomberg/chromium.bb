@@ -23,10 +23,9 @@ void TestURLLoaderClient::OnReceiveResponse(
   has_received_response_ = true;
   response_head_ = response_head;
   ssl_info_ = ssl_info;
+  downloaded_file_ = std::move(downloaded_file);
   if (quit_closure_for_on_receive_response_)
     quit_closure_for_on_receive_response_.Run();
-  binding_.set_connection_error_handler(base::BindOnce(
-      &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));
 }
 
 void TestURLLoaderClient::OnReceiveRedirect(
@@ -109,6 +108,10 @@ void TestURLLoaderClient::OnComplete(
     quit_closure_for_on_complete_.Run();
 }
 
+mojom::DownloadedTempFilePtr TestURLLoaderClient::TakeDownloadedTempFile() {
+  return std::move(downloaded_file_);
+}
+
 void TestURLLoaderClient::ClearHasReceivedRedirect() {
   has_received_redirect_ = false;
 }
@@ -116,6 +119,8 @@ void TestURLLoaderClient::ClearHasReceivedRedirect() {
 mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtr() {
   mojom::URLLoaderClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));
   return client_ptr;
 }
 
@@ -188,6 +193,8 @@ void TestURLLoaderClient::RunUntilConnectionError() {
 }
 
 void TestURLLoaderClient::OnConnectionError() {
+  if (has_received_connection_error_)
+    return;
   has_received_connection_error_ = true;
   if (quit_closure_for_on_connection_error_)
     quit_closure_for_on_connection_error_.Run();
