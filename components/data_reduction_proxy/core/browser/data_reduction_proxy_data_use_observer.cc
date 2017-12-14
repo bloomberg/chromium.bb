@@ -132,4 +132,10 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
   }
 }
 
+void DataReductionProxyDataUseObserver::OnPageDidFinishLoad(
+    data_use_measurement::DataUse* data_use) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(dougarnett): 781885 - estimate data saving for NoScript.
+}
+
 }  // namespace data_reduction_proxy

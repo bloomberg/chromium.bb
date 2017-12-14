@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "url/gurl.h"
 
 namespace content {
 class NavigationHandle;
@@ -65,6 +66,10 @@ class ChromeDataUseAscriberService : public KeyedService {
 
   // Forwarded from DataUseWebContentsObserver
   void DidFinishNavigation(content::NavigationHandle* navigation_handle);
+
+  // Forwarded from DataUseWebContentsObserver
+  void DidFinishLoad(content::RenderFrameHost* main_render_frame_host,
+                     const GURL& validated_url);
 
  private:
   friend class ChromeDataUseAscriberServiceTest;

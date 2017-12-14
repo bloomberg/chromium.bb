@@ -111,6 +111,11 @@ class ChromeDataUseAscriber : public DataUseAscriber {
                               int new_render_process_id,
                               int new_render_frame_id);
 
+  // Called when the load is finished.
+  void DidFinishLoad(int render_process_id,
+                     int render_frame_id,
+                     const GURL& validated_url);
+
  private:
   friend class ChromeDataUseAscriberTest;
 
@@ -167,7 +172,8 @@ class ChromeDataUseAscriber : public DataUseAscriber {
       net::URLRequest* request);
 
   void NotifyPageLoadCommit(DataUseRecorderEntry entry);
-  void NotifyDataUseCompleted(DataUseRecorderEntry entry);
+  void NotifyDidFinishLoad(DataUseRecorderEntry entry);
+  void NotifyPageLoadConcluded(DataUseRecorderEntry entry);
 
   DataUseRecorderEntry CreateNewDataUseRecorder(
       net::URLRequest* request,

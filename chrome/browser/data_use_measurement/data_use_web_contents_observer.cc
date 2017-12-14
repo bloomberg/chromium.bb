@@ -93,4 +93,10 @@ void DataUseWebContentsObserver::DidFinishNavigation(
   service_->DidFinishNavigation(navigation_handle);
 }
 
+void DataUseWebContentsObserver::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  service_->DidFinishLoad(render_frame_host, validated_url);
+}
+
 }  // namespace data_use_measurement
