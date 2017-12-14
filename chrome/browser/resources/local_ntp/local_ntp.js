@@ -656,6 +656,12 @@ function init() {
 
     // Update the fakebox style to match the current key capturing state.
     setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
+    // Also tell the browser that we're capturing, otherwise it's possible that
+    // both fakebox and Omnibox have visible focus at the same time, see
+    // crbug.com/792850.
+    if (searchboxApiHandle.isKeyCaptureEnabled) {
+      searchboxApiHandle.startCapturingKeyStrokes();
+    }
 
     // Load the Doodle. After the first request completes (getting cached
     // data), issue a second request for fresh Doodle data.
