@@ -24,6 +24,11 @@ for (const {property, values, desc} of gInvalidTestCases) {
 
 test(() => {
   let styleMap = newDivWithStyle().attributeStyleMap;
+  assert_throws(new TypeError(), () => styleMap.set('width', CSS.px(10), CSS.px(10)));
+}, 'Setting a non list-valued property with multiple arguments throws TypeError');
+
+test(() => {
+  let styleMap = newDivWithStyle().attributeStyleMap;
 
   styleMap.set('width', CSS.px(10));
   assert_style_value_array_equals(styleMap.get('width'), CSS.px(10));
