@@ -39,12 +39,14 @@
 @synthesize preferences = _preferences;
 @synthesize userContentController = _userContentController;
 
-static CWVWebViewConfiguration* defaultConfiguration;
-static CWVWebViewConfiguration* incognitoConfiguration;
+namespace {
+CWVWebViewConfiguration* gDefaultConfiguration = nil;
+CWVWebViewConfiguration* gIncognitoConfiguration = nil;
+}  // namespace
 
 + (void)shutDown {
-  [defaultConfiguration shutDown];
-  [incognitoConfiguration shutDown];
+  [gDefaultConfiguration shutDown];
+  [gIncognitoConfiguration shutDown];
 }
 
 + (instancetype)defaultConfiguration {
@@ -52,10 +54,10 @@ static CWVWebViewConfiguration* incognitoConfiguration;
   dispatch_once(&onceToken, ^{
     auto browserState =
         base::MakeUnique<ios_web_view::WebViewBrowserState>(false);
-    defaultConfiguration = [[CWVWebViewConfiguration alloc]
+    gDefaultConfiguration = [[CWVWebViewConfiguration alloc]
         initWithBrowserState:std::move(browserState)];
   });
-  return defaultConfiguration;
+  return gDefaultConfiguration;
 }
 
 + (instancetype)incognitoConfiguration {
@@ -63,10 +65,10 @@ static CWVWebViewConfiguration* incognitoConfiguration;
   dispatch_once(&onceToken, ^{
     auto browserState =
         base::MakeUnique<ios_web_view::WebViewBrowserState>(true);
-    incognitoConfiguration = [[CWVWebViewConfiguration alloc]
+    gIncognitoConfiguration = [[CWVWebViewConfiguration alloc]
         initWithBrowserState:std::move(browserState)];
   });
-  return incognitoConfiguration;
+  return gIncognitoConfiguration;
 }
 
 + (void)initialize {
