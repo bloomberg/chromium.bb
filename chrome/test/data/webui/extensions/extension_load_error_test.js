@@ -67,7 +67,7 @@ cr.define('extension_load_error_tests', function() {
     });
 
     test(assert(TestNames.CodeSection), function() {
-      expectTrue(loadError.$.code.isEmpty());
+      expectTrue(loadError.$.code.$$('#scroll-container').hidden);
       var loadErrorWithSource = {
         error: 'Some error',
         path: '/some/path',
@@ -79,7 +79,7 @@ cr.define('extension_load_error_tests', function() {
       };
 
       loadError.loadError = loadErrorWithSource;
-      expectFalse(loadError.$.code.isEmpty());
+      expectFalse(loadError.$.code.$$('#scroll-container').hidden);
     });
   });
 

@@ -38,7 +38,6 @@ cr.define('extension_code_section_tests', function() {
 
       var testIsVisible = extension_test_util.isVisible.bind(null, codeSection);
       expectFalse(!!codeSection.code);
-      expectTrue(codeSection.isEmpty());
       expectTrue(codeSection.$$('#scroll-container').hidden);
       expectFalse(testIsVisible('#main'));
       expectTrue(testIsVisible('#no-code'));
@@ -52,11 +51,10 @@ cr.define('extension_code_section_tests', function() {
       expectEquals(
           code.beforeHighlight + code.highlight + code.afterHighlight,
           fullSpan.textContent);
-      var highlightSpan = codeSection.$$('#highlight');
-      expectEquals(code.highlight, highlightSpan.textContent);
-      expectEquals(code.message, highlightSpan.title);
+      var highlightedText = window.getSelection().toString();
+      expectEquals(code.highlight, highlightedText);
       expectEquals(
-          '1\n2\n3\n4', codeSection.$['line-numbers'].textContent.trim());
+          '1\n2\n3\n4\n5', codeSection.$['line-numbers'].textContent.trim());
     });
   });
 
