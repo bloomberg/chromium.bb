@@ -450,6 +450,24 @@ bool Page::IsPageVisible() const {
 void Page::SetLifecycleState(PageLifecycleState state) {
   if (state == page_lifecycle_state_)
     return;
+
+  if (RuntimeEnabledFeatures::PageLifecycleEnabled()) {
+    if (state == PageLifecycleState::kStopped) {
+      for (Frame* frame = main_frame_.Get(); frame;
+           frame = frame->Tree().TraverseNext()) {
+        frame->DidFreeze();
+      }
+    } else if (state == PageLifecycleState::kActive ||
+               state == PageLifecycleState::kHidden) {
+      // TODO(fmeawad): Only resume the page that just became visible, blocked
+      // on task queues per frame.
+      DCHECK(page_lifecycle_state_ == PageLifecycleState::kStopped);
+      for (Frame* frame = main_frame_.Get(); frame;
+           frame = frame->Tree().TraverseNext()) {
+        frame->DidResume();
+      }
+    }
+  }
   page_lifecycle_state_ = state;
 }
 

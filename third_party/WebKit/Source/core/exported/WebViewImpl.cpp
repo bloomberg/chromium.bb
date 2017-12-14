@@ -957,10 +957,10 @@ void WebViewImpl::RequestBeginMainFrameNotExpected(bool new_state) {
 void WebViewImpl::SetPageStopped(bool stopped) {
   if (!GetPage())
     return;
-  GetPage()->SetLifecycleState(
-      stopped ? PageLifecycleState::kStopped
-              // TODO(fmeawad): if not stopped, fall back to visibility state.
-              : PageLifecycleState::kUnknown);
+  GetPage()->SetLifecycleState(stopped ? PageLifecycleState::kStopped
+                                       : GetPage()->IsPageVisible()
+                                             ? PageLifecycleState::kActive
+                                             : PageLifecycleState::kHidden);
 }
 
 WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {

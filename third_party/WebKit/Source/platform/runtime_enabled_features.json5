@@ -753,6 +753,10 @@
       settable_from_internals: true,
     },
     {
+      name: "PageLifecycle",
+      status: "test",
+    },
+    {
       name: "PagePopup",
       status: "stable",
     },

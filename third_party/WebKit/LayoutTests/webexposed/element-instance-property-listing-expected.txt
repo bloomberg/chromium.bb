@@ -377,6 +377,7 @@ html element body
     property onafterprint
     property onbeforeprint
     property onbeforeunload
+    property onfreeze
     property onhashchange
     property onlanguagechange
     property onmessage
@@ -387,6 +388,7 @@ html element body
     property onpageshow
     property onpopstate
     property onrejectionhandled
+    property onresume
     property onstorage
     property onunhandledrejection
     property onunload
@@ -528,6 +530,7 @@ html element frameset
     property onafterprint
     property onbeforeprint
     property onbeforeunload
+    property onfreeze
     property onhashchange
     property onlanguagechange
     property onmessage
@@ -538,6 +541,7 @@ html element frameset
     property onpageshow
     property onpopstate
     property onrejectionhandled
+    property onresume
     property onstorage
     property onunhandledrejection
     property onunload

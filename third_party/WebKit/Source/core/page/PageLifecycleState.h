@@ -8,8 +8,10 @@
 namespace blink {
 
 enum class PageLifecycleState {
-  kUnknown,
-  kStopped,
+  kUnknown,  // The page state is unknown.
+  kActive,   // The page is visible and active.
+  kHidden,   // The page is not visible but active.
+  kStopped,  // The page is stopped.
 };
 
 }  // namespace blink

@@ -38,6 +38,7 @@
     attribute EventHandler onbeforeprint;
     // FIXME: onbeforeunload should be an OnBeforeUnloadEventHandler.
     attribute EventHandler onbeforeunload;
+    [RuntimeEnabled=PageLifecycle] attribute EventHandler onfreeze;
     attribute EventHandler onhashchange;
     attribute EventHandler onlanguagechange;
     attribute EventHandler onmessage;
@@ -48,6 +49,7 @@
     attribute EventHandler onpageshow;
     attribute EventHandler onpopstate;
     attribute EventHandler onrejectionhandled;
+    [RuntimeEnabled=PageLifecycle] attribute EventHandler onresume;
     attribute EventHandler onstorage;
     attribute EventHandler onunhandledrejection;
     attribute EventHandler onunload;

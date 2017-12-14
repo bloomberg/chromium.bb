@@ -16197,6 +16197,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Microseconds spent in beforeunload.</summary>
 </histogram>
 
+<histogram name="DocumentEventTiming.FreezeDuration" units="microseconds">
+  <owner>panicker@chromium.org</owner>
+  <owner>fmeawad@chromium.org</owner>
+  <summary>Microseconds spent in onfreeze.</summary>
+</histogram>
+
 <histogram name="DocumentEventTiming.PageHideDuration" units="microseconds">
   <owner>panicker@chromium.org</owner>
   <summary>Microseconds spent in pagehide.</summary>
@@ -16206,6 +16212,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="microseconds">
   <owner>panicker@chromium.org</owner>
   <summary>Microseconds spent in vibilitychange (hidden).</summary>
+</histogram>
+
+<histogram name="DocumentEventTiming.ResumeDuration" units="microseconds">
+  <owner>panicker@chromium.org</owner>
+  <owner>fmeawad@chromium.org</owner>
+  <summary>Microseconds spent in onresume.</summary>
 </histogram>
 
 <histogram name="DocumentEventTiming.UnloadDuration" units="microseconds">
