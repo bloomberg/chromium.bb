@@ -1460,9 +1460,11 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnableNetworkPortalNotification,
          chromeos::switches::kDisableNetworkPortalNotification)},
-    {"network-settings-config", flag_descriptions::kNetworkSettingsConfigName,
-     flag_descriptions::kNetworkSettingsConfigDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kNetworkSettingsConfig)},
+    {"disable-network-settings-config",
+     flag_descriptions::kDisableNetworkSettingsConfigName,
+     flag_descriptions::kDisableNetworkSettingsConfigDescription, kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(
+         chromeos::switches::kDisableNetworkSettingsConfig)},
 #endif  // OS_CHROMEOS
 #if BUILDFLAG(ENABLE_PLUGINS)
     {"allow-nacl-socket-api", flag_descriptions::kAllowNaclSocketApiName,
