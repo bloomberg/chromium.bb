@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
@@ -91,6 +92,7 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
       profile_(nullptr),
       model_(nullptr),
       search_model_(nullptr),
+      model_updater_(nullptr),
       template_url_service_observer_(this),
       observer_binding_(this),
       weak_ptr_factory_(this) {
@@ -129,6 +131,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   if (profile_) {
     DCHECK(model_);
     DCHECK(search_model_);
+    DCHECK(model_updater_);
     // |search_controller_| will be destroyed on profile switch. Before that,
     // delete |model_|'s search results to clear any dangling pointers.
     search_model_->results()->DeleteAll();
@@ -144,6 +147,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     app_sync_ui_state_watcher_.reset();
     model_ = nullptr;
     search_model_ = nullptr;
+    model_updater_ = nullptr;
   }
 
   template_url_service_observer_.RemoveAll();
@@ -166,11 +170,11 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
       TemplateURLServiceFactory::GetForProfile(profile_);
   template_url_service_observer_.Add(template_url_service);
 
-  model_ = app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
-               ->GetModel();
-  search_model_ =
-      app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
-          ->GetSearchModel();
+  app_list::AppListSyncableService* syncable_service =
+      app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
+  model_ = syncable_service->GetModel();
+  search_model_ = syncable_service->GetSearchModel();
+  model_updater_ = syncable_service->GetModelUpdater();
 
   // After |model_| is initialized, make a GetWallpaperColors mojo call to set
   // wallpaper colors for |model_|.
@@ -178,7 +182,8 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
       base::Bind(&AppListViewDelegate::OnGetWallpaperColorsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));
+  app_sync_ui_state_watcher_ =
+      std::make_unique<AppSyncUIStateWatcher>(profile_, model_updater_);
 
   SetUpSearchUI();
   OnTemplateURLServiceChanged();
@@ -207,8 +212,8 @@ void AppListViewDelegate::SetUpSearchUI() {
   search_resource_manager_.reset(new app_list::SearchResourceManager(
       profile_, search_model_->search_box(), speech_ui_.get()));
 
-  search_controller_ =
-      CreateSearchController(profile_, model_, search_model_, controller_);
+  search_controller_ = CreateSearchController(profile_, model_updater_,
+                                              search_model_, controller_);
 }
 
 void AppListViewDelegate::OnWallpaperColorsChanged(
@@ -219,6 +224,10 @@ void AppListViewDelegate::OnWallpaperColorsChanged(
   wallpaper_prominent_colors_ = prominent_colors;
   for (auto& observer : observers_)
     observer.OnWallpaperColorsChanged();
+}
+
+app_list::AppListModelUpdater* AppListViewDelegate::GetModelUpdater() {
+  return model_updater_;
 }
 
 app_list::AppListModel* AppListViewDelegate::GetModel() {
@@ -248,7 +257,8 @@ void AppListViewDelegate::OpenSearchResult(app_list::SearchResult* result,
 
   // Record the search metric if the SearchResult is not a suggested app.
   if (result->display_type() != app_list::SearchResult::DISPLAY_RECOMMENDATION)
-    RecordHistogram(search_model_->tablet_mode(), model_->state_fullscreen());
+    RecordHistogram(model_updater_->TabletMode(),
+                    model_updater_->StateFullscreen());
 
   search_controller_->OpenResult(result, event_flags);
 }

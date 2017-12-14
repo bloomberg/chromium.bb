@@ -13,7 +13,6 @@
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
+#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -65,16 +65,15 @@ class AppSearchProviderTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    model_.reset(new app_list::AppListModel);
+    model_updater_ = std::make_unique<app_list::FakeAppListModelUpdater>();
     controller_.reset(new ::test::TestAppListControllerDelegate);
   }
 
   void CreateSearch() {
     std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
     clock->SetNow(kTestCurrentTime);
-    app_search_.reset(new AppSearchProvider(profile_.get(), nullptr,
-                                            std::move(clock),
-                                            model_->top_level_item_list()));
+    app_search_.reset(new AppSearchProvider(
+        profile_.get(), nullptr, std::move(clock), model_updater_.get()));
   }
 
   std::string RunQuery(const std::string& query) {
@@ -139,12 +138,12 @@ class AppSearchProviderTest : public AppListTestBase {
     service()->AddExtension(extension.get());
   }
 
-  AppListModel* model() { return model_.get(); }
   const SearchProvider::Results& results() { return app_search_->results(); }
   ArcAppTest& arc_test() { return arc_test_; }
 
  private:
   std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<app_list::FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AppSearchProvider> app_search_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
   ArcAppTest arc_test_;

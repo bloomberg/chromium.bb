@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "ash/app_list/model/search/search_model.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -60,12 +60,12 @@ void AnswerCardSearchProvider::NavigationContext::Clear() {
 
 AnswerCardSearchProvider::AnswerCardSearchProvider(
     Profile* profile,
-    app_list::SearchModel* search_model,
+    app_list::AppListModelUpdater* model_updater,
     AppListControllerDelegate* list_controller,
     std::unique_ptr<AnswerCardContents> contents0,
     std::unique_ptr<AnswerCardContents> contents1)
     : profile_(profile),
-      search_model_(search_model),
+      model_updater_(model_updater),
       list_controller_(list_controller),
       answer_server_url_(features::AnswerServerUrl()),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
@@ -85,7 +85,7 @@ void AnswerCardSearchProvider::Start(bool is_voice_query,
   server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
 
   if (query.empty() || is_voice_query ||
-      !search_model_->search_engine_is_google()) {
+      !model_updater_->SearchEngineIsGoogle()) {
     DeleteCurrentResult();
     return;
   }

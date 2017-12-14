@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
-#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync/model/sync_change.h"
@@ -46,8 +45,12 @@ class PrefRegistrySyncable;
 namespace app_list {
 
 class AppListItem;
+// TODO(hejq): Remove these when we get rid of |GetModel| and |GetSearchModel|.
 class AppListModel;
 class SearchModel;
+
+class AppListModelUpdater;
+class ChromeAppListModelUpdater;
 
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
@@ -119,10 +122,15 @@ class AppListSyncableService : public syncer::SyncableService,
   void SetPinPosition(const std::string& app_id,
                       const syncer::StringOrdinal& item_pin_ordinal);
 
+  // Gets the app list model updater.
+  AppListModelUpdater* GetModelUpdater();
+
   // Gets the app list model.
+  // Note: This will be removed. Use |GetModelUpdater| instead.
   AppListModel* GetModel();
 
   // Gets the search model.
+  // Note: This will be removed. Use |GetModelUpdater| instead.
   SearchModel* GetSearchModel();
 
   // Returns true if this service was initialized.
@@ -155,7 +163,6 @@ class AppListSyncableService : public syncer::SyncableService,
 
  private:
   class ModelObserver;
-  class ModelUpdater;
 
   // KeyedService
   void Shutdown() override;
@@ -233,13 +240,10 @@ class AppListSyncableService : public syncer::SyncableService,
   // Deletes a SyncItem matching |specifics|.
   void DeleteSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
 
-  // Creates the OEM folder and sets its name if necessary. Returns the OEM
-  // folder id.
-  std::string FindOrCreateOemFolder();
-
-  // Gets the location for the OEM folder. Called when the folder is first
-  // created.
-  syncer::StringOrdinal GetOemFolderPos();
+  // Gets the preferred location for the OEM folder. It may return an invalid
+  // position and the final OEM folder position will be determined in the
+  // AppListModel.
+  syncer::StringOrdinal GetPreferredOemFolderPos();
 
   // Returns true if an extension matching |id| exists and was installed by
   // an OEM (extension->was_installed_by_oem() is true).
@@ -270,9 +274,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
-  std::unique_ptr<AppListModel> model_;
-  std::unique_ptr<SearchModel> search_model_;
-  std::unique_ptr<ModelUpdater> model_updater_;
+  std::unique_ptr<ChromeAppListModelUpdater> model_updater_;
   std::unique_ptr<ModelObserver> model_observer_;
   std::unique_ptr<ExtensionAppModelBuilder> apps_builder_;
   std::unique_ptr<ArcAppModelBuilder> arc_apps_builder_;

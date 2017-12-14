@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -60,6 +61,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Invoked to start speech recognition based on a hotword trigger.
   void StartSpeechRecognitionForHotword(
       const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
+
+  // Gets the model updater.
+  app_list::AppListModelUpdater* GetModelUpdater();
 
   // Overridden from app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
@@ -119,6 +123,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // if |profile_| changes.
   app_list::AppListModel* model_;
   app_list::SearchModel* search_model_;
+
+  // Unowned pointer to the model updater owned by AppListSyncableService.
+  // Will change if |profile_| changes.
+  app_list::AppListModelUpdater* model_updater_;
 
   // Note: order ensures |search_resource_manager_| is destroyed before
   // |speech_ui_|.
