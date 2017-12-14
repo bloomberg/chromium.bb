@@ -51,14 +51,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       return true;
     }
 
-    var frames = getSameOriginFrames_(win);
-    for (var i = 0; i < frames.length; i++) {
-      if (hasPasswordField_(frames[i])) {
-        return true;
-      }
-    }
-
-    return false;
+    return getSameOriginFrames_(win).some(hasPasswordField_);
   };
 
   /**
@@ -228,7 +221,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       if (usernameInput.readOnly) {
         if (usernameInput.value == username) {
           passwordInput.value = password;
-          __gCrWeb.setAutofilled(passwordInput, true);
           filled = true;
         }
       } else {
@@ -241,8 +233,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
         usernameInput.value = username;
         passwordInput.focus();
         passwordInput.value = password;
-        __gCrWeb.setAutofilled(passwordInput, true);
-        __gCrWeb.setAutofilled(usernameInput, true);
         filled = true;
       }
     }
@@ -260,27 +250,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   };
 
   /**
-   * Returns true if the supplied field |inputElement| was autofilled.
-   * @param {Element} inputElement The form field for which we need to
-   *     acquire the autofilled indicator.
-   * @return {boolean} Whether inputElement was autofilled.
-   */
-  __gCrWeb.isAutofilled = function(inputElement) {
-    return inputElement['__gCrWebAutofilled'];
-  };
-
-  /**
-   * Marks the supplied field as autofilled or not depending on the
-   * |value|.
-   * @param {Element} inputElement The form field for which the indicator
-   *    needs to be set.
-   * @param {boolean} value The new value of the indicator.
-   */
-  __gCrWeb.setAutofilled = function(inputElement, value) {
-    inputElement['__gCrWebAutofilled'] = value;
-  };
-
-  /**
    * Finds all forms with passwords in the supplied window or frame and appends
    * JS objects containing the form data to |formDataList|.
    * @param {!Array.<Object>} formDataList A list that this function populates
@@ -289,18 +258,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    *    look for password forms.
    */
   __gCrWeb.getPasswordFormDataList = function(formDataList, win) {
-    var doc = null;
-
-    try {
-      // Security violations may generate an exception or null to be returned.
-      doc = win.document;
-    } catch(e) {
-    }
-
-    if (!doc) {
-      return;
-    }
-
+    var doc = win.document;
     var forms = doc.forms;
     for (var i = 0; i < forms.length; i++) {
       var formData = __gCrWeb.getPasswordFormData(forms[i]);
