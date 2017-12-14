@@ -9,7 +9,7 @@
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace ash {
 
@@ -38,7 +38,9 @@ class ASH_EXPORT NewWindowController : public mojom::NewWindowController {
   void OpenFeedbackPage();
 
  private:
-  mojo::Binding<mojom::NewWindowController> binding_;
+  // More than one part of chrome may connect to call the mojo methods, so use
+  // BindingSet instead of Binding. http://crbug.com/794581
+  mojo::BindingSet<mojom::NewWindowController> bindings_;
 
   mojom::NewWindowClientAssociatedPtr client_;
 
