@@ -114,7 +114,6 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> worker_context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    viz::SharedBitmapManager* shared_bitmap_manager,
     int routing_id,
     uint32_t layer_tree_frame_sink_id,
     std::unique_ptr<viz::BeginFrameSource> begin_frame_source,
@@ -128,7 +127,6 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
       routing_id_(routing_id),
       layer_tree_frame_sink_id_(layer_tree_frame_sink_id),
       registry_(registry),
-      shared_bitmap_manager_(shared_bitmap_manager),
       sender_(RenderThreadImpl::current()->sync_compositor_message_filter()),
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
@@ -205,7 +203,7 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   // TODO(crbug.com/692814): The Display never sends its resources out of
   // process so there is no reason for it to use a SharedBitmapManager.
   display_ = std::make_unique<viz::Display>(
-      shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
+      &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
       software_renderer_settings, kRootFrameSinkId, std::move(output_surface),
       nullptr /* scheduler */, nullptr /* current_task_runner */);
   display_->Initialize(&display_client_,

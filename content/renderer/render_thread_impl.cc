@@ -2155,9 +2155,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
             : CreateExternalBeginFrameSource(routing_id);
     callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
-        compositor_task_runner_, GetGpuMemoryBufferManager(),
-        shared_bitmap_manager(), routing_id, g_next_layer_tree_frame_sink_id++,
-        std::move(begin_frame_source), sync_compositor_message_filter_.get(),
+        compositor_task_runner_, GetGpuMemoryBufferManager(), routing_id,
+        g_next_layer_tree_frame_sink_id++, std::move(begin_frame_source),
+        sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue)));
     return;
   }
