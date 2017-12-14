@@ -15,9 +15,11 @@ namespace vr {
 // reference in
 // //tools/metrics/histograms/histograms.xml.
 enum class AssetsLoadStatus : int {
-  kSuccess = 0,         // Assets loaded successfully.
-  kParseFailure = 1,    // Failed to load assets.
-  kInvalidContent = 2,  // Content of assets files is invalid.
+  kSuccess = 0,       // Assets loaded successfully.
+  kParseFailure = 1,  // Failed to load assets.
+  kInvalidContent =
+      2,  // Content of assets files is invalid, e.g. it couldn't be decoded.
+  kNotFound = 3,  // Could not find asset files.
 };
 
 }  // namespace vr

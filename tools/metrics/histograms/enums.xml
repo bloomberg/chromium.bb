@@ -43491,6 +43491,8 @@ Called by update_traffic_annotation_histograms.py.-->
       label="Failed to load assets from disk (component version 0.1)."/>
   <int value="1002"
       label="Assets have an invalid content (component version 0.1)."/>
+  <int value="1000003"
+      label="Assets file(s) not found (component version 1.0)."/>
 </enum>
 
 <enum name="VRComponentStatus">
