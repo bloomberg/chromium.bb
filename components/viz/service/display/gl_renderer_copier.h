@@ -67,9 +67,10 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // copy of the framebuffer. |color_space| specifies the color space of the
   // pixels in the framebuffer.
   //
-  // This implementation may change texture and framebuffer bindings, and so the
-  // caller must not make any assumptions about the original objects still being
-  // bound to the same units.
+  // This implementation may change a wide variety of GL state, such as texture
+  // and framebuffer bindings, shader programs, and related attributes; and so
+  // the caller must not make any assumptions about the state of the GL context
+  // after this call.
   void CopyFromTextureOrFramebuffer(std::unique_ptr<CopyOutputRequest> request,
                                     const gfx::Rect& output_rect,
                                     GLenum internal_format,

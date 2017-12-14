@@ -2686,6 +2686,10 @@ void GLRenderer::CopyDrawnRenderPass(
       GetFramebufferCopyTextureFormat(), framebuffer_texture,
       framebuffer_texture_size,
       current_frame()->current_render_pass->color_space);
+
+  // The copier modified texture/framebuffer bindings, shader programs, and
+  // other GL state; and so this must be restored before continuing.
+  RestoreGLState();
 }
 
 void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {

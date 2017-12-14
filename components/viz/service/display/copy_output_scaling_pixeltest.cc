@@ -108,20 +108,47 @@ class CopyOutputScalingPixelTest
     std::unique_ptr<CopyOutputResult> result;
     {
       base::RunLoop loop;
-      std::unique_ptr<CopyOutputRequest> request(new CopyOutputRequest(
+
+      // Add a dummy copy request to be executed when the RED RenderPass is
+      // drawn (before the root RenderPass). This is a regression test to
+      // confirm GLRenderer state is consistent with the GL context after each
+      // copy request executes, and before the next RenderPass is drawn.
+      // http://crbug.com/792734
+      bool dummy_ran = false;
+      auto request = std::make_unique<CopyOutputRequest>(
           result_format_,
           base::BindOnce(
-              [](std::unique_ptr<CopyOutputResult>* test_result,
+              [](bool* dummy_ran, std::unique_ptr<CopyOutputResult> result) {
+                EXPECT_TRUE(!result->IsEmpty());
+                EXPECT_FALSE(*dummy_ran);
+                *dummy_ran = true;
+              },
+              &dummy_ran));
+      // Set a 10X zoom, which should be more than sufficient to disturb the
+      // results of the main copy request (below) if the GL state is not
+      // properly restored.
+      request->SetUniformScaleRatio(1, 10);
+      list.front()->copy_requests.push_back(std::move(request));
+
+      // Add a copy request to the root RenderPass, to capture the results of
+      // drawing all passes for this frame.
+      request = std::make_unique<CopyOutputRequest>(
+          result_format_,
+          base::BindOnce(
+              [](bool* dummy_ran,
+                 std::unique_ptr<CopyOutputResult>* test_result,
                  const base::Closure& quit_closure,
                  std::unique_ptr<CopyOutputResult> result_from_renderer) {
+                EXPECT_TRUE(*dummy_ran);
                 *test_result = std::move(result_from_renderer);
                 quit_closure.Run();
               },
-              &result, loop.QuitClosure())));
+              &dummy_ran, &result, loop.QuitClosure()));
       request->set_result_selection(
           copy_output::ComputeResultRect(copy_rect, scale_from_, scale_to_));
       request->SetScaleRatio(scale_from_, scale_to_);
       list.back()->copy_requests.push_back(std::move(request));
+
       renderer()->DrawFrame(&list, 1.0f, viewport_size);
       loop.Run();
     }
