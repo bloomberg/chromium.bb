@@ -81,7 +81,6 @@ class SURFACE_EXPORT TransportDIB {
 
   explicit TransportDIB(base::SharedMemoryHandle dib);
   base::SharedMemory shared_memory_;
-  uint32_t sequence_num_;
   size_t size_;  // length, in bytes
 
   DISALLOW_COPY_AND_ASSIGN(TransportDIB);
