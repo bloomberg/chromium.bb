@@ -99,17 +99,25 @@ public class ShareMenuActionHandlerTest {
         final String otherHttpUrl = "http://eek.com";
         final String httpsUrl = "https://blah.com";
         final String otherHttpsUrl = "https://eek.com";
+        final String ftpUrl = "ftp://blah.com";
+        final String contentUrl = "content://eek.com";
 
-        // HTTP, HTTP
+        // HTTP Display URL, HTTP Canonical URL -> HTTP Display URL
         Assert.assertEquals(httpUrl, ShareMenuActionHandler.getUrlToShare(httpUrl, otherHttpUrl));
-        // HTTP, HTTPS
+        // HTTP Display URL, HTTPS Canonical URL -> HTTP Display URL
         Assert.assertEquals(httpUrl, ShareMenuActionHandler.getUrlToShare(httpUrl, httpsUrl));
-        // HTTPS, HTTP
-        Assert.assertEquals(httpsUrl, ShareMenuActionHandler.getUrlToShare(httpsUrl, httpUrl));
+        // HTTPS Display URL, HTTP Canonical URL -> HTTP Canonical URL
+        Assert.assertEquals(httpUrl, ShareMenuActionHandler.getUrlToShare(httpsUrl, httpUrl));
 
+        // HTTPS Display URL, HTTPS Canonical URL -> HTTPS Canonical URL
         Assert.assertEquals(httpsUrl, ShareMenuActionHandler.getUrlToShare(httpsUrl, httpsUrl));
         Assert.assertEquals(
                 otherHttpsUrl, ShareMenuActionHandler.getUrlToShare(httpsUrl, otherHttpsUrl));
+
+        // HTTPS Display URL, FTP URL -> HTTPS Display URL
+        Assert.assertEquals(httpsUrl, ShareMenuActionHandler.getUrlToShare(httpsUrl, ftpUrl));
+        // HTTPS Display URL, Content URL -> HTTPS Display URL
+        Assert.assertEquals(httpsUrl, ShareMenuActionHandler.getUrlToShare(httpsUrl, contentUrl));
     }
 
     private static class MockTab extends Tab {
