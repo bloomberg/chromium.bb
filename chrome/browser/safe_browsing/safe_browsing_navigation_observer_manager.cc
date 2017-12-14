@@ -132,7 +132,7 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
       // looks for the retargeting navigation event.
       if (nav_event->source_url.is_empty() &&
           nav_event->source_main_frame_url.is_empty() &&
-          !nav_event->is_user_initiated) {
+          !nav_event->IsUserInitiated()) {
         // If there is a server redirection immediately after retargeting, we
         // need to adjust our search url to the original request.
         if (!nav_event->server_redirect_urls.empty()) {
@@ -250,6 +250,7 @@ void SafeBrowsingNavigationObserverManager::SanitizeReferrerChain(
           GetOrigin(entry_copy.referrer_main_frame_url()));
     entry->set_is_retargeting(entry_copy.is_retargeting());
     entry->set_navigation_time_msec(entry_copy.navigation_time_msec());
+    entry->set_navigation_initiation(entry_copy.navigation_initiation());
     for (int j = 0; j < entry_copy.server_redirect_chain_size(); j++) {
       ReferrerChainEntry::ServerRedirect* server_redirect_entry =
           entry->add_server_redirect_chain();
@@ -434,7 +435,7 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
     int source_render_frame_id,
     GURL target_url,
     content::WebContents* target_web_contents,
-    bool not_yet_in_tabstrip) {
+    bool renderer_initiated) {
   DCHECK(source_web_contents);
   DCHECK(target_web_contents);
 
@@ -458,14 +459,18 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
   nav_event->original_request_url = cleaned_target_url;
   nav_event->target_tab_id = SessionTabHelper::IdForTab(target_web_contents);
   nav_event->frame_id = rfh ? rfh->GetFrameTreeNodeId() : -1;
+
   auto it = user_gesture_map_.find(source_web_contents);
-  if (it != user_gesture_map_.end() &&
-      !SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
-          it->second)) {
-    nav_event->is_user_initiated = true;
-    OnUserGestureConsumed(it->first, it->second);
+  if (it == user_gesture_map_.end() ||
+      SafeBrowsingNavigationObserverManager::IsUserGestureExpired(it->second)) {
+    nav_event->navigation_initiation =
+        ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE;
   } else {
-    nav_event->is_user_initiated = false;
+    OnUserGestureConsumed(it->first, it->second);
+    nav_event->navigation_initiation =
+        renderer_initiated
+            ? ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE
+            : ReferrerChainEntry::BROWSER_INITIATED;
   }
 
   navigation_event_list_.RecordNavigationEvent(std::move(nav_event));
@@ -530,6 +535,8 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
     ReferrerChainEntry::URLType type) {
   std::unique_ptr<ReferrerChainEntry> referrer_chain_entry =
       base::MakeUnique<ReferrerChainEntry>();
+  referrer_chain_entry->set_navigation_initiation(
+      nav_event->navigation_initiation);
   const GURL destination_url = nav_event->GetDestinationUrl();
   referrer_chain_entry->set_url(ShortURLForReporting(destination_url));
   if (destination_main_frame_url.is_valid() &&
@@ -583,7 +590,7 @@ void SafeBrowsingNavigationObserverManager::GetRemainingReferrerChain(
   GURL last_main_frame_url_traced(last_nav_event_traced->source_main_frame_url);
   while (current_user_gesture_count < user_gesture_count_limit) {
     // Back trace to the next nav_event that was initiated by the user.
-    while (!last_nav_event_traced->is_user_initiated) {
+    while (!last_nav_event_traced->IsUserInitiated()) {
       last_nav_event_traced = navigation_event_list_.FindNavigationEvent(
           last_nav_event_traced->source_url,
           last_nav_event_traced->source_main_frame_url,
@@ -602,14 +609,11 @@ void SafeBrowsingNavigationObserverManager::GetRemainingReferrerChain(
 
     current_user_gesture_count++;
 
-
-    // If the source_url and source_main_frame_url of current navigation event
-    // are empty, and is_user_initiated is true, this is a browser initiated
-    // navigation (e.g. trigged by typing in address bar, clicking on bookmark,
-    // etc). We reached the end of the referrer chain.
-    if (last_nav_event_traced->source_url.is_empty() &&
-        last_nav_event_traced->source_main_frame_url.is_empty()) {
-      DCHECK(last_nav_event_traced->is_user_initiated);
+    // If this is a browser initiated navigation (e.g. trigged by typing in
+    // address bar, clicking on bookmark, etc). We reached the end of the
+    // referrer chain.
+    if (last_nav_event_traced->navigation_initiation ==
+        ReferrerChainEntry::BROWSER_INITIATED) {
       return;
     }
 

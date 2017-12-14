@@ -188,9 +188,17 @@ message LoginReputationClientRequest {
     // Whether the frame contains password field.
     optional bool has_password_field = 4;
 
-    // URLs transitions in reverse chronological order, i.e. the top level url
-    // or the url of the iframe comes first in the list.
+    // If we can find the complete referrer chain, this field will contains URLs
+    // transitions from landing referrer to event in reverse chronological
+    // order, i.e. event url comes first in this list, and landing referrer
+    // comes last.
+    // For Safe Browsing Extended Reporting or Scout users, if the referrer
+    // chain is empty or partially missing, we will add/append recent navigation
+    // events to this list. The type of these entries will be RECENT_NAVIGATION.
     repeated ReferrerChainEntry referrer_chain = 5;
+
+    // Options and metadata about the above referrer chain.
+    optional ReferrerChainOptions referrer_chain_options = 7;
 
     // The message contains features of a form.
     message Form {
@@ -202,6 +210,8 @@ message LoginReputationClientRequest {
     }
 
     repeated Form forms = 6;
+
+    // next available tag number: 8.
   }
 
   repeated Frame frames = 3;
@@ -520,10 +530,17 @@ message ClientDownloadRequest {
   // the leading extension separator.
   repeated string alternate_extensions = 35;
 
-  // URLs transitions from landing referrer to download in reverse chronological
-  // order, i.e. download url comes first in this list, and landing referrer
+  // If we can find the complete referrer chain, this field will contains URLs
+  // transitions from landing referrer to event in reverse chronological
+  // order, i.e. event url comes first in this list, and landing referrer
   // comes last.
+  // For Safe Browsing Extended Reporting or Scout users, if the referrer chain
+  // is empty or partially missing, we will add/append recent navigation events
+  // to this list. The type of these entries will be RECENT_NAVIGATION.
   repeated ReferrerChainEntry referrer_chain = 36;
+
+  // Options and metadata about the above referrer chain.
+  optional ReferrerChainOptions referrer_chain_options = 49;
 
   // Deprecated.
   optional bool DEPRECATED_download_attribution_finch_enabled = 39
@@ -533,6 +550,14 @@ message ClientDownloadRequest {
   // The underlying structure of code signature is defined at
   // https://opensource.apple.com/source/xnu/xnu-2782.1.97/bsd/sys/codesign.h
   optional bytes udif_code_signature = 40;
+
+  // next available tag number: 50;
+}
+
+message ReferrerChainOptions {
+  // The number of recent navigations we'd like to collect. This number is
+  // controlled by Finch parameter and its default value is 0.
+  optional int32 recent_navigations_to_collect = 1 [default = 0];
 }
 
 // Please update SafeBrowsingNavigationObserverManager::SanitizeReferrerChain()
@@ -557,6 +582,32 @@ message ReferrerChainEntry {
     CLIENT_REDIRECT = 4;
 
     DEPRECATED_SERVER_REDIRECT = 5;  // Deprecated
+
+    // For Safe Browsing Extended Reporting or Scout users, if the referrer
+    // chain is empty or partially missing, we will add/append recent navigation
+    // events to this list. RECENT_NAVIGATION type is set for these cases.
+    RECENT_NAVIGATION = 6;
+  }
+
+  enum NavigationInitiation {
+    // Convenient default value, should not be used in real ReferrerChainEntry.
+    UNDEFINED = 0;
+
+    // Navigation is initiated by the browser process. e.g. user enters url into
+    // address bar, or user opens a bookmark.
+    BROWSER_INITIATED = 1;
+
+    // Navigation is initiated by the renderer process and there is no user
+    // gesture associate with this navigation. e.g.
+    // * redirect via the <meta http-equiv="refresh"> tag
+    // * change window.location.href
+    RENDERER_INITIATED_WITHOUT_USER_GESTURE = 2;
+
+    // Navigation is initiated by the renderer process and there is a clear user
+    // gesture associate with this navigation. e.g.
+    //  * <a> link click
+    //  * using window.history.pushState (i.e. back, forward button interaction)
+    RENDERER_INITIATED_WITH_USER_GESTURE = 3;
   }
 
   message ServerRedirect {
@@ -594,6 +645,11 @@ message ReferrerChainEntry {
   // The first entry in |server_redirect_chain| should be the original request
   // url, and the last entry should be the same as |url|.
   repeated ServerRedirect server_redirect_chain = 8;
+
+  // How this navigation is initiated.
+  optional NavigationInitiation navigation_initiation = 10;
+
+  // next available tag number: 11.
 }  // End of ReferrerChainEntry
 
 message ClientDownloadResponse {

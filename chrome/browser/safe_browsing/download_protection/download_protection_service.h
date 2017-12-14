@@ -223,16 +223,15 @@ class DownloadProtectionService {
       const net::X509Certificate& issuer,
       std::vector<std::string>* whitelist_strings);
 
-  // If kDownloadAttribution feature is enabled, identify referrer chain info of
-  // a download. This function also records UMA stats of download attribution
-  // result.
+  // Identify referrer chain info of a download. This function also records UMA
+  // stats of download attribution result.
   std::unique_ptr<ReferrerChain> IdentifyReferrerChain(
       const content::DownloadItem& item);
 
-  // If kDownloadAttribution feature is enabled, identify referrer chain of the
-  // PPAPI download based on the frame URL where the download is initiated.
-  // Then add referrer chain info to ClientDownloadRequest proto. This function
-  // also records UMA stats of download attribution result.
+  // Identify referrer chain of the PPAPI download based on the frame URL where
+  // the download is initiated. Then add referrer chain info to
+  // ClientDownloadRequest proto. This function also records UMA stats of
+  // download attribution result.
   void AddReferrerChainToPPAPIClientDownloadRequest(
       const GURL& initiating_frame_url,
       const GURL& initiating_main_frame_url,
