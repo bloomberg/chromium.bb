@@ -21,6 +21,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/containers/stack.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
@@ -985,16 +987,21 @@ int GetMaximumPathComponentLength(const FilePath& path) {
 // This is implemented in file_util_android.cc for that platform.
 bool GetShmemTempDir(bool executable, FilePath* path) {
 #if defined(OS_LINUX) || defined(OS_AIX)
+  bool disable_dev_shm = false;
+#if !defined(OS_CHROMEOS)
+  disable_dev_shm = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDevShmUsage);
+#endif
   bool use_dev_shm = true;
   if (executable) {
     static const bool s_dev_shm_executable = DetermineDevShmExecutable();
     use_dev_shm = s_dev_shm_executable;
   }
-  if (use_dev_shm) {
+  if (use_dev_shm && !disable_dev_shm) {
     *path = FilePath("/dev/shm");
     return true;
   }
-#endif
+#endif  // defined(OS_LINUX) || defined(OS_AIX)
   return GetTempDir(path);
 }
 #endif  // !defined(OS_ANDROID)
