@@ -103,18 +103,16 @@ void av1_encode_token_init(void) {
   av1_tokens_from_tree(compound_type_encodings, av1_compound_type_tree);
 }
 
-static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
-                                const MODE_INFO *mi, const MODE_INFO *above_mi,
-                                const MODE_INFO *left_mi, int block,
-                                PREDICTION_MODE mode, aom_writer *w) {
+static void write_intra_mode_kf(FRAME_CONTEXT *frame_ctx, const MODE_INFO *mi,
+                                const MODE_INFO *above_mi,
+                                const MODE_INFO *left_mi, PREDICTION_MODE mode,
+                                aom_writer *w) {
 #if CONFIG_INTRABC
   assert(!is_intrabc_block(&mi->mbmi));
 #endif  // CONFIG_INTRABC
   (void)mi;
-  (void)block;
   aom_write_symbol(w, mode, get_y_mode_cdf(frame_ctx, above_mi, left_mi),
                    INTRA_MODES);
-  (void)cm;
 }
 
 static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
@@ -1726,7 +1724,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
 #endif  // CONFIG_INTRABC
 
-  write_intra_mode_kf(cm, ec_ctx, mi, above_mi, left_mi, 0, mbmi->mode, w);
+  write_intra_mode_kf(ec_ctx, mi, above_mi, left_mi, mbmi->mode, w);
 
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
