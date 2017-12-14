@@ -32,8 +32,7 @@ std::string CalculateHash(const std::string& password,
 
 }  // namespace
 
-LoginScreenController::LoginScreenController()
-    : binding_(this), weak_factory_(this) {}
+LoginScreenController::LoginScreenController() : weak_factory_(this) {}
 
 LoginScreenController::~LoginScreenController() = default;
 
@@ -51,7 +50,7 @@ void LoginScreenController::RegisterProfilePrefs(PrefRegistrySimple* registry,
 }
 
 void LoginScreenController::BindRequest(mojom::LoginScreenRequest request) {
-  binding_.Bind(std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {

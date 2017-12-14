@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace ash {
 
@@ -53,8 +53,8 @@ class CastConfigController : public ash::mojom::CastConfig {
   void StopCasting(mojom::CastRoutePtr route);
 
  private:
-  // Binding for the CastConfig interface.
-  mojo::Binding<mojom::CastConfig> binding_;
+  // Bindings for the CastConfig interface.
+  mojo::BindingSet<mojom::CastConfig> bindings_;
 
   mojom::CastConfigClientAssociatedPtr client_;
 

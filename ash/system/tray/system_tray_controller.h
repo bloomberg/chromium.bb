@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace ash {
 
@@ -80,8 +80,8 @@ class ASH_EXPORT SystemTrayController : public mojom::SystemTray {
   // Client interface in chrome browser. May be null in tests.
   mojom::SystemTrayClientPtr system_tray_client_;
 
-  // Binding for the SystemTray interface.
-  mojo::Binding<mojom::SystemTray> binding_;
+  // Bindings for users of the mojo interface.
+  mojo::BindingSet<mojom::SystemTray> bindings_;
 
   // The type of clock hour display: 12 or 24 hour.
   base::HourClockType hour_clock_type_;

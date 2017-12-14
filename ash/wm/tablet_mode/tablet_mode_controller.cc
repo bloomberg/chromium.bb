@@ -202,6 +202,7 @@ void TabletModeController::AddWindow(aura::Window* window) {
 
 void TabletModeController::BindRequest(
     mojom::TabletModeControllerRequest request) {
+  DCHECK(!binding_.is_bound()) << "Only one client allowed.";
   binding_.Bind(std::move(request));
 }
 
