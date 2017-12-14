@@ -6,11 +6,11 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutView #document",
-      "reason": "style change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY class='noScroll'",

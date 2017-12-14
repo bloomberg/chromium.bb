@@ -3,18 +3,28 @@
     {
       "name": "LayoutView #document",
       "bounds": [500, 400],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [500, 400],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [500, 400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 200, 500, 200],
           "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 300, 60, 22],
-          "reason": "incremental"
+          "reason": "appeared"
         },
         {
           "object": "LayoutView #document",
@@ -25,6 +35,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "Scrolling Contents Layer",
+      "reason": "incremental"
+    },
     {
       "object": "LayoutView #document",
       "reason": "incremental"
