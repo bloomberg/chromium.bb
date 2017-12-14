@@ -17,8 +17,6 @@ namespace device {
 
 namespace {
 
-constexpr double kEpsilon = 1e-8;
-
 class
     AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometerTest
     : public DeviceServiceTestBase {

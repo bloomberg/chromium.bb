@@ -13,8 +13,6 @@
 
 namespace {
 
-const double kEpsilon = 1e-8;
-
 // Returns orientation angles from a rotation matrix, such that the angles are
 // according to spec http://dev.w3.org/geo/api/spec-source-orientation.html}.
 //
@@ -53,11 +51,12 @@ void ComputeOrientationEulerAnglesInRadiansFromRotationMatrix(
   DCHECK_EQ(9u, r.size());
 
   // Since |r| contains double, directly compare it with 0 won't be accurate,
-  // so here |kEpsilon| is used to check if r[8] and r[6] is close to 0. And
-  // this needs to be done before checking if it is greater or less than 0
-  // since a number close to 0 can be either a positive or negative number.
-  if (std::abs(r[8]) < kEpsilon) {    // r[8] == 0
-    if (std::abs(r[6]) < kEpsilon) {  // r[6] == 0, cos(beta) == 0
+  // so here |device::kEpsilon| is used to check if r[8] and r[6] is close to
+  // 0. And // this needs to be done before checking if it is greater or less
+  // than 0 since a number close to 0 can be either a positive or negative
+  // number.
+  if (std::abs(r[8]) < device::kEpsilon) {    // r[8] == 0
+    if (std::abs(r[6]) < device::kEpsilon) {  // r[6] == 0, cos(beta) == 0
       // gimbal lock discontinuity
       *alpha_in_radians = std::atan2(r[3], r[0]);
       *beta_in_radians = (r[7] > 0) ? base::kPiDouble / 2
