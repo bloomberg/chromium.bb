@@ -35,9 +35,6 @@
 -ArcAppDeferredLauncherBrowserTest.*
 -ArcAppDeferredLauncherWithParamsBrowserTestInstance/ArcAppDeferredLauncherWithParamsBrowserTest.*
 
-# Times out. Possibly general extensions test problem.
--AppWindowApiTest.*
-
 # AutomationManagerAura::Enable() uses ash to get active window. More generally,
 # chrome a11y code directly accesses ash system UI widgets and views.
 -AutomationApiTest.*

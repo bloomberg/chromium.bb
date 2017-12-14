@@ -54,23 +54,40 @@ IN_PROC_BROWSER_TEST_F(ExperimentalAppWindowApiTest, SetIcon) {
             app_window->app_icon_url().spec().find("icon.png"));
 }
 
-// TODO(asargent) - Figure out what to do about the fact that minimize events
-// don't work under ubuntu unity.
-// (crbug.com/162794 and https://bugs.launchpad.net/unity/+bug/998073).
-// TODO(linux_aura) http://crbug.com/163931
-// Flaky on Mac, http://crbug.com/232330
-#if defined(TOOLKIT_VIEWS) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+// TODO(crbug.com/794771): These fail on Linux with HEADLESS env var set.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_OnMinimizedEvent DISABLED_OnMinimizedEvent
+#define MAYBE_OnMaximizedEvent DISABLED_OnMaximizedEvent
+#define MAYBE_OnRestoredEvent DISABLED_OnRestoredEvent
+#else
+#define MAYBE_OnMinimizedEvent OnMinimizedEvent
+#define MAYBE_OnMaximizedEvent OnMaximizedEvent
+#define MAYBE_OnRestoredEvent OnRestoredEvent
+#endif  // defined(OS_LINUX)
 
-IN_PROC_BROWSER_TEST_F(AppWindowApiTest, Properties) {
-#if defined(OS_MACOSX)
-  if (base::mac::IsOS10_10())
-    return;  // Fails when swarmed. http://crbug.com/660582
-#endif
-  EXPECT_TRUE(
-      RunExtensionTest("platform_apps/windows_api_properties")) << message_;
+IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_OnMinimizedEvent) {
+  EXPECT_TRUE(RunExtensionTestWithArg("platform_apps/windows_api_properties",
+                                      "minimized"))
+      << message_;
 }
 
-#endif  // defined(TOOLKIT_VIEWS)
+IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_OnMaximizedEvent) {
+  EXPECT_TRUE(RunExtensionTestWithArg("platform_apps/windows_api_properties",
+                                      "maximized"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_OnRestoredEvent) {
+  EXPECT_TRUE(RunExtensionTestWithArg("platform_apps/windows_api_properties",
+                                      "restored"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowApiTest, OnBoundsChangedEvent) {
+  EXPECT_TRUE(RunExtensionTestWithArg("platform_apps/windows_api_properties",
+                                      "boundsChanged"))
+      << message_;
+}
 
 IN_PROC_BROWSER_TEST_F(AppWindowApiTest, AlwaysOnTopWithPermissions) {
   EXPECT_TRUE(RunPlatformAppTest(
