@@ -398,9 +398,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // Whether task observers are allowed.
   bool allow_task_observers_ = true;
 
-  // An interface back to RunLoop state accessible by this RunLoop::Delegate.
-  RunLoop::Delegate::Client* run_loop_client_ = nullptr;
-
   // Holds data stored through the SequenceLocalStorageSlot API.
   internal::SequenceLocalStorageMap sequence_local_storage_map_;
 

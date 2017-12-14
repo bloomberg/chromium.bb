@@ -158,10 +158,9 @@ class TestBoundDelegate final : public InjectableTestDelegate {
   // Makes this TestBoundDelegate become the RunLoop::Delegate and
   // ThreadTaskRunnerHandle for this thread.
   void BindToCurrentThread() {
-    DCHECK(!run_loop_client_);
     thread_task_runner_handle_ =
         std::make_unique<ThreadTaskRunnerHandle>(simple_task_runner_);
-    run_loop_client_ = RunLoop::RegisterDelegateForCurrentThread(this);
+    RunLoop::RegisterDelegateForCurrentThread(this);
   }
 
  private:
@@ -178,7 +177,7 @@ class TestBoundDelegate final : public InjectableTestDelegate {
       if (application_tasks_allowed && simple_task_runner_->ProcessSingleTask())
         continue;
 
-      if (run_loop_client_->ShouldQuitWhenIdle())
+      if (ShouldQuitWhenIdle())
         break;
 
       if (RunInjectedClosure())
@@ -205,8 +204,6 @@ class TestBoundDelegate final : public InjectableTestDelegate {
   std::unique_ptr<ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
   bool should_quit_ = false;
-
-  RunLoop::Delegate::Client* run_loop_client_ = nullptr;
 };
 
 // A test RunLoop::Delegate meant to override an existing RunLoop::Delegate.
@@ -219,20 +216,19 @@ class TestOverridingDelegate final : public InjectableTestDelegate {
   // Overrides the existing RunLoop::Delegate and ThreadTaskRunnerHandles on
   // this thread with this TestOverridingDelegate's.
   void TakeOverCurrentThread() {
-    DCHECK(!run_loop_client_);
-
-    overriden_task_runner_ = ThreadTaskRunnerHandle::Get();
-    DCHECK(overriden_task_runner_);
+    overridden_task_runner_ = ThreadTaskRunnerHandle::Get();
+    ASSERT_TRUE(overridden_task_runner_);
     thread_task_runner_handle_override_scope_ =
         ThreadTaskRunnerHandle::OverrideForTesting(
             simple_task_runner_,
             ThreadTaskRunnerHandle::OverrideType::kTakeOverThread);
 
-    auto delegate_override_pair =
-        RunLoop::OverrideDelegateForCurrentThreadForTesting(this);
-    run_loop_client_ = delegate_override_pair.first;
-    overriden_delegate_ = delegate_override_pair.second;
-    DCHECK(overriden_delegate_);
+    // TestOverridingDelegate::Run() is designed with the assumption that the
+    // overridden Delegate's Run() always returns control to it when it becomes
+    // idle.
+    overridden_delegate_ = RunLoop::OverrideDelegateForCurrentThreadForTesting(
+        this, base::BindRepeating([]() { return true; }));
+    ASSERT_TRUE(overridden_delegate_);
   }
 
  private:
@@ -241,15 +237,15 @@ class TestOverridingDelegate final : public InjectableTestDelegate {
       auto pending_tasks = simple_task_runner_->TakePendingTasks();
       if (!pending_tasks.empty()) {
         while (!pending_tasks.empty()) {
-          overriden_task_runner_->PostTask(FROM_HERE,
-                                           std::move(pending_tasks.front()));
+          overridden_task_runner_->PostTask(FROM_HERE,
+                                            std::move(pending_tasks.front()));
           pending_tasks.pop();
         }
-        overriden_delegate_->Run(application_tasks_allowed);
+        overridden_delegate_->Run(application_tasks_allowed);
         continue;
       }
 
-      if (run_loop_client_->ShouldQuitWhenIdle())
+      if (ShouldQuitWhenIdle())
         break;
 
       if (RunInjectedClosure())
@@ -262,11 +258,11 @@ class TestOverridingDelegate final : public InjectableTestDelegate {
 
   void Quit() override {
     should_quit_ = true;
-    overriden_delegate_->Quit();
+    overridden_delegate_->Quit();
   }
 
   void EnsureWorkScheduled() override {
-    overriden_delegate_->EnsureWorkScheduled();
+    overridden_delegate_->EnsureWorkScheduled();
   }
 
   scoped_refptr<SimpleSingleThreadTaskRunner> simple_task_runner_ =
@@ -274,12 +270,10 @@ class TestOverridingDelegate final : public InjectableTestDelegate {
 
   ScopedClosureRunner thread_task_runner_handle_override_scope_;
 
-  scoped_refptr<SingleThreadTaskRunner> overriden_task_runner_;
-  RunLoop::Delegate* overriden_delegate_;
+  scoped_refptr<SingleThreadTaskRunner> overridden_task_runner_;
+  RunLoop::Delegate* overridden_delegate_;
 
   bool should_quit_ = false;
-
-  RunLoop::Delegate::Client* run_loop_client_ = nullptr;
 };
 
 enum class RunLoopTestType {

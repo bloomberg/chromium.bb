@@ -197,7 +197,7 @@ TestMockTimeTaskRunner::TestMockTimeTaskRunner(Time start_time,
                                                Type type)
     : now_(start_time), now_ticks_(start_ticks), tasks_lock_cv_(&tasks_lock_) {
   if (type == Type::kBoundToThread) {
-    run_loop_client_ = RunLoop::RegisterDelegateForCurrentThread(this);
+    RunLoop::RegisterDelegateForCurrentThread(this);
     thread_task_runner_handle_ = std::make_unique<ThreadTaskRunnerHandle>(
         MakeRefCounted<NonOwningProxyTaskRunner>(this));
   }
@@ -387,7 +387,7 @@ void TestMockTimeTaskRunner::Run(bool application_tasks_allowed) {
 
   while (!quit_run_loop_) {
     RunUntilIdle();
-    if (quit_run_loop_ || run_loop_client_->ShouldQuitWhenIdle())
+    if (quit_run_loop_ || ShouldQuitWhenIdle())
       break;
 
     // Peek into |tasks_| to perform one of two things:

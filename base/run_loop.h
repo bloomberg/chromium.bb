@@ -152,33 +152,20 @@ class BASE_EXPORT RunLoop {
   static void DisallowNestingOnCurrentThread();
 
   // A RunLoop::Delegate is a generic interface that allows RunLoop to be
-  // separate from the uderlying implementation of the message loop for this
+  // separate from the underlying implementation of the message loop for this
   // thread. It holds private state used by RunLoops on its associated thread.
   // One and only one RunLoop::Delegate must be registered on a given thread
   // via RunLoop::RegisterDelegateForCurrentThread() before RunLoop instances
   // and RunLoop static methods can be used on it.
   class BASE_EXPORT Delegate {
    public:
+    // A Callback which returns true if the Delegate should return from the
+    // topmost Run() when it becomes idle. The Delegate is responsible for
+    // probing this when it becomes idle.
+    using ShouldQuitWhenIdleCallback = RepeatingCallback<bool(void)>;
+
     Delegate();
     virtual ~Delegate();
-
-    // The client interface provided back to the caller who registers this
-    // Delegate via RegisterDelegateForCurrentThread() or
-    // OverrideDelegateForCurrentThreadForTesting().
-    class BASE_EXPORT Client {
-     public:
-      // Returns true if the Delegate should return from the topmost Run() when
-      // it becomes idle. The Delegate is responsible for probing this when it
-      // becomes idle.
-      bool ShouldQuitWhenIdle() const;
-
-     private:
-      // Only a Delegate can instantiate a Delegate::Client.
-      friend class Delegate;
-      Client(Delegate* outer);
-
-      Delegate* outer_;
-    };
 
     // Used by RunLoop to inform its Delegate to Run/Quit. Implementations are
     // expected to keep on running synchronously from the Run() call until the
@@ -186,12 +173,12 @@ class BASE_EXPORT RunLoop {
     // return from the Run() call as soon as possible without executing
     // remaining tasks/messages. Run() calls can nest in which case each Quit()
     // call should result in the topmost active Run() call returning. The only
-    // other trigger for Run() to return is Client::ShouldQuitWhenIdle() which
-    // the Delegate should probe before sleeping when it becomes idle.
-    // |application_tasks_allowed| is true if this is the first Run() call on
-    // the stack or it was made from a nested RunLoop of
-    // Type::kNestableTasksAllowed (otherwise this Run() level should only
-    // process system tasks).
+    // other trigger for Run() to return is the
+    // |should_quit_when_idle_callback_| which the Delegate should probe before
+    // sleeping when it becomes idle. |application_tasks_allowed| is true if
+    // this is the first Run() call on the stack or it was made from a nested
+    // RunLoop of Type::kNestableTasksAllowed (otherwise this Run() level should
+    // only process system tasks).
     virtual void Run(bool application_tasks_allowed) = 0;
     virtual void Quit() = 0;
 
@@ -203,6 +190,11 @@ class BASE_EXPORT RunLoop {
     // process application tasks when nested, otherwise they'll only wait for
     // system messages.
     virtual void EnsureWorkScheduled() = 0;
+
+   protected:
+    // Returns the result of this Delegate's |should_quit_when_idle_callback_|.
+    // "protected" so it can be invoked only by the Delegate itself.
+    bool ShouldQuitWhenIdle();
 
    private:
     // While the state is owned by the Delegate subclass, only RunLoop can use
@@ -218,12 +210,6 @@ class BASE_EXPORT RunLoop {
     RunLoopStack active_run_loops_;
     ObserverList<RunLoop::NestingObserver> nesting_observers_;
 
-    // True if this Delegate was overriden through
-    // OverrideDelegateForCurrentThreadForTesting(). It will from then on always
-    // return from Run() when idle (i.e. its Client's ShouldQuitWhenIdle() will
-    // always be true).
-    bool was_overriden_ = false;
-
 #if DCHECK_IS_ON()
     bool allow_running_for_testing_ = true;
 #endif
@@ -232,28 +218,28 @@ class BASE_EXPORT RunLoop {
     // RegisterDelegateForCurrentThread().
     bool bound_ = false;
 
+    ShouldQuitWhenIdleCallback should_quit_when_idle_callback_;
+
     // Thread-affine per its use of TLS.
     THREAD_CHECKER(bound_thread_checker_);
-
-    Client client_interface_ = Client(this);
 
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   // Registers |delegate| on the current thread. Must be called once and only
   // once per thread before using RunLoop methods on it. |delegate| is from then
-  // on forever bound to that thread (including its destruction). The returned
-  // Delegate::Client is valid as long as |delegate| is kept alive.
-  static Delegate::Client* RegisterDelegateForCurrentThread(Delegate* delegate);
+  // on forever bound to that thread (including its destruction).
+  static void RegisterDelegateForCurrentThread(Delegate* delegate);
 
   // Akin to RegisterDelegateForCurrentThread but overrides an existing Delegate
-  // (there must be one). Returning |delegate|'s client interface like
-  // RegisterDelegateForCurrentThread() as well as the overriden Delegate which
-  // the caller is now in charge of driving. The overriden Delegate's Run()
-  // method will always return when idle (or earlier if the Delegate's Quit()
-  // method is explicitly invoked).
-  static std::pair<Delegate::Client*, Delegate*>
-  OverrideDelegateForCurrentThreadForTesting(Delegate* delegate);
+  // (there must be one). Returning the overridden Delegate which the caller is
+  // now in charge of driving. |override_should_quit_when_idle_callback|
+  // specifies will replace the overridden Delegate's
+  // |should_quit_when_idle_callback_|, giving full control to |delegate|.
+  static Delegate* OverrideDelegateForCurrentThreadForTesting(
+      Delegate* delegate,
+      Delegate::ShouldQuitWhenIdleCallback
+          overriding_should_quit_when_idle_callback);
 
   // Quits the active RunLoop (when idle) -- there must be one. These were
   // introduced as prefered temporary replacements to the long deprecated
@@ -318,9 +304,8 @@ class BASE_EXPORT RunLoop {
   bool running_ = false;
   // Used to record that QuitWhenIdle() was called on this RunLoop, meaning that
   // the Delegate should quit Run() once it becomes idle (it's responsible for
-  // probing this state via Client::ShouldQuitWhenIdle()). This state is stored
-  // here rather than pushed to Delegate via, e.g., Delegate::QuitWhenIdle() to
-  // support nested RunLoops.
+  // probing this state via ShouldQuitWhenIdle()). This state is stored here
+  // rather than pushed to Delegate to support nested RunLoops.
   bool quit_when_idle_received_ = false;
 
   // RunLoop is not thread-safe. Its state/methods, unless marked as such, may
