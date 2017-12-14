@@ -329,6 +329,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTestWithDeviceScaleFactor, LocationScaled) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTestWithDeviceScaleFactor, HitTest) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "hit_test.html"))
+      << message_;
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace extensions
