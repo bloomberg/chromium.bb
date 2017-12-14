@@ -127,10 +127,11 @@ NSString* JSONEscape(NSString* JSON) {
   [self executeScript:script completionHandler:completionHandler];
 }
 
-- (void)updateShippingAddress:(const payments::PaymentAddress&)shippingAddress
+- (void)updateShippingAddress:
+            (const payments::mojom::PaymentAddress&)shippingAddress
             completionHandler:(ProceduralBlockWithBool)completionHanlder {
   std::unique_ptr<base::DictionaryValue> shippingAddressData =
-      shippingAddress.ToDictionaryValue();
+      payments::PaymentAddressToDictionaryValue(shippingAddress);
   std::string shippingAddressDataJSON;
   base::JSONWriter::Write(*shippingAddressData, &shippingAddressDataJSON);
   NSString* script = [NSString

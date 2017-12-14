@@ -19,20 +19,39 @@ static const char kPaymentShippingOptionSelected[] = "selected";
 
 }  // namespace
 
-PaymentShippingOption::PaymentShippingOption() : selected(false) {}
+PaymentShippingOption::PaymentShippingOption() : selected(false) {
+  amount = mojom::PaymentCurrencyAmount::New();
+}
+
 PaymentShippingOption::PaymentShippingOption(
-    const PaymentShippingOption& other) = default;
+    const PaymentShippingOption& other) {
+  *this = other;
+}
+
 PaymentShippingOption::~PaymentShippingOption() = default;
 
 bool PaymentShippingOption::operator==(
     const PaymentShippingOption& other) const {
-  return id == other.id && label == other.label && amount == other.amount &&
-         selected == other.selected;
+  return id == other.id && label == other.label &&
+         amount.Equals(other.amount) && selected == other.selected;
 }
 
 bool PaymentShippingOption::operator!=(
     const PaymentShippingOption& other) const {
   return !(*this == other);
+}
+
+PaymentShippingOption& PaymentShippingOption::operator=(
+    const PaymentShippingOption& other) {
+  id = other.id;
+  label = other.label;
+  if (other.amount) {
+    amount = other.amount.Clone();
+  } else {
+    amount.reset();
+  }
+  selected = other.selected;
+  return *this;
 }
 
 bool PaymentShippingOption::FromDictionaryValue(
@@ -49,7 +68,8 @@ bool PaymentShippingOption::FromDictionaryValue(
   if (!value.GetDictionary(kPaymentShippingOptionAmount, &amount_dict)) {
     return false;
   }
-  if (!amount.FromDictionaryValue(*amount_dict)) {
+  amount = mojom::PaymentCurrencyAmount::New();
+  if (!PaymentCurrencyAmountFromDictionaryValue(*amount_dict, amount.get())) {
     return false;
   }
 

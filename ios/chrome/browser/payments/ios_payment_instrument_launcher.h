@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_PAYMENTS_IOS_PAYMENT_INSTRUMENT_LAUNCHER_H_
 
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/payments/core/payment_currency_amount.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 
 namespace base {

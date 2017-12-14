@@ -100,6 +100,7 @@ jumbo_source_set("webkit_unit_tests_sources") {
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//components/payments/mojom:mojom_blink",
     "//content/test:test_support",
     "//gpu:test_support",
     "//services/device/public/interfaces:interfaces_blink",

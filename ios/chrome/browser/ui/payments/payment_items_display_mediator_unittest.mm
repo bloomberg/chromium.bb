@@ -30,8 +30,8 @@ TEST_F(PaymentRequestPaymentItemsDisplayMediatorTest, TotalItem) {
   payments::WebPaymentRequest web_payment_request;
   web_payment_request.details.total = base::MakeUnique<payments::PaymentItem>();
   web_payment_request.details.total->label = "Total Cost";
-  web_payment_request.details.total->amount.value = "9.99";
-  web_payment_request.details.total->amount.currency = "USD";
+  web_payment_request.details.total->amount->value = "9.99";
+  web_payment_request.details.total->amount->currency = "USD";
 
   payments::TestPaymentRequest payment_request(web_payment_request,
                                                browser_state(), web_state(),
@@ -63,13 +63,13 @@ TEST_F(PaymentRequestPaymentItemsDisplayMediatorTest, LineItems) {
 
   payments::PaymentItem display_item1;
   display_item1.label = "Line Item 1";
-  display_item1.amount.value = "9.00";
-  display_item1.amount.currency = "USD";
+  display_item1.amount->value = "9.00";
+  display_item1.amount->currency = "USD";
   web_payment_request.details.display_items.push_back(display_item1);
   payments::PaymentItem display_item2;
   display_item2.label = "Line Item 2";
-  display_item2.amount.value = "0.99";
-  display_item2.amount.currency = "USD";
+  display_item2.amount->value = "0.99";
+  display_item2.amount->currency = "USD";
   web_payment_request.details.display_items.push_back(display_item2);
 
   payments::TestPaymentRequest payment_request2(web_payment_request,

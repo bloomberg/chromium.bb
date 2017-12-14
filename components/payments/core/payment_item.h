@@ -27,8 +27,11 @@ class PaymentItem {
   PaymentItem();
   ~PaymentItem();
 
+  PaymentItem(const PaymentItem& other);
+
   bool operator==(const PaymentItem& other) const;
   bool operator!=(const PaymentItem& other) const;
+  PaymentItem& operator=(const PaymentItem& other);
 
   // Populates the properties of this PaymentItem from |value|. Returns true if
   // the required values are present.
@@ -42,7 +45,7 @@ class PaymentItem {
   std::string label;
 
   // The monetary amount for the item.
-  PaymentCurrencyAmount amount;
+  mojom::PaymentCurrencyAmountPtr amount;
 
   // When set to true this flag means that the amount field is not final. This
   // is commonly used to show items such as shipping or tax amounts that depend

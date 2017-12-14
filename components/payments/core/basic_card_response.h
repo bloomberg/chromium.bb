@@ -21,7 +21,6 @@ namespace payments {
 struct BasicCardResponse {
  public:
   BasicCardResponse();
-  BasicCardResponse(const BasicCardResponse& other);
   ~BasicCardResponse();
 
   bool operator==(const BasicCardResponse& other) const;
@@ -47,7 +46,7 @@ struct BasicCardResponse {
   base::string16 card_security_code;
 
   // The billing address information associated with the payment card.
-  PaymentAddress billing_address;
+  mojom::PaymentAddressPtr billing_address;
 };
 
 }  // namespace payments

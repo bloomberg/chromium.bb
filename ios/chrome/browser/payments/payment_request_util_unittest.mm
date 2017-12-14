@@ -10,6 +10,7 @@
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_response.h"
+#include "components/payments/mojom/payment_request_data.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payment_request_util {
@@ -95,8 +96,7 @@ TEST_F(PaymentRequestUtilTest,
   payment_response_details.expiry_month = base::ASCIIToUTF16("02");
   payment_response_details.expiry_year = base::ASCIIToUTF16("2090");
   payment_response_details.card_security_code = base::ASCIIToUTF16("111");
-  payment_response_details.billing_address.postal_code =
-      base::ASCIIToUTF16("90210");
+  payment_response_details.billing_address->postal_code = "90210";
   std::unique_ptr<base::DictionaryValue> response_value =
       payment_response_details.ToDictionaryValue();
   std::string payment_response_stringified_details;
@@ -104,9 +104,8 @@ TEST_F(PaymentRequestUtilTest,
                           &payment_response_stringified_details);
   payment_response.details = payment_response_stringified_details;
 
-  payment_response.shipping_address =
-      std::make_unique<payments::PaymentAddress>();
-  payment_response.shipping_address->postal_code = base::ASCIIToUTF16("94115");
+  payment_response.shipping_address = payments::mojom::PaymentAddress::New();
+  payment_response.shipping_address->postal_code = "94115";
   payment_response.shipping_option = "666";
   payment_response.payer_name = base::ASCIIToUTF16("Jane Doe");
   payment_response.payer_email = base::ASCIIToUTF16("jane@example.com");

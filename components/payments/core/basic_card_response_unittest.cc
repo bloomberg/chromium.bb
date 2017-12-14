@@ -53,15 +53,15 @@ TEST(PaymentRequestTest, BasicCardResponseEquality) {
   card_response2.expiry_year = base::ASCIIToUTF16("123");
   EXPECT_EQ(card_response1, card_response2);
 
-  PaymentAddress billing_address1;
-  billing_address1.postal_code = base::ASCIIToUTF16("90210");
-  PaymentAddress billing_address2;
-  billing_address2.postal_code = base::ASCIIToUTF16("01209");
-  card_response1.billing_address = billing_address1;
+  mojom::PaymentAddressPtr billing_address1 = mojom::PaymentAddress::New();
+  billing_address1->postal_code = "90210";
+  mojom::PaymentAddressPtr billing_address2 = mojom::PaymentAddress::New();
+  billing_address2->postal_code = "01209";
+  card_response1.billing_address = billing_address1.Clone();
   EXPECT_NE(card_response1, card_response2);
-  card_response2.billing_address = billing_address2;
+  card_response2.billing_address = billing_address2.Clone();
   EXPECT_NE(card_response1, card_response2);
-  card_response2.billing_address = billing_address1;
+  card_response2.billing_address = billing_address1.Clone();
   EXPECT_EQ(card_response1, card_response2);
 }
 
