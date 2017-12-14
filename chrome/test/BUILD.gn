@@ -2857,6 +2857,7 @@ test("unit_tests") {
       "../browser/ui/tabs/pinned_tab_test_utils.h",
       "../browser/ui/tabs/tab_activity_watcher_unittest.cc",
       "../browser/ui/tabs/tab_menu_model_unittest.cc",
+      "../browser/ui/tabs/tab_metrics_logger_impl_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_impl_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_stats_recorder_unittest.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.cc",

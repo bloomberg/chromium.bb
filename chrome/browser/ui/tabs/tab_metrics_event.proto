@@ -44,4 +44,38 @@ message TabMetricsEvent {
   }
 
   optional ContentType content_type = 1;
+
+  // URI schemes that can be handled by a protocol handler.
+  enum ProtocolHandlerScheme {
+    option allow_alias = true;  // Allow LAST alias for static assertions.
+
+    // Not one of the below, including custom handlers.
+    PROTOCOL_HANDLER_SCHEME_OTHER = 0;
+
+    // Schemes whitelisted for registerProtocolHandler.
+    PROTOCOL_HANDLER_SCHEME_BITCOIN = 1;
+    PROTOCOL_HANDLER_SCHEME_GEO = 2;
+    PROTOCOL_HANDLER_SCHEME_IM = 3;
+    PROTOCOL_HANDLER_SCHEME_IRC = 4;
+    PROTOCOL_HANDLER_SCHEME_IRCS = 5;
+    PROTOCOL_HANDLER_SCHEME_MAGNET = 6;
+    PROTOCOL_HANDLER_SCHEME_MAILTO = 7;
+    PROTOCOL_HANDLER_SCHEME_MMS = 8;
+    PROTOCOL_HANDLER_SCHEME_NEWS = 9;
+    PROTOCOL_HANDLER_SCHEME_NNTP = 10;
+    PROTOCOL_HANDLER_SCHEME_OPENPGP4FPR = 11;
+    PROTOCOL_HANDLER_SCHEME_SIP = 12;
+    PROTOCOL_HANDLER_SCHEME_SMS = 13;
+    PROTOCOL_HANDLER_SCHEME_SMSTO = 14;
+    PROTOCOL_HANDLER_SCHEME_SSH = 15;
+    PROTOCOL_HANDLER_SCHEME_TEL = 16;
+    PROTOCOL_HANDLER_SCHEME_URN = 17;
+    PROTOCOL_HANDLER_SCHEME_WEBCAL = 18;
+    PROTOCOL_HANDLER_SCHEME_WTAI = 19;
+    PROTOCOL_HANDLER_SCHEME_XMPP = 20;
+
+    PROTOCOL_HANDLER_SCHEME_LAST = 20;
+  }
+
+  repeated ProtocolHandlerScheme enabled_protocol_handlers = 2;
 }

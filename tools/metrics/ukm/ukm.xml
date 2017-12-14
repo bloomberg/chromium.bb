@@ -2123,6 +2123,14 @@ be describing additional metrics about the same event.
       metrics::TabEvent::ContentType.
     </summary>
   </metric>
+  <metric name="DefaultProtocolHandler">
+    <summary>
+      Schemes that a page from this page's origin is the default protocol
+      handler for, meaning the user has chosen to accept (or the handler was
+      preinstalled by Chrome). The metric is repeated, occurring for each such
+      protocol handler, and uses values from metrics::TabMetricsEvent::Scheme.
+    </summary>
+  </metric>
   <metric name="HasBeforeUnloadHandler">
     <summary>
       Boolean value indicating whether the page has a beforeunload JavaScript
