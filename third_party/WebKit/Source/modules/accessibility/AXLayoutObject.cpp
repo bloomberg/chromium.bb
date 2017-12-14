@@ -1431,7 +1431,8 @@ const AtomicString& AXLayoutObject::LiveRegionRelevant() const {
 //
 
 AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
-  if (!layout_object_ || !layout_object_->HasLayer())
+  if (!layout_object_ || !layout_object_->HasLayer() ||
+      !layout_object_->IsBox())
     return nullptr;
 
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
