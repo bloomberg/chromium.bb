@@ -137,6 +137,12 @@ class DataReductionProxyCompressionStats {
   // persists data usage to memory when pref is disabled.
   void SetDataUsageReportingEnabled(bool enabled);
 
+  // Returns |data_usage_map_|.
+  const DataReductionProxyCompressionStats::SiteUsageMap&
+  DataUsageMapForTesting() const {
+    return data_usage_map_;
+  }
+
  private:
   // Enum to track the state of loading data usage from storage.
   enum CurrentDataUsageLoadStatus { NOT_LOADED = 0, LOADING = 1, LOADED = 2 };

@@ -27,7 +27,8 @@ class PreviewsUIService;
 // infobar.
 class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  typedef base::Callback<void(bool opt_out)> OnDismissPreviewsInfobarCallback;
+  typedef base::OnceCallback<void(bool opt_out)>
+      OnDismissPreviewsInfobarCallback;
 
   // Actions on the previews infobar. This enum must remain synchronized with
   // the enum of the same name in metrics/histograms/histograms.xml.
@@ -66,7 +67,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
       bool is_reload,
       // TODO(ryansturm): Replace |on_dismiss_callback| with direct call to
       // |previews_ui_service|.
-      const OnDismissPreviewsInfobarCallback& on_dismiss_callback,
+      OnDismissPreviewsInfobarCallback on_dismiss_callback,
       previews::PreviewsUIService* previews_ui_service);
 
   // ConfirmInfoBarDelegate overrides:
@@ -80,13 +81,12 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   static const void* OptOutEventKey();
 
  private:
-  PreviewsInfoBarDelegate(
-      PreviewsInfoBarTabHelper* infobar_tab_helper,
-      previews::PreviewsType previews_type,
-      base::Time previews_freshness,
-      bool is_data_saver_user,
-      bool is_reload,
-      const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
+  PreviewsInfoBarDelegate(PreviewsInfoBarTabHelper* infobar_tab_helper,
+                          previews::PreviewsType previews_type,
+                          base::Time previews_freshness,
+                          bool is_data_saver_user,
+                          bool is_reload,
+                          OnDismissPreviewsInfobarCallback on_dismiss_callback);
 
   // ConfirmInfoBarDelegate overrides:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;

@@ -142,10 +142,6 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     now_delta_ += base::TimeDelta::FromHours(hours);
   }
 
-  DataReductionProxyCompressionStats::SiteUsageMap* DataUsageMap() {
-    return &compression_stats_->data_usage_map_;
-  }
-
   void SetUpPrefs() {
     CreatePrefList(prefs::kDailyHttpOriginalContentLength);
     CreatePrefList(prefs::kDailyHttpReceivedContentLength);
@@ -1298,7 +1294,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteBrowsingHistory) {
   DeleteBrowsingHistory(now, now);
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(DataUsageMap()->empty());
+  ASSERT_TRUE(compression_stats()->DataUsageMapForTesting().empty());
 
   auto expected_data_usage =
       base::MakeUnique<std::vector<data_reduction_proxy::DataUsageBucket>>(
