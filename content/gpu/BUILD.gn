@@ -102,11 +102,7 @@ target(link_target_type, "gpu_sources") {
       "//third_party/wtl:wtl_includes",
     ]
     libs = [ "setupapi.lib" ]
-    deps += [
-      "//sandbox",
-      "//third_party/angle:libEGL",
-      "//third_party/angle:libGLESv2",
-    ]
+    deps += [ "//sandbox" ]
   }
 
   if (use_x11) {
