@@ -60,7 +60,11 @@ void WillLoadPluginsCallback(base::SequenceChecker* sequence_checker) {
   DCHECK(sequence_checker->CalledOnValidSequence());
 }
 
-void RecordBrokerUsage(int render_process_id, int render_frame_id) {
+}  // namespace
+
+// static
+void PluginServiceImpl::RecordBrokerUsage(int render_process_id,
+                                          int render_frame_id) {
   ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   WebContents* web_contents = WebContents::FromRenderFrameHost(
@@ -70,8 +74,6 @@ void RecordBrokerUsage(int render_process_id, int render_frame_id) {
     ukm::builders::Pepper_Broker(source_id).Record(recorder);
   }
 }
-
-}  // namespace
 
 // static
 PluginService* PluginService::GetInstance() {
@@ -230,9 +232,9 @@ void PluginServiceImpl::OpenChannelToPpapiBroker(
     int render_frame_id,
     const base::FilePath& path,
     PpapiPluginProcessHost::BrokerClient* client) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RecordBrokerUsage, render_process_id, render_frame_id));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&PluginServiceImpl::RecordBrokerUsage,
+                                         render_process_id, render_frame_id));
 
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(
       render_process_id, path);

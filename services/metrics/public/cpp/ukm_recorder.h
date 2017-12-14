@@ -19,12 +19,19 @@
 
 class DocumentWritePageLoadMetricsObserver;
 class FromGWSPageLoadMetricsLogger;
+class IOSChromePasswordManagerClient;
+class LocalNetworkRequestsPageLoadMetricsObserver;
+class MediaEngagementSession;
 class PluginInfoHostImpl;
 class ServiceWorkerPageLoadMetricsObserver;
 class SubresourceFilterMetricsObserver;
 class UkmPageLoadMetricsObserver;
 class UseCounterPageLoadMetricsObserver;
-class LocalNetworkRequestsPageLoadMetricsObserver;
+
+namespace autofill {
+class AutofillMetrics;
+class FormStructure;
+}  // namespace autofill
 
 namespace assist_ranker {
 class BasePredictor;
@@ -32,15 +39,25 @@ class BasePredictor;
 
 namespace blink {
 class AutoplayUmaHelper;
+class Document;
 }
 
 namespace cc {
 class UkmManager;
 }
 
+namespace content {
+class WebContentsImpl;
+class PluginServiceImpl;
+}  // namespace content
+
 namespace password_manager {
 class PasswordManagerMetricsRecorder;
 }  // namespace password_manager
+
+namespace payments {
+class JourneyLogger;
+}
 
 namespace previews {
 class PreviewsUKMObserver;
@@ -48,6 +65,16 @@ class PreviewsUKMObserver;
 
 namespace metrics {
 class UkmRecorderInterface;
+}
+
+namespace media {
+class MediaMetricsProvider;
+class VideoDecodePerfHistory;
+class WatchTimeRecorder;
+}  // namespace media
+
+namespace translate {
+class TranslateRankerImpl;
 }
 
 namespace ui {
@@ -62,6 +89,7 @@ class TestRecordingHelper;
 
 namespace internal {
 class UkmEntryBuilderBase;
+class SourceUrlRecorderWebContentsObserver;
 }
 
 // This feature controls whether UkmService should be created.
@@ -83,29 +111,38 @@ class METRICS_EXPORT UkmRecorder {
   // session.
   static SourceId GetNewSourceID();
 
-  // Update the URL on the source keyed to the given source ID. If the source
-  // does not exist, it will create a new UkmSource object.
-  virtual void UpdateSourceURL(SourceId source_id, const GURL& url) = 0;
-
  private:
   friend assist_ranker::BasePredictor;
   friend DelegatingUkmRecorder;
   friend DocumentWritePageLoadMetricsObserver;
   friend FromGWSPageLoadMetricsLogger;
+  friend IOSChromePasswordManagerClient;
   friend LocalNetworkRequestsPageLoadMetricsObserver;
+  friend MediaEngagementSession;
   friend PluginInfoHostImpl;
   friend ServiceWorkerPageLoadMetricsObserver;
   friend SubresourceFilterMetricsObserver;
   friend TestRecordingHelper;
   friend UkmPageLoadMetricsObserver;
   friend UseCounterPageLoadMetricsObserver;
+  friend autofill::AutofillMetrics;
+  friend autofill::FormStructure;
   friend blink::AutoplayUmaHelper;
+  friend blink::Document;
   friend cc::UkmManager;
+  friend content::PluginServiceImpl;
+  friend content::WebContentsImpl;
+  friend internal::SourceUrlRecorderWebContentsObserver;
   friend internal::UkmEntryBuilderBase;
+  friend media::MediaMetricsProvider;
+  friend media::VideoDecodePerfHistory;
+  friend media::WatchTimeRecorder;
   friend metrics::UkmRecorderInterface;
-  friend ui::LatencyTracker;
   friend password_manager::PasswordManagerMetricsRecorder;
+  friend payments::JourneyLogger;
   friend previews::PreviewsUKMObserver;
+  friend translate::TranslateRankerImpl;
+  friend ui::LatencyTracker;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,
@@ -114,12 +151,17 @@ class METRICS_EXPORT UkmRecorder {
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, PersistAndPurge);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, WhitelistEntryTest);
 
+  // Associates the SourceId with a URL. Most UKM recording code should prefer
+  // to use a shared SourceId that is already associated with a URL, rather
+  // than using this API directly. New uses of this API must be auditted to
+  // maintain privacy constraints.
+  virtual void UpdateSourceURL(SourceId source_id, const GURL& url) = 0;
+
   // Get a new UkmEntryBuilder object for the specified source ID and event,
   // which can get metrics added to.
   //
-  // This API being private is intentional. Any client using UKM needs to
-  // declare itself to be a friend of UkmService and go through code review
-  // process.
+  // This API is deprecated, and new code should prefer using the API from
+  // ukm_builders.h.
   std::unique_ptr<UkmEntryBuilder> GetEntryBuilder(SourceId source_id,
                                                    const char* event_name);
 

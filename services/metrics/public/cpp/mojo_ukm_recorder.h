@@ -35,9 +35,6 @@ class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
   explicit MojoUkmRecorder(mojom::UkmRecorderInterfacePtr recorder_interface);
   ~MojoUkmRecorder() override;
 
-  // UkmRecorder:
-  void UpdateSourceURL(SourceId source_id, const GURL& url) override;
-
   // Helper for getting the wrapper from a connector.
   static std::unique_ptr<MojoUkmRecorder> Create(
       service_manager::Connector* connector);
@@ -46,6 +43,7 @@ class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
 
  private:
   // UkmRecorder:
+  void UpdateSourceURL(SourceId source_id, const GURL& url) override;
   void AddEntry(mojom::UkmEntryPtr entry) override;
 
   mojom::UkmRecorderInterfacePtr interface_;

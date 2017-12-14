@@ -16,7 +16,9 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
-namespace {
+namespace ukm {
+
+namespace internal {
 
 // SourceUrlRecorderWebContentsObserver is responsible for recording UKM source
 // URLs, for all (any only) main frame navigations in a given WebContents.
@@ -139,21 +141,22 @@ void SourceUrlRecorderWebContentsObserver::CreateForWebContents(
   }
 }
 
-}  // namespace
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SourceUrlRecorderWebContentsObserver);
-
-namespace ukm {
+}  // namespace internal
 
 void InitializeSourceUrlRecorderForWebContents(
     content::WebContents* web_contents) {
-  SourceUrlRecorderWebContentsObserver::CreateForWebContents(web_contents);
+  internal::SourceUrlRecorderWebContentsObserver::CreateForWebContents(
+      web_contents);
 }
 
 SourceId GetSourceIdForWebContentsDocument(content::WebContents* web_contents) {
-  SourceUrlRecorderWebContentsObserver* obs =
-      SourceUrlRecorderWebContentsObserver::FromWebContents(web_contents);
+  internal::SourceUrlRecorderWebContentsObserver* obs =
+      internal::SourceUrlRecorderWebContentsObserver::FromWebContents(
+          web_contents);
   return obs ? obs->GetLastCommittedSourceId() : kInvalidSourceId;
 }
 
 }  // namespace ukm
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(
+    ukm::internal::SourceUrlRecorderWebContentsObserver);
