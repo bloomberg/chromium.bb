@@ -14,7 +14,7 @@ html {
 
   --logo-height: 200px; /* Normal height of a doodle. */
   --logo-margin-top: 56px; /* Expected OGB height, so logo doesn't overlap. */
-  --logo-margin-bottom: 24px; /* Between logo and fakebox. */
+  --logo-margin-bottom: 29px; /* Between logo and fakebox. */
 
   --tile-height: 128px;
   --tile-margin: 16px;
