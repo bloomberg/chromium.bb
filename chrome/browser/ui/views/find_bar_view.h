@@ -88,6 +88,10 @@ class FindBarView : public views::View,
   // views::ViewTargeterDelegate:
   views::View* TargetForRect(View* root, const gfx::Rect& rect) override;
 
+ protected:
+  // views::View overrides:
+  void AddedToWidget() override;
+
  private:
   // Starts finding |search_text|.  If the text is empty, stops finding.
   void Find(const base::string16& search_text);
