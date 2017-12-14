@@ -9,8 +9,13 @@
 
 namespace offline_pages {
 
+// Currently used for fallbacks like tests.
+extern const char kDefaultNamespace[];
+
 // Any changes to these well-known namespaces should also be reflected in
-// OfflinePagesNamespace (histograms.xml) for consistency.
+// OfflinePagesNamespaceEnumeration (histograms.xml) for consistency.
+// New namespaces should be put at the end of this list and a corresponding
+// enum value should be added in OfflinePagesNamespaceEnumeration.
 extern const char kBookmarkNamespace[];
 extern const char kLastNNamespace[];
 extern const char kAsyncNamespace[];
@@ -20,8 +25,25 @@ extern const char kNTPSuggestionsNamespace[];
 extern const char kSuggestedArticlesNamespace[];
 extern const char kBrowserActionsNamespace[];
 
-// Currently used for fallbacks like tests.
-extern const char kDefaultNamespace[];
+// Enum of namespaces used by metric collection.
+// See OfflinePagesNamespaceEnumeration in enums.xml for histogram usages.
+// Changes to this enum should be in sync with the changes to the namespace
+// constants above.
+enum class OfflinePagesNamespaceEnumeration {
+  DEFAULT = 0,
+  BOOKMARK = 1,
+  LAST_N = 2,
+  ASYNC_LOADING = 3,
+  CUSTOM_TABS = 4,
+  DOWNLOAD = 5,
+  NTP_SUGGESTION = 6,
+  SUGGESTED_ARTICLES = 7,
+  BROWSER_ACTIONS = 8,
+  // NOTE: always keep this entry at the end. Add new result types only
+  // immediately above this line. Make sure to update the corresponding
+  // histogram enum accordingly.
+  RESULT_COUNT,
+};
 
 }  // namespace offline_pages
 

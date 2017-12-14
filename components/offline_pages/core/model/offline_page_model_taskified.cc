@@ -9,18 +9,21 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/archive_manager.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/add_page_task.h"
 #include "components/offline_pages/core/model/clear_legacy_temporary_pages_task.h"
 #include "components/offline_pages/core/model/create_archive_task.h"
 #include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
+#include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/persistent_pages_consistency_check_task.h"
 #include "components/offline_pages/core/model/temporary_pages_consistency_check_task.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
@@ -275,6 +278,10 @@ void OfflinePageModelTaskified::InformSavePageDone(
     const SavePageCallback& callback,
     SavePageResult result,
     const OfflinePageItem& page) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.SavePageCount",
+      model_utils::ToNamespaceEnum(page.client_id.name_space),
+      OfflinePagesNamespaceEnumeration::RESULT_COUNT);
   if (result == SavePageResult::ARCHIVE_CREATION_FAILED)
     CreateArchivesDirectoryIfNeeded();
   if (!callback.is_null())
@@ -354,6 +361,10 @@ void OfflinePageModelTaskified::OnDeleteDone(
     DeletePageResult result,
     const std::vector<OfflinePageModel::DeletedPageInfo>& infos) {
   for (const auto& info : infos) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "OfflinePages.DeletePageCount",
+        model_utils::ToNamespaceEnum(info.client_id.name_space),
+        OfflinePagesNamespaceEnumeration::RESULT_COUNT);
     for (Observer& observer : observers_)
       observer.OfflinePageDeleted(info);
   }
