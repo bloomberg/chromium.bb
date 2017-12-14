@@ -39,6 +39,9 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 // Lists the accessibility elements that are to be seen by UIAccessibility.
 @property(nonatomic, readonly) NSMutableArray* accessibilityElements;
 
+// True when title text has ended editing and committed.
+@property(nonatomic, assign) BOOL isTextCommitted;
+
 @end
 
 @implementation BookmarkTableCell
@@ -48,6 +51,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 @synthesize textDelegate = _textDelegate;
 @synthesize separatorView = _separatorView;
 @synthesize accessibilityElements = _accessibilityElements;
+@synthesize isTextCommitted = _isTextCommitted;
 
 #pragma mark - Initializer
 
@@ -147,6 +151,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 }
 
 - (void)startEdit {
+  self.isTextCommitted = NO;
   self.titleText.userInteractionEnabled = YES;
   self.titleText.enablesReturnKeyAutomatically = YES;
   self.titleText.keyboardType = UIKeyboardTypeDefault;
@@ -168,6 +173,10 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 }
 
 - (void)stopEdit {
+  if (self.isTextCommitted) {
+    return;
+  }
+  self.isTextCommitted = YES;
   [self.textDelegate textDidChangeTo:self.titleText.text];
   self.titleText.userInteractionEnabled = NO;
   [self.titleText endEditing:YES];
@@ -259,10 +268,15 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 
 // This method hides the keyboard when the return key is pressed.
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
-  [self.textDelegate textDidChangeTo:self.titleText.text];
-  self.titleText.userInteractionEnabled = NO;
-  [textField endEditing:YES];
+  [self stopEdit];
   return YES;
+}
+
+// This method is called when titleText resigns its first responder status.
+// (when return/dimiss key is pressed, or when navigating away.)
+- (void)textFieldDidEndEditing:(UITextField*)textField
+                        reason:(UITextFieldDidEndEditingReason)reason {
+  [self stopEdit];
 }
 
 @end
