@@ -154,22 +154,18 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   for (int p = 0; p < MAX_MB_PLANE; ++p) {
     const int is_uv = p > 0;
     const int ss_x = is_uv && cm->subsampling_x;
-
     const int plane_w = ((frame_w + ss_x) >> ss_x) + 2 * RESTORATION_EXTRA_HORZ;
-    const int align_bits = 5;  // align for efficiency
-    const int stride = ALIGN_POWER_OF_TWO(plane_w, align_bits);
-
+    const int stride = ALIGN_POWER_OF_TWO(plane_w, 5);
     const int buf_size = num_stripes * stride * RESTORATION_CTX_VERT
                          << use_highbd;
-
     RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
     aom_free(boundaries->stripe_boundary_above);
     aom_free(boundaries->stripe_boundary_below);
 
     CHECK_MEM_ERROR(cm, boundaries->stripe_boundary_above,
-                    (uint8_t *)aom_memalign(1 << align_bits, buf_size));
+                    (uint8_t *)aom_memalign(32, buf_size));
     CHECK_MEM_ERROR(cm, boundaries->stripe_boundary_below,
-                    (uint8_t *)aom_memalign(1 << align_bits, buf_size));
+                    (uint8_t *)aom_memalign(32, buf_size));
 
     boundaries->stripe_boundary_stride = stride;
   }

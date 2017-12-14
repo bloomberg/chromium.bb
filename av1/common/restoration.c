@@ -278,7 +278,7 @@ static void restore_boundary_column(uint8_t *dst8, int dst_stride,
     uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst8);
     for (int i = 0; i < h; i++) dst16[i * dst_stride] = buf[i];
   } else {
-    for (int i = 0; i < h; i++) dst8[i * dst_stride] = buf[i];
+    for (int i = 0; i < h; i++) dst8[i * dst_stride] = (uint8_t)(buf[i]);
   }
 }
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -1134,7 +1134,7 @@ void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
       if (highbd)
         *CONVERT_TO_SHORTPTR(dst8ij) = out;
       else
-        *dst8ij = out;
+        *dst8ij = (uint8_t)out;
     }
   }
 }
