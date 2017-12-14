@@ -254,7 +254,7 @@ void AttestationPolicyObserver::CheckCertificateExpiry(
 
 void AttestationPolicyObserver::UploadCertificate(
     const std::string& pem_certificate_chain) {
-  policy_client_->UploadCertificate(
+  policy_client_->UploadEnterpriseMachineCertificate(
       pem_certificate_chain,
       base::Bind(&AttestationPolicyObserver::OnUploadComplete,
                  weak_factory_.GetWeakPtr()));

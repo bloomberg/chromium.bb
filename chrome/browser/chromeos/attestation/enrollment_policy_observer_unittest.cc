@@ -57,7 +57,8 @@ class EnrollmentPolicyObserverTest : public ::testing::Test {
   void SetupMocks() {
     EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
         .WillOnce(WithArgs<4>(Invoke(CertCallbackSuccess)));
-    EXPECT_CALL(policy_client_, UploadCertificate("fake_cert", _))
+    EXPECT_CALL(policy_client_,
+                UploadEnterpriseEnrollmentCertificate("fake_cert", _))
         .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
   }
 

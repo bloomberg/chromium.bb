@@ -153,12 +153,21 @@ class POLICY_EXPORT CloudPolicyClient {
   // Sends an unregistration request to the server.
   virtual void Unregister();
 
-  // Upload a device certificate to the server.  Like FetchPolicy, this method
+  // Upload a machine certificate to the server.  Like FetchPolicy, this method
   // requires that the client is in a registered state.  |certificate_data| must
   // hold the X.509 certificate data to be sent to the server.  The |callback|
   // will be called when the operation completes.
-  virtual void UploadCertificate(const std::string& certificate_data,
-                                 const StatusCallback& callback);
+  virtual void UploadEnterpriseMachineCertificate(
+      const std::string& certificate_data,
+      const StatusCallback& callback);
+
+  // Upload an enrollment certificate to the server.  Like FetchPolicy, this
+  // method requires that the client is in a registered state.
+  // |certificate_data| must hold the X.509 certificate data to be sent to the
+  // server.  The |callback| will be called when the operation completes.
+  virtual void UploadEnterpriseEnrollmentCertificate(
+      const std::string& certificate_data,
+      const StatusCallback& callback);
 
   // Uploads device/session status to the server. As above, the client must be
   // in a registered state. If non-null, |device_status| and |session_status|
@@ -296,6 +305,16 @@ class POLICY_EXPORT CloudPolicyClient {
  protected:
   // A set of (policy type, settings entity ID) pairs to fetch.
   typedef std::set<std::pair<std::string, std::string>> PolicyTypeSet;
+
+  // Upload a certificate to the server.  Like FetchPolicy, this method
+  // requires that the client is in a registered state.  |certificate_data| must
+  // hold the X.509 certificate data to be sent to the server.  The |callback|
+  // will be called when the operation completes.
+  void UploadCertificate(
+      const std::string& certificate_data,
+      enterprise_management::DeviceCertUploadRequest::CertificateType
+          certificate_type,
+      const StatusCallback& callback);
 
   // Callback for retries of registration requests.
   void OnRetryRegister(DeviceManagementRequestJob* job);

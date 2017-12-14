@@ -159,7 +159,7 @@ void EnrollmentPolicyObserver::GetEnrollmentCertificate() {
 
 void EnrollmentPolicyObserver::UploadCertificate(
     const std::string& pem_certificate_chain) {
-  policy_client_->UploadCertificate(
+  policy_client_->UploadEnterpriseEnrollmentCertificate(
       pem_certificate_chain,
       base::Bind(&EnrollmentPolicyObserver::OnUploadComplete,
                  weak_factory_.GetWeakPtr()));

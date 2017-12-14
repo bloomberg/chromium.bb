@@ -87,8 +87,8 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     // status in the key payload matches the upload operation.
     bool new_key = (mock_options & MOCK_NEW_KEY);
     if (new_key || !key_uploaded) {
-      EXPECT_CALL(policy_client_,
-                  UploadCertificate(new_key ? "fake_cert" : certificate, _))
+      EXPECT_CALL(policy_client_, UploadEnterpriseMachineCertificate(
+                                      new_key ? "fake_cert" : certificate, _))
           .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
     }
 
