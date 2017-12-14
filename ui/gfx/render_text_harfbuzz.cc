@@ -137,6 +137,16 @@ bool AsciiBreak(UChar32 first_char, UChar32 current_char) {
   return scripts_size != 0;
 }
 
+// When a string of "unusual" characters ends, the run usually breaks. However,
+// variation selectors should still attach to the run of unusual characters.
+// Detect this situation so that FindRunBreakingCharacter() can continue
+// tracking the unusual block. Otherwise, just returns |current|.
+UBlockCode MaybeCombineUnusualBlock(UBlockCode preceding, UBlockCode current) {
+  return IsUnusualBlockCode(preceding) && current == UBLOCK_VARIATION_SELECTORS
+             ? preceding
+             : current;
+}
+
 // Returns the boundary between a special and a regular character. Special
 // characters are brackets or characters that satisfy |IsUnusualBlockCode|.
 size_t FindRunBreakingCharacter(const base::string16& text,
@@ -156,7 +166,8 @@ size_t FindRunBreakingCharacter(const base::string16& text,
 
   while (iter.Advance() && iter.array_pos() < run_length) {
     const UChar32 current_char = iter.get();
-    const UBlockCode current_block = ublock_getCode(current_char);
+    const UBlockCode current_block =
+        MaybeCombineUnusualBlock(first_block, ublock_getCode(current_char));
     const bool block_break = current_block != first_block &&
         (first_block_unusual || IsUnusualBlockCode(current_block));
     if (block_break || current_char == '\n' ||
