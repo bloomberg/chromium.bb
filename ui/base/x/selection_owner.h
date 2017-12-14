@@ -22,6 +22,10 @@ namespace ui {
 
 class XScopedEventSelector;
 
+extern const char kIncr[];
+extern const char kSaveTargets[];
+extern const char kTargets[];
+
 // Owns a specific X11 selection on an X window.
 //
 // The selection owner object keeps track of which xwindow is the current
