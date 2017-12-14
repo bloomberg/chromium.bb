@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
@@ -85,6 +86,7 @@ public class TextSuggestionMenuTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/710097")
     @LargeTest
     public void testDeleteWordMarkedWithSpellingMarker()
             throws InterruptedException, Throwable, TimeoutException {

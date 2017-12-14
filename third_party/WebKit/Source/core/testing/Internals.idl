@@ -182,7 +182,6 @@ enum EffectiveConnectionType {
 
     [RaisesException] boolean hasSpellingMarker(Document document, long from, long length);
     [RaisesException] boolean hasGrammarMarker(Document document, long from, long length);
-    [RaisesException] void setSpellCheckingEnabled(boolean enabled);
     [RaisesException] void replaceMisspelled(Document document, DOMString replacement);
 
     bool canHyphenate(DOMString locale);

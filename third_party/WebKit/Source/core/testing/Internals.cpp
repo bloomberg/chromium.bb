@@ -2153,19 +2153,6 @@ bool Internals::hasSpellingMarker(Document* document,
       DocumentMarker::kSpelling, from, length);
 }
 
-void Internals::setSpellCheckingEnabled(bool enabled,
-                                        ExceptionState& exception_state) {
-  if (!GetFrame()) {
-    exception_state.ThrowDOMException(
-        kInvalidAccessError,
-        "No frame can be obtained from the provided document.");
-    return;
-  }
-
-  if (enabled != GetFrame()->GetSpellChecker().IsSpellCheckingEnabled())
-    GetFrame()->GetSpellChecker().ToggleSpellCheckingEnabled();
-}
-
 void Internals::replaceMisspelled(Document* document,
                                   const String& replacement,
                                   ExceptionState& exception_state) {

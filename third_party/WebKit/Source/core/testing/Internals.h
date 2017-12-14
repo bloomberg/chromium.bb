@@ -322,7 +322,6 @@ class Internals final : public ScriptWrappable {
 
   bool hasSpellingMarker(Document*, int from, int length, ExceptionState&);
   bool hasGrammarMarker(Document*, int from, int length, ExceptionState&);
-  void setSpellCheckingEnabled(bool, ExceptionState&);
   void replaceMisspelled(Document*, const String&, ExceptionState&);
 
   bool canHyphenate(const AtomicString& locale);

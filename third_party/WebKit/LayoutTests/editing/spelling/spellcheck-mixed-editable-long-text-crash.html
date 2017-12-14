@@ -16,10 +16,6 @@ if (window.testRunner)
     testRunner.setMockSpellCheckerEnabled(true);
 
 test(function() {
-    if (window.internals) {
-        internals.setSpellCheckingEnabled(true);
-    }
-
     // Make text for spell checking longer than |kChunkSize|=16*1024 defined in
     // SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar()
     var words = document.getElementById('words');
