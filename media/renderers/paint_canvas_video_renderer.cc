@@ -137,11 +137,18 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
       source_textures[i].fTarget = GL_TEXTURE_2D;
     }
   }
+  GrPixelConfig config = video_frame->format() == PIXEL_FORMAT_NV12
+                             ? kRGBA_8888_GrPixelConfig
+                             : kAlpha_8_GrPixelConfig;
   context_3d.gr_context->resetContext(kTextureBinding_GrGLBackendState);
-  GrBackendObject handles[3] = {
-      skia::GrGLTextureInfoToGrBackendObject(source_textures[0]),
-      skia::GrGLTextureInfoToGrBackendObject(source_textures[1]),
-      skia::GrGLTextureInfoToGrBackendObject(source_textures[2])};
+  GrBackendTexture textures[3] = {
+      GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(), config,
+                       source_textures[0]),
+      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(), config,
+                       source_textures[1]),
+      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(), config,
+                       source_textures[2]),
+  };
 
   SkISize yuvSizes[] = {
       {ya_tex_size.width(), ya_tex_size.height()},
@@ -158,11 +165,11 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
   sk_sp<SkImage> img;
   if (video_frame->format() == PIXEL_FORMAT_NV12) {
     img = SkImage::MakeFromNV12TexturesCopy(context_3d.gr_context, color_space,
-                                            handles, yuvSizes,
+                                            textures, yuvSizes,
                                             kTopLeft_GrSurfaceOrigin);
   } else {
     img = SkImage::MakeFromYUVTexturesCopy(context_3d.gr_context, color_space,
-                                           handles, yuvSizes,
+                                           textures, yuvSizes,
                                            kTopLeft_GrSurfaceOrigin);
   }
   for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
