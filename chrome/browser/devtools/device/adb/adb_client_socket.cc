@@ -212,7 +212,7 @@ void AdbClientSocket::SendCommand(const std::string& command,
           destination: LOCAL
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "To use adb with a device connected over USB, you must enable USB "
             "debugging in the device system settings, under Developer options."
