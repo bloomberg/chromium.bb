@@ -253,13 +253,12 @@ int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles) {
 AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
                                int is_uv) {
   AV1PixelRect r;
-  const int ss_x = is_uv && cm->subsampling_x;
-  const int ss_y = is_uv && cm->subsampling_y;
 
-  r.left = (tile_info->mi_col_start * MI_SIZE + ss_x) >> ss_x;
-  r.right = (tile_info->mi_col_end * MI_SIZE + ss_x) >> ss_x;
-  r.top = (tile_info->mi_row_start * MI_SIZE + ss_y) >> ss_y;
-  r.bottom = (tile_info->mi_row_end * MI_SIZE + ss_y) >> ss_y;
+  // Calculate position in the Y plane
+  r.left = tile_info->mi_col_start * MI_SIZE;
+  r.right = tile_info->mi_col_end * MI_SIZE;
+  r.top = tile_info->mi_row_start * MI_SIZE;
+  r.bottom = tile_info->mi_row_end * MI_SIZE;
 
 #if CONFIG_HORZONLY_FRAME_SUPERRES
   // If upscaling is enabled, the tile limits need scaling to match the
@@ -279,12 +278,19 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
   const int frame_h = cm->height;
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
-  const int plane_w = (frame_w + ss_x) >> ss_x;
-  const int plane_h = (frame_h + ss_y) >> ss_y;
-
   // Make sure we don't fall off the bottom-right of the frame.
-  r.right = AOMMIN(r.right, plane_w);
-  r.bottom = AOMMIN(r.bottom, plane_h);
+  r.right = AOMMIN(r.right, frame_w);
+  r.bottom = AOMMIN(r.bottom, frame_h);
+
+  // Convert to coordinates in the appropriate plane
+  const int ss_x = is_uv && cm->subsampling_x;
+  const int ss_y = is_uv && cm->subsampling_y;
+
+  r.left = ROUND_POWER_OF_TWO(r.left, ss_x);
+  r.right = ROUND_POWER_OF_TWO(r.right, ss_x);
+  r.top = ROUND_POWER_OF_TWO(r.top, ss_y);
+  r.bottom = ROUND_POWER_OF_TWO(r.bottom, ss_y);
+
   return r;
 }
 
