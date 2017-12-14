@@ -2579,7 +2579,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 #if defined(OS_ANDROID)
   auto* single_tab_mode_helper =
       SingleTabModeTabHelper::FromWebContents(web_contents);
-  if (single_tab_mode_helper->block_all_new_windows()) {
+  if (single_tab_mode_helper &&
+      single_tab_mode_helper->block_all_new_windows()) {
     if (TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents)) {
       tab_android->HandlePopupNavigation(&nav_params);
     }
