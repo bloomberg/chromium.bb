@@ -94,6 +94,11 @@ NetworkConfigView::~NetworkConfigView() {
 }
 
 // static
+bool NetworkConfigView::HasInstance() {
+  return !!g_instance;
+}
+
+// static
 NetworkConfigView* NetworkConfigView::ShowForNetworkId(
     const std::string& network_id) {
   if (g_instance)

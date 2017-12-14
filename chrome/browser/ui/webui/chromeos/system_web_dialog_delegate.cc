@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "components/session_manager/core/session_manager.h"
@@ -56,6 +57,13 @@ bool SystemWebDialogDelegate::ShouldShowDialogTitle() const {
 }
 
 void SystemWebDialogDelegate::ShowSystemDialog() {
+  // NetworkConfigView does not interact well with web dialogs. For now, do
+  // not show the dialog while NetworkConfigView is shown: crbug.com/791955.
+  // TODO(stevenjb): Remove this when NetworkConfigView is deprecated.
+  if (NetworkConfigView::HasInstance()) {
+    delete this;
+    return;
+  }
   content::BrowserContext* browser_context =
       ProfileManager::GetActiveUserProfile();
   int container_id = session_manager::SessionManager::Get()->session_state() ==
