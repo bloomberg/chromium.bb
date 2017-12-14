@@ -320,6 +320,7 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
     for (plane = 0; plane < PLANE_TYPES; ++plane) {
 #if CONFIG_LV_MAP_MULTI
       for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+#if 0
         int p = 32768 - fc->coeff_lps[tx_size][plane][0][ctx] * 128;
         int sum = p;
         fc->coeff_br_cdf[tx_size][plane][ctx][0] = AOM_ICDF(sum);
@@ -335,6 +336,9 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
         //        fc->coeff_br_cdf[tx_size][plane][ctx][0] >> 7,
         //        fc->coeff_br_cdf[tx_size][plane][ctx][1] >> 7,
         //        fc->coeff_br_cdf[tx_size][plane][ctx][2] >> 7);
+#else
+        (void)ctx;  // coeff_br_cdf is initialized in init_mode_probs
+#endif
       }
 #else
       for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {

@@ -282,6 +282,8 @@ typedef struct FRAME_COUNTS {
 #else
   unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE - 1][LEVEL_CONTEXTS]
                         [2];
+  unsigned int coeff_lps_multi[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
+                              [BR_CDF_SIZE];
 #endif
 #endif  // CONFIG_LV_MAP
 

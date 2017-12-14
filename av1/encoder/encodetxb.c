@@ -478,10 +478,14 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #endif
       for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
-        aom_write_symbol(
-            w, k,
+        aom_write_symbol(w, k,
+#if 0
             ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_16X16)][plane_type][ctx],
-            BR_CDF_SIZE);
+#else
+                         ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)]
+                                             [plane_type][ctx],
+#endif
+                         BR_CDF_SIZE);
         if (k < BR_CDF_SIZE - 1) break;
       }
       if (base_range < COEFF_BASE_RANGE) continue;
@@ -2258,13 +2262,24 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
         update_cdf(
+#if 0
             ec_ctx->coeff_br_cdf[AOMMIN(txsize_ctx, TX_16X16)][plane_type][ctx],
+#else
+            ec_ctx->coeff_br_cdf[AOMMIN(txsize_ctx, TX_32X32)][plane_type][ctx],
+#endif
             k, BR_CDF_SIZE);
         for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
+#if 0
           ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_16X16)][plane_type][lps]
                                  [ctx][lps == k];
+#else
+          ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_32X32)][plane_type][lps]
+                                 [ctx][lps == k];
+#endif
           if (lps == k) break;
         }
+        ++td->counts->coeff_lps_multi[AOMMIN(txsize_ctx, TX_32X32)][plane_type]
+                                     [ctx][k];
 
         if (k < BR_CDF_SIZE - 1) break;
       }
