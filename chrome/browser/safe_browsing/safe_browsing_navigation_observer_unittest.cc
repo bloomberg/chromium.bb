@@ -42,16 +42,17 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
     delete navigation_observer_;
     BrowserWithTestWindowTest::TearDown();
   }
-  void VerifyNavigationEvent(const GURL& expected_source_url,
-                             const GURL& expected_source_main_frame_url,
-                             const GURL& expected_original_request_url,
-                             const GURL& expected_destination_url,
-                             int expected_source_tab,
-                             int expected_target_tab,
-                             bool expected_is_user_initiated,
-                             bool expected_has_committed,
-                             bool expected_has_server_redirect,
-                             NavigationEvent* actual_nav_event) {
+  void VerifyNavigationEvent(
+      const GURL& expected_source_url,
+      const GURL& expected_source_main_frame_url,
+      const GURL& expected_original_request_url,
+      const GURL& expected_destination_url,
+      int expected_source_tab,
+      int expected_target_tab,
+      ReferrerChainEntry::NavigationInitiation expected_nav_initiation,
+      bool expected_has_committed,
+      bool expected_has_server_redirect,
+      NavigationEvent* actual_nav_event) {
     EXPECT_EQ(expected_source_url, actual_nav_event->source_url);
     EXPECT_EQ(expected_source_main_frame_url,
               actual_nav_event->source_main_frame_url);
@@ -60,7 +61,7 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
     EXPECT_EQ(expected_destination_url, actual_nav_event->GetDestinationUrl());
     EXPECT_EQ(expected_source_tab, actual_nav_event->source_tab_id);
     EXPECT_EQ(expected_target_tab, actual_nav_event->target_tab_id);
-    EXPECT_EQ(expected_is_user_initiated, actual_nav_event->is_user_initiated);
+    EXPECT_EQ(expected_nav_initiation, actual_nav_event->navigation_initiation);
     EXPECT_EQ(expected_has_committed, actual_nav_event->has_committed);
     EXPECT_EQ(expected_has_server_redirect,
               !actual_nav_event->server_redirect_urls.empty());
@@ -170,9 +171,9 @@ TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
                         GURL("http://foo/1"),  // destination_url
                         tab_id,                // source_tab_id
                         tab_id,                // target_tab_id
-                        true,                  // is_user_initiated
-                        true,                  // has_committed
-                        false,                 // has_server_redirect
+                        ReferrerChainEntry::BROWSER_INITIATED,
+                        true,   // has_committed
+                        false,  // has_server_redirect
                         nav_list->Get(0U));
 }
 
@@ -187,16 +188,17 @@ TEST_F(SBNavigationObserverTest, ServerRedirect) {
       browser()->tab_strip_model()->GetWebContentsAt(0));
   auto* nav_list = navigation_event_list();
   ASSERT_EQ(1U, nav_list->Size());
-  VerifyNavigationEvent(GURL("http://foo/0"),       // source_url
-                        GURL("http://foo/0"),       // source_main_frame_url
-                        GURL("http://foo/3"),       // original_request_url
-                        GURL("http://redirect/1"),  // destination_url
-                        tab_id,                     // source_tab_id
-                        tab_id,                     // target_tab_id
-                        false,                      // is_user_initiated
-                        true,                       // has_committed
-                        true,                       // has_server_redirect
-                        nav_list->Get(0U));
+  VerifyNavigationEvent(
+      GURL("http://foo/0"),       // source_url
+      GURL("http://foo/0"),       // source_main_frame_url
+      GURL("http://foo/3"),       // original_request_url
+      GURL("http://redirect/1"),  // destination_url
+      tab_id,                     // source_tab_id
+      tab_id,                     // target_tab_id
+      ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE,
+      true,  // has_committed
+      true,  // has_server_redirect
+      nav_list->Get(0U));
 }
 
 TEST_F(SBNavigationObserverTest, TestCleanUpStaleNavigationEvents) {

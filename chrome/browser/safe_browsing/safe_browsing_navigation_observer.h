@@ -9,6 +9,7 @@
 #include "base/supports_user_data.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -30,27 +31,40 @@ struct NavigationEvent {
   NavigationEvent& operator=(NavigationEvent&& nav_event);
   ~NavigationEvent();
 
-  GURL source_url;  // URL that caused this navigation to occur.
-                    // TODO(jialiul): source_url may be incorrect when
-                    // navigation involves frames targeting each other.
-                    // http://crbug.com/651895.
-  GURL source_main_frame_url;  // Main frame url of the source_url. Could be the
-                               // same as source_url, if source_url was loaded
-                               // in main frame.
-  GURL original_request_url;   // The original request URL of this navigation.
-  std::vector<GURL> server_redirect_urls;  // Server redirect url chain.
-                                           // Empty if there is no server
-                                           // redirect. If set, last url in this
-                                           // vector is the destination url.
-  int source_tab_id;  // Which tab contains the frame with source_url. Tab ID is
-                      // returned by SessionTabHelper::IdForTab. This ID is
-                      // immutable for a given tab and unique across Chrome
-                      // within the current session.
-  int target_tab_id;  // Which tab this request url is targeting to.
-  int frame_id;  // Frame tree node ID of the frame where this navigation takes
-                 // place.
-  base::Time last_updated;  // When this NavigationEvent was last updated.
-  bool is_user_initiated;  // browser_initiated || has_user_gesture.
+  // URL that caused this navigation to occur.
+  GURL source_url;
+
+  // Main frame url of the source_url. Could be the same as source_url, if
+  // source_url was loaded in main frame.
+  GURL source_main_frame_url;
+
+  // The original request URL of this navigation.
+  GURL original_request_url;
+
+  // Server redirect url chain. Empty if there is no server redirect. If set,
+  // last url in this vector is the destination url.
+  std::vector<GURL> server_redirect_urls;
+
+  // Which tab contains the frame with source_url. Tab ID is returned by
+  // SessionTabHelper::IdForTab. This ID is immutable for a given tab and unique
+  // across Chrome within the current session.
+  int source_tab_id;
+
+  // Which tab this request url is targeting to.
+  int target_tab_id;
+
+  // Frame tree node ID of the frame where this navigation takes place.
+  int frame_id;
+
+  // When this NavigationEvent was last updated.
+  base::Time last_updated;
+
+  // If this navigation is triggered by browser or renderer, and if it is
+  // associated with any user gesture.
+  ReferrerChainEntry::NavigationInitiation navigation_initiation;
+
+  // Whether this a committed navigation. Navigation leads to download is not
+  // committed.
   bool has_committed;
 
   const GURL& GetDestinationUrl() const {
@@ -58,6 +72,12 @@ struct NavigationEvent {
       return server_redirect_urls.back();
     else
       return original_request_url;
+  }
+
+  bool IsUserInitiated() const {
+    return navigation_initiation == ReferrerChainEntry::BROWSER_INITIATED ||
+           navigation_initiation ==
+               ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE;
   }
 };
 

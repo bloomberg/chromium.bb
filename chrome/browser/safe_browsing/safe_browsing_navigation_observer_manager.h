@@ -195,7 +195,7 @@ class SafeBrowsingNavigationObserverManager
                             int source_render_frame_id,
                             GURL target_url,
                             content::WebContents* target_web_contents,
-                            bool not_yet_in_tabstrip);
+                            bool renderer_initiated);
 
  private:
   friend class base::RefCountedThreadSafe<
