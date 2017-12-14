@@ -94504,6 +94504,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Launch.NetworkError" enum="NetErrorCodes">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the error codes when a WebAPK is launched with network failures.
+  </summary>
+</histogram>
+
 <histogram name="WebApk.LaunchInterval" units="ms">
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>

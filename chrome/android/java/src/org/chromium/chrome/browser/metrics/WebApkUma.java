@@ -229,6 +229,11 @@ public class WebApkUma {
         RecordHistogram.recordBooleanHistogram("WebApk.WebApkService.BindSuccess", bindSucceeded);
     }
 
+    /** Records the network error code caught when a WebAPK is launched. */
+    public static void recordNetworkErrorWhenLaunch(int errorCode) {
+        RecordHistogram.recordSparseSlowlyHistogram("WebApk.Launch.NetworkError", -errorCode);
+    }
+
     /**
      * Log necessary disk usage and cache size UMAs when WebAPK installation fails.
      */
