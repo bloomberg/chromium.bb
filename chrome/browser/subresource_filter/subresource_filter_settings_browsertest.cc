@@ -65,6 +65,33 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
+                       ContentSettingsWhitelistGlobal_DoNotActivate) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kActivationConsoleMessage);
+  web_contents()->SetDelegate(&console_observer);
+
+  // Simulate globally allowing ads via content settings.
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  settings_map->SetDefaultContentSetting(
+      ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS, CONTENT_SETTING_ALLOW);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  // No message for loads that are not activated.
+  EXPECT_TRUE(console_observer.message().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
                        ContentSettingsAllowWithNoPageActivation_DoNotActivate) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
