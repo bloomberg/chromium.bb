@@ -1062,7 +1062,7 @@ crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-functi
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 [ Mac ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Crash Pass Timeout Failure ]
 
-crbug.com/498539 [ Win7 ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass ]
+crbug.com/498539 crbug.com/794869 [ Win7 ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
 
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
