@@ -1,4 +1,0 @@
-Tests that waitForDebuggerOnStart works with out-of-process iframes.
-sessionId matches: true
-User-Agent = test
-
