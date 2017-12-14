@@ -59,21 +59,48 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
     const int count = 500;
 
     for (int ci = 0; ci < count; ci++) {
-      int16_t expected[64 * 64] = { 0 };
-      ASSERT_LE(txfm2d_size, NELEMENTS(expected));
+      int16_t input[64 * 64] = { 0 };
+      ASSERT_LE(txfm2d_size, NELEMENTS(input));
 
       for (int ni = 0; ni < txfm2d_size; ++ni) {
         if (ci == 0) {
           int extreme_input = input_base - 1;
-          expected[ni] = extreme_input;  // extreme case
+          input[ni] = extreme_input;  // extreme case
         } else {
-          expected[ni] = rnd.Rand16() % input_base;
+          input[ni] = rnd.Rand16() % input_base;
+        }
+      }
+
+      uint16_t expected[64 * 64] = { 0 };
+      ASSERT_LE(txfm2d_size, NELEMENTS(expected));
+      if (TxfmUsesApproximation()) {
+        // Compare reference forward HT + inverse HT vs forward HT + inverse HT.
+        double ref_input[64 * 64];
+        ASSERT_LE(txfm2d_size, NELEMENTS(ref_input));
+        for (int ni = 0; ni < txfm2d_size; ++ni) {
+          ref_input[ni] = input[ni];
+        }
+        double ref_coeffs[64 * 64] = { 0 };
+        ASSERT_LE(txfm2d_size, NELEMENTS(ref_coeffs));
+        ASSERT_EQ(tx_type_, DCT_DCT);
+        libaom_test::reference_hybrid_2d(ref_input, ref_coeffs, tx_type_,
+                                         tx_size_);
+        int32_t ref_coeffs_int[64 * 64] = { 0 };
+        ASSERT_LE(txfm2d_size, NELEMENTS(ref_coeffs_int));
+        for (int ni = 0; ni < txfm2d_size; ++ni) {
+          ref_coeffs_int[ni] = (int32_t)round(ref_coeffs[ni]);
+        }
+        inv_txfm_func(ref_coeffs_int, expected, tx_w, tx_type_, bd);
+      } else {
+        // Compare original input vs forward HT + inverse HT.
+        for (int ni = 0; ni < txfm2d_size; ++ni) {
+          expected[ni] = input[ni];
         }
       }
 
       int32_t coeffs[64 * 64] = { 0 };
       ASSERT_LE(txfm2d_size, NELEMENTS(coeffs));
-      fwd_txfm_func(expected, coeffs, tx_w, tx_type_, bd);
+      fwd_txfm_func(input, coeffs, tx_w, tx_type_, bd);
 
       uint16_t actual[64 * 64] = { 0 };
       ASSERT_LE(txfm2d_size, NELEMENTS(actual));
@@ -89,7 +116,7 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
       if (actual_max_error > max_error_) {  // exit early.
         break;
       }
-      avg_abs_error += compute_avg_abs_error<int16_t, uint16_t>(
+      avg_abs_error += compute_avg_abs_error<uint16_t, uint16_t>(
           expected, actual, txfm2d_size);
     }
 
@@ -99,6 +126,15 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
   }
 
  private:
+  bool TxfmUsesApproximation() {
+#if CONFIG_TX64X64
+    if (tx_size_wide[tx_size_] == 64 || tx_size_high[tx_size_] == 64) {
+      return true;
+    }
+#endif  // CONFIG_TX64X64
+    return false;
+  }
+
   int max_error_;
   double max_avg_error_;
   TX_TYPE tx_type_;
@@ -128,13 +164,11 @@ vector<AV1InvTxfm2dParam> GetInvTxfm2dParamList() {
 
 #if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
-      // Large round trip errors expected for these, because of inherent
-      // approximation in the transforms.
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X64, 900, 214));
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X64, 750, 175));
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X32, 750, 175));
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X64, 1025, 350));
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X16, 1025, 350));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X64, 3, 0.2));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X64, 3, 0.3));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X32, 3, 0.3));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X64, 2, 0.11));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X16, 2, 0.11));
     }
 #endif  // CONFIG_TX64X64
   }
