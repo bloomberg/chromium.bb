@@ -74,10 +74,12 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // To be called on sender thread before performing a transfer
   void Transfer() final;
 
-  void EnsureMailbox(MailboxSyncMode) final;
+  void EnsureMailbox(MailboxSyncMode, GLenum filter) final;
 
-  gpu::Mailbox GetMailbox() final { return texture_holder_->GetMailbox(); }
-  gpu::SyncToken GetSyncToken() final {
+  const gpu::Mailbox& GetMailbox() const final {
+    return texture_holder_->GetMailbox();
+  }
+  const gpu::SyncToken& GetSyncToken() const final {
     return texture_holder_->GetSyncToken();
   }
   void UpdateSyncToken(gpu::SyncToken) final;

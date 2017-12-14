@@ -771,7 +771,7 @@ void VRDisplay::submitFrame() {
     StaticBitmapImage* static_image =
         static_cast<StaticBitmapImage*>(image_ref.get());
     TRACE_EVENT_BEGIN0("gpu", "VRDisplay::EnsureMailbox");
-    static_image->EnsureMailbox(kVerifiedSyncToken);
+    static_image->EnsureMailbox(kVerifiedSyncToken, GL_NEAREST);
     TRACE_EVENT_END0("gpu", "VRDisplay::EnsureMailbox");
 
     // Conditionally wait for the previous render to finish. A late wait here

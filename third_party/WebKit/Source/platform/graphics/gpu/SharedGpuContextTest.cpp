@@ -192,7 +192,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
                                   &FakeMailboxGenerator::GenMailbox));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage());
+      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
 
   EXPECT_EQ(mailbox.name[0], 1);
 
@@ -203,7 +203,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
 
   mailbox.name[0] = 0;
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage());
+      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
   EXPECT_EQ(mailbox.name[0], 1);
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -228,7 +228,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
                                   &FakeMailboxGenerator::GenMailbox));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage());
+      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
 
   EXPECT_EQ(mailbox.name[0], 1);
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -252,7 +252,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   mailbox.name[0] = 0;
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage());
+      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
   EXPECT_EQ(mailbox.name[0], 1);
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);

@@ -105,9 +105,9 @@ bool ImageLayerBridge::PrepareTransferableResource(
   DCHECK_EQ(image_for_compositor->IsTextureBacked(), gpu_compositing);
 
   if (gpu_compositing) {
-    image_for_compositor->EnsureMailbox(kUnverifiedSyncToken);
     uint32_t filter =
         filter_quality_ == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
+    image_for_compositor->EnsureMailbox(kUnverifiedSyncToken, filter);
     *out_resource = viz::TransferableResource::MakeGL(
         image_for_compositor->GetMailbox(), filter, GL_TEXTURE_2D,
         image_for_compositor->GetSyncToken());

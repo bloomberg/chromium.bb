@@ -25,8 +25,8 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) final { return false; }
   bool IsValid() const final;
 
-  gpu::Mailbox GetMailbox() final { return mailbox_; }
-  gpu::SyncToken GetSyncToken() final { return sync_token_; }
+  const gpu::Mailbox& GetMailbox() const final { return mailbox_; }
+  const gpu::SyncToken& GetSyncToken() const final { return sync_token_; }
   void UpdateSyncToken(gpu::SyncToken sync_token) final {
     sync_token_ = sync_token;
   }
@@ -42,7 +42,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
                        IntSize mailbox_size);
   // This function turns a texture-backed SkImage into a mailbox and a
   // syncToken.
-  MailboxTextureHolder(std::unique_ptr<TextureHolder>);
+  MailboxTextureHolder(std::unique_ptr<TextureHolder>, GLenum filter);
 
  private:
   void InitCommon();
