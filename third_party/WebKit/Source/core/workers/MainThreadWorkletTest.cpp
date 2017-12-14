@@ -135,7 +135,7 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
 
 TEST_F(MainThreadWorkletTest, TaskRunner) {
   scoped_refptr<WebTaskRunner> task_runner =
-      global_scope_->GetTaskRunner(TaskType::kUnthrottled);
+      global_scope_->GetTaskRunner(TaskType::kInternalTest);
   EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
 }
 

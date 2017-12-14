@@ -49,7 +49,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountFeature(feature);
     GetParentFrameTaskRunners()
-        ->Get(TaskType::kUnspecedTimer)
+        ->Get(TaskType::kInternalTest)
         ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
@@ -64,17 +64,17 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     EXPECT_TRUE(console_message.Contains("deprecated"));
 
     GetParentFrameTaskRunners()
-        ->Get(TaskType::kUnspecedTimer)
+        ->Get(TaskType::kInternalTest)
         ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
   void TestTaskRunner() {
     EXPECT_TRUE(IsCurrentThread());
     scoped_refptr<WebTaskRunner> task_runner =
-        GlobalScope()->GetTaskRunner(TaskType::kUnspecedTimer);
+        GlobalScope()->GetTaskRunner(TaskType::kInternalTest);
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     GetParentFrameTaskRunners()
-        ->Get(TaskType::kUnspecedTimer)
+        ->Get(TaskType::kInternalTest)
         ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 };
@@ -223,7 +223,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   // on the Document.
   EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature1));
   GetWorkerThread()
-      ->GetTaskRunner(TaskType::kUnspecedTimer)
+      ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
@@ -234,7 +234,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   // API use should be reported to the Document only one time. See comments in
   // DedicatedWorkerObjectProxyForTest::CountFeature.
   GetWorkerThread()
-      ->GetTaskRunner(TaskType::kUnspecedTimer)
+      ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
@@ -248,7 +248,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   // UseCounter on the Document.
   EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature2));
   GetWorkerThread()
-      ->GetTaskRunner(TaskType::kUnspecedTimer)
+      ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
@@ -259,7 +259,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   // API use should be reported to the Document only one time. See comments in
   // DedicatedWorkerObjectProxyForTest::CountDeprecation.
   GetWorkerThread()
-      ->GetTaskRunner(TaskType::kUnspecedTimer)
+      ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
@@ -272,7 +272,7 @@ TEST_F(DedicatedWorkerTest, TaskRunner) {
   WorkerMessagingProxy()->StartWithSourceCode(source_code);
 
   GetWorkerThread()
-      ->GetTaskRunner(TaskType::kUnspecedTimer)
+      ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(&DedicatedWorkerThreadForTest::TestTaskRunner,
                                  CrossThreadUnretained(GetWorkerThread())));

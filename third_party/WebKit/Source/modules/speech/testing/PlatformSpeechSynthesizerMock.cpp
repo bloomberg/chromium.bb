@@ -46,11 +46,11 @@ PlatformSpeechSynthesizerMock::PlatformSpeechSynthesizerMock(
     ExecutionContext* context)
     : PlatformSpeechSynthesizer(client),
       speaking_error_occurred_timer_(
-          context->GetTaskRunner(TaskType::kUnspecedTimer),
+          context->GetTaskRunner(TaskType::kInternalTest),
           this,
           &PlatformSpeechSynthesizerMock::SpeakingErrorOccurred),
       speaking_finished_timer_(
-          context->GetTaskRunner(TaskType::kUnspecedTimer),
+          context->GetTaskRunner(TaskType::kInternalTest),
           this,
           &PlatformSpeechSynthesizerMock::SpeakingFinished) {}
 

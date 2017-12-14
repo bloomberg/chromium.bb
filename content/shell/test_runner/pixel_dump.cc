@@ -153,7 +153,7 @@ void PrintFrameAsync(blink::WebLocalFrame* web_frame,
                      base::OnceCallback<void(const SkBitmap&)> callback) {
   DCHECK(web_frame);
   DCHECK(!callback.is_null());
-  web_frame->GetTaskRunner(blink::TaskType::kUnthrottled)
+  web_frame->GetTaskRunner(blink::TaskType::kInternalTest)
       ->PostTask(FROM_HERE, base::BindOnce(&CapturePixelsForPrinting,
                                            base::Unretained(web_frame),
                                            base::Passed(std::move(callback))));

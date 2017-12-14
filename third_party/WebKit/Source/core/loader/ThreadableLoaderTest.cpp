@@ -244,7 +244,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
                                         parent_frame_task_runners_.Get());
     worker_thread_->WaitForInit();
     worker_loading_task_runner_ =
-        worker_thread_->GetTaskRunner(TaskType::kUnspecedLoading);
+        worker_thread_->GetTaskRunner(TaskType::kInternalTest);
   }
 
   void OnServeRequests() override { testing::RunPendingTasks(); }

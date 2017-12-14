@@ -106,7 +106,7 @@ class MockFetchContext : public FetchContext {
   }
 
   scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override {
-    return frame_scheduler_->GetTaskRunner(TaskType::kUnspecedLoading);
+    return frame_scheduler_->GetTaskRunner(TaskType::kInternalTest);
   }
 
  private:
