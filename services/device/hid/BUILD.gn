@@ -37,7 +37,6 @@ source_set("hid") {
     "//base",
     "//components/device_event_log",
     "//device/base",
-    "//net",
     "//services/device/public/cpp/hid",
     "//services/device/public/interfaces",
   ]
@@ -76,6 +75,7 @@ source_set("mocks") {
 
   public_deps = [
     ":hid",
+    "//base",
   ]
 }
 

@@ -19,10 +19,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class IOBuffer;
-}
-
 namespace device {
 
 class HidConnectionMac : public HidConnection {
@@ -36,12 +32,12 @@ class HidConnectionMac : public HidConnection {
   // HidConnection implementation.
   void PlatformClose() override;
   void PlatformRead(ReadCallback callback) override;
-  void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
+  void PlatformWrite(scoped_refptr<base::RefCountedBytes> buffer,
                      size_t size,
                      WriteCallback callback) override;
   void PlatformGetFeatureReport(uint8_t report_id,
                                 ReadCallback callback) override;
-  void PlatformSendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
+  void PlatformSendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
                                  size_t size,
                                  WriteCallback callback) override;
 
@@ -52,11 +48,11 @@ class HidConnectionMac : public HidConnection {
                                   uint32_t report_id,
                                   uint8_t* report_bytes,
                                   CFIndex report_length);
-  void ProcessInputReport(scoped_refptr<net::IOBufferWithSize> buffer);
+  void ProcessInputReport(scoped_refptr<base::RefCountedBytes> buffer);
   void ProcessReadQueue();
   void GetFeatureReportAsync(uint8_t report_id, ReadCallback callback);
   void SetReportAsync(IOHIDReportType report_type,
-                      scoped_refptr<net::IOBuffer> buffer,
+                      scoped_refptr<base::RefCountedBytes> buffer,
                       size_t size,
                       WriteCallback callback);
   void ReturnAsyncResult(base::OnceClosure callback);

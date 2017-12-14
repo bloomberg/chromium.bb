@@ -16,6 +16,7 @@
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -59,11 +60,11 @@ class HidConnectionLinux::BlockingTaskHelper {
                               base::Unretained(this)));
   }
 
-  void Write(scoped_refptr<net::IOBuffer> buffer,
+  void Write(scoped_refptr<base::RefCountedBytes> buffer,
              size_t size,
              WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    ssize_t result = HANDLE_EINTR(write(fd_.get(), buffer->data(), size));
+    ssize_t result = HANDLE_EINTR(write(fd_.get(), buffer->front(), size));
     if (result < 0) {
       HID_PLOG(EVENT) << "Write failed";
       origin_task_runner_->PostTask(FROM_HERE,
@@ -77,11 +78,11 @@ class HidConnectionLinux::BlockingTaskHelper {
   }
 
   void GetFeatureReport(uint8_t report_id,
-                        scoped_refptr<net::IOBufferWithSize> buffer,
+                        scoped_refptr<base::RefCountedBytes> buffer,
                         ReadCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     int result = HANDLE_EINTR(
-        ioctl(fd_.get(), HIDIOCGFEATURE(buffer->size()), buffer->data()));
+        ioctl(fd_.get(), HIDIOCGFEATURE(buffer->size()), buffer->front()));
     if (result < 0) {
       HID_PLOG(EVENT) << "Failed to get feature report";
       origin_task_runner_->PostTask(
@@ -92,8 +93,9 @@ class HidConnectionLinux::BlockingTaskHelper {
           FROM_HERE, base::BindOnce(std::move(callback), false, nullptr, 0));
     } else if (report_id == 0) {
       // Linux adds a 0 to the beginning of the data received from the device.
-      scoped_refptr<net::IOBuffer> copied_buffer(new net::IOBuffer(result - 1));
-      memcpy(copied_buffer->data(), buffer->data() + 1, result - 1);
+      auto copied_buffer =
+          base::MakeRefCounted<base::RefCountedBytes>(result - 1);
+      memcpy(copied_buffer->front(), buffer->front() + 1, result - 1);
       origin_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback), true, copied_buffer, result - 1));
@@ -103,12 +105,12 @@ class HidConnectionLinux::BlockingTaskHelper {
     }
   }
 
-  void SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
+  void SendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
                          size_t size,
                          WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     int result =
-        HANDLE_EINTR(ioctl(fd_.get(), HIDIOCSFEATURE(size), buffer->data()));
+        HANDLE_EINTR(ioctl(fd_.get(), HIDIOCSFEATURE(size), buffer->front()));
     if (result < 0) {
       HID_PLOG(EVENT) << "Failed to send feature report";
       origin_task_runner_->PostTask(FROM_HERE,
@@ -123,8 +125,9 @@ class HidConnectionLinux::BlockingTaskHelper {
   void OnFileCanReadWithoutBlocking() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(report_buffer_size_));
-    char* data = buffer->data();
+    auto buffer =
+        base::MakeRefCounted<base::RefCountedBytes>(report_buffer_size_);
+    uint8_t* data = buffer->front();
     size_t length = report_buffer_size_;
     if (!has_report_id_) {
       // Linux will not prefix the buffer with a report ID if report IDs are not
@@ -205,9 +208,10 @@ void HidConnectionLinux::PlatformRead(ReadCallback callback) {
   ProcessReadQueue();
 }
 
-void HidConnectionLinux::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
-                                       size_t size,
-                                       WriteCallback callback) {
+void HidConnectionLinux::PlatformWrite(
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t size,
+    WriteCallback callback) {
   // Linux expects the first byte of the buffer to always be a report ID so the
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
@@ -221,8 +225,8 @@ void HidConnectionLinux::PlatformGetFeatureReport(uint8_t report_id,
   // The first byte of the destination buffer is the report ID being requested
   // and is overwritten by the feature report.
   DCHECK_GT(device_info()->max_feature_report_size(), 0u);
-  scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(device_info()->max_feature_report_size() + 1));
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(
+      device_info()->max_feature_report_size() + 1);
   buffer->data()[0] = report_id;
 
   blocking_task_runner_->PostTask(
@@ -232,7 +236,7 @@ void HidConnectionLinux::PlatformGetFeatureReport(uint8_t report_id,
 }
 
 void HidConnectionLinux::PlatformSendFeatureReport(
-    scoped_refptr<net::IOBuffer> buffer,
+    scoped_refptr<base::RefCountedBytes> buffer,
     size_t size,
     WriteCallback callback) {
   // Linux expects the first byte of the buffer to always be a report ID so the
@@ -243,8 +247,9 @@ void HidConnectionLinux::PlatformSendFeatureReport(
                                 std::move(callback)));
 }
 
-void HidConnectionLinux::ProcessInputReport(scoped_refptr<net::IOBuffer> buffer,
-                                            size_t size) {
+void HidConnectionLinux::ProcessInputReport(
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t size) {
   DCHECK(thread_checker().CalledOnValidThread());
   DCHECK_GE(size, 1u);
 

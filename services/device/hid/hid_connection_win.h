@@ -33,20 +33,20 @@ class HidConnectionWin : public HidConnection {
   // HidConnection implementation.
   void PlatformClose() override;
   void PlatformRead(ReadCallback callback) override;
-  void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
+  void PlatformWrite(scoped_refptr<base::RefCountedBytes> buffer,
                      size_t size,
                      WriteCallback callback) override;
   void PlatformGetFeatureReport(uint8_t report_id,
                                 ReadCallback callback) override;
-  void PlatformSendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
+  void PlatformSendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
                                  size_t size,
                                  WriteCallback callback) override;
 
-  void OnReadComplete(scoped_refptr<net::IOBuffer> buffer,
+  void OnReadComplete(scoped_refptr<base::RefCountedBytes> buffer,
                       ReadCallback callback,
                       PendingHidTransfer* transfer,
                       bool signaled);
-  void OnReadFeatureComplete(scoped_refptr<net::IOBuffer> buffer,
+  void OnReadFeatureComplete(scoped_refptr<base::RefCountedBytes> buffer,
                              ReadCallback callback,
                              PendingHidTransfer* transfer,
                              bool signaled);

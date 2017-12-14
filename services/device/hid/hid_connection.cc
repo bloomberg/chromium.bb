@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
@@ -92,7 +93,7 @@ void HidConnection::Read(ReadCallback callback) {
   PlatformRead(std::move(callback));
 }
 
-void HidConnection::Write(scoped_refptr<net::IOBuffer> buffer,
+void HidConnection::Write(scoped_refptr<base::RefCountedBytes> buffer,
                           size_t size,
                           WriteCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -144,9 +145,10 @@ void HidConnection::GetFeatureReport(uint8_t report_id, ReadCallback callback) {
   PlatformGetFeatureReport(report_id, std::move(callback));
 }
 
-void HidConnection::SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
-                                      size_t size,
-                                      WriteCallback callback) {
+void HidConnection::SendFeatureReport(
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t size,
+    WriteCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_feature_report_size() == 0) {
     HID_LOG(USER) << "This device does not support feature reports.";

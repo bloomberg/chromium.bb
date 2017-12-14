@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "services/device/hid/mock_hid_connection.h"
+
+#include "base/memory/ref_counted_memory.h"
 #include "services/device/hid/hid_device_info.h"
 
 namespace device {
@@ -16,30 +18,30 @@ MockHidConnection::~MockHidConnection() {}
 void MockHidConnection::PlatformClose() {}
 
 void MockHidConnection::PlatformRead(ReadCallback callback) {
-  const char data[] = "TestRead";
-  auto buffer = base::MakeRefCounted<net::IOBuffer>(sizeof(data));
-  // report_id.
-  buffer->data()[0] = 1;
-  memcpy(buffer->data() + 1, data, sizeof(data) - 1);
-  std::move(callback).Run(true, buffer, sizeof(data));
+  // The first byte is the report id.
+  const uint8_t data[] = "\1TestRead";
+  auto buffer =
+      base::MakeRefCounted<base::RefCountedBytes>(data, sizeof(data) - 1);
+  std::move(callback).Run(true, buffer, buffer->size());
 }
 
-void MockHidConnection::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
-                                      size_t size,
-                                      WriteCallback callback) {
+void MockHidConnection::PlatformWrite(
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t size,
+    WriteCallback callback) {
   std::move(callback).Run(true);
 }
 
 void MockHidConnection::PlatformGetFeatureReport(uint8_t report_id,
                                                  ReadCallback callback) {
-  const char data[] = "TestGetFeatureReport";
-  auto buffer = base::MakeRefCounted<net::IOBuffer>(sizeof(data) - 1);
-  memcpy(buffer->data(), data, sizeof(data) - 1);
-  std::move(callback).Run(true, buffer, sizeof(data) - 1);
+  const uint8_t data[] = "TestGetFeatureReport";
+  auto buffer =
+      base::MakeRefCounted<base::RefCountedBytes>(data, sizeof(data) - 1);
+  std::move(callback).Run(true, buffer, buffer->size());
 }
 
 void MockHidConnection::PlatformSendFeatureReport(
-    scoped_refptr<net::IOBuffer> buffer,
+    scoped_refptr<base::RefCountedBytes> buffer,
     size_t size,
     WriteCallback callback) {
   std::move(callback).Run(true);

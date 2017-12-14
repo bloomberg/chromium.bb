@@ -8,12 +8,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/io_buffer.h"
 #include "services/device/hid/hid_device_info.h"
+
+namespace base {
+class RefCountedBytes;
+}
 
 namespace device {
 
@@ -24,8 +27,10 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
     kAnyReportId = 0xFF,
   };
 
-  using ReadCallback = base::OnceCallback<
-      void(bool success, scoped_refptr<net::IOBuffer> buffer, size_t size)>;
+  using ReadCallback =
+      base::OnceCallback<void(bool success,
+                              scoped_refptr<base::RefCountedBytes> buffer,
+                              size_t size)>;
 
   using WriteCallback = base::OnceCallback<void(bool success)>;
 
@@ -43,7 +48,7 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
   // The report ID (or 0 if report IDs are not supported by the device) is
   // always expected in the first byte of the buffer.
-  void Write(scoped_refptr<net::IOBuffer> buffer,
+  void Write(scoped_refptr<base::RefCountedBytes> buffer,
              size_t size,
              WriteCallback callback);
 
@@ -54,7 +59,7 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
   // The report ID (or 0 if report IDs are not supported by the device) is
   // always expected in the first byte of the buffer.
-  void SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
+  void SendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
                          size_t size,
                          WriteCallback callback);
 
@@ -66,14 +71,15 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
   virtual void PlatformClose() = 0;
   virtual void PlatformRead(ReadCallback callback) = 0;
-  virtual void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
+  virtual void PlatformWrite(scoped_refptr<base::RefCountedBytes> buffer,
                              size_t size,
                              WriteCallback callback) = 0;
   virtual void PlatformGetFeatureReport(uint8_t report_id,
                                         ReadCallback callback) = 0;
-  virtual void PlatformSendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
-                                         size_t size,
-                                         WriteCallback callback) = 0;
+  virtual void PlatformSendFeatureReport(
+      scoped_refptr<base::RefCountedBytes> buffer,
+      size_t size,
+      WriteCallback callback) = 0;
 
   bool IsReportIdProtected(uint8_t report_id);
 
@@ -91,7 +97,7 @@ struct PendingHidReport {
   PendingHidReport(const PendingHidReport& other);
   ~PendingHidReport();
 
-  scoped_refptr<net::IOBuffer> buffer;
+  scoped_refptr<base::RefCountedBytes> buffer;
   size_t size;
 };
 

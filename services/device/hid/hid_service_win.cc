@@ -25,7 +25,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
-#include "net/base/io_buffer.h"
 #include "services/device/hid/hid_connection_win.h"
 #include "services/device/hid/hid_device_info.h"
 
