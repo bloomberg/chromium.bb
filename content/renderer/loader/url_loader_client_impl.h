@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/url_loader.mojom.h"
-#include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -75,13 +74,21 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
  private:
+  class DeferredMessage;
+  class DeferredOnReceiveResponse;
+  class DeferredOnReceiveRedirect;
+  class DeferredOnDataDownloaded;
+  class DeferredOnUploadProgress;
+  class DeferredOnReceiveCachedMetadata;
+  class DeferredOnComplete;
+
   bool NeedsStoringMessage() const;
-  void StoreAndDispatch(const IPC::Message& message);
+  void StoreAndDispatch(std::unique_ptr<DeferredMessage> message);
   void OnConnectionClosed();
 
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
   mojom::DownloadedTempFilePtr downloaded_file_;
-  std::vector<IPC::Message> deferred_messages_;
+  std::vector<std::unique_ptr<DeferredMessage>> deferred_messages_;
   const int request_id_;
   bool has_received_response_ = false;
   bool has_received_complete_ = false;
