@@ -51,7 +51,10 @@ class AppCacheRequestHandlerTest;
 class AppCacheStorageImplTest;
 class AppCacheSubresourceURLFactory;
 class AppCacheTest;
+
+namespace appcache_update_job_unittest {
 class AppCacheUpdateJobTest;
+}
 
 typedef base::OnceCallback<void(AppCacheStatus)> GetStatusCallback;
 typedef base::OnceCallback<void(bool)> StartUpdateCallback;
@@ -208,7 +211,7 @@ class CONTENT_EXPORT AppCacheHost
   friend class content::AppCacheHostTest;
   friend class content::AppCacheStorageImplTest;
   friend class content::AppCacheRequestHandlerTest;
-  friend class content::AppCacheUpdateJobTest;
+  friend class content::appcache_update_job_unittest::AppCacheUpdateJobTest;
 
   AppCacheStatus GetStatus();
   void LoadSelectedCache(int64_t cache_id);

@@ -45,9 +45,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-class AppCacheUpdateJobTest;
+namespace appcache_update_job_unittest {
 
-namespace {
+class AppCacheUpdateJobTest;
 
 // Values should match values used in appcache_update_job.cc.
 const base::TimeDelta kFullUpdateInterval =
@@ -239,8 +239,6 @@ inline bool operator==(const AppCacheNamespace& lhs,
          lhs.namespace_url == rhs.namespace_url &&
          lhs.target_url == rhs.target_url;
 }
-
-}  // namespace
 
 class MockFrontend : public AppCacheFrontend {
  public:
@@ -4195,4 +4193,5 @@ INSTANTIATE_TEST_CASE_P(,
                         AppCacheUpdateJobTest,
                         ::testing::Values(URLREQUEST, URLLOADER));
 
+}  // namespace appcache_update_job_unittest
 }  // namespace content

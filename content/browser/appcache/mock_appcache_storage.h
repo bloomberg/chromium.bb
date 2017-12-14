@@ -43,6 +43,10 @@ class AppCacheRequestHandlerTest;
 class AppCacheServiceImplTest;
 class MockAppCacheStorageTest;
 
+namespace appcache_update_job_unittest {
+class AppCacheUpdateJobTest;
+}
+
 // For use in unit tests.
 // Note: This class is also being used to bootstrap our development efforts.
 // We can get layout tests up and running, and back fill with real storage
@@ -86,7 +90,7 @@ class MockAppCacheStorage : public AppCacheStorage {
  private:
   friend class AppCacheRequestHandlerTest;
   friend class AppCacheServiceImplTest;
-  friend class AppCacheUpdateJobTest;
+  friend class appcache_update_job_unittest::AppCacheUpdateJobTest;
   friend class MockAppCacheStorageTest;
 
   typedef base::hash_map<int64_t, scoped_refptr<AppCache>> StoredCacheMap;

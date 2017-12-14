@@ -23,7 +23,9 @@ class GrowableIOBuffer;
 namespace content {
 class AppCacheHost;
 class AppCacheRequestHandlerTest;
+namespace appcache_url_request_job_unittest {
 class AppCacheURLRequestJobTest;
+}
 
 // A net::URLRequestJob derivative that knows how to return a response stored
 // in the appcache.
@@ -59,7 +61,7 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public AppCacheJob,
 
  private:
   friend class AppCacheRequestHandlerTest;
-  friend class AppCacheURLRequestJobTest;
+  friend class appcache_url_request_job_unittest::AppCacheURLRequestJobTest;
   // AppCacheRequestHandler::CreateJob() creates this instance.
   friend class AppCacheRequestHandler;
 

@@ -13,10 +13,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+namespace appcache_storage_unittest {
 
-namespace {
 const storage::StorageType kTemp = storage::kStorageTypeTemporary;
-}
 
 class AppCacheStorageTest : public testing::Test {
  public:
@@ -166,4 +165,5 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   EXPECT_TRUE(service.storage()->usage_map_.empty());
 }
 
+}  // namespace appcache_storage_unittest
 }  // namespace content
