@@ -69,7 +69,8 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client,
       double_tap_enabled_(true),
       use_2x_cursors_(false),
       emulated_stream_active_sequence_count_(0),
-      native_stream_active_sequence_count_(0) {
+      native_stream_active_sequence_count_(0),
+      pending_taps_count_(0) {
   DCHECK(client_);
   ResetState();
   InitCursors(device_scale_factor, true);
@@ -309,13 +310,15 @@ bool TouchEmulator::HandleTouchEventAck(
     if (is_sequence_end)
       emulated_stream_active_sequence_count_--;
 
+    int taps_count_before = pending_taps_count_;
     const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
     if (gesture_provider_) {
       gesture_provider_->OnTouchEventAck(
           event.unique_touch_event_id, event_consumed,
           InputEventAckStateIsSetNonBlocking(ack_result));
     }
-    OnInjectedTouchCompleted();
+    if (pending_taps_count_ == taps_count_before)
+      OnInjectedTouchCompleted();
     return true;
   }
 
@@ -324,6 +327,15 @@ bool TouchEmulator::HandleTouchEventAck(
   if (is_sequence_end && native_stream_active_sequence_count_)
     native_stream_active_sequence_count_--;
   return false;
+}
+
+void TouchEmulator::OnGestureEventAck(const WebGestureEvent& event) {
+  if (event.GetType() != WebInputEvent::kGestureTap)
+    return;
+  if (pending_taps_count_) {
+    pending_taps_count_--;
+    OnInjectedTouchCompleted();
+  }
 }
 
 void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
@@ -384,6 +396,11 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
       if (!suppress_next_fling_cancel_)
         client_->ForwardEmulatedGestureEvent(gesture_event);
       suppress_next_fling_cancel_ = false;
+      break;
+
+    case WebInputEvent::kGestureTap:
+      pending_taps_count_++;
+      client_->ForwardEmulatedGestureEvent(gesture_event);
       break;
 
     default:

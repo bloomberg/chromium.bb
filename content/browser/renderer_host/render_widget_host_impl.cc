@@ -2388,6 +2388,9 @@ void RenderWidgetHostImpl::OnGestureEventAck(
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result, event.event);
 
+  if (touch_emulator_)
+    touch_emulator_->OnGestureEventAck(event.event);
+
   if (view_)
     view_->GestureEventAck(event.event, ack_result);
 }
