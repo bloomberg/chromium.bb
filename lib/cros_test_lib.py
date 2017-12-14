@@ -597,9 +597,12 @@ class TestCase(unittest.TestCase):
         raise AssertionError('\n'.join(bad))
       return e
 
-  def assertExists(self, path):
+  def assertExists(self, path, msg=None):
     """Make sure |path| exists"""
-    if not os.path.exists(path):
+    if os.path.exists(path):
+      return
+
+    if msg is None:
       msg = ['path is missing: %s' % path]
       while path != '/':
         path = os.path.dirname(path)
@@ -611,30 +614,47 @@ class TestCase(unittest.TestCase):
         if result:
           msg.append('\tcontents: %r' % os.listdir(path))
           break
-      raise self.failureException('\n'.join(msg))
+      msg = '\n'.join(msg)
 
-  def assertNotExists(self, path):
+    raise self.failureException(msg)
+
+  def assertNotExists(self, path, msg=None):
     """Make sure |path| does not exist"""
-    if os.path.exists(path):
-      raise self.failureException('path exists when it should not: %s' % path)
+    if not os.path.exists(path):
+      return
 
-  def assertStartsWith(self, s, prefix):
+    if msg is None:
+      msg = 'path exists when it should not: %s' % (path,)
+
+    raise self.failureException(msg)
+
+  def assertStartsWith(self, s, prefix, msg=None):
     """Asserts that |s| starts with |prefix|.
 
     This function should be preferred over assertTrue(s.startswith(prefix)) for
     it produces better error failure message than the other.
     """
-    if not s.startswith(prefix):
-      raise self.failureException('%s does not starts with %s' % (s, prefix))
+    if s.startswith(prefix):
+      return
 
-  def assertEndsWith(self, s, suffix):
+    if msg is None:
+      msg = '%s does not starts with %s' % (s, prefix)
+
+    raise self.failureException(msg)
+
+  def assertEndsWith(self, s, suffix, msg=None):
     """Asserts that |s| ends with |suffix|.
 
     This function should be preferred over assertTrue(s.endswith(suffix)) for
     it produces better error failure message than the other.
     """
-    if not s.endswith(suffix):
-      raise self.failureException('%s does not starts with %s' % (s, suffix))
+    if s.endswith(suffix):
+      return
+
+    if msg is None:
+      msg = '%s does not starts with %s' % (s, suffix)
+
+    raise self.failureException(msg)
 
   def GetSequenceDiff(self, seq1, seq2):
     """Get a string describing the difference between two sequences.
