@@ -16,7 +16,6 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace views {
-class ImageButton;
 class Widget;
 }  // namespace views
 
@@ -51,9 +50,6 @@ class ASH_EXPORT PaletteWelcomeBubble : public SessionObserver,
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
-
-  // Returns the close button on the bubble if it exists.
-  views::ImageButton* GetCloseButtonForTest();
 
   // Returns the bounds of the bubble view if it exists.
   base::Optional<gfx::Rect> GetBubbleBoundsForTest();
