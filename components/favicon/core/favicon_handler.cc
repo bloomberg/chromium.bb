@@ -273,8 +273,7 @@ void FaviconHandler::MaybeDeleteFaviconMappings() {
   // The order of these conditions is important because we want the feature
   // state to be checked at the very end.
   if (!error_other_than_404_found_ &&
-      notification_icon_type_ != favicon_base::IconType::kInvalid &&
-      base::FeatureList::IsEnabled(kAllowDeletionOfFaviconMappings)) {
+      notification_icon_type_ != favicon_base::IconType::kInvalid) {
     if (!delegate_->IsOffTheRecord())
       service_->DeleteFaviconMappings(page_urls_, notification_icon_type_);
 
