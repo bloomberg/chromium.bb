@@ -10714,12 +10714,10 @@
       'caption': '''Origins to be treated as secure context.''',
       'tags': ['system-security'],
       'desc': '''
-        The policy specifies a list of origins (URLs) to be treated as secure
-        context. The intent is to allow organizations to set up a staging server
-        for internal web developments.
-        This is the same as the --unsafely-treat-insecure-origin-as-secure flag.
-        For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
-        '''
+      The policy specifies a list of origins (URLs) to be treated as secure context. The intent is to allow organizations to set up a staging server for internal web development, so that their developers can test out features requiring secure contexts without having to deploy TLS on the staging server.
+      Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
+      For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
+      '''
     },
     {
       'name': 'DefaultDownloadDirectory',
