@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -111,10 +112,10 @@ base::string16 LauncherControllerHelper::GetAppTitle(
     return base::string16();
 
   // Get the title if the app is an ARC app.
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-  if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
+  if (arc::IsArcItem(profile, app_id)) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        arc_prefs->GetApp(app_id);
+        ArcAppListPrefs::Get(profile)->GetApp(
+            arc::ArcAppShelfId::FromString(app_id).app_id());
     DCHECK(app_info.get());
     if (app_info)
       return base::UTF8ToUTF16(app_info->name);
