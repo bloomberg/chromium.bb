@@ -23,6 +23,7 @@
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -248,8 +249,11 @@ void AutomationManagerAura::PerformHitTest(
 
     content::RenderFrameHost* rfh =
         content::RenderFrameHost::FromAXTreeID(child_ax_tree_id);
-    if (rfh)
+    if (rfh) {
+      // Convert to pixels for the RenderFrameHost HitTest.
+      window->GetHost()->ConvertDIPToPixels(&action.target_point);
       rfh->AccessibilityPerformAction(action);
+    }
     return;
   }
 

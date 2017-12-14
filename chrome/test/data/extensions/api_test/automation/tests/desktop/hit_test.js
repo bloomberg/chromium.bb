@@ -5,7 +5,8 @@
 var allTests = [
   function testHitTestInDesktop() {
     var url = 'data:text/html,<!doctype html>' +
-        encodeURI('<button>Click Me</button>');
+        encodeURI('<div>Don\'t Click Me</div>' +
+                  '<button>Click Me</button>');
     var didHitTest = false;
     chrome.automation.getDesktop(function(desktop) {
       chrome.tabs.create({url: url});
@@ -14,14 +15,18 @@ var allTests = [
         if (didHitTest)
           return;
         if (event.target.url.indexOf('data:') >= 0) {
-          var button = desktop.find({ attributes: { name: 'Click Me' } });
+          var button = desktop.find({ attributes: { name: 'Click Me',
+                                                    role: 'button' } });
           if (button) {
             didHitTest = true;
             button.addEventListener(EventType.ALERT, function() {
               chrome.test.succeed();
             }, true);
-            var cx = button.location.left + button.location.width / 2;
-            var cy = button.location.top + button.location.height / 2;
+            // Click just barely on the second button, very close
+            // to the first button. This tests that we are converting
+            // coordinate properly.
+            var cx = button.location.left + 10;
+            var cy = button.location.top + 10;
             desktop.hitTest(cx, cy, EventType.ALERT);
           }
         }
