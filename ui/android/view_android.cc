@@ -143,9 +143,10 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
 
   // Empty view size also need not propagating down in order to prevent
   // spurious events with empty size from being sent down.
-  if (child->match_parent() && !view_rect_.IsEmpty()) {
+  if (child->match_parent() && !view_rect_.IsEmpty() &&
+      child->GetSize() != view_rect_.size()) {
     child->OnSizeChangedInternal(view_rect_.size());
-    DispatchOnSizeChanged();
+    child->DispatchOnSizeChanged();
   }
 
   if (GetWindowAndroid())
@@ -401,8 +402,11 @@ void ViewAndroid::OnSizeChanged(int width, int height) {
   DCHECK(!match_parent());
 
   float scale = GetDipScale();
-  OnSizeChangedInternal(
-      gfx::Size(std::ceil(width / scale), std::ceil(height / scale)));
+  gfx::Size size(std::ceil(width / scale), std::ceil(height / scale));
+  if (view_rect_.size() == size)
+    return;
+
+  OnSizeChangedInternal(size);
 
   // Signal resize event after all the views in the tree get the updated size.
   DispatchOnSizeChanged();

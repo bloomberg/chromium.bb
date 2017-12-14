@@ -202,15 +202,28 @@ TEST_F(ViewAndroidBoundsTest, OnSizeChanged) {
   EXPECT_FALSE(clientm_.OnSizeCalled());
   EXPECT_FALSE(client3_.OnSizeCalled());
 
+  viewm_.RemoveFromParent();
+  viewm_.OnSizeChangedInternal(gfx::Size(0, 0));  // Reset the size.
+
   Reset();
 
-  viewm_.RemoveFromParent();
   view1_.OnSizeChanged(100, 100);
 
   // Size event is generated for a newly added, match-parent child view.
   EXPECT_FALSE(clientm_.OnSizeCalled());
   view1_.AddChild(&viewm_);
   EXPECT_TRUE(clientm_.OnSizeCalled());
+  EXPECT_FALSE(client3_.OnSizeCalled());
+
+  viewm_.RemoveFromParent();
+
+  Reset();
+
+  view1_.OnSizeChanged(100, 100);
+
+  // Size event won't propagate if the children already have the same size.
+  view1_.AddChild(&viewm_);
+  EXPECT_FALSE(clientm_.OnSizeCalled());
   EXPECT_FALSE(client3_.OnSizeCalled());
 }
 
