@@ -80,12 +80,12 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
       web_contents, previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
       false /* is_reload */,
-      base::Bind(&AddPreviewNavigationToBlackListCallback,
-                 web_contents->GetBrowserContext(),
-                 web_contents->GetController()
-                     .GetLastCommittedEntry()
-                     ->GetRedirectChain()[0],
-                 previews::PreviewsType::LOFI, page_id),
+      base::BindOnce(&AddPreviewNavigationToBlackListCallback,
+                     web_contents->GetBrowserContext(),
+                     web_contents->GetController()
+                         .GetLastCommittedEntry()
+                         ->GetRedirectChain()[0],
+                     previews::PreviewsType::LOFI, page_id),
       previews_ui_service);
 }
 
