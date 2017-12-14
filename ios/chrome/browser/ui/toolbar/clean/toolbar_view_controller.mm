@@ -85,6 +85,17 @@
 // overlap with the Status Bar.
 @property(nonatomic, strong) NSLayoutYAxisAnchor* topSafeAnchor;
 
+// These constraints pin the content view to the safe area. They are temporarily
+// disabled when a fake safe area is simulated by calling
+// activateFakeSafeAreaInsets.
+@property(nonatomic, strong) NSLayoutConstraint* leadingSafeAreaConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* trailingSafeAreaConstraint;
+// Leading and trailing safe area constraint for faking a safe area. These
+// constraints are activated by calling activateFakeSafeAreaInsets and
+// deactivateFakeSafeAreaInsets.
+@property(nonatomic, strong) NSLayoutConstraint* leadingFakeSafeAreaConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* trailingFakeSafeAreaConstraint;
+
 @property(nonatomic, strong) ToolbarView* view;
 @end
 
@@ -122,6 +133,10 @@
 @synthesize expandedToolbarConstraints = _expandedToolbarConstraints;
 @synthesize topSafeAnchor = _topSafeAnchor;
 @synthesize regularToolbarConstraints = _regularToolbarConstraints;
+@synthesize leadingFakeSafeAreaConstraint = _leadingFakeSafeAreaConstraint;
+@synthesize trailingFakeSafeAreaConstraint = _trailingFakeSafeAreaConstraint;
+@synthesize leadingSafeAreaConstraint = _leadingSafeAreaConstraint;
+@synthesize trailingSafeAreaConstraint = _trailingSafeAreaConstraint;
 
 #pragma mark - Public
 
@@ -335,6 +350,24 @@
   self.bookmarkButton.hiddenInCurrentState = isFirstResponder;
 }
 
+- (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets {
+  self.leadingFakeSafeAreaConstraint.constant =
+      UIEdgeInsetsGetLeading(fakeSafeAreaInsets) + [self leadingMargin];
+  self.trailingFakeSafeAreaConstraint.constant =
+      -UIEdgeInsetsGetTrailing(fakeSafeAreaInsets);
+  self.leadingSafeAreaConstraint.active = NO;
+  self.trailingSafeAreaConstraint.active = NO;
+  self.leadingFakeSafeAreaConstraint.active = YES;
+  self.trailingFakeSafeAreaConstraint.active = YES;
+}
+
+- (void)deactivateFakeSafeAreaInsets {
+  self.leadingFakeSafeAreaConstraint.active = NO;
+  self.trailingFakeSafeAreaConstraint.active = NO;
+  self.leadingSafeAreaConstraint.active = YES;
+  self.trailingSafeAreaConstraint.active = YES;
+}
+
 #pragma mark - View lifecyle
 
 - (void)loadView {
@@ -453,15 +486,22 @@
   // Stack views constraints.
   // Layout: |[leadingStackView]-[locationBarContainer]-[trailingStackView]|.
   // Safe Area constraints.
-  CGFloat leadingMargin = IsIPadIdiom() ? kLeadingMarginIPad : 0;
   UILayoutGuide* viewSafeAreaGuide = SafeAreaLayoutGuideForView(self.view);
+  self.leadingSafeAreaConstraint = [self.leadingStackView.leadingAnchor
+      constraintEqualToAnchor:viewSafeAreaGuide.leadingAnchor
+                     constant:[self leadingMargin]];
+  self.trailingSafeAreaConstraint = [self.trailingStackView.trailingAnchor
+      constraintEqualToAnchor:viewSafeAreaGuide.trailingAnchor];
   [NSLayoutConstraint activateConstraints:@[
-    [self.leadingStackView.leadingAnchor
-        constraintEqualToAnchor:viewSafeAreaGuide.leadingAnchor
-                       constant:leadingMargin],
-    [self.trailingStackView.trailingAnchor
-        constraintEqualToAnchor:viewSafeAreaGuide.trailingAnchor]
+    self.leadingSafeAreaConstraint, self.trailingSafeAreaConstraint
   ]];
+
+  // Fake safe area constraints. Not activated by default.
+  self.leadingFakeSafeAreaConstraint = [self.leadingStackView.leadingAnchor
+      constraintEqualToAnchor:self.view.leadingAnchor];
+  self.trailingFakeSafeAreaConstraint = [self.trailingStackView.trailingAnchor
+      constraintEqualToAnchor:self.view.trailingAnchor];
+
   // Stackviews and locationBar Spacing constraints. These will be disabled when
   // expanding the omnibox.
   NSArray<NSLayoutConstraint*>* stackViewSpacingConstraint = [NSLayoutConstraint
@@ -1092,6 +1132,11 @@
     }
   }
   return buttons;
+}
+
+// Returns the leading margin for the leading stack view.
+- (CGFloat)leadingMargin {
+  return IsIPadIdiom() ? kLeadingMarginIPad : 0;
 }
 
 @end

@@ -114,11 +114,11 @@
 }
 
 - (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets {
-  return;
+  [self.toolbarCoordinator activateFakeSafeAreaInsets:fakeSafeAreaInsets];
 }
 
 - (void)deactivateFakeSafeAreaInsets {
-  return;
+  [self.toolbarCoordinator deactivateFakeSafeAreaInsets];
 }
 
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible {
