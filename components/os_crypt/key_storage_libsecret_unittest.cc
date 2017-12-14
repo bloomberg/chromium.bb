@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/os_crypt/key_storage_libsecret.h"
 #include "components/os_crypt/libsecret_util_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -216,8 +215,6 @@ class LibsecretTest : public testing::Test {
   void TearDown() override { MockLibsecretLoader::TearDown(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
   DISALLOW_COPY_AND_ASSIGN(LibsecretTest);
 };
 

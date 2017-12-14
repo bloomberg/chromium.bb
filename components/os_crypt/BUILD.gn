@@ -97,8 +97,6 @@ static_library("os_crypt") {
       sources += [
         "key_storage_libsecret.cc",
         "key_storage_libsecret.h",
-        "libsecret_task_runner_linux.cc",
-        "libsecret_task_runner_linux.h",
         "libsecret_util_linux.cc",
         "libsecret_util_linux.h",
       ]
