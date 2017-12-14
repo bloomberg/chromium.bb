@@ -498,7 +498,8 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--local', '--production', 'foo-build',
     ])
     self.assertEqual(result, [
-        '--buildroot', mock.ANY, '--no-buildbot-tags', '-b', 'master',
+        '--buildroot', mock.ANY, '--no-buildbot-tags',
+        '--buildbot', '-b', 'master',
     ])
 
 class TryjobTestDisplayLabel(TryjobTest):

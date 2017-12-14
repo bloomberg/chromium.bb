@@ -423,23 +423,22 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
 
   def testNullArgsStripped(self):
     """Test that null args are stripped out and don't cause error."""
-    self.assertMain(['--buildbot', '-r', self.buildroot, '', '',
-                     'amd64-generic-paladin'])
+    self.assertMain(['-r', self.buildroot, '', '',
+                     'amd64-generic-pre-cq'])
 
   def testMultipleConfigsError(self):
-    """Test that multiple configs cause error if --remote is not used."""
-    self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
-                      ['--buildbot',
-                       '-r', self.buildroot,
-                       'arm-generic-paladin',
-                       'amd64-generic-paladin'])
+    """Test that multiple configs cause error."""
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      self.assertMain(['-r', self.buildroot,
+                       'arm-generic-pre-cq',
+                       'amd64-generic-pre-cq'])
 
   def testBuildbotDiesInChroot(self):
     """Buildbot should quit if run inside a chroot."""
     self.inchroot_mock.return_value = True
-    self.assertRaises(
-        cros_build_lib.DieSystemExit, self.assertMain,
-        ['--local', '-r', self.buildroot, 'amd64-generic-paladin'])
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      self.assertMain(['--debug', '-r', self.buildroot,
+                       'amd64-generic-pre-cq'])
 
   def testBuildBotOnNonCIBuilder(self):
     """Test BuildBot On Non-CIBuilder
@@ -448,5 +447,5 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
     both debug and remote.
     """
     if not cros_build_lib.HostIsCIBuilder():
-      self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
-                        ['--buildbot', 'amd64-generic-paladin'])
+      with self.assertRaises(cros_build_lib.DieSystemExit):
+        self.assertMain(['--buildbot', 'amd64-generic-pre-cq'])

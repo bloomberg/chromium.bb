@@ -848,10 +848,13 @@ def main(argv):
   if options.enable_buildbot_tags:
     logging.EnableBuildbotMarkers()
 
-  elif options.buildbot and not options.debug:
-    # Cannot run real builds, except on real build machines.
-    if not cros_build_lib.HostIsCIBuilder():
-      cros_build_lib.Die('This host is not a supported build machine.')
+  if (options.buildbot and
+      not options.debug and
+      not options.build_config_name == constants.BRANCH_UTIL_CONFIG and
+      not cros_build_lib.HostIsCIBuilder()):
+    # --buildbot can only be used on a real builder, unless it's debug, or
+    # 'branch-util'.
+    cros_build_lib.Die('This host is not a supported build machine.')
 
   # Only one config arg is allowed in this mode, which was confirmed earlier.
   build_config = site_config[options.build_config_name]

@@ -93,7 +93,11 @@ def CbuildbotArgs(options):
       args.append('--remote-trybot')
   else:
     args.extend(('--buildroot', options.buildroot, '--no-buildbot-tags'))
-    if not options.production:
+    if options.production:
+      # This is expected to fail on workstations without an explicit --debug,
+      # or running 'branch-util'.
+      args.append('--buildbot')
+    else:
       args.append('--debug')
 
   if options.branch:
