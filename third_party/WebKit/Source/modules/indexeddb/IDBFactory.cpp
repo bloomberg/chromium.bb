@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBKey.h"
@@ -80,6 +81,11 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
     return nullptr;
   }
 
+  if (ExecutionContext::From(script_state)->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(ExecutionContext::From(script_state),
+                      WebFeature::kFileAccessedDatabase);
+  }
+
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state),
                             "Database Listing")) {
@@ -122,6 +128,11 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     exception_state.ThrowSecurityError(
         "access to the Indexed Database API is denied in this context.");
     return nullptr;
+  }
+
+  if (ExecutionContext::From(script_state)->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(ExecutionContext::From(script_state),
+                      WebFeature::kFileAccessedDatabase);
   }
 
   IDBDatabaseCallbacks* database_callbacks = IDBDatabaseCallbacks::Create();
@@ -184,6 +195,11 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     exception_state.ThrowSecurityError(
         "access to the Indexed Database API is denied in this context.");
     return nullptr;
+  }
+
+  if (ExecutionContext::From(script_state)->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(ExecutionContext::From(script_state),
+                      WebFeature::kFileAccessedDatabase);
   }
 
   IDBOpenDBRequest* request = IDBOpenDBRequest::Create(

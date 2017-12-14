@@ -9,6 +9,7 @@
 #include "bindings/modules/v8/v8_lock_granted_callback.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "modules/locks/Lock.h"
 #include "modules/locks/LockOptions.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -161,6 +162,8 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
     exception_state.ThrowSecurityError(
         "Access to the Locks API is denied in this context.");
     return ScriptPromise();
+  } else if (context->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(context, WebFeature::kFileAccessedLocks);
   }
 
   if (!service_.get()) {

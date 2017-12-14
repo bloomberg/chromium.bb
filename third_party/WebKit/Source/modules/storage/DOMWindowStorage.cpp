@@ -9,6 +9,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "modules/storage/Storage.h"
 #include "modules/storage/StorageNamespace.h"
@@ -61,7 +62,7 @@ Storage* DOMWindowStorage::sessionStorage(
   Document* document = GetSupplementable()->GetFrame()->GetDocument();
   DCHECK(document);
   String access_denied_message = "Access is denied for this document.";
-  if (!document->GetSecurityOrigin()->CanAccessLocalStorage()) {
+  if (!document->GetSecurityOrigin()->CanAccessSessionStorage()) {
     if (document->IsSandboxed(kSandboxOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
@@ -71,6 +72,10 @@ Storage* DOMWindowStorage::sessionStorage(
     else
       exception_state.ThrowSecurityError(access_denied_message);
     return nullptr;
+  }
+
+  if (document->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(document, WebFeature::kFileAccessedSessionStorage);
   }
 
   if (session_storage_) {
@@ -115,6 +120,11 @@ Storage* DOMWindowStorage::localStorage(ExceptionState& exception_state) const {
       exception_state.ThrowSecurityError(access_denied_message);
     return nullptr;
   }
+
+  if (document->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(document, WebFeature::kFileAccessedLocalStorage);
+  }
+
   if (local_storage_) {
     if (!local_storage_->Area()->CanAccessStorage(document->GetFrame())) {
       exception_state.ThrowSecurityError(access_denied_message);

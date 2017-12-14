@@ -1773,6 +1773,15 @@ enum WebFeature {
   kHTMLMediaElementEmptyLoadWithFutureData = 2264,
   kCSSValueDisplayContents = 2265,
   kCSSSelectorPseudoAnyLink = 2266,
+  kFileAccessedCache = 2267,
+  kFileAccessedCookies = 2268,
+  kFileAccessedDatabase = 2269,
+  kFileAccessedFileSystem = 2270,
+  kFileAccessedLocalStorage = 2271,
+  kFileAccessedLocks = 2272,
+  kFileAccessedServiceWorker = 2273,
+  kFileAccessedSessionStorage = 2274,
+  kFileAccessedSharedWorker = 2275,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

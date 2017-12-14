@@ -27,9 +27,11 @@
 
 #include "modules/filesystem/WorkerGlobalScopeFileSystem.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FileError.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
@@ -41,7 +43,6 @@
 #include "modules/filesystem/SyncCallbackHelper.h"
 #include "platform/FileSystemType.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include <memory>
 
 namespace blink {
 
@@ -57,6 +58,8 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
                                ScriptErrorCallback::Wrap(error_callback),
                                FileError::kSecurityErr);
     return;
+  } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(secure_context, WebFeature::kFileAccessedFileSystem);
   }
 
   FileSystemType file_system_type = static_cast<FileSystemType>(type);
@@ -83,6 +86,8 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem()) {
     exception_state.ThrowSecurityError(FileError::kSecurityErrorMessage);
     return nullptr;
+  } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(secure_context, WebFeature::kFileAccessedFileSystem);
   }
 
   FileSystemType file_system_type = static_cast<FileSystemType>(type);
@@ -118,6 +123,8 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
                                ScriptErrorCallback::Wrap(error_callback),
                                FileError::kSecurityErr);
     return;
+  } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(secure_context, WebFeature::kFileAccessedFileSystem);
   }
 
   if (!completed_url.IsValid()) {
@@ -144,6 +151,8 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
       !secure_context->GetSecurityOrigin()->CanRequest(completed_url)) {
     exception_state.ThrowSecurityError(FileError::kSecurityErrorMessage);
     return nullptr;
+  } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(secure_context, WebFeature::kFileAccessedFileSystem);
   }
 
   if (!completed_url.IsValid()) {

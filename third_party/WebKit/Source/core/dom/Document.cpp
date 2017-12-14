@@ -5070,6 +5070,8 @@ String Document::cookie(ExceptionState& exception_state) const {
     else
       exception_state.ThrowSecurityError("Access is denied for this document.");
     return String();
+  } else if (GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(*this, WebFeature::kFileAccessedCookies);
   }
 
   // Suborigins are cookie-averse and thus should always return the empty
@@ -5106,6 +5108,8 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
     else
       exception_state.ThrowSecurityError("Access is denied for this document.");
     return;
+  } else if (GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(*this, WebFeature::kFileAccessedCookies);
   }
 
   // Suborigins are cookie-averse and thus setting should be a no-op, unless

@@ -63,6 +63,8 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
                                ScriptErrorCallback::Wrap(error_callback),
                                FileError::kSecurityErr);
     return;
+  } else if (document->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(document, WebFeature::kFileAccessedFileSystem);
   }
 
   FileSystemType file_system_type = static_cast<FileSystemType>(type);
@@ -100,6 +102,8 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
                                ScriptErrorCallback::Wrap(error_callback),
                                FileError::kSecurityErr);
     return;
+  } else if (document->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(document, WebFeature::kFileAccessedFileSystem);
   }
 
   if (!completed_url.IsValid()) {

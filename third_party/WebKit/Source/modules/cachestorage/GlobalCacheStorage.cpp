@@ -55,6 +55,8 @@ class GlobalCacheStorageImpl final
         exception_state.ThrowSecurityError(
             "Access to cache storage is denied.");
       return nullptr;
+    } else if (context->GetSecurityOrigin()->IsLocal()) {
+      UseCounter::Count(context, WebFeature::kFileAccessedCache);
     }
 
     if (!caches_) {
