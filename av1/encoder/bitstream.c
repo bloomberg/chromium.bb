@@ -4344,12 +4344,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         aom_wb_write_bit(wb, cm->delta_lf_present_flag);
         if (cm->delta_lf_present_flag) {
           aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
-          xd->prev_delta_lf_from_base = 0;
 #if CONFIG_LOOPFILTER_LEVEL
-          aom_wb_write_bit(wb, cm->delta_lf_multi);
           for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
             xd->prev_delta_lf[lf_id] = 0;
 #endif  // CONFIG_LOOPFILTER_LEVEL
+          xd->prev_delta_lf_from_base = 0;
         }
 #endif  // CONFIG_EXT_DELTA_Q
       }
