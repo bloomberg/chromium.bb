@@ -69,7 +69,6 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutBoxItem.h"
-#include "core/layout/ng/legacy_layout_tree_walking.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -877,13 +876,10 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
       Box().GetDocument().SetAnnotatedRegionsDirty(true);
 
     // Our proprietary overflow: overlay value doesn't trigger a layout.
-    // If the box is managed by LayoutNG, don't go here. We don't want to
-    // re-enter the NG layout algorithm for this box from here.
-    if (((horizontal_scrollbar_should_change &&
-          Box().Style()->OverflowX() != EOverflow::kOverlay) ||
-         (vertical_scrollbar_should_change &&
-          Box().Style()->OverflowY() != EOverflow::kOverlay)) &&
-        !IsManagedByLayoutNG(Box())) {
+    if ((horizontal_scrollbar_should_change &&
+         Box().Style()->OverflowX() != EOverflow::kOverlay) ||
+        (vertical_scrollbar_should_change &&
+         Box().Style()->OverflowY() != EOverflow::kOverlay)) {
       if ((vertical_scrollbar_should_change &&
            Box().IsHorizontalWritingMode()) ||
           (horizontal_scrollbar_should_change &&
