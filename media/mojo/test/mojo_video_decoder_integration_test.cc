@@ -184,6 +184,10 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
  protected:
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
+  void SetWriterCapacity(uint32_t capacity) {
+    client_->set_writer_capacity_for_testing(capacity);
+  }
+
   bool Initialize() {
     bool result = false;
 
@@ -220,12 +224,16 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
   }
 
   scoped_refptr<DecoderBuffer> CreateKeyframe(int64_t timestamp_ms) {
-    std::vector<uint8_t> data = {1, 2, 3, 4};
+    // Use 32 bytes to simulated chunked write (with capacity 10; see below).
+    std::vector<uint8_t> data(32, 0);
+
     scoped_refptr<DecoderBuffer> buffer =
         DecoderBuffer::CopyFrom(data.data(), data.size());
+
     buffer->set_timestamp(base::TimeDelta::FromMilliseconds(timestamp_ms));
     buffer->set_duration(base::TimeDelta::FromMilliseconds(10));
     buffer->set_is_key_frame(true);
+
     return buffer;
   }
 
@@ -323,6 +331,36 @@ TEST_F(MojoVideoDecoderIntegrationTest, ReleaseAfterShutdown) {
 }
 
 TEST_F(MojoVideoDecoderIntegrationTest, ResetDuringDecode) {
+  ASSERT_TRUE(Initialize());
+
+  VideoFrame::ReleaseMailboxCB release_cb = VideoFrame::ReleaseMailboxCB();
+  StrictMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb;
+  StrictMock<base::MockCallback<base::Closure>> reset_cb;
+
+  EXPECT_CALL(*decoder_, GetReleaseMailboxCB())
+      .WillRepeatedly(Return(release_cb));
+  EXPECT_CALL(output_cb_, Run(_)).Times(kMaxDecodeRequests);
+  EXPECT_CALL(*decoder_, Decode(_, _)).Times(kMaxDecodeRequests);
+  EXPECT_CALL(*decoder_, Reset(_)).Times(1);
+
+  InSequence s;  // Make sure all callbacks are fired in order.
+  EXPECT_CALL(decode_cb, Run(_)).Times(kMaxDecodeRequests);
+  EXPECT_CALL(reset_cb, Run());
+
+  int64_t timestamp_ms = 0;
+  for (int j = 0; j < kMaxDecodeRequests; ++j) {
+    client_->Decode(CreateKeyframe(timestamp_ms++), decode_cb.Get());
+  }
+
+  client_->Reset(reset_cb.Get());
+
+  RunUntilIdle();
+}
+
+TEST_F(MojoVideoDecoderIntegrationTest, ResetDuringDecode_ChunkedWrite) {
+  // Use a small writer capacity to force chunked write.
+  SetWriterCapacity(10);
+
   ASSERT_TRUE(Initialize());
 
   VideoFrame::ReleaseMailboxCB release_cb = VideoFrame::ReleaseMailboxCB();

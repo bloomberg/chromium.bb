@@ -229,4 +229,169 @@ TEST(MojoDecoderBufferConverterTest, ConcurrentDecoderBuffers) {
   run_loop.Run();
 }
 
+TEST(MojoDecoderBufferConverterTest, FlushWithoutRead) {
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+
+  base::MockCallback<base::OnceClosure> mock_flush_cb;
+  EXPECT_CALL(mock_flush_cb, Run());
+
+  MojoDecoderBufferConverter converter;
+  converter.reader->Flush(mock_flush_cb.Get());
+
+  run_loop.RunUntilIdle();
+}
+
+TEST(MojoDecoderBufferConverterTest, FlushAfterRead) {
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+
+  const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
+  const size_t kDataSize = arraysize(kData);
+  scoped_refptr<DecoderBuffer> media_buffer =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  MojoDecoderBufferConverter converter(kDataSize / 3);
+  converter.ConvertAndVerify(media_buffer);
+
+  base::MockCallback<base::OnceClosure> mock_flush_cb;
+  EXPECT_CALL(mock_flush_cb, Run())
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  converter.reader->Flush(mock_flush_cb.Get());
+
+  run_loop.Run();
+}
+
+TEST(MojoDecoderBufferConverterTest, FlushBeforeRead) {
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+
+  const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
+  const size_t kDataSize = arraysize(kData);
+  scoped_refptr<DecoderBuffer> media_buffer =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  MojoDecoderBufferConverter converter;
+
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_read_cb;
+  base::MockCallback<base::OnceClosure> mock_flush_cb;
+
+  ::testing::InSequence sequence;
+  EXPECT_CALL(mock_flush_cb, Run());
+  EXPECT_CALL(mock_read_cb, Run(MatchesDecoderBuffer(media_buffer)))
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  // Write, Flush, then Read.
+  mojom::DecoderBufferPtr mojo_buffer =
+      converter.writer->WriteDecoderBuffer(media_buffer);
+  converter.reader->Flush(mock_flush_cb.Get());
+  converter.reader->ReadDecoderBuffer(std::move(mojo_buffer),
+                                      mock_read_cb.Get());
+  run_loop.Run();
+}
+
+TEST(MojoDecoderBufferConverterTest, FlushBeforeChunkedRead) {
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+
+  const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
+  const size_t kDataSize = arraysize(kData);
+  scoped_refptr<DecoderBuffer> media_buffer =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  MojoDecoderBufferConverter converter(kDataSize / 3);
+
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_read_cb;
+  base::MockCallback<base::OnceClosure> mock_flush_cb;
+
+  // Read callback should be fired after reset callback.
+  ::testing::InSequence sequence;
+  EXPECT_CALL(mock_flush_cb, Run());
+  EXPECT_CALL(mock_read_cb, Run(MatchesDecoderBuffer(media_buffer)))
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  // Write, reset, then read.
+  mojom::DecoderBufferPtr mojo_buffer =
+      converter.writer->WriteDecoderBuffer(media_buffer);
+  converter.reader->Flush(mock_flush_cb.Get());
+  converter.reader->ReadDecoderBuffer(std::move(mojo_buffer),
+                                      mock_read_cb.Get());
+  run_loop.Run();
+}
+
+TEST(MojoDecoderBufferConverterTest, FlushDuringChunkedRead) {
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+
+  const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
+  const size_t kDataSize = arraysize(kData);
+  scoped_refptr<DecoderBuffer> media_buffer =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  MojoDecoderBufferConverter converter(kDataSize / 3);
+
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_read_cb;
+  base::MockCallback<base::OnceClosure> mock_flush_cb;
+
+  // Flush callback should be fired after read callback.
+  ::testing::InSequence sequence;
+  EXPECT_CALL(mock_read_cb, Run(MatchesDecoderBuffer(media_buffer)));
+  EXPECT_CALL(mock_flush_cb, Run())
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  // Write, read, then reset.
+  mojom::DecoderBufferPtr mojo_buffer =
+      converter.writer->WriteDecoderBuffer(media_buffer);
+  converter.reader->ReadDecoderBuffer(std::move(mojo_buffer),
+                                      mock_read_cb.Get());
+  converter.reader->Flush(mock_flush_cb.Get());
+  run_loop.Run();
+}
+
+TEST(MojoDecoderBufferConverterTest, FlushDuringConcurrentReads) {
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+
+  // Prevent all of the buffers from fitting at once to exercise the chunking
+  // logic.
+  MojoDecoderBufferConverter converter(4);
+  auto& writer = converter.writer;
+  auto& reader = converter.reader;
+
+  // Three buffers: normal, EOS, normal.
+  const uint8_t kData[] = "Hello, world";
+  const size_t kDataSize = arraysize(kData);
+  auto media_buffer1 = DecoderBuffer::CopyFrom(kData, kDataSize);
+  auto media_buffer2 = DecoderBuffer::CreateEOSBuffer();
+  auto media_buffer3 = DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  // Expect the read callbacks to be issued in the same order.
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_read_cb1;
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_read_cb2;
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_read_cb3;
+  base::MockCallback<base::OnceClosure> mock_flush_cb;
+
+  ::testing::InSequence scoper;
+  EXPECT_CALL(mock_read_cb1, Run(MatchesDecoderBuffer(media_buffer1)));
+  EXPECT_CALL(mock_read_cb2, Run(MatchesDecoderBuffer(media_buffer2)));
+  EXPECT_CALL(mock_read_cb3, Run(MatchesDecoderBuffer(media_buffer3)));
+  EXPECT_CALL(mock_flush_cb, Run())
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  // Write all of the buffers at once.
+  auto mojo_buffer1 = writer->WriteDecoderBuffer(media_buffer1);
+  auto mojo_buffer2 = writer->WriteDecoderBuffer(media_buffer2);
+  auto mojo_buffer3 = writer->WriteDecoderBuffer(media_buffer3);
+
+  // Read all of the buffers at once.
+  reader->ReadDecoderBuffer(std::move(mojo_buffer1), mock_read_cb1.Get());
+  reader->ReadDecoderBuffer(std::move(mojo_buffer2), mock_read_cb2.Get());
+  reader->ReadDecoderBuffer(std::move(mojo_buffer3), mock_read_cb3.Get());
+  reader->Flush(mock_flush_cb.Get());
+  // No ReadDecoderBuffer() can be called during pending reset.
+
+  run_loop.Run();
+}
+
 }  // namespace media

@@ -24,6 +24,8 @@ MojoAudioDecoder::MojoAudioDecoder(
     mojom::AudioDecoderPtr remote_decoder)
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
+      writer_capacity_(
+          GetDefaultDecoderBufferConverterCapacity(DemuxerStream::AUDIO)),
       client_binding_(this) {
   DVLOG(1) << __func__;
 }
@@ -179,7 +181,8 @@ void MojoAudioDecoder::OnInitialized(bool success,
   if (success && !mojo_decoder_buffer_writer_) {
     mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
     mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
-        DemuxerStream::AUDIO, &remote_consumer_handle);
+        writer_capacity_, &remote_consumer_handle);
+
     // Pass consumer end to |remote_decoder_|.
     remote_decoder_->SetDataSource(std::move(remote_consumer_handle));
   }

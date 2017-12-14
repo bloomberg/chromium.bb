@@ -61,6 +61,10 @@ class MojoVideoDecoder final : public VideoDecoder,
       const base::Optional<base::UnguessableToken>& release_token) final;
   void RequestOverlayInfo(bool restart_for_transitions) final;
 
+  void set_writer_capacity_for_testing(uint32_t capacity) {
+    writer_capacity_ = capacity;
+  }
+
  private:
   void OnInitializeDone(bool status,
                         bool needs_bitstream_conversion,
@@ -96,6 +100,9 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   mojom::VideoDecoderPtr remote_decoder_;
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
+
+  uint32_t writer_capacity_ = 0;
+
   bool remote_decoder_bound_ = false;
   bool has_connection_error_ = false;
   mojo::AssociatedBinding<mojom::VideoDecoderClient> client_binding_;

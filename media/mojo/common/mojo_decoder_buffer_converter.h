@@ -19,15 +19,20 @@ namespace media {
 
 class DecoderBuffer;
 
+// Returns the default capacity to be used with MojoDecoderBufferReader and
+// MojoDecoderBufferWriter for |type|.
+uint32_t GetDefaultDecoderBufferConverterCapacity(DemuxerStream::Type type);
+
 // Combines mojom::DecoderBuffers with data read from a DataPipe to produce
 // media::DecoderBuffers (counterpart of MojoDecoderBufferWriter).
 class MojoDecoderBufferReader {
  public:
   using ReadCB = base::OnceCallback<void(scoped_refptr<DecoderBuffer>)>;
 
-  // Creates a MojoDecoderBufferReader of |type| and set the |producer_handle|.
+  // Creates a MojoDecoderBufferReader of |capacity| bytes and set the
+  // |producer_handle|.
   static std::unique_ptr<MojoDecoderBufferReader> Create(
-      DemuxerStream::Type type,
+      uint32_t capacity,
       mojo::ScopedDataPipeProducerHandle* producer_handle);
 
   // Hold the consumer handle to read DecoderBuffer data.
@@ -48,6 +53,16 @@ class MojoDecoderBufferReader {
   // If reading fails (for example, if the DataPipe is closed), |read_cb| will
   // be called with nullptr.
   void ReadDecoderBuffer(mojom::DecoderBufferPtr buffer, ReadCB read_cb);
+
+  // Reads all pending data from the pipe and fire all pending ReadCBs, after
+  // which fire the |flush_cb|. No further ReadDecoderBuffer() or Flush() calls
+  // should be made before |flush_cb| is fired.
+  // Note that |flush_cb| may be called on the same call stack as this Flush()
+  // call if there are no pending reads.
+  void Flush(base::OnceClosure flush_cb);
+
+  // Whether there's any pending reads in |this|.
+  bool HasPendingReads() const;
 
  private:
   void CancelReadCB(ReadCB read_cb);
@@ -71,6 +86,9 @@ class MojoDecoderBufferReader {
   // Callbacks for pending buffers.
   base::circular_deque<ReadCB> pending_read_cbs_;
 
+  // Callback for Flush().
+  base::OnceClosure flush_cb_;
+
   // Number of bytes already read into the current buffer.
   uint32_t bytes_read_;
 
@@ -89,9 +107,10 @@ class MojoDecoderBufferReader {
 // successful prior to the closure.
 class MojoDecoderBufferWriter {
  public:
-  // Creates a MojoDecoderBufferWriter of |type| and set the |consumer_handle|.
+  // Creates a MojoDecoderBufferWriter of |capacity| bytes and set the
+  // |consumer_handle|.
   static std::unique_ptr<MojoDecoderBufferWriter> Create(
-      DemuxerStream::Type type,
+      uint32_t capacity,
       mojo::ScopedDataPipeConsumerHandle* consumer_handle);
 
   // Hold the producer handle to write DecoderBuffer data.
