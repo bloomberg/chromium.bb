@@ -142,7 +142,8 @@ class MediaEngagementAutoplayBrowserTest : public InProcessBrowserTest {
 
     // Launch the generator and wait for it to finish.
     base::CommandLine cmd(GetPythonPath());
-    cmd.AppendArg("tools/media_engagement_preload/make_dafsa.py");
+    cmd.AppendArgPath(module_dir.Append(
+        FILE_PATH_LITERAL("tools/media_engagement_preload/make_dafsa.py")));
     cmd.AppendArgPath(input_path);
     cmd.AppendArgPath(output_path);
     base::Process process = base::LaunchProcess(cmd, base::LaunchOptions());
