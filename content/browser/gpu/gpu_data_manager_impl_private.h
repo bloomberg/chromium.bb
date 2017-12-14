@@ -77,8 +77,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
-  void UpdateRendererWebPrefs(WebPreferences* prefs) const;
-
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;
 
   void GetBlacklistReasons(base::ListValue* reasons) const;

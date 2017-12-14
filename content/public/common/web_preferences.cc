@@ -182,7 +182,7 @@ WebPreferences::WebPreferences()
       record_whole_document(false),
       save_previous_document_resources(SavePreviousDocumentResources::NEVER),
       cookie_enabled(true),
-      pepper_accelerated_video_decode_enabled(false),
+      accelerated_video_decode_enabled(false),
       animation_policy(IMAGE_ANIMATION_POLICY_ALLOWED),
       user_gesture_required_for_presentation(true),
       text_track_margin_percentage(0.0f),

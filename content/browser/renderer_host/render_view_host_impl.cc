@@ -423,6 +423,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   prefs.save_previous_document_resources = GetSavePreviousDocumentResources();
 
+  prefs.accelerated_video_decode_enabled =
+      !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
+
   std::string autoplay_policy = media::GetEffectiveAutoplayPolicy(command_line);
   if (autoplay_policy == switches::autoplay::kNoUserGestureRequiredPolicy) {
     prefs.autoplay_policy = AutoplayPolicy::kNoUserGestureRequired;
@@ -483,9 +486,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       command_line.HasSwitch(switches::kEnableSmoothScrolling) ||
       (!command_line.HasSwitch(switches::kDisableSmoothScrolling) &&
       gfx::Animation::ScrollAnimationsEnabledBySystem());
-
-  // Certain GPU features might have been blacklisted.
-  GpuDataManagerImpl::GetInstance()->UpdateRendererWebPrefs(&prefs);
 
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           GetProcess()->GetID())) {

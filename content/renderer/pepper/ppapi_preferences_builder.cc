@@ -35,7 +35,10 @@ ppapi::Preferences PpapiPreferencesBuilder::Build(
             .status_values[gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE] ==
         gpu::kGpuFeatureStatusEnabled));
   ppapi_prefs.is_accelerated_video_decode_enabled =
-      prefs.pepper_accelerated_video_decode_enabled;
+      (prefs.accelerated_video_decode_enabled &&
+       (gpu_feature_info
+            .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
+        gpu::kGpuFeatureStatusEnabled));
   return ppapi_prefs;
 }
 

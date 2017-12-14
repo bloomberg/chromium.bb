@@ -208,9 +208,9 @@ struct CONTENT_EXPORT WebPreferences {
   // without raising a DOM security exception.
   bool cookie_enabled;
 
-  // This flag indicates whether H/W accelerated video decode is enabled for
-  // pepper plugins. Defaults to false.
-  bool pepper_accelerated_video_decode_enabled;
+  // This flag indicates whether H/W accelerated video decode is enabled.
+  // Defaults to false.
+  bool accelerated_video_decode_enabled;
 
   ImageAnimationPolicy animation_policy;
 

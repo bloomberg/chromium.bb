@@ -247,15 +247,17 @@ void OffscreenCanvas::DiscardImageBuffer() {
 ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
   if (!image_buffer_) {
     bool is_accelerated_2d_canvas_blacklisted = true;
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-        context_provider_wrapper = SharedGpuContext::ContextProviderWrapper();
-    if (context_provider_wrapper) {
-      const gpu::GpuFeatureInfo& gpu_feature_info =
-          context_provider_wrapper->ContextProvider()->GetGpuFeatureInfo();
-      if (gpu::kGpuFeatureStatusEnabled ==
-          gpu_feature_info
-              .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS]) {
-        is_accelerated_2d_canvas_blacklisted = false;
+    if (SharedGpuContext::IsGpuCompositingEnabled()) {
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper = SharedGpuContext::ContextProviderWrapper();
+      if (context_provider_wrapper) {
+        const gpu::GpuFeatureInfo& gpu_feature_info =
+            context_provider_wrapper->ContextProvider()->GetGpuFeatureInfo();
+        if (gpu::kGpuFeatureStatusEnabled ==
+            gpu_feature_info
+                .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS]) {
+          is_accelerated_2d_canvas_blacklisted = false;
+        }
       }
     }
 
