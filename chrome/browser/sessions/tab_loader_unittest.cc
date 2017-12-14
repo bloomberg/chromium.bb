@@ -31,6 +31,11 @@ class TabLoaderTest : public testing::Test {
   }
 
   void TearDown() override {
+    // Clean up the |shared_tab_loader_|, this would reduce the ref counting and
+    // thus it essentially deletes the |shared_tab_loader_|.
+    if (TabLoader::shared_tab_loader_)
+      TabLoader::shared_tab_loader_->this_retainer_ = nullptr;
+    ASSERT_TRUE(TabLoader::shared_tab_loader_ == nullptr);
     test_web_contents_factory_.reset();
   }
 
@@ -98,5 +103,11 @@ TEST_F(TabLoaderTest, UsePageAlmostIdleSignal) {
   TabLoader::shared_tab_loader_->OnPageAlmostIdle(web_contents3);
   EXPECT_TRUE(TabLoader::shared_tab_loader_->loading_enabled_);
   EXPECT_EQ(1u, TabLoader::shared_tab_loader_->tabs_loading_.size());
+  EXPECT_EQ(0u, TabLoader::shared_tab_loader_->tabs_to_load_.size());
+
+  // Load rest of the tabs.
+  TabLoader::shared_tab_loader_->OnPageAlmostIdle(web_contents2);
+  EXPECT_TRUE(TabLoader::shared_tab_loader_->loading_enabled_);
+  EXPECT_EQ(0u, TabLoader::shared_tab_loader_->tabs_loading_.size());
   EXPECT_EQ(0u, TabLoader::shared_tab_loader_->tabs_to_load_.size());
 }

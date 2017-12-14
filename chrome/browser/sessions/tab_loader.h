@@ -73,6 +73,7 @@ class TabLoader : public content::NotificationObserver,
                            TabsFromRestoredWindowsAreLoadedGradually);
 
   friend class base::RefCounted<TabLoader>;
+  friend class TabLoaderTest;
 
   using TabsLoading = std::set<content::NavigationController*>;
   using TabsToLoad = std::list<content::NavigationController*>;
