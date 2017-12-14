@@ -1322,10 +1322,7 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   AddThrottle(
       MixedContentNavigationThrottle::CreateThrottleForNavigation(this));
 
-  for (auto& throttle :
-       RenderFrameDevToolsAgentHost::CreateNavigationThrottles(this)) {
-    AddThrottle(std::move(throttle));
-  }
+  AddThrottle(RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(this));
 
   // Insert all testing NavigationThrottles last.
   throttles_.insert(throttles_.end(),
