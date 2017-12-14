@@ -67,7 +67,7 @@ class AttestationPolicyObserver {
   // and, if so, gets a new one. If not renewing, calls CheckIfUploaded.
   void CheckCertificateExpiry(const std::string& pem_certificate_chain);
 
-  // Uploads a certificate to the policy server.
+  // Uploads a machine certificate to the policy server.
   void UploadCertificate(const std::string& pem_certificate_chain);
 
   // Checks if a certificate has already been uploaded and, if not, upload.

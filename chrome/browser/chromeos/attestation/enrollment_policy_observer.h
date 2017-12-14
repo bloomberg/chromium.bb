@@ -57,7 +57,7 @@ class EnrollmentPolicyObserver {
   // Gets an enrollment certificate.
   void GetEnrollmentCertificate();
 
-  // Uploads a certificate to the policy server.
+  // Uploads an enrollment certificate to the policy server.
   void UploadCertificate(const std::string& pem_certificate_chain);
 
   // Called when a certificate upload operation completes.  On success, |status|
