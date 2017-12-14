@@ -374,8 +374,7 @@ class BlinkDataRefPrinter:
         self.val = val
 
     def to_string(self):
-        return 'DataRef(%s)' % (
-            WTFRefOrOwnPtrPrinter(self.val['data_']).to_string())
+        return 'DataRef(%s)' % (str(self.val['data_']))
 
 
 def add_pretty_printers():
