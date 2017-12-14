@@ -42,7 +42,8 @@ class SettingsProviderGSettings : public SettingsProvider {
 
   GtkUi* delegate_;
 
-  GSettings* settings_;
+  GSettings* button_settings_ = nullptr;
+  GSettings* click_settings_ = nullptr;
   gulong signal_button_id_;
   gulong signal_middle_click_id_;
 

@@ -54,6 +54,7 @@ void DetectAndOpenPrinterConfigDialog() {
       opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand) ||
                OpenPrinterConfigDialog(kGnomeControlCenterPrintersCommand);
       break;
+    case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
     case base::nix::DESKTOP_ENVIRONMENT_KDE5:

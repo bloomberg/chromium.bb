@@ -92,8 +92,9 @@ bool ShouldUseLibAppIndicator() {
     case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
       return true;
-    case base::nix::DESKTOP_ENVIRONMENT_KDE3:
+    case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
       return false;

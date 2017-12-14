@@ -321,7 +321,8 @@ void PasswordStoreFactory::RecordBackendStatistics(
       usage =
           used_backend == KWALLET ? KDE_NOFLAG_KWALLET : KDE_NOFLAG_PLAINTEXT;
     }
-  } else if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
+  } else if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_CINNAMON ||
+             desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
              desktop_env == base::nix::DESKTOP_ENVIRONMENT_UNITY ||
              desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
     if (command_line_flag == "kwallet") {

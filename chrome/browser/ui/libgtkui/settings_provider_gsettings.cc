@@ -6,12 +6,15 @@
 
 #include <gio/gio.h>
 
+#include "base/environment.h"
+#include "base/nix/xdg_util.h"
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 
 namespace {
 
-const char kGeneralPreferencesSchema[] = "org.gnome.desktop.wm.preferences";
+const char kGnomePreferencesSchema[] = "org.gnome.desktop.wm.preferences";
+const char kCinnamonPreferencesSchema[] = "org.cinnamon.muffin";
 
 const char kButtonLayoutKey[] = "button-layout";
 const char kButtonLayoutChangedSignal[] = "changed::button-layout";
@@ -29,38 +32,54 @@ namespace libgtkui {
 // Public interface:
 
 SettingsProviderGSettings::SettingsProviderGSettings(GtkUi* delegate)
-    : delegate_(delegate), settings_(nullptr) {
+    : delegate_(delegate) {
   DCHECK(delegate_);
 
+  // Of all the supported distros, this code path should only be used by
+  // Ubuntu 14.04 (all the others have a sufficent gtk version to use the
+  // gtk3 API). The default in 14.04 is Unity, but Cinnamon has enough
+  // usage to justify also checking its value.
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  const gchar* settings_schema =
+      base::nix::GetDesktopEnvironment(env.get()) ==
+              base::nix::DESKTOP_ENVIRONMENT_CINNAMON
+          ? settings_schema = kCinnamonPreferencesSchema
+          : settings_schema = kGnomePreferencesSchema;
+
   if (!g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
-                                       kGeneralPreferencesSchema, FALSE) ||
-      !(settings_ = g_settings_new(kGeneralPreferencesSchema))) {
-    LOG(ERROR) << "Unable to create a gsettings client - setting button layout "
-                  "to default";
+                                       settings_schema, FALSE) ||
+      !(button_settings_ = g_settings_new(settings_schema))) {
     ParseAndStoreButtonValue(kDefaultButtonString);
-    return;
+  } else {
+    // Get the inital value of the keys we're interested in.
+    OnDecorationButtonLayoutChanged(button_settings_, kButtonLayoutKey);
+    signal_button_id_ = g_signal_connect(
+        button_settings_, kButtonLayoutChangedSignal,
+        G_CALLBACK(OnDecorationButtonLayoutChangedThunk), this);
   }
 
-  // Get the inital value of the keys we're interested in.
-  OnDecorationButtonLayoutChanged(settings_, kButtonLayoutKey);
-  signal_button_id_ =
-      g_signal_connect(settings_, kButtonLayoutChangedSignal,
-                       G_CALLBACK(OnDecorationButtonLayoutChangedThunk), this);
-
-  OnMiddleClickActionChanged(settings_, kMiddleClickActionKey);
-  signal_middle_click_id_ =
-      g_signal_connect(settings_, kMiddleClickActionChangedSignal,
-                       G_CALLBACK(OnMiddleClickActionChangedThunk), this);
+  // If this fails, the default action has already been set in gtk_ui.cc.
+  if (g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
+                                      kGnomePreferencesSchema, FALSE) &&
+      (click_settings_ = g_settings_new(kGnomePreferencesSchema))) {
+    OnMiddleClickActionChanged(click_settings_, kMiddleClickActionKey);
+    signal_middle_click_id_ =
+        g_signal_connect(click_settings_, kMiddleClickActionChangedSignal,
+                         G_CALLBACK(OnMiddleClickActionChangedThunk), this);
+  }
 }
 
 SettingsProviderGSettings::~SettingsProviderGSettings() {
-  if (settings_) {
+  if (button_settings_) {
     if (signal_button_id_)
-      g_signal_handler_disconnect(settings_, signal_button_id_);
-    if (signal_middle_click_id_)
-      g_signal_handler_disconnect(settings_, signal_middle_click_id_);
+      g_signal_handler_disconnect(button_settings_, signal_button_id_);
+    g_free(button_settings_);
   }
-  g_free(settings_);
+  if (click_settings_) {
+    if (signal_middle_click_id_)
+      g_signal_handler_disconnect(click_settings_, signal_middle_click_id_);
+    g_free(click_settings_);
+  }
 }
 
 // Private:
