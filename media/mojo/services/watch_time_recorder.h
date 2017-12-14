@@ -24,7 +24,9 @@ namespace media {
 class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
  public:
   WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
-                    uint64_t playback_id);
+                    const url::Origin& untrusted_top_origin,
+                    bool is_top_frame,
+                    uint64_t player_id);
   ~WatchTimeRecorder() override;
 
   // mojom::WatchTimeRecorder implementation:
@@ -44,6 +46,17 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
   void RecordUkmPlaybackData();
 
   const mojom::PlaybackPropertiesPtr properties_;
+
+  // For privacy, only record the top origin. "Untrusted" signals that this
+  // value comes from the renderer and should not be used for security checks.
+  // TODO(crbug.com/787209): Stop getting origin from the renderer.
+  const url::Origin untrusted_top_origin_;
+  const bool is_top_frame_;
+
+  // The provider ID which constructed this recorder. Used to record a UKM entry
+  // at destruction that can be correlated with the final status for the
+  // associated WebMediaPlayerImpl instance.
+  const uint64_t player_id_;
 
   // Mapping of WatchTime metric keys to MeanTimeBetweenRebuffers (MTBR), smooth
   // rate (had zero rebuffers), and discard (<7s watch time) keys.
@@ -67,11 +80,8 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
   WatchTimeInfo aggregate_watch_time_info_;
 
   int underflow_count_ = 0;
+  int total_underflow_count_ = 0;
   PipelineStatus pipeline_status_ = PIPELINE_OK;
-
-  // False if all data has been reported to UKM. Set to false by important
-  // property updates; e.g., OnError().
-  bool needs_ukm_report_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(WatchTimeRecorder);
 };

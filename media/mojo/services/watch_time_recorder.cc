@@ -120,8 +120,13 @@ static void RecordRebuffersCount(base::StringPiece key, int underflow_count) {
 }
 
 WatchTimeRecorder::WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
-                                     uint64_t playback_id)
+                                     const url::Origin& untrusted_top_origin,
+                                     bool is_top_frame,
+                                     uint64_t player_id)
     : properties_(std::move(properties)),
+      untrusted_top_origin_(untrusted_top_origin),
+      is_top_frame_(is_top_frame),
+      player_id_(player_id),
       extended_metrics_keys_(
           {{WatchTimeKey::kAudioSrc, kMeanTimeBetweenRebuffersAudioSrc,
             kRebuffersCountAudioSrc, kDiscardedWatchTimeAudioSrc},
@@ -137,12 +142,11 @@ WatchTimeRecorder::WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
             kRebuffersCountAudioVideoMse, kDiscardedWatchTimeAudioVideoMse},
            {WatchTimeKey::kAudioVideoEme,
             kMeanTimeBetweenRebuffersAudioVideoEme,
-            kRebuffersCountAudioVideoEme, kDiscardedWatchTimeAudioVideoEme}}) {
-  // TODO(dalecurtis): Record a UKM metric using |playback_id_|.
-}
+            kRebuffersCountAudioVideoEme, kDiscardedWatchTimeAudioVideoEme}}) {}
 
 WatchTimeRecorder::~WatchTimeRecorder() {
   FinalizeWatchTime({});
+  RecordUkmPlaybackData();
 }
 
 void WatchTimeRecorder::RecordWatchTime(WatchTimeKey key,
@@ -193,10 +197,6 @@ void WatchTimeRecorder::FinalizeWatchTime(
     return;
   }
 
-  // This must be done before |underflow_count_| is cleared. Will only be
-  // recorded if a Media.WatchTime.*.All entry exists.
-  RecordUkmPlaybackData();
-
   // Check for watch times entries that have corresponding MTBR entries and
   // report the MTBR value using watch_time / |underflow_count|. Do this only
   // for foreground reporters since we only have UMA keys for foreground.
@@ -216,14 +216,13 @@ void WatchTimeRecorder::FinalizeWatchTime(
   }
 
   // Ensure values are cleared in case the reporter is reused.
-  pipeline_status_ = PIPELINE_OK;
+  total_underflow_count_ += underflow_count_;
   underflow_count_ = 0;
   watch_time_info_.clear();
 }
 
 void WatchTimeRecorder::OnError(PipelineStatus status) {
   pipeline_status_ = status;
-  needs_ukm_report_ = true;
 }
 
 void WatchTimeRecorder::UpdateUnderflowCount(int32_t count) {
@@ -243,32 +242,15 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
   if (!ukm_recorder)
     return;
 
-  // Ensure we have an "All" watch time entry or we haven't issued an up to date
-  // UKM report; otherwise skip reporting.
-  if (!needs_ukm_report_ &&
-      !std::any_of(
-          aggregate_watch_time_info_.begin(), aggregate_watch_time_info_.end(),
-          [](const std::pair<WatchTimeKey, base::TimeDelta>& kv) {
-            return kv.first == WatchTimeKey::kAudioAll ||
-                   kv.first == WatchTimeKey::kAudioBackgroundAll ||
-                   kv.first == WatchTimeKey::kAudioVideoAll ||
-                   kv.first == WatchTimeKey::kAudioVideoBackgroundAll ||
-                   kv.first == WatchTimeKey::kVideoAll ||
-                   kv.first == WatchTimeKey::kVideoBackgroundAll;
-          })) {
-    return;
-  }
-
-  needs_ukm_report_ = false;
   const int32_t source_id = ukm_recorder->GetNewSourceID();
 
   // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  ukm_recorder->UpdateSourceURL(source_id,
-                                properties_->untrusted_top_origin.GetURL());
+  ukm_recorder->UpdateSourceURL(source_id, untrusted_top_origin_.GetURL());
   ukm::builders::Media_BasicPlayback builder(source_id);
 
-  builder.SetIsTopFrame(properties_->is_top_frame);
+  builder.SetIsTopFrame(is_top_frame_);
   builder.SetIsBackground(properties_->is_background);
+  builder.SetPlayerID(player_id_);
 
   bool recorded_all_metric = false;
   for (auto& kv : aggregate_watch_time_info_) {
@@ -278,14 +260,14 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
         kv.first == WatchTimeKey::kAudioVideoBackgroundAll ||
         kv.first == WatchTimeKey::kVideoAll ||
         kv.first == WatchTimeKey::kVideoBackgroundAll) {
-      // Only one of these keys should be present in a given finalize.
+      // Only one of these keys should be present.
       DCHECK(!recorded_all_metric);
       recorded_all_metric = true;
 
       builder.SetWatchTime(kv.second.InMilliseconds());
-      if (underflow_count_) {
+      if (total_underflow_count_) {
         builder.SetMeanTimeBetweenRebuffers(
-            (kv.second / underflow_count_).InMilliseconds());
+            (kv.second / total_underflow_count_).InMilliseconds());
       }
     } else if (kv.first == WatchTimeKey::kAudioAc ||
                kv.first == WatchTimeKey::kAudioBackgroundAc ||
@@ -330,7 +312,7 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
   builder.SetIsEME(properties_->is_eme);
   builder.SetIsMSE(properties_->is_mse);
   builder.SetLastPipelineStatus(pipeline_status_);
-  builder.SetRebuffersCount(underflow_count_);
+  builder.SetRebuffersCount(total_underflow_count_);
   builder.SetVideoNaturalWidth(properties_->natural_size.width());
   builder.SetVideoNaturalHeight(properties_->natural_size.height());
   builder.Record(ukm_recorder);

@@ -527,6 +527,13 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.GetString().Utf8()));
 
+  // URL is used for UKM reporting. Privacy requires we only report origin of
+  // the top frame. |is_top_frame| signals how to interpret the origin.
+  // TODO(crbug.com/787209): Stop getting origin from the renderer.
+  media_metrics_provider_->Initialize(load_type == kLoadTypeMediaSource,
+                                      frame_ == frame_->Top(),
+                                      frame_->Top()->GetSecurityOrigin());
+
   // Media source pipelines can start immediately.
   if (load_type == kLoadTypeMediaSource) {
     StartPipeline();
@@ -1408,6 +1415,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 
   ReportPipelineError(load_type_, status, media_log_.get());
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(status));
+  media_metrics_provider_->OnError(status);
   if (watch_time_reporter_)
     watch_time_reporter_->OnError(status);
 
@@ -1507,13 +1515,8 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   if (is_encrypted_)
     return;
 
-  // Setup the recorder Mojo service. Origin is used for UKM reporting (not
-  // saved to VideoDecodeStatsDB). Privacy requires we only report origin of the
-  // top frame. |is_top_frame| signals how to interpret the origin.
-  // TODO(crbug.com/787209): Stop getting origin from the renderer.
   mojom::VideoDecodeStatsRecorderPtr recorder;
   media_metrics_provider_->AcquireVideoDecodeStatsRecorder(
-      frame_->Top()->GetSecurityOrigin(), frame_ == frame_->Top(),
       mojo::MakeRequest(&recorder));
 
   // Create capabilities reporter and synchronize its initial state.
@@ -1974,6 +1977,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 
   if (!success) {
     SetNetworkState(WebMediaPlayer::kNetworkStateFormatError);
+    media_metrics_provider_->OnError(PIPELINE_ERROR_NETWORK);
 
     // Not really necessary, since the pipeline was never started, but it at
     // least this makes sure that the error handling code is in sync.
@@ -2552,12 +2556,6 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
   if (!HasVideo() && !HasAudio())
     return;
 
-  // URL is used for UKM reporting. Privacy requires we only report origin of
-  // the top frame. |is_top_frame| signals how to interpret the origin.
-  // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  bool is_top_frame = frame_ == frame_->Top();
-  url::Origin top_origin(frame_->Top()->GetSecurityOrigin());
-
   // Create the watch time reporter and synchronize its initial state.
   watch_time_reporter_.reset(new WatchTimeReporter(
       mojom::PlaybackProperties::New(
@@ -2565,7 +2563,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
           pipeline_metadata_.video_decoder_config.codec(),
           pipeline_metadata_.has_audio, pipeline_metadata_.has_video, false,
           !!chunk_demuxer_, is_encrypted_, embedded_media_experience_enabled_,
-          pipeline_metadata_.natural_size, top_origin, is_top_frame),
+          pipeline_metadata_.natural_size),
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                           base::Unretained(this)),
       media_metrics_provider_.get()));

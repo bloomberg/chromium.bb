@@ -292,6 +292,11 @@ class WebMediaPlayerImplTest : public testing::Test {
     mojom::MediaMetricsProviderPtr provider;
     MediaMetricsProvider::Create(nullptr, mojo::MakeRequest(&provider));
 
+    // Initialize provider since none of the tests below actually go through the
+    // full loading/pipeline initialize phase. If this ever changes the provider
+    // will start DCHECK failing.
+    provider->Initialize(false, false, url::Origin());
+
     auto params = base::MakeUnique<WebMediaPlayerParams>(
         std::move(media_log), WebMediaPlayerParams::DeferLoadCB(),
         scoped_refptr<SwitchableAudioRendererSink>(),

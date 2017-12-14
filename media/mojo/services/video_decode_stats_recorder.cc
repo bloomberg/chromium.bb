@@ -15,15 +15,15 @@ namespace media {
 VideoDecodeStatsRecorder::VideoDecodeStatsRecorder(
     const url::Origin& untrusted_top_frame_origin,
     bool is_top_frame,
-    uint64_t playback_id,
+    uint64_t player_id,
     VideoDecodePerfHistory* perf_history)
     : untrusted_top_frame_origin_(untrusted_top_frame_origin),
       is_top_frame_(is_top_frame),
-      perf_history_(perf_history) {
+      perf_history_(perf_history),
+      player_id_(player_id) {
   DVLOG(2) << __func__
            << " untrusted_top_frame_origin:" << untrusted_top_frame_origin
            << " is_top_frame:" << is_top_frame;
-  // TODO(dalecurtis): Recorder VideoDecodeStats UKM using |playback_id|.
 }
 
 VideoDecodeStatsRecorder::~VideoDecodeStatsRecorder() {
@@ -86,7 +86,7 @@ void VideoDecodeStatsRecorder::FinalizeRecord() {
   perf_history_->SavePerfRecord(untrusted_top_frame_origin_, is_top_frame_,
                                 profile_, natural_size_, frames_per_sec_,
                                 frames_decoded_, frames_dropped_,
-                                frames_decoded_power_efficient_);
+                                frames_decoded_power_efficient_, player_id_);
 }
 
 }  // namespace media

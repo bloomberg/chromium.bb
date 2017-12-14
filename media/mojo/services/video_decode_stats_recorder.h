@@ -28,7 +28,7 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
   // be nullptr if database recording is currently disabled.
   VideoDecodeStatsRecorder(const url::Origin& untrusted_top_frame_origin,
                            bool is_top_frame,
-                           uint64_t playback_id,
+                           uint64_t player_id,
                            VideoDecodePerfHistory* perf_history);
   ~VideoDecodeStatsRecorder() override;
 
@@ -48,6 +48,7 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
   const url::Origin untrusted_top_frame_origin_;
   const bool is_top_frame_;
   VideoDecodePerfHistory* const perf_history_;
+  const uint64_t player_id_;
 
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   gfx::Size natural_size_;

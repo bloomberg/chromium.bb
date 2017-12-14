@@ -21,12 +21,6 @@ struct PlaybackProperties {
   bool is_eme;
   bool is_embedded_media_experience;  // Playback from 'Downloads' on Android.
   gfx.mojom.Size natural_size;  // Size of video frame; (0, 0) if audio only.
-
-  // For privacy, only record the top origin. "Untrusted" signals that this
-  // value comes from the renderer and should not be used for security checks.
-  // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  url.mojom.Origin untrusted_top_origin;
-  bool is_top_frame;  // False for any inner/iframe playbacks.
 };
 
 // Interface by which the WatchTimeReporter reports watch time. This is used to
@@ -43,6 +37,8 @@ struct PlaybackProperties {
 // Note: There are some UMA values that the WatchTimeRecorder will generate
 // based on the recorded keys and values. Such metrics will only be generated
 // when finalizing everything via FinalizeWatchTime({}) or destruction.
+//
+// Note: UKM metrics are only reported upon destruction of the recorder.
 interface WatchTimeRecorder {
   // Reports |watch_time| for |key|. Note this should be an absolute value and
   // not a delta since the last call. Any necessary relative processing should

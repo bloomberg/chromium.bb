@@ -282,12 +282,14 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
   const int kFramesPowerEfficient = 0;
   const url::Origin kOrigin = url::Origin::Create(GURL("http://example.com"));
   const bool kIsTopFrame = true;
+  const uint64_t kPlayerId = 1234u;
 
   {
     base::RunLoop run_loop;
     video_decode_perf_history->SavePerfRecord(
         kOrigin, kIsTopFrame, kProfile, kSize, kFrameRate, kFramesDecoded,
-        kFramesDropped, kFramesPowerEfficient, run_loop.QuitWhenIdleClosure());
+        kFramesDropped, kFramesPowerEfficient, kPlayerId,
+        run_loop.QuitWhenIdleClosure());
     run_loop.Run();
   }
 

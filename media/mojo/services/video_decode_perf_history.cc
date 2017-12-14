@@ -180,6 +180,7 @@ void VideoDecodePerfHistory::SavePerfRecord(
     uint32_t frames_decoded,
     uint32_t frames_dropped,
     uint32_t frames_decoded_power_efficient,
+    uint64_t player_id,
     base::OnceClosure save_done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__
@@ -200,7 +201,7 @@ void VideoDecodePerfHistory::SavePerfRecord(
         &VideoDecodePerfHistory::SavePerfRecord, weak_ptr_factory_.GetWeakPtr(),
         untrusted_top_frame_origin, is_top_frame, profile, natural_size,
         frame_rate, frames_decoded, frames_dropped,
-        frames_decoded_power_efficient, std::move(save_done_cb)));
+        frames_decoded_power_efficient, player_id, std::move(save_done_cb)));
     InitDatabase();
     return;
   }
@@ -213,15 +214,17 @@ void VideoDecodePerfHistory::SavePerfRecord(
 
   // Get past perf info and report UKM metrics before saving this record.
   db_->GetDecodeStats(
-      video_key, base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForSave,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                untrusted_top_frame_origin, is_top_frame,
-                                video_key, new_stats, std::move(save_done_cb)));
+      video_key,
+      base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForSave,
+                     weak_ptr_factory_.GetWeakPtr(), untrusted_top_frame_origin,
+                     is_top_frame, player_id, video_key, new_stats,
+                     std::move(save_done_cb)));
 }
 
 void VideoDecodePerfHistory::OnGotStatsForSave(
     const url::Origin& untrusted_top_frame_origin,
     bool is_top_frame,
+    uint64_t player_id,
     const VideoDecodeStatsDB::VideoDescKey& video_key,
     const VideoDecodeStatsDB::DecodeStatsEntry& new_stats,
     base::OnceClosure save_done_cb,
@@ -236,8 +239,10 @@ void VideoDecodePerfHistory::OnGotStatsForSave(
     return;
   }
 
-  ReportUkmMetrics(untrusted_top_frame_origin, is_top_frame, video_key,
-                   new_stats, past_stats.get());
+  ReportUkmMetrics(untrusted_top_frame_origin, is_top_frame, player_id,
+                   video_key, new_stats, past_stats.get());
+
+  // TODO(dalecurtis): Abort stats recording if db_ is in read-only mode.
 
   db_->AppendDecodeStats(
       video_key, new_stats,
@@ -263,6 +268,7 @@ void VideoDecodePerfHistory::OnSaveDone(base::OnceClosure save_done_cb,
 void VideoDecodePerfHistory::ReportUkmMetrics(
     const url::Origin& untrusted_top_frame_origin,
     bool is_top_frame,
+    uint64_t player_id,
     const VideoDecodeStatsDB::VideoDescKey& video_key,
     const VideoDecodeStatsDB::DecodeStatsEntry& new_stats,
     VideoDecodeStatsDB::DecodeStatsEntry* past_stats) {
@@ -281,6 +287,7 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
   // TODO(crbug.com/787209): Stop getting origin from the renderer.
   ukm_recorder->UpdateSourceURL(source_id, untrusted_top_frame_origin.GetURL());
   builder.SetVideo_InTopFrame(is_top_frame);
+  builder.SetVideo_PlayerID(player_id);
 
   builder.SetVideo_CodecProfile(video_key.codec_profile);
   builder.SetVideo_FramesPerSecond(video_key.frame_rate);

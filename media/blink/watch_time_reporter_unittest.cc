@@ -80,19 +80,11 @@ using blink::WebMediaPlayer;
 
 using WatchTimeReporterTestData = std::tuple<bool, bool>;
 class WatchTimeReporterTest
-    : public testing::TestWithParam<WatchTimeReporterTestData>,
-      public mojom::MediaMetricsProvider {
+    : public testing::TestWithParam<WatchTimeReporterTestData> {
  public:
-  WatchTimeReporterTest()
-      : has_video_(std::get<0>(GetParam())),
-        has_audio_(std::get<1>(GetParam())) {}
-  ~WatchTimeReporterTest() override = default;
-
- protected:
   class WatchTimeInterceptor : public mojom::WatchTimeRecorder {
    public:
     WatchTimeInterceptor(WatchTimeReporterTest* parent) : parent_(parent) {}
-
     ~WatchTimeInterceptor() override = default;
 
     // mojom::WatchTimeRecorder implementation:
@@ -190,20 +182,39 @@ class WatchTimeReporterTest
     DISALLOW_COPY_AND_ASSIGN(WatchTimeInterceptor);
   };
 
-  // mojom::WatchTimeRecorderProvider implementation:
-  void AcquireWatchTimeRecorder(
-      mojom::PlaybackPropertiesPtr properties,
-      mojom::WatchTimeRecorderRequest request) override {
-    mojo::MakeStrongBinding(base::MakeUnique<WatchTimeInterceptor>(this),
-                            std::move(request));
-  }
-  void AcquireVideoDecodeStatsRecorder(
-      const url::Origin& untrusted_top_frame_origin,
-      bool is_top_frame,
-      mojom::VideoDecodeStatsRecorderRequest request) override {
-    FAIL();
-  }
+  class FakeMediaMetricsProvider : public mojom::MediaMetricsProvider {
+   public:
+    explicit FakeMediaMetricsProvider(WatchTimeReporterTest* parent)
+        : parent_(parent) {}
+    ~FakeMediaMetricsProvider() override {}
 
+    // mojom::WatchTimeRecorderProvider implementation:
+    void AcquireWatchTimeRecorder(
+        mojom::PlaybackPropertiesPtr properties,
+        mojom::WatchTimeRecorderRequest request) override {
+      mojo::MakeStrongBinding(base::MakeUnique<WatchTimeInterceptor>(parent_),
+                              std::move(request));
+    }
+    void AcquireVideoDecodeStatsRecorder(
+        mojom::VideoDecodeStatsRecorderRequest request) override {
+      FAIL();
+    }
+    void Initialize(bool is_mse,
+                    bool is_top_frame,
+                    const url::Origin& untrusted_top_origin) override {}
+    void OnError(PipelineStatus status) override {}
+
+   private:
+    WatchTimeReporterTest* parent_;
+  };
+
+  WatchTimeReporterTest()
+      : has_video_(std::get<0>(GetParam())),
+        has_audio_(std::get<1>(GetParam())),
+        fake_metrics_provider_(this) {}
+  ~WatchTimeReporterTest() override = default;
+
+ protected:
   void Initialize(bool is_mse,
                   bool is_encrypted,
                   const gfx::Size& initial_video_size) {
@@ -213,11 +224,10 @@ class WatchTimeReporterTest
     wtr_.reset(new WatchTimeReporter(
         mojom::PlaybackProperties::New(kUnknownAudioCodec, kUnknownVideoCodec,
                                        has_audio_, has_video_, false, is_mse,
-                                       is_encrypted, false, initial_video_size,
-                                       url::Origin(), true /* is_top_frame */),
+                                       is_encrypted, false, initial_video_size),
         base::Bind(&WatchTimeReporterTest::GetCurrentMediaTime,
                    base::Unretained(this)),
-        this));
+        &fake_metrics_provider_));
 
     // Setup the reporting interval to be immediate to avoid spinning real time
     // within the unit test.
@@ -513,6 +523,7 @@ class WatchTimeReporterTest
 
   const bool has_video_;
   const bool has_audio_;
+  FakeMediaMetricsProvider fake_metrics_provider_;
   base::TestMessageLoop message_loop_;
   std::unique_ptr<WatchTimeReporter> wtr_;
 
