@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/callback_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -46,7 +47,7 @@ class BASE_EXPORT ThreadTaskRunnerHandle {
   };
   static ScopedClosureRunner OverrideForTesting(
       scoped_refptr<SingleThreadTaskRunner> overriding_task_runner,
-      OverrideType type = OverrideType::kDefault);
+      OverrideType type = OverrideType::kDefault) WARN_UNUSED_RESULT;
 
   // Binds |task_runner| to the current thread. |task_runner| must belong
   // to the current thread for this to succeed.
