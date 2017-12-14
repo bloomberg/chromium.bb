@@ -188,6 +188,10 @@ def build_gn_with_ninja_manually(tempdir, options):
           'UNSAFE_DEVELOPER_BUILD': 'false'
       })
 
+  write_buildflag_header_manually(root_gen_dir,
+                                  'base/memory/protected_memory_flags.h',
+                                  { 'USE_LLD': 'false' })
+
   write_buildflag_header_manually(root_gen_dir, 'base/cfi_flags.h',
       {
           'CFI_CAST_CHECK': 'false',

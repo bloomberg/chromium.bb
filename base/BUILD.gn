@@ -1148,6 +1148,7 @@ jumbo_component("base") {
     ":build_date",
     ":cfi_flags",
     ":debugging_flags",
+    ":protected_memory_flags",
     "//base/numerics:base_numerics",
   ]
 
@@ -1747,6 +1748,17 @@ buildflag_header("debugging_flags") {
     "CAN_UNWIND_WITH_FRAME_POINTERS=$can_unwind_with_frame_pointers",
     "UNSAFE_DEVELOPER_BUILD=$is_unsafe_developer_build",
   ]
+}
+
+# Build flags for ProtectedMemory, temporary workaround for crbug.com/792777
+# TODO(vtsyrklevich): Remove once support for gold on Android/CrOs is dropped
+buildflag_header("protected_memory_flags") {
+  header = "protected_memory_flags.h"
+  header_dir = "base/memory"
+
+  # buildflag entries added to this header must also must be manually added to
+  # tools/gn/bootstrap/bootstrap.py
+  flags = [ "USE_LLD=$use_lld" ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic
