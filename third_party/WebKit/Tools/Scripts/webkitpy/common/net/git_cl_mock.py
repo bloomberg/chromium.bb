@@ -2,16 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from webkitpy.common.net.git_cl import GitCL
+from webkitpy.common.net.git_cl import CLStatus, GitCL
 
 # pylint: disable=unused-argument
 
 class MockGitCL(object):
 
-    def __init__(self, host, results=None, issue_number='1234'):
-        self._host = host
-        self._results = results
+    def __init__(
+            self, host, try_job_results=None, status='closed',
+            issue_number='1234', time_out=False):
+        """Constructs a fake GitCL with canned return values.
+
+        Args:
+            host: Host object, used for builder names.
+            try_job_results: A dict of Build to TryJobStatus.
+            status: CL status string.
+            issue_number: CL issue number as a string.
+            time_out: Whether to simulate timing out while waiting.
+        """
+        self._builders = host.builders.all_try_builder_names()
+        self._status = status
+        self._try_job_results = try_job_results
         self._issue_number = issue_number
+        self._time_out = time_out
         self.calls = []
 
     def run(self, args):
@@ -19,7 +32,7 @@ class MockGitCL(object):
         return 'mock output'
 
     def trigger_try_jobs(self, builders=None, master=None):
-        builders = builders or self._host.builders.all_try_builder_names()
+        builders = builders or self._builders
         if not master:
             master = 'tryserver.blink'
         command = ['try', '-m', master]
@@ -31,16 +44,20 @@ class MockGitCL(object):
         return self._issue_number
 
     def try_job_results(self, **_):
-        return self._results
+        return self._try_job_results
 
     def wait_for_try_jobs(self, **_):
-        return self._results
+        if self._time_out:
+            return None
+        return CLStatus(self._status, self._try_job_results)
 
     def wait_for_closed_status(self, **_):
+        if self._time_out:
+            return None
         return 'closed'
 
     def latest_try_jobs(self, builder_names=None):
-        return self.filter_latest(self._results)
+        return self.filter_latest(self._try_job_results)
 
     @staticmethod
     def filter_latest(try_results):
