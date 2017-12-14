@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/files/file.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
@@ -39,15 +38,14 @@ bool WriteAssetToBuffer(const SkStreamAsset* asset,
   // Calling duplicate() keeps original asset state unchanged.
   std::unique_ptr<SkStreamAsset> assetCopy(asset->duplicate());
   size_t length = assetCopy->getLength();
-  if (length > size)
-    return false;
-  return (length == assetCopy->read(buffer, length));
+  return length <= size && length == assetCopy->read(buffer, length);
 }
 
 }  // namespace
 
 namespace printing {
 
+// TODO(thestig): struct members should not have trailing underscore.
 struct Page {
   Page(SkSize s, sk_sp<cc::PaintRecord> c) : size_(s), content_(std::move(c)) {}
   Page(Page&& that) : size_(that.size_), content_(std::move(that.content_)) {}
@@ -80,6 +78,11 @@ struct PdfMetafileSkiaData {
 #endif
 };
 
+PdfMetafileSkia::PdfMetafileSkia(SkiaDocumentType type)
+    : data_(std::make_unique<PdfMetafileSkiaData>()) {
+  data_->type_ = type;
+}
+
 PdfMetafileSkia::~PdfMetafileSkia() = default;
 
 bool PdfMetafileSkia::Init() {
@@ -91,7 +94,7 @@ bool PdfMetafileSkia::Init() {
 // PdfMetafileSkia does.
 bool PdfMetafileSkia::InitFromData(const void* src_buffer,
                                    size_t src_buffer_size) {
-  data_->pdf_data_ = base::MakeUnique<SkMemoryStream>(
+  data_->pdf_data_ = std::make_unique<SkMemoryStream>(
       src_buffer, src_buffer_size, true /* copy_data? */);
   return true;
 }
@@ -274,17 +277,11 @@ bool PdfMetafileSkia::SaveTo(base::File* file) const {
   return true;
 }
 
-PdfMetafileSkia::PdfMetafileSkia(SkiaDocumentType type)
-    : data_(new PdfMetafileSkiaData) {
-  data_->type_ = type;
-}
-
 std::unique_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage(
     SkiaDocumentType type) {
   // If we only ever need the metafile for the last page, should we
   // only keep a handle on one PaintRecord?
-  std::unique_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia(type));
-
+  auto metafile = std::make_unique<PdfMetafileSkia>(type);
   if (data_->pages_.size() == 0)
     return metafile;
 
