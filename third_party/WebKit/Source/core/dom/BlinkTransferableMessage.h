@@ -5,6 +5,7 @@
 #ifndef BlinkTransferableMessage_h
 #define BlinkTransferableMessage_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/dom/BlinkCloneableMessage.h"
@@ -20,7 +21,13 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
   BlinkTransferableMessage();
   ~BlinkTransferableMessage();
 
+  BlinkTransferableMessage(BlinkTransferableMessage&&);
+  BlinkTransferableMessage& operator=(BlinkTransferableMessage&&);
+
   Vector<MessagePortChannel> ports;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BlinkTransferableMessage);
 };
 
 }  // namespace blink
