@@ -105,4 +105,7 @@ message PageloadMetrics {
   // The name of the finch group for the data reduction proxy holdback
   // experiment. This can be an empty string if not included in a finch group.
   optional string holdback_group = 19;
+
+  // Added in M65.
+  optional DeviceInfo device_info = 20;
 }
