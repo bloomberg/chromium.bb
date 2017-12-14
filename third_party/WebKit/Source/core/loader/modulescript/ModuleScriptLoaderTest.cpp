@@ -193,8 +193,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   global_scope_->SetModuleResponsesMapProxyForTesting(
       WorkletModuleResponsesMapProxy::Create(
           new WorkletModuleResponsesMap(modulator_->Fetcher()),
-          GetDocument().GetTaskRunner(TaskType::kUnspecedLoading),
-          global_scope_->GetTaskRunner(TaskType::kUnspecedLoading)));
+          GetDocument().GetTaskRunner(TaskType::kInternalTest),
+          global_scope_->GetTaskRunner(TaskType::kInternalTest)));
 }
 
 void ModuleScriptLoaderTest::TestFetchDataURL(

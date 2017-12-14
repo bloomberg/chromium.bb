@@ -10,6 +10,10 @@ namespace blink {
 // A list of task sources known to Blink according to the spec.
 // This enum is used for a histogram and it should not be re-numbered.
 enum class TaskType : unsigned {
+  ///////////////////////////////////////
+  // Speced tasks should use one of the following task types
+  ///////////////////////////////////////
+
   // Speced tasks and related internal tasks should be posted to one of
   // the following task runners. These task runners may be throttled.
 
@@ -108,6 +112,10 @@ enum class TaskType : unsigned {
   // The task runner may be throttled.
   kMiscPlatformAPI = 22,
 
+  ///////////////////////////////////////
+  // The following task types are DEPRECATED! Use kInternal* instead.
+  ///////////////////////////////////////
+
   // Other internal tasks that cannot fit any of the above task runners
   // can be posted here, but the usage is not encouraged. The task runner
   // may be throttled.
@@ -121,7 +129,14 @@ enum class TaskType : unsigned {
   // should be very limited.
   kUnthrottled = 25,
 
-  kCount = 26,
+  ///////////////////////////////////////
+  // Not-speced tasks should use one of the following task types
+  ///////////////////////////////////////
+
+  // Tasks for tests or mock objects.
+  kInternalTest = 26,
+
+  kCount = 27,
 };
 
 }  // namespace blink

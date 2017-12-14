@@ -27,10 +27,10 @@ ParentFrameTaskRunners* ParentFrameTaskRunners::Create() {
 ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
     : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr) {
   // For now we only support very limited task types.
-  for (auto type :
-       {TaskType::kUnspecedTimer, TaskType::kUnspecedLoading,
-        TaskType::kNetworking, TaskType::kPostedMessage,
-        TaskType::kCanvasBlobSerialization, TaskType::kUnthrottled}) {
+  for (auto type : {TaskType::kUnspecedTimer, TaskType::kUnspecedLoading,
+                    TaskType::kNetworking, TaskType::kPostedMessage,
+                    TaskType::kCanvasBlobSerialization, TaskType::kUnthrottled,
+                    TaskType::kInternalTest}) {
     auto task_runner =
         frame ? frame->GetTaskRunner(type)
               : Platform::Current()->MainThread()->GetWebTaskRunner();

@@ -51,7 +51,7 @@ class WorkerGlobalScopeSchedulerTest : public ::testing::Test {
   // Helper for posting a task.
   void PostTestTask(std::vector<std::string>* run_order,
                     const std::string& task_descriptor) {
-    global_scope_scheduler_->GetTaskRunner(TaskType::kUnthrottled)
+    global_scope_scheduler_->GetTaskRunner(TaskType::kInternalTest)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&AppendToVectorTestTask,
                              WTF::Unretained(run_order), task_descriptor));
