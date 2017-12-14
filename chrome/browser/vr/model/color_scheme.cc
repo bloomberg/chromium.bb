@@ -32,8 +32,8 @@ void InitializeColorSchemes() {
   normal_scheme.floor_grid = 0x26FFFFFF;
   normal_scheme.element_foreground = 0xFF333333;
   normal_scheme.element_background = 0xCCB3B3B3;
-  normal_scheme.element_background_hover = 0xFFCCCCCC;
-  normal_scheme.element_background_down = 0xFFF3F3F3;
+  normal_scheme.element_background_hover = 0xCCE3E3E3;
+  normal_scheme.element_background_down = 0xCCF3F3F3;
   normal_scheme.button_colors.foreground = 0x87000000;
   normal_scheme.button_colors.background = normal_scheme.element_background;
   normal_scheme.button_colors.background_hover =
@@ -117,6 +117,12 @@ void InitializeColorSchemes() {
   normal_scheme.omnibox_hint = 0xFF999999;
   normal_scheme.omnibox_suggestion_content = 0xFF595959;
   normal_scheme.omnibox_suggestion_description = 0xFF5595FE;
+  normal_scheme.suggestion_button_colors.foreground =
+      normal_scheme.omnibox_suggestion_content;
+  normal_scheme.suggestion_button_colors.background =
+      normal_scheme.omnibox_background;
+  normal_scheme.suggestion_button_colors.background_hover = 0xFFE0E0E0;
+  normal_scheme.suggestion_button_colors.background_down = 0xFFE0E0E0;
   normal_scheme.cursor = 0xFF5595FE;
 
   g_fullscreen_scheme.Get() = normal_scheme;
@@ -144,12 +150,12 @@ void InitializeColorSchemes() {
   g_incognito_scheme.Get() = normal_scheme;
   ColorScheme& incognito_scheme = g_incognito_scheme.Get();
   incognito_scheme.world_background = 0xFF2E2E2E;
-  incognito_scheme.world_background_text = 0xFF878787;
+  incognito_scheme.world_background_text = 0x99FFFFFF;
   incognito_scheme.floor = 0xFF282828;
   incognito_scheme.ceiling = 0xFF2F2F2F;
   incognito_scheme.floor_grid = 0xCC595959;
-  incognito_scheme.element_foreground = 0xFFBCBCBC;
-  incognito_scheme.element_background = 0xCC454545;
+  incognito_scheme.element_foreground = 0xFFFFFFFF;
+  incognito_scheme.element_background = 0xFF454545;
   incognito_scheme.element_background_hover = 0xCC505050;
   incognito_scheme.element_background_down = 0xCC888888;
   incognito_scheme.button_colors.foreground =
@@ -162,13 +168,13 @@ void InitializeColorSchemes() {
   incognito_scheme.button_colors.background_down =
       fullscreen_scheme.element_background_down;
 
-  incognito_scheme.url_bar.secure = 0xFFEDEDED;
+  incognito_scheme.url_bar.secure = 0xFFFFFFFF;
   incognito_scheme.url_bar.insecure = incognito_scheme.url_bar.secure;
   incognito_scheme.url_bar.emphasized = incognito_scheme.url_bar.secure;
-  incognito_scheme.url_bar.deemphasized = 0xFF878787;
+  incognito_scheme.url_bar.deemphasized = 0xCCFFFFFF;
   incognito_scheme.url_bar.offline_page_warning =
       incognito_scheme.url_bar.secure;
-  incognito_scheme.url_bar.separator = 0xFF474747;
+  incognito_scheme.url_bar.separator = 0x1FFFFFFF;
   incognito_scheme.url_bar.back_button.background =
       incognito_scheme.element_background;
   incognito_scheme.url_bar.back_button.background_down =
@@ -192,6 +198,18 @@ void InitializeColorSchemes() {
   incognito_scheme.prompt_secondary_button_colors.background = 0x80FFFFFF;
   incognito_scheme.prompt_secondary_button_colors.background_hover = 0xFF8C8C8C;
   incognito_scheme.prompt_secondary_button_colors.background_down = 0xE6FFFFFF;
+  incognito_scheme.omnibox_background = 0xFF454545;
+  incognito_scheme.omnibox_icon = 0xCCFFFFFF;
+  incognito_scheme.omnibox_text = 0xCCFFFFFF;
+  incognito_scheme.omnibox_hint = 0x80FFFFFF;
+  incognito_scheme.omnibox_suggestion_content = 0xCCFFFFFF;
+  incognito_scheme.omnibox_suggestion_description = 0xCCFFFFFF;
+  incognito_scheme.suggestion_button_colors.foreground =
+      incognito_scheme.omnibox_suggestion_content;
+  incognito_scheme.suggestion_button_colors.background =
+      incognito_scheme.omnibox_background;
+  incognito_scheme.suggestion_button_colors.background_hover = 0xFF656565;
+  incognito_scheme.suggestion_button_colors.background_down = 0xFF656565;
 
   initialized = true;
 }

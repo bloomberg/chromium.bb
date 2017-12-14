@@ -109,6 +109,7 @@ struct ColorScheme {
   SkColor omnibox_hint;
   SkColor omnibox_suggestion_content;
   SkColor omnibox_suggestion_description;
+  ButtonColors suggestion_button_colors;
 
   SkColor cursor;
 };

@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/controller.h"
+#include "chrome/browser/vr/elements/disc_button.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/full_screen_rect.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/vr/elements/scaled_depth_adjuster.h"
 #include "chrome/browser/vr/elements/simple_textured_element.h"
 #include "chrome/browser/vr/elements/spinner.h"
-#include "chrome/browser/vr/elements/suggestion.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/elements/throbber.h"
@@ -76,7 +76,15 @@ void BindButtonColors(Model* model, V* view, C colors, S setter) {
                  base::Unretained(view), setter)));
 }
 
-typedef VectorBinding<OmniboxSuggestion, Suggestion> SuggestionSetBinding;
+template <typename T, typename... Args>
+std::unique_ptr<T> Create(UiElementName name, DrawPhase phase, Args&&... args) {
+  auto element = base::MakeUnique<T>(std::forward<Args>(args)...);
+  element->SetName(name);
+  element->SetDrawPhase(phase);
+  return element;
+}
+
+typedef VectorBinding<OmniboxSuggestion, Button> SuggestionSetBinding;
 typedef typename SuggestionSetBinding::ElementBinding SuggestionBinding;
 
 void OnSuggestionModelAdded(UiScene* scene,
@@ -140,42 +148,50 @@ void OnSuggestionModelAdded(UiScene* scene,
   suggestion_layout->AddChild(std::move(text_layout));
   suggestion_layout->AddChild(std::move(right_margin));
 
-  auto background = base::MakeUnique<Rect>();
+  auto background = Create<Button>(
+      kNone, kPhaseForeground,
+      base::BindRepeating(
+          [](UiBrowserInterface* b, Model* m, SuggestionBinding* e) {
+            b->Navigate(e->model()->destination);
+            // TODO(vollick): set this as a side effect of navigating.
+            m->omnibox_input_active = false;
+          },
+          base::Unretained(browser), base::Unretained(model),
+          base::Unretained(element_binding)));
+
   background->SetType(kTypeOmniboxSuggestionBackground);
-  background->SetDrawPhase(kPhaseForeground);
   background->set_hit_testable(true);
   background->set_bubble_events(true);
   background->set_bounds_contain_children(true);
-  background->SetColor(SK_ColorGREEN);
+  background->set_hover_offset(0.0);
+  BindButtonColors(model, background.get(),
+                   &ColorScheme::suggestion_button_colors,
+                   &Button::SetButtonColors);
   background->AddChild(std::move(suggestion_layout));
-  BindColor(model, background.get(), &ColorScheme::omnibox_background,
-            &Rect::SetColor);
-
-  auto suggestion = base::MakeUnique<Suggestion>(base::Bind(
-      [](UiBrowserInterface* browser, Model* m, GURL gurl) {
-        browser->Navigate(gurl);
-        m->omnibox_input_active = false;
-      },
-      base::Unretained(browser), base::Unretained(model)));
-  suggestion->set_bounds_contain_children(true);
-  suggestion->AddChild(std::move(background));
 
   element_binding->bindings().push_back(
       VR_BIND_FUNC(base::string16, SuggestionBinding, element_binding,
                    model()->content, Text, p_content_text, SetText));
   element_binding->bindings().push_back(
-      VR_BIND_FUNC(base::string16, SuggestionBinding, element_binding,
-                   model()->description, Text, p_description_text, SetText));
+      base::MakeUnique<Binding<base::string16>>(
+          base::BindRepeating(
+              [](SuggestionBinding* m) { return m->model()->description; },
+              base::Unretained(element_binding)),
+          base::BindRepeating(
+              [](Text* v, const base::string16& text) {
+                v->SetVisibleImmediately(!text.empty());
+                v->set_requires_layout(!text.empty());
+                if (!text.empty()) {
+                  v->SetText(text);
+                }
+              },
+              base::Unretained(p_description_text))));
   element_binding->bindings().push_back(
       VR_BIND(AutocompleteMatch::Type, SuggestionBinding, element_binding,
               model()->type, VectorIcon, p_icon,
               SetIcon(AutocompleteMatch::TypeToVectorIcon(value))));
-  element_binding->bindings().push_back(VR_BIND_FUNC(
-      GURL, SuggestionBinding, element_binding, model()->destination,
-      Suggestion, suggestion.get(), set_destination));
-
-  element_binding->set_view(suggestion.get());
-  scene->AddUiElement(kOmniboxSuggestions, std::move(suggestion));
+  element_binding->set_view(background.get());
+  scene->AddUiElement(kOmniboxSuggestions, std::move(background));
 }
 
 void OnSuggestionModelRemoved(UiScene* scene, SuggestionBinding* binding) {
@@ -197,14 +213,6 @@ TransientElement* AddTransientParent(UiElementName name,
     element->SetTransitionedProperties({OPACITY});
   scene->AddUiElement(parent_name, std::move(element));
   return to_return;
-}
-
-template <typename T, typename... Args>
-std::unique_ptr<T> Create(UiElementName name, DrawPhase phase, Args&&... args) {
-  auto element = base::MakeUnique<T>(std::forward<Args>(args)...);
-  element->SetName(name);
-  element->SetDrawPhase(phase);
-  return element;
 }
 
 }  // namespace
@@ -597,7 +605,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   auto button_scaler =
       base::MakeUnique<ScaledDepthAdjuster>(kTimeoutButtonDepthOffset);
 
-  auto button = Create<Button>(
+  auto button = Create<DiscButton>(
       kWebVrTimeoutMessageButton, kPhaseOverlayForeground,
       base::Bind(&UiBrowserInterface::ExitPresent, base::Unretained(browser_)),
       vector_icons::kClose16Icon);
@@ -609,9 +617,9 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
                   kWebVrTimeoutMessageButtonDiameterDMM);
   button->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                   web_vr_timeout_state == kWebVrTimedOut,
-                                  Button, button.get(), SetVisible));
+                                  DiscButton, button.get(), SetVisible));
   BindButtonColors(model_, button.get(), &ColorScheme::button_colors,
-                   &Button::SetButtonColors);
+                   &DiscButton::SetButtonColors);
 
   auto timeout_button_text =
       Create<Text>(kWebVrTimeoutMessageButtonText, kPhaseOverlayForeground, 512,
@@ -733,11 +741,11 @@ void UiSceneCreator::CreateViewportAwareRoot() {
 }
 
 void UiSceneCreator::CreateVoiceSearchUiGroup() {
-  auto voice_search_button =
-      Create<Button>(kVoiceSearchButton, kPhaseForeground,
-                     base::Bind(&UiBrowserInterface::SetVoiceSearchActive,
-                                base::Unretained(browser_), true),
-                     vector_icons::kMicrophoneIcon);
+  auto voice_search_button = Create<DiscButton>(
+      kVoiceSearchButton, kPhaseForeground,
+      base::BindRepeating(&UiBrowserInterface::SetVoiceSearchActive,
+                          base::Unretained(browser_), true),
+      vector_icons::kMicrophoneIcon);
   voice_search_button->SetSize(kVoiceSearchButtonDiameterDMM,
                                kVoiceSearchButtonDiameterDMM);
   voice_search_button->set_hover_offset(kButtonZOffsetHoverDMM);
@@ -754,7 +762,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
       base::Bind([](UiElement* e, const bool& v) { e->SetVisible(v); },
                  voice_search_button.get())));
   BindButtonColors(model_, voice_search_button.get(),
-                   &ColorScheme::button_colors, &Button::SetButtonColors);
+                   &ColorScheme::button_colors, &DiscButton::SetButtonColors);
   scene_->AddUiElement(kUrlBar, std::move(voice_search_button));
 
   auto speech_recognition_root = base::MakeUnique<UiElement>();
@@ -890,17 +898,17 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   microphone_icon->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(microphone_icon));
 
-  auto close_button =
-      Create<Button>(kSpeechRecognitionListeningCloseButton, kPhaseForeground,
-                     base::Bind(&UiBrowserInterface::SetVoiceSearchActive,
-                                base::Unretained(browser_), false),
-                     vector_icons::kClose16Icon);
+  auto close_button = Create<DiscButton>(
+      kSpeechRecognitionListeningCloseButton, kPhaseForeground,
+      base::BindRepeating(&UiBrowserInterface::SetVoiceSearchActive,
+                          base::Unretained(browser_), false),
+      vector_icons::kClose16Icon);
   close_button->SetSize(kVoiceSearchCloseButtonWidth,
                         kVoiceSearchCloseButtonHeight);
   close_button->set_hover_offset(kButtonZOffsetHoverDMM * kContentDistance);
   close_button->SetTranslate(0.0, -kVoiceSearchCloseButtonYOffset, 0.f);
   BindButtonColors(model_, close_button.get(), &ColorScheme::button_colors,
-                   &Button::SetButtonColors);
+                   &DiscButton::SetButtonColors);
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(close_button));
 
   UiElement* browser_foregroud =
@@ -1141,6 +1149,8 @@ void UiSceneCreator::CreateOmnibox() {
             e->SetTranslate(0, y_offset, 0);
           },
           omnibox_container.get())));
+  BindColor(model_, omnibox_container.get(), &ColorScheme::omnibox_background,
+            &Rect::SetColor);
   scene_->AddUiElement(kOmniboxRoot, std::move(omnibox_container));
 
   float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM;
@@ -1225,18 +1235,18 @@ void UiSceneCreator::CreateOmnibox() {
 
   scene_->AddUiElement(kOmniboxContainer, std::move(suggestions_layout));
 
-  auto close_button = Create<Button>(
+  auto close_button = Create<DiscButton>(
       kOmniboxCloseButton, kPhaseForeground,
       base::BindRepeating([](Model* m) { m->omnibox_input_active = false; },
                           base::Unretained(model_)),
-      vector_icons::kClose16Icon);
+      vector_icons::kBackArrowIcon);
   close_button->SetSize(kOmniboxCloseButtonDiameterDMM,
                         kOmniboxCloseButtonDiameterDMM);
   close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffsetDMM, 0);
   close_button->SetRotate(1, 0, 0, atan(kOmniboxCloseButtonVerticalOffsetDMM));
   close_button->set_hover_offset(kButtonZOffsetHoverDMM);
   BindButtonColors(model_, close_button.get(), &ColorScheme::button_colors,
-                   &Button::SetButtonColors);
+                   &DiscButton::SetButtonColors);
   scene_->AddUiElement(kOmniboxRoot, std::move(close_button));
 }
 
@@ -1284,14 +1294,14 @@ void UiSceneCreator::CreateCloseButton() {
         }
       },
       base::Unretained(model_), base::Unretained(browser_));
-  std::unique_ptr<Button> element =
-      Create<Button>(kCloseButton, kPhaseForeground, click_handler,
-                     vector_icons::kClose16Icon);
+  std::unique_ptr<DiscButton> element =
+      Create<DiscButton>(kCloseButton, kPhaseForeground, click_handler,
+                         vector_icons::kClose16Icon);
   element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   element->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
   element->SetTranslate(0, kCloseButtonVerticalOffset, -kCloseButtonDistance);
   BindButtonColors(model_, element.get(), &ColorScheme::button_colors,
-                   &Button::SetButtonColors);
+                   &DiscButton::SetButtonColors);
 
   // Close button is a special control element that needs to be hidden when
   // in WebVR, but it needs to be visible when in cct or fullscreen.
@@ -1406,9 +1416,8 @@ void UiSceneCreator::CreateAudioPermissionPrompt() {
       UiElement, backplane.get(), SetVisible));
 
   std::unique_ptr<Shadow> shadow = base::MakeUnique<Shadow>();
-  shadow->SetDrawPhase(kPhaseForeground);
   shadow->SetName(kAudioPermissionPromptShadow);
-  shadow->set_corner_radius(kContentCornerRadius);
+  shadow->SetDrawPhase(kPhaseForeground);
 
   std::unique_ptr<AudioPermissionPrompt> prompt =
       base::MakeUnique<AudioPermissionPrompt>(

@@ -61,8 +61,6 @@ TextInput::TextInput(int maximum_width_pixels,
   cursor->SetColor(SK_ColorBLUE);
   cursor_element_ = cursor.get();
   text_element_->AddChild(std::move(cursor));
-
-  set_bounds_contain_children(true);
 }
 
 TextInput::~TextInput() {}

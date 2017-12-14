@@ -590,9 +590,9 @@ void UiElement::DoLayOutChildren() {
   }
 
   gfx::RectF bounds;
-  bool first = false;
   for (auto& child : children_) {
-    if (!child->IsVisible() || child->size().IsEmpty()) {
+    if (!child->IsVisible() || child->size().IsEmpty() ||
+        !child->contributes_to_parent_bounds()) {
       continue;
     }
     gfx::Point3F child_center(child->local_origin());
@@ -601,18 +601,13 @@ void UiElement::DoLayOutChildren() {
         gfx::RectF(child_center.x() - 0.5 * child->size().width(),
                    child_center.y() - 0.5 * child->size().height(),
                    child->size().width(), child->size().height());
-    if (first) {
-      bounds = local_rect;
-      first = false;
-    } else {
-      bounds.Union(local_rect);
-    }
+    bounds.Union(local_rect);
   }
 
   bounds.Inset(-x_padding_, -y_padding_);
   bounds.set_origin(bounds.CenterPoint());
-  size_ = bounds.size();
   local_origin_ = bounds.origin();
+  SetSize(bounds.width(), bounds.height());
 }
 
 void UiElement::LayOutChildren() {
