@@ -222,4 +222,28 @@ TEST(AutofillWalletSyncableServiceTest, NewWalletCard) {
   EXPECT_EQ(arbitrary_time, wallet_cards.back().use_date());
 }
 
+// Verify that name on card can be empty.
+TEST(AutofillWalletSyncableServiceTest, EmptyNameOnCard) {
+  std::vector<CreditCard> wallet_cards;
+  std::vector<AutofillProfile> wallet_addresses;
+  syncer::SyncDataList data_list;
+
+  // Create a Sync data for a card and its billing address.
+  data_list.push_back(CreateSyncDataForWalletCreditCard(
+      "card1" /* id */, "1" /* billing_address_id */));
+
+  AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
+      data_list, &wallet_cards, &wallet_addresses);
+
+  ASSERT_EQ(1U, wallet_cards.size());
+
+  // Make sure card holder name can be empty.
+  EXPECT_TRUE(
+      wallet_cards.back().GetRawInfo(autofill::CREDIT_CARD_NAME_FULL).empty());
+  EXPECT_TRUE(
+      wallet_cards.back().GetRawInfo(autofill::CREDIT_CARD_NAME_FIRST).empty());
+  EXPECT_TRUE(
+      wallet_cards.back().GetRawInfo(autofill::CREDIT_CARD_NAME_LAST).empty());
+}
+
 }  // namespace autofill
