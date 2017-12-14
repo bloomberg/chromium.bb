@@ -39,6 +39,9 @@ class NetworkConfigView : public views::DialogDelegateView,
      virtual ~Delegate() {}
   };
 
+  // Returns true if a NetworkConfigView instance exists.
+  static bool HasInstance();
+
   // Shows a network connection dialog if none is currently visible. The dialog
   // is placed on the default display for new windows. Returns the dialog or
   // nullptr on error.
