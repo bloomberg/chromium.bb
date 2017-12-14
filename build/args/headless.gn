@@ -35,7 +35,6 @@ enable_remoting = false
 use_alsa = false
 use_cups = false
 use_dbus = false
-use_gconf = false
 use_gio = false
 use_kerberos = false
 use_libpci = false

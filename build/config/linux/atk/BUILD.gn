@@ -7,12 +7,10 @@ import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 
-# CrOS doesn't install GTK, gconf or any gnome packages.
+# CrOS doesn't install GTK or any gnome packages.
 assert(!is_chromeos)
 
 # These packages should _only_ be expected when building for a target.
-# If these extra checks are not run, gconf is required when building host
-# tools for a CrOS build.
 assert(current_toolchain == default_toolchain)
 
 if (use_atk) {
