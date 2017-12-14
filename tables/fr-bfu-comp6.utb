@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-04
+#-updated: 2017-12-14
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -71,6 +71,7 @@ include latinLetterDef6Dots.uti
 uplow \x00c7\x00e7  12346 # c cédille (Çç)
 uplow \x00c6\x00E6 345     #*ae
 uplow \x0152\x0153    246 # oe liés (Œœ)
+uplow \x00C3\x00E3 1,1		a tilde
 noback uplow \x00d1\x00f1 12456 # n tilde (Ññ)
 
 uplow \x00c0\x00e0  12356 # a accent grave (Àà)
