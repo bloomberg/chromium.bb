@@ -34,17 +34,6 @@ class InstantController::TabObserver : public content::WebContentsObserver {
     }
   }
 
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    // TODO(treib): Verify if this is necessary - NavigationEntryCommitted
-    // should already cover all cases.
-    if (navigation_handle->HasCommitted() &&
-        navigation_handle->IsInMainFrame() &&
-        search::IsInstantNTP(web_contents())) {
-      callback_.Run();
-    }
-  }
-
   base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TabObserver);
