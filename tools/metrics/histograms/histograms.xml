@@ -42379,6 +42379,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.DNS.ResultAfterMalformedResponse"
+    enum="MalformedResponseResult">
+  <owner>mgersh@chromium.org</owner>
+  <summary>
+    When DnsUDPAttempt gets a malformed response, it returns an error but
+    continues running. This histogram records all attempt outcomes that are
+    returned to the transaction once a malformed response has been received,
+    including the original malformed response.
+  </summary>
+</histogram>
+
 <histogram name="Net.DNS.TotalTime" units="ms">
   <owner>mgersh@chromium.org</owner>
   <summary>

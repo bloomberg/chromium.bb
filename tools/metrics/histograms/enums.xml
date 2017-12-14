@@ -26465,6 +26465,12 @@ from previous Chrome versions.
   </int>
 </enum>
 
+<enum name="MalformedResponseResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Malformed"/>
+  <int value="2" label="Other failure"/>
+</enum>
+
 <enum name="ManagedUserPasswordChange">
   <int value="0" label="OK_MANAGER">Changed in manager session</int>
   <int value="1" label="OK_MANGED">Changed in supervised user session</int>
