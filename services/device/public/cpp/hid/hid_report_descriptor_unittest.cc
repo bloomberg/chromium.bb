@@ -14,8 +14,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace testing;
-
 namespace device {
 
 class HidReportDescriptorTest : public testing::Test {
@@ -70,7 +68,7 @@ class HidReportDescriptorTest : public testing::Test {
       ASSERT_EQ(expected_collection->usage->usage,
                 actual_collection->usage->usage);
       ASSERT_THAT(actual_collection->report_ids,
-                  ContainerEq(expected_collection->report_ids));
+                  testing::ContainerEq(expected_collection->report_ids));
 
       expected_collections_iter++;
       actual_collections_iter++;
