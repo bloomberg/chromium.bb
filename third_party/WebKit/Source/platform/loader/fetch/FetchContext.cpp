@@ -76,12 +76,13 @@ void FetchContext::DispatchDidLoadResourceFromMemoryCache(
     const ResourceRequest&,
     const ResourceResponse&) {}
 
-void FetchContext::DispatchDidReceiveResponse(unsigned long,
-                                              const ResourceResponse&,
-                                              WebURLRequest::FrameType,
-                                              WebURLRequest::RequestContext,
-                                              Resource*,
-                                              ResourceResponseType) {}
+void FetchContext::DispatchDidReceiveResponse(
+    unsigned long,
+    const ResourceResponse&,
+    network::mojom::RequestContextFrameType FrameType,
+    WebURLRequest::RequestContext,
+    Resource*,
+    ResourceResponseType) {}
 
 void FetchContext::DispatchDidReceiveData(unsigned long, const char*, int) {}
 

@@ -63,6 +63,7 @@
 #include "content/test/test_render_frame.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
@@ -698,7 +699,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kInclude);
   request.SetFetchRedirectMode(blink::WebURLRequest::kFetchRedirectModeManual);
-  request.SetFrameType(blink::WebURLRequest::kFrameTypeTopLevel);
+  request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
   blink::WebFrameClient::NavigationPolicyInfo policy_info(request);
   policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;

@@ -27,6 +27,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
@@ -128,8 +129,8 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
         network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
         false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
-        REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,
-        nullptr);
+        REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        network::mojom::RequestContextFrameType::kNone, nullptr);
   }
 
  protected:
@@ -262,8 +263,8 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
       network::mojom::FetchCredentialsMode::kOmit,
       FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
       false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
-      REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,
-      nullptr);
+      REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+      network::mojom::RequestContextFrameType::kNone, nullptr);
   // Verify a ServiceWorkerRequestHandler was created.
   ServiceWorkerRequestHandler* handler =
       ServiceWorkerRequestHandler::GetHandler(request.get());

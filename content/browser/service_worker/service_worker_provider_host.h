@@ -24,7 +24,6 @@
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
@@ -32,6 +31,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
@@ -233,7 +233,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       bool keepalive,
       ResourceType resource_type,
       RequestContextType request_context_type,
-      RequestContextFrameType frame_type,
+      network::mojom::RequestContextFrameType frame_type,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<ResourceRequestBody> body,
       bool skip_service_worker);

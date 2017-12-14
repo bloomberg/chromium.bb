@@ -9,6 +9,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebVector.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
 #include "third_party/WebKit/common/service_worker/service_worker_client.mojom-shared.h"
 
@@ -22,7 +23,7 @@ struct WebServiceWorkerClientInfo {
   WebServiceWorkerClientInfo()
       : page_visibility_state(mojom::PageVisibilityState::kLast),
         is_focused(false),
-        frame_type(WebURLRequest::kFrameTypeNone),
+        frame_type(network::mojom::RequestContextFrameType::kNone),
         client_type(mojom::ServiceWorkerClientType::kWindow) {}
 
   WebString uuid;
@@ -30,7 +31,7 @@ struct WebServiceWorkerClientInfo {
   mojom::PageVisibilityState page_visibility_state;
   bool is_focused;
   WebURL url;
-  WebURLRequest::FrameType frame_type;
+  network::mojom::RequestContextFrameType frame_type;
   mojom::ServiceWorkerClientType client_type;
 };
 

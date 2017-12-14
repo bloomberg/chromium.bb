@@ -119,6 +119,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "ppapi/features/features.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
@@ -2155,9 +2156,9 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         blob_context->GetBlobDataFromPublicURL(new_request->url()));
   }
 
-  RequestContextFrameType frame_type =
-      info.is_main_frame ? REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL
-                         : REQUEST_CONTEXT_FRAME_TYPE_NESTED;
+  network::mojom::RequestContextFrameType frame_type =
+      info.is_main_frame ? network::mojom::RequestContextFrameType::kTopLevel
+                         : network::mojom::RequestContextFrameType::kNested;
   ServiceWorkerRequestHandler::InitializeForNavigation(
       new_request.get(), service_worker_handle_core, blob_context,
       info.begin_params->skip_service_worker, resource_type,
