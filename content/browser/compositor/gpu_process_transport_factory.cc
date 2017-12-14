@@ -355,21 +355,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       gpu_channel_host->gpu_feature_info()
               .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] !=
           gpu::kGpuFeatureStatusEnabled) {
-#if defined(OS_CHROMEOS)
-    // TODO(crbug.com/793303): We shouldn't blacklist gpu compositing on
-    // ChromeOS.
-    NOTREACHED();
-#endif
     use_gpu_compositing = false;
   }
   // Gpu compositing may have been disabled in the meantime.
-  if (is_gpu_compositing_disabled_) {
-#if defined(OS_CHROMEOS)
-    // TODO(crbug.com/793303): We shouldn't have gpu disabled on ChromeOS.
-    NOTREACHED();
-#endif
+  if (is_gpu_compositing_disabled_)
     use_gpu_compositing = false;
-  }
 
   // The widget might have been released in the meantime.
   PerCompositorDataMap::iterator it =
@@ -403,11 +393,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     // If not using GL compositing, don't keep the old shared worker context.
     shared_worker_context_provider_ = nullptr;
   } else if (!gpu_channel_host) {
-#if defined(OS_CHROMEOS)
-    // TODO(crbug.com/793303): We shouldn't fail to make a GpuChannelHost on
-    // ChromeOS.
-    NOTREACHED();
-#endif
     // Failed to establish a channel, which is a fatal error, so stop trying to
     // use gpu compositing.
     use_gpu_compositing = false;
@@ -440,14 +425,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       auto result = shared_worker_context_provider_->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
         shared_worker_context_provider_ = nullptr;
-        if (result == gpu::ContextResult::kFatalFailure) {
-#if defined(OS_CHROMEOS)
-          // TODO(crbug.com/793303): We shouldn't have fatal context failures on
-          // ChromeOS.
-          NOTREACHED();
-#endif
+        if (result == gpu::ContextResult::kFatalFailure)
           use_gpu_compositing = false;
-        }
       }
     }
 
@@ -475,14 +454,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       auto result = context_provider->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
         context_provider = nullptr;
-        if (result == gpu::ContextResult::kFatalFailure) {
-#if defined(OS_CHROMEOS)
-          // TODO(crbug.com/793303): We shouldn't have fatal context failures on
-          // ChromeOS.
-          NOTREACHED();
-#endif
+        if (result == gpu::ContextResult::kFatalFailure)
           use_gpu_compositing = false;
-        }
       }
     }
   }
