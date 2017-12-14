@@ -33,21 +33,6 @@ ukm::SourceId GenerateUkmSourceId() {
   return ukm_recorder ? ukm_recorder->GetNewSourceID() : ukm::kInvalidSourceId;
 }
 
-std::string WebInputEventTypeToInputModalityString(WebInputEvent::Type type) {
-  if (type == blink::WebInputEvent::kMouseWheel) {
-    return "Wheel";
-  } else if (WebInputEvent::IsKeyboardEventType(type)) {
-    // We should only be reporting latency for key presses.
-    DCHECK(type == WebInputEvent::kRawKeyDown || type == WebInputEvent::kChar);
-    return "KeyPress";
-  } else if (WebInputEvent::IsMouseEventType(type)) {
-    return "Mouse";
-  } else if (WebInputEvent::IsTouchEventType(type)) {
-    return "Touch";
-  }
-  return "";
-}
-
 // LatencyComponents generated in the renderer must have component IDs
 // provided to them by the browser process. This function adds the correct
 // component ID where necessary.
@@ -190,35 +175,6 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   bool multi_finger_touch_gesture =
       WebInputEvent::IsTouchEventType(type) && active_multi_finger_gesture_;
 
-  LatencyInfo::LatencyComponent ui_component;
-  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0,
-                          &ui_component)) {
-    DCHECK_EQ(ui_component.event_count, 1u);
-    CONFIRM_EVENT_TIMES_EXIST(ui_component, rwh_component);
-    base::TimeDelta ui_delta =
-        rwh_component.last_event_time - ui_component.first_event_time;
-
-    if (latency.source_event_type() == ui::SourceEventType::WHEEL) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.Latency.Browser.WheelUI",
-          std::max(static_cast<int64_t>(0), ui_delta.InMicroseconds()), 1,
-          20000, 100);
-    } else if (latency.source_event_type() == ui::SourceEventType::TOUCH) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.Latency.Browser.TouchUI",
-          std::max(static_cast<int64_t>(0), ui_delta.InMicroseconds()), 1,
-          20000, 100);
-    } else if (latency.source_event_type() == ui::SourceEventType::KEY_PRESS) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.Latency.Browser.KeyPressUI",
-          std::max(static_cast<int64_t>(0), ui_delta.InMicroseconds()), 1,
-          20000, 50);
-    } else {
-      // We should only report these histograms for wheel, touch and keyboard.
-      NOTREACHED();
-    }
-  }
-
   bool action_prevented = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
   // Touchscreen tap and scroll gestures depend on the disposition of the touch
   // start and the current touch. For touch start,
@@ -259,13 +215,6 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
       UMA_HISTOGRAM_INPUT_LATENCY_MILLISECONDS(
           "Event.Latency.BlockingTime." + event_name + default_action_status,
           main_component, acked_component);
-    }
-
-    std::string input_modality = WebInputEventTypeToInputModalityString(type);
-    if (input_modality != "") {
-      UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-          "Event.Latency.Browser." + input_modality + "Acked", rwh_component,
-          acked_component);
     }
   }
 }

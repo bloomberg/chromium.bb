@@ -312,9 +312,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
                 test_browser_client_.getTestRapporService()->GetReportsCount());
 
       // UMA histograms.
-      EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelUI", 1));
-      EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelAcked", 1));
-
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
@@ -428,9 +425,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
                 test_browser_client_.getTestRapporService()->GetReportsCount());
 
       // UMA histograms.
-      EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelUI", 1));
-      EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelAcked", 1));
-
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
@@ -567,8 +561,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
               test_browser_client_.getTestRapporService()->GetReportsCount());
 
     // UMA histograms.
-    EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.TouchUI", 1));
-    EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.TouchAcked", 1));
     EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 1));
 
@@ -807,10 +799,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     EXPECT_TRUE(key_latency.terminated());
   }
 
-  EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelUI", 1));
-  EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.TouchUI", 1));
-  EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelAcked", 1));
-  EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.TouchAcked", 1));
   EXPECT_TRUE(
       HistogramSizeEq("Event.Latency.ScrollUpdate.TouchToHandled_Main", 0));
   EXPECT_TRUE(
@@ -1136,81 +1124,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyBlockingAndQueueingTime) {
       histogram_tester().GetAllSamples(
           "Event.Latency.BlockingTime.KeyPressDefaultAllowed"),
       ElementsAre(Bucket(event_timestamps_ms[2] - event_timestamps_ms[1], 1)));
-}
-
-TEST_F(RenderWidgetHostLatencyTrackerTest, KeyUILatency) {
-  // These numbers are sensitive to where the histogram buckets are.
-  int event_timestamps_microseconds[] = {100, 185};
-
-  NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kChar,
-                               blink::WebInputEvent::kNoModifiers,
-                               base::TimeTicks::Now());
-  ui::LatencyInfo latency_info;
-  latency_info.set_trace_id(kTraceEventId);
-  latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
-  latency_info.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0,
-      base::TimeTicks() +
-          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
-      1);
-
-  // Add the BEGIN_RWH component explicitly here with a timestamp, instead of
-  // calling tracker()->OnInputEvent().
-  latency_info.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-      tracker()->latency_component_id(), 0,
-      base::TimeTicks() +
-          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
-      1);
-
-  tracker()->OnInputEventAck(event, &latency_info,
-                             InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN);
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Event.Latency.Browser.KeyPressUI"),
-      ElementsAre(Bucket(
-          event_timestamps_microseconds[1] - event_timestamps_microseconds[0],
-          1)));
-}
-
-TEST_F(RenderWidgetHostLatencyTrackerTest, KeyAckedLatency) {
-  // These numbers are sensitive to where the histogram buckets are.
-  int event_timestamps_microseconds[] = {11, 24};
-
-  NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                               blink::WebInputEvent::kNoModifiers,
-                               base::TimeTicks::Now());
-  ui::LatencyInfo latency_info;
-  latency_info.set_trace_id(kTraceEventId);
-  latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
-
-  // Add the BEGIN_RWH component explicitly here with a timestamp, instead of
-  // calling tracker()->OnInputEvent().
-  latency_info.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-      tracker()->latency_component_id(), 0,
-      base::TimeTicks() +
-          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
-      1);
-
-  // Add the ACK_RWH component explicitly here with a timestamp, instead of
-  // calling tracker()->OnInputEventAck().
-  latency_info.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
-      base::TimeTicks() +
-          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
-      1);
-
-  // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
-  // overwriting components.
-  tracker()->ComputeInputLatencyHistograms(
-      event.GetType(), tracker()->latency_component_id(), latency_info,
-      InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN);
-
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Event.Latency.Browser.KeyPressAcked"),
-      ElementsAre(Bucket(
-          event_timestamps_microseconds[1] - event_timestamps_microseconds[0],
-          1)));
 }
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {
