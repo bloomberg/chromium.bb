@@ -69,24 +69,29 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
   if (event->key_code() == ui::VKEY_PROCESSKEY)
     return true;
 
+  // Except for PROCESSKEY, never discard "key-up" events. A keydown not paired
+  // by a keyup can trigger a never-ending key repeat in the client, which can
+  // never be desirable.
+  if (event->type() == ui::ET_KEY_RELEASED)
+    return false;
+
   // Case 2:
   // When IME ate a key event and generated a single character input, it leaves
   // the key event as-is, and in addition calls the active ui::TextInputClient's
   // InsertChar() method. (In our case, arc::ArcImeService::InsertChar()).
   //
-  // In Chrome OS (and Web) convention, the two calls wont't cause duplicates,
+  // In Chrome OS (and Web) convention, the two calls won't cause duplicates,
   // because key-down events do not mean any character inputs there.
   // (InsertChar issues a DOM "keypress" event, which is distinct from keydown.)
   // Unfortunately, this is not necessary the case for our clients that may
   // treat keydown as a trigger of text inputs. We need suppression for keydown.
-  if (event->type() == ui::ET_KEY_PRESSED) {
-    // Same condition as components/arc/ime/arc_ime_service.cc#InsertChar.
-    const base::char16 ch = event->GetCharacter();
-    const bool is_control_char =
-        (0x00 <= ch && ch <= 0x1f) || (0x7f <= ch && ch <= 0x9f);
-    if (!is_control_char && !ui::IsSystemKeyModifier(event->flags()))
-      return true;
-  }
+  //
+  // Same condition as components/arc/ime/arc_ime_service.cc#InsertChar.
+  const base::char16 ch = event->GetCharacter();
+  const bool is_control_char =
+      (0x00 <= ch && ch <= 0x1f) || (0x7f <= ch && ch <= 0x9f);
+  if (!is_control_char && !ui::IsSystemKeyModifier(event->flags()))
+    return true;
 
   // Case 3:
   // Workaround for apps that doesn't handle hardware keyboard events well.
