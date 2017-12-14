@@ -286,6 +286,16 @@ Polymer({
   },
 
   /**
+   * Returns true if the overscan setting should be shown for |display|.
+   * @param {!chrome.system.display.DisplayUnitInfo} display
+   * @return {boolean}
+   * @private
+   */
+  showOverscanSetting_: function(display) {
+    return !display.isInternal;
+  },
+
+  /**
    * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @return {boolean}
    * @private
