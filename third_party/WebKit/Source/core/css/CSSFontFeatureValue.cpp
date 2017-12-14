@@ -28,6 +28,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSFontFeatureValue::CSSFontFeatureValue(const AtomicString& tag, int value)
     : CSSValue(kFontFeatureClass), tag_(tag), value_(value) {}
@@ -45,4 +46,5 @@ bool CSSFontFeatureValue::Equals(const CSSFontFeatureValue& other) const {
   return tag_ == other.tag_ && value_ == other.value_;
 }
 
+}  // namespace cssvalue
 }  // namespace blink

@@ -1365,7 +1365,8 @@ CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange& range) {
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   CSSValueList* settings = CSSValueList::CreateCommaSeparated();
   do {
-    CSSFontFeatureValue* font_feature_value = ConsumeFontFeatureTag(range);
+    cssvalue::CSSFontFeatureValue* font_feature_value =
+        ConsumeFontFeatureTag(range);
     if (!font_feature_value)
       return nullptr;
     settings->Append(*font_feature_value);
@@ -1373,7 +1374,8 @@ CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange& range) {
   return settings;
 }
 
-CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange& range) {
+cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(
+    CSSParserTokenRange& range) {
   // Feature tag name consists of 4-letter characters.
   const unsigned kTagNameLength = 4;
 
@@ -1404,7 +1406,7 @@ CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange& range) {
              range.Peek().Id() == CSSValueOff) {
     tag_value = range.ConsumeIncludingWhitespace().Id() == CSSValueOn;
   }
-  return CSSFontFeatureValue::Create(tag, tag_value);
+  return cssvalue::CSSFontFeatureValue::Create(tag, tag_value);
 }
 
 CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange& range) {
