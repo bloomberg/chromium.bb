@@ -148,7 +148,6 @@ const map_entry refs_map[] = {
 };
 
 const map_entry block_size_map[] = {
-  ENUM(BLOCK_2X2),    ENUM(BLOCK_2X4),    ENUM(BLOCK_4X2),
   ENUM(BLOCK_4X4),    ENUM(BLOCK_4X8),    ENUM(BLOCK_8X4),
   ENUM(BLOCK_8X8),    ENUM(BLOCK_8X16),   ENUM(BLOCK_16X8),
   ENUM(BLOCK_16X16),  ENUM(BLOCK_16X32),  ENUM(BLOCK_32X16),

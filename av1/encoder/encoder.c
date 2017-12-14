@@ -1569,13 +1569,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_8_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits8,
             aom_highbd_sad4x4x8_bits8, aom_highbd_sad4x4x4d_bits8)
 
-        HIGHBD_BFP(BLOCK_2X2, NULL, NULL, aom_highbd_8_variance2x2, NULL, NULL,
-                   NULL, NULL, NULL)
-        HIGHBD_BFP(BLOCK_4X2, NULL, NULL, aom_highbd_8_variance4x2, NULL, NULL,
-                   NULL, NULL, NULL)
-        HIGHBD_BFP(BLOCK_2X4, NULL, NULL, aom_highbd_8_variance2x4, NULL, NULL,
-                   NULL, NULL, NULL)
-
 #if CONFIG_EXT_PARTITION
         HIGHBD_BFP(BLOCK_128X128, aom_highbd_sad128x128_bits8,
                    aom_highbd_sad128x128_avg_bits8,
@@ -1883,13 +1876,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_10_variance4x4, aom_highbd_10_sub_pixel_variance4x4,
             aom_highbd_10_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits10,
             aom_highbd_sad4x4x8_bits10, aom_highbd_sad4x4x4d_bits10)
-
-        HIGHBD_BFP(BLOCK_2X2, NULL, NULL, aom_highbd_10_variance2x2, NULL, NULL,
-                   NULL, NULL, NULL)
-        HIGHBD_BFP(BLOCK_4X2, NULL, NULL, aom_highbd_10_variance4x2, NULL, NULL,
-                   NULL, NULL, NULL)
-        HIGHBD_BFP(BLOCK_2X4, NULL, NULL, aom_highbd_10_variance2x4, NULL, NULL,
-                   NULL, NULL, NULL)
 
 #if CONFIG_EXT_PARTITION
         HIGHBD_BFP(
@@ -2200,13 +2186,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_12_variance4x4, aom_highbd_12_sub_pixel_variance4x4,
             aom_highbd_12_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits12,
             aom_highbd_sad4x4x8_bits12, aom_highbd_sad4x4x4d_bits12)
-
-        HIGHBD_BFP(BLOCK_2X2, NULL, NULL, aom_highbd_12_variance2x2, NULL, NULL,
-                   NULL, NULL, NULL)
-        HIGHBD_BFP(BLOCK_4X2, NULL, NULL, aom_highbd_12_variance4x2, NULL, NULL,
-                   NULL, NULL, NULL)
-        HIGHBD_BFP(BLOCK_2X4, NULL, NULL, aom_highbd_12_variance2x4, NULL, NULL,
-                   NULL, NULL, NULL)
 
 #if CONFIG_EXT_PARTITION
         HIGHBD_BFP(
@@ -2904,12 +2883,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
       aom_sad4x4x8, aom_sad4x4x4d, aom_jnt_sad4x4_avg,
       aom_jnt_sub_pixel_avg_variance4x4)
 
-  BFP(BLOCK_2X2, NULL, NULL, aom_variance2x2, NULL, NULL, NULL, NULL, NULL,
-      NULL, NULL)
-  BFP(BLOCK_2X4, NULL, NULL, aom_variance2x4, NULL, NULL, NULL, NULL, NULL,
-      NULL, NULL)
-  BFP(BLOCK_4X2, NULL, NULL, aom_variance4x2, NULL, NULL, NULL, NULL, NULL,
-      NULL, NULL)
 #else  // CONFIG_JNT_COMP
 #if CONFIG_EXT_PARTITION_TYPES
   BFP(BLOCK_4X16, aom_sad4x16, aom_sad4x16_avg, aom_variance4x16,
@@ -3013,9 +2986,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
       aom_sub_pixel_variance4x4, aom_sub_pixel_avg_variance4x4, aom_sad4x4x3,
       aom_sad4x4x8, aom_sad4x4x4d)
 
-  BFP(BLOCK_2X2, NULL, NULL, aom_variance2x2, NULL, NULL, NULL, NULL, NULL)
-  BFP(BLOCK_2X4, NULL, NULL, aom_variance2x4, NULL, NULL, NULL, NULL, NULL)
-  BFP(BLOCK_4X2, NULL, NULL, aom_variance4x2, NULL, NULL, NULL, NULL, NULL)
 #endif  // CONFIG_JNT_COMP
 
 #define OBFP(BT, OSDF, OVF, OSVF) \

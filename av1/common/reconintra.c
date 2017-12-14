@@ -407,8 +407,6 @@ static const uint16_t orders_vert_8x8[256] = {
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
-  // 2X2,         2X4,            4X2
-  NULL,           NULL,           NULL,
   //                              4X4
                                   orders_4x4,
   // 4X8,         8X4,            8X8
@@ -441,8 +439,6 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
 #else
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
-  // 2X2,         2X4,            4X2
-  NULL,           NULL,           NULL,
   //                              4X4
                                   orders_8x8,
   // 4X8,         8X4,            8X8
@@ -481,8 +477,6 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders_vert[BLOCK_SIZES] = {
-  // 2X2,        2X4,    4X2
-  NULL,          NULL,   NULL,
   //                     4X4
                          NULL,
   // 4X8,        8X4,    8X8
@@ -500,8 +494,6 @@ static const uint16_t *const orders_vert[BLOCK_SIZES] = {
 #else
 /* clang-format off */
 static const uint16_t *const orders_vert[BLOCK_SIZES] = {
-  // 2X2,        2X4,    4X2
-  NULL,          NULL,   NULL,
   //                     4X4
                          NULL,
   // 4X8,        8X4,    8X8
@@ -2780,8 +2772,7 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
     assert(blk_col == 0);
     assert(blk_row == 0);
     assert(is_cfl_allowed(mbmi));
-    const BLOCK_SIZE plane_bsize =
-        AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
     assert(plane_bsize < BLOCK_SIZES_ALL);
     assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
     assert(block_size_high[plane_bsize] == tx_size_high[tx_size]);

@@ -430,8 +430,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
       const int stepr = tx_size_high_unit[tx_size];
       const int stepc = tx_size_wide_unit[tx_size];
-      const BLOCK_SIZE plane_bsize =
-          AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
       int row, col;
       const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
       const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
@@ -512,8 +511,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
           continue;
         const BLOCK_SIZE bsizec =
             scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-        const BLOCK_SIZE plane_bsize =
-            AOMMAX(BLOCK_4X4, get_plane_block_size(bsizec, pd));
+        const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
         const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
         const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
         int row, col;

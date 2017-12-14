@@ -1515,7 +1515,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   for (plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE bs = AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+    const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
     unsigned int sse;
     int rate;
     int64_t dist;
@@ -1733,8 +1733,7 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblockd_plane *pd = &xd->plane[plane];
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const BLOCK_SIZE plane_bsize =
-      AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
   int cost = av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block, tx_size,
@@ -4683,7 +4682,7 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
 
 static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
   {
-      0,  0,  0,  50, 50, 50, 55, 47, 47, 53, 53, 53, 53, 53, 53, 53,
+      50, 50, 50, 55, 47, 47, 53, 53, 53, 53, 53, 53, 53,
 #if CONFIG_EXT_PARTITION
       53, 53, 53,
 #endif
@@ -4693,7 +4692,7 @@ static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
 #endif
   },
   {
-      0,  0,  0,  69, 69, 69, 67, 68, 68, 53, 53, 53, 53, 53, 53, 53,
+      69, 69, 69, 67, 68, 68, 53, 53, 53, 53, 53, 53, 53,
 #if CONFIG_EXT_PARTITION
       53, 53, 53,
 #endif
@@ -4703,7 +4702,7 @@ static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
 #endif
   },
   {
-      0,  0,  0,  70, 73, 73, 70, 73, 73, 58, 58, 58, 58, 58, 58, 58,
+      70, 73, 73, 70, 73, 73, 58, 58, 58, 58, 58, 58, 58,
 #if CONFIG_EXT_PARTITION
       58, 58, 58,
 #endif
@@ -5434,8 +5433,8 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   const BLOCK_SIZE bsize = mbmi->sb_type;
 #if CONFIG_DEBUG
   assert(is_cfl_allowed(mbmi));
-  const BLOCK_SIZE plane_bsize = AOMMAX(
-      BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]));
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]);
   assert(plane_bsize < BLOCK_SIZES_ALL);
   assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
   assert(block_size_high[plane_bsize] == tx_size_high[tx_size]);

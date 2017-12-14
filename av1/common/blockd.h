@@ -892,9 +892,6 @@ static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
   static const char LUT[BLOCK_SIZES_ALL] = {
-    0,  // BLOCK_2X2
-    0,  // BLOCK_2X4
-    0,  // BLOCK_4X2
     0,  // BLOCK_4X4
     1,  // BLOCK_4X8
     1,  // BLOCK_8X4
@@ -1171,8 +1168,7 @@ static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi,
                                          const struct macroblockd_plane *pd) {
 #if CONFIG_CFL
   if (!is_inter_block(mbmi) && mbmi->uv_mode == UV_CFL_PRED) {
-    const BLOCK_SIZE plane_bsize =
-        AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
     assert(plane_bsize < BLOCK_SIZES_ALL);
     return max_txsize_rect_lookup[0][plane_bsize];
   }

@@ -153,54 +153,28 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
 
 #if CONFIG_FP_MB_STATS
 static const uint8_t num_16x16_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  2,
-  2,
-  2,
-  4,
-  4,
-  IF_EXT_PARTITION(4, 8, 8) 1,
-  1,
-  1,
-  2,
-  2,
-  4,
-  IF_EXT_PARTITION(2, 8)
+  1, 1,
+  1, 1,
+  1, 1,
+  1, 1,
+  2, 2,
+  2, 4,
+  4, IF_EXT_PARTITION(4, 8, 8) 1,
+  1, 1,
+  2, 2,
+  4, IF_EXT_PARTITION(2, 8)
 };
 static const uint8_t num_16x16_blocks_high_lookup[BLOCK_SIZES_ALL] = {
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  2,
-  1,
-  2,
-  4,
-  2,
-  4,
-  IF_EXT_PARTITION(8, 4, 8) 1,
-  1,
-  2,
-  1,
-  4,
-  2,
-  IF_EXT_PARTITION(8, 2)
+  1, 1,
+  1, 1,
+  1, 1,
+  1, 2,
+  1, 2,
+  4, 2,
+  4, IF_EXT_PARTITION(8, 4, 8) 1,
+  1, 2,
+  1, 4,
+  2, IF_EXT_PARTITION(8, 2)
 };
 #endif  // CONFIG_FP_MB_STATS
 
@@ -1853,7 +1827,6 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
 
 /* clang-format off */
 static const BLOCK_SIZE min_partition_size[BLOCK_SIZES_ALL] = {
-  BLOCK_2X2,   BLOCK_2X2,   BLOCK_2X2,    //    2x2,    2x4,     4x2
                             BLOCK_4X4,    //                     4x4
   BLOCK_4X4,   BLOCK_4X4,   BLOCK_4X4,    //    4x8,    8x4,     8x8
   BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,    //   8x16,   16x8,   16x16
@@ -1870,7 +1843,6 @@ static const BLOCK_SIZE min_partition_size[BLOCK_SIZES_ALL] = {
 };
 
 static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
-  BLOCK_4X4,     BLOCK_4X4,       BLOCK_4X4,    //    2x2,    2x4,     4x2
                                   BLOCK_8X8,    //                     4x4
   BLOCK_16X16,   BLOCK_16X16,   BLOCK_16X16,    //    4x8,    8x4,     8x8
   BLOCK_32X32,   BLOCK_32X32,   BLOCK_32X32,    //   8x16,   16x8,   16x16
@@ -1888,7 +1860,6 @@ static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
 
 // Next square block size less or equal than current block size.
 static const BLOCK_SIZE next_square_size[BLOCK_SIZES_ALL] = {
-  BLOCK_2X2,   BLOCK_2X2,     BLOCK_2X2,    //    2x2,    2x4,     4x2
                               BLOCK_4X4,    //                     4x4
   BLOCK_4X4,   BLOCK_4X4,     BLOCK_8X8,    //    4x8,    8x4,     8x8
   BLOCK_8X8,   BLOCK_8X8,     BLOCK_16X16,  //   8x16,   16x8,   16x16
@@ -2257,7 +2228,7 @@ static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
     const int src_stride_uv = x->plane[plane].src.stride;
     const int dst_stride_uv = xd->plane[plane].dst.stride;
     const BLOCK_SIZE plane_bsize =
-        AOMMAX(BLOCK_4X4, get_plane_block_size(BLOCK_8X8, &xd->plane[plane]));
+        get_plane_block_size(BLOCK_8X8, &xd->plane[plane]);
 
     cpi->fn_ptr[plane_bsize].vf(src_plane_8x8[plane], src_stride_uv,
                                 dst_plane_8x8[plane], dst_stride_uv, &sse);

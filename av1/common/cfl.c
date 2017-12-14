@@ -483,7 +483,6 @@ void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
   struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
   int row = 0;
   int col = 0;
-  bsize = AOMMAX(BLOCK_4X4, bsize);
 
   assert(is_cfl_allowed(&xd->mi[0]->mbmi));
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {

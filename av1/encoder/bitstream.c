@@ -1941,8 +1941,7 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
   const BLOCK_SIZE bsizec =
       scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
 
-  const BLOCK_SIZE plane_bsize =
-      AOMMAX(BLOCK_4X4, get_plane_block_size(bsizec, pd));
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
 
   TX_SIZE max_tx_size = get_vartx_max_txsize(
       xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
@@ -2057,8 +2056,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       const BLOCK_SIZE bsize = mbmi->sb_type;
       const BLOCK_SIZE bsizec =
           scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-      const BLOCK_SIZE plane_bsize =
-          AOMMAX(BLOCK_4X4, get_plane_block_size(bsizec, pd));
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
 
       const int num_4x4_w =
           block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
