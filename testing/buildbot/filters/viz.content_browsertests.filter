@@ -86,11 +86,10 @@
 # TODO: investigate flaky failure http://crbug.com/790683
 -SitePerProcessBrowserTest.CrossSiteIframeBlockedByXFrameOptionsOrCSP
 
-# TODO: investigate flaky failure http://crbug.com/792739
+# TODO: investigate flaky failures http://crbug.com/792739
 -SitePerProcessFeaturePolicyBrowserTest.TestFeaturePolicyReplicationFromRemoteFrames
-
-# TODO: investigate flaky failure http://crbug.com/792740
 -IsolatedOriginTest.ProcessLimit
+-SitePerProcessBrowserTest.RFPHDestruction
 
 # Tests failures related to surface sync. http://crbug.com/793302
 -RenderWidgetHostViewBrowserTestBase.CompositorWorksWhenReusingRenderer
