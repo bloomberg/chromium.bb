@@ -231,7 +231,7 @@ bool CBORReader::CheckDuplicateKey(const std::string& new_key,
 }
 
 bool CBORReader::HasValidUTF8Format(const std::string& string_data) {
-  if (!base::IsStringUTF8(string_data.data())) {
+  if (!base::IsStringUTF8(string_data)) {
     error_code_ = DecoderError::INVALID_UTF8;
     return false;
   }
