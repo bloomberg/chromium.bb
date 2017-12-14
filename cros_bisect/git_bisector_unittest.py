@@ -44,13 +44,22 @@ class GitMock(partial_mock.PartialCmdMock):
 
   def RunGit(self, *args, **kwargs):
     """Mocked RunGit."""
-    return self._results['RunGit'].LookupResult(args, kwargs=kwargs)
+    try:
+      return self._results['RunGit'].LookupResult(args, kwargs=kwargs)
+    except cros_build_lib.RunCommandError as e:
+      # Copy the logic of error_code_ok from RunCommand.
+      if kwargs.get('error_code_ok'):
+        return e.result
+      raise e
 
   def AddRunGitResult(self, cmd, cwd=None, returncode=0, output='', error='',
                       kwargs=None, strict=False, side_effect=None):
     """Adds git command and results."""
     cwd = self.cwd if cwd is None else cwd
     result = self.CmdResult(returncode, output, error)
+    if returncode != 0 and not side_effect:
+      side_effect = cros_build_lib.RunCommandError('non-zero returncode',
+                                                   result)
     self._results['RunGit'].AddResultForParams(
         (cwd, cmd,), result, kwargs=kwargs, side_effect=side_effect,
         strict=strict)
@@ -174,7 +183,7 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
   def testUpdateCurrentCommitFail(self):
     """Tests UpdateCurrentCommit() when 'git show' returns nonzero."""
     git_mock = self.StartPatcher(GitMock(self.repo_dir))
-    git_mock.AddRunGitResult(partial_mock.In('show'), returncode=1)
+    git_mock.AddRunGitResult(partial_mock.In('show'), returncode=128)
     self.bisector.UpdateCurrentCommit()
     self.assertTrue(not self.bisector.current_commit)
 
@@ -259,9 +268,8 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     sync_to_head_mock = self.PatchObject(builder_module.Builder, 'SyncToHead')
     # Mock git result for DoesCommitExistInRepo to return False.
     git_mock.AddRunGitResult(
-        partial_mock.InOrder(['rev-list', self.GOOD_COMMIT_SHA1]))
-    git_mock.AddRunGitResult(
-        partial_mock.InOrder(['rev-list', self.BAD_COMMIT_SHA1]))
+        partial_mock.InOrder(['rev-list', self.GOOD_COMMIT_SHA1]),
+        returncode=128)
 
     # Mock invalid result for GetCommitTimestamp to return None.
     git_mock.AddRunGitResult(
@@ -272,6 +280,9 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
         output='invalid commit')
 
     self.assertFalse(self.bisector.SanityCheck())
+
+    # SyncToHead() called because DoesCommitExistInRepo() returns False for
+    # good commit.
     sync_to_head_mock.assert_called()
 
   def testSanityCheckSyncToHeadWorks(self):
@@ -284,9 +295,6 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     # Mock git result for DoesCommitExistInRepo to return False.
     git_mock.AddRunGitResult(
         partial_mock.InOrder(['rev-list', self.GOOD_COMMIT_SHA1]),
-        returncode=128)
-    git_mock.AddRunGitResult(
-        partial_mock.InOrder(['rev-list', self.BAD_COMMIT_SHA1]),
         returncode=128)
 
     # Mock git result for GetCommitTimestamp.
@@ -338,8 +346,10 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
                      self.bisector.ObtainBisectBoundaryScoreImpl(False))
 
     self.assertEqual(
-        [mock.call(self.repo_dir, ['checkout', self.GOOD_COMMIT_SHA1]),
-         mock.call(self.repo_dir, ['checkout', self.BAD_COMMIT_SHA1])],
+        [mock.call(self.repo_dir, ['checkout', self.GOOD_COMMIT_SHA1],
+                   error_code_ok=True),
+         mock.call(self.repo_dir, ['checkout', self.BAD_COMMIT_SHA1],
+                   error_code_ok=True)],
         git_mock.call_args_list)
 
   def testObtainBisectBoundaryScore(self):
