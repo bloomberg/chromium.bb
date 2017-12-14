@@ -1841,6 +1841,50 @@ TEST(HttpCache, RangeGET_ParallelValidationDifferentRanges) {
       histogram_name, static_cast<int>(HttpCache::PARALLEL_WRITING_CREATE), 2);
 }
 
+// Tests that a request does not create Writers when readers is not empty.
+TEST(HttpCache, RangeGET_DoNotCreateWritersWhenReaderExists) {
+  MockHttpCache cache;
+
+  // Save a request in the cache so that the next request can become a
+  // reader.
+  MockTransaction transaction(kRangeGET_Transaction);
+  transaction.request_headers = EXTRA_HEADER;
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Let this request be a reader since it doesn't need validation as per its
+  // load flag.
+  transaction.load_flags |= LOAD_SKIP_CACHE_VALIDATION;
+  MockHttpRequest request(transaction);
+  Context context;
+  context.result = cache.CreateTransaction(&context.trans);
+  ASSERT_THAT(context.result, IsOk());
+  context.result = context.trans->Start(&request, context.callback.callback(),
+                                        NetLogWithSource());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, cache.GetCountReaders(transaction.url));
+  RemoveMockTransaction(&transaction);
+
+  // A range request should now "not" create Writers while readers is still
+  // non-empty.
+  MockTransaction range_transaction(kRangeGET_Transaction);
+  range_transaction.request_headers = "Range: bytes = 0-9\r\n" EXTRA_HEADER;
+  AddMockTransaction(&range_transaction);
+  MockHttpRequest range_request(range_transaction);
+  Context range_context;
+  range_context.result = cache.CreateTransaction(&range_context.trans);
+  ASSERT_THAT(range_context.result, IsOk());
+  range_context.result = range_context.trans->Start(
+      &range_request, range_context.callback.callback(), NetLogWithSource());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, cache.GetCountReaders(transaction.url));
+  EXPECT_FALSE(cache.IsWriterPresent(transaction.url));
+  EXPECT_EQ(1, cache.GetCountDoneHeadersQueue(transaction.url));
+
+  RemoveMockTransaction(&range_transaction);
+}
+
 // Tests parallel validation on range requests can be successfully restarted
 // when there is a cache lock timeout.
 TEST(HttpCache, RangeGET_ParallelValidationCacheLockTimeout) {

@@ -839,7 +839,8 @@ int HttpCache::DoneWithResponseHeaders(ActiveEntry* entry,
   // through done_headers_queue for performance benefit. (Also, in case of
   // writer transaction, the consumer sometimes depend on synchronous behaviour
   // e.g. while computing raw headers size. (crbug.com/711766))
-  if ((transaction->mode() & Transaction::WRITE) && !entry->writers) {
+  if ((transaction->mode() & Transaction::WRITE) && !entry->writers &&
+      entry->readers.empty()) {
     AddTransactionToWriters(entry, transaction,
                             CanTransactionJoinExistingWriters(transaction));
     ProcessQueuedTransactions(entry);
@@ -1095,7 +1096,10 @@ void HttpCache::ProcessDoneHeadersQueue(ActiveEntry* entry) {
   } else {  // no writing in progress
     if (transaction->mode() & Transaction::WRITE) {
       if (transaction->partial()) {
-        AddTransactionToWriters(entry, transaction, parallel_writing_pattern);
+        if (entry->readers.empty())
+          AddTransactionToWriters(entry, transaction, parallel_writing_pattern);
+        else
+          return;
       } else {
         // Add the transaction to readers since the response body should have
         // already been written. (If it was the first writer about to start
