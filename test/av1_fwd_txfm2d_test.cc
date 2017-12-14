@@ -44,31 +44,14 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
     count_ = 500;
     TXFM_2D_FLIP_CFG fwd_txfm_flip_cfg;
     av1_get_fwd_txfm_cfg(tx_type_, tx_size_, &fwd_txfm_flip_cfg);
+    amplify_factor_ = libaom_test::get_amplification_factor(tx_type_, tx_size_);
     tx_width_ = fwd_txfm_flip_cfg.row_cfg->txfm_size;
     tx_height_ = fwd_txfm_flip_cfg.col_cfg->txfm_size;
-    const int8_t *shift = (tx_width_ > tx_height_)
-                              ? fwd_txfm_flip_cfg.row_cfg->shift
-                              : fwd_txfm_flip_cfg.col_cfg->shift;
-    const int amplify_bit = shift[0] + shift[1] + shift[2];
     ud_flip_ = fwd_txfm_flip_cfg.ud_flip;
     lr_flip_ = fwd_txfm_flip_cfg.lr_flip;
-    amplify_factor_ =
-        amplify_bit >= 0 ? (1 << amplify_bit) : (1.0 / (1 << -amplify_bit));
-
-    // For rectangular transforms, we need to multiply by an extra factor.
-    const int rect_type = get_rect_tx_log_ratio(tx_width_, tx_height_);
-    if (abs(rect_type) == 1) {
-      amplify_factor_ *= pow(2, 0.5);
-    } else if (abs(rect_type) == 2) {
-      const int tx_max_dim = AOMMAX(tx_width_, tx_height_);
-      const int rect_type2_shift =
-          tx_max_dim == 64 ? 3 : tx_max_dim == 32 ? 2 : 1;
-      amplify_factor_ *= pow(2, rect_type2_shift);
-    }
 
     fwd_txfm_ = libaom_test::fwd_txfm_func_ls[tx_size_];
     txfm2d_size_ = tx_width_ * tx_height_;
-    get_txfm1d_type(tx_type_, &type0_, &type1_);
     input_ = reinterpret_cast<int16_t *>(
         aom_memalign(16, sizeof(input_[0]) * txfm2d_size_));
     output_ = reinterpret_cast<int32_t *>(
@@ -100,12 +83,12 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
         libaom_test::flipud(ref_input_, tx_width_, tx_height_, tx_width_);
       }
 
-      reference_hybrid_2d(ref_input_, ref_output_, tx_width_, tx_height_,
-                          type0_, type1_);
+      libaom_test::reference_hybrid_2d(ref_input_, ref_output_, tx_type_,
+                                       tx_size_);
 
       double actual_max_error = 0;
       for (int ni = 0; ni < txfm2d_size_; ++ni) {
-        ref_output_[ni] = round(ref_output_[ni] * amplify_factor_);
+        ref_output_[ni] = round(ref_output_[ni]);
         const double this_error =
             fabs(output_[ni] - ref_output_[ni]) / amplify_factor_;
         actual_max_error = AOMMAX(actual_max_error, this_error);
@@ -144,8 +127,6 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
   int tx_height_;
   int txfm2d_size_;
   Fwd_Txfm2d_Func fwd_txfm_;
-  TYPE_TXFM type0_;
-  TYPE_TXFM type1_;
   int16_t *input_;
   int32_t *output_;
   double *ref_input_;

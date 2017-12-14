@@ -46,8 +46,10 @@ void reference_adst_1d(const double *in, double *out, int size);
 
 void reference_hybrid_1d(double *in, double *out, int size, int type);
 
-void reference_hybrid_2d(double *in, double *out, int tx_width, int tx_height,
-                         int type0, int type1);
+double get_amplification_factor(TX_TYPE tx_type, TX_SIZE tx_size);
+
+void reference_hybrid_2d(double *in, double *out, TX_TYPE tx_type,
+                         TX_SIZE tx_size);
 template <typename Type1, typename Type2>
 static double compute_avg_abs_error(const Type1 *a, const Type2 *b,
                                     const int size) {

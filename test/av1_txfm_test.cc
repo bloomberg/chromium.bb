@@ -106,8 +106,40 @@ void reference_hybrid_1d(double *in, double *out, int size, int type) {
     reference_adst_1d(in, out, size);
 }
 
-void reference_hybrid_2d(double *in, double *out, int tx_width, int tx_height,
-                         int type0, int type1) {
+double get_amplification_factor(TX_TYPE tx_type, TX_SIZE tx_size) {
+  TXFM_2D_FLIP_CFG fwd_txfm_flip_cfg;
+  av1_get_fwd_txfm_cfg(tx_type, tx_size, &fwd_txfm_flip_cfg);
+  const int tx_width = fwd_txfm_flip_cfg.row_cfg->txfm_size;
+  const int tx_height = fwd_txfm_flip_cfg.col_cfg->txfm_size;
+  const int8_t *shift = (tx_width > tx_height)
+                            ? fwd_txfm_flip_cfg.row_cfg->shift
+                            : fwd_txfm_flip_cfg.col_cfg->shift;
+  const int amplify_bit = shift[0] + shift[1] + shift[2];
+  double amplify_factor =
+      amplify_bit >= 0 ? (1 << amplify_bit) : (1.0 / (1 << -amplify_bit));
+
+  // For rectangular transforms, we need to multiply by an extra factor.
+  const int rect_type = get_rect_tx_log_ratio(tx_width, tx_height);
+  if (abs(rect_type) == 1) {
+    amplify_factor *= pow(2, 0.5);
+  } else if (abs(rect_type) == 2) {
+    const int tx_max_dim = AOMMAX(tx_width, tx_height);
+    const int rect_type2_shift =
+        tx_max_dim == 64 ? 3 : tx_max_dim == 32 ? 2 : 1;
+    amplify_factor *= pow(2, rect_type2_shift);
+  }
+  return amplify_factor;
+}
+
+void reference_hybrid_2d(double *in, double *out, TX_TYPE tx_type,
+                         TX_SIZE tx_size) {
+  // Get transform type and size of each dimension.
+  TYPE_TXFM type0;
+  TYPE_TXFM type1;
+  get_txfm1d_type(tx_type, &type0, &type1);
+  const int tx_width = tx_size_wide[tx_size];
+  const int tx_height = tx_size_high[tx_size];
+
   double *const temp_in = new double[AOMMAX(tx_width, tx_height)];
   double *const temp_out = new double[AOMMAX(tx_width, tx_height)];
   double *const out_interm = new double[tx_width * tx_height];
@@ -178,6 +210,14 @@ void reference_hybrid_2d(double *in, double *out, int tx_width, int tx_height,
     }
   }
 #endif  // CONFIG_TX_64X64
+
+  // Apply appropriate scale.
+  const double amplify_factor = get_amplification_factor(tx_type, tx_size);
+  for (int c = 0; c < tx_width; ++c) {
+    for (int r = 0; r < tx_height; ++r) {
+      out[r * stride + c] *= amplify_factor;
+    }
+  }
 }
 
 template <typename Type>
