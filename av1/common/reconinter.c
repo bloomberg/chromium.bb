@@ -2109,10 +2109,9 @@ void av1_build_interintra_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 // Builds the inter-predictor for the single ref case
 // for use in the encoder to search the wedges efficiently.
 static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
-                                              int block, int bw, int bh, int x,
-                                              int y, int w, int h, int mi_x,
-                                              int mi_y, int ref,
-                                              uint8_t *const ext_dst,
+                                              int bw, int bh, int x, int y,
+                                              int w, int h, int mi_x, int mi_y,
+                                              int ref, uint8_t *const ext_dst,
                                               int ext_dst_stride) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const MODE_INFO *mi = xd->mi[0];
@@ -2127,10 +2126,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
 #else
   uint8_t *const dst = ext_dst + ext_dst_stride * y + x;
 #endif
-  const MV mv = mi->mbmi.sb_type < BLOCK_8X8
-                    ? average_split_mvs(pd, mi, ref, block)
-                    : mi->mbmi.mv[ref].as_mv;
-
+  const MV mv = mi->mbmi.mv[ref].as_mv;
   uint8_t *pre;
   int xs, ys, subpel_x, subpel_y;
   const int is_scaled = av1_is_scaled(sf);
@@ -2195,7 +2191,7 @@ void av1_build_inter_predictors_for_planes_single_buf(
         get_plane_block_size(bsize, &xd->plane[plane]);
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
-    build_inter_predictors_single_buf(xd, plane, 0, bw, bh, 0, 0, bw, bh, mi_x,
+    build_inter_predictors_single_buf(xd, plane, bw, bh, 0, 0, bw, bh, mi_x,
                                       mi_y, ref, ext_dst[plane],
                                       ext_dst_stride[plane]);
   }
