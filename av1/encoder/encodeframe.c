@@ -559,35 +559,23 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
   if (!frame_is_intra_only(cm)) {
     if (is_inter_block(mbmi)) {
-      if (bsize >= BLOCK_8X8) {
-        // TODO(sarahparker): global motion stats need to be handled per-tile
-        // to be compatible with tile-based threading.
-        update_global_motion_used(mbmi->mode, bsize, mbmi, rdc);
-      } else {
-        const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
-        const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
-        int idx, idy;
-        for (idy = 0; idy < 2; idy += num_4x4_h) {
-          for (idx = 0; idx < 2; idx += num_4x4_w) {
-            const int j = idy * 2 + idx;
-            update_global_motion_used(mi->bmi[j].as_mode, bsize, mbmi, rdc);
-          }
-        }
-      }
-      if (cm->interp_filter == SWITCHABLE &&
-          mbmi->motion_mode != WARPED_CAUSAL &&
-          !is_nontrans_global_motion(xd)) {
+      // TODO(sarahparker): global motion stats need to be handled per-tile
+      // to be compatible with tile-based threading.
+      update_global_motion_used(mbmi->mode, bsize, mbmi, rdc);
+    }
+
+    if (cm->interp_filter == SWITCHABLE && mbmi->motion_mode != WARPED_CAUSAL &&
+        !is_nontrans_global_motion(xd)) {
 #if CONFIG_DUAL_FILTER
-        update_filter_type_count(tile_data->allow_update_cdf, td->counts, xd,
-                                 mbmi);
+      update_filter_type_count(tile_data->allow_update_cdf, td->counts, xd,
+                               mbmi);
 #else
-        (void)tile_data;
-        const int switchable_ctx = av1_get_pred_context_switchable_interp(xd);
-        const InterpFilter filter =
-            av1_extract_interp_filter(mbmi->interp_filters, 0);
-        ++td->counts->switchable_interp[switchable_ctx][filter];
+      (void)tile_data;
+      const int switchable_ctx = av1_get_pred_context_switchable_interp(xd);
+      const InterpFilter filter =
+          av1_extract_interp_filter(mbmi->interp_filters, 0);
+      ++td->counts->switchable_interp[switchable_ctx][filter];
 #endif
-      }
     }
 
     rdc->comp_pred_diff[SINGLE_REFERENCE] += ctx->single_pred_diff;
