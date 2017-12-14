@@ -4,7 +4,12 @@
 
 #include "content/browser/download/parallel_download_utils.h"
 
+#include <map>
+
+#include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -135,6 +140,72 @@ TEST(ParallelDownloadUtilsTest, GetMaxContiguousDataBlockSizeFromBeginning) {
   DownloadItem::ReceivedSlice slice2(200, 300);
   AddOrMergeReceivedSliceIntoSortedArray(slice2, slices);
   EXPECT_EQ(1000, GetMaxContiguousDataBlockSizeFromBeginning(slices));
+}
+
+// Test to verify Finch parameters for enabled experiment group is read
+// correctly.
+TEST(ParallelDownloadUtilsTest, FinchConfigEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  std::map<std::string, std::string> params = {
+      {content::kMinSliceSizeFinchKey, "1234"},
+      {content::kParallelRequestCountFinchKey, "6"},
+      {content::kParallelRequestDelayFinchKey, "2000"},
+      {content::kParallelRequestRemainingTimeFinchKey, "3"}};
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kParallelDownloading, params);
+  EXPECT_TRUE(IsParallelDownloadEnabled());
+  EXPECT_EQ(GetMinSliceSizeConfig(), 1234);
+  EXPECT_EQ(GetParallelRequestCountConfig(), 6);
+  EXPECT_EQ(GetParallelRequestDelayConfig(), base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(GetParallelRequestRemainingTimeConfig(),
+            base::TimeDelta::FromSeconds(3));
+}
+
+// Test to verify the disable experiment group will actually disable the
+// feature.
+TEST(ParallelDownloadUtilsTest, FinchConfigDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kParallelDownloading);
+  EXPECT_FALSE(IsParallelDownloadEnabled());
+}
+
+// Test to verify that the Finch parameter |enable_parallel_download| works
+// correctly.
+TEST(ParallelDownloadUtilsTest, FinchConfigDisabledWithParameter) {
+  {
+    base::test::ScopedFeatureList feature_list;
+    std::map<std::string, std::string> params = {
+        {content::kMinSliceSizeFinchKey, "4321"},
+        {content::kEnableParallelDownloadFinchKey, "false"}};
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kParallelDownloading, params);
+    // Use |enable_parallel_download| to disable parallel download in enabled
+    // experiment group.
+    EXPECT_FALSE(IsParallelDownloadEnabled());
+    EXPECT_EQ(GetMinSliceSizeConfig(), 4321);
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    std::map<std::string, std::string> params = {
+        {content::kMinSliceSizeFinchKey, "4321"},
+        {content::kEnableParallelDownloadFinchKey, "true"}};
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kParallelDownloading, params);
+    // Disable only if |enable_parallel_download| sets to false.
+    EXPECT_TRUE(IsParallelDownloadEnabled());
+    EXPECT_EQ(GetMinSliceSizeConfig(), 4321);
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    std::map<std::string, std::string> params = {
+        {content::kMinSliceSizeFinchKey, "4321"}};
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kParallelDownloading, params);
+    // Empty |enable_parallel_download| in an enabled experiment group will have
+    // no impact.
+    EXPECT_TRUE(IsParallelDownloadEnabled());
+    EXPECT_EQ(GetMinSliceSizeConfig(), 4321);
+  }
 }
 
 }  // namespace content

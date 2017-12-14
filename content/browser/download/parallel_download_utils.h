@@ -13,6 +13,11 @@
 
 namespace content {
 
+// Finch parameter key value to enable parallel download. Used in enabled
+// experiment group that needs other parameters, such as min_slice_size, but
+// don't want to actually do parallel download.
+constexpr char kEnableParallelDownloadFinchKey[] = "enable_parallel_download";
+
 // Finch parameter key value for minimum slice size in bytes to use parallel
 // download.
 constexpr char kMinSliceSizeFinchKey[] = "min_slice_size";
