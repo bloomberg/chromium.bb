@@ -139,6 +139,10 @@ bool ShouldTreatNavigationAsReload(const NavigationEntry* entry) {
   if (!entry)
     return false;
 
+  // Skip navigations initiated by external applications.
+  if (entry->GetTransitionType() & ui::PAGE_TRANSITION_FROM_API)
+    return false;
+
   // We treat (PAGE_TRANSITION_RELOAD | PAGE_TRANSITION_FROM_ADDRESS_BAR),
   // PAGE_TRANSITION_TYPED or PAGE_TRANSITION_LINK transitions as navigations
   // which should be treated as reloads.
