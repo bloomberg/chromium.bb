@@ -26,7 +26,7 @@ from itertools import chain
 # platform specific, so we define an ordering instead.
 # The ordering comes from the data obtained in:
 # https://codereview.chromium.org/2841413002
-# TODO(shend): Put alignment sizes into code form, rather than linking to a CL
+# FIXME: Put alignment sizes into code form, rather than linking to a CL
 # which may disappear.
 ALIGNMENT_ORDER = [
     # Aligns like double
@@ -87,7 +87,7 @@ ALIGNMENT_ORDER = [
     'bool'
 ]
 
-# TODO(shend): Improve documentation and add docstrings.
+# FIXME: Improve documentation and add docstrings.
 
 def _flatten_list(x):
     """Flattens a list of lists into a single list."""
@@ -124,7 +124,7 @@ def _create_groups(properties):
     # }
     #
     # We then recursively convert this dictionary into a tree of Groups.
-    # TODO(shend): Skip the first step by changing Group attributes to methods.
+    # FIXME: Skip the first step by changing Group attributes to methods.
     def _dict_to_group(name, group_dict):
         fields_in_current_group = group_dict.pop(None)
         subgroups = [

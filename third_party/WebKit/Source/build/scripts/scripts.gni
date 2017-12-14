@@ -81,7 +81,7 @@ make_core_generated_deps = [
   "//third_party/WebKit/Source/core:core_event_interfaces",
 ]
 
-# TODO(shend): Remove this once everything that uses this switches over to
+# TODO(crbug.com/732657): Remove this once everything that uses this switches over to
 # the 'code_generator' template instead.
 # Template to run most of scripts that process "*.json5" files.
 #   script: script to run.

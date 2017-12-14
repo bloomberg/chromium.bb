@@ -140,9 +140,9 @@ def enum_for_css_property(property_name):
 def enum_for_css_property_alias(property_name):
     return 'CSSPropertyAlias' + upper_camel_case(property_name)
 
-# TODO(shend): Merge these with the above methods.
+# FIXME: Merge these with the above methods.
 # and update all the generators to use these ones.
-# TODO(shend): Switch external callers of these methods to use the high level
+# FIXME: Switch external callers of these methods to use the high level
 # API below instead.
 
 

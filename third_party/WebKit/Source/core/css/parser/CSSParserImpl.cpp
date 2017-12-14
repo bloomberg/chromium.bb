@@ -79,7 +79,7 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
   else if (declaration->CssParserMode() == kCSSFontFaceRuleMode)
     rule_type = StyleRule::kFontFace;
   CSSTokenizer tokenizer(string);
-  // TODO(shend): Use streams instead of ranges
+  // TODO(crbug.com/661854): Use streams instead of ranges
   parser.ConsumeDeclarationValue(CSSParserTokenRange(tokenizer.TokenizeToEOF()),
                                  unresolved_property, important, rule_type);
   bool did_parse = false;
@@ -101,7 +101,7 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
     bool is_animation_tainted) {
   CSSParserImpl parser(context);
   CSSTokenizer tokenizer(value);
-  // TODO(shend): Use streams instead of ranges
+  // TODO(crbug.com/661854): Use streams instead of ranges
   const auto tokens = tokenizer.TokenizeToEOF();
   const CSSParserTokenRange range(tokens);
   parser.ConsumeVariableValue(range, property_name, important,
@@ -326,7 +326,7 @@ CSSSelectorList CSSParserImpl::ParsePageSelector(
 std::unique_ptr<Vector<double>> CSSParserImpl::ParseKeyframeKeyList(
     const String& key_list) {
   CSSTokenizer tokenizer(key_list);
-  // TODO(shend): Use streams instead of ranges
+  // TODO(crbug.com/661854): Use streams instead of ranges
   return ConsumeKeyframeKeyList(CSSParserTokenRange(tokenizer.TokenizeToEOF()));
 }
 
@@ -864,7 +864,7 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
         stream.UncheckedConsume();
         break;
       case kIdentToken: {
-        // TODO(shend): Use streams instead of ranges
+        // TODO(crbug.com/661854): Use streams instead of ranges
         const size_t decl_offset_start = stream.Offset();
         const CSSParserTokenRange decl =
             stream.ConsumeUntilPeekedTypeIs<kSemicolonToken>();

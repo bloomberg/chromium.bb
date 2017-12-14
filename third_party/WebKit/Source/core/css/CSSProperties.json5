@@ -1487,7 +1487,7 @@
       property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
-      field_size: 4, // TODO(shend): Make this use "kGridAutoFlowBits".
+      field_size: 4, // FIXME: Make this use "kGridAutoFlowBits".
       field_template: "primitive",
       default_value: "kAutoFlowRow",
       type_name: "GridAutoFlow",
@@ -2875,7 +2875,7 @@
       property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
-      field_size: 6, // TODO(shend): Make this use "kTouchActionBits".
+      field_size: 6, // FIXME: Make this use "kTouchActionBits".
       field_template: "primitive",
       include_paths: ["platform/graphics/TouchAction.h"],
       default_value: "TouchAction::kTouchActionAuto",
