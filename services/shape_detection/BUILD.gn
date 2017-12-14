@@ -37,7 +37,8 @@ source_set("lib") {
       "face_detection_impl_win.h",
       "face_detection_provider_win.cc",
       "face_detection_provider_win.h",
-      "text_detection_impl.cc",
+      "text_detection_impl_win.cc",
+      "text_detection_impl_win.h",
     ]
   } else {
     sources += [
@@ -109,21 +110,19 @@ service_manifest("manifest") {
 
 source_set("tests") {
   testonly = true
-  sources = []
+  sources = [
+    "barcode_detection_impl_mac_unittest.mm",
+    "face_detection_impl_mac_unittest.mm",
+    "face_detection_impl_win_unittest.cc",
+    "text_detection_impl_mac_unittest.mm",
+    "text_detection_impl_win_unittest.cc",
+  ]
   if (is_mac) {
-    sources += [
-      "barcode_detection_impl_mac_unittest.mm",
-      "face_detection_impl_mac_unittest.mm",
-      "text_detection_impl_mac_unittest.mm",
-    ]
-
     libs = [
       "CoreFoundation.framework",
       "CoreGraphics.framework",
       "QuartzCore.framework",
     ]
-  } else if (is_win) {
-    sources += [ "face_detection_impl_win_unittest.cc" ]
   }
 
   deps = [

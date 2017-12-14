@@ -11,6 +11,7 @@ namespace shape_detection {
 
 class TextDetectionImpl {
  public:
+  // Binds TextDetection request to an implementation of mojom::TextDetection.
   static void Create(mojom::TextDetectionRequest request);
 
  private:
