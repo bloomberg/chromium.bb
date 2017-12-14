@@ -98,7 +98,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
 
   void RequestDeviceAuthorization(
       media::mojom::AudioOutputStreamProviderRequest stream_provider_request,
-      int64_t session_id,
+      int32_t session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) override {
     EXPECT_EQ(session_id, expected_session_id_);
@@ -119,7 +119,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   }
 
   void PrepareProviderForAuthorization(
-      int64_t session_id,
+      int32_t session_id,
       const std::string& device_id,
       std::unique_ptr<TestStreamProvider> provider) {
     EXPECT_FALSE(expect_request_);
@@ -130,7 +130,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
     std::swap(provider_, provider);
   }
 
-  void RefuseNextRequest(int64_t session_id, const std::string& device_id) {
+  void RefuseNextRequest(int32_t session_id, const std::string& device_id) {
     EXPECT_FALSE(expect_request_);
     expect_request_ = true;
     expected_session_id_ = session_id;
@@ -158,7 +158,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   mojom::RendererAudioOutputStreamFactory* get() { return this_proxy_.get(); }
 
   bool expect_request_;
-  int64_t expected_session_id_;
+  int32_t expected_session_id_;
   std::string expected_device_id_;
 
   mojom::RendererAudioOutputStreamFactoryPtr this_proxy_;

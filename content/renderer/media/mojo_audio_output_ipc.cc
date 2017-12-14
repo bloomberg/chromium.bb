@@ -176,6 +176,8 @@ bool MojoAudioOutputIPC::DoRequestDeviceAuthorization(
     return false;
   }
 
+  static_assert(sizeof(int) == sizeof(int32_t),
+                "sizeof(int) == sizeof(int32_t)");
   factory->RequestDeviceAuthorization(MakeProviderRequest(), session_id,
                                       device_id, std::move(callback));
   return true;

@@ -41,7 +41,7 @@ class FakeRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
 
   void RequestDeviceAuthorization(
       media::mojom::AudioOutputStreamProviderRequest stream_provider,
-      int64_t session_id,
+      int32_t session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) override {
     std::move(callback).Run(

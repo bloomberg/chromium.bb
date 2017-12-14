@@ -17,7 +17,7 @@ interface RendererAudioOutputStreamFactory {
   // (in case of an error).
   RequestDeviceAuthorization(
       media.mojom.AudioOutputStreamProvider& stream_provider_request,
-      int64 session_id,
+      int32 session_id,
       string device_id) =>
       (media.mojom.OutputDeviceStatus state,
        media.mojom.AudioParameters output_params,

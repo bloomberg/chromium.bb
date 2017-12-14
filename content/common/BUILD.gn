@@ -557,6 +557,7 @@ mojom("mojo_bindings") {
     "leveldb_wrapper.mojom",
     "manifest_observer.mojom",
     "media/media_stream.mojom",
+    "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
     "memory_coordinator.mojom",
     "native_types.mojom",
