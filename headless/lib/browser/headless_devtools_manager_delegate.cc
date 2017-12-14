@@ -247,6 +247,15 @@ std::unique_ptr<base::DictionaryValue> ParsePrintSettings(
   if (const base::Value* margin_right_value = params->FindKey("marginRight"))
     margin_right_in_inch = margin_right_value->GetDouble();
 
+  if (const base::Value* header_template_value =
+          params->FindKey("headerTemplate")) {
+    settings->header_template = header_template_value->GetString();
+  }
+  if (const base::Value* footer_template_value =
+          params->FindKey("footerTemplate")) {
+    settings->footer_template = footer_template_value->GetString();
+  }
+
   if (margin_top_in_inch < 0)
     return CreateInvalidParamResponse(command_id, "marginTop");
   if (margin_bottom_in_inch < 0)

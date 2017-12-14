@@ -36,6 +36,8 @@ struct HEADLESS_EXPORT HeadlessPrintSettings {
 
   std::string page_ranges;
   bool ignore_invalid_page_ranges;
+  std::string header_template;
+  std::string footer_template;
 };
 
 class HeadlessPrintManager
