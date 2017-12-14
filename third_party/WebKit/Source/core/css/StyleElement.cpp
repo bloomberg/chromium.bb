@@ -32,6 +32,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/probe/CoreProbes.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -92,7 +93,7 @@ void StyleElement::RemovedFrom(Element& element,
 StyleElement::ProcessingResult StyleElement::ChildrenChanged(Element& element) {
   if (created_by_parser_)
     return kProcessingSuccessful;
-
+  probe::willChangeStyleElement(&element);
   return Process(element);
 }
 

@@ -69,6 +69,7 @@ interface CoreProbes {
   void willModifyDOMAttr([Keep] Element*, const AtomicString& oldValue, const AtomicString& newValue);
   void didModifyDOMAttr([Keep] Element*, const QualifiedName& name, const AtomicString& value);
   void didRemoveDOMAttr([Keep] Element*, const QualifiedName& name);
+  void willChangeStyleElement([Keep] Element*);
   void characterDataModified([Keep] CharacterData*);
   void didInvalidateStyleAttr([Keep] Node*);
   void didPerformElementShadowDistribution([Keep] Element*);

@@ -29,6 +29,7 @@
         "fontsUpdated",
         "forcePseudoState",
         "mediaQueryResultChanged",
+        "willChangeStyleElement",
       ]
     },
     DOM: {

@@ -52,4 +52,8 @@ bool InspectorResourceContainer::LoadStyleElementContent(int backend_node_id,
   return true;
 }
 
+void InspectorResourceContainer::EraseStyleElementContent(int backend_node_id) {
+  style_element_contents_.erase(backend_node_id);
+}
+
 }  // namespace blink
