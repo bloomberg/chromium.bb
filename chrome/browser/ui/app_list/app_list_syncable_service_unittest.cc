@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/app_list_model.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -20,7 +20,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 
-using namespace crx_file::id_util;
+using crx_file::id_util::GenerateId;
 
 namespace {
 
@@ -47,7 +47,7 @@ std::string CreateNextAppId(const std::string& app_id) {
   size_t index = next_app_id.length() - 1;
   while (index > 0 && next_app_id[index] == 'p')
     next_app_id[index--] = 'a';
-  DCHECK(next_app_id[index] != 'p');
+  DCHECK_NE(next_app_id[index], 'p');
   next_app_id[index]++;
   DCHECK(crx_file::id_util::IdIsValid(next_app_id));
   return next_app_id;
@@ -182,8 +182,8 @@ class AppListSyncableServiceTest : public AppListTestBase {
 
   void TearDown() override { app_list_syncable_service_.reset(); }
 
-  app_list::AppListModel* model() {
-    return app_list_syncable_service_->GetModel();
+  app_list::AppListModelUpdater* model_updater() {
+    return app_list_syncable_service_->GetModelUpdater();
   }
 
   const app_list::AppListSyncableService::SyncItem* GetSyncItem(
@@ -219,13 +219,15 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
               extensions ::Extension::WAS_INSTALLED_BY_DEFAULT);
   service_->AddExtension(some_app.get());
 
-  app_list::AppListItem* web_store_item = model()->FindItem(web_store_app_id);
+  app_list::AppListItem* web_store_item =
+      model_updater()->FindItem(web_store_app_id);
   ASSERT_TRUE(web_store_item);
-  app_list::AppListItem* some_app_item = model()->FindItem(some_app_id);
+  app_list::AppListItem* some_app_item = model_updater()->FindItem(some_app_id);
   ASSERT_TRUE(some_app_item);
 
   // Simulate position conflict.
-  model()->SetItemPosition(web_store_item, some_app_item->position());
+  model_updater()->SetItemPosition(web_store_item->id(),
+                                   some_app_item->position());
 
   // Install an OEM app. It must be placed by default after web store app but in
   // case of app of the same position should be shifted next.
@@ -238,15 +240,13 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
   size_t some_app_index;
   size_t oem_app_index;
   size_t oem_folder_index;
-  EXPECT_TRUE(model()->top_level_item_list()->FindItemIndex(
-      web_store_app_id, &web_store_app_index));
-  EXPECT_TRUE(model()->top_level_item_list()->FindItemIndex(some_app_id,
-                                                            &some_app_index));
+  EXPECT_TRUE(
+      model_updater()->FindItemIndex(web_store_app_id, &web_store_app_index));
+  EXPECT_TRUE(model_updater()->FindItemIndex(some_app_id, &some_app_index));
   // OEM item is not top level element.
-  EXPECT_FALSE(model()->top_level_item_list()->FindItemIndex(oem_app_id,
-                                                             &oem_app_index));
+  EXPECT_FALSE(model_updater()->FindItemIndex(oem_app_id, &oem_app_index));
   // But OEM folder is.
-  EXPECT_TRUE(model()->top_level_item_list()->FindItemIndex(
+  EXPECT_TRUE(model_updater()->FindItemIndex(
       app_list::AppListSyncableService::kOemFolderId, &oem_folder_index));
 
   // Ensure right item sequence.

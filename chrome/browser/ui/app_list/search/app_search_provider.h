@@ -22,7 +22,7 @@ class Clock;
 
 namespace app_list {
 
-class AppListItemList;
+class AppListModelUpdater;
 
 class AppSearchProvider : public SearchProvider {
  public:
@@ -33,7 +33,7 @@ class AppSearchProvider : public SearchProvider {
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller,
                     std::unique_ptr<base::Clock> clock,
-                    AppListItemList* top_level_item_list);
+                    AppListModelUpdater* model_updater);
   ~AppSearchProvider() override;
 
   // SearchProvider overrides:
@@ -52,7 +52,7 @@ class AppSearchProvider : public SearchProvider {
   AppListControllerDelegate* const list_controller_;
   base::string16 query_;
   Apps apps_;
-  AppListItemList* const top_level_item_list_;
+  AppListModelUpdater* const model_updater_;
   std::unique_ptr<base::Clock> clock_;
   std::vector<std::unique_ptr<DataSource>> data_sources_;
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_;

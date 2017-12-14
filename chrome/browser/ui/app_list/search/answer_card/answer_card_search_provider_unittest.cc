@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_search_provider.h"
+#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url_service.h"
@@ -116,7 +116,9 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     EXPECT_EQ(base::UTF8ToUTF16(title), result->title());
   }
 
-  SearchModel* search_model() const { return search_model_.get(); }
+  FakeAppListModelUpdater* GetModelUpdater() const {
+    return model_updater_.get();
+  }
 
   const SearchProvider::Results& results() { return provider()->results(); }
 
@@ -132,8 +134,8 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    search_model_ = std::make_unique<app_list::SearchModel>();
-    search_model_->SetSearchEngineIsGoogle(true);
+    model_updater_ = std::make_unique<app_list::FakeAppListModelUpdater>();
+    model_updater_->SetSearchEngineIsGoogle(true);
 
     controller_ = base::MakeUnique<::test::TestAppListControllerDelegate>();
 
@@ -159,7 +161,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
         profile_.get(), CreateTemplateURLService);
     // Provider will own the MockAnswerCardContents instance.
     provider_ = std::make_unique<AnswerCardSearchProvider>(
-        profile_.get(), search_model_.get(), nullptr, std::move(contents0),
+        profile_.get(), model_updater_.get(), nullptr, std::move(contents0),
         std::move(contents1));
 
     ON_CALL(*contents0_, GetView()).WillByDefault(Return(view0()));
@@ -167,7 +169,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
   }
 
  private:
-  std::unique_ptr<app_list::SearchModel> search_model_;
+  std::unique_ptr<app_list::FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AnswerCardSearchProvider> provider_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
   MockAnswerCardContents* contents0_ = nullptr;  // Unowned.
@@ -204,7 +206,7 @@ TEST_F(AnswerCardSearchProviderTest, VoiceQuery) {
 
 // Queries to non-Google search engines are ignored.
 TEST_F(AnswerCardSearchProviderTest, NotGoogle) {
-  search_model()->SetSearchEngineIsGoogle(false);
+  GetModelUpdater()->SetSearchEngineIsGoogle(false);
   EXPECT_CALL(*contents1(), LoadURL(_)).Times(0);
   provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
 }

@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
@@ -107,11 +107,12 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
 
   // Show the app list to ensure it has loaded a profile.
   service_->ShowForProfile(browser()->profile());
-  app_list::AppListModel* model = test::GetAppListModel(service);
-  EXPECT_TRUE(model);
+  app_list::AppListModelUpdater* model_updater = test::GetModelUpdater(service);
+  EXPECT_TRUE(model_updater);
 
   // Get the webstore hosted app, which is always present.
-  app_list::AppListItem* item = model->FindItem(extensions::kWebStoreAppId);
+  app_list::AppListItem* item =
+      model_updater->FindItem(extensions::kWebStoreAppId);
   EXPECT_TRUE(item);
 
   ui::MenuModel* menu_model = item->GetContextMenuModel();

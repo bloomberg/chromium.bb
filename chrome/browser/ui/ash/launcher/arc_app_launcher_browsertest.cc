@@ -456,7 +456,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
 
   // Make use app list sync service is started. Normally it is started when
   // sycing is initialized.
-  app_list::AppListSyncableServiceFactory::GetForProfile(profile())->GetModel();
+  app_list::AppListSyncableServiceFactory::GetForProfile(profile())
+      ->GetModelUpdater();
 
   InstallTestApps(kTestAppPackage, true);
   SendPackageAdded(kTestAppPackage, false);

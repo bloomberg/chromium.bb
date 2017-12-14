@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/tokenized_string.h"
 #include "ash/app_list/model/search/tokenized_string_match.h"
 #include "base/bind.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
@@ -302,9 +302,9 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 AppSearchProvider::AppSearchProvider(Profile* profile,
                                      AppListControllerDelegate* list_controller,
                                      std::unique_ptr<base::Clock> clock,
-                                     AppListItemList* top_level_item_list)
+                                     AppListModelUpdater* model_updater)
     : list_controller_(list_controller),
-      top_level_item_list_(top_level_item_list),
+      model_updater_(model_updater),
       clock_(std::move(clock)),
       update_results_factory_(this) {
   data_sources_.emplace_back(
@@ -350,8 +350,8 @@ void AppSearchProvider::UpdateResults() {
   if (show_recommendations) {
     // Build a map of app ids to their position in the app list.
     std::map<std::string, size_t> id_to_app_list_index;
-    for (size_t i = 0; i < top_level_item_list_->item_count(); ++i)
-      id_to_app_list_index[top_level_item_list_->item_at(i)->id()] = i;
+    for (size_t i = 0; i < model_updater_->ItemCount(); ++i)
+      id_to_app_list_index[model_updater_->ItemAt(i)->id()] = i;
 
     for (auto& app : apps_) {
       std::unique_ptr<AppResult> result =

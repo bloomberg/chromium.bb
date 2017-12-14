@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
-#include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/app_list_model.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"

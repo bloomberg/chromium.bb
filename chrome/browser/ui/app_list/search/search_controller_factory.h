@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
 class AppListControllerDelegate;
 class Profile;
@@ -20,8 +20,8 @@ class SearchController;
 // Build a SearchController instance with the profile.
 std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
-    AppListModel* model,
-    SearchModel* search_model,
+    AppListModelUpdater* model_updater,
+    SearchModel* search_model,  // TODO(hejq): Remove this.
     AppListControllerDelegate* list_controller);
 
 }  // namespace app_list

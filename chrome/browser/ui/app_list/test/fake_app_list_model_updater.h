@@ -19,16 +19,28 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   ~FakeAppListModelUpdater() override;
 
   // AppListModelUpdater:
+  // For AppListModel:
   void AddItem(std::unique_ptr<AppListItem> item) override;
+  void AddItemToFolder(std::unique_ptr<AppListItem> item,
+                       const std::string& folder_id) override;
   void RemoveItem(const std::string& id) override;
   void RemoveUninstalledItem(const std::string& id) override;
+  // For SearchModel:
+  void SetSearchEngineIsGoogle(bool is_google) override;
+
+  // For AppListModel:
   AppListItem* FindItem(const std::string& id) override;
   size_t ItemCount() override;
   AppListItem* ItemAt(size_t index) override;
+  AppListFolderItem* FindFolderItem(const std::string& folder_id) override;
+  bool FindItemIndex(const std::string& id, size_t* index) override;
+  app_list::AppListViewState StateFullscreen() override;
+  // For SearchModel:
+  bool TabletMode() override;
+  bool SearchEngineIsGoogle() override;
 
  private:
-  bool FindItemIndex(const std::string& id, size_t* index);
-
+  bool search_engine_is_google_ = false;
   std::vector<std::unique_ptr<AppListItem>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAppListModelUpdater);

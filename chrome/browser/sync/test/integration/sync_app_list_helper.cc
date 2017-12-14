@@ -6,11 +6,11 @@
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/app_list_model.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/extensions/sync_helper.h"
@@ -54,35 +54,30 @@ bool SyncAppListHelper::AppListMatch(Profile* profile1, Profile* profile2) {
       AppListSyncableServiceFactory::GetForProfile(profile2);
   // Note: sync item entries may not exist in verifier, but item lists should
   // match.
-  if (service1->GetModel()->top_level_item_list()->item_count() !=
-      service2->GetModel()->top_level_item_list()->item_count()) {
+  if (service1->GetModelUpdater()->ItemCount() !=
+      service2->GetModelUpdater()->ItemCount()) {
     LOG(ERROR) << "Model item count: "
-               << service1->GetModel()->top_level_item_list()->item_count()
-               << " != "
-               << service2->GetModel()->top_level_item_list()->item_count();
+               << service1->GetModelUpdater()->ItemCount()
+               << " != " << service2->GetModelUpdater()->ItemCount();
     return false;
   }
   bool res = true;
-  for (size_t i = 0;
-       i < service1->GetModel()->top_level_item_list()->item_count(); ++i) {
-    AppListItem* item1 =
-        service1->GetModel()->top_level_item_list()->item_at(i);
-    AppListItem* item2 =
-        service2->GetModel()->top_level_item_list()->item_at(i);
+  for (size_t i = 0; i < service1->GetModelUpdater()->ItemCount(); ++i) {
+    AppListItem* item1 = service1->GetModelUpdater()->ItemAt(i);
+    AppListItem* item2 = service2->GetModelUpdater()->ItemAt(i);
     if (item1->CompareForTest(item2))
       continue;
 
     LOG(ERROR) << "Item(" << i << "): " << item1->ToDebugString()
                << " != " << item2->ToDebugString();
     size_t index2;
-    if (!service2->GetModel()->top_level_item_list()->FindItemIndex(item1->id(),
-                                                                    &index2)) {
+    if (!service2->GetModelUpdater()->FindItemIndex(item1->id(), &index2)) {
       LOG(ERROR) << " Item(" << i << "): " << item1->ToDebugString()
                  << " Not in profile2.";
     } else {
       LOG(ERROR) << " Item(" << i << "): " << item1->ToDebugString()
                  << " Has different profile2 index: " << index2;
-      item2 = service2->GetModel()->top_level_item_list()->item_at(index2);
+      item2 = service2->GetModelUpdater()->ItemAt(index2);
       LOG(ERROR) << " profile2 Item(" << index2
                  << "): " << item2->ToDebugString();
     }
@@ -111,7 +106,7 @@ bool SyncAppListHelper::AllProfilesHaveSameAppList() {
 void SyncAppListHelper::MoveApp(Profile* profile, size_t from, size_t to) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  service->GetModel()->top_level_item_list()->MoveItem(from, to);
+  service->GetModelUpdater()->MoveItem(from, to);
 }
 
 void SyncAppListHelper::MoveAppToFolder(Profile* profile,
@@ -119,8 +114,8 @@ void SyncAppListHelper::MoveAppToFolder(Profile* profile,
                                         const std::string& folder_id) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  service->GetModel()->MoveItemToFolder(
-      service->GetModel()->top_level_item_list()->item_at(index), folder_id);
+  service->GetModelUpdater()->MoveItemToFolder(
+      service->GetModelUpdater()->ItemAt(index)->id(), folder_id);
 }
 
 void SyncAppListHelper::MoveAppFromFolder(Profile* profile,
@@ -128,21 +123,21 @@ void SyncAppListHelper::MoveAppFromFolder(Profile* profile,
                                           const std::string& folder_id) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  AppListFolderItem* folder = service->GetModel()->FindFolderItem(folder_id);
+  AppListFolderItem* folder =
+      service->GetModelUpdater()->FindFolderItem(folder_id);
   if (!folder) {
     LOG(ERROR) << "Folder not found: " << folder_id;
     return;
   }
-  service->GetModel()->MoveItemToFolder(
-      folder->item_list()->item_at(index_in_folder), "");
+  service->GetModelUpdater()->MoveItemToFolder(
+      folder->item_list()->item_at(index_in_folder)->id(), "");
 }
 
 void SyncAppListHelper::PrintAppList(Profile* profile) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  for (size_t i = 0;
-       i < service->GetModel()->top_level_item_list()->item_count(); ++i) {
-    AppListItem* item = service->GetModel()->top_level_item_list()->item_at(i);
+  for (size_t i = 0; i < service->GetModelUpdater()->ItemCount(); ++i) {
+    AppListItem* item = service->GetModelUpdater()->ItemAt(i);
     std::string label = base::StringPrintf("Item(%d): ", static_cast<int>(i));
     PrintItem(profile, item, label);
   }
