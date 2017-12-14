@@ -21,6 +21,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       kRasterDimension, kRasterDimension, kOpaque_SkAlphaType);
   scoped_refptr<cc::TestContextProvider> context_provider =
       cc::TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
       context_provider->GrContext(), SkBudgeted::kYes, image_info);
   SkCanvas* canvas = surface->getCanvas();
