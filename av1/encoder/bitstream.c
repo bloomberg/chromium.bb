@@ -2637,9 +2637,11 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 #endif  // CONFIG_LPF_SB
     aom_wb_write_literal(wb, lf->filter_level[0], 6);
     aom_wb_write_literal(wb, lf->filter_level[1], 6);
-    if (lf->filter_level[0] || lf->filter_level[1]) {
-      aom_wb_write_literal(wb, lf->filter_level_u, 6);
-      aom_wb_write_literal(wb, lf->filter_level_v, 6);
+    if (av1_num_planes(cm) > 1) {
+      if (lf->filter_level[0] || lf->filter_level[1]) {
+        aom_wb_write_literal(wb, lf->filter_level_u, 6);
+        aom_wb_write_literal(wb, lf->filter_level_v, 6);
+      }
     }
 #if CONFIG_LPF_SB
   }
@@ -2698,7 +2700,7 @@ static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, cm->cdef_bits, 2);
   for (i = 0; i < cm->nb_cdef_strengths; i++) {
     aom_wb_write_literal(wb, cm->cdef_strengths[i], CDEF_STRENGTH_BITS);
-    if (cm->subsampling_x == cm->subsampling_y)
+    if (cm->subsampling_x == cm->subsampling_y && av1_num_planes(cm) > 1)
       aom_wb_write_literal(wb, cm->cdef_uv_strengths[i], CDEF_STRENGTH_BITS);
   }
 }
@@ -2716,18 +2718,20 @@ static void encode_quantization(const AV1_COMMON *const cm,
                                 struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, cm->base_qindex, QINDEX_BITS);
   write_delta_q(wb, cm->y_dc_delta_q);
-  int diff_uv_delta = (cm->u_dc_delta_q != cm->v_dc_delta_q) ||
-                      (cm->u_ac_delta_q != cm->v_ac_delta_q);
+  if (av1_num_planes(cm) > 1) {
+    int diff_uv_delta = (cm->u_dc_delta_q != cm->v_dc_delta_q) ||
+                        (cm->u_ac_delta_q != cm->v_ac_delta_q);
 #if CONFIG_EXT_QM
-  if (cm->separate_uv_delta_q) aom_wb_write_bit(wb, diff_uv_delta);
+    if (cm->separate_uv_delta_q) aom_wb_write_bit(wb, diff_uv_delta);
 #else
-  assert(!diff_uv_delta);
+    assert(!diff_uv_delta);
 #endif
-  write_delta_q(wb, cm->u_dc_delta_q);
-  write_delta_q(wb, cm->u_ac_delta_q);
-  if (diff_uv_delta) {
-    write_delta_q(wb, cm->v_dc_delta_q);
-    write_delta_q(wb, cm->v_ac_delta_q);
+    write_delta_q(wb, cm->u_dc_delta_q);
+    write_delta_q(wb, cm->u_ac_delta_q);
+    if (diff_uv_delta) {
+      write_delta_q(wb, cm->v_dc_delta_q);
+      write_delta_q(wb, cm->v_ac_delta_q);
+    }
   }
 #if CONFIG_AOM_QM
   aom_wb_write_bit(wb, cm->using_qmatrix);

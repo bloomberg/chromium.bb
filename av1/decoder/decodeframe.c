@@ -1178,9 +1178,11 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #endif  // CONFIG_LPF_SB
     lf->filter_level[0] = aom_rb_read_literal(rb, 6);
     lf->filter_level[1] = aom_rb_read_literal(rb, 6);
-    if (lf->filter_level[0] || lf->filter_level[1]) {
-      lf->filter_level_u = aom_rb_read_literal(rb, 6);
-      lf->filter_level_v = aom_rb_read_literal(rb, 6);
+    if (av1_num_planes(cm) > 1) {
+      if (lf->filter_level[0] || lf->filter_level[1]) {
+        lf->filter_level_u = aom_rb_read_literal(rb, 6);
+        lf->filter_level_v = aom_rb_read_literal(rb, 6);
+      }
     }
 #if CONFIG_LPF_SB
   }
@@ -1227,9 +1229,10 @@ static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   cm->nb_cdef_strengths = 1 << cm->cdef_bits;
   for (int i = 0; i < cm->nb_cdef_strengths; i++) {
     cm->cdef_strengths[i] = aom_rb_read_literal(rb, CDEF_STRENGTH_BITS);
-    cm->cdef_uv_strengths[i] = cm->subsampling_x == cm->subsampling_y
-                                   ? aom_rb_read_literal(rb, CDEF_STRENGTH_BITS)
-                                   : 0;
+    cm->cdef_uv_strengths[i] =
+        cm->subsampling_x == cm->subsampling_y && av1_num_planes(cm) > 1
+            ? aom_rb_read_literal(rb, CDEF_STRENGTH_BITS)
+            : 0;
   }
 }
 
@@ -1241,18 +1244,20 @@ static void setup_quantization(AV1_COMMON *const cm,
                                struct aom_read_bit_buffer *rb) {
   cm->base_qindex = aom_rb_read_literal(rb, QINDEX_BITS);
   cm->y_dc_delta_q = read_delta_q(rb);
-  int diff_uv_delta = 0;
+  if (av1_num_planes(cm) > 1) {
+    int diff_uv_delta = 0;
 #if CONFIG_EXT_QM
-  if (cm->separate_uv_delta_q) diff_uv_delta = aom_rb_read_bit(rb);
+    if (cm->separate_uv_delta_q) diff_uv_delta = aom_rb_read_bit(rb);
 #endif
-  cm->u_dc_delta_q = read_delta_q(rb);
-  cm->u_ac_delta_q = read_delta_q(rb);
-  if (diff_uv_delta) {
-    cm->v_dc_delta_q = read_delta_q(rb);
-    cm->v_ac_delta_q = read_delta_q(rb);
-  } else {
-    cm->v_dc_delta_q = cm->u_dc_delta_q;
-    cm->v_ac_delta_q = cm->u_ac_delta_q;
+    cm->u_dc_delta_q = read_delta_q(rb);
+    cm->u_ac_delta_q = read_delta_q(rb);
+    if (diff_uv_delta) {
+      cm->v_dc_delta_q = read_delta_q(rb);
+      cm->v_ac_delta_q = read_delta_q(rb);
+    } else {
+      cm->v_dc_delta_q = cm->u_dc_delta_q;
+      cm->v_ac_delta_q = cm->u_ac_delta_q;
+    }
   }
   cm->dequant_bit_depth = cm->bit_depth;
 #if CONFIG_AOM_QM
