@@ -1772,6 +1772,7 @@ enum WebFeature {
   kAudioWorkletNodeConstructor = 2263,
   kHTMLMediaElementEmptyLoadWithFutureData = 2264,
   kCSSValueDisplayContents = 2265,
+  kCSSSelectorPseudoAnyLink = 2266,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

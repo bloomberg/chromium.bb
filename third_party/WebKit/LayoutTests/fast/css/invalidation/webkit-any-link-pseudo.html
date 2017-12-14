@@ -2,7 +2,7 @@
 <script src="../../../resources/js-test.js"></script>
 <style>
 #link { background-color: red }
-#link:any-link { background-color: green }
+#link:-webkit-any-link { background-color: green }
 #link + div { color: pink }
 </style>
 <a id="link">This link should have a green background.</a>
@@ -13,7 +13,7 @@
     <div></div>
 </div>
 <script>
-description("Use descendant invalidation set for :any-link pseudo class.")
+description("Use descendant invalidation set for :-webkit-any-link pseudo class.")
 
 var red = "rgb(255, 0, 0)";
 var green = "rgb(0, 128, 0)";
