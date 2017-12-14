@@ -44,8 +44,7 @@ using net::IOBuffer;
 using net::WrappedIOBuffer;
 
 namespace content {
-
-namespace {
+namespace appcache_url_request_job_unittest {
 
 const char kHttpBasicHeaders[] = "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
 const char kHttpBasicBody[] = "Hello";
@@ -119,8 +118,6 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
   // This is mutable because MaybeCreateJobWithProtocolHandler is const.
   mutable std::unique_ptr<net::URLRequestJob> job_;
 };
-
-}  // namespace
 
 class AppCacheURLRequestJobTest : public testing::Test {
  public:
@@ -915,4 +912,5 @@ TEST_F(AppCacheURLRequestJobTest, CancelRequestWithIOPending) {
   RunTestOnIOThread(&AppCacheURLRequestJobTest::CancelRequestWithIOPending);
 }
 
+}  // namespace appcache_url_request_job_unittest
 }  // namespace content

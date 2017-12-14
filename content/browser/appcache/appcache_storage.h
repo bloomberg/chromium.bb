@@ -23,8 +23,13 @@
 class GURL;
 
 namespace content {
+
+namespace appcache_storage_unittest {
+class AppCacheStorageTest;
 FORWARD_DECLARE_TEST(AppCacheStorageTest, DelegateReferences);
 FORWARD_DECLARE_TEST(AppCacheStorageTest, UsageMap);
+}  // namespace appcache_storage_unittest
+
 class AppCache;
 class AppCacheEntry;
 class AppCacheGroup;
@@ -34,7 +39,6 @@ class AppCacheResponseReader;
 class AppCacheResponseTest;
 class AppCacheResponseWriter;
 class AppCacheServiceImpl;
-class AppCacheStorageTest;
 struct AppCacheInfoCollection;
 struct HttpResponseInfoIOBuffer;
 
@@ -217,7 +221,7 @@ class CONTENT_EXPORT AppCacheStorage {
  protected:
   friend class content::AppCacheQuotaClientTest;
   friend class content::AppCacheResponseTest;
-  friend class content::AppCacheStorageTest;
+  friend class content::appcache_storage_unittest::AppCacheStorageTest;
 
   // Helper to call a collection of delegates.
   #define FOR_EACH_DELEGATE(delegates, func_and_args)                \
@@ -330,8 +334,12 @@ class CONTENT_EXPORT AppCacheStorage {
   // The set of last ids must be retrieved from storage prior to being used.
   static const int64_t kUnitializedId;
 
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheStorageTest, DelegateReferences);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheStorageTest, UsageMap);
+  FRIEND_TEST_ALL_PREFIXES(
+      content::appcache_storage_unittest::AppCacheStorageTest,
+      DelegateReferences);
+  FRIEND_TEST_ALL_PREFIXES(
+      content::appcache_storage_unittest::AppCacheStorageTest,
+      UsageMap);
 
   // The WeakPtrFactory below must occur last in the class definition so they
   // get destroyed last.

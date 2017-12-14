@@ -34,7 +34,11 @@
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
 class AppCacheGroupTest;
+
+namespace appcache_update_job_unittest {
 class AppCacheUpdateJobTest;
+}
+
 class HostNotifier;
 
 // Application cache Update algorithm and state.
@@ -59,7 +63,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
  private:
   friend class content::AppCacheGroupTest;
-  friend class content::AppCacheUpdateJobTest;
+  friend class content::appcache_update_job_unittest::AppCacheUpdateJobTest;
 
   class URLFetcher;
   class UpdateRequestBase;
