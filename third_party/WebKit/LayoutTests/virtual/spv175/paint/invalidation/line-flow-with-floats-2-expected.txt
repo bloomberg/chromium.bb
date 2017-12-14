@@ -3,6 +3,16 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -32,17 +42,7 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'here; the great\n'",
-          "rect": [13, 520, 408, 80],
-          "reason": "geometry"
-        },
-        {
           "object": "InlineTextBox 'me? They\u2019re dreadfully fond of beheading people'",
-          "rect": [13, 520, 408, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
           "rect": [13, 520, 408, 80],
           "reason": "geometry"
         },
@@ -72,17 +72,7 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'here; the great\n'",
-          "rect": [13, 521, 408, 79],
-          "reason": "geometry"
-        },
-        {
           "object": "InlineTextBox 'me? They\u2019re dreadfully fond of beheading people'",
-          "rect": [13, 521, 408, 79],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
           "rect": [13, 521, 408, 79],
           "reason": "geometry"
         },
@@ -508,10 +498,6 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow P",

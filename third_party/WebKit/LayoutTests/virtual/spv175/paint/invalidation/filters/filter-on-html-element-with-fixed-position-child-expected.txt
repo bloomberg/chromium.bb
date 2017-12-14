@@ -2,14 +2,24 @@
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [785, 10016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 785, 10016],
-          "reason": "full"
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 200, 10000],
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
@@ -43,13 +53,22 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -10, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "invalidate paint rectangle"
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "subtree"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
@@ -57,6 +76,10 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
       "reason": "subtree"
     }
   ]

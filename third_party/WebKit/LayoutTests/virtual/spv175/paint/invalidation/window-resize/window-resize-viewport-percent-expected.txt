@@ -3,6 +3,16 @@
     {
       "name": "LayoutView #document",
       "bounds": [600, 250],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [600, 250],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [600, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -21,6 +31,10 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "Scrolling Contents Layer",
+      "reason": "incremental"
+    },
+    {
       "object": "LayoutView #document",
       "reason": "incremental"
     },
@@ -35,21 +49,35 @@
     {
       "name": "LayoutView #document",
       "bounds": [400, 250],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [400, 250],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [400, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 0, 400, 250],
-          "reason": "background"
+          "reason": "background on scrolling contents layer"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
+    },
+    {
       "object": "LayoutView #document",
-      "reason": "background"
+      "reason": "incremental"
     }
   ]
 }
@@ -58,11 +86,21 @@
     {
       "name": "LayoutView #document",
       "bounds": [400, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [400, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [400, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 250, 400, 350],
           "reason": "incremental"
         },
@@ -81,6 +119,10 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "Scrolling Contents Layer",
+      "reason": "incremental"
+    },
+    {
       "object": "LayoutView #document",
       "reason": "incremental"
     },
@@ -95,21 +137,35 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 0, 800, 600],
-          "reason": "background"
+          "reason": "background on scrolling contents layer"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
+    },
+    {
       "object": "LayoutView #document",
-      "reason": "background"
+      "reason": "incremental"
     }
   ]
 }

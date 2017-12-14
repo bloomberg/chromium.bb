@@ -7,6 +7,16 @@ CASE 1, original layer tree:
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
@@ -52,6 +62,16 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -111,7 +131,8 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -80, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     },
     {
       "id": 2,
@@ -152,6 +173,16 @@ CASE 3, scrolling y to 120, no repaints expected:
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -192,7 +223,8 @@ CASE 3, scrolling y to 120, no repaints expected:
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -120, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     },
     {
       "id": 2,
@@ -211,6 +243,16 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -270,7 +312,8 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -170, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     },
     {
       "id": 2,

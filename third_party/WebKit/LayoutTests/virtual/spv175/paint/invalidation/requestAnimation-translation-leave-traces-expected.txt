@@ -5,17 +5,27 @@ Tested locations: 1200,1500
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 585],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [1600, 585],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [1300, 0, 300, 585],
           "reason": "incremental"
         },
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [1000, 0, 300, 585],
           "reason": "incremental"
         },
@@ -44,11 +54,11 @@ Tested locations: 1200,1500
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutView #document",
+      "object": "Scrolling Contents Layer",
       "reason": "incremental"
     },
     {
-      "object": "LayoutView #document",
+      "object": "Scrolling Contents Layer",
       "reason": "incremental"
     }
   ]

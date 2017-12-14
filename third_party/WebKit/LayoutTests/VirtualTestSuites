@@ -266,13 +266,13 @@
   {
     "prefix": "spv175",
     "base": "compositing",
-    "args": ["--enable-slimming-paint-v175"],
+    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
     "references_use_default_args": true
   },
   {
     "prefix": "spv175",
     "base": "paint",
-    "args": ["--enable-slimming-paint-v175"],
+    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
     "references_use_default_args": true
   },
   {

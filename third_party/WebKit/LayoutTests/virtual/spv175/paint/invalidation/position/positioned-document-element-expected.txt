@@ -3,13 +3,23 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 0, 800, 600],
-          "reason": "style change"
+          "reason": "background on scrolling contents layer"
         },
         {
           "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
@@ -25,6 +35,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
+    },
     {
       "object": "LayoutView #document",
       "reason": "style change"
