@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "build/build_config.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 
 #define UMA_HISTOGRAM_ASPECT_RATIO(name, width, height) \
-  UMA_HISTOGRAM_SPARSE_SLOWLY(                          \
+  base::UmaHistogramSparse(                             \
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
 
 namespace content {

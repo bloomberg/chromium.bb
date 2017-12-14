@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
@@ -386,9 +386,7 @@ CdmMessageType PpCdmMessageTypeToMediaMessageType(
 }
 
 void ReportSystemCodeUMA(const std::string& key_system, uint32_t system_code) {
-  // Sparse histogram macro does not cache the histogram, so it's safe to use
-  // macro with non-static histogram name here.
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       "Media.EME." + media::GetKeySystemNameForUMA(key_system) + ".SystemCode",
       system_code);
 }

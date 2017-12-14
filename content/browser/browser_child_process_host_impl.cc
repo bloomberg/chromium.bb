@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -505,7 +506,7 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
       int process_type = data_.process_type;
       if (process_type >= PROCESS_TYPE_CONTENT_END)
         process_type += 1000 - PROCESS_TYPE_CONTENT_END;
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "UMA.SubprocessMetricsProvider.UntrackedProcesses", process_type);
       return;
   }

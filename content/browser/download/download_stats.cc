@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -399,7 +398,7 @@ void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
                             danger_type,
                             DOWNLOAD_DANGER_TYPE_MAX);
   if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         "Download.DangerousFile.DangerousDownloadValidated",
         GetDangerousFileType(file_path));
   }
@@ -413,16 +412,16 @@ void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
       UMA_HISTOGRAM_ENUMERATION(
           "Download.UserDiscard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
       if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
-        UMA_HISTOGRAM_SPARSE_SLOWLY("Download.DangerousFile.UserDiscard",
-                                    GetDangerousFileType(file_path));
+        base::UmaHistogramSparse("Download.DangerousFile.UserDiscard",
+                                 GetDangerousFileType(file_path));
       }
       break;
     case DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN:
       UMA_HISTOGRAM_ENUMERATION(
           "Download.Discard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
       if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
-        UMA_HISTOGRAM_SPARSE_SLOWLY("Download.DangerousFile.Discard",
-                                    GetDangerousFileType(file_path));
+        base::UmaHistogramSparse("Download.DangerousFile.Discard",
+                                 GetDangerousFileType(file_path));
       }
       break;
     default:

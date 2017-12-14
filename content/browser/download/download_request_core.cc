@@ -12,8 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -400,8 +399,8 @@ void DownloadRequestCore::OnResponseCompleted(
   // If the error mapped to something unknown, record it so that
   // we can drill down.
   if (reason == DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Download.MapErrorNetworkFailed",
-                                std::abs(status.error()));
+    base::UmaHistogramSparse("Download.MapErrorNetworkFailed",
+                             std::abs(status.error()));
   }
 
   stream_writer_.reset();  // We no longer need the stream.

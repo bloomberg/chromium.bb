@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -529,8 +530,8 @@ GpuProcessHost::~GpuProcessHost() {
         status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
       // Windows always returns PROCESS_CRASHED on abnormal termination, as it
       // doesn't have a way to distinguish the two.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.GPUProcessExitCode",
-                                  std::max(0, std::min(100, exit_code)));
+      base::UmaHistogramSparse("GPU.GPUProcessExitCode",
+                               std::max(0, std::min(100, exit_code)));
     }
 
     switch (status) {

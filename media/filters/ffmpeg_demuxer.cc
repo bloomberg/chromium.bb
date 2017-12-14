@@ -14,8 +14,8 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -1292,14 +1292,14 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       // Log the codec detected, whether it is supported or not, and whether or
       // not we have already detected a supported codec in another stream.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedAudioCodecHash",
-                                  HashCodecName(GetCodecName(codec_id)));
+      base::UmaHistogramSparse("Media.DetectedAudioCodecHash",
+                               HashCodecName(GetCodecName(codec_id)));
       detected_audio_track_count++;
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       // Log the codec detected, whether it is supported or not, and whether or
       // not we have already detected a supported codec in another stream.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedVideoCodecHash",
-                                  HashCodecName(GetCodecName(codec_id)));
+      base::UmaHistogramSparse("Media.DetectedVideoCodecHash",
+                               HashCodecName(GetCodecName(codec_id)));
       detected_video_track_count++;
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

@@ -15,7 +15,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
@@ -63,31 +63,31 @@ void LogUMAEmptyCb(UmaLogStep step, HRESULT hr) {}
 void LogUMAPreferredOutputParams(UmaLogStep step, HRESULT hr) {
   switch (step) {
     case UmaLogStep::CREATE_DEVICE_ENUMERATOR:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.AudioOutputStreamProxy."
           "GetPreferredOutputStreamParametersWin.CreateDeviceEnumeratorResult",
           hr);
       break;
     case UmaLogStep::CREATE_DEVICE:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.AudioOutputStreamProxy."
           "GetPreferredOutputStreamParametersWin.CreateDeviceResult",
           hr);
       break;
     case UmaLogStep::CREATE_CLIENT:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.AudioOutputStreamProxy."
           "GetPreferredOutputStreamParametersWin.CreateClientResult",
           hr);
       break;
     case UmaLogStep::GET_MIX_FORMAT:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.AudioOutputStreamProxy."
           "GetPreferredOutputStreamParametersWin.GetMixFormatResult",
           hr);
       break;
     case UmaLogStep::GET_DEVICE_PERIOD:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.AudioOutputStreamProxy."
           "GetPreferredOutputStreamParametersWin.GetDevicePeriodResult",
           hr);

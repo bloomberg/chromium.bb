@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/math_constants.h"
 #include "build/build_config.h"
 #include "device/vr/openvr/openvr_render_loop.h"
@@ -200,7 +200,7 @@ void OpenVRDevice::OnRequestPresentResult(
     if (it != viewer_types.end())
       type = it->second;
 
-    UMA_HISTOGRAM_SPARSE_SLOWLY("VRViewerType", static_cast<int>(type));
+    base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
   }
 }
 

@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
@@ -219,16 +219,16 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
     BOOL fileOperationSuccess =
         [fileManager removeItemAtPath:file error:&error];
     NSInteger errorCode = fileOperationSuccess ? 0 : [error code];
-    UMA_HISTOGRAM_SPARSE_SLOWLY("TabRestore.error_remove_backup_at_path",
-                                errorCode);
+    base::UmaHistogramSparse("TabRestore.error_remove_backup_at_path",
+                             errorCode);
     if (!fileOperationSuccess && errorCode != NSFileNoSuchFileError) {
       return NO;
     }
     fileOperationSuccess =
         [fileManager moveItemAtPath:sessionPath toPath:file error:&error];
     errorCode = fileOperationSuccess ? 0 : [error code];
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "TabRestore.error_move_session_at_path_to_backup", errorCode);
+    base::UmaHistogramSparse("TabRestore.error_move_session_at_path_to_backup",
+                             errorCode);
     if (!fileOperationSuccess) {
       return NO;
     }
@@ -237,8 +237,8 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
     BOOL fileOperationSuccess =
         [fileManager removeItemAtPath:sessionPath error:&error];
     NSInteger errorCode = fileOperationSuccess ? 0 : [error code];
-    UMA_HISTOGRAM_SPARSE_SLOWLY("TabRestore.error_remove_session_at_path",
-                                errorCode);
+    base::UmaHistogramSparse("TabRestore.error_remove_session_at_path",
+                             errorCode);
     if (!fileOperationSuccess) {
       return NO;
     }

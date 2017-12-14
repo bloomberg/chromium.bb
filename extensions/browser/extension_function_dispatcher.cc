@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/process/process.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
@@ -325,8 +325,8 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   if (violation_error.empty()) {
     NotifyApiFunctionCalled(extension->id(), params.name, params.arguments,
                             static_cast<content::BrowserContext*>(profile_id));
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
-                                function->histogram_value());
+    base::UmaHistogramSparse("Extensions.FunctionCalls",
+                             function->histogram_value());
     base::ElapsedTimer timer;
     function->RunWithValidation()->Execute();
     // TODO(devlin): Once we have a baseline metric for how long functions take,
@@ -480,8 +480,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     ExtensionsBrowserClient::Get()->PermitExternalProtocolHandler();
     NotifyApiFunctionCalled(extension->id(), params.name, params.arguments,
                             browser_context_);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
-                                function->histogram_value());
+    base::UmaHistogramSparse("Extensions.FunctionCalls",
+                             function->histogram_value());
     base::ElapsedTimer timer;
     function->RunWithValidation()->Execute();
     // TODO(devlin): Once we have a baseline metric for how long functions take,

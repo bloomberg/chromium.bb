@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -931,7 +932,7 @@ void ExtensionDownloader::OnCRXFetchComplete(
                       extensions_queue_.active_request_failure_count(),
                       url);
       // status.error() is 0 (net::OK) or negative. (See net/base/net_errors.h)
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.CrxFetchError", -status.error());
+      base::UmaHistogramSparse("Extensions.CrxFetchError", -status.error());
       delegate_->OnExtensionDownloadFailed(
           id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);
     }

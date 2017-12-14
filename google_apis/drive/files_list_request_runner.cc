@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/request_sender.h"
@@ -75,8 +75,7 @@ void FilesListRequestRunner::OnCompleted(int max_results,
   if (!request_completed_callback_for_testing_.is_null())
     request_completed_callback_for_testing_.Run();
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "Drive.FilesListRequestRunner.ApiErrorCode", error);
+  base::UmaHistogramSparse("Drive.FilesListRequestRunner.ApiErrorCode", error);
 
   if (error == google_apis::DRIVE_RESPONSE_TOO_LARGE && max_results > 1) {
     CreateAndStartWithSizeBackoff(max_results / 2, corpora, team_drive_id, q,

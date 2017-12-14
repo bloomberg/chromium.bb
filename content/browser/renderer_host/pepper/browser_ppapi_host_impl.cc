@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/pepper_renderer_instance_data.h"
@@ -243,7 +243,7 @@ BrowserPpapiHostImpl::HostMessageFilter::~HostMessageFilter() {}
 
 void BrowserPpapiHostImpl::HostMessageFilter::OnHostMsgLogInterfaceUsage(
     int hash) const {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Pepper.InterfaceUsed", hash);
+  base::UmaHistogramSparse("Pepper.InterfaceUsed", hash);
 }
 
 BrowserPpapiHostImpl::InstanceData::InstanceData(

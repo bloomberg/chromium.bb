@@ -24,6 +24,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sha1.h"
@@ -286,8 +287,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     if (result >= 0)
       UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.OnReadCompleteResult", result);
     else
-      UMA_HISTOGRAM_SPARSE_SLOWLY("ExtensionUrlRequest.OnReadCompleteError",
-                                  -result);
+      base::UmaHistogramSparse("ExtensionUrlRequest.OnReadCompleteError",
+                               -result);
     if (result > 0) {
       bytes_read_ += result;
       if (verify_job_.get())

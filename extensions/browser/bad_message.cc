@@ -5,7 +5,7 @@
 #include "extensions/browser/bad_message.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -21,8 +21,7 @@ void LogBadMessage(BadMessageReason reason) {
   // content::bad_message::BadMessageReason enum values.
   LOG(ERROR) << "Terminating extension renderer for bad IPC message, reason "
              << reason;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Stability.BadMessageTerminated.Extensions",
-                              reason);
+  base::UmaHistogramSparse("Stability.BadMessageTerminated.Extensions", reason);
 }
 
 }  // namespace

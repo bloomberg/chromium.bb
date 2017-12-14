@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/synchronization/lock.h"
 #include "media/base/container_names.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -164,7 +164,7 @@ bool FFmpegGlue::OpenContext() {
       return false;
 
     container_ = container_names::DetermineContainer(buffer.data(), num_read);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container_);
+    base::UmaHistogramSparse("Media.DetectedContainer", container_);
 
     detected_hls_ =
         container_ == container_names::MediaContainerName::CONTAINER_HLS;
@@ -194,7 +194,7 @@ bool FFmpegGlue::OpenContext() {
     container_ = container_names::CONTAINER_AVI;
 
   DCHECK_NE(container_, container_names::CONTAINER_UNKNOWN);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container_);
+  base::UmaHistogramSparse("Media.DetectedContainer", container_);
 
   return true;
 }

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,7 +23,7 @@ void LogBadMessage(BadMessageReason reason) {
       "bad_message_reason", base::debug::CrashKeySize::Size32);
 
   LOG(ERROR) << "Terminating renderer for bad IPC message, reason " << reason;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Stability.BadMessageTerminated.Content", reason);
+  base::UmaHistogramSparse("Stability.BadMessageTerminated.Content", reason);
   base::debug::SetCrashKeyString(bad_message_reason, base::IntToString(reason));
 }
 

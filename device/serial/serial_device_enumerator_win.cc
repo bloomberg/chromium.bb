@@ -12,7 +12,7 @@
 #include <memory>
 #include <unordered_set>
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -172,9 +172,8 @@ SerialDeviceEnumeratorWin::GetDevices() {
   std::vector<mojom::SerialDeviceInfoPtr> devices = GetDevicesNew();
   std::vector<mojom::SerialDeviceInfoPtr> old_devices = GetDevicesOld();
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "Hardware.Serial.NewMinusOldDeviceListSize",
-      Clamp(devices.size() - old_devices.size(), -10, 10));
+  base::UmaHistogramSparse("Hardware.Serial.NewMinusOldDeviceListSize",
+                           Clamp(devices.size() - old_devices.size(), -10, 10));
 
   // Add devices found from both the new and old methods of enumeration. If a
   // device is found using both the new and the old enumeration method, then we

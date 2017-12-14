@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio_renderer_sink_cache.h"
 #include "media/audio/audio_device_description.h"
@@ -184,8 +184,8 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     // renderer lifetime, because the destructor is usually not called. So,
     // we'll have a sort of exponential scale here, with a smaller subset
     // logged both on its own and as a part of any larger subset.
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.Render.AudioMixing.LatencyMap",
-                                latency_map_.to_ulong());
+    base::UmaHistogramSparse("Media.Audio.Render.AudioMixing.LatencyMap",
+                             latency_map_.to_ulong());
   }
 
   AudioRendererMixerMap::iterator it = mixers_.find(key);
