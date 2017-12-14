@@ -232,7 +232,13 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
 }
 
 // Test that stylus gesture recognition correctly handles display scaling
-TEST_F(HighlighterControllerTest, HighlighterGesturesScaled) {
+// Flaky on ChromeOS. http://crbug.com/794703.
+#if defined(OS_CHROMEOS)
+#define MAYBE_HighlighterGesturesScaled DISABLED_HighlighterGesturesScaled
+#else
+#define MAYBE_HighlighterGesturesScaled HighlighterGesturesScaled
+#endif
+TEST_F(HighlighterControllerTest, MAYBE_HighlighterGesturesScaled) {
   controller_test_api_->SetEnabled(true);
   GetEventGenerator().EnterPenPointerMode();
 
