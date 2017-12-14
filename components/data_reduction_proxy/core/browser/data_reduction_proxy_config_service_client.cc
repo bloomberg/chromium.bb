@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
@@ -383,6 +384,10 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   request.set_telephony_network_operator(
       net::android::GetTelephonyNetworkOperator());
 #endif
+
+  data_reduction_proxy::DeviceInfo* device_info = request.mutable_device_info();
+  device_info->set_total_device_memory_kb(
+      base::SysInfo::AmountOfPhysicalMemory() / 1024);
   const std::string& session_key = request_options_->GetSecureSession();
   if (!session_key.empty())
     request.set_session_key(request_options_->GetSecureSession());

@@ -115,6 +115,12 @@ message ProxyServer {
   optional ProxyType type = 4;
 }
 
+// Information about the device the user is on.
+message DeviceInfo {
+  // Kilobytes of total device memory.
+  optional int64 total_device_memory_kb = 1;
+}
+
 // Request object to create a client configuration object.
 message CreateClientConfigRequest {
   // An enum representing the type of user regarding whether they are dogfooding
@@ -143,6 +149,9 @@ message CreateClientConfigRequest {
   // The DogfoodGroup of the user.
   // Added in M65.
   optional DogfoodGroup dogfood_group = 4;
+
+  // Added in M65.
+  optional DeviceInfo device_info = 5;
 }
 
 // Build version information.
