@@ -95,7 +95,6 @@
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/url_loader_factory_bundle.mojom.h"
 #include "content/common/widget.mojom.h"

@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/variations/variations_params_manager.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/notification_service.h"

@@ -20,7 +20,6 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_features.h"

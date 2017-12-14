@@ -17,7 +17,7 @@
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/common/site_isolation_policy.h"
+#include "content/browser/site_isolation_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_client.h"
