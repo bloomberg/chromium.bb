@@ -890,7 +890,11 @@ TEST_F(TextfieldTest, ControlAndSelectTest) {
 
   // Test word select.
   SendWordEvent(ui::VKEY_RIGHT, true);
+#if defined(OS_WIN)  // Select word right includes space/punctuation.
+  EXPECT_STR_EQ("one two ", textfield_->GetSelectedText());
+#else  // Non-Windows: select word right does NOT include space/punctuation.
   EXPECT_STR_EQ("one two", textfield_->GetSelectedText());
+#endif
   SendWordEvent(ui::VKEY_RIGHT, true);
   EXPECT_STR_EQ("one two three", textfield_->GetSelectedText());
   SendWordEvent(ui::VKEY_LEFT, true);
@@ -927,7 +931,11 @@ TEST_F(TextfieldTest, WordSelection) {
 
   // Select word towards right.
   SendWordEvent(ui::VKEY_RIGHT, true);
+#if defined(OS_WIN)  // Select word right includes space/punctuation.
+  EXPECT_STR_EQ("67 ", textfield_->GetSelectedText());
+#else  // Non-Win: select word right does NOT include space/punctuation.
   EXPECT_STR_EQ("67", textfield_->GetSelectedText());
+#endif
   SendWordEvent(ui::VKEY_RIGHT, true);
   EXPECT_STR_EQ("67 89", textfield_->GetSelectedText());
 
@@ -1161,8 +1169,11 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
   shift = false;
   SendHomeEvent(shift);
   SendWordEvent(ui::VKEY_DELETE, shift);
+#if defined(OS_WIN)  // Delete word incldes space/punctuation.
+  EXPECT_STR_EQ("two three four", textfield_->text());
+#else  // Non-Windows: delete word does NOT include space/punctuation.
   EXPECT_STR_EQ(" two three four", textfield_->text());
-
+#endif
   // Delete to a line break on Linux and ChromeOS, to a word break on Windows
   // and Mac.
   SendWordEvent(ui::VKEY_RIGHT, shift);
@@ -1170,6 +1181,8 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
   SendWordEvent(ui::VKEY_DELETE, shift);
 #if defined(OS_LINUX)
   EXPECT_STR_EQ(" two", textfield_->text());
+#elif defined(OS_WIN)
+  EXPECT_STR_EQ("two four", textfield_->text());
 #else
   EXPECT_STR_EQ(" two four", textfield_->text());
 #endif
@@ -1393,6 +1406,20 @@ TEST_F(TextfieldTest, CursorMovement) {
   EXPECT_STR_EQ("one two thre ", textfield_->text());
   EXPECT_STR_EQ("one two thre ", last_contents_);
 
+#if defined(OS_WIN)  // Move right by word includes space/punctuation.
+  // Ctrl+Right should move the cursor to the end of the last word.
+  SendWordEvent(ui::VKEY_RIGHT, shift);
+  SendKeyEvent(ui::VKEY_E);
+  EXPECT_STR_EQ("one two thre e", textfield_->text());
+  EXPECT_STR_EQ("one two thre e", last_contents_);
+
+  // Ctrl+Right again should not move the cursor, because
+  // it is aleady at the end.
+  SendWordEvent(ui::VKEY_RIGHT, shift);
+  SendKeyEvent(ui::VKEY_BACK);
+  EXPECT_STR_EQ("one two thre ", textfield_->text());
+  EXPECT_STR_EQ("one two thre ", last_contents_);
+#else  // Non-Windows: move right by word does NOT include space/punctuation.
   // Ctrl+Right should move the cursor to the end of the last word.
   SendWordEvent(ui::VKEY_RIGHT, shift);
   SendKeyEvent(ui::VKEY_E);
@@ -1404,7 +1431,7 @@ TEST_F(TextfieldTest, CursorMovement) {
   SendKeyEvent(ui::VKEY_BACK);
   EXPECT_STR_EQ("one two three", textfield_->text());
   EXPECT_STR_EQ("one two three", last_contents_);
-
+#endif
   // Test with leading whitespace.
   textfield_->SetText(ASCIIToUTF16(" ne two"));
 
