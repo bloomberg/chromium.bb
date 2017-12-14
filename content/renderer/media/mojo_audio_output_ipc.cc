@@ -96,14 +96,14 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
 
 void MojoAudioOutputIPC::PlayStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (stream_.is_bound())
-    stream_->Play();
+  DCHECK(stream_.is_bound());
+  stream_->Play();
 }
 
 void MojoAudioOutputIPC::PauseStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (stream_.is_bound())
-    stream_->Pause();
+  DCHECK(stream_.is_bound());
+  stream_->Pause();
 }
 
 void MojoAudioOutputIPC::CloseStream() {
@@ -119,8 +119,8 @@ void MojoAudioOutputIPC::CloseStream() {
 
 void MojoAudioOutputIPC::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (stream_.is_bound())
-    stream_->SetVolume(volume);
+  DCHECK(stream_.is_bound());
+  stream_->SetVolume(volume);
 }
 
 void MojoAudioOutputIPC::OnError() {
