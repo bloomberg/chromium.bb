@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 class PrefRegistrySimple;
 
@@ -121,8 +121,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // Client interface in chrome browser. May be null in tests.
   mojom::LoginScreenClientPtr login_screen_client_;
 
-  // Binding for the LockScreen interface.
-  mojo::Binding<mojom::LoginScreen> binding_;
+  // Bindings for users of the LockScreen interface.
+  mojo::BindingSet<mojom::LoginScreen> bindings_;
 
   // True iff we are currently authentication.
   bool is_authenticating_ = false;

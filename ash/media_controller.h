@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace ash {
 
@@ -52,7 +52,8 @@ class MediaController : public mojom::MediaController {
  private:
   friend class MultiProfileMediaTrayItemTest;
 
-  mojo::Binding<mojom::MediaController> binding_;
+  // Bindings for users of the mojo interface.
+  mojo::BindingSet<mojom::MediaController> bindings_;
 
   mojom::MediaClientAssociatedPtr client_;
 

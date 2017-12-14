@@ -223,9 +223,7 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
       const AccountId& account_id,
       std::unique_ptr<PrefService> pref_service);
 
-  // Bindings for mojom::SessionController interface.
-  // TODO(jamescook): This should be mojo::Binding<> but that causes crashes in
-  // browser test UserAddingScreenTest.AddingSeveralUsers.
+  // Bindings for users of the mojom::SessionController interface.
   mojo::BindingSet<mojom::SessionController> bindings_;
 
   // Client interface to session manager code (chrome).

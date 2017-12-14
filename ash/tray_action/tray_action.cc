@@ -18,7 +18,6 @@ namespace ash {
 
 TrayAction::TrayAction(BacklightsForcedOffSetter* backlights_forced_off_setter)
     : backlights_forced_off_setter_(backlights_forced_off_setter),
-      binding_(this),
       stylus_observer_(this) {
   stylus_observer_.Add(ui::InputDeviceManager::GetInstance());
 }
@@ -34,7 +33,7 @@ void TrayAction::RemoveObserver(TrayActionObserver* observer) {
 }
 
 void TrayAction::BindRequest(mojom::TrayActionRequest request) {
-  binding_.Bind(std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 mojom::TrayActionState TrayAction::GetLockScreenNoteState() const {
