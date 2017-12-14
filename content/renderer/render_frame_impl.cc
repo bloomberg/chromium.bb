@@ -1777,7 +1777,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
                         OnSnapshotAccessibilityTree)
-    IPC_MESSAGE_HANDLER(FrameMsg_ExtractSmartClipData, OnExtractSmartClipData)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
@@ -2407,13 +2406,15 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id) {
       routing_id_, callback_id, response));
 }
 
-void RenderFrameImpl::OnExtractSmartClipData(uint32_t id,
-                                             const gfx::Rect& rect) {
+void RenderFrameImpl::ExtractSmartClipData(
+    const gfx::Rect& rect,
+    ExtractSmartClipDataCallback callback) {
+#if defined(OS_ANDROID)
   blink::WebString clip_text;
   blink::WebString clip_html;
   GetWebFrame()->ExtractSmartClipData(rect, clip_text, clip_html);
-  Send(new FrameHostMsg_SmartClipDataExtracted(
-      routing_id_, id, clip_text.Utf16(), clip_html.Utf16()));
+  std::move(callback).Run(clip_text.Utf16(), clip_html.Utf16());
+#endif  // defined(OS_ANDROID)
 }
 
 void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {

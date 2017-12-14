@@ -834,12 +834,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
 IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
                     uint32_t /* max_length */)
 
-// Extracts the data at the given rect, returning it through the
-// SmartClipDataExtracted IPC.
-IPC_MESSAGE_ROUTED2(FrameMsg_ExtractSmartClipData,
-                    uint32_t /* id */,
-                    gfx::Rect /* rect */)
-
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)
 
@@ -1553,12 +1547,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_AbortNavigation)
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
-
-// Reply to the ExtractSmartClipData message.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_SmartClipDataExtracted,
-                    uint32_t /* id */,
-                    base::string16 /* text */,
-                    base::string16 /* html */)
 
 // Puts the browser into "tab fullscreen" mode for the sending renderer.
 // See the comment in chrome/browser/ui/browser.h for more details.
