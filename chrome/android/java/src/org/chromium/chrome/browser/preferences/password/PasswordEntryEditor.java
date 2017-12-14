@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -27,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -250,6 +252,10 @@ public class PasswordEntryEditor extends Fragment {
     private void hookupCopyUsernameButton(View usernameView) {
         final ImageButton copyUsernameButton =
                 (ImageButton) usernameView.findViewById(R.id.password_entry_editor_copy);
+        final ImageView copy_image = usernameView.findViewById(R.id.password_entry_editor_copy);
+        copy_image.setImageDrawable(
+                AppCompatResources.getDrawable(getActivity(), R.drawable.ic_content_copy_black));
+
         copyUsernameButton.setContentDescription(
                 getActivity().getString(R.string.password_entry_editor_copy_stored_username));
         copyUsernameButton.setOnClickListener(new View.OnClickListener() {
@@ -274,6 +280,10 @@ public class PasswordEntryEditor extends Fragment {
                 (ImageButton) siteView.findViewById(R.id.password_entry_editor_copy);
         copySiteButton.setContentDescription(
                 getActivity().getString(R.string.password_entry_editor_copy_stored_site));
+        final ImageView copy_image = siteView.findViewById(R.id.password_entry_editor_copy);
+        copy_image.setImageDrawable(
+                AppCompatResources.getDrawable(getActivity(), R.drawable.ic_content_copy_black));
+
         copySiteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -348,6 +358,10 @@ public class PasswordEntryEditor extends Fragment {
                 (ImageButton) mView.findViewById(R.id.password_entry_editor_copy_password);
         final ImageButton viewPasswordButton =
                 (ImageButton) mView.findViewById(R.id.password_entry_editor_view_password);
+        final ImageView copy_password =
+                mView.findViewById(R.id.password_entry_editor_copy_password);
+        copy_password.setImageDrawable(
+                AppCompatResources.getDrawable(getActivity(), R.drawable.ic_content_copy_black));
         copyPasswordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -391,5 +405,4 @@ public class PasswordEntryEditor extends Fragment {
             }
         });
     }
-
 }
