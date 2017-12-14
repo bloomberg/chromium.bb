@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 404
+#   For your editing convenience: highest ID currently used: 405
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10785,6 +10785,32 @@
       If this policy is set to False, sites with abusive experiences will be allowed to open new windows or tabs.
       If this policy is left not set, True will be used.''',
     },
+    {
+      'name': 'SpellcheckLanguage',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' }
+      },
+      # Spell checking is provided by macOS, so can't be controlled on Mac.
+      'supported_on': ['chrome.win:65-', 'chrome.linux:65-', 'chrome_os:65-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['fr', 'es'],
+      'id': 405,
+      'caption': '''Force enable spellcheck languages''',
+      'tags': [],
+      'desc': '''Force-enables spellcheck languages. Unrecognized languages in that list will be ignored.
+
+      If you enable this policy, spellcheck will be enabled for the languages specified, in addition to the languages for which the user has enabled spellcheck.
+
+      If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
+
+      The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
+    }
   ],
 
   'messages': {

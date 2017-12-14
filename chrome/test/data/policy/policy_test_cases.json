@@ -871,7 +871,7 @@
   },
 
   "DefaultDownloadDirectory": {
-    "os": ["win", "linux", "mac", "chbromeos"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultDownloadDirectory": "${user_home}/test-downloads" },
     "can_be_recommended": true,
     "pref_mappings": [
@@ -882,6 +882,20 @@
       { "pref": "savefile.default_directory",
         "check_for_mandatory": false,
         "check_for_recommended": true
+      }
+    ]
+  },
+
+  "SpellcheckLanguage": {
+    "os": ["win", "linux", "chromeos"],
+    "test_policy": { "SpellcheckLanguage": [ "fr" ] },
+    "pref_mappings": [
+      { "pref": "spellcheck.forced_dictionaries",
+        "indicator_tests": [
+          { "policy": { "SpellcheckLanguage": [ "en-US" ] } },
+          { "policy": { "SpellcheckLanguage": [ "en-US", "ru", "sk" ] } },
+          { "policy": { "SpellcheckLanguage": [] } }
+        ]
       }
     ]
   },

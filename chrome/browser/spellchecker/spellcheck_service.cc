@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
@@ -84,19 +85,24 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
 
   pref_change_registrar_.Add(
       spellcheck::prefs::kSpellCheckDictionaries,
-      base::Bind(&SpellcheckService::OnSpellCheckDictionariesChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&SpellcheckService::OnSpellCheckDictionariesChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      spellcheck::prefs::kSpellCheckForcedDictionaries,
+      base::BindRepeating(&SpellcheckService::OnSpellCheckDictionariesChanged,
+                          base::Unretained(this)));
   pref_change_registrar_.Add(
       spellcheck::prefs::kSpellCheckUseSpellingService,
-      base::Bind(&SpellcheckService::OnUseSpellingServiceChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&SpellcheckService::OnUseSpellingServiceChanged,
+                          base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kAcceptLanguages,
-      base::Bind(&SpellcheckService::OnAcceptLanguagesChanged,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(spellcheck::prefs::kEnableSpellcheck,
-                             base::Bind(&SpellcheckService::InitForAllRenderers,
-                                        base::Unretained(this)));
+      base::BindRepeating(&SpellcheckService::OnAcceptLanguagesChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      spellcheck::prefs::kEnableSpellcheck,
+      base::BindRepeating(&SpellcheckService::InitForAllRenderers,
+                          base::Unretained(this)));
 
   custom_dictionary_.reset(new SpellcheckCustomDictionary(context_->GetPath()));
   custom_dictionary_->AddObserver(this);
@@ -216,12 +222,19 @@ void SpellcheckService::LoadHunspellDictionaries() {
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   DCHECK(prefs);
 
-  const base::ListValue* dictionary_values =
+  const base::ListValue* user_dictionaries =
       prefs->GetList(spellcheck::prefs::kSpellCheckDictionaries);
+  const base::ListValue* forced_dictionaries =
+      prefs->GetList(spellcheck::prefs::kSpellCheckForcedDictionaries);
 
-  for (const auto& dictionary_value : *dictionary_values) {
-    std::string dictionary;
-    dictionary_value.GetAsString(&dictionary);
+  // Merge both lists of dictionaries. Use a set to avoid duplicates.
+  std::set<std::string> dictionaries;
+  for (const auto& dictionary_value : user_dictionaries->GetList())
+    dictionaries.insert(dictionary_value.GetString());
+  for (const auto& dictionary_value : forced_dictionaries->GetList())
+    dictionaries.insert(dictionary_value.GetString());
+
+  for (const auto& dictionary : dictionaries) {
     hunspell_dictionaries_.push_back(
         base::MakeUnique<SpellcheckHunspellDictionary>(
             dictionary,

@@ -14,9 +14,19 @@
  *   removable: boolean,
  *   spellCheckEnabled: boolean,
  *   translateEnabled: boolean,
+ *   isManaged: boolean,
  * }}
  */
 var LanguageState;
+
+/**
+ * Settings and state for a policy-enforced spellcheck language.
+ * @typedef {{
+ *   language: !chrome.languageSettingsPrivate.Language,
+ *   isManaged: boolean,
+ * }}
+ */
+var ForcedLanguageState;
 
 /**
  * Input method data to expose to consumers (Chrome OS only).
@@ -43,12 +53,15 @@ var InputMethodsModel;
  *     from the actually used language (navigator.language). Chrome OS and
  *     Windows only.
  * inputMethods: the InputMethodsModel (Chrome OS only).
+ * forcedSpellCheckLanguages: an array of spellcheck languages that are not in
+ *     |enabled|.
  * @typedef {{
  *   supported: !Array<!chrome.languageSettingsPrivate.Language>,
  *   enabled: !Array<!LanguageState>,
  *   translateTarget: string,
  *   prospectiveUILanguage: (string|undefined),
  *   inputMethods: (!InputMethodsModel|undefined),
+ *   forcedSpellCheckLanguages: !Array<!chrome.languageSettingsPrivate.Language>
  * }}
  */
 var LanguagesModel;

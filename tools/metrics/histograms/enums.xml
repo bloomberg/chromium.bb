@@ -12127,6 +12127,7 @@ Called by update_net_error_codes.py.-->
   <int value="402" label="SecurityKeyPermitAttestation"/>
   <int value="403" label="DeviceHostnameTemplate"/>
   <int value="404" label="AbusiveExperienceInterventionEnforce"/>
+  <int value="405" label="SpellcheckLanguage"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
