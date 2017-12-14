@@ -302,6 +302,7 @@
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   [_autofillAgent detachFromWebState];
+  _autofillClient.reset();
   _webState->RemoveObserver(_webStateObserverBridge.get());
   _webStateObserverBridge.reset();
   _webState = nullptr;
