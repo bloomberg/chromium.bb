@@ -789,9 +789,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // responsive.
   void StopHangMonitorTimeout();
 
-  // Used for UMA logging how long the renderer was unresponsive.
-  void LogHangMonitorUnresponsive();
-
   // Once both the frame and its swap messages arrive, we call this method to
   // process the messages. Virtual for tests.
   virtual void ProcessSwapMessages(std::vector<IPC::Message> messages);
@@ -900,9 +897,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Used for UMA histogram logging to measure the time for a repaint view
   // operation to finish.
   base::TimeTicks repaint_start_time_;
-
-  // Used for UMA histogram logging to measure how long the renderer is hanging.
-  base::TimeTicks hang_start_time_;
 
   // Set to true if we shouldn't send input events from the render widget.
   bool ignore_input_events_;

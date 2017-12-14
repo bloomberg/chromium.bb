@@ -1048,8 +1048,6 @@ void RenderWidgetHostImpl::ProcessIgnoreInputEventsChanged(
 void RenderWidgetHostImpl::StartHangMonitorTimeout(
     base::TimeDelta delay,
     blink::WebInputEvent::Type event_type) {
-  if (hang_start_time_.is_null())
-    hang_start_time_ = TimeTicks::Now();
   if (!hang_monitor_timeout_)
     return;
   if (!hang_monitor_timeout_->IsRunning())
@@ -1059,12 +1057,8 @@ void RenderWidgetHostImpl::StartHangMonitorTimeout(
 }
 
 void RenderWidgetHostImpl::RestartHangMonitorTimeoutIfNecessary() {
-  if (in_flight_event_count_ > 0 && !is_hidden_) {
-    LogHangMonitorUnresponsive();
-    hang_start_time_ = TimeTicks::Now();
-    if (hang_monitor_timeout_)
-      hang_monitor_timeout_->Restart(hung_renderer_delay_);
-  }
+  if (hang_monitor_timeout_ && in_flight_event_count_ > 0 && !is_hidden_)
+    hang_monitor_timeout_->Restart(hung_renderer_delay_);
 }
 
 bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() const {
@@ -1072,18 +1066,9 @@ bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() const {
 }
 
 void RenderWidgetHostImpl::StopHangMonitorTimeout() {
-  LogHangMonitorUnresponsive();
-  hang_start_time_ = TimeTicks();
   if (hang_monitor_timeout_)
     hang_monitor_timeout_->Stop();
   RendererIsResponsive();
-}
-
-void RenderWidgetHostImpl::LogHangMonitorUnresponsive() {
-  if (!hang_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("MPArch.RWH_HangMonitorUnresponsive",
-                        TimeTicks::Now() - hang_start_time_);
-  }
 }
 
 void RenderWidgetHostImpl::StartNewContentRenderingTimeout(

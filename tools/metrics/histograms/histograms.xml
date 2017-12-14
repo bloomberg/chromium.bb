@@ -38718,6 +38718,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MPArch.RWH_HangMonitorUnresponsive" units="ms">
+  <obsolete>
+    Deprecated 12/2017 due to lack of usage.
+  </obsolete>
   <owner>amaralp@chromium.org</owner>
   <summary>
     The length of time the renderer is unresponsive according to the hang
