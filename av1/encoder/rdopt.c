@@ -2721,7 +2721,13 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   RD_STATS this_rd_stats;
   int row, col;
   int64_t temp_sse, this_rd;
-  const TX_SIZE tx_size = tx_size_from_tx_mode(bsize, cpi->common.tx_mode, 0);
+  TX_SIZE tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, 0);
+#if CONFIG_FILTER_INTRA
+  if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {
+    tx_size = av1_max_tx_size_for_filter_intra(bsize, cm->tx_mode);
+    if (!av1_filter_intra_allowed_txsize(tx_size)) return INT64_MAX;
+  }
+#endif
   const int stepr = tx_size_high_unit[tx_size];
   const int stepc = tx_size_wide_unit[tx_size];
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);

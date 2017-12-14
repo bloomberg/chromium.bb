@@ -195,7 +195,6 @@ typedef struct {
 } PALETTE_MODE_INFO;
 
 #if CONFIG_FILTER_INTRA
-#define USE_3TAP_INTRA_FILTER 1  // 0: 4-tap; 1: 3-tap
 typedef struct {
   // 1: an ext intra mode is used; 0: otherwise.
   uint8_t use_filter_intra_mode[PLANE_TYPES];
@@ -205,27 +204,6 @@ typedef struct {
 static const PREDICTION_MODE fimode_to_intradir[FILTER_INTRA_MODES] = {
   DC_PRED, V_PRED, H_PRED, D153_PRED, DC_PRED
 };
-
-#define DISABLE_SUB8X8_FILTER_INTRA 0
-
-static INLINE int av1_filter_intra_allowed_bsize(BLOCK_SIZE bs) {
-  (void)bs;
-#if DISABLE_SUB8X8_FILTER_INTRA
-  return block_size_wide[bs] >= 8 && block_size_high[bs] >= 8;
-#else
-  return 1;
-#endif
-}
-
-static INLINE int av1_filter_intra_allowed_txsize(TX_SIZE tx) {
-  (void)tx;
-#if DISABLE_SUB8X8_FILTER_INTRA
-  return tx_size_wide[tx] >= 8 && tx_size_high[tx] >= 8 &&
-         tx_size_wide[tx] <= 32 && tx_size_high[tx] <= 32;
-#else
-  return tx_size_wide[tx] <= 32 && tx_size_high[tx] <= 32;
-#endif
-}
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_RD_DEBUG
@@ -981,6 +959,47 @@ static const uint8_t mode_to_angle_map[] = {
   0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0,
 };
 #endif  // CONFIG_EXT_INTRA
+
+#if CONFIG_FILTER_INTRA
+#define DISABLE_SUB8X8_FILTER_INTRA 0
+
+static INLINE int av1_filter_intra_allowed_bsize(BLOCK_SIZE bs) {
+  (void)bs;
+#if DISABLE_SUB8X8_FILTER_INTRA
+  return block_size_wide[bs] >= 8 && block_size_high[bs] >= 8;
+#else
+  return 1;
+#endif
+}
+
+static INLINE int av1_filter_intra_allowed_txsize(TX_SIZE tx) {
+  (void)tx;
+  if (tx == TX_INVALID) return 0;
+
+#if DISABLE_SUB8X8_FILTER_INTRA
+  return tx_size_wide[tx] >= 8 && tx_size_high[tx] >= 8 &&
+         tx_size_wide[tx] <= 32 && tx_size_high[tx] <= 32;
+#else
+  return tx_size_wide[tx] <= 32 && tx_size_high[tx] <= 32;
+#endif
+}
+
+static INLINE TX_SIZE av1_max_tx_size_for_filter_intra(BLOCK_SIZE bsize,
+                                                       TX_MODE tx_mode) {
+  const TX_SIZE max_tx_size = tx_size_from_tx_mode(bsize, tx_mode, 0);
+
+  if (tx_mode != TX_MODE_SELECT) return max_tx_size;
+
+  int depth = 0;
+  TX_SIZE tx_size = max_tx_size;
+  while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
+    if (av1_filter_intra_allowed_txsize(tx_size)) return tx_size;
+    depth++;
+    tx_size = sub_tx_size_map[0][tx_size];
+  }
+  return TX_INVALID;
+}
+#endif
 
 #if CONFIG_DCT_ONLY
 #define FIXED_TX_TYPE 1
