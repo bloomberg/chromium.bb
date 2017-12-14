@@ -94,6 +94,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_components_ui",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
@@ -110,6 +111,7 @@ source_set("omnibox_internal") {
     "//ui/gfx/geometry",
     "//url",
   ]
+  allow_circular_includes_from = [ "//ios/chrome/browser/ui/omnibox/popup" ]
   public_deps = [
     "//components/omnibox/browser",
   ]

@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_suggestions_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -42,31 +43,19 @@ OmniboxPopupViewIOS::OmniboxPopupViewIOS(
     OmniboxEditModel* edit_model,
     OmniboxPopupViewSuggestionsDelegate* delegate,
     id<OmniboxPopupPositioner> positioner)
-    : model_(new OmniboxPopupModel(this, edit_model)),
-      delegate_(delegate),
-      is_open_(false) {
+    : model_(new OmniboxPopupModel(this, edit_model)), delegate_(delegate) {
   DCHECK(delegate);
   DCHECK(browser_state);
   DCHECK(edit_model);
 
-  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher =
-      base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
-          browser_state->GetRequestContext());
+  // TODO(crbug.com/788640): The coordinator should own the OmniboxPopupViewIOS,
+  // not the other way around.
+  coordinator_.reset([[OmniboxPopupCoordinator alloc] init]);
+  [coordinator_ setBrowserState:browser_state];
+  [coordinator_ setMediatorDelegate:this];
+  [coordinator_ setPositioner:positioner];
 
-  mediator_.reset([[OmniboxPopupMediator alloc]
-      initWithFetcher:std::move(imageFetcher)
-             delegate:this]);
-  popup_controller_.reset([[OmniboxPopupViewController alloc] init]);
-  [popup_controller_ setIncognito:browser_state->IsOffTheRecord()];
-
-  [mediator_ setIncognito:browser_state->IsOffTheRecord()];
-  [mediator_ setConsumer:popup_controller_];
-  [popup_controller_ setImageRetriever:mediator_];
-  [popup_controller_ setDelegate:mediator_];
-
-  presenter_.reset([[OmniboxPopupPresenter alloc]
-      initWithPopupPositioner:positioner
-          popupViewController:popup_controller_]);
+  [coordinator_ start];
 }
 
 OmniboxPopupViewIOS::~OmniboxPopupViewIOS() {
@@ -87,23 +76,9 @@ void OmniboxPopupViewIOS::UpdateEditViewIcon() {
 void OmniboxPopupViewIOS::UpdatePopupAppearance() {
   const AutocompleteResult& result = model_->result();
 
-  // TODO(crbug.com/762597): this logic should move to PopupCoordinator.
-  if (!is_open_ && !result.empty()) {
-    // The popup is not currently open and there are results to display. Update
-    // and animate the cells
-    [mediator_ updateMatches:result withAnimation:YES];
-  } else {
-    // The popup is already displayed or there are no results to display. Update
-    // the cells without animating.
-    [mediator_ updateMatches:result withAnimation:NO];
-  }
-  is_open_ = !result.empty();
-
-  if (is_open_) {
-    [presenter_ updateHeightAndAnimateAppearanceIfNecessary];
+  [coordinator_ updateWithResults:result];
+  if ([coordinator_ isOpen]) {
     UpdateEditViewIcon();
-  } else {
-    [presenter_ animateCollapse];
   }
 
   delegate_->OnResultsChanged(result);
@@ -114,7 +89,7 @@ gfx::Rect OmniboxPopupViewIOS::GetTargetBounds() {
 }
 
 bool OmniboxPopupViewIOS::IsOpen() const {
-  return is_open_;
+  return [coordinator_ isOpen];
 }
 
 OmniboxPopupModel* OmniboxPopupViewIOS::model() const {
@@ -124,11 +99,11 @@ OmniboxPopupModel* OmniboxPopupViewIOS::model() const {
 #pragma mark - OmniboxPopupProvider
 
 bool OmniboxPopupViewIOS::IsPopupOpen() {
-  return is_open_;
+  return [coordinator_ isOpen];
 }
 
 void OmniboxPopupViewIOS::SetTextAlignment(NSTextAlignment alignment) {
-  [popup_controller_ setTextAlignment:alignment];
+  [coordinator_ setTextAlignment:alignment];
 }
 
 #pragma mark - OmniboxPopupViewControllerDelegate

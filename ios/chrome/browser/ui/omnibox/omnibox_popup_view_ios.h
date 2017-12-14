@@ -17,12 +17,11 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_controller.h"
 
 class OmniboxEditModel;
-@class OmniboxPopupViewController;
+@class OmniboxPopupCoordinator;
 class OmniboxPopupModel;
 class OmniboxPopupViewSuggestionsDelegate;
 @protocol OmniboxPopupPositioner;
 struct AutocompleteMatch;
-@class OmniboxPopupPresenter;
 
 namespace ios {
 class ChromeBrowserState;
@@ -68,10 +67,7 @@ class OmniboxPopupViewIOS : public OmniboxPopupView,
  private:
   std::unique_ptr<OmniboxPopupModel> model_;
   OmniboxPopupViewSuggestionsDelegate* delegate_;  // weak
-  base::scoped_nsobject<OmniboxPopupMediator> mediator_;
-  base::scoped_nsobject<OmniboxPopupPresenter> presenter_;
-  base::scoped_nsobject<OmniboxPopupViewController> popup_controller_;
-  bool is_open_;
+  base::scoped_nsobject<OmniboxPopupCoordinator> coordinator_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_IOS_H_
