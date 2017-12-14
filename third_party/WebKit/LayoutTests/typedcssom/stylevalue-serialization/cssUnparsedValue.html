@@ -14,23 +14,23 @@ test(() => {
 }, 'CSSUnparsedValue constructed from IDL with strings serializes correctly');
 
 test(() => {
-  assert_equals(new CSSUnparsedValue(createReferenceValue('--A')).toString(), 'var(--A)');
+  assert_equals(new CSSUnparsedValue(new CSSVariableReferenceValue('--A')).toString(), 'var(--A)');
   assert_equals(new CSSUnparsedValue(
-      createReferenceValue('--A'),
-      createReferenceValue('--B')).toString(),
+      new CSSVariableReferenceValue('--A'),
+      new CSSVariableReferenceValue('--B')).toString(),
     'var(--A)var(--B)');
   assert_equals(new CSSUnparsedValue(
-      createReferenceValue('--A',
-        new CSSUnparsedValue(createReferenceValue('--B'))),
-      createReferenceValue('--C')).toString(),
+      new CSSVariableReferenceValue('--A',
+        new CSSUnparsedValue(new CSSVariableReferenceValue('--B'))),
+      new CSSVariableReferenceValue('--C')).toString(),
     'var(--A,var(--B))var(--C)');
 }, 'CSSUnparsedValue constructed from IDL with CSSVariableReferenceValues serializes correctly');
 
 test(() => {
   assert_equals(new CSSUnparsedValue('foo', 'bar ',
-      createReferenceValue('--A',
-        new CSSUnparsedValue('baz ', createReferenceValue('--B'), 'lemon')),
-      createReferenceValue('--C',
+      new CSSVariableReferenceValue('--A',
+        new CSSUnparsedValue('baz ', new CSSVariableReferenceValue('--B'), 'lemon')),
+      new CSSVariableReferenceValue('--C',
         new CSSUnparsedValue('ade'))).toString(),
     'foobar var(--A,baz var(--B)lemon)var(--C,ade)');
 }, 'CSSUnparsedValue constructed from IDL with mix of strings and CSSVariableReferenceValues serializes correctly');
