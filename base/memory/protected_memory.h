@@ -17,12 +17,15 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/protected_memory_flags.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
 #define PROTECTED_MEMORY_ENABLED 1
 
-#if defined(OS_LINUX)
+// Linking with lld is required to workaround crbug.com/792777.
+// TODO(vtsyrklevich): Remove once support for gold on Android/CrOs is dropped
+#if defined(OS_LINUX) && BUILDFLAG(USE_LLD)
 // Define the section read-only
 __asm__(".section protected_memory, \"a\"\n\t");
 #define PROTECTED_MEMORY_SECTION __attribute__((section("protected_memory")))
