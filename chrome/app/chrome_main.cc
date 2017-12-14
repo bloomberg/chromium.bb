@@ -115,13 +115,14 @@ int ChromeMain(int argc, const char** argv) {
     params.create_discardable_memory = true;
     params.env_mode = aura::Env::Mode::MUS;
   }
-  if (service_manager::ServiceManagerIsRemote() ||
-      command_line->HasSwitch(switches::kMash)) {
+#if defined(OS_CHROMEOS)
+  if (command_line->HasSwitch(switches::kMash)) {
     params.create_discardable_memory = false;
     params.env_mode = aura::Env::Mode::MUS;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kMus, switches::kMusHostVizValue);
   }
+#endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(ENABLE_MUS)
 
   int rv = content::ContentMain(params);
