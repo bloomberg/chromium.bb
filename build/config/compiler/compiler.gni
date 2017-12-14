@@ -91,7 +91,7 @@ optimize_for_size = is_android || is_ios
 
 # Determine whether to enable or disable frame pointers, based on the platform
 # and build arguments.
-if (is_mac || is_ios || is_linux) {
+if (is_mac || is_ios || is_linux || is_chromeos) {
   enable_frame_pointers = true
 } else if (is_win) {
   # 64-bit Windows ABI doesn't support frame pointers.
@@ -100,16 +100,10 @@ if (is_mac || is_ios || is_linux) {
   } else {
     enable_frame_pointers = true
   }
-} else if (is_chromeos) {
-  # ChromeOS generally prefers frame pointers, to support CWP.
-  # However, Clang does not currently generate usable frame pointers in ARM
-  # 32-bit builds (https://bugs.llvm.org/show_bug.cgi?id=18505) so disable them
-  # there to avoid the unnecessary overhead.
-  enable_frame_pointers = current_cpu != "arm"
 } else if (is_android) {
   enable_frame_pointers =
       # Ensure that stacks from arm64 crash dumps are usable (crbug.com/391706).
-      current_cpu == "arm64" ||
+      current_cpu == "arm64" || current_cpu == "arm" ||
       # For x86 Android, unwind tables are huge without frame pointers
       # (crbug.com/762629). Enabling frame pointers grows the code size slightly
       # but overall shrinks binaries considerably by avoiding huge unwind
@@ -127,11 +121,7 @@ if (is_mac || is_ios || is_linux) {
 # most translation units, that they are emitted correctly, and that the
 # compiler or platform provides a way to access them.
 can_unwind_with_frame_pointers = enable_frame_pointers
-if (current_cpu == "arm" && arm_use_thumb) {
-  # We cannot currently unwind ARM Thumb frame pointers correctly.
-  # See https://bugs.llvm.org/show_bug.cgi?id=18505
-  can_unwind_with_frame_pointers = false
-} else if (is_win) {
+if (is_win) {
   # Windows 32-bit does provide frame pointers, but the compiler does not
   # provide intrinsics to access them, so we don't use them.
   can_unwind_with_frame_pointers = false

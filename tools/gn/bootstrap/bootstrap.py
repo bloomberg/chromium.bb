@@ -185,7 +185,6 @@ def build_gn_with_ninja_manually(tempdir, options):
       {
           'ENABLE_LOCATION_SOURCE': 'false',
           'ENABLE_PROFILING': 'false',
-          'CAN_UNWIND_WITH_FRAME_POINTERS': 'false',
           'UNSAFE_DEVELOPER_BUILD': 'false'
       })
 
