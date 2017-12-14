@@ -164,7 +164,13 @@ int64_t GetMaxContiguousDataBlockSizeFromBeginning(
 }
 
 bool IsParallelDownloadEnabled() {
-  return base::FeatureList::IsEnabled(features::kParallelDownloading);
+  bool feature_enabled =
+      base::FeatureList::IsEnabled(features::kParallelDownloading);
+  // Disabled when |kEnableParallelDownloadFinchKey| Finch config is set to
+  // false.
+  bool enabled_parameter = GetFieldTrialParamByFeatureAsBool(
+      features::kParallelDownloading, kEnableParallelDownloadFinchKey, true);
+  return feature_enabled && enabled_parameter;
 }
 
 }  // namespace content
