@@ -91,6 +91,10 @@ void WindowPortMus::SetExtendedHitRegionForChildren(
                                                        touch_insets);
 }
 
+void WindowPortMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {
+  window_tree_client_->SetHitTestMask(this, rect);
+}
+
 void WindowPortMus::Embed(
     ui::mojom::WindowTreeClientPtr client,
     uint32_t flags,
