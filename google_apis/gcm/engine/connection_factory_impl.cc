@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gcm/engine/connection_handler_impl.h"
@@ -383,7 +384,7 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
     recorder_->RecordConnectionFailure(result);
     CloseSocket();
     backoff_entry_->InformOfRequest(false);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionFailureErrorCode", result);
+    base::UmaHistogramSparse("GCM.ConnectionFailureErrorCode", result);
 
     event_tracker_.ConnectionAttemptFailed(result);
     event_tracker_.EndConnectionAttempt();
@@ -422,7 +423,7 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
   if (result != net::OK) {
     // TODO(zea): Consider how to handle errors that may require some sort of
     // user intervention (login page, etc.).
-    UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionDisconnectErrorCode", result);
+    base::UmaHistogramSparse("GCM.ConnectionDisconnectErrorCode", result);
     SignalConnectionReset(SOCKET_FAILURE);
     return;
   }

@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/win/win_util.h"
 #include "ui/display/display.h"
@@ -654,7 +654,7 @@ void ScreenWin::RecordDisplayScaleFactors() const {
         std::max(base::checked_cast<int>(scale_factor * 100), 0), 1000);
     if (!base::ContainsValue(unique_scale_factors, reported_scale)) {
       unique_scale_factors.push_back(reported_scale);
-      UMA_HISTOGRAM_SPARSE_SLOWLY("UI.DeviceScale", reported_scale);
+      base::UmaHistogramSparse("UI.DeviceScale", reported_scale);
     }
   }
 }

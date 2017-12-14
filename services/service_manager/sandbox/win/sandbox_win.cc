@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -392,9 +393,9 @@ sandbox::ResultCode AddGenericPolicy(sandbox::TargetPolicy* policy) {
 }
 
 void LogLaunchWarning(sandbox::ResultCode last_warning, DWORD last_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.WarningResultCode",
-                              last_warning);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.Warning", last_error);
+  base::UmaHistogramSparse("Process.Sandbox.Launch.WarningResultCode",
+                           last_warning);
+  base::UmaHistogramSparse("Process.Sandbox.Launch.Warning", last_error);
 }
 
 sandbox::ResultCode AddPolicyForSandboxedProcess(
@@ -845,7 +846,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
   }
 
   if (sandbox::SBOX_ALL_OK != result) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.Error", last_error);
+    base::UmaHistogramSparse("Process.Sandbox.Launch.Error", last_error);
     if (result == sandbox::SBOX_ERROR_GENERIC)
       DPLOG(ERROR) << "Failed to launch process";
     else

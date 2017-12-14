@@ -14,8 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -170,20 +170,20 @@ static void RecordRebufferingStats(const AudioParameters& input_params,
 
   switch (input_params.latency_tag()) {
     case AudioLatency::LATENCY_EXACT_MS:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.Audio.Render.BrowserCallbackRegularity.LatencyExactMs", value);
       return;
     case AudioLatency::LATENCY_INTERACTIVE:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.Audio.Render.BrowserCallbackRegularity.LatencyInteractive",
           value);
       return;
     case AudioLatency::LATENCY_RTC:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.Audio.Render.BrowserCallbackRegularity.LatencyRtc", value);
       return;
     case AudioLatency::LATENCY_PLAYBACK:
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "Media.Audio.Render.BrowserCallbackRegularity.LatencyPlayback",
           value);
       return;

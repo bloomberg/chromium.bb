@@ -11,6 +11,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
@@ -130,8 +131,8 @@ bool HardwareSupportsOverlays() {
                                             d3d11_device.Get(), &flags)))
       continue;
 
-    UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DirectComposition.OverlaySupportFlags",
-                                flags);
+    base::UmaHistogramSparse("GPU.DirectComposition.OverlaySupportFlags",
+                             flags);
 
     // Some new Intel drivers only claim to support unscaled overlays, but
     // scaled overlays still work. Even when scaled overlays aren't actually
@@ -749,8 +750,8 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (SUCCEEDED(swap_chain_.CopyTo(swap_chain_media.GetAddressOf()))) {
     DXGI_FRAME_STATISTICS_MEDIA stats = {};
     if (SUCCEEDED(swap_chain_media->GetFrameStatisticsMedia(&stats))) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DirectComposition.CompositionMode",
-                                  stats.CompositionMode);
+      base::UmaHistogramSparse("GPU.DirectComposition.CompositionMode",
+                               stats.CompositionMode);
       presentation_history_.AddSample(stats.CompositionMode);
     }
   }
@@ -1131,8 +1132,8 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
         continue;
       }
 
-      UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.Output.ColorSpace", desc.ColorSpace);
-      UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.Output.MaxLuminance", desc.MaxLuminance);
+      base::UmaHistogramSparse("GPU.Output.ColorSpace", desc.ColorSpace);
+      base::UmaHistogramSparse("GPU.Output.MaxLuminance", desc.MaxLuminance);
 
       if (desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
         hdr_monitor_found = true;

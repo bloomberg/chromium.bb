@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_source.h"
@@ -45,33 +45,33 @@ void LogUma(bool success,
   // long execution time equates to a poorly-performing function.
   if (success) {
     if (elapsed_time < base::TimeDelta::FromMilliseconds(1)) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
-          "Extensions.Functions.SucceededTime.LessThan1ms", histogram_value);
+      base::UmaHistogramSparse("Extensions.Functions.SucceededTime.LessThan1ms",
+                               histogram_value);
     } else if (elapsed_time < base::TimeDelta::FromMilliseconds(5)) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.SucceededTime.1msTo5ms",
-                                  histogram_value);
+      base::UmaHistogramSparse("Extensions.Functions.SucceededTime.1msTo5ms",
+                               histogram_value);
     } else if (elapsed_time < base::TimeDelta::FromMilliseconds(10)) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
-          "Extensions.Functions.SucceededTime.5msTo10ms", histogram_value);
+      base::UmaHistogramSparse("Extensions.Functions.SucceededTime.5msTo10ms",
+                               histogram_value);
     } else {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.SucceededTime.Over10ms",
-                                  histogram_value);
+      base::UmaHistogramSparse("Extensions.Functions.SucceededTime.Over10ms",
+                               histogram_value);
     }
     UMA_HISTOGRAM_TIMES("Extensions.Functions.SucceededTotalExecutionTime",
                         elapsed_time);
   } else {
     if (elapsed_time < base::TimeDelta::FromMilliseconds(1)) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.FailedTime.LessThan1ms",
-                                  histogram_value);
+      base::UmaHistogramSparse("Extensions.Functions.FailedTime.LessThan1ms",
+                               histogram_value);
     } else if (elapsed_time < base::TimeDelta::FromMilliseconds(5)) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.FailedTime.1msTo5ms",
-                                  histogram_value);
+      base::UmaHistogramSparse("Extensions.Functions.FailedTime.1msTo5ms",
+                               histogram_value);
     } else if (elapsed_time < base::TimeDelta::FromMilliseconds(10)) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.FailedTime.5msTo10ms",
-                                  histogram_value);
+      base::UmaHistogramSparse("Extensions.Functions.FailedTime.5msTo10ms",
+                               histogram_value);
     } else {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.Functions.FailedTime.Over10ms",
-                                  histogram_value);
+      base::UmaHistogramSparse("Extensions.Functions.FailedTime.Over10ms",
+                               histogram_value);
     }
     UMA_HISTOGRAM_TIMES("Extensions.Functions.FailedTotalExecutionTime",
                         elapsed_time);

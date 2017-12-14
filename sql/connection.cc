@@ -21,6 +21,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -465,7 +466,7 @@ void Connection::CloseInternal(bool forced) {
 
     int rc = sqlite3_close(db_);
     if (rc != SQLITE_OK) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.CloseFailure", rc);
+      base::UmaHistogramSparse("Sqlite.CloseFailure", rc);
       DLOG(DCHECK) << "sqlite3_close failed: " << GetErrorMessage();
     }
   }
@@ -1124,7 +1125,7 @@ bool Connection::Raze() {
 
   const char* kMain = "main";
   int rc = BackupDatabase(null_db.db_, db_, kMain);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RazeDatabase",rc);
+  base::UmaHistogramSparse("Sqlite.RazeDatabase", rc);
 
   // The destination database was locked.
   if (rc == SQLITE_BUSY) {
@@ -1147,13 +1148,13 @@ bool Connection::Raze() {
 
     rc = file->pMethods->xTruncate(file, 0);
     if (rc != SQLITE_OK) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RazeDatabaseTruncate",rc);
+      base::UmaHistogramSparse("Sqlite.RazeDatabaseTruncate", rc);
       DLOG(DCHECK) << "Failed to truncate file.";
       return false;
     }
 
     rc = BackupDatabase(null_db.db_, db_, kMain);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RazeDatabase2",rc);
+    base::UmaHistogramSparse("Sqlite.RazeDatabase2", rc);
 
     DCHECK_EQ(rc, SQLITE_DONE) << "Failed retrying Raze().";
   }
@@ -1698,7 +1699,7 @@ bool Connection::OpenInternal(const std::string& file_name,
 
     // Histogram failures specific to initial open for debugging
     // purposes.
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.OpenFailure", err);
+    base::UmaHistogramSparse("Sqlite.OpenFailure", err);
 
     OnSqliteError(err, NULL, "-- sqlite3_open()");
     bool was_poisoned = poisoned_;
@@ -1757,7 +1758,7 @@ bool Connection::OpenInternal(const std::string& file_name,
   // be razed.
   err = ExecuteAndReturnErrorCode("PRAGMA auto_vacuum");
   if (err != SQLITE_OK) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.OpenProbeFailure", err);
+    base::UmaHistogramSparse("Sqlite.OpenProbeFailure", err);
     OnSqliteError(err, nullptr, "PRAGMA auto_vacuum");
 
     // Retry or bail out if the error handler poisoned the handle.
@@ -1932,7 +1933,7 @@ void Connection::AddTaggedHistogram(const std::string& name,
 
 int Connection::OnSqliteError(
     int err, sql::Statement *stmt, const char* sql) const {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.Error", err);
+  base::UmaHistogramSparse("Sqlite.Error", err);
   AddTaggedHistogram("Sqlite.Error", err);
 
   // Always log the error.

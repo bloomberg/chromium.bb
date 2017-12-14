@@ -13,8 +13,8 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -1395,8 +1395,7 @@ void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
   } else {
     histogram_error = source->GetStatus().error();
   }
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      kUMADriveBatchUploadResponseCode, histogram_error);
+  base::UmaHistogramSparse(kUMADriveBatchUploadResponseCode, histogram_error);
 
   if (!IsSuccessfulDriveApiErrorCode(GetErrorCode())) {
     RunCallbackOnPrematureFailure(GetErrorCode());

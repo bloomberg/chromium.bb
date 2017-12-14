@@ -14,8 +14,8 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -230,7 +230,7 @@ void UpdateDriverBugListStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
   // Use entry 0 to capture the total number of times that data was recorded
   // in this histogram in order to have a convenient denominator to compute
   // driver bug list percentages for the rest of the entries.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DriverBugTestResultsPerEntry", 0);
+  base::UmaHistogramSparse("GPU.DriverBugTestResultsPerEntry", 0);
 
   if (!gpu_feature_info.applied_gpu_driver_bug_list_entries.empty()) {
     std::unique_ptr<gpu::GpuDriverBugList> bug_list(
@@ -242,7 +242,7 @@ void UpdateDriverBugListStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
               entry_ids.size());
     for (auto id : entry_ids) {
       DCHECK_GE(bug_list->max_entry_id(), id);
-      UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DriverBugTestResultsPerEntry", id);
+      base::UmaHistogramSparse("GPU.DriverBugTestResultsPerEntry", id);
     }
   }
 }

@@ -7,8 +7,8 @@
 #include <limits>
 #include <string>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -443,8 +443,8 @@ void ServiceWorkerMetrics::RecordDestroyDatabaseResult(
 }
 
 void ServiceWorkerMetrics::RecordPurgeResourceResult(int net_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("ServiceWorker.Storage.PurgeResourceResult",
-                              std::abs(net_error));
+  base::UmaHistogramSparse("ServiceWorker.Storage.PurgeResourceResult",
+                           std::abs(net_error));
 }
 
 void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(

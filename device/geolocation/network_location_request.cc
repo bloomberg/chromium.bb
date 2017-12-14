@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,8 +62,8 @@ void RecordUmaEvent(NetworkLocationRequestEvent event) {
 }
 
 void RecordUmaResponseCode(int code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Geolocation.NetworkLocationRequest.ResponseCode",
-                              code);
+  base::UmaHistogramSparse("Geolocation.NetworkLocationRequest.ResponseCode",
+                           code);
 }
 
 void RecordUmaAccessPoints(int count) {

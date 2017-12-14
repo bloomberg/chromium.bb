@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -428,9 +429,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
 }
 
 void ReportSystemCodeUMA(const std::string& key_system, uint32_t system_code) {
-  // Sparse histogram macro does not cache the histogram, so it's safe to use
-  // macro with non-static histogram name here.
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       "Media.EME." + GetKeySystemNameForUMA(key_system) + ".SystemCode",
       system_code);
 }

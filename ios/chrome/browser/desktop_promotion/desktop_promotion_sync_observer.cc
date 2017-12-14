@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -102,11 +103,11 @@ void DesktopPromotionSyncObserver::OnStateChanged(syncer::SyncService* sync) {
       pref_service_->GetInteger(prefs::kDesktopIOSPromotionVariationId);
   if (promo_variation_id != 0) {
     if (sms_entrypoint != 0) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "DesktopIOSPromotion.SMSSent.VariationSigninReason",
           promo_variation_id);
     } else {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
+      base::UmaHistogramSparse(
           "DesktopIOSPromotion.NoSMS.VariationSigninReason",
           promo_variation_id);
     }

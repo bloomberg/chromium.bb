@@ -8,7 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -483,9 +483,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
     keys[i].SetStatus(ConvertCdmKeyStatus(key_info->status));
     keys[i].SetSystemCode(key_info->system_code);
 
-    // Sparse histogram macro does not cache the histogram, so it's safe to use
-    // macro with non-static histogram name here.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    base::UmaHistogramSparse(
         adapter_->GetKeySystemUMAPrefix() + kKeyStatusSystemCodeUMAName,
         key_info->system_code);
   }

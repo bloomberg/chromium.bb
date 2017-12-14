@@ -12,7 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -163,7 +163,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
   gpu_info->max_msaa_samples = base::IntToString(max_samples);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.MaxMSAASampleCount", max_samples);
+  base::UmaHistogramSparse("GPU.MaxMSAASampleCount", max_samples);
 
 #if defined(OS_ANDROID)
   gpu_info->can_support_threaded_texture_mailbox =

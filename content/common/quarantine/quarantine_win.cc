@@ -20,8 +20,8 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -54,8 +54,8 @@ enum class AttachmentServicesResult : int {
 };
 
 void RecordAttachmentServicesResult(AttachmentServicesResult type) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Download.AttachmentServices.Result",
-                              static_cast<int>(type));
+  base::UmaHistogramSparse("Download.AttachmentServices.Result",
+                           static_cast<int>(type));
 }
 
 bool ZoneIdentifierPresentForFile(const base::FilePath& path) {

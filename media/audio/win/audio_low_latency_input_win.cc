@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -741,7 +742,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
 
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_AUDIO_CLIENT_INIT_FAILED;
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.Capture.Win.InitError", hr);
+    base::UmaHistogramSparse("Media.Audio.Capture.Win.InitError", hr);
     return hr;
   }
 

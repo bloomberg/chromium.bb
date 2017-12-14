@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -616,10 +616,8 @@ void PpapiThread::ReportLoadErrorCode(
 // Only report load error code on Windows because that's the only platform that
 // has a numerical error value.
 #if defined(OS_WIN)
-  // For sparse histograms, we can use the macro, as it does not incorporate a
-  // static.
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      GetHistogramName(is_broker_, "LoadErrorCode", path), error.code);
+  base::UmaHistogramSparse(GetHistogramName(is_broker_, "LoadErrorCode", path),
+                           error.code);
 #endif
 }
 

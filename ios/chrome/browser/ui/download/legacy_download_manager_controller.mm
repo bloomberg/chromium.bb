@@ -14,6 +14,7 @@
 #include "base/task_scheduler/post_task.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -955,7 +956,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   [[NetworkActivityIndicatorManager sharedInstance]
       stopNetworkTaskForGroup:[self getNetworkActivityKey]];
   int responseCode = _fetcher->GetResponseCode();
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
+  base::UmaHistogramSparse(
       kUMADownloadedFileStatusCode,
       net::HttpUtil::MapStatusCodeForHistogram(responseCode));
 
@@ -1441,8 +1442,8 @@ class DownloadContentDelegate : public URLFetcherDelegate {
       _fetcher->GetResponseCode() != 200) {
     [self displayError];
     // Log the Net Error code.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kUMADownloadFileNetError,
-                                -_fetcher->GetStatus().error());
+    base::UmaHistogramSparse(kUMADownloadFileNetError,
+                             -_fetcher->GetStatus().error());
     return;
   }
 

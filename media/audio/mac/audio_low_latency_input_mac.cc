@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
@@ -853,7 +853,7 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
     // they are only stored for "AGC streams", e.g. WebRTC audio streams.
     const bool add_uma_histogram = GetAutomaticGainControl();
     if (add_uma_histogram) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
+      base::UmaHistogramSparse("Media.AudioInputCbErrorMac", result);
     }
     OSSTATUS_LOG(ERROR, result) << "AudioUnitRender() failed ";
     if (result == kAudioUnitErr_TooManyFramesToProcess ||
@@ -1126,8 +1126,8 @@ void AUAudioInputStream::HandleError(OSStatus err) {
   // Log the latest OSStatus error message and also change the sign of the
   // error if no callbacks are active. I.e., the sign of the error message
   // carries one extra level of information.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputErrorMac",
-                              GetInputCallbackIsActive() ? err : (err * -1));
+  base::UmaHistogramSparse("Media.InputErrorMac",
+                           GetInputCallbackIsActive() ? err : (err * -1));
   NOTREACHED() << "error " << logging::DescriptionFromOSStatus(err) << " ("
                << err << ")";
   if (sink_)
@@ -1203,8 +1203,8 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
   // to the requested (by the client) number of audio frames per I/O buffer
   // connected to the selected input device. Ideally, this size will be the same
   // as the native I/O buffer size given by |io_buffer_frame_size_|.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.RequestedInputBufferFrameSizeMac",
-                              input_params_.frames_per_buffer());
+  base::UmaHistogramSparse("Media.Audio.RequestedInputBufferFrameSizeMac",
+                           input_params_.frames_per_buffer());
   DVLOG(1) << "number_of_frames_: " << input_params_.frames_per_buffer();
   // This value indicates the number of frames in the IO buffers connected to
   // the selected input device. It has been set by the audio manger in Open()
@@ -1212,8 +1212,8 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
   // desired buffer size. These two values might differ if other streams are
   // using the same device and any of these streams have asked for a smaller
   // buffer size.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.ActualInputBufferFrameSizeMac",
-                              io_buffer_frame_size_);
+  base::UmaHistogramSparse("Media.Audio.ActualInputBufferFrameSizeMac",
+                           io_buffer_frame_size_);
   DVLOG(1) << "io_buffer_frame_size_: " << io_buffer_frame_size_;
   // TODO(henrika): this value will currently always report true. It should
   // be fixed when we understand the problem better.

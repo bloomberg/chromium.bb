@@ -27,8 +27,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -661,9 +661,8 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
   if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
     // This enumeration has "3" appended to its name to distinguish it from
     // older versions.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Net.ErrorCodesForMainFrame3",
-        -loader->request()->status().error());
+    base::UmaHistogramSparse("Net.ErrorCodesForMainFrame3",
+                             -loader->request()->status().error());
     if (loader->request()->status().error() == net::OK) {
       UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2Success.MainFrame",
                                request_loading_time);
@@ -679,13 +678,13 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
 
     if (loader->request()->url().SchemeIsCryptographic()) {
       if (loader->request()->url().host_piece() == "www.google.com") {
-        UMA_HISTOGRAM_SPARSE_SLOWLY("Net.ErrorCodesForHTTPSGoogleMainFrame2",
-                                    -loader->request()->status().error());
+        base::UmaHistogramSparse("Net.ErrorCodesForHTTPSGoogleMainFrame2",
+                                 -loader->request()->status().error());
       }
 
       if (net::IsTLS13ExperimentHost(loader->request()->url().host_piece())) {
-        UMA_HISTOGRAM_SPARSE_SLOWLY("Net.ErrorCodesForTLS13ExperimentMainFrame",
-                                    -loader->request()->status().error());
+        base::UmaHistogramSparse("Net.ErrorCodesForTLS13ExperimentMainFrame",
+                                 -loader->request()->status().error());
       }
 
       int num_valid_scts = std::count_if(
@@ -701,14 +700,12 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
                                request_loading_time);
     }
     if (info->GetResourceType() == RESOURCE_TYPE_IMAGE) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
-          "Net.ErrorCodesForImages",
-          -loader->request()->status().error());
+      base::UmaHistogramSparse("Net.ErrorCodesForImages",
+                               -loader->request()->status().error());
     }
     // This enumeration has "2" appended to distinguish it from older versions.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Net.ErrorCodesForSubresources2",
-        -loader->request()->status().error());
+    base::UmaHistogramSparse("Net.ErrorCodesForSubresources2",
+                             -loader->request()->status().error());
   }
 
   if (delegate_)

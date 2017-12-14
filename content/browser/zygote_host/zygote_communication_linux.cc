@@ -11,8 +11,7 @@
 #include "base/command_line.h"
 #include "base/i18n/unicodestring.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -80,7 +79,7 @@ ssize_t ZygoteCommunication::ReadReply(void* buf, size_t buf_len) {
       return -1;
     }
     have_read_sandbox_status_word_ = true;
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Linux.SandboxStatus", sandbox_status_);
+    base::UmaHistogramSparse("Linux.SandboxStatus", sandbox_status_);
   }
 
   return HANDLE_EINTR(read(control_fd_.get(), buf, buf_len));
@@ -347,7 +346,7 @@ int ZygoteCommunication::GetSandboxStatus() {
     return 0;
   }
   have_read_sandbox_status_word_ = true;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Linux.SandboxStatus", sandbox_status_);
+  base::UmaHistogramSparse("Linux.SandboxStatus", sandbox_status_);
   return sandbox_status_;
 }
 

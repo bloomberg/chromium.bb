@@ -14,8 +14,8 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -818,28 +818,28 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
       int counter) override {
     switch (counter_type) {
       case webrtc::kEnumCounterAudioSrtpCipher:
-        UMA_HISTOGRAM_SPARSE_SLOWLY(
-            "WebRTC.PeerConnection.SrtpCryptoSuite.Audio", counter);
+        base::UmaHistogramSparse("WebRTC.PeerConnection.SrtpCryptoSuite.Audio",
+                                 counter);
         break;
       case webrtc::kEnumCounterAudioSslCipher:
-        UMA_HISTOGRAM_SPARSE_SLOWLY(
-            "WebRTC.PeerConnection.SslCipherSuite.Audio", counter);
+        base::UmaHistogramSparse("WebRTC.PeerConnection.SslCipherSuite.Audio",
+                                 counter);
         break;
       case webrtc::kEnumCounterVideoSrtpCipher:
-        UMA_HISTOGRAM_SPARSE_SLOWLY(
-            "WebRTC.PeerConnection.SrtpCryptoSuite.Video", counter);
+        base::UmaHistogramSparse("WebRTC.PeerConnection.SrtpCryptoSuite.Video",
+                                 counter);
         break;
       case webrtc::kEnumCounterVideoSslCipher:
-        UMA_HISTOGRAM_SPARSE_SLOWLY(
-            "WebRTC.PeerConnection.SslCipherSuite.Video", counter);
+        base::UmaHistogramSparse("WebRTC.PeerConnection.SslCipherSuite.Video",
+                                 counter);
         break;
       case webrtc::kEnumCounterDataSrtpCipher:
-        UMA_HISTOGRAM_SPARSE_SLOWLY(
-            "WebRTC.PeerConnection.SrtpCryptoSuite.Data", counter);
+        base::UmaHistogramSparse("WebRTC.PeerConnection.SrtpCryptoSuite.Data",
+                                 counter);
         break;
       case webrtc::kEnumCounterDataSslCipher:
-        UMA_HISTOGRAM_SPARSE_SLOWLY("WebRTC.PeerConnection.SslCipherSuite.Data",
-                                    counter);
+        base::UmaHistogramSparse("WebRTC.PeerConnection.SslCipherSuite.Data",
+                                 counter);
         break;
       default:
         // The default clause is expected to reach when new enum types are

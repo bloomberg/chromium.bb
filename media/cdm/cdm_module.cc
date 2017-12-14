@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -64,7 +65,7 @@ void ReportLoadErrorCode(const base::NativeLibraryLoadError& error) {
 // Only report load error code on Windows because that's the only platform that
 // has a numerical error value.
 #if defined(OS_WIN)
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.EME.CdmLoadErrorCode", error.code);
+  base::UmaHistogramSparse("Media.EME.CdmLoadErrorCode", error.code);
 #endif
 }
 

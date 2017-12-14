@@ -18,7 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -222,9 +222,8 @@ SerialDeviceEnumeratorMac::GetDevices() {
   std::vector<mojom::SerialDeviceInfoPtr> devices = GetDevicesNew();
   std::vector<mojom::SerialDeviceInfoPtr> old_devices = GetDevicesOld();
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "Hardware.Serial.NewMinusOldDeviceListSize",
-      Clamp(devices.size() - old_devices.size(), -10, 10));
+  base::UmaHistogramSparse("Hardware.Serial.NewMinusOldDeviceListSize",
+                           Clamp(devices.size() - old_devices.size(), -10, 10));
 
   // Add devices found from both the new and old methods of enumeration. If a
   // device is found using both the new and the old enumeration method, then we

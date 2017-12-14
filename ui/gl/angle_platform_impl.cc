@@ -10,7 +10,7 @@
 #include "base/memory/protected_memory.h"
 #include "base/memory/protected_memory_cfi.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/angle/include/platform/Platform.h"
 #include "ui/gl/gl_bindings.h"
@@ -124,9 +124,7 @@ void ANGLEPlatformImpl_histogramEnumeration(PlatformMethods* platform,
 void ANGLEPlatformImpl_histogramSparse(PlatformMethods* platform,
                                        const char* name,
                                        int sample) {
-  // For sparse histograms, we can use the macro, as it does not incorporate a
-  // static.
-  UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample);
+  base::UmaHistogramSparse(name, sample);
 }
 
 void ANGLEPlatformImpl_histogramBoolean(PlatformMethods* platform,

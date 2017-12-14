@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/env.h"
@@ -661,8 +662,8 @@ void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
   const int transition_record =
       (valid_transition ? 1 : -1) *
       (static_cast<int>(prev) * 1000 + static_cast<int>(next));
-  UMA_HISTOGRAM_SPARSE_SLOWLY("VirtualKeyboard.ControllerStateTransition",
-                              transition_record);
+  base::UmaHistogramSparse("VirtualKeyboard.ControllerStateTransition",
+                           transition_record);
   UMA_HISTOGRAM_BOOLEAN("VirtualKeyboard.ControllerStateTransitionIsValid",
                         transition_record > 0);
 
