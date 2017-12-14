@@ -29,6 +29,7 @@
 #include "media/base/test_helpers.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
+#include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
 #include "media/renderers/default_renderer_factory.h"
@@ -74,25 +75,6 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
   return CONTAINS_STRING(arg, "Effective playback rate changed from " +
                                   std::string(old_rate_string) + " to " +
                                   std::string(new_rate_string));
-}
-
-class FakeVideoDecodeStatsRecorder : public mojom::VideoDecodeStatsRecorder {
- public:
-  void SetPageInfo(const url::Origin& top_frame_origin,
-                   bool is_top_frame) override {}
-  void StartNewRecord(VideoCodecProfile profile,
-                      const gfx::Size& natural_size,
-                      int frames_per_sec) override {}
-  void UpdateRecord(uint32_t frames_decoded,
-                    uint32_t frames_dropped,
-                    uint32_t frames_decoded_power_efficient) override {}
-};
-
-mojom::VideoDecodeStatsRecorderPtr CreateCapabilitiesRecorder() {
-  mojom::VideoDecodeStatsRecorderPtr recorder;
-  mojo::MakeStrongBinding(std::make_unique<FakeVideoDecodeStatsRecorder>(),
-                          mojo::MakeRequest(&recorder));
-  return recorder;
 }
 
 class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
@@ -307,8 +289,8 @@ class WebMediaPlayerImplTest : public testing::Test {
     factory_selector->SetBaseFactoryType(
         RendererFactorySelector::FactoryType::DEFAULT);
 
-    WatchTimeRecorder::CreateWatchTimeRecorderProvider(
-        mojo::MakeRequest(&provider_));
+    mojom::MediaMetricsProviderPtr provider;
+    MediaMetricsProvider::Create(nullptr, mojo::MakeRequest(&provider));
 
     auto params = base::MakeUnique<WebMediaPlayerParams>(
         std::move(media_log), WebMediaPlayerParams::DeferLoadCB(),
@@ -319,7 +301,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         RequestRoutingTokenCallback(), nullptr,
         kMaxKeyframeDistanceToDisableBackgroundVideo,
         kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
-        provider_.get(), base::Bind(&CreateCapabilitiesRecorder),
+        std::move(provider),
         base::Bind(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                    base::Unretained(this)),
         cc::TestContextProvider::Create());
@@ -523,8 +505,6 @@ class WebMediaPlayerImplTest : public testing::Test {
   viz::FrameSinkId id_ = viz::FrameSinkId(1, 1);
 
   NiceMock<MockWebMediaPlayerDelegate> delegate_;
-
-  mojom::WatchTimeRecorderProviderPtr provider_;
 
   std::unique_ptr<StrictMock<MockSurfaceLayerBridge>> surface_layer_bridge_;
   StrictMock<MockSurfaceLayerBridge>* surface_layer_bridge_ptr_ = nullptr;

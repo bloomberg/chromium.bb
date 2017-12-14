@@ -16,6 +16,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_codecs.h"
 #include "media/blink/media_blink_export.h"
+#include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "media/mojo/interfaces/watch_time_recorder.mojom.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "ui/gfx/geometry/size.h"
@@ -73,7 +74,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // the elapsed media time instead?
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                     GetMediaTimeCB get_media_time_cb,
-                    mojom::WatchTimeRecorderProvider* provider);
+                    mojom::MediaMetricsProvider* provider);
   ~WatchTimeReporter() override;
 
   // These methods are used to ensure that watch time is only reported for media
@@ -143,7 +144,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                     bool is_background,
                     GetMediaTimeCB get_media_time_cb,
-                    mojom::WatchTimeRecorderProvider* provider);
+                    mojom::MediaMetricsProvider* provider);
 
   // base::PowerObserver implementation.
   //

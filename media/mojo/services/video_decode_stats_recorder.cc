@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/mojo/services/video_decode_stats_recorder.h"
+
 #include "base/memory/ptr_util.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -12,34 +13,22 @@
 namespace media {
 
 VideoDecodeStatsRecorder::VideoDecodeStatsRecorder(
+    const url::Origin& untrusted_top_frame_origin,
+    bool is_top_frame,
+    uint64_t playback_id,
     VideoDecodePerfHistory* perf_history)
-    : perf_history_(perf_history) {
-  DCHECK(perf_history_);
+    : untrusted_top_frame_origin_(untrusted_top_frame_origin),
+      is_top_frame_(is_top_frame),
+      perf_history_(perf_history) {
+  DVLOG(2) << __func__
+           << " untrusted_top_frame_origin:" << untrusted_top_frame_origin
+           << " is_top_frame:" << is_top_frame;
+  // TODO(dalecurtis): Recorder VideoDecodeStats UKM using |playback_id|.
 }
 
 VideoDecodeStatsRecorder::~VideoDecodeStatsRecorder() {
   DVLOG(2) << __func__ << " Finalize for IPC disconnect";
   FinalizeRecord();
-}
-
-// static
-void VideoDecodeStatsRecorder::Create(
-    VideoDecodePerfHistory* perf_history,
-    mojom::VideoDecodeStatsRecorderRequest request) {
-  mojo::MakeStrongBinding(
-      base::MakeUnique<VideoDecodeStatsRecorder>(perf_history),
-      std::move(request));
-}
-
-void VideoDecodeStatsRecorder::SetPageInfo(
-    const url::Origin& untrusted_top_frame_origin,
-    bool is_top_frame) {
-  DVLOG(2) << __func__
-           << " untrusted_top_frame_origin:" << untrusted_top_frame_origin
-           << " is_top_frame:" << is_top_frame;
-
-  untrusted_top_frame_origin_ = untrusted_top_frame_origin;
-  is_top_frame_ = is_top_frame;
 }
 
 void VideoDecodeStatsRecorder::StartNewRecord(VideoCodecProfile profile,
@@ -84,8 +73,10 @@ void VideoDecodeStatsRecorder::UpdateRecord(
 }
 
 void VideoDecodeStatsRecorder::FinalizeRecord() {
-  if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN || frames_decoded_ == 0)
+  if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN || frames_decoded_ == 0 ||
+      !perf_history_) {
     return;
+  }
 
   DVLOG(2) << __func__ << " profile: " << profile_
            << " size:" << natural_size_.ToString() << " fps:" << frames_per_sec_

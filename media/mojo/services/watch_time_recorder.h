@@ -23,11 +23,9 @@ namespace media {
 // See mojom::WatchTimeRecorder for documentation.
 class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
  public:
-  explicit WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties);
+  WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
+                    uint64_t playback_id);
   ~WatchTimeRecorder() override;
-
-  static void CreateWatchTimeRecorderProvider(
-      mojom::WatchTimeRecorderProviderRequest request);
 
   // mojom::WatchTimeRecorder implementation:
   void RecordWatchTime(WatchTimeKey key, base::TimeDelta watch_time) override;

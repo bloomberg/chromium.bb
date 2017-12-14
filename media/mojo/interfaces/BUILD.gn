@@ -18,6 +18,7 @@ mojom("interfaces") {
     "interface_factory.mojom",
     "jpeg_decode_accelerator.mojom",
     "media_log.mojom",
+    "media_metrics_provider.mojom",
     "media_types.mojom",
     "output_protection.mojom",
     "platform_verification.mojom",

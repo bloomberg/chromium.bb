@@ -63,12 +63,3 @@ interface WatchTimeRecorder {
   // this is an absolute count and not relative since the last call.
   UpdateUnderflowCount(int32 count);
 };
-
-// Provider interface used to avoid having a SetPlaybackProperties() type method
-// on the WatchTimeRecorder interface.
-interface WatchTimeRecorderProvider {
-  // Creates a WatchTimeRecorder instance using |properties|. If any of those
-  // properties changes, a new recorder should be requested.
-  AcquireWatchTimeRecorder(PlaybackProperties properties,
-                           WatchTimeRecorder& recorder);
-};

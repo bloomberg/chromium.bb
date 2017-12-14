@@ -20,7 +20,7 @@ static bool IsOnBatteryPower() {
 
 WatchTimeReporter::WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                                      GetMediaTimeCB get_media_time_cb,
-                                     mojom::WatchTimeRecorderProvider* provider)
+                                     mojom::MediaMetricsProvider* provider)
     : WatchTimeReporter(std::move(properties),
                         false /* is_background */,
                         std::move(get_media_time_cb),
@@ -29,7 +29,7 @@ WatchTimeReporter::WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
 WatchTimeReporter::WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                                      bool is_background,
                                      GetMediaTimeCB get_media_time_cb,
-                                     mojom::WatchTimeRecorderProvider* provider)
+                                     mojom::MediaMetricsProvider* provider)
     : properties_(std::move(properties)),
       is_background_(is_background),
       get_media_time_cb_(std::move(get_media_time_cb)) {
