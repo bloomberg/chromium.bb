@@ -4,8 +4,8 @@
 
 ## Introduction
 
-`mb` is a simple python wrapper around the GYP and GN meta-build tools to
-be used as part of the GYP->GN migration.
+`mb` is a simple python wrapper GN meta-build tool; it was originally
+written as part of the GYP-&gt;GN migration.
 
 It is intended to be used by bots to make it easier to manage the configuration
 each bot builds (i.e., the configurations can be changed from chromium
@@ -45,7 +45,7 @@ a single object with the following fields:
     reflect the stuff we might want to build *in addition to* the list
     passed in `test_targets`. Targets in this list will be treated 
     specially, in the following way: if a given target is a "meta"
-    (GN: group, GYP: none) target like 'blink_tests' or or even the
+    (GN: group) target like 'blink_tests' or or even the
     ninja-specific 'all' target, then only the *dependencies* of the
     target that are affected by the modified files will be rebuilt
     (not the target itself, which might also cause unaffected dependencies
@@ -93,18 +93,11 @@ differences can be subtle.  We won't even go into how the `targets` and
 The `-b/--builder`, `-c/--config`, `-f/--config-file`, `-m/--master`,
 `-q/--quiet`, and `-v/--verbose` flags work as documented for `mb gen`.
 
-### `mb audit`
-
-`mb audit` is used to track the progress of the GYP->GN migration. You can
-use it to check a single master, or all the masters we care about. See
-`mb help audit` for more details (most people are not expected to care about
-this).
-
 ### `mb gen`
 
-`mb gen` is responsible for generating the Ninja files by invoking either GYP
-or GN as appropriate. It takes arguments to specify a build config and
-a directory, then runs GYP or GN as appropriate:
+`mb gen` is responsible for generating the Ninja files by invoking GN with
+the right sets of build args for the given bot. It takes arguments to
+specify a build config and a directory, then runs GN as appropriate:
 
 ```
 % mb gen -m tryserver.chromium.linux -b linux_rel //out/Release
@@ -133,12 +126,7 @@ that are read and written, and all the commands that are run.
 
 If the build config will use the Goma distributed-build system, you can pass
 the path to your Goma client in the `-g/--goma-dir` flag, and it will be
-incorporated into the appropriate flags for GYP or GN as needed.
-
-If gen ends up using GYP, the path must have a valid GYP configuration as the
-last component of the path (i.e., specify `//out/Release_x64`, not `//out`).
-The gyp script defaults to `//build/gyp_chromium`, but can be overridden with
-the `--gyp-script` flag, e.g. `--gyp-script=gypfiles/gyp_v8`.
+incorporated into the appropriate flags for GN as needed.
 
 ### `mb help`
 
@@ -186,7 +174,7 @@ push origin HEAD:refs/for/refs/meta/config` to upload the CL for review.
 
 `mb gen` is also responsible for generating the `.isolate` and
 `.isolated.gen.json` files needed to run test executables through swarming
-in a GN build (in a GYP build, this is done as part of the compile step).
+in a GN build.
 
 If you wish to generate the isolate files, pass `mb gen` the
 `--swarming-targets-file` command line argument; that arg should be a path
@@ -210,7 +198,7 @@ The `mb_config.pyl` config file is intended to enumerate all of the
 supported build configurations for Chromium. Generally speaking, you
 should never need to (or want to) build a configuration that isn't
 listed here, and so by using the configs in this file you can avoid
-having to juggle long lists of GYP_DEFINES and gn args by hand.
+having to juggle long lists of gn args by hand.
 
 `mb_config.pyl` is structured as a file containing a single PYthon Literal
 expression: a dictionary with three main keys, `masters`, `configs` and
@@ -239,49 +227,38 @@ value of the `mixins` key.
 Each mixin value is itself a dictionary that contains one or more of the
 following keys:
 
-  * `gyp_crosscompile`: a boolean; if true, GYP_CROSSCOMPILE=1 is set in
-    the environment and passed to GYP.
-  * `gyp_defines`: a string containing a list of GYP_DEFINES.
   * `gn_args`: a string containing a list of values passed to gn --args.
   * `mixins`: a list of other mixins that should be included.
-  * `type`: a string with either the value `gyp` or `gn`;
-    setting this indicates which meta-build tool to use.
 
 When `mb gen` or `mb analyze` executes, it takes a config name, looks it
 up in the 'configs' dict, and then does a left-to-right expansion of the
-mixins; gyp_defines and gn_args values are concatenated, and the type values
-override each other.
+mixins; gn_args values are concatenated.
 
 For example, if you had:
 
 ```
 {
   'configs`: {
-    'linux_release_trybot': ['gyp_release', 'trybot'],
+    'linux_release_trybot': ['gn_release', 'trybot'],
     'gn_shared_debug': None,
   }
   'mixins': {
     'bot': {
-      'gyp_defines': 'use_goma=1 dcheck_always_on=0',
       'gn_args': 'use_goma=true dcheck_always_on=false',
     },
     'debug': {
       'gn_args': 'is_debug=true',
     },
-    'gn': {'type': 'gn'},
-    'gyp_release': {
+    'gn_release': {
       'mixins': ['release'],
-      'type': 'gyp',
     },
     'release': {
       'gn_args': 'is_debug=false',
     }
     'shared': {
       'gn_args': 'is_component_build=true',
-      'gyp_defines': 'component=shared_library',
     },
     'trybot': {
-      'gyp_defines': 'dcheck_always_on=1',
       'gn_args': 'dcheck_always_on=true',
     }
   }
@@ -289,11 +266,10 @@ For example, if you had:
 ```
 
 and you ran `mb gen -c linux_release_trybot //out/Release`, it would
-translate into a call to `gyp_chromium -G Release` with `GYP_DEFINES` set to
-`"use_goma=true dcheck_always_on=false dcheck_always_on=true"`.
+translate into a call to `gn --args="use_goma=true dcheck_always_on=false dcheck_always_on=true"`.
 
 (From that you can see that mb is intentionally dumb and does not
-attempt to de-dup the flags, it lets gyp do that).
+attempt to de-dup the flags, it lets GN do that).
 
 ## Debugging MB
 
