@@ -130,7 +130,7 @@ static INLINE int64_t get_coeff_dist(tran_low_t tcoeff, tran_low_t dqcoeff,
   int depth_shift = (TX_COEFF_DEPTH - 11) * 2;
   int depth_round = depth_shift > 1 ? (1 << (depth_shift - 1)) : 0;
   const int64_t diff = tcoeff - dqcoeff;
-  const int64_t error = diff * diff + depth_round >> depth_shift;
+  const int64_t error = (diff * diff + depth_round) >> depth_shift;
   (void)shift;
 #else
   const int64_t diff = (tcoeff - dqcoeff) * (1 << shift);
@@ -2014,7 +2014,11 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const LV_MAP_COEFF_COST txb_costs = x->coeff_costs[txs_ctx][plane_type];
 
+#if CONFIG_DAALA_TX
+  const int shift = 0;
+#else
   const int shift = av1_get_tx_scale(tx_size);
+#endif
   const int64_t rdmult =
       ((x->rdmult * plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8))) +
        2) >>

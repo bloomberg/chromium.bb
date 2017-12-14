@@ -73,7 +73,9 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int16_t *const dequant = pd->seg_dequant_QTX[mbmi->segment_id];
   tran_low_t *const tcoeffs = pd->dqcoeff;
+#if !CONFIG_DAALA_TX
   const int shift = av1_get_tx_scale(tx_size);
+#endif
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
   const int height = get_txb_high(tx_size);
@@ -206,7 +208,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       *max_scan_line = AOMMAX(*max_scan_line, pos);
       if (level < 3) {
         cul_level += level;
+#if CONFIG_DAALA_TX
+        tcoeffs[pos] = level * dequant[!!c];
+#else
         tcoeffs[pos] = (level * dequant[!!c]) >> shift;
+#endif
       } else {
         update_pos[num_updates++] = pos;
       }
@@ -235,7 +241,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         // semantic: is_k = 1 if level > (k+1)
         if (is_k == 0) {
           cul_level += k + 1;
+#if CONFIG_DAALA_TX
+          tcoeffs[pos] = (k + 1) * dequant[!!c];
+#else
           tcoeffs[pos] = ((k + 1) * dequant[!!c]) >> shift;
+#endif
           break;
         }
       }
@@ -309,7 +319,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
       if (*level <= NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
         cul_level += *level;
+#if CONFIG_DAALA_TX
+        tran_low_t t = *level * dequant[!!pos];
+#else
         tran_low_t t = (*level * dequant[!!pos]) >> shift;
+#endif
         if (signs[pos]) t = -t;
         tcoeffs[pos] = t;
         continue;
@@ -341,7 +355,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
           *level = NUM_BASE_LEVELS + 1 + br_base + br_offset;
           cul_level += *level;
+#if CONFIG_DAALA_TX
+          tran_low_t t = *level * dequant[!!pos];
+#else
           tran_low_t t = (*level * dequant[!!pos]) >> shift;
+#endif
           if (signs[pos]) t = -t;
           tcoeffs[pos] = t;
           break;
@@ -356,7 +374,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       // Save golomb in tcoeffs because adding it to level may incur overflow
       tran_low_t t = *level + read_golomb(xd, r, counts);
       cul_level += t;
+#if CONFIG_DAALA_TX
+      t = t * dequant[!!pos];
+#else
       t = (t * dequant[!!pos]) >> shift;
+#endif
       if (signs[pos]) t = -t;
       tcoeffs[pos] = t;
     }
