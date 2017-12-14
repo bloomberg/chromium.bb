@@ -78,6 +78,10 @@ class BASE_EXPORT RefCountedBytes : public RefCountedMemory {
   // Constructs a RefCountedBytes object by copying |size| bytes from |p|.
   RefCountedBytes(const unsigned char* p, size_t size);
 
+  // Constructs a RefCountedBytes object by zero-initializing a new vector of
+  // |size| bytes.
+  explicit RefCountedBytes(size_t size);
+
   // Constructs a RefCountedBytes object by performing a swap. (To non
   // destructively build a RefCountedBytes, use the constructor that takes a
   // vector.)
@@ -90,6 +94,14 @@ class BASE_EXPORT RefCountedBytes : public RefCountedMemory {
 
   const std::vector<unsigned char>& data() const { return data_; }
   std::vector<unsigned char>& data() { return data_; }
+
+  // Non-const versions of front() and front_as() that are simply shorthand for
+  // data().data().
+  unsigned char* front() { return data_.data(); }
+  template <typename T>
+  T* front_as() {
+    return reinterpret_cast<T*>(front());
+  }
 
  private:
   ~RefCountedBytes() override;

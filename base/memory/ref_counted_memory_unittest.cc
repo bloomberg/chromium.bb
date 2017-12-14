@@ -6,7 +6,11 @@
 
 #include <stdint.h>
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::Each;
+using testing::ElementsAre;
 
 namespace base {
 
@@ -39,6 +43,20 @@ TEST(RefCountedMemoryUnitTest, RefCountedBytes) {
   EXPECT_EQ(12U, mem2->front()[0]);
   EXPECT_EQ(11U, mem2->front()[1]);
   EXPECT_EQ(99U, mem2->front()[2]);
+}
+
+TEST(RefCountedMemoryUnitTest, RefCountedBytesMutable) {
+  auto mem = base::MakeRefCounted<RefCountedBytes>(10);
+
+  ASSERT_EQ(10U, mem->size());
+  EXPECT_THAT(mem->data(), Each(0U));
+
+  // Test non-const versions of data(), front() and front_as<>().
+  mem->data()[0] = 1;
+  mem->front()[1] = 2;
+  mem->front_as<char>()[2] = 3;
+
+  EXPECT_THAT(mem->data(), ElementsAre(1, 2, 3, 0, 0, 0, 0, 0, 0, 0));
 }
 
 TEST(RefCountedMemoryUnitTest, RefCountedString) {
