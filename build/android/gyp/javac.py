@@ -209,8 +209,12 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
         # Add the extracted files to the classpath. This is required because
         # when compiling only a subset of files, classes that haven't changed
         # need to be findable.
-        classpath_idx = javac_cmd.index('-classpath')
-        javac_cmd[classpath_idx + 1] += ':' + classes_dir
+        try:
+          classpath_idx = javac_cmd.index('-classpath')
+          javac_cmd[classpath_idx + 1] += ':' + classes_dir
+        except ValueError:
+          # If there is no class path in the command line then add the arg
+          javac_cmd.extend(["-classpath", classes_dir])
 
       # Can happen when a target goes from having no sources, to having sources.
       # It's created by the call to build_utils.Touch() below.
