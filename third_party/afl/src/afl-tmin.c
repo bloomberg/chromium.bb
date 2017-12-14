@@ -4,7 +4,7 @@
 
    Written and maintained by Michal Zalewski <lcamtuf@google.com>
 
-   Copyright 2015, 2016 Google Inc. All rights reserved.
+   Copyright 2015, 2016, 2017 Google Inc. All rights reserved.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ static s32 shm_id,                    /* ID of the SHM region              */
 static u8  crash_mode,                /* Crash-centric mode?               */
            exit_crash,                /* Treat non-zero exit as crash?     */
            edges_only,                /* Ignore hit counts?                */
+           exact_mode,                /* Require path match for crashes?   */
            use_stdin = 1;             /* Use stdin for program input?      */
 
 static volatile u8
@@ -157,7 +158,7 @@ static inline u8 anything_set(void) {
 
 static void remove_shm(void) {
 
-  unlink(prog_in); /* Ignore errors */
+  if (prog_in) unlink(prog_in); /* Ignore errors */
   shmctl(shm_id, IPC_RMID, NULL);
 
 }
@@ -282,6 +283,8 @@ static u8 run_target(char** argv, u8* mem, u32 len, u8 first_run) {
     close(dev_null_fd);
     close(prog_in_fd);
 
+    setsid();
+
     if (mem_limit) {
 
       r.rlim_max = r.rlim_cur = ((rlim_t)mem_limit) << 20;
@@ -338,8 +341,11 @@ static u8 run_target(char** argv, u8* mem, u32 len, u8 first_run) {
   total_execs++;
 
   if (stop_soon) {
+
     SAYF(cRST cLRD "\n+++ Minimization aborted by user +++\n" cRST);
+    close(write_to_file(out_file, in_data, in_len));
     exit(1);
+
   }
 
   /* Always discard inputs that time out. */
@@ -361,7 +367,7 @@ static u8 run_target(char** argv, u8* mem, u32 len, u8 first_run) {
 
     if (crash_mode) {
 
-      return 1;
+      if (!exact_mode) return 1;
 
     } else {
 
@@ -370,7 +376,7 @@ static u8 run_target(char** argv, u8* mem, u32 len, u8 first_run) {
 
     }
 
-  }
+  } else
 
   /* Handle non-crashing inputs appropriately. */
 
@@ -670,14 +676,14 @@ static void set_up_environment(void) {
 
     u8* use_dir = ".";
 
-    if (!access(use_dir, R_OK | W_OK | X_OK)) {
+    if (access(use_dir, R_OK | W_OK | X_OK)) {
 
       use_dir = getenv("TMPDIR");
       if (!use_dir) use_dir = "/tmp";
 
-      prog_in = alloc_printf("%s/.afl-tmin-temp-%u", use_dir, getpid());
-
     }
+
+    prog_in = alloc_printf("%s/.afl-tmin-temp-%u", use_dir, getpid());
 
   }
 
@@ -887,6 +893,10 @@ static char** get_qemu_argv(u8* own_loc, char** argv, int argc) {
 
   char** new_argv = ck_alloc(sizeof(char*) * (argc + 4));
   u8 *tmp, *cp, *rsl, *own_copy;
+
+  /* Workaround for a QEMU stability glitch. */
+
+  setenv("QEMU_LOG", "nochain", 1);
 
   memcpy(new_argv + 3, argv + 1, sizeof(char*) * argc);
 
@@ -1101,6 +1111,8 @@ int main(int argc, char** argv) {
   else
     use_argv = argv + optind;
 
+  exact_mode = !!getenv("AFL_TMIN_EXACT");
+
   SAYF("\n");
 
   read_initial_file();
@@ -1122,14 +1134,17 @@ int main(int argc, char** argv) {
 
   } else {
 
-     OKF("Program exits with a signal, minimizing in " cMGN "crash" cRST
-         " mode.");
+     OKF("Program exits with a signal, minimizing in " cMGN "%scrash" cRST
+         " mode.", exact_mode ? "EXACT " : "");
 
   }
 
   minimize(use_argv);
 
   ACTF("Writing output to '%s'...", out_file);
+
+  unlink(prog_in);
+  prog_in = NULL;
 
   close(write_to_file(out_file, in_data, in_len));
 
