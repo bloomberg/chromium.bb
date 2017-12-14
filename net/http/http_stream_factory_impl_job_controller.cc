@@ -1229,12 +1229,7 @@ bool HttpStreamFactoryImpl::JobController::
     return false;
   }
 
-  ProxyDelegate* proxy_delegate = session_->context().proxy_delegate;
-  if (!proxy_delegate)
-    return false;
-  proxy_delegate->GetAlternativeProxy(url, proxy_info.proxy_server(),
-                                      alternative_proxy_server);
-
+  *alternative_proxy_server = proxy_info.alternative_proxy();
   if (!alternative_proxy_server->is_valid())
     return false;
 

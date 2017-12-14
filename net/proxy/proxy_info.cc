@@ -64,6 +64,10 @@ void ProxyInfo::OverrideProxyList(const ProxyList& proxy_list) {
   proxy_list_ = proxy_list;
 }
 
+void ProxyInfo::SetAlternativeProxy(const ProxyServer& proxy_server) {
+  alternative_proxy_ = proxy_server;
+}
+
 std::string ProxyInfo::ToPacString() const {
   return proxy_list_.ToPacString();
 }

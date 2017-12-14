@@ -63,10 +63,6 @@ class TestProxyDelegate : public ProxyDelegate {
       const HostPortPair& proxy_server,
       const HttpResponseHeaders& response_headers) override;
   bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override;
-  void GetAlternativeProxy(
-      const GURL& url,
-      const ProxyServer& resolved_proxy_server,
-      ProxyServer* alternative_proxy_server) const override;
   void OnAlternativeProxyBroken(
       const ProxyServer& alternative_proxy_server) override;
 
@@ -78,14 +74,10 @@ class TestProxyDelegate : public ProxyDelegate {
     return alternative_proxy_server_;
   }
 
-  int get_alternative_proxy_invocations() const {
-    return get_alternative_proxy_invocations_;
-  }
-
  private:
-  bool on_before_tunnel_request_called_;
-  bool on_tunnel_request_completed_called_;
-  bool on_tunnel_headers_received_called_;
+  bool on_before_tunnel_request_called_ = false;
+  bool on_tunnel_request_completed_called_ = false;
+  bool on_tunnel_headers_received_called_ = false;
   net::ProxyServer trusted_spdy_proxy_;
   HostPortPair on_tunnel_request_completed_endpoint_;
   HostPortPair on_tunnel_request_completed_proxy_server_;
@@ -93,9 +85,6 @@ class TestProxyDelegate : public ProxyDelegate {
   HostPortPair on_tunnel_headers_received_proxy_server_;
   std::string on_tunnel_headers_received_status_line_;
   ProxyServer alternative_proxy_server_;
-
-  // Number of times GetAlternativeProxy() method has been called.
-  mutable int get_alternative_proxy_invocations_;
 };
 
 }  // namespace net

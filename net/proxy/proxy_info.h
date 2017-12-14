@@ -71,6 +71,10 @@ class NET_EXPORT ProxyInfo {
   // proxy configuration.
   void OverrideProxyList(const ProxyList& proxy_list);
 
+  // Sets the alternative service to try when connecting to the first valid
+  // proxy server, but does not otherwise reset the proxy configuration.
+  void SetAlternativeProxy(const ProxyServer& proxy_server);
+
   // Returns true if this proxy info specifies a direct connection.
   bool is_direct() const {
     // We don't implicitly fallback to DIRECT unless it was added to the list.
@@ -158,6 +162,9 @@ class NET_EXPORT ProxyInfo {
     return proxy_list_;
   }
 
+  // Returns the alternative proxy, which may be invalid.
+  const ProxyServer& alternative_proxy() const { return alternative_proxy_; }
+
   base::TimeTicks proxy_resolve_start_time() const {
     return proxy_resolve_start_time_;
   }
@@ -180,6 +187,10 @@ class NET_EXPORT ProxyInfo {
   // The ordered list of proxy servers (including DIRECT attempts) remaining to
   // try. If proxy_list_ is empty, then there is nothing left to fall back to.
   ProxyList proxy_list_;
+
+  // An alternative to proxy_server() (in the sense of HTTP Alternative
+  // Services).
+  ProxyServer alternative_proxy_;
 
   // List of proxies that have been tried already.
   ProxyRetryInfoMap proxy_retry_info_;
