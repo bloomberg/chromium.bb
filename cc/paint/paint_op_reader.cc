@@ -268,8 +268,10 @@ void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob,
                          TransferCacheDeserializeHelper* transfer_cache) {
   sk_sp<SkData> data;
   Read(&data);
-  if (!data || !valid_)
+  if (!data || !valid_) {
+    SetInvalid();
     return;
+  }
 
   // Skia expects the following to be true, make sure we don't pass it incorrect
   // data.
