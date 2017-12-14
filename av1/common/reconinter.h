@@ -275,34 +275,6 @@ void av1_make_masked_inter_predictor(
     int xs, int ys, int plane, const WarpTypesAllowed *warp_types, int p_col,
     int p_row, int ref, MACROBLOCKD *xd);
 
-static INLINE int round_mv_comp_q4(int value) {
-  return (value < 0 ? value - 2 : value + 2) / 4;
-}
-
-static MV mi_mv_pred_q4(const MODE_INFO *mi, int idx) {
-  MV res = {
-    round_mv_comp_q4(
-        mi->bmi[0].as_mv[idx].as_mv.row + mi->bmi[1].as_mv[idx].as_mv.row +
-        mi->bmi[2].as_mv[idx].as_mv.row + mi->bmi[3].as_mv[idx].as_mv.row),
-    round_mv_comp_q4(
-        mi->bmi[0].as_mv[idx].as_mv.col + mi->bmi[1].as_mv[idx].as_mv.col +
-        mi->bmi[2].as_mv[idx].as_mv.col + mi->bmi[3].as_mv[idx].as_mv.col)
-  };
-  return res;
-}
-
-static INLINE int round_mv_comp_q2(int value) {
-  return (value < 0 ? value - 1 : value + 1) / 2;
-}
-
-static MV mi_mv_pred_q2(const MODE_INFO *mi, int idx, int block0, int block1) {
-  MV res = { round_mv_comp_q2(mi->bmi[block0].as_mv[idx].as_mv.row +
-                              mi->bmi[block1].as_mv[idx].as_mv.row),
-             round_mv_comp_q2(mi->bmi[block0].as_mv[idx].as_mv.col +
-                              mi->bmi[block1].as_mv[idx].as_mv.col) };
-  return res;
-}
-
 // TODO(jkoleszar): yet another mv clamping function :-(
 static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
                                            const MV *src_mv, int bw, int bh,
@@ -325,20 +297,6 @@ static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
            xd->mb_to_bottom_edge * (1 << (1 - ss_y)) + spel_bottom);
 
   return clamped_mv;
-}
-
-static INLINE MV average_split_mvs(const struct macroblockd_plane *pd,
-                                   const MODE_INFO *mi, int ref, int block) {
-  const int ss_idx = ((pd->subsampling_x > 0) << 1) | (pd->subsampling_y > 0);
-  MV res = { 0, 0 };
-  switch (ss_idx) {
-    case 0: res = mi->bmi[block].as_mv[ref].as_mv; break;
-    case 1: res = mi_mv_pred_q2(mi, ref, block, block + 2); break;
-    case 2: res = mi_mv_pred_q2(mi, ref, block, block + 1); break;
-    case 3: res = mi_mv_pred_q4(mi, ref); break;
-    default: assert(ss_idx <= 3 && ss_idx >= 0);
-  }
-  return res;
 }
 
 void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
