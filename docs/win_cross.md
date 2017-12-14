@@ -1,15 +1,15 @@
 # Cross-compiling Chrome/win
 
-It's possible to build most parts of the codebase on a Linux (and soon, Mac)
-host while targeting Windows.  This document describes how to set that up, and
-current restrictions.
+It's possible to build most parts of the codebase on a Linux or Mac host while
+targeting Windows.  This document describes how to set that up, and current
+restrictions.
 
 What does *not* work:
 
 * goma. Sorry. ([internal bug](http://b/64390790)) You can use the
   [jumbo build](jumbo.md) for faster build times.
 * mini_installer ([bug](https://crbug.com/762073))
-* linking on Mac ([bug](https://crbug.com/774209)), should change soon
+* on Mac hosts, building a 32-bit chrome ([bug](https://crbug.com/794838))
 
 All other targets build fine (including `chrome`, `browser_tests`, ...).
 
