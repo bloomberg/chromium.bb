@@ -55,11 +55,11 @@ class AssertionEnablerClassAdapter extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(final int access, final String name, String desc,
             String signature, String[] exceptions) {
-        return new RewriteAssertMethodVisitorWriter(
+        return new RewriteAssertMethodVisitor(
                 Opcodes.ASM5, super.visitMethod(access, name, desc, signature, exceptions));
     }
 
-    static class RewriteAssertMethodVisitorWriter extends MethodVisitor {
+    static class RewriteAssertMethodVisitor extends MethodVisitor {
         static final String ASSERTION_DISABLED_NAME = "$assertionsDisabled";
         static final String INSERT_INSTRUCTION_NAME = "assertFailureHandler";
         static final String INSERT_INSTRUCTION_DESC =
@@ -69,7 +69,7 @@ class AssertionEnablerClassAdapter extends ClassVisitor {
         boolean mStartLoadingAssert;
         Label mGotoLabel;
 
-        public RewriteAssertMethodVisitorWriter(int api, MethodVisitor mv) {
+        public RewriteAssertMethodVisitor(int api, MethodVisitor mv) {
             super(api, mv);
         }
 
