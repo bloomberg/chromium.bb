@@ -15,26 +15,18 @@
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/html/forms/HTMLOptionElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class HTMLInputElementTest : public ::testing::Test {
+class HTMLInputElementTest : public PageTestBase {
  protected:
-  Document& GetDocument() { return page_holder_->GetDocument(); }
   HTMLInputElement& TestElement() {
     Element* element = GetDocument().getElementById("test");
     DCHECK(element);
     return ToHTMLInputElement(*element);
   }
-
- private:
-  void SetUp() override {
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-  }
-
-  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsNoList) {

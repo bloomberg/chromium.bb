@@ -4,10 +4,10 @@
 
 #include "core/html/parser/HTMLResourcePreloader.h"
 
-#include "core/html/parser/PreloadRequest.h"
-#include "core/testing/DummyPageHolder.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
+#include "core/html/parser/PreloadRequest.h"
+#include "core/testing/PageTestBase.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
@@ -41,9 +41,9 @@ class PreloaderNetworkHintsMock : public NetworkHintsInterface {
   mutable bool is_cross_origin_;
 };
 
-class HTMLResourcePreloaderTest : public ::testing::Test {
+class HTMLResourcePreloaderTest : public PageTestBase {
  protected:
-  HTMLResourcePreloaderTest() : dummy_page_holder_(DummyPageHolder::Create()) {}
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
   void Test(HTMLResourcePreconnectTestCase test_case) {
     // TODO(yoav): Need a mock loader here to verify things are happenning
@@ -58,15 +58,12 @@ class HTMLResourcePreloaderTest : public ::testing::Test {
     if (test_case.is_cors)
       preload_request->SetCrossOrigin(kCrossOriginAttributeAnonymous);
     HTMLResourcePreloader* preloader =
-        HTMLResourcePreloader::Create(dummy_page_holder_->GetDocument());
+        HTMLResourcePreloader::Create(GetDocument());
     preloader->Preload(std::move(preload_request), network_hints);
     ASSERT_TRUE(network_hints.DidPreconnect());
     ASSERT_EQ(test_case.is_cors, network_hints.IsCrossOrigin());
     ASSERT_EQ(test_case.is_https, network_hints.IsHTTPS());
   }
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(HTMLResourcePreloaderTest, testPreconnect) {

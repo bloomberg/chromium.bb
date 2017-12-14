@@ -7,26 +7,23 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 const int kViewportWidth = 500;
 const int kViewportHeight = 600;
-class HTMLImageElementTest : public ::testing::Test {
+class HTMLImageElementTest : public PageTestBase {
  protected:
-  HTMLImageElementTest()
-      : dummy_page_holder_(
-            DummyPageHolder::Create(IntSize(kViewportWidth, kViewportHeight))) {
+  void SetUp() override {
+    PageTestBase::SetUp(IntSize(kViewportWidth, kViewportHeight));
   }
-
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(HTMLImageElementTest, width) {
-  HTMLImageElement* image = HTMLImageElement::Create(
-      dummy_page_holder_->GetDocument(), /* createdByParser */ false);
+  HTMLImageElement* image =
+      HTMLImageElement::Create(GetDocument(), /* createdByParser */ false);
   image->setAttribute(HTMLNames::widthAttr, "400");
   // TODO(yoav): `width` does not impact resourceWidth until we resolve
   // https://github.com/ResponsiveImagesCG/picture-element/issues/268
@@ -36,8 +33,8 @@ TEST_F(HTMLImageElementTest, width) {
 }
 
 TEST_F(HTMLImageElementTest, sourceSize) {
-  HTMLImageElement* image = HTMLImageElement::Create(
-      dummy_page_holder_->GetDocument(), /* createdByParser */ false);
+  HTMLImageElement* image =
+      HTMLImageElement::Create(GetDocument(), /* createdByParser */ false);
   image->setAttribute(HTMLNames::widthAttr, "400");
   EXPECT_EQ(kViewportWidth, image->SourceSize(*image));
   image->setAttribute(HTMLNames::sizesAttr, "50vw");
