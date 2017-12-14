@@ -9,12 +9,7 @@
 
 namespace skia {
 
-// TODO(bsalomon): Remove both of these conversions when Skia bug 5019 is fixed.
-inline GrBackendObject GrGLTextureInfoToGrBackendObject(
-    const GrGLTextureInfo& info) {
-  return reinterpret_cast<GrBackendObject>(&info);
-}
-
+// TODO(bsalomon): Remove this conversion when Skia bug 5019 is fixed.
 inline const GrGLTextureInfo* GrBackendObjectToGrGLTextureInfo(
     GrBackendObject object) {
   return reinterpret_cast<const GrGLTextureInfo*>(object);
