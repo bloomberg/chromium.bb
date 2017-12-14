@@ -224,7 +224,13 @@ void MediaRouterDesktop::InitializeWiredDisplayMediaRouteProvider() {
 
 #if defined(OS_WIN)
 void MediaRouterDesktop::EnsureMdnsDiscoveryEnabled() {
-  extension_provider_proxy_->EnableMdnsDiscovery();
+  if (cast_media_sink_service_) {
+    cast_media_sink_service_->StartMdnsDiscovery();
+  } else {
+    media_route_providers_[MediaRouteProviderId::EXTENSION]
+        ->EnableMdnsDiscovery();
+  }
+
   // Record that we enabled mDNS discovery, so that we will know to enable again
   // when we reconnect to the component extension.
   should_enable_mdns_discovery_ = true;

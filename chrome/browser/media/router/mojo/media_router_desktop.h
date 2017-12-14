@@ -52,8 +52,8 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
       const std::string& presentation_id) override;
 
  private:
-  friend class MediaRouterDesktopTest;
-  friend class MediaRouterDesktopTestTest;
+  template <bool>
+  friend class MediaRouterDesktopTestBase;
   friend class MediaRouterFactory;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, TestProvideSinks);
 
