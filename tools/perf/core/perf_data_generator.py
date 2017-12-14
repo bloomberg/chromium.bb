@@ -844,7 +844,7 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
 BENCHMARK_SWARMING_TIMEOUTS = {
     'loading.desktop': 14400, # 4 hours (crbug.com/753798)
     'loading.mobile': 16200, # 4.5 hours
-    'system_health.memory_mobile': 10800, # 3 hours
+    'system_health.memory_mobile': 14400, # 4 hours (crbug.com/775242)
     'system_health.memory_desktop': 10800, # 3 hours
 }
 
