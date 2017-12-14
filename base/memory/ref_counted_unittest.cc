@@ -4,6 +4,7 @@
 
 #include "base/memory/ref_counted.h"
 
+#include <type_traits>
 #include <utility>
 
 #include "base/test/gtest_util.h"
@@ -160,6 +161,12 @@ TEST(RefCountedUnitTest, TestSelfAssignment) {
   SelfAssign* p = new SelfAssign;
   scoped_refptr<SelfAssign> var(p);
   var = var;
+  EXPECT_EQ(var.get(), p);
+  var = std::move(var);
+  EXPECT_EQ(var.get(), p);
+  var.swap(var);
+  EXPECT_EQ(var.get(), p);
+  swap(var, var);
   EXPECT_EQ(var.get(), p);
 }
 
@@ -563,21 +570,21 @@ TEST(RefCountedUnitTest, MoveConstructorDerived) {
 }
 
 TEST(RefCountedUnitTest, TestOverloadResolutionCopy) {
-  scoped_refptr<Derived> derived(new Derived);
-  scoped_refptr<SelfAssign> expected(derived);
+  const scoped_refptr<Derived> derived(new Derived);
+  const scoped_refptr<SelfAssign> expected(derived);
   EXPECT_EQ(expected, Overloaded(derived));
 
-  scoped_refptr<Other> other(new Other);
+  const scoped_refptr<Other> other(new Other);
   EXPECT_EQ(other, Overloaded(other));
 }
 
 TEST(RefCountedUnitTest, TestOverloadResolutionMove) {
   scoped_refptr<Derived> derived(new Derived);
-  scoped_refptr<SelfAssign> expected(derived);
+  const scoped_refptr<SelfAssign> expected(derived);
   EXPECT_EQ(expected, Overloaded(std::move(derived)));
 
   scoped_refptr<Other> other(new Other);
-  scoped_refptr<Other> other2(other);
+  const scoped_refptr<Other> other2(other);
   EXPECT_EQ(other2, Overloaded(std::move(other)));
 }
 
