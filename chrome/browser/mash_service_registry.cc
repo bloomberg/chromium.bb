@@ -4,19 +4,13 @@
 
 #include "chrome/browser/mash_service_registry.h"
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/font_service/public/interfaces/constants.mojom.h"
 #include "mash/quick_launch/public/interfaces/constants.mojom.h"
 #include "mash/quick_launch/quick_launch.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/constants.mojom.h"  // nogncheck
-#endif                                              // defined(OS_CHROMEOS)
-
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-#include "components/font_service/public/interfaces/constants.mojom.h"
-#endif  // defined(OS_LINUX) && !defined(OS_ANDROID)
 
 namespace mash_service_registry {
 namespace {
@@ -29,14 +23,10 @@ struct Service {
 constexpr Service kServices[] = {
     {mash::quick_launch::mojom::kServiceName, "Quick Launch"},
     {ui::mojom::kServiceName, "UI Service"},
-#if defined(OS_CHROMEOS)
     {ash::mojom::kServiceName, "Ash Window Manager and Shell"},
     {"accessibility_autoclick", "Ash Accessibility Autoclick"},
     {"touch_hud", "Ash Touch Hud"},
-#endif  // defined(OS_CHROMEOS)
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
     {font_service::mojom::kServiceName, "Font Service"},
-#endif  // defined(OS_LINUX) && !defined(OS_ANDROID)
 };
 
 }  // namespace
@@ -61,13 +51,7 @@ bool ShouldTerminateOnServiceQuit(const std::string& name) {
   // Some services going down are treated as catastrophic failures, usually
   // because both the browser and the service cache data about each other's
   // state that is not rebuilt when the service restarts.
-  if (name == ui::mojom::kServiceName)
-    return true;
-#if defined(OS_CHROMEOS)
-  if (name == ash::mojom::kServiceName)
-    return true;
-#endif
-  return false;
+  return name == ui::mojom::kServiceName || name == ash::mojom::kServiceName;
 }
 
 }  // namespace mash_service_registry

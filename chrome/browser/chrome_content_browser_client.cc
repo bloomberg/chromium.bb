@@ -271,6 +271,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/mash_service_registry.h"
 #include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -380,7 +381,6 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_MUS)
-#include "chrome/browser/mash_service_registry.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #endif
 
@@ -1935,10 +1935,6 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
 #if BUILDFLAG(ENABLE_MUS)
-  if (mash_service_registry::IsMashServiceName(identity.name())) {
-    command_line->AppendSwitchASCII(switches::kMashServiceName,
-                                    identity.name());
-  }
   bool copy_switches = false;
   if (identity.name() == ui::mojom::kServiceName) {
     command_line->AppendSwitch(switches::kMessageLoopTypeUi);
@@ -1949,6 +1945,10 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     command_line->AppendSwitch(switches::kMessageLoopTypeUi);
     copy_switches = true;
   }
+  if (mash_service_registry::IsMashServiceName(identity.name())) {
+    command_line->AppendSwitchASCII(switches::kMashServiceName,
+                                    identity.name());
+  }
 #endif
   // TODO(sky): move to a whitelist, but currently the set of flags is rather
   // sprawling.
@@ -1956,7 +1956,7 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     for (const auto& sw : base::CommandLine::ForCurrentProcess()->GetSwitches())
       command_line->AppendSwitchNative(sw.first, sw.second);
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_MUS)
 }
 
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
@@ -3282,7 +3282,7 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
   (*services)[patch::mojom::kServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PATCH_NAME);
 
-#if BUILDFLAG(ENABLE_MUS)
+#if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMash))
     mash_service_registry::RegisterOutOfProcessServices(services);
 #endif
@@ -3290,7 +3290,7 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 
 bool ChromeContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
-#if BUILDFLAG(ENABLE_MUS)
+#if defined(OS_CHROMEOS)
   return mash_service_registry::ShouldTerminateOnServiceQuit(id.name());
 #endif
   return false;

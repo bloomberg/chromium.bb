@@ -292,8 +292,8 @@ void ChromeContentUtilityClient::RegisterServices(
 #endif
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(ENABLE_MUS)
-  RegisterMashServices(services);
+#if defined(OS_CHROMEOS)
+  RegisterOutOfProcessMashServices(services);
 #endif
 }
 

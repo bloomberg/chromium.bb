@@ -2763,6 +2763,8 @@ split_static_library("browser") {
       "download/notification/download_notification_manager.h",
       "feedback/feedback_util_chromeos.cc",
       "feedback/feedback_util_chromeos.h",
+      "mash_service_registry.cc",
+      "mash_service_registry.h",
       "media/chromeos_login_media_access_handler.cc",
       "media/chromeos_login_media_access_handler.h",
       "media/public_session_media_access_handler.cc",
@@ -2814,9 +2816,14 @@ split_static_library("browser") {
     ]
     deps += [
       "//ash",
+      "//ash/public/cpp",
       "//chrome/browser/chromeos",
+      "//components/font_service:lib",
+      "//components/font_service/public/interfaces",
+      "//mash/quick_launch/public/interfaces:constants",
       "//services/ui/public/cpp/input_devices",
       "//services/ui/public/cpp/input_devices:input_device_controller",
+      "//services/ui/public/interfaces",
       "//ui/ozone",
     ]
     public_deps += [
@@ -4098,28 +4105,6 @@ split_static_library("browser") {
 
   if (use_udev) {
     deps += [ "//device/udev_linux" ]
-  }
-
-  if (enable_mus) {
-    sources += [
-      "mash_service_registry.cc",
-      "mash_service_registry.h",
-    ]
-
-    deps += [
-      "//mash/quick_launch/public/interfaces:constants",
-      "//services/ui/public/interfaces",
-    ]
-
-    if (is_linux && !is_android) {
-      deps += [
-        "//components/font_service:lib",
-        "//components/font_service/public/interfaces",
-      ]
-    }
-    if (is_chromeos) {
-      deps += [ "//ash/public/cpp" ]
-    }
   }
 }
 
