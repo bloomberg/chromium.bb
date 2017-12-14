@@ -152,8 +152,9 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
   return true;
 }
 
-gpu::SyncToken StaticBitmapImage::GetSyncToken() {
-  return gpu::SyncToken();
+const gpu::SyncToken& StaticBitmapImage::GetSyncToken() const {
+  static const gpu::SyncToken sync_token;
+  return sync_token;
 }
 
 }  // namespace blink

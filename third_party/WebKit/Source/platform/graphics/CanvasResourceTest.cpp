@@ -4,6 +4,7 @@
 
 #include "platform/graphics/CanvasResource.h"
 
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
@@ -59,9 +60,10 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_TRUE(!!context_provider_wrapper_);
-  scoped_refptr<CanvasResource> resource = CanvasResource_Skia::Create(
-      surface->makeImageSnapshot(), context_provider_wrapper_, nullptr,
-      kLow_SkFilterQuality);
+  scoped_refptr<CanvasResource> resource = CanvasResource_Bitmap::Create(
+      StaticBitmapImage::Create(surface->makeImageSnapshot(),
+                                context_provider_wrapper_),
+      nullptr, kLow_SkFilterQuality);
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 

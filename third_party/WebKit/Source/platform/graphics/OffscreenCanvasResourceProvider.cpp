@@ -92,7 +92,7 @@ void OffscreenCanvasResourceProvider::
         scoped_refptr<StaticBitmapImage> image) {
   DCHECK(image->IsTextureBacked());
   DCHECK(image->IsValid());
-  image->EnsureMailbox(kVerifiedSyncToken);
+  image->EnsureMailbox(kVerifiedSyncToken, GL_LINEAR);
   resource.mailbox_holder = gpu::MailboxHolder(
       image->GetMailbox(), image->GetSyncToken(), GL_TEXTURE_2D);
   resource.read_lock_fences_enabled = false;

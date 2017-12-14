@@ -13,6 +13,8 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
 
+typedef unsigned int GLenum;
+
 namespace blink {
 
 class WebGraphicsContext3DProviderWrapper;
@@ -29,7 +31,9 @@ class PLATFORM_EXPORT GraphicsContext3DUtils {
   // mailbox for a given texture. The caching of pre-existing mailboxes survives
   // when the texture gets recycled by skia for creating a new SkSurface or
   // SkImage with a pre-existing GrTexture backing.
-  void GetMailboxForSkImage(gpu::Mailbox&, const sk_sp<SkImage>&);
+  void GetMailboxForSkImage(gpu::Mailbox&,
+                            const sk_sp<SkImage>&,
+                            GLenum filter);
   void RemoveCachedMailbox(GrTexture*);
 
  private:

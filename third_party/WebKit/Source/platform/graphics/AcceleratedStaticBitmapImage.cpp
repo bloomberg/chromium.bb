@@ -156,11 +156,12 @@ void AcceleratedStaticBitmapImage::CopyToTexture(
 
   // TODO(junov) : could reduce overhead by using kOrderingBarrier when we know
   // that the source and destination context or on the same stream.
-  EnsureMailbox(kUnverifiedSyncToken);
+  EnsureMailbox(kUnverifiedSyncToken, GL_NEAREST);
 
   // Get a texture id that |destProvider| knows about and copy from it.
   gpu::gles2::GLES2Interface* dest_gl = dest_provider->ContextGL();
-  dest_gl->WaitSyncTokenCHROMIUM(texture_holder_->GetSyncToken().GetData());
+  dest_gl->WaitSyncTokenCHROMIUM(
+      texture_holder_->GetSyncToken().GetConstData());
   GLuint source_texture_id = dest_gl->CreateAndConsumeTextureCHROMIUM(
       texture_holder_->GetMailbox().name);
   dest_gl->CopySubTextureCHROMIUM(
@@ -232,7 +233,8 @@ void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
       WTF::WrapUnique(new SkiaTextureHolder(std::move(texture_holder_)));
 }
 
-void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode) {
+void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,
+                                                 GLenum filter) {
   if (!texture_holder_->IsMailboxTextureHolder()) {
     if (!original_skia_image_) {
       // To ensure that the texture resource stays alive we only really need
@@ -241,15 +243,15 @@ void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode) {
       RetainOriginalSkImageForCopyOnWrite();
     }
 
-    texture_holder_ =
-        WTF::WrapUnique(new MailboxTextureHolder(std::move(texture_holder_)));
+    texture_holder_ = WTF::WrapUnique(
+        new MailboxTextureHolder(std::move(texture_holder_), filter));
   }
   texture_holder_->Sync(mode);
 }
 
 void AcceleratedStaticBitmapImage::Transfer() {
   CheckThread();
-  EnsureMailbox(kUnverifiedSyncToken);
+  EnsureMailbox(kUnverifiedSyncToken, GL_NEAREST);
   detach_thread_at_next_check_ = true;
 }
 

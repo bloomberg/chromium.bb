@@ -61,6 +61,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   virtual bool IsValid() const { return true; }
   virtual void Transfer() {}
   virtual void Abandon() {}
+
   // Creates a non-gpu copy of the image, or returns this if image is already
   // non-gpu.
   virtual scoped_refptr<StaticBitmapImage> MakeUnaccelerated() { return this; }
@@ -91,12 +92,13 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   //   Use kUnverifiedSyncToken
   // Case 3: Passing to a gpu context on the same stream.
   //   Use kOrderingBarrier
-  virtual void EnsureMailbox(MailboxSyncMode) { NOTREACHED(); }
-  virtual gpu::Mailbox GetMailbox() {
+  virtual void EnsureMailbox(MailboxSyncMode, GLenum filter) { NOTREACHED(); }
+  virtual const gpu::Mailbox& GetMailbox() const {
     NOTREACHED();
-    return gpu::Mailbox();
+    static const gpu::Mailbox mailbox;
+    return mailbox;
   }
-  virtual gpu::SyncToken GetSyncToken();
+  virtual const gpu::SyncToken& GetSyncToken() const;
   virtual void UpdateSyncToken(gpu::SyncToken) { NOTREACHED(); }
   virtual bool IsPremultiplied() const { return true; }
 
