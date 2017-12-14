@@ -25,6 +25,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -37,8 +38,10 @@ namespace {
 constexpr size_t kMaxAppResults = arc::ArcNavigationThrottle::kMaxAppResults;
 // Main components sizes
 constexpr int kTitlePadding = 16;
-constexpr int kRowHeight = 40;
+constexpr int kRowHeight = 32;
 constexpr int kMaxWidth = 320;
+constexpr gfx::Insets kSeparatorPadding(16, 0, 16, 0);
+constexpr SkColor kSeparatorColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 
 // UI position wrt the Top Container
 constexpr int kTopContainerMerge = 3;
@@ -48,6 +51,13 @@ constexpr char kInvalidPackageName[] = "";
 bool IsKeyboardCodeArrow(ui::KeyboardCode key_code) {
   return key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN ||
          key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_LEFT;
+}
+
+views::Separator* CreateHorizontalSeparator() {
+  views::Separator* separator = new views::Separator;
+  separator->SetColor(kSeparatorColor);
+  separator->SetBorder(views::CreateEmptyBorder(kSeparatorPadding));
+  return separator;
 }
 
 }  // namespace
@@ -69,10 +79,10 @@ class IntentPickerLabelButton : public views::LabelButton {
     SetInkDropMode(InkDropMode::ON);
     if (!icon->IsEmpty())
       SetImage(views::ImageButton::STATE_NORMAL, *icon->ToImageSkia());
-    SetBorder(views::CreateEmptyBorder(10, 16, 10, 0));
+    SetBorder(views::CreateEmptyBorder(8, 16, 8, 0));
   }
 
-  SkColor GetInkDropBaseColor() const override { return SK_ColorBLACK; }
+  SkColor GetInkDropBaseColor() const override { return SK_ColorGRAY; }
 
   void MarkAsUnselected(const ui::Event* event) {
     AnimateInkDrop(views::InkDropState::HIDDEN,
@@ -222,6 +232,7 @@ void IntentPickerBubbleView::Init() {
     app_button->set_tag(i);
     scrollable_view->AddChildViewAt(app_button, i++);
   }
+
   // We should delete at most one entry, this is the case when Chrome is listed
   // as a candidate to handle a given URL.
   if (to_erase != app_info_.size())
@@ -248,6 +259,8 @@ void IntentPickerBubbleView::Init() {
 
   layout->StartRowWithPadding(0, kColumnSetId, 0, kTitlePadding);
   layout->AddView(scroll_view_);
+  layout->StartRow(0, kColumnSetId, 0);
+  layout->AddView(CreateHorizontalSeparator());
 
   // This second ColumnSet has a padding column in order to manipulate the
   // Checkbox positioning freely.
@@ -258,12 +271,12 @@ void IntentPickerBubbleView::Init() {
                        views::GridLayout::FIXED, kMaxWidth - 2 * kTitlePadding,
                        0);
 
-  layout->StartRowWithPadding(0, kColumnSetIdPadded, 0, kTitlePadding / 2);
+  layout->StartRowWithPadding(0, kColumnSetIdPadded, 0, 0);
   remember_selection_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_INTENT_PICKER_BUBBLE_VIEW_REMEMBER_SELECTION));
   layout->AddView(remember_selection_checkbox_);
 
-  layout->AddPaddingRow(0, kTitlePadding / 2);
+  layout->AddPaddingRow(0, kTitlePadding);
 }
 
 base::string16 IntentPickerBubbleView::GetWindowTitle() const {

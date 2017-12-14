@@ -304,7 +304,7 @@ void ArcNavigationThrottle::AsyncOnAppIconsReceived(
         handler->package_name, handler->activity_name);
     const auto it = icons->find(activity);
 
-    app_info.emplace_back(it != icons->end() ? it->second.icon20 : gfx::Image(),
+    app_info.emplace_back(it != icons->end() ? it->second.icon16 : gfx::Image(),
                           handler->package_name, handler->name);
   }
 
