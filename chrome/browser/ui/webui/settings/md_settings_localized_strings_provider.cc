@@ -1075,8 +1075,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 
   html_source->AddBoolean("networkSettingsConfig",
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              chromeos::switches::kNetworkSettingsConfig));
+                          chromeos::switches::IsNetworkSettingsConfigEnabled());
   html_source->AddString("networkGoogleNameserversLearnMoreUrl",
                          chrome::kGoogleNameserversLearnMoreURL);
 

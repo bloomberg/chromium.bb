@@ -293,6 +293,9 @@ const char kDisableMdOobe[] = "disable-md-oobe";
 // Disables material design Error screen.
 const char kDisableMdErrorScreen[] = "disable-md-error-screen";
 
+// Disables Settings based network configuration dialogs.
+const char kDisableNetworkSettingsConfig[] = "disable-network-settings-config";
+
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
@@ -434,9 +437,6 @@ const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 // initially issued with ecrypfs encryption and have ARC (N+) available. For the
 // devices in other categories this flag must be missing.
 const char kNeedArcMigrationPolicyCheck[] = "need-arc-migration-policy-check";
-
-// Enables Settings based network config in MD Settings.
-const char kNetworkSettingsConfig[] = "network-settings-config";
 
 // An optional comma-separated list of IDs of apps that can be used to take
 // notes. If unset, a hardcoded list is used instead.
@@ -652,6 +652,11 @@ bool IsSigninFrameClientCertsEnabled() {
 bool IsSigninFrameClientCertUserSelectionEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSigninFrameClientCertUserSelection);
+}
+
+bool IsNetworkSettingsConfigEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableNetworkSettingsConfig);
 }
 
 }  // namespace switches

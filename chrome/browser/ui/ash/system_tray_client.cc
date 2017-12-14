@@ -341,13 +341,10 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
     return;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kNetworkSettingsConfig)) {
+  if (chromeos::switches::IsNetworkSettingsConfigEnabled())
     chromeos::InternetConfigDialog::ShowDialogForNetworkState(network_state);
-
-  } else {
+  else
     chromeos::NetworkConfigView::ShowForNetworkId(network_id);
-  }
 }
 
 void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
@@ -360,8 +357,7 @@ void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
     ShowNetworkSettingsHelper(network_id, false /* show_configure */);
     return;
   }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kNetworkSettingsConfig)) {
+  if (chromeos::switches::IsNetworkSettingsConfigEnabled()) {
     // TODO(stevenjb): Pass ONC type to ShowNetworkCreate once NetworkConfigView
     // is deprecated.
     std::string onc_type =
