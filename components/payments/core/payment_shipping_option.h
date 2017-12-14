@@ -27,7 +27,6 @@ class PaymentShippingOption {
 
   bool operator==(const PaymentShippingOption& other) const;
   bool operator!=(const PaymentShippingOption& other) const;
-  PaymentShippingOption& operator=(const PaymentShippingOption& other);
 
   // Populates the properties of this PaymentShippingOption from |value|.
   // Returns true if the required values are present.
@@ -42,7 +41,7 @@ class PaymentShippingOption {
   std::string label;
 
   // A PaymentCurrencyAmount containing the monetary amount for the option.
-  mojom::PaymentCurrencyAmountPtr amount;
+  PaymentCurrencyAmount amount;
 
   // This is set to true to indicate that this is the default selected
   // PaymentShippingOption in a sequence. User agents should display this option
