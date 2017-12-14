@@ -586,11 +586,10 @@ base::string16 FormatUrlWithAdjustments(
                              NonHostComponentTransform(unescape_rules),
                              &url_string, &new_parsed->query, adjustments);
 
-    // Ref.  This is valid, unescaped UTF-8, so we can just convert.
     if (parsed.ref.is_valid())
       url_string.push_back('#');
     AppendFormattedComponent(spec, parsed.ref,
-                             NonHostComponentTransform(net::UnescapeRule::NONE),
+                             NonHostComponentTransform(unescape_rules),
                              &url_string, &new_parsed->ref, adjustments);
   }
 
