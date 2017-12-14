@@ -2213,6 +2213,39 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 }
 
+// Tests the new folder name is committed when "hide keyboard" button is
+// pressed. (iPad specific)
+- (void)testNewFolderNameCommittedWhenKeyboardDismissedOnIpad {
+  // Tablet only (handset keyboard does not have "hide keyboard" button).
+  if (!IsIPadIdiom()) {
+    EARL_GREY_TEST_SKIPPED(@"Test not supported on iPhone");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Create a new folder and type "New Folder 1" without pressing return.
+  NSString* newFolderTitle = @"New Folder 1";
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:NO];
+
+  // Tap on the "hide keyboard" button.
+  id<GREYMatcher> hideKeyboard = grey_accessibilityLabel(@"Hide keyboard");
+  [[EarlGrey selectElementWithMatcher:hideKeyboard] performAction:grey_tap()];
+
+  // Tap on "New Folder 1".
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"New Folder 1")]
+      performAction:grey_tap()];
+
+  // Verify the empty background appears. (If "New Folder 1" is commited,
+  // tapping on it will enter it and see a empty background.  Instead of
+  // re-editing it (crbug.com/794155)).
+  [self verifyEmptyBackgroundAppears];
+}
+
 - (void)testEmptyBackgroundAndSelectButton {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
