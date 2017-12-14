@@ -12,6 +12,7 @@
 #include "media/base/mock_media_log.h"
 #include "media/base/watch_time_keys.h"
 #include "media/blink/watch_time_reporter.h"
+#include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "media/mojo/interfaces/watch_time_recorder.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,7 +81,7 @@ using blink::WebMediaPlayer;
 using WatchTimeReporterTestData = std::tuple<bool, bool>;
 class WatchTimeReporterTest
     : public testing::TestWithParam<WatchTimeReporterTestData>,
-      public mojom::WatchTimeRecorderProvider {
+      public mojom::MediaMetricsProvider {
  public:
   WatchTimeReporterTest()
       : has_video_(std::get<0>(GetParam())),
@@ -195,6 +196,12 @@ class WatchTimeReporterTest
       mojom::WatchTimeRecorderRequest request) override {
     mojo::MakeStrongBinding(base::MakeUnique<WatchTimeInterceptor>(this),
                             std::move(request));
+  }
+  void AcquireVideoDecodeStatsRecorder(
+      const url::Origin& untrusted_top_frame_origin,
+      bool is_top_frame,
+      mojom::VideoDecodeStatsRecorderRequest request) override {
+    FAIL();
   }
 
   void Initialize(bool is_mse,

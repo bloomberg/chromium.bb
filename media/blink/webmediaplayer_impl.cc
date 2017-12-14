@@ -242,9 +242,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)),
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
-      watch_time_recorder_provider_(params->watch_time_recorder_provider()),
-      create_decode_stats_recorder_cb_(
-          params->create_capabilities_recorder_cb()) {
+      media_metrics_provider_(params->take_metrics_provider()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_selector_);
@@ -1509,17 +1507,14 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   if (is_encrypted_)
     return;
 
-  // Setup the recorder Mojo service.
-  mojom::VideoDecodeStatsRecorderPtr recorder =
-      create_decode_stats_recorder_cb_.Run();
-
-  // Origin is used for UKM reporting (not saved to VideoDecodeStatsDB). Privacy
-  // requires we only report origin of the top frame. |is_top_frame| signals how
-  // to interpret the origin.
+  // Setup the recorder Mojo service. Origin is used for UKM reporting (not
+  // saved to VideoDecodeStatsDB). Privacy requires we only report origin of the
+  // top frame. |is_top_frame| signals how to interpret the origin.
   // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  bool is_top_frame = frame_ == frame_->Top();
-  url::Origin top_origin(frame_->Top()->GetSecurityOrigin());
-  recorder->SetPageInfo(top_origin, is_top_frame);
+  mojom::VideoDecodeStatsRecorderPtr recorder;
+  media_metrics_provider_->AcquireVideoDecodeStatsRecorder(
+      frame_->Top()->GetSecurityOrigin(), frame_ == frame_->Top(),
+      mojo::MakeRequest(&recorder));
 
   // Create capabilities reporter and synchronize its initial state.
   video_decode_stats_reporter_.reset(new VideoDecodeStatsReporter(
@@ -2573,7 +2568,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
           pipeline_metadata_.natural_size, top_origin, is_top_frame),
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                           base::Unretained(this)),
-      watch_time_recorder_provider_));
+      media_metrics_provider_.get()));
   watch_time_reporter_->OnVolumeChange(volume_);
 
   if (delegate_->IsFrameHidden())

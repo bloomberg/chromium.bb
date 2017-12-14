@@ -15,8 +15,6 @@
 #include "media/media_features.h"
 #include "media/mojo/features.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
-#include "media/mojo/interfaces/video_decode_stats_recorder.mojom.h"
-#include "media/mojo/interfaces/watch_time_recorder.mojom.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSetSinkIdCallbacks.h"
@@ -146,8 +144,6 @@ class MediaFactory {
 
   media::CdmFactory* GetCdmFactory();
 
-  media::mojom::VideoDecodeStatsRecorderPtr CreateVideoDecodeStatsRecorder();
-
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
 
@@ -196,8 +192,6 @@ class MediaFactory {
   // EncryptedMediaClient attached to this frame; lazily initialized.
   std::unique_ptr<media::WebEncryptedMediaClientImpl>
       web_encrypted_media_client_;
-
-  media::mojom::WatchTimeRecorderProviderPtr watch_time_recorder_provider_;
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   // Lazy-bound pointer to the RemoterFactory service in the browser

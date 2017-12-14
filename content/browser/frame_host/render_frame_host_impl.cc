@@ -131,8 +131,7 @@
 #include "media/media_features.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
-#include "media/mojo/services/video_decode_stats_recorder.h"
-#include "media/mojo/services/watch_time_recorder.h"
+#include "media/mojo/services/media_metrics_provider.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -3199,8 +3198,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(sensor_provider_proxy_.get())));
   }
 
-  registry_->AddInterface(
-      base::Bind(&media::WatchTimeRecorder::CreateWatchTimeRecorderProvider));
+  registry_->AddInterface(base::BindRepeating(
+      &media::MediaMetricsProvider::Create,
+      // Only save decode stats when on-the-record.
+      GetSiteInstance()->GetBrowserContext()->IsOffTheRecord()
+          ? nullptr
+          : GetSiteInstance()
+                ->GetBrowserContext()
+                ->GetVideoDecodePerfHistory()));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableGpuBenchmarking)) {
@@ -3210,14 +3215,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(
       base::BindRepeating(GetRestrictedCookieManager, base::Unretained(this)));
-
-  // Only save decode stats when on-the-record.
-  if (!GetSiteInstance()->GetBrowserContext()->IsOffTheRecord()) {
-    media::VideoDecodePerfHistory* video_perf_history =
-        GetSiteInstance()->GetBrowserContext()->GetVideoDecodePerfHistory();
-    registry_->AddInterface(base::BindRepeating(
-        &media::VideoDecodeStatsRecorder::Create, video_perf_history));
-  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "media/base/watch_time_keys.h"
+#include "media/mojo/services/media_metrics_provider.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +50,7 @@ class WatchTimeRecorderTest : public testing::Test {
                        kDiscardedWatchTimeAudioVideoMse,
                        kDiscardedWatchTimeAudioVideoEme}) {
     ResetMetricRecorders();
-    WatchTimeRecorder::CreateWatchTimeRecorderProvider(
-        mojo::MakeRequest(&provider_));
+    MediaMetricsProvider::Create(nullptr, mojo::MakeRequest(&provider_));
   }
 
   ~WatchTimeRecorderTest() override { base::RunLoop().RunUntilIdle(); }
@@ -138,7 +138,7 @@ class WatchTimeRecorderTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  mojom::WatchTimeRecorderProviderPtr provider_;
+  mojom::MediaMetricsProviderPtr provider_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
   mojom::WatchTimeRecorderPtr wtr_;

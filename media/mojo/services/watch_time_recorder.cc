@@ -119,25 +119,8 @@ static void RecordRebuffersCount(base::StringPiece key, int underflow_count) {
   base::UmaHistogramCounts100(key.as_string(), underflow_count);
 }
 
-class WatchTimeRecorderProvider : public mojom::WatchTimeRecorderProvider {
- public:
-  WatchTimeRecorderProvider() = default;
-  ~WatchTimeRecorderProvider() override = default;
-
- private:
-  // mojom::WatchTimeRecorderProvider implementation:
-  void AcquireWatchTimeRecorder(
-      mojom::PlaybackPropertiesPtr properties,
-      mojom::WatchTimeRecorderRequest request) override {
-    mojo::MakeStrongBinding(
-        base::MakeUnique<WatchTimeRecorder>(std::move(properties)),
-        std::move(request));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(WatchTimeRecorderProvider);
-};
-
-WatchTimeRecorder::WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties)
+WatchTimeRecorder::WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
+                                     uint64_t playback_id)
     : properties_(std::move(properties)),
       extended_metrics_keys_(
           {{WatchTimeKey::kAudioSrc, kMeanTimeBetweenRebuffersAudioSrc,
@@ -154,17 +137,12 @@ WatchTimeRecorder::WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties)
             kRebuffersCountAudioVideoMse, kDiscardedWatchTimeAudioVideoMse},
            {WatchTimeKey::kAudioVideoEme,
             kMeanTimeBetweenRebuffersAudioVideoEme,
-            kRebuffersCountAudioVideoEme, kDiscardedWatchTimeAudioVideoEme}}) {}
+            kRebuffersCountAudioVideoEme, kDiscardedWatchTimeAudioVideoEme}}) {
+  // TODO(dalecurtis): Record a UKM metric using |playback_id_|.
+}
 
 WatchTimeRecorder::~WatchTimeRecorder() {
   FinalizeWatchTime({});
-}
-
-// static
-void WatchTimeRecorder::CreateWatchTimeRecorderProvider(
-    mojom::WatchTimeRecorderProviderRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<WatchTimeRecorderProvider>(),
-                          std::move(request));
 }
 
 void WatchTimeRecorder::RecordWatchTime(WatchTimeKey key,
