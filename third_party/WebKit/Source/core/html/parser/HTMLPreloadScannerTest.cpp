@@ -12,7 +12,7 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/media_type_names.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -175,7 +175,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
   std::unique_ptr<PreloadRequest> preload_request_;
 };
 
-class HTMLPreloadScannerTest : public ::testing::Test {
+class HTMLPreloadScannerTest : public PageTestBase {
  protected:
   enum ViewportState {
     kViewportEnabled,
@@ -186,8 +186,6 @@ class HTMLPreloadScannerTest : public ::testing::Test {
     kPreloadEnabled,
     kPreloadDisabled,
   };
-
-  HTMLPreloadScannerTest() : dummy_page_holder_(DummyPageHolder::Create()) {}
 
   MediaValuesCached::MediaValuesCachedData CreateMediaValuesData() {
     MediaValuesCached::MediaValuesCachedData data;
@@ -211,27 +209,27 @@ class HTMLPreloadScannerTest : public ::testing::Test {
       ViewportState viewport_state,
       PreloadState preload_state = kPreloadEnabled,
       ReferrerPolicy document_referrer_policy = kReferrerPolicyDefault) {
-    HTMLParserOptions options(&dummy_page_holder_->GetDocument());
+    HTMLParserOptions options(&GetDocument());
     KURL document_url("http://whatever.test/");
-    dummy_page_holder_->GetDocument().SetURL(document_url);
-    dummy_page_holder_->GetDocument().SetSecurityOrigin(
-        SecurityOrigin::Create(document_url));
-    dummy_page_holder_->GetDocument().GetSettings()->SetViewportEnabled(
-        viewport_state == kViewportEnabled);
-    dummy_page_holder_->GetDocument().GetSettings()->SetViewportMetaEnabled(
-        viewport_state == kViewportEnabled);
-    dummy_page_holder_->GetDocument().GetSettings()->SetDoHtmlPreloadScanning(
-        preload_state == kPreloadEnabled);
-    dummy_page_holder_->GetDocument().SetReferrerPolicy(
-        document_referrer_policy);
+    GetDocument().SetURL(document_url);
+    GetDocument().SetSecurityOrigin(SecurityOrigin::Create(document_url));
+    GetDocument().GetSettings()->SetViewportEnabled(viewport_state ==
+                                                    kViewportEnabled);
+    GetDocument().GetSettings()->SetViewportMetaEnabled(viewport_state ==
+                                                        kViewportEnabled);
+    GetDocument().GetSettings()->SetDoHtmlPreloadScanning(preload_state ==
+                                                          kPreloadEnabled);
+    GetDocument().SetReferrerPolicy(document_referrer_policy);
     scanner_ = HTMLPreloadScanner::Create(
-        options, document_url,
-        CachedDocumentParameters::Create(&dummy_page_holder_->GetDocument()),
+        options, document_url, CachedDocumentParameters::Create(&GetDocument()),
         CreateMediaValuesData(),
         TokenPreloadScanner::ScannerType::kMainDocument);
   }
 
-  void SetUp() override { RunSetUp(kViewportEnabled); }
+  void SetUp() override {
+    PageTestBase::SetUp(IntSize());
+    RunSetUp(kViewportEnabled);
+  }
 
   void Test(PreloadScannerTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
@@ -265,8 +263,8 @@ class HTMLPreloadScannerTest : public ::testing::Test {
     if (test_case.expected_referrer) {
       preloader.PreloadRequestVerification(
           test_case.type, test_case.preloaded_url, test_case.output_base_url,
-          test_case.resource_width, test_case.referrer_policy,
-          &dummy_page_holder_->GetDocument(), test_case.expected_referrer);
+          test_case.resource_width, test_case.referrer_policy, &GetDocument(),
+          test_case.expected_referrer);
     } else {
       preloader.PreloadRequestVerification(
           test_case.type, test_case.preloaded_url, test_case.output_base_url,
@@ -281,8 +279,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
     preloader.TakeAndPreload(requests);
 
-    preloader.CORSRequestVerification(&dummy_page_holder_->GetDocument(),
-                                      test_case.request_mode,
+    preloader.CORSRequestVerification(&GetDocument(), test_case.request_mode,
                                       test_case.credentials_mode);
   }
 
@@ -307,7 +304,6 @@ class HTMLPreloadScannerTest : public ::testing::Test {
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   std::unique_ptr<HTMLPreloadScanner> scanner_;
 };
 

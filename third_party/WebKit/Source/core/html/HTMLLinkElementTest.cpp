@@ -7,24 +7,13 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHeadElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class HTMLLinkElementTest : public ::testing::Test {
- protected:
-  void SetUp() override;
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-};
-
-void HTMLLinkElementTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-}
+class HTMLLinkElementTest : public PageTestBase {};
 
 // This tests that we should ignore empty string value
 // in href attribute value of the link element.
