@@ -9,6 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_util.h"
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
@@ -29,6 +32,17 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
 
   return base::Bind(
       [](base::OnceClosure arg) {
+        // We need to gather GPUInfo and compute GpuFeatureInfo here, so we can
+        // decide if initializing core profile or compatibility profile GL,
+        // depending on gpu driver bug workarounds.
+        gpu::GPUInfo gpu_info;
+        auto* command_line = base::CommandLine::ForCurrentProcess();
+        // TODO(zmo): Collect basic GPUInfo instead.
+        gpu::GetGpuInfoFromCommandLine(*command_line, &gpu_info);
+        gpu::CacheGPUInfo(gpu_info);
+        gpu::GpuFeatureInfo gpu_feature_info =
+            gpu::ComputeGpuFeatureInfo(gpu_info, command_line);
+        gpu::CacheGpuFeatureInfo(gpu_feature_info);
         // Preload either the desktop GL or the osmesa so, depending on the
         // --use-gl flag.
         gl::init::InitializeGLOneOff();

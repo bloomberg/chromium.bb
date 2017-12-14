@@ -203,6 +203,9 @@ void AdjustGpuFeatureStatusToWorkarounds(GpuFeatureInfo* gpu_feature_info) {
   }
 }
 
+GPUInfo* g_gpu_info_cache = nullptr;
+GpuFeatureInfo* g_gpu_feature_info_cache = nullptr;
+
 }  // namespace anonymous
 
 void ParseSecondaryGpuDevicesFromCommandLine(
@@ -419,6 +422,36 @@ void SetKeysForCrashLogging(const GPUInfo& gpu_info) {
   crash_keys::gpu_vendor.Set(gpu_info.gl_vendor);
   crash_keys::gpu_renderer.Set(gpu_info.gl_renderer);
 #endif
+}
+
+void CacheGPUInfo(const GPUInfo& gpu_info) {
+  DCHECK(!g_gpu_info_cache);
+  g_gpu_info_cache = new GPUInfo;
+  *g_gpu_info_cache = gpu_info;
+}
+
+bool PopGPUInfoCache(GPUInfo* gpu_info) {
+  if (!g_gpu_info_cache)
+    return false;
+  *gpu_info = *g_gpu_info_cache;
+  delete g_gpu_info_cache;
+  g_gpu_info_cache = nullptr;
+  return true;
+}
+
+void CacheGpuFeatureInfo(const GpuFeatureInfo& gpu_feature_info) {
+  DCHECK(!g_gpu_feature_info_cache);
+  g_gpu_feature_info_cache = new GpuFeatureInfo;
+  *g_gpu_feature_info_cache = gpu_feature_info;
+}
+
+bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info) {
+  if (!g_gpu_feature_info_cache)
+    return false;
+  *gpu_feature_info = *g_gpu_feature_info_cache;
+  delete g_gpu_feature_info_cache;
+  g_gpu_feature_info_cache = nullptr;
+  return true;
 }
 
 }  // namespace gpu

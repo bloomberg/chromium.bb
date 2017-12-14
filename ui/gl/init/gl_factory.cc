@@ -4,6 +4,7 @@
 
 #include "ui/gl/init/gl_factory.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,12 @@ bool InitializeGLOneOffHelper(bool init_extensions) {
   DCHECK(!allowed_impls.empty());
 
   const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (cmd->HasSwitch(switches::kDisableES3GLContext)) {
+    auto iter = std::find(allowed_impls.begin(), allowed_impls.end(),
+                          kGLImplementationDesktopGLCoreProfile);
+    if (iter != allowed_impls.end())
+      allowed_impls.erase(iter);
+  }
 
   // The default implementation is always the first one in list.
   GLImplementation impl = allowed_impls[0];
