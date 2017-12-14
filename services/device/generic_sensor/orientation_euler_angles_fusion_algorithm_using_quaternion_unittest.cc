@@ -7,16 +7,11 @@
 #include "base/memory/ref_counted.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"
+#include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/orientation_test_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
-
-namespace {
-
-constexpr double kEpsilon = 1e-8;
-
-}  // namespace
 
 class OrientationEulerAnglesFusionAlgorithmUsingQuaternionTest
     : public DeviceServiceTestBase {
