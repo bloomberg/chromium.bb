@@ -107,8 +107,12 @@ public class ShareMenuActionHandler {
     @VisibleForTesting
     static String getUrlToShare(String visibleUrl, String canonicalUrl) {
         if (TextUtils.isEmpty(canonicalUrl)) return visibleUrl;
-        if (!UrlConstants.HTTPS_SCHEME.equals(GURLUtils.getScheme(canonicalUrl))
-                || !UrlConstants.HTTPS_SCHEME.equals(GURLUtils.getScheme(visibleUrl))) {
+        String canonicalScheme = GURLUtils.getScheme(canonicalUrl);
+        if (!UrlConstants.HTTP_SCHEME.equals(canonicalScheme)
+                && !UrlConstants.HTTPS_SCHEME.equals(canonicalScheme)) {
+            return visibleUrl;
+        }
+        if (!UrlConstants.HTTPS_SCHEME.equals(GURLUtils.getScheme(visibleUrl))) {
             return visibleUrl;
         }
         return canonicalUrl;

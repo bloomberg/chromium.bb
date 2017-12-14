@@ -62,7 +62,7 @@ public class ShareMenuActionHandlerIntegrationTest {
 
         try {
             verifyShareUrl(httpsCanonicalUrl, "https://examplehttps.com/");
-            verifyShareUrl(httpCanonicalUrl, httpCanonicalUrl);
+            verifyShareUrl(httpCanonicalUrl, "http://examplehttp.com/");
             verifyShareUrl(noCanonicalUrl, noCanonicalUrl);
         } finally {
             testServer.stopAndDestroyServer();
