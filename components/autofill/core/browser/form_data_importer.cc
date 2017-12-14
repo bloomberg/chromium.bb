@@ -132,7 +132,8 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
     // to ImportFormData, this block can be reached on observing either a new
     // card or one already stored locally and whose |TypeAndLastFourDigits| do
     // not match a masked server card. We can offer to upload either kind, but
-    // note that they must pass address/name/CVC validation requirements first.
+    // note that unless the "send detected values" experiment is enabled, they
+    // must pass address/name/CVC validation requirements first.
     credit_card_save_manager_->AttemptToOfferCardUploadSave(
         submitted_form, *imported_credit_card);
   }

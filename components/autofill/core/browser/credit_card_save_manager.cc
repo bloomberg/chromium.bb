@@ -104,8 +104,13 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   //  1) Card with CVC
   //  2) 1+ recently-used or modified addresses that meet the client-side
   //     validation rules
-  // Here we perform both checks before returning or logging anything,
-  // because if only one of the two is missing, it may be fixable.
+  // Here we perform both checks before returning or logging anything, because
+  // if only one of the two is missing, it may be fixable.
+
+  // Additional note: If the "send detected values" experiment is enabled,
+  // ignore the above and always ping Google Payments regardless.  Include what
+  // data was found as part of the request, and let Payments decide whether
+  // upload save should be offered.
 
   // Check for a CVC to determine whether we can prompt the user to upload
   // their card. If no CVC is present and the experiment is off, do nothing.
@@ -135,30 +140,51 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   }
 
   // Upload requires that recently used or modified addresses meet the
-  // client-side validation rules.
-  int upload_decision_metrics =
-      SetProfilesForCreditCardUpload(card, &upload_request_);
+  // client-side validation rules. This call also begins setting the value of
+  // |upload_decision_metrics_|.
+  SetProfilesForCreditCardUpload(card, &upload_request_);
 
   pending_upload_request_origin_ = submitted_form.main_frame_origin();
 
   should_cvc_be_requested_ = false;
   if (upload_request_.cvc.empty()) {
+    // CVC should be requested from the user if the CVC fix flow experiment is
+    // enabled and no other problems were found (i.e., name and address are
+    // available). At this point, |upload_decision_metrics_| is non-zero only if
+    // there were problems gathering a unique name and address.
     should_cvc_be_requested_ =
-        (!upload_decision_metrics &&
+        (!upload_decision_metrics_ &&
          IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled());
     if (should_cvc_be_requested_) {
+      // If requesting CVC, don't apply the CVC decision to
+      // |upload_decision_metrics_| yet as that will signify a problem. Instead,
+      // it will be applied in OnDidGetUploadDetails(~).
       upload_request_.active_experiments.push_back(
           kAutofillUpstreamRequestCvcIfMissing.name);
     } else {
-      upload_decision_metrics |= GetCVCCardUploadDecisionMetric();
+      // If not requesting CVC, apply the CVC decision to
+      // |upload_decision_metrics_| to denote a problem was found.
+      upload_decision_metrics_ |= GetCVCCardUploadDecisionMetric();
     }
   }
-  if (upload_decision_metrics) {
-    LogCardUploadDecisions(upload_decision_metrics);
+
+  // If any problems were found (including missing CVC and fix flow disabled),
+  // |upload_decision_metrics_| will be non-zero. If the "send detected values"
+  // experiment is on, continue anyway and just let Payments know that not
+  // everything was found, as Payments may still allow the card to be saved.
+  // If the experiment is off, follow the legacy logic of aborting upload save.
+  if (upload_decision_metrics_ &&
+      !IsAutofillUpstreamSendDetectedValuesExperimentEnabled()) {
+    LogCardUploadDecisions(upload_decision_metrics_);
     pending_upload_request_origin_ = url::Origin();
     return;
   }
 
+  // Add active experiments to the request payload.
+  if (IsAutofillUpstreamSendDetectedValuesExperimentEnabled()) {
+    upload_request_.active_experiments.push_back(
+        kAutofillUpstreamSendDetectedValues.name);
+  }
   if (IsAutofillUpstreamSendPanFirstSixExperimentEnabled()) {
     upload_request_.active_experiments.push_back(
         kAutofillUpstreamSendPanFirstSix.name);
@@ -166,7 +192,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
 
   // All required data is available, start the upload process.
   payments_client_->GetUploadDetails(
-      upload_request_.profiles,
+      upload_request_.profiles, GetDetectedValues(),
       base::UTF16ToASCII(CreditCard::StripSeparators(card.number()))
           .substr(0, 6),
       upload_request_.active_experiments, app_locale_);
@@ -199,7 +225,6 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
     std::unique_ptr<base::DictionaryValue> legal_message) {
-  int upload_decision_metrics;
   if (result == AutofillClient::SUCCESS) {
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
@@ -213,7 +238,7 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     client_->LoadRiskData(
         base::Bind(&CreditCardSaveManager::OnDidGetUploadRiskData,
                    weak_ptr_factory_.GetWeakPtr()));
-    upload_decision_metrics = AutofillMetrics::UPLOAD_OFFERED;
+    upload_decision_metrics_ |= AutofillMetrics::UPLOAD_OFFERED;
   } else {
     // If the upload details request failed, fall back to a local save. The
     // reasoning here is as follows:
@@ -226,34 +251,61 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     // the upload details request will consistently fail and if we don't fall
     // back to a local save then the user will never be offered any kind of
     // credit card save.
-    client_->ConfirmSaveCreditCardLocally(
-        upload_request_.card,
-        base::Bind(
-            base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
-            base::Unretained(personal_data_manager_), upload_request_.card));
-    upload_decision_metrics =
+
+    // Additional note: If the "send detected values" experiment is enabled,
+    // only offer to save locally if CVC + name + address were all found, as
+    // this signifies a legacy decision of "Payments doesn't want this card".
+    // We can revisit this decision in the future, but the reasoning here is as
+    // follows:
+    // - If any of them were not found, surfacing local save would begin to
+    // create a scenario where different card types or different checkout forms
+    // could reasonably surface different save dialogs to the user, and that
+    // would cause unnecessary confusion.
+    // - We already don't offer to save at all in these cases today, so this
+    // decision doesn't disable any upload chances, it just enables *less*
+    // upload chances.
+    int detected_values = GetDetectedValues();
+    bool found_name_and_postal_code_and_cvc =
+        (detected_values & DetectedValue::CARDHOLDER_NAME ||
+         detected_values & DetectedValue::ADDRESS_NAME) &&
+        detected_values & DetectedValue::POSTAL_CODE &&
+        detected_values & DetectedValue::CVC;
+    if (!IsAutofillUpstreamSendDetectedValuesExperimentEnabled() ||
+        found_name_and_postal_code_and_cvc) {
+      client_->ConfirmSaveCreditCardLocally(
+          upload_request_.card,
+          base::BindRepeating(
+              base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
+              base::Unretained(personal_data_manager_), upload_request_.card));
+    }
+    upload_decision_metrics_ |=
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED;
   }
 
-  if (!found_cvc_field_ || !found_value_in_cvc_field_)
-    DCHECK(should_cvc_be_requested_);
+  if (should_cvc_be_requested_) {
+    // If we're requesting CVC from the user, it should be because the CVC field
+    // was not found or it was found but empty or with an invalid value.
+    upload_decision_metrics_ |= GetCVCCardUploadDecisionMetric();
+    DCHECK(!found_cvc_field_ || !found_value_in_cvc_field_);
+  } else {
+    // If we're not requesting CVC from the user, assert that we've either
+    // detected the CVC or the send detected values experiment is enabled.
+    DCHECK(IsAutofillUpstreamSendDetectedValuesExperimentEnabled() ||
+           (found_cvc_field_ && found_value_in_cvc_field_));
+  }
 
-  if (should_cvc_be_requested_)
-    upload_decision_metrics |= GetCVCCardUploadDecisionMetric();
-  else
-    DCHECK(found_cvc_field_ && found_value_in_cvc_field_);
-
-  LogCardUploadDecisions(upload_decision_metrics);
+  LogCardUploadDecisions(upload_decision_metrics_);
   pending_upload_request_origin_ = url::Origin();
 }
 
-int CreditCardSaveManager::SetProfilesForCreditCardUpload(
+void CreditCardSaveManager::SetProfilesForCreditCardUpload(
     const CreditCard& card,
-    payments::PaymentsClient::UploadRequestDetails* upload_request) const {
+    payments::PaymentsClient::UploadRequestDetails* upload_request) {
   std::vector<AutofillProfile> candidate_profiles;
   const base::Time now = AutofillClock::Now();
   const base::TimeDelta fifteen_minutes = base::TimeDelta::FromMinutes(15);
-  int upload_decision_metrics = 0;
+  // Reset |upload_decision_metrics_| to begin logging detected problems.
+  upload_decision_metrics_ = 0;
   bool has_profile = false;
   bool has_modified_profile = false;
 
@@ -272,7 +324,7 @@ int CreditCardSaveManager::SetProfilesForCreditCardUpload(
       has_modified_profile);
 
   if (candidate_profiles.empty()) {
-    upload_decision_metrics |=
+    upload_decision_metrics_ |=
         has_profile
             ? AutofillMetrics::UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS
             : AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE;
@@ -329,7 +381,7 @@ int CreditCardSaveManager::SetProfilesForCreditCardUpload(
       }
     }
     if (found_conflicting_names) {
-      upload_decision_metrics |=
+      upload_decision_metrics_ |=
           AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
     }
   }
@@ -337,7 +389,7 @@ int CreditCardSaveManager::SetProfilesForCreditCardUpload(
   // If neither the card nor any of the addresses have a name associated with
   // them, the candidate set is invalid.
   if (verified_name.empty()) {
-    upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
+    upload_decision_metrics_ |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
   }
 
   // If any of the candidate addresses have a non-empty zip that doesn't match
@@ -362,7 +414,7 @@ int CreditCardSaveManager::SetProfilesForCreditCardUpload(
                 base::string16::npos &&
             normalized_verified_zip.find(normalized_zip) ==
                 base::string16::npos) {
-          upload_decision_metrics |=
+          upload_decision_metrics_ |=
               AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS;
           break;
         }
@@ -378,7 +430,7 @@ int CreditCardSaveManager::SetProfilesForCreditCardUpload(
         // likely to fail.
         if (!(StartsWith(verified_zip, zip, base::CompareCase::SENSITIVE) ||
               StartsWith(zip, verified_zip, base::CompareCase::SENSITIVE))) {
-          upload_decision_metrics |=
+          upload_decision_metrics_ |=
               AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS;
           break;
         }
@@ -389,9 +441,12 @@ int CreditCardSaveManager::SetProfilesForCreditCardUpload(
   // If none of the candidate addresses have a zip, the candidate set is
   // invalid.
   if (verified_zip.empty() && !candidate_profiles.empty())
-    upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
+    upload_decision_metrics_ |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
 
-  if (!upload_decision_metrics) {
+  // Only set |upload_request->profiles| if upload is allowed (either all
+  // required data was found, or "send detected values" experiment is enabled).
+  if (!upload_decision_metrics_ ||
+      IsAutofillUpstreamSendDetectedValuesExperimentEnabled()) {
     upload_request->profiles.assign(candidate_profiles.begin(),
                                     candidate_profiles.end());
     if (!has_modified_profile)
@@ -400,7 +455,66 @@ int CreditCardSaveManager::SetProfilesForCreditCardUpload(
             "Autofill.DaysSincePreviousUseAtSubmission.Profile",
             (profile.use_date() - profile.previous_use_date()).InDays());
   }
-  return upload_decision_metrics;
+}
+
+int CreditCardSaveManager::GetDetectedValues() const {
+  int detected_values = 0;
+
+  // Report detecting CVC if it was found or if we intend to request it from the
+  // user.
+  if (!upload_request_.cvc.empty() || should_cvc_be_requested_) {
+    detected_values |= DetectedValue::CVC;
+  }
+
+  // If cardholder name exists, set it as detected as long as
+  // UPLOAD_NOT_OFFERED_CONFLICTING_NAMES was not set.
+  if (!upload_request_.card
+           .GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), app_locale_)
+           .empty() &&
+      !(upload_decision_metrics_ &
+        AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES)) {
+    detected_values |= DetectedValue::CARDHOLDER_NAME;
+  }
+
+  // Go through the upload request's profiles and set the following as detected:
+  //  - ADDRESS_NAME, as long as UPLOAD_NOT_OFFERED_CONFLICTING_NAMES was not
+  //    set
+  //  - POSTAL_CODE, as long as UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS was not set
+  //  - Any other address fields found on any addresses, regardless of conflicts
+  for (const AutofillProfile& profile : upload_request_.profiles) {
+    if (!profile.GetInfo(NAME_FULL, app_locale_).empty() &&
+        !(upload_decision_metrics_ &
+          AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES)) {
+      detected_values |= DetectedValue::ADDRESS_NAME;
+    }
+    if (!profile.GetInfo(ADDRESS_HOME_ZIP, app_locale_).empty() &&
+        !(upload_decision_metrics_ &
+          AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS)) {
+      detected_values |= DetectedValue::POSTAL_CODE;
+    }
+    if (!profile.GetInfo(ADDRESS_HOME_LINE1, app_locale_).empty()) {
+      detected_values |= DetectedValue::ADDRESS_LINE;
+    }
+    if (!profile.GetInfo(ADDRESS_HOME_CITY, app_locale_).empty()) {
+      detected_values |= DetectedValue::LOCALITY;
+    }
+    if (!profile.GetInfo(ADDRESS_HOME_STATE, app_locale_).empty()) {
+      detected_values |= DetectedValue::ADMINISTRATIVE_AREA;
+    }
+    if (!profile.GetRawInfo(ADDRESS_HOME_COUNTRY).empty()) {
+      detected_values |= DetectedValue::COUNTRY_CODE;
+    }
+  }
+
+  // If the billing_customer_number Priority Preference is non-zero, it means
+  // the user has a Google Payments account. Include a bit for existence of this
+  // account (NOT the id itself), as it will help determine if a new Payments
+  // customer might need to be created when save is accepted.
+  if (static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
+          prefs::kAutofillBillingCustomerNumber)) != 0)
+    detected_values |= DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
+
+  return detected_values;
 }
 
 void CreditCardSaveManager::OnUserDidAcceptUpload() {
@@ -424,8 +538,10 @@ void CreditCardSaveManager::OnDidGetUploadRiskData(
 
 void CreditCardSaveManager::SendUploadCardRequest() {
   upload_request_.app_locale = app_locale_;
-  // If the upload request does not have card CVC, populate it with the value
-  // provided by the user:
+  // If the upload request does not have card CVC and the CVC fix flow is
+  // enabled, populate it with the value provided by the user. If the CVC fix
+  // flow is not enabled, not sending CVC to Payments at all is expected
+  // behavior.
   if (upload_request_.cvc.empty() &&
       IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled()) {
     DCHECK(client_->GetSaveCardBubbleController());
