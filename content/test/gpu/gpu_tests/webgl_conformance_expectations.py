@@ -225,6 +225,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl', 'nvidia'], bug=794339)
 
+    # Passthrough command decoder / Win / OpenGL / Intel
+    self.Fail('conformance/renderbuffers/' +
+        'depth-renderbuffer-initialization.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=794339)
+
     # Win failures
     # TODO(kbr): re-enable suppression for same test below once fixed.
     self.Skip('conformance/glsl/bugs/sampler-struct-function-arg.html',
@@ -525,6 +530,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/texture-size-limit.html',
         ['linux', ('intel', 0x5912)], bug=745888)
 
+    # Linux passthrough Intel
+    self.Fail('conformance/renderbuffers/' +
+        'depth-renderbuffer-initialization.html',
+        ['linux', 'passthrough', 'intel'], bug=794339)
+    self.Fail('conformance/renderbuffers/' +
+        'stencil-renderbuffer-initialization.html',
+        ['linux', 'passthrough', 'intel'], bug=794339)
     ####################
     # Android failures #
     ####################
