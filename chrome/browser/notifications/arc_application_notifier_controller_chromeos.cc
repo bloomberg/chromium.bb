@@ -72,7 +72,7 @@ ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
         message_center::NotifierId::ARC_APPLICATION, app_id);
     auto ui_data = ash::mojom::NotifierUiData::New(
         notifier_id, base::UTF8ToUTF16(app->name), false,
-        app->notifications_enabled, icon->image_skia());
+        app->notifications_enabled, false /* enforced */, icon->image_skia());
     icons_.push_back(std::move(icon));
     results.push_back(std::move(ui_data));
   }

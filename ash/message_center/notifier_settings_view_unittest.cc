@@ -62,11 +62,11 @@ class TestAshMessageCenterClient : public mojom::AshMessageCenterClient {
       ui_data.push_back(mojom::NotifierUiData::New(
           NotifierId(NotifierId::APPLICATION, "id"),
           base::ASCIIToUTF16("title"), true /* has_advanced_settings */,
-          true /* enabled */, gfx::ImageSkia()));
+          true /* enabled */, false /* enforced */, gfx::ImageSkia()));
       ui_data.push_back(mojom::NotifierUiData::New(
           NotifierId(NotifierId::APPLICATION, "id2"),
           base::ASCIIToUTF16("other title"), false /* has_advanced_settings */,
-          false /* enabled */, gfx::ImageSkia()));
+          false /* enabled */, false /* enforced */, gfx::ImageSkia()));
     }
 
     std::move(callback).Run(std::move(ui_data));
