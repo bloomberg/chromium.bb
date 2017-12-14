@@ -33,7 +33,8 @@ class WebServiceWorkerRequestPrivate
       WebURLRequest::kFetchRedirectModeFollow;
   WebURLRequest::RequestContext request_context_ =
       WebURLRequest::kRequestContextUnspecified;
-  WebURLRequest::FrameType frame_type_ = WebURLRequest::kFrameTypeNone;
+  network::mojom::RequestContextFrameType frame_type_ =
+      network::mojom::RequestContextFrameType::kNone;
   WebString integrity_;
   bool keepalive_ = false;
   WebString client_id_;
@@ -218,11 +219,12 @@ WebURLRequest::RequestContext WebServiceWorkerRequest::GetRequestContext()
 }
 
 void WebServiceWorkerRequest::SetFrameType(
-    WebURLRequest::FrameType frame_type) {
+    network::mojom::RequestContextFrameType frame_type) {
   private_->frame_type_ = frame_type;
 }
 
-WebURLRequest::FrameType WebServiceWorkerRequest::GetFrameType() const {
+network::mojom::RequestContextFrameType WebServiceWorkerRequest::GetFrameType()
+    const {
   return private_->frame_type_;
 }
 

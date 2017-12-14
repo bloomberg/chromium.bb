@@ -71,8 +71,10 @@ class WebServiceWorkerNetworkProviderForFrame
     // service worker that is in the process of becoming the controller (i.e.,
     // via claim()) on the browser-side could handle the request and break the
     // assumptions of the renderer.
-    if (request.GetFrameType() != blink::WebURLRequest::kFrameTypeTopLevel &&
-        request.GetFrameType() != blink::WebURLRequest::kFrameTypeNested &&
+    if (request.GetFrameType() !=
+            network::mojom::RequestContextFrameType::kTopLevel &&
+        request.GetFrameType() !=
+            network::mojom::RequestContextFrameType::kNested &&
         !provider_->IsControlledByServiceWorker() &&
         request.GetServiceWorkerMode() !=
             blink::WebURLRequest::ServiceWorkerMode::kNone) {

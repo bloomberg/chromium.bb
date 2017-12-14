@@ -37,7 +37,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
@@ -57,6 +56,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
@@ -126,7 +126,7 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
         false /* keepalive */, resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
-        REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+        network::mojom::RequestContextFrameType::kTopLevel,
         scoped_refptr<ResourceRequestBody>(), ServiceWorkerFetchType::FETCH,
         custom_timeout_, delegate_);
     if (simulate_navigation_preload_) {

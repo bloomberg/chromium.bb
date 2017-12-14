@@ -88,7 +88,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     bool keepalive,
     ResourceType resource_type,
     RequestContextType request_context_type,
-    RequestContextFrameType frame_type,
+    network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body)
     : ServiceWorkerRequestHandler(context,
                                   provider_host,

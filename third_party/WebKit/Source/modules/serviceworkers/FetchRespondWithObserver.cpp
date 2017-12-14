@@ -22,6 +22,7 @@
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 
 using blink::mojom::ServiceWorkerResponseError;
 
@@ -97,11 +98,11 @@ const String GetMessageForResponseError(ServiceWorkerResponseError error,
   return error_message;
 }
 
-bool IsNavigationRequest(WebURLRequest::FrameType frame_type) {
-  return frame_type != WebURLRequest::kFrameTypeNone;
+bool IsNavigationRequest(network::mojom::RequestContextFrameType frame_type) {
+  return frame_type != network::mojom::RequestContextFrameType::kNone;
 }
 
-bool IsClientRequest(WebURLRequest::FrameType frame_type,
+bool IsClientRequest(network::mojom::RequestContextFrameType frame_type,
                      WebURLRequest::RequestContext request_context) {
   return IsNavigationRequest(frame_type) ||
          request_context == WebURLRequest::kRequestContextSharedWorker ||
@@ -140,7 +141,7 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
     const KURL& request_url,
     network::mojom::FetchRequestMode request_mode,
     WebURLRequest::FetchRedirectMode redirect_mode,
-    WebURLRequest::FrameType frame_type,
+    network::mojom::RequestContextFrameType frame_type,
     WebURLRequest::RequestContext request_context,
     WaitUntilObserver* observer) {
   return new FetchRespondWithObserver(context, fetch_event_id, request_url,
@@ -284,7 +285,7 @@ FetchRespondWithObserver::FetchRespondWithObserver(
     const KURL& request_url,
     network::mojom::FetchRequestMode request_mode,
     WebURLRequest::FetchRedirectMode redirect_mode,
-    WebURLRequest::FrameType frame_type,
+    network::mojom::RequestContextFrameType frame_type,
     WebURLRequest::RequestContext request_context,
     WaitUntilObserver* observer)
     : RespondWithObserver(context, fetch_event_id, observer),

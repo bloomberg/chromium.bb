@@ -38,6 +38,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 
@@ -45,7 +46,7 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
                                       ResourceFetcher* fetcher,
                                       ResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            WebURLRequest::kFrameTypeNone);
+            network::mojom::RequestContextFrameType::kNone);
   params.SetRequestContext(WebURLRequest::kRequestContextScript);
   return ToScriptResource(
       fetcher->RequestResource(params, ScriptResourceFactory(), client));
