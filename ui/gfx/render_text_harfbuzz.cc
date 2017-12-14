@@ -1126,8 +1126,13 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
     pos = std::min(selection.caret_pos() + 1, text().length());
     while (iter.Advance()) {
       pos = iter.pos();
-      if (iter.IsWord() && pos > selection.caret_pos())
+      if (iter.IsWord() && pos > selection.caret_pos()) {
+        // In Windows, word move advances past any characters separating the
+        // end of the current word from the next word.
+        while (iter.Advance() && !iter.IsWord())
+          pos = iter.pos();
         break;
+      }
     }
   } else {  // direction == CURSOR_LEFT
     // Notes: We always iterate words from the beginning.

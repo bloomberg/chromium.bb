@@ -1354,8 +1354,13 @@ TEST_P(RenderTextHarfBuzzTest, MoveCursor_Word) {
                                         SELECTION_NONE, &expected);
 
   // Move right twice.
+#if defined(OS_WIN)  // Move word right includes space/punctuation.
+  expected.push_back(Range(4));
+  expected.push_back(Range(8));
+#else  // Non-Windows: move word right does NOT include space/punctuation.
   expected.push_back(Range(3));
   expected.push_back(Range(7));
+#endif
   RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
                                         SELECTION_NONE, &expected);
 
@@ -1369,7 +1374,11 @@ TEST_P(RenderTextHarfBuzzTest, MoveCursor_Word) {
 
   // Move right twice.
   expected.push_back(Range(6));
+#if defined(OS_WIN)  // Select word right includes space/punctuation.
+  expected.push_back(Range(6, 8));
+#else  // Non-Windows: select word right does NOT include space/punctuation.
   expected.push_back(Range(6, 7));
+#endif
   RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
                                         SELECTION_CARET, &expected);
 
@@ -1387,7 +1396,11 @@ TEST_P(RenderTextHarfBuzzTest, MoveCursor_Word) {
                                         SELECTION_RETAIN, &expected);
 
   // Move right twice.
+#if defined(OS_WIN)  // Select word right includes space/punctuation.
+  expected.push_back(Range(6, 8));
+#else  // Non-Windows: select word right does NOT include space/punctuation.
   expected.push_back(Range(6, 7));
+#endif
   expected.push_back(Range(6, 11));
   RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
                                         SELECTION_RETAIN, &expected);
@@ -1406,7 +1419,11 @@ TEST_P(RenderTextHarfBuzzTest, MoveCursor_Word) {
                                         SELECTION_EXTEND, &expected);
 
   // Move right twice.
+#if defined(OS_WIN)  // Select word right includes space/punctuation.
+  expected.push_back(Range(4, 8));
+#else  // Non-Windows: select word right does NOT include space/punctuation.
   expected.push_back(Range(4, 7));
+#endif
   expected.push_back(Range(4, 11));
   RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
                                         SELECTION_EXTEND, &expected);
