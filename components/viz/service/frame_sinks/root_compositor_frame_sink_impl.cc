@@ -19,9 +19,11 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
-    mojom::DisplayPrivateAssociatedRequest display_private_request)
+    mojom::DisplayPrivateAssociatedRequest display_private_request,
+    mojom::DisplayClientPtr display_client)
     : compositor_frame_sink_client_(std::move(client)),
       compositor_frame_sink_binding_(this, std::move(request)),
+      display_client_(std::move(display_client)),
       display_private_binding_(this, std::move(display_private_request)),
       support_(std::make_unique<CompositorFrameSinkSupport>(
           compositor_frame_sink_client_.get(),
@@ -130,8 +132,11 @@ void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
 
 void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
-  // TODO(ccameron): Continue plumbing |ca_layer_params| through to
-  // ui::AcceleratedWidgetMac.
+  // If |ca_layer_params| should have content only when there exists a client
+  // to send it to.
+  DCHECK(ca_layer_params.is_empty || display_client_);
+  if (display_client_)
+    display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}

@@ -98,7 +98,8 @@ void ServerWindow::CreateRootCompositorFrameSink(
     gfx::AcceleratedWidget widget,
     viz::mojom::CompositorFrameSinkAssociatedRequest sink_request,
     viz::mojom::CompositorFrameSinkClientPtr client,
-    viz::mojom::DisplayPrivateAssociatedRequest display_request) {
+    viz::mojom::DisplayPrivateAssociatedRequest display_request,
+    viz::mojom::DisplayClientPtr display_client) {
   has_created_compositor_frame_sink_ = true;
   // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
   // or Android. We should instead use GpuSurfaceTracker here on those
@@ -106,7 +107,8 @@ void ServerWindow::CreateRootCompositorFrameSink(
   delegate_->GetVizHostProxy()->CreateRootCompositorFrameSink(
       frame_sink_id_, widget,
       viz::CreateRendererSettings(viz::BufferUsageAndFormatList()),
-      std::move(sink_request), std::move(client), std::move(display_request));
+      std::move(sink_request), std::move(client), std::move(display_request),
+      std::move(display_client));
 }
 
 void ServerWindow::CreateCompositorFrameSink(

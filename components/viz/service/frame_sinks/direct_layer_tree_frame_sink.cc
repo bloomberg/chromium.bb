@@ -21,6 +21,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     CompositorFrameSinkSupportManager* support_manager,
     FrameSinkManagerImpl* frame_sink_manager,
     Display* display,
+    mojom::DisplayClient* display_client,
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
@@ -34,7 +35,8 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
       frame_sink_id_(frame_sink_id),
       support_manager_(support_manager),
       frame_sink_manager_(frame_sink_manager),
-      display_(display) {
+      display_(display),
+      display_client_(display_client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   capabilities_.must_always_swap = true;
   // Display and DirectLayerTreeFrameSink share a GL context, so sync
@@ -47,12 +49,14 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     CompositorFrameSinkSupportManager* support_manager,
     FrameSinkManagerImpl* frame_sink_manager,
     Display* display,
+    mojom::DisplayClient* display_client,
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
     : LayerTreeFrameSink(std::move(vulkan_context_provider)),
       frame_sink_id_(frame_sink_id),
       support_manager_(support_manager),
       frame_sink_manager_(frame_sink_manager),
-      display_(display) {
+      display_(display),
+      display_client_(display_client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   capabilities_.must_always_swap = true;
 }
@@ -136,8 +140,11 @@ void DirectLayerTreeFrameSink::DisplayDidDrawAndSwap() {
 
 void DirectLayerTreeFrameSink::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
-  // TODO(ccameron): Continue plumbing |ca_layer_params| through to
-  // ui::AcceleratedWidgetMac.
+  // If |ca_layer_params| should have content only when there exists a client
+  // to send it to.
+  DCHECK(ca_layer_params.is_empty || display_client_);
+  if (display_client_)
+    display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
 }
 
 void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(

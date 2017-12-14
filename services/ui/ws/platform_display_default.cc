@@ -13,6 +13,7 @@
 #include "services/ui/public/interfaces/cursor/cursor_struct_traits.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/threaded_image_cursors.h"
+#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -248,16 +249,22 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
     return;
 
   viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink;
-  viz::mojom::DisplayPrivateAssociatedPtr display_private;
   viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;
   viz::mojom::CompositorFrameSinkClientRequest
       compositor_frame_sink_client_request =
           mojo::MakeRequest(&compositor_frame_sink_client);
 
+  // TODO(ccameron): |display_client| is not bound. This will need to
+  // change to support macOS.
+  viz::mojom::DisplayPrivateAssociatedPtr display_private;
+  viz::mojom::DisplayClientPtr display_client;
+  viz::mojom::DisplayClientRequest display_client_request =
+      mojo::MakeRequest(&display_client);
+
   root_window_->CreateRootCompositorFrameSink(
       widget_, mojo::MakeRequest(&compositor_frame_sink),
       std::move(compositor_frame_sink_client),
-      mojo::MakeRequest(&display_private));
+      mojo::MakeRequest(&display_private), std::move(display_client));
 
   display_private->SetDisplayVisible(true);
   frame_generator_ = std::make_unique<FrameGenerator>();

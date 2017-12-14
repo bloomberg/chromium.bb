@@ -8,11 +8,9 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/accelerated_widget_mac/ca_layer_frame_sink.h"
 #include "ui/compositor/compositor.h"
-#include "ui/display/types/display_snapshot.h"
 
 namespace content {
 
@@ -47,19 +45,6 @@ void GpuOutputSurfaceMac::SwapBuffers(viz::OutputSurfaceFrame frame) {
     if (ca_layer_frame_sink)
       ca_layer_frame_sink->SetSuspended(false);
   }
-}
-
-void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
-    const gpu::SwapBuffersCompleteParams& params) {
-  DCHECK(!params.ca_layer_params.is_empty);
-  // TODO(ccameron): Push the call to CALayerFrameSink into |client_|.
-  ui::CALayerFrameSink* ca_layer_frame_sink =
-      ui::CALayerFrameSink::FromAcceleratedWidget(widget_);
-  if (ca_layer_frame_sink)
-    ca_layer_frame_sink->UpdateCALayerTree(params.ca_layer_params);
-  client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
-  GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
-      params);
 }
 
 void GpuOutputSurfaceMac::SetSurfaceSuspendedForRecycle(bool suspended) {

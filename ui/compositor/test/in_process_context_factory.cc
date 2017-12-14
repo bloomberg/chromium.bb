@@ -270,9 +270,10 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   auto* display = per_compositor_data_[compositor.get()]->display.get();
   auto layer_tree_frame_sink = std::make_unique<viz::DirectLayerTreeFrameSink>(
       compositor->frame_sink_id(), GetHostFrameSinkManager(),
-      GetFrameSinkManager(), display, context_provider,
-      shared_worker_context_provider_, compositor->task_runner(),
-      &gpu_memory_buffer_manager_, &shared_bitmap_manager_);
+      GetFrameSinkManager(), display, nullptr /* display_client */,
+      context_provider, shared_worker_context_provider_,
+      compositor->task_runner(), &gpu_memory_buffer_manager_,
+      &shared_bitmap_manager_);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 
   data->display->Resize(compositor->size());

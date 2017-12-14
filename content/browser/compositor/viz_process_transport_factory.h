@@ -13,6 +13,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/compositor/in_process_display_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
@@ -120,6 +121,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
     // Privileged interface that controls the display for a root
     // CompositorFrameSink.
     viz::mojom::DisplayPrivateAssociatedPtr display_private;
+    std::unique_ptr<InProcessDisplayClient> display_client;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(CompositorData);

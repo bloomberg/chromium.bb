@@ -5,6 +5,7 @@
 module viz.mojom;
 
 import "mojo/common/time.mojom";
+import "ui/gfx/mojo/ca_layer_params.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
@@ -26,4 +27,8 @@ interface DisplayPrivate {
   // ignores vsync interval information from other sources. This will do nothing
   // if the display is using an external BeginFrame source.
   SetAuthoritativeVSyncInterval(mojo.common.mojom.TimeDelta interval);
+};
+
+interface DisplayClient {
+  OnDisplayReceivedCALayerParams(gfx.mojom.CALayerParams ca_layer_params);
 };

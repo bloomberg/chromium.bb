@@ -57,7 +57,8 @@ interface FrameSinkManager {
       RendererSettings renderer_settings,
       associated CompositorFrameSink& compositor_frame_sink,
       CompositorFrameSinkClient compositor_frame_sink_client,
-      associated DisplayPrivate& display_private);
+      associated DisplayPrivate& display_private,
+      DisplayClient display_client);
 
   // CreateCompositorFrameSink is used by unprivileged clients. This
   // CompositorFrameSink is not a root, and has to be parented by another

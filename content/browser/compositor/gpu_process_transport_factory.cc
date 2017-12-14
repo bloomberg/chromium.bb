@@ -39,6 +39,7 @@
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
+#include "content/browser/compositor/in_process_display_client.h"
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
@@ -181,6 +182,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
   std::unique_ptr<ExternalBeginFrameController> external_begin_frame_controller;
   ReflectorImpl* reflector = nullptr;
   std::unique_ptr<viz::Display> display;
+  std::unique_ptr<viz::mojom::DisplayClient> display_client;
   bool output_is_secure = false;
 };
 
@@ -629,6 +631,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       renderer_settings_, compositor->frame_sink_id(),
       std::move(display_output_surface), std::move(scheduler),
       compositor->task_runner());
+  data->display_client =
+      std::make_unique<InProcessDisplayClient>(compositor->widget());
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source,
                                                   compositor->frame_sink_id());
   // Note that we are careful not to destroy prior BeginFrameSource objects
@@ -649,11 +653,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           ? std::make_unique<viz::DirectLayerTreeFrameSink>(
                 compositor->frame_sink_id(), GetHostFrameSinkManager(),
                 GetFrameSinkManager(), data->display.get(),
+                data->display_client.get(),
                 static_cast<scoped_refptr<viz::VulkanContextProvider>>(
                     vulkan_context_provider))
           : std::make_unique<viz::DirectLayerTreeFrameSink>(
                 compositor->frame_sink_id(), GetHostFrameSinkManager(),
-                GetFrameSinkManager(), data->display.get(), context_provider,
+                GetFrameSinkManager(), data->display.get(),
+                data->display_client.get(), context_provider,
                 shared_worker_context_provider_, compositor->task_runner(),
                 GetGpuMemoryBufferManager(),
                 viz::ServerSharedBitmapManager::current());
