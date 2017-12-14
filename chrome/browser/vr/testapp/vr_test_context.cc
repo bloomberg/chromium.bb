@@ -11,12 +11,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/controller_mesh.h"
-#include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/test/constants.h"
+#include "chrome/browser/vr/testapp/test_keyboard_delegate.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
@@ -32,6 +32,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
@@ -58,31 +59,6 @@ void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
 
 }  // namespace
 
-// This stub delegate does nothing today, but can be expanded to offer
-// legitimate keyboard support if required.
-class TestKeyboardDelegate : KeyboardDelegate {
- public:
-  // KeyboardDelegate implemenation.
-  void ShowKeyboard() override {}
-  void HideKeyboard() override {}
-  void SetTransform(const gfx::Transform&) override {}
-  bool HitTest(const gfx::Point3F& ray_origin,
-               const gfx::Point3F& ray_target,
-               gfx::Point3F* hit_position) override {
-    return false;
-  }
-  void Draw(const CameraModel&) override {}
-
-  // Testapp-specific hooks.
-  void SetUiInterface(vr::KeyboardUiInterface* keyboard) {
-    keyboard_interface_ = keyboard;
-  }
-  void UpdateInput(const vr::TextInputInfo& info) {}
-
- private:
-  vr::KeyboardUiInterface* keyboard_interface_ = nullptr;
-};
-
 VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   base::FilePath pak_path;
   PathService::Get(base::DIR_MODULE, &pak_path);
@@ -94,11 +70,11 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   // TODO(cjgrant): Remove this when the keyboard is enabled by default.
   base::FeatureList::InitializeInstance("VrBrowserKeyboard", "");
 
-  text_input_delegate_ = base::MakeUnique<vr::TextInputDelegate>();
-  keyboard_delegate_ = base::MakeUnique<vr::TestKeyboardDelegate>();
+  text_input_delegate_ = base::MakeUnique<TextInputDelegate>();
+  keyboard_delegate_ = base::MakeUnique<TestKeyboardDelegate>();
 
-  ui_ = base::MakeUnique<Ui>(this, nullptr, nullptr, text_input_delegate_.get(),
-                             UiInitialState());
+  ui_ = base::MakeUnique<Ui>(this, nullptr, keyboard_delegate_.get(),
+                             text_input_delegate_.get(), UiInitialState());
 
   text_input_delegate_->SetRequestFocusCallback(
       base::BindRepeating(&vr::Ui::RequestFocus, base::Unretained(ui_.get())));
@@ -156,6 +132,9 @@ void VrTestContext::DrawFrame() {
 void VrTestContext::HandleInput(ui::Event* event) {
   if (event->IsKeyEvent()) {
     if (event->type() != ui::ET_KEY_PRESSED) {
+      return;
+    }
+    if (keyboard_delegate_->HandleInput(event)) {
       return;
     }
     switch (event->AsKeyEvent()->code()) {
@@ -332,6 +311,9 @@ void VrTestContext::OnGlInitialized() {
   ui_->OnGlInitialized(content_texture_id,
                        UiElementRenderer::kTextureLocationLocal, false);
 
+  keyboard_delegate_->Initialize(ui_->scene()->SurfaceProviderForTesting(),
+                                 ui_->ui_element_renderer());
+
   ui_->ui_element_renderer()->SetUpController(
       ControllerMesh::LoadFromResources());
 }
@@ -458,7 +440,6 @@ void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
 
 void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
                                          vr::UiUnsupportedMode reason) {
-  LOG(ERROR) << "exit prompt result: " << choice;
   if (reason == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission &&
       choice == CHOICE_EXIT) {
     voice_search_enabled_ = true;
