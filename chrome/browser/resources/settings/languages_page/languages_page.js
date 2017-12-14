@@ -53,7 +53,16 @@ Polymer({
     spellCheckSecondaryText_: {
       type: String,
       value: '',
-      computed: 'getSpellCheckSecondaryText_(languages.enabled.*)',
+      computed: 'getSpellCheckSecondaryText_(languages.enabled.*, ' +
+          'languages.forcedSpellCheckLanguages.*)',
+    },
+
+    /** @private */
+    spellCheckLanguages_: {
+      type: Array,
+      value: function() {
+        return [];
+      },
     },
     // </if>
 
@@ -99,6 +108,11 @@ Polymer({
       },
     },
   },
+
+  observers: [
+    'updateSpellcheckLanguages_(languages.enabled.*, ' +
+        'languages.forcedSpellCheckLanguages.*)',
+  ],
 
   /**
    * Stamps and opens the Add Languages dialog, registering a listener to
@@ -407,8 +421,8 @@ Polymer({
    */
   getSpellCheckSecondaryText_: function() {
     var enabledSpellCheckLanguages =
-        this.languages.enabled.filter(function(languageState) {
-          return languageState.spellCheckEnabled &&
+        this.getSpellCheckLanguages_().filter(function(languageState) {
+          return (languageState.spellCheckEnabled || languageState.isManaged) &&
               languageState.language.supportsSpellcheck;
         });
     switch (enabledSpellCheckLanguages.length) {
@@ -434,6 +448,35 @@ Polymer({
             enabledSpellCheckLanguages[0].language.displayName,
             enabledSpellCheckLanguages[1].language.displayName,
             (enabledSpellCheckLanguages.length - 2).toLocaleString());
+    }
+  },
+
+  /**
+   * Returns an array of enabled languages, plus spellcheck languages that are
+   * forced by policy.
+   * @return {!Array<!LanguageState|!ForcedLanguageState>}
+   * @private
+   */
+  getSpellCheckLanguages_: function() {
+    return this.languages.enabled.concat(
+        this.languages.forcedSpellCheckLanguages.map(
+            language => ({'language': language, isManaged: true})));
+  },
+
+  /** @private */
+  updateSpellcheckLanguages_: function() {
+    this.set('spellCheckLanguages_', this.getSpellCheckLanguages_());
+
+    // Notify Polymer of subproperties that might have changed on the items in
+    // the spellCheckLanguages_ array, to make sure the UI updates. Polymer
+    // would otherwise not notice the changes in the subproperties, as some of
+    // them are references to those from |this.languages.enabled|. It would be
+    // possible to |this.linkPaths()| objects from |this.languages.enabled| to
+    // |this.spellCheckLanguages_|, but that would require complex housekeeping
+    // to |this.unlinkPaths()| as |this.languages.enabled| changes.
+    for (var i = 0; i < this.spellCheckLanguages_.length; i++) {
+      this.notifyPath(`spellCheckLanguages_.${i}.isManaged`);
+      this.notifyPath(`spellCheckLanguages_.${i}.spellCheckEnabled`);
     }
   },
 

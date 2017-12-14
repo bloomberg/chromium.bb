@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/guest_mode_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
+#include "chrome/browser/spellchecker/spellcheck_language_policy_handler.h"
 #include "chrome/browser/supervised_user/supervised_user_creation_policy_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
@@ -957,6 +958,10 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       base::Bind(GetDeprecatedFeaturesMap)));
 
   handlers->AddHandler(base::MakeUnique<BrowsingHistoryPolicyHandler>());
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+  handlers->AddHandler(base::MakeUnique<SpellcheckLanguagePolicyHandler>());
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   handlers->AddHandler(base::MakeUnique<extensions::ExtensionListPolicyHandler>(

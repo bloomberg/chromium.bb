@@ -440,6 +440,14 @@ cr.define('languages_page_tests', function() {
         assertFalse(triggerRow.classList.contains('two-line'));
         assertEquals(
             0, triggerRow.querySelector('.secondary').textContent.length);
+
+        // Force-enable a language via policy.
+        languageHelper.setPrefValue('spellcheck.forced_dictionaries', ['nb']);
+
+        // The second row should no longer be empty.
+        assertTrue(triggerRow.classList.contains('two-line'));
+        assertLT(
+            0, triggerRow.querySelector('.secondary').textContent.length);
       }
     });
   });

@@ -360,6 +360,10 @@ cr.define('settings', function() {
       type: chrome.settingsPrivate.PrefType.LIST,
       value: ['en-US'],
     }, {
+      key: 'spellcheck.forced_dictionaries',
+      type: chrome.settingsPrivate.PrefType.LIST,
+      value: [],
+    }, {
       key: 'translate.enabled',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: true,

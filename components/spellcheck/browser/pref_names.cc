@@ -17,6 +17,9 @@ const char kSpellCheckDictionary[] = "spellcheck.dictionary";
 // List of strings representing the dictionary names for our spell-checker.
 const char kSpellCheckDictionaries[] = "spellcheck.dictionaries";
 
+// List of strings representing the dictionary names for our spell-checker.
+const char kSpellCheckForcedDictionaries[] = "spellcheck.forced_dictionaries";
+
 // String which represents whether we use the spelling service.
 const char kSpellCheckUseSpellingService[] = "spellcheck.use_spelling_service";
 

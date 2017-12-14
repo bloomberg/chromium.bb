@@ -141,7 +141,8 @@ Polymer({
     'preferredLanguagesPrefChanged_(' +
         'prefs.' + preferredLanguagesPrefName + '.value, languages)',
     'spellCheckDictionariesPrefChanged_(' +
-        'prefs.spellcheck.dictionaries.value.*, languages)',
+        'prefs.spellcheck.dictionaries.value.*, ' +
+        'prefs.spellcheck.forced_dictionaries.value.*, languages)',
     'translateLanguagesPrefChanged_(' +
         'prefs.translate_blocked_languages.value.*, languages)',
     'updateRemovableLanguages_(' +
@@ -278,12 +279,46 @@ Polymer({
   spellCheckDictionariesPrefChanged_: function() {
     var spellCheckSet = this.makeSetFromArray_(/** @type {!Array<string>} */ (
         this.getPref('spellcheck.dictionaries').value));
+    var spellCheckForcedSet =
+        this.makeSetFromArray_(/** @type {!Array<string>} */ (
+            this.getPref('spellcheck.forced_dictionaries').value));
     for (var i = 0; i < this.languages.enabled.length; i++) {
       var languageState = this.languages.enabled[i];
       this.set(
-          'languages.enabled.' + i + '.spellCheckEnabled',
+          `languages.enabled.${i}.spellCheckEnabled`,
           !!spellCheckSet.has(languageState.language.code));
+      this.set(
+          `languages.enabled.${i}.isManaged`,
+          !!spellCheckForcedSet.has(languageState.language.code));
     }
+
+    this.set(
+        'languages.forcedSpellCheckLanguages',
+        this.getForcedSpellCheckLanguages_(this.languages.enabled));
+  },
+
+  /**
+   * Returns an array of language codes for the spellcheck languages that are
+   * managed by policy, but that are not "enabled" languages.
+   * @param {!Array<!LanguageState>} enabledLanguages An array of enabled
+   *     languages.
+   * @return {!Array<!string>}
+   * @private
+   */
+  getForcedSpellCheckLanguages_: function(enabledLanguages) {
+    var enabledSet = this.makeSetFromArray_(/** @type {!Array<string>} */ (
+        enabledLanguages.map(x => x.language.code)));
+    var spellCheckForcedDictionaries = /** @type {!Array<string>} */ (
+        this.getPref('spellcheck.forced_dictionaries').value);
+
+    var forcedLanguages = [];
+    for (var i = 0; i < spellCheckForcedDictionaries.length; i++) {
+      var code = spellCheckForcedDictionaries[i];
+      if (!enabledSet.has(code) && this.supportedLanguageMap_.has(code)) {
+        forcedLanguages.push(this.supportedLanguageMap_.get(code));
+      }
+    }
+    return forcedLanguages;
   },
 
   /** @private */
@@ -366,10 +401,14 @@ Polymer({
     for (var l = 0; l < enabledLanguageStates.length; l++)
       this.enabledLanguageSet_.add(enabledLanguageStates[l].language.code);
 
+    var forcedSpellCheckLanguages =
+        this.getForcedSpellCheckLanguages_(enabledLanguageStates);
+
     var model = /** @type {!LanguagesModel} */ ({
       supported: supportedLanguages,
       enabled: enabledLanguageStates,
       translateTarget: translateTarget,
+      forcedSpellCheckLanguages: forcedSpellCheckLanguages,
     });
 
     if (cr.isChromeOS || cr.isWindows)
@@ -403,8 +442,12 @@ Polymer({
     var pref = this.getPref(preferredLanguagesPrefName);
     var enabledLanguageCodes = pref.value.split(',');
     var spellCheckPref = this.getPref('spellcheck.dictionaries');
+    var spellCheckForcedPref = this.getPref('spellcheck.forced_dictionaries');
     var spellCheckSet = this.makeSetFromArray_(
-        /** @type {!Array<string>} */ (spellCheckPref.value));
+        /** @type {!Array<string>} */ (
+            spellCheckPref.value.concat(spellCheckForcedPref.value)));
+    var spellCheckForcedSet = this.makeSetFromArray_(
+        /** @type {!Array<string>} */ (spellCheckForcedPref.value));
 
     var translateBlockedPref = this.getPref('translate_blocked_languages');
     var translateBlockedSet = this.makeSetFromArray_(
@@ -427,6 +470,7 @@ Polymer({
           !translateBlockedSet.has(translateCode) &&
           translateCode != translateTarget &&
           (!prospectiveUILanguage || code != prospectiveUILanguage);
+      languageState.isManaged = !!spellCheckForcedSet.has(code);
       enabledLanguageStates.push(languageState);
     }
     return enabledLanguageStates;
