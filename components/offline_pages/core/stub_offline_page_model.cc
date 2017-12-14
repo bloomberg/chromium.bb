@@ -59,6 +59,10 @@ const base::FilePath& StubOfflinePageModel::GetArchiveDirectory(
     const std::string& name_space) const {
   return archive_directory_;
 }
+bool StubOfflinePageModel::IsArchiveInInternalDir(
+    const base::FilePath& file_path) const {
+  return archive_directory_.IsParent(file_path);
+}
 
 ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
   return &policy_controller_;

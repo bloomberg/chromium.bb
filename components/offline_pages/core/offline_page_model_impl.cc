@@ -685,6 +685,16 @@ const base::FilePath& OfflinePageModelImpl::GetArchiveDirectory(
   return archive_manager_->GetPersistentArchivesDir();
 }
 
+bool OfflinePageModelImpl::IsArchiveInInternalDir(
+    const base::FilePath& file_path) const {
+  DCHECK(!file_path.empty());
+
+  // TODO(jianli): Update this once persisten archives are moved into the public
+  // directory.
+  return archive_manager_->GetTemporaryArchivesDir().IsParent(file_path) ||
+         archive_manager_->GetPersistentArchivesDir().IsParent(file_path);
+}
+
 void OfflinePageModelImpl::CheckMetadataConsistency() {
   DCHECK(is_loaded_);
 

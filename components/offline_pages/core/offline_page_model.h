@@ -201,6 +201,10 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual const base::FilePath& GetArchiveDirectory(
       const std::string& name_space) const = 0;
 
+  // Returns whether given archive file is in the internal directory.
+  virtual bool IsArchiveInInternalDir(
+      const base::FilePath& file_path) const = 0;
+
   // Returns the logger. Ownership is retained by the model.
   virtual OfflineEventLogger* GetLogger() = 0;
 };
