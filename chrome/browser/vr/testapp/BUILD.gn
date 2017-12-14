@@ -8,6 +8,10 @@ executable("vr_testapp") {
   sources = [
     "gl_renderer.cc",
     "gl_renderer.h",
+    "test_keyboard_delegate.cc",
+    "test_keyboard_delegate.h",
+    "test_keyboard_renderer.cc",
+    "test_keyboard_renderer.h",
     "vr_test_context.cc",
     "vr_test_context.h",
     "vr_testapp.cc",

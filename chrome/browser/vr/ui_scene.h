@@ -75,6 +75,8 @@ class UiScene {
 
   void OnGlInitialized(SkiaSurfaceProvider* provider);
 
+  SkiaSurfaceProvider* SurfaceProviderForTesting() { return provider_; }
+
  private:
   void InitializeElement(UiElement* element);
 
