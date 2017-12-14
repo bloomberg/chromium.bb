@@ -242,7 +242,7 @@ void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
   // If all requests are done for |entry| and no more requests can be attributed
   // to it, it is safe to delete.
   if (entry->IsDataUseComplete() && !page_load_is_tracked) {
-    NotifyDataUseCompleted(entry);
+    NotifyPageLoadConcluded(entry);
     data_use_recorders_.erase(entry);
   }
 }
@@ -290,7 +290,7 @@ void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
     if (main_render_frame_entry_map_.end() != main_frame_it) {
       DataUseRecorderEntry entry = main_frame_it->second.data_use_recorder;
       if (entry->IsDataUseComplete()) {
-        NotifyDataUseCompleted(entry);
+        NotifyPageLoadConcluded(entry);
         data_use_recorders_.erase(entry);
       }
       main_render_frame_entry_map_.erase(main_frame_it);
@@ -362,7 +362,7 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
       main_frame_it->second.data_use_recorder = data_use_recorders_.end();
       NotifyPageLoadCommit(old_frame_entry);
       if (old_frame_entry->IsDataUseComplete()) {
-        NotifyDataUseCompleted(old_frame_entry);
+        NotifyPageLoadConcluded(old_frame_entry);
         data_use_recorders_.erase(old_frame_entry);
       }
 
@@ -379,12 +379,12 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
   entry->set_main_frame_id(main_frame);
 
   // If the frame has already been deleted then mark this navigation as having
-  // completed its data use.
+  // concluded its data use.
   if (main_frame_it == main_render_frame_entry_map_.end()) {
     entry->set_page_transition(page_transition);
     NotifyPageLoadCommit(entry);
     if (entry->IsDataUseComplete()) {
-      NotifyDataUseCompleted(entry);
+      NotifyPageLoadConcluded(entry);
       data_use_recorders_.erase(entry);
     }
     return;
@@ -441,7 +441,7 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
       }
     }
     if (old_frame_entry->IsDataUseComplete()) {
-      NotifyDataUseCompleted(old_frame_entry);
+      NotifyPageLoadConcluded(old_frame_entry);
       data_use_recorders_.erase(old_frame_entry);
     }
     entry->set_is_visible(main_frame_it->second.is_visible);
@@ -450,14 +450,41 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
   }
 }
 
+void ChromeDataUseAscriber::DidFinishLoad(int render_process_id,
+                                          int render_frame_id,
+                                          const GURL& validated_url) {
+  // Only continue for validated HTTP* URLs (e.g., not internal error pages).
+  if (!validated_url.SchemeIsHTTPOrHTTPS())
+    return;
+
+  RenderFrameHostID main_frame(render_process_id, render_frame_id);
+
+  auto main_frame_it = main_render_frame_entry_map_.find(main_frame);
+  if (main_frame_it == main_render_frame_entry_map_.end())
+    return;
+
+  // Check that the DataUse entry has a committed URL.
+  DataUseRecorderEntry entry = main_frame_it->second.data_use_recorder;
+  DataUse& data_use = entry->data_use();
+  if (data_use.url().is_valid()) {
+    NotifyDidFinishLoad(entry);
+  }
+}
+
 void ChromeDataUseAscriber::NotifyPageLoadCommit(DataUseRecorderEntry entry) {
   for (auto& observer : observers_)
     observer.OnPageLoadCommit(&entry->data_use());
 }
 
-void ChromeDataUseAscriber::NotifyDataUseCompleted(DataUseRecorderEntry entry) {
+void ChromeDataUseAscriber::NotifyDidFinishLoad(DataUseRecorderEntry entry) {
   for (auto& observer : observers_)
-    observer.OnPageLoadComplete(&entry->data_use());
+    observer.OnPageDidFinishLoad(&entry->data_use());
+}
+
+void ChromeDataUseAscriber::NotifyPageLoadConcluded(
+    DataUseRecorderEntry entry) {
+  for (auto& observer : observers_)
+    observer.OnPageLoadConcluded(&entry->data_use());
 }
 
 std::unique_ptr<URLRequestClassifier>

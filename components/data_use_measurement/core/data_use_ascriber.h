@@ -48,9 +48,14 @@ class DataUseAscriber {
     virtual void OnPageResourceLoad(const net::URLRequest& request,
                                     DataUse* data_use) = 0;
 
+    // The DidFinishLoad event occurred for the main frame. That is, the page
+    // load is nominally done (however, the page can still issue more network
+    // requests between this event and |OnPageLoadConcluded|.
+    virtual void OnPageDidFinishLoad(DataUse* data_use) = 0;
+
     // The page load completed. This is when the tab is closed or another
     // navigation starts due to omnibox search, link clicks, page reload, etc.
-    virtual void OnPageLoadComplete(DataUse* data_use) = 0;
+    virtual void OnPageLoadConcluded(DataUse* data_use) = 0;
   };
 
   DataUseAscriber();

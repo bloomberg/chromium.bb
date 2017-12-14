@@ -186,6 +186,22 @@ void ChromeDataUseAscriberService::DidFinishNavigation(
                      base::TimeTicks::Now()));
 }
 
+void ChromeDataUseAscriberService::DidFinishLoad(
+    content::RenderFrameHost* main_render_frame_host,
+    const GURL& validated_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!ascriber_)
+    return;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ChromeDataUseAscriber::DidFinishLoad,
+                     base::Unretained(ascriber_),
+                     main_render_frame_host->GetProcess()->GetID(),
+                     main_render_frame_host->GetRoutingID(), validated_url));
+}
+
 void ChromeDataUseAscriberService::SetDataUseAscriber(
     ChromeDataUseAscriber* ascriber) {
   DCHECK(!is_initialized_);

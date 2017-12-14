@@ -45,6 +45,8 @@ class DataUseWebContentsObserver
                               content::RenderFrameHost* new_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
 
  private:
   friend class content::WebContentsUserData<DataUseWebContentsObserver>;

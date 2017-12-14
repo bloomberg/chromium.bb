@@ -37,7 +37,9 @@ class MockPageLoadObserver
   MOCK_METHOD2(OnPageResourceLoad,
                void(const net::URLRequest& request,
                     data_use_measurement::DataUse* data_use));
-  MOCK_METHOD1(OnPageLoadComplete,
+  MOCK_METHOD1(OnPageDidFinishLoad,
+               void(data_use_measurement::DataUse* data_use));
+  MOCK_METHOD1(OnPageLoadConcluded,
                void(data_use_measurement::DataUse* data_use));
 };
 
@@ -483,7 +485,7 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
   ascriber()->OnUrlRequestCompleted(*request, false);
 
   EXPECT_CALL(mock_observer, OnPageLoadCommit(data_use)).Times(1);
-  EXPECT_CALL(mock_observer, OnPageLoadComplete(testing::_)).Times(1);
+  EXPECT_CALL(mock_observer, OnPageLoadConcluded(testing::_)).Times(1);
   ascriber()->DidFinishMainFrameNavigation(
       kRenderProcessId, kRenderFrameId, GURL("http://mobile.test.com"), false,
       kPageTransition, base::TimeTicks::Now());
@@ -495,9 +497,70 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
   EXPECT_EQ(content::GlobalRequestID(kRenderProcessId, 0),
             recorder_entry.main_frame_request_id());
   EXPECT_EQ(GURL("http://mobile.test.com"), recorder_entry.data_use().url());
-  EXPECT_CALL(mock_observer, OnPageLoadComplete(&recorder_entry.data_use()))
-      .Times(1);
 
+  EXPECT_CALL(mock_observer, OnPageDidFinishLoad(&recorder_entry.data_use()))
+      .Times(1);
+  ascriber()->DidFinishLoad(kRenderProcessId, kRenderFrameId,
+                            GURL("http://mobile.test.com"));
+
+  EXPECT_CALL(mock_observer, OnPageLoadConcluded(&recorder_entry.data_use()))
+      .Times(1);
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+  ascriber()->OnUrlRequestDestroyed(request.get());
+
+  EXPECT_EQ(0u, recorders().size());
+}
+
+TEST_F(ChromeDataUseAscriberTest, PageLoadObserverForErrorPageValidatedURL) {
+  MockPageLoadObserver mock_observer;
+  ascriber()->AddObserver(&mock_observer);
+
+  std::unique_ptr<net::URLRequest> request = CreateNewRequest(
+      "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
+
+  // Mainframe is created.
+  ascriber()->RenderFrameCreated(kRenderProcessId, kRenderFrameId, -1, -1);
+  EXPECT_EQ(1u, recorders().size());
+
+  ascriber()->OnBeforeUrlRequest(request.get());
+
+  // Navigation starts.
+  ascriber()->DidStartMainFrameNavigation(GURL("http://test.com"),
+                                          kRenderProcessId, kRenderFrameId,
+                                          kNavigationHandle);
+
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
+      kRenderFrameId);
+
+  EXPECT_EQ(2u, recorders().size());
+  DataUse* data_use = &recorders().back().data_use();
+
+  EXPECT_CALL(mock_observer, OnPageResourceLoad(testing::_, data_use)).Times(1);
+  ascriber()->OnUrlRequestCompleted(*request, false);
+
+  EXPECT_CALL(mock_observer, OnPageLoadCommit(data_use)).Times(1);
+  EXPECT_CALL(mock_observer, OnPageLoadConcluded(testing::_)).Times(1);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://mobile.test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
+
+  EXPECT_EQ(1u, recorders().size());
+  auto& recorder_entry = recorders().front();
+  EXPECT_EQ(RenderFrameHostID(kRenderProcessId, kRenderFrameId),
+            recorder_entry.main_frame_id());
+  EXPECT_EQ(content::GlobalRequestID(kRenderProcessId, 0),
+            recorder_entry.main_frame_request_id());
+  EXPECT_EQ(GURL("http://mobile.test.com"), recorder_entry.data_use().url());
+
+  // Now expect no DidFinishLoad observer call for "about:blank" validated URL.
+  EXPECT_CALL(mock_observer, OnPageDidFinishLoad(&recorder_entry.data_use()))
+      .Times(0);
+  ascriber()->DidFinishLoad(kRenderProcessId, kRenderFrameId,
+                            GURL("about:blank"));
+
+  EXPECT_CALL(mock_observer, OnPageLoadConcluded(&recorder_entry.data_use()))
+      .Times(1);
   ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
   ascriber()->OnUrlRequestDestroyed(request.get());
 
