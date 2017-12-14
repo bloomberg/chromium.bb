@@ -393,7 +393,7 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
     BLOCK_SIZE bsize = mbmi->sb_type;
     TX_SIZE min_tx_size =
         depth_to_tx_size(MAX_TX_DEPTH, bsize, is_inter_block(mbmi));
-    mbmi->tx_size = (TX_SIZE)AOMMAX(mbmi->tx_size, min_tx_size);
+    mbmi->tx_size = (TX_SIZE)TXSIZEMAX(mbmi->tx_size, min_tx_size);
   }
 }
 
@@ -4525,7 +4525,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       }
     }
 
-    mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+    mbmi->min_tx_size = mbmi->tx_size;
 #if CONFIG_LV_MAP
     av1_update_txb_context(cpi, td, dry_run, block_size, rate, mi_row, mi_col,
                            tile_data->allow_update_cdf);
@@ -4572,7 +4572,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
 
     av1_encode_sb((AV1_COMMON *)cm, x, block_size, mi_row, mi_col, dry_run);
-    if (mbmi->skip) mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+    if (mbmi->skip) mbmi->min_tx_size = mbmi->tx_size;
     av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, block_size, rate,
                           tile_data->allow_update_cdf);
   }
@@ -4612,7 +4612,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
           if (mi_col + i < cm->mi_cols && mi_row + j < cm->mi_rows)
             mi_8x8[mis * j + i]->mbmi.tx_size = intra_tx_size;
 
-      mbmi->min_tx_size = get_min_tx_size(intra_tx_size);
+      mbmi->min_tx_size = intra_tx_size;
       if (intra_tx_size != get_max_rect_tx_size(bsize, is_inter))
         ++x->txb_split_count;
     }

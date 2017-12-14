@@ -436,7 +436,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
       for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
         inter_tx_size[idy][idx] = tx_size;
     mbmi->tx_size = tx_size;
-    mbmi->min_tx_size = AOMMIN(mbmi->min_tx_size, get_min_tx_size(tx_size));
+    mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
     return;
@@ -458,7 +458,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
         for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
           inter_tx_size[idy][idx] = inter_tx_size[0][0];
       mbmi->tx_size = sub_txs;
-      mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+      mbmi->min_tx_size = mbmi->tx_size;
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, sub_txs, tx_size);
       return;
@@ -480,7 +480,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
       for (idx = 0; idx < AOMMAX(1, tx_size_wide_unit[tx_size] / 2); ++idx)
         inter_tx_size[idy][idx] = tx_size;
     mbmi->tx_size = tx_size;
-    mbmi->min_tx_size = AOMMIN(mbmi->min_tx_size, get_min_tx_size(tx_size));
+    mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
     if (counts) ++counts->txfm_partition[ctx][0];
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
@@ -1045,7 +1045,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       for (int idy = 0; idy < height; ++idy)
         for (int idx = 0; idx < width; ++idx)
           mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
-      mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+      mbmi->min_tx_size = mbmi->tx_size;
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
     }
     mbmi->mode = mbmi->uv_mode = UV_DC_PRED;
@@ -2419,7 +2419,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
         for (int idx = 0; idx < width; ++idx)
           mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
     }
-    mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+    mbmi->min_tx_size = mbmi->tx_size;
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
   }
 

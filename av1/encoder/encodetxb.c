@@ -350,8 +350,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   av1_txb_init_levels(tcoeff, width, height, levels);
 
 #if CONFIG_TXK_SEL
-  av1_write_tx_type(cm, xd, blk_row, blk_col, plane, get_min_tx_size(tx_size),
-                    w);
+  av1_write_tx_type(cm, xd, blk_row, blk_col, plane, tx_size, w);
 #endif
 
   int eob_extra, dummy;
@@ -2149,8 +2148,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
 #if CONFIG_TXK_SEL
   av1_update_tx_type_count(cm, xd, blk_row, blk_col, plane, mbmi->sb_type,
-                           get_min_tx_size(tx_size), td->counts,
-                           allow_update_cdf);
+                           tx_size, td->counts, allow_update_cdf);
 #endif
 
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =

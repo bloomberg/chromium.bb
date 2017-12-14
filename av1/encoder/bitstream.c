@@ -1080,7 +1080,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   const TX_SIZE mtx_size =
       get_max_rect_tx_size(xd->mi[0]->mbmi.sb_type, is_inter);
   const TX_SIZE tx_size =
-      is_inter ? AOMMAX(sub_tx_size_map[1][mtx_size], mbmi->min_tx_size)
+      is_inter ? TXSIZEMAX(sub_tx_size_map[1][mtx_size], mbmi->min_tx_size)
                : mbmi->tx_size;
 #endif  // !CONFIG_TXK_SEL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
@@ -1095,7 +1095,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #endif
 
   if (!FIXED_TX_TYPE) {
-    const TX_SIZE square_tx_size = get_min_tx_size(tx_size);
+    const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
     const BLOCK_SIZE bsize = mbmi->sb_type;
     if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) >
             1 &&

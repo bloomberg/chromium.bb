@@ -925,6 +925,9 @@ static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
   return LUT[bsize];
 }
 
+#define TXSIZEMAX(t1, t2) (tx_size_2d[(t1)] >= tx_size_2d[(t2)] ? (t1) : (t2))
+#define TXSIZEMIN(t1, t2) (tx_size_2d[(t1)] <= tx_size_2d[(t2)] ? (t1) : (t2))
+
 static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
                                      const MB_MODE_INFO *mbmi) {
   return is_rect_tx_allowed_bsize(mbmi->sb_type) &&

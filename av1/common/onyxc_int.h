@@ -1162,10 +1162,7 @@ static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {
 #if defined(__GNUC__) && __GNUC__ >= 4
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
-static INLINE TX_SIZE get_min_tx_size(TX_SIZE tx_size) {
-  assert(tx_size < TX_SIZES_ALL);
-  return txsize_sqr_map[tx_size];
-}
+
 #if defined(__GNUC__) && __GNUC__ >= 4
 #pragma GCC diagnostic warning "-Warray-bounds"
 #endif
