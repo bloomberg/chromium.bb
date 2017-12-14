@@ -39,6 +39,8 @@
 //  - Callers can decode CBOR values with at most 16 nested depth layer. More
 //    strict restrictions on nesting layer size of CBOR values can be enforced
 //    by setting |max_nesting_level|.
+//  - Only CBOR maps with integer or string type keys are supported due to the
+//    cost of serialization when sorting map keys.
 
 namespace content {
 
@@ -88,9 +90,9 @@ class CONTENT_EXPORT CBORReader {
   base::Optional<CBORValue> ReadCBORMap(uint64_t length, int max_nesting_level);
   bool CanConsume(uint64_t bytes);
   void CheckExtraneousData();
-  bool CheckDuplicateKey(const std::string& new_key, CBORValue::MapValue* map);
+  bool CheckDuplicateKey(const CBORValue& new_key, CBORValue::MapValue* map);
   bool HasValidUTF8Format(const std::string& string_data);
-  bool CheckOutOfOrderKey(const std::string& new_key, CBORValue::MapValue* map);
+  bool CheckOutOfOrderKey(const CBORValue& new_key, CBORValue::MapValue* map);
   bool CheckUintEncodedByteLength(uint8_t additional_bytes, uint64_t uint_data);
 
   DecoderError GetErrorCode();

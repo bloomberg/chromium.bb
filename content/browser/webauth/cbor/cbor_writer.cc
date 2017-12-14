@@ -81,7 +81,7 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
       StartItem(CBORValue::Type::MAP, map.size());
 
       for (const auto& value : map) {
-        if (!EncodeCBOR(CBORValue(value.first), max_nesting_level - 1))
+        if (!EncodeCBOR(value.first, max_nesting_level - 1))
           return false;
         if (!EncodeCBOR(value.second, max_nesting_level - 1))
           return false;

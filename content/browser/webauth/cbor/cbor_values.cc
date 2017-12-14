@@ -74,7 +74,8 @@ CBORValue::CBORValue(ArrayValue&& in_array) noexcept
 CBORValue::CBORValue(const MapValue& in_map) : type_(Type::MAP), map_value_() {
   map_value_.reserve(in_map.size());
   for (const auto& it : in_map)
-    map_value_.emplace_hint(map_value_.end(), it.first, it.second.Clone());
+    map_value_.emplace_hint(map_value_.end(), it.first.Clone(),
+                            it.second.Clone());
 }
 
 CBORValue::CBORValue(MapValue&& in_map) noexcept
@@ -111,7 +112,7 @@ CBORValue CBORValue::Clone() const {
   return CBORValue();
 }
 
-uint64_t CBORValue::GetUnsigned() const {
+const uint64_t& CBORValue::GetUnsigned() const {
   CHECK(is_unsigned());
   return unsigned_value_;
 }

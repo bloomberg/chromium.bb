@@ -25,9 +25,12 @@ AttestationObject::AttestationObject(
 
 std::vector<uint8_t> AttestationObject::SerializeToCBOREncodedBytes() {
   CBORValue::MapValue map;
-  map[kFormatKey] = CBORValue(attestation_statement_->format_name().c_str());
-  map[kAuthDataKey] = CBORValue(authenticator_data_->SerializeToByteArray());
-  map[kAttestationKey] = CBORValue(attestation_statement_->GetAsCBORMap());
+  map[CBORValue(kFormatKey)] =
+      CBORValue(attestation_statement_->format_name().c_str());
+  map[CBORValue(kAuthDataKey)] =
+      CBORValue(authenticator_data_->SerializeToByteArray());
+  map[CBORValue(kAttestationKey)] =
+      CBORValue(attestation_statement_->GetAsCBORMap());
   auto cbor = CBORWriter::Write(CBORValue(map));
   if (cbor.has_value()) {
     return cbor.value();

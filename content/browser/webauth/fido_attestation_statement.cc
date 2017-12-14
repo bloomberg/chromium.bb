@@ -87,13 +87,13 @@ FidoAttestationStatement::FidoAttestationStatement(
 
 CBORValue::MapValue FidoAttestationStatement::GetAsCBORMap() {
   CBORValue::MapValue attstmt_map;
-  attstmt_map[kSignatureKey] = CBORValue(signature_);
+  attstmt_map[CBORValue(kSignatureKey)] = CBORValue(signature_);
 
   std::vector<CBORValue> array;
   for (auto cert : x509_certificates_) {
     array.push_back(CBORValue(cert));
   }
-  attstmt_map[kX509CertKey] = CBORValue(array);
+  attstmt_map[CBORValue(kX509CertKey)] = CBORValue(array);
   return attstmt_map;
 }
 
