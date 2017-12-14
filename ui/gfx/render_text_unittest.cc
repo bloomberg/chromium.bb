@@ -50,6 +50,7 @@
 #if defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 
+#include "base/mac/mac_util.h"
 #include "ui/gfx/render_text_mac.h"
 #endif
 
@@ -539,6 +540,50 @@ class RenderTextTest : public testing::Test,
 
   Rect GetSelectionBoundsUnion() {
     return GetSubstringBoundsUnion(render_text_->selection());
+  }
+
+  // Checks left-to-right text, ensuring that the caret moves to the right as
+  // the cursor position increments through the logical text. Also ensures that
+  // each glyph is to the right of the prior glyph. RenderText automatically
+  // updates invalid cursor positions (eg. between a surrogate pair) to a valid
+  // neighbor, so the positions may be unchanged for some iterations. Invoking
+  // this in a test gives coverage of the sanity checks in functions such as
+  // TextRunHarfBuzz::GetGraphemeBounds() which rely on sensible glyph positions
+  // being provided by installed typefaces.
+  void CheckBoundsForCursorPositions() {
+    ASSERT_FALSE(render_text_->text().empty());
+
+    // Use a wide display rect to avoid scrolling.
+    render_text_->SetDisplayRect(gfx::Rect(0, 0, 1000, 50));
+    test_api()->EnsureLayout();
+    EXPECT_LT(render_text_->GetContentWidthF(),
+              render_text_->display_rect().width());
+
+    // Assume LTR for now.
+    int max_cursor_x = 0;
+    int max_glyph_x = 0, max_glyph_right = 0;
+
+    for (size_t i = 0; i <= render_text_->text().size(); ++i) {
+      render_text_->SetCursorPosition(i);
+
+      SCOPED_TRACE(testing::Message()
+                   << "Cursor position: " << i
+                   << " selection: " << render_text_->selection().ToString());
+
+      const gfx::Rect cursor_bounds = render_text_->GetUpdatedCursorBounds();
+
+      // The cursor should always be one pixel wide.
+      EXPECT_EQ(1, cursor_bounds.width());
+      EXPECT_LE(max_cursor_x, cursor_bounds.x());
+      max_cursor_x = cursor_bounds.x();
+
+      const gfx::Rect glyph_bounds =
+          render_text_->GetCursorBounds(render_text_->selection_model(), false);
+      EXPECT_LE(max_glyph_x, glyph_bounds.x());
+      EXPECT_LE(max_glyph_right, glyph_bounds.right());
+      max_glyph_x = glyph_bounds.x();
+      max_glyph_right = glyph_bounds.right();
+    }
   }
 
   Canvas* canvas() { return &canvas_; }
@@ -3943,6 +3988,112 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmoji) {
   EXPECT_EQ(ToString16Vec({"x", "😁", "y", "✨"}), GetRunListStrings());
   // U+1F601 is represented as a surrogate pair in UTF-16.
   EXPECT_EQ("[0][1->2][3][4]", GetRunListStructureString());
+}
+
+TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {
+  constexpr int kGlyphWidth = 30;
+  SetGlyphWidth(30);
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+
+  // ☎ (U+260E BLACK TELEPHONE) and U+FE0F (a variation selector) combine to
+  // form (on some platforms), ☎️, a red (or blue) telephone. The run can
+  // not break between the codepoints, or the incorrect glyph will be chosen.
+  render_text->SetText(WideToUTF16(L"z\u260E\uFE0Fy"));
+  render_text->SetDisplayRect(Rect(1000, 50));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"z", "☎\uFE0F", "y"}), GetRunListStrings());
+  EXPECT_EQ("[0][1->2][3]", GetRunListStructureString());
+
+  // Also test moving the cursor across the telephone.
+  EXPECT_EQ(gfx::Range(0, 0), render_text->selection());
+  EXPECT_EQ(0, render_text->GetUpdatedCursorBounds().x());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(gfx::Range(1, 1), render_text->selection());
+  EXPECT_EQ(1 * kGlyphWidth, render_text->GetUpdatedCursorBounds().x());
+
+#if defined(OS_MACOSX)
+  // Early versions of macOS provide a tofu glyph for the variation selector.
+  // Bail out early except on 10.12 and above.
+  if (base::mac::IsAtMostOS10_11())
+    return;
+#endif
+
+  // Jump over the telephone: two codepoints, but a single glyph.
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(gfx::Range(3, 3), render_text->selection());
+  EXPECT_EQ(2 * kGlyphWidth, render_text->GetUpdatedCursorBounds().x());
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(gfx::Range(4, 4), render_text->selection());
+  EXPECT_EQ(3 * kGlyphWidth, render_text->GetUpdatedCursorBounds().x());
+
+  // Nothing else.
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(gfx::Range(4, 4), render_text->selection());
+  EXPECT_EQ(3 * kGlyphWidth, render_text->GetUpdatedCursorBounds().x());
+}
+
+TEST_P(RenderTextHarfBuzzTest, HarfBuzz_OrphanedVariationSelector) {
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+
+  // It should never happen in normal usage, but a variation selector can appear
+  // by itself. In this case, it can form its own text run, with no glyphs.
+  render_text->SetText(WideToUTF16(L"\uFE0F"));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"\uFE0F"}), GetRunListStrings());
+  EXPECT_EQ("[0]", GetRunListStructureString());
+  CheckBoundsForCursorPositions();
+}
+
+TEST_P(RenderTextHarfBuzzTest, HarfBuzz_AsciiVariationSelector) {
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+
+  // A variation selector doesn't have to appear with Emoji. It will probably
+  // cause the typesetter to render tofu in this case, but it should not break
+  // a text run.
+  render_text->SetText(WideToUTF16(L"z\uFE0Fy"));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"z\uFE0Fy"}), GetRunListStrings());
+  EXPECT_EQ("[0->2]", GetRunListStructureString());
+  CheckBoundsForCursorPositions();
+}
+
+TEST_P(RenderTextHarfBuzzTest, HarfBuzz_LeadingVariationSelector) {
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+
+  // When a variation selector appears either side of an emoji, ensure the one
+  // after is in the same run.
+  render_text->SetText(WideToUTF16(L"\uFE0F\u260E\uFE0Fy"));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"\uFE0F", "☎\uFE0F", "y"}), GetRunListStrings());
+  EXPECT_EQ("[0][1->2][3]", GetRunListStructureString());
+  CheckBoundsForCursorPositions();
+}
+
+TEST_P(RenderTextHarfBuzzTest, HarfBuzz_TrailingVariationSelector) {
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+
+  // If a redundant variation selector appears in an emoji run, it also gets
+  // merged into the emoji run. Usually there should be no effect. That's
+  // ultimately up to the typeface but, however it choses, cursor and glyph
+  // positions should behave.
+  render_text->SetText(WideToUTF16(L"z\u260E\uFE0F\uFE0Fy"));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"z", "☎\uFE0F\uFE0F", "y"}), GetRunListStrings());
+  EXPECT_EQ("[0][1->3][4]", GetRunListStructureString());
+  CheckBoundsForCursorPositions();
+}
+
+TEST_P(RenderTextHarfBuzzTest, HarfBuzz_MultipleVariationSelectorEmoji) {
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+
+  // Two emoji with variation selectors appearing in a correct sequence should
+  // be in the same run.
+  render_text->SetText(WideToUTF16(L"z\u260E\uFE0F\u260E\uFE0Fy"));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"z", "☎\uFE0F☎\uFE0F", "y"}), GetRunListStrings());
+  EXPECT_EQ("[0][1->4][5]", GetRunListStructureString());
+  CheckBoundsForCursorPositions();
 }
 
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByAscii) {
