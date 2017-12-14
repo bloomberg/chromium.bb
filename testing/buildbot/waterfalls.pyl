@@ -1204,9 +1204,17 @@
         },
       },
       'Site Isolation Linux': {
+        # TODO(dpranke): Remove this builder once the tests are running on
+        # the main 'Linux Tests' bot; base_unittests is a placeholder
+        # to keep the builder from building "all".
+        'additional_compile_targets': [
+          'base_unittests',
+        ],
         'test_suites': {
-          'gtest_tests': 'site_isolation_linux_fyi_gtests',
-          'isolated_scripts': 'site_isolation_linux_fyi_isolated_scripts',
+          # TODO(crbug.com/786554): merge this into
+          # linux_specific_chromium_isolated_scripts to run on
+          # linux_chromium_rel_ng when we're sure we have the capacity.
+          'isolated_scripts': 'linux_specific_site_per_process_isolated_scripts',
         },
       },
       'Site Isolation Win': {

@@ -588,6 +588,26 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -701,6 +721,26 @@
         "test": "extensions_browsertests"
       },
       {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -767,6 +807,16 @@
         "test": "headless_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -929,6 +979,16 @@
         "test": "storage_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sync_integration_tests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_sync_integration_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1213,6 +1273,26 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1314,6 +1394,26 @@
         "test": "extensions_browsertests"
       },
       {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1383,6 +1483,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -1546,6 +1656,16 @@
         "test": "storage_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sync_integration_tests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "name": "site_per_process_sync_integration_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

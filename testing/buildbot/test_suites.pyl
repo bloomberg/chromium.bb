@@ -1272,6 +1272,38 @@
     'devtools_eslint': {},
   },
 
+  'linux_specific_site_per_process_isolated_scripts': {
+    # TODO(crbug.com/786554): merge this into
+    # linux_specific_chromium_isolated_scripts to run on
+    # linux_chromium_rel_ng when we're sure we have the capacity.
+    'site_per_process_webkit_layout_tests': {
+      'args': [
+        '--additional-driver-flag',
+        '--site-per-process',
+        '--additional-driver-flag',
+        '--isolate-origins=http://www.web-platform.test:8001/,http://www1.web-platform.test:8001/,http://www2.web-platform.test:8001/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8001/,http://xn--lve-6lad.web-platform.test:8001/,http://www.web-platform.test:8081/,http://www1.web-platform.test:8081/,http://www2.web-platform.test:8081/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8081/,http://xn--lve-6lad.web-platform.test:8081/,https://www.web-platform.test:8444/,https://www1.web-platform.test:8444/,https://www2.web-platform.test:8444/,https://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8444/,https://xn--lve-6lad.web-platform.test:8444/',
+        '--additional-expectations',
+        'src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process',
+      ],
+      'isolate_name': 'webkit_layout_tests_exparchive',
+      'merge': {
+        'args': [
+          '--verbose',
+        ],
+        'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
+      },
+      'results_handler': 'layout tests',
+      'swarming': {
+        'dimension_sets': [
+          {
+            'os': 'Ubuntu-14.04'
+          },
+        ],
+        'shards': 10,
+      },
+    },
+  },
+
   'mac_specific_chromium_gtests': {
     'mac_installer_unittests': {},
     'sandbox_mac_unittests': {},
@@ -1493,6 +1525,45 @@
     },
   },
 
+  'site_isolation_chromium_linux_gtests': {
+    'site_per_process_components_browsertests': {
+      'args': [
+        '--site-per-process',
+      ],
+      'test': 'components_browsertests',
+    },
+    'site_per_process_components_unittests': {
+      'args': [
+        '--site-per-process',
+      ],
+      'test': 'components_unittests',
+    },
+    'site_per_process_extensions_browsertests': {
+      'args': [
+        '--site-per-process',
+      ],
+      'test': 'extensions_browsertests',
+    },
+    'site_per_process_extensions_unittests': {
+      'args': [
+        '--site-per-process',
+      ],
+      'test': 'extensions_unittests',
+    },
+    'site_per_process_interactive_ui_tests': {
+      'args': [
+        '--site-per-process',
+      ],
+      'test': 'interactive_ui_tests',
+    },
+    'site_per_process_sync_integration_tests': {
+      'args': [
+        '--site-per-process',
+      ],
+      'test': 'sync_integration_tests',
+    },
+  },
+
   'site_isolation_android_fyi_specific_gtests': {
     # TODO(kbr): a couple of these look like accidents.
     # content_browsertests and content_unittests are already run on
@@ -1517,7 +1588,7 @@
     },
   },
 
-  'site_isolation_linux_and_win_fyi_gtests': {
+  'site_isolation_win_fyi_gtests': {
     # TODO(kbr): most of the tests on this bot have different names
     # than the other site isolation bots, so we can't simply reuse the
     # site_isolation_chromium_gtests test suite. These should be
@@ -1572,6 +1643,18 @@
         '--site-per-process',
       ],
     },
+    'installer_util_unittests': {
+      'args': [
+        '--site-per-process',
+      ],
+      'swarming': {
+        'dimension_sets': [
+          {
+            'integrity': 'high',
+          }
+        ],
+      },
+    },
     'nacl_loader_unittests': {
       'args': [
         '--site-per-process',
@@ -1586,50 +1669,6 @@
       'args': [
         '--site-per-process',
       ],
-    },
-  },
-
-  'site_isolation_linux_fyi_isolated_scripts': {
-    'webkit_layout_tests': {
-      'args': [
-        '--additional-driver-flag',
-        '--site-per-process',
-        '--additional-driver-flag',
-        '--isolate-origins=http://www.web-platform.test:8001/,http://www1.web-platform.test:8001/,http://www2.web-platform.test:8001/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8001/,http://xn--lve-6lad.web-platform.test:8001/,http://www.web-platform.test:8081/,http://www1.web-platform.test:8081/,http://www2.web-platform.test:8081/,http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8081/,http://xn--lve-6lad.web-platform.test:8081/,https://www.web-platform.test:8444/,https://www1.web-platform.test:8444/,https://www2.web-platform.test:8444/,https://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8444/,https://xn--lve-6lad.web-platform.test:8444/',
-        '--additional-expectations',
-        'src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process',
-      ],
-      'isolate_name': 'webkit_layout_tests_exparchive',
-      'merge': {
-        'args': [
-          '--verbose',
-        ],
-        'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
-      },
-      'results_handler': 'layout tests',
-      'swarming': {
-        'dimension_sets': [
-          {
-            'os': 'Ubuntu-14.04'
-          },
-        ],
-        'shards': 10,
-      },
-    },
-  },
-
-  'site_isolation_win_fyi_specific_gtests': {
-    'installer_util_unittests': {
-      'args': [
-        '--site-per-process',
-      ],
-      'swarming': {
-        'dimension_sets': [
-          {
-            'integrity': 'high',
-          }
-        ],
-      },
     },
   },
 
@@ -1895,6 +1934,7 @@
     'non_clang_win_chromium_gtests',
     'non_mac_non_clang_win_chromium_gtests',
     'site_isolation_chromium_gtests',
+    'site_isolation_chromium_linux_gtests',
     'viz_gtests',
   ],
 
@@ -2232,15 +2272,6 @@
   'site_isolation_android_fyi_gtests': [
     'site_isolation_android_fyi_specific_gtests',
     'site_isolation_chromium_gtests',
-  ],
-
-  'site_isolation_linux_fyi_gtests': [
-    'site_isolation_linux_and_win_fyi_gtests',
-  ],
-
-  'site_isolation_win_fyi_gtests': [
-    'site_isolation_linux_and_win_fyi_gtests',
-    'site_isolation_win_fyi_specific_gtests',
   ],
 
   'system_webview_and_webview_ui_instrumentation_tests': [
