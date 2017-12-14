@@ -13,6 +13,7 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/viz_service_export.h"
+#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace cc {
@@ -39,6 +40,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       CompositorFrameSinkSupportManager* support_manager,
       FrameSinkManagerImpl* frame_sink_manager,
       Display* display,
+      mojom::DisplayClient* display_client,
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
@@ -49,6 +51,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       CompositorFrameSinkSupportManager* support_manager,
       FrameSinkManagerImpl* frame_sink_manager,
       Display* display,
+      mojom::DisplayClient* display_client,
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
   ~DirectLayerTreeFrameSink() override;
 
@@ -97,6 +100,8 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   FrameSinkManagerImpl* frame_sink_manager_;
   ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   Display* display_;
+  // |display_client_| may be nullptr on platforms that do not use it.
+  mojom::DisplayClient* display_client_ = nullptr;
   gfx::Size last_swap_frame_size_;
   float device_scale_factor_ = 1.f;
   bool is_lost_ = false;

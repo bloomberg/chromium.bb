@@ -20,6 +20,7 @@
 #include "components/viz/test/fake_host_frame_sink_client.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
+#include "components/viz/test/mock_display_client.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,7 +74,8 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
       const RendererSettings& renderer_settings,
       mojom::CompositorFrameSinkAssociatedRequest request,
       mojom::CompositorFrameSinkClientPtr client,
-      mojom::DisplayPrivateAssociatedRequest display_private_request) override {
+      mojom::DisplayPrivateAssociatedRequest display_private_request,
+      mojom::DisplayClientPtr display_client) override {
     MockCreateRootCompositorFrameSink(frame_sink_id);
   }
   MOCK_METHOD1(MockCreateRootCompositorFrameSink,
@@ -511,7 +513,8 @@ TEST_F(HostFrameSinkManagerLocalTest, DisplayHitTestQueryMap) {
       kFrameSinkChild1, 0 /* surface_handle */,
       false /* force_software_compositing */,
       RendererSettings() /* renderer_settings */, nullptr /* request */,
-      nullptr /* client */, nullptr /* display_private_request */);
+      nullptr /* client */, nullptr /* display_private_request */,
+      nullptr /* display_client */);
   EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
 
   host().InvalidateFrameSinkId(kFrameSinkChild1);
@@ -584,13 +587,14 @@ TEST_F(HostFrameSinkManagerRemoteTest, DeletedHitTestQuery) {
       compositor_frame_sink_associated_info;
   MockCompositorFrameSinkClient compositor_frame_sink_client;
   mojom::DisplayPrivateAssociatedPtr display_private;
+  MockDisplayClient display_client;
   host().CreateRootCompositorFrameSink(
       kFrameSinkChild1, 0 /* surface_handle */,
       false /* force_software_compositing */,
       RendererSettings() /* renderer_settings */,
       MakeRequest(&compositor_frame_sink_associated_info),
       compositor_frame_sink_client.BindInterfacePtr(),
-      MakeRequest(&display_private));
+      MakeRequest(&display_private), display_client.BindInterfacePtr());
 
   EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
 

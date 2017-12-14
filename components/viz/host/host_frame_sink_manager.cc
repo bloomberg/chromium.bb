@@ -101,7 +101,8 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
     const RendererSettings& renderer_settings,
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
-    mojom::DisplayPrivateAssociatedRequest display_private_request) {
+    mojom::DisplayPrivateAssociatedRequest display_private_request,
+    mojom::DisplayClientPtr display_client) {
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
   DCHECK(!data.HasCompositorFrameSinkData());
@@ -112,7 +113,7 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
   frame_sink_manager_->CreateRootCompositorFrameSink(
       frame_sink_id, surface_handle, force_software_compositing,
       renderer_settings, std::move(request), std::move(client),
-      std::move(display_private_request));
+      std::move(display_private_request), std::move(display_client));
   display_hit_test_query_[frame_sink_id] = base::MakeUnique<HitTestQuery>();
 }
 

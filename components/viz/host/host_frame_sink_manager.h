@@ -97,7 +97,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
       const RendererSettings& renderer_settings,
       mojom::CompositorFrameSinkAssociatedRequest request,
       mojom::CompositorFrameSinkClientPtr client,
-      mojom::DisplayPrivateAssociatedRequest display_private_request);
+      mojom::DisplayPrivateAssociatedRequest display_private_request,
+      mojom::DisplayClientPtr display_client);
 
   // Creates a connection between client to viz, using |request| and |client|,
   // that allows the client to submit CompositorFrames. When no longer needed,

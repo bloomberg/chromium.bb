@@ -31,8 +31,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
       const RendererSettings& renderer_settings,
       mojom::CompositorFrameSinkAssociatedRequest request,
       mojom::CompositorFrameSinkClientPtr client,
-      mojom::DisplayPrivateAssociatedRequest display_private_request) override {
-  }
+      mojom::DisplayPrivateAssociatedRequest display_private_request,
+      mojom::DisplayClientPtr display_client) override {}
   void CreateCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       mojom::CompositorFrameSinkRequest request,

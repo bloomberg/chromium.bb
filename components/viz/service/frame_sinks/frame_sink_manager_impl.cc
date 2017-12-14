@@ -121,7 +121,8 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     const RendererSettings& renderer_settings,
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
-    mojom::DisplayPrivateAssociatedRequest display_private_request) {
+    mojom::DisplayPrivateAssociatedRequest display_private_request,
+    mojom::DisplayClientPtr display_client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
@@ -134,8 +135,8 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
 
   auto frame_sink = std::make_unique<RootCompositorFrameSinkImpl>(
       this, frame_sink_id, std::move(display), std::move(begin_frame_source),
-      std::move(request), std::move(client),
-      std::move(display_private_request));
+      std::move(request), std::move(client), std::move(display_private_request),
+      std::move(display_client));
   SinkAndSupport& entry = compositor_frame_sinks_[frame_sink_id];
   DCHECK(entry.support);  // |entry| was created by RootCompositorFrameSinkImpl.
   entry.sink = std::move(frame_sink);

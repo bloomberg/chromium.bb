@@ -430,6 +430,10 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
       mojo::MakeRequest(&client);
   viz::mojom::DisplayPrivateAssociatedRequest display_private_request =
       mojo::MakeRequest(&compositor_data_map_[compositor].display_private);
+  compositor_data_map_[compositor].display_client =
+      std::make_unique<InProcessDisplayClient>(compositor->widget());
+  viz::mojom::DisplayClientPtr display_client =
+      compositor_data_map_[compositor].display_client->GetBoundPtr();
 
 #if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
   gpu::SurfaceHandle surface_handle = compositor->widget();
@@ -443,7 +447,7 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
       compositor->frame_sink_id(), surface_handle,
       compositor->force_software_compositor(), renderer_settings_,
       std::move(sink_request), std::move(client),
-      std::move(display_private_request));
+      std::move(display_private_request), std::move(display_client));
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   viz::ClientLayerTreeFrameSink::InitParams params;

@@ -52,6 +52,7 @@ void CALayerTreeCoordinator::CommitPendingTreesToCA(
     current_ca_renderer_layer_tree_.swap(pending_ca_renderer_layer_tree_);
   } else {
     TRACE_EVENT0("gpu", "Blank frame: No overlays or CALayers");
+    DLOG(WARNING) << "Blank frame: No overlays or CALayers";
     [root_ca_layer_ setSublayers:nil];
     current_ca_renderer_layer_tree_.reset();
   }

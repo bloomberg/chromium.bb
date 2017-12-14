@@ -37,7 +37,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source,
       mojom::CompositorFrameSinkAssociatedRequest request,
       mojom::CompositorFrameSinkClientPtr client,
-      mojom::DisplayPrivateAssociatedRequest display_private_request);
+      mojom::DisplayPrivateAssociatedRequest display_private_request,
+      mojom::DisplayClientPtr display_client);
 
   ~RootCompositorFrameSinkImpl() override;
 
@@ -82,6 +83,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client_;
   mojo::AssociatedBinding<mojom::CompositorFrameSink>
       compositor_frame_sink_binding_;
+  // |display_client_| may be nullptr on platforms that do not use it.
+  mojom::DisplayClientPtr display_client_;
   mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;
 
   // Must be destroyed before |compositor_frame_sink_client_|. This must never

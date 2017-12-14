@@ -29,8 +29,6 @@ class GpuOutputSurfaceMac
   bool SurfaceIsSuspendForRecycle() const override;
 
   // BrowserCompositorOutputSurface implementation.
-  void OnGpuSwapBuffersCompleted(
-      const gpu::SwapBuffersCompleteParams& params) override;
   void SetSurfaceSuspendedForRecycle(bool suspended) override;
 
  private:

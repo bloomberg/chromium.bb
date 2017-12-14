@@ -87,15 +87,15 @@ class VizHostProxyImpl : public VizHostProxy {
       const viz::RendererSettings& renderer_settings,
       viz::mojom::CompositorFrameSinkAssociatedRequest request,
       viz::mojom::CompositorFrameSinkClientPtr client,
-      viz::mojom::DisplayPrivateAssociatedRequest display_private_request)
-      override {
+      viz::mojom::DisplayPrivateAssociatedRequest display_private_request,
+      viz::mojom::DisplayClientPtr display_client) override {
     if (manager_) {
       // No software compositing on ChromeOS.
       bool force_software_compositing = false;
       manager_->CreateRootCompositorFrameSink(
           frame_sink_id, surface_handle, force_software_compositing,
           renderer_settings, std::move(request), std::move(client),
-          std::move(display_private_request));
+          std::move(display_private_request), std::move(display_client));
     }
   }
 

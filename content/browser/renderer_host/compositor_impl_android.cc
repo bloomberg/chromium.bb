@@ -832,10 +832,11 @@ void CompositorImpl::InitializeDisplay(
       vulkan_context_provider
           ? std::make_unique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, GetHostFrameSinkManager(), manager,
-                display_.get(), vulkan_context_provider)
+                display_.get(), nullptr /* display_client */,
+                vulkan_context_provider)
           : std::make_unique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, GetHostFrameSinkManager(), manager,
-                display_.get(), context_provider,
+                display_.get(), nullptr /* display_client */, context_provider,
                 nullptr /* worker_context_provider */, task_runner,
                 gpu_memory_buffer_manager,
                 viz::ServerSharedBitmapManager::current());
