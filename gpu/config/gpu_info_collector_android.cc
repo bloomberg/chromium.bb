@@ -22,7 +22,12 @@
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_surface.h"
+
+#if BUILDFLAG(USE_STATIC_ANGLE)
+#include <EGL/egl.h>
+#endif  // BUILDFLAG(USE_STATIC_ANGLE)
 
 namespace {
 
@@ -68,6 +73,12 @@ std::string GetDriverVersionFromString(const std::string& version_string) {
 }
 
 gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
+#if BUILDFLAG(USE_STATIC_ANGLE)
+#pragma push_macro("eglGetProcAddress")
+#undef eglGetProcAddress
+#define LOOKUP_FUNC(x) \
+  auto x##Fn = reinterpret_cast<gl::x##Proc>(eglGetProcAddress(#x))
+#else  // BUILDFLAG(USE_STATIC_ANGLE)
   // Go through the process of loading GL libs and initializing an EGL
   // context so that we can get GL vendor/version/renderer strings.
   base::NativeLibrary gles_library, egl_library;
@@ -112,6 +123,7 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
   };
 
 #define LOOKUP_FUNC(x) auto x##Fn = reinterpret_cast<gl::x##Proc>(get_func(#x))
+#endif  // BUILDFLAG(USE_STATIC_ANGLE)
 
   LOOKUP_FUNC(eglGetError);
   LOOKUP_FUNC(eglQueryString);
@@ -131,6 +143,9 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
   LOOKUP_FUNC(glGetIntegerv);
 
 #undef LOOKUP_FUNC
+#if BUILDFLAG(USE_STATIC_ANGLE)
+#pragma pop_macro("eglGetProcAddress")
+#endif  // BUILDFLAG(USE_STATIC_ANGLE)
 
   EGLDisplay curr_display = eglGetCurrentDisplayFn();
   EGLContext curr_context = eglGetCurrentContextFn();

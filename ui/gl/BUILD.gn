@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
 import("//testing/test.gni")
 
@@ -25,7 +26,10 @@ if (is_android) {
 
 buildflag_header("gl_features") {
   header = "gl_features.h"
-  flags = [ "ENABLE_SWIFTSHADER=$enable_swiftshader" ]
+  flags = [
+    "ENABLE_SWIFTSHADER=$enable_swiftshader",
+    "USE_STATIC_ANGLE=$use_static_angle",
+  ]
 }
 
 config("gl_config") {
@@ -196,6 +200,10 @@ component("gl") {
         "gl_image_ahardwarebuffer.cc",
         "gl_image_ahardwarebuffer.h",
       ]
+
+      if (use_static_angle) {
+        deps += [ "//third_party/angle:libEGL_static" ]
+      }
     }
 
     if (is_posix) {

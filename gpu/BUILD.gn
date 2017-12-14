@@ -5,6 +5,7 @@
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//build/config/ui.gni")
+import("//ui/gl/features.gni")
 
 config("gpu_implementation") {
   defines = [ "GPU_IMPLEMENTATION" ]
@@ -34,83 +35,85 @@ component("gpu_util") {
   ]
 }
 
-shared_library("command_buffer_gles2") {
-  sources = [
-    # TODO(hendrikw): Move egl out of gles2_conform_support.
-    "gles2_conform_support/egl/config.cc",
-    "gles2_conform_support/egl/config.h",
-    "gles2_conform_support/egl/context.cc",
-    "gles2_conform_support/egl/context.h",
-    "gles2_conform_support/egl/display.cc",
-    "gles2_conform_support/egl/display.h",
-    "gles2_conform_support/egl/egl.cc",
-    "gles2_conform_support/egl/surface.cc",
-    "gles2_conform_support/egl/surface.h",
-    "gles2_conform_support/egl/test_support.cc",
-    "gles2_conform_support/egl/test_support.h",
-    "gles2_conform_support/egl/thread_state.cc",
-    "gles2_conform_support/egl/thread_state.h",
-  ]
+if (!use_static_angle) {
+  shared_library("command_buffer_gles2") {
+    sources = [
+      # TODO(hendrikw): Move egl out of gles2_conform_support.
+      "gles2_conform_support/egl/config.cc",
+      "gles2_conform_support/egl/config.h",
+      "gles2_conform_support/egl/context.cc",
+      "gles2_conform_support/egl/context.h",
+      "gles2_conform_support/egl/display.cc",
+      "gles2_conform_support/egl/display.h",
+      "gles2_conform_support/egl/egl.cc",
+      "gles2_conform_support/egl/surface.cc",
+      "gles2_conform_support/egl/surface.h",
+      "gles2_conform_support/egl/test_support.cc",
+      "gles2_conform_support/egl/test_support.h",
+      "gles2_conform_support/egl/thread_state.cc",
+      "gles2_conform_support/egl/thread_state.h",
+    ]
 
-  deps = [
-    ":gpu",
-    "//base",
-    "//build/config:exe_and_shlib_deps",
-    "//gpu/command_buffer/client:gles2_c_lib",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/common:gles2_utils",
-    "//ui/gl:gl",
-  ]
+    deps = [
+      ":gpu",
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+      "//gpu/command_buffer/client:gles2_c_lib",
+      "//gpu/command_buffer/client:gles2_implementation",
+      "//gpu/command_buffer/common:gles2_utils",
+      "//ui/gl:gl",
+    ]
 
-  defines = [
-    "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
-    "EGLAPIENTRY=",
-  ]
-  if (is_android) {
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-  }
-  if (current_os == "win") {
-    defines += [ "EGLAPI=__declspec(dllexport)" ]
-  } else {
-    defines += [ "EGLAPI=__attribute__((visibility(\"default\")))" ]
-  }
-}
-
-test("command_buffer_gles2_tests") {
-  sources = [
-    "command_buffer/tests/command_buffer_gles2_tests_main.cc",
-    "command_buffer/tests/egl_test.cc",
-  ]
-
-  deps = [
-    ":command_buffer_gles2",
-    "//base",
-    "//base/test:test_support",
-    "//base/third_party/dynamic_annotations",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-
-  defines = [
-    "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
-    "EGLAPIENTRY=",
-  ]
-  if (current_os == "win") {
-    defines += [ "EGLAPI=__declspec(dllimport)" ]
-  } else {
-    defines += [ "EGLAPI=" ]
+    defines = [
+      "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
+      "EGLAPIENTRY=",
+    ]
+    if (is_android) {
+      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    }
+    if (current_os == "win") {
+      defines += [ "EGLAPI=__declspec(dllexport)" ]
+    } else {
+      defines += [ "EGLAPI=__attribute__((visibility(\"default\")))" ]
+    }
   }
 
-  libs = []
+  test("command_buffer_gles2_tests") {
+    sources = [
+      "command_buffer/tests/command_buffer_gles2_tests_main.cc",
+      "command_buffer/tests/egl_test.cc",
+    ]
 
-  if (is_android) {
-    libs += [ "android" ]
-    deps += [ "//ui/android:ui_java" ]
+    deps = [
+      ":command_buffer_gles2",
+      "//base",
+      "//base/test:test_support",
+      "//base/third_party/dynamic_annotations",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+
+    defines = [
+      "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
+      "EGLAPIENTRY=",
+    ]
+    if (current_os == "win") {
+      defines += [ "EGLAPI=__declspec(dllimport)" ]
+    } else {
+      defines += [ "EGLAPI=" ]
+    }
+
+    libs = []
+
+    if (is_android) {
+      libs += [ "android" ]
+      deps += [ "//ui/android:ui_java" ]
+    }
+    if (is_linux && !is_component_build) {
+      configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+    }
   }
-  if (is_linux && !is_component_build) {
-    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
-  }
-}
+}  # if (!use_static_angle)
 
 static_library("test_support") {
   testonly = true
