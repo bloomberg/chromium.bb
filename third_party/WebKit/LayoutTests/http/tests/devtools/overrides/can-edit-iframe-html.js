@@ -9,7 +9,6 @@
 
   var {project} = await BindingsTestRunner.createOverrideProject('file:///tmp/');
   BindingsTestRunner.setOverridesEnabled(true);
-  Persistence.networkPersistenceManager.addFileSystemOverridesProject(Persistence.NetworkPersistenceManager.inspectedPageDomain(), project);
 
   // NOTE: localhost is considered coss-origin in this context and should be cross-origin.
   await TestRunner.addIframe('http://localhost:8000/devtools/resources/cross-origin-iframe.html');

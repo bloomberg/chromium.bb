@@ -15,8 +15,6 @@
   testFileSystem.addFile('127.0.0.1%3a8000/devtools/network/resources/empty.html', 'New Content');
 
   BindingsTestRunner.setOverridesEnabled(true);
-  Persistence.networkPersistenceManager.addFileSystemOverridesProject(
-      Persistence.NetworkPersistenceManager.inspectedPageDomain(), project);
 
   TestRunner.addResult('Bound Files:');
   for (var binding of bindings)
