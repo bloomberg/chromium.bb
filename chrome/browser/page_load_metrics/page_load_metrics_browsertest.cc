@@ -631,7 +631,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
   EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHttpOrHttpsUrl) {
+// Flaky on Win7 dbg. crbug.com/794879.
+#if defined(OS_WIN)
+#define MAYBE_NonHttpOrHttpsUrl DISABLED_NonHttpOrHttpsUrl
+#else
+#define MAYBE_NonHttpOrHttpsUrl NonHttpOrHttpsUrl
+#endif
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_NonHttpOrHttpsUrl) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
