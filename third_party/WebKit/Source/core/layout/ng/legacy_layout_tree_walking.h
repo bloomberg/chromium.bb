@@ -24,6 +24,10 @@ LayoutObject* GetLayoutObjectForParentNode(LayoutObject*);
 // established by |block| will be inline; see LayoutObject::ChildrenInline().
 bool AreNGBlockFlowChildrenInline(const LayoutBlockFlow*);
 
+// Return true if the layout object is a LayoutNG object that is managed by the
+// LayoutNG engine (i.e. its containing block is a LayoutNG object as well).
+bool IsManagedByLayoutNG(const LayoutObject&);
+
 }  // namespace blink
 
 #endif  // LegacyLayoutTreeWalking_h
