@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sys_info.h"
+#include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
@@ -145,6 +146,7 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
     std::unique_ptr<const base::FieldTrial::EntropyProvider>
         low_entropy_provider,
     base::FeatureList* feature_list) {
+  TRACE_EVENT0("startup", "VariationsFieldTrialCreator::CreateTrialsFromSeed");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!create_trials_from_seed_called_);
 
