@@ -99,9 +99,8 @@ static void PaintSelection(GraphicsContext& context,
   DCHECK_GE(text_fragment.EndOffset(), selection_start);
   DCHECK_GE(text_fragment.EndOffset(), selection_end);
   const ShapeResult* shape_result = text_fragment.TextShapeResult();
-  // TODO(yoichio): Confirm passing TextDirection::kLtr is O.K or not.
   const CharacterRange& range = ShapeResultBuffer::GetCharacterRange(
-      shape_result, TextDirection::kLtr, shape_result->Width(),
+      shape_result, shape_result->Direction(), shape_result->Width(),
       selection_start - text_fragment.StartOffset(),
       selection_end - text_fragment.StartOffset());
   const FloatRect& selection_rect = PixelSnappedSelectionRect(
