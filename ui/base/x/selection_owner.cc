@@ -16,24 +16,25 @@
 
 namespace ui {
 
+const char kIncr[] = "INCR";
+const char kSaveTargets[] = "SAVE_TARGETS";
+const char kTargets[] = "TARGETS";
+
 namespace {
 
 const char kAtomPair[] = "ATOM_PAIR";
-const char kIncr[] = "INCR";
 const char kMultiple[] = "MULTIPLE";
-const char kSaveTargets[] = "SAVE_TARGETS";
-const char kTargets[] = "TARGETS";
 const char kTimestamp[] = "TIMESTAMP";
 
 // The period of |incremental_transfer_abort_timer_|. Arbitrary but must be <=
 // than kIncrementalTransferTimeoutMs.
-const int kTimerPeriodMs = 1000;
+const int KSelectionOwnerTimerPeriodMs = 1000;
 
 // The amount of time to wait for the selection requestor to process the data
 // sent by the selection owner before aborting an incremental data transfer.
 const int kIncrementalTransferTimeoutMs = 10000;
 
-static_assert(kTimerPeriodMs <= kIncrementalTransferTimeoutMs,
+static_assert(KSelectionOwnerTimerPeriodMs <= kIncrementalTransferTimeoutMs,
               "timer period must be <= transfer timeout");
 
 // Returns a conservative max size of the data we can pass into
@@ -261,9 +262,8 @@ bool SelectionOwner::ProcessTarget(XAtom target,
       if (!incremental_transfer_abort_timer_.IsRunning()) {
         incremental_transfer_abort_timer_.Start(
             FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kTimerPeriodMs),
-            this,
-            &SelectionOwner::AbortStaleIncrementalTransfers);
+            base::TimeDelta::FromMilliseconds(KSelectionOwnerTimerPeriodMs),
+            this, &SelectionOwner::AbortStaleIncrementalTransfers);
       }
     } else {
       XChangeProperty(

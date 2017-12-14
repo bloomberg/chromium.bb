@@ -42,8 +42,6 @@ namespace {
 const char kClipboard[] = "CLIPBOARD";
 const char kClipboardManager[] = "CLIPBOARD_MANAGER";
 const char kMimeTypeFilename[] = "chromium/filename";
-const char kSaveTargets[] = "SAVE_TARGETS";
-const char kTargets[] = "TARGETS";
 
 ///////////////////////////////////////////////////////////////////////////////
 
