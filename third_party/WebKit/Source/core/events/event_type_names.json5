@@ -117,6 +117,7 @@
     "focusin",
     "focusout",
     "foreignfetch",
+    "freeze",
     "fullscreenchange",
     "fullscreenerror",
     "gamepadconnected",

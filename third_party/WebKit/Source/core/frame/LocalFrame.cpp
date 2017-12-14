@@ -454,6 +454,32 @@ void LocalFrame::DidChangeVisibilityState() {
   Frame::DidChangeVisibilityState();
 }
 
+void LocalFrame::DidFreeze() {
+  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
+  if (DomWindow()) {
+    const double freeze_event_start = MonotonicallyIncreasingTime();
+    DomWindow()->DispatchEvent(Event::Create(EventTypeNames::freeze));
+    const double freeze_event_end = MonotonicallyIncreasingTime();
+    DEFINE_STATIC_LOCAL(
+        CustomCountHistogram, freeze_histogram,
+        ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
+    freeze_histogram.Count((freeze_event_end - freeze_event_start) * 1000000.0);
+  }
+}
+
+void LocalFrame::DidResume() {
+  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
+  if (DomWindow()) {
+    const double resume_event_start = MonotonicallyIncreasingTime();
+    DomWindow()->DispatchEvent(Event::Create(EventTypeNames::resume));
+    const double resume_event_end = MonotonicallyIncreasingTime();
+    DEFINE_STATIC_LOCAL(
+        CustomCountHistogram, resume_histogram,
+        ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));
+    resume_histogram.Count((resume_event_end - resume_event_start) * 1000000.0);
+  }
+}
+
 void LocalFrame::SetIsInert(bool inert) {
   is_inert_ = inert;
   PropagateInertToChildFrames();

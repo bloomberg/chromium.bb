@@ -2245,6 +2245,7 @@ interface HTMLBodyElement : HTMLElement
     getter onblur
     getter onerror
     getter onfocus
+    getter onfreeze
     getter onhashchange
     getter onlanguagechange
     getter onload
@@ -2257,6 +2258,7 @@ interface HTMLBodyElement : HTMLElement
     getter onpopstate
     getter onrejectionhandled
     getter onresize
+    getter onresume
     getter onscroll
     getter onstorage
     getter onunhandledrejection
@@ -2274,6 +2276,7 @@ interface HTMLBodyElement : HTMLElement
     setter onblur
     setter onerror
     setter onfocus
+    setter onfreeze
     setter onhashchange
     setter onlanguagechange
     setter onload
@@ -2286,6 +2289,7 @@ interface HTMLBodyElement : HTMLElement
     setter onpopstate
     setter onrejectionhandled
     setter onresize
+    setter onresume
     setter onscroll
     setter onstorage
     setter onunhandledrejection
@@ -2686,6 +2690,7 @@ interface HTMLFrameSetElement : HTMLElement
     getter onblur
     getter onerror
     getter onfocus
+    getter onfreeze
     getter onhashchange
     getter onlanguagechange
     getter onload
@@ -2698,6 +2703,7 @@ interface HTMLFrameSetElement : HTMLElement
     getter onpopstate
     getter onrejectionhandled
     getter onresize
+    getter onresume
     getter onscroll
     getter onstorage
     getter onunhandledrejection
@@ -2711,6 +2717,7 @@ interface HTMLFrameSetElement : HTMLElement
     setter onblur
     setter onerror
     setter onfocus
+    setter onfreeze
     setter onhashchange
     setter onlanguagechange
     setter onload
@@ -2723,6 +2730,7 @@ interface HTMLFrameSetElement : HTMLElement
     setter onpopstate
     setter onrejectionhandled
     setter onresize
+    setter onresume
     setter onscroll
     setter onstorage
     setter onunhandledrejection
@@ -9232,6 +9240,7 @@ interface webkitURL
     getter onended
     getter onerror
     getter onfocus
+    getter onfreeze
     getter ongotpointercapture
     getter onhashchange
     getter oninput
@@ -9276,6 +9285,7 @@ interface webkitURL
     getter onrejectionhandled
     getter onreset
     getter onresize
+    getter onresume
     getter onscroll
     getter onsearch
     getter onseeked
@@ -9414,6 +9424,7 @@ interface webkitURL
     setter onended
     setter onerror
     setter onfocus
+    setter onfreeze
     setter ongotpointercapture
     setter onhashchange
     setter oninput
@@ -9458,6 +9469,7 @@ interface webkitURL
     setter onrejectionhandled
     setter onreset
     setter onresize
+    setter onresume
     setter onscroll
     setter onsearch
     setter onseeked

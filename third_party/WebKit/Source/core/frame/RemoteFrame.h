@@ -39,6 +39,8 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void PrintNavigationWarning(const String&) override {}
   bool PrepareForCommit() override;
   bool ShouldClose() override;
+  void DidFreeze() override;
+  void DidResume() override;
   void SetIsInert(bool) override;
 
   void SetWebLayer(WebLayer*);
