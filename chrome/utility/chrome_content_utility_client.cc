@@ -18,7 +18,6 @@
 #include "chrome/common/features.h"
 #include "chrome/common/profiling/constants.mojom.h"
 #include "chrome/profiling/profiling_service.h"
-#include "chrome/utility/printing/pdf_to_pwg_raster_converter_impl.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/patch_service/patch_service.h"
 #include "components/patch_service/public/interfaces/constants.mojom.h"
@@ -68,8 +67,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/common/printing/pdf_to_pwg_raster_converter.mojom.h"
-#include "chrome/utility/printing/pdf_to_pwg_raster_converter_service.h"
+#include "chrome/services/printing/printing_service.h"
+#include "chrome/services/printing/public/interfaces/constants.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
@@ -226,11 +225,13 @@ void ChromeContentUtilityClient::RegisterServices(
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  service_manager::EmbeddedServiceInfo pdf_to_pwg_converter_info;
-  pdf_to_pwg_converter_info.factory =
-      base::Bind(&printing::PdfToPwgRasterConverterService::CreateService);
-  services->emplace(printing::mojom::kPdfToPwgRasterConverterServiceName,
-                    pdf_to_pwg_converter_info);
+  {
+    service_manager::EmbeddedServiceInfo printing_info;
+    printing_info.factory =
+        base::Bind(&printing::PrintingService::CreateService);
+    services->emplace(printing::mojom::kChromePrintingServiceName,
+                      printing_info);
+  }
 #endif
 
   service_manager::EmbeddedServiceInfo profiling_info;

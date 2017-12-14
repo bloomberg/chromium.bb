@@ -34,7 +34,6 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
-    "//chrome/common/printing:interfaces",
     "//chrome/common/profiling",
     "//chrome/profiling",
     "//components/patch_service:lib",
@@ -187,12 +186,7 @@ static_library("utility") {
   }
 
   if (enable_print_preview) {
-    sources += [
-      "printing/pdf_to_pwg_raster_converter_impl.cc",
-      "printing/pdf_to_pwg_raster_converter_impl.h",
-      "printing/pdf_to_pwg_raster_converter_service.cc",
-      "printing/pdf_to_pwg_raster_converter_service.h",
-    ]
+    deps += [ "//chrome/services/printing:lib" ]
   }
 
   if (enable_print_preview || (enable_basic_printing && is_win)) {
@@ -230,12 +224,5 @@ if (!is_android) {
   service_manifest("profile_import_manifest") {
     name = "profile_import"
     source = "importer/profile_import_manifest.json"
-  }
-}
-
-if (enable_print_preview) {
-  service_manifest("pdf_to_pwg_raster_converter_manifest") {
-    name = "pdf_to_pwg_raster_converter"
-    source = "printing/pdf_to_pwg_raster_converter_manifest.json"
   }
 }

@@ -8,6 +8,7 @@ include_rules = [
   "+chrome/installer/util",
   "+chrome/services/file_util/public",
   "+chrome/services/media_gallery_util/public",
+  "+chrome/services/printing/public",
   "+chrome/services/removable_storage_writer/public",
   "+chrome/services/util_win/public",
   "+chrome/services/wifi_util_win/public",

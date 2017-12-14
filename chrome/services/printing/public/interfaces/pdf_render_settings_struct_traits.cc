@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/printing/pdf_render_settings_struct_traits.h"
+#include "chrome/services/printing/public/interfaces/pdf_render_settings_struct_traits.h"
 
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
@@ -15,7 +15,6 @@ bool StructTraits<printing::mojom::PdfRenderSettingsDataView,
          printing::PdfRenderSettings* out) {
   out->dpi = data.dpi();
   out->autorotate = data.autorotate();
-
   return data.ReadArea(&out->area) && data.ReadOffsets(&out->offsets) &&
          data.ReadMode(&out->mode);
 }

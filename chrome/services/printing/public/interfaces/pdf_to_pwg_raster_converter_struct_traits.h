@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PRINTING_PDF_TO_PWG_RASTER_CONVERTER_STRUCT_TRAITS_H_
-#define CHROME_COMMON_PRINTING_PDF_TO_PWG_RASTER_CONVERTER_STRUCT_TRAITS_H_
+#ifndef CHROME_SERVICES_PRINTING_PUBLIC_INTERFACES_PDF_TO_PWG_RASTER_CONVERTER_STRUCT_TRAITS_H_
+#define CHROME_SERVICES_PRINTING_PUBLIC_INTERFACES_PDF_TO_PWG_RASTER_CONVERTER_STRUCT_TRAITS_H_
 
 #include "build/build_config.h"
-#include "chrome/common/printing/pdf_to_pwg_raster_converter.mojom.h"
+#include "chrome/services/printing/public/interfaces/pdf_to_pwg_raster_converter.mojom.h"
 #include "printing/pwg_raster_settings.h"
 
 namespace mojo {
@@ -80,4 +80,4 @@ class StructTraits<printing::mojom::PwgRasterSettingsDataView,
 
 }  // namespace mojo
 
-#endif  // CHROME_COMMON_PRINTING_PDF_TO_PWG_RASTER_CONVERTER_STRUCT_TRAITS_H_
+#endif  // CHROME_SERVICES_PRINTING_PUBLIC_INTERFACES_PDF_TO_PWG_RASTER_CONVERTER_STRUCT_TRAITS_H_

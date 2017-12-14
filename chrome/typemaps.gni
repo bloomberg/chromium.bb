@@ -6,5 +6,7 @@ typemaps = [
   "//chrome/common/search.typemap",
   "//chrome/services/file_util/public/interfaces/safe_archive_analyzer.typemap",
   "//chrome/services/media_gallery_util/public/interfaces/media_parser.typemap",
+  "//chrome/services/printing/public/interfaces/pdf_render_settings.typemap",
+  "//chrome/services/printing/public/interfaces/pdf_to_pwg_raster_converter.typemap",
   "//chrome/services/util_win/public/interfaces/shell_util_win.typemap",
 ]

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_PRINTING_PDF_TO_PWG_RASTER_CONVERTER_SERVICE_H_
-#define CHROME_UTILITY_PRINTING_PDF_TO_PWG_RASTER_CONVERTER_SERVICE_H_
+#ifndef CHROME_SERVICES_PRINTING_PRINTING_SERVICE_H_
+#define CHROME_SERVICES_PRINTING_PRINTING_SERVICE_H_
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -11,10 +11,10 @@
 
 namespace printing {
 
-class PdfToPwgRasterConverterService : public service_manager::Service {
+class PrintingService : public service_manager::Service {
  public:
-  PdfToPwgRasterConverterService();
-  ~PdfToPwgRasterConverterService() override;
+  PrintingService();
+  ~PrintingService() override;
 
   // Factory method for creating the service.
   static std::unique_ptr<service_manager::Service> CreateService();
@@ -30,9 +30,9 @@ class PdfToPwgRasterConverterService : public service_manager::Service {
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(PdfToPwgRasterConverterService);
+  DISALLOW_COPY_AND_ASSIGN(PrintingService);
 };
 
 }  // namespace printing
 
-#endif  // CHROME_UTILITY_PRINTING_PDF_TO_PWG_RASTER_CONVERTER_SERVICE_H_
+#endif  // CHROME_SERVICES_PRINTING_PRINTING_SERVICE_H_

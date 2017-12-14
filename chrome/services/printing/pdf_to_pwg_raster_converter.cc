@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/printing/pdf_to_pwg_raster_converter_impl.h"
+#include "chrome/services/printing/pdf_to_pwg_raster_converter.h"
 
 #include "chrome/utility/cloud_print/bitmap_image.h"
 #include "chrome/utility/cloud_print/pwg_encoder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "pdf/pdf.h"
+#include "printing/pdf_render_settings.h"
 
 namespace printing {
 

@@ -31,6 +31,7 @@
         "ash_pref_connector": [ "pref_connector" ],
         // Only used in classic ash case.
         "chrome": [ "input_device_controller" ],
+        "chrome_printing": [ "converter" ],
         "content_browser": [ "profiling_client" ],
         "device": [ "device:fingerprint" ],
         "file_util": [ "analyze_archive", "zip_file" ],
@@ -45,7 +46,6 @@
         "profile_import": [ "import" ],
         "profiling": [ "profiling" ],
         "proxy_resolver": [ "factory" ],
-        "pdf_to_pwg_raster_converter": [ "converter" ],
         "preferences": [ "pref_client", "pref_control" ],
         "removable_storage_writer": [ "removable_storage_writer" ],
         "ui": [
