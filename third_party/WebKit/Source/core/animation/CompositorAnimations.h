@@ -45,7 +45,6 @@ class Animation;
 class CompositorAnimation;
 class CompositorAnimationPlayer;
 class Element;
-class FloatBox;
 class KeyframeEffectModelBase;
 
 class CORE_EXPORT CompositorAnimations {
@@ -120,11 +119,6 @@ class CORE_EXPORT CompositorAnimations {
                                                    double pause_time);
 
   static void AttachCompositedLayers(Element&, CompositorAnimationPlayer*);
-
-  static bool GetAnimatedBoundingBox(FloatBox&,
-                                     const EffectModel&,
-                                     double min_value,
-                                     double max_value);
 
   struct CompositorTiming {
     Timing::PlaybackDirection direction;
