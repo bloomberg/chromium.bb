@@ -684,22 +684,6 @@ TEST_F(FaviconHandlerTest, DeleteFaviconMappingsDespitePrior404) {
   RunHandlerWithSimpleFaviconCandidates({kIconURL});
 }
 
-// Test that favicon mappings are not deleted if the feature is disabled.
-TEST_F(FaviconHandlerTest, DoDeleteFaviconMappingsIfFeatureDisabled) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndDisableFeature(kAllowDeletionOfFaviconMappings);
-
-  const GURL kIconURL("http://www.google.com/favicon");
-
-  favicon_service_.fake()->Store(kPageURL, kIconURL,
-                                 CreateRawBitmapResult(kIconURL));
-
-  EXPECT_CALL(favicon_service_, DeleteFaviconMappings(_, _)).Times(0);
-  EXPECT_CALL(delegate_, OnFaviconDeleted(_, _)).Times(0);
-
-  RunHandlerWithSimpleFaviconCandidates(URLVector());
-}
-
 // Test that favicon mappings are deleted for a page in history, when all icons
 // listed in the page return a 404.
 TEST_F(FaviconHandlerTest, DeleteFaviconMappingsDueTo404) {
