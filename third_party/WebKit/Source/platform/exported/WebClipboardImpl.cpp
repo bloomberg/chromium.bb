@@ -69,6 +69,14 @@ WTF::String URLToImageMarkup(const WebURL& url, const WTF::String& title) {
 }
 #endif
 
+String EnsureNotNullWTFString(const WebString& string) {
+  String result = string;
+  if (result.IsNull()) {
+    return g_empty_string16_bit;
+  }
+  return result;
+}
+
 }  // namespace
 
 WebClipboardImpl::WebClipboardImpl() {
@@ -160,7 +168,7 @@ WebString WebClipboardImpl::ReadCustomData(mojom::ClipboardBuffer buffer,
     return WebString();
 
   WTF::String data;
-  clipboard_->ReadCustomData(buffer, type, &data);
+  clipboard_->ReadCustomData(buffer, EnsureNotNullWTFString(type), &data);
   return data;
 }
 
@@ -192,7 +200,7 @@ void WebClipboardImpl::WriteImage(const WebImage& image,
 
   if (url.IsValid() && !url.IsEmpty()) {
     clipboard_->WriteBookmark(mojom::ClipboardBuffer::kStandard,
-                              url.GetString(), title);
+                              url.GetString(), EnsureNotNullWTFString(title));
 #if !defined(OS_MACOSX)
     // When writing the image, we also write the image markup so that pasting
     // into rich text editors, such as Gmail, reveals the image. We also don't
