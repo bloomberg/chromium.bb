@@ -66,7 +66,7 @@ void DeviceMotionDispatcher::DidChangeDeviceMotion(
   NotifyControllers();
 }
 
-DeviceMotionData* DeviceMotionDispatcher::LatestDeviceMotionData() {
+const DeviceMotionData* DeviceMotionDispatcher::LatestDeviceMotionData() {
   return last_device_motion_data_.Get();
 }
 

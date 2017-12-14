@@ -47,11 +47,11 @@ class DeviceMotionEvent final : public Event {
     return new DeviceMotionEvent(event_type, initializer);
   }
   static DeviceMotionEvent* Create(const AtomicString& event_type,
-                                   DeviceMotionData* device_motion_data) {
+                                   const DeviceMotionData* device_motion_data) {
     return new DeviceMotionEvent(event_type, device_motion_data);
   }
 
-  DeviceMotionData* GetDeviceMotionData() const {
+  const DeviceMotionData* GetDeviceMotionData() const {
     return device_motion_data_.Get();
   }
 
@@ -67,9 +67,9 @@ class DeviceMotionEvent final : public Event {
  private:
   DeviceMotionEvent();
   DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit&);
-  DeviceMotionEvent(const AtomicString& event_type, DeviceMotionData*);
+  DeviceMotionEvent(const AtomicString& event_type, const DeviceMotionData*);
 
-  Member<DeviceMotionData> device_motion_data_;
+  Member<const DeviceMotionData> device_motion_data_;
   Member<DeviceAcceleration> acceleration_;
   Member<DeviceAcceleration> acceleration_including_gravity_;
   Member<DeviceRotationRate> rotation_rate_;
