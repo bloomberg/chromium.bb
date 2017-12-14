@@ -7,21 +7,27 @@ cr.define('extensions', function() {
 
   /**
    * @param {boolean} dragEnabled
+   * @param {boolean} isMdExtensions
    * @param {!EventTarget} target
    * @constructor
    * @implements cr.ui.DragWrapperDelegate
    */
-  function DragAndDropHandler(dragEnabled, target) {
+  function DragAndDropHandler(dragEnabled, isMdExtensions, target) {
     this.dragEnabled = dragEnabled;
+
+    // Behavior is different for dropped directories between MD and non-MD
+    // extensions pages.
+    // TODO(devlin): Delete the non-MD codepath and remove this variable when
+    // MD extensions launches.
+    /** @private {boolean} */
+    this.isMdExtensions_ = isMdExtensions;
+
     /** @private {!EventTarget} */
     this.eventTarget_ = target;
   }
 
-  // TODO(devlin): Un-chrome.send-ify this implementation.
+  // TODO(devlin): Finish un-chrome.send-ifying this implementation.
   DragAndDropHandler.prototype = {
-    /** @type {boolean} */
-    dragEnabled: false,
-
     /** @override */
     shouldAcceptDrag: function(e) {
       // External Extension installation can be disabled globally, e.g. while a
@@ -40,6 +46,9 @@ cr.define('extensions', function() {
     /** @override */
     doDragEnter: function() {
       chrome.send('startDrag');
+      if (this.isMdExtensions_)
+        chrome.developerPrivate.notifyDragInstallInProgress();
+
       this.eventTarget_.dispatchEvent(
           new CustomEvent('extension-drag-started'));
     },
@@ -61,27 +70,56 @@ cr.define('extensions', function() {
       if (e.dataTransfer.files.length != 1)
         return;
 
-      let toSend = '';
+      let handled = false;
+
       // Files lack a check if they're a directory, but we can find out through
       // its item entry.
-      for (let i = 0; i < e.dataTransfer.items.length; ++i) {
-        if (e.dataTransfer.items[i].kind == 'file' &&
-            e.dataTransfer.items[i].webkitGetAsEntry().isDirectory) {
-          toSend = 'installDroppedDirectory';
-          break;
-        }
-      }
-      // Only process files that look like extensions. Other files should
-      // navigate the browser normally.
-      if (!toSend &&
-          /\.(crx|user\.js|zip)$/i.test(e.dataTransfer.files[0].name)) {
-        toSend = 'installDroppedFile';
+      let item = e.dataTransfer.items[0];
+      if (item.kind === 'file' && item.webkitGetAsEntry().isDirectory) {
+        handled = true;
+        this.handleDirectoryDrop_();
+      } else if (/\.(crx|user\.js|zip)$/i.test(e.dataTransfer.files[0].name)) {
+        // Only process files that look like extensions. Other files should
+        // navigate the browser normally.
+        handled = true;
+        this.handleFileDrop_();
       }
 
-      if (toSend) {
+      if (handled)
         e.preventDefault();
-        chrome.send(toSend);
+    },
+
+    /**
+     * Handles a dropped file.
+     * @private
+     */
+    handleFileDrop_: function() {
+      // Packaged files always go through chrome.send (for now).
+      chrome.send('installDroppedFile');
+    },
+
+    /**
+     * Handles a dropped directory.
+     * @private
+     */
+    handleDirectoryDrop_: function() {
+      // Dropped directories either go through developerPrivate or chrome.send
+      // depending on if this is the MD page.
+      if (!this.isMdExtensions_) {
+        chrome.send('installDroppedDirectory');
+        return;
       }
+
+      // TODO(devlin): Update this to use extensions.Service when it's not
+      // shared between the MD and non-MD pages.
+      chrome.developerPrivate.loadUnpacked(
+          {failQuietly: true, populateError: true, useDraggedPath: true},
+          (loadError) => {
+            if (loadError) {
+              this.eventTarget_.dispatchEvent(new CustomEvent(
+                  'drag-and-drop-load-error', {detail: loadError}));
+            }
+          });
     },
 
     /** @private */

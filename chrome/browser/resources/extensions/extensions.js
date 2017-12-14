@@ -108,7 +108,7 @@ cr.define('extensions', function() {
       var dragTarget = document.documentElement;
       /** @private {extensions.DragAndDropHandler} */
       this.dragWrapperHandler_ =
-          new extensions.DragAndDropHandler(true, dragTarget);
+          new extensions.DragAndDropHandler(true, false, dragTarget);
       dragTarget.addEventListener('extension-drag-started', function() {
         ExtensionSettings.showOverlay($('drop-target-overlay'));
       });

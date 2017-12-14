@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_DEVELOPER_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_DEVELOPER_PRIVATE_API_H_
 
+#include <map>
 #include <set>
 
 #include "base/files/file.h"
@@ -187,6 +188,13 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
   base::FilePath GetUnpackedPath(content::WebContents* web_contents,
                                  const UnpackedRetryId& id) const;
 
+  // Sets the dragged path for the given |web_contents|.
+  void SetDraggedPath(content::WebContents* web_contents,
+                      const base::FilePath& path);
+
+  // Returns the dragged path for the given |web_contents|, if one exists.
+  base::FilePath GetDraggedPath(content::WebContents* web_contents) const;
+
   // KeyedService implementation
   void Shutdown() override;
 
@@ -204,6 +212,30 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
  private:
   class WebContentsTracker;
 
+  using IdToPathMap = std::map<UnpackedRetryId, base::FilePath>;
+  // Data specific to a given WebContents.
+  struct WebContentsData {
+    WebContentsData();
+    ~WebContentsData();
+    WebContentsData(WebContentsData&& other);
+
+    // A set of unpacked paths that we are allowed to load for different
+    // WebContents. For security reasons, we don't let JavaScript arbitrarily
+    // pass us a path and load the extension at that location; instead, the user
+    // has to explicitly select the path through a native dialog first, and then
+    // we will allow JavaScript to request we reload that same selected path.
+    // Additionally, these are segmented by WebContents; this is primarily to
+    // allow collection (removing old paths when the WebContents closes) but has
+    // the effect that WebContents A cannot retry a path selected in
+    // WebContents B.
+    IdToPathMap allowed_unpacked_paths;
+
+    // The last dragged path for the WebContents.
+    base::FilePath dragged_path;
+
+    DISALLOW_COPY_AND_ASSIGN(WebContentsData);
+  };
+
   friend class BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>;
 
   // BrowserContextKeyedAPI implementation.
@@ -213,23 +245,18 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
 
   void RegisterNotifications();
 
+  const WebContentsData* GetWebContentsData(
+      content::WebContents* web_contents) const;
+  WebContentsData* GetOrCreateWebContentsData(
+      content::WebContents* web_contents);
+
   Profile* profile_;
 
   // Used to start the load |load_extension_dialog_| in the last directory that
   // was loaded.
   base::FilePath last_unpacked_directory_;
 
-  // A set of unpacked paths that we are allowed to load for different
-  // WebContents. For security reasons, we don't let JavaScript arbitrarily
-  // pass us a path and load the extension at that location; instead, the user
-  // has to explicitly select the path through a native dialog first, and then
-  // we will allow JavaScript to request we reload that same selected path.
-  // Additionally, these are segmented by WebContents; this is primarily to
-  // allow collection (removing old paths when the WebContents closes) but has
-  // the effect that WebContents A cannot retry a path selected in
-  // WebContents B.
-  using IdToPathMap = std::map<UnpackedRetryId, base::FilePath>;
-  std::map<content::WebContents*, IdToPathMap> allowed_unpacked_paths_;
+  std::map<content::WebContents*, WebContentsData> web_contents_data_;
 
   // Created lazily upon OnListenerAdded.
   std::unique_ptr<DeveloperPrivateEventRouter> developer_private_event_router_;
@@ -463,6 +490,24 @@ class DeveloperPrivateLoadUnpackedFunction
 
   // The identifier for the selected path when retrying an unpacked load.
   DeveloperPrivateAPI::UnpackedRetryId retry_guid_;
+};
+
+class DeveloperPrivateNotifyDragInstallInProgressFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.notifyDragInstallInProgress",
+                             DEVELOPERPRIVATE_NOTIFYDRAGINSTALLINPROGRESS);
+
+  DeveloperPrivateNotifyDragInstallInProgressFunction();
+
+  ResponseAction Run() override;
+
+  static void SetDropPathForTesting(base::FilePath* file_path);
+
+ private:
+  ~DeveloperPrivateNotifyDragInstallInProgressFunction() override;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateNotifyDragInstallInProgressFunction);
 };
 
 class DeveloperPrivateChoosePathFunction

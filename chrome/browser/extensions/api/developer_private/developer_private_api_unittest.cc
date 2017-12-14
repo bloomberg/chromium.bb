@@ -861,6 +861,87 @@ TEST_F(DeveloperPrivateApiUnitTest, ReloadBadExtensionToLoadUnpackedRetry) {
   }
 }
 
+TEST_F(DeveloperPrivateApiUnitTest,
+       DeveloperPrivateNotifyDragInstallInProgress) {
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+  TestExtensionDir dir;
+  dir.WriteManifest(
+      R"({
+           "name": "foo",
+           "description": "bar",
+           "version": "1",
+           "manifest_version": 2
+         })");
+  base::FilePath path = dir.UnpackedPath();
+  api::DeveloperPrivateNotifyDragInstallInProgressFunction::
+      SetDropPathForTesting(&path);
+
+  {
+    auto function = base::MakeRefCounted<
+        api::DeveloperPrivateNotifyDragInstallInProgressFunction>();
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    api_test_utils::RunFunction(function.get(), "[]", profile());
+  }
+
+  // Set the picker to choose an invalid path (the picker should be skipped if
+  // we supply a retry id).
+  base::FilePath empty_path;
+  api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&empty_path);
+
+  constexpr char kLoadUnpackedArgs[] =
+      R"([{"failQuietly": true,
+           "populateError": true,
+           "useDraggedPath": true}])";
+
+  {
+    // Try reloading the extension by supplying the retry id. It should succeed.
+    auto function =
+        base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    TestExtensionRegistryObserver observer(registry());
+    api_test_utils::RunFunction(function.get(), kLoadUnpackedArgs, profile());
+    const Extension* extension = observer.WaitForExtensionLoaded();
+    ASSERT_TRUE(extension);
+    EXPECT_EQ(extension->path(), path);
+  }
+
+  // Next, ensure that nothing catastrophic happens if the file that was dropped
+  // was not a directory. In theory, this shouldn't happen (the JS validates the
+  // file), but it could in the case of a compromised renderer, JS bug, etc.
+  base::FilePath invalid_path = path.AppendASCII("manifest.json");
+  api::DeveloperPrivateNotifyDragInstallInProgressFunction::
+      SetDropPathForTesting(&invalid_path);
+  {
+    auto function = base::MakeRefCounted<
+        api::DeveloperPrivateNotifyDragInstallInProgressFunction>();
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
+                                                         profile());
+  }
+
+  {
+    // Trying to load the bad extension (the path points to the manifest, not
+    // the directory) should result in a load error.
+    auto function =
+        base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    TestExtensionRegistryObserver observer(registry());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(), kLoadUnpackedArgs, profile());
+    ASSERT_TRUE(result);
+    EXPECT_TRUE(api::developer_private::LoadError::FromValue(*result));
+  }
+
+  // Cleanup.
+  api::DeveloperPrivateNotifyDragInstallInProgressFunction::
+      SetDropPathForTesting(nullptr);
+  api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(nullptr);
+}
+
 // Test developerPrivate.requestFileSource.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   // Testing of this function seems light, but that's because it basically just

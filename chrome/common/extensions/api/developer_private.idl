@@ -320,6 +320,11 @@ namespace developerPrivate {
     // associated with the identifier will be loaded, and the file chooser
     // will be skipped.
     DOMString? retryGuid;
+
+    // True if the function should try to load an extension from the drop data
+    // of the page. notifyDragInstallInProgress() needs to be called prior to
+    // this being used. This cannot be used with |retryGuid|.
+    boolean? useDraggedPath;
   };
 
   enum PackStatus {
@@ -490,6 +495,7 @@ namespace developerPrivate {
   callback RequestFileSourceCallback =
       void (RequestFileSourceResponse response);
   callback LoadErrorCallback = void (optional LoadError error);
+  callback DragInstallInProgressCallback = void (DOMString loadGuid);
 
   interface Functions {
     // Runs auto update for extensions and apps immediately.
@@ -550,6 +556,10 @@ namespace developerPrivate {
     // |options| : Additional configuration parameters.
     static void loadUnpacked(optional LoadUnpackedOptions options,
                              optional LoadErrorCallback callback);
+
+    // Notifies the browser that a user began a drag in order to install an
+    // extension.
+    static void notifyDragInstallInProgress();
 
     // Loads an extension / app.
     // |directory| : The directory to load the extension from.
