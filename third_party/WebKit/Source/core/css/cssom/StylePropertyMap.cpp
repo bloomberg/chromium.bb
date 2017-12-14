@@ -97,8 +97,9 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
       SetProperty(property_id, result);
   } else {
     if (values.size() != 1) {
-      // FIXME: Is this actually the correct behaviour?
-      exception_state.ThrowTypeError("Not supported");
+      exception_state.ThrowTypeError(
+          "Cannot set " + property_name +
+          " with multiple values as it is not list-valued");
       return;
     }
 
