@@ -7,8 +7,8 @@
 
 #include "content/public/utility/content_utility_client.h"
 
-// Registers the services provided by mash.
-void RegisterMashServices(
+// Registers the out-of-process services for --mash.
+void RegisterOutOfProcessMashServices(
     content::ContentUtilityClient::StaticServiceMap* services);
 
 #endif  // CHROME_UTILITY_MASH_SERVICE_FACTORY_H_
