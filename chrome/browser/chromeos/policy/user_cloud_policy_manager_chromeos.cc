@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -27,8 +26,8 @@
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/crash_keys.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -136,8 +135,10 @@ void UserCloudPolicyManagerChromeOS::Connect(
   // TODO(emaxx): Remove the crash key after the crashes tracked at
   // https://crbug.com/685996 are fixed.
   if (core()->client()) {
-    base::debug::SetCrashKeyToStackTrace(
-        crash_keys::kUserCloudPolicyManagerConnectTrace, connect_callstack_);
+    static crash_reporter::CrashKeyString<1024> connect_callstack_key(
+        "user-cloud-policy-manager-connect-trace");
+    crash_reporter::SetCrashKeyStringToStackTrace(&connect_callstack_key,
+                                                  connect_callstack_);
   } else {
     connect_callstack_ = base::debug::StackTrace();
   }

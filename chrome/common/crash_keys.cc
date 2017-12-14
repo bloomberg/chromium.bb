@@ -37,9 +37,6 @@ const char kPrinterInfo[] = "prn-info-%" PRIuS;
 
 const char kViewCount[] = "view-count";
 
-const char kUserCloudPolicyManagerConnectTrace[] =
-    "user-cloud-policy-manager-connect-trace";
-
 size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
@@ -64,9 +61,6 @@ size_t RegisterChromeCrashKeys() {
     {kBrowserUnpinTrace, kMediumSize},
 
     {kViewCount, kSmallSize},
-
-    // Temporary for https://crbug.com/685996.
-    {kUserCloudPolicyManagerConnectTrace, kMediumSize},
 
     // TODO(sunnyps): Remove after fixing crbug.com/724999.
     {"gl-context-set-current-stack-trace", kMediumSize},
