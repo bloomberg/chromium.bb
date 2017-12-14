@@ -7,6 +7,7 @@
 
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapPage.h"
+#include "platform/heap/IncrementalMarking.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashTraits.h"
@@ -249,8 +250,7 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
 
  protected:
   ALWAYS_INLINE void WriteBarrier(const T* value) const {
-// TODO(mlippautz): Replace with proper build flag.
-#if 0
+#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
     if (value) {
       // The following method for retrieving a page works as allocation of
       // mixins on large object pages is prohibited.
@@ -260,7 +260,7 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
         ThreadState::Current()->Heap().WriteBarrierInternal(page, value);
       }
     }
-#endif
+#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 };
 
