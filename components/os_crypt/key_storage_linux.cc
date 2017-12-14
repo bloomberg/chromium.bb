@@ -56,7 +56,7 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
 #if defined(USE_LIBSECRET)
   if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
       selected_backend == os_crypt::SelectedLinuxBackend::GNOME_LIBSECRET) {
-    key_storage = std::make_unique<KeyStorageLibsecret>();
+    key_storage.reset(new KeyStorageLibsecret());
     if (key_storage->WaitForInitOnTaskRunner()) {
       VLOG(1) << "OSCrypt using Libsecret as backend.";
       return key_storage;
@@ -67,8 +67,7 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
 #if defined(USE_KEYRING)
   if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
       selected_backend == os_crypt::SelectedLinuxBackend::GNOME_KEYRING) {
-    key_storage =
-        std::make_unique<KeyStorageKeyring>(config.main_thread_runner);
+    key_storage.reset(new KeyStorageKeyring(config.main_thread_runner));
     if (key_storage->WaitForInitOnTaskRunner()) {
       VLOG(1) << "OSCrypt using Keyring as backend.";
       return key_storage;
@@ -84,8 +83,8 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
         selected_backend == os_crypt::SelectedLinuxBackend::KWALLET
             ? base::nix::DESKTOP_ENVIRONMENT_KDE4
             : base::nix::DESKTOP_ENVIRONMENT_KDE5;
-    key_storage = std::make_unique<KeyStorageKWallet>(
-        used_desktop_env, config.product_name, config.dbus_task_runner);
+    key_storage.reset(
+        new KeyStorageKWallet(used_desktop_env, config.product_name));
     if (key_storage->WaitForInitOnTaskRunner()) {
       VLOG(1) << "OSCrypt using KWallet as backend.";
       return key_storage;
