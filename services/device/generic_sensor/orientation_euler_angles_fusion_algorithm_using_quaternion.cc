@@ -62,12 +62,12 @@ void ComputeEulerAnglesFromQuaternion(double x,
       rotation_matrix, alpha_in_degrees, beta_in_degrees, gamma_in_degrees);
 }
 
-constexpr mojom::SensorType GetFusedType(bool absolute) {
+constexpr mojom::SensorType GetEulerAngleFusedType(bool absolute) {
   return absolute ? mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES
                   : mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES;
 }
 
-constexpr mojom::SensorType GetSourceType(bool absolute) {
+constexpr mojom::SensorType GetQuaternionSourceType(bool absolute) {
   return absolute ? mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION
                   : mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION;
 }
@@ -76,8 +76,8 @@ constexpr mojom::SensorType GetSourceType(bool absolute) {
 
 OrientationEulerAnglesFusionAlgorithmUsingQuaternion::
     OrientationEulerAnglesFusionAlgorithmUsingQuaternion(bool absolute)
-    : PlatformSensorFusionAlgorithm(GetFusedType(absolute),
-                                    {GetSourceType(absolute)}) {}
+    : PlatformSensorFusionAlgorithm(GetEulerAngleFusedType(absolute),
+                                    {GetQuaternionSourceType(absolute)}) {}
 
 OrientationEulerAnglesFusionAlgorithmUsingQuaternion::
     ~OrientationEulerAnglesFusionAlgorithmUsingQuaternion() = default;
