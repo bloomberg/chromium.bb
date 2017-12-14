@@ -432,11 +432,9 @@ static INLINE MV_REFERENCE_FRAME comp_ref1(int ref_idx) {
 }
 #endif  // CONFIG_EXT_COMP_REFS
 
-PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
-                                    const MODE_INFO *left_mi, int b);
+PREDICTION_MODE av1_left_block_mode(const MODE_INFO *left_mi);
 
-PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
-                                     const MODE_INFO *above_mi, int b);
+PREDICTION_MODE av1_above_block_mode(const MODE_INFO *above_mi);
 
 static INLINE int is_global_mv_block(const MODE_INFO *mi,
                                      TransformationType type) {

@@ -110,8 +110,9 @@ static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
 #if CONFIG_INTRABC
   assert(!is_intrabc_block(&mi->mbmi));
 #endif  // CONFIG_INTRABC
-  aom_write_symbol(w, mode,
-                   get_y_mode_cdf(frame_ctx, mi, above_mi, left_mi, block),
+  (void)mi;
+  (void)block;
+  aom_write_symbol(w, mode, get_y_mode_cdf(frame_ctx, above_mi, left_mi),
                    INTRA_MODES);
   (void)cm;
 }

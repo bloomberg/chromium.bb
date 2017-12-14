@@ -3419,8 +3419,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       try_palette ? x->palette_buffer->best_palette_color_map : NULL;
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
-  const PREDICTION_MODE A = av1_above_block_mode(mic, above_mi, 0);
-  const PREDICTION_MODE L = av1_left_block_mode(mic, left_mi, 0);
+  const PREDICTION_MODE A = av1_above_block_mode(above_mi);
+  const PREDICTION_MODE L = av1_left_block_mode(left_mi);
   const PREDICTION_MODE FINAL_MODE_SEARCH = PAETH_PRED + 1;
 
 #if CONFIG_KF_CTX

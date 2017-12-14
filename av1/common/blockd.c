@@ -16,28 +16,14 @@
 #include "av1/common/blockd.h"
 #include "av1/common/onyxc_int.h"
 
-PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
-                                    const MODE_INFO *left_mi, int b) {
-  if (b == 0 || b == 2) {
-    if (!left_mi || is_inter_block(&left_mi->mbmi)) return DC_PRED;
-
-    return left_mi->mbmi.mode;
-  } else {
-    assert(b == 1 || b == 3);
-    return cur_mi->bmi[b - 1].as_mode;
-  }
+PREDICTION_MODE av1_left_block_mode(const MODE_INFO *left_mi) {
+  if (!left_mi || is_inter_block(&left_mi->mbmi)) return DC_PRED;
+  return left_mi->mbmi.mode;
 }
 
-PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
-                                     const MODE_INFO *above_mi, int b) {
-  if (b == 0 || b == 1) {
-    if (!above_mi || is_inter_block(&above_mi->mbmi)) return DC_PRED;
-
-    return above_mi->mbmi.mode;
-  } else {
-    assert(b == 2 || b == 3);
-    return cur_mi->bmi[b - 2].as_mode;
-  }
+PREDICTION_MODE av1_above_block_mode(const MODE_INFO *above_mi) {
+  if (!above_mi || is_inter_block(&above_mi->mbmi)) return DC_PRED;
+  return above_mi->mbmi.mode;
 }
 
 void av1_foreach_transformed_block_in_plane(

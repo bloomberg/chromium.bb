@@ -863,23 +863,11 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
     if (mi_row & (xd->n8_w - 1)) xd->is_sec_rect = 1;
 }
 
-static INLINE const aom_prob *get_y_mode_probs(const AV1_COMMON *cm,
-                                               const MODE_INFO *mi,
-                                               const MODE_INFO *above_mi,
-                                               const MODE_INFO *left_mi,
-                                               int block) {
-  const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, block);
-  const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, block);
-  return cm->kf_y_prob[above][left];
-}
-
 static INLINE aom_cdf_prob *get_y_mode_cdf(FRAME_CONTEXT *tile_ctx,
-                                           const MODE_INFO *mi,
                                            const MODE_INFO *above_mi,
-                                           const MODE_INFO *left_mi,
-                                           int block) {
-  const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, block);
-  const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, block);
+                                           const MODE_INFO *left_mi) {
+  const PREDICTION_MODE above = av1_above_block_mode(above_mi);
+  const PREDICTION_MODE left = av1_left_block_mode(left_mi);
 
 #if CONFIG_KF_CTX
   int above_ctx = intra_mode_context[above];
