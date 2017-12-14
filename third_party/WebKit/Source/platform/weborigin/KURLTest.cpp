@@ -58,7 +58,7 @@ TEST(KURLTest, Getters) {
       {"http://www.google.com/foo/blah?bar=baz#ref", "http", "www.google.com",
        0, "", nullptr, "/foo/blah", "blah", "bar=baz", "ref", true},
       {// Non-ASCII code points in the fragment part. fragmentIdentifier()
-       // shouldn't return it in percent-encoded form.
+       // should return it in percent-encoded form.
        "http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http",
        "www.google.com", 0, "", nullptr, "/foo/blah", "blah", "bar=baz",
        "%CE%B1%CE%B2", true},
