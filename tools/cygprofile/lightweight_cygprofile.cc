@@ -193,14 +193,14 @@ extern "C" {
 // be inside __cyg_profile_func_enter(). To prevent that, force inlining.
 // We cannot use ALWAYS_INLINE from src/base/compiler_specific.h, as it doesn't
 // always map to always_inline, for instance when NDEBUG is not defined.
-__attribute__((__always_inline__)) void mcount() {
+__attribute__((__always_inline__)) void __cyg_profile_func_enter_bare() {
   cygprofile::RecordAddress<false>(
       reinterpret_cast<size_t>(__builtin_return_address(0)));
 }
 
 void __cyg_profile_func_enter(void* unused1, void* unused2) {
-  // Requires __always_inline__ on mcount(), see above.
-  mcount();
+  // Requires __always_inline__ on __cyg_profile_func_enter_bare(), see above.
+  __cyg_profile_func_enter_bare();
 }
 
 void __cyg_profile_func_exit(void* unused1, void* unused2) {}
