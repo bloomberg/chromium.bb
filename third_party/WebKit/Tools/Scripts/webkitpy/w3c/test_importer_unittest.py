@@ -29,7 +29,7 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
-        importer.git_cl = MockGitCL(host, results=None)
+        importer.git_cl = MockGitCL(host, time_out=True)
         success = importer.update_expectations_for_cl()
         self.assertFalse(success)
         self.assertLog([
@@ -43,12 +43,9 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
-        importer.git_cl = MockGitCL(host, results=CLStatus(
-            status='closed',
-            try_job_results={
-                Build('builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
-            },
-        ))
+        importer.git_cl = MockGitCL(host, status='closed', try_job_results={
+            Build('builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
+        })
         success = importer.update_expectations_for_cl()
         self.assertFalse(success)
         self.assertLog([
@@ -61,12 +58,9 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
-        importer.git_cl = MockGitCL(host, results=CLStatus(
-            status='lgtm',
-            try_job_results={
-                Build('builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
-            },
-        ))
+        importer.git_cl = MockGitCL(host, status='lgtm', try_job_results={
+            Build('builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
+        })
         success = importer.update_expectations_for_cl()
         self.assertLog([
             'INFO: Triggering try jobs for updating expectations.\n',
@@ -79,12 +73,9 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
-        importer.git_cl = MockGitCL(host, results=CLStatus(
-            status='lgtm',
-            try_job_results={
-                Build('builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE'),
-            },
-        ))
+        importer.git_cl = MockGitCL(host, status='lgtm', try_job_results={
+            Build('builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE'),
+        })
         importer.fetch_new_expectations_and_baselines = lambda: None
         success = importer.update_expectations_for_cl()
         self.assertTrue(success)
@@ -99,13 +90,10 @@ class TestImporterTest(LoggingTestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
         # Only the latest job for each builder is counted.
-        importer.git_cl = MockGitCL(host, results=CLStatus(
-            status='lgtm',
-            try_job_results={
-                Build('cq-builder-a', 120): TryJobStatus('COMPLETED', 'FAILURE'),
-                Build('cq-builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
-            },
-        ))
+        importer.git_cl = MockGitCL(host, status='lgtm', try_job_results={
+            Build('cq-builder-a', 120): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('cq-builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
+        })
         success = importer.run_commit_queue_for_cl()
         self.assertTrue(success)
         self.assertLog([
@@ -125,14 +113,11 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
-        importer.git_cl = MockGitCL(host, results=CLStatus(
-            status='lgtm',
-            try_job_results={
-                Build('cq-builder-a', 120): TryJobStatus('COMPLETED', 'SUCCESS'),
-                Build('cq-builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE'),
-                Build('cq-builder-b', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
-            },
-        ))
+        importer.git_cl = MockGitCL(host, status='lgtm', try_job_results={
+            Build('cq-builder-a', 120): TryJobStatus('COMPLETED', 'SUCCESS'),
+            Build('cq-builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('cq-builder-b', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
+        })
         importer.fetch_new_expectations_and_baselines = lambda: None
         success = importer.run_commit_queue_for_cl()
         self.assertFalse(success)
@@ -151,13 +136,10 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
-        importer.git_cl = MockGitCL(host, results=CLStatus(
-            status='closed',
-            try_job_results={
-                Build('cq-builder-a', 120): TryJobStatus('COMPLETED', 'SUCCESS'),
-                Build('cq-builder-b', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
-            },
-        ))
+        importer.git_cl = MockGitCL(host, status='closed', try_job_results={
+            Build('cq-builder-a', 120): TryJobStatus('COMPLETED', 'SUCCESS'),
+            Build('cq-builder-b', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
+        })
         success = importer.run_commit_queue_for_cl()
         self.assertFalse(success)
         self.assertLog([
@@ -180,13 +162,10 @@ class TestImporterTest(LoggingTestCase):
             }
         })
         importer = TestImporter(host)
-        importer.git_cl = MockGitCL(host, results=CLStatus(
-            status='lgtm',
-            try_job_results={
-                Build('fakeos_blink_rel', 123): TryJobStatus('COMPLETED', 'FAILURE'),
-                Build('cq-builder-b', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
-            },
-        ))
+        importer.git_cl = MockGitCL(host, status='lgtm', try_job_results={
+            Build('fakeos_blink_rel', 123): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('cq-builder-b', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
+        })
         importer.fetch_new_expectations_and_baselines = lambda: None
         success = importer.run_commit_queue_for_cl()
         self.assertTrue(success)
@@ -203,11 +182,10 @@ class TestImporterTest(LoggingTestCase):
         ])
 
     def test_run_commit_queue_for_cl_timeout(self):
+        # This simulates the case where we time out while waiting for try jobs.
         host = MockHost()
         importer = TestImporter(host)
-        # The simulates the case where importer.git_cl.wait_for_try_jobs returns
-        # None, which would normally happen if we time out waiting for results.
-        importer.git_cl = MockGitCL(host, results=None)
+        importer.git_cl = MockGitCL(host, time_out=True)
         success = importer.run_commit_queue_for_cl()
         self.assertFalse(success)
         self.assertLog([
