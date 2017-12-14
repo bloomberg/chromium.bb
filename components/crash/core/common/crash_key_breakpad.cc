@@ -14,8 +14,8 @@
 #include "components/crash/core/common/crash_key_base_support.h"
 #include "components/crash/core/common/crash_key_internal.h"
 
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
-#error "This file should not be used when Crashpad is available."
+#if defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_WIN)
+#error "This file should not be used when Crashpad is available, nor on iOS."
 #endif
 
 namespace crash_reporter {
