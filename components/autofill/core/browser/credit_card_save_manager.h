@@ -26,6 +26,36 @@ namespace autofill {
 // save logic.  Owned by FormDataImporter.
 class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
  public:
+  // Possible fields and values detected during credit card form submission, to
+  // be sent to Google Payments to better determine if upload credit card save
+  // should be offered.  These should stay consistent with the equivalent enum
+  // in Google Payments code.
+  enum DetectedValue {
+    // Set if a valid CVC was detected.  Will always be set if the CVC fix flow
+    // is enabled.
+    CVC = 1 << 0,
+    // Set if a cardholder name was found, *unless* conflicting names were
+    // found.
+    CARDHOLDER_NAME = 1 << 1,
+    // Set if an address name was found, *unless* conflicting names were found.
+    ADDRESS_NAME = 1 << 2,
+    // Set if an address line was found in any address (regardless of
+    // conflicts).
+    ADDRESS_LINE = 1 << 3,
+    // Set if a locality was found in any address (regardless of conflicts).
+    LOCALITY = 1 << 4,
+    // Set if an administrative area was found in any address (regardless of
+    // conflicts).
+    ADMINISTRATIVE_AREA = 1 << 5,
+    // Set if a postal code was found in any address, *unless* conflicting
+    // postal codes were found.
+    POSTAL_CODE = 1 << 6,
+    // Set if a country code was found in any address (regardless of conflicts).
+    COUNTRY_CODE = 1 << 7,
+    // Set if the user is already syncing data from a Google Payments account.
+    HAS_GOOGLE_PAYMENTS_ACCOUNT = 1 << 8,
+  };
+
   // The parameters should outlive the CreditCardSaveManager.
   CreditCardSaveManager(AutofillClient* client,
                         payments::PaymentsClient* payments_client,
@@ -63,13 +93,18 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
 
   // Examines |card| and the stored profiles and if a candidate set of profiles
   // is found that matches the client-side validation rules, assigns the values
-  // to |upload_request.profiles| and returns 0. If no valid set can be found,
-  // returns the failure reasons. Appends any experiments that were triggered to
-  // |upload_request.active_experiments|. The return value is a bitmask of
-  // |AutofillMetrics::CardUploadDecisionMetric|.
-  int SetProfilesForCreditCardUpload(
+  // to |upload_request.profiles|. If any problems are found when determining
+  // the candidate set of profiles, sets |upload_decision_metrics_| with the
+  // failure reasons. Appends any experiments that were triggered to
+  // |upload_request.active_experiments|.
+  void SetProfilesForCreditCardUpload(
       const CreditCard& card,
-      payments::PaymentsClient::UploadRequestDetails* upload_request) const;
+      payments::PaymentsClient::UploadRequestDetails* upload_request);
+
+  // Analyzes the decisions made while importing address profile and credit card
+  // data in preparation for upload credit card save, in order to determine what
+  // uploadable data is actually available.
+  int GetDetectedValues() const;
 
   // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
   // the risk data is available.
@@ -109,6 +144,12 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
 
   // Collected information about a pending upload request.
   payments::PaymentsClient::UploadRequestDetails upload_request_;
+
+  // A bitmask of |AutofillMetrics::CardUploadDecisionMetric| representing the
+  // decisions made when determining if credit card upload save should be
+  // offered.
+  int upload_decision_metrics_ = 0;
+
   // |true| if the user has opted to upload save their credit card to Google.
   bool user_did_accept_upload_prompt_ = false;
 

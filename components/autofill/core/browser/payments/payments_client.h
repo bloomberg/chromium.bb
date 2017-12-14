@@ -131,11 +131,15 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // The service uses |addresses| (from which names and phone numbers are
   // removed) and |app_locale| to determine which legal message to display.
   // |pan_first_six| is the first six digits of the number of the credit card
-  // being considered for upload. If the conditions are met, the legal message
-  // will be returned via OnDidGetUploadDetails. |active_experiments| is used by
-  // Payments server to track requests that were triggered by enabled features.
+  // being considered for upload. |detected_values| is a bitmask of
+  // CreditCardSaveManager::DetectedValue values that relays what data is
+  // actually available for upload in order to make more informed upload
+  // decisions. If the conditions are met, the legal message will be returned
+  // via OnDidGetUploadDetails. |active_experiments| is used by Payments server
+  // to track requests that were triggered by enabled features.
   virtual void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
+      const int detected_values,
       const std::string& pan_first_six,
       const std::vector<const char*>& active_experiments,
       const std::string& app_locale);

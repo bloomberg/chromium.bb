@@ -261,11 +261,13 @@ class UnmaskCardRequest : public PaymentsRequest {
 class GetUploadDetailsRequest : public PaymentsRequest {
  public:
   GetUploadDetailsRequest(const std::vector<AutofillProfile>& addresses,
+                          const int detected_values,
                           const std::string& pan_first_six,
                           const std::vector<const char*>& active_experiments,
                           const std::string& app_locale,
                           PaymentsClientSaveDelegate* delegate)
       : addresses_(addresses),
+        detected_values_(detected_values),
         pan_first_six_(pan_first_six),
         active_experiments_(active_experiments),
         app_locale_(app_locale),
@@ -295,6 +297,13 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       addresses->Append(BuildAddressDictionary(profile, app_locale_, false));
     }
     request_dict.Set("address", std::move(addresses));
+
+    // If the "send detected values" experiment is enabled, it's possible we may
+    // not have found name/address/CVC. The detected_values_ bitmask tells
+    // Payments what was found, and Payments will decide if the provided data is
+    // enough to offer upload save.
+    if (IsAutofillUpstreamSendDetectedValuesExperimentEnabled())
+      request_dict.SetInteger("detected_values", detected_values_);
 
     if (IsAutofillUpstreamSendPanFirstSixExperimentEnabled() &&
         !pan_first_six_.empty())
@@ -326,6 +335,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
 
  private:
   const std::vector<AutofillProfile> addresses_;
+  const int detected_values_;
   const std::string pan_first_six_;
   const std::vector<const char*> active_experiments_;
   std::string app_locale_;
@@ -484,13 +494,14 @@ void PaymentsClient::UnmaskCard(
 
 void PaymentsClient::GetUploadDetails(
     const std::vector<AutofillProfile>& addresses,
+    const int detected_values,
     const std::string& pan_first_six,
     const std::vector<const char*>& active_experiments,
     const std::string& app_locale) {
   DCHECK(save_delegate_);
   IssueRequest(std::make_unique<GetUploadDetailsRequest>(
-                   addresses, pan_first_six, active_experiments, app_locale,
-                   save_delegate_),
+                   addresses, detected_values, pan_first_six,
+                   active_experiments, app_locale, save_delegate_),
                false);
 }
 

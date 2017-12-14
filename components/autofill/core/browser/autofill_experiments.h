@@ -44,6 +44,7 @@ extern const base::Feature kAutofillSuppressDisusedCreditCards;
 extern const base::Feature kAutofillToolkitViewsCreditCardDialogsMac;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamRequestCvcIfMissing;
+extern const base::Feature kAutofillUpstreamSendDetectedValues;
 extern const base::Feature kAutofillUpstreamSendPanFirstSix;
 extern const base::Feature kAutofillUpstreamUseAutofillProfileComparator;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
@@ -139,6 +140,12 @@ bool IsAutofillSendBillingCustomerNumberExperimentEnabled();
 // Returns whether the experiment is enabled where Chrome Upstream requests CVC
 // in the offer to save bubble if it was not detected during the checkout flow.
 bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled();
+
+// Returns whether the experiment is enabled where Chrome Upstream always checks
+// to see if it can offer to save (even though some data like name, address, and
+// CVC might be missing) by sending metadata on what form values were detected
+// along with whether the user is a Google Payments customer.
+bool IsAutofillUpstreamSendDetectedValuesExperimentEnabled();
 
 // Returns whether the experiment is enabled where Chrome Upstream sends the
 // first six digits of the card PAN to Google Payments to help determine whether

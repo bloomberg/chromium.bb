@@ -204,6 +204,10 @@ extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 extern const char kEnableAutofillCreditCardUploadCvcPromptName[];
 extern const char kEnableAutofillCreditCardUploadCvcPromptDescription[];
 
+extern const char kEnableAutofillCreditCardUploadSendDetectedValuesName[];
+extern const char
+    kEnableAutofillCreditCardUploadSendDetectedValuesDescription[];
+
 extern const char kEnableAutofillCreditCardUploadSendPanFirstSixName[];
 extern const char kEnableAutofillCreditCardUploadSendPanFirstSixDescription[];
 

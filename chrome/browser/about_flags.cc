@@ -2940,6 +2940,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamRequestCvcIfMissing)},
+    {"enable-autofill-credit-card-upload-send-detected-values",
+     flag_descriptions::kEnableAutofillCreditCardUploadSendDetectedValuesName,
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadSendDetectedValuesDescription,
+     kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamSendDetectedValues)},
     {"enable-autofill-credit-card-upload-send-pan-first-six",
      flag_descriptions::kEnableAutofillCreditCardUploadSendPanFirstSixName,
      flag_descriptions::
