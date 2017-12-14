@@ -983,6 +983,21 @@
     },
   },
 
+  'linux_viz_gtests': {
+    # TODO(jonross): merge all viz tests into one config, use exceptions to
+    # differentiate between the fyi and cq filters.
+    'viz_content_browsertests': {
+      'args': [
+        '--enable-viz',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.viz.content_browsertests.filter',
+      ],
+      'swarming': {
+        'shards': 2,
+      },
+      'test': 'content_browsertests',
+    },
+  },
+
   'mash_chromium_gtests': {
     'ash_unittests-mash': {
       'test': 'ash_unittests',

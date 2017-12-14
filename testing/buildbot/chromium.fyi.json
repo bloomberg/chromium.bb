@@ -4101,6 +4101,25 @@
       "chrome"
     ]
   },
+  "Linux Viz": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "args": [
+          "--enable-viz",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.viz.content_browsertests.filter"
+        ],
+        "name": "viz_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "content_browsertests"
+      }
+    ]
+  },
   "Linux x64 Goma Canary (clobber)": {
     "additional_compile_targets": [
       "all"
