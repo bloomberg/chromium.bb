@@ -56,10 +56,6 @@ DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 // Application Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
 
-// Maximum amount of time to wait for contents after a change to maximize,
-// fullscreen or pinned state.
-constexpr int kMaximizedOrFullscreenOrPinnedLockTimeoutMs = 100;
-
 // The accelerator keys used to close ShellSurfaces.
 const struct {
   ui::KeyboardCode keycode;
@@ -243,20 +239,6 @@ struct ShellSurfaceBase::Config {
   std::unique_ptr<ui::CompositorLock> compositor_lock;
 };
 
-// Helper class used to temporarily disable animations. Restores the
-// animations disabled property when instance is destroyed.
-class ShellSurfaceBase::ScopedAnimationsDisabled {
- public:
-  explicit ScopedAnimationsDisabled(ShellSurfaceBase* shell_surface);
-  ~ScopedAnimationsDisabled();
-
- private:
-  ShellSurfaceBase* const shell_surface_;
-  bool saved_animations_disabled_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAnimationsDisabled);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase, Config:
 
@@ -297,29 +279,6 @@ ShellSurfaceBase::ScopedConfigure::~ScopedConfigure() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellSurfaceBase, ScopedAnimationsDisabled:
-
-ShellSurfaceBase::ScopedAnimationsDisabled::ScopedAnimationsDisabled(
-    ShellSurfaceBase* shell_surface)
-    : shell_surface_(shell_surface) {
-  if (shell_surface_->widget_) {
-    aura::Window* window = shell_surface_->widget_->GetNativeWindow();
-    saved_animations_disabled_ =
-        window->GetProperty(aura::client::kAnimationsDisabledKey);
-    window->SetProperty(aura::client::kAnimationsDisabledKey, true);
-  }
-}
-
-ShellSurfaceBase::ScopedAnimationsDisabled::~ScopedAnimationsDisabled() {
-  if (shell_surface_->widget_) {
-    aura::Window* window = shell_surface_->widget_->GetNativeWindow();
-    DCHECK_EQ(window->GetProperty(aura::client::kAnimationsDisabledKey), true);
-    window->SetProperty(aura::client::kAnimationsDisabledKey,
-                        saved_animations_disabled_);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase, public:
 
 ShellSurfaceBase::ShellSurfaceBase(Surface* surface,
@@ -347,7 +306,6 @@ ShellSurfaceBase::~ShellSurfaceBase() {
   // casuing the configure callback to be called.
   WMHelper::GetInstance()->RemoveActivationObserver(this);
   if (widget_) {
-    ash::wm::GetWindowState(widget_->GetNativeWindow())->RemoveObserver(this);
     widget_->GetNativeWindow()->RemoveObserver(this);
     // Remove transient children so they are not automatically destroyed.
     for (auto* child : wm::GetTransientChildren(widget_->GetNativeWindow()))
@@ -825,54 +783,6 @@ gfx::Size ShellSurfaceBase::GetMaximumSize() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ash::wm::WindowStateObserver overrides:
-
-void ShellSurfaceBase::OnPreWindowStateTypeChange(
-    ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType old_type) {
-  ash::mojom::WindowStateType new_type = window_state->GetStateType();
-  if (old_type == ash::mojom::WindowStateType::MINIMIZED ||
-      new_type == ash::mojom::WindowStateType::MINIMIZED) {
-    return;
-  }
-
-  if (ash::IsMaximizedOrFullscreenOrPinnedWindowStateType(old_type) ||
-      ash::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
-    if (CanAnimateWindowStateTransitions()) {
-      if (!widget_)
-        return;
-      // Give client a chance to produce a frame that takes state change into
-      // account by acquiring a compositor lock.
-      ui::Compositor* compositor =
-          widget_->GetNativeWindow()->layer()->GetCompositor();
-      configure_compositor_lock_ = compositor->GetCompositorLock(
-          nullptr, base::TimeDelta::FromMilliseconds(
-                       kMaximizedOrFullscreenOrPinnedLockTimeoutMs));
-    } else {
-      scoped_animations_disabled_.reset(new ScopedAnimationsDisabled(this));
-    }
-  }
-}
-
-void ShellSurfaceBase::OnPostWindowStateTypeChange(
-    ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType old_type) {
-  ash::mojom::WindowStateType new_type = window_state->GetStateType();
-  if (ash::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
-    Configure();
-  }
-
-  if (widget_) {
-    UpdateWidgetBounds();
-    UpdateShadow();
-    UpdateBackdrop();
-  }
-
-  // Re-enable animations if they were disabled in pre state change handler.
-  scoped_animations_disabled_.reset();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 
 void ShellSurfaceBase::OnWindowBoundsChanged(aura::Window* window,
@@ -1097,8 +1007,6 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // Start tracking changes to window bounds and window state.
   window->AddObserver(this);
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-  window_state->AddObserver(this);
-
   InitializeWindowState(window_state);
 
   // AutoHide shelf in fullscreen state.
@@ -1243,8 +1151,6 @@ void ShellSurfaceBase::UpdateShadow() {
 
   shadow_bounds_changed_ = false;
 
-  UpdateBackdrop();
-
   aura::Window* window = widget_->GetNativeWindow();
 
   if (!shadow_bounds_) {
@@ -1295,19 +1201,8 @@ gfx::Rect ShellSurfaceBase::GetShadowBounds() const {
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase, private:
 
-void ShellSurfaceBase::UpdateBackdrop() {}
-
 float ShellSurfaceBase::GetScale() const {
   return 1.f;
-}
-
-bool ShellSurfaceBase::CanAnimateWindowStateTransitions() const {
-  // When transitioning in/out of maximized or fullscreen mode, we need to
-  // make sure we have a configure callback before we allow the default
-  // cross-fade animations. The configure callback provides a mechanism for
-  // the client to inform us that a frame has taken the state change into
-  // account, and without this cross-fade animations are unreliable.
-  return !configure_callback_.is_null();
 }
 
 aura::Window* ShellSurfaceBase::GetDragWindow() {
