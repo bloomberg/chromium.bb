@@ -9,4 +9,9 @@ namespace blink {
 BlinkTransferableMessage::BlinkTransferableMessage() = default;
 BlinkTransferableMessage::~BlinkTransferableMessage() = default;
 
+BlinkTransferableMessage::BlinkTransferableMessage(BlinkTransferableMessage&&) =
+    default;
+BlinkTransferableMessage& BlinkTransferableMessage::operator=(
+    BlinkTransferableMessage&&) = default;
+
 }  // namespace blink

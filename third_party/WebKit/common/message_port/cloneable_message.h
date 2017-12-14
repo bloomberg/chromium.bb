@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "third_party/WebKit/common/common_export.h"
 
@@ -38,6 +39,9 @@ struct BLINK_COMMON_EXPORT CloneableMessage {
 
   // Blob handles for any blobs being sent in this message.
   std::vector<mojo::StructPtr<mojom::SerializedBlob>> blobs;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CloneableMessage);
 };
 
 }  // namespace blink

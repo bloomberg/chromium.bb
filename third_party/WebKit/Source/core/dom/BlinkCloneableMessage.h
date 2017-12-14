@@ -5,6 +5,7 @@
 #ifndef BlinkCloneableMessage_h
 #define BlinkCloneableMessage_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 
@@ -18,7 +19,13 @@ struct CORE_EXPORT BlinkCloneableMessage {
   BlinkCloneableMessage();
   ~BlinkCloneableMessage();
 
+  BlinkCloneableMessage(BlinkCloneableMessage&&);
+  BlinkCloneableMessage& operator=(BlinkCloneableMessage&&);
+
   scoped_refptr<blink::SerializedScriptValue> message;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BlinkCloneableMessage);
 };
 
 }  // namespace blink
