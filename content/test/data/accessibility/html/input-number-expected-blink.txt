@@ -1,0 +1,9 @@
+rootWebArea
+++genericContainer
+++++spinButton value='1'
+++++++genericContainer
+++++++++staticText name='1'
+++++++++++inlineTextBox name='1'
+++++++spinButton
+++++++++button
+++++++++button
