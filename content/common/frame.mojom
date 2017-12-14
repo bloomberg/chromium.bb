@@ -10,12 +10,14 @@ import "content/public/common/resource_type.mojom";
 import "content/public/common/url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/common/unguessable_token.mojom";
+import "mojo/common/string16.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/common/feature_policy/feature_policy.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/public/web/window_features.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
 import "url/mojo/url.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
 // frame tree to expose frame-specific interfaces between renderer and browser.
@@ -25,6 +27,12 @@ const string kNavigation_FrameSpec = "navigation:frame";
 interface Frame {
   GetInterfaceProvider(service_manager.mojom.InterfaceProvider& interfaces);
   GetCanonicalUrlForSharing() => (url.mojom.Url? canonical_url);
+
+  // Samsung Galaxy Note-specific "smart clip" stylus text getter.
+  // Extracts the data at the given rect.
+  // TODO(crbug.com/676224): Only enable for OS_ANDROID.
+  ExtractSmartClipData(gfx.mojom.Rect rect)
+      => (mojo.common.mojom.String16 text, mojo.common.mojom.String16 html);
 };
 
 // See src/content/common/navigation_params.h

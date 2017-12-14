@@ -899,8 +899,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnJavaScriptExecuteResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse,
                         OnVisualStateResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SmartClipDataExtracted,
-                        OnSmartClipDataExtracted)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptDialog,
                                     OnRunJavaScriptDialog)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
@@ -1935,11 +1933,17 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   for (const auto& iter : ax_tree_snapshot_callbacks_)
     iter.second.Run(ui::AXTreeUpdate());
 
-  for (const auto& iter : smart_clip_callbacks_)
-    iter.second.Run(base::string16(), base::string16());
+#if defined(OS_ANDROID)
+  // Execute any pending Samsung smart clip callbacks.
+  for (base::IDMap<std::unique_ptr<ExtractSmartClipDataCallback>>::iterator
+           iter(&smart_clip_callbacks_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    std::move(*iter.GetCurrentValue()).Run(base::string16(), base::string16());
+  }
+  smart_clip_callbacks_.Clear();
+#endif  // defined(OS_ANDROID)
 
   ax_tree_snapshot_callbacks_.clear();
-  smart_clip_callbacks_.clear();
   javascript_callbacks_.clear();
   visual_state_callbacks_.clear();
 
@@ -2046,25 +2050,24 @@ void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
   }
 }
 
-void RenderFrameHostImpl::RequestSmartClipExtract(SmartClipCallback callback,
-                                                  gfx::Rect rect) {
-  static uint32_t next_id = 1;
-  uint32_t key = next_id++;
-  Send(new FrameMsg_ExtractSmartClipData(routing_id_, key, rect));
-  smart_clip_callbacks_.insert(std::make_pair(key, callback));
+#if defined(OS_ANDROID)
+void RenderFrameHostImpl::RequestSmartClipExtract(
+    ExtractSmartClipDataCallback callback,
+    gfx::Rect rect) {
+  int32_t callback_id = smart_clip_callbacks_.Add(
+      std::make_unique<ExtractSmartClipDataCallback>(std::move(callback)));
+  frame_->ExtractSmartClipData(
+      rect, base::BindOnce(&RenderFrameHostImpl::OnSmartClipDataExtracted,
+                           base::Unretained(this), callback_id));
 }
 
-void RenderFrameHostImpl::OnSmartClipDataExtracted(uint32_t id,
-                                                   base::string16 text,
-                                                   base::string16 html) {
-  auto it = smart_clip_callbacks_.find(id);
-  if (it != smart_clip_callbacks_.end()) {
-    it->second.Run(text, html);
-    smart_clip_callbacks_.erase(it);
-  } else {
-    NOTREACHED() << "Received smartclip data response for unknown request";
-  }
+void RenderFrameHostImpl::OnSmartClipDataExtracted(int32_t callback_id,
+                                                   const base::string16& text,
+                                                   const base::string16& html) {
+  std::move(*smart_clip_callbacks_.Lookup(callback_id)).Run(text, html);
+  smart_clip_callbacks_.Remove(callback_id);
 }
+#endif  // defined(OS_ANDROID)
 
 void RenderFrameHostImpl::OnVisualStateResponse(uint64_t id) {
   auto it = visual_state_callbacks_.find(id);
