@@ -5,6 +5,7 @@
 #include "bindings/core/v8/node_or_string.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/BrowserControls.h"
+#include "core/frame/DOMVisualViewport.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RootFrameViewport.h"
@@ -21,6 +22,9 @@
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -1169,6 +1173,74 @@ TEST_P(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
 
   EXPECT_EQ(MainFrameView()->LayoutViewportScrollableArea(),
             &MainFrameView()->GetRootFrameViewport()->LayoutViewport());
+}
+
+class RootScrollerSimTest : public ::testing::WithParamInterface<bool>,
+                            private ScopedRootLayerScrollingForTest,
+                            public SimTest {
+ public:
+  RootScrollerSimTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(All, RootScrollerSimTest, ::testing::Bool());
+
+// Tests that the root scroller doesn't affect visualViewport pageLeft and
+// pageTop.
+TEST_P(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Start();
+  request.Write(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+
+            #spacer {
+              width: 1000px;
+              height: 1000px;
+            }
+
+            #container {
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+          </style>
+          <div id="container">
+            <div id="spacer"></div>
+          </div>
+      )HTML");
+
+  GetDocument().GetPage()->GetVisualViewport().SetScale(2);
+  GetDocument().GetPage()->GetVisualViewport().SetLocation(
+      FloatPoint(100, 120));
+
+  LocalFrame* frame = ToLocalFrame(GetDocument().GetPage()->MainFrame());
+  EXPECT_EQ(100, frame->DomWindow()->visualViewport()->pageLeft());
+  EXPECT_EQ(120, frame->DomWindow()->visualViewport()->pageTop());
+
+  request.Finish();
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("container");
+  GetDocument().setRootScroller(container);
+
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+  container->setScrollTop(50);
+  container->setScrollLeft(60);
+
+  ASSERT_EQ(50, container->scrollTop());
+  ASSERT_EQ(60, container->scrollLeft());
+  ASSERT_EQ(100, frame->DomWindow()->visualViewport()->pageLeft());
+  EXPECT_EQ(120, frame->DomWindow()->visualViewport()->pageTop());
 }
 
 class RootScrollerHitTest : public RootScrollerTest {
