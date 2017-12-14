@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "components/os_crypt/key_storage_linux.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 // Specialisation of KeyStorageLinux that uses Libsecret.
 class KeyStorageLibsecret : public KeyStorageLinux {
  public:
@@ -22,7 +18,6 @@ class KeyStorageLibsecret : public KeyStorageLinux {
 
  protected:
   // KeyStorageLinux
-  base::SequencedTaskRunner* GetTaskRunner() override;
   bool Init() override;
   std::string GetKeyImpl() override;
 

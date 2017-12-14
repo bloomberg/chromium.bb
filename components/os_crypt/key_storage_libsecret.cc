@@ -6,9 +6,7 @@
 
 #include "base/base64.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/os_crypt/libsecret_task_runner_linux.h"
 #include "components/os_crypt/libsecret_util_linux.h"
 
 namespace {
@@ -52,10 +50,6 @@ SecretValue* ToSingleSecret(GList* secret_items) {
 }
 
 }  // namespace
-
-base::SequencedTaskRunner* KeyStorageLibsecret::GetTaskRunner() {
-  return os_crypt::GetLibsecretTaskRunner().get();
-}
 
 std::string KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
   std::string password;
