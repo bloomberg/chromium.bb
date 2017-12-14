@@ -354,7 +354,7 @@ void OnAppIconsReceived(
                                                        handler->activity_name);
     const auto it = icons->find(activity);
     app_info.emplace_back(
-        AppInfo(it != icons->end() ? it->second.icon20 : gfx::Image(),
+        AppInfo(it != icons->end() ? it->second.icon16 : gfx::Image(),
                 handler->package_name, handler->name));
   }
 
