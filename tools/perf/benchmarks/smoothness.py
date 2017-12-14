@@ -772,7 +772,10 @@ class SmoothnessToughTextureUploadCases(_Smoothness):
 
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
-      pass # Nothing.
+      def SetExpectations(self):
+        self.DisableStory('extra_large_texture_uploads.html',
+                          [story_module.expectations.ANDROID_ONE],
+                          'crbug.com/795060')
     return StoryExpectations()
 
 
