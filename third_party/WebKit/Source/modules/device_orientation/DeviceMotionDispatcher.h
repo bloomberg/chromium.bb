@@ -57,8 +57,7 @@ class DeviceMotionDispatcher final
   ~DeviceMotionDispatcher() override;
 
   // Note that the returned object is owned by this class.
-  // FIXME: make the return value const, see crbug.com/233174.
-  DeviceMotionData* LatestDeviceMotionData();
+  const DeviceMotionData* LatestDeviceMotionData();
 
   // Inherited from WebDeviceMotionListener.
   void DidChangeDeviceMotion(const device::MotionData&) override;
