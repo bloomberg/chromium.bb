@@ -43,7 +43,7 @@ void Rect::NotifyClientColorAnimated(SkColor color,
 void Rect::Render(UiElementRenderer* renderer, const CameraModel& model) const {
   renderer->DrawGradientQuad(model.view_proj_matrix * world_space_transform(),
                              edge_color_, center_color_, computed_opacity(),
-                             size(), corner_radius());
+                             size(), corner_radii());
 }
 
 }  // namespace vr

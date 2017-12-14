@@ -53,7 +53,7 @@ void UiElementRenderer::DrawTexturedQuad(
     const gfx::Transform& model_view_proj_matrix,
     const gfx::RectF& copy_rect,
     float opacity,
-    gfx::SizeF element_size,
+    const gfx::SizeF& element_size,
     float corner_radius) {
   // TODO(vollick): handle drawing this degenerate situation crbug.com/768922
   if (corner_radius * 2.0 > element_size.width() ||
@@ -73,12 +73,11 @@ void UiElementRenderer::DrawGradientQuad(
     const SkColor edge_color,
     const SkColor center_color,
     float opacity,
-    gfx::SizeF element_size,
-    float corner_radius) {
+    const gfx::SizeF& element_size,
+    const CornerRadii& radii) {
   FlushIfNecessary(gradient_quad_renderer_.get());
   gradient_quad_renderer_->Draw(model_view_proj_matrix, edge_color,
-                                center_color, opacity, element_size,
-                                corner_radius);
+                                center_color, opacity, element_size, radii);
 }
 
 void UiElementRenderer::DrawGradientGridQuad(

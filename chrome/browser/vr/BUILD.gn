@@ -41,6 +41,7 @@ static_library("vr_common") {
     "elements/content_element.h",
     "elements/controller.cc",
     "elements/controller.h",
+    "elements/corner_radii.h",
     "elements/draw_phase.cc",
     "elements/draw_phase.h",
     "elements/exclusive_screen_toast_texture.cc",

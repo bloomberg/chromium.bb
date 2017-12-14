@@ -17,7 +17,7 @@ void FakeUiElementRenderer::DrawTexturedQuad(
     const gfx::Transform& view_proj_matrix,
     const gfx::RectF& copy_rect,
     float opacity,
-    gfx::SizeF element_size,
+    const gfx::SizeF& element_size,
     float corner_radius) {
   opacity_ = opacity;
   called_ = true;
@@ -28,8 +28,8 @@ void FakeUiElementRenderer::DrawGradientQuad(
     const SkColor edge_color,
     const SkColor center_color,
     float opacity,
-    gfx::SizeF element_size,
-    float corner_radius) {
+    const gfx::SizeF& element_size,
+    const CornerRadii& corner_radii) {
   opacity_ = opacity;
   called_ = true;
 }

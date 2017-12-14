@@ -203,7 +203,7 @@ void UiElement::SetSize(float width, float height) {
   OnSetSize(gfx::SizeF(width, height));
 }
 
-void UiElement::OnSetSize(gfx::SizeF size) {}
+void UiElement::OnSetSize(const gfx::SizeF& size) {}
 
 void UiElement::SetVisible(bool visible) {
   SetOpacity(visible ? opacity_when_visible_ : 0.0);
@@ -314,18 +314,21 @@ bool UiElement::LocalHitTest(const gfx::PointF& point) const {
   if (point.x() < 0.0f || point.x() > 1.0f || point.y() < 0.0f ||
       point.y() > 1.0f) {
     return false;
-  } else if (corner_radius() == 0.f) {
+  } else if (corner_radii_.IsZero()) {
     return point.x() >= 0.0f && point.x() <= 1.0f && point.y() >= 0.0f &&
            point.y() <= 1.0f;
-  } else if (size().width() == size().height() &&
-             corner_radius() == size().width() / 2) {
-    return (point - gfx::PointF(0.5, 0.5)).LengthSquared() < 0.25;
   }
 
   float width = size().width();
   float height = size().height();
-  SkRRect rrect = SkRRect::MakeRectXY(SkRect::MakeWH(width, height),
-                                      corner_radius(), corner_radius());
+  SkRRect rrect;
+  SkVector radii[4] = {
+      {corner_radii_.upper_left, corner_radii_.upper_left},
+      {corner_radii_.upper_right, corner_radii_.upper_right},
+      {corner_radii_.lower_right, corner_radii_.lower_right},
+      {corner_radii_.lower_left, corner_radii_.lower_left},
+  };
+  rrect.setRectRadii(SkRect::MakeWH(width, height), radii);
 
   float left = std::min(point.x() * width, width - kHitTestResolutionInMeter);
   float top = std::min(point.y() * height, height - kHitTestResolutionInMeter);
@@ -410,7 +413,7 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
   *os << DebugName() << kReset << " " << kCyan << DrawPhaseToString(draw_phase_)
       << " " << kReset;
 
-  if (draw_phase_ != kPhaseNone && !size().IsEmpty()) {
+  if (!size().IsEmpty()) {
     *os << kRed << "[" << size().width() << ", " << size().height() << "] "
         << kReset;
   }
