@@ -1413,7 +1413,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual ItemPosition SelfAlignmentNormalBehavior(
       const LayoutBox* child = nullptr) const {
     DCHECK(!child);
-    return kItemPositionStretch;
+    return ItemPosition::kStretch;
   }
 
   // Returns false if it could not cheaply compute the extent (e.g. fixed

@@ -69,7 +69,7 @@ class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
   ItemPosition SelfAlignmentNormalBehavior(
       const LayoutBox* child = nullptr) const override {
     DCHECK(!child);
-    return kItemPositionCenter;
+    return ItemPosition::kCenter;
   }
 };
 

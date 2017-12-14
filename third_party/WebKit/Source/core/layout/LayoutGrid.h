@@ -114,8 +114,8 @@ class LayoutGrid final : public LayoutBlock {
   ItemPosition SelfAlignmentNormalBehavior(
       const LayoutBox* child = nullptr) const override {
     DCHECK(child);
-    return child->IsLayoutReplaced() ? kItemPositionStart
-                                     : kItemPositionStretch;
+    return child->IsLayoutReplaced() ? ItemPosition::kStart
+                                     : ItemPosition::kStretch;
   }
 
  private:
@@ -262,11 +262,11 @@ class LayoutGrid final : public LayoutBlock {
                                      : child.StyleRef().Height().IsAuto();
   }
   bool AllowedToStretchChildAlongColumnAxis(const LayoutBox& child) const {
-    return AlignSelfForChild(child).GetPosition() == kItemPositionStretch &&
+    return AlignSelfForChild(child).GetPosition() == ItemPosition::kStretch &&
            HasAutoSizeInColumnAxis(child) && !HasAutoMarginsInColumnAxis(child);
   }
   bool AllowedToStretchChildAlongRowAxis(const LayoutBox& child) const {
-    return JustifySelfForChild(child).GetPosition() == kItemPositionStretch &&
+    return JustifySelfForChild(child).GetPosition() == ItemPosition::kStretch &&
            HasAutoSizeInRowAxis(child) && !HasAutoMarginsInRowAxis(child);
   }
   bool HasAutoMarginsInColumnAxis(const LayoutBox&) const;

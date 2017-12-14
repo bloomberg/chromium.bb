@@ -187,26 +187,26 @@ inline Containment& operator|=(Containment& a, Containment b) {
   return a = a | b;
 }
 
-enum ItemPosition {
-  kItemPositionAuto,
-  kItemPositionNormal,
-  kItemPositionStretch,
-  kItemPositionBaseline,
-  kItemPositionLastBaseline,
-  kItemPositionCenter,
-  kItemPositionStart,
-  kItemPositionEnd,
-  kItemPositionSelfStart,
-  kItemPositionSelfEnd,
-  kItemPositionFlexStart,
-  kItemPositionFlexEnd,
-  kItemPositionLeft,
-  kItemPositionRight
+enum class ItemPosition : unsigned {
+  kAuto,
+  kNormal,
+  kStretch,
+  kBaseline,
+  kLastBaseline,
+  kCenter,
+  kStart,
+  kEnd,
+  kSelfStart,
+  kSelfEnd,
+  kFlexStart,
+  kFlexEnd,
+  kLeft,
+  kRight
 };
 
 enum class OverflowAlignment : unsigned { kDefault, kUnsafe, kSafe };
 
-enum ItemPositionType { kNonLegacyPosition, kLegacyPosition };
+enum class ItemPositionType : unsigned { kNonLegacy, kLegacy };
 
 enum class ContentPosition : unsigned {
   kNormal,

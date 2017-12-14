@@ -18,16 +18,19 @@ class StyleSelfAlignmentData {
   // items}, justify-{self, items}.
   // [ <self-position> && <overflow-position>? ] | [ legacy && [ left | right |
   // center ] ]
-  StyleSelfAlignmentData(ItemPosition position,
-                         OverflowAlignment overflow,
-                         ItemPositionType position_type = kNonLegacyPosition)
-      : position_(position),
-        position_type_(position_type),
+  StyleSelfAlignmentData(
+      ItemPosition position,
+      OverflowAlignment overflow,
+      ItemPositionType position_type = ItemPositionType::kNonLegacy)
+      : position_(static_cast<unsigned>(position)),
+        position_type_(static_cast<unsigned>(position_type)),
         overflow_(static_cast<unsigned>(overflow)) {}
 
-  void SetPosition(ItemPosition position) { position_ = position; }
+  void SetPosition(ItemPosition position) {
+    position_ = static_cast<unsigned>(position);
+  }
   void SetPositionType(ItemPositionType position_type) {
-    position_type_ = position_type;
+    position_type_ = static_cast<unsigned>(position_type);
   }
   void SetOverflow(OverflowAlignment overflow) {
     overflow_ = static_cast<unsigned>(overflow);

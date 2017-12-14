@@ -685,15 +685,15 @@ StyleSelfAlignmentData StyleBuilderConverter::ConvertSelfOrDefaultAlignmentData(
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     if (ToCSSIdentifierValue(pair.First()).GetValueID() == CSSValueLegacy) {
-      alignment_data.SetPositionType(kLegacyPosition);
+      alignment_data.SetPositionType(ItemPositionType::kLegacy);
       alignment_data.SetPosition(
           ToCSSIdentifierValue(pair.Second()).ConvertTo<ItemPosition>());
     } else if (ToCSSIdentifierValue(pair.First()).GetValueID() ==
                CSSValueFirst) {
-      alignment_data.SetPosition(kItemPositionBaseline);
+      alignment_data.SetPosition(ItemPosition::kBaseline);
     } else if (ToCSSIdentifierValue(pair.First()).GetValueID() ==
                CSSValueLast) {
-      alignment_data.SetPosition(kItemPositionLastBaseline);
+      alignment_data.SetPosition(ItemPosition::kLastBaseline);
     } else {
       alignment_data.SetPosition(
           ToCSSIdentifierValue(pair.First()).ConvertTo<ItemPosition>());

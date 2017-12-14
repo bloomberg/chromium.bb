@@ -107,7 +107,7 @@ void LayoutFullScreen::UpdateStyle(LayoutObject* parent) {
   // TODO (lajava): Since the FullScrenn layout object is anonymous, its Default
   // Alignment (align-items) value can't be used to resolve its children Self
   // Alignment 'auto' values.
-  fullscreen_style->SetAlignItemsPosition(kItemPositionCenter);
+  fullscreen_style->SetAlignItemsPosition(ItemPosition::kCenter);
   fullscreen_style->SetFlexDirection(EFlexDirection::kColumn);
 
   fullscreen_style->SetPosition(EPosition::kFixed);

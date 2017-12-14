@@ -109,15 +109,17 @@ StyleSelfAlignmentData LayoutGrid::SelfAlignmentForChild(
 StyleSelfAlignmentData LayoutGrid::DefaultAlignment(
     GridAxis axis,
     const ComputedStyle& style) const {
-  return axis == kGridRowAxis ? style.ResolvedJustifyItems(kItemPositionNormal)
-                              : style.ResolvedAlignItems(kItemPositionNormal);
+  return axis == kGridRowAxis
+             ? style.ResolvedJustifyItems(ItemPosition::kNormal)
+             : style.ResolvedAlignItems(ItemPosition::kNormal);
 }
 
 bool LayoutGrid::DefaultAlignmentIsStretchOrNormal(
     GridAxis axis,
     const ComputedStyle& style) const {
   ItemPosition alignment = DefaultAlignment(axis, style).GetPosition();
-  return alignment == kItemPositionStretch || alignment == kItemPositionNormal;
+  return alignment == ItemPosition::kStretch ||
+         alignment == ItemPosition::kNormal;
 }
 
 bool LayoutGrid::SelfAlignmentChangedSize(GridAxis axis,
@@ -125,11 +127,11 @@ bool LayoutGrid::SelfAlignmentChangedSize(GridAxis axis,
                                           const ComputedStyle& new_style,
                                           const LayoutBox& child) const {
   return SelfAlignmentForChild(axis, child, &old_style).GetPosition() ==
-                 kItemPositionStretch
+                 ItemPosition::kStretch
              ? SelfAlignmentForChild(axis, child, &new_style).GetPosition() !=
-                   kItemPositionStretch
+                   ItemPosition::kStretch
              : SelfAlignmentForChild(axis, child, &new_style).GetPosition() ==
-                   kItemPositionStretch;
+                   ItemPosition::kStretch;
 }
 
 bool LayoutGrid::DefaultAlignmentChangedSize(
@@ -1821,7 +1823,7 @@ GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
     return kGridAxisStart;
 
   switch (AlignSelfForChild(child).GetPosition()) {
-    case kItemPositionSelfStart:
+    case ItemPosition::kSelfStart:
       // TODO (lajava): Should we implement this logic in a generic utility
       // function?
       // Aligns the alignment subject to be flush with the edge of the alignment
@@ -1838,7 +1840,7 @@ GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
       // self-start is based on the child's block-flow direction. That's why we
       // need to check against the grid container's block-flow direction.
       return has_same_writing_mode ? kGridAxisStart : kGridAxisEnd;
-    case kItemPositionSelfEnd:
+    case ItemPosition::kSelfEnd:
       // TODO (lajava): Should we implement this logic in a generic utility
       // function?
       // Aligns the alignment subject to be flush with the edge of the alignment
@@ -1855,37 +1857,37 @@ GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
       // self-end is based on the child's block-flow direction. That's why we
       // need to check against the grid container's block-flow direction.
       return has_same_writing_mode ? kGridAxisEnd : kGridAxisStart;
-    case kItemPositionLeft:
+    case ItemPosition::kLeft:
       // Aligns the alignment subject to be flush with the alignment container's
       // 'line-left' edge. The alignment axis (column axis) is always orthogonal
       // to the inline axis, hence this value behaves as 'start'.
       return kGridAxisStart;
-    case kItemPositionRight:
+    case ItemPosition::kRight:
       // Aligns the alignment subject to be flush with the alignment container's
       // 'line-right' edge. The alignment axis (column axis) is always
       // orthogonal to the inline axis, hence this value behaves as 'start'.
       return kGridAxisStart;
-    case kItemPositionCenter:
+    case ItemPosition::kCenter:
       return kGridAxisCenter;
     // Only used in flex layout, otherwise equivalent to 'start'.
-    case kItemPositionFlexStart:
+    case ItemPosition::kFlexStart:
     // Aligns the alignment subject to be flush with the alignment container's
     // 'start' edge (block-start) in the column axis.
-    case kItemPositionStart:
+    case ItemPosition::kStart:
       return kGridAxisStart;
     // Only used in flex layout, otherwise equivalent to 'end'.
-    case kItemPositionFlexEnd:
+    case ItemPosition::kFlexEnd:
     // Aligns the alignment subject to be flush with the alignment container's
     // 'end' edge (block-end) in the column axis.
-    case kItemPositionEnd:
+    case ItemPosition::kEnd:
       return kGridAxisEnd;
-    case kItemPositionStretch:
+    case ItemPosition::kStretch:
       return kGridAxisStart;
-    case kItemPositionBaseline:
-    case kItemPositionLastBaseline:
+    case ItemPosition::kBaseline:
+    case ItemPosition::kLastBaseline:
       return kGridAxisStart;
-    case kItemPositionAuto:
-    case kItemPositionNormal:
+    case ItemPosition::kAuto:
+    case ItemPosition::kNormal:
       break;
   }
 
@@ -1902,7 +1904,7 @@ GridAxisPosition LayoutGrid::RowAxisPositionForChild(
     return kGridAxisStart;
 
   switch (JustifySelfForChild(child).GetPosition()) {
-    case kItemPositionSelfStart:
+    case ItemPosition::kSelfStart:
       // TODO (lajava): Should we implement this logic in a generic utility
       // function?
       // Aligns the alignment subject to be flush with the edge of the alignment
@@ -1918,7 +1920,7 @@ GridAxisPosition LayoutGrid::RowAxisPositionForChild(
       // self-start is based on the child's inline-flow direction. That's why we
       // need to check against the grid container's direction.
       return has_same_direction ? kGridAxisStart : kGridAxisEnd;
-    case kItemPositionSelfEnd:
+    case ItemPosition::kSelfEnd:
       // TODO (lajava): Should we implement this logic in a generic utility
       // function?
       // Aligns the alignment subject to be flush with the edge of the alignment
@@ -1934,37 +1936,37 @@ GridAxisPosition LayoutGrid::RowAxisPositionForChild(
       // self-end is based on the child's inline-flow direction. That's why we
       // need to check against the grid container's direction.
       return has_same_direction ? kGridAxisEnd : kGridAxisStart;
-    case kItemPositionLeft:
+    case ItemPosition::kLeft:
       // Aligns the alignment subject to be flush with the alignment container's
       // 'line-left' edge. We want the physical 'left' side, so we have to take
       // account, container's inline-flow direction.
       return grid_is_ltr ? kGridAxisStart : kGridAxisEnd;
-    case kItemPositionRight:
+    case ItemPosition::kRight:
       // Aligns the alignment subject to be flush with the alignment container's
       // 'line-right' edge. We want the physical 'right' side, so we have to
       // take account, container's inline-flow direction.
       return grid_is_ltr ? kGridAxisEnd : kGridAxisStart;
-    case kItemPositionCenter:
+    case ItemPosition::kCenter:
       return kGridAxisCenter;
     // Only used in flex layout, otherwise equivalent to 'start'.
-    case kItemPositionFlexStart:
+    case ItemPosition::kFlexStart:
     // Aligns the alignment subject to be flush with the alignment container's
     // 'start' edge (inline-start) in the row axis.
-    case kItemPositionStart:
+    case ItemPosition::kStart:
       return kGridAxisStart;
     // Only used in flex layout, otherwise equivalent to 'end'.
-    case kItemPositionFlexEnd:
+    case ItemPosition::kFlexEnd:
     // Aligns the alignment subject to be flush with the alignment container's
     // 'end' edge (inline-end) in the row axis.
-    case kItemPositionEnd:
+    case ItemPosition::kEnd:
       return kGridAxisEnd;
-    case kItemPositionStretch:
+    case ItemPosition::kStretch:
       return kGridAxisStart;
-    case kItemPositionBaseline:
-    case kItemPositionLastBaseline:
+    case ItemPosition::kBaseline:
+    case ItemPosition::kLastBaseline:
       return kGridAxisStart;
-    case kItemPositionAuto:
-    case kItemPositionNormal:
+    case ItemPosition::kAuto:
+    case ItemPosition::kNormal:
       break;
   }
 

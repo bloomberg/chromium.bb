@@ -221,8 +221,8 @@ void ComputedStyle::PropagateIndependentInheritedProperties(
 StyleSelfAlignmentData ResolvedSelfAlignment(
     const StyleSelfAlignmentData& value,
     ItemPosition normal_value_behavior) {
-  if (value.GetPosition() == kItemPositionNormal ||
-      value.GetPosition() == kItemPositionAuto)
+  if (value.GetPosition() == ItemPosition::kNormal ||
+      value.GetPosition() == ItemPosition::kAuto)
     return {normal_value_behavior, OverflowAlignment::kDefault};
   return value;
 }
@@ -239,7 +239,7 @@ StyleSelfAlignmentData ComputedStyle::ResolvedAlignSelf(
     const ComputedStyle* parent_style) const {
   // We will return the behaviour of 'normal' value if needed, which is specific
   // of each layout model.
-  if (!parent_style || AlignSelfPosition() != kItemPositionAuto)
+  if (!parent_style || AlignSelfPosition() != ItemPosition::kAuto)
     return ResolvedSelfAlignment(AlignSelf(), normal_value_behaviour);
 
   // The 'auto' keyword computes to the parent's align-items computed value.
@@ -258,7 +258,7 @@ StyleSelfAlignmentData ComputedStyle::ResolvedJustifySelf(
     const ComputedStyle* parent_style) const {
   // We will return the behaviour of 'normal' value if needed, which is specific
   // of each layout model.
-  if (!parent_style || JustifySelfPosition() != kItemPositionAuto)
+  if (!parent_style || JustifySelfPosition() != ItemPosition::kAuto)
     return ResolvedSelfAlignment(JustifySelf(), normal_value_behaviour);
 
   // The auto keyword computes to the parent's justify-items computed value.

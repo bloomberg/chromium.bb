@@ -1554,46 +1554,46 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ItemPosition item_position)
     : CSSValue(kIdentifierClass) {
   switch (item_position) {
-    case kItemPositionAuto:
+    case ItemPosition::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kItemPositionNormal:
+    case ItemPosition::kNormal:
       value_id_ = CSSValueNormal;
       break;
-    case kItemPositionStretch:
+    case ItemPosition::kStretch:
       value_id_ = CSSValueStretch;
       break;
-    case kItemPositionBaseline:
+    case ItemPosition::kBaseline:
       value_id_ = CSSValueBaseline;
       break;
-    case kItemPositionLastBaseline:
+    case ItemPosition::kLastBaseline:
       value_id_ = CSSValueLastBaseline;
       break;
-    case kItemPositionCenter:
+    case ItemPosition::kCenter:
       value_id_ = CSSValueCenter;
       break;
-    case kItemPositionStart:
+    case ItemPosition::kStart:
       value_id_ = CSSValueStart;
       break;
-    case kItemPositionEnd:
+    case ItemPosition::kEnd:
       value_id_ = CSSValueEnd;
       break;
-    case kItemPositionSelfStart:
+    case ItemPosition::kSelfStart:
       value_id_ = CSSValueSelfStart;
       break;
-    case kItemPositionSelfEnd:
+    case ItemPosition::kSelfEnd:
       value_id_ = CSSValueSelfEnd;
       break;
-    case kItemPositionFlexStart:
+    case ItemPosition::kFlexStart:
       value_id_ = CSSValueFlexStart;
       break;
-    case kItemPositionFlexEnd:
+    case ItemPosition::kFlexEnd:
       value_id_ = CSSValueFlexEnd;
       break;
-    case kItemPositionLeft:
+    case ItemPosition::kLeft:
       value_id_ = CSSValueLeft;
       break;
-    case kItemPositionRight:
+    case ItemPosition::kRight:
       value_id_ = CSSValueRight;
       break;
   }
@@ -1603,40 +1603,40 @@ template <>
 inline ItemPosition CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return kItemPositionAuto;
+      return ItemPosition::kAuto;
     case CSSValueNormal:
-      return kItemPositionNormal;
+      return ItemPosition::kNormal;
     case CSSValueStretch:
-      return kItemPositionStretch;
+      return ItemPosition::kStretch;
     case CSSValueBaseline:
-      return kItemPositionBaseline;
+      return ItemPosition::kBaseline;
     case CSSValueFirstBaseline:
-      return kItemPositionBaseline;
+      return ItemPosition::kBaseline;
     case CSSValueLastBaseline:
-      return kItemPositionLastBaseline;
+      return ItemPosition::kLastBaseline;
     case CSSValueCenter:
-      return kItemPositionCenter;
+      return ItemPosition::kCenter;
     case CSSValueStart:
-      return kItemPositionStart;
+      return ItemPosition::kStart;
     case CSSValueEnd:
-      return kItemPositionEnd;
+      return ItemPosition::kEnd;
     case CSSValueSelfStart:
-      return kItemPositionSelfStart;
+      return ItemPosition::kSelfStart;
     case CSSValueSelfEnd:
-      return kItemPositionSelfEnd;
+      return ItemPosition::kSelfEnd;
     case CSSValueFlexStart:
-      return kItemPositionFlexStart;
+      return ItemPosition::kFlexStart;
     case CSSValueFlexEnd:
-      return kItemPositionFlexEnd;
+      return ItemPosition::kFlexEnd;
     case CSSValueLeft:
-      return kItemPositionLeft;
+      return ItemPosition::kLeft;
     case CSSValueRight:
-      return kItemPositionRight;
+      return ItemPosition::kRight;
     default:
       break;
   }
   NOTREACHED();
-  return kItemPositionAuto;
+  return ItemPosition::kAuto;
 }
 
 template <>
