@@ -58,6 +58,7 @@ class UrlBarTexture : public UiTexture {
                               security_state::SecurityLevel security_level,
                               RenderTextWrapper* render_text,
                               const UrlBarColors& colors);
+  bool url_dirty() const { return url_dirty_; }
 
   std::unique_ptr<gfx::RenderText> url_render_text_;
 
