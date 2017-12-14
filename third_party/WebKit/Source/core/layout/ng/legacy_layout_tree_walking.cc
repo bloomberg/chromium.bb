@@ -48,4 +48,15 @@ bool AreNGBlockFlowChildrenInline(const LayoutBlockFlow* block) {
   return false;
 }
 
+bool IsManagedByLayoutNG(const LayoutObject& object) {
+  if (!object.IsLayoutNGMixin())
+    return false;
+  const auto* containing_block = object.ContainingBlock();
+  if (!containing_block)
+    return false;
+  if (containing_block->IsLayoutFlowThread())
+    containing_block = containing_block->ContainingBlock();
+  return containing_block && containing_block->IsLayoutNGMixin();
+}
+
 }  // namespace blink
