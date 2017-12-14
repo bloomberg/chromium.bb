@@ -183,21 +183,21 @@ class TestImporter(object):
         """
         _log.info('Triggering try jobs for updating expectations.')
         self.git_cl.trigger_try_jobs(self.blink_try_bots())
-        try_results = self.git_cl.wait_for_try_jobs(
+        cl_status = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS,
             timeout_seconds=TIMEOUT_SECONDS)
 
-        if not try_results:
+        if not cl_status:
             _log.error('No initial try job results, aborting.')
             self.git_cl.run(['set-close'])
             return False
 
-        if try_results.status == 'closed':
+        if cl_status.status == 'closed':
             _log.error('The CL was closed, aborting.')
             return False
 
         _log.info('All jobs finished.')
-        try_results = try_results.try_job_results
+        try_results = cl_status.try_job_results
 
         if try_results and self.git_cl.some_failed(try_results):
             self.fetch_new_expectations_and_baselines()
@@ -212,21 +212,21 @@ class TestImporter(object):
         """Triggers CQ and either commits or aborts; returns True on success."""
         _log.info('Triggering CQ try jobs.')
         self.git_cl.run(['try'])
-        try_results = self.git_cl.wait_for_try_jobs(
+        cl_status = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS,
             timeout_seconds=TIMEOUT_SECONDS)
 
-        if not try_results:
+        if not cl_status:
             self.git_cl.run(['set-close'])
             _log.error('Timed out waiting for CQ; aborting.')
             return False
 
-        if try_results.status == 'closed':
+        if cl_status.status == 'closed':
             _log.error('The CL was closed; aborting.')
             return False
 
         _log.info('All jobs finished.')
-        try_results = self.git_cl.filter_latest(try_results.try_job_results)
+        try_results = self.git_cl.filter_latest(cl_status.try_job_results)
 
         # We only want to check the status of CQ bots. The set of CQ bots is
         # determined by //infra/config/cq.cfg, but since in import jobs we only
