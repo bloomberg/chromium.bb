@@ -428,12 +428,6 @@ service_manifest("chrome_manifest") {
   source = "chrome_manifest.json"
 }
 
-service_manifest("chrome_content_packaged_services_manifest_overlay_for_mash") {
-  source =
-      "//chrome/browser/chrome_content_packaged_services_manifest_overlay.json"
-  packaged_services = chrome_packaged_services
-}
-
 service_manifest("chrome_content_packaged_services_manifest_overlay") {
   source =
       "//chrome/browser/chrome_content_packaged_services_manifest_overlay.json"
@@ -488,10 +482,6 @@ group("chrome_content_manifest_overlays") {
     ":chrome_content_renderer_manifest_overlay",
     ":chrome_content_utility_manifest_overlay",
   ]
-
-  if (enable_mus) {
-    deps += [ ":chrome_content_packaged_services_manifest_overlay_for_mash" ]
-  }
 }
 
 if (use_aura) {
@@ -504,11 +494,6 @@ if (use_aura) {
   service_manifest("chrome_content_packaged_services_manifest") {
     source_manifest = "//content/public/app:packaged_services_manifest"
     overlays = [ ":chrome_content_packaged_services_manifest_overlay" ]
-  }
-
-  service_manifest("chrome_content_packaged_services_manifest_for_mash") {
-    source_manifest = "//content/public/app:packaged_services_manifest"
-    overlays = [ ":chrome_content_packaged_services_manifest_overlay_for_mash" ]
   }
 
   service_manifest("chrome_content_browser_manifest") {
@@ -549,10 +534,6 @@ if (use_aura) {
       ":chrome_content_renderer_manifest",
       ":chrome_content_utility_manifest",
     ]
-
-    if (enable_mus) {
-      deps += [ ":chrome_content_packaged_services_manifest_for_mash" ]
-    }
   }
 
   chrome_embedded_services = [
@@ -566,19 +547,5 @@ if (use_aura) {
   catalog("catalog") {
     embedded_services = chrome_embedded_services +
                         [ ":chrome_content_packaged_services_manifest" ]
-  }
-
-  catalog("catalog_for_mash") {
-    embedded_services =
-        chrome_embedded_services +
-        [ ":chrome_content_packaged_services_manifest_for_mash" ]
-  }
-
-  catalog("catalog_for_tests_mash") {
-    embedded_services = chrome_embedded_services + [
-                          ":chrome_content_packaged_services_manifest_for_mash",
-                          ":chrome_test_browser_manifest",
-                        ]
-    embedded_services -= [ ":chrome_content_browser_manifest" ]
   }
 }
