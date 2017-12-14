@@ -19,7 +19,7 @@ from chromite.lib import osutils
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
 
-# Contains the valid build config suffixes in the order that they are dumped.
+# Contains the valid build config suffixes.
 CONFIG_TYPE_PRECQ = 'pre-cq'
 CONFIG_TYPE_PALADIN = 'paladin'
 CONFIG_TYPE_RELEASE = 'release'
@@ -29,47 +29,7 @@ CONFIG_TYPE_FACTORY = 'factory'
 CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
 CONFIG_TYPE_TOOLCHAIN = 'toolchain'
 
-# This is only used for unitests... find a better solution?
-CONFIG_TYPE_DUMP_ORDER = (
-    CONFIG_TYPE_PALADIN,
-    CONFIG_TYPE_PRECQ,
-    constants.PRE_CQ_LAUNCHER_CONFIG,
-    'incremental',
-    'telemetry',
-    CONFIG_TYPE_FULL,
-    'full-group',
-    CONFIG_TYPE_RELEASE,
-    'release-group',
-    'release-afdo',
-    'release-afdo-generate',
-    'release-afdo-use',
-    'sdk',
-    'chromium-pfq',
-    'chromium-pfq-informational',
-    'chrome-perf',
-    'chrome-pfq',
-    'chrome-pfq-cheets-informational',
-    'chrome-pfq-informational',
-    'android-pfq',
-    'vmtest-informational',
-    'som-dispatcher',
-    'config-updater',
-    'pre-flight-branch',
-    CONFIG_TYPE_FACTORY,
-    CONFIG_TYPE_FIRMWARE,
-    'toolchain',
-    'asan',
-    'asan-informational',
-    'refresh-packages',
-    'test-ap',
-    'test-ap-group',
-    constants.BRANCH_UTIL_CONFIG,
-    constants.PAYLOADS_TYPE,
-    'cbuildbot',
-    'unittest-stress',
-    'infra-go',
-    'tryjob',
-)
+# DISPLAY labels are used to group related builds together in the GE UI.
 
 DISPLAY_LABEL_PRECQ = 'pre_cq'
 DISPLAY_LABEL_TRYJOB = 'tryjob'

@@ -216,26 +216,22 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase,
     if site_config is None:
       site_config = chromeos_config.GetConfig()
 
-    with parallel.BackgroundTaskRunner(task) as queue:
-      # Loop through all major configuration types and pick one from each.
-      for bot_type in config_lib.CONFIG_TYPE_DUMP_ORDER:
-        for bot_id in site_config:
-          if bot_id.endswith(bot_type):
-            # Skip any config without a board, since those configs do not
-            # build packages.
-            cfg = site_config[bot_id]
-            if cfg.boards:
-              # Skip boards w/out a local overlay.  Like when running a
-              # public manifest and testing private-only boards.
-              if skip_missing:
-                try:
-                  for b in cfg.boards:
-                    portage_util.FindPrimaryOverlay(constants.BOTH_OVERLAYS, b)
-                except portage_util.MissingOverlayException:
-                  continue
+    boards = ('samus', 'arm-generic')
 
-              queue.put([bot_id])
-              break
+    with parallel.BackgroundTaskRunner(task) as queue:
+      # Test every build config on an waterfall, that builds something.
+      for bot_id, cfg in site_config.iteritems():
+        if not cfg.boards or cfg.boards[0] not in boards:
+          continue
+
+        if skip_missing:
+          try:
+            for b in cfg.boards:
+              portage_util.FindPrimaryOverlay(constants.BOTH_OVERLAYS, b)
+          except portage_util.MissingOverlayException:
+            continue
+
+        queue.put([bot_id])
 
 
 class BuildPackagesStageTest(AllConfigsTestCase,

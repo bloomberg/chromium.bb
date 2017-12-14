@@ -869,22 +869,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
     return False
 
-  def testNonOverlappingConfigTypes(self):
-    """Test that a config can only match one build suffix."""
-    # This test belongs in config_lib_unittest, except nobody else cares.
-    for config_type in config_lib.CONFIG_TYPE_DUMP_ORDER:
-      trimmed_configs = list(config_lib.CONFIG_TYPE_DUMP_ORDER)
-      trimmed_configs.remove(config_type)
-      self.assertFalse(self._HasValidSuffix(config_type, trimmed_configs))
-
-  def testConfigTypesComplete(self):
-    """Verify CONFIG_TYPE_DUMP_ORDER contains all valid config types."""
-    for config_name in self.site_config:
-      self.assertTrue(
-          self._HasValidSuffix(config_name, config_lib.CONFIG_TYPE_DUMP_ORDER),
-          '%s did not match any types in %s' %
-          (config_name, 'config_lib.CONFIG_TYPE_DUMP_ORDER'))
-
   def testCantBeBothTypesOfLKGM(self):
     """Using lkgm and chrome_lkgm doesn't make sense."""
     for config in self.site_config.values():
