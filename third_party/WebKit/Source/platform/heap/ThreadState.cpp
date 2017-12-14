@@ -44,7 +44,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapCompact.h"
-#include "platform/heap/IncrementalMarking.h"
 #include "platform/heap/PagePool.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/Visitor.h"
@@ -365,14 +364,15 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
 }
 
 bool ThreadState::ShouldScheduleIncrementalMarking() const {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+// TODO(mlippautz): Replace with proper build flag.
+#if 0
   // TODO(mlippautz): For now immediately schedule incremental marking if
   // the runtime flag is provided, basically exercising a stress test.
   return (GcState() == kNoGCScheduled || GcState() == kSweeping) &&
          RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled();
 #else
   return false;
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+#endif
 }
 
 bool ThreadState::ShouldScheduleIdleGC() {
