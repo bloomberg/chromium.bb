@@ -17,6 +17,8 @@ class GURL;
 
 namespace media_router {
 
+enum class SinkIconType;
+
 // NOTE: Do not renumber enums as that would confuse interpretation of
 // previously logged data. When making changes, also update the enum list
 // in tools/metrics/histograms/histograms.xml to keep it in sync.
@@ -84,11 +86,12 @@ class MediaRouterMetrics {
   static const char kHistogramMediaRouterCastingSource[];
   static const char kHistogramMediaRouterFileFormat[];
   static const char kHistogramMediaRouterFileSize[];
+  static const char kHistogramMediaSinkType[];
+  static const char kHistogramPresentationUrlType[];
   static const char kHistogramRouteCreationOutcome[];
   static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiDialogLoadedWithData[];
   static const char kHistogramUiFirstAction[];
-  static const char kHistogramPresentationUrlType[];
 
   // Records where the user clicked to open the Media Router dialog.
   static void RecordMediaRouterDialogOrigin(
@@ -129,6 +132,9 @@ class MediaRouterMetrics {
 
   // Records the type of Presentation URL used by a web page.
   static void RecordPresentationUrlType(const GURL& url);
+
+  // Records the type of the sink that media is being Cast to.
+  static void RecordMediaSinkType(SinkIconType sink_icon_type);
 };
 
 }  // namespace media_router

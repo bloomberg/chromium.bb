@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
+#include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -52,6 +53,10 @@ const char MediaRouterMetrics::kHistogramMediaRouterFileFormat[] =
     "MediaRouter.Source.LocalFileFormat";
 const char MediaRouterMetrics::kHistogramMediaRouterFileSize[] =
     "MediaRouter.Source.LocalFileSize";
+const char MediaRouterMetrics::kHistogramMediaSinkType[] =
+    "MediaRouter.MediaSink.SelectedType";
+const char MediaRouterMetrics::kHistogramPresentationUrlType[] =
+    "MediaRouter.PresentationRequest.AvailabilityUrlType";
 const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
     "MediaRouter.Route.CreationOutcome";
 const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
@@ -60,8 +65,6 @@ const char MediaRouterMetrics::kHistogramUiDialogLoadedWithData[] =
     "MediaRouter.Ui.Dialog.LoadedWithData";
 const char MediaRouterMetrics::kHistogramUiFirstAction[] =
     "MediaRouter.Ui.FirstAction";
-const char MediaRouterMetrics::kHistogramPresentationUrlType[] =
-    "MediaRouter.PresentationRequest.AvailabilityUrlType";
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
@@ -137,6 +140,12 @@ void MediaRouterMetrics::RecordPresentationUrlType(const GURL& url) {
   PresentationUrlType type = GetPresentationUrlType(url);
   UMA_HISTOGRAM_ENUMERATION(kHistogramPresentationUrlType, type,
                             PresentationUrlType::kPresentationUrlTypeCount);
+}
+
+// static
+void MediaRouterMetrics::RecordMediaSinkType(SinkIconType sink_icon_type) {
+  UMA_HISTOGRAM_ENUMERATION(kHistogramMediaSinkType, sink_icon_type,
+                            SinkIconType::TOTAL_COUNT);
 }
 
 }  // namespace media_router

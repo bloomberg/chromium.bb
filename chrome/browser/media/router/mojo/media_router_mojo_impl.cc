@@ -18,6 +18,7 @@
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
@@ -179,22 +180,22 @@ void MediaRouterMojoImpl::CreateRoute(
     base::TimeDelta timeout,
     bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::Optional<MediaRouteProviderId> provider_id =
-      GetProviderIdForSink(sink_id);
-  if (!provider_id) {
+  const MediaSink* sink = GetSinkById(sink_id);
+  if (!sink) {
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Sink not found", RouteRequestResult::SINK_NOT_FOUND);
     RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
     return;
   }
 
+  MediaRouterMetrics::RecordMediaSinkType(sink->icon_type());
+  MediaRouteProviderId provider_id = sink->provider_id();
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
-  auto callback =
-      base::BindOnce(&MediaRouterMojoImpl::RouteResponseReceived,
-                     weak_factory_.GetWeakPtr(), presentation_id, *provider_id,
-                     incognito, base::Passed(&callbacks), false);
-  media_route_providers_[*provider_id]->CreateRoute(
+  auto callback = base::BindOnce(
+      &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
+      presentation_id, provider_id, incognito, base::Passed(&callbacks), false);
+  media_route_providers_[provider_id]->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
       std::move(callback));
 }

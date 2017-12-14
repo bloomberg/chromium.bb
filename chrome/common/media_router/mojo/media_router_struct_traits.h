@@ -262,8 +262,12 @@ struct EnumTraits<media_router::mojom::SinkIconType,
         return media_router::mojom::SinkIconType::HANGOUT;
       case media_router::SinkIconType::EDUCATION:
         return media_router::mojom::SinkIconType::EDUCATION;
+      case media_router::SinkIconType::WIRED_DISPLAY:
+        return media_router::mojom::SinkIconType::WIRED_DISPLAY;
       case media_router::SinkIconType::GENERIC:
         return media_router::mojom::SinkIconType::GENERIC;
+      case media_router::SinkIconType::TOTAL_COUNT:
+        break;
     }
     NOTREACHED() << "Unknown sink icon type " << static_cast<int>(icon_type);
     return media_router::mojom::SinkIconType::GENERIC;
@@ -289,6 +293,9 @@ struct EnumTraits<media_router::mojom::SinkIconType,
         return true;
       case media_router::mojom::SinkIconType::EDUCATION:
         *output = media_router::SinkIconType::EDUCATION;
+        return true;
+      case media_router::mojom::SinkIconType::WIRED_DISPLAY:
+        *output = media_router::SinkIconType::WIRED_DISPLAY;
         return true;
       case media_router::mojom::SinkIconType::GENERIC:
         *output = media_router::SinkIconType::GENERIC;

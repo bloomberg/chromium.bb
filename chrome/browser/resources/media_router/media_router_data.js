@@ -97,7 +97,8 @@ media_router.SinkIconType = {
   MEETING: 3,
   HANGOUT: 4,
   EDUCATION: 5,
-  GENERIC: 6,
+  WIRED_DISPLAY: 6,
+  GENERIC: 7,
 };
 
 /**
