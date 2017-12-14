@@ -133,6 +133,9 @@ LayoutObject* LayoutFullScreen::WrapLayoutObject(LayoutObject* object,
   // layout. crbug.com/370459
   DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
 
+  // A fullscreen <html> element should not be wrapped (see crbug.com/676432).
+  DCHECK(!object || object->GetNode() != document->documentElement());
+
   LayoutFullScreen* fullscreen_layout_object =
       LayoutFullScreen::CreateAnonymous(document);
   fullscreen_layout_object->UpdateStyle(parent);

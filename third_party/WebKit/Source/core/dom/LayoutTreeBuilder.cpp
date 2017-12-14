@@ -134,9 +134,11 @@ void LayoutTreeBuilderForElement::CreateLayoutObject() {
   new_layout_object->SetStyle(
       &style);  // SetStyle() can depend on LayoutObject() already being set.
 
-  if (Fullscreen::IsFullscreenElement(*node_)) {
+  Document& document = node_->GetDocument();
+  if (Fullscreen::IsFullscreenElement(*node_) &&
+      node_.Get() != document.documentElement()) {
     new_layout_object = LayoutFullScreen::WrapLayoutObject(
-        new_layout_object, parent_layout_object, &node_->GetDocument());
+        new_layout_object, parent_layout_object, &document);
     if (!new_layout_object)
       return;
   }
