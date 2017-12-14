@@ -115,7 +115,7 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
-  V8AbstractEventListener(bool is_attribute, DOMWrapperWorld&, v8::Isolate*);
+  V8AbstractEventListener(v8::Isolate*, bool is_attribute, DOMWrapperWorld&);
 
   virtual v8::Local<v8::Object> GetListenerObjectInternal(
       ExecutionContext* execution_context) {

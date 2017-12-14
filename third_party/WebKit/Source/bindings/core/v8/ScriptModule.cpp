@@ -96,8 +96,8 @@ ScriptValue ScriptModule::Evaluate(ScriptState* script_state) const {
   // TODO(kouhei): We currently don't have a code-path which use return value of
   // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
-  if (!V8ScriptRunner::EvaluateModule(module_->NewLocal(isolate),
-                                      script_state->GetContext(), isolate)
+  if (!V8ScriptRunner::EvaluateModule(isolate, module_->NewLocal(isolate),
+                                      script_state->GetContext())
            .ToLocal(&result)) {
     DCHECK(try_catch.HasCaught());
     return ScriptValue(script_state, try_catch.Exception());

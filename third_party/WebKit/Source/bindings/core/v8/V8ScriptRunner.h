@@ -79,9 +79,9 @@ class CORE_EXPORT V8ScriptRunner final {
                                                      v8::Local<v8::Script>,
                                                      ExecutionContext*);
   static v8::MaybeLocal<v8::Value> CompileAndRunInternalScript(
+      v8::Isolate*,
       ScriptState*,
-      const ScriptSourceCode&,
-      v8::Isolate*);
+      const ScriptSourceCode&);
   static v8::MaybeLocal<v8::Value> RunCompiledInternalScript(
       v8::Isolate*,
       v8::Local<v8::Script>);
@@ -92,20 +92,20 @@ class CORE_EXPORT V8ScriptRunner final {
       int argc = 0,
       v8::Local<v8::Value> argv[] = nullptr);
   static v8::MaybeLocal<v8::Value> CallInternalFunction(
+      v8::Isolate*,
       v8::Local<v8::Function>,
       v8::Local<v8::Value> receiver,
       int argc,
-      v8::Local<v8::Value> info[],
-      v8::Isolate*);
+      v8::Local<v8::Value> info[]);
   static v8::MaybeLocal<v8::Value> CallFunction(v8::Local<v8::Function>,
                                                 ExecutionContext*,
                                                 v8::Local<v8::Value> receiver,
                                                 int argc,
                                                 v8::Local<v8::Value> info[],
                                                 v8::Isolate*);
-  static v8::MaybeLocal<v8::Value> EvaluateModule(v8::Local<v8::Module>,
-                                                  v8::Local<v8::Context>,
-                                                  v8::Isolate*);
+  static v8::MaybeLocal<v8::Value> EvaluateModule(v8::Isolate*,
+                                                  v8::Local<v8::Module>,
+                                                  v8::Local<v8::Context>);
 
   // Only to be used from ScriptModule::ReportException().
   static void ReportExceptionForModule(v8::Isolate*,

@@ -46,9 +46,9 @@
 
 namespace blink {
 
-V8AbstractEventListener::V8AbstractEventListener(bool is_attribute,
-                                                 DOMWrapperWorld& world,
-                                                 v8::Isolate* isolate)
+V8AbstractEventListener::V8AbstractEventListener(v8::Isolate* isolate,
+                                                 bool is_attribute,
+                                                 DOMWrapperWorld& world)
     : EventListener(kJSEventListenerType),
       listener_(nullptr),
       is_attribute_(is_attribute),

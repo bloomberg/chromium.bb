@@ -523,9 +523,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
+    v8::Isolate* isolate,
     ScriptState* script_state,
-    const ScriptSourceCode& source_code,
-    v8::Isolate* isolate) {
+    const ScriptSourceCode& source_code) {
   DCHECK_EQ(isolate, script_state->GetIsolate());
 
   v8::Local<v8::Script> script;
@@ -640,11 +640,11 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::CallInternalFunction(
+    v8::Isolate* isolate,
     v8::Local<v8::Function> function,
     v8::Local<v8::Value> receiver,
     int argc,
-    v8::Local<v8::Value> args[],
-    v8::Isolate* isolate) {
+    v8::Local<v8::Value> args[]) {
   TRACE_EVENT0("v8", "v8.callFunction");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
@@ -659,9 +659,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallInternalFunction(
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::EvaluateModule(
+    v8::Isolate* isolate,
     v8::Local<v8::Module> module,
-    v8::Local<v8::Context> context,
-    v8::Isolate* isolate) {
+    v8::Local<v8::Context> context) {
   TRACE_EVENT0("v8,devtools.timeline", "v8.evaluateModule");
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
   v8::MicrotasksScope microtasks_scope(isolate,
@@ -714,8 +714,8 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallExtraHelper(
            .ToLocal(&function_value))
     return v8::MaybeLocal<v8::Value>();
   v8::Local<v8::Function> function = function_value.As<v8::Function>();
-  return V8ScriptRunner::CallInternalFunction(function, v8::Undefined(isolate),
-                                              num_args, args, isolate);
+  return V8ScriptRunner::CallInternalFunction(
+      isolate, function, v8::Undefined(isolate), num_args, args);
 }
 
 // static

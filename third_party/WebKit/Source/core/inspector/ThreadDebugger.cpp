@@ -278,11 +278,10 @@ void ThreadDebugger::installAdditionalCommandLineAPI(
   v8::Local<v8::Value> function_value;
   bool success =
       V8ScriptRunner::CompileAndRunInternalScript(
-          ScriptState::From(context),
+          isolate_, ScriptState::From(context),
           ScriptSourceCode("(function(e) { console.log(e.type, e); })",
                            ScriptSourceLocationType::kInternal, nullptr, KURL(),
-                           TextPosition()),
-          isolate_)
+                           TextPosition()))
           .ToLocal(&function_value) &&
       function_value->IsFunction();
   DCHECK(success);
