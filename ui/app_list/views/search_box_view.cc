@@ -123,8 +123,7 @@ class SearchBoxImageButton : public views::ImageButton {
  public:
   explicit SearchBoxImageButton(views::ButtonListener* listener)
       : ImageButton(listener), selected_(false) {
-    if (features::IsAppListFocusEnabled())
-      SetFocusBehavior(FocusBehavior::ALWAYS);
+    SetFocusBehavior(FocusBehavior::ALWAYS);
   }
   ~SearchBoxImageButton() override {}
 
@@ -190,17 +189,14 @@ class SearchBoxTextfield : public views::Textfield {
   }
 
   void OnFocus() override {
-    if (is_app_list_focus_enabled_)
-      search_box_view_->SetSelected(true);
+    search_box_view_->SetSelected(true);
     Textfield::OnFocus();
   }
 
   void OnBlur() override {
-    if (is_app_list_focus_enabled_) {
-      search_box_view_->SetSelected(false);
-      // Clear selection and set the caret to the end of the text.
-      ClearSelection();
-    }
+    search_box_view_->SetSelected(false);
+    // Clear selection and set the caret to the end of the text.
+    ClearSelection();
     Textfield::OnBlur();
   }
 
@@ -494,7 +490,7 @@ void SearchBoxView::SetSearchBoxActive(bool active) {
                                                  : search_box_color_);
   search_box_->SetCursorEnabled(active);
 
-  if (active && is_app_list_focus_enabled_)
+  if (active)
     search_box_->RequestFocus();
 
   search_box_right_space_->SetVisible(!active);
@@ -718,12 +714,6 @@ void SearchBoxView::SetSelected(bool selected) {
   if (selected) {
     // Set the ChromeVox focus to the search box.
     search_box_->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
-    if (!is_app_list_focus_enabled_ && !search_box_->text().empty()) {
-      // If query is not empty (including a string of spaces), we need to select
-      // the entire text range. When app list focus flag is enabled, query is
-      // automatically selected all when search box is focused.
-      search_box_->SelectAll(false);
-    }
   }
   UpdateSearchBoxBorder();
   Layout();
@@ -747,10 +737,8 @@ void SearchBoxView::NotifyQueryChanged() {
 
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const base::string16& new_contents) {
-  if (is_app_list_focus_enabled_) {
-    // Set search box focused when query changes.
-    search_box_->RequestFocus();
-  }
+  // Set search box focused when query changes.
+  search_box_->RequestFocus();
   UpdateModel(true);
   view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();

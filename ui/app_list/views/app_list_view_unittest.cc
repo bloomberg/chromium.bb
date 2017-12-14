@@ -187,9 +187,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
         base::i18n::SetICUDefaultLocale("he");
     }
 
-    // Enable app list focus.
-    scoped_feature_list_.InitAndEnableFeature(features::kEnableAppListFocus);
-
     // Initialize app list view.
     delegate_.reset(new AppListTestViewDelegate);
     view_ = new AppListView(delegate_.get());
