@@ -9,6 +9,7 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "net/base/net_errors.h"
@@ -48,9 +49,14 @@ void AwCookieAccessPolicy::SetShouldAcceptCookies(bool allow) {
 
 bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     int render_process_id,
-    int render_frame_id) {
+    int render_frame_id,
+    int frame_tree_node_id) {
   std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
-      AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
+      (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId)
+          ? AwContentsIoThreadClient::FromID(frame_tree_node_id)
+          : AwContentsIoThreadClient::FromID(render_process_id,
+                                             render_frame_id);
+
   if (!io_thread_client) {
     return false;
   }
@@ -60,20 +66,23 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
 bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     const net::URLRequest& request) {
   int child_id = 0;
-  int frame_id = 0;
+  int render_frame_id = 0;
+  int frame_tree_node_id = content::RenderFrameHost::kNoFrameTreeNodeId;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
     child_id = info->GetChildID();
-    frame_id = info->GetRenderFrameID();
+    render_frame_id = info->GetRenderFrameID();
+    frame_tree_node_id = info->GetFrameTreeNodeId();
   } else {
     const WebSocketHandshakeRequestInfo* websocket_info =
         WebSocketHandshakeRequestInfo::ForRequest(&request);
     if (!websocket_info)
       return false;
     child_id = websocket_info->GetChildId();
-    frame_id = websocket_info->GetRenderFrameId();
+    render_frame_id = websocket_info->GetRenderFrameId();
   }
-  return GetShouldAcceptThirdPartyCookies(child_id, frame_id);
+  return GetShouldAcceptThirdPartyCookies(child_id, render_frame_id,
+                                          frame_tree_node_id);
 }
 
 bool AwCookieAccessPolicy::OnCanGetCookies(const net::URLRequest& request,
@@ -100,8 +109,9 @@ bool AwCookieAccessPolicy::AllowGetCookie(const GURL& url,
                                           int render_process_id,
                                           int render_frame_id) {
   bool global = GetShouldAcceptCookies();
-  bool thirdParty =
-      GetShouldAcceptThirdPartyCookies(render_process_id, render_frame_id);
+  bool thirdParty = GetShouldAcceptThirdPartyCookies(
+      render_process_id, render_frame_id,
+      content::RenderFrameHost::kNoFrameTreeNodeId);
   return AwStaticCookiePolicy(global, thirdParty).AllowGet(url, first_party);
 }
 
@@ -113,8 +123,9 @@ bool AwCookieAccessPolicy::AllowSetCookie(const GURL& url,
                                           int render_frame_id,
                                           const net::CookieOptions& options) {
   bool global = GetShouldAcceptCookies();
-  bool thirdParty =
-      GetShouldAcceptThirdPartyCookies(render_process_id, render_frame_id);
+  bool thirdParty = GetShouldAcceptThirdPartyCookies(
+      render_process_id, render_frame_id,
+      content::RenderFrameHost::kNoFrameTreeNodeId);
   return AwStaticCookiePolicy(global, thirdParty).AllowSet(url, first_party);
 }
 
