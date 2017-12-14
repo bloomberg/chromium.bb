@@ -21,8 +21,9 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
  public:
   virtual ~CSSStyleVariableReferenceValue() = default;
 
-  static CSSStyleVariableReferenceValue* Create(const String& variable,
-                                                CSSUnparsedValue* fallback) {
+  static CSSStyleVariableReferenceValue* Create(
+      const String& variable,
+      CSSUnparsedValue* fallback = nullptr) {
     return new CSSStyleVariableReferenceValue(variable, fallback);
   }
 

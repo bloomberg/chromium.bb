@@ -11,9 +11,9 @@
 const gValidTestArgs = [
   { args: [], desc: 'no arguments' },
   { args: [''], desc: 'an empty string' },
-  { args: [createReferenceValue('--foo', null)], desc: 'a CSSVariableReferenceValue' },
+  { args: [new CSSVariableReferenceValue('--foo')], desc: 'a CSSVariableReferenceValue' },
   {
-    args: ['foo', 'bar', createReferenceValue('--A', null), 'baz', createReferenceValue('--B', null)],
+    args: ['foo', 'bar', new CSSVariableReferenceValue('--A'), 'baz', new CSSVariableReferenceValue('--B')],
     desc: 'mix of strings and CSSVariableReferenceValues'
   },
 ];
