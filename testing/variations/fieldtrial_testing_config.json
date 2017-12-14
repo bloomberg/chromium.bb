@@ -506,15 +506,52 @@
             "platforms": [
                 "chromeos",
                 "linux",
+                "mac",
                 "win"
             ],
             "experiments": [
                 {
-                    "name": "EnabledWithGoogleBranding",
+                    "name": "EnabledWithGoogleBranding_Launched",
                     "enable_features": [
-                        "AutofillUpstreamRequestCvcIfMissing",
-                        "AutofillUpstreamShowGoogleLogo",
-                        "AutofillUpstreamShowNewUi"
+                        "AutofillUpstreamRequestCvcIfMissing"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillUpstreamSendDetectedValues": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUpstreamSendDetectedValues"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillUpstreamSendPanFirstSix": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUpstreamSendPanFirstSix"
                     ]
                 }
             ]
