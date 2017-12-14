@@ -11,7 +11,6 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/payments/mojom/payment_request_data.mojom.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -21,19 +20,20 @@ class AutofillProfile;
 namespace payments {
 
 struct BasicCardResponse;
+struct PaymentAddress;
 class PaymentMethodData;
 
 namespace data_util {
 
-// Helper function to get an instance of PaymentAddressPtr from an autofill
+// Helper function to get an instance of web::PaymentAddress from an autofill
 // profile.
-mojom::PaymentAddressPtr GetPaymentAddressFromAutofillProfile(
+PaymentAddress GetPaymentAddressFromAutofillProfile(
     const autofill::AutofillProfile& profile,
     const std::string& app_locale);
 
 // Helper function to get an instance of web::BasicCardResponse from an autofill
 // credit card.
-std::unique_ptr<BasicCardResponse> GetBasicCardResponseFromAutofillCreditCard(
+BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
     const autofill::CreditCard& card,
     const base::string16& cvc,
     const autofill::AutofillProfile& billing_profile,

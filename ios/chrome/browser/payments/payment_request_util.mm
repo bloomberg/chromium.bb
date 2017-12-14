@@ -15,7 +15,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
@@ -61,8 +60,7 @@ std::unique_ptr<base::DictionaryValue> PaymentResponseToDictionaryValue(
                                            : std::make_unique<base::Value>());
   result->Set(kPaymentResponseShippingAddress,
               response.shipping_address
-                  ? payments::PaymentAddressToDictionaryValue(
-                        *response.shipping_address)
+                  ? response.shipping_address->ToDictionaryValue()
                   : std::make_unique<base::Value>());
   result->SetString(kPaymentResponseShippingOption, response.shipping_option);
   result->SetString(kPaymentResponsePayerName, response.payer_name);

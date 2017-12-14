@@ -103,9 +103,8 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
 
   DCHECK(payment_request->web_payment_request().details.total);
   params_to_payment_app->SetDictionary(
-      kTotal,
-      PaymentCurrencyAmountToDictionaryValue(
-          *(payment_request->web_payment_request().details.total->amount)));
+      kTotal, payment_request->web_payment_request()
+                  .details.total->amount.ToDictionaryValue());
 
   params_to_payment_app->SetList(
       kModifiers,
