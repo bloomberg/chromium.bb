@@ -112,6 +112,14 @@ const char kProfilingFile[] = "profiling-file";
 const char kDisableUsbKeyboardDetect[]      = "disable-usb-keyboard-detect";
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// The /dev/shm partition is too small in certain VM environments, causing
+// Chrome to fail or crash (see http://crbug.com/715363). Use this flag to
+// work-around this issue (a temporary directory will always be used to create
+// anonymous shared memory files).
+const char kDisableDevShmUsage[] = "disable-dev-shm-usage";
+#endif
+
 #if defined(OS_POSIX)
 // Used for turning on Breakpad crash reporting in a debug environment where
 // crash reporting is typically compiled but disabled.

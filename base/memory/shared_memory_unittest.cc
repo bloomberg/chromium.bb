@@ -10,6 +10,8 @@
 #include <memory>
 
 #include "base/atomicops.h"
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/process/kill.h"
@@ -100,12 +102,36 @@ const char MultipleThreadMain::s_test_name_[] =
     "SharedMemoryOpenThreadTest";
 #endif  // !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
 
+enum class Mode {
+  Default,
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  DisableDevShm = 1,
+#endif
+};
+
+class SharedMemoryTest : public ::testing::TestWithParam<Mode> {
+ public:
+  void SetUp() override {
+    switch (GetParam()) {
+      case Mode::Default:
+        break;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+      case Mode::DisableDevShm:
+        CommandLine* cmdline = CommandLine::ForCurrentProcess();
+        cmdline->AppendSwitch(switches::kDisableDevShmUsage);
+        break;
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    }
+  }
+};
+
 }  // namespace
 
 // Android/Mac/Fuchsia doesn't support SharedMemory::Open/Delete/
 // CreateNamedDeprecated(openExisting=true)
 #if !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
-TEST(SharedMemoryTest, OpenClose) {
+
+TEST_P(SharedMemoryTest, OpenClose) {
   const uint32_t kDataSize = 1024;
   std::string test_name = "SharedMemoryOpenCloseTest";
 
@@ -153,7 +179,7 @@ TEST(SharedMemoryTest, OpenClose) {
   EXPECT_TRUE(rv);
 }
 
-TEST(SharedMemoryTest, OpenExclusive) {
+TEST_P(SharedMemoryTest, OpenExclusive) {
   const uint32_t kDataSize = 1024;
   const uint32_t kDataSize2 = 2048;
   std::ostringstream test_name_stream;
@@ -221,7 +247,7 @@ TEST(SharedMemoryTest, OpenExclusive) {
 #endif  // !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
 
 // Check that memory is still mapped after its closed.
-TEST(SharedMemoryTest, CloseNoUnmap) {
+TEST_P(SharedMemoryTest, CloseNoUnmap) {
   const size_t kDataSize = 4096;
 
   SharedMemory memory;
@@ -246,7 +272,7 @@ TEST(SharedMemoryTest, CloseNoUnmap) {
 #if !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
 // Create a set of N threads to each open a shared memory segment and write to
 // it. Verify that they are always reading/writing consistent data.
-TEST(SharedMemoryTest, MultipleThreads) {
+TEST_P(SharedMemoryTest, MultipleThreads) {
   const int kNumThreads = 5;
 
   MultipleThreadMain::CleanUp();
@@ -287,7 +313,7 @@ TEST(SharedMemoryTest, MultipleThreads) {
 // Allocate private (unique) shared memory with an empty string for a
 // name.  Make sure several of them don't point to the same thing as
 // we might expect if the names are equal.
-TEST(SharedMemoryTest, AnonymousPrivate) {
+TEST_P(SharedMemoryTest, AnonymousPrivate) {
   int i, j;
   int count = 4;
   bool rv;
@@ -328,7 +354,7 @@ TEST(SharedMemoryTest, AnonymousPrivate) {
   }
 }
 
-TEST(SharedMemoryTest, GetReadOnlyHandle) {
+TEST_P(SharedMemoryTest, GetReadOnlyHandle) {
   StringPiece contents = "Hello World";
 
   SharedMemory writable_shmem;
@@ -430,7 +456,7 @@ TEST(SharedMemoryTest, GetReadOnlyHandle) {
 #endif  // defined(OS_POSIX) || defined(OS_WIN)
 }
 
-TEST(SharedMemoryTest, ShareToSelf) {
+TEST_P(SharedMemoryTest, ShareToSelf) {
   StringPiece contents = "Hello World";
 
   SharedMemory shmem;
@@ -461,7 +487,7 @@ TEST(SharedMemoryTest, ShareToSelf) {
                         contents.size()));
 }
 
-TEST(SharedMemoryTest, ShareWithMultipleInstances) {
+TEST_P(SharedMemoryTest, ShareWithMultipleInstances) {
   static const StringPiece kContents = "Hello World";
 
   SharedMemory shmem;
@@ -505,7 +531,7 @@ TEST(SharedMemoryTest, ShareWithMultipleInstances) {
   ASSERT_EQ(StringPiece(ToLowerASCII(kContents)), readonly_contents);
 }
 
-TEST(SharedMemoryTest, MapAt) {
+TEST_P(SharedMemoryTest, MapAt) {
   ASSERT_TRUE(SysInfo::VMAllocationGranularity() >= sizeof(uint32_t));
   const size_t kCount = SysInfo::VMAllocationGranularity();
   const size_t kDataSize = kCount * sizeof(uint32_t);
@@ -531,7 +557,7 @@ TEST(SharedMemoryTest, MapAt) {
   }
 }
 
-TEST(SharedMemoryTest, MapTwice) {
+TEST_P(SharedMemoryTest, MapTwice) {
   const uint32_t kDataSize = 1024;
   SharedMemory memory;
   bool rv = memory.CreateAndMapAnonymous(kDataSize);
@@ -548,7 +574,7 @@ TEST(SharedMemoryTest, MapTwice) {
 // This test is not applicable for iOS (crbug.com/399384).
 #if !defined(OS_IOS)
 // Create a shared memory object, mmap it, and mprotect it to PROT_EXEC.
-TEST(SharedMemoryTest, AnonymousExecutable) {
+TEST_P(SharedMemoryTest, AnonymousExecutable) {
   const uint32_t kTestSize = 1 << 16;
 
   SharedMemory shared_memory;
@@ -588,7 +614,7 @@ class ScopedUmaskSetter {
 };
 
 // Create a shared memory object, check its permissions.
-TEST(SharedMemoryTest, FilePermissionsAnonymous) {
+TEST_P(SharedMemoryTest, FilePermissionsAnonymous) {
   const uint32_t kTestSize = 1 << 8;
 
   SharedMemory shared_memory;
@@ -614,7 +640,7 @@ TEST(SharedMemoryTest, FilePermissionsAnonymous) {
 }
 
 // Create a shared memory object, check its permissions.
-TEST(SharedMemoryTest, FilePermissionsNamed) {
+TEST_P(SharedMemoryTest, FilePermissionsNamed) {
   const uint32_t kTestSize = 1 << 8;
 
   SharedMemory shared_memory;
@@ -645,7 +671,7 @@ TEST(SharedMemoryTest, FilePermissionsNamed) {
 // Map() will return addresses which are aligned to the platform page size, this
 // varies from platform to platform though.  Since we'd like to advertise a
 // minimum alignment that callers can count on, test for it here.
-TEST(SharedMemoryTest, MapMinimumAlignment) {
+TEST_P(SharedMemoryTest, MapMinimumAlignment) {
   static const int kDataSize = 8192;
 
   SharedMemory shared_memory;
@@ -656,7 +682,7 @@ TEST(SharedMemoryTest, MapMinimumAlignment) {
 }
 
 #if defined(OS_WIN)
-TEST(SharedMemoryTest, UnsafeImageSection) {
+TEST_P(SharedMemoryTest, UnsafeImageSection) {
   const char kTestSectionName[] = "UnsafeImageSection";
   wchar_t path[MAX_PATH];
   EXPECT_GT(::GetModuleFileName(nullptr, path, arraysize(path)), 0U);
@@ -784,7 +810,7 @@ MULTIPROCESS_TEST_MAIN(SharedMemoryTestMain) {
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID) && !defined(OS_MACOSX) &&
         // !defined(OS_FUCHSIA)
 
-TEST(SharedMemoryTest, MappedId) {
+TEST_P(SharedMemoryTest, MappedId) {
   const uint32_t kDataSize = 1024;
   SharedMemory memory;
   SharedMemoryCreateOptions options;
@@ -808,5 +834,14 @@ TEST(SharedMemoryTest, MappedId) {
   memory.Unmap();
   EXPECT_TRUE(memory.mapped_id().is_empty());
 }
+
+INSTANTIATE_TEST_CASE_P(Default,
+                        SharedMemoryTest,
+                        ::testing::Values(Mode::Default));
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+INSTANTIATE_TEST_CASE_P(SkipDevShm,
+                        SharedMemoryTest,
+                        ::testing::Values(Mode::DisableDevShm));
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 }  // namespace base
