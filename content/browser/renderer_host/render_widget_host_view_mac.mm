@@ -1435,6 +1435,16 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
     viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
+  if (repaint_state_ == RepaintState::Paused) {
+    gfx::Size frame_size = gfx::ConvertSizeToDIP(
+        frame.metadata.device_scale_factor, frame.size_in_pixels());
+    gfx::Size view_size = gfx::Size(cocoa_view_.bounds.size);
+    if (frame_size == view_size || render_widget_host_->auto_resize_enabled()) {
+      NSDisableScreenUpdates();
+      repaint_state_ = RepaintState::ScreenUpdatesDisabled;
+    }
+  }
+
   last_frame_root_background_color_ = frame.metadata.root_background_color;
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
 
@@ -1754,7 +1764,11 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
     return;
 
   // Wait for a frame of the right size to come in.
+  repaint_state_ = RepaintState::Paused;
   render_widget_host_->PauseForPendingResizeOrRepaints();
+  if (repaint_state_ == RepaintState::ScreenUpdatesDisabled)
+    NSEnableScreenUpdates();
+  repaint_state_ = RepaintState::None;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
