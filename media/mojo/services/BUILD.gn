@@ -225,6 +225,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "media_metrics_provider_unittest.cc",
     "mojo_audio_input_stream_unittest.cc",
     "mojo_audio_output_stream_provider_unittest.cc",
     "mojo_audio_output_stream_unittest.cc",

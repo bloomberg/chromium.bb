@@ -72,6 +72,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
                       uint32_t frames_decoded,
                       uint32_t frames_dropped,
                       uint32_t frames_decoded_power_efficient,
+                      uint64_t player_id,
                       base::OnceClosure save_done_cb = base::OnceClosure());
 
   // Clear all history from the underlying database. Run |clear_done_cb| when
@@ -122,6 +123,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   void OnGotStatsForSave(
       const url::Origin& top_frame_origin,
       bool is_top_frame,
+      uint64_t player_id,
       const VideoDecodeStatsDB::VideoDescKey& video_key,
       const VideoDecodeStatsDB::DecodeStatsEntry& new_stats,
       base::OnceClosure save_done_cb,
@@ -136,6 +138,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // |past_stats| predicts |new_stats|.
   void ReportUkmMetrics(const url::Origin& top_frame_origin,
                         bool is_top_frame,
+                        uint64_t player_id,
                         const VideoDecodeStatsDB::VideoDescKey& video_key,
                         const VideoDecodeStatsDB::DecodeStatsEntry& new_stats,
                         VideoDecodeStatsDB::DecodeStatsEntry* past_stats);

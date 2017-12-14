@@ -5,6 +5,9 @@
 #ifndef MEDIA_MOJO_SERVICES_MEDIA_METRICS_PROVIDER_H_
 #define MEDIA_MOJO_SERVICES_MEDIA_METRICS_PROVIDER_H_
 
+#include <stdint.h>
+
+#include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "url/origin.h"
@@ -26,17 +29,27 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
 
  private:
   // mojom::MediaMetricsProvider implementation:
+  void Initialize(bool is_mse,
+                  bool is_top_frame,
+                  const url::Origin& untrusted_top_origin) override;
+  void OnError(PipelineStatus status) override;
   void AcquireWatchTimeRecorder(
       mojom::PlaybackPropertiesPtr properties,
       mojom::WatchTimeRecorderRequest request) override;
   void AcquireVideoDecodeStatsRecorder(
-      const url::Origin& untrusted_top_frame_origin,
-      bool is_top_frame,
       mojom::VideoDecodeStatsRecorderRequest request) override;
 
   // Session unique ID which maps to a given WebMediaPlayerImpl instances. Used
   // to coordinate multiply logged events with a singly logged metric.
-  const uint64_t playback_id_;
+  const uint64_t player_id_;
+
+  PipelineStatus pipeline_status_ = PIPELINE_OK;
+
+  // The values below are only set if |initialized_| is true.
+  bool initialized_ = false;
+  bool is_mse_;
+  bool is_top_frame_;
+  url::Origin untrusted_top_origin_;
 
   VideoDecodePerfHistory* const perf_history_;
 

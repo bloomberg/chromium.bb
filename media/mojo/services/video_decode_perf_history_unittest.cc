@@ -10,12 +10,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "media/capabilities/video_decode_stats_db.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+using UkmEntry = ukm::builders::Media_VideoDecodePerfRecord;
 
 namespace {
 
@@ -26,6 +30,7 @@ const bool kIsPowerEfficient = true;
 const bool kIsNotPowerEfficient = false;
 const url::Origin kOrigin = url::Origin::Create(GURL("http://example.com"));
 const bool kIsTopFrame = true;
+const uint64_t kPlayerId = 1234u;
 
 }  // namespace
 
@@ -74,7 +79,7 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
       std::move(get_stats_cb).Run(true, nullptr);
     } else {
       std::move(get_stats_cb)
-          .Run(true, base::MakeUnique<DecodeStatsEntry>(entry_it->second));
+          .Run(true, std::make_unique<DecodeStatsEntry>(entry_it->second));
     }
   }
 
@@ -109,6 +114,7 @@ class FakeVideoDecodeStatsDBFactory : public VideoDecodeStatsDBFactory {
 class VideoDecodePerfHistoryTest : public testing::Test {
  public:
   void SetUp() override {
+    test_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
     perf_history_ = std::make_unique<VideoDecodePerfHistory>(
         std::make_unique<FakeVideoDecodeStatsDBFactory>());
   }
@@ -163,6 +169,8 @@ class VideoDecodePerfHistoryTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
+
   // The VideoDecodeStatsReporter being tested.
   std::unique_ptr<VideoDecodePerfHistory> perf_history_;
 };
@@ -201,12 +209,14 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
       kFramesDecoded * kMaxSmoothDroppedFramesPercent + 1;
 
   // Add the entries.
-  perf_history_->SavePerfRecord(
-      kOrigin, kIsTopFrame, kKnownProfile, kKownSize, kSmoothFrameRate,
-      kFramesDecoded, kSmoothFramesDropped, kNotPowerEfficientFramesDecoded);
-  perf_history_->SavePerfRecord(
-      kOrigin, kIsTopFrame, kKnownProfile, kKownSize, kNotSmoothFrameRate,
-      kFramesDecoded, kNotSmoothFramesDropped, kNotPowerEfficientFramesDecoded);
+  perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kKnownProfile, kKownSize,
+                                kSmoothFrameRate, kFramesDecoded,
+                                kSmoothFramesDropped,
+                                kNotPowerEfficientFramesDecoded, kPlayerId);
+  perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kKnownProfile, kKownSize,
+                                kNotSmoothFrameRate, kFramesDecoded,
+                                kNotSmoothFramesDropped,
+                                kNotPowerEfficientFramesDecoded, kPlayerId);
 
   // Verify perf history returns is_smooth = true for the smooth entry.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
@@ -275,17 +285,18 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
       kFramesDecoded * kMaxSmoothDroppedFramesPercent + 1;
 
   // Add the entries.
-  perf_history_->SavePerfRecord(
-      kOrigin, kIsTopFrame, kPowerEfficientProfile, kKownSize, kSmoothFrameRate,
-      kFramesDecoded, kSmoothFramesDropped, kPowerEfficientFramesDecoded);
+  perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kPowerEfficientProfile,
+                                kKownSize, kSmoothFrameRate, kFramesDecoded,
+                                kSmoothFramesDropped,
+                                kPowerEfficientFramesDecoded, kPlayerId);
   perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kNotPowerEfficientProfile,
                                 kKownSize, kSmoothFrameRate, kFramesDecoded,
                                 kSmoothFramesDropped,
-                                kNotPowerEfficientFramesDecoded);
+                                kNotPowerEfficientFramesDecoded, kPlayerId);
   perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kPowerEfficientProfile,
                                 kKownSize, kNotSmoothFrameRate, kFramesDecoded,
                                 kNotSmoothFramesDropped,
-                                kPowerEfficientFramesDecoded);
+                                kPowerEfficientFramesDecoded, kPlayerId);
 
   // Verify perf history returns is_smooth = true, is_power_efficient = true.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
@@ -378,7 +389,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
   const int kFramesPowerEfficient = kFramesDecoded;
   perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kProfile, kSize,
                                 kFrameRate, kFramesDecoded, kManyFramesDropped,
-                                kFramesPowerEfficient);
+                                kFramesPowerEfficient, kPlayerId);
 
   // Verify its there before we ClearHistory(). Note that perf is NOT smooth.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsPowerEfficient));
@@ -412,6 +423,23 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
     base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
     run_loop.Run();
   }
+
+  const auto& entries = test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_recorder_->ExpectEntrySourceHasUrl(entry, kOrigin.GetURL());
+
+#define EXPECT_UKM(name, value) \
+  test_recorder_->ExpectEntryMetric(entry, name, value)
+
+    EXPECT_UKM(UkmEntry::kVideo_InTopFrameName, kIsTopFrame);
+    EXPECT_UKM(UkmEntry::kVideo_PlayerIDName, kPlayerId);
+    EXPECT_UKM(UkmEntry::kVideo_CodecProfileName, kProfile);
+    EXPECT_UKM(UkmEntry::kVideo_FramesPerSecondName, kFrameRate);
+#undef EXPECT_UKM
+
+    // TODO(chcunningham): Expand UKM tests to include absence tests.
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(VaryDBInitTiming,
@@ -443,7 +471,7 @@ TEST_F(VideoDecodePerfHistoryTest, AppendWhileDestroying) {
   // NOT smooth performance.
   perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kProfile, kSize,
                                 kFrameRate, kFramesDecoded, kManyFramesDropped,
-                                kFramesPowerEfficient);
+                                kFramesPowerEfficient, kPlayerId);
 
   // Expect that NOT smooth is eventually reported (after DB reinitialization
   // completes) when we query this stream description.

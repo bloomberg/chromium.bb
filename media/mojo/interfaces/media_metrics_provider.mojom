@@ -14,6 +14,18 @@ import "url/mojo/origin.mojom";
 // Provider interface used to avoid having one time setters on each interface.
 // Each recorder will be stamped with an ID which can be used for linking UKM.
 interface MediaMetricsProvider {
+  // Assigns a playback ID and sets up this provider instance with information
+  // needed to make UKM reports. No other methods may be called until after
+  // Initialize() has been called.
+  //
+  // TODO(crbug.com/787209): Stop getting origin from the renderer.
+  Initialize(bool is_mse, bool is_top_frame,
+             url.mojom.Origin untrusted_top_origin);
+
+  // Called when a playback ends in error. The status is reported to UKM when
+  // the provider is destructed.
+  OnError(PipelineStatus status);
+
   // Creates a WatchTimeRecorder instance using |properties|. If any of those
   // properties changes, a new recorder should be requested.
   AcquireWatchTimeRecorder(PlaybackProperties properties,
@@ -24,7 +36,5 @@ interface MediaMetricsProvider {
   // top-frame origin. |is_top_frame| signals whether the video is hosted in the
   // top frame vs some inner frame to help interpret the origin.
   // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  AcquireVideoDecodeStatsRecorder(url.mojom.Origin untrusted_top_frame_origin,
-                                  bool is_top_frame,
-                                  VideoDecodeStatsRecorder& recorder);
+  AcquireVideoDecodeStatsRecorder(VideoDecodeStatsRecorder& recorder);
 };

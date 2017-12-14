@@ -816,14 +816,51 @@ be describing additional metrics about the same event.
   <metric name="AudioVideo.SRC"/>
 </event>
 
+<event name="Media.WebMediaPlayerState">
+  <owner>dalecurtis@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Final state of WebMediaPlayerImpl instance. Records only immutable playback
+    properties. Contains a PlaybackID which links to Media.BasicPlayback events.
+  </summary>
+  <metric name="FinalPipelineStatus">
+    <summary>
+      media::PipelineStatus enum value. Always 0 if the playback succeeded; all
+      other values indicate the playback ended in an error.
+    </summary>
+  </metric>
+  <metric name="IsMSE">
+    <summary>
+      Boolean value indicating if this event is for an MSE playback. If false it
+      means this was a SRC playback.
+    </summary>
+  </metric>
+  <metric name="IsTopFrame">
+    <summary>
+      Flag indicating whether the report comes from the top frame or some inner
+      frame. For privacy, metrics from inner frames are recorded with the top
+      frame's origin, so this flag helps separate top frame vs. embedded
+      playbacks.
+    </summary>
+  </metric>
+  <metric name="PlayerID">
+    <summary>
+      ID which corresponds to a given WebMediaPlayerImpl instance. May be linked
+      with Media.BasicPlayback events to understand a playback more deeply.
+    </summary>
+  </metric>
+</event>
+
 <event name="Media.BasicPlayback">
   <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
-    Core metrics associated with a media playback. Only recorded if a playback
-    qualifies for WatchTime recording (see Media.WatchTime metrics). Reported at
-    the time of WebMediaPlayer destruction or render process termination;
-    whichever comes first.
+    Core metrics associated with a media playback through WebMediaPlayerImpl.
+    Reported at the time of WatchTimeRecorder destruction or render process
+    termination; whichever comes first. There will be multiple entries for a
+    given playback; one for every PlaybackProperties change as well as one for
+    foreground and background. Records may be aggregated based on PlayerID and
+    correlated with the Media.WebMediaPlayerState event.
   </summary>
   <metric name="AudioCodec">
     <summary>
@@ -876,6 +913,12 @@ be describing additional metrics about the same event.
       Average number of milliseconds between rebuffering events. Only reported
       if a rebuffering event occurred. Computed by dividing total watch time by
       the number of rebuffering events.
+    </summary>
+  </metric>
+  <metric name="PlayerID">
+    <summary>
+      ID which corresponds to a given WebMediaPlayerImpl instance. May be linked
+      with Media.WebMediaPlayerState events to understand playback more deeply.
     </summary>
   </metric>
   <metric name="RebuffersCount">
@@ -1048,6 +1091,12 @@ be describing additional metrics about the same event.
   <metric name="Video.NaturalWidth">
     <summary>
       Integer representing width of video natural size.
+    </summary>
+  </metric>
+  <metric name="Video.PlayerID">
+    <summary>
+      ID which corresponds to a given WebMediaPlayerImpl instance. May be linked
+      with Media.WebMediaPlayerState events to understand playback more deeply.
     </summary>
   </metric>
 </event>
