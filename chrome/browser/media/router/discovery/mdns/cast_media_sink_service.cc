@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
@@ -117,14 +118,9 @@ void CastMediaSinkService::Start(
       FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::Start,
                                 base::Unretained(impl_.get())));
 
-  // |dns_sd_registry_| is already set to a mock version in unit tests only.
-  // |impl_| must be initialized first because AddObserver might end up calling
-  // |OnDnsSdEvent| right away.
-  if (!dns_sd_registry_) {
-    dns_sd_registry_ = DnsSdRegistry::GetInstance();
-    dns_sd_registry_->AddObserver(this);
-    dns_sd_registry_->RegisterDnsSdListener(kCastServiceType);
-  }
+#if !defined(OS_WIN)
+  StartMdnsDiscovery();
+#endif
 }
 
 std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
@@ -140,6 +136,18 @@ CastMediaSinkService::CreateImpl(
           DiscoveryNetworkMonitor::GetInstance(),
           Profile::FromBrowserContext(browser_context_)->GetRequestContext()),
       base::OnTaskRunnerDeleter(task_runner));
+}
+
+void CastMediaSinkService::StartMdnsDiscovery() {
+  // |dns_sd_registry_| is already set to a mock version in unit tests only.
+  // |impl_| must be initialized first because AddObserver might end up calling
+  // |OnDnsSdEvent| right away.
+  DCHECK(impl_);
+  if (!dns_sd_registry_) {
+    dns_sd_registry_ = DnsSdRegistry::GetInstance();
+    dns_sd_registry_->AddObserver(this);
+    dns_sd_registry_->RegisterDnsSdListener(kCastServiceType);
+  }
 }
 
 void CastMediaSinkService::ForceSinkDiscoveryCallback() {

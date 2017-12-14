@@ -72,18 +72,22 @@ class MockCastMediaSinkService : public CastMediaSinkService {
   MOCK_METHOD1(Start, void(const OnSinksDiscoveredCallback&));
   MOCK_METHOD0(ForceSinkDiscoveryCallback, void());
   MOCK_METHOD0(OnUserGesture, void());
+  MOCK_METHOD0(StartMdnsDiscovery, void());
 };
 
 }  // namespace
 
-class MediaRouterDesktopTest : public MediaRouterMojoTest {
+template <bool enable_cast_discovery>
+class MediaRouterDesktopTestBase : public MediaRouterMojoTest {
  public:
-  MediaRouterDesktopTest() {}
-  ~MediaRouterDesktopTest() override {}
+  MediaRouterDesktopTestBase() {}
+  ~MediaRouterDesktopTestBase() override {}
 
  protected:
   void SetUp() override {
-    feature_list_.InitWithFeatures({kEnableCastDiscovery}, {});
+    if (enable_cast_discovery)
+      feature_list_.InitWithFeatures({kEnableCastDiscovery}, {});
+
     MediaRouterMojoTest::SetUp();
   }
 
@@ -91,12 +95,14 @@ class MediaRouterDesktopTest : public MediaRouterMojoTest {
     auto dial_media_sink_service =
         std::make_unique<MockDialMediaSinkService>(profile());
     dial_media_sink_service_ = dial_media_sink_service.get();
-    EXPECT_CALL(*dial_media_sink_service_, ForceSinkDiscoveryCallback());
 
-    auto cast_media_sink_service =
-        std::make_unique<MockCastMediaSinkService>(profile());
-    cast_media_sink_service_ = cast_media_sink_service.get();
-    EXPECT_CALL(*cast_media_sink_service_, ForceSinkDiscoveryCallback());
+    std::unique_ptr<MockCastMediaSinkService> cast_media_sink_service;
+    if (enable_cast_discovery) {
+      cast_media_sink_service =
+          std::make_unique<MockCastMediaSinkService>(profile());
+      cast_media_sink_service_ = cast_media_sink_service.get();
+    }
+
     return std::unique_ptr<MediaRouterDesktop>(
         new MediaRouterDesktop(profile(), std::move(dial_media_sink_service),
                                std::move(cast_media_sink_service)));
@@ -115,39 +121,52 @@ class MediaRouterDesktopTest : public MediaRouterMojoTest {
   MockDialMediaSinkService* dial_media_sink_service_ = nullptr;
   MockCastMediaSinkService* cast_media_sink_service_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaRouterDesktopTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaRouterDesktopTestBase);
 };
+
+using MediaRouterDesktopTest = MediaRouterDesktopTestBase<true>;
+using MediaRouterDesktopTestCastDiscoveryDisabled =
+    MediaRouterDesktopTestBase<false>;
 
 #if defined(OS_WIN)
 TEST_F(MediaRouterDesktopTest, EnableMdnsAfterEachRegister) {
   EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery()).Times(0);
-  EXPECT_CALL(*dial_media_sink_service(), ForceSinkDiscoveryCallback());
-  EXPECT_CALL(*cast_media_sink_service(), ForceSinkDiscoveryCallback());
+  EXPECT_CALL(*cast_media_sink_service(), StartMdnsDiscovery()).Times(0);
   RegisterExtensionProvider();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(mock_extension_provider_,
-              UpdateMediaSinks(MediaSourceForDesktop().id()));
+  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery()).Times(0);
+  EXPECT_CALL(*cast_media_sink_service(), StartMdnsDiscovery());
+  router()->OnUserGesture();
+  base::RunLoop().RunUntilIdle();
+
+  // EnableMdnsDiscovery() is called on this RegisterExtensionProvider() because
+  // we've already seen an mdns-enabling event.
+  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery()).Times(0);
+  EXPECT_CALL(*cast_media_sink_service(), StartMdnsDiscovery());
+  RegisterExtensionProvider();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(MediaRouterDesktopTestCastDiscoveryDisabled,
+       EnableMdnsAfterEachRegister) {
+  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery()).Times(0);
+  RegisterExtensionProvider();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery());
-  EXPECT_CALL(*dial_media_sink_service(), OnUserGesture());
-  EXPECT_CALL(*cast_media_sink_service(), OnUserGesture());
   router()->OnUserGesture();
   base::RunLoop().RunUntilIdle();
 
   // EnableMdnsDiscovery() is called on this RegisterExtensionProvider() because
   // we've already seen an mdns-enabling event.
   EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery());
-  EXPECT_CALL(*dial_media_sink_service(), ForceSinkDiscoveryCallback());
-  EXPECT_CALL(*cast_media_sink_service(), ForceSinkDiscoveryCallback());
   RegisterExtensionProvider();
   base::RunLoop().RunUntilIdle();
 }
 #endif
 
 TEST_F(MediaRouterDesktopTest, OnUserGesture) {
-#if defined(OS_WIN)
-  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery());
-#endif
   EXPECT_CALL(mock_extension_provider_,
               UpdateMediaSinks(MediaSourceForDesktop().id()));
   EXPECT_CALL(*dial_media_sink_service(), OnUserGesture());

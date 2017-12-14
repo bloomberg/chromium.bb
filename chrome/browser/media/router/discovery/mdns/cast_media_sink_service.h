@@ -70,6 +70,16 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // Marked virtual for tests.
   virtual std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
   CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb);
+
+  // Registers with DnsSdRegistry to listen for Cast devices. Note that this is
+  // called on |Start()| on all platforms except for Windows. On Windows, this
+  // method should be invoked either if enabling mDNS will not trigger a
+  // firewall prompt, or if the resulting firewall prompt can be associated with
+  // a user gesture (e.g. opening the Media Router dialog).
+  // Subsequent invocations of this method are no-op.
+  // Marked virtual for tests.
+  virtual void StartMdnsDiscovery();
+
   void SetDnsSdRegistryForTest(DnsSdRegistry* registry);
 
  private:
