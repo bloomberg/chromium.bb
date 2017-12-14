@@ -120,6 +120,7 @@ class CORE_EXPORT InspectorCSSAgent final
   void DocumentDetached(Document*);
   void FontsUpdated();
   void SetCoverageEnabled(bool);
+  void WillChangeStyleElement(Element*);
 
   void enable(std::unique_ptr<EnableCallback>) override;
   protocol::Response disable() override;

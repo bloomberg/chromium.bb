@@ -59,6 +59,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/frame/LocalFrame.h"
@@ -2346,6 +2347,10 @@ void InspectorCSSAgent::SetCoverageEnabled(bool enabled) {
 
   for (Document* document : dom_agent_->Documents())
     document->GetStyleEngine().SetRuleUsageTracker(tracker_);
+}
+
+void InspectorCSSAgent::WillChangeStyleElement(Element* element) {
+  resource_container_->EraseStyleElementContent(DOMNodeIds::IdForNode(element));
 }
 
 Response InspectorCSSAgent::startRuleUsageTracking() {

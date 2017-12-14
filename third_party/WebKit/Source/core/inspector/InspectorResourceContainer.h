@@ -32,6 +32,7 @@ class CORE_EXPORT InspectorResourceContainer
 
   void StoreStyleElementContent(int backend_node_id, const String& content);
   bool LoadStyleElementContent(int backend_node_id, String* content);
+  void EraseStyleElementContent(int backend_node_id);
 
  private:
   Member<InspectedFrames> inspected_frames_;
