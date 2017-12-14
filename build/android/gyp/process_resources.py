@@ -488,11 +488,24 @@ def _DidCrunchFail(returncode, stderr):
   return returncode != 0 or stderr
 
 
-def _ZipResources(resource_dirs, zip_path):
+def _GenerateGlobs(pattern):
+  # This function processes the aapt ignore assets pattern into a list of globs
+  # to be used to exclude files on the python side. It removes the '!', which is
+  # used by aapt to mean 'not chatty' so it does not output if the file is
+  # ignored (we dont output anyways, so it is not required). This function does
+  # not handle the <dir> and <file> prefixes used by aapt and are assumed not to
+  # be included in the pattern string.
+  return pattern.replace('!', '').split(':')
+
+
+def _ZipResources(resource_dirs, zip_path, ignore_pattern):
   # Python zipfile does not provide a way to replace a file (it just writes
   # another file with the same name). So, first collect all the files to put
   # in the zip (with proper overriding), and then zip them.
+  # ignore_pattern is a string of ':' delimited list of globs used to ignore
+  # files that should not be part of the final resource zip.
   files_to_zip = dict()
+  globs = _GenerateGlobs(ignore_pattern)
   for d in resource_dirs:
     for root, _, files in os.walk(d):
       for f in files:
@@ -501,6 +514,8 @@ def _ZipResources(resource_dirs, zip_path):
         if parent_dir != '.':
           archive_path = os.path.join(parent_dir, f)
         path = os.path.join(root, f)
+        if build_utils.MatchesGlob(archive_path, globs):
+          continue
         files_to_zip[archive_path] = path
   build_utils.DoZip(files_to_zip.iteritems(), zip_path)
 
@@ -844,7 +859,8 @@ def _PackageLibrary(options, dep_subdirs, temp_dir, gen_dir):
     _CrunchDirectory(options.aapt_path, input_dir, crunch_dir)
 
   if options.resource_zip_out:
-    _ZipResources(zip_resource_dirs, options.resource_zip_out)
+    _ZipResources(zip_resource_dirs, options.resource_zip_out,
+                  build_utils.AAPT_IGNORE_PATTERN)
 
   # Only creates an R.txt
   build_utils.CheckOutput(
