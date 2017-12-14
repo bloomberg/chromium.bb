@@ -114,12 +114,13 @@ class MonorailAPI(object):
         self._oauth2_client = oauth2client.client
 
         if service_account_key_json:
-            credentials = self._oauth2_client.GoogleCredentials(service_account_key_json)
+            credentials = self._oauth2_client.GoogleCredentials.from_stream(service_account_key_json)
         else:
             credentials = self._oauth2_client.GoogleCredentials.get_application_default()
 
+        # cache_discovery needs to be disabled because of https://github.com/google/google-api-python-client/issues/299
         self.api = self._api_discovery.build(
-            'monorail', 'v1', discoveryServiceUrl=self._DISCOVERY_URL, credentials=credentials)
+            'monorail', 'v1', discoveryServiceUrl=self._DISCOVERY_URL, credentials=credentials, cache_discovery=False)
 
     def insert_issue(self, issue):
         return self.api.issues().insert(projectId=issue.project_id, body=issue.body).execute()
