@@ -58,6 +58,11 @@ template("create_native_executable_dist") {
   group(_runtime_deps_target_name) {
     forward_variables_from(invoker, [ "deps" ])
     data = _sanitizer_runtimes
+    if (is_component_build || is_asan) {
+      data_deps = [
+        "//build/android:cpplib_stripped",
+      ]
+    }
     write_runtime_deps = _runtime_deps_file
   }
 
