@@ -55,6 +55,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/drop_data.h"
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -117,6 +118,8 @@ const char kCannotRepairPolicyExtension[] =
 
 const char kUnpackedAppsFolder[] = "apps_target";
 const char kManifestFile[] = "manifest.json";
+
+base::FilePath* g_drop_path_for_testing = nullptr;
 
 ExtensionService* GetExtensionService(content::BrowserContext* context) {
   return ExtensionSystem::Get(context)->extension_service();
@@ -235,7 +238,7 @@ class DeveloperPrivateAPI::WebContentsTracker
 
   void WebContentsDestroyed() override {
     if (api_)
-      api_->allowed_unpacked_paths_.erase(web_contents());
+      api_->web_contents_data_.erase(web_contents());
     delete this;
   }
 
@@ -243,6 +246,11 @@ class DeveloperPrivateAPI::WebContentsTracker
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsTracker);
 };
+
+DeveloperPrivateAPI::WebContentsData::WebContentsData() = default;
+DeveloperPrivateAPI::WebContentsData::~WebContentsData() = default;
+DeveloperPrivateAPI::WebContentsData::WebContentsData(WebContentsData&& other) =
+    default;
 
 // static
 BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>*
@@ -462,21 +470,16 @@ DeveloperPrivateAPI::UnpackedRetryId DeveloperPrivateAPI::AddUnpackedPath(
     const base::FilePath& path) {
   DCHECK(web_contents);
   last_unpacked_directory_ = path;
-  IdToPathMap& paths = allowed_unpacked_paths_[web_contents];
-  if (paths.empty()) {
-    // This is the first we've added this WebContents. Track its lifetime so we
-    // can clean up the paths when it is destroyed.
-    // WebContentsTracker manages its own lifetime.
-    new WebContentsTracker(weak_factory_.GetWeakPtr(), web_contents);
-  } else {
-    auto existing = std::find_if(
-        paths.begin(), paths.end(),
-        [path](const std::pair<std::string, base::FilePath>& entry) {
-          return entry.second == path;
-        });
-    if (existing != paths.end())
-      return existing->first;
-  }
+  WebContentsData* data = GetOrCreateWebContentsData(web_contents);
+  IdToPathMap& paths = data->allowed_unpacked_paths;
+  auto existing =
+      std::find_if(paths.begin(), paths.end(),
+                   [path](const std::pair<std::string, base::FilePath>& entry) {
+                     return entry.second == path;
+                   });
+  if (existing != paths.end())
+    return existing->first;
+
   UnpackedRetryId id = base::GenerateGUID();
   paths[id] = path;
   return id;
@@ -485,19 +488,52 @@ DeveloperPrivateAPI::UnpackedRetryId DeveloperPrivateAPI::AddUnpackedPath(
 base::FilePath DeveloperPrivateAPI::GetUnpackedPath(
     content::WebContents* web_contents,
     const UnpackedRetryId& id) const {
-  auto iter = allowed_unpacked_paths_.find(web_contents);
-  if (iter == allowed_unpacked_paths_.end())
+  const WebContentsData* data = GetWebContentsData(web_contents);
+  if (!data)
     return base::FilePath();
-  const IdToPathMap& paths = iter->second;
+  const IdToPathMap& paths = data->allowed_unpacked_paths;
   auto path_iter = paths.find(id);
   if (path_iter == paths.end())
     return base::FilePath();
   return path_iter->second;
 }
 
+void DeveloperPrivateAPI::SetDraggedPath(content::WebContents* web_contents,
+                                         const base::FilePath& dragged_path) {
+  WebContentsData* data = GetOrCreateWebContentsData(web_contents);
+  data->dragged_path = dragged_path;
+}
+
+base::FilePath DeveloperPrivateAPI::GetDraggedPath(
+    content::WebContents* web_contents) const {
+  const WebContentsData* data = GetWebContentsData(web_contents);
+  return data ? data->dragged_path : base::FilePath();
+}
+
 void DeveloperPrivateAPI::RegisterNotifications() {
   EventRouter::Get(profile_)->RegisterObserver(
       this, developer::OnItemStateChanged::kEventName);
+}
+
+const DeveloperPrivateAPI::WebContentsData*
+DeveloperPrivateAPI::GetWebContentsData(
+    content::WebContents* web_contents) const {
+  auto iter = web_contents_data_.find(web_contents);
+  return iter == web_contents_data_.end() ? nullptr : &iter->second;
+}
+
+DeveloperPrivateAPI::WebContentsData*
+DeveloperPrivateAPI::GetOrCreateWebContentsData(
+    content::WebContents* web_contents) {
+  auto iter = web_contents_data_.find(web_contents);
+  if (iter != web_contents_data_.end())
+    return &iter->second;
+
+  // This is the first we've added this WebContents. Track its lifetime so we
+  // can clean up the paths when it is destroyed.
+  // WebContentsTracker manages its own lifetime.
+  new WebContentsTracker(weak_factory_.GetWeakPtr(), web_contents);
+  return &web_contents_data_[web_contents];
 }
 
 DeveloperPrivateAPI::~DeveloperPrivateAPI() {}
@@ -910,6 +946,17 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
     return RespondLater();
   }
 
+  if (params->options && params->options->use_dragged_path &&
+      *params->options->use_dragged_path) {
+    DeveloperPrivateAPI* api = DeveloperPrivateAPI::Get(browser_context());
+    base::FilePath path = api->GetDraggedPath(web_contents);
+    if (path.empty())
+      return RespondNow(Error("No dragged path"));
+    AddRef();  // Balanced in FileSelected.
+    FileSelected(path);
+    return RespondLater();
+  }
+
   if (!ShowPicker(ui::SelectFileDialog::SELECT_FOLDER,
                   l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
                   ui::SelectFileDialog::FileTypeInfo(),
@@ -967,6 +1014,47 @@ void DeveloperPrivateLoadUnpackedFunction::OnGotManifestError(
   Respond(OneArgument(
       CreateLoadError(file_path, error, line_number, manifest, retry_guid_)
           .ToValue()));
+}
+
+DeveloperPrivateNotifyDragInstallInProgressFunction::
+    DeveloperPrivateNotifyDragInstallInProgressFunction() = default;
+DeveloperPrivateNotifyDragInstallInProgressFunction::
+    ~DeveloperPrivateNotifyDragInstallInProgressFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateNotifyDragInstallInProgressFunction::Run() {
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents)
+    return RespondNow(Error(kCouldNotFindWebContentsError));
+
+  const base::FilePath* file_path = nullptr;
+  if (g_drop_path_for_testing) {
+    file_path = g_drop_path_for_testing;
+  } else {
+    content::DropData* drop_data = web_contents->GetDropData();
+    if (!drop_data)
+      return RespondNow(Error("No current drop data."));
+
+    if (drop_data->filenames.empty())
+      return RespondNow(Error("No files being dragged."));
+
+    const ui::FileInfo& file_info = drop_data->filenames.front();
+    file_path = &file_info.path;
+  }
+
+  DCHECK(file_path);
+  // Note(devlin): we don't do further validation that the file is a directory
+  // here. This is validated in the JS, but if that fails, then trying to load
+  // the file as an unpacked extension will also fail (reasonably gracefully).
+  DeveloperPrivateAPI::Get(browser_context())
+      ->SetDraggedPath(web_contents, *file_path);
+  return RespondNow(NoArguments());
+}
+
+// static
+void DeveloperPrivateNotifyDragInstallInProgressFunction::SetDropPathForTesting(
+    base::FilePath* file_path) {
+  g_drop_path_for_testing = file_path;
 }
 
 bool DeveloperPrivateChooseEntryFunction::ShowPicker(

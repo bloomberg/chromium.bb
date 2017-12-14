@@ -125,6 +125,7 @@ cr.define('extensions', function() {
     },
 
     listeners: {
+      'load-error': 'onLoadError_',
       'view-exit-finish': 'onViewExitFinish_',
     },
 

@@ -60,7 +60,6 @@
         on-pack-tap="onPackTap_" delegate="[[delegate]]"
         on-cr-toolbar-menu-tap="onMenuButtonTap_"
         on-search-changed="onFilterChanged_"
-        on-load-error="onLoadError_"
 <if expr="chromeos">
         on-kiosk-tap="onKioskTap_"
         kiosk-enabled="[[kioskEnabled_]]"
@@ -81,8 +80,7 @@
           delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
           filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view"
           apps="[[apps_]]" extensions="[[extensions_]]"
-          on-show-install-warnings="onShowInstallWarnings_"
-          on-load-error="onLoadError_">
+          on-show-install-warnings="onShowInstallWarnings_">
       </extensions-item-list>
       <template id="details-view" is="cr-lazy-render">
         <extensions-detail-view delegate="[[delegate]]" slot="view"
