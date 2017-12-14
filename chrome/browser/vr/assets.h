@@ -12,6 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
+#include "chrome/browser/vr/assets_load_status.h"
+
+class SkBitmap;
 
 namespace base {
 class DictionaryValue;
@@ -21,7 +24,7 @@ class Version;
 
 namespace vr {
 
-constexpr uint32_t kCompatibleMajorVrAssetsComponentVersion = 0;
+constexpr uint32_t kCompatibleMajorVrAssetsComponentVersion = 1;
 
 class MetricsHelper;
 struct AssetsSingletonTrait;
@@ -35,8 +38,8 @@ struct AssetsSingletonTrait;
 // performed on a worker thread.
 class Assets {
  public:
-  typedef base::OnceCallback<void(bool success,
-                                  std::string environment,
+  typedef base::OnceCallback<void(AssetsLoadStatus status,
+                                  std::unique_ptr<SkBitmap> background_image,
                                   const base::Version& component_version)>
       OnAssetsLoadedCallback;
 

@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/android_vsync_helper.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
+#include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/fps_meter.h"
@@ -177,8 +178,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void ClosePresentationBindings();
 
-  void OnAssetsLoaded(bool success,
-                      std::string environment,
+  void OnAssetsLoaded(vr::AssetsLoadStatus status,
+                      std::unique_ptr<SkBitmap> background_image,
                       const base::Version& component_version);
 
   // samplerExternalOES texture data for WebVR content image.

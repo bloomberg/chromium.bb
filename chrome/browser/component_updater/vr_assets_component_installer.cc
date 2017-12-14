@@ -19,6 +19,7 @@
 #include "base/version.h"
 #include "chrome/browser/vr/assets.h"
 #include "chrome/browser/vr/metrics_helper.h"
+#include "chrome/browser/vr_features.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/component_updater/component_updater_paths.h"
 
@@ -121,7 +122,8 @@ std::string VrAssetsComponentInstallerTraits::GetName() const {
 
 update_client::InstallerAttributes
 VrAssetsComponentInstallerTraits::GetInstallerAttributes() const {
-  return update_client::InstallerAttributes();
+  return {{"compatible_major_version",
+           std::to_string(vr::kCompatibleMajorVrAssetsComponentVersion)}};
 }
 
 std::vector<std::string> VrAssetsComponentInstallerTraits::GetMimeTypes()
@@ -130,12 +132,14 @@ std::vector<std::string> VrAssetsComponentInstallerTraits::GetMimeTypes()
 }
 
 void RegisterVrAssetsComponent(ComponentUpdateService* cus) {
+#if BUILDFLAG(REGISTER_VR_ASSETS_COMPONENT)
   std::unique_ptr<ComponentInstallerPolicy> policy(
       new VrAssetsComponentInstallerTraits());
   auto installer = base::MakeRefCounted<ComponentInstaller>(std::move(policy));
   installer->Register(cus, base::Closure());
   vr::Assets::GetInstance()->GetMetricsHelper()->OnRegisteredComponent();
   VLOG(1) << "Registered VR assets component";
+#endif  // BUILDFLAG(REGISTER_VR_ASSETS_COMPONENT)
 }
 
 }  // namespace component_updater
