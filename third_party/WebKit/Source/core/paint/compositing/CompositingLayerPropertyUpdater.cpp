@@ -49,16 +49,20 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   SetContainerLayerState(mapping->BackgroundLayer());
   SetContainerLayerState(mapping->ChildClippingMaskLayer());
 
-  auto SetContentsLayerState =
-      [&fragment_data, &snapped_paint_offset](GraphicsLayer* graphics_layer) {
-        if (graphics_layer) {
-          graphics_layer->SetLayerState(
-              fragment_data.ContentsProperties(),
-              snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
-        }
-      };
-  SetContentsLayerState(mapping->ScrollingContentsLayer());
-  SetContentsLayerState(mapping->ForegroundLayer());
+  if (mapping->ScrollingContentsLayer()) {
+    auto SetContentsLayerState = [&fragment_data, &snapped_paint_offset](
+                                     GraphicsLayer* graphics_layer) {
+      if (graphics_layer) {
+        graphics_layer->SetLayerState(
+            fragment_data.ContentsProperties(),
+            snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
+      }
+    };
+    SetContentsLayerState(mapping->ScrollingContentsLayer());
+    SetContentsLayerState(mapping->ForegroundLayer());
+  } else {
+    SetContainerLayerState(mapping->ForegroundLayer());
+  }
 
   if (auto* squashing_layer = mapping->SquashingLayer()) {
     squashing_layer->SetLayerState(
