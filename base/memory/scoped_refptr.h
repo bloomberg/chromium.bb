@@ -9,6 +9,7 @@
 
 #include <iosfwd>
 #include <type_traits>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -164,7 +165,7 @@ class scoped_refptr {
   }
 
   // Copy constructor.
-  scoped_refptr(const scoped_refptr<T>& r) : ptr_(r.ptr_) {
+  scoped_refptr(const scoped_refptr& r) : ptr_(r.ptr_) {
     if (ptr_)
       AddRef(ptr_);
   }
@@ -180,13 +181,13 @@ class scoped_refptr {
 
   // Move constructor. This is required in addition to the conversion
   // constructor below in order for clang to warn about pessimizing moves.
-  scoped_refptr(scoped_refptr&& r) : ptr_(r.get()) { r.ptr_ = nullptr; }
+  scoped_refptr(scoped_refptr&& r) noexcept : ptr_(r.ptr_) { r.ptr_ = nullptr; }
 
   // Move conversion constructor.
   template <typename U,
             typename = typename std::enable_if<
                 std::is_convertible<U*, T*>::value>::type>
-  scoped_refptr(scoped_refptr<U>&& r) : ptr_(r.get()) {
+  scoped_refptr(scoped_refptr<U>&& r) noexcept : ptr_(r.ptr_) {
     r.ptr_ = nullptr;
   }
 
@@ -212,48 +213,15 @@ class scoped_refptr {
     return ptr_;
   }
 
-  scoped_refptr<T>& operator=(T* p) {
-    // AddRef first so that self assignment should work
-    if (p)
-      AddRef(p);
-    T* old_ptr = ptr_;
-    ptr_ = p;
-    if (old_ptr)
-      Release(old_ptr);
+  scoped_refptr& operator=(T* p) { return *this = scoped_refptr(p); }
+
+  // Unified assignment operator.
+  scoped_refptr& operator=(scoped_refptr r) noexcept {
+    swap(r);
     return *this;
   }
 
-  scoped_refptr<T>& operator=(const scoped_refptr<T>& r) {
-    return *this = r.ptr_;
-  }
-
-  template <typename U>
-  scoped_refptr<T>& operator=(const scoped_refptr<U>& r) {
-    return *this = r.get();
-  }
-
-  scoped_refptr<T>& operator=(scoped_refptr<T>&& r) {
-    scoped_refptr<T> tmp(std::move(r));
-    tmp.swap(*this);
-    return *this;
-  }
-
-  template <typename U>
-  scoped_refptr<T>& operator=(scoped_refptr<U>&& r) {
-    // We swap with a temporary variable to guarantee that |ptr_| is released
-    // immediately. A naive implementation which swaps |this| and |r| would
-    // unintentionally extend the lifetime of |ptr_| to at least the lifetime of
-    // |r|.
-    scoped_refptr<T> tmp(std::move(r));
-    tmp.swap(*this);
-    return *this;
-  }
-
-  void swap(scoped_refptr<T>& r) {
-    T* tmp = ptr_;
-    ptr_ = r.ptr_;
-    r.ptr_ = tmp;
-  }
+  void swap(scoped_refptr& r) noexcept { std::swap(ptr_, r.ptr_); }
 
   explicit operator bool() const { return ptr_ != nullptr; }
 
@@ -351,7 +319,7 @@ std::ostream& operator<<(std::ostream& out, const scoped_refptr<T>& p) {
 }
 
 template <typename T>
-void swap(scoped_refptr<T>& lhs, scoped_refptr<T>& rhs) {
+void swap(scoped_refptr<T>& lhs, scoped_refptr<T>& rhs) noexcept {
   lhs.swap(rhs);
 }
 
