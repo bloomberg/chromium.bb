@@ -19,9 +19,8 @@ import re
 import shutil
 import subprocess
 import sys
+import xml.etree.ElementTree
 import zipfile
-from xml.etree import ElementTree
-
 
 import generate_v14_compatible_resources
 
@@ -466,7 +465,7 @@ def _DuplicateZhResources(resource_dirs):
         shutil.copyfile(path, hk_path)
 
 def _ExtractPackageFromManifest(manifest_path):
-  doc = ElementTree.parse(manifest_path)
+  doc = xml.etree.ElementTree.parse(manifest_path)
   return doc.getroot().get('package')
 
 
@@ -554,62 +553,45 @@ def _CheckForMissedConfigs(apk_path, check_density, languages):
                            'config (trigger=%s)') % (name, trigger.pattern))
 
 
-def _CreateLinkApkArgs(options):
-  link_command = [
-    options.aapt_path + '2',
-    'link',
+def _CreatePackageApkArgs(options):
+  package_command = [
     '--version-code', options.version_code,
     '--version-name', options.version_name,
-    '--auto-add-overlay',
-    '--no-version-vectors',
-    '-I', options.android_sdk_jar,
-    '-o', options.apk_path,
+    '-f',
+    '-F', options.apk_path,
   ]
 
   if options.proguard_file:
-    link_command += ['--proguard', options.proguard_file]
+    package_command += ['-G', options.proguard_file]
   if options.proguard_file_main_dex:
-    link_command += ['--proguard-main-dex', options.proguard_file_main_dex]
+    package_command += ['-D', options.proguard_file_main_dex]
 
   if options.no_compress:
     for ext in options.no_compress.split(','):
-      link_command += ['-0', ext]
+      package_command += ['-0', ext]
 
   if options.shared_resources:
-    link_command.append('--shared-lib')
+    package_command.append('--shared-lib')
+  if options.app_as_shared_lib:
+    package_command.append('--app-as-shared-lib')
 
   if options.create_density_splits:
     for config in _DENSITY_SPLITS.itervalues():
-      link_command.extend(('--split', ','.join(config)))
+      package_command.extend(('--split', ','.join(config)))
 
   if options.language_splits:
     for lang in options.language_splits:
-      link_command.extend(('--split', lang))
+      package_command.extend(('--split', lang))
+
+  if options.debuggable:
+    package_command += ['--debug-mode']
 
   if options.locale_whitelist:
     aapt_locales = _ToAaptLocales(
         options.locale_whitelist, options.support_zh_hk)
-    link_command += ['-c', ','.join(aapt_locales)]
+    package_command += ['-c', ','.join(aapt_locales)]
 
-  return link_command
-
-
-def _EnableDebugInManifest(manifest_path, temp_dir):
-  debug_manifest_path = os.path.join(temp_dir, 'AndroidManifest.xml')
-  _ANDROID_NAMESPACE = 'http://schemas.android.com/apk/res/android'
-  _TOOLS_NAMESPACE = 'http://schemas.android.com/tools'
-  ElementTree.register_namespace('android', _ANDROID_NAMESPACE)
-  ElementTree.register_namespace('tools', _TOOLS_NAMESPACE)
-  original_manifest = ElementTree.parse(manifest_path)
-
-  app_node = original_manifest.find('application')
-  app_node.set('{%s}%s' % (_ANDROID_NAMESPACE, 'debuggable'), 'true')
-
-  with open(debug_manifest_path, 'w') as debug_manifest:
-    debug_manifest.write(ElementTree.tostring(
-        original_manifest.getroot(), encoding='UTF-8'))
-
-  return debug_manifest_path
+  return package_command
 
 
 def _ResourceNameFromPath(path):
@@ -654,31 +636,10 @@ def _ConvertToWebP(webp_binary, png_files):
   pool.join()
 
 
-def _CompileDeps(aapt_path, dep_subdirs, temp_dir):
-  partials_dir = os.path.join(temp_dir, 'partials')
-  build_utils.MakeDirectory(partials_dir)
-  partial_compile_command = [
-      aapt_path + '2',
-      'compile',
-      '--no-crunch',
-  ]
-  pool = multiprocessing.pool.ThreadPool(10)
-  def compile_partial(directory):
-    dirname = os.path.basename(directory)
-    partial_path = os.path.join(partials_dir, dirname + '.zip')
-    compile_command = (partial_compile_command +
-                       ['--dir', directory, '-o', partial_path])
-    build_utils.CheckOutput(compile_command)
-    return partial_path
-
-  partials = pool.map(compile_partial, dep_subdirs)
-  pool.close()
-  pool.join()
-  return partials
-
-
-def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
+def _PackageApk(options, package_command, dep_subdirs):
   _DuplicateZhResources(dep_subdirs)
+
+  package_command += _CreatePackageApkArgs(options)
 
   keep_predicate = _CreateKeepPredicate(
       dep_subdirs, options.exclude_xxxhdpi, options.xxxhdpi_whitelist)
@@ -694,26 +655,10 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   for directory in dep_subdirs:
     _MoveImagesToNonMdpiFolders(directory)
 
-  link_command = _CreateLinkApkArgs(options)
-  link_command += ['--output-text-symbols', r_txt_path]
-  link_command += ['--java', gen_dir]
-
-  if options.debuggable:
-    debug_manifest = _EnableDebugInManifest(options.android_manifest, temp_dir)
-    link_command += ['--manifest', debug_manifest]
-  else:
-    link_command += ['--manifest', options.android_manifest]
-
-  partials = _CompileDeps(options.aapt_path, dep_subdirs, temp_dir)
-  # It only works if partials are reversed (resource clobbering). This could be
-  # due to aapt2 processes the partials in reversed order (compared to aapt)
-  for partial in reversed(partials):
-    link_command += ['-R', partial]
-
   # Creates a .zip with AndroidManifest.xml, resources.arsc, res/*
   # Also creates R.txt
   build_utils.CheckOutput(
-      link_command, print_stdout=False, print_stderr=False)
+      package_command, print_stdout=False, print_stderr=False)
 
   if options.create_density_splits or options.language_splits:
     _CheckForMissedConfigs(options.apk_path, options.create_density_splits,
@@ -723,44 +668,15 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
     _RenameDensitySplits(options.apk_path)
 
 
-# _PackageLibrary uses aapt rather than aapt2 because aapt2 compile does not
-# support outputting an R.txt file.
-def _PackageLibrary(options, dep_subdirs, temp_dir, gen_dir):
+def _PackageLibrary(options, package_command, temp_dir):
   v14_dir = os.path.join(temp_dir, 'v14')
   build_utils.MakeDirectory(v14_dir)
-
-  # Generate R.java. This R.java contains non-final constants and is used only
-  # while compiling the library jar (e.g. chromium_content.jar). When building
-  # an apk, a new R.java file with the correct resource -> ID mappings will be
-  # generated by merging the resources from all libraries and the main apk
-  # project.
-  package_command = [options.aapt_path,
-                     'package',
-                     '-m',
-                     '-M', options.android_manifest,
-                     '--no-crunch',
-                     '--auto-add-overlay',
-                     '--no-version-vectors',
-                     '-I', options.android_sdk_jar,
-                     '--output-text-symbols', gen_dir,
-                     '-J', gen_dir,  # Required for R.txt generation.
-                     '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN]
-
-  # Adding all dependencies as sources is necessary for @type/foo references
-  # to symbols within dependencies to resolve. However, it has the side-effect
-  # that all Java symbols from dependencies are copied into the new R.java.
-  # E.g.: It enables an arguably incorrect usage of
-  # "mypackage.R.id.lib_symbol" where "libpackage.R.id.lib_symbol" would be
-  # more correct. This is just how Android works.
-  for d in dep_subdirs:
-    package_command += ['-S', d]
 
   input_resource_dirs = options.resource_dirs
 
   for d in input_resource_dirs:
     package_command += ['-S', d]
 
-  #TODO(mheikal): use aapt2 to do this instead, which can do this on its own.
   if not options.v14_skip:
     for resource_dir in input_resource_dirs:
       generate_v14_compatible_resources.GenerateV14Resources(
@@ -848,10 +764,36 @@ def _OnStaleMd5(options):
 
     dep_subdirs = _ExtractDeps(options.dependencies_res_zips, deps_dir)
 
+    # Generate R.java. This R.java contains non-final constants and is used only
+    # while compiling the library jar (e.g. chromium_content.jar). When building
+    # an apk, a new R.java file with the correct resource -> ID mappings will be
+    # generated by merging the resources from all libraries and the main apk
+    # project.
+    package_command = [options.aapt_path,
+                       'package',
+                       '-m',
+                       '-M', options.android_manifest,
+                       '--no-crunch',
+                       '--auto-add-overlay',
+                       '--no-version-vectors',
+                       '-I', options.android_sdk_jar,
+                       '--output-text-symbols', gen_dir,
+                       '-J', gen_dir,  # Required for R.txt generation.
+                       '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN]
+
+    # Adding all dependencies as sources is necessary for @type/foo references
+    # to symbols within dependencies to resolve. However, it has the side-effect
+    # that all Java symbols from dependencies are copied into the new R.java.
+    # E.g.: It enables an arguably incorrect usage of
+    # "mypackage.R.id.lib_symbol" where "libpackage.R.id.lib_symbol" would be
+    # more correct. This is just how Android works.
+    for d in dep_subdirs:
+      package_command += ['-S', d]
+
     if options.apk_path:
-      _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path)
+      _PackageApk(options, package_command, dep_subdirs)
     else:
-      _PackageLibrary(options, dep_subdirs, temp_dir, gen_dir)
+      _PackageLibrary(options, package_command, temp_dir)
 
     _CreateRTxtAndSrcJar(options, r_txt_path, srcjar_dir)
 
@@ -890,13 +832,12 @@ def main(args):
     options.v14_skip,
     options.exclude_xxxhdpi,
     options.xxxhdpi_whitelist,
-    str(options.debuggable),
     str(options.png_to_webp),
     str(options.support_zh_hk),
   ]
 
   if options.apk_path:
-    input_strings.extend(_CreateLinkApkArgs(options))
+    input_strings.extend(_CreatePackageApkArgs(options))
 
   input_paths = [
     options.aapt_path,
