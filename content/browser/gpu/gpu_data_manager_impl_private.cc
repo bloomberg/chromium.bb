@@ -32,7 +32,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/web_preferences.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -800,26 +799,9 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   }
 }
 
-void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
-    WebPreferences* prefs) const {
-  DCHECK(prefs);
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  // TODO(zmo): Remove this when we check on the renderer side for 2d canvas.
-  if (command_line->HasSwitch(switches::kDisableGpuCompositing)) {
-    prefs->accelerated_2d_canvas_enabled = false;
-  }
-  if (!ShouldDisableAcceleratedVideoDecode(command_line) &&
-      !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
-    prefs->pepper_accelerated_video_decode_enabled = true;
-  }
-}
-
 void GpuDataManagerImplPrivate::UpdateGpuPreferences(
     gpu::GpuPreferences* gpu_preferences) const {
   DCHECK(gpu_preferences);
-
-
   gpu_preferences->gpu_program_cache_size =
       gpu::ShaderDiskCache::CacheSizeBytes();
 }

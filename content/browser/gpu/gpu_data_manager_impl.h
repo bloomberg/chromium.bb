@@ -39,7 +39,6 @@ struct VideoMemoryUsageStats;
 namespace content {
 
 class GpuDataManagerImplPrivate;
-struct WebPreferences;
 
 class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
  public:
@@ -122,9 +121,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
 
   // Insert switches into gpu process command line: kUseGL, etc.
   void AppendGpuCommandLine(base::CommandLine* command_line) const;
-
-  // Update WebPreferences for renderer based on blacklisting decisions.
-  void UpdateRendererWebPrefs(WebPreferences* prefs) const;
 
   // Update GpuPreferences based on blacklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;
