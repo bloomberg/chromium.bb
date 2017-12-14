@@ -154,6 +154,16 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     arc::mojom::CameraInfoPtr camera_info = arc::mojom::CameraInfo::New();
     arc::mojom::CameraMetadataPtr static_metadata =
         arc::mojom::CameraMetadata::New();
+    arc::mojom::CameraMetadataEntryPtr entry =
+        arc::mojom::CameraMetadataEntry::New();
+    entry->index = 0;
+    entry->tag = arc::mojom::CameraMetadataTag::ANDROID_SENSOR_ORIENTATION;
+    entry->type = arc::mojom::EntryType::TYPE_INT32;
+    entry->count = 1;
+    entry->data = std::vector<uint8_t>(4, 0);
+    static_metadata->entries =
+        std::vector<arc::mojom::CameraMetadataEntryPtr>();
+    static_metadata->entries->push_back(std::move(entry));
     switch (camera_id) {
       case 0:
         camera_info->facing = arc::mojom::CameraFacing::CAMERA_FACING_FRONT;
