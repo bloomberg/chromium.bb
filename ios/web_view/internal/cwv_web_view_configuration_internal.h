@@ -11,11 +11,25 @@ namespace ios_web_view {
 class WebViewBrowserState;
 }  // namespace ios_web_view
 
+@class CWVWebView;
+
 @interface CWVWebViewConfiguration ()
+
+// Calls |shutDown| on the singletons returned by |defaultConfiguration| and
+// |incognitoConfiguration|.
++ (void)shutDown;
 
 // The browser state associated with this configuration.
 @property(nonatomic, readonly, nonnull)
     ios_web_view::WebViewBrowserState* browserState;
+
+// Registers a |webView| so that this class can call |shutDown| on it later on.
+// Only weak references are held, so no need for de-register method.
+- (void)registerWebView:(nonnull CWVWebView*)webView;
+
+// Because Obj-C classes under ARC tend to outlive C++ classes, this method is
+// needed to cleanly tear down this object. Must be called before |dealloc|.
+- (void)shutDown;
 
 @end
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/public/cwv_web_view.h"
+#import "ios/web_view/internal/cwv_web_view_internal.h"
 
 #include <memory>
 #include <utility>
@@ -54,22 +54,6 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 }
 
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
-  // |_configuration| must come before |_webState| here to avoid crash on
-  // deallocating CWVWebView. This is because the destructor of |_webState|
-  // indirectly accesses the BrowserState instance, which is owned by
-  // |_configuration|.
-  //
-  // Looks like the fields of the object are deallocated in the reverse order of
-  // their definition. If |_webState| comes before |_configuration|, the order
-  // of execution is like this:
-  //
-  // 1. |_configuration| is deallocated
-  // 1.1. BrowserState is deallocated
-  // 2. |_webState| is deallocated
-  // 2.1. The destructor of |_webState| indirectly accesses the BrowserState
-  //      deallocated above, causing crash.
-  //
-  // See crbug.com/712556 for the full stack trace.
   CWVWebViewConfiguration* _configuration;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
@@ -99,7 +83,7 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 - (void)updateCurrentURLs;
 // Updates |title| property.
 - (void)updateTitle;
-// Returns a new CWVAutofillController created from |webState_|.
+// Returns a new CWVAutofillController created from |_webState|.
 - (CWVAutofillController*)newAutofillController;
 
 @end
@@ -158,6 +142,7 @@ static NSString* gUserAgentProduct = nil;
   self = [super initWithFrame:frame];
   if (self) {
     _configuration = configuration;
+    [_configuration registerWebView:self];
     _scrollView = [[CWVScrollView alloc] init];
     [self resetWebStateWithSessionStorage:nil];
   }
@@ -216,8 +201,12 @@ static NSString* gUserAgentProduct = nil;
   _javaScriptDialogPresenter->SetUIDelegate(_UIDelegate);
 }
 
-// -----------------------------------------------------------------------
-// WebStateObserver implementation.
+#pragma mark - CRWWebStateObserver
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  webState->RemoveObserver(_webStateObserver.get());
+  _webStateObserver.reset();
+}
 
 - (void)webState:(web::WebState*)webState
     navigationItemsPruned:(size_t)pruned_item_count {
@@ -513,6 +502,12 @@ static NSString* gUserAgentProduct = nil;
 
 - (void)updateTitle {
   self.title = base::SysUTF16ToNSString(_webState->GetTitle());
+}
+
+#pragma mark - Internal Methods
+
+- (void)shutDown {
+  _webState.reset();
 }
 
 @end
