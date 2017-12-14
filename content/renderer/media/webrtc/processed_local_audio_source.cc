@@ -26,7 +26,8 @@ namespace content {
 
 namespace {
 // Used as an identifier for ProcessedLocalAudioSource::From().
-void* const kClassIdentifier = const_cast<void**>(&kClassIdentifier);
+void* const kProcessedLocalAudioSourceIdentifier =
+    const_cast<void**>(&kProcessedLocalAudioSourceIdentifier);
 }  // namespace
 
 ProcessedLocalAudioSource::ProcessedLocalAudioSource(
@@ -55,13 +56,14 @@ ProcessedLocalAudioSource::~ProcessedLocalAudioSource() {
 // static
 ProcessedLocalAudioSource* ProcessedLocalAudioSource::From(
     MediaStreamAudioSource* source) {
-  if (source && source->GetClassIdentifier() == kClassIdentifier)
+  if (source &&
+      source->GetClassIdentifier() == kProcessedLocalAudioSourceIdentifier)
     return static_cast<ProcessedLocalAudioSource*>(source);
   return nullptr;
 }
 
 void* ProcessedLocalAudioSource::GetClassIdentifier() const {
-  return kClassIdentifier;
+  return kProcessedLocalAudioSourceIdentifier;
 }
 
 bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
