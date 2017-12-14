@@ -290,7 +290,7 @@ base::flat_map<const char*, int64_t> GetExpectedProcessMetrics(
   return base::flat_map<const char*, int64_t>();
 }
 
-ProcessInfoVector GetProcessInfo(ukm::UkmRecorder& ukm_recorder) {
+ProcessInfoVector GetProcessInfo(ukm::TestUkmRecorder& ukm_recorder) {
   ProcessInfoVector process_infos;
 
   // Process 200 always has no URLs.

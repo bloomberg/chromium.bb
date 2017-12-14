@@ -116,6 +116,9 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
  private:
   friend struct base::DefaultSingletonTraits<PluginServiceImpl>;
 
+  // Helper for recording URLs to UKM.
+  static void RecordBrokerUsage(int render_process_id, int render_frame_id);
+
   // Creates the PluginServiceImpl object, but doesn't actually build the plugin
   // list yet.  It's generated lazily.
   PluginServiceImpl();
