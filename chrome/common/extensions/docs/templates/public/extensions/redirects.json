@@ -12,5 +12,6 @@
   "cloudMessagingV1": "https://developers.google.com/cloud-messaging/chrome/client",
   "pushMessaging": "https://developers.google.com/cloud-messaging/chrome/client",
   "gcm_tos": "https://developers.google.com/terms/",
-  "gcm_server": "https://developers.google.com/cloud-messaging/server"
+  "gcm_server": "https://developers.google.com/cloud-messaging/server",
+  "autoupdate": "hosting"
 }

@@ -1,97 +1,71 @@
-<h1>Hosting</h1>
+<h1>Hosting and Updating</h1>
 
-<p class="warning"><b>Warning:</b>
-As of Chrome 33,
-Windows users can only download extensions
-hosted in the Chrome Web store,
-except for installs via
-<a href="https://support.google.com/chrome/a/answer/188453">enterprise policy</a>
-or
-<a href="getstarted#unpacked">developer mode</a>
- (see
- <a href="http://blog.chromium.org/2013/11/protecting-windows-users-from-malicious.html">Protecting Windows users from malicious extensions</a>).
-As of Chrome 44, no external installs are allowed from a path to a local .crx on Mac
-(see
-<a href="http://blog.chromium.org/2015/05/continuing-to-protect-chrome-users-from.html">Continuing to protect Chrome users from malicious extensions</a>).
+<h2 id="hosting">Hosting</h2>
+
+<p>
+  Extensions must be uploaded through the
+  <a href="https://chrome.google.com/webstore/developer/dashboard">
+  Developer Dashboard</a>
+  and are
+  <a href="/webstore">distributed</a> in the
+  <a href="https://chrome.google.com/webstore/category/extensions">
+  Chrome Web Store</a> to
+  <a href="http://blog.chromium.org/2015/05/continuing-to-protect-chrome-users-from.html">
+  protect users from malicious extensions</a>.
+  Allow users to add an extension through the web store
+  from a designated website by enabling
+  <a href="/webstore/inline_installation">inline installation</a>.
 </p>
 
 <p>
-This page tells you how to host <code>.crx</code> files
-on your own server.
-If you distribute your extension, app, or theme solely through the
-<a href="http://chrome.google.com/webstore">Chrome Web Store</a>,
-you don't need this page.
-Instead, consult the <a href="/webstore">store developer documentation</a>.
+  There are three exceptions to the Chrome Web Store hosting rule:
+  <ol>
+    <li>Extensions that are distributed through the
+      <a href="https://support.google.com/chrome/a/answer/188453">
+        enterprise policy</a>.</li>
+    <li>Unpacked extension directories from a local machine while in
+      <a href="getstarted#unpacked">developer mode</a>.</li>
+    <li><a href="/linux_hosting">Hosting for Linux</a> installations.</li>
+  </ol>
 </p>
 
 <p>
-By convention, extensions,
-installable web apps, and themes are served&mdash;whether
-by the Chrome Web Store or by a custom server&mdash;as
-<code>.crx</code> files.
-When you upload a ZIP file with the
-<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>,
-the dashboard creates the <code>.crx</code> file for you.
+  <a href="/hosting_changes">Read more about the hosting policy</a>.
+</p>
+<h2 id="updating">Updating</h2>
+
+<p>
+  Extensions are automatically updated without user intervention,
+  just like the Chrome Browser.
 </p>
 
 <p>
-If you aren't publishing using the dashboard,
-you need to create the <code>.crx</code> file yourself,
-as described in <a href="packaging">Packaging</a>.
-You can also specify
-<a href="autoupdate">autoupdate</a> information to ensure that
-your users will have the latest copy of the <code>.crx</code> file.
+  To update an extension,
+  the version number will need to increase in the manifest:
 </p>
 
-<p>
-A server that hosts <code>.crx</code> files
-must use appropriate HTTP headers,
-so that users can install the file
-by clicking a link to it.
-</p>
+<pre data-filename="manifest.json">
+  {
+    ...
+    <b>"version": "1.5",</b>
+    ...
+    }
+  }</pre>
+  <pre data-filename="manifest.json">
+  {
+    ...
+    <b>"version": "1.6",</b>
+    ...
+    }
+  }
+</pre>
 
 <p>
-Google Chrome considers a file to be installable
-if <b>either</b> of the following is true:
-</p>
-
-<ul>
-  <li>
-    The file has the content type
-    <code>application/x-chrome-extension</code>
-  </li>
-  <li>
-    The file suffix is <code>.crx</code>
-    and <b>both</b> of the following are true:
-    <ul>
-      <li>
-        The file <b>is not</b> served with
-        the HTTP header <code>X-Content-Type-Options: nosniff</code>
-      </li>
-      <li>
-        The file <b>is</b> served
-        with one of the following content types:
-        <ul>
-          <li> empty string </li>
-          <li> "text/plain" </li>
-          <li> "application/octet-stream" </li>
-          <li> "unknown/unknown" </li>
-          <li> "application/unknown" </li>
-          <li> "*/*" </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
-
-<p>
-The most common reason for failing to recognize an installable file
-is that the server sends the header
-<code>X-Content-Type-Options: nosniff</code>.
-The second most common reason
-is that the server sends an unknown content type&mdash;one
-that isn't in the previous list.
-To fix an HTTP header issue,
-either change the configuration of the server
-or try hosting the <code>.crx</code> file at another server.
+  Re-<a href="/packaging">package</a> the updated extension and locate it in the
+  <a href="https://chrome.google.com/webstore/developer/dashboard">
+  Developer Dashboard</a>.
+  Select <strong>Edit</strong>, upload the new package,
+  and hit <strong>Publish</strong>.
+  The extension will automatically update for users
+  after the new version is published.
 </p>
