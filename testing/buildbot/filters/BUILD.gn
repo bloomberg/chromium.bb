@@ -34,6 +34,7 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/mojo.fyi.network_browser_tests.filter",
     "//testing/buildbot/filters/browser_tests_cros_asan.filter",
     "//testing/buildbot/filters/site-per-process.browser_tests.filter",
+    "//testing/buildbot/filters/viz.browser_tests.filter",
   ]
 }
 
