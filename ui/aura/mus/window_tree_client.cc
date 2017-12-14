@@ -361,6 +361,18 @@ void WindowTreeClient::SetImeVisibility(WindowMus* window,
   tree_->SetImeVisibility(window->server_id(), visible, std::move(state));
 }
 
+void WindowTreeClient::SetHitTestMask(
+    WindowMus* window,
+    const base::Optional<gfx::Rect>& mask_rect) {
+  base::Optional<gfx::Rect> out_rect = base::nullopt;
+  if (mask_rect) {
+    out_rect = gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(),
+                                       mask_rect.value());
+  }
+
+  tree_->SetHitTestMask(window->server_id(), out_rect);
+}
+
 void WindowTreeClient::Embed(
     Window* window,
     ui::mojom::WindowTreeClientPtr client,
@@ -2238,20 +2250,6 @@ void WindowTreeClient::OnWindowTreeHostClientAreaWillChange(
       window->server_id(),
       gfx::ConvertInsetsToPixel(device_scale_factor, client_area),
       additional_client_areas_in_pixel);
-}
-
-void WindowTreeClient::OnWindowTreeHostHitTestMaskWillChange(
-    WindowTreeHostMus* window_tree_host,
-    const base::Optional<gfx::Rect>& mask_rect) {
-  WindowMus* window = WindowMus::Get(window_tree_host->window());
-
-  base::Optional<gfx::Rect> out_rect = base::nullopt;
-  if (mask_rect) {
-    out_rect = gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(),
-                                       mask_rect.value());
-  }
-
-  tree_->SetHitTestMask(window->server_id(), out_rect);
 }
 
 void WindowTreeClient::OnWindowTreeHostSetOpacity(

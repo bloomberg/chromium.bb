@@ -31,6 +31,8 @@ class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
                    const gfx::Insets& last_touch_extend) override;
 
  private:
+  class HitMaskSetter;
+
   // aura::WindowTargeter:
   // Delegates to WindowTargeter's impl and prevents overriding in subclasses.
   bool EventLocationInsideBounds(aura::Window* target,
@@ -41,6 +43,8 @@ class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
   bool ShouldUseExtendedBounds(const aura::Window* window) const override;
 
   aura::Window* container_;
+
+  std::unique_ptr<HitMaskSetter> hit_mask_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyResizeWindowTargeter);
 };

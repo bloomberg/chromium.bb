@@ -253,7 +253,7 @@ void DesktopWindowTreeHostMus::SendClientAreaToServer() {
 
 void DesktopWindowTreeHostMus::SendHitTestMaskToServer() {
   if (!native_widget_delegate_->HasHitTestMask()) {
-    SetHitTestMask(base::nullopt);
+    aura::WindowPortMus::Get(window())->SetHitTestMask(base::nullopt);
     return;
   }
 
@@ -262,7 +262,7 @@ void DesktopWindowTreeHostMus::SendHitTestMaskToServer() {
   // TODO(jamescook): Use the full path for the mask.
   gfx::Rect mask_rect =
       gfx::ToEnclosingRect(gfx::SkRectToRectF(mask_path.getBounds()));
-  SetHitTestMask(mask_rect);
+  aura::WindowPortMus::Get(window())->SetHitTestMask(mask_rect);
 }
 
 bool DesktopWindowTreeHostMus::IsFocusClientInstalledOnFocusSynchronizer()

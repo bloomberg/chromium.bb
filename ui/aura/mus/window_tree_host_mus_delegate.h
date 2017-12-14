@@ -37,11 +37,6 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
       const gfx::Insets& client_area,
       const std::vector<gfx::Rect>& additional_client_areas) = 0;
 
-  // Called when the hit test mask is about to be cleared.
-  virtual void OnWindowTreeHostHitTestMaskWillChange(
-      WindowTreeHostMus* window_tree_host,
-      const base::Optional<gfx::Rect>& mask_rect) = 0;
-
   // Called when the opacity is changed client side.
   virtual void OnWindowTreeHostSetOpacity(WindowTreeHostMus* window_tree_host,
                                           float opacity) = 0;

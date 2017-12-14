@@ -52,10 +52,6 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform {
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_area);
 
-  // Sets the hit test mask on the underlying mus window. Pass base::nullopt to
-  // clear.
-  void SetHitTestMask(const base::Optional<gfx::Rect>& rect);
-
   // Sets the opacity of the underlying mus window.
   void SetOpacity(float value);
 
