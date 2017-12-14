@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_SHELL_SURFACE_H_
 #define COMPONENTS_EXO_SHELL_SURFACE_H_
 
+#include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "components/exo/shell_surface_base.h"
 
@@ -13,7 +14,8 @@ class Surface;
 
 // This class implements toplevel surface for which position and state are
 // managed by the shell.
-class ShellSurface : public ShellSurfaceBase {
+class ShellSurface : public ShellSurfaceBase,
+                     public ash::wm::WindowStateObserver {
  public:
   // The |origin| is the initial position in screen coordinates. The position
   // specified as part of the geometry is relative to the shell surface.
@@ -52,7 +54,19 @@ class ShellSurface : public ShellSurfaceBase {
   // Overridden from ShellSurfaceBase:
   void InitializeWindowState(ash::wm::WindowState* window_state) override;
 
+  // Overridden from ash::wm::WindowStateObserver:
+  void OnPreWindowStateTypeChange(
+      ash::wm::WindowState* window_state,
+      ash::mojom::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(
+      ash::wm::WindowState* window_state,
+      ash::mojom::WindowStateType old_type) override;
+
  private:
+  class ScopedAnimationsDisabled;
+
+  std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };
 

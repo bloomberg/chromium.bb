@@ -4,8 +4,10 @@
 
 #include "components/exo/test/test_client_controlled_state_delegate.h"
 
+#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/window_state.h"
 #include "components/exo/client_controlled_shell_surface.h"
+#include "ui/views/widget/widget.h"
 
 namespace exo {
 namespace test {
@@ -18,10 +20,29 @@ TestClientControlledStateDelegate::~TestClientControlledStateDelegate() =
 void TestClientControlledStateDelegate::HandleWindowStateRequest(
     ash::wm::WindowState* window_state,
     ash::mojom::WindowStateType next_state) {
-  ash::wm::ClientControlledState* state_impl =
-      static_cast<ash::wm::ClientControlledState*>(
-          ash::wm::WindowState::TestApi::GetStateImpl(window_state));
-  state_impl->EnterNextState(window_state, next_state);
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(window_state->window());
+  ClientControlledShellSurface* shell_surface =
+      static_cast<ClientControlledShellSurface*>(widget->widget_delegate());
+  switch (next_state) {
+    case ash::mojom::WindowStateType::NORMAL:
+    case ash::mojom::WindowStateType::DEFAULT:
+      shell_surface->SetRestored();
+      break;
+    case ash::mojom::WindowStateType::MINIMIZED:
+      shell_surface->SetMinimized();
+      break;
+    case ash::mojom::WindowStateType::MAXIMIZED:
+      shell_surface->SetMaximized();
+      break;
+    case ash::mojom::WindowStateType::FULLSCREEN:
+      shell_surface->SetFullscreen(true);
+      break;
+    default:
+      NOTIMPLEMENTED();
+      break;
+  }
+  shell_surface->OnSurfaceCommit();
 }
 
 void TestClientControlledStateDelegate::HandleBoundsRequest(

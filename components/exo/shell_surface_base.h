@@ -10,14 +10,13 @@
 #include <string>
 
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/wm/window_state_observer.h"
+#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/surface_tree_host.h"
-
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor_lock.h"
@@ -30,6 +29,9 @@
 
 namespace ash {
 class WindowResizer;
+namespace wm {
+class WindowState;
+}
 }
 
 namespace base {
@@ -53,7 +55,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
                          public aura::WindowObserver,
                          public views::WidgetDelegate,
                          public views::View,
-                         public ash::wm::WindowStateObserver,
                          public wm::ActivationChangeObserver {
  public:
   // The |origin| is the initial position in screen coordinates. The position
@@ -182,14 +183,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
 
-  // Overridden from ash::wm::WindowStateObserver:
-  void OnPreWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::mojom::WindowStateType old_type) override;
-  void OnPostWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::mojom::WindowStateType old_type) override;
-
   // Overridden from aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
@@ -293,24 +286,18 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool shadow_bounds_changed_ = false;
   std::unique_ptr<ash::WindowResizer> resizer_;
   base::string16 title_;
+  std::unique_ptr<ui::CompositorLock> configure_compositor_lock_;
+  ConfigureCallback configure_callback_;
 
  private:
   struct Config;
-
-  class ScopedAnimationsDisabled;
 
   // Called on widget creation to initialize its window state.
   // TODO(reveman): Remove virtual functions below to avoid FBC problem.
   virtual void InitializeWindowState(ash::wm::WindowState* window_state) = 0;
 
-  // Updates the backdrop of the sshell surface based on the window state.
-  virtual void UpdateBackdrop();
-
   // Returns the scale of the surface tree relative to the shell surface.
   virtual float GetScale() const;
-
-  // Returns whether window state transitions should be animated.
-  virtual bool CanAnimateWindowStateTransitions() const;
 
   // Returns the window that has capture during dragging.
   virtual aura::Window* GetDragWindow();
@@ -340,11 +327,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Rect pending_geometry_;
   base::RepeatingClosure close_callback_;
   base::OnceClosure surface_destroyed_callback_;
-  ConfigureCallback configure_callback_;
   ScopedConfigure* scoped_configure_ = nullptr;
-  std::unique_ptr<ui::CompositorLock> configure_compositor_lock_;
   base::circular_deque<std::unique_ptr<Config>> pending_configs_;
-  std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
   bool system_modal_ = false;
   bool non_system_modal_window_was_active_ = false;
   gfx::ImageSkia icon_;

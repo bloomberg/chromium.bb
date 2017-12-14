@@ -394,6 +394,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowStartMaximized) {
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
   shell_surface->SetMaximized();
+  surface->Commit();
   views::Widget* widget = shell_surface->GetWidget();
   aura::Window* window = widget->GetNativeWindow();
 
@@ -501,7 +502,7 @@ TEST_F(ClientControlledShellSurfaceTest, Maximize) {
   surface->Commit();
   EXPECT_FALSE(HasBackdrop());
   shell_surface->SetMaximized();
-  EXPECT_TRUE(HasBackdrop());
+  EXPECT_FALSE(HasBackdrop());
   surface->Commit();
   EXPECT_TRUE(HasBackdrop());
   EXPECT_TRUE(shell_surface->GetWidget()->IsMaximized());
@@ -532,8 +533,13 @@ TEST_F(ClientControlledShellSurfaceTest, Restore) {
   EXPECT_FALSE(HasBackdrop());
   // Note: Remove contents to avoid issues with maximize animations in tests.
   shell_surface->SetMaximized();
+  EXPECT_FALSE(HasBackdrop());
+  surface->Commit();
   EXPECT_TRUE(HasBackdrop());
+
   shell_surface->SetRestored();
+  EXPECT_TRUE(HasBackdrop());
+  surface->Commit();
   EXPECT_FALSE(HasBackdrop());
 }
 
@@ -568,7 +574,9 @@ TEST_F(ClientControlledShellSurfaceTest, ToggleFullscreen) {
   surface->Attach(buffer.get());
   surface->Commit();
   EXPECT_FALSE(HasBackdrop());
+
   shell_surface->SetMaximized();
+  surface->Commit();
   EXPECT_TRUE(HasBackdrop());
 
   ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
@@ -576,7 +584,6 @@ TEST_F(ClientControlledShellSurfaceTest, ToggleFullscreen) {
 
   // Enter fullscreen mode.
   ash::wm::GetWindowState(window)->OnWMEvent(&event);
-
   EXPECT_TRUE(HasBackdrop());
 
   // Leave fullscreen mode.
