@@ -289,8 +289,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void SetSizeHackForLayoutTreeAsText(const LayoutSize& size) { size_ = size; }
 
-  LayoutRect Rect() const { return LayoutRect(Location(), Size()); }
-
   // For LayoutTreeAsText
   LayoutRect RectIgnoringNeedsPositionUpdate() const {
     return LayoutRect(location_, size_);
