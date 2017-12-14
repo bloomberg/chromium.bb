@@ -167,25 +167,4 @@ void EffectStack::Trace(blink::Visitor* visitor) {
   visitor->Trace(sampled_effects_);
 }
 
-bool EffectStack::GetAnimatedBoundingBox(FloatBox& box,
-                                         const CSSProperty& property) const {
-  FloatBox original_box(box);
-  for (const auto& sampled_effect : sampled_effects_) {
-    if (sampled_effect->Effect() &&
-        sampled_effect->Effect()->Affects(PropertyHandle(property))) {
-      KeyframeEffectReadOnly* effect = sampled_effect->Effect();
-      const Timing& timing = effect->SpecifiedTiming();
-      double start_range = 0;
-      double end_range = 1;
-      timing.timing_function->Range(&start_range, &end_range);
-      FloatBox expanding_box(original_box);
-      if (!CompositorAnimations::GetAnimatedBoundingBox(
-              expanding_box, *effect->Model(), start_range, end_range))
-        return false;
-      box.ExpandTo(expanding_box);
-    }
-  }
-  return true;
-}
-
 }  // namespace blink

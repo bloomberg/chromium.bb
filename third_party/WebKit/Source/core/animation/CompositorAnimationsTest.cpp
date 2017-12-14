@@ -152,18 +152,6 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
         timing, 0, std::numeric_limits<double>::quiet_NaN(), 0, effect,
         animations, player_playback_rate);
   }
-  bool GetAnimationBounds(FloatBox& bounding_box,
-                          const KeyframeEffectModelBase& effect,
-                          double min_value,
-                          double max_value) {
-    // As the compositor code only understands AnimatableValues, we must
-    // snapshot the effect to make those available.
-    // TODO(crbug.com/725385): Remove once compositor uses InterpolationTypes.
-    auto style = ComputedStyle::Create();
-    effect.SnapshotAllCompositorKeyframes(*element_.Get(), *style, nullptr);
-    return CompositorAnimations::GetAnimatedBoundingBox(bounding_box, effect,
-                                                        min_value, max_value);
-  }
 
   bool DuplicateSingleKeyframeAndTestIsCandidateOnResult(
       StringKeyframe* frame) {
@@ -438,33 +426,6 @@ TEST_F(AnimationCompositorAnimationsTest,
   frames_mixed_properties.push_back(std::move(keyframe));
   EXPECT_FALSE(CanStartEffectOnCompositor(
       timing_, *StringKeyframeEffectModel::Create(frames_mixed_properties)));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox) {
-  Vector<String> transform_vector;
-  transform_vector.push_back("translate3d(0, 0, 0)");
-  transform_vector.push_back("translate3d(200px, 200px, 0)");
-  std::unique_ptr<StringKeyframeVector> frames =
-      CreateCompositableTransformKeyframeVector(transform_vector);
-  FloatBox bounds;
-  EXPECT_TRUE(GetAnimationBounds(
-      bounds, *StringKeyframeEffectModel::Create(*frames), 0, 1));
-  EXPECT_EQ(FloatBox(0.0f, 0.f, 0.0f, 200.0f, 200.0f, 0.0f), bounds);
-  bounds = FloatBox();
-  EXPECT_TRUE(GetAnimationBounds(
-      bounds, *StringKeyframeEffectModel::Create(*frames), -1, 1));
-  EXPECT_EQ(FloatBox(-200.0f, -200.0, 0.0, 400.0f, 400.0f, 0.0f), bounds);
-
-  transform_vector.push_back("translate3d(-300px, -400px, 1px)");
-  bounds = FloatBox();
-  frames = CreateCompositableTransformKeyframeVector(transform_vector);
-  EXPECT_TRUE(GetAnimationBounds(
-      bounds, *StringKeyframeEffectModel::Create(*frames), 0, 1));
-  EXPECT_EQ(FloatBox(-300.0f, -400.f, 0.0f, 500.0f, 600.0f, 1.0f), bounds);
-  bounds = FloatBox();
-  EXPECT_TRUE(GetAnimationBounds(
-      bounds, *StringKeyframeEffectModel::Create(*frames), -1, 2));
-  EXPECT_EQ(FloatBox(-1300.0f, -1600.f, 0.0f, 1500.0f, 1800.0f, 3.0f), bounds);
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
