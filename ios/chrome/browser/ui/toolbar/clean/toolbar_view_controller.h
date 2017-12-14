@@ -68,6 +68,14 @@
 // IPad only function. iPad doesn't animate when locationBar is first responder,
 // but there are small UI changes to the locationBarContainer.
 - (void)locationBarIsFirstResonderOnIPad:(BOOL)isFirstResponder;
+// Activates constraints to simulate a safe area with |fakeSafeAreaInsets|
+// insets. The insets will be used as leading/trailing wrt RTL. Those
+// constraints have a higher priority than the one used to respect the safe
+// area. They need to be deactivated for the toolbar to respect the safe area
+// again. The fake safe area can be bigger or smaller than the real safe area.
+- (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets;
+// Deactivates the constraints used to create a fake safe area.
+- (void)deactivateFakeSafeAreaInsets;
 
 @end
 

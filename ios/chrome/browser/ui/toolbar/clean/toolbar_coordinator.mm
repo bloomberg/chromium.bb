@@ -302,6 +302,14 @@
   return omniboxViewIOS->IsPopupOpen();
 }
 
+- (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets {
+  [self.toolbarViewController activateFakeSafeAreaInsets:fakeSafeAreaInsets];
+}
+
+- (void)deactivateFakeSafeAreaInsets {
+  [self.toolbarViewController deactivateFakeSafeAreaInsets];
+}
+
 // TODO(crbug.com/786940): This protocol should move to the ViewController
 // owning the Toolbar. This can wait until the omnibox and toolbar refactoring
 // is more advanced.
