@@ -4,6 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//content/common/features.gni")
@@ -14,9 +15,9 @@ import("//third_party/webrtc/webrtc.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 if (is_component_build) {
-  link_target_type = "source_set"
+  link_target_type = "jumbo_source_set"
 } else {
-  link_target_type = "split_static_library"
+  link_target_type = "jumbo_split_static_library"
 }
 
 target(link_target_type, "renderer") {
@@ -199,6 +200,7 @@ target(link_target_type, "renderer") {
     "input/frame_input_handler_impl.h",
     "input/input_event_filter.cc",
     "input/input_event_filter.h",
+    "input/input_event_filter_ipc_names.cc",
     "input/input_handler_manager.cc",
     "input/input_handler_manager.h",
     "input/input_handler_manager_client.h",
@@ -521,6 +523,16 @@ target(link_target_type, "renderer") {
     "worker_thread_message_filter.h",
     "worker_thread_registry.cc",
     "worker_thread_registry.h",
+  ]
+
+  jumbo_excluded_sources = [
+    # IPC code is built with macros that redefine the default meaning
+    # of the IPC macros. When that happens in a translation unit there
+    # is no way to get the default meaning of the macros
+    # back. Therefore any code that redefines the default IPC macros
+    # need to be excluded from jumbo
+    # compilations. https://crbug.com/794176
+    "input/input_event_filter_ipc_names.cc",
   ]
 
   if (!is_component_build) {
