@@ -162,11 +162,6 @@ void CheckerImageTracker::ScheduleImageDecodeQueue(
     ImageDecodeQueue image_decode_queue) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "CheckerImageTracker::ScheduleImageDecodeQueue");
-  // Only checker-imaged (async updated) images are decoded using the image
-  // decode service. If |enable_checker_imaging_| is false, no image should
-  // be checkered.
-  DCHECK(image_decode_queue.empty() || enable_checker_imaging_);
-
 #if DCHECK_IS_ON()
   // The decodes in the queue should be prioritized correctly.
   DecodeType type = DecodeType::kRaster;
@@ -282,8 +277,20 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
   TRACE_EVENT1("cc", "CheckerImageTracker::ShouldCheckerImage", "image_id",
                image_id);
 
-  if (!enable_checker_imaging_)
+  auto decoding_mode_it = decoding_mode_map_.find(image_id);
+  PaintImage::DecodingMode decoding_mode_hint =
+      decoding_mode_it == decoding_mode_map_.end()
+          ? PaintImage::DecodingMode::kUnspecified
+          : decoding_mode_it->second;
+
+  // If we don't have default checker imaging enabled, and the developer did not
+  // specify "async" then we don't checker the images. To put it different, we
+  // currently only not respect |enable_checker_imaging_| if the value was
+  // specified as "async" by the developer.
+  if (decoding_mode_hint != PaintImage::DecodingMode::kAsync &&
+      !enable_checker_imaging_) {
     return false;
+  }
 
   // If the image was invalidated on the current sync tree and the tile is
   // for the active tree, continue checkering it on the active tree to ensure
@@ -305,11 +312,6 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
   auto it = insert_result.first;
   if (insert_result.second) {
     CheckerImagingDecision decision = CheckerImagingDecision::kCanChecker;
-    auto decoding_mode_it = decoding_mode_map_.find(image_id);
-    PaintImage::DecodingMode decoding_mode_hint =
-        decoding_mode_it == decoding_mode_map_.end()
-            ? PaintImage::DecodingMode::kUnspecified
-            : decoding_mode_it->second;
     // If the mode is sync, then don't checker this image.
     // TODO(vmpstr): Figure out if we should do something different in other
     // cases.
