@@ -93,9 +93,8 @@ int ScriptRegexp::Match(const String& string,
   v8::Local<v8::Value> argv[] = {
       V8String(isolate, string.Substring(start_from))};
   v8::Local<v8::Value> return_value;
-  if (!V8ScriptRunner::CallInternalFunction(exec.As<v8::Function>(), regex,
-                                            WTF_ARRAY_LENGTH(argv), argv,
-                                            isolate)
+  if (!V8ScriptRunner::CallInternalFunction(isolate, exec.As<v8::Function>(),
+                                            regex, WTF_ARRAY_LENGTH(argv), argv)
            .ToLocal(&return_value))
     return -1;
 

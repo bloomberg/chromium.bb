@@ -140,8 +140,8 @@ void DevToolsHost::EvaluateScript(const String& expression) {
                                  v8::MicrotasksScope::kRunMicrotasks);
   ScriptSourceCode source_code(expression, ScriptSourceLocationType::kInternal,
                                nullptr, KURL(), TextPosition());
-  V8ScriptRunner::CompileAndRunInternalScript(script_state, source_code,
-                                              script_state->GetIsolate());
+  V8ScriptRunner::CompileAndRunInternalScript(script_state->GetIsolate(),
+                                              script_state, source_code);
 }
 
 void DevToolsHost::DisconnectClient() {

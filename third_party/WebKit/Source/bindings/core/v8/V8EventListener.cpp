@@ -40,9 +40,9 @@
 namespace blink {
 
 V8EventListener::V8EventListener(bool is_attribute, ScriptState* script_state)
-    : V8AbstractEventListener(is_attribute,
-                              script_state->World(),
-                              script_state->GetIsolate()) {}
+    : V8AbstractEventListener(script_state->GetIsolate(),
+                              is_attribute,
+                              script_state->World()) {}
 
 v8::Local<v8::Function> V8EventListener::GetListenerFunction(
     ScriptState* script_state) {
