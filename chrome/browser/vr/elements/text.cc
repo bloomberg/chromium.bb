@@ -120,7 +120,7 @@ gfx::RectF Text::GetCursorBounds() const {
       bounds.height() * scale * kCursorWidthRatio, bounds.height() * scale);
 }
 
-void Text::OnSetSize(gfx::SizeF size) {
+void Text::OnSetSize(const gfx::SizeF& size) {
   texture_->SetTextWidth(size.width());
 }
 

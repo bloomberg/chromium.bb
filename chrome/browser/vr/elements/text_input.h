@@ -55,7 +55,7 @@ class TextInput : public UiElement {
 
   bool OnBeginFrame(const base::TimeTicks& time,
                     const gfx::Vector3dF& look_at) final;
-  void OnSetSize(gfx::SizeF size) final;
+  void OnSetSize(const gfx::SizeF& size) final;
   void OnSetName() final;
 
   Text* get_hint_element() { return hint_element_; }

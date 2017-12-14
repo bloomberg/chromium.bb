@@ -146,6 +146,8 @@ void Shadow::LayOutChildren() {
                                             kXMaxShadowGradientFactor),
               gfx::Tween::FloatValueBetween(depth_, kYMinShadowGradientFactor,
                                             kYMaxShadowGradientFactor));
+  if (children().size() == 1u)
+    set_corner_radius(children().front()->corner_radii().MaxRadius());
 }
 
 Shadow::Renderer::Renderer()

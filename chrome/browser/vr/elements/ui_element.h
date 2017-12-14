@@ -16,6 +16,7 @@
 #include "cc/animation/transform_operations.h"
 #include "chrome/browser/vr/animation_player.h"
 #include "chrome/browser/vr/databinding/binding_base.h"
+#include "chrome/browser/vr/elements/corner_radii.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
@@ -218,7 +219,7 @@ class UiElement : public cc::AnimationTarget {
 
   gfx::SizeF size() const;
   void SetSize(float width, float hight);
-  virtual void OnSetSize(gfx::SizeF size);
+  virtual void OnSetSize(const gfx::SizeF& size);
 
   gfx::PointF local_origin() const { return local_origin_; }
 
@@ -239,9 +240,18 @@ class UiElement : public cc::AnimationTarget {
   float opacity() const { return opacity_; }
   virtual void SetOpacity(float opacity);
 
-  float corner_radius() const { return corner_radius_; }
+  CornerRadii corner_radii() const { return corner_radii_; }
+  void set_corner_radii(const CornerRadii& radii) { corner_radii_ = radii; }
+
+  float corner_radius() const {
+    DCHECK(corner_radii_.AllEqual());
+    return corner_radii_.upper_left;
+  }
+
+  // Syntax sugar for setting all corner radii to the same value.
   void set_corner_radius(float corner_radius) {
-    corner_radius_ = corner_radius;
+    set_corner_radii(
+        {corner_radius, corner_radius, corner_radius, corner_radius});
   }
 
   float computed_opacity() const;
@@ -459,7 +469,7 @@ class UiElement : public cc::AnimationTarget {
 
   // The corner radius of the object. Analogous to the CSS property,
   // border-radius. This is in meters (same units as |size|).
-  float corner_radius_ = 0.0f;
+  CornerRadii corner_radii_ = {0, 0, 0, 0};
 
   // The computed opacity, incorporating opacity of parent objects.
   float computed_opacity_ = 1.0f;

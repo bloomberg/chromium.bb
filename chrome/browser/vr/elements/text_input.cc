@@ -142,7 +142,7 @@ bool TextInput::OnBeginFrame(const base::TimeTicks& time,
   return SetCursorBlinkState(time);
 }
 
-void TextInput::OnSetSize(gfx::SizeF size) {
+void TextInput::OnSetSize(const gfx::SizeF& size) {
   hint_element_->SetSize(size.width(), size.height());
   text_element_->SetSize(size.width(), size.height());
 }

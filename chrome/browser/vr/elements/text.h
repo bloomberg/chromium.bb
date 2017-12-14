@@ -45,7 +45,7 @@ class Text : public TexturedElement {
   // texture size, relative to the upper-left corner of the element.
   gfx::RectF GetCursorBounds() const;
 
-  void OnSetSize(gfx::SizeF size) override;
+  void OnSetSize(const gfx::SizeF& size) override;
 
   std::vector<std::unique_ptr<gfx::RenderText>> LayOutTextForTest(
       const gfx::Size& texture_size);
