@@ -299,7 +299,7 @@ class SiteParametersClassTest(cros_test_lib.TestCase):
     site_params = config_lib.SiteParameters()
 
     # Ensure our test key is not in site_params.
-    self.assertTrue(site_params.get('foo') is None)
+    self.assertNotIn('foo', site_params)
 
     # Test that we raise when accessing a non-existent value.
     # pylint: disable=pointless-statement

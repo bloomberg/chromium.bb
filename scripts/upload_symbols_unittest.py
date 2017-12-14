@@ -681,7 +681,7 @@ class UploadSymbolsTest(SymbolsTestBase):
 
     self.assertEquals(result, 0)
     self.assertEqual(self.urlopen_mock.call_count, 2)
-    self.assertFalse(os.path.exists(self.failure_file))
+    self.assertNotExists(self.failure_file)
 
   def testUploadSymbolsFailures(self):
     """Upload a few files."""

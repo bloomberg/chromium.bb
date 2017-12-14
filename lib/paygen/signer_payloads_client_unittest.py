@@ -236,7 +236,7 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
         client._CreateArchive(archive_file.name, hashes, self.hash_names)
 
         # Make sure the archive file created exists
-        self.assertTrue(os.path.exists(archive_file.name))
+        self.assertExists(archive_file.name)
 
         tmp_dir = tempfile.mkdtemp()
 

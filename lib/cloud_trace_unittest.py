@@ -81,8 +81,7 @@ class SpanLogTest(cros_test_lib.MockTestCase, cros_test_lib.TempDirTestCase):
     stack = cloud_trace.SpanStack()
     with stack.Span('foo'):
       pass
-    self.assertTrue(os.path.exists(
-        cloud_trace.SPANS_LOG.format(pid=os.getpid())))
+    self.assertExists(cloud_trace.SPANS_LOG.format(pid=os.getpid()))
 
 
 class CloudTraceContextTest(cros_test_lib.MockTestCase):

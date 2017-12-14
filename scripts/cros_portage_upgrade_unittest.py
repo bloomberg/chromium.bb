@@ -650,7 +650,7 @@ class CopyUpstreamTest(CpuTestBase):
                                             'dev-libs/A/A-2.ebuild',
                                             'inheritme',
                                             True)
-    self.assertTrue(result is None)
+    self.assertIsNone(result)
 
   #
   # _CopyUpstreamEclass
@@ -705,7 +705,7 @@ class CopyUpstreamTest(CpuTestBase):
     if do_copy:
       self.assertTrue(result)
       # Verify that eclass has been copied into portage-stable.
-      self.assertTrue(os.path.exists(eclass_path))
+      self.assertExists(eclass_path)
       # Verify that eclass contents are correct.
       self.assertTrue(filecmp.cmp(upstream_eclass_path, eclass_path))
 
@@ -818,17 +818,17 @@ class CopyUpstreamTest(CpuTestBase):
 
       # Verify that ebuild has been copied into portage-stable.
       ebuild_path = os.path.join(portage_stable, catpkg, ebuild)
-      self.assertTrue(os.path.exists(ebuild_path),
-                      msg='Missing expected ebuild after copy from upstream')
+      self.assertExists(ebuild_path,
+                        msg='Missing expected ebuild after copy from upstream')
 
       # Verify that any extra files upstream are also copied.
       for extra_file in extra_upstream_files:
         file_path = os.path.join(portage_stable, catpkg, extra_file)
         msg = ('Missing expected extra file %s after copy from upstream' %
                extra_file)
-        self.assertTrue(os.path.exists(file_path), msg=msg)
+        self.assertExists(file_path, msg=msg)
     else:
-      self.assertTrue(result is None)
+      self.assertIsNone(result)
 
   def testCopyUpstreamPackageEmptyStable(self):
     existing_files = []
@@ -939,7 +939,7 @@ class CopyUpstreamTest(CpuTestBase):
     current_manifest = os.path.join(current_dir, 'Manifest')
 
     # Run test verification.
-    self.assertFalse(os.path.exists(current_manifest))
+    self.assertNotExists(current_manifest)
     cpu.Upgrader._CreateManifest(mocked_upgrader,
                                  upstream_dir, current_dir, ebuild)
     self.mox.VerifyAll()
@@ -997,7 +997,7 @@ class CopyUpstreamTest(CpuTestBase):
     current_manifest = os.path.join(current_dir, 'Manifest')
 
     # Run test verification.
-    self.assertTrue(os.path.exists(current_manifest))
+    self.assertExists(current_manifest)
     cpu.Upgrader._CreateManifest(mocked_upgrader,
                                  upstream_dir, current_dir, ebuild)
     self.mox.VerifyAll()
@@ -1974,7 +1974,7 @@ class RunBoardTest(CpuTestBase):
       self.mox.UnsetStubs()
 
     readme_path = self.tempdir + '-README'
-    self.assertTrue(os.path.exists(readme_path))
+    self.assertExists(readme_path)
     os.remove(readme_path)
 
   def _TestRunBoard(self, pinfolist, upgrade=False, staged_changes=False):
@@ -2410,10 +2410,10 @@ class UpgradePackageTest(CpuTestBase):
       if upgrade_requested and (upstream_cpv != pinfo.cpv or force):
         self.assertEquals(upstream_cpv, pinfo.upgraded_cpv)
       else:
-        self.assertTrue(pinfo.upgraded_cpv is None)
+        self.assertIsNone(pinfo.upgraded_cpv)
     else:
-      self.assertTrue(pinfo.upstream_cpv is None)
-      self.assertTrue(pinfo.upgraded_cpv is None)
+      self.assertIsNone(pinfo.upstream_cpv)
+      self.assertIsNone(pinfo.upgraded_cpv)
     self.assertEquals(stable_up, pinfo.stable_upstream_cpv)
     self.assertEquals(latest_up, pinfo.latest_upstream_cpv)
 

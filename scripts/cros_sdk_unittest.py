@@ -155,7 +155,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
 
     code, _ = self._crosSdk(['--snapshot-create', 'test'])
     self.assertEqual(code, 0)
-    self.assertTrue(os.path.exists(self.chroot_version_file))
+    self.assertExists(self.chroot_version_file)
 
     code, output = self._crosSdk(['--snapshot-list'])
     self.assertEqual(code, 0)
@@ -214,7 +214,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
       code, _ = self._crosSdk(['--snapshot-restore', 'test'])
       self.assertEqual(code, 0)
       self.assertTrue(cros_build_lib.MountChroot(self.chroot, create=False))
-      self.assertTrue(os.path.exists(test_file))
+      self.assertExists(test_file)
 
       code, output = self._crosSdk(['--snapshot-list'])
       self.assertEqual(code, 0)
@@ -234,7 +234,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
                                '--snapshot-create', 'test'])
       self.assertEqual(code, 0)
       self.assertTrue(cros_build_lib.MountChroot(self.chroot, create=False))
-      self.assertTrue(os.path.exists(test_file))
+      self.assertExists(test_file)
 
       code, output = self._crosSdk(['--snapshot-list'])
       self.assertEqual(code, 0)
@@ -260,7 +260,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
     code, _ = self._crosSdk(['--snapshot-restore', 'test'])
     self.assertNotEqual(code, 0)
     # Failed restore leaves the existing snapshot in place.
-    self.assertTrue(os.path.exists(test_file))
+    self.assertExists(test_file)
 
   def testRestoreSnapshotMountsAsNeeded(self):
     with sudo.SudoKeepAlive():
@@ -276,7 +276,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
 
       code, _ = self._crosSdk(['--snapshot-restore', 'test'])
       self.assertEqual(code, 0)
-      self.assertTrue(os.path.exists(test_file))
+      self.assertExists(test_file)
 
       code, output = self._crosSdk(['--snapshot-list'])
       self.assertEqual(code, 0)

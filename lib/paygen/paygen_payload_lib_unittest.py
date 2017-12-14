@@ -164,10 +164,10 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Ensure that the expected executables in the au-generator are available.
     expected = os.path.join(gen.generator_dir, 'cros_generate_update_payload')
-    self.assertTrue(os.path.exists(expected))
+    self.assertExists(expected)
 
     expected = os.path.join(gen.generator_dir, 'delta_generator')
-    self.assertTrue(os.path.exists(expected))
+    self.assertExists(expected)
 
   def testRunGeneratorCmd(self):
     """Test the specialized command to run programs from au-generate.zip."""
@@ -719,9 +719,9 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
             payload.tgt_image.channel, payload.tgt_image.board, '7587.0.0'),
         sign=sign)
 
-    self.assertTrue(os.path.exists(output_uri))
+    self.assertExists(output_uri)
     self.assertEqual(os.path.exists(output_metadata_uri), sign)
-    self.assertTrue(os.path.exists(output_metadata_json))
+    self.assertExists(output_metadata_json)
 
   @cros_test_lib.NetworkTest()
   def testEndToEndIntegrationFull(self):

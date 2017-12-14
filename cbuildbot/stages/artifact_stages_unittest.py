@@ -434,7 +434,7 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,
 
       if not os.path.isdir(os.path.dirname(output)):
         os.makedirs(os.path.dirname(output))
-      self.assertFalse(os.path.exists(output))
+      self.assertNotExists(output)
 
       osutils.Touch(output)
 
@@ -454,7 +454,7 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,
 
       output = os.path.join(output, commands.STATEFUL_FILE)
 
-      self.assertFalse(os.path.exists(output))
+      self.assertNotExists(output)
 
       osutils.Touch(output)
 

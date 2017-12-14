@@ -634,7 +634,7 @@ class TestGsLibAccess(cros_test_lib.MoxTempDirTestCase):
 
     gs_path = 'gs://chromeos-releases/awsedrftgyhujikol'
     gs_md5 = gslib.MD5Sum(gs_path)
-    self.assertTrue(gs_md5 is None)
+    self.assertIsNone(gs_md5)
 
   @cros_test_lib.NetworkTest()
   def testMD5SumBadBucket(self):
@@ -646,4 +646,4 @@ class TestGsLibAccess(cros_test_lib.MoxTempDirTestCase):
 
     gs_path = 'gs://lokijuhygtfrdesxcv/awsedrftgyhujikol'
     gs_md5 = gslib.MD5Sum(gs_path)
-    self.assertTrue(gs_md5 is None)
+    self.assertIsNone(gs_md5)

@@ -292,7 +292,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     osutils.SafeUnlink(target_report_file)
     self.assertTrue(
         self.evaluator.RunTestFromHost(self.DUT, target_report_file))
-    self.assertTrue(os.path.exists(target_report_file))
+    self.assertExists(target_report_file)
     self.assertEqual(report_content, osutils.ReadFile(target_report_file))
 
   def testRunTestFromHostTestThatFailWithEvalPassingOnly(self):
@@ -326,7 +326,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     osutils.SafeUnlink(target_report_file)
     self.assertTrue(
         self.evaluator.RunTestFromHost(self.DUT, target_report_file))
-    self.assertTrue(os.path.exists(target_report_file))
+    self.assertExists(target_report_file)
     self.assertEqual(report_content, osutils.ReadFile(target_report_file))
 
   def testRunTestFromHostTestThatFailReportMissing(self):

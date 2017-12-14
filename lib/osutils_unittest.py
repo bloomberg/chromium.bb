@@ -470,7 +470,7 @@ class MountTests(cros_test_lib.TestCase):
       # Unmount the whole tree and verify it worked.
       osutils.UmountTree(tempdir)
       st_umount = os.stat(tempdir)
-      self.assertFalse(os.path.exists(tempdir2))
+      self.assertNotExists(tempdir2)
       self.assertEqual(st_before.st_dev, st_umount.st_dev)
 
 

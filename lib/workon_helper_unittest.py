@@ -187,17 +187,17 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
 
     # The link exists after starting a package.
     helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
-    self.assertTrue(os.path.exists(workon_link))
+    self.assertExists(workon_link)
 
     # The link exists after recreating a sysroot.
     osutils.RmDir(self._sysroot)
     osutils.SafeMakedirs(self._sysroot)
     helper = self.CreateHelper()
-    self.assertTrue(os.path.exists(workon_link))
+    self.assertExists(workon_link)
 
     # The link exists when no packages are worked on.
     helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
-    self.assertTrue(os.path.exists(workon_link))
+    self.assertExists(workon_link)
 
   def testCanStartSingleAtom(self):
     """Check that we can mark a single atom as being worked on."""

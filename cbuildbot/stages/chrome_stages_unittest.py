@@ -89,7 +89,7 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
 
     env_tar_base = stage._upload_queue.get()[0]
     env_tar = os.path.join(stage.archive_path, env_tar_base)
-    self.assertTrue(os.path.exists(env_tar))
+    self.assertExists(env_tar)
     cros_test_lib.VerifyTarball(env_tar, ['./', 'environment'])
 
 
