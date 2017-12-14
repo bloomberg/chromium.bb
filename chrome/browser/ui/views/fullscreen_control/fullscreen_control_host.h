@@ -55,6 +55,7 @@ class FullscreenControlHost : public ui::EventHandler {
   void ShowForInputEntryMethod(InputEntryMethod input_entry_method);
   void OnVisibilityChanged();
   void OnTouchPopupTimeout();
+  bool IsExitUiNeeded();
 
   InputEntryMethod input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
 
