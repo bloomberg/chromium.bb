@@ -19,7 +19,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -93,8 +92,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
                            SigninAccessPoint.BOOKMARK_MANAGER)) {
             int imageSize =
                     mContext.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
-            mProfileDataCache =
-                    new ProfileDataCache(mContext, Profile.getLastUsedProfile(), imageSize);
+            mProfileDataCache = new ProfileDataCache(mContext, imageSize);
             mProfileDataCache.addObserver(this);
             mSigninPromoController = new SigninPromoController(SigninAccessPoint.BOOKMARK_MANAGER);
             AccountManagerFacade.get().addObserver(this);

@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
@@ -116,8 +115,7 @@ public class SignInPromo extends OptionalLeaf {
 
         if (mArePersonalizedPromosEnabled) {
             int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
-            mProfileDataCache =
-                    new ProfileDataCache(context, Profile.getLastUsedProfile(), imageSize);
+            mProfileDataCache = new ProfileDataCache(context, imageSize);
             mSigninPromoController =
                     new SigninPromoController(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
             mGenericPromoData = null;

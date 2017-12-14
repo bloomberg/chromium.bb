@@ -108,7 +108,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
         if (SigninPromoController.arePersonalizedPromosEnabled()) {
             int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
-            mProfileDataCache = new ProfileDataCache(mContext, profile, imageSize);
+            mProfileDataCache = new ProfileDataCache(mContext, imageSize);
             mSigninPromoController = new SigninPromoController(SigninAccessPoint.RECENT_TABS);
         } else {
             mProfileDataCache = null;

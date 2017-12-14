@@ -26,7 +26,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.components.signin.AccountManagerDelegateException;
@@ -149,7 +148,7 @@ public class AccountSigninView extends FrameLayout {
         super(context, attrs);
         mAccountsChangedObserver = this::triggerUpdateAccounts;
         mProfileDataCacheObserver = (String accountId) -> updateProfileData();
-        mProfileDataCache = new ProfileDataCache(context, Profile.getLastUsedProfile(),
+        mProfileDataCache = new ProfileDataCache(context,
                 context.getResources().getDimensionPixelSize(R.dimen.signin_account_image_size));
 
         mCancelButtonTextId = R.string.no_thanks;
