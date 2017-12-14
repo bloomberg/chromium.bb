@@ -629,6 +629,17 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The size associated with the current LocalSurfaceId if any.
   gfx::Size last_size_;
 
+  enum class RepaintState {
+    // No repaint in progress.
+    None,
+
+    // Synchronously waiting for a new frame.
+    Paused,
+
+    // Screen updates are disabled while a new frame is swapped in.
+    ScreenUpdatesDisabled,
+  } repaint_state_ = RepaintState::None;
+
   // The last device scale factor associated with the current
   // LocalSurfaceId if any.
   float last_device_scale_factor_ = 0.f;
