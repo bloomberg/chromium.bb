@@ -175,6 +175,34 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayJP) {
   EXPECT_EQ(clock24h, TimeFormatTimeOfDay(time));
   EXPECT_EQ(k24HourClock, GetHourClockType());
   // k{Keep,Drop}AmPm should not affect for 24h clock.
+  EXPECT_EQ(clock24h, TimeFormatTimeOfDayWithHourClockType(time, k24HourClock,
+                                                           kKeepAmPm));
+  EXPECT_EQ(clock24h, TimeFormatTimeOfDayWithHourClockType(time, k24HourClock,
+                                                           kDropAmPm));
+  // k{Keep,Drop}AmPm affects for 12h clock.
+  EXPECT_EQ(clock12h_pm, TimeFormatTimeOfDayWithHourClockType(
+                             time, k12HourClock, kKeepAmPm));
+  EXPECT_EQ(clock12h, TimeFormatTimeOfDayWithHourClockType(time, k12HourClock,
+                                                           kDropAmPm));
+}
+
+TEST(TimeFormattingTest, TimeFormatTimeOfDayDE) {
+  // Test for a locale that uses different mark than "AM" and "PM".
+  // As an instance, we use third_party/icu/source/data/locales/de.txt.
+  test::ScopedRestoreICUDefaultLocale restore_locale;
+  i18n::SetICUDefaultLocale("de");
+  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+
+  Time time;
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
+  string16 clock24h(ASCIIToUTF16("15:42"));
+  string16 clock12h_pm(UTF8ToUTF16("3:42 nachm."));
+  string16 clock12h(ASCIIToUTF16("3:42"));
+
+  // The default is 24h clock.
+  EXPECT_EQ(clock24h, TimeFormatTimeOfDay(time));
+  EXPECT_EQ(k24HourClock, GetHourClockType());
+  // k{Keep,Drop}AmPm should not affect for 24h clock.
   EXPECT_EQ(clock24h,
             TimeFormatTimeOfDayWithHourClockType(time,
                                                  k24HourClock,
