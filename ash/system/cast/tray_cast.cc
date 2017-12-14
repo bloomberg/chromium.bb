@@ -78,6 +78,8 @@ const gfx::VectorIcon& SinkIconTypeToIcon(mojom::SinkIconType icon_type) {
       return kSystemMenuCastAudioGroupIcon;
     case mojom::SinkIconType::CAST_AUDIO:
       return kSystemMenuCastAudioIcon;
+    case mojom::SinkIconType::WIRED_DISPLAY:
+      return kSystemMenuCastGenericIcon;
   }
 
   NOTREACHED();

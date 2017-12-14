@@ -27606,6 +27606,17 @@ Called by update_use_counter_css.py.-->
   <int value="8" label="Seek forward"/>
 </enum>
 
+<enum name="MediaSinkType">
+  <int value="0" label="Cast"/>
+  <int value="1" label="Cast Audio Group"/>
+  <int value="2" label="Cast Audio"/>
+  <int value="3" label="Meeting"/>
+  <int value="4" label="Hangout"/>
+  <int value="5" label="Cast for Education"/>
+  <int value="6" label="Wired Display"/>
+  <int value="7" label="Generic"/>
+</enum>
+
 <enum name="MediaStreamRequestResult">
   <int value="0" label="Ok"/>
   <int value="1" label="Permission Denied"/>

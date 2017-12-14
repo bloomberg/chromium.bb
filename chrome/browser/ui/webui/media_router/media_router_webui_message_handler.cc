@@ -113,7 +113,7 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
     const MediaSink& sink = sink_with_cast_modes.sink;
     sink_val->SetString("id", sink.id());
     sink_val->SetString("name", sink.name());
-    sink_val->SetInteger("iconType", sink.icon_type());
+    sink_val->SetInteger("iconType", static_cast<int>(sink.icon_type()));
     if (sink.description())
       sink_val->SetString("description", *sink.description());
 

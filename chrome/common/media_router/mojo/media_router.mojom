@@ -13,6 +13,7 @@ import "net/interfaces/ip_endpoint.mojom";
 import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
 
+// This must stay in sync with ash.mojom.SinkIconType.
 enum SinkIconType {
   CAST,
   CAST_AUDIO_GROUP,
@@ -20,6 +21,7 @@ enum SinkIconType {
   MEETING,
   HANGOUT,
   EDUCATION,
+  WIRED_DISPLAY,
   GENERIC
 };
 

@@ -959,6 +959,8 @@ Polymer({
         return 'media-router:hangout';
       case media_router.SinkIconType.EDUCATION:
         return 'media-router:education';
+      case media_router.SinkIconType.WIRED_DISPLAY:
+        return 'media-router:tv';
       case media_router.SinkIconType.GENERIC:
         return 'media-router:tv';
       default:
