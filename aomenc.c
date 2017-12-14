@@ -1193,12 +1193,6 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.tile_height_count =
           arg_parse_list(&arg, config->cfg.tile_heights, MAX_TILE_HEIGHTS);
 #endif
-#if CONFIG_MONO_VIDEO
-    } else if (arg_match(&arg, &input_color_space, argi)) {
-      aom_color_space_t color_space = arg_parse_enum_or_int(&arg);
-      config->cfg.monochrome = (color_space == AOM_CS_MONOCHROME);
-      set_config_arg_ctrls(config, AV1E_SET_COLOR_SPACE, &arg);
-#endif
     } else {
       int i, match = 0;
       for (i = 0; ctrl_args[i]; i++) {
@@ -1506,7 +1500,7 @@ static void initialize_encoder(struct stream_state *stream,
 #if CONFIG_AV1_DECODER
   if (global->test_decode != TEST_DECODE_OFF) {
     const AvxInterface *decoder = get_aom_decoder_by_name(global->codec->name);
-    aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH, 0 };
+    aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH };
     aom_codec_dec_init(&stream->decoder, decoder->codec_interface(), &cfg, 0);
 
 #if CONFIG_EXT_TILE
@@ -1745,7 +1739,7 @@ static float usec_to_fps(uint64_t usec, unsigned int frames) {
 }
 
 static void test_decode(struct stream_state *stream,
-                        enum TestDecodeFatality fatal, int is_mono) {
+                        enum TestDecodeFatality fatal) {
   aom_image_t enc_img, dec_img;
 
   if (stream->mismatch_seen) return;
@@ -1777,7 +1771,7 @@ static void test_decode(struct stream_state *stream,
   ctx_exit_on_error(&stream->encoder, "Failed to get encoder reference frame");
   ctx_exit_on_error(&stream->decoder, "Failed to get decoder reference frame");
 
-  if (!aom_compare_img(&enc_img, &dec_img, is_mono ? 1 : 3)) {
+  if (!aom_compare_img(&enc_img, &dec_img)) {
     int y[4], u[4], v[4];
 #if CONFIG_HIGHBITDEPTH
     if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
@@ -2205,8 +2199,7 @@ int main(int argc, const char **argv_) {
 
         if (got_data && global.test_decode != TEST_DECODE_OFF) {
           FOREACH_STREAM(stream, streams) {
-            test_decode(stream, global.test_decode,
-                        stream->config.cfg.monochrome);
+            test_decode(stream, global.test_decode);
           }
         }
       }

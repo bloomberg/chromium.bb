@@ -1515,9 +1515,6 @@ static aom_codec_err_t ctrl_set_color_space(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.color_space = CAST(AV1E_SET_COLOR_SPACE, args);
-#if CONFIG_MONO_VIDEO
-  ctx->cfg.monochrome = (extra_cfg.color_space == AOM_CS_MONOCHROME);
-#endif
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1702,7 +1699,6 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         0,            // kf_min_dist
         9999,         // kf_max_dist
         0,            // large_scale_tile
-        0,            // monochrome
         0,            // tile_width_count
         0,            // tile_height_count
         { 0 },        // tile_widths

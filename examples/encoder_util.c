@@ -102,7 +102,10 @@ void aom_find_mismatch(const aom_image_t *const img1,
 }
 
 int aom_compare_img(const aom_image_t *const img1,
-                    const aom_image_t *const img2, int num_planes) {
+                    const aom_image_t *const img2) {
+  assert(img1->cs == img2->cs);
+  int num_planes = img1->cs == AOM_CS_MONOCHROME ? 1 : 3;
+
   uint32_t l_w = img1->d_w;
   uint32_t c_w = (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;
   const uint32_t c_h =
