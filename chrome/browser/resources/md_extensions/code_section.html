@@ -40,29 +40,22 @@
         flex-direction: column;
       }
 
-      #highlight {
-        background: var(--paper-red-100);
-      }
-
       #no-code {
         color: var(--paper-grey-800);
         text-align: center;
       }
     </style>
-    <div id="scroll-container" hidden$="[[isEmpty(code)]]">
+    <div id="scroll-container" hidden="[[!codeText_]]">
       <div id="main">
         <div id="line-numbers">
-          <span>[[computeLineNumbersContent_(code.*)]]</span>
+          <span>[[computeLineNumbersContent_(codeText_)]]</span>
         </div>
         <div id="source">
-          <span>[[code.beforeHighlight]]<!-- No whitespace allowed
-         --><span id="highlight" title="[[code.message]]"><!--
-           -->[[code.highlight]]<!--
-       --></span>[[code.afterHighlight]]</span>
+          <span>[[codeText_]]</span>
         </div>
       </div>
     </div>
-    <div id="no-code" hidden$="[[!isEmpty(code)]]">[[couldNotDisplayCode]]</div>
+    <div id="no-code" hidden="[[codeText_]]">[[couldNotDisplayCode]]</div>
   </template>
   <script src="code_section.js"></script>
 </dom-module>
