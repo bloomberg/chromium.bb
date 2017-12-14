@@ -57,8 +57,6 @@
   async function createFileSystem() {
     var {isolatedFileSystem, project} = await BindingsTestRunner.createOverrideProject(fileSystemPath);
     BindingsTestRunner.setOverridesEnabled(true);
-    Persistence.networkPersistenceManager.addFileSystemOverridesProject(
-        Persistence.NetworkPersistenceManager.inspectedPageDomain(), project);
     return {isolatedFileSystem, project};
   }
 })();
