@@ -136,7 +136,7 @@ void CameraDeviceDelegate::SetPhotoOptions(
 void CameraDeviceDelegate::SetRotation(int rotation) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(rotation >= 0 && rotation < 360 && rotation % 90 == 0);
-  device_context_->SetRotation(rotation);
+  device_context_->SetScreenRotation(rotation);
 }
 
 base::WeakPtr<CameraDeviceDelegate> CameraDeviceDelegate::GetWeakPtr() {
@@ -203,6 +203,20 @@ void CameraDeviceDelegate::OnGotCameraInfo(
     return;
   }
   static_metadata_ = std::move(camera_info->static_camera_characteristics);
+
+  const arc::mojom::CameraMetadataEntryPtr* sensor_orientation =
+      GetMetadataEntry(
+          static_metadata_,
+          arc::mojom::CameraMetadataTag::ANDROID_SENSOR_ORIENTATION);
+  if (sensor_orientation) {
+    device_context_->SetSensorOrientation(
+        *reinterpret_cast<int32_t*>((*sensor_orientation)->data.data()));
+  } else {
+    device_context_->SetErrorState(
+        FROM_HERE, "Camera is missing required sensor orientation info");
+    return;
+  }
+
   // |device_ops_| is bound after the MakeRequest call.
   arc::mojom::Camera3DeviceOpsRequest device_ops_request =
       mojo::MakeRequest(&device_ops_);

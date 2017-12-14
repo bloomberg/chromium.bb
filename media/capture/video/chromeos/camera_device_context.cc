@@ -8,7 +8,10 @@ namespace media {
 
 CameraDeviceContext::CameraDeviceContext(
     std::unique_ptr<VideoCaptureDevice::Client> client)
-    : state_(State::kStopped), rotation_(0), client_(std::move(client)) {
+    : state_(State::kStopped),
+      sensor_orientation_(0),
+      screen_rotation_(0),
+      client_(std::move(client)) {
   DCHECK(client_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -45,14 +48,23 @@ void CameraDeviceContext::SubmitCapturedData(
     const VideoCaptureFormat& frame_format,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
-  client_->OnIncomingCapturedData(data, length, frame_format, rotation_,
+  int total_rotation = (sensor_orientation_ + screen_rotation_) % 360;
+  client_->OnIncomingCapturedData(data, length, frame_format, total_rotation,
                                   reference_time, timestamp);
 }
 
-void CameraDeviceContext::SetRotation(int rotation) {
+void CameraDeviceContext::SetSensorOrientation(int sensor_orientation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(rotation >= 0 && rotation < 360 && rotation % 90 == 0);
-  rotation_ = rotation;
+  DCHECK(sensor_orientation >= 0 && sensor_orientation < 360 &&
+         sensor_orientation % 90 == 0);
+  sensor_orientation_ = sensor_orientation;
+}
+
+void CameraDeviceContext::SetScreenRotation(int screen_rotation) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(screen_rotation >= 0 && screen_rotation < 360 &&
+         screen_rotation % 90 == 0);
+  screen_rotation_ = screen_rotation;
 }
 
 }  // namespace media

@@ -112,7 +112,9 @@ class CAPTURE_EXPORT CameraDeviceContext {
                           base::TimeTicks reference_time,
                           base::TimeDelta timestamp);
 
-  void SetRotation(int rotation);
+  void SetSensorOrientation(int sensor_orientation);
+
+  void SetScreenRotation(int screen_rotation);
 
  private:
   friend class StreamBufferManagerTest;
@@ -122,8 +124,14 @@ class CAPTURE_EXPORT CameraDeviceContext {
   // The state the CameraDeviceDelegate currently is in.
   State state_;
 
-  // Clockwise rotation in degrees. This value should be 0, 90, 180, or 270.
-  int rotation_;
+  // Clockwise angle through which the output image needs to be rotated to be
+  // upright on the device screen in its native orientation.  This value should
+  // be 0, 90, 180, or 270.
+  int sensor_orientation_;
+
+  // Clockwise screen rotation in degrees. This value should be 0, 90, 180, or
+  // 270.
+  int screen_rotation_;
 
   std::unique_ptr<VideoCaptureDevice::Client> client_;
 
