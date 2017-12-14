@@ -719,21 +719,27 @@ static INLINE BLOCK_SIZE get_subsize(BLOCK_SIZE bsize,
     return subsize_lookup[partition][bsize];
 }
 
-static const TX_TYPE intra_mode_to_tx_type_context[INTRA_MODES] = {
-  DCT_DCT,    // DC
-  ADST_DCT,   // V
-  DCT_ADST,   // H
-  DCT_DCT,    // D45
-  ADST_ADST,  // D135
-  ADST_DCT,   // D117
-  DCT_ADST,   // D153
-  DCT_ADST,   // D207
-  ADST_DCT,   // D63
-  ADST_ADST,  // SMOOTH
-  ADST_DCT,   // SMOOTH_V
-  DCT_ADST,   // SMOOTH_H
-  ADST_ADST,  // PAETH
-};
+static TX_TYPE intra_mode_to_tx_type_context(const MB_MODE_INFO *mbmi,
+                                             PLANE_TYPE plane_type) {
+  static const TX_TYPE _intra_mode_to_tx_type_context[INTRA_MODES] = {
+    DCT_DCT,    // DC
+    ADST_DCT,   // V
+    DCT_ADST,   // H
+    DCT_DCT,    // D45
+    ADST_ADST,  // D135
+    ADST_DCT,   // D117
+    DCT_ADST,   // D153
+    DCT_ADST,   // D207
+    ADST_DCT,   // D63
+    ADST_ADST,  // SMOOTH
+    ADST_DCT,   // SMOOTH_V
+    DCT_ADST,   // SMOOTH_H
+    ADST_ADST,  // PAETH
+  };
+  return plane_type == PLANE_TYPE_Y
+             ? _intra_mode_to_tx_type_context[mbmi->mode]
+             : _intra_mode_to_tx_type_context[get_uv_mode(mbmi->uv_mode)];
+}
 
 #define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
 
@@ -1031,9 +1037,7 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
       xd->lossless[mbmi->segment_id] || tx_size >= TX_32X32)
     return DCT_DCT;
 
-  return intra_mode_to_tx_type_context[plane_type == PLANE_TYPE_Y
-                                           ? mbmi->mode
-                                           : get_uv_mode(mbmi->uv_mode)];
+  return intra_mode_to_tx_type_context(mbmi, plane_type);
 }
 
 static INLINE BLOCK_SIZE
@@ -1078,7 +1082,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
     } else {
       // In intra mode, uv planes don't share the same prediction mode as y
       // plane, so the tx_type should not be shared
-      tx_type = intra_mode_to_tx_type_context[get_uv_mode(mbmi->uv_mode)];
+      tx_type = intra_mode_to_tx_type_context(mbmi, PLANE_TYPE_UV);
     }
   }
   assert(tx_type < TX_TYPES);
@@ -1112,8 +1116,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   }
 
   // UV Intra only
-  TX_TYPE intra_type =
-      intra_mode_to_tx_type_context[get_uv_mode(mbmi->uv_mode)];
+  const TX_TYPE intra_type = intra_mode_to_tx_type_context(mbmi, PLANE_TYPE_UV);
   if (!av1_ext_tx_used[tx_set_type][intra_type]) return DCT_DCT;
   return intra_type;
 }

@@ -2465,7 +2465,8 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
     }
   } else {
     if (!ALLOW_INTRA_EXT_TX && bs >= BLOCK_8X8) {
-      if (tx_type != intra_mode_to_tx_type_context[mbmi->mode]) return 1;
+      if (tx_type != intra_mode_to_tx_type_context(mbmi, PLANE_TYPE_Y))
+        return 1;
     }
   }
   return 0;
@@ -2497,7 +2498,6 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   int s1 = x->skip_cost[skip_ctx][1];
   const int is_inter = is_inter_block(mbmi);
   int prune = 0;
-  const int plane = 0;
   av1_invalid_rd_stats(rd_stats);
 
   mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);
@@ -2529,17 +2529,18 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
             tx_type != get_default_tx_type(0, xd, mbmi->tx_size))
           continue;
         if (!ALLOW_INTRA_EXT_TX && bs >= BLOCK_8X8) {
-          if (tx_type != intra_mode_to_tx_type_context[mbmi->mode]) continue;
+          if (tx_type != intra_mode_to_tx_type_context(mbmi, PLANE_TYPE_Y))
+            continue;
         }
       }
 
       mbmi->tx_type = tx_type;
 
-      txfm_rd_in_plane(x, cpi, &this_rd_stats, ref_best_rd, 0, bs,
+      txfm_rd_in_plane(x, cpi, &this_rd_stats, ref_best_rd, AOM_PLANE_Y, bs,
                        mbmi->tx_size, cpi->sf.use_fast_coef_costing);
 
       if (this_rd_stats.rate == INT_MAX) continue;
-      av1_tx_type_cost(cm, x, xd, bs, plane, mbmi->tx_size, tx_type);
+      av1_tx_type_cost(cm, x, xd, bs, AOM_PLANE_Y, mbmi->tx_size, tx_type);
 
       if (this_rd_stats.skip)
         this_rd = RDCOST(x->rdmult, s1, this_rd_stats.sse);
@@ -2559,8 +2560,8 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   } else {
     mbmi->tx_type = DCT_DCT;
-    txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, mbmi->tx_size,
-                     cpi->sf.use_fast_coef_costing);
+    txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOM_PLANE_Y, bs,
+                     mbmi->tx_size, cpi->sf.use_fast_coef_costing);
   }
   mbmi->tx_type = best_tx_type;
 }
@@ -4930,7 +4931,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
           }
         } else {
           if (!ALLOW_INTRA_EXT_TX && bsize >= BLOCK_8X8) {
-            if (tx_type != intra_mode_to_tx_type_context[mbmi->mode]) continue;
+            if (tx_type != intra_mode_to_tx_type_context(mbmi, PLANE_TYPE_Y)
+       continue;
           }
         }
     */
