@@ -8,9 +8,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,12 +41,14 @@ class MarkPageAccessedTaskTest : public testing::Test {
     return &store_test_util_;
   }
   TestTaskRunner* runner() { return &runner_; }
+  base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   OfflinePageMetadataStoreTestUtil store_test_util_;
   TestTaskRunner runner_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 MarkPageAccessedTaskTest::MarkPageAccessedTaskTest()
@@ -57,6 +61,7 @@ MarkPageAccessedTaskTest::~MarkPageAccessedTaskTest() {}
 
 void MarkPageAccessedTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
+  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
 }
 
 void MarkPageAccessedTaskTest::TearDown() {
@@ -79,6 +84,10 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessed) {
   EXPECT_EQ(kTestFileSize, offline_page->file_size);
   EXPECT_EQ(1, offline_page->access_count);
   EXPECT_EQ(current_time, offline_page->last_access_time);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.AccessPageCount",
+      static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId.name_space)),
+      1);
 }
 
 TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
@@ -98,6 +107,10 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
   EXPECT_EQ(kTestFileSize, offline_page->file_size);
   EXPECT_EQ(1, offline_page->access_count);
   EXPECT_EQ(current_time, offline_page->last_access_time);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.AccessPageCount",
+      static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId.name_space)),
+      1);
 
   task = base::MakeUnique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                 base::Time::Now());
@@ -107,6 +120,10 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
   EXPECT_EQ(kTestOfflineId, offline_page->offline_id);
   EXPECT_EQ(2, offline_page->access_count);
   EXPECT_LT(current_time, offline_page->last_access_time);
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.AccessPageCount",
+      static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId.name_space)),
+      2);
 }
 
 }  // namespace offline_pages

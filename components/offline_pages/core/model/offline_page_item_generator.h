@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_item.h"
 
 class GURL;
@@ -34,7 +35,7 @@ class OfflinePageItemGenerator {
   void SetArchiveDirectory(const base::FilePath& archive_dir);
 
  private:
-  std::string namespace_;
+  std::string namespace_ = kDefaultNamespace;
   std::string id_;
   std::string request_origin_;
   GURL url_;

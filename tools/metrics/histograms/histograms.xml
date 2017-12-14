@@ -53857,6 +53857,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.AccessPageCount"
+    enum="OfflinePagesNamespaceEnumeration">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Counts the number of times an offline page is accessed. Events are reported
+    per offline pages namespace.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.AggregatedRequestResult"
     enum="OfflinePagesAggregatedRequestResult">
   <obsolete>
@@ -54394,6 +54403,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     pages. In case pages are removed in bulk, this value will be reported once.
     This value is only reported with deleting, as we are trying to infer if lack
     of free space might have caused the user to delete.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.DeletePageCount"
+    enum="OfflinePagesNamespaceEnumeration">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Counts the number of times an offline page is deleted. Events are reported
+    per offline pages namespace.
   </summary>
 </histogram>
 
@@ -54940,6 +54958,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The percentage of the page load completed when the button to save an offline
     page is pressed.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.SavePageCount"
+    enum="OfflinePagesNamespaceEnumeration">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Counts the number of times an offline page is saved. Events are reported per
+    offline pages namespace.
   </summary>
 </histogram>
 

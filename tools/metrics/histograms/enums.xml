@@ -30983,6 +30983,34 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Data parsing failed"/>
 </enum>
 
+<enum name="OfflinePagesNamespaceEnumeration">
+  <int value="0" label="Default">Namespace used as default.</int>
+  <int value="1" label="Bookmark">
+    Namespace used when offline page is saved when bookmarking.
+  </int>
+  <int value="2" label="Last_N">
+    Namespace used when offline page is saved as last_n page.
+  </int>
+  <int value="3" label="Async_loading">
+    Namespace used when offline page is saved from save page later on dino page.
+  </int>
+  <int value="4" label="Custom_tabs">
+    Namespace used when offline page is saved from custom tabs.
+  </int>
+  <int value="5" label="Download">
+    Namespace used when offline page is saved as downloads.
+  </int>
+  <int value="6" label="NTP_suggestions">
+    Namespace used when offline page is saved as NTP suggestions.
+  </int>
+  <int value="7" label="Suggested_articles">
+    Namespace used when offline page is saved as suggested articles.
+  </int>
+  <int value="8" label="Browser_actions">
+    Namespace used when offline page is saved from browser actions.
+  </int>
+</enum>
+
 <enum name="OfflinePagesOfflineUsage">
   <int value="0" label="Not used">Not used at all during whole day.</int>
   <int value="1" label="Started, but no pages loaded successfully">
