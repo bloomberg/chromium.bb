@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -24,6 +25,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
@@ -384,6 +386,10 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   const std::string& session_key = request_options_->GetSecureSession();
   if (!session_key.empty())
     request.set_session_key(request_options_->GetSecureSession());
+  request.set_dogfood_group(
+      base::FeatureList::IsEnabled(features::kDogfood)
+          ? CreateClientConfigRequest_DogfoodGroup_DOGFOOD
+          : CreateClientConfigRequest_DogfoodGroup_NONDOGFOOD);
   data_reduction_proxy::VersionInfo* version_info =
       request.mutable_version_info();
   uint32_t build;

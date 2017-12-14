@@ -117,6 +117,17 @@ message ProxyServer {
 
 // Request object to create a client configuration object.
 message CreateClientConfigRequest {
+  // An enum representing the type of user regarding whether they are dogfooding
+  // Chrome.
+  enum DogfoodGroup {
+    // The user dogfood group is not specified.
+    UNSPECIFIED = 0;
+    // The user is not a Chrome dogfooder.
+    NONDOGFOOD = 1;
+    // The user is a Chrome dogfooder.
+    DOGFOOD = 2;
+  }
+
   // A previous per-session key that was assigned by the service.
   optional string session_key = 1;
 
@@ -126,7 +137,12 @@ message CreateClientConfigRequest {
   // The MCC/MNC of the telephony network operator. Represented as a string of
   // the two numbers concatenated. E.g., "310260" for T-Mobile. Empty string if
   // the user is not on android or if the user is on WiFi.
+  // Added in M65.
   optional string telephony_network_operator = 3;
+
+  // The DogfoodGroup of the user.
+  // Added in M65.
+  optional DogfoodGroup dogfood_group = 4;
 }
 
 // Build version information.
