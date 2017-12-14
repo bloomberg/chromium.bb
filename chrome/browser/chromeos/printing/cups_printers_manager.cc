@@ -372,6 +372,14 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         // else here.
         continue;
       }
+
+      // Sometimes the detector can flag a printer as IPP-everywhere compatible;
+      // those printers can go directly into the automatic class without further
+      // processing.
+      if (detected.printer.IsIppEverywhere()) {
+        printers_[kAutomatic].push_back(detected.printer);
+        continue;
+      }
       auto it = detected_printer_ppd_references_.find(detected.printer.id());
       if (it != detected_printer_ppd_references_.end()) {
         if (it->second == nullptr) {
@@ -385,12 +393,11 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
           *printers_[kAutomatic].back().mutable_ppd_reference() = *it->second;
         }
       } else {
-        // Didn't find an entry for this printer in the PpdReferences cache.
-        // We need to ask PpdProvider whether or not it can determine a
-        // PpdReference.  If there's not already an outstanding request for
-        // one, start one.  When the request comes back, we'll rerun
-        // classification and then should be able to figure out where this
-        // printer belongs.
+        // Didn't find an entry for this printer in the PpdReferences cache.  We
+        // need to ask PpdProvider whether or not it can determine a
+        // PpdReference.  If there's not already an outstanding request for one,
+        // start one.  When the request comes back, we'll rerun classification
+        // and then should be able to figure out where this printer belongs.
         if (!base::ContainsKey(inflight_ppd_reference_resolutions_,
                                detected.printer.id())) {
           inflight_ppd_reference_resolutions_.insert(detected.printer.id());
