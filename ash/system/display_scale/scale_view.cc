@@ -37,7 +37,7 @@ ScaleView::ScaleView(SystemTrayItem* owner, bool is_default_view)
       label_(nullptr),
       slider_(nullptr),
       is_default_view_(is_default_view) {
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(tri_view_);
 
   label_ = new views::Label(base::UTF8ToUTF16(base::StringPrintf(

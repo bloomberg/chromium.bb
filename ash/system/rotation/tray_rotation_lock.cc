@@ -78,7 +78,7 @@ RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
     : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
       icon_(TrayPopupUtils::CreateMainImageView()),
       label_(TrayPopupUtils::CreateDefaultLabel()) {
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
   AddChildView(tri_view);

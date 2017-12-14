@@ -60,8 +60,8 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
         gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
 
     views::View* alert_view = new views::View();
-    alert_view->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets()));
+    alert_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kHorizontal, gfx::Insets()));
     views::ImageView* alert_icon = new views::ImageView();
     alert_icon->SetPreferredSize(gfx::Size(kAlertIconSizeDp, kAlertIconSizeDp));
     alert_icon->SetImage(

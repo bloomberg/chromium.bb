@@ -262,7 +262,7 @@ CastDuplexView::CastDuplexView(
   select_view_->SetEnabled(enabled);
   cast_view_ = new CastCastView();
   cast_view_->UpdateLabel(sinks_routes);
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   ActivateSelectView();
 }

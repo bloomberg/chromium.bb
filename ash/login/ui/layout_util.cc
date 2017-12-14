@@ -12,10 +12,11 @@ namespace login_layout_util {
 
 views::View* WrapViewForPreferredSize(views::View* view) {
   auto* proxy = new NonAccessibleView();
-  auto* layout_manager = new views::BoxLayout(views::BoxLayout::kVertical);
+  auto layout_manager =
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  proxy->SetLayoutManager(layout_manager);
+  proxy->SetLayoutManager(std::move(layout_manager));
   proxy->AddChildView(view);
   return proxy;
 }

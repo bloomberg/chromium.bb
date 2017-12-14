@@ -152,7 +152,6 @@ std::unique_ptr<PaymentRequestRowView> CreatePaymentSheetRow(
   std::unique_ptr<PaymentRequestRowView> row =
       base::MakeUnique<PaymentRequestRowView>(listener, clickable, row_insets);
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(row.get());
-  row->SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the section name.
@@ -414,7 +413,6 @@ base::string16 PaymentSheetViewController::GetSheetTitle() {
 
 void PaymentSheetViewController::FillContentView(views::View* content_view) {
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(content_view);
-  content_view->SetLayoutManager(layout);
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
                      views::GridLayout::USE_PREF, 0, 0);
@@ -731,7 +729,6 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
 
     views::GridLayout* layout =
         views::GridLayout::CreateAndInstall(content_view.get());
-    content_view->SetLayoutManager(layout);
     views::ColumnSet* columns = layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
                        views::GridLayout::USE_PREF, 0, 0);

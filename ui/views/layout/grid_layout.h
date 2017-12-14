@@ -108,6 +108,8 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   };
 
   // Creates a new GridLayout and installs it as the LayoutManager for |host|.
+  // The returned pointer is owned by the view and already installed as its
+  // layout manager.
   static GridLayout* CreateAndInstall(View* host);
 
   ~GridLayout() override;

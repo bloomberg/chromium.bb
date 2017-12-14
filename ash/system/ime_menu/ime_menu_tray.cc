@@ -137,9 +137,10 @@ class ImeTitleView : public views::View, public views::ButtonListener {
         views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
                                       kMenuSeparatorColor),
         gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
-    auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
+    auto box_layout =
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
-    SetLayoutManager(box_layout);
+    views::BoxLayout* layout_ptr = SetLayoutManager(std::move(box_layout));
     auto* title_label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
     title_label->SetBorder(
@@ -149,7 +150,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     style.SetupLabel(title_label);
 
     AddChildView(title_label);
-    box_layout->SetFlexForView(title_label, 1);
+    layout_ptr->SetFlexForView(title_label, 1);
 
     if (show_settings_button) {
       settings_button_ = CreateImeMenuButton(
@@ -221,9 +222,10 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
 
  private:
   void Init(bool show_emoji, bool show_handwriting, bool show_voice) {
-    auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
+    auto box_layout =
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
-    SetLayoutManager(box_layout);
+    SetLayoutManager(std::move(box_layout));
     SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(kSeparatorWidth, 0, 0, 0,
                                       kMenuSeparatorColor),

@@ -43,7 +43,7 @@ class ContentsView : public views::View {
 
 ContentsView::ContentsView(MessageCenterBubble* bubble, views::View* contents)
     : bubble_(bubble->AsWeakPtr()) {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(contents);
 }
 

@@ -195,7 +195,7 @@ class NetworkListView::SectionHeaderRowView : public views::View,
 
   void InitializeLayout() {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     container_ = TrayPopupUtils::CreateSubHeaderRowView(false);
     AddChildView(container_);
 

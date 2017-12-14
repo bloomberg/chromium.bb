@@ -24,7 +24,7 @@ class ExampleBubbleDialogDelegateView : public views::BubbleDialogDelegateView {
   ~ExampleBubbleDialogDelegateView() override;
 
   void Init() override {
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     views::Label* label = new views::Label(label_);
     AddChildView(label);
   }

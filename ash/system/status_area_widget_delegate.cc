@@ -121,7 +121,8 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
 void StatusAreaWidgetDelegate::DeleteDelegate() {}
 
 void StatusAreaWidgetDelegate::AddTray(views::View* tray) {
-  SetLayoutManager(NULL);  // Reset layout manager before adding a child.
+  // Reset layout manager before adding a child.
+  SetLayoutManager(nullptr);
   AddChildView(tray);
   // Set the layout manager with the new list of children.
   UpdateLayout();

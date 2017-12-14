@@ -343,7 +343,7 @@ const views::View* NoteActionLaunchButton::TestApi::BackgroundView() const {
 
 NoteActionLaunchButton::NoteActionLaunchButton(
     mojom::TrayActionState initial_note_action_state) {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   background_ = new BackgroundView();
   AddChildView(background_);

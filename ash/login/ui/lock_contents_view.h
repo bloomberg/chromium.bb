@@ -237,7 +237,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
 
   // Contains authentication user and the additional user views.
   NonAccessibleView* main_view_ = nullptr;
-  // Layout used for |main_view_|.
+  // Layout used for |main_view_|. Pointer owned by the View base class.
   views::BoxLayout* main_layout_ = nullptr;
 
   // Actions that should be executed when rotation changes. A full layout pass

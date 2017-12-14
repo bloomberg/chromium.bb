@@ -43,7 +43,7 @@ class LoginBubbleTest : public LoginTestBase {
 
     container_ = new views::View();
     container_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical));
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
     bubble_opener_ = new LoginButton(nullptr /*listener*/);
     other_view_ = new views::View();

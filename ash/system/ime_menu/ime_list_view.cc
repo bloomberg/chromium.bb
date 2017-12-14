@@ -59,7 +59,7 @@ class ImeListItemView : public ActionableView {
 
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
 
     // |id_label| contains the IME short name (e.g., 'US', 'GB', 'IT').
     views::Label* id_label = TrayPopupUtils::CreateDefaultLabel();
@@ -149,7 +149,7 @@ class KeyboardStatusRow : public views::View {
 
   void Init(views::ButtonListener* listener) {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
 
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);

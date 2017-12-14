@@ -31,7 +31,7 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
     // We proxy |view_| inside of |container_| so we can control layout.
     container_ = new views::View();
     container_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical));
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     container_->AddChildView(view_);
     SetWidget(CreateWidgetWithContent(container_));
   }

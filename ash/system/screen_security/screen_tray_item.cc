@@ -46,7 +46,7 @@ ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
       stop_button_text_(stop_button_text) {
   CreateItems();
   TriView* tri_view(TrayPopupUtils::CreateDefaultRowView());
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(tri_view);
   tri_view->AddView(TriView::Container::START, icon_);
   tri_view->AddView(TriView::Container::CENTER, label_);

@@ -133,7 +133,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   button_container_->SetBackground(
       views::CreateSolidBackground(message_center_style::kBackgroundColor));
   button_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
   close_all_button_ = new MessageCenterButton(this);
   close_all_button_->SetImage(
       views::Button::STATE_NORMAL,

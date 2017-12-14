@@ -28,9 +28,8 @@ constexpr int kBubbleBottomMarginDp = 18;
 
 LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::NONE) {
-  auto* layout = new views::BoxLayout(
-      views::BoxLayout::kVertical, gfx::Insets(), kBubbleBetweenChildSpacing);
-  SetLayoutManager(layout);
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(), kBubbleBetweenChildSpacing));
 
   set_margins(gfx::Insets(kBubbleTopMarginDp, kBubbleHorizontalMarginDp,
                           kBubbleBottomMarginDp, kBubbleHorizontalMarginDp));

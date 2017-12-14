@@ -33,10 +33,9 @@ PowerStatusView::PowerStatusView()
   separator_label_->SetEnabledColor(kHeaderTextColorNormal);
   separator_label_->SetText(base::ASCIIToUTF16(" - "));
 
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(0, 12),
-                           kTrayPopupPaddingBetweenItems);
-  SetLayoutManager(layout);
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(0, 12),
+      kTrayPopupPaddingBetweenItems));
 
   AddChildView(percentage_label_);
   AddChildView(separator_label_);

@@ -256,7 +256,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
     : debug_data_dispatcher_(std::make_unique<DebugDataDispatcherTransformer>(
           initial_note_action_state,
           data_dispatcher)) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
 
   lock_ = new LockContentsView(initial_note_action_state,
                                debug_data_dispatcher_->debug_dispatcher());
@@ -264,12 +265,12 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
 
   debug_row_ = new NonAccessibleView();
   debug_row_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
   AddChildView(debug_row_);
 
   per_user_action_column_ = new NonAccessibleView();
   per_user_action_column_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   debug_row_->AddChildView(per_user_action_column_);
 
   auto* margin = new NonAccessibleView();
@@ -408,7 +409,8 @@ void LockDebugView::RebuildDebugUserColumn() {
 
   for (size_t i = 0u; i < num_users_; ++i) {
     auto* row = new NonAccessibleView();
-    row->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
+    row->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
 
     views::View* toggle_pin =
         AddButton("Toggle PIN", false /*add_to_debug_row*/);

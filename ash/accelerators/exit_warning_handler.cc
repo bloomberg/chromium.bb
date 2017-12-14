@@ -61,7 +61,7 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     label->SetAutoColorReadabilityEnabled(false);
     label->SetSubpixelRenderingEnabled(false);
     AddChildView(label);
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
   }
 
   void OnPaint(gfx::Canvas* canvas) override {
