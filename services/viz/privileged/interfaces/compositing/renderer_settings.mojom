@@ -19,6 +19,7 @@ struct RendererSettings {
   ResourceSettings resource_settings;
   bool should_clear_root_render_pass;
   bool show_overdraw_feedback;
+  bool enable_draw_occlusion;
   int32 slow_down_compositing_scale_factor;
   bool use_skia_renderer;
 };

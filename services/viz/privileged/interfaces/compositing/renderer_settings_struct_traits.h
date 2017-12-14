@@ -56,6 +56,10 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.show_overdraw_feedback;
   }
 
+  static bool enable_draw_occlusion(const viz::RendererSettings& input) {
+    return input.enable_draw_occlusion;
+  }
+
   static int highp_threshold_min(const viz::RendererSettings& input) {
     return input.highp_threshold_min;
   }

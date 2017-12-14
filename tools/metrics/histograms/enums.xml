@@ -25118,6 +25118,7 @@ from previous Chrome versions.
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-798187384" label="try-supported-channel-layouts"/>
+  <int value="-795854288" label="enable-draw-occlusion"/>
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-793921836" label="ShowAllDialogsWithViewsToolkit:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
