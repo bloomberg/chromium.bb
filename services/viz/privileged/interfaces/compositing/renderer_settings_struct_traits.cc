@@ -22,6 +22,7 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->gl_composited_overlay_candidate_quad_border =
       data.gl_composited_overlay_candidate_quad_border();
   out->show_overdraw_feedback = data.show_overdraw_feedback();
+  out->enable_draw_occlusion = data.enable_draw_occlusion();
   out->highp_threshold_min = data.highp_threshold_min();
   out->disallow_non_exact_resource_reuse =
       data.disallow_non_exact_resource_reuse();
