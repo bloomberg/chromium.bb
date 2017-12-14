@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 
 namespace base {
@@ -26,9 +25,6 @@ class CloudDeviceDescription {
   CloudDeviceDescription();
   ~CloudDeviceDescription();
 
-  void Reset();
-
-  bool InitFromDictionary(std::unique_ptr<base::DictionaryValue> root);
   bool InitFromString(const std::string& json);
 
   std::string ToString() const;
