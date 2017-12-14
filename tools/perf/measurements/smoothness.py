@@ -58,15 +58,7 @@ class Smoothness(legacy_page_test.LegacyPageTest):
 
   def ValidateAndMeasurePage(self, _, tab, results):
     self._results = results
-    trace_result = tab.browser.platform.tracing_controller.StopTracing()
-
-    # TODO(charliea): This is part of a three-sided Chromium/Telemetry patch
-    # where we're changing the return type of StopTracing from a TraceValue to a
-    # (TraceValue, nonfatal_exception_list) tuple. Once the tuple return value
-    # lands in Chromium, the non-tuple logic should be deleted.
-    if isinstance(trace_result, tuple):
-      trace_result = trace_result[0]
-
+    trace_result = tab.browser.platform.tracing_controller.StopTracing()[0]
     trace_value = trace.TraceValue(
         results.current_page, trace_result,
         file_path=results.telemetry_info.trace_local_path,
@@ -83,16 +75,8 @@ class Smoothness(legacy_page_test.LegacyPageTest):
 
   def DidRunPage(self, platform):
     if platform.tracing_controller.is_tracing_running:
-      trace_result = platform.tracing_controller.StopTracing()
+      trace_result = platform.tracing_controller.StopTracing()[0]
       if self._results:
-
-        # TODO(charliea): This is part of a three-sided Chromium/Telemetry patch
-        # where we're changing the return type of StopTracing from a TraceValue
-        # to a (TraceValue, nonfatal_exception_list) tuple. Once the tuple
-        # return value lands in Chromium, the non-tuple logic should be deleted.
-        if isinstance(trace_result, tuple):
-          trace_result = trace_result[0]
-
         trace_value = trace.TraceValue(
             self._results.current_page, trace_result,
             file_path=self._results.telemetry_info.trace_local_path,
