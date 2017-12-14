@@ -26,8 +26,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/dummy_render_widget_host_delegate.h"
 #include "content/test/fake_renderer_compositor_frame_sink.h"
+#include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -82,7 +82,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<BrowserContext> browser_context_;
-  DummyRenderWidgetHostDelegate delegate_;
+  MockRenderWidgetHostDelegate delegate_;
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
@@ -203,7 +203,7 @@ class RenderWidgetHostViewGuestSurfaceTest
  protected:
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<BrowserContext> browser_context_;
-  DummyRenderWidgetHostDelegate delegate_;
+  MockRenderWidgetHostDelegate delegate_;
   BrowserPluginGuestDelegate browser_plugin_guest_delegate_;
   std::unique_ptr<TestWebContents> web_contents_;
   TestBrowserPluginGuest* browser_plugin_guest_;

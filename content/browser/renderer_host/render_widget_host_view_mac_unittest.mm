@@ -37,6 +37,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -201,30 +202,6 @@ id MockGestureEvent(NSEventType type, double magnification) {
       andReturnValue:OCMOCK_VALUE(magnification)] magnification];
   return event;
 }
-
-class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
- public:
-  MockRenderWidgetHostDelegate()
-      : text_input_manager_(new TextInputManager()) {}
-  ~MockRenderWidgetHostDelegate() override {}
-
-  TextInputManager* GetTextInputManager() override {
-    return text_input_manager_.get();
-  }
-
- private:
-  void ExecuteEditCommand(
-      const std::string& command,
-      const base::Optional<base::string16>& value) override {}
-  void Cut() override {}
-  void Copy() override {}
-  void Paste() override {}
-  void SelectAll() override {}
-
-  std::unique_ptr<TextInputManager> text_input_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
-};
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
  public:

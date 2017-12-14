@@ -68,6 +68,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/fake_renderer_compositor_frame_sink.h"
+#include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -243,105 +244,6 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
   float delta_y_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOverscrollDelegate);
-};
-
-class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
- public:
-  MockRenderWidgetHostDelegate()
-      : rwh_(nullptr),
-        is_fullscreen_(false),
-        focused_widget_(nullptr),
-        last_device_scale_factor_(0.0) {}
-  ~MockRenderWidgetHostDelegate() override {}
-  const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
-  void set_widget_host(RenderWidgetHostImpl* rwh) { rwh_ = rwh; }
-  void set_is_fullscreen(bool is_fullscreen) { is_fullscreen_ = is_fullscreen; }
-  TextInputManager* GetTextInputManager() override {
-    return &text_input_manager_;
-  }
-  RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
-      RenderWidgetHostImpl* widget_host) override {
-    return !!focused_widget_ ? focused_widget_ : widget_host;
-  }
-  void set_focused_widget(RenderWidgetHostImpl* focused_widget) {
-    focused_widget_ = focused_widget;
-  }
-
-  double get_last_device_scale_factor() { return last_device_scale_factor_; }
-  void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
-                             const gfx::Size& new_size,
-                             uint64_t sequence_number) override {
-    RenderWidgetHostViewBase* rwhv = rwh_->GetView();
-    if (rwhv)
-      rwhv->ResizeDueToAutoResize(new_size, sequence_number);
-  }
-  void ScreenInfoChanged() override {
-    display::Screen* screen = display::Screen::GetScreen();
-    const display::Display display = screen->GetPrimaryDisplay();
-    last_device_scale_factor_ = display.device_scale_factor();
-  }
-
-  void GetScreenInfo(ScreenInfo* result) override {
-    display::Screen* screen = display::Screen::GetScreen();
-    const display::Display display = screen->GetPrimaryDisplay();
-    result->rect = display.bounds();
-    result->available_rect = display.work_area();
-    result->depth = display.color_depth();
-    result->depth_per_component = display.depth_per_component();
-    result->is_monochrome = display.is_monochrome();
-    result->device_scale_factor = display.device_scale_factor();
-    result->color_space = display.color_space();
-
-    // The Display rotation and the ScreenInfo orientation are not the same
-    // angle. The former is the physical display rotation while the later is the
-    // rotation required by the content to be shown properly on the screen, in
-    // other words, relative to the physical display.
-    result->orientation_angle = display.RotationAsDegree();
-    if (result->orientation_angle == 90)
-      result->orientation_angle = 270;
-    else if (result->orientation_angle == 270)
-      result->orientation_angle = 90;
-
-    result->orientation_type =
-        RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
-  }
-
-  void set_pre_handle_keyboard_event_result(
-      KeyboardEventProcessingResult result) {
-    pre_handle_keyboard_event_result_ = result;
-  }
-
- protected:
-  // RenderWidgetHostDelegate:
-  KeyboardEventProcessingResult PreHandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) override {
-    last_event_.reset(new NativeWebKeyboardEvent(event));
-    return pre_handle_keyboard_event_result_;
-  }
-  void ExecuteEditCommand(
-      const std::string& command,
-      const base::Optional<base::string16>& value) override {}
-  void Cut() override {}
-  void Copy() override {}
-  void Paste() override {}
-  void SelectAll() override {}
-  void SendScreenRects() override {
-    if (rwh_)
-      rwh_->SendScreenRects();
-  }
-  bool IsFullscreenForCurrentTab() const override { return is_fullscreen_; }
-
- private:
-  std::unique_ptr<NativeWebKeyboardEvent> last_event_;
-  RenderWidgetHostImpl* rwh_;
-  bool is_fullscreen_;
-  TextInputManager text_input_manager_;
-  RenderWidgetHostImpl* focused_widget_;
-  double last_device_scale_factor_;
-  KeyboardEventProcessingResult pre_handle_keyboard_event_result_ =
-      KeyboardEventProcessingResult::HANDLED;
-
-  DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
 
 // Simple observer that keeps track of changes to a window for tests.

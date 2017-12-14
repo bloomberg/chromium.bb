@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/dummy_render_widget_host_delegate.h"
+#include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -130,7 +130,7 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   // Needed by RenderWidgetHostImpl constructor.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  DummyRenderWidgetHostDelegate delegate_;
+  MockRenderWidgetHostDelegate delegate_;
   std::unique_ptr<BrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> process_host1_;
   std::unique_ptr<MockRenderProcessHost> process_host2_;
