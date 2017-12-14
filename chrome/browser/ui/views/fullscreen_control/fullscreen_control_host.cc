@@ -62,7 +62,7 @@ void FullscreenControlHost::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
 
-  if (browser_view_->IsFullscreen()) {
+  if (IsExitUiNeeded()) {
     if (IsVisible()) {
       float control_bottom = static_cast<float>(
           fullscreen_control_popup_.GetFinalBounds().bottom());
@@ -98,8 +98,8 @@ void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void FullscreenControlHost::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_LONG_PRESS &&
-      browser_view_->IsFullscreen() && !IsVisible()) {
+  if (event->type() == ui::ET_GESTURE_LONG_PRESS && IsExitUiNeeded() &&
+      !IsVisible()) {
     ShowForInputEntryMethod(InputEntryMethod::TOUCH);
   }
 }
@@ -131,4 +131,9 @@ void FullscreenControlHost::OnTouchPopupTimeout() {
       input_entry_method_ == InputEntryMethod::TOUCH) {
     Hide(true);
   }
+}
+
+bool FullscreenControlHost::IsExitUiNeeded() {
+  return browser_view_->IsFullscreen() &&
+         browser_view_->ShouldHideUIForFullscreen();
 }
