@@ -336,7 +336,7 @@ cr.define('cr.login', function() {
       url = appendParam(url, 'domain', data.enterpriseEnrollmentDomain);
       url = appendParam(
           url, 'continue',
-          data.gaiaUrl + 'o/oauth2/programmatic_auth?hl=' + data.hl +
+          data.gaiaUrl + 'programmatic_auth_chromeos?hl=' + data.hl +
               '&scope=https%3A%2F%2Fwww.google.com%2Faccounts%2FOAuthLogin&' +
               'client_id=' + encodeURIComponent(data.clientId) +
               '&access_type=offline');
