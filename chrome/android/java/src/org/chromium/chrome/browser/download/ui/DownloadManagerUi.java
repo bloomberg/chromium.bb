@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.annotation.IntDef;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -164,6 +165,20 @@ public class DownloadManagerUi
             RecordUserAction.record("Android.DownloadManager.Delete");
         }
     }
+
+    // Please treat this list as append only and keep it in sync with
+    // Android.DownloadManager.Menu.Actions in enums.xml.
+    @IntDef({MENU_ACTION_CLOSE, MENU_ACTION_MULTI_DELETE, MENU_ACTION_MULTI_SHARE,
+            MENU_ACTION_SHOW_INFO, MENU_ACTION_HIDE_INFO, MENU_ACTION_SEARCH})
+    public @interface MenuAction {}
+
+    private static final int MENU_ACTION_CLOSE = 0;
+    private static final int MENU_ACTION_MULTI_DELETE = 1;
+    private static final int MENU_ACTION_MULTI_SHARE = 2;
+    private static final int MENU_ACTION_SHOW_INFO = 3;
+    private static final int MENU_ACTION_HIDE_INFO = 4;
+    private static final int MENU_ACTION_SEARCH = 5;
+    private static final int MENU_ACTION_BOUNDARY = 6;
 
     private static BackendProvider sProviderForTests;
 
@@ -333,12 +348,18 @@ public class DownloadManagerUi
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         if (item.getItemId() == R.id.close_menu_id && mIsSeparateActivity) {
+            recordMenuActionHistogram(MENU_ACTION_CLOSE);
             mActivity.finish();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
             List<DownloadHistoryItemWrapper> items =
                     mBackendProvider.getSelectionDelegate().getSelectedItems();
             mBackendProvider.getSelectionDelegate().clearSelection();
+
+            recordMenuActionHistogram(MENU_ACTION_MULTI_DELETE);
+            RecordHistogram.recordCount100Histogram(
+                    "Android.DownloadManager.Menu.Delete.SelectedCount", items.size());
+
             deleteItems(items);
             return true;
         } else if (item.getItemId() == R.id.selection_mode_share_menu_id) {
@@ -348,12 +369,20 @@ public class DownloadManagerUi
             //                    startActivityForResult() and the selection would only be cleared
             //                    after receiving an OK response. See crbug.com/638916.
             mBackendProvider.getSelectionDelegate().clearSelection();
+
+            recordMenuActionHistogram(MENU_ACTION_MULTI_SHARE);
+            RecordHistogram.recordCount100Histogram(
+                    "Android.DownloadManager.Menu.Share.SelectedCount", items.size());
+
             startShareIntent(DownloadUtils.createShareIntent(items));
             return true;
         } else if (item.getItemId() == R.id.info_menu_id) {
-            enableStorageInfoHeader(!mHistoryAdapter.shouldShowStorageInfoHeader());
+            boolean showInfo = !mHistoryAdapter.shouldShowStorageInfoHeader();
+            recordMenuActionHistogram(showInfo ? MENU_ACTION_SHOW_INFO : MENU_ACTION_HIDE_INFO);
+            enableStorageInfoHeader(showInfo);
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
+            recordMenuActionHistogram(MENU_ACTION_SEARCH);
             // The header should be removed as soon as a search is started. It will be added back in
             // DownloadHistoryAdatper#filter() when the search is ended.
             mHistoryAdapter.removeHeader();
@@ -513,5 +542,10 @@ public class DownloadManagerUi
     @VisibleForTesting
     public static void setProviderForTests(BackendProvider provider) {
         sProviderForTests = provider;
+    }
+
+    private static void recordMenuActionHistogram(@MenuAction int action) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.DownloadManager.Menu.Action", action, MENU_ACTION_BOUNDARY);
     }
 }
