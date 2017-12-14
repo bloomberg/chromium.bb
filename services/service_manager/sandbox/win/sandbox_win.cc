@@ -838,13 +838,6 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 
   TRACE_EVENT_END0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
-  base::debug::GlobalActivityTracker* tracker =
-      base::debug::GlobalActivityTracker::Get();
-  if (tracker) {
-    tracker->RecordProcessLaunch(target.process_id(),
-                                 cmd_line->GetCommandLineString());
-  }
-
   if (sandbox::SBOX_ALL_OK != result) {
     base::UmaHistogramSparse("Process.Sandbox.Launch.Error", last_error);
     if (result == sandbox::SBOX_ERROR_GENERIC)
@@ -852,6 +845,13 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
     else
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
     return result;
+  }
+
+  base::debug::GlobalActivityTracker* tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (tracker) {
+    tracker->RecordProcessLaunch(target.process_id(),
+                                 cmd_line->GetCommandLineString());
   }
 
   if (sandbox::SBOX_ALL_OK != last_warning)
