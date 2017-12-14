@@ -91,10 +91,10 @@ void LayoutMenuList::AdjustInnerStyle() {
   // when the content overflows, treat it the same as align-items: flex-start.
   // But we only do that for the cases where html.css would otherwise use
   // center.
-  if (Style()->AlignItemsPosition() == kItemPositionCenter) {
+  if (Style()->AlignItemsPosition() == ItemPosition::kCenter) {
     inner_style.SetMarginTop(Length());
     inner_style.SetMarginBottom(Length());
-    inner_style.SetAlignSelfPosition(kItemPositionFlexStart);
+    inner_style.SetAlignSelfPosition(ItemPosition::kFlexStart);
   }
 
   Length padding_start = Length(

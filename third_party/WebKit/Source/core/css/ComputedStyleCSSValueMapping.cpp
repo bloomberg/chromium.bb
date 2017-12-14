@@ -501,14 +501,14 @@ static CSSValue* ValueForReflection(const StyleReflection* reflection,
 static CSSValueList* ValueForItemPositionWithOverflowAlignment(
     const StyleSelfAlignmentData& data) {
   CSSValueList* result = CSSValueList::CreateSpaceSeparated();
-  if (data.PositionType() == kLegacyPosition)
+  if (data.PositionType() == ItemPositionType::kLegacy)
     result->Append(*CSSIdentifierValue::Create(CSSValueLegacy));
-  if (data.GetPosition() == kItemPositionBaseline) {
+  if (data.GetPosition() == ItemPosition::kBaseline) {
     result->Append(
         *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueBaseline),
                               CSSIdentifierValue::Create(CSSValueBaseline),
                               CSSValuePair::kDropIdenticalValues));
-  } else if (data.GetPosition() == kItemPositionLastBaseline) {
+  } else if (data.GetPosition() == ItemPosition::kLastBaseline) {
     result->Append(
         *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueLast),
                               CSSIdentifierValue::Create(CSSValueBaseline),
@@ -516,7 +516,7 @@ static CSSValueList* ValueForItemPositionWithOverflowAlignment(
   } else {
     result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
   }
-  if (data.GetPosition() >= kItemPositionCenter &&
+  if (data.GetPosition() >= ItemPosition::kCenter &&
       data.Overflow() != OverflowAlignment::kDefault)
     result->Append(*CSSIdentifierValue::Create(data.Overflow()));
   DCHECK_LE(result->length(), 2u);
@@ -2715,7 +2715,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(style.Isolation());
     case CSSPropertyJustifyItems:
       return ValueForItemPositionWithOverflowAlignment(
-          style.JustifyItems().GetPosition() == kItemPositionAuto
+          style.JustifyItems().GetPosition() == ItemPosition::kAuto
               ? ComputedStyleInitialValues::InitialDefaultAlignment()
               : style.JustifyItems());
     case CSSPropertyJustifySelf:

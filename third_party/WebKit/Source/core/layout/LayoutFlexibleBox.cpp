@@ -187,7 +187,7 @@ LayoutUnit LayoutFlexibleBox::FirstLineBoxBaseline() const {
     if (child->IsOutOfFlowPositioned())
       continue;
     if (FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child->StyleRef()) ==
-            kItemPositionBaseline &&
+            ItemPosition::kBaseline &&
         !HasAutoMarginsInCrossAxis(*child)) {
       baseline_child = child;
       break;
@@ -331,7 +331,7 @@ void LayoutFlexibleBox::StyleDidChange(StyleDifference diff,
 
   if (old_style &&
       old_style->ResolvedAlignItems(SelfAlignmentNormalBehavior())
-              .GetPosition() == kItemPositionStretch &&
+              .GetPosition() == ItemPosition::kStretch &&
       diff.NeedsFullLayout()) {
     // Flex items that were previously stretching need to be relayed out so we
     // can compute new available cross axis space. This is only necessary for
@@ -343,7 +343,7 @@ void LayoutFlexibleBox::StyleDidChange(StyleDifference diff,
           child->StyleRef()
               .ResolvedAlignSelf(SelfAlignmentNormalBehavior(), old_style)
               .GetPosition();
-      if (previous_alignment == kItemPositionStretch &&
+      if (previous_alignment == ItemPosition::kStretch &&
           previous_alignment !=
               child->StyleRef()
                   .ResolvedAlignSelf(SelfAlignmentNormalBehavior(), Style())
@@ -1109,7 +1109,7 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
 LayoutUnit LayoutFlexibleBox::CrossSizeForPercentageResolution(
     const LayoutBox& child) {
   if (FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child.StyleRef()) !=
-      kItemPositionStretch)
+      ItemPosition::kStretch)
     return LayoutUnit(-1);
 
   // Here we implement https://drafts.csswg.org/css-flexbox/#algo-stretch
@@ -1228,11 +1228,11 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
                                   LayoutUnit max_ascent,
                                   bool is_wrap_reverse) {
   switch (position) {
-    case kItemPositionAuto:
-    case kItemPositionNormal:
+    case ItemPosition::kAuto:
+    case ItemPosition::kNormal:
       NOTREACHED();
       break;
-    case kItemPositionStretch:
+    case ItemPosition::kStretch:
       // Actual stretching must be handled by the caller. Since wrap-reverse
       // flips cross start and cross end, stretch children should be aligned
       // with the cross end. This matters because applyStretchAlignment
@@ -1242,24 +1242,24 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
       if (is_wrap_reverse)
         return available_free_space;
       break;
-    case kItemPositionFlexStart:
+    case ItemPosition::kFlexStart:
       break;
-    case kItemPositionFlexEnd:
+    case ItemPosition::kFlexEnd:
       return available_free_space;
-    case kItemPositionCenter:
+    case ItemPosition::kCenter:
       return available_free_space / 2;
-    case kItemPositionBaseline:
+    case ItemPosition::kBaseline:
       // FIXME: If we get here in columns, we want the use the descent, except
       // we currently can't get the ascent/descent of orthogonal children.
       // https://bugs.webkit.org/show_bug.cgi?id=98076
       return max_ascent - ascent;
-    case kItemPositionLastBaseline:
-    case kItemPositionSelfStart:
-    case kItemPositionSelfEnd:
-    case kItemPositionStart:
-    case kItemPositionEnd:
-    case kItemPositionLeft:
-    case kItemPositionRight:
+    case ItemPosition::kLastBaseline:
+    case ItemPosition::kSelfStart:
+    case ItemPosition::kSelfEnd:
+    case ItemPosition::kStart:
+    case ItemPosition::kEnd:
+    case ItemPosition::kLeft:
+    case ItemPosition::kRight:
       // TODO(jferanndez): Implement these (https://crbug.com/722287).
       break;
   }
@@ -1388,7 +1388,7 @@ bool LayoutFlexibleBox::NeedToStretchChildLogicalHeight(
   // - We are vertical and the child is in horizontal writing mode
   // Otherwise, we need to stretch if the cross axis size is auto.
   if (FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child.StyleRef()) !=
-      kItemPositionStretch)
+      ItemPosition::kStretch)
     return false;
 
   if (IsHorizontalFlow() != child.StyleRef().IsHorizontalWritingMode())
@@ -1634,7 +1634,7 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
         continue;
 
       ItemPosition position = flex_item.Alignment();
-      if (position == kItemPositionStretch)
+      if (position == ItemPosition::kStretch)
         ApplyStretchAlignmentToChild(flex_item, line_cross_axis_extent);
       LayoutUnit available_space =
           flex_item.AvailableAlignmentSpace(line_cross_axis_extent);
@@ -1642,7 +1642,7 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
           available_space, position, flex_item.MarginBoxAscent(), max_ascent,
           StyleRef().FlexWrap() == EFlexWrap::kWrapReverse);
       AdjustAlignmentForChild(*flex_item.box, offset);
-      if (position == kItemPositionBaseline &&
+      if (position == ItemPosition::kBaseline &&
           StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
         min_margin_after_baseline = std::min(
             min_margin_after_baseline,
@@ -1666,7 +1666,7 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
     for (size_t child_number = 0; child_number < line_context.line_items.size();
          ++child_number) {
       const FlexItem& flex_item = line_context.line_items[child_number];
-      if (flex_item.Alignment() == kItemPositionBaseline &&
+      if (flex_item.Alignment() == ItemPosition::kBaseline &&
           !flex_item.HasAutoMarginsInCrossAxis() && min_margin_after_baseline)
         AdjustAlignmentForChild(*flex_item.box, min_margin_after_baseline);
     }

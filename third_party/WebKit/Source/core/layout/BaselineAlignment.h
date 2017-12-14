@@ -75,8 +75,8 @@ class BaselineContext {
 };
 
 static inline bool IsBaselinePosition(ItemPosition position) {
-  return position == kItemPositionBaseline ||
-         position == kItemPositionLastBaseline;
+  return position == ItemPosition::kBaseline ||
+         position == ItemPosition::kLastBaseline;
 }
 
 }  // namespace blink

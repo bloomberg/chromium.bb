@@ -2949,7 +2949,7 @@ bool LayoutBox::ColumnFlexItemHasStretchAlignment() const {
              .ResolvedAlignSelf(
                  ContainingBlock()->SelfAlignmentNormalBehavior(),
                  &parent_style)
-             .GetPosition() == kItemPositionStretch;
+             .GetPosition() == ItemPosition::kStretch;
 }
 
 bool LayoutBox::IsStretchingColumnFlexItem() const {
@@ -2983,15 +2983,16 @@ bool LayoutBox::HasStretchedLogicalWidth() const {
     // Flexbox Items, which obviously should have a container.
     return false;
   }
-  if (cb->IsHorizontalWritingMode() != IsHorizontalWritingMode())
+  if (cb->IsHorizontalWritingMode() != IsHorizontalWritingMode()) {
     return style
                .ResolvedAlignSelf(cb->SelfAlignmentNormalBehavior(this),
                                   cb->Style())
-               .GetPosition() == kItemPositionStretch;
+               .GetPosition() == ItemPosition::kStretch;
+  }
   return style
              .ResolvedJustifySelf(cb->SelfAlignmentNormalBehavior(this),
                                   cb->Style())
-             .GetPosition() == kItemPositionStretch;
+             .GetPosition() == ItemPosition::kStretch;
 }
 
 bool LayoutBox::SizesLogicalWidthToFitContent(

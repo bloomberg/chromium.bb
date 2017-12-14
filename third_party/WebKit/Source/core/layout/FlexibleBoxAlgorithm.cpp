@@ -311,7 +311,7 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
     flex_item.UpdateAutoMarginsInMainAxis(auto_margin_offset);
 
     LayoutUnit child_cross_axis_margin_box_extent;
-    if (flex_item.Alignment() == kItemPositionBaseline &&
+    if (flex_item.Alignment() == ItemPosition::kBaseline &&
         !flex_item.HasAutoMarginsInCrossAxis()) {
       LayoutUnit ascent = flex_item.MarginBoxAscent();
       LayoutUnit descent =
@@ -506,20 +506,20 @@ ItemPosition FlexLayoutAlgorithm::AlignmentForChild(
     const ComputedStyle& flexbox_style,
     const ComputedStyle& child_style) {
   ItemPosition align =
-      child_style.ResolvedAlignSelf(kItemPositionStretch, &flexbox_style)
+      child_style.ResolvedAlignSelf(ItemPosition::kStretch, &flexbox_style)
           .GetPosition();
-  DCHECK_NE(align, kItemPositionAuto);
-  DCHECK_NE(align, kItemPositionNormal);
+  DCHECK_NE(align, ItemPosition::kAuto);
+  DCHECK_NE(align, ItemPosition::kNormal);
 
-  if (align == kItemPositionBaseline &&
+  if (align == ItemPosition::kBaseline &&
       IsHorizontalFlow(flexbox_style) != child_style.IsHorizontalWritingMode())
-    align = kItemPositionFlexStart;
+    align = ItemPosition::kFlexStart;
 
   if (flexbox_style.FlexWrap() == EFlexWrap::kWrapReverse) {
-    if (align == kItemPositionFlexStart)
-      align = kItemPositionFlexEnd;
-    else if (align == kItemPositionFlexEnd)
-      align = kItemPositionFlexStart;
+    if (align == ItemPosition::kFlexStart)
+      align = ItemPosition::kFlexEnd;
+    else if (align == ItemPosition::kFlexEnd)
+      align = ItemPosition::kFlexStart;
   }
 
   return align;
