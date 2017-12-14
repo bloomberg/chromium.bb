@@ -162,6 +162,49 @@ TEST_F(QuicStreamSendBufferTest, AckStreamDataMultipleTimes) {
   EXPECT_FALSE(send_buffer_.OnStreamDataAcked(4000, 100, &newly_acked_length));
 }
 
+TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
+  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
+    return;
+  }
+  EXPECT_TRUE(send_buffer_.IsStreamDataOutstanding(0, 3840));
+  EXPECT_FALSE(send_buffer_.HasPendingRetransmission());
+  // Lost data [0, 1200).
+  send_buffer_.OnStreamDataLost(0, 1200);
+  // Lost data [1500, 2000).
+  send_buffer_.OnStreamDataLost(1500, 500);
+  EXPECT_TRUE(send_buffer_.HasPendingRetransmission());
+
+  EXPECT_EQ(StreamPendingRetransmission(0, 1200),
+            send_buffer_.NextPendingRetransmission());
+  // Retransmit data [0, 500).
+  send_buffer_.OnStreamDataRetransmitted(0, 500);
+  EXPECT_TRUE(send_buffer_.IsStreamDataOutstanding(0, 500));
+  EXPECT_EQ(StreamPendingRetransmission(500, 700),
+            send_buffer_.NextPendingRetransmission());
+  // Ack data [500, 1200).
+  QuicByteCount newly_acked_length = 0;
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(500, 700, &newly_acked_length));
+  EXPECT_FALSE(send_buffer_.IsStreamDataOutstanding(500, 700));
+  EXPECT_TRUE(send_buffer_.HasPendingRetransmission());
+  EXPECT_EQ(StreamPendingRetransmission(1500, 500),
+            send_buffer_.NextPendingRetransmission());
+  // Retransmit data [1500, 2000).
+  send_buffer_.OnStreamDataRetransmitted(1500, 500);
+  EXPECT_FALSE(send_buffer_.HasPendingRetransmission());
+
+  // Lost [200, 800).
+  send_buffer_.OnStreamDataLost(200, 600);
+  EXPECT_TRUE(send_buffer_.HasPendingRetransmission());
+  // Verify [200, 500) is considered as lost, as [500, 800) has been acked.
+  EXPECT_EQ(StreamPendingRetransmission(200, 300),
+            send_buffer_.NextPendingRetransmission());
+
+  // Verify 0 length data is not outstanding.
+  EXPECT_FALSE(send_buffer_.IsStreamDataOutstanding(100, 0));
+  // Verify partially acked data is outstanding.
+  EXPECT_TRUE(send_buffer_.IsStreamDataOutstanding(400, 800));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

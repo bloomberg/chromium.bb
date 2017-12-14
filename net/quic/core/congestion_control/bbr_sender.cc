@@ -220,14 +220,10 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
   if (config.HasClientRequestedIndependentOption(kBBR2, perspective)) {
     max_aggregation_bytes_multiplier_ = 2;
   }
-  if (GetQuicReloadableFlag(quic_bbr_slower_startup) &&
-      config.HasClientRequestedIndependentOption(kBBRS, perspective)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_slower_startup);
+  if (config.HasClientRequestedIndependentOption(kBBRS, perspective)) {
     slower_startup_ = true;
   }
-  if (GetQuicReloadableFlag(quic_bbr_fully_drain_queue) &&
-      config.HasClientRequestedIndependentOption(kBBR3, perspective)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_fully_drain_queue);
+  if (config.HasClientRequestedIndependentOption(kBBR3, perspective)) {
     fully_drain_queue_ = true;
   }
   if (GetQuicReloadableFlag(quic_bbr_conservation_in_startup) &&

@@ -4,6 +4,7 @@
 
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/core/tls_server_handshaker.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/fake_proof_source.h"
@@ -365,7 +366,7 @@ TEST_F(TlsHandshakerTest, ClientConnectionClosedOnTlsAlert) {
   };
   QuicStreamFrame alert(kCryptoStreamId, false,
                         client_stream_.stream_bytes_read(),
-                        QuicStringPiece(alert_msg, arraysize(alert_msg)));
+                        QuicStringPiece(alert_msg, QUIC_ARRAYSIZE(alert_msg)));
   client_stream_.OnStreamFrame(alert);
 
   EXPECT_FALSE(client_stream_.handshake_confirmed());
@@ -386,7 +387,7 @@ TEST_F(TlsHandshakerTest, ServerConnectionClosedOnTlsAlert) {
   };
   QuicStreamFrame alert(kCryptoStreamId, false,
                         server_stream_->stream_bytes_read(),
-                        QuicStringPiece(alert_msg, arraysize(alert_msg)));
+                        QuicStringPiece(alert_msg, QUIC_ARRAYSIZE(alert_msg)));
   server_stream_->OnStreamFrame(alert);
 
   EXPECT_FALSE(server_stream_->handshake_confirmed());

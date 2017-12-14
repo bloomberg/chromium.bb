@@ -14,6 +14,7 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
@@ -36,7 +37,7 @@ std::vector<uint8_t> CryptoUtils::HkdfExpandLabel(
       !CBB_add_u8_length_prefixed(&hkdf_label, &inner_label) ||
       !CBB_add_bytes(&inner_label,
                      reinterpret_cast<const uint8_t*>(label_prefix),
-                     arraysize(label_prefix) - 1) ||
+                     QUIC_ARRAYSIZE(label_prefix) - 1) ||
       !CBB_add_bytes(&inner_label,
                      reinterpret_cast<const uint8_t*>(label.data()),
                      label.size()) ||

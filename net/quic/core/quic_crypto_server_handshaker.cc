@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
@@ -375,7 +376,7 @@ bool QuicCryptoServerHandshaker::GetBase64SHA256ClientChannelID(
   SHA256(reinterpret_cast<const uint8_t*>(channel_id.data()), channel_id.size(),
          digest);
 
-  QuicTextUtils::Base64Encode(digest, arraysize(digest), output);
+  QuicTextUtils::Base64Encode(digest, QUIC_ARRAYSIZE(digest), output);
   return true;
 }
 

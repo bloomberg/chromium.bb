@@ -44,7 +44,8 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
                           QuicTime::Delta ack_delay_time) override;
 
   void OnStreamFrameRetransmitted(QuicStreamOffset offset,
-                                  QuicByteCount data_length) override;
+                                  QuicByteCount data_length,
+                                  bool fin_retransmitted) override;
 
  private:
   friend class test::QuicHeadersStreamPeer;

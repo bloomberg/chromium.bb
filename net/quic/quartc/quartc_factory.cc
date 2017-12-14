@@ -120,8 +120,6 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
 
     // Note: These settings have no effect for Exoblaze builds since
     // SetQuicReloadableFlag() gets stubbed out.
-    SetQuicReloadableFlag(quic_bbr_slower_startup, true);
-    SetQuicReloadableFlag(quic_bbr_fully_drain_queue, true);
     SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);
     for (const auto option : quartc_session_config.bbr_options) {
       switch (option) {

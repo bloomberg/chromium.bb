@@ -21,6 +21,7 @@
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_endian.h"
 #include "net/quic/platform/api/quic_hostname_utils.h"
@@ -466,9 +467,9 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   }
 
   char proof_nonce[32];
-  rand->RandBytes(proof_nonce, arraysize(proof_nonce));
-  out->SetStringPiece(kNONP,
-                      QuicStringPiece(proof_nonce, arraysize(proof_nonce)));
+  rand->RandBytes(proof_nonce, QUIC_ARRAYSIZE(proof_nonce));
+  out->SetStringPiece(
+      kNONP, QuicStringPiece(proof_nonce, QUIC_ARRAYSIZE(proof_nonce)));
 
   out->SetVector(kPDMD, QuicTagVector{kX509});
 

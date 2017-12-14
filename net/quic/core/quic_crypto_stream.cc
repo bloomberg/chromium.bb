@@ -97,4 +97,65 @@ void QuicCryptoStream::WriteCryptoData(const QuicStringPiece& data) {
   WriteOrBufferData(data, /* fin */ false, /* ack_listener */ nullptr);
 }
 
+void QuicCryptoStream::NeuterUnencryptedStreamData() {
+  for (const auto& interval : bytes_consumed_[ENCRYPTION_NONE]) {
+    QuicByteCount newly_acked_length = 0;
+    send_buffer().OnStreamDataAcked(
+        interval.min(), interval.max() - interval.min(), &newly_acked_length);
+  }
+}
+
+void QuicCryptoStream::OnStreamDataConsumed(size_t bytes_consumed) {
+  if (bytes_consumed > 0) {
+    bytes_consumed_[session()->connection()->encryption_level()].Add(
+        stream_bytes_written(), stream_bytes_written() + bytes_consumed);
+  }
+  QuicStream::OnStreamDataConsumed(bytes_consumed);
+}
+
+void QuicCryptoStream::WritePendingRetransmission() {
+  while (HasPendingRetransmission()) {
+    StreamPendingRetransmission pending =
+        send_buffer().NextPendingRetransmission();
+    QuicIntervalSet<QuicStreamOffset> retransmission(
+        pending.offset, pending.offset + pending.length);
+    EncryptionLevel retransmission_encryption_level = ENCRYPTION_NONE;
+    // Determine the encryption level to write the retransmission
+    // at. The retransmission should be written at the same encryption level
+    // as the original transmission.
+    for (size_t i = 0; i < NUM_ENCRYPTION_LEVELS; ++i) {
+      if (retransmission.Intersects(bytes_consumed_[i])) {
+        retransmission_encryption_level = static_cast<EncryptionLevel>(i);
+        retransmission.Intersection(bytes_consumed_[i]);
+        break;
+      }
+    }
+    pending.offset = retransmission.begin()->min();
+    pending.length =
+        retransmission.begin()->max() - retransmission.begin()->min();
+    EncryptionLevel current_encryption_level =
+        session()->connection()->encryption_level();
+    // Set appropriate encryption level.
+    session()->connection()->SetDefaultEncryptionLevel(
+        retransmission_encryption_level);
+    QuicConsumedData consumed = session()->WritevData(
+        this, id(), pending.length, pending.offset, NO_FIN);
+    QUIC_DVLOG(1) << ENDPOINT << "stream " << id()
+                  << " tries to retransmit stream data [" << pending.offset
+                  << ", " << pending.offset + pending.length
+                  << ") with encryption level: "
+                  << retransmission_encryption_level
+                  << ", consumed: " << consumed;
+    OnStreamFrameRetransmitted(pending.offset, consumed.bytes_consumed,
+                               consumed.fin_consumed);
+    // Restore encryption level.
+    session()->connection()->SetDefaultEncryptionLevel(
+        current_encryption_level);
+    if (consumed.bytes_consumed < pending.length) {
+      // The connection is write blocked.
+      break;
+    }
+  }
+}
+
 }  // namespace net

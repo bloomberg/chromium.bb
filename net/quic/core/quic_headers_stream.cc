@@ -5,6 +5,7 @@
 #include "net/quic/core/quic_headers_stream.h"
 
 #include "net/quic/core/quic_spdy_session.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 
@@ -38,7 +39,7 @@ void QuicHeadersStream::OnDataAvailable() {
   QuicTime timestamp(QuicTime::Zero());
   while (true) {
     iov.iov_base = buffer;
-    iov.iov_len = arraysize(buffer);
+    iov.iov_len = QUIC_ARRAYSIZE(buffer);
     if (!sequencer()->GetReadableRegion(&iov, &timestamp)) {
       // No more data to read.
       break;
@@ -111,7 +112,8 @@ void QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
 }
 
 void QuicHeadersStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
-                                                   QuicByteCount data_length) {
+                                                   QuicByteCount data_length,
+                                                   bool /*fin_retransmitted*/) {
   for (CompressedHeaderInfo& header : unacked_headers_) {
     if (offset < header.headers_stream_offset) {
       // This header frame offset belongs to headers with smaller offset, stop

@@ -17,6 +17,7 @@
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_packet_creator.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_endian.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -100,7 +101,7 @@ string Sha1Hash(QuicStringPiece data) {
   char buffer[SHA_DIGEST_LENGTH];
   SHA1(reinterpret_cast<const uint8_t*>(data.data()), data.size(),
        reinterpret_cast<uint8_t*>(buffer));
-  return string(buffer, arraysize(buffer));
+  return string(buffer, QUIC_ARRAYSIZE(buffer));
 }
 
 uint64_t SimpleRandom::RandUint64() {

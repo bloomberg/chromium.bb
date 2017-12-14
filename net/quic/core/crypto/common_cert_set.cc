@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "net/quic/core/quic_utils.h"
-
+#include "net/quic/platform/api/quic_arraysize.h"
 
 namespace net {
 
@@ -77,11 +77,11 @@ class CommonCertSetsQUIC : public CommonCertSets {
   // CommonCertSets interface.
   QuicStringPiece GetCommonHashes() const override {
     return QuicStringPiece(reinterpret_cast<const char*>(kSetHashes),
-                           sizeof(uint64_t) * arraysize(kSetHashes));
+                           sizeof(uint64_t) * QUIC_ARRAYSIZE(kSetHashes));
   }
 
   QuicStringPiece GetCert(uint64_t hash, uint32_t index) const override {
-    for (size_t i = 0; i < arraysize(kSets); i++) {
+    for (size_t i = 0; i < QUIC_ARRAYSIZE(kSets); i++) {
       if (kSets[i].hash == hash) {
         if (index < kSets[i].num_certs) {
           return QuicStringPiece(
@@ -108,7 +108,7 @@ class CommonCertSetsQUIC : public CommonCertSets {
       memcpy(&hash, common_set_hashes.data() + i * sizeof(uint64_t),
              sizeof(uint64_t));
 
-      for (size_t j = 0; j < arraysize(kSets); j++) {
+      for (size_t j = 0; j < QUIC_ARRAYSIZE(kSets); j++) {
         if (kSets[j].hash != hash) {
           continue;
         }
