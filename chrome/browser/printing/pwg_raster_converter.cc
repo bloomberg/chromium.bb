@@ -22,7 +22,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
-#include "chrome/common/printing/pdf_to_pwg_raster_converter.mojom.h"
+#include "chrome/services/printing/public/interfaces/constants.mojom.h"
+#include "chrome/services/printing/public/interfaces/pdf_to_pwg_raster_converter.mojom.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "content/public/browser/browser_thread.h"
@@ -178,7 +179,7 @@ void PWGRasterConverterHelper::OnFilesReadyOnUIThread() {
 
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(printing::mojom::kPdfToPwgRasterConverterServiceName,
+      ->BindInterface(printing::mojom::kChromePrintingServiceName,
                       &pdf_to_pwg_raster_converter_ptr_);
 
   pdf_to_pwg_raster_converter_ptr_.set_connection_error_handler(

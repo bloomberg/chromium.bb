@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//chrome/common/printing/pdf_render_settings.typemap",
-  "//chrome/common/printing/pdf_to_pwg_raster_converter.typemap",
+  "//chrome/services/printing/public/interfaces/pdf_render_settings.typemap",
+  "//chrome/services/printing/public/interfaces/pdf_to_pwg_raster_converter.typemap",
 ]

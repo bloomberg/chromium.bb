@@ -1,4 +1,0 @@
-file://printing/OWNERS
-
-per-file pdf_to_pwg_raster_converter_manifest.json=set noparent
-per-file pdf_to_pwg_raster_converter_manifest.json=file://ipc/SECURITY_OWNERS

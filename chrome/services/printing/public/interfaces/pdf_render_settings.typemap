@@ -1,15 +1,14 @@
-mojom = "//chrome/common/printing/pdf_render_settings.mojom"
+mojom = "//chrome/services/printing/public/interfaces/pdf_render_settings.mojom"
 
 public_headers = [
   "//printing/pdf_render_settings.h",
   "//ui/gfx/geometry/rect.h",
 ]
 
-traits_headers =
-    [ "//chrome/common/printing/pdf_render_settings_struct_traits.h" ]
+traits_headers = [ "//chrome/services/printing/public/interfaces/pdf_render_settings_struct_traits.h" ]
 
 sources = [
-  "//chrome/common/printing/pdf_render_settings_struct_traits.cc",
+  "//chrome/services/printing/public/interfaces/pdf_render_settings_struct_traits.cc",
 ]
 
 public_deps = [

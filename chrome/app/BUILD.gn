@@ -393,8 +393,7 @@ chrome_packaged_services = [
 ]
 
 if (enable_print_preview) {
-  chrome_packaged_services +=
-      [ "//chrome/utility:pdf_to_pwg_raster_converter_manifest" ]
+  chrome_packaged_services += [ "//chrome/services/printing:manifest" ]
 }
 
 if (enable_basic_printing || enable_print_preview) {

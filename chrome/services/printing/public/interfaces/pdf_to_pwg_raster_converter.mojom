@@ -4,10 +4,7 @@
 
 module printing.mojom;
 
-import "chrome/common/printing/pdf_render_settings.mojom";
-
-const string kPdfToPwgRasterConverterServiceName =
-    "pdf_to_pwg_raster_converter";
+import "chrome/services/printing/public/interfaces/pdf_render_settings.mojom";
 
 struct PwgRasterSettings {
   enum TransformType {

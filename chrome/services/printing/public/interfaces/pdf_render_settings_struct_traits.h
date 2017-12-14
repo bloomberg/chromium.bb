@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PRINTING_PDF_RENDER_SETTINGS_STRUCT_TRAITS_H_
-#define CHROME_COMMON_PRINTING_PDF_RENDER_SETTINGS_STRUCT_TRAITS_H_
+#ifndef CHROME_SERVICES_PRINTING_PUBLIC_INTERFACES_PDF_RENDER_SETTINGS_STRUCT_TRAITS_H_
+#define CHROME_SERVICES_PRINTING_PUBLIC_INTERFACES_PDF_RENDER_SETTINGS_STRUCT_TRAITS_H_
 
 #include "build/build_config.h"
-#include "chrome/common/printing/pdf_render_settings.mojom.h"
+#include "chrome/services/printing/public/interfaces/pdf_render_settings.mojom.h"
 #include "printing/pdf_render_settings.h"
 
 namespace mojo {
@@ -95,4 +95,4 @@ class StructTraits<printing::mojom::PdfRenderSettingsDataView,
 
 }  // namespace mojo
 
-#endif  // CHROME_COMMON_PRINTING_PDF_RENDER_SETTINGS_STRUCT_TRAITS_H_
+#endif  // CHROME_SERVICES_PRINTING_PUBLIC_INTERFACES_PDF_RENDER_SETTINGS_STRUCT_TRAITS_H_

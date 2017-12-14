@@ -1,6 +1,6 @@
 {
-  "name": "pdf_to_pwg_raster_converter",
-  "display_name": "PDF to PWG Raster Converter",
+  "name": "chrome_printing",
+  "display_name": "Printing",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

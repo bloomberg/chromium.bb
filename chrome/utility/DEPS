@@ -6,6 +6,8 @@ include_rules = [
   "+chrome/services/file_util/public/interfaces",
   "+chrome/services/media_gallery_util/media_gallery_util_service.h",
   "+chrome/services/media_gallery_util/public/interfaces",
+  "+chrome/services/printing/printing_service.h",
+  "+chrome/services/printing/public/interfaces",
   "+chrome/services/removable_storage_writer/removable_storage_writer_service.h",
   "+chrome/services/removable_storage_writer/public/interfaces",
   "+chrome/services/util_win/util_win_service.h",

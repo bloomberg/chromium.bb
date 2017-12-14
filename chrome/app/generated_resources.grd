@@ -3312,8 +3312,8 @@ are declared in build/common.gypi.
         </message>
       </if>
       <if expr="enable_print_preview">
-        <message name="IDS_UTILITY_PROCESS_PWG_RASTER_CONVERTOR_NAME" desc="The name of the utility process used for converting PDFs to the PWG Raster format.">
-          PWG Raster Convertor
+        <message name="IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME" desc="The name of the utility process used for printing conversions.">
+          Printing service
         </message>
       </if>
       <message name="IDS_UTILITY_PROCESS_PATCH_NAME" desc="The name of the utility process used for patching file operations.">
