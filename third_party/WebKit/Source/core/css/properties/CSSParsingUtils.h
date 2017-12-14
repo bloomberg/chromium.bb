@@ -13,8 +13,10 @@
 
 namespace blink {
 
-class CSSIdentifierValue;
+namespace cssvalue {
 class CSSFontFeatureValue;
+}  // namespace cssvalue
+class CSSIdentifierValue;
 class CSSParserContext;
 class CSSParserLocalContext;
 class CSSShadowValue;
@@ -125,7 +127,7 @@ CSSValue* ConsumeFontStretch(CSSParserTokenRange&, const CSSParserMode&);
 CSSValue* ConsumeFontStyle(CSSParserTokenRange&, const CSSParserMode&);
 CSSValue* ConsumeFontWeight(CSSParserTokenRange&, const CSSParserMode&);
 CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&);
-CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&);
+cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange&);
 
 CSSValue* ConsumeGridLine(CSSParserTokenRange&);

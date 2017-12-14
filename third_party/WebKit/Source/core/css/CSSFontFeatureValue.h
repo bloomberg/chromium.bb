@@ -30,7 +30,7 @@
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-
+namespace cssvalue {
 class CSSFontFeatureValue : public CSSValue {
  public:
   static CSSFontFeatureValue* Create(const AtomicString& tag, int value) {
@@ -56,6 +56,7 @@ class CSSFontFeatureValue : public CSSValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFeatureValue, IsFontFeatureValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif

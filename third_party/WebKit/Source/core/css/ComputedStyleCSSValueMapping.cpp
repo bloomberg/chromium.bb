@@ -2580,8 +2580,9 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       CSSValueList* list = CSSValueList::CreateCommaSeparated();
       for (unsigned i = 0; i < feature_settings->size(); ++i) {
         const FontFeature& feature = feature_settings->at(i);
-        CSSFontFeatureValue* feature_value =
-            CSSFontFeatureValue::Create(feature.Tag(), feature.Value());
+        cssvalue::CSSFontFeatureValue* feature_value =
+            cssvalue::CSSFontFeatureValue::Create(feature.Tag(),
+                                                  feature.Value());
         list->Append(*feature_value);
       }
       return list;

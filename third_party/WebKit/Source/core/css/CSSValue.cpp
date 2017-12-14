@@ -169,7 +169,7 @@ bool CSSValue::operator==(const CSSValue& other) const {
       case kFontFamilyClass:
         return CompareCSSValues<CSSFontFamilyValue>(*this, other);
       case kFontFeatureClass:
-        return CompareCSSValues<CSSFontFeatureValue>(*this, other);
+        return CompareCSSValues<cssvalue::CSSFontFeatureValue>(*this, other);
       case kFontStyleRangeClass:
         return CompareCSSValues<CSSFontStyleRangeValue>(*this, other);
       case kFontVariationClass:

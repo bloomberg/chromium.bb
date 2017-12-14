@@ -257,7 +257,8 @@ StyleBuilderConverter::ConvertFontFeatureSettings(StyleResolverState& state,
   scoped_refptr<FontFeatureSettings> settings = FontFeatureSettings::Create();
   int len = list.length();
   for (int i = 0; i < len; ++i) {
-    const CSSFontFeatureValue& feature = ToCSSFontFeatureValue(list.Item(i));
+    const cssvalue::CSSFontFeatureValue& feature =
+        ToCSSFontFeatureValue(list.Item(i));
     settings->Append(FontFeature(feature.Tag(), feature.Value()));
   }
   return settings;
