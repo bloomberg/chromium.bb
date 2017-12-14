@@ -39,8 +39,7 @@ sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
   metadata.fCreator = creator.empty()
                           ? SkString("Chromium")
                           : SkString(creator.c_str(), creator.size());
-  return SkDocument::MakePDF(stream, SK_ScalarDefaultRasterDPI, metadata,
-                             nullptr, false);
+  return SkDocument::MakePDF(stream, metadata);
 }
 
 }  // namespace printing
