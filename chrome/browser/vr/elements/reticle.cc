@@ -76,6 +76,7 @@ static constexpr float kReticleColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
 Reticle::Reticle(UiScene* scene, Model* model) : scene_(scene), model_(model) {
   SetName(kReticle);
+  SetDrawPhase(kPhaseForeground);
   set_hit_testable(false);
   SetVisible(true);
 }
