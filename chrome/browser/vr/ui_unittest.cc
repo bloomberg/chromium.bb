@@ -997,44 +997,6 @@ TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {
   ui_->OnAppButtonClicked();
 }
 
-TEST(UiReticleTest, ReticleRenderedOnPlanarChildren) {
-  UiScene scene;
-  Model model;
-
-  auto reticle = base::MakeUnique<Reticle>(&scene, &model);
-  reticle->SetDrawPhase(kPhaseNone);
-  scene.root_element().AddChild(std::move(reticle));
-
-  auto element = base::MakeUnique<UiElement>();
-  UiElement* parent = element.get();
-  parent->SetDrawPhase(kPhaseForeground);
-  parent->SetName(k2dBrowsingRoot);
-  scene.root_element().AddChild(std::move(element));
-  model.reticle.target_element_id = parent->id();
-
-  // Add 4 children to the parent:
-  // - Parent (hit element, initially having reticle)
-  //   - Planar
-  //   - Planar but offset (should receive reticle)
-  //   - Parallel
-  //   - Rotated
-  for (int i = 0; i < 4; i++) {
-    element = base::MakeUnique<UiElement>();
-    element->SetDrawPhase(kPhaseForeground);
-    parent->AddChild(std::move(element));
-  }
-  parent->children()[1]->SetTranslate(1, 0, 0);
-  parent->children()[2]->SetTranslate(0, 0, -1);
-  parent->children()[3]->SetRotate(1, 0, 0, 1);
-  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
-
-  // Sorted set should have 1 parent, 4 children and 1 reticle.
-  UiScene::Elements sorted = scene.GetVisible2dBrowsingElements();
-  EXPECT_EQ(6u, sorted.size());
-  // Reticle should be after the parent and first two children.
-  EXPECT_EQ(sorted[3]->name(), kReticle);
-}
-
 // This test ensures that the render order matches the expected tree state. All
 // phases are merged, as the order is the same. Unnamed and unrenderable
 // elements are skipped.
@@ -1046,79 +1008,6 @@ TEST_F(UiTest, UiRendererSortingTest) {
   for (size_t i = 0; i < sorted.size(); ++i) {
     ASSERT_EQ(kElementsInDrawOrder[i], sorted[i]->DebugName());
   }
-}
-
-TEST_F(UiTest, ReticleStacking) {
-  CreateScene(kNotInCct, kNotInWebVr);
-  UiElement* content = scene_->GetUiElementByName(kContentQuad);
-  EXPECT_TRUE(content);
-  model_->reticle.target_element_id = content->id();
-  auto unsorted = scene_->GetVisible2dBrowsingElements();
-  auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
-  bool saw_target = false;
-  for (auto* e : sorted) {
-    if (e == content) {
-      saw_target = true;
-    } else if (saw_target) {
-      EXPECT_EQ(kReticle, e->name());
-      break;
-    }
-  }
-
-  EXPECT_TRUE(saw_target);
-
-  auto controller_elements = scene_->GetVisibleControllerElements();
-  bool saw_reticle = false;
-  for (auto* e : controller_elements) {
-    if (e->name() == kReticle) {
-      saw_reticle = true;
-    }
-  }
-  EXPECT_FALSE(saw_reticle);
-}
-
-TEST_F(UiTest, ReticleStackingAtopForeground) {
-  CreateScene(kNotInCct, kNotInWebVr);
-  UiElement* element = scene_->GetUiElementByName(kContentQuad);
-  EXPECT_TRUE(element);
-  element->SetDrawPhase(kPhaseOverlayForeground);
-  model_->reticle.target_element_id = element->id();
-  auto unsorted = scene_->GetVisible2dBrowsingOverlayElements();
-  auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
-  bool saw_target = false;
-  for (auto* e : sorted) {
-    if (e == element) {
-      saw_target = true;
-    } else if (saw_target) {
-      EXPECT_EQ(kReticle, e->name());
-      break;
-    }
-  }
-  EXPECT_TRUE(saw_target);
-
-  auto controller_elements = scene_->GetVisibleControllerElements();
-  bool saw_reticle = false;
-  for (auto* e : controller_elements) {
-    if (e->name() == kReticle) {
-      saw_reticle = true;
-    }
-  }
-  EXPECT_FALSE(saw_reticle);
-}
-
-TEST_F(UiTest, ReticleStackingWithControllerElements) {
-  CreateScene(kNotInCct, kNotInWebVr);
-  UiElement* element = scene_->GetUiElementByName(kReticle);
-  EXPECT_TRUE(element);
-  element->SetDrawPhase(kPhaseBackground);
-  EXPECT_NE(scene_->GetUiElementByName(kLaser)->draw_phase(),
-            element->draw_phase());
-  model_->reticle.target_element_id = 0;
-  auto unsorted = scene_->GetVisibleControllerElements();
-  auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
-  EXPECT_EQ(element->DebugName(), sorted.back()->DebugName());
-  EXPECT_EQ(scene_->GetUiElementByName(kLaser)->draw_phase(),
-            element->draw_phase());
 }
 
 // Tests that transient elements will show, even if there is a long delay
