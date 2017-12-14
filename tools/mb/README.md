@@ -1,13 +1,19 @@
 # MB - The Meta-Build wrapper
 
-MB is a simple wrapper intended to provide a uniform interface to either
-GYP or GN, such that users and bots can call one script and not need to
-worry about whether a given bot is meant to use GN or GYP.
+MB is a simple wrapper around the GN build tool.
+
+It was originally written as part of the GYP-&gt;GN migration, in order to
+provide a uniform interface to either GYP or GN, such that users and bots
+can call one script and not need to worry about whether a given bot was
+meant to use GN or GYP.
+
+It eventually grew additional functionality and is now still used even
+though everything is GN-only.
 
 It supports two main functions:
 
-1. "gen" - the main `gyp_chromium` / `gn gen` invocation that generates the
-   Ninja files needed for the build.
+1. "gen" - the main `gn gen` invocation that generates the Ninja files
+   needed for the build.
 
 2. "analyze" - the step that takes a list of modified files and a list of
    desired targets and reports which targets will need to be rebuilt.

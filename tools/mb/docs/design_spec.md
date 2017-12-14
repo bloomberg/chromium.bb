@@ -4,21 +4,22 @@
 
 ## Intro
 
-MB is intended to address two major aspects of the GYP -> GN transition
-for Chromium:
+MB was originally intended to address two major aspects of the GYP -> GN
+transition for Chromium:
 
 1. "bot toggling" - make it so that we can easily flip a given bot
    back and forth between GN and GYP.
 
 2. "bot configuration" - provide a single source of truth for all of
-   the different configurations (os/arch/`gyp_define` combinations) of
+   the different configurations (os/arch/`gn_args` combinations) of
    Chromium that are supported.
 
-MB must handle at least the `gen` and `analyze` steps on the bots, i.e.,
-we need to wrap both the `gyp_chromium` invocation to generate the
-Ninja files, and the `analyze` step that takes a list of modified files
-and a list of targets to build and returns which targets are affected by
-the files.
+Now that everything is using GN, only the second purpose is really relevant,
+but it's still important. MB must handle at least the `gen` and `analyze`
+steps on the bots, i.e., we need to wrap both the `gn gen` invocation to
+generate the Ninja files, and the `analyze` step that takes a list of
+modified files and a list of targets to build and returns which targets
+are affected by the files.
 
 For more information on how to actually use MB, see
 [the user guide](user_guide.md).
@@ -26,7 +27,7 @@ For more information on how to actually use MB, see
 ## Design
 
 MB is intended to be as simple as possible, and to defer as much work as
-possible to GN or GYP. It should live as a very simple Python wrapper
+possible to GN. It should live as a very simple Python wrapper
 that offers little in the way of surprises.
 
 ### Command line
@@ -40,16 +41,12 @@ It is structured as a single binary that supports a list of subcommands:
 
 `mb` will first look for a bot config file in a set of different locations
 (initially just in //ios/build/bots). Bot config files are JSON files that
-contain keys for 'GYP_DEFINES' (a list of strings that will be joined together
-with spaces and passed to GYP, or a dict that will be similarly converted),
-'gn_args' (a list of strings that will be joined together), and an
-'mb_type' field that says whether to use GN or GYP. Bot config files
-require the full list of settings to be given explicitly.
+contain keys for 'gn_args' (a list of strings that will be joined together).
+Bot config files require the full list of settings to be given explicitly.
 
 If no matching bot config file is found, `mb` looks in the
-`//tools/mb/mb_config.pyl` config file to determine whether to use GYP or GN
-for a particular build directory, and what set of flags (`GYP_DEFINES` or `gn
-args`) to use.
+`//tools/mb/mb_config.pyl` config file to determine what set of flags
+(`gn args`) to use.
 
 A config can either be specified directly (useful for testing) or by specifying
 the master name and builder name (useful on the bots so that they do not need
@@ -63,10 +60,6 @@ The interface to `mb analyze` is described in the
 [user\_guide](user_guide.md#mb_analyze).
 
 The way analyze works can be subtle and complicated (see below).
-
-Since the interface basically mirrors the way the "analyze" step on the bots
-invokes `gyp_chromium` today, when the config is found to be a gyp config,
-the arguments are passed straight through.
 
 It implements the equivalent functionality in GN by calling `gn refs
 [list of files] --type=executable --all --as=output` and filtering the
@@ -110,16 +103,15 @@ So:
    you need to build base_unittests. For others (like the telemetry and
    layout tests), you might need to build several executables in order to
    run the tests, and that mapping might best be captured by a *meta*
-   target (a GN group or a GYP 'none' target like `webkit_tests`) that
-   depends on the right list of files. Because the GN and GYP files know
-   nothing about test steps, we have to have some way of mapping back
-   and forth between test steps and build targets. That mapping
-   is *not* currently available to MB (or GN or GYP), and so we have to 
-   enough information to make it possible for the caller to do the mapping.
+   target (a GN group like `webkit_tests`) that depends on the right list
+   of files. Because the BUILD.gn files know nothing about test steps, we
+   have to have some way of mapping back and forth between test steps and
+   build targets. That mapping is *not* currently available to MB (or GN),
+   and so we have to provide enough information to make it possible for
+   the caller to do the mapping.
 
 3. We might also want to know when test targets are affected by data files
    that aren't compiled (python scripts, or the layout tests themselves).
-   There's no good way to do this in GYP, but GN supports this.
 
 4. We also want to ensure that particular targets still compile even if they
    are not actually tested; consider testing the installers themselves, or
@@ -137,9 +129,9 @@ So:
 6. As noted above, in the ideal case we actually have enough resources and
    things are fast enough that we can afford to build everything affected by a
    patch, but listing every possible target explicitly would be painful. The
-   GYP and GN Ninja generators provide an 'all' target that captures (nearly,
+   GN Ninja generator provides an 'all' target that captures (nearly,
    see [crbug.com/503241](crbug.com/503241)) everything, but unfortunately
-   neither GN nor GYP actually represents 'all' as a meta target in the build
+   GN doesn't actually represent 'all' as a meta target in the build
    graph, so we will need to write code to handle that specially.
 
 7. In some cases, we will not be able to correctly analyze the build graph to
@@ -216,7 +208,7 @@ In the output case, an empty list indicates that there was nothing to
 build, or that there were no affected test targets as appropriate.
 
 Note that passing no arguments to Ninja is equivalent to passing
-`all` to Ninja (at least given how GN and GYP work); however, we
+`all` to Ninja (at least given how GN works); however, we
 don't want to take advantage of this in most cases because we don't
 actually want to build every out of date target, only the targets
 potentially affected by the files. One could try to indicate
@@ -225,7 +217,7 @@ list, but using the existing fields for this seems fragile and/or
 confusing, and adding a new field for this seems unwarranted at this time.
 
 There is an "error" field in case something goes wrong (like the
-empty file list case, above, or an internal error in MB/GYP/GN). The
+empty file list case, above, or an internal error in MB/GN). The
 analyze code should also return an error code to the shell if appropriate
 to indicate that the command failed.
 
@@ -350,8 +342,7 @@ it is ...
 
 The first issue is whether or not this should exist as a script in
 Chromium at all; an alternative would be to simply change the bot
-configurations to know whether to use GYP or GN, and which flags to
-pass.
+configurations to know which flags to pass.
 
 That would certainly work, but experience over the past two years
 suggests a few things:
@@ -373,22 +364,11 @@ be a simple one, hiding as much of the chromium logic as possible.
 ### Why not have MB be smarter about de-duping flags?
 
 This just adds complexity to the MB implementation, and duplicates logic
-that GYP and GN already have to support anyway; in particular, it might
-require MB to know how to parse GYP and GN values. The belief is that
+that GN already has to support anyway; in particular, it might
+require MB to know how to parse GN values. The belief is that
 if MB does *not* do this, it will lead to fewer surprises.
 
 It will not be hard to change this if need be.
-
-### Integration w/ gclient runhooks
-
-On the bots, we will disable `gyp_chromium` as part of runhooks (using
-`GYP_CHROMIUM_NO_ACTION=1`), so that mb shows up as a separate step.
-
-At the moment, we expect most developers to either continue to use
-`gyp_chromium` in runhooks or to disable at as above if they have no
-use for GYP at all. We may revisit how this works once we encourage more
-people to use GN full-time (i.e., we might take `gyp_chromium` out of
-runhooks altogether).
 
 ### Config per flag set or config per (os/arch/flag set)?
 
@@ -410,17 +390,15 @@ config file change, however.
 
 ### Non-goals
 
-* MB is not intended to replace direct invocation of GN or GYP for
+* MB is not intended to replace direct invocation of GN for
   complicated build scenarios (a.k.a. Chrome OS), where multiple flags need
   to be set to user-defined paths for specific toolchains (e.g., where
   Chrome OS needs to specify specific board types and compilers).
 
 * MB is not intended at this time to be something developers use frequently,
-  or to add a lot of features to. We hope to be able to get rid of it once
-  the GYP->GN migration is done, and so we should not add things for
-  developers that can't easily be added to GN itself.
+  or to add a lot of features to. We hope to be able to get rid of it
+  eventually.
 
 * MB is not intended to replace the
-  [CR tool](https://code.google.com/p/chromium/wiki/CRUserManual). Not
-  only is it only intended to replace the gyp\_chromium part of `'gclient
-  runhooks'`, it is not really meant as a developer-facing tool.
+  [CR tool](https://code.google.com/p/chromium/wiki/CRUserManual), and
+  it is not really meant as a developer-facing tool.
