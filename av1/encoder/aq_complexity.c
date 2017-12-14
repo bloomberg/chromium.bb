@@ -39,8 +39,6 @@ static const double aq_c_var_thresholds[AQ_C_STRENGTHS][AQ_C_SEGMENTS] = {
   { -3.0, -2.0, -1.0, 100.00, 100.0 }
 };
 
-#define DEFAULT_COMPLEXITY 64
-
 static int get_aq_c_strength(int q_index, aom_bit_depth_t bit_depth) {
   // Approximate base quatizer (truncated to int)
   const int base_quant = av1_ac_quant_Q3(q_index, 0, bit_depth) / 4;
@@ -104,7 +102,6 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
 
 #define DEFAULT_LV_THRESH 10.0
 #define MIN_DEFAULT_LV_THRESH 8.0
-#define VAR_STRENGTH_STEP 0.25
 // Select a segment for the current block.
 // The choice of segment for a block depends on the ratio of the projected
 // bits for the block vs a target average and its spatial complexity.

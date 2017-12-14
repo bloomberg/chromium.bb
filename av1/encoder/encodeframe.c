@@ -63,11 +63,6 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/tokenize.h"
-#if CONFIG_HIGHBITDEPTH
-#define IF_HBD(...) __VA_ARGS__
-#else
-#define IF_HBD(...)
-#endif  // CONFIG_HIGHBITDEPTH
 
 static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                               ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,

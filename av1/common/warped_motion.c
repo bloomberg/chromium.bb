@@ -1001,8 +1001,6 @@ void av1_warp_plane(WarpedMotionParams *wm,
                p_height, p_stride, subsampling_x, subsampling_y, conv_params);
 }
 
-#define LEAST_SQUARES_ORDER 2
-
 #define LS_MV_MAX 256  // max mv in 1/8-pel
 // Use LS_STEP = 8 so that 2 less bits needed for A, Bx, By.
 #define LS_STEP 8

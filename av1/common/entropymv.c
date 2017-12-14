@@ -12,9 +12,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/entropymv.h"
 
-// Integer pel reference mv threshold for use of high-precision 1/8 mv
-#define COMPANDED_MVREF_THRESH 8
-
 const aom_tree_index av1_mv_joint_tree[TREE_SIZE(MV_JOINTS)] = {
   -MV_JOINT_ZERO, 2, -MV_JOINT_HNZVZ, 4, -MV_JOINT_HZVNZ, -MV_JOINT_HNZVNZ
 };

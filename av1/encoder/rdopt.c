@@ -115,12 +115,10 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
   ((1 << ALTREF_FRAME) | (1 << ALTREF2_FRAME) | (1 << BWDREF_FRAME) | 0x01)
 #endif  // CONFIG_EXT_COMP_REFS
 
-#define MIN_EARLY_TERM_INDEX 3
 #define NEW_MV_DISCOUNT_FACTOR 8
 
 #if CONFIG_EXT_INTRA
 #define ANGLE_SKIP_THRESH 10
-#define FILTER_FAST_SEARCH 1
 #endif  // CONFIG_EXT_INTRA
 
 static const double ADST_FLIP_SVM[8] = {

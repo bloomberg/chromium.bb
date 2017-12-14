@@ -23,8 +23,6 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
-#define USE_SPEED_TEST (0)
-
 typedef void (*SubtractFunc)(int rows, int cols, int16_t *diff_ptr,
                              ptrdiff_t diff_stride, const uint8_t *src_ptr,
                              ptrdiff_t src_stride, const uint8_t *pred_ptr,
