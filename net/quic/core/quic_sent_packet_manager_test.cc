@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "net/quic/core/quic_pending_retransmission.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_string_piece.h"
@@ -255,9 +256,10 @@ TEST_F(QuicSentPacketManagerTest, IsUnacked) {
   SendDataPacket(1);
 
   QuicPacketNumber unacked[] = {1};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   QuicPacketNumber retransmittable[] = {1};
-  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+  VerifyRetransmittablePackets(retransmittable,
+                               QUIC_ARRAYSIZE(retransmittable));
 }
 
 TEST_F(QuicSentPacketManagerTest, IsUnAckedRetransmit) {
@@ -266,9 +268,10 @@ TEST_F(QuicSentPacketManagerTest, IsUnAckedRetransmit) {
 
   EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(&manager_, 2));
   QuicPacketNumber unacked[] = {1, 2};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   QuicPacketNumber retransmittable[] = {2};
-  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+  VerifyRetransmittablePackets(retransmittable,
+                               QUIC_ARRAYSIZE(retransmittable));
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
@@ -283,7 +286,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
 
   // Packet 1 is unacked, pending, but not retransmittable.
   QuicPacketNumber unacked[] = {1};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(nullptr, 0);
 }
@@ -320,7 +323,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenStopRetransmittingBeforeSend) {
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   QuicPacketNumber unacked[] = {1};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
   EXPECT_EQ(0u, stats_.packets_spuriously_retransmitted);
 }
@@ -338,7 +341,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
 
   // 2 remains unacked, but no packets have retransmittable data.
   QuicPacketNumber unacked[] = {2};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(nullptr, 0);
 
@@ -406,7 +409,7 @@ TEST_F(QuicSentPacketManagerTest,
 
   // Since 2 was marked for retransmit, when 1 is acked, 2 is kept for RTT.
   QuicPacketNumber unacked[] = {2};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(nullptr, 0);
 
@@ -435,7 +438,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
 
   // 2 and 3 remain unacked, but no packets have retransmittable data.
   QuicPacketNumber unacked[] = {2, 3};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(nullptr, 0);
 
@@ -443,11 +446,11 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   SendDataPacket(4);
   ack_frame = InitAckFrame({{1, 2}, {3, 5}});
   QuicPacketNumber acked[] = {3, 4};
-  ExpectAcksAndLosses(true, acked, arraysize(acked), nullptr, 0);
+  ExpectAcksAndLosses(true, acked, QUIC_ARRAYSIZE(acked), nullptr, 0);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
   QuicPacketNumber unacked2[] = {2};
-  VerifyUnackedPackets(unacked2, arraysize(unacked2));
+  VerifyUnackedPackets(unacked2, QUIC_ARRAYSIZE(unacked2));
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
 
   SendDataPacket(5);
@@ -628,7 +631,8 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   ack_frame = InitAckFrame({{3, 6}});
   QuicPacketNumber acked[] = {4, 5};
   QuicPacketNumber lost[] = {1, 2};
-  ExpectAcksAndLosses(true, acked, arraysize(acked), lost, arraysize(lost));
+  ExpectAcksAndLosses(true, acked, QUIC_ARRAYSIZE(acked), lost,
+                      QUIC_ARRAYSIZE(lost));
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -732,7 +736,7 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
   // Now ack the two crypto packets and the speculatively encrypted request,
   // and ensure the first four crypto packets get abandoned, but not lost.
   QuicPacketNumber acked[] = {3, 4, 5, 8, 9};
-  ExpectAcksAndLosses(true, acked, arraysize(acked), nullptr, 0);
+  ExpectAcksAndLosses(true, acked, QUIC_ARRAYSIZE(acked), nullptr, 0);
   QuicAckFrame ack_frame = InitAckFrame({{3, 6}, {8, 10}});
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
@@ -780,7 +784,7 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeoutVersionNegotiation) {
   // Least unacked isn't raised until an ack is received, so ack the
   // crypto packets.
   QuicPacketNumber acked[] = {8, 9};
-  ExpectAcksAndLosses(true, acked, arraysize(acked), nullptr, 0);
+  ExpectAcksAndLosses(true, acked, QUIC_ARRAYSIZE(acked), nullptr, 0);
   QuicAckFrame ack_frame = InitAckFrame({{8, 10}});
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
   EXPECT_EQ(10u, manager_.GetLeastUnacked());
@@ -807,7 +811,7 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
 
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
   QuicPacketNumber unacked[] = {3};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
 }
 
 TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeoutUnsentDataPacket) {
@@ -841,7 +845,7 @@ TEST_F(QuicSentPacketManagerTest,
   // version negotiation.
   manager_.RetransmitUnackedPackets(ALL_UNACKED_RETRANSMISSION);
   QuicPacketNumber unacked[] = {1, 2};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
@@ -868,7 +872,7 @@ TEST_F(QuicSentPacketManagerTest,
   manager_.NeuterUnencryptedPackets();
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
   QuicPacketNumber unacked[] = {1, 2, 3};
-  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));

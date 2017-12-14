@@ -11,6 +11,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/quic_write_blocked_list.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_string_piece.h"
@@ -50,7 +51,7 @@ class TestStream : public QuicSpdyStream {
     char buffer[2048];
     struct iovec vec;
     vec.iov_base = buffer;
-    vec.iov_len = arraysize(buffer);
+    vec.iov_len = QUIC_ARRAYSIZE(buffer);
     size_t bytes_read = Readv(&vec, 1);
     data_ += string(buffer, bytes_read);
   }
@@ -318,10 +319,10 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyReadv) {
   stream_->ConsumeHeaderList();
 
   char buffer[2048];
-  ASSERT_LT(body.length(), arraysize(buffer));
+  ASSERT_LT(body.length(), QUIC_ARRAYSIZE(buffer));
   struct iovec vec;
   vec.iov_base = buffer;
-  vec.iov_len = arraysize(buffer);
+  vec.iov_len = QUIC_ARRAYSIZE(buffer);
 
   size_t bytes_read = stream_->Readv(&vec, 1);
   EXPECT_EQ(body.length(), bytes_read);
@@ -362,7 +363,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
   char buffer[1];
   struct iovec vec;
   vec.iov_base = buffer;
-  vec.iov_len = arraysize(buffer);
+  vec.iov_len = QUIC_ARRAYSIZE(buffer);
 
   for (size_t i = 0; i < body.length(); ++i) {
     size_t bytes_read = stream_->Readv(&vec, 1);
@@ -385,9 +386,9 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
   char buffer2[1];
   struct iovec vec[2];
   vec[0].iov_base = buffer1;
-  vec[0].iov_len = arraysize(buffer1);
+  vec[0].iov_len = QUIC_ARRAYSIZE(buffer1);
   vec[1].iov_base = buffer2;
-  vec[1].iov_len = arraysize(buffer2);
+  vec[1].iov_len = QUIC_ARRAYSIZE(buffer2);
 
   for (size_t i = 0; i < body.length(); i += 2) {
     size_t bytes_read = stream_->Readv(vec, 2);

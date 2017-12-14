@@ -79,7 +79,22 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Provides the message parser to use when data is received on this stream.
   virtual CryptoMessageParser* crypto_message_parser() = 0;
 
+  // Called to cancel retransmission of unencrypted crypto stream data.
+  void NeuterUnencryptedStreamData();
+
+  // Override to record the encryption level of consumed data.
+  void OnStreamDataConsumed(size_t bytes_consumed) override;
+
+  // Override to retransmit lost crypto data with the appropriate encryption
+  // level.
+  void WritePendingRetransmission() override;
+
  private:
+  // Consumed data according to encryption levels.
+  // TODO(fayang): This is not needed once switching from QUIC crypto to
+  // TLS 1.3, which never encrypts crypto data.
+  QuicIntervalSet<QuicStreamOffset> bytes_consumed_[NUM_ENCRYPTION_LEVELS];
+
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoStream);
 };
 

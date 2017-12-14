@@ -2019,6 +2019,11 @@ void QuicConnection::SetDiversificationNonce(
 }
 
 void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {
+  if (level != encryption_level_ && packet_generator_.HasQueuedFrames()) {
+    // Flush all queued frames when encryption level changes.
+    ScopedPacketFlusher flusher(this, NO_ACK);
+    packet_generator_.FlushAllQueuedFrames();
+  }
   encryption_level_ = level;
   packet_generator_.set_encryption_level(level);
 }

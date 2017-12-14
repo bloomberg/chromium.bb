@@ -265,6 +265,11 @@ bool QuicSession::CheckStreamNotBusyLooping(QuicStream* stream,
 }
 
 void QuicSession::OnCanWrite() {
+  if (!RetransmitLostStreamData()) {
+    // Cannot finish retransmitting lost data, connection is write blocked.
+    return;
+  }
+
   // We limit the number of writes to the number of pending streams. If more
   // streams become pending, WillingAndAbleToWrite will be true, which will
   // cause the connection to request resumption before yielding to other
@@ -319,17 +324,21 @@ void QuicSession::OnCanWrite() {
 }
 
 bool QuicSession::WillingAndAbleToWrite() const {
-  // If the crypto or headers streams are blocked, we want to schedule a write -
-  // they don't get blocked by connection level flow control. Otherwise only
-  // schedule a write if we are not flow control blocked at the connection
-  // level.
-  return write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
+  // Schedule a write when:
+  // 1) any stream has pending retransmissions, or
+  // 2) If the crypto or headers streams are blocked, or
+  // 3) connection is not flow control blocked and there are write blocked
+  // streams.
+  return !streams_with_pending_retransmission_.empty() ||
+         write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
          (!flow_controller_.IsBlocked() &&
           write_blocked_streams_.HasWriteBlockedDataStreams());
 }
 
 bool QuicSession::HasPendingHandshake() const {
-  return write_blocked_streams_.crypto_stream_blocked();
+  return QuicContainsKey(streams_with_pending_retransmission_,
+                         kCryptoStreamId) ||
+         write_blocked_streams_.crypto_stream_blocked();
 }
 
 bool QuicSession::HasOpenDynamicStreams() const {
@@ -368,7 +377,10 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
   }
   QuicConsumedData data =
       connection_->SendStreamData(id, write_length, offset, state);
-  write_blocked_streams_.UpdateBytesForStream(id, data.bytes_consumed);
+  if (offset >= stream->stream_bytes_written()) {
+    // This is new stream data.
+    write_blocked_streams_.UpdateBytesForStream(id, data.bytes_consumed);
+  }
   return data;
 }
 
@@ -430,6 +442,8 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
     zombie_streams_[stream->id()] = std::move(it->second);
   } else {
     closed_streams_.push_back(std::move(it->second));
+    // Do not retransmit data of a closed stream.
+    streams_with_pending_retransmission_.erase(stream_id);
   }
 
   // If we haven't received a FIN or RST for this stream, we need to keep track
@@ -760,6 +774,14 @@ bool QuicSession::ShouldYield(QuicStreamId stream_id) {
   return write_blocked_streams()->ShouldYield(stream_id);
 }
 
+void QuicSession::NeuterUnencryptedStreamData() {
+  QuicCryptoStream* crypto_stream = GetMutableCryptoStream();
+  crypto_stream->NeuterUnencryptedStreamData();
+  if (!crypto_stream->HasPendingRetransmission()) {
+    streams_with_pending_retransmission_.erase(kCryptoStreamId);
+  }
+}
+
 QuicStream* QuicSession::GetOrCreateDynamicStream(
     const QuicStreamId stream_id) {
   DCHECK(!QuicContainsKey(static_stream_map_, stream_id))
@@ -938,6 +960,8 @@ void QuicSession::OnStreamDoneWaitingForAcks(QuicStreamId id) {
 
   closed_streams_.push_back(std::move(it->second));
   zombie_streams_.erase(it);
+  // Do not retransmit data of a closed stream.
+  streams_with_pending_retransmission_.erase(id);
 }
 
 QuicStream* QuicSession::GetStream(QuicStreamId id) const {
@@ -963,6 +987,9 @@ void QuicSession::OnStreamFrameAcked(const QuicStreamFrame& frame,
   if (stream != nullptr) {
     stream->OnStreamFrameAcked(frame.offset, frame.data_length, frame.fin,
                                ack_delay_time);
+    if (!stream->HasPendingRetransmission()) {
+      streams_with_pending_retransmission_.erase(stream->id());
+    }
   }
 }
 
@@ -976,7 +1003,8 @@ void QuicSession::OnStreamFrameRetransmitted(const QuicStreamFrame& frame) {
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
-  stream->OnStreamFrameRetransmitted(frame.offset, frame.data_length);
+  stream->OnStreamFrameRetransmitted(frame.offset, frame.data_length,
+                                     frame.fin);
 }
 
 void QuicSession::OnStreamFrameDiscarded(const QuicStreamFrame& frame) {
@@ -990,6 +1018,22 @@ void QuicSession::OnStreamFrameDiscarded(const QuicStreamFrame& frame) {
     return;
   }
   stream->OnStreamFrameDiscarded(frame.offset, frame.data_length, frame.fin);
+  if (!stream->HasPendingRetransmission()) {
+    streams_with_pending_retransmission_.erase(stream->id());
+  }
+}
+
+void QuicSession::OnStreamFrameLost(const QuicStreamFrame& frame) {
+  QuicStream* stream = GetStream(frame.stream_id);
+  if (stream == nullptr) {
+    return;
+  }
+  stream->OnStreamFrameLost(frame.offset, frame.data_length, frame.fin);
+  if (stream->HasPendingRetransmission() &&
+      !QuicContainsKey(streams_with_pending_retransmission_, frame.stream_id)) {
+    streams_with_pending_retransmission_.insert(
+        std::make_pair(frame.stream_id, true));
+  }
 }
 
 bool QuicSession::WriteStreamData(QuicStreamId id,
@@ -1008,6 +1052,46 @@ bool QuicSession::WriteStreamData(QuicStreamId id,
 
 uint128 QuicSession::GetStatelessResetToken() const {
   return kStatelessResetToken;
+}
+
+bool QuicSession::RetransmitLostStreamData() {
+  QuicConnection::ScopedPacketFlusher retransmission_flusher(
+      connection_, QuicConnection::SEND_ACK_IF_QUEUED);
+  while (!streams_with_pending_retransmission_.empty()) {
+    if (!connection_->CanWriteStreamData()) {
+      break;
+    }
+    if (QuicContainsKey(streams_with_pending_retransmission_,
+                        kCryptoStreamId)) {
+      // Retransmit crypto data first.
+      QuicStream* crypto_stream = GetStream(kCryptoStreamId);
+      crypto_stream->OnCanWrite();
+      if (crypto_stream->HasPendingRetransmission()) {
+        // Connection is write blocked.
+        break;
+      } else {
+        streams_with_pending_retransmission_.erase(kCryptoStreamId);
+      }
+      continue;
+    }
+    // Retransmit lost data on headers and data streams.
+    QuicStream* stream =
+        GetStream(streams_with_pending_retransmission_.begin()->first);
+    if (stream != nullptr) {
+      stream->OnCanWrite();
+      if (stream->HasPendingRetransmission()) {
+        // Connection is write blocked.
+        break;
+      } else {
+        streams_with_pending_retransmission_.pop_front();
+      }
+    } else {
+      QUIC_BUG << "Try to retransmit data of a closed stream";
+      streams_with_pending_retransmission_.pop_front();
+    }
+  }
+
+  return streams_with_pending_retransmission_.empty();
 }
 
 }  // namespace net

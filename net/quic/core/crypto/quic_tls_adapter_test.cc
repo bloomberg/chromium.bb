@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "third_party/boringssl/src/include/openssl/bio.h"
 
@@ -56,7 +57,7 @@ TEST_P(QuicTlsAdapterTest, ProcessInput) {
 
   char buf[4];
   ASSERT_EQ(static_cast<int>(input.length()),
-            BIO_read(bio_, buf, arraysize(buf)));
+            BIO_read(bio_, buf, QUIC_ARRAYSIZE(buf)));
   EXPECT_EQ(input, string(buf, input.length()));
 }
 
@@ -71,9 +72,9 @@ TEST_P(QuicTlsAdapterTest, BIORead) {
   // Test that a call to BIO_read for less than what is in |adapter_|'s buffer
   // still leaves more input remaining to read.
   char buf1[3];
-  ASSERT_EQ(static_cast<int>(arraysize(buf1)),
-            BIO_read(bio_, buf1, arraysize(buf1)));
-  EXPECT_EQ("abc", string(buf1, arraysize(buf1)));
+  ASSERT_EQ(static_cast<int>(QUIC_ARRAYSIZE(buf1)),
+            BIO_read(bio_, buf1, QUIC_ARRAYSIZE(buf1)));
+  EXPECT_EQ("abc", string(buf1, QUIC_ARRAYSIZE(buf1)));
   EXPECT_EQ(1u, adapter_.InputBytesRemaining());
 
   // Test that the bytes read by BIO_read can span input read in by
@@ -82,9 +83,9 @@ TEST_P(QuicTlsAdapterTest, BIORead) {
   EXPECT_EQ(QUIC_NO_ERROR, adapter_.error());
   EXPECT_EQ(2, visitor_.data_available_count());
   char buf2[5];
-  ASSERT_EQ(static_cast<int>(arraysize(buf2)),
-            BIO_read(bio_, buf2, arraysize(buf2)));
-  EXPECT_EQ("defgh", string(buf2, arraysize(buf2)));
+  ASSERT_EQ(static_cast<int>(QUIC_ARRAYSIZE(buf2)),
+            BIO_read(bio_, buf2, QUIC_ARRAYSIZE(buf2)));
+  EXPECT_EQ("defgh", string(buf2, QUIC_ARRAYSIZE(buf2)));
   EXPECT_EQ(0u, adapter_.InputBytesRemaining());
 }
 

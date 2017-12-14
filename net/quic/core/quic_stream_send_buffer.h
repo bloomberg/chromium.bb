@@ -42,6 +42,19 @@ struct BufferedSlice {
   QuicByteCount outstanding_data_length;
 };
 
+struct StreamPendingRetransmission {
+  StreamPendingRetransmission(QuicStreamOffset offset, QuicByteCount length)
+      : offset(offset), length(length) {}
+
+  // Starting offset of this pending retransmission.
+  QuicStreamOffset offset;
+  // Length of this pending retransmission.
+  QuicByteCount length;
+
+  QUIC_EXPORT_PRIVATE bool operator==(
+      const StreamPendingRetransmission& other) const;
+};
+
 // QuicStreamSendBuffer contains a list of QuicStreamDataSlices. New data slices
 // are added to the tail of the list. Data slices are removed from the head of
 // the list when they get fully acked. Stream data can be retrieved and acked
@@ -77,6 +90,24 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   bool OnStreamDataAcked(QuicStreamOffset offset,
                          QuicByteCount data_length,
                          QuicByteCount* newly_acked_length);
+
+  // Called when data [offset, offset + data_length) is considered as lost.
+  void OnStreamDataLost(QuicStreamOffset offset, QuicByteCount data_length);
+
+  // Called when data [offset, offset + length) was retransmitted.
+  void OnStreamDataRetransmitted(QuicStreamOffset offset,
+                                 QuicByteCount data_length);
+
+  // Returns true if there is pending retransmissions.
+  bool HasPendingRetransmission() const;
+
+  // Returns next pending retransmissions.
+  StreamPendingRetransmission NextPendingRetransmission() const;
+
+  // Returns true if data [offset, offset + data_length) is outstanding and
+  // waiting to be acked. Returns false otherwise.
+  bool IsStreamDataOutstanding(QuicStreamOffset offset,
+                               QuicByteCount data_length) const;
 
   // Number of data slices in send buffer.
   size_t size() const;
@@ -115,6 +146,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
 
   // Latch value for quic_reloadable_flag_quic_allow_multiple_acks_for_data2.
   const bool allow_multiple_acks_for_data_;
+
+  // Data considered as lost and needs to be retransmitted.
+  QuicIntervalSet<QuicStreamOffset> pending_retransmissions_;
 };
 
 }  // namespace net

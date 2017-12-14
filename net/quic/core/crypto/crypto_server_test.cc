@@ -18,6 +18,7 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_socket_address_coder.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_endian.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_string_piece.h"
@@ -165,7 +166,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     CheckRejectTag();
     const HandshakeFailureReason kRejectReasons[] = {
         SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+    CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
     CheckForServerDesignatedConnectionId();
 
     QuicStringPiece srct;
@@ -431,7 +432,7 @@ TEST_P(CryptoServerTest, BadSNI) {
   };
   // clang-format on
 
-  for (size_t i = 0; i < arraysize(kBadSNIs); i++) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(kBadSNIs); i++) {
     CryptoHandshakeMessage msg =
         crypto_test_utils::CreateCHLO({{"PDMD", "X509"},
                                        {"SNI", kBadSNIs[i]},
@@ -440,7 +441,7 @@ TEST_P(CryptoServerTest, BadSNI) {
     ShouldFailMentioning("SNI", msg);
     const HandshakeFailureReason kRejectReasons[] = {
         SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+    CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
   }
 }
 
@@ -466,7 +467,7 @@ TEST_P(CryptoServerTest, DefaultCert) {
   EXPECT_NE(0u, proof.size());
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
   EXPECT_LT(0u, cert_sct.size());
 }
 
@@ -493,7 +494,7 @@ TEST_P(CryptoServerTest, RejectTooLarge) {
   EXPECT_FALSE(out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, RejectNotTooLarge) {
@@ -520,7 +521,7 @@ TEST_P(CryptoServerTest, RejectNotTooLarge) {
   EXPECT_TRUE(out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, RejectTooLargeButValidSTK) {
@@ -549,7 +550,7 @@ TEST_P(CryptoServerTest, RejectTooLargeButValidSTK) {
   EXPECT_NE(0u, proof.size());
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, TooSmall) {
@@ -560,7 +561,7 @@ TEST_P(CryptoServerTest, TooSmall) {
 
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, BadSourceAddressToken) {
@@ -574,7 +575,7 @@ TEST_P(CryptoServerTest, BadSourceAddressToken) {
   };
   // clang-format on
 
-  for (size_t i = 0; i < arraysize(kBadSourceAddressTokens); i++) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(kBadSourceAddressTokens); i++) {
     CryptoHandshakeMessage msg =
         crypto_test_utils::CreateCHLO({{"PDMD", "X509"},
                                        {"STK", kBadSourceAddressTokens[i]},
@@ -583,7 +584,7 @@ TEST_P(CryptoServerTest, BadSourceAddressToken) {
     ShouldSucceed(msg);
     const HandshakeFailureReason kRejectReasons[] = {
         SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+    CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
   }
 }
 
@@ -596,7 +597,7 @@ TEST_P(CryptoServerTest, BadClientNonce) {
   };
   // clang-format on
 
-  for (size_t i = 0; i < arraysize(kBadNonces); i++) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(kBadNonces); i++) {
     // Invalid nonces should be ignored, in an inchoate CHLO.
 
     CryptoHandshakeMessage msg =
@@ -608,7 +609,7 @@ TEST_P(CryptoServerTest, BadClientNonce) {
     ShouldSucceed(msg);
     const HandshakeFailureReason kRejectReasons[] = {
         SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+    CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 
     // Invalid nonces should result in CLIENT_NONCE_INVALID_FAILURE.
     CryptoHandshakeMessage msg1 =
@@ -629,7 +630,7 @@ TEST_P(CryptoServerTest, BadClientNonce) {
     CheckRejectTag();
     const HandshakeFailureReason kRejectReasons1[] = {
         CLIENT_NONCE_INVALID_FAILURE};
-    CheckRejectReasons(kRejectReasons1, arraysize(kRejectReasons1));
+    CheckRejectReasons(kRejectReasons1, QUIC_ARRAYSIZE(kRejectReasons1));
   }
 }
 
@@ -643,7 +644,7 @@ TEST_P(CryptoServerTest, NoClientNonce) {
   ShouldSucceed(msg);
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 
   CryptoHandshakeMessage msg1 =
       crypto_test_utils::CreateCHLO({{"PDMD", "X509"},
@@ -660,7 +661,7 @@ TEST_P(CryptoServerTest, NoClientNonce) {
   CheckRejectTag();
   const HandshakeFailureReason kRejectReasons1[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons1, arraysize(kRejectReasons1));
+  CheckRejectReasons(kRejectReasons1, QUIC_ARRAYSIZE(kRejectReasons1));
 }
 
 TEST_P(CryptoServerTest, DowngradeAttack) {
@@ -679,7 +680,7 @@ TEST_P(CryptoServerTest, DowngradeAttack) {
   ShouldFailMentioning("Downgrade", msg);
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, CorruptServerConfig) {
@@ -699,7 +700,7 @@ TEST_P(CryptoServerTest, CorruptServerConfig) {
   CheckRejectTag();
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, CorruptSourceAddressToken) {
@@ -720,7 +721,7 @@ TEST_P(CryptoServerTest, CorruptSourceAddressToken) {
   CheckRejectTag();
   const HandshakeFailureReason kRejectReasons[] = {
       SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, CorruptClientNonceAndSourceAddressToken) {
@@ -741,7 +742,7 @@ TEST_P(CryptoServerTest, CorruptClientNonceAndSourceAddressToken) {
   CheckRejectTag();
   const HandshakeFailureReason kRejectReasons[] = {
       SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE, CLIENT_NONCE_INVALID_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, CorruptMultipleTags) {
@@ -765,7 +766,7 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
 
   const HandshakeFailureReason kRejectReasons[] = {
       SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE, CLIENT_NONCE_INVALID_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, NoServerNonce) {
@@ -814,7 +815,7 @@ TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
   CheckRejectTag();
   const HandshakeFailureReason kRejectReasons[] = {
       SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 
   QuicStringPiece cert, proof, scfg_str;
   EXPECT_TRUE(out_.GetStringPiece(kCertificateTag, &cert));
@@ -875,7 +876,7 @@ TEST_P(CryptoServerTest, RejectInvalidXlct) {
   const HandshakeFailureReason kRejectReasons[] = {
       INVALID_EXPECTED_LEAF_CERTIFICATE};
 
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, ValidXlct) {
@@ -1086,7 +1087,7 @@ TEST_P(CryptoServerTestNoConfig, DontCrash) {
 
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+  CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
 class CryptoServerTestOldVersion : public CryptoServerTest {

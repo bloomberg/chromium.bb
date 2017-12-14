@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -182,7 +183,7 @@ QuicData* EncryptWithNonce(Aes256GcmEncrypter* encrypter,
 class Aes256GcmEncrypterTest : public QuicTest {};
 
 TEST_F(Aes256GcmEncrypterTest, Encrypt) {
-  for (size_t i = 0; i < arraysize(test_group_array); i++) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(test_group_array); i++) {
     SCOPED_TRACE(i);
     const TestVector* test_vectors = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];

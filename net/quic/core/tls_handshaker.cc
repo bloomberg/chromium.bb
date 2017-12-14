@@ -8,6 +8,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/core/tls_server_handshaker.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 
 namespace net {
 
@@ -60,12 +61,12 @@ bool TlsHandshaker::DeriveSecrets(std::vector<uint8_t>* client_secret_out,
   size_t hash_len = EVP_MD_size(Prf());
   client_secret_out->resize(hash_len);
   server_secret_out->resize(hash_len);
-  return (SSL_export_keying_material(ssl(), client_secret_out->data(), hash_len,
-                                     kClientLabel, arraysize(kClientLabel) - 1,
-                                     nullptr, 0, 0) == 1) &&
-         (SSL_export_keying_material(ssl(), server_secret_out->data(), hash_len,
-                                     kServerLabel, arraysize(kServerLabel) - 1,
-                                     nullptr, 0, 0) == 1);
+  return (SSL_export_keying_material(
+              ssl(), client_secret_out->data(), hash_len, kClientLabel,
+              QUIC_ARRAYSIZE(kClientLabel) - 1, nullptr, 0, 0) == 1) &&
+         (SSL_export_keying_material(
+              ssl(), server_secret_out->data(), hash_len, kServerLabel,
+              QUIC_ARRAYSIZE(kServerLabel) - 1, nullptr, 0, 0) == 1);
 }
 
 namespace {

@@ -12,6 +12,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -222,7 +223,7 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
   const string& cached_scfg = state->server_config();
   test::CompareCharArraysWithHexError(
       "scfg", cached_scfg.data(), cached_scfg.length(),
-      reinterpret_cast<char*>(scfg), arraysize(scfg));
+      reinterpret_cast<char*>(scfg), QUIC_ARRAYSIZE(scfg));
 
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(stream());
   EXPECT_FALSE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));

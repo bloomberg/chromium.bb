@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/core/crypto/null_decrypter.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
@@ -19,7 +20,7 @@ TEST_F(NullDecrypterTest, DecryptClient) {
       'g', 'o', 'o', 'd', 'b', 'y', 'e', '!',
   };
   const char* data = reinterpret_cast<const char*>(expected);
-  size_t len = arraysize(expected);
+  size_t len = QUIC_ARRAYSIZE(expected);
   NullDecrypter decrypter(Perspective::IS_SERVER);
   char buffer[256];
   size_t length = 0;
@@ -38,7 +39,7 @@ TEST_F(NullDecrypterTest, DecryptServer) {
       'g', 'o', 'o', 'd', 'b', 'y', 'e', '!',
   };
   const char* data = reinterpret_cast<const char*>(expected);
-  size_t len = arraysize(expected);
+  size_t len = QUIC_ARRAYSIZE(expected);
   NullDecrypter decrypter(Perspective::IS_CLIENT);
   char buffer[256];
   size_t length = 0;
@@ -57,7 +58,7 @@ TEST_F(NullDecrypterTest, DecryptClientPre37) {
       'g', 'o', 'o', 'd', 'b', 'y', 'e', '!',
   };
   const char* data = reinterpret_cast<const char*>(expected);
-  size_t len = arraysize(expected);
+  size_t len = QUIC_ARRAYSIZE(expected);
   NullDecrypter decrypter(Perspective::IS_CLIENT);
   char buffer[256];
   size_t length = 0;
@@ -76,7 +77,7 @@ TEST_F(NullDecrypterTest, DecryptServerPre37) {
       'g', 'o', 'o', 'd', 'b', 'y', 'e', '!',
   };
   const char* data = reinterpret_cast<const char*>(expected);
-  size_t len = arraysize(expected);
+  size_t len = QUIC_ARRAYSIZE(expected);
   NullDecrypter decrypter(Perspective::IS_SERVER);
   char buffer[256];
   size_t length = 0;
@@ -95,7 +96,7 @@ TEST_F(NullDecrypterTest, BadHash) {
       'g', 'o', 'o', 'd', 'b', 'y', 'e', '!',
   };
   const char* data = reinterpret_cast<const char*>(expected);
-  size_t len = arraysize(expected);
+  size_t len = QUIC_ARRAYSIZE(expected);
   NullDecrypter decrypter(Perspective::IS_CLIENT);
   char buffer[256];
   size_t length = 0;
@@ -110,7 +111,7 @@ TEST_F(NullDecrypterTest, ShortInput) {
       0x46, 0x11, 0xea, 0x5f, 0xcf, 0x1d, 0x66, 0x5b, 0xba, 0xf0, 0xbc,
   };
   const char* data = reinterpret_cast<const char*>(expected);
-  size_t len = arraysize(expected);
+  size_t len = QUIC_ARRAYSIZE(expected);
   NullDecrypter decrypter(Perspective::IS_CLIENT);
   char buffer[256];
   size_t length = 0;

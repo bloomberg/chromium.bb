@@ -20,6 +20,10 @@
 
 using std::string;
 
+using testing::_;
+using testing::InSequence;
+using testing::Invoke;
+
 namespace net {
 namespace test {
 namespace {
@@ -123,6 +127,79 @@ TEST_F(QuicCryptoStreamTest, ProcessBadData) {
 TEST_F(QuicCryptoStreamTest, NoConnectionLevelFlowControl) {
   EXPECT_FALSE(
       QuicStreamPeer::StreamContributesToConnectionFlowControl(&stream_));
+}
+
+TEST_F(QuicCryptoStreamTest, RetransmitCryptoData) {
+  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
+    return;
+  }
+  InSequence s;
+  // Send [0, 1350) in ENCRYPTION_NONE.
+  EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
+  string data(1350, 'a');
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+  stream_.WriteOrBufferData(data, false, nullptr);
+  // Send [1350, 2700) in ENCRYPTION_INITIAL.
+  connection_->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
+  EXPECT_EQ(ENCRYPTION_INITIAL, connection_->encryption_level());
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 1350, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+  stream_.WriteOrBufferData(data, false, nullptr);
+  connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  EXPECT_EQ(ENCRYPTION_FORWARD_SECURE, connection_->encryption_level());
+
+  // Lost [0, 1000).
+  stream_.OnStreamFrameLost(0, 1000, false);
+  EXPECT_TRUE(stream_.HasPendingRetransmission());
+  // Lost [1200, 2000).
+  stream_.OnStreamFrameLost(1200, 800, false);
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1000, 0, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+  // Verify [1200, 2000) are sent in [1200, 1350) and [1350, 2000) because of
+  // they are in different encryption levels.
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 150, 1200, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 650, 1350, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+  stream_.OnCanWrite();
+  EXPECT_FALSE(stream_.HasPendingRetransmission());
+  // Verify connection's encryption level has restored.
+  EXPECT_EQ(ENCRYPTION_FORWARD_SECURE, connection_->encryption_level());
+}
+
+TEST_F(QuicCryptoStreamTest, NeuterUnencryptedStreamData) {
+  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
+    return;
+  }
+  // Send [0, 1350) in ENCRYPTION_NONE.
+  EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
+  string data(1350, 'a');
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+  stream_.WriteOrBufferData(data, false, nullptr);
+  // Send [1350, 2700) in ENCRYPTION_INITIAL.
+  connection_->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
+  EXPECT_EQ(ENCRYPTION_INITIAL, connection_->encryption_level());
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 1350, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+  stream_.WriteOrBufferData(data, false, nullptr);
+
+  // Lost [0, 1350).
+  stream_.OnStreamFrameLost(0, 1350, false);
+  EXPECT_TRUE(stream_.HasPendingRetransmission());
+  // Neuters [0, 1350).
+  stream_.NeuterUnencryptedStreamData();
+  EXPECT_FALSE(stream_.HasPendingRetransmission());
+  // Lost [0, 1350) again.
+  stream_.OnStreamFrameLost(0, 1350, false);
+  EXPECT_FALSE(stream_.HasPendingRetransmission());
+
+  // Lost [1350, 2000).
+  stream_.OnStreamFrameLost(1350, 650, false);
+  EXPECT_TRUE(stream_.HasPendingRetransmission());
+  stream_.NeuterUnencryptedStreamData();
+  EXPECT_TRUE(stream_.HasPendingRetransmission());
 }
 
 }  // namespace

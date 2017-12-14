@@ -4,6 +4,7 @@
 
 #include "net/quic/core/quic_versions.h"
 
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -39,9 +40,9 @@ TEST_F(QuicVersionsTest, QuicVersionToQuicVersionLabel) {
   // Loop over all supported versions and make sure that we never hit the
   // default case (i.e. all supported versions should be successfully converted
   // to valid QuicVersionLabels).
-  for (size_t i = 0; i < arraysize(kSupportedTransportVersions); ++i) {
-    QuicTransportVersion version = kSupportedTransportVersions[i];
-    EXPECT_LT(0u, QuicVersionToQuicVersionLabel(version));
+    for (size_t i = 0; i < QUIC_ARRAYSIZE(kSupportedTransportVersions); ++i) {
+      QuicTransportVersion version = kSupportedTransportVersions[i];
+      EXPECT_LT(0u, QuicVersionToQuicVersionLabel(version));
   }
 }
 
@@ -78,7 +79,7 @@ TEST_F(QuicVersionsTest, QuicVersionLabelToQuicTransportVersion) {
   EXPECT_EQ(QUIC_VERSION_35,
             QuicVersionLabelToQuicVersion(MakeQuicTag('5', '3', '0', 'Q')));
 
-  for (size_t i = 0; i < arraysize(kSupportedTransportVersions); ++i) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(kSupportedTransportVersions); ++i) {
     QuicTransportVersion version = kSupportedTransportVersions[i];
 
     // Get the label from the version (we can loop over QuicVersions easily).
@@ -117,7 +118,7 @@ TEST_F(QuicVersionsTest, QuicVersionLabelToHandshakeProtocol) {
   log.StartCapturingLogs();
 #endif
 
-  for (size_t i = 0; i < arraysize(kSupportedTransportVersions); ++i) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(kSupportedTransportVersions); ++i) {
     QuicVersionLabel version_label =
         QuicVersionToQuicVersionLabel(kSupportedTransportVersions[i]);
     EXPECT_EQ(PROTOCOL_QUIC_CRYPTO,
@@ -261,7 +262,7 @@ TEST_F(QuicVersionsTest, QuicVersionToString) {
 
   QuicTransportVersion single_version[] = {QUIC_VERSION_35};
   QuicTransportVersionVector versions_vector;
-  for (size_t i = 0; i < arraysize(single_version); ++i) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(single_version); ++i) {
     versions_vector.push_back(single_version[i]);
   }
   EXPECT_EQ("QUIC_VERSION_35",
@@ -270,14 +271,14 @@ TEST_F(QuicVersionsTest, QuicVersionToString) {
   QuicTransportVersion multiple_versions[] = {QUIC_VERSION_UNSUPPORTED,
                                               QUIC_VERSION_35};
   versions_vector.clear();
-  for (size_t i = 0; i < arraysize(multiple_versions); ++i) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(multiple_versions); ++i) {
     versions_vector.push_back(multiple_versions[i]);
   }
   EXPECT_EQ("QUIC_VERSION_UNSUPPORTED,QUIC_VERSION_35",
             QuicTransportVersionVectorToString(versions_vector));
 
   // Make sure that all supported versions are present in QuicVersionToString.
-  for (size_t i = 0; i < arraysize(kSupportedTransportVersions); ++i) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(kSupportedTransportVersions); ++i) {
     QuicTransportVersion version = kSupportedTransportVersions[i];
     EXPECT_NE("QUIC_VERSION_UNSUPPORTED", QuicVersionToString(version));
   }
@@ -364,7 +365,7 @@ TEST_F(QuicVersionsTest, ParsedVersionsToTransportVersions) {
 // yet a typo was made in doing the #defines and it was caught
 // only in some test far removed from here... Better safe than sorry.
 TEST_F(QuicVersionsTest, CheckVersionNumbersForTypos) {
-  static_assert(arraysize(net::kSupportedTransportVersions) == 7u,
+  static_assert(QUIC_ARRAYSIZE(net::kSupportedTransportVersions) == 7u,
                 "Supported versions out of sync");
   EXPECT_EQ(QUIC_VERSION_35, 35);
   EXPECT_EQ(QUIC_VERSION_37, 37);

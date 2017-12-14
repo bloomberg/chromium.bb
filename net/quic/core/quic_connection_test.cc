@@ -2088,6 +2088,7 @@ TEST_P(QuicConnectionTest, FramePacking) {
   // Send two stream frames in 1 packet by queueing them.
   // If quic_strict_ack_handling is false, the packet
   // also bundles an empty ack frame and a stop_waiting frame.
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   {
     QuicConnection::ScopedPacketFlusher flusher(&connection_,
                                                 QuicConnection::SEND_ACK);
@@ -2128,6 +2129,7 @@ TEST_P(QuicConnectionTest, FramePacking) {
 TEST_P(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
   // Send two stream frames (one non-crypto, then one crypto) in 2 packets by
   // queueing them.
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
     QuicConnection::ScopedPacketFlusher flusher(&connection_,

@@ -6,6 +6,7 @@
 
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_socket_address.h"
@@ -130,9 +131,9 @@ TEST_F(QuicServerEpollInTest, ProcessBufferedCHLOsOnEpollin) {
   ASSERT_LT(0, fd);
 
   char buf[1024];
-  memset(buf, 0, arraysize(buf));
+  memset(buf, 0, QUIC_ARRAYSIZE(buf));
   sockaddr_storage storage = server_address_.generic_address();
-  int rc = sendto(fd, buf, arraysize(buf), 0,
+  int rc = sendto(fd, buf, QUIC_ARRAYSIZE(buf), 0,
                   reinterpret_cast<sockaddr*>(&storage), sizeof(storage));
   if (rc < 0) {
     QUIC_DLOG(INFO) << errno << " " << strerror(errno);
@@ -196,7 +197,7 @@ TEST_F(QuicServerDispatchPacketTest, DispatchPacket) {
   };
   // clang-format on
   QuicReceivedPacket encrypted_valid_packet(
-      reinterpret_cast<char*>(valid_packet), arraysize(valid_packet),
+      reinterpret_cast<char*>(valid_packet), QUIC_ARRAYSIZE(valid_packet),
       QuicTime::Zero(), false);
 
   EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _)).Times(1);

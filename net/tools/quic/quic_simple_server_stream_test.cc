@@ -10,6 +10,7 @@
 
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_test.h"
@@ -603,7 +604,7 @@ TEST_P(QuicSimpleServerStreamTest, InvalidHeadersWithFin) {
       0x54, 0x54, 0x50, 0x2f,  // TTP/
       0x31, 0x2e, 0x31,        // 1.1
   };
-  QuicStringPiece data(arr, arraysize(arr));
+  QuicStringPiece data(arr, QUIC_ARRAYSIZE(arr));
   QuicStreamFrame frame(stream_->id(), true, 0, data);
   // Verify that we don't crash when we get a invalid headers in stream frame.
   stream_->OnStreamFrame(frame);

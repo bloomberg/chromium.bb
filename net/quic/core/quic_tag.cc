@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
 namespace net {
@@ -36,9 +37,10 @@ std::string QuicTagToString(QuicTag tag) {
   bool ascii = true;
   const QuicTag orig_tag = tag;
 
-  for (size_t i = 0; i < arraysize(chars); i++) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(chars); i++) {
     chars[i] = static_cast<char>(tag);
-    if ((chars[i] == 0 || chars[i] == '\xff') && i == arraysize(chars) - 1) {
+    if ((chars[i] == 0 || chars[i] == '\xff') &&
+        i == QUIC_ARRAYSIZE(chars) - 1) {
       chars[i] = ' ';
     }
     if (!isprint(static_cast<unsigned char>(chars[i]))) {

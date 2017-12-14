@@ -92,6 +92,8 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
 
   MOCK_METHOD0(OnCanWrite, void());
 
+  MOCK_CONST_METHOD0(HasPendingRetransmission, bool());
+
  private:
   using QuicCryptoStream::session;
 
@@ -118,6 +120,8 @@ class TestStream : public QuicSpdyStream {
   void OnDataAvailable() override {}
 
   MOCK_METHOD0(OnCanWrite, void());
+
+  MOCK_CONST_METHOD0(HasPendingRetransmission, bool());
 };
 
 // Poor man's functor for use as callback in a mock.
@@ -1421,6 +1425,107 @@ TEST_P(QuicSessionTestServer, ZombieStreams) {
   EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), 2));
   EXPECT_EQ(1u, session_.closed_streams()->size());
   EXPECT_EQ(2u, session_.closed_streams()->front()->id());
+}
+
+TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
+  InSequence s;
+
+  // Drive congestion control manually.
+  MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
+
+  TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
+  TestStream* stream2 = session_.CreateOutgoingDynamicStream();
+  TestStream* stream4 = session_.CreateOutgoingDynamicStream();
+
+  QuicStreamFrame frame1(kCryptoStreamId, false, 0, 1300);
+  QuicStreamFrame frame2(stream2->id(), false, 0, 9);
+  QuicStreamFrame frame3(stream4->id(), false, 0, 9);
+
+  // Lost data on cryption stream, streams 2 and 4.
+  EXPECT_CALL(*stream4, HasPendingRetransmission()).WillOnce(Return(true));
+  EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
+  session_.OnStreamFrameLost(frame3);
+  session_.OnStreamFrameLost(frame1);
+  session_.OnStreamFrameLost(frame2);
+  EXPECT_TRUE(session_.WillingAndAbleToWrite());
+
+  // Mark streams 2 and 4 write blocked.
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
+
+  // Lost data is retransmitted before new data, and retransmissions for crypto
+  // stream go first.
+  // Do not check congestion window when crypto stream has lost data.
+  EXPECT_CALL(*send_algorithm, CanSend(_)).Times(0);
+  EXPECT_CALL(*crypto_stream, OnCanWrite());
+  EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
+      .WillOnce(Return(false));
+  // Check congestion window for non crypto streams.
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
+  EXPECT_CALL(*stream4, OnCanWrite());
+  EXPECT_CALL(*stream4, HasPendingRetransmission()).WillOnce(Return(false));
+  // Connection is blocked.
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillRepeatedly(Return(false));
+
+  session_.OnCanWrite();
+  EXPECT_TRUE(session_.WillingAndAbleToWrite());
+
+  // Unblock connection.
+  // Stream 2 retransmits lost data.
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
+  EXPECT_CALL(*stream2, OnCanWrite());
+  EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(false));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
+  // Stream 2 sends new data.
+  EXPECT_CALL(*stream2, OnCanWrite());
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
+  EXPECT_CALL(*stream4, OnCanWrite());
+  EXPECT_CALL(*send_algorithm, OnApplicationLimited(_));
+
+  session_.OnCanWrite();
+  EXPECT_FALSE(session_.WillingAndAbleToWrite());
+}
+
+TEST_P(QuicSessionTestServer, DonotRetransmitDataOfClosedStreams) {
+  if (!FLAGS_quic_reloadable_flag_quic_remove_on_stream_frame_discarded) {
+    return;
+  }
+  InSequence s;
+
+  TestStream* stream2 = session_.CreateOutgoingDynamicStream();
+  TestStream* stream4 = session_.CreateOutgoingDynamicStream();
+  TestStream* stream6 = session_.CreateOutgoingDynamicStream();
+
+  QuicStreamFrame frame1(stream2->id(), false, 0, 9);
+  QuicStreamFrame frame2(stream4->id(), false, 0, 9);
+  QuicStreamFrame frame3(stream6->id(), false, 0, 9);
+
+  EXPECT_CALL(*stream6, HasPendingRetransmission()).WillOnce(Return(true));
+  EXPECT_CALL(*stream4, HasPendingRetransmission()).WillOnce(Return(true));
+  EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
+  session_.OnStreamFrameLost(frame3);
+  session_.OnStreamFrameLost(frame2);
+  session_.OnStreamFrameLost(frame1);
+
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
+  session_.MarkConnectionLevelWriteBlocked(stream6->id());
+
+  // Reset stream 4 locally.
+  EXPECT_CALL(*connection_, SendRstStream(stream4->id(), _, _));
+  stream4->Reset(QUIC_STREAM_CANCELLED);
+
+  // Verify stream 4 is removed from streams with lost data list.
+  EXPECT_CALL(*stream6, OnCanWrite());
+  EXPECT_CALL(*stream6, HasPendingRetransmission()).WillOnce(Return(false));
+  EXPECT_CALL(*stream2, OnCanWrite());
+  EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(false));
+  EXPECT_CALL(*stream2, OnCanWrite());
+  EXPECT_CALL(*stream6, OnCanWrite());
+  session_.OnCanWrite();
 }
 
 }  // namespace

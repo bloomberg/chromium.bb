@@ -205,9 +205,11 @@ class QUIC_EXPORT_PRIVATE QuicStream {
                                   bool fin_acked,
                                   QuicTime::Delta ack_delay_time);
 
-  // Called when data [offset, offset + data_length) gets retransmitted.
+  // Called when data [offset, offset + data_length) was retransmitted.
+  // |fin_retransmitted| indicates whether fin was retransmitted.
   virtual void OnStreamFrameRetransmitted(QuicStreamOffset offset,
-                                          QuicByteCount data_length);
+                                          QuicByteCount data_length,
+                                          bool fin_retransmitted);
 
   // Called when data [offset, offset + data_length) gets discarded because
   // stream is cancelled. |fin_discarded| indicates whether the fin is
@@ -216,9 +218,26 @@ class QUIC_EXPORT_PRIVATE QuicStream {
                               QuicByteCount data_length,
                               bool fin_discarded);
 
+  // Called when data [offset, offset + data_length) is considered as lost.
+  // |fin_lost| inidacates whether the fin is considered as lost.
+  void OnStreamFrameLost(QuicStreamOffset offset,
+                         QuicByteCount data_length,
+                         bool fin_lost);
+
   // Same as WritevData except data is provided in reference counted memory so
   // that data copy is avoided.
   QuicConsumedData WriteMemSlices(QuicMemSliceSpan span, bool fin);
+
+  // Returns true if any stream data is lost (including fin) and needs to be
+  // retransmitted.
+  virtual bool HasPendingRetransmission() const;
+
+  // Returns true if any portion of data [offset, offset + data_length) is
+  // outstanding or fin is outstanding (if |fin| is true). Returns false
+  // otherwise.
+  bool IsStreamFrameOutstanding(QuicStreamOffset offset,
+                                QuicByteCount data_length,
+                                bool fin) const;
 
  protected:
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
@@ -262,6 +281,12 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // Called when upper layer can write new data.
   virtual void OnCanWriteNewData() {}
 
+  // Called when |bytes_consumed| bytes has been consumed.
+  virtual void OnStreamDataConsumed(size_t bytes_consumed);
+
+  // Writes pending retransmissions if any.
+  virtual void WritePendingRetransmission();
+
   bool fin_buffered() const { return fin_buffered_; }
 
   const QuicSession* session() const { return session_; }
@@ -280,6 +305,10 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   }
 
   const QuicIntervalSet<QuicStreamOffset>& bytes_acked() const;
+
+  const QuicStreamSendBuffer& send_buffer() const { return send_buffer_; }
+
+  QuicStreamSendBuffer& send_buffer() { return send_buffer_; }
 
  private:
   friend class test::QuicStreamPeer;
@@ -326,6 +355,8 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   bool fin_sent_;
   // True if a FIN is waiting to be acked.
   bool fin_outstanding_;
+  // True if a FIN is lost.
+  bool fin_lost_;
 
   // True if this stream has received (and the sequencer has accepted) a
   // StreamFrame with the FIN set.

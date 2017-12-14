@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/core/crypto/null_encrypter.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
@@ -26,7 +27,7 @@ TEST_F(NullEncrypterTest, EncryptClient) {
                                       256));
   test::CompareCharArraysWithHexError(
       "encrypted data", encrypted, encrypted_len,
-      reinterpret_cast<const char*>(expected), arraysize(expected));
+      reinterpret_cast<const char*>(expected), QUIC_ARRAYSIZE(expected));
 }
 
 TEST_F(NullEncrypterTest, EncryptServer) {
@@ -44,7 +45,7 @@ TEST_F(NullEncrypterTest, EncryptServer) {
                                       256));
   test::CompareCharArraysWithHexError(
       "encrypted data", encrypted, encrypted_len,
-      reinterpret_cast<const char*>(expected), arraysize(expected));
+      reinterpret_cast<const char*>(expected), QUIC_ARRAYSIZE(expected));
 }
 
 TEST_F(NullEncrypterTest, EncryptClientPre37) {
@@ -62,7 +63,7 @@ TEST_F(NullEncrypterTest, EncryptClientPre37) {
                                       256));
   test::CompareCharArraysWithHexError(
       "encrypted data", encrypted, encrypted_len,
-      reinterpret_cast<const char*>(expected), arraysize(expected));
+      reinterpret_cast<const char*>(expected), QUIC_ARRAYSIZE(expected));
 }
 
 TEST_F(NullEncrypterTest, EncryptServerPre37) {
@@ -80,7 +81,7 @@ TEST_F(NullEncrypterTest, EncryptServerPre37) {
                                       256));
   test::CompareCharArraysWithHexError(
       "encrypted data", encrypted, encrypted_len,
-      reinterpret_cast<const char*>(expected), arraysize(expected));
+      reinterpret_cast<const char*>(expected), QUIC_ARRAYSIZE(expected));
 }
 
 TEST_F(NullEncrypterTest, GetMaxPlaintextSize) {

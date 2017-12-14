@@ -866,8 +866,8 @@ TEST_P(QuicHeadersStreamTest, AckSentData) {
   // Packet 2 gets retransmitted.
   EXPECT_CALL(*ack_listener3, OnPacketRetransmitted(7)).Times(1);
   EXPECT_CALL(*ack_listener2, OnPacketRetransmitted(7)).Times(1);
-  headers_stream_->OnStreamFrameRetransmitted(21, 7);
-  headers_stream_->OnStreamFrameRetransmitted(28, 7);
+  headers_stream_->OnStreamFrameRetransmitted(21, 7, false);
+  headers_stream_->OnStreamFrameRetransmitted(28, 7, false);
 
   // Packets are acked in order: 2, 3, 1.
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
@@ -916,7 +916,7 @@ TEST_P(QuicHeadersStreamTest, FrameContainsMultipleHeaders) {
   // Frame 1 is retransmitted.
   EXPECT_CALL(*ack_listener1, OnPacketRetransmitted(14));
   EXPECT_CALL(*ack_listener2, OnPacketRetransmitted(3));
-  headers_stream_->OnStreamFrameRetransmitted(0, 17);
+  headers_stream_->OnStreamFrameRetransmitted(0, 17, false);
 
   // Frames are acked in order: 2, 3, 1.
   EXPECT_CALL(*ack_listener2, OnPacketAcked(4, _));

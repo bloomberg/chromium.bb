@@ -1006,7 +1006,6 @@ TEST_F(BbrSenderTest, SimpleTransferLRTTStartupSmallBuffer) {
 TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
   // Adding TSO CWND causes packet loss before exiting startup.
   SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
-  SetQuicReloadableFlag(quic_bbr_slower_startup, true);
   CreateSmallBufferSetup();
 
   SetConnectionOption(kBBRS);

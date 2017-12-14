@@ -5,6 +5,7 @@
 #include "net/quic/core/crypto/crypto_utils.h"
 
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -67,7 +68,7 @@ TEST_F(CryptoUtilsTest, TestExportKeyingMaterial) {
        "c9a46ed0757bd1812f1f21b4d41e62125fec8364a21db7"},
   };
 
-  for (size_t i = 0; i < arraysize(test_vector); i++) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(test_vector); i++) {
     // Decode the test vector.
     string subkey_secret =
         QuicTextUtils::HexDecode(test_vector[i].subkey_secret);

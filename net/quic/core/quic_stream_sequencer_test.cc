@@ -12,6 +12,7 @@
 
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
@@ -60,7 +61,7 @@ class QuicStreamSequencerTest : public QuicTest {
  public:
   void ConsumeData(size_t num_bytes) {
     char buffer[1024];
-    ASSERT_GT(arraysize(buffer), num_bytes);
+    ASSERT_GT(QUIC_ARRAYSIZE(buffer), num_bytes);
     struct iovec iov;
     iov.iov_base = buffer;
     iov.iov_len = num_bytes;
@@ -90,7 +91,7 @@ class QuicStreamSequencerTest : public QuicTest {
   bool VerifyReadableRegions(const std::vector<string>& expected) {
     iovec iovecs[5];
     size_t num_iovecs =
-        sequencer_->GetReadableRegions(iovecs, arraysize(iovecs));
+        sequencer_->GetReadableRegions(iovecs, QUIC_ARRAYSIZE(iovecs));
     return VerifyReadableRegion(expected) &&
            VerifyIovecs(iovecs, num_iovecs, expected);
   }
@@ -384,7 +385,7 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
   typedef std::vector<Frame> FrameList;
 
   void CreateFrames() {
-    int payload_size = arraysize(kPayload) - 1;
+    int payload_size = QUIC_ARRAYSIZE(kPayload) - 1;
     int remaining_payload = payload_size;
     while (remaining_payload != 0) {
       int size = std::min(OneToN(6), remaining_payload);
@@ -406,10 +407,10 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
 
   void ReadAvailableData() {
     // Read all available data
-    char output[arraysize(kPayload) + 1];
+    char output[QUIC_ARRAYSIZE(kPayload) + 1];
     iovec iov;
     iov.iov_base = output;
-    iov.iov_len = arraysize(output);
+    iov.iov_len = QUIC_ARRAYSIZE(output);
     int bytes_read = sequencer_->Readv(&iov, 1);
     EXPECT_NE(0, bytes_read);
     output_.append(output, bytes_read);
@@ -439,7 +440,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
     list_.erase(list_.begin() + index);
   }
 
-  ASSERT_EQ(arraysize(kPayload) - 1, output_.size());
+  ASSERT_EQ(QUIC_ARRAYSIZE(kPayload) - 1, output_.size());
   EXPECT_EQ(kPayload, output_);
 }
 
@@ -453,7 +454,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
 
   EXPECT_CALL(stream_, OnDataAvailable()).Times(AnyNumber());
 
-  while (output_.size() != arraysize(kPayload) - 1) {
+  while (output_.size() != QUIC_ARRAYSIZE(kPayload) - 1) {
     if (!list_.empty() && OneToN(2) == 1) {  // Send data
       int index = OneToN(list_.size()) - 1;
       OnFrame(list_[index].first, list_[index].second.data());
@@ -470,7 +471,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
         ASSERT_EQ(0, iovs_peeked);
         ASSERT_FALSE(sequencer_->GetReadableRegion(peek_iov, &timestamp));
       }
-      int total_bytes_to_peek = arraysize(buffer);
+      int total_bytes_to_peek = QUIC_ARRAYSIZE(buffer);
       for (int i = 0; i < iovs_peeked; ++i) {
         int bytes_to_peek =
             std::min<int>(peek_iov[i].iov_len, total_bytes_to_peek);

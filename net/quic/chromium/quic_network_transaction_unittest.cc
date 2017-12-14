@@ -1971,6 +1971,12 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       10, kHeadersStreamId, true, false, settings_offset, settings_data));
 
+  if (FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp) {
+    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
+        11, true, QuicTime::Delta::Infinite(), 0, 1, 1,
+        QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
+  }
+
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2328,6 +2334,12 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       10, kHeadersStreamId, true, false, settings_offset, settings_data));
 
+  if (FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp) {
+    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
+        11, true, QuicTime::Delta::Infinite(), 0, 1, 1,
+        QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
+  }
+
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2444,6 +2456,12 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
                                                   false, 0, request_data));
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       10, kHeadersStreamId, true, false, settings_offset, settings_data));
+
+  if (FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp) {
+    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
+        11, true, QuicTime::Delta::Infinite(), 0, 1, 1,
+        QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
+  }
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);
@@ -2572,6 +2590,12 @@ TEST_P(QuicNetworkTransactionTest,
                                                   false, 0, request_data));
   quic_data.AddWrite(client_maker_.MakeDataPacket(
       11, kHeadersStreamId, false, false, settings_offset, settings_data));
+
+  if (FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp) {
+    quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
+        12, false, QuicTime::Delta::FromMilliseconds(4200), 1, 1, 1,
+        QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
+  }
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);

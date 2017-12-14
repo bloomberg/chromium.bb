@@ -8,6 +8,7 @@
 
 #include "net/quic/core/crypto/chacha20_poly1305_tls_decrypter.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -102,12 +103,12 @@ TEST_F(ChaCha20Poly1305TlsEncrypterTest, EncryptThenDecrypt) {
   size_t len;
   ASSERT_TRUE(encrypter.EncryptPacket(QuicTransportVersionMax(), packet_number,
                                       associated_data, plaintext, encrypted,
-                                      &len, arraysize(encrypted)));
+                                      &len, QUIC_ARRAYSIZE(encrypted)));
   QuicStringPiece ciphertext(encrypted, len);
   char decrypted[1024];
   ASSERT_TRUE(decrypter.DecryptPacket(QuicTransportVersionMax(), packet_number,
                                       associated_data, ciphertext, decrypted,
-                                      &len, arraysize(decrypted)));
+                                      &len, QUIC_ARRAYSIZE(decrypted)));
 }
 
 TEST_F(ChaCha20Poly1305TlsEncrypterTest, Encrypt) {

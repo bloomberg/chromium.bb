@@ -4,6 +4,7 @@
 
 #include "net/quic/core/quic_socket_address_coder.h"
 
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_test.h"
 
 using std::string;
@@ -110,7 +111,7 @@ TEST_F(QuicSocketAddressCoderTest, EncodeAndDecode) {
       {"::1", 65534},
   };
 
-  for (size_t i = 0; i < arraysize(test_case); i++) {
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(test_case); i++) {
     QuicIpAddress ip;
     ASSERT_TRUE(ip.FromString(test_case[i].ip_literal));
     QuicSocketAddressCoder encoder(QuicSocketAddress(ip, test_case[i].port));

@@ -128,6 +128,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override;
   void OnStreamFrameDiscarded(const QuicStreamFrame& frame) override;
 
+  // TODO(fayang): Add this function to StreamNotifierInterface.
+  void OnStreamFrameLost(const QuicStreamFrame& frame);
+
   // Called on every incoming packet. Passes |packet| through to |connection_|.
   virtual void ProcessUdpPacket(const QuicSocketAddress& self_address,
                                 const QuicSocketAddress& peer_address,
@@ -274,6 +277,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Returns true if this stream should yield writes to another blocked stream.
   bool ShouldYield(QuicStreamId stream_id);
+
+  // Called to cancel retransmission of unencrypted stream data.
+  void NeuterUnencryptedStreamData();
 
   bool can_use_slices() const { return can_use_slices_; }
 
@@ -424,6 +430,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // closed.
   QuicStream* GetStream(QuicStreamId id) const;
 
+  // Let streams retransmit lost data, returns true if all lost data is
+  // retransmitted. Returns false otherwise.
+  bool RetransmitLostStreamData();
+
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.
   std::map<QuicStreamId, QuicStreamOffset>
@@ -498,6 +508,11 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Latched value of quic_reloadable_flag_quic_allow_multiple_acks_for_data2.
   const bool allow_multiple_acks_for_data_;
+
+  // TODO(fayang): switch to linked_hash_set when chromium supports it. The bool
+  // is not used here.
+  // List of streams with pending retransmissions.
+  QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

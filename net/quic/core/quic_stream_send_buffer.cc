@@ -26,6 +26,11 @@ BufferedSlice& BufferedSlice::operator=(BufferedSlice&& other) = default;
 
 BufferedSlice::~BufferedSlice() {}
 
+bool StreamPendingRetransmission::operator==(
+    const StreamPendingRetransmission& other) const {
+  return offset == other.offset && length == other.length;
+}
+
 QuicStreamSendBuffer::QuicStreamSendBuffer(QuicBufferAllocator* allocator,
                                            bool allow_multiple_acks_for_data)
     : stream_offset_(0),
@@ -114,6 +119,7 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
   stream_bytes_outstanding_ -= *newly_acked_length;
   if (allow_multiple_acks_for_data_) {
     bytes_acked_.Add(offset, offset + data_length);
+    pending_retransmissions_.Difference(offset, offset + data_length);
     while (!buffered_slices_.empty() &&
            bytes_acked_.Contains(buffered_slices_.front().offset,
                                  buffered_slices_.front().offset +
@@ -148,6 +154,52 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
     buffered_slices_.pop_front();
   }
   return true;
+}
+
+void QuicStreamSendBuffer::OnStreamDataLost(QuicStreamOffset offset,
+                                            QuicByteCount data_length) {
+  if (data_length == 0) {
+    return;
+  }
+  QuicIntervalSet<QuicStreamOffset> bytes_lost(offset, offset + data_length);
+  bytes_lost.Difference(bytes_acked_);
+  if (bytes_lost.Empty()) {
+    return;
+  }
+  for (const auto& lost : bytes_lost) {
+    pending_retransmissions_.Add(lost.min(), lost.max());
+  }
+}
+
+void QuicStreamSendBuffer::OnStreamDataRetransmitted(
+    QuicStreamOffset offset,
+    QuicByteCount data_length) {
+  if (data_length == 0) {
+    return;
+  }
+  pending_retransmissions_.Difference(offset, offset + data_length);
+}
+
+bool QuicStreamSendBuffer::HasPendingRetransmission() const {
+  return !pending_retransmissions_.Empty();
+}
+
+StreamPendingRetransmission QuicStreamSendBuffer::NextPendingRetransmission()
+    const {
+  if (HasPendingRetransmission()) {
+    const auto pending = pending_retransmissions_.begin();
+    return {pending->min(), pending->max() - pending->min()};
+  }
+  QUIC_BUG << "NextPendingRetransmission is called unexpected with no "
+              "pending retransmissions.";
+  return {0, 0};
+}
+
+bool QuicStreamSendBuffer::IsStreamDataOutstanding(
+    QuicStreamOffset offset,
+    QuicByteCount data_length) const {
+  return data_length > 0 &&
+         !bytes_acked_.Contains(offset, offset + data_length);
 }
 
 size_t QuicStreamSendBuffer::size() const {
