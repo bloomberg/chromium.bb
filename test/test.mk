@@ -211,8 +211,8 @@ ifeq ($(CONFIG_INTERNAL_STATS),yes)
 LIBAOM_TEST_SRCS-$(CONFIG_HIGHBITDEPTH) += hbd_metrics_test.cc
 endif
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += sad_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_txfm_test.h
-LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_txfm_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_txfm_test.h
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_txfm_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_fwd_txfm1d_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_inv_txfm1d_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_fwd_txfm2d_test.cc

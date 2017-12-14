@@ -128,8 +128,6 @@ if (NOT BUILD_SHARED_LIBS)
         ${AOM_UNIT_TEST_COMMON_SOURCES}
         "${AOM_ROOT}/test/av1_convolve_optimz_test.cc"
         "${AOM_ROOT}/test/av1_convolve_test.cc"
-        "${AOM_ROOT}/test/av1_txfm_test.cc"
-        "${AOM_ROOT}/test/av1_txfm_test.h"
         "${AOM_ROOT}/test/intrapred_test.cc"
         "${AOM_ROOT}/test/lpf_test.cc"
         "${AOM_ROOT}/test/simd_cmp_impl.h")
@@ -197,6 +195,8 @@ if (CONFIG_AV1_ENCODER)
   set(AOM_UNIT_TEST_ENCODER_SOURCES
       ${AOM_UNIT_TEST_ENCODER_SOURCES}
       "${AOM_ROOT}/test/active_map_test.cc"
+      "${AOM_ROOT}/test/av1_txfm_test.cc"
+      "${AOM_ROOT}/test/av1_txfm_test.h"
       "${AOM_ROOT}/test/borders_test.cc"
       "${AOM_ROOT}/test/cpu_speed_test.cc"
       "${AOM_ROOT}/test/end_to_end_test.cc"
