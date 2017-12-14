@@ -96,20 +96,6 @@ TEST_F(PaletteWelcomeBubbleTest, ShowIfNeeded) {
   EXPECT_FALSE(welcome_bubble_->bubble_shown());
 }
 
-// Verify that tapping the close button on the welcome bubble closes the bubble.
-TEST_F(PaletteWelcomeBubbleTest, CloseButton) {
-  ShowBubble();
-  ASSERT_TRUE(welcome_bubble_->bubble_shown());
-  ASSERT_TRUE(welcome_bubble_->GetCloseButtonForTest());
-
-  GetEventGenerator().set_current_location(
-      welcome_bubble_->GetCloseButtonForTest()
-          ->GetBoundsInScreen()
-          .CenterPoint());
-  GetEventGenerator().ClickLeftButton();
-  EXPECT_FALSE(welcome_bubble_->bubble_shown());
-}
-
 // Verify that tapping on the screen outside of the welcome bubble closes the
 // bubble.
 TEST_F(PaletteWelcomeBubbleTest, TapOutsideOfBubble) {

@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -16,12 +15,9 @@
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/font.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 
@@ -32,11 +28,9 @@ constexpr int kBubbleContentLabelPreferredWidthDp = 380;
 
 }  // namespace
 
-// View which contains two text (one title) and a close button for closing the
-// bubble. Controlled by PaletteWelcomeBubble and anchored to a PaletteTray.
+// Controlled by PaletteWelcomeBubble and anchored to a PaletteTray.
 class PaletteWelcomeBubble::WelcomeBubbleView
-    : public views::BubbleDialogDelegateView,
-      public views::ButtonListener {
+    : public views::BubbleDialogDelegateView {
  public:
   WelcomeBubbleView(views::View* anchor, views::BubbleBorder::Arrow arrow)
       : views::BubbleDialogDelegateView(anchor, arrow) {
@@ -46,63 +40,33 @@ class PaletteWelcomeBubble::WelcomeBubbleView
     set_parent_window(
         anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
             kShellWindowId_SettingBubbleContainer));
-    SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-
-    // Add the header which contains the title and close button.
-    auto* header = new views::View();
-    auto box_layout =
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
-    auto* layout_ptr = header->SetLayoutManager(std::move(box_layout));
-    AddChildView(header);
-
-    // Add the title, which is bolded.
-    auto* title = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_TITLE));
-    title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    title->SetFontList(views::Label::GetDefaultFontList().Derive(
-        0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD));
-    header->AddChildView(title);
-    layout_ptr->SetFlexForView(title, 1);
-
-    // Add a button to close the bubble.
-    close_button_ = new views::ImageButton(this);
-    close_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kWindowControlCloseIcon, SK_ColorBLACK));
-    header->AddChildView(close_button_);
-
-    auto* content = new views::Label(l10n_util::GetStringUTF16(
-        IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_DESCRIPTION));
-    content->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    content->SetMultiLine(true);
-    content->SizeToFit(kBubbleContentLabelPreferredWidthDp);
-    AddChildView(content);
-
     views::BubbleDialogDelegateView::CreateBubble(this);
   }
 
   ~WelcomeBubbleView() override = default;
 
-  views::ImageButton* close_button() { return close_button_; }
-
   // ui::BubbleDialogDelegateView:
+  base::string16 GetWindowTitle() const override {
+    return l10n_util::GetStringUTF16(IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_TITLE);
+  }
+
+  bool ShouldShowWindowTitle() const override { return true; }
+
+  bool ShouldShowCloseButton() const override { return true; }
+
+  void Init() override {
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+    auto* label = new views::Label(l10n_util::GetStringUTF16(
+        IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_DESCRIPTION));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetMultiLine(true);
+    label->SizeToFit(kBubbleContentLabelPreferredWidthDp);
+    AddChildView(label);
+  }
+
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (sender == close_button_)
-      GetWidget()->Close();
-  }
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override {
-    return BubbleDialogDelegateView::CalculatePreferredSize();
-  }
-
  private:
-  views::ImageButton* close_button_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(WelcomeBubbleView);
 };
 
@@ -159,13 +123,6 @@ void PaletteWelcomeBubble::MarkAsShown() {
   DCHECK(active_user_pref_service_);
   active_user_pref_service_->SetBoolean(prefs::kShownPaletteWelcomeBubble,
                                         true);
-}
-
-views::ImageButton* PaletteWelcomeBubble::GetCloseButtonForTest() {
-  if (bubble_view_)
-    return bubble_view_->close_button();
-
-  return nullptr;
 }
 
 base::Optional<gfx::Rect> PaletteWelcomeBubble::GetBubbleBoundsForTest() {
