@@ -98,6 +98,7 @@ class TestUrlBarTexture : public UrlBarTexture {
   const base::string16& security_text() { return rendered_security_text_; }
   const gfx::Rect url_rect() { return rendered_url_text_rect_; }
   const gfx::Rect security_rect() { return rendered_security_text_rect_; }
+  bool url_dirty() const { return UrlBarTexture::url_dirty(); }
 
  private:
   void OnUnsupportedFeature(UiUnsupportedMode mode) {
@@ -320,6 +321,16 @@ TEST(UrlBarTexture, OfflinePage) {
   EXPECT_EQ(texture.url_rect(), online_url_rect);
   EXPECT_TRUE(texture.security_text().empty());
   EXPECT_EQ(texture.url_text(), base::UTF8ToUTF16("https://host.com/page"));
+}
+
+TEST(UrlBarTexture, ColorChange) {
+  TestUrlBarTexture texture;
+  texture.DrawURL(GURL("https://short.com/"));
+  EXPECT_FALSE(texture.url_dirty());
+  UrlBarColors colors;
+  colors.insecure = SK_ColorRED;
+  texture.SetColors(colors);
+  EXPECT_TRUE(texture.url_dirty());
 }
 
 }  // namespace vr

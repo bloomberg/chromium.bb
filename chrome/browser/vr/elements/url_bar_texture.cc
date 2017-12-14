@@ -152,6 +152,8 @@ void UrlBarTexture::SetBackButtonPressed(bool pressed) {
 
 void UrlBarTexture::SetColors(const UrlBarColors& colors) {
   SetAndDirty(&colors_, colors);
+  if (dirty())
+    url_dirty_ = true;
 }
 
 SkColor UrlBarTexture::BackButtonColor() const {
