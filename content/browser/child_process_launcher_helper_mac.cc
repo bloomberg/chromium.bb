@@ -21,7 +21,10 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "services/service_manager/sandbox/mac/common_v2.sb.h"
 #include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
+#include "services/service_manager/sandbox/mac/utility.sb.h"
+#include "services/service_manager/sandbox/sandbox.h"
 
 namespace content {
 namespace internal {
@@ -54,19 +57,42 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
   options->environ = delegate_->GetEnvironment();
 
-  bool no_sandbox = command_line_->HasSwitch(switches::kNoSandbox);
+  auto sandbox_type =
+      service_manager::SandboxTypeFromCommandLine(*command_line_);
 
-  if (base::FeatureList::IsEnabled(features::kMacV2Sandbox) &&
-      GetProcessType() == switches::kRendererProcess && !no_sandbox) {
+  bool no_sandbox = command_line_->HasSwitch(switches::kNoSandbox) ||
+                    service_manager::IsUnsandboxedSandboxType(sandbox_type);
+
+  bool v2_process = GetProcessType() == switches::kRendererProcess ||
+                    GetProcessType() == switches::kUtilityProcess;
+
+  bool use_v2 =
+      v2_process && base::FeatureList::IsEnabled(features::kMacV2Sandbox);
+
+  if (use_v2 && !no_sandbox) {
+    // Generate the profile string.
+    std::string profile =
+        std::string(service_manager::kSeatbeltPolicyString_common_v2);
+
+    if (GetProcessType() == switches::kRendererProcess) {
+      profile += service_manager::kSeatbeltPolicyString_renderer_v2;
+    } else if (GetProcessType() == switches::kUtilityProcess) {
+      profile += service_manager::kSeatbeltPolicyString_utility;
+    }
+
     // Disable os logging to com.apple.diagnosticd which is a performance
     // problem.
     options->environ.insert(std::make_pair("OS_ACTIVITY_MODE", "disable"));
 
     seatbelt_exec_client_ = std::make_unique<sandbox::SeatbeltExecClient>();
-    seatbelt_exec_client_->SetProfile(
-        service_manager::kSeatbeltPolicyString_renderer_v2);
+    seatbelt_exec_client_->SetProfile(profile);
 
-    SetupRendererSandboxParameters(seatbelt_exec_client_.get());
+    if (GetProcessType() == switches::kRendererProcess) {
+      SetupRendererSandboxParameters(seatbelt_exec_client_.get());
+    } else {
+      SetupUtilitySandboxParameters(seatbelt_exec_client_.get(),
+                                    *command_line_.get());
+    }
 
     int pipe = seatbelt_exec_client_->SendProfileAndGetFD();
 
