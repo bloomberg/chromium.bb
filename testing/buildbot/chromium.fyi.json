@@ -6050,6 +6050,7 @@
       },
       {
         "args": [
+          "--gtest-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter",
           "--site-per-process",
           "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
