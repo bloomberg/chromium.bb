@@ -1305,10 +1305,13 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataNewExtension) {
         prefs->GetGrantedPermissions(good_crx);
     EXPECT_EQ(test_case.expect_permissions_granted, !permissions->IsEmpty());
     ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
+    if (test_case.sync_enabled)
+      EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+    else
+      EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
 
     // Remove the extension again, so we can install it again for the next case.
-    UninstallExtension(good_crx, test_case.sync_enabled ? Extension::ENABLED
-                                                        : Extension::DISABLED);
+    UninstallExtension(good_crx);
   }
 }
 
@@ -1567,8 +1570,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataEnableDisable) {
     EXPECT_EQ(test_case.expect_disable_reasons, prefs->GetDisableReasons(id));
 
     // Remove the extension again, so we can install it again for the next case.
-    UninstallExtension(
-        id, expect_enabled ? Extension::ENABLED : Extension::DISABLED);
+    UninstallExtension(id);
   }
 }
 
@@ -1745,8 +1747,7 @@ TEST_F(ExtensionServiceSyncCustomGalleryTest,
     }
 
     // Remove the extension again, so we can install it again for the next case.
-    UninstallExtension(
-        id, expect_enabled ? Extension::ENABLED : Extension::DISABLED);
+    UninstallExtension(id);
   }
 }
 

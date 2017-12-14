@@ -322,18 +322,12 @@ void ExtensionServiceTestWithInstall::UpdateExtension(
 
 void ExtensionServiceTestWithInstall::UninstallExtension(
     const std::string& id) {
-  UninstallExtension(id, Extension::ENABLED);
-}
-
-void ExtensionServiceTestWithInstall::UninstallExtension(
-    const std::string& id,
-    Extension::State expected_state) {
   // Verify that the extension is installed.
+  ASSERT_TRUE(registry()->GetExtensionById(id, ExtensionRegistry::EVERYTHING));
   base::FilePath extension_path = extensions_install_dir().AppendASCII(id);
   EXPECT_TRUE(base::PathExists(extension_path));
   size_t pref_key_count = GetPrefKeyCount();
   EXPECT_GT(pref_key_count, 0u);
-  ValidateIntegerPref(id, "state", expected_state);
 
   // We make a copy of the extension's id since the extension can be deleted
   // once it's uninstalled.

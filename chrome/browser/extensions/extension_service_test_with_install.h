@@ -113,8 +113,6 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
                        UpdateState expected_state);
 
   void UninstallExtension(const std::string& id);
-  void UninstallExtension(const std::string& id,
-                          Extension::State expected_state);
 
   void TerminateExtension(const std::string& id);
 
