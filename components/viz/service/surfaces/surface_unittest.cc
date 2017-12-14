@@ -31,7 +31,7 @@ TEST(SurfaceTest, PresentationCallback) {
 
   FrameSinkManagerImpl frame_sink_manager;
   MockCompositorFrameSinkClient client;
-  auto support = CompositorFrameSinkSupport::Create(
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
       &client, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);
   {
@@ -86,7 +86,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
   FrameSinkManagerImpl frame_sink_manager(
       SurfaceManager::LifetimeType::SEQUENCES);
   SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
-  auto support = CompositorFrameSinkSupport::Create(
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);
 
@@ -120,7 +120,7 @@ void TestCopyResultCallback(bool* called,
 TEST(SurfaceTest, CopyRequestLifetime) {
   FrameSinkManagerImpl frame_sink_manager;
   SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
-  auto support = CompositorFrameSinkSupport::Create(
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);
 

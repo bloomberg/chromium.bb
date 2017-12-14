@@ -17,17 +17,6 @@
 
 namespace viz {
 
-// static
-std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
-    mojom::CompositorFrameSinkClient* client,
-    FrameSinkManagerImpl* frame_sink_manager,
-    const FrameSinkId& frame_sink_id,
-    bool is_root,
-    bool needs_sync_tokens) {
-  return std::make_unique<CompositorFrameSinkSupport>(
-      client, frame_sink_manager, frame_sink_id, is_root, needs_sync_tokens);
-}
-
 CompositorFrameSinkSupport::CompositorFrameSinkSupport(
     mojom::CompositorFrameSinkClient* client,
     FrameSinkManagerImpl* frame_sink_manager,
@@ -75,7 +64,7 @@ void CompositorFrameSinkSupport::SetAggregatedDamageCallback(
 }
 
 void CompositorFrameSinkSupport::SetDestructionCallback(
-    base::OnceCallback<void()> callback) {
+    base::OnceClosure callback) {
   destruction_callback_ = std::move(callback);
 }
 

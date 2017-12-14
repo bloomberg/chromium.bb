@@ -25,8 +25,8 @@ class FrameSinkManagerTest : public testing::Test {
 
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       const FrameSinkId& frame_sink_id) {
-    return CompositorFrameSinkSupport::Create(nullptr, &manager_, frame_sink_id,
-                                              false, false);
+    return std::make_unique<CompositorFrameSinkSupport>(
+        nullptr, &manager_, frame_sink_id, false, false);
   }
 
   const BeginFrameSource* GetBeginFrameSource(

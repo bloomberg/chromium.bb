@@ -50,7 +50,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     std::vector<std::unique_ptr<CompositorFrameSinkSupport>> child_supports(
         num_surfaces);
     for (int i = 0; i < num_surfaces; i++) {
-      child_supports[i] = CompositorFrameSinkSupport::Create(
+      child_supports[i] = std::make_unique<CompositorFrameSinkSupport>(
           nullptr, &manager_, FrameSinkId(1, i + 1), kIsChildRoot,
           kNeedsSyncPoints);
     }
@@ -104,7 +104,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
                                                frame_builder.Build());
     }
 
-    auto root_support = CompositorFrameSinkSupport::Create(
+    auto root_support = std::make_unique<CompositorFrameSinkSupport>(
         nullptr, &manager_, FrameSinkId(1, num_surfaces + 1), kIsRoot,
         kNeedsSyncPoints);
     timer_.Reset();

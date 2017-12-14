@@ -97,12 +97,12 @@ class TestDisplayScheduler : public DisplayScheduler {
 class DisplayTest : public testing::Test {
  public:
   DisplayTest()
-      : support_(
-            CompositorFrameSinkSupport::Create(nullptr,
-                                               &manager_,
-                                               kArbitraryFrameSinkId,
-                                               true /* is_root */,
-                                               true /* needs_sync_points */)),
+      : support_(std::make_unique<CompositorFrameSinkSupport>(
+            nullptr,
+            &manager_,
+            kArbitraryFrameSinkId,
+            true /* is_root */,
+            true /* needs_sync_points */)),
         task_runner_(new base::NullTaskRunner) {}
 
   ~DisplayTest() override { support_->EvictCurrentSurface(); }
@@ -648,7 +648,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
   // Set up second frame sink + display.
-  auto support2 = CompositorFrameSinkSupport::Create(
+  auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, &manager_, kAnotherFrameSinkId, true /* is_root */,
       true /* needs_sync_points */);
   auto begin_frame_source2 = base::MakeUnique<StubBeginFrameSource>();
@@ -2455,7 +2455,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
 
   MockCompositorFrameSinkClient sub_client;
 
-  auto sub_support = CompositorFrameSinkSupport::Create(
+  auto sub_support = std::make_unique<CompositorFrameSinkSupport>(
       &sub_client, &manager_, kAnotherFrameSinkId, false /* is_root */,
       true /* needs_sync_points */);
 

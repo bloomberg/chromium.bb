@@ -213,7 +213,7 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
   DCHECK(data.IsFrameSinkRegistered());
   DCHECK(!data.HasCompositorFrameSinkData());
 
-  auto support = CompositorFrameSinkSupport::Create(
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
       client, frame_sink_manager_impl_, frame_sink_id, is_root,
       needs_sync_points);
   support->SetDestructionCallback(

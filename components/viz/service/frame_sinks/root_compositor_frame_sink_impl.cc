@@ -23,7 +23,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     : compositor_frame_sink_client_(std::move(client)),
       compositor_frame_sink_binding_(this, std::move(request)),
       display_private_binding_(this, std::move(display_private_request)),
-      support_(CompositorFrameSinkSupport::Create(
+      support_(std::make_unique<CompositorFrameSinkSupport>(
           compositor_frame_sink_client_.get(),
           frame_sink_manager,
           frame_sink_id,

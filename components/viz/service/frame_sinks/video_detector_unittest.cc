@@ -168,10 +168,9 @@ class VideoDetectorTest : public testing::Test {
     static uint32_t client_id = 1;
     FrameSinkId frame_sink_id(client_id++, 0);
     frame_sink_manager_.RegisterFrameSinkId(frame_sink_id);
-    std::unique_ptr<CompositorFrameSinkSupport> frame_sink =
-        CompositorFrameSinkSupport::Create(&frame_sink_client_,
-                                           &frame_sink_manager_, frame_sink_id,
-                                           is_root, needs_sync_points);
+    auto frame_sink = std::make_unique<CompositorFrameSinkSupport>(
+        &frame_sink_client_, &frame_sink_manager_, frame_sink_id, is_root,
+        needs_sync_points);
     SendUpdate(frame_sink.get(), gfx::Rect());
     return frame_sink;
   }

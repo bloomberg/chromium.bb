@@ -60,7 +60,7 @@ SurfacesInstance::SurfacesInstance()
 
   constexpr bool is_root = true;
   constexpr bool needs_sync_points = true;
-  support_ = viz::CompositorFrameSinkSupport::Create(
+  support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
       this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       needs_sync_points);
 

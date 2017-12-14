@@ -82,10 +82,10 @@ class SurfaceHittestTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    supports_.push_back(CompositorFrameSinkSupport::Create(
+    supports_.push_back(std::make_unique<CompositorFrameSinkSupport>(
         &client_, &frame_sink_manager_, kRootFrameSink, kIsRoot,
         kNeedsSyncPoints));
-    supports_.push_back(CompositorFrameSinkSupport::Create(
+    supports_.push_back(std::make_unique<CompositorFrameSinkSupport>(
         &client_, &frame_sink_manager_, kChildFrameSink, kIsChildRoot,
         kNeedsSyncPoints));
   }
