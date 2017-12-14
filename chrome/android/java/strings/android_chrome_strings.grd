@@ -3049,6 +3049,12 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_WEBAPK_NOTIFICATION_CHANNEL_NAME" desc="The visible name of the notification channel of WebAPKs on Android O+.">
         General
       </message>
+      <message name="IDS_WEBAPP_CANNOT_CONNECT_TO_SITE" desc="The message on the dialog shown when launching a WebAPK or a TWA with network failure.">
+        Can't connect to the site
+      </message>
+      <message name="IDS_WEBAPP_NETWORK_ERROR_MESSAGE_TUNNEL_CONNECTION_FAILED" desc="The error message for ERROR_TUNNEL_CONNECTION_FAILED.">
+        Establishing a tunnel via proxy server failed
+      </message>
 
       <!-- Keyboard shortcuts in Android N-->
       <message name="IDS_KEYBOARD_SHORTCUT_OPEN_NEW_TAB" desc="A text label that appears next to the keyboard shortcut to open a new tab in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=55]">
