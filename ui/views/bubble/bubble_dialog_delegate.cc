@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/views_delegate.h"
@@ -60,8 +61,8 @@ const char BubbleDialogDelegateView::kViewClassName[] =
 BubbleDialogDelegateView::~BubbleDialogDelegateView() {
   if (GetWidget())
     GetWidget()->RemoveObserver(this);
-  SetLayoutManager(NULL);
-  SetAnchorView(NULL);
+  SetLayoutManager(nullptr);
+  SetAnchorView(nullptr);
 }
 
 // static

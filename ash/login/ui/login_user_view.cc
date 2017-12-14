@@ -90,7 +90,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
       : NonAccessibleView(kLoginUserImageClassName),
         size_(size),
         weak_factory_(this) {
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
 
     // TODO(jdufault): We need to render a black border. We will probably have
     // to add support directly to AnimatedRoundedImageView, since the existing
@@ -142,7 +142,7 @@ class LoginUserView::UserLabel : public NonAccessibleView {
  public:
   UserLabel(LoginDisplayStyle style)
       : NonAccessibleView(kLoginUserLabelClassName) {
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
 
     user_name_ = new views::Label();
     user_name_->SetEnabledColor(SK_ColorWHITE);
@@ -540,10 +540,9 @@ void LoginUserView::SetLargeLayout() {
 }
 
 void LoginUserView::SetSmallishLayout() {
-  auto* root_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                           kSmallManyDistanceFromUserIconToUserLabelDp);
-  SetLayoutManager(root_layout);
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      kSmallManyDistanceFromUserIconToUserLabelDp));
 
   AddChildView(user_image_);
   AddChildView(user_label_);

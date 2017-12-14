@@ -61,16 +61,17 @@ class LockScreenActionBackgroundView::NoteBackground
 };
 
 LockScreenActionBackgroundView::LockScreenActionBackgroundView() {
-  auto* layout_manager = new views::BoxLayout(views::BoxLayout::kVertical);
+  auto layout_manager =
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  SetLayoutManager(layout_manager);
+  auto* layout_ptr = SetLayoutManager(std::move(layout_manager));
 
   background_ = new NoteBackground(this);
   AddChildView(background_);
   // Make background view flexible - the constant does not really matter given
   // that |background_| is the only child, as long as it's greater than 0.
-  layout_manager->SetFlexForView(background_, 1 /*flex_weight*/);
+  layout_ptr->SetFlexForView(background_, 1 /*flex_weight*/);
 }
 
 LockScreenActionBackgroundView::~LockScreenActionBackgroundView() = default;

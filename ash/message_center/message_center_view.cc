@@ -77,12 +77,12 @@ void SetViewHierarchyEnabled(views::View* view, bool enabled) {
 class EmptyNotificationView : public views::View {
  public:
   EmptyNotificationView() {
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, kEmptyViewPadding, 0);
+    auto layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical, kEmptyViewPadding, 0);
     layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-    SetLayoutManager(layout);
+    SetLayoutManager(std::move(layout));
 
     views::ImageView* icon = new views::ImageView();
     icon->SetImage(gfx::CreateVectorIcon(
@@ -179,7 +179,7 @@ MessageCenterView::MessageCenterView(
   // an intermediate view for the contents whose children we can swap in and
   // out.
   views::View* scroller_contents = new views::View();
-  scroller_contents->SetLayoutManager(new views::FillLayout());
+  scroller_contents->SetLayoutManager(std::make_unique<views::FillLayout>());
   scroller_contents->AddChildView(message_list_view_.get());
   scroller_->SetContents(scroller_contents);
 

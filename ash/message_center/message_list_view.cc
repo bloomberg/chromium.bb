@@ -46,10 +46,10 @@ MessageListView::MessageListView()
       clear_all_started_(false),
       animator_(this),
       weak_ptr_factory_(this) {
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 1);
+  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical,
+                                                   gfx::Insets(), 1);
   layout->SetDefaultFlex(1);
-  SetLayoutManager(layout);
+  SetLayoutManager(std::move(layout));
 
   if (!switches::IsSidebarEnabled()) {
     SetBackground(

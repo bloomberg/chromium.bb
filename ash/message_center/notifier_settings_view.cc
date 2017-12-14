@@ -266,13 +266,13 @@ class ScrollContentsView : public views::View {
 class EmptyNotifierView : public views::View {
  public:
   EmptyNotifierView() {
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0);
+    auto layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-    SetLayoutManager(layout);
+    SetLayoutManager(std::move(layout));
 
     views::ImageView* icon = new views::ImageView();
     icon->SetImage(gfx::CreateVectorIcon(
@@ -478,17 +478,17 @@ NotifierSettingsView::NotifierSettingsView()
   SetPaintToLayer();
 
   header_view_ = new views::View;
-  header_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, kHeaderViewPadding, 0));
+  header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, kHeaderViewPadding, 0));
   header_view_->SetBorder(
       views::CreateSolidSidedBorder(1, 0, 0, 0, kTopBorderColor));
 
   views::View* quiet_mode_view = new views::View;
 
-  views::BoxLayout* quiet_mode_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, kQuietModeViewPadding,
-                           kQuietModeViewSpacing);
-  quiet_mode_view->SetLayoutManager(quiet_mode_layout);
+  auto* quiet_mode_layout =
+      quiet_mode_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal, kQuietModeViewPadding,
+          kQuietModeViewSpacing));
 
   quiet_mode_icon_ = new views::ImageView();
   quiet_mode_icon_->SetBorder(views::CreateEmptyBorder(kQuietModeLabelPadding));
@@ -579,7 +579,7 @@ void NotifierSettingsView::SetNotifierList(
   buttons_.clear();
 
   views::View* contents_view = new ScrollContentsView();
-  contents_view->SetLayoutManager(new views::BoxLayout(
+  contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(0, kHorizontalMargin)));
 
   size_t notifier_count = ui_data.size();

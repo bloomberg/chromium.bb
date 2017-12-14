@@ -141,7 +141,7 @@ StickyKeysOverlayView::StickyKeysOverlayView() {
   int vertical_spacing = font_size / 2 - font_padding;
   int child_spacing = font_size - 2 * font_padding;
 
-  SetLayoutManager(new views::BoxLayout(
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
       gfx::Insets(vertical_spacing, horizontal_spacing), child_spacing));
   AddKeyLabel(ui::EF_CONTROL_DOWN,

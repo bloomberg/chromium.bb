@@ -92,7 +92,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
     : dragging_(false),
       is_default_view_(default_view),
       last_percent_(initial_percent) {
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   // Use CreateMultiTargetRowView() instead of CreateDefaultRowView() because
   // that's what the audio row uses and we want the two rows to layout with the
   // same insets.

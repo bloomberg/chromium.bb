@@ -250,25 +250,26 @@ LockContentsView::LockContentsView(
   // focusable.
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   main_view_ = new NonAccessibleView();
   AddChildView(main_view_);
 
   // The top header view.
   top_header_ = new views::View();
-  auto* top_header_layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
+  auto top_header_layout =
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
   top_header_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
-  top_header_->SetLayoutManager(top_header_layout);
+  top_header_->SetLayoutManager(std::move(top_header_layout));
   AddChildView(top_header_);
 
   dev_channel_info_ = new views::View();
-  auto* dev_channel_info_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(5, 8));
+  auto dev_channel_info_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(5, 8));
   dev_channel_info_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
-  dev_channel_info_->SetLayoutManager(dev_channel_info_layout);
+  dev_channel_info_->SetLayoutManager(std::move(dev_channel_info_layout));
   dev_channel_info_->SetVisible(false);
   top_header_->AddChildView(dev_channel_info_);
 
@@ -345,12 +346,14 @@ void LockContentsView::OnUsersChanged(
   for (const mojom::LoginUserInfoPtr& user : users)
     users_.push_back(UserState{user->basic_user_info->account_id});
 
-  main_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal);
+  auto box_layout =
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+  main_layout_ = box_layout.get();
   main_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   main_layout_->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  main_view_->SetLayoutManager(main_layout_);
+  main_view_->SetLayoutManager(std::move(box_layout));
 
   // Add auth user.
   primary_auth_ = AllocateLoginAuthUserView(users[0], true /*is_primary*/);
@@ -560,10 +563,9 @@ void LockContentsView::CreateMediumDensityLayout(
   // Add additional users.
   auto* row = new NonAccessibleView();
   main_view_->AddChildView(row);
-  auto* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
-                           kMediumDensityVerticalDistanceBetweenUsersDp);
-  row->SetLayoutManager(layout);
+  row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      kMediumDensityVerticalDistanceBetweenUsersDp));
   for (std::size_t i = 1u; i < users.size(); ++i) {
     auto* view =
         new LoginUserView(LoginDisplayStyle::kSmall, false /*show_dropdown*/,
@@ -614,12 +616,12 @@ void LockContentsView::CreateHighDensityLayout(
 
   // Add user list.
   auto* row = new NonAccessibleView();
-  auto* row_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
-                           kHighDensityVerticalDistanceBetweenUsersDp);
+  auto row_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      kHighDensityVerticalDistanceBetweenUsersDp);
   row_layout->set_minimum_cross_axis_size(
       LoginUserView::WidthForLayoutStyle(LoginDisplayStyle::kExtraSmall));
-  row->SetLayoutManager(row_layout);
+  row->SetLayoutManager(std::move(row_layout));
   for (std::size_t i = 1u; i < users.size(); ++i) {
     auto* view = new LoginUserView(
         LoginDisplayStyle::kExtraSmall, false /*show_dropdown*/,

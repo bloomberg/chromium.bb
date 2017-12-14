@@ -69,7 +69,7 @@ class ShelfTooltipManager::ShelfTooltipBubble
     set_accept_events(false);
     set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin));
     set_shadow(views::BubbleBorder::NO_ASSETS);
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     views::Label* label = new views::Label(text);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     ui::NativeTheme* theme = anchor->GetWidget()->GetNativeTheme();

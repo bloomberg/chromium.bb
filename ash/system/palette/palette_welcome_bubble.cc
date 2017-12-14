@@ -46,12 +46,14 @@ class PaletteWelcomeBubble::WelcomeBubbleView
     set_parent_window(
         anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
             kShellWindowId_SettingBubbleContainer));
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
+    SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
     // Add the header which contains the title and close button.
     auto* header = new views::View();
-    auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
-    header->SetLayoutManager(box_layout);
+    auto box_layout =
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+    auto* layout_ptr = header->SetLayoutManager(std::move(box_layout));
     AddChildView(header);
 
     // Add the title, which is bolded.
@@ -61,7 +63,7 @@ class PaletteWelcomeBubble::WelcomeBubbleView
     title->SetFontList(views::Label::GetDefaultFontList().Derive(
         0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD));
     header->AddChildView(title);
-    box_layout->SetFlexForView(title, 1);
+    layout_ptr->SetFlexForView(title, 1);
 
     // Add a button to close the bubble.
     close_button_ = new views::ImageButton(this);

@@ -85,12 +85,13 @@ class SidebarWidget::DelegateView : public views::WidgetDelegateView,
     message_center_view_->SetNotifications(
         message_center->GetVisibleNotifications());
 
-    auto* container_layout = new views::BoxLayout(views::BoxLayout::kVertical);
+    auto container_layout =
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
     container_->SetPaintToLayer();
     container_->layer()->SetFillsBoundsOpaquely(false);
-    container_->SetLayoutManager(container_layout);
     container_->AddChildView(message_center_view_);
     container_layout->SetFlexForView(message_center_view_, 1);
+    container_->SetLayoutManager(std::move(container_layout));
 
     AddChildView(background_);
     AddChildView(container_);

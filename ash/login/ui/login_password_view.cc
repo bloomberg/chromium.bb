@@ -187,7 +187,7 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
   EasyUnlockIcon(const gfx::Size& size, int corner_radius)
       : views::Button(this) {
     SetPreferredSize(size);
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     icon_ = new AnimatedRoundedImageView(size, corner_radius);
     icon_->SetAnimationEnabled(true);
     AddChildView(icon_);
@@ -344,20 +344,21 @@ void LoginPasswordView::TestApi::set_immediately_hover_easy_unlock_icon() {
 }
 
 LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
-  auto* root_layout = new views::BoxLayout(views::BoxLayout::kVertical);
+  auto root_layout =
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   root_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(root_layout);
+  SetLayoutManager(std::move(root_layout));
 
   password_row_ = new NonAccessibleView();
 
-  auto* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal,
-                           gfx::Insets(kMarginAboveBelowPasswordIconsDp, 0));
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal,
+      gfx::Insets(kMarginAboveBelowPasswordIconsDp, 0));
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  password_row_->SetLayoutManager(layout);
+  auto* layout_ptr = password_row_->SetLayoutManager(std::move(layout));
   AddChildView(password_row_);
 
   // Add easy unlock icon.
@@ -391,7 +392,7 @@ LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   password_row_->AddChildView(textfield_);
-  layout->SetFlexForView(textfield_, 1);
+  layout_ptr->SetFlexForView(textfield_, 1);
 
   // Caps lock hint icon.
   capslock_icon_ = new views::ImageView();

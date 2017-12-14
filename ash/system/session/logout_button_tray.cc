@@ -38,7 +38,7 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf)
       show_logout_button_in_tray_(false) {
   DCHECK(shelf);
   Shell::Get()->session_controller()->AddObserver(this);
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(container_);
 
   button_->SetProminent(true);

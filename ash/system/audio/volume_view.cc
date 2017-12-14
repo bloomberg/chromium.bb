@@ -122,7 +122,7 @@ VolumeView::VolumeView(SystemTrayItem* owner,
       slider_(nullptr),
       device_type_(nullptr),
       is_default_view_(is_default_view) {
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(tri_view_);
 
   icon_ = new VolumeButton(owner, this);

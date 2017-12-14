@@ -35,7 +35,7 @@ class TextInputView : public views::WidgetDelegateView {
   TextInputView() : text_field_(new views::Textfield) {
     text_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
     AddChildView(text_field_);
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
   }
 
   ~TextInputView() override = default;

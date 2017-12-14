@@ -510,9 +510,28 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Gets/Sets the Layout Manager used by this view to size and place its
   // children.
+  //
   // The LayoutManager is owned by the View and is deleted when the view is
-  // deleted, or when a new LayoutManager is installed.
+  // deleted, or when a new LayoutManager is installed. Call
+  // SetLayoutManager(nullptr) to clear it.
+  //
+  // SetLayoutManager returns a bare pointer version of the input parameter
+  // (now owned by the view). If code needs to use the layout manager after
+  // being assigned, use this pattern:
+  //
+  //   views::BoxLayout* box_layout = SetLayoutManager(
+  //       std::make_unique<views::BoxLayout>(...));
+  //   box_layout->Foo();
   LayoutManager* GetLayoutManager() const;
+  template <typename LayoutManager>
+  LayoutManager* SetLayoutManager(
+      std::unique_ptr<LayoutManager> layout_manager) {
+    LayoutManager* lm = layout_manager.get();
+    SetLayoutManagerImpl(std::move(layout_manager));
+    return lm;
+  }
+  void SetLayoutManager(nullptr_t);
+  // DEPRECATED version that takes ownership of a raw pointer.
   void SetLayoutManager(LayoutManager* layout);
 
   // Attributes ----------------------------------------------------------------
@@ -1511,6 +1530,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // this views location and possibly size are changed.
   void AddDescendantToNotify(View* view);
   void RemoveDescendantToNotify(View* view);
+
+  // Non-templatized backend for SetLayoutManager().
+  void SetLayoutManagerImpl(std::unique_ptr<LayoutManager> layout);
 
   // Transformations -----------------------------------------------------------
 

@@ -73,10 +73,11 @@ class BasePinButton : public LoginButton, public views::ButtonListener {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetPreferredSize(
         gfx::Size(LoginPinView::kButtonSizeDp, LoginPinView::kButtonSizeDp));
-    auto* layout = new views::BoxLayout(views::BoxLayout::kVertical);
+    auto layout =
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
     layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-    SetLayoutManager(layout);
+    SetLayoutManager(std::move(layout));
 
     // Layer rendering is needed for animation. Enable it here for
     // focus painter to paint.
@@ -254,14 +255,14 @@ LoginPinView::LoginPinView(const OnPinKey& on_key,
   // Builds and returns a new view which contains a row of the PIN keyboard.
   auto build_and_add_row = [this]() {
     auto* row = new NonAccessibleView();
-    row->SetLayoutManager(new views::BoxLayout(
+    row->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(), kButtonSeparatorSizeDp));
     AddChildView(row);
     return row;
   };
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        gfx::Insets(), kButtonSeparatorSizeDp));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(), kButtonSeparatorSizeDp));
 
   // 1-2-3
   auto* row = build_and_add_row();

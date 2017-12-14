@@ -120,7 +120,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(layout.release());
+  SetLayoutManager(std::move(layout));
   bool size_button_visibility = ShouldSizeButtonBeVisible();
   tablet_mode_animation_.reset(new gfx::SlideAnimation(this));
   tablet_mode_animation_->SetTweenType(gfx::Tween::LINEAR);

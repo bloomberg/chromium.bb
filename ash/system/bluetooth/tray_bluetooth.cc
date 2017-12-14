@@ -471,11 +471,11 @@ class BluetoothDetailedView : public TrayDetailsView {
 
   views::View* CreateDisabledPanel() {
     views::View* container = new views::View;
-    views::BoxLayout* box_layout =
-        new views::BoxLayout(views::BoxLayout::kVertical);
+    auto box_layout =
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-    container->SetLayoutManager(box_layout);
+    container->SetLayoutManager(std::move(box_layout));
 
     TrayPopupItemStyle style(
         TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);

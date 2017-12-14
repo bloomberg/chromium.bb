@@ -75,7 +75,7 @@ class KeyboardBrightnessView : public TabletModeObserver, public views::View {
 };
 
 KeyboardBrightnessView::KeyboardBrightnessView(double initial_percent) {
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   // Use CreateMultiTargetRowView() instead of CreateDefaultRowView() because
   // that's what the audio row uses and we want the two rows to layout with the
   // same insets.
