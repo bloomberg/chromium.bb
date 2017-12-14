@@ -334,6 +334,9 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ 
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip ]
 
+#### external/wpt/css/css-position
+crbug.com/752022 external/wpt/css/css-position/position-sticky-offset-overflow.html [ Failure ]
+
 #### crbug.com/783229 overflow
 crbug.com/724697 overflow/overflow-basic-002.html [ Failure ]
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
