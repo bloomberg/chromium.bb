@@ -53,13 +53,13 @@ $ out/dbg/content_browsertests \
     --test-launcher-filter-file=testing/buildbot/filters/site-per-process.content_browsertests.filter
 ```
 
-When running tests on Android, the test filter file can be specified using
-`--gtest-filter-file` command line flag. Example test invocation:
+When running tests on Android, the test filter file can also be specified using
+`--test-launcher-filter-file` command line flag. Example test invocation:
 
 ```bash
 $ out/android/bin/run_content_browsertests \
     --site-per-process \
-    --gtest-filter-file=testing/buildbot/filters/site-per-process.content_browsertests.filter
+    --test-launcher-filter-file=testing/buildbot/filters/site-per-process.content_browsertests.filter
 ```
 
 ## Applicability

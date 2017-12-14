@@ -362,7 +362,10 @@ def AddGTestOptions(parser):
       help='googletest-style filter string.',
       default=os.environ.get('GTEST_FILTER'))
   filter_group.add_argument(
+      # Deprecated argument.
       '--gtest-filter-file',
+      # New argument.
+      '--test-launcher-filter-file',
       dest='test_filter_file', type=os.path.realpath,
       help='Path to file that contains googletest-style filter strings. '
            'See also //testing/buildbot/filters/README.md.')
