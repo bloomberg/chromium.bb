@@ -16,7 +16,8 @@
 namespace {
 
 #if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
-const ui::LinuxInputMethodContextFactory* g_linux_input_method_context_factory;
+const ui::LinuxInputMethodContextFactory*
+    g_linux_input_method_context_factory_for_testing;
 #endif
 
 }  // namespace
@@ -39,15 +40,16 @@ void InitializeInputMethodForTesting() {
 #if defined(OS_CHROMEOS)
   IMEBridge::Initialize();
 #elif defined(USE_AURA) && defined(OS_LINUX)
-  if (!g_linux_input_method_context_factory)
-    g_linux_input_method_context_factory = new FakeInputMethodContextFactory();
+  if (!g_linux_input_method_context_factory_for_testing)
+    g_linux_input_method_context_factory_for_testing =
+        new FakeInputMethodContextFactory();
   const LinuxInputMethodContextFactory* factory =
       LinuxInputMethodContextFactory::instance();
-  CHECK(!factory || factory == g_linux_input_method_context_factory)
+  CHECK(!factory || factory == g_linux_input_method_context_factory_for_testing)
       << "LinuxInputMethodContextFactory was already initialized somewhere "
       << "else.";
   LinuxInputMethodContextFactory::SetInstance(
-      g_linux_input_method_context_factory);
+      g_linux_input_method_context_factory_for_testing);
 #endif
 }
 
@@ -57,11 +59,11 @@ void ShutdownInputMethodForTesting() {
 #elif defined(USE_AURA) && defined(OS_LINUX)
   const LinuxInputMethodContextFactory* factory =
       LinuxInputMethodContextFactory::instance();
-  CHECK(!factory || factory == g_linux_input_method_context_factory)
+  CHECK(!factory || factory == g_linux_input_method_context_factory_for_testing)
       << "An unknown LinuxInputMethodContextFactory was set.";
   LinuxInputMethodContextFactory::SetInstance(NULL);
-  delete g_linux_input_method_context_factory;
-  g_linux_input_method_context_factory = NULL;
+  delete g_linux_input_method_context_factory_for_testing;
+  g_linux_input_method_context_factory_for_testing = NULL;
 #endif
 }
 
