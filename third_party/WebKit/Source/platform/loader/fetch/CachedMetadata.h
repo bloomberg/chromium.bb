@@ -40,6 +40,9 @@
 
 namespace blink {
 
+// |m_serializedData| consists of 32 bits type ID and and actual data.
+constexpr size_t kCachedMetaDataStart = sizeof(uint32_t);
+
 // Metadata retrieved from the embedding application's cache.
 //
 // Serialized data is NOT portable across architectures. However, reading the
@@ -63,23 +66,19 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
   const Vector<char>& SerializedData() const { return serialized_data_; }
 
   uint32_t DataTypeID() const {
-    // We need to define a local variable to use the constant in DCHECK.
-    constexpr auto kDataStart = CachedMetadata::kDataStart;
-    DCHECK_GE(serialized_data_.size(), kDataStart);
+    DCHECK_GE(serialized_data_.size(), kCachedMetaDataStart);
     return *reinterpret_cast_ptr<uint32_t*>(
         const_cast<char*>(serialized_data_.data()));
   }
 
   const char* Data() const {
-    constexpr auto kDataStart = CachedMetadata::kDataStart;
-    DCHECK_GE(serialized_data_.size(), kDataStart);
-    return serialized_data_.data() + kDataStart;
+    DCHECK_GE(serialized_data_.size(), kCachedMetaDataStart);
+    return serialized_data_.data() + kCachedMetaDataStart;
   }
 
   size_t size() const {
-    constexpr auto kDataStart = CachedMetadata::kDataStart;
-    DCHECK_GE(serialized_data_.size(), kDataStart);
-    return serialized_data_.size() - kDataStart;
+    DCHECK_GE(serialized_data_.size(), kCachedMetaDataStart);
+    return serialized_data_.size() - kCachedMetaDataStart;
   }
 
  private:
@@ -89,9 +88,6 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
   // Since the serialization format supports random access, storing it in
   // serialized form avoids need for a copy during serialization.
   Vector<char> serialized_data_;
-
-  // |m_serializedData| consists of 32 bits type ID and and actual data.
-  static constexpr size_t kDataStart = sizeof(uint32_t);
 };
 
 }  // namespace blink

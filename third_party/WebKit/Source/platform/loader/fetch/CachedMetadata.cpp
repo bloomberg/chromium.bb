@@ -7,10 +7,8 @@
 namespace blink {
 
 CachedMetadata::CachedMetadata(const char* data, size_t size) {
-  // We need to define a local variable to use the constant in DCHECK.
-  constexpr auto kDataStart = CachedMetadata::kDataStart;
   // Serialized metadata should have non-empty data.
-  DCHECK_GT(size, kDataStart);
+  DCHECK_GT(size, kCachedMetaDataStart);
   DCHECK(data);
 
   serialized_data_.ReserveInitialCapacity(size);
