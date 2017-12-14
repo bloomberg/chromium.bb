@@ -18,6 +18,7 @@
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/blend.h"
 #include "aom_mem/aom_mem.h"
+#include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 
@@ -1717,12 +1718,16 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                     int blk_row, int blk_col, int block, TX_SIZE tx_size,
                     const SCAN_ORDER *scan_order, const ENTROPY_CONTEXT *a,
                     const ENTROPY_CONTEXT *l, int use_fast_coef_costing) {
+#if TXCOEFF_COST_TIMER
+  struct aom_usec_timer timer;
+  aom_usec_timer_start(&timer);
+#endif
   const AV1_COMMON *const cm = &cpi->common;
 #if !CONFIG_LV_MAP
   (void)blk_row;
   (void)blk_col;
-  return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
-                     use_fast_coef_costing);
+  int cost = cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
+                         use_fast_coef_costing);
 #else   // !CONFIG_LV_MAP
   (void)scan_order;
   (void)use_fast_coef_costing;
@@ -1734,9 +1739,17 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  return av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block, tx_size,
-                             &txb_ctx);
+  int cost = av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block, tx_size,
+                                 &txb_ctx);
 #endif  // !CONFIG_LV_MAP
+#if TXCOEFF_COST_TIMER
+  AV1_COMMON *tmp_cm = (AV1_COMMON *)&cpi->common;
+  aom_usec_timer_mark(&timer);
+  const int64_t elapsed_time = aom_usec_timer_elapsed(&timer);
+  tmp_cm->txcoeff_cost_timer += elapsed_time;
+  ++tmp_cm->txcoeff_cost_count;
+#endif
+  return cost;
 }
 
 // Get transform block visible dimensions cropped to the MI units.

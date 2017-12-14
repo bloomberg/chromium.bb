@@ -87,6 +87,7 @@ extern "C" {
 // TODO(jingning): Turning this on to set up transform coefficient
 // processing timer.
 #define TXCOEFF_TIMER 0
+#define TXCOEFF_COST_TIMER 0
 
 typedef enum {
   SINGLE_REFERENCE = 0,
@@ -581,6 +582,12 @@ typedef struct AV1Common {
   int64_t cum_txcoeff_timer;
   int64_t txcoeff_timer;
   int txb_count;
+#endif
+
+#if TXCOEFF_COST_TIMER
+  int64_t cum_txcoeff_cost_timer;
+  int64_t txcoeff_cost_timer;
+  int64_t txcoeff_cost_count;
 #endif
 } AV1_COMMON;
 

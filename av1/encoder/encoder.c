@@ -5876,7 +5876,21 @@ static void Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #if CONFIG_MISMATCH_DEBUG
   mismatch_move_frame_idx_w();
 #endif
+#if TXCOEFF_COST_TIMER
+  AV1_COMMON *cm = &cpi->common;
+  cm->txcoeff_cost_timer = 0;
+  cm->txcoeff_cost_count = 0;
+#endif
   encode_frame_to_data_rate(cpi, size, dest, 0, frame_flags);
+
+#if TXCOEFF_COST_TIMER
+  cm->cum_txcoeff_cost_timer += cm->txcoeff_cost_timer;
+  fprintf(stderr,
+          "\ntxb coeff cost block number: %ld, frame time: %ld, cum time %ld "
+          "in us\n",
+          cm->txcoeff_cost_count, cm->txcoeff_cost_timer,
+          cm->cum_txcoeff_cost_timer);
+#endif
 
   // Do not do post-encoding update for those frames that do not have a spot in
   // a gf group, but note that an OVERLAY frame always has a spot in a gf group,
