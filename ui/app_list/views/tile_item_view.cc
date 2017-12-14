@@ -62,8 +62,7 @@ TileItemView::TileItemView()
       icon_(new views::ImageView),
       badge_(nullptr),
       title_(new views::Label) {
-  if (features::IsAppListFocusEnabled())
-    SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   // Prevent the icon view from interfering with our mouse events.
   icon_->set_can_process_events_within_subtree(false);
   icon_->SetVerticalAlignment(views::ImageView::LEADING);

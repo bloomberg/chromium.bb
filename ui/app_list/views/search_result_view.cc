@@ -63,8 +63,7 @@ SearchResultView::SearchResultView(SearchResultListView* list_view)
       actions_view_(new SearchResultActionsView(this)),
       progress_bar_(new views::ProgressBar),
       is_app_list_focus_enabled_(features::IsAppListFocusEnabled()) {
-  if (is_app_list_focus_enabled_)
-    SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   icon_->set_can_process_events_within_subtree(false);
   badge_icon_->set_can_process_events_within_subtree(false);
 
@@ -142,7 +141,7 @@ void SearchResultView::SetSelected(bool selected) {
     return;
   selected_ = selected;
 
-  if (is_app_list_focus_enabled_ && selected_) {
+  if (selected_) {
     ScrollRectToVisible(GetLocalBounds());
     NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
   }

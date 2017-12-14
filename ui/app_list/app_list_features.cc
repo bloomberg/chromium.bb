@@ -16,8 +16,6 @@ const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnablePlayStoreAppSearch{"EnablePlayStoreAppSearch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableAppListFocus{"EnableAppListFocus",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -40,7 +38,8 @@ bool IsPlayStoreAppSearchEnabled() {
 }
 
 bool IsAppListFocusEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAppListFocus);
+  // TODO(766807): Remove this method.
+  return true;
 }
 
 std::string AnswerServerUrl() {

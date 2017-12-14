@@ -70,11 +70,8 @@ class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
   int GetThickness() const override { return 0; }
 
   bool OnKeyPressed(const ui::KeyEvent& event) override {
-    if (!features::IsAppListFocusEnabled())
-      return OverlayScrollBar::OnKeyPressed(event);
-
     // Arrow keys should be handled by FocusManager to move focus. When a search
-    // result is focued, it will be set visible in scroll view.
+    // result is focused, it will be set visible in scroll view.
     return false;
   }
 

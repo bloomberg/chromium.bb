@@ -264,11 +264,9 @@ AppListView::AppListView(AppListViewDelegate* delegate)
     display_observer_.Add(display::Screen::GetScreen());
     delegate_->AddObserver(this);
   }
-  if (is_app_list_focus_enabled_) {
-    // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
-    // the same focus movement as tab/shift+tab.
-    views::FocusManager::set_arrow_key_traversal_enabled(true);
-  }
+  // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
+  // the same focus movement as tab/shift+tab.
+  views::FocusManager::set_arrow_key_traversal_enabled(true);
 }
 
 AppListView::~AppListView() {
@@ -279,10 +277,8 @@ AppListView::~AppListView() {
   animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
-  if (is_app_list_focus_enabled_) {
-    views::FocusManager::set_arrow_key_traversal_enabled(
-        previous_arrow_key_traversal_enabled_);
-  }
+  views::FocusManager::set_arrow_key_traversal_enabled(
+      previous_arrow_key_traversal_enabled_);
 }
 
 // static
@@ -1409,9 +1405,6 @@ void AppListView::DraggingLayout() {
 }
 
 void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
-  if (!is_app_list_focus_enabled_)
-    return;
-
   if (event->handled())
     return;
 
