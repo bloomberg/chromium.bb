@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/elements/button.h"
+#include "chrome/browser/vr/elements/disc_button.h"
 
 #include "cc/animation/transform_operation.h"
 #include "cc/animation/transform_operations.h"
@@ -17,8 +17,9 @@
 
 namespace vr {
 
-TEST(Button, HoverTest) {
-  Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
+TEST(DiscButton, HoverTest) {
+  DiscButton button(base::RepeatingCallback<void()>(),
+                    vector_icons::kMicrophoneIcon);
   button.SetSize(1.0f, 1.0f);
   button.set_hover_offset(0.5f);
 
@@ -44,8 +45,9 @@ TEST(Button, HoverTest) {
   EXPECT_TRUE(hit_plane_op_hover.scale.x - hit_plane_op.scale.x > 0.f);
 }
 
-TEST(Button, SizePropagatesToSubElements) {
-  Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
+TEST(DiscButton, SizePropagatesToSubElements) {
+  DiscButton button(base::RepeatingCallback<void()>(),
+                    vector_icons::kMicrophoneIcon);
   gfx::SizeF size(1000.0f, 1000.0f);
   gfx::SizeF icon_size = size;
   icon_size.Scale(0.5f);
@@ -68,8 +70,9 @@ TEST(Button, SizePropagatesToSubElements) {
   }
 }
 
-TEST(Button, DrawPhasePropagatesToSubElements) {
-  Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
+TEST(DiscButton, DrawPhasePropagatesToSubElements) {
+  DiscButton button(base::RepeatingCallback<void()>(),
+                    vector_icons::kMicrophoneIcon);
   button.SetDrawPhase(kPhaseOverlayForeground);
 
   for (auto& child : button.children()) {
@@ -77,8 +80,9 @@ TEST(Button, DrawPhasePropagatesToSubElements) {
   }
 }
 
-TEST(Button, NamePropagatesToSubElements) {
-  Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
+TEST(DiscButton, NamePropagatesToSubElements) {
+  DiscButton button(base::RepeatingCallback<void()>(),
+                    vector_icons::kMicrophoneIcon);
   button.SetName(kCloseButton);
 
   for (auto& child : button.children()) {

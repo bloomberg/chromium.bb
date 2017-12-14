@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
+#include "chrome/browser/vr/elements/disc_button.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -164,7 +165,7 @@ MATCHER_P2(SizeFsAreApproximatelyEqual, other, tolerance, "") {
          base::IsApproximatelyEqual(arg.height(), other.height(), tolerance);
 }
 
-void VerifyButtonColor(Button* button,
+void VerifyButtonColor(DiscButton* button,
                        SkColor foreground_color,
                        SkColor background_color,
                        const std::string& trace_name) {
@@ -909,6 +910,7 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
   UiElement* suggestion = suggestions->children().front().get();
   ASSERT_NE(suggestion, nullptr);
   EXPECT_CALL(*browser_, Navigate(gurl)).Times(1);
+  suggestion->OnHoverEnter({0, 0});
   suggestion->OnButtonDown({0, 0});
   suggestion->OnButtonUp({0, 0});
 }
@@ -941,8 +943,8 @@ TEST_F(UiTest, ControllerQuiescence) {
 TEST_F(UiTest, CloseButtonColorBindings) {
   CreateScene(kInCct, kNotInWebVr);
   EXPECT_TRUE(IsVisible(kCloseButton));
-  Button* button =
-      static_cast<Button*>(scene_->GetUiElementByName(kCloseButton));
+  DiscButton* button =
+      static_cast<DiscButton*>(scene_->GetUiElementByName(kCloseButton));
   for (int i = 0; i < ColorScheme::kNumModes; i++) {
     ColorScheme::Mode mode = static_cast<ColorScheme::Mode>(i);
     SCOPED_TRACE(mode);

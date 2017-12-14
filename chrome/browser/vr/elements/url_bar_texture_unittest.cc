@@ -28,15 +28,15 @@ namespace vr {
 
 // TODO(cjgrant): Use ColorScheme instead of hardcoded values
 // where it makes sense.
-static const SkColor kEmphasizedColor = 0xFF000000;
+static const SkColor kEmphasizedColor = SK_ColorBLACK;
 static const SkColor kDeemphasizedColor = 0xFF5A5A5A;
 static const SkColor kSecureColor = gfx::kGoogleGreen700;
 static const SkColor kWarningColor = gfx::kGoogleRed700;
 
-static const SkColor kIncognitoDeemphasizedColor = 0xFF878787;
-static const SkColor kIncognitoEmphasizedColor = 0xFFEDEDED;
-static const SkColor kIncognitoSecureColor = 0xFFEDEDED;
-static const SkColor kIncognitoWarningColor = 0xFFEDEDED;
+static const SkColor kIncognitoDeemphasizedColor = 0xCCFFFFFF;
+static const SkColor kIncognitoEmphasizedColor = 0xFFFFFFFF;
+static const SkColor kIncognitoSecureColor = 0xFFFFFFFF;
+static const SkColor kIncognitoWarningColor = 0xFFFFFFFF;
 
 static constexpr int kUrlWidthPixels = 1024;
 
