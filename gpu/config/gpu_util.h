@@ -37,6 +37,21 @@ GPU_EXPORT GpuFeatureInfo
 ComputeGpuFeatureInfo(const GPUInfo& gpu_info, base::CommandLine* command_line);
 
 GPU_EXPORT void SetKeysForCrashLogging(const GPUInfo& gpu_info);
+
+// Cache GPUInfo so it can be accessed later.
+GPU_EXPORT void CacheGPUInfo(const GPUInfo& gpu_info);
+
+// If GPUInfo is cached, write into |gpu_info|, clear cache, and return true;
+// otherwise, return false;
+GPU_EXPORT bool PopGPUInfoCache(GPUInfo* gpu_info);
+
+// Cache GpuFeatureInfo so it can be accessed later.
+GPU_EXPORT void CacheGpuFeatureInfo(const GpuFeatureInfo& gpu_feature_info);
+
+// If GpuFeatureInfo is cached, write into |gpu_feature_info|, clear cache, and
+// return true; otherwise, return false;
+GPU_EXPORT bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info);
+
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_

@@ -106,13 +106,14 @@ GpuInit::~GpuInit() {
 bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                         const GpuPreferences& gpu_preferences) {
   gpu_preferences_ = gpu_preferences;
-  gpu_info_.in_process_gpu = false;
 #if !defined(OS_ANDROID)
-  // Get vendor_id, device_id, driver_version from browser process through
-  // commandline switches.
-  // TODO(zmo): Collect basic GPU info (without a context) here instead of
-  // passing from browser process.
-  GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
+  if (!PopGPUInfoCache(&gpu_info_)) {
+    // Get vendor_id, device_id, driver_version from browser process through
+    // commandline switches.
+    // TODO(zmo): Collect basic GPU info (without a context) here instead of
+    // passing from browser process.
+    GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
+  }
 
   // Set keys for crash logging based on preliminary gpu info, in case we
   // crash during feature collection.
@@ -123,10 +124,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
     return false;
 #endif
-
-  // Compute blacklist and driver bug workaround decisions based on basic GPU
-  // info.
-  gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+  if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
+    // Compute blacklist and driver bug workaround decisions based on basic GPU
+    // info.
+    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+  }
   if (gpu::SwitchableGPUsSupported(gpu_info_, *command_line)) {
     gpu::InitializeSwitchableGPUs(
         gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
@@ -137,6 +139,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     gpu_preferences_.disable_accelerated_video_decode = true;
   }
 #endif  // OS_ANDROID
+  gpu_info_.in_process_gpu = false;
 
   bool enable_watchdog = !gpu_preferences.disable_gpu_watchdog &&
                          !command_line->HasSwitch(switches::kHeadless);
@@ -286,9 +289,13 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     gpu_feature_info_ = *gpu_feature_info;
   } else {
 #if !defined(OS_ANDROID)
-    // TODO(zmo): Collect basic GPU info here instead.
-    gpu::GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
-    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+    if (!PopGPUInfoCache(&gpu_info_)) {
+      // TODO(zmo): Collect basic GPU info here instead.
+      gpu::GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
+    }
+    if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
+      gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+    }
 #endif
   }
   if (gpu::SwitchableGPUsSupported(gpu_info_, *command_line)) {
