@@ -76,6 +76,7 @@ class AutofillWalletSyncableService
   FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest,
                            CopyRelevantMetadataFromDisk_KeepUseStats);
   FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest, NewWalletCard);
+  FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest, EmptyNameOnCard);
 
   syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list);
 
