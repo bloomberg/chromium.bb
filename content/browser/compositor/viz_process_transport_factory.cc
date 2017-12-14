@@ -305,7 +305,11 @@ void VizProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
 }
 
 viz::FrameSinkManagerImpl* VizProcessTransportFactory::GetFrameSinkManager() {
-  // FrameSinkManagerImpl is in the gpu process, not the browser process.
+  // When running with viz there is no FrameSinkManagerImpl in the browser
+  // process. FrameSinkManagerImpl runs in the GPU process instead. Anything in
+  // the browser process that relies FrameSinkManagerImpl or SurfaceManager
+  // internal state needs to change. See https://crbug.com/787097 and
+  // https://crbug.com/760181 for more context.
   NOTREACHED();
   return nullptr;
 }
