@@ -159,7 +159,9 @@ class ASH_EXPORT ShelfLayoutManager
                          aura::Window* lost_active) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardAppearanceChanging(
+      const keyboard::KeyboardStateDescriptor& state) override;
+  void OnKeyboardAvailabilityChanging(const bool is_available) override;
   void OnKeyboardClosed() override;
 
   // Overridden from LockStateObserver:

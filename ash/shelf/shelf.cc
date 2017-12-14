@@ -21,6 +21,7 @@
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ash {
 
@@ -289,6 +290,19 @@ StatusAreaWidget* Shelf::GetStatusAreaWidget() const {
 }
 
 void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
+  keyboard::KeyboardStateDescriptor state;
+  state.is_available = !bounds.IsEmpty();
+  state.is_locked = false;
+  state.visual_bounds = bounds;
+  state.occluded_bounds = bounds;
+  state.displaced_bounds = gfx::Rect();
+  shelf_layout_manager_->OnKeyboardAvailabilityChanging(state.is_available);
+  shelf_layout_manager_->OnKeyboardVisibleBoundsChanging(state.visual_bounds);
+  shelf_layout_manager_->OnKeyboardWorkspaceOccludedBoundsChanging(
+      state.occluded_bounds);
+  shelf_layout_manager_->OnKeyboardWorkspaceDisplacingBoundsChanging(
+      state.displaced_bounds);
+  shelf_layout_manager_->OnKeyboardAppearanceChanging(state);
   shelf_layout_manager_->OnKeyboardBoundsChanging(bounds);
 }
 

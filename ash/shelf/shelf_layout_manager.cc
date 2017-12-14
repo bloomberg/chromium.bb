@@ -448,23 +448,21 @@ void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
   UpdateAutoHideStateNow();
 }
 
-void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
-  bool keyboard_is_about_to_hide = false;
-  if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty())
-    keyboard_is_about_to_hide = true;
-  // If in non-sticky mode, do not change the work area.
-  bool change_work_area =
-      keyboard::KeyboardController::GetInstance() &&
-      keyboard::KeyboardController::GetInstance()->keyboard_locked();
-
-  keyboard_bounds_ = new_bounds;
+void ShelfLayoutManager::OnKeyboardAppearanceChanging(
+    const keyboard::KeyboardStateDescriptor& state) {
+  // If in locked mode, change the work area.
+  bool change_work_area = state.is_locked;
+  keyboard_bounds_ = state.occluded_bounds;
   LayoutShelfAndUpdateBounds(change_work_area);
+}
 
+void ShelfLayoutManager::OnKeyboardAvailabilityChanging(
+    const bool is_available) {
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore target_bounds.work_area_insets since shelf overlaps with login
   // window.
   if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&
-      keyboard_is_about_to_hide) {
+      !is_available) {
     Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
                                            gfx::Insets());
   }
