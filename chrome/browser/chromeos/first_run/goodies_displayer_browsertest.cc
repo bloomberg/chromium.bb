@@ -15,6 +15,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace chromeos {
 

@@ -318,7 +318,7 @@ static_library("browser_tests_runner") {
     ":test_support",
   ]
 
-  if (is_chromeos && enable_mus) {
+  if (is_chromeos) {
     sources += [
       "base/browser_tests_main_chromeos.cc",
       "base/mash_browser_tests_main.cc",

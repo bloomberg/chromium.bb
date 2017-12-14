@@ -249,6 +249,8 @@ extern const char kWebApkServerUrl[];
 extern const char kCroshCommand[];
 extern const char kDisableLoggingRedirect[];
 extern const char kDisableLoginScreenApps[];
+extern const char kMash[];
+extern const char kMashServiceName[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
@@ -295,12 +297,6 @@ extern const char kUninstall[];
 extern const char kWatcherProcess[];
 extern const char kWindows10CustomTitlebar[];
 #endif  // defined(OS_WIN)
-
-#if BUILDFLAG(ENABLE_MUS)
-extern const char kMash[];
-extern const char kMashServiceName[];
-extern const char kMus[];
-#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 extern const char kDebugPrint[];
