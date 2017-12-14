@@ -833,16 +833,25 @@ bool GpuImageDecodeCache::OnMemoryDump(
     // CPU wrapper), upload it here.
     if (image_data->upload.image() &&
         image_data->mode == DecodedDataMode::GPU) {
+      size_t discardable_size = image_data->size;
+      // If the discardable system has deleted this out from under us, log a
+      // size of 0 to match software discardable.
+      if (context_->ContextSupport()
+              ->ThreadsafeDiscardableTextureIsDeletedForTracing(
+                  image_data->upload.gl_id())) {
+        discardable_size = 0;
+      }
+
       std::string gpu_dump_name = base::StringPrintf(
           "cc/image_memory/cache_0x%" PRIXPTR "/gpu/image_%d",
           reinterpret_cast<uintptr_t>(this), image_id);
       MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(gpu_dump_name);
       dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                      MemoryAllocatorDump::kUnitsBytes, image_data->size);
+                      MemoryAllocatorDump::kUnitsBytes, discardable_size);
 
       // Dump the "locked_size" as an additional column.
       size_t locked_size =
-          image_data->upload.is_locked() ? image_data->size : 0u;
+          image_data->upload.is_locked() ? discardable_size : 0u;
       dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
                       locked_size);
 

@@ -91,6 +91,10 @@ class ContextSupport {
   virtual void CompleteLockDiscardableTexureOnContextThread(
       uint32_t texture_id) = 0;
 
+  // Checks if a discardable handle is deleted. For use in tracing code.
+  virtual bool ThreadsafeDiscardableTextureIsDeletedForTracing(
+      uint32_t texture_id) = 0;
+
   // Access to transfer cache functionality for OOP raster. Only
   // ThreadsafeLockTransferCacheEntry can be accessed without holding the
   // context lock.

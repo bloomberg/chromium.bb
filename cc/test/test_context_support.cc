@@ -107,6 +107,11 @@ bool TestContextSupport::ThreadSafeShallowLockDiscardableTexture(
 }
 void TestContextSupport::CompleteLockDiscardableTexureOnContextThread(
     uint32_t texture_id) {}
+bool TestContextSupport::ThreadsafeDiscardableTextureIsDeletedForTracing(
+    uint32_t texture_id) {
+  NOTIMPLEMENTED();
+  return false;
+}
 
 void TestContextSupport::CreateTransferCacheEntry(
     const ClientTransferCacheEntry& entry) {

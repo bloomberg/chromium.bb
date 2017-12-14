@@ -48,6 +48,15 @@ bool ClientDiscardableTextureManager::TextureIsValid(
          texture_id_to_handle_id_.end();
 }
 
+bool ClientDiscardableTextureManager::TextureIsDeletedForTracing(
+    uint32_t texture_id) const {
+  base::AutoLock hold(lock_);
+  auto found = texture_id_to_handle_id_.find(texture_id);
+  if (found == texture_id_to_handle_id_.end())
+    return true;
+  return discardable_manager_.HandleIsDeletedForTracing(found->second);
+}
+
 ClientDiscardableHandle ClientDiscardableTextureManager::GetHandleForTesting(
     uint32_t texture_id) {
   base::AutoLock hold(lock_);
