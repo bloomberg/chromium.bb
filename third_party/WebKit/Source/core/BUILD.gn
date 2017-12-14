@@ -74,7 +74,10 @@ config("blink_core_pch") {
   }
 }
 
-core_config_add += [ ":blink_core_pch" ]
+core_config_add += [
+  ":blink_core_pch",
+  "//build/config/compiler:noshadowing",
+]
 
 source_set("generated") {
   deps = [

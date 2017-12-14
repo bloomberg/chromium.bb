@@ -202,13 +202,13 @@ namespace blink {
   for (size_t i = 0; i < list.length(); ++i) {
     const CSSValuePair& pair = ToCSSValuePair(list.Item(i));
     AtomicString identifier(ToCSSCustomIdentValue(pair.First()).Value());
-    int value = ToCSSPrimitiveValue(pair.Second()).GetIntValue();
+    int counter_value = ToCSSPrimitiveValue(pair.Second()).GetIntValue();
     CounterDirectives& directives =
         map.insert(identifier, CounterDirectives()).stored_value->value;
     {% if action == 'Reset' %}
-    directives.SetResetValue(value);
+    directives.SetResetValue(counter_value);
     {% else %}
-    directives.AddIncrementValue(value);
+    directives.AddIncrementValue(counter_value);
     {% endif %}
   }
   DCHECK(!map.IsEmpty());

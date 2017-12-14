@@ -277,10 +277,10 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         // read the list of key pair values for color settings, etc.
         bool is_done = false;
         do {
-          ImageSerializationTag tag;
-          if (!ReadUint32Enum<ImageSerializationTag>(&tag))
+          ImageSerializationTag image_tag;
+          if (!ReadUint32Enum<ImageSerializationTag>(&image_tag))
             return nullptr;
-          switch (tag) {
+          switch (image_tag) {
             case ImageSerializationTag::kEndTag:
               is_done = true;
               break;
@@ -347,10 +347,10 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       if (Version() >= 18) {
         bool is_done = false;
         do {
-          ImageSerializationTag tag;
-          if (!ReadUint32Enum<ImageSerializationTag>(&tag))
+          ImageSerializationTag image_tag;
+          if (!ReadUint32Enum<ImageSerializationTag>(&image_tag))
             return nullptr;
-          switch (tag) {
+          switch (image_tag) {
             case ImageSerializationTag::kEndTag:
               is_done = true;
               break;

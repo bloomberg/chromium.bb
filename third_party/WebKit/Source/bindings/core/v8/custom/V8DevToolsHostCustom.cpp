@@ -83,9 +83,8 @@ static bool PopulateContextMenuItems(v8::Isolate* isolate,
       continue;
     String type_string = ToCoreStringWithNullCheck(type.As<v8::String>());
     if (type_string == "separator") {
-      ContextMenuItem item(ContextMenuItem(
+      menu.AppendItem(ContextMenuItem(
           kSeparatorType, kContextMenuItemCustomTagNoAction, String()));
-      menu.AppendItem(item);
     } else if (type_string == "subMenu" && sub_items->IsArray()) {
       ContextMenu sub_menu;
       v8::Local<v8::Array> sub_items_array =
@@ -94,9 +93,9 @@ static bool PopulateContextMenuItems(v8::Isolate* isolate,
         return false;
       TOSTRING_DEFAULT(V8StringResource<kTreatNullAsNullString>, label_string,
                        label, false);
-      ContextMenuItem item(kSubmenuType, kContextMenuItemCustomTagNoAction,
-                           label_string, &sub_menu);
-      menu.AppendItem(item);
+      menu.AppendItem(ContextMenuItem(kSubmenuType,
+                                      kContextMenuItemCustomTagNoAction,
+                                      label_string, &sub_menu));
     } else {
       int32_t int32_id;
       if (!id->Int32Value(context).To(&int32_id))

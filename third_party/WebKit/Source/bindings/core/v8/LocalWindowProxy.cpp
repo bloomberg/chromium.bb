@@ -80,7 +80,6 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_.get());
 
   if (next_status == Lifecycle::kGlobalObjectIsDetached) {
-    v8::Local<v8::Context> context = script_state_->GetContext();
     // Clean up state on the global proxy, which will be reused.
     if (!global_proxy_.IsEmpty()) {
       CHECK(global_proxy_ == context->Global());
