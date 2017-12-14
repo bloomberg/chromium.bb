@@ -8,17 +8,12 @@
 
 #include "base/base64.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
 #include "components/os_crypt/kwallet_dbus.h"
 #include "dbus/bus.h"
 
-KeyStorageKWallet::KeyStorageKWallet(
-    base::nix::DesktopEnvironment desktop_env,
-    std::string app_name,
-    scoped_refptr<base::SequencedTaskRunner> dbus_task_runner)
-    : desktop_env_(desktop_env),
-      app_name_(std::move(app_name)),
-      dbus_task_runner_(dbus_task_runner) {}
+KeyStorageKWallet::KeyStorageKWallet(base::nix::DesktopEnvironment desktop_env,
+                                     std::string app_name)
+    : desktop_env_(desktop_env), app_name_(std::move(app_name)) {}
 
 KeyStorageKWallet::~KeyStorageKWallet() {
   // The handle is shared between programs that are using the same wallet.
@@ -28,12 +23,7 @@ KeyStorageKWallet::~KeyStorageKWallet() {
   kwallet_dbus_->GetSessionBus()->ShutdownAndBlock();
 }
 
-base::SequencedTaskRunner* KeyStorageKWallet::GetTaskRunner() {
-  return dbus_task_runner_.get();
-}
-
 bool KeyStorageKWallet::Init() {
-  DCHECK(dbus_task_runner_->RunsTasksInCurrentSequence());
   // Initialize using the production KWalletDBus.
   return InitWithKWalletDBus(nullptr);
 }
@@ -90,8 +80,6 @@ KeyStorageKWallet::InitResult KeyStorageKWallet::InitWallet() {
 }
 
 std::string KeyStorageKWallet::GetKeyImpl() {
-  DCHECK(dbus_task_runner_->RunsTasksInCurrentSequence());
-
   // Get handle
   KWalletDBus::Error error =
       kwallet_dbus_->Open(wallet_name_, app_name_, &handle_);
