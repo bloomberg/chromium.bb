@@ -264,6 +264,16 @@ const base::FilePath& OfflinePageModelTaskified::GetArchiveDirectory(
   return archive_manager_->GetPersistentArchivesDir();
 }
 
+bool OfflinePageModelTaskified::IsArchiveInInternalDir(
+    const base::FilePath& file_path) const {
+  DCHECK(!file_path.empty());
+
+  // TODO(jianli): Update this once persistent archives are moved into the
+  // public directory.
+  return archive_manager_->GetTemporaryArchivesDir().IsParent(file_path) ||
+         archive_manager_->GetPersistentArchivesDir().IsParent(file_path);
+}
+
 ClientPolicyController* OfflinePageModelTaskified::GetPolicyController() {
   return policy_controller_.get();
 }

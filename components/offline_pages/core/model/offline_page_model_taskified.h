@@ -107,6 +107,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   const base::FilePath& GetArchiveDirectory(
       const std::string& name_space) const override;
+  bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
 
   ClientPolicyController* GetPolicyController() override;
 
