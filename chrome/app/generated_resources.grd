@@ -5678,51 +5678,6 @@ the Bookmarks menu.">
         </message>
       </if>
 
-      <!-- MD Feedback Strings -->
-      <message name="IDS_MD_FEEDBACK_DIALOG_TITLE" desc="Text for feedback dialog. This appears in the OS taskbar and the top of the dialog window when the title is shown.">
-        Feedback
-      </message>
-      <message name="IDS_MD_FEEDBACK_HEADING" desc="Header text of the feedback dialog.">
-        Tell us what's happening
-      </message>
-      <message name="IDS_MD_FEEDBACK_OPEN_ENDED_LABEL" desc="Label for the open ended feedback input box that is initially blank. Users can write open ended feedback before submission.">
-        Please enter your feedback here.
-      </message>
-      <message name="IDS_MD_FEEDBACK_URL_LABEL" desc="Label for the text input that may be prepopulated with the URL to be reported. Users are able to modify this text before submission..">
-        URL
-      </message>
-      <message name="IDS_MD_FEEDBACK_USER_EMAIL_LABEL" desc="Label for the text input that may be prepopulated with the user's email. Users are able to modify this text before submission.">
-        Email
-      </message>
-      <message name="IDS_MD_FEEDBACK_CANCEL_BUTTON" desc="Text for Cancel button of the feedback dialog. When clicked, the dialog will close without sending the feedback.">
-        Cancel
-      </message>
-      <message name="IDS_MD_FEEDBACK_SEND_REPORT_BUTTON" desc="Text for Send Report button of the feedback dialog. When clicked, the feedback report will be sent.">
-        Send
-      </message>
-      <message name="IDS_MD_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the checkbox to indicate whether the shown screenshot should be included in the feedback report.">
-        Include this screenshot
-      </message>
-      <message name="IDS_MD_FEEDBACK_SEND_SYSTEM_INFO_LABEL" desc="Label for the checkbox to indicate whether the system info should be included in the feedback report.">
-        Send system information
-      </message>
-      <if expr="_google_chrome">
-        <message name="IDS_MD_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note shown on the feedback dialog.">
-          Your Chrome and operating system version will be submitted in addition
-          to any information you choose to include above. If you include your email
-          address, Google may contact you regarding your feedback report. This feedback
-          is used to diagnose problems and help improve Chrome. Any personal information
-          you submit, whether explicitly or incidentally will be protected in
-          accordance with our privacy policies.<ph name="BEGIN_BOLD">&lt;strong&gt;
-          </ph> By submitting this feedback, you agree that Google may use feedback
-          that you provide to improve any Google product or service.
-          <ph name="END_BOLD">&lt;/strong&gt;</ph>
-        </message>
-      </if>
-      <message name="IDS_MD_FEEDBACK_ADDITIONAL_INFO_LABEL" desc="Text for the group label to indicate that some fields are optional.">
-        Additional info (optional)
-      </message>
-
       <!-- Clear Browsing Data -->
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
         Clear browsing data
