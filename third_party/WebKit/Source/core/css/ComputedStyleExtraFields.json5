@@ -136,7 +136,7 @@
       mutable: true,
     },
     // These are set if we used viewport or rem units when resolving a length.
-    // TODO(shend): HasViewportUnits should be a monotonic_flag.
+    // FIXME: HasViewportUnits should be a monotonic_flag.
     {
       name: "HasViewportUnits",
       field_template: "primitive",
@@ -151,7 +151,6 @@
       custom_compare: true,
     },
     // These properties only have generated storage, and their methods are handwritten in ComputedStyle.
-    // TODO(shend): Remove these fields and delete the 'storage_only' template.
     {
       name: "EmptyState",
       field_template: "primitive",
@@ -190,7 +189,7 @@
       inherited: true,
       computed_style_custom_functions: ["getter", "setter"],
     },
-    // TODO(shend): vertical align is actually a CSS property, but since we don't support union fields
+    // FIXME: vertical align is actually a CSS property, but since we don't support union fields
     // which can be either a keyword or Length, this is specified in this file for now. Remove this
     // once we can support union fields.
     {
@@ -616,7 +615,6 @@
       type_name: "bool",
       field_group: "*",
     },
-    // TODO(shend): Investigate why this doesn't interact with other outline fields.
     {
       name: "OutlineStyleIsAuto",
       field_template: "primitive",

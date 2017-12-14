@@ -231,7 +231,7 @@ class ComputedStyle : public ComputedStyleBase,
   ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
 
   static scoped_refptr<ComputedStyle> CreateInitialStyle();
-  // TODO(shend): Remove this. Initial style should not be mutable.
+  // TODO(crbug.com/794841): Remove this. Initial style should not be mutable.
   CORE_EXPORT static ComputedStyle& MutableInitialStyle();
 
  public:
@@ -1046,7 +1046,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Comparison operators
-  // TODO(shend): Replace callers of operator== wth a named method instead, e.g.
+  // FIXME: Replace callers of operator== wth a named method instead, e.g.
   // inheritedEquals().
   CORE_EXPORT bool operator==(const ComputedStyle& other) const;
   bool operator!=(const ComputedStyle& other) const {

@@ -531,7 +531,7 @@ css_properties("make_core_generated_css_property_baseclass") {
   ]
 }
 
-# TODO(shend): Need a better way to specify generated output files
+# FIXME: Need a better way to specify generated output files
 css_properties("make_core_generated_css_longhand_property_classes") {
   script = "../build/scripts/core/css/properties/make_css_property_headers.py"
   in_files = [ "css/properties/CSSPropertyMethods.json5" ]
@@ -765,7 +765,7 @@ css_properties("make_core_generated_css_longhand_property_classes") {
   ]
 }
 
-# TODO(shend): Need a better way to specify generated output files
+# FIXME: Need a better way to specify generated output files
 css_properties("make_core_generated_css_shorthand_property_classes") {
   script = "../build/scripts/core/css/properties/make_css_property_headers.py"
   in_files = [ "css/properties/CSSPropertyMethods.json5" ]
