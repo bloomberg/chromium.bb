@@ -28,6 +28,9 @@ class GPU_EXPORT ClientDiscardableManager {
   bool HandleIsValid(ClientDiscardableHandle::Id handle_id) const;
   ClientDiscardableHandle GetHandle(ClientDiscardableHandle::Id handle_id);
 
+  // For diagnostic tracing only.
+  bool HandleIsDeletedForTracing(ClientDiscardableHandle::Id handle_id) const;
+
   // Test only functions.
   void CheckPendingForTesting(CommandBuffer* command_buffer) {
     CheckPending(command_buffer);

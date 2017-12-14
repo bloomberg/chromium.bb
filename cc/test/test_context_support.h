@@ -53,6 +53,8 @@ class TestContextSupport : public gpu::ContextSupport {
   bool ThreadSafeShallowLockDiscardableTexture(uint32_t texture_id) override;
   void CompleteLockDiscardableTexureOnContextThread(
       uint32_t texture_id) override;
+  bool ThreadsafeDiscardableTextureIsDeletedForTracing(
+      uint32_t texture_id) override;
   void CreateTransferCacheEntry(const ClientTransferCacheEntry& entry) override;
   bool ThreadsafeLockTransferCacheEntry(TransferCacheEntryType entry_type,
                                         uint32_t entry_id) override;

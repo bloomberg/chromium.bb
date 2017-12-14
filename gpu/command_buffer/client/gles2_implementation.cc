@@ -6178,6 +6178,13 @@ void GLES2Implementation::CompleteLockDiscardableTexureOnContextThread(
   helper_->LockDiscardableTextureCHROMIUM(texture_id);
 }
 
+bool GLES2Implementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
+    uint32_t texture_id) {
+  ClientDiscardableTextureManager* manager =
+      share_group()->discardable_texture_manager();
+  return manager->TextureIsDeletedForTracing(texture_id);
+}
+
 void GLES2Implementation::CreateTransferCacheEntry(
     const cc::ClientTransferCacheEntry& entry) {
   share_group()->transfer_cache()->CreateCacheEntry(

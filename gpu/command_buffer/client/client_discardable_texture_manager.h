@@ -17,9 +17,9 @@ namespace gpu {
 // ClientDiscardableManager. Used by the GLES2 Implementation.
 //
 // NOTE: The presence of locking on this class does not make it threadsafe.
-// The underlying locking *only* allows calling TextureIsValid and
-// LockTexture without holding the GL context lock. All other calls still
-// require that the context lock be held.
+// The underlying locking *only* allows calling TextureIsValid,
+// LockTexture, and TextureIsDeletedForTracing without holding the GL context
+// lock. All other calls still require that the context lock be held.
 class GPU_EXPORT ClientDiscardableTextureManager {
  public:
   ClientDiscardableTextureManager();
@@ -31,6 +31,9 @@ class GPU_EXPORT ClientDiscardableTextureManager {
   // to allow tracking memory to be reclaimed.
   void FreeTexture(uint32_t texture_id);
   bool TextureIsValid(uint32_t texture_id) const;
+
+  // Tracing only functions.
+  bool TextureIsDeletedForTracing(uint32_t texture_id) const;
 
   // Test only functions.
   ClientDiscardableManager* DiscardableManagerForTesting() {

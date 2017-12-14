@@ -215,6 +215,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool ThreadSafeShallowLockDiscardableTexture(uint32_t texture_id) override;
   void CompleteLockDiscardableTexureOnContextThread(
       uint32_t texture_id) override;
+  bool ThreadsafeDiscardableTextureIsDeletedForTracing(
+      uint32_t texture_id) override;
   void CreateTransferCacheEntry(
       const cc::ClientTransferCacheEntry& entry) override;
   bool ThreadsafeLockTransferCacheEntry(cc::TransferCacheEntryType type,
