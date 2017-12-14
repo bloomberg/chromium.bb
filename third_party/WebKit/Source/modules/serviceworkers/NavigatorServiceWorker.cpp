@@ -9,6 +9,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "core/frame/UseCounter.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
 #include "platform/bindings/ScriptState.h"
 
@@ -107,6 +108,9 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
           "Access to service workers is denied in this document origin.";
     }
     return nullptr;
+  } else if (frame &&
+             frame->GetSecurityContext()->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(frame, WebFeature::kFileAccessedServiceWorker);
   }
   if (!service_worker_ && frame) {
     // We need to create a new ServiceWorkerContainer when the frame

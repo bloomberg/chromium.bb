@@ -71,6 +71,8 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
         "Access to shared workers is denied to origin '" +
         document->GetSecurityOrigin()->ToString() + "'.");
     return nullptr;
+  } else if (document->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(document, WebFeature::kFileAccessedSharedWorker);
   }
 
   KURL script_url = ResolveURL(context, url, exception_state,

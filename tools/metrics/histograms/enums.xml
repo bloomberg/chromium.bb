@@ -17240,6 +17240,15 @@ Called by update_net_error_codes.py.-->
   <int value="2264" label="HTMLMediaElementEmptyLoadWithFutureData"/>
   <int value="2265" label="CSSValueDisplayContents"/>
   <int value="2266" label="CSSSelectorPseudoAnyLink"/>
+  <int value="2267" label="FileAccessedCache"/>
+  <int value="2268" label="FileAccessedCookies"/>
+  <int value="2269" label="FileAccessedDatabase"/>
+  <int value="2270" label="FileAccessedFileSystem"/>
+  <int value="2271" label="FileAccessedLocalStorage"/>
+  <int value="2272" label="FileAccessedLocks"/>
+  <int value="2273" label="FileAccessedServiceWorker"/>
+  <int value="2274" label="FileAccessedSessionStorage"/>
+  <int value="2275" label="FileAccessedSharedWorker"/>
 </enum>
 
 <enum name="FeedbackSource">
