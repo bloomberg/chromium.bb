@@ -215,6 +215,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoVisited:
     case kPseudoAny:
     case kPseudoAnyLink:
+    case kPseudoWebkitAnyLink:
     case kPseudoAutofill:
     case kPseudoHover:
     case kPseudoDrag:
@@ -303,7 +304,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-internal-video-persistent", CSSSelector::kPseudoVideoPersistent},
     {"-internal-video-persistent-ancestor",
      CSSSelector::kPseudoVideoPersistentAncestor},
-    {"-webkit-any-link", CSSSelector::kPseudoAnyLink},
+    {"-webkit-any-link", CSSSelector::kPseudoWebkitAnyLink},
     {"-webkit-autofill", CSSSelector::kPseudoAutofill},
     {"-webkit-drag", CSSSelector::kPseudoDrag},
     {"-webkit-full-page-media", CSSSelector::kPseudoFullPageMedia},
@@ -318,6 +319,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-webkit-scrollbar-track-piece", CSSSelector::kPseudoScrollbarTrackPiece},
     {"active", CSSSelector::kPseudoActive},
     {"after", CSSSelector::kPseudoAfter},
+    {"any-link", CSSSelector::kPseudoAnyLink},
     {"backdrop", CSSSelector::kPseudoBackdrop},
     {"before", CSSSelector::kPseudoBefore},
     {"checked", CSSSelector::kPseudoChecked},
@@ -619,6 +621,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoValid:
     case kPseudoVertical:
     case kPseudoVisited:
+    case kPseudoWebkitAnyLink:
     case kPseudoWindowInactive:
       if (match_ != kPseudoClass)
         pseudo_type_ = kPseudoUnknown;

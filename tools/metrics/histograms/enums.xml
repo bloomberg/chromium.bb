@@ -17239,6 +17239,7 @@ Called by update_net_error_codes.py.-->
   <int value="2263" label="AudioWorkletNodeConstructor"/>
   <int value="2264" label="HTMLMediaElementEmptyLoadWithFutureData"/>
   <int value="2265" label="CSSValueDisplayContents"/>
+  <int value="2266" label="CSSSelectorPseudoAnyLink"/>
 </enum>
 
 <enum name="FeedbackSource">

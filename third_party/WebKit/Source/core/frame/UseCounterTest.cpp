@@ -57,6 +57,8 @@ class UseCounterTest : public ::testing::Test {
   LocalFrame* GetFrame() { return &dummy_->GetFrame(); }
   void SetIsViewSource() { dummy_->GetDocument().SetIsViewSource(true); }
   void SetURL(const KURL& url) { dummy_->GetDocument().SetURL(url); }
+  Document& GetDocument() { return dummy_->GetDocument(); }
+
   template <typename T>
   void HistogramBasicTest(const std::string& histogram,
                           T item,
@@ -243,6 +245,22 @@ TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },
       [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
+}
+
+TEST_F(UseCounterTest, CSSSelectorPseudoAnyLink) {
+  UseCounter use_counter;
+  WebFeature feature = WebFeature::kCSSSelectorPseudoAnyLink;
+  EXPECT_FALSE(use_counter.IsCounted(GetDocument(), feature));
+  use_counter.Count(GetDocument(), feature);
+  EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
+}
+
+TEST_F(UseCounterTest, CSSSelectorPseudoWebkitAnyLink) {
+  UseCounter use_counter;
+  WebFeature feature = WebFeature::kCSSSelectorPseudoWebkitAnyLink;
+  EXPECT_FALSE(use_counter.IsCounted(GetDocument(), feature));
+  use_counter.Count(GetDocument(), feature);
+  EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
 }
 
 TEST_F(UseCounterTest, InspectorDisablesMeasurement) {

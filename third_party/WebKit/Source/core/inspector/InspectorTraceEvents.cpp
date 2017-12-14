@@ -257,6 +257,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoLink)
     DEFINE_STRING_MAPPING(PseudoVisited)
     DEFINE_STRING_MAPPING(PseudoAny)
+    DEFINE_STRING_MAPPING(PseudoWebkitAnyLink)
     DEFINE_STRING_MAPPING(PseudoAnyLink)
     DEFINE_STRING_MAPPING(PseudoAutofill)
     DEFINE_STRING_MAPPING(PseudoHover)

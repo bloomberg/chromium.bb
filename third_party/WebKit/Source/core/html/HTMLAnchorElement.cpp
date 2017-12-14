@@ -203,6 +203,7 @@ void HTMLAnchorElement::ParseAttribute(
     if (was_link || IsLink()) {
       PseudoStateChanged(CSSSelector::kPseudoLink);
       PseudoStateChanged(CSSSelector::kPseudoVisited);
+      PseudoStateChanged(CSSSelector::kPseudoWebkitAnyLink);
       PseudoStateChanged(CSSSelector::kPseudoAnyLink);
     }
     if (IsLink()) {

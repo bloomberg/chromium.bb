@@ -88,6 +88,7 @@ void SVGAElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     if (was_link || IsLink()) {
       PseudoStateChanged(CSSSelector::kPseudoLink);
       PseudoStateChanged(CSSSelector::kPseudoVisited);
+      PseudoStateChanged(CSSSelector::kPseudoWebkitAnyLink);
       PseudoStateChanged(CSSSelector::kPseudoAnyLink);
     }
     return;
