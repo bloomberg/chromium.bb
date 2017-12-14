@@ -28,6 +28,10 @@ using local_discovery::ServiceDiscoverySharedClient;
 const char* kIppServiceName = "_ipp._tcp.local";
 const char* kIppsServiceName = "_ipps._tcp.local";
 
+// IppEverywhere printers are also required to advertise these services.
+const char* kIppEverywhereServiceName = "_ipp._tcp.local,print";
+const char* kIppsEverywhereServiceName = "_ipps._tcp.local,print";
+
 // These (including the default values) come from section 9.2 of the Bonjour
 // Printing Spec v1.2, and the field names follow the spec definitions instead
 // of the canonical Chromium style.
@@ -161,6 +165,14 @@ bool ConvertToPrinter(const ServiceDescription& service_description,
       service_description.ip_address.ToString().c_str(),
       service_description.address.port(), metadata.rp.c_str()));
 
+  // Per the IPP Everywhere Standard 5100.14-2013, section 4.2.1, IPP
+  // everywhere-capable printers advertise services suffixed with ",_print"
+  // (possibly in addition to suffix-free versions).  If we get a printer from a
+  // ,_print service type, it should be auto-configurable with IPP Everywhere.
+  printer.mutable_ppd_reference()->autoconf =
+      base::StringPiece(service_description.service_type())
+          .ends_with(",_print");
+
   // gather ppd identification candidates.
   if (!metadata.ty.empty()) {
     detected_printer->ppd_search_data.make_and_model.push_back(metadata.ty);
@@ -182,9 +194,19 @@ bool ConvertToPrinter(const ServiceDescription& service_description,
 // should replace the existing record.
 bool ShouldReplaceRecord(const PrinterDetector::DetectedPrinter& existing,
                          const PrinterDetector::DetectedPrinter& candidate) {
-  // Right now the only time this should happen is for ipp vs ipps.
-  return (base::StringPiece(existing.printer.uri()).starts_with("ipp://") &&
-          base::StringPiece(candidate.printer.uri()).starts_with("ipps://"));
+  // If the new version is auto-configurable and the previous version is not,
+  // then do the replacement.  (This can happen if we initially found an
+  // _ipp[s]._tcp.local record and later get an ipp[s]._tcp.local,_print record.
+  // Advertising the latter service implies that we can use IPP Everywhere for
+  // this printer.
+  if (candidate.printer.IsIppEverywhere() !=
+      existing.printer.IsIppEverywhere()) {
+    return candidate.printer.IsIppEverywhere();
+  } else {
+    // Otherwise, prefer an equivalent ipps record to an ipp record.
+    return (base::StringPiece(existing.printer.uri()).starts_with("ipp://") &&
+            base::StringPiece(candidate.printer.uri()).starts_with("ipps://"));
+  }
 }
 
 class ZeroconfPrinterDetectorImpl
@@ -194,7 +216,9 @@ class ZeroconfPrinterDetectorImpl
   explicit ZeroconfPrinterDetectorImpl(Profile* profile)
       : discovery_client_(ServiceDiscoverySharedClient::GetInstance()),
         observer_list_(new base::ObserverListThreadSafe<Observer>()) {
-    std::array<const char*, 2> services{{kIppServiceName, kIppsServiceName}};
+    std::array<const char*, 4> services{{kIppServiceName, kIppsServiceName,
+                                         kIppEverywhereServiceName,
+                                         kIppsEverywhereServiceName}};
 
     // Since we start the discoverers immediately, this must come last in the
     // constructor.
