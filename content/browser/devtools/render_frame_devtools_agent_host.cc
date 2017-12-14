@@ -81,7 +81,7 @@ bool ShouldCreateDevToolsForHost(RenderFrameHost* rfh) {
 }
 
 bool ShouldCreateDevToolsForNode(FrameTreeNode* ftn) {
-  return ShouldCreateDevToolsForHost(ftn->current_frame_host());
+  return !ftn->parent() || ftn->current_frame_host()->IsCrossProcessSubframe();
 }
 
 FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
@@ -361,6 +361,21 @@ scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
 }
 
 // static
+scoped_refptr<DevToolsAgentHost>
+RenderFrameDevToolsAgentHost::GetOrCreateForDangling(
+    FrameTreeNode* frame_tree_node) {
+  // Note that this method does not use FrameTreeNode::current_frame_host(),
+  // since it is used while the frame host may not be set as current yet,
+  // for example right before commit time.
+  // So the caller must be sure that passed frame will indeed be a correct
+  // devtools target (see ShouldCreateDevToolsForNode above).
+  RenderFrameDevToolsAgentHost* result = FindAgentHost(frame_tree_node);
+  if (!result)
+    result = new RenderFrameDevToolsAgentHost(frame_tree_node);
+  return result;
+}
+
+// static
 bool DevToolsAgentHost::HasFor(WebContents* web_contents) {
   FrameTreeNode* node =
       static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
@@ -432,21 +447,43 @@ void RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
 }
 
 // static
-std::unique_ptr<NavigationThrottle>
-RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(
+std::vector<std::unique_ptr<NavigationThrottle>>
+RenderFrameDevToolsAgentHost::CreateNavigationThrottles(
     NavigationHandle* navigation_handle) {
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(
-      static_cast<NavigationHandleImpl*>(navigation_handle)->frame_tree_node());
-  if (!agent_host)
-    return nullptr;
-  for (auto* network_handler :
-       protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    std::unique_ptr<NavigationThrottle> throttle =
-        network_handler->CreateThrottleForNavigation(navigation_handle);
-    if (throttle)
-      return throttle;
+  std::vector<std::unique_ptr<NavigationThrottle>> result;
+  FrameTreeNode* frame_tree_node =
+      static_cast<NavigationHandleImpl*>(navigation_handle)->frame_tree_node();
+
+  // Interception might throttle navigations in inspected frames.
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
+  if (agent_host) {
+    for (auto* network_handler :
+         protocol::NetworkHandler::ForAgentHost(agent_host)) {
+      std::unique_ptr<NavigationThrottle> throttle =
+          network_handler->CreateThrottleForNavigation(navigation_handle);
+      if (throttle)
+        result.push_back(std::move(throttle));
+    }
   }
-  return nullptr;
+
+  agent_host = nullptr;
+  if (frame_tree_node->parent()) {
+    // Target domain of the parent frame's DevTools may want to pause
+    // this frame to do some setup.
+    agent_host =
+        FindAgentHost(GetFrameTreeNodeAncestor(frame_tree_node->parent()));
+  }
+  if (agent_host) {
+    for (auto* target_handler :
+         protocol::TargetHandler::ForAgentHost(agent_host)) {
+      std::unique_ptr<NavigationThrottle> throttle =
+          target_handler->CreateThrottleForNavigation(navigation_handle);
+      if (throttle)
+        result.push_back(std::move(throttle));
+    }
+  }
+
+  return result;
 }
 
 // static

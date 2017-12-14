@@ -27,6 +27,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_task_runner.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -2012,7 +2013,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsProtocolTest, TargetNoDiscovery) {
   Attach();
   command_params.reset(new base::DictionaryValue());
   command_params->SetBoolean("autoAttach", true);
-  command_params->SetBoolean("waitForDebuggerOnStart", true);
+  command_params->SetBoolean("waitForDebuggerOnStart", false);
   SendCommand("Target.setAutoAttach", std::move(command_params), true);
   EXPECT_TRUE(notifications_.empty());
   command_params.reset(new base::DictionaryValue());

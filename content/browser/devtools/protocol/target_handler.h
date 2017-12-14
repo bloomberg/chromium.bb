@@ -8,6 +8,8 @@
 #include <map>
 #include <set>
 
+#include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/target.h"
 #include "content/browser/devtools/protocol/target_auto_attacher.h"
@@ -16,6 +18,8 @@
 namespace content {
 
 class DevToolsAgentHostImpl;
+class NavigationHandle;
+class NavigationThrottle;
 class RenderFrameHostImpl;
 
 namespace protocol {
@@ -36,6 +40,8 @@ class TargetHandler : public DevToolsDomainHandler,
 
   void DidCommitNavigation();
   void RenderFrameHostChanged();
+  std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
+      NavigationHandle* navigation_handle);
 
   // Domain implementation.
   Response SetDiscoverTargets(bool discover) override;
@@ -72,6 +78,7 @@ class TargetHandler : public DevToolsDomainHandler,
 
  private:
   class Session;
+  class Throttle;
 
   void AutoAttach(DevToolsAgentHost* host, bool waiting_for_debugger);
   void AutoDetach(DevToolsAgentHost* host);
@@ -79,6 +86,7 @@ class TargetHandler : public DevToolsDomainHandler,
                        Maybe<std::string> target_id,
                        Session** session,
                        bool fall_through);
+  void ClearThrottles();
 
   // DevToolsAgentHostObserver implementation.
   bool ShouldForceDevToolsAgentHostCreation() override;
@@ -95,6 +103,8 @@ class TargetHandler : public DevToolsDomainHandler,
   std::map<DevToolsAgentHost*, Session*> auto_attached_sessions_;
   std::set<DevToolsAgentHost*> reported_hosts_;
   int last_session_id_ = 0;
+  base::flat_set<Throttle*> throttles_;
+  base::WeakPtrFactory<TargetHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);
 };
