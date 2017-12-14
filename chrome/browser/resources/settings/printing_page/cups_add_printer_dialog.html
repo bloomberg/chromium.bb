@@ -183,9 +183,10 @@
               on-tap="onCancelTap_">
             $i18n{cancelButtonText}
           </paper-button>
-          <paper-button class="action-button"
+          <paper-button id="addPrinterButton" class="action-button"
               on-tap="addPressed_"
-              disabled="[[!newPrinter.printerName]]">
+              disabled="[[!canAddPrinter_(newPrinter.printerName,
+                                          newPrinter.printerAddress)]]">
             $i18n{addPrinterButtonText}
           </paper-button>
         </div>
