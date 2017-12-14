@@ -240,11 +240,9 @@ void CheckSecureCertificateExplanation(
 void CheckSecureConnectionExplanation(
     const content::SecurityStyleExplanation& explanation,
     Browser* browser) {
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_STRONG_SSL_SUMMARY),
-            explanation.summary);
-
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
+
   security_state::SecurityInfo security_info;
   SecurityStateTabHelper::FromWebContents(web_contents)
       ->GetSecurityInfo(&security_info);
@@ -253,6 +251,10 @@ void CheckSecureConnectionExplanation(
   int ssl_version =
       net::SSLConnectionStatusToVersion(security_info.connection_status);
   net::SSLVersionToString(&protocol, ssl_version);
+  EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_STRONG_SSL_SUMMARY,
+                                      base::ASCIIToUTF16(protocol)),
+            explanation.summary);
+
   bool is_aead, is_tls13;
   uint16_t cipher_suite =
       net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
@@ -2364,12 +2366,17 @@ IN_PROC_BROWSER_TEST_F(
   // TLS settings, so it should remain at WebSecurityStyleSecure.
   EXPECT_EQ(blink::kWebSecurityStyleSecure, observer.latest_security_style());
 
-  // The messages explaining the security style do, however, get
-  // downgraded: SECURE_PROTOCOL_AND_CIPHERSUITE should not show up when
-  // the TLS settings are obsolete.
+  security_state::SecurityInfo security_info;
+  SecurityStateTabHelper::FromWebContents(web_contents)
+      ->GetSecurityInfo(&security_info);
+  const char* protocol;
+  int ssl_version =
+      net::SSLConnectionStatusToVersion(security_info.connection_status);
+  net::SSLVersionToString(&protocol, ssl_version);
   for (const auto& explanation :
        observer.latest_explanations().secure_explanations) {
-    EXPECT_NE(l10n_util::GetStringUTF8(IDS_STRONG_SSL_SUMMARY),
+    EXPECT_NE(l10n_util::GetStringFUTF8(IDS_STRONG_SSL_SUMMARY,
+                                        base::ASCIIToUTF16(protocol)),
               explanation.summary);
   }
 

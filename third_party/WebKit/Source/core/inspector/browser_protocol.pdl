@@ -4884,6 +4884,8 @@ domain Security
     properties
       # Security state representing the severity of the factor being explained.
       SecurityState securityState
+      # Title describing the type of factor.
+      string title
       # Short phrase describing the type of factor.
       string summary
       # Full text explanation of the factor.

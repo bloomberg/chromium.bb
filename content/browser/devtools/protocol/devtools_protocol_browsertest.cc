@@ -211,7 +211,8 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       override {
     security_style_explanations->secure_explanations.push_back(
         SecurityStyleExplanation(
-            "an explanation", "an explanation description", cert_,
+            "an explanation title", "an explanation summary",
+            "an explanation description", cert_,
             blink::WebMixedContentContextType::kNotMixedContent));
     return blink::kWebSecurityStyleNeutral;
   }

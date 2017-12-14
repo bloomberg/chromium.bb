@@ -89,6 +89,7 @@ void AddExplanations(
     explanations->addItem(
         Security::SecurityStateExplanation::Create()
             .SetSecurityState(security_style)
+            .SetTitle(it.title)
             .SetSummary(it.summary)
             .SetDescription(it.description)
             .SetCertificate(std::move(certificate))

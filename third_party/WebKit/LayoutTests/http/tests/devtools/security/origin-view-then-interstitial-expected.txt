@@ -23,7 +23,7 @@ Security overview
         <DIV class=security-summary-text >
         </DIV>
     </DIV>
-    <DIV class=security-explanation-list >
+    <DIV class=security-explanation-list security-explanations-main >
     </DIV>
     <DIV class=security-explanation-list security-explanations-extra >
     </DIV>
@@ -78,7 +78,7 @@ Security overview
         <DIV class=security-summary-text >
         </DIV>
     </DIV>
-    <DIV class=security-explanation-list >
+    <DIV class=security-explanation-list security-explanations-main >
     </DIV>
     <DIV class=security-explanation-list security-explanations-extra >
     </DIV>
