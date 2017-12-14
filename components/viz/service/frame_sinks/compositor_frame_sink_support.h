@@ -6,7 +6,6 @@
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_SUPPORT_H_
 
 #include <memory>
-#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -43,14 +42,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   static const uint64_t kFrameIndexStart = 2;
 
-  // DEPRECATED(kylechar): It's now possible to use the constructor directly.
-  static std::unique_ptr<CompositorFrameSinkSupport> Create(
-      mojom::CompositorFrameSinkClient* client,
-      FrameSinkManagerImpl* frame_sink_manager,
-      const FrameSinkId& frame_sink_id,
-      bool is_root,
-      bool needs_sync_tokens);
-
   CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                              FrameSinkManagerImpl* frame_sink_manager,
                              const FrameSinkId& frame_sink_id,
@@ -73,7 +64,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void SetAggregatedDamageCallback(AggregatedDamageCallback callback);
 
   // Sets callback called on destruction.
-  void SetDestructionCallback(base::OnceCallback<void()> callback);
+  void SetDestructionCallback(base::OnceClosure callback);
 
   // This allows the FrameSinkManagerImpl to pass a BeginFrameSource to use.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source);
@@ -183,7 +174,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   const bool needs_sync_tokens_;
 
   // A callback that will be run at the start of the destructor if set.
-  base::OnceCallback<void()> destruction_callback_;
+  base::OnceClosure destruction_callback_;
 
   // TODO(crbug.com/754872): Remove once tab capture has moved into VIZ.
   AggregatedDamageCallback aggregated_damage_callback_;

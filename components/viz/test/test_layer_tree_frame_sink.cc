@@ -101,9 +101,9 @@ bool TestLayerTreeFrameSink::BindToClient(
 
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;
-  support_ = CompositorFrameSinkSupport::Create(this, frame_sink_manager_.get(),
-                                                frame_sink_id_, is_root,
-                                                needs_sync_points);
+  support_ = std::make_unique<CompositorFrameSinkSupport>(
+      this, frame_sink_manager_.get(), frame_sink_id_, is_root,
+      needs_sync_points);
   client_->SetBeginFrameSource(&external_begin_frame_source_);
   if (begin_frame_source_) {
     frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),

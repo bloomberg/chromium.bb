@@ -66,9 +66,6 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
 
- protected:
-  std::unique_ptr<CompositorFrameSinkSupport> support_;  // protected for test.
-
  private:
   // mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
@@ -91,6 +88,8 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
 
   // This class is only meant to be used on a single thread.
   THREAD_CHECKER(thread_checker_);
+
+  std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   const FrameSinkId frame_sink_id_;
   LocalSurfaceId local_surface_id_;

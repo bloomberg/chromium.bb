@@ -114,7 +114,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
     manager_.SetFrameSinkDebugLabel(kArbitraryFrameSinkId,
                                     "kArbitraryFrameSinkId");
-    support_ = CompositorFrameSinkSupport::Create(
+    support_ = std::make_unique<CompositorFrameSinkSupport>(
         &fake_support_client_, &manager_, kArbitraryFrameSinkId, kIsRoot,
         kNeedsSyncPoints);
     support_->SetBeginFrameSource(&begin_frame_source_);
@@ -503,7 +503,7 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
   manager_.SetFrameSinkDebugLabel(kAnotherArbitraryFrameSinkId,
                                   "kAnotherArbitraryFrameSinkId");
   MockCompositorFrameSinkClient mock_client;
-  auto support = CompositorFrameSinkSupport::Create(
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(6, kArbitraryToken);
@@ -529,7 +529,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
   manager_.SetFrameSinkDebugLabel(kAnotherArbitraryFrameSinkId,
                                   "kAnotherArbitraryFrameSinkId");
   MockCompositorFrameSinkClient mock_client;
-  auto support = CompositorFrameSinkSupport::Create(
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(7, kArbitraryToken);

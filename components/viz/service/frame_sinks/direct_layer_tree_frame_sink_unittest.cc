@@ -33,8 +33,6 @@ static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 class TestDirectLayerTreeFrameSink : public DirectLayerTreeFrameSink {
  public:
   using DirectLayerTreeFrameSink::DirectLayerTreeFrameSink;
-
-  CompositorFrameSinkSupport* support() const { return support_.get(); }
 };
 
 class TestCompositorFrameSinkSupportManager
@@ -50,7 +48,7 @@ class TestCompositorFrameSinkSupportManager
       const FrameSinkId& frame_sink_id,
       bool is_root,
       bool needs_sync_points) override {
-    return CompositorFrameSinkSupport::Create(
+    return std::make_unique<CompositorFrameSinkSupport>(
         client, frame_sink_manager_, frame_sink_id, is_root, needs_sync_points);
   }
 

@@ -272,7 +272,7 @@ void HardwareRenderer::CreateNewCompositorFrameSinkSupport() {
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;
   support_.reset();
-  support_ = viz::CompositorFrameSinkSupport::Create(
+  support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
       this, surfaces_->GetFrameSinkManager(), frame_sink_id_, is_root,
       needs_sync_points);
 }

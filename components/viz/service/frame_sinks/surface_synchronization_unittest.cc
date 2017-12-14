@@ -112,7 +112,7 @@ class SurfaceSynchronizationTest : public testing::Test {
   }
 
   void CreateFrameSink(const FrameSinkId& frame_sink_id, bool is_root) {
-    supports_[frame_sink_id] = CompositorFrameSinkSupport::Create(
+    supports_[frame_sink_id] = std::make_unique<CompositorFrameSinkSupport>(
         &support_client_, &frame_sink_manager_, frame_sink_id, is_root,
         kNeedsSyncPoints);
   }
@@ -170,19 +170,19 @@ class SurfaceSynchronizationTest : public testing::Test {
     begin_frame_source_->SetClient(&begin_frame_source_client_);
     now_src_ = base::MakeUnique<base::SimpleTestTickClock>();
     frame_sink_manager_.surface_manager()->AddObserver(&surface_observer_);
-    supports_[kDisplayFrameSink] = CompositorFrameSinkSupport::Create(
+    supports_[kDisplayFrameSink] = std::make_unique<CompositorFrameSinkSupport>(
         &support_client_, &frame_sink_manager_, kDisplayFrameSink, kIsRoot,
         kNeedsSyncPoints);
 
-    supports_[kParentFrameSink] = CompositorFrameSinkSupport::Create(
+    supports_[kParentFrameSink] = std::make_unique<CompositorFrameSinkSupport>(
         &support_client_, &frame_sink_manager_, kParentFrameSink, kIsChildRoot,
         kNeedsSyncPoints);
 
-    supports_[kChildFrameSink1] = CompositorFrameSinkSupport::Create(
+    supports_[kChildFrameSink1] = std::make_unique<CompositorFrameSinkSupport>(
         &support_client_, &frame_sink_manager_, kChildFrameSink1, kIsChildRoot,
         kNeedsSyncPoints);
 
-    supports_[kChildFrameSink2] = CompositorFrameSinkSupport::Create(
+    supports_[kChildFrameSink2] = std::make_unique<CompositorFrameSinkSupport>(
         &support_client_, &frame_sink_manager_, kChildFrameSink2, kIsChildRoot,
         kNeedsSyncPoints);
 
