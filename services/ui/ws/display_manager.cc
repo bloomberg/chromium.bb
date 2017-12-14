@@ -131,23 +131,10 @@ bool DisplayManager::SetDisplayConfiguration(
       primary_display_index = i;
     found_internal_display |= display.id() == internal_display_id;
     Display* ws_display = GetDisplayById(display.id());
-    if (!ws_display) {
-      if (display.id() == display::kUnifiedDisplayId) {
-        if (displays.size() != 1u) {
-          LOG(ERROR) << "SetDisplayConfiguration passed 2+ displays in unified";
-          return false;
-        }
-        if (mirrors.size() <= 1u) {
-          LOG(ERROR) << "SetDisplayConfiguration passed <2 mirrors in unified";
-          return false;
-        }
-        NOTIMPLEMENTED() << "TODO(crbug.com/764472): Mus unified mode.";
-        return false;
-      } else {
-        LOG(ERROR) << "SetDisplayConfiguration passed unknown display id "
-                   << display.id();
-        return false;
-      }
+    if (!ws_display && display.id() != display::kUnifiedDisplayId) {
+      LOG(ERROR) << "SetDisplayConfiguration passed unknown display id "
+                 << display.id();
+      return false;
     }
   }
   if (primary_display_index == std::numeric_limits<size_t>::max()) {

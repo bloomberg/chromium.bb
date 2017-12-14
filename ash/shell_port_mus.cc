@@ -11,6 +11,8 @@
 #include "ash/display/display_synchronizer.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_mus.h"
+#include "ash/host/ash_window_tree_host_mus_mirroring_unified.h"
+#include "ash/host/ash_window_tree_host_mus_unified.h"
 #include "ash/keyboard/keyboard_ui_mash.h"
 #include "ash/pointer_watcher_adapter_classic.h"
 #include "ash/public/cpp/config.h"
@@ -209,6 +211,19 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMus::CreateAshWindowTreeHost(
   aura_init_params.use_classic_ime = !Shell::ShouldUseIMEService();
   aura_init_params.uses_real_accelerated_widget =
       !::switches::IsMusHostingViz();
+
+  if (!::switches::IsMusHostingViz()) {
+    if (init_params.mirroring_unified) {
+      return std::make_unique<AshWindowTreeHostMusMirroringUnified>(
+          std::move(aura_init_params), init_params.display_id,
+          init_params.mirroring_delegate);
+    }
+    if (init_params.offscreen) {
+      return std::make_unique<AshWindowTreeHostMusUnified>(
+          std::move(aura_init_params), init_params.mirroring_delegate);
+    }
+  }
+
   return std::make_unique<AshWindowTreeHostMus>(std::move(aura_init_params));
 }
 
