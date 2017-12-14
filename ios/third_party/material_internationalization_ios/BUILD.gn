@@ -45,3 +45,14 @@ source_set("material_internationalization_ios") {
     "//build/config/gcc:symbol_visibility_default",
   ]
 }
+
+# TODO(crbug.com/785248): remove those targets when downstream has been fixed
+# to no longer use it but instead depend on :material_internationalization_ios.
+group("material_internationalization_ios+link") {
+  public_deps = [
+    ":material_internationalization_ios",
+  ]
+}
+
+group("material_internationalization_ios:bundle") {
+}
