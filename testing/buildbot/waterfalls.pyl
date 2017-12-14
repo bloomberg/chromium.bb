@@ -1075,6 +1075,14 @@
           'gtest_tests': 'goma_gtests',
         },
       },
+      'Linux Viz': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_viz_gtests',
+        },
+      },
       'Mac Builder (dbg) Goma Canary': {
         'additional_compile_targets': [
           'all',
