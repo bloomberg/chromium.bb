@@ -4034,7 +4034,8 @@
           "--upload-results",
           "--output-format=histograms",
           "--output-format=json-test-results",
-          "--browser=default"
+          "--browser=release",
+          "--xvfb"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "memory.leak_detection",
