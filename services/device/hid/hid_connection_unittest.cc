@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +20,6 @@
 #include "base/test/test_io_thread.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
-#include "net/base/io_buffer.h"
 #include "services/device/hid/hid_service.h"
 #include "services/device/public/interfaces/hid.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,8 +27,6 @@
 namespace device {
 
 namespace {
-
-using net::IOBufferWithSize;
 
 // Helper class that can be used to block until a HID device with a particular
 // serial number is available. Example usage:
@@ -109,7 +107,7 @@ class TestIoCallback {
   ~TestIoCallback() {}
 
   void SetReadResult(bool success,
-                     scoped_refptr<net::IOBuffer> buffer,
+                     scoped_refptr<base::RefCountedBytes> buffer,
                      size_t size) {
     result_ = success;
     buffer_ = buffer;
@@ -135,14 +133,14 @@ class TestIoCallback {
     return base::BindOnce(&TestIoCallback::SetWriteResult,
                           base::Unretained(this));
   }
-  scoped_refptr<net::IOBuffer> buffer() const { return buffer_; }
+  scoped_refptr<base::RefCountedBytes> buffer() const { return buffer_; }
   size_t size() const { return size_; }
 
  private:
   base::RunLoop run_loop_;
   bool result_;
   size_t size_;
-  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<base::RefCountedBytes> buffer_;
 };
 
 }  // namespace
@@ -190,7 +188,7 @@ TEST_F(HidConnectionTest, ReadWrite) {
 
   const char kBufferSize = 9;
   for (char i = 0; i < 8; ++i) {
-    scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(kBufferSize));
+    auto buffer = base::MakeRefCounted<base::RefCountedBytes>(kBufferSize);
     buffer->data()[0] = 0;
     for (unsigned char j = 1; j < kBufferSize; ++j) {
       buffer->data()[j] = i + j - 1;

@@ -6,7 +6,6 @@
 #define DEVICE_HID_HID_CONNECTION_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "net/base/io_buffer.h"
 #include "services/device/hid/hid_connection.h"
 #include "services/device/public/interfaces/hid.mojom.h"
 
@@ -34,12 +33,12 @@ class HidConnectionImpl : public mojom::HidConnection {
  private:
   void OnRead(ReadCallback callback,
               bool success,
-              scoped_refptr<net::IOBuffer> buffer,
+              scoped_refptr<base::RefCountedBytes> buffer,
               size_t size);
   void OnWrite(WriteCallback callback, bool success);
   void OnGetFeatureReport(GetFeatureReportCallback callback,
                           bool success,
-                          scoped_refptr<net::IOBuffer> buffer,
+                          scoped_refptr<base::RefCountedBytes> buffer,
                           size_t size);
   void OnSendFeatureReport(SendFeatureReportCallback callback, bool success);
 

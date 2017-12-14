@@ -37,16 +37,17 @@ class HidConnectionLinux : public HidConnection {
   // HidConnection implementation.
   void PlatformClose() override;
   void PlatformRead(ReadCallback callback) override;
-  void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
+  void PlatformWrite(scoped_refptr<base::RefCountedBytes> buffer,
                      size_t size,
                      WriteCallback callback) override;
   void PlatformGetFeatureReport(uint8_t report_id,
                                 ReadCallback callback) override;
-  void PlatformSendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
+  void PlatformSendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
                                  size_t size,
                                  WriteCallback callback) override;
 
-  void ProcessInputReport(scoped_refptr<net::IOBuffer> buffer, size_t size);
+  void ProcessInputReport(scoped_refptr<base::RefCountedBytes> buffer,
+                          size_t size);
   void ProcessReadQueue();
 
   // |helper_| lives on the sequence to which |blocking_task_runner_| posts

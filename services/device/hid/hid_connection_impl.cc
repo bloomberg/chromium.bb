@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 
 namespace device {
 
@@ -30,7 +31,7 @@ void HidConnectionImpl::Read(ReadCallback callback) {
 
 void HidConnectionImpl::OnRead(ReadCallback callback,
                                bool success,
-                               scoped_refptr<net::IOBuffer> buffer,
+                               scoped_refptr<base::RefCountedBytes> buffer,
                                size_t size) {
   if (!success) {
     std::move(callback).Run(false, 0, base::nullopt);
@@ -38,7 +39,7 @@ void HidConnectionImpl::OnRead(ReadCallback callback,
   }
   DCHECK(buffer);
 
-  std::vector<uint8_t> data(buffer->data() + 1, buffer->data() + size);
+  std::vector<uint8_t> data(buffer->front() + 1, buffer->front() + size);
   std::move(callback).Run(true, buffer->data()[0], data);
 }
 
@@ -48,11 +49,10 @@ void HidConnectionImpl::Write(uint8_t report_id,
   DCHECK(hid_connection_);
 
   auto io_buffer =
-      base::MakeRefCounted<net::IOBufferWithSize>(buffer.size() + 1);
+      base::MakeRefCounted<base::RefCountedBytes>(buffer.size() + 1);
   io_buffer->data()[0] = report_id;
 
-  const char* data = reinterpret_cast<const char*>(buffer.data());
-  memcpy(io_buffer->data() + 1, data, buffer.size());
+  memcpy(io_buffer->front() + 1, buffer.data(), buffer.size());
 
   hid_connection_->Write(
       io_buffer, io_buffer->size(),
@@ -73,17 +73,18 @@ void HidConnectionImpl::GetFeatureReport(uint8_t report_id,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HidConnectionImpl::OnGetFeatureReport(GetFeatureReportCallback callback,
-                                           bool success,
-                                           scoped_refptr<net::IOBuffer> buffer,
-                                           size_t size) {
+void HidConnectionImpl::OnGetFeatureReport(
+    GetFeatureReportCallback callback,
+    bool success,
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t size) {
   if (!success) {
     std::move(callback).Run(false, base::nullopt);
     return;
   }
   DCHECK(buffer);
 
-  std::vector<uint8_t> data(buffer->data(), buffer->data() + size);
+  std::vector<uint8_t> data(buffer->front(), buffer->front() + size);
   std::move(callback).Run(true, data);
 }
 
@@ -93,11 +94,10 @@ void HidConnectionImpl::SendFeatureReport(uint8_t report_id,
   DCHECK(hid_connection_);
 
   auto io_buffer =
-      base::MakeRefCounted<net::IOBufferWithSize>(buffer.size() + 1);
+      base::MakeRefCounted<base::RefCountedBytes>(buffer.size() + 1);
   io_buffer->data()[0] = report_id;
 
-  const char* data = reinterpret_cast<const char*>(buffer.data());
-  memcpy(io_buffer->data() + 1, data, buffer.size());
+  memcpy(io_buffer->front() + 1, buffer.data(), buffer.size());
 
   hid_connection_->SendFeatureReport(
       io_buffer, io_buffer->size(),
