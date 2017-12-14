@@ -546,18 +546,6 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
     // as invalid so that it is not used for subsequent requests.
     EXPECT_FALSE(
         test_proxy_delegate_raw->alternative_proxy_server().is_valid());
-
-    if (set_alternative_proxy_server) {
-      // GetAlternativeProxy should be called only once for the first
-      // request.
-      EXPECT_EQ(1,
-                test_proxy_delegate_raw->get_alternative_proxy_invocations());
-    } else {
-      // Alternative proxy server job is never started. So, ProxyDelegate is
-      // queried once per request.
-      EXPECT_EQ(2,
-                test_proxy_delegate_raw->get_alternative_proxy_invocations());
-    }
   }
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
@@ -1660,7 +1648,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, HttpsURL) {
 
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, test_proxy_delegate()->get_alternative_proxy_invocations());
 }
 
 // Verifies that the alternative proxy server job is not created if the main job
@@ -1685,8 +1672,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, HttpURLWithNoProxy) {
 
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0, test_proxy_delegate()->get_alternative_proxy_invocations());
 }
 
 // Verifies that the main job is resumed properly after a delay when the
@@ -1737,7 +1722,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPAlternativeProxy) {
 
   test_task_runner->RunUntilIdle();
   EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_valid());
-  EXPECT_EQ(1, test_proxy_delegate()->get_alternative_proxy_invocations());
   EXPECT_FALSE(test_task_runner->HasPendingTask());
 
   // Now unblock Resolver so that alternate job (and QuicStreamFactory::Job) can
@@ -1789,7 +1773,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
 
   // The alternative proxy server should be marked as bad.
   EXPECT_FALSE(test_proxy_delegate()->alternative_proxy_server().is_valid());
-  EXPECT_EQ(1, test_proxy_delegate()->get_alternative_proxy_invocations());
   request_.reset();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
@@ -1836,7 +1819,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   // The alternative proxy server should not be marked as bad.
   EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_valid());
-  EXPECT_EQ(1, test_proxy_delegate()->get_alternative_proxy_invocations());
   request_.reset();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }

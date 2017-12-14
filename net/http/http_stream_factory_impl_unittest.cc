@@ -1021,16 +1021,6 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyMarkedAsBad) {
         // If alternative proxy server was specified, it should have been marked
         // as invalid so that it is not used for subsequent requests.
         EXPECT_FALSE(test_proxy_delegate.alternative_proxy_server().is_valid());
-
-        if (set_alternative_proxy_server) {
-          // GetAlternativeProxy should be called only once for the first
-          // request.
-          EXPECT_EQ(1, test_proxy_delegate.get_alternative_proxy_invocations());
-        } else {
-          // Alternative proxy server job is never started. So, ProxyDelegate is
-          // queried once per request.
-          EXPECT_EQ(2, test_proxy_delegate.get_alternative_proxy_invocations());
-        }
       }
     }
   }
@@ -1126,10 +1116,6 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
       // Alternative proxy server should be marked as invalid so that it is
       // not used for subsequent requests.
       EXPECT_FALSE(test_proxy_delegate.alternative_proxy_server().is_quic());
-
-      // GetAlternativeProxy should be called only once per request.
-      EXPECT_EQ(static_cast<int>(i + 1),
-                test_proxy_delegate.get_alternative_proxy_invocations());
     }
   }
 }

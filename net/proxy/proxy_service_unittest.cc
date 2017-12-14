@@ -227,10 +227,6 @@ class TestResolveProxyDelegate : public ProxyDelegate {
   bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
     return true;
   }
-  void GetAlternativeProxy(
-      const GURL& url,
-      const ProxyServer& resolved_proxy_server,
-      ProxyServer* alternative_proxy_server) const override {}
   void OnAlternativeProxyBroken(
       const ProxyServer& alternative_proxy_server) override {}
 
@@ -270,10 +266,6 @@ class TestProxyFallbackProxyDelegate : public ProxyDelegate {
   bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
     return true;
   }
-  void GetAlternativeProxy(
-      const GURL& url,
-      const ProxyServer& resolved_proxy_server,
-      ProxyServer* alternative_proxy_server) const override {}
   void OnAlternativeProxyBroken(
       const ProxyServer& alternative_proxy_server) override {}
 

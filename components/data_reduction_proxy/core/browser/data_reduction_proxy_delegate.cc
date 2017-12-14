@@ -151,6 +151,12 @@ void DataReductionProxyDelegate::OnResolveProxy(
   OnResolveProxyHandler(url, method, proxy_config, proxy_retry_info, *config_,
                         io_data_, result);
 
+  if (!result->is_empty()) {
+    net::ProxyServer alternative_proxy_server;
+    GetAlternativeProxy(url, result->proxy_server(), &alternative_proxy_server);
+    result->SetAlternativeProxy(alternative_proxy_server);
+  }
+
   if (!first_data_saver_request_recorded_ && !result->is_empty() &&
       config_->IsDataReductionProxy(result->proxy_server(), nullptr)) {
     UMA_HISTOGRAM_MEDIUM_TIMES(

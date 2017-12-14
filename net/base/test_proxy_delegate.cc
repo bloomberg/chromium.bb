@@ -6,15 +6,12 @@
 
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
-TestProxyDelegate::TestProxyDelegate()
-    : on_before_tunnel_request_called_(false),
-      on_tunnel_request_completed_called_(false),
-      on_tunnel_headers_received_called_(false),
-      get_alternative_proxy_invocations_(0) {}
+TestProxyDelegate::TestProxyDelegate() = default;
 
 TestProxyDelegate::~TestProxyDelegate() = default;
 
@@ -44,7 +41,9 @@ void TestProxyDelegate::OnResolveProxy(
     const GURL& url,
     const std::string& method,
     const ProxyRetryInfoMap& proxy_retry_info,
-    ProxyInfo* result) {}
+    ProxyInfo* result) {
+  result->SetAlternativeProxy(alternative_proxy_server_);
+}
 
 void TestProxyDelegate::OnTunnelConnectCompleted(
     const HostPortPair& endpoint,
@@ -79,16 +78,6 @@ void TestProxyDelegate::OnTunnelHeadersReceived(
 bool TestProxyDelegate::IsTrustedSpdyProxy(
     const net::ProxyServer& proxy_server) {
   return proxy_server.is_valid() && trusted_spdy_proxy_ == proxy_server;
-}
-
-void TestProxyDelegate::GetAlternativeProxy(
-    const GURL& url,
-    const ProxyServer& resolved_proxy_server,
-    ProxyServer* alternative_proxy_server) const {
-  EXPECT_TRUE(resolved_proxy_server.is_valid());
-  EXPECT_FALSE(alternative_proxy_server->is_valid());
-  *alternative_proxy_server = alternative_proxy_server_;
-  get_alternative_proxy_invocations_++;
 }
 
 void TestProxyDelegate::OnAlternativeProxyBroken(
