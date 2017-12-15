@@ -242,22 +242,16 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   v8::StartupData natives;
-  GetMappedFileData(g_mapped_natives, &natives);
+  natives.data = reinterpret_cast<const char*>(g_mapped_natives->data());
+  natives.raw_size = static_cast<int>(g_mapped_natives->length());
   v8::V8::SetNativesDataBlob(&natives);
 
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
-  if (g_mapped_v8_context_snapshot) {
-    v8::StartupData snapshot{};
-    GetMappedFileData(g_mapped_v8_context_snapshot, &snapshot);
-    v8::V8::SetSnapshotDataBlob(&snapshot);
-  }
-#else
   if (g_mapped_snapshot) {
-    v8::StartupData snapshot{};
-    GetMappedFileData(g_mapped_snapshot, &snapshot);
+    v8::StartupData snapshot;
+    snapshot.data = reinterpret_cast<const char*>(g_mapped_snapshot->data());
+    snapshot.raw_size = static_cast<int>(g_mapped_snapshot->length());
     v8::V8::SetSnapshotDataBlob(&snapshot);
   }
-#endif  // USE_V8_CONTEXT_SNAPSHOT
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
   v8::V8::SetEntropySource(&GenerateEntropy);
