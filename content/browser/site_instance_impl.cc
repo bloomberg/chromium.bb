@@ -4,6 +4,8 @@
 
 #include "content/browser/site_instance_impl.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/macros.h"
@@ -409,8 +411,10 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
     return isolated_origin.GetURL();
   }
 
-  // If the url has a host, then determine the site.
-  if (!origin.host().empty()) {
+  // If the url has a host, then determine the site.  Skip file URLs to avoid a
+  // situation where site URL of file://localhost/ would mismatch Blink's origin
+  // (which ignores the hostname in this case - see https://crbug.com/776160).
+  if (!origin.host().empty() && origin.scheme() != url::kFileScheme) {
     // Only keep the scheme and registered domain of |origin|.
     std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
         origin.host(),
