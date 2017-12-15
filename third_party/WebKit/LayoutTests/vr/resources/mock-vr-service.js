@@ -174,32 +174,39 @@ function vr_test(func, vrDisplays, name, properties) {
   func(t, mockVRService);
 }
 
-function vr_session_test(func, vrDevice, sessionOptions, name, properties) {
+// TODO(offenwanger) Remove this when we switch over to promise tests.
+function xr_session_test(func, vrDevice, sessionOptions, name, properties) {
   mockVRService.setVRDisplays([vrDevice]);
   let t = async_test(name, properties);
 
-  navigator.vr.requestDevice().then( (device) => {
-    // Perform the session request in a user gesture.
-    function thunk() {
-      document.removeEventListener("keypress", thunk, false);
+  navigator.xr.requestDevice().then(
+      (device) => {
+        // Perform the session request in a user gesture.
+        function thunk() {
+          document.removeEventListener('keypress', thunk, false);
 
-      device.requestSession(sessionOptions).then( (session) => {
-        func(t, session, mockVRService);
-      }, (err) => {
-        t.step( () => {
-          assert_unreached("requestSession rejected");
+          device.requestSession(sessionOptions)
+              .then(
+                  (session) => {
+                    func(t, session, mockVRService);
+                  },
+                  (err) => {
+                    t.step(() => {
+                      assert_unreached('requestSession rejected');
+                    });
+                    t.done();
+                  });
+        }
+        document.addEventListener('keypress', thunk, false);
+        eventSender.keyDown(' ', []);
+      },
+      (err) => {
+        t.step(() => {
+          assert_unreached(
+              'navigator.xr.getDevices rejected in xr_session_test');
         });
         t.done();
       });
-    }
-    document.addEventListener("keypress", thunk, false);
-    eventSender.keyDown(" ", []);
-  }, (err) => {
-    t.step( () => {
-      assert_unreached("navigator.vr.getDevices rejected in vr_session_test");
-    });
-    t.done();
-  });
 }
 
 // Gets the corresponding transform matrix for a WebVR 1.1 pose

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../vr/resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../vr/resources/mock-vr-service.js"></script>
+<script src="../vr/resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../vr/resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+xr_session_test( (t, session, mockService) => {
+  // Session must have a baseLayer or else frame requests will be ignored.
+  session.baseLayer = new XRWebGLLayer(session, gl);
+
+  session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
+    let expected_pose = VALID_POSE;
+    let counter = 0;
+
+    function onFrame(vrFrame) {
+      session.requestFrame(onFrame);
+      if (counter == 0) {
+        t.step( () => {
+          assert_equals(vrFrame.getDevicePose(frameOfRef), null);
+        }, "Expecting to not get a pose since none has been supplied");
+        mockService.mockVRDisplays_[0].setPose(expected_pose);
+        t.step( () => {
+          assert_equals(vrFrame.getDevicePose(frameOfRef), null);
+        }, "Does not update pose within the same frame");
+      } else {
+        t.step( () => {
+          let pose = vrFrame.getDevicePose(frameOfRef);
+          assert_not_equals(pose, null);
+
+          let poseMatrix = pose.poseModelMatrix;
+          assert_not_equals(poseMatrix, null);
+
+          let expectedMatrix = matrixFrom11Pose(expected_pose);
+          assert_matrices_approx_equal(poseMatrix, expectedMatrix);
+        }, "Pose was updated in the next frame");
+        t.done();
+      }
+      counter++;
+    }
+
+    session.requestFrame(onFrame);
+  });
+}, fakeDisplays["Pixel"], { exclusive: true },
+"XRPresentationFrame getDevicePose updates on the next frame");
+
+</script>

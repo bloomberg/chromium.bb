@@ -19,7 +19,7 @@
 #include "modules/vr/VRDisplay.h"
 #include "modules/vr/VRGetDevicesCallback.h"
 #include "modules/vr/VRPose.h"
-#include "modules/vr/latest/VR.h"
+#include "modules/xr/XR.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
@@ -39,7 +39,7 @@ const char kNotAssociatedWithDocumentMessage[] =
     "The object is no longer associated with a document.";
 
 const char kCannotUseBothNewAndOldAPIMessage[] =
-    "Cannot use navigator.getVRDisplays if the latest VR API is already in "
+    "Cannot use navigator.getVRDisplays if the XR API is already in "
     "use.";
 
 }  // namespace
@@ -61,21 +61,21 @@ NavigatorVR& NavigatorVR::From(Navigator& navigator) {
   return *supplement;
 }
 
-VR* NavigatorVR::vr(Navigator& navigator) {
+XR* NavigatorVR::xr(Navigator& navigator) {
   // Always return null when the navigator is detached.
   if (!navigator.GetFrame())
     return nullptr;
 
-  return NavigatorVR::From(navigator).vr();
+  return NavigatorVR::From(navigator).xr();
 }
 
-VR* NavigatorVR::vr() {
+XR* NavigatorVR::xr() {
   LocalFrame* frame = GetSupplementable()->GetFrame();
   // Always return null when the navigator is detached.
   if (!frame)
     return nullptr;
 
-  if (!vr_) {
+  if (!xr_) {
     // For the sake of simplicity we're going to block developers from using the
     // new API if they've already made calls to the legacy API.
     if (controller_) {
@@ -87,9 +87,9 @@ VR* NavigatorVR::vr() {
       return nullptr;
     }
 
-    vr_ = VR::Create(*frame);
+    xr_ = XR::Create(*frame);
   }
-  return vr_;
+  return xr_;
 }
 
 ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
@@ -134,7 +134,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
 
   // Similar to the restriciton above, we're going to block developers from
   // using the legacy API if they've already made calls to the new API.
-  if (vr_) {
+  if (xr_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
                                            kCannotUseBothNewAndOldAPIMessage));
@@ -176,7 +176,7 @@ Document* NavigatorVR::GetDocument() {
 }
 
 void NavigatorVR::Trace(blink::Visitor* visitor) {
-  visitor->Trace(vr_);
+  visitor->Trace(xr_);
   visitor->Trace(controller_);
   Supplement<Navigator>::Trace(visitor);
 }
@@ -225,7 +225,7 @@ void NavigatorVR::FocusedFrameChanged() {
 void NavigatorVR::DidAddEventListener(LocalDOMWindow* window,
                                       const AtomicString& event_type) {
   // Don't bother if we're using the newer API
-  if (vr_)
+  if (xr_)
     return;
 
   if (event_type == EventTypeNames::vrdisplayactivate) {
@@ -241,7 +241,7 @@ void NavigatorVR::DidAddEventListener(LocalDOMWindow* window,
 void NavigatorVR::DidRemoveEventListener(LocalDOMWindow* window,
                                          const AtomicString& event_type) {
   // Don't bother if we're using the newer API
-  if (vr_)
+  if (xr_)
     return;
 
   if (event_type == EventTypeNames::vrdisplayactivate &&
@@ -252,7 +252,7 @@ void NavigatorVR::DidRemoveEventListener(LocalDOMWindow* window,
 }
 
 void NavigatorVR::DidRemoveAllEventListeners(LocalDOMWindow* window) {
-  if (vr_ || !controller_)
+  if (xr_ || !controller_)
     return;
 
   controller_->SetListeningForActivate(false);

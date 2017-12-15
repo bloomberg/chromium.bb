@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../vr/resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../vr/resources/mock-vr-service.js"></script>
+<script src="../vr/resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../vr/resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t) => {
+  return navigator.xr.requestDevice().then( (device) => {
+    runWithUserGesture( () => {
+      device.requestSession({ exclusive: true }).then( (session) => {
+        runWithUserGesture( () => {
+          // Requesting a second exclusive session from a device that already
+          // has an active exclusive session should fail. Exclusive sessions
+          // are, well... exclusive!
+          promise_rejects(t, "InvalidStateError", device.requestSession({ exclusive: true })).then( () => {
+            // End the exclusive session and try again. Now the exclusive
+            // session creation should succeed.
+            session.end().then( () => {
+              runWithUserGesture( () => {
+                device.requestSession({ exclusive: true }).then( (session) => {
+                }, (err) => {
+                  t.step( () => {
+                    assert_unreached("requestSession rejected second exclusive session");
+                  });
+                }).then( () => {
+                  t.done();
+                });
+              });
+            });
+          });
+        });
+      }, (err) => {
+        t.step( () => {
+          assert_unreached("requestSession rejected first exclusive session");
+        });
+      }).then( () => {
+        t.done();
+      });
+
+      return;
+    });
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getDevices rejected");
+    });
+  });
+}, [fakeDisplays["Pixel"]],
+"requestSession prevents creation of multiple simultaneous exclusive sessions");
+
+</script>

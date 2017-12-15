@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../vr/resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../vr/resources/mock-vr-service.js"></script>
+<script src="../vr/resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../vr/resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t) => {
+  return navigator.xr.requestDevice().then( (device) => {
+    runWithUserGesture( () => {
+      device.requestSession({ exclusive: true }).then( (session) => {
+        t.step( () => {
+          assert_true(session.exclusive);
+          assert_equals(session.device, device);
+          assert_approx_equals(session.depthNear, 0.1, FLOAT_EPSILON);
+          assert_approx_equals(session.depthFar, 1000.0, FLOAT_EPSILON);
+        }, "requestSession returned correct results");
+      }, (err) => {
+        t.step( () => {
+          assert_unreached("requestSession rejected");
+        });
+      }).then( () => {
+        t.done();
+      });
+    });
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("requestDevice rejected");
+    });
+  });
+}, [fakeDisplays["Pixel"]],
+"supportsSession returns expected exclusive session");
+
+</script>

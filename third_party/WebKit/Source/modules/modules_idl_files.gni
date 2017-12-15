@@ -301,21 +301,6 @@ modules_idl_files =
           "vr/VRFrameData.idl",
           "vr/VRPose.idl",
           "vr/VRStageParameters.idl",
-          "vr/latest/VR.idl",
-          "vr/latest/VRCoordinateSystem.idl",
-          "vr/latest/VRDevice.idl",
-          "vr/latest/VRDevicePose.idl",
-          "vr/latest/VRDeviceEvent.idl",
-          "vr/latest/VRFrameOfReference.idl",
-          "vr/latest/VRLayer.idl",
-          "vr/latest/VRPresentationFrame.idl",
-          "vr/latest/VRSession.idl",
-          "vr/latest/VRSessionEvent.idl",
-          "vr/latest/VRStageBounds.idl",
-          "vr/latest/VRStageBoundsPoint.idl",
-          "vr/latest/VRView.idl",
-          "vr/latest/VRViewport.idl",
-          "vr/latest/VRWebGLLayer.idl",
           "webaudio/AnalyserNode.idl",
           "webaudio/AudioBuffer.idl",
           "webaudio/AudioBufferSourceNode.idl",
@@ -434,11 +419,26 @@ modules_idl_files =
           "webusb/USBIsochronousOutTransferPacket.idl",
           "webusb/USBIsochronousOutTransferResult.idl",
           "webusb/USBOutTransferResult.idl",
+          "xr/XR.idl",
+          "xr/XRCoordinateSystem.idl",
+          "xr/XRDevice.idl",
+          "xr/XRDevicePose.idl",
+          "xr/XRDeviceEvent.idl",
+          "xr/XRFrameOfReference.idl",
+          "xr/XRLayer.idl",
+          "xr/XRPresentationFrame.idl",
+          "xr/XRSession.idl",
+          "xr/XRSessionEvent.idl",
+          "xr/XRStageBounds.idl",
+          "xr/XRStageBoundsPoint.idl",
+          "xr/XRView.idl",
+          "xr/XRViewport.idl",
+          "xr/XRWebGLLayer.idl",
         ],
         "abspath")
 
 modules_callback_function_idl_files =
-    get_path_info([ "vr/latest/VRFrameRequestCallback.idl" ], "abspath")
+    get_path_info([ "xr/XRFrameRequestCallback.idl" ], "abspath")
 
 modules_dictionary_idl_files =
     get_path_info([
@@ -586,11 +586,6 @@ modules_dictionary_idl_files =
                     "storage/StorageEventInit.idl",
                     "vr/VRDisplayEventInit.idl",
                     "vr/VRLayerInit.idl",
-                    "vr/latest/VRDeviceEventInit.idl",
-                    "vr/latest/VRFrameOfReferenceOptions.idl",
-                    "vr/latest/VRSessionCreationOptions.idl",
-                    "vr/latest/VRSessionEventInit.idl",
-                    "vr/latest/VRWebGLLayerInit.idl",
                     "webaudio/AnalyserOptions.idl",
                     "webaudio/AudioBufferOptions.idl",
                     "webaudio/AudioBufferSourceOptions.idl",
@@ -630,6 +625,11 @@ modules_dictionary_idl_files =
                     "webusb/USBControlTransferParameters.idl",
                     "webusb/USBDeviceFilter.idl",
                     "webusb/USBDeviceRequestOptions.idl",
+                    "xr/XRDeviceEventInit.idl",
+                    "xr/XRFrameOfReferenceOptions.idl",
+                    "xr/XRSessionCreationOptions.idl",
+                    "xr/XRSessionEventInit.idl",
+                    "xr/XRWebGLLayerInit.idl",
                   ],
                   "abspath")
 

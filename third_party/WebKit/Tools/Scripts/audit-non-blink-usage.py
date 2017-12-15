@@ -127,6 +127,7 @@ _CONFIG = [
             'third_party/WebKit/Source/core/html/media/',
             'third_party/WebKit/Source/modules/vr/',
             'third_party/WebKit/Source/modules/webgl/',
+            'third_party/WebKit/Source/modules/xr/',
         ],
         # These modules need access to GL drawing, cross-process image
         # transport, and related interfaces.
