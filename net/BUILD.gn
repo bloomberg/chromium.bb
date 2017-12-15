@@ -4005,6 +4005,7 @@ bundle_data("net_unittests_bundle_data") {
     "data/verify_name_match_unittest/names/ascii-UTF8-unmangled.pem",
     "data/verify_name_match_unittest/names/ascii-mixed-rdn_dupetype_sorting_1.pem",
     "data/verify_name_match_unittest/names/ascii-mixed-rdn_dupetype_sorting_2.pem",
+    "data/verify_name_match_unittest/names/custom-custom-normalized.pem",
     "data/verify_name_match_unittest/names/invalid-AttributeTypeAndValue-badAttributeType.pem",
     "data/verify_name_match_unittest/names/invalid-AttributeTypeAndValue-empty.pem",
     "data/verify_name_match_unittest/names/invalid-AttributeTypeAndValue-extradata.pem",
