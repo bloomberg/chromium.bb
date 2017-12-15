@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -116,9 +117,11 @@ class AppBannerManagerTest : public AppBannerManager {
     }
   }
 
-  void OnBannerPromptReply(blink::mojom::AppBannerPromptReply reply,
+  void OnBannerPromptReply(blink::mojom::AppBannerControllerPtr controller,
+                           blink::mojom::AppBannerPromptReply reply,
                            const std::string& referrer) override {
-    AppBannerManager::OnBannerPromptReply(reply, referrer);
+    AppBannerManager::OnBannerPromptReply(std::move(controller), reply,
+                                          referrer);
     if (on_banner_prompt_reply_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                     on_banner_prompt_reply_);
