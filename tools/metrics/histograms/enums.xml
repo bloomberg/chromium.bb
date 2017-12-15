@@ -32323,6 +32323,17 @@ Called by update_net_trust_anchors.py.-->
     Request sent out and a connection error occurred (no valid HTTP response
     received).
   </int>
+  <int value="5" label="SUCCESS_FROM_CACHE">
+    Success fetching the favicon from the cache without reaching out to the
+    server.
+  </int>
+  <int value="6" label="SUCCESS_FROM_SERVER">
+    Success fetching the favicon from server.
+  </int>
+  <int value="7" label="FAILURE_WRITING_FAVICON_CACHE">
+    Failed to write the favicon to cache, likely from attempting to add a
+    duplicate.
+  </int>
 </enum>
 
 <enum name="PassiveForcedListenerResultType">

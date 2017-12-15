@@ -150,6 +150,13 @@ public class LargeIconBridge {
         }
     }
 
+    /**
+     * Removes the favicon from the local cache for the given URL.
+     */
+    public void clearFavicon(String url) {
+        mFaviconCache.remove(url);
+    }
+
     private static native long nativeInit();
     private static native void nativeDestroy(long nativeLargeIconBridge);
     private static native boolean nativeGetLargeIconForURL(long nativeLargeIconBridge,

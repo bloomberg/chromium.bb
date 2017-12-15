@@ -81,7 +81,7 @@ public class PartnerBookmarksFaviconThrottleTest {
 
         mFaviconThrottle.init();
         Assert.assertFalse(mFaviconThrottle.shouldFetchFromServerIfNecessary("url1"));
-        mFaviconThrottle.onFaviconFetched("url1", FaviconFetchResult.SUCCESS);
+        mFaviconThrottle.onFaviconFetched("url1", FaviconFetchResult.SUCCESS_FROM_CACHE);
         mFaviconThrottle.commit();
 
         mFaviconThrottle.init();

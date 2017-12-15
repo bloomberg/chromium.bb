@@ -86,12 +86,17 @@ public class PartnerBookmarksFaviconThrottle {
 
         if (result == FaviconFetchResult.FAILURE_SERVER_ERROR) {
             mNewEntries.put(url, System.currentTimeMillis() + FAVICON_RETRIEVAL_TIMEOUT_MS);
-        } else if (result != FaviconFetchResult.SUCCESS && !shouldFetchFromServerIfNecessary(url)
+        } else if (!isSuccessfulFetchResult(result) && !shouldFetchFromServerIfNecessary(url)
                 && (System.currentTimeMillis() < mCurrentEntries.get(url))) {
             // Keep storing an entry if it hasn't yet expired and we get didn't just get a success
             // response.
             mNewEntries.put(url, mCurrentEntries.get(url));
         }
+    }
+
+    private boolean isSuccessfulFetchResult(@FaviconFetchResult int result) {
+        return result == FaviconFetchResult.SUCCESS_FROM_CACHE
+                || result == FaviconFetchResult.SUCCESS_FROM_SERVER;
     }
 
     /**
