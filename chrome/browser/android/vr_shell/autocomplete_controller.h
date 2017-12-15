@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
@@ -45,6 +46,13 @@ class AutocompleteController : public AutocompleteControllerDelegate {
   ChromeAutocompleteProviderClient* client_;
   std::unique_ptr<::AutocompleteController> autocomplete_controller_;
   vr::BrowserUiInterface* ui_;
+
+  // This is used to throttle the rate at which new suggestions are presented to
+  // the user. For example, if a suggestion comes in on frame 1 and frame 2, we
+  // will wait for a period of time after the receipt of each suggestion and
+  // batch incoming suggestions that arrive before that period of time has been
+  // exceeded.
+  base::CancelableCallback<void()> suggestions_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };
