@@ -28,6 +28,7 @@ from webkitpy.w3c.common import read_credentials, is_testharness_baseline, is_fi
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.import_notifier import ImportNotifier
 from webkitpy.w3c.local_wpt import LocalWPT
+from webkitpy.w3c.monorail import MonorailAPI, MonorailIssue
 from webkitpy.w3c.test_copier import TestCopier
 from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 from webkitpy.w3c.wpt_github import WPTGitHub
@@ -82,6 +83,18 @@ class TestImporter(object):
         if options.verbose:
             # Print out the full output when executive.run_command fails.
             self.host.executive.error_output_limit = None
+
+        # One-off testing-only code. To be removed (reverted) afterwards.
+        # ====================
+        try:
+            monorail_issue = MonorailIssue.new_chromium_issue(
+                'Test bug filed by wpt-import automatically', description='This is a test',
+                cc=['robertma@chromium.org'], components=['Blink>Infra'])
+            monorail_api = MonorailAPI(options.monorail_auth_json)
+            monorail_api.insert_issue(monorail_issue)
+        except Exception as e:  # pylint:disable=broad-except
+            _log.error('Failed to create an issue: %s', str(e))
+        # ====================
 
         if not self.checkout_is_okay():
             return 1

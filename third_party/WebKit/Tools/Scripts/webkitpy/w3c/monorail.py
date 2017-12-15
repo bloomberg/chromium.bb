@@ -94,7 +94,7 @@ class MonorailAPI(object):
     # TODO(robertma): Mock googleapiclient and oauth2client to test this class.
 
     _DISCOVERY_URL = (
-        'https://monorail-prod.appspot.com/_ah/api/discovery/v1/apis/'
+        'https://monorail-staging.appspot.com/_ah/api/discovery/v1/apis/'
         '{api}/{apiVersion}/rest')
 
     def __init__(self, service_account_key_json=None):
