@@ -77,22 +77,17 @@ static StyleSheetContents* ParseUASheet(const String& str) {
 
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     : media_controls_style_sheet_loader_(nullptr) {
-  default_style_ = RuleSet::Create();
-  default_print_style_ = RuleSet::Create();
-  default_quirks_style_ = RuleSet::Create();
-
   // Strict-mode rules.
   String default_rules = GetDataResourceAsASCIIString("html.css") +
                          LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
   default_style_sheet_ = ParseUASheet(default_rules);
-  default_style_->AddRulesFromSheet(DefaultStyleSheet(), ScreenEval());
-  default_print_style_->AddRulesFromSheet(DefaultStyleSheet(), PrintEval());
 
   // Quirks-mode rules.
   String quirks_rules = GetDataResourceAsASCIIString("quirks.css") +
                         LayoutTheme::GetTheme().ExtraQuirksStyleSheet();
   quirks_style_sheet_ = ParseUASheet(quirks_rules);
-  default_quirks_style_->AddRulesFromSheet(QuirksStyleSheet(), ScreenEval());
+
+  InitializeDefaultStyles();
 
 #if DCHECK_IS_ON()
   default_style_->CompactRulesIfNeeded();
@@ -102,6 +97,31 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
   DCHECK(default_print_style_->UniversalRules()->IsEmpty());
   DCHECK(default_quirks_style_->UniversalRules()->IsEmpty());
 #endif
+}
+
+void CSSDefaultStyleSheets::PrepareForLeakDetection() {
+  // Clear the optional style sheets.
+  media_controls_style_sheet_.Clear();
+  mobile_viewport_style_sheet_.Clear();
+  television_viewport_style_sheet_.Clear();
+  xhtml_mobile_profile_style_sheet_.Clear();
+  svg_style_sheet_.Clear();
+  mathml_style_sheet_.Clear();
+  fullscreen_style_sheet_.Clear();
+  // Initialize the styles that have the lazily loaded style sheets.
+  InitializeDefaultStyles();
+  default_view_source_style_.Clear();
+}
+
+void CSSDefaultStyleSheets::InitializeDefaultStyles() {
+  // This must be called only from constructor / PrepareForLeakDetection.
+  default_style_ = RuleSet::Create();
+  default_print_style_ = RuleSet::Create();
+  default_quirks_style_ = RuleSet::Create();
+
+  default_style_->AddRulesFromSheet(DefaultStyleSheet(), ScreenEval());
+  default_print_style_->AddRulesFromSheet(DefaultStyleSheet(), PrintEval());
+  default_quirks_style_->AddRulesFromSheet(QuirksStyleSheet(), ScreenEval());
 }
 
 RuleSet* CSSDefaultStyleSheets::DefaultViewSourceStyle() {
