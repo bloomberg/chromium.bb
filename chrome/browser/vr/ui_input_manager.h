@@ -86,9 +86,7 @@ class UiInputManager {
   void SendButtonDown(UiElement* target,
                       const gfx::PointF& target_point,
                       ButtonState button_state);
-  bool SendButtonUp(UiElement* target,
-                    const gfx::PointF& target_point,
-                    ButtonState button_state);
+  bool SendButtonUp(const gfx::PointF& target_point, ButtonState button_state);
   void GetVisualTargetElement(const ControllerModel& controller_model,
                               ReticleModel* reticle_model) const;
   void UpdateQuiescenceState(base::TimeTicks current_time,

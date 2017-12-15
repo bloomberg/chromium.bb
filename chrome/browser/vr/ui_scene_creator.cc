@@ -705,6 +705,7 @@ void UiSceneCreator::CreateBackground() {
   floor->SetTranslate(0.0, -kSceneHeight / 2, 0.0);
   floor->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   floor->set_gridline_count(kFloorGridlineCount);
+  floor->set_focusable(false);
   BindColor(model_, floor.get(), &ColorScheme::floor, &Grid::SetCenterColor);
   BindColor(model_, floor.get(), &ColorScheme::world_background,
             &Grid::SetEdgeColor);
@@ -713,6 +714,7 @@ void UiSceneCreator::CreateBackground() {
 
   // Ceiling.
   auto ceiling = base::MakeUnique<Rect>();
+  ceiling->set_focusable(false);
   ceiling->SetName(kCeiling);
   ceiling->SetDrawPhase(kPhaseFloorCeiling);
   ceiling->SetSize(kSceneSize, kSceneSize);
