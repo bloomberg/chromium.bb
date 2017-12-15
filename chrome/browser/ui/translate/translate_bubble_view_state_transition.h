@@ -79,6 +79,12 @@ enum TranslateBubbleUiEvent {
   BUBBLE_NOT_SHOWN_WEB_CONTENTS_NOT_ACTIVE,
   BUBBLE_NOT_SHOWN_EDITABLE_FIELD_IS_ACTIVE,
 
+  // The user clicked the advanced menu item.
+  ADVANCED_MENU_CLICKED,
+
+  // The user clicked the advanced button.
+  ADVANCED_BUTTON_CLICKED,
+
   TRANSLATE_BUBBLE_UI_EVENT_MAX
 };
 
