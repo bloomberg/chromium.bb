@@ -160,10 +160,12 @@ class SwReporterInvocationSequence {
  public:
   using Queue = std::queue<SwReporterInvocation>;
 
-  SwReporterInvocationSequence(const base::Version& version = base::Version(),
-                               const Queue& container = Queue());
+  explicit SwReporterInvocationSequence(
+      const base::Version& version = base::Version());
   SwReporterInvocationSequence(SwReporterInvocationSequence&& queue);
   virtual ~SwReporterInvocationSequence();
+
+  void PushInvocation(const SwReporterInvocation& invocation);
 
   void operator=(SwReporterInvocationSequence&& queue);
 
@@ -182,7 +184,13 @@ class SwReporterInvocationSequence {
   OnReporterSequenceDone on_sequence_done_;
 };
 
-// Tries to run the sw_reporter component. If this runs successfully, than any
+// This is used only by tests and exists solely to make the browser tests happy
+// while we implement user-initiated runs.
+// TODO(proberge): Remove this by Q1 2018.
+void RunSwReportersForTesting(SwReporterInvocationType invocation_type,
+                              SwReporterInvocationSequence&& invocations);
+
+// Tries to run the given invocations. If this runs successfully, than any
 // calls made in the next |kDaysBetweenSuccessfulSwReporterRuns| days will be
 // ignored.
 //
@@ -190,8 +198,7 @@ class SwReporterInvocationSequence {
 // executions of the tool with different command lines. |invocations| is the
 // queue of SwReporters to execute as a single "run". When a new try is
 // scheduled the entire queue is executed.
-void RunSwReporters(SwReporterInvocationType invocation_type,
-                    SwReporterInvocationSequence&& invocations);
+void OnSwReporterReady(SwReporterInvocationSequence&& invocations);
 
 // A delegate used by tests to implement test doubles (e.g., stubs, fakes, or
 // mocks).

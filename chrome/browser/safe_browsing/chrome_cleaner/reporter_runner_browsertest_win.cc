@@ -178,7 +178,9 @@ class ReporterRunnerTest
 
   SwReporterInvocationSequence CreateInvocationSequence(
       const SwReporterInvocationSequence::Queue& container) {
-    return SwReporterInvocationSequence(base::Version("1.2.3"), container);
+    SwReporterInvocationSequence sequence(base::Version("1.2.3"));
+    sequence.mutable_container() = container;
+    return sequence;
   }
 
   // Schedules a single reporter to run.
@@ -209,7 +211,7 @@ class ReporterRunnerTest
                 OnReporterSequenceDone(Eq(expected_result)))
         .WillOnce(InvokeWithoutArgs(&on_sequence_done, &Waiter::Signal));
     auto invocations = CreateInvocationSequence(container);
-    RunSwReporters(invocation_type_, std::move(invocations));
+    RunSwReportersForTesting(invocation_type_, std::move(invocations));
     on_sequence_done.Wait();
   }
 
@@ -413,7 +415,8 @@ class ReporterRunnerTest
                   InvokeWithoutArgs(&first_sequence_done, &Waiter::Signal)));
 
     SwReporterInvocationSequence::Queue invocations1({CreateInvocation(path1)});
-    RunSwReporters(invocation_type1, CreateInvocationSequence(invocations1));
+    RunSwReportersForTesting(invocation_type1,
+                             CreateInvocationSequence(invocations1));
 
     EXPECT_CALL(
         mock_chrome_cleaner_controller_,
@@ -421,7 +424,8 @@ class ReporterRunnerTest
         .WillOnce(InvokeWithoutArgs(&second_sequence_done, &Waiter::Signal));
 
     SwReporterInvocationSequence::Queue invocations2({CreateInvocation(path2)});
-    RunSwReporters(invocation_type2, CreateInvocationSequence(invocations2));
+    RunSwReportersForTesting(invocation_type2,
+                             CreateInvocationSequence(invocations2));
 
     first_sequence_done.Wait();
 

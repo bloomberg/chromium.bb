@@ -1044,9 +1044,8 @@ void SwReporterInvocation::set_cleaner_logs_upload_enabled(
 }
 
 SwReporterInvocationSequence::SwReporterInvocationSequence(
-    const base::Version& version,
-    const Queue& container)
-    : version_(version), container_(container) {
+    const base::Version& version)
+    : version_(version) {
   // Notify the cleaner controller once this sequence completes. Don't retain
   // a reference to the controller object, since it's guaranteed to outlive the
   // sequence.
@@ -1070,6 +1069,11 @@ void SwReporterInvocationSequence::operator=(
   on_sequence_done_ = std::move(invocations_sequence.on_sequence_done_);
 }
 
+void SwReporterInvocationSequence::PushInvocation(
+    const SwReporterInvocation& invocation) {
+  container_.push(invocation);
+}
+
 void SwReporterInvocationSequence::NotifySequenceDone(
     SwReporterInvocationResult result) {
   if (on_sequence_done_)
@@ -1090,12 +1094,21 @@ SwReporterInvocationSequence::mutable_container() {
   return container_;
 }
 
-void RunSwReporters(SwReporterInvocationType invocation_type,
-                    SwReporterInvocationSequence&& invocations) {
+void RunSwReportersForTesting(SwReporterInvocationType invocation_type,
+                              SwReporterInvocationSequence&& invocations) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!invocations.container().empty());
 
   ReporterRunner::MaybeStartInvocations(invocation_type,
+                                        std::move(invocations));
+}
+
+void OnSwReporterReady(SwReporterInvocationSequence&& invocations) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!invocations.container().empty());
+
+  // TODO(crbug.com/776538): Handle user-initiated cleanups.
+  ReporterRunner::MaybeStartInvocations(SwReporterInvocationType::kPeriodicRun,
                                         std::move(invocations));
 }
 
