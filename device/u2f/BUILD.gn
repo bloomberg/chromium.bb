@@ -17,6 +17,7 @@ source_set("u2f") {
     "u2f_ble_discovery.h",
     "u2f_ble_frames.cc",
     "u2f_ble_frames.h",
+    "u2f_ble_uuids.cc",
     "u2f_ble_uuids.h",
     "u2f_command_type.h",
     "u2f_device.cc",

@@ -81,7 +81,7 @@ void U2fBleDiscovery::Stop() {
 
 // static
 const BluetoothUUID& U2fBleDiscovery::U2fServiceUUID() {
-  static const BluetoothUUID service_uuid(U2F_SERVICE_UUID);
+  static const BluetoothUUID service_uuid(kU2fServiceUUID);
   return service_uuid;
 }
 
