@@ -1362,38 +1362,39 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesCadence) {
   EXPECT_EQ(0u, EffectiveFramesQueued());
 }
 
-// Test runs too slowly on debug builds.
-// TODO(fuchsia): Also runs too slowly on Fuchsia, this should be investigated,
-// see https://crbug.com/767166.
-#if defined(NDEBUG) && !defined(OS_FUCHSIA)
-TEST_F(VideoRendererAlgorithmTest, CadenceBasedTest) {
-  // Common display rates.
-  const double kDisplayRates[] = {
-      NTSC(24), 24, NTSC(25), 25, NTSC(30), 30,  48,
-      NTSC(50), 50, NTSC(60), 60, 75,       120, 144,
-  };
+class VideoRendererAlgorithmCadenceTest
+    : public VideoRendererAlgorithmTest,
+      public ::testing::WithParamInterface<::testing::tuple<double, double>> {};
 
-  // List of common frame rate values. Values pulled from local test media,
-  // videostack test matrix, and Wikipedia.
-  const double kTestRates[] = {
-      1,        10, 12.5,  15,  NTSC(24), 24,  NTSC(25), 25,
-      NTSC(30), 30, 30.12, 48,  NTSC(50), 50,  58.74,    NTSC(60),
-      60,       72, 90,    100, 120,      144, 240,      300,
-  };
+TEST_P(VideoRendererAlgorithmCadenceTest, CadenceTest) {
+  double display_rate = std::tr1::get<0>(GetParam());
+  double frame_rate = std::tr1::get<1>(GetParam());
 
-  for (double display_rate : kDisplayRates) {
-    for (double frame_rate : kTestRates) {
-      TickGenerator frame_tg(base::TimeTicks(), frame_rate);
-      TickGenerator display_tg(tick_clock_->NowTicks(), display_rate);
-      RunFramePumpTest(
-          true, &frame_tg, &display_tg,
-          [](const scoped_refptr<VideoFrame>& frame, size_t frames_dropped) {});
-      if (HasFatalFailure())
-        return;
-    }
-  }
+  TickGenerator frame_tg(base::TimeTicks(), frame_rate);
+  TickGenerator display_tg(tick_clock_->NowTicks(), display_rate);
+  RunFramePumpTest(
+      true, &frame_tg, &display_tg,
+      [](const scoped_refptr<VideoFrame>& frame, size_t frames_dropped) {});
 }
-#endif  // defined(NDEBUG) && !defined(OS_FUCHSIA)
+
+// Common display rates.
+const double kDisplayRates[] = {
+    NTSC(24), 24, NTSC(25), 25, NTSC(30), 30,  48,
+    NTSC(50), 50, NTSC(60), 60, 75,       120, 144,
+};
+
+// List of common frame rate values. Values pulled from local test media,
+// videostack test matrix, and Wikipedia.
+const double kTestRates[] = {
+    1,        10, 12.5,  15,  NTSC(24), 24,  NTSC(25), 25,
+    NTSC(30), 30, 30.12, 48,  NTSC(50), 50,  58.74,    NTSC(60),
+    60,       72, 90,    100, 120,      144, 240,      300,
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        VideoRendererAlgorithmCadenceTest,
+                        ::testing::Combine(::testing::ValuesIn(kDisplayRates),
+                                           ::testing::ValuesIn(kTestRates)));
 
 // Rotate through various playback rates and ensure algorithm adapts correctly.
 TEST_F(VideoRendererAlgorithmTest, VariablePlaybackRateCadence) {
