@@ -17,12 +17,11 @@ RealGLXApi* g_real_glx;
 DebugGLXApi* g_debug_glx;
 
 void InitializeStaticGLBindingsGLX() {
-  auto writer = base::AutoWritableMemory::Create(g_driver_glx);
-  g_driver_glx->InitializeStaticBindings();
+  g_driver_glx.InitializeStaticBindings();
   if (!g_real_glx) {
     g_real_glx = new RealGLXApi();
   }
-  g_real_glx->Initialize(&*g_driver_glx);
+  g_real_glx->Initialize(&g_driver_glx);
   g_current_glx_context = g_real_glx;
 }
 
@@ -43,8 +42,7 @@ void ClearBindingsGLX() {
     g_real_glx = NULL;
   }
   g_current_glx_context = NULL;
-  auto writer = base::AutoWritableMemory::Create(g_driver_glx);
-  g_driver_glx->ClearBindings();
+  g_driver_glx.ClearBindings();
 }
 
 GLXApi::GLXApi() {

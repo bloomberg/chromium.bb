@@ -17,12 +17,11 @@ RealEGLApi* g_real_egl = nullptr;
 DebugEGLApi* g_debug_egl = nullptr;
 
 void InitializeStaticGLBindingsEGL() {
-  auto writer = base::AutoWritableMemory::Create(g_driver_egl);
-  g_driver_egl->InitializeStaticBindings();
+  g_driver_egl.InitializeStaticBindings();
   if (!g_real_egl) {
     g_real_egl = new RealEGLApi();
   }
-  g_real_egl->Initialize(&*g_driver_egl);
+  g_real_egl->Initialize(&g_driver_egl);
   g_current_egl_context = g_real_egl;
 }
 
@@ -43,8 +42,7 @@ void ClearBindingsEGL() {
     g_real_egl = NULL;
   }
   g_current_egl_context = NULL;
-  auto writer = base::AutoWritableMemory::Create(g_driver_egl);
-  g_driver_egl->ClearBindings();
+  g_driver_egl.ClearBindings();
 }
 
 EGLApi::EGLApi() {
