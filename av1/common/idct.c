@@ -1407,6 +1407,18 @@ void av1_iht64x64_4096_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
   };
 
+  // TODO(urvang): Can the same array be reused, instead of using a new array?
+  // Remap 32x32 input into a modified 64x64 input by:
+  // - Copying over these values in top-left 32x32 locations.
+  // - Setting the rest of the locations to 0.
+  DECLARE_ALIGNED(32, tran_low_t, mod_input[64 * 64]);
+  for (int row = 0; row < 32; ++row) {
+    memcpy(mod_input + row * 64, input + row * 32, 32 * sizeof(*mod_input));
+    memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
+  }
+  memset(mod_input + 32 * 64, 0, 32 * 64 * sizeof(*mod_input));
+  const tran_low_t *mod_input_ptr = mod_input;
+
   tran_low_t tmp[64][64];
   tran_low_t out[64][64];
   tran_low_t *outp = &out[0][0];
@@ -1416,13 +1428,13 @@ void av1_iht64x64_4096_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   for (int i = 0; i < 64; ++i) {
 #if CONFIG_DAALA_TX64
     tran_low_t temp_in[64];
-    for (int j = 0; j < 64; j++) temp_in[j] = input[j] * 8;
+    for (int j = 0; j < 64; j++) temp_in[j] = mod_input_ptr[j] * 8;
     IHT_64[tx_type].rows(temp_in, out[i]);
 #else
-    IHT_64[tx_type].rows(input, out[i]);
+    IHT_64[tx_type].rows(mod_input_ptr, out[i]);
     for (int j = 0; j < 64; ++j) out[i][j] = ROUND_POWER_OF_TWO(out[i][j], 1);
 #endif
-    input += 64;
+    mod_input_ptr += 64;
   }
 
   // transpose
@@ -1494,6 +1506,17 @@ void av1_iht64x32_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { iidtx32_c, ihalfright64_c },       // H_FLIPADST
 #endif
   };
+
+  // Remap 32x32 input into a modified 64x32 input by:
+  // - Copying over these values in top-left 32x32 locations.
+  // - Setting the rest of the locations to 0.
+  DECLARE_ALIGNED(32, tran_low_t, mod_input[64 * 32]);
+  for (int row = 0; row < 32; ++row) {
+    memcpy(mod_input + row * 64, input + row * 32, 32 * sizeof(*mod_input));
+    memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
+  }
+  const tran_low_t *mod_input_ptr = mod_input;
+
   const int n = 32;
   const int n2 = 64;
 
@@ -1505,15 +1528,15 @@ void av1_iht64x32_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   for (int i = 0; i < n; ++i) {
 #if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
     tran_low_t temp_in[64];
-    for (int j = 0; j < n2; j++) temp_in[j] = input[j] * 8;
+    for (int j = 0; j < n2; j++) temp_in[j] = mod_input_ptr[j] * 8;
     IHT_64x32[tx_type].rows(temp_in, outtmp);
     for (int j = 0; j < n2; ++j) tmp[j][i] = outtmp[j];
 #else
-    IHT_64x32[tx_type].rows(input, outtmp);
+    IHT_64x32[tx_type].rows(mod_input_ptr, outtmp);
     for (int j = 0; j < n2; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * InvSqrt2);
 #endif
-    input += n2;
+    mod_input_ptr += n2;
   }
 
   // inverse transform column vectors
@@ -1579,6 +1602,14 @@ void av1_iht32x64_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
   };
 
+  // Remap 32x32 input into a modified 32x64 input by:
+  // - Copying over these values in top-left 32x32 locations.
+  // - Setting the rest of the locations to 0.
+  DECLARE_ALIGNED(32, tran_low_t, mod_input[32 * 64]);
+  memcpy(mod_input, input, 32 * 32 * sizeof(*mod_input));
+  memset(mod_input + 32 * 32, 0, 32 * 32 * sizeof(*mod_input));
+  const tran_low_t *mod_input_ptr = mod_input;
+
   const int n = 32;
   const int n2 = 64;
 
@@ -1590,15 +1621,15 @@ void av1_iht32x64_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   for (int i = 0; i < n2; ++i) {
 #if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
     tran_low_t temp_in[32];
-    for (int j = 0; j < n; j++) temp_in[j] = input[j] * 8;
+    for (int j = 0; j < n; j++) temp_in[j] = mod_input_ptr[j] * 8;
     IHT_32x64[tx_type].rows(temp_in, outtmp);
     for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
 #else
-    IHT_32x64[tx_type].rows(input, outtmp);
+    IHT_32x64[tx_type].rows(mod_input_ptr, outtmp);
     for (int j = 0; j < n; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * InvSqrt2);
 #endif
-    input += n;
+    mod_input_ptr += n;
   }
 
   // inverse transform column vectors
@@ -1645,6 +1676,14 @@ void av1_iht16x64_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { iidtx64_c, aom_iadst16_c },       // H_FLIPADST
   };
 
+  // Remap 16x32 input into a modified 16x64 input by:
+  // - Copying over these values in top-left 16x32 locations.
+  // - Setting the rest of the locations to 0.
+  DECLARE_ALIGNED(32, tran_low_t, mod_input[16 * 64]);
+  memcpy(mod_input, input, 16 * 32 * sizeof(*mod_input));
+  memset(mod_input + 16 * 32, 0, 16 * 32 * sizeof(*mod_input));
+  const tran_low_t *mod_input_ptr = mod_input;
+
   const int n = 16;
   const int n4 = 64;
 
@@ -1654,9 +1693,9 @@ void av1_iht16x64_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   // inverse transform row vectors and transpose
   for (int i = 0; i < n4; ++i) {
-    IHT_16x64[tx_type].rows(input, outtmp);
+    IHT_16x64[tx_type].rows(mod_input_ptr, outtmp);
     for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
-    input += n;
+    mod_input_ptr += n;
   }
 
   // inverse transform column vectors
@@ -1701,6 +1740,16 @@ void av1_iht64x16_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { iidtx16_c, ihalfright64_c },      // H_FLIPADST
   };
 
+  // Remap 32x16 input into a modified 64x16 input by:
+  // - Copying over these values in top-left 32x16 locations.
+  // - Setting the rest of the locations to 0.
+  DECLARE_ALIGNED(32, tran_low_t, mod_input[64 * 16]);
+  for (int row = 0; row < 16; ++row) {
+    memcpy(mod_input + row * 64, input + row * 32, 32 * sizeof(*mod_input));
+    memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
+  }
+  const tran_low_t *mod_input_ptr = mod_input;
+
   const int n = 16;
   const int n4 = 64;
 
@@ -1710,9 +1759,9 @@ void av1_iht64x16_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   // inverse transform row vectors and transpose
   for (int i = 0; i < n; ++i) {
-    IHT_64x16[tx_type].rows(input, outtmp);
+    IHT_64x16[tx_type].rows(mod_input_ptr, outtmp);
     for (int j = 0; j < n4; ++j) tmp[j][i] = outtmp[j];
-    input += n4;
+    mod_input_ptr += n4;
   }
 
   // inverse transform column vectors
