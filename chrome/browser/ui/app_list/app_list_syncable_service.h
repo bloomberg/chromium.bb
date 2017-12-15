@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/string_ordinal.h"
@@ -26,7 +25,6 @@
 #include "components/sync/protocol/app_list_specifics.pb.h"
 
 class ArcAppModelBuilder;
-class DriveAppProvider;
 class ExtensionAppModelBuilder;
 class Profile;
 
@@ -54,8 +52,7 @@ class ChromeAppListModelUpdater;
 
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
-                               public KeyedService,
-                               public DriveAppUninstallSyncService {
+                               public KeyedService {
  public:
   struct SyncItem {
     SyncItem(const std::string& id,
@@ -145,7 +142,6 @@ class AppListSyncableService : public syncer::SyncableService,
   const std::string& GetOemFolderNameForTest() const {
     return oem_folder_name_;
   }
-  void ResetDriveAppProviderForTest();
 
   const SyncItemMap& sync_items() const { return sync_items_; }
 
@@ -163,13 +159,6 @@ class AppListSyncableService : public syncer::SyncableService,
 
  private:
   class ModelObserver;
-
-  // KeyedService
-  void Shutdown() override;
-
-  // DriveAppUninstallSyncService
-  void TrackUninstalledDriveApp(const std::string& drive_app_id) override;
-  void UntrackUninstalledDriveApp(const std::string& drive_app_id) override;
 
   // Builds the model once ExtensionService is ready.
   void BuildModel();
@@ -272,6 +261,10 @@ class AppListSyncableService : public syncer::SyncableService,
   // releases http://crbug.com/722675.
   void MaybeImportLegacyPlayStorePosition(syncer::SyncChangeList* change_list);
 
+  // Remove sync data of Drive apps.
+  // TODO(http://crbug.com/794724): Remove after M65 goes stable.
+  void RemoveDriveAppItems();
+
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   std::unique_ptr<ChromeAppListModelUpdater> model_updater_;
@@ -288,9 +281,6 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;
-
-  // Provides integration with Drive apps.
-  std::unique_ptr<DriveAppProvider> drive_app_provider_;
 
   base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_;
 

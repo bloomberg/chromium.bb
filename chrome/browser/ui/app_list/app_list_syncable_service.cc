@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
@@ -45,7 +44,6 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/one_shot_event.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using syncer::SyncChange;
@@ -54,18 +52,11 @@ namespace app_list {
 
 namespace {
 
-const char kNameKey[] = "name";
-const char kParentIdKey[] = "parent_id";
-const char kPositionKey[] = "position";
-const char kPinPositionKey[] = "pin_position";
-const char kTypeKey[] = "type";
-
-// Prefix for a sync id of a Drive app. Drive app ids are in a different
-// format and have to be used because a Drive app could have only an URL
-// without a matching Chrome app. To differentiate the Drive app id from
-// Chrome app ids, this prefix will be added to create the sync item id
-// for a Drive app item.
-const char kDriveAppSyncIdPrefix[] = "drive-app-";
+constexpr char kNameKey[] = "name";
+constexpr char kParentIdKey[] = "parent_id";
+constexpr char kPositionKey[] = "position";
+constexpr char kPinPositionKey[] = "pin_position";
+constexpr char kTypeKey[] = "type";
 
 void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
                             AppListSyncableService::SyncItem* item) {
@@ -158,19 +149,17 @@ bool GetAppListItemType(AppListItem* item,
   return true;
 }
 
+// TODO(http://crbug.com/794724): Remove after M65 goes stable.
 bool IsDriveAppSyncId(const std::string& sync_id) {
+  // Prefix for a sync id of a Drive app. Drive app ids are in a different
+  // format and have to be used because a Drive app could have only an URL
+  // without a matching Chrome app. To differentiate the Drive app id from
+  // Chrome app ids, this prefix will be added to create the sync item id
+  // for a Drive app item.
+  constexpr char kDriveAppSyncIdPrefix[] = "drive-app-";
+
   return base::StartsWith(sync_id, kDriveAppSyncIdPrefix,
                           base::CompareCase::SENSITIVE);
-}
-
-std::string GetDriveAppSyncId(const std::string& drive_app_id) {
-  return kDriveAppSyncIdPrefix + drive_app_id;
-}
-
-std::string GetDriveAppIdFromSyncId(const std::string& sync_id) {
-  if (!IsDriveAppSyncId(sync_id))
-    return std::string();
-  return sync_id.substr(strlen(kDriveAppSyncIdPrefix));
 }
 
 void RemoveSyncItemFromLocalStorage(Profile* profile,
@@ -400,11 +389,6 @@ void AppListSyncableService::BuildModel() {
   if (arc_apps_builder_.get())
     arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
 
-  if (app_list::switches::IsDriveAppsInAppListEnabled() &&
-      !::switches::ExtensionsDisabled()) {
-    drive_app_provider_.reset(new DriveAppProvider(profile_, this));
-  }
-
   HandleUpdateFinished();
 }
 
@@ -425,43 +409,6 @@ void AppListSyncableService::NotifyObserversSyncUpdated() {
 size_t AppListSyncableService::GetNumSyncItemsForTest() {
   DCHECK(IsInitialized());
   return sync_items_.size();
-}
-
-void AppListSyncableService::ResetDriveAppProviderForTest() {
-  drive_app_provider_.reset();
-}
-
-void AppListSyncableService::Shutdown() {
-  // DriveAppProvider touches other KeyedServices in its dtor and needs be
-  // released in shutdown stage.
-  drive_app_provider_.reset();
-}
-
-void AppListSyncableService::TrackUninstalledDriveApp(
-    const std::string& drive_app_id) {
-  const std::string sync_id = GetDriveAppSyncId(drive_app_id);
-  SyncItem* sync_item = FindSyncItem(sync_id);
-  if (sync_item) {
-    DCHECK_EQ(sync_item->item_type,
-              sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP);
-    return;
-  }
-
-  sync_item = CreateSyncItem(
-      sync_id, sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP);
-  SendSyncChange(sync_item, SyncChange::ACTION_ADD);
-}
-
-void AppListSyncableService::UntrackUninstalledDriveApp(
-    const std::string& drive_app_id) {
-  const std::string sync_id = GetDriveAppSyncId(drive_app_id);
-  SyncItem* sync_item = FindSyncItem(sync_id);
-  if (!sync_item)
-    return;
-
-  DCHECK_EQ(sync_item->item_type,
-            sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP);
-  DeleteSyncItem(drive_app_id);
 }
 
 const AppListSyncableService::SyncItem*
@@ -501,6 +448,8 @@ void AppListSyncableService::HandleUpdateFinished() {
   // Processing an update may create folders without setting their positions.
   // Resolve them now.
   ResolveFolderPositions();
+
+  RemoveDriveAppItems();
 
   // Resume or start observing app list model changes.
   model_observer_.reset(new ModelObserver(this));
@@ -982,12 +931,7 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
     }
     case sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP: {
       VLOG(1) << this << ": Uninstall: " << sync_item->ToString();
-      if (IsDriveAppSyncId(sync_item->item_id)) {
-        if (drive_app_provider_) {
-          drive_app_provider_->AddUninstalledDriveAppFromSync(
-              GetDriveAppIdFromSyncId(sync_item->item_id));
-        }
-      } else {
+      if (!IsDriveAppSyncId(sync_item->item_id)) {
         UninstallExtension(extension_system_->extension_service(),
                            sync_item->item_id);
       }
@@ -1100,11 +1044,6 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
   // children have been deleted.
   if (item_type == sync_pb::AppListSpecifics::TYPE_APP) {
     model_updater_->RemoveItem(item_id);
-  } else if (item_type == sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
-    if (IsDriveAppSyncId(item_id) && drive_app_provider_) {
-      drive_app_provider_->RemoveUninstalledDriveAppFromSync(
-          GetDriveAppIdFromSyncId(item_id));
-    }
   }
 }
 
@@ -1175,6 +1114,17 @@ void AppListSyncableService::MaybeImportLegacyPlayStorePosition(
       SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE,
                  GetSyncDataFromSyncItem(play_store_sync_item)));
   DVLOG(2) << "Play Store app list item was updated from the legacy entry";
+}
+
+void AppListSyncableService::RemoveDriveAppItems() {
+  std::set<std::string> drive_app_item_ids;
+  for (const auto& sync_pair : sync_items_) {
+    if (IsDriveAppSyncId(sync_pair.first))
+      drive_app_item_ids.insert(sync_pair.first);
+  }
+
+  for (const auto& item_id : drive_app_item_ids)
+    DeleteSyncItem(item_id);
 }
 
 }  // namespace app_list

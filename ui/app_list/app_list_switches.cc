@@ -42,10 +42,6 @@ bool ShouldNotDismissOnBlur() {
       kDisableAppListDismissOnBlur);
 }
 
-bool IsDriveAppsInAppListEnabled() {
-  return true;
-}
-
 bool IsDriveSearchInChromeLauncherEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kEnableDriveSearchInChromeLauncher))

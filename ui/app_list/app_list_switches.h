@@ -28,8 +28,6 @@ bool APP_LIST_EXPORT IsVoiceSearchEnabled();
 // Determines whether the app list should not be dismissed on focus loss.
 bool APP_LIST_EXPORT ShouldNotDismissOnBlur();
 
-bool APP_LIST_EXPORT IsDriveAppsInAppListEnabled();
-
 bool APP_LIST_EXPORT IsDriveSearchInChromeLauncherEnabled();
 
 }  // namespace switches
