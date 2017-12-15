@@ -1678,12 +1678,28 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
           'scripts': 'chromium_webkit_scripts',
         },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.10.5',
+            }
+          ],
+        },
       },
       'WebKit Mac10.11': {
         'test_suites': {
           'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
           'scripts': 'chromium_webkit_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.11.6',
+            }
+          ],
         },
       },
       'WebKit Mac10.11 (dbg)': {
@@ -1692,6 +1708,14 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
           'scripts': 'chromium_webkit_scripts',
         },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.11.6',
+            }
+          ],
+        },
       },
       'WebKit Mac10.11 (retina)': {
         'test_suites': {
@@ -1699,12 +1723,31 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
           'scripts': 'chromium_webkit_scripts',
         },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '1002:6821',
+              'hidpi': '1',
+              'os': 'Mac-10.12.6',
+              'pool': 'Chrome-GPU',
+            }
+          ],
+        },
       },
       'WebKit Mac10.12': {
         'test_suites': {
           'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
           'scripts': 'chromium_webkit_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '8086:0a2e',
+              'hidpi': '0',
+              'os': 'Mac-10.12.6',
+            },
+          ],
         },
       },
       'WebKit Win x64 Builder': {
