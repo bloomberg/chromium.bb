@@ -61,7 +61,6 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
     private final CastDevice mCastDevice;
     private final MediaSource mSource;
     private final CastMessageHandler mMessageHandler;
-    private final CastMediaRouteProvider mRouteProvider;
 
     private GoogleApiClient mApiClient;
     private String mSessionId;
@@ -83,25 +82,17 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
      * @param source The {@link MediaSource} corresponding to this session.
      * @param routeProvider The {@link CastMediaRouteProvider} instance managing this session.
      */
-    public CastSessionImpl(
-            GoogleApiClient apiClient,
-            String sessionId,
-            ApplicationMetadata metadata,
-            String applicationStatus,
-            CastDevice castDevice,
-            String origin,
-            int tabId,
-            boolean isIncognito,
-            MediaSource source,
-            CastMediaRouteProvider routeProvider) {
+    public CastSessionImpl(GoogleApiClient apiClient, String sessionId,
+            ApplicationMetadata metadata, String applicationStatus, CastDevice castDevice,
+            String origin, int tabId, boolean isIncognito, MediaSource source,
+            CastMessageHandler messageHandler) {
         mSessionId = sessionId;
-        mRouteProvider = routeProvider;
         mApiClient = apiClient;
         mSource = source;
         mApplicationMetadata = metadata;
         mApplicationStatus = applicationStatus;
         mCastDevice = castDevice;
-        mMessageHandler = mRouteProvider.getMessageHandler();
+        mMessageHandler = messageHandler;
         mMessageChannel = new CastMessagingChannel(this);
         updateNamespaces();
 
@@ -179,7 +170,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
     @Override
     public void onStop(int actionSource) {
         stopApplication();
-        mRouteProvider.onSessionStopAction();
+        ChromeCastSessionManager.get().onSessionStopAction();
     }
 
     @Override
@@ -443,7 +434,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                         mSessionId = null;
                         mApiClient = null;
 
-                        mRouteProvider.onSessionClosed();
+                        ChromeCastSessionManager.get().onSessionEnded();
                         mStoppingApplication = false;
 
                         MediaNotificationManager.clear(R.id.presentation_notification);
