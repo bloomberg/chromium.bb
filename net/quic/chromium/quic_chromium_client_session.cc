@@ -245,9 +245,11 @@ class QuicServerPushHelper : public ServerPushDelegate::ServerPushHelper {
 }  // namespace
 
 QuicChromiumClientSession::Handle::Handle(
-    const base::WeakPtr<QuicChromiumClientSession>& session)
+    const base::WeakPtr<QuicChromiumClientSession>& session,
+    const HostPortPair& destination)
     : MultiplexedSessionHandle(session),
       session_(session),
+      destination_(destination),
       net_log_(session_->net_log()),
       was_handshake_confirmed_(session->IsCryptoHandshakeConfirmed()),
       net_error_(OK),
@@ -928,11 +930,6 @@ int QuicChromiumClientSession::WaitForHandshakeConfirmation(
 }
 
 int QuicChromiumClientSession::TryCreateStream(StreamRequest* request) {
-  if (stream_factory_ && stream_factory_->IsQuicBroken(this)) {
-    DVLOG(1) << "QUIC broken.";
-    return ERR_QUIC_PROTOCOL_ERROR;
-  }
-
   if (goaway_received()) {
     DVLOG(1) << "Going away.";
     return ERR_CONNECTION_CLOSED;
@@ -2312,9 +2309,9 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
 }
 
 std::unique_ptr<QuicChromiumClientSession::Handle>
-QuicChromiumClientSession::CreateHandle() {
+QuicChromiumClientSession::CreateHandle(const HostPortPair& destination) {
   return std::make_unique<QuicChromiumClientSession::Handle>(
-      weak_factory_.GetWeakPtr());
+      weak_factory_.GetWeakPtr(), destination);
 }
 
 void QuicChromiumClientSession::OnReadError(

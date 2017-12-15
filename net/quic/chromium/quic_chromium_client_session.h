@@ -104,7 +104,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       : public MultiplexedSessionHandle,
         public QuicClientPushPromiseIndex::Delegate {
    public:
-    explicit Handle(const base::WeakPtr<QuicChromiumClientSession>& session);
+    // Constructs a handle to |session| which was created via the alternative
+    // server |destination|.
+    Handle(const base::WeakPtr<QuicChromiumClientSession>& session,
+           const HostPortPair& destination);
     Handle(const Handle& other) = delete;
     ~Handle() override;
 
@@ -178,6 +181,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // Returns the session's server ID.
     QuicServerId server_id() const { return server_id_; }
 
+    // Returns the alternative server used for this session.
+    HostPortPair destination() const { return destination_; }
+
     // Returns the session's net log.
     const NetLogWithSource& net_log() const { return net_log_; }
 
@@ -225,6 +231,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     // Underlying session which may be destroyed before this handle.
     base::WeakPtr<QuicChromiumClientSession> session_;
+
+    HostPortPair destination_;
 
     // Stream request created by |RequestStream()|.
     std::unique_ptr<StreamRequest> stream_request_;
@@ -470,7 +478,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   const NetLogWithSource& net_log() const { return net_log_; }
 
   // Returns a Handle to this session.
-  std::unique_ptr<QuicChromiumClientSession::Handle> CreateHandle();
+  std::unique_ptr<QuicChromiumClientSession::Handle> CreateHandle(
+      const HostPortPair& destination);
 
   // Returns the number of client hello messages that have been sent on the
   // crypto stream. If the handshake has completed then this is one greater

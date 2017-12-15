@@ -1106,7 +1106,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
         // Quic session is closed before stream can be created.
         return ERR_CONNECTION_CLOSED;
       }
-      stream_.reset(new QuicHttpStream(std::move(session)));
+      stream_ = std::make_unique<QuicHttpStream>(std::move(session));
     }
     next_state_ = STATE_NONE;
     return OK;

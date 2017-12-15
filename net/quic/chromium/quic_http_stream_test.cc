@@ -318,9 +318,10 @@ class QuicHttpStreamTest
     TestCompletionCallback callback;
 
     session_->CryptoConnect(callback.callback());
-    stream_.reset(new QuicHttpStream(session_->CreateHandle()));
-    promised_stream_.reset(new QuicHttpStream(session_->CreateHandle()));
-
+    stream_ = std::make_unique<QuicHttpStream>(
+        session_->CreateHandle(HostPortPair("www.example.org", 443)));
+    promised_stream_ = std::make_unique<QuicHttpStream>(
+        session_->CreateHandle(HostPortPair("www.example.org", 443)));
     push_promise_[":path"] = "/bar";
     push_promise_[":authority"] = "www.example.org";
     push_promise_[":version"] = "HTTP/1.1";
@@ -702,7 +703,8 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Start a second request.
-  QuicHttpStream stream2(session_->CreateHandle());
+  QuicHttpStream stream2(
+      session_->CreateHandle(HostPortPair("www.example.org", 443)));
   TestCompletionCallback callback2;
   EXPECT_EQ(OK,
             stream2.InitializeStream(&request_, DEFAULT_PRIORITY,
