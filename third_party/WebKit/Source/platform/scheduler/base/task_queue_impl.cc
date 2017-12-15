@@ -410,7 +410,7 @@ TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
   while (!main_thread_only().delayed_incoming_queue.empty()) {
     Task& task =
         const_cast<Task&>(main_thread_only().delayed_incoming_queue.top());
-    if (task.task.IsCancelled()) {
+    if (!task.task || task.task.IsCancelled()) {
       main_thread_only().delayed_incoming_queue.pop();
       continue;
     }
