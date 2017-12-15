@@ -20,8 +20,8 @@
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace content {
+namespace leveldb_unittest {
 
-namespace {
 static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
 
 class SimpleComparator : public LevelDBComparator {
@@ -33,8 +33,6 @@ class SimpleComparator : public LevelDBComparator {
   }
   const char* Name() const override { return "temp_comparator"; }
 };
-
-}  // namespace
 
 TEST(LevelDBDatabaseTest, CorruptionTest) {
   base::ScopedTempDir temp_directory;
@@ -112,4 +110,5 @@ TEST(LevelDB, Locking) {
   EXPECT_TRUE(status.ok());
 }
 
+}  // namespace leveldb_unittest
 }  // namespace content

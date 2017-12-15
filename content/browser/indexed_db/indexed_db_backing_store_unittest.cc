@@ -38,8 +38,8 @@ using base::ASCIIToUTF16;
 using url::Origin;
 
 namespace content {
+namespace indexed_db_backing_store_unittest {
 
-namespace {
 static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
 
 // Write |content| to |file|. Returns true on success.
@@ -1324,9 +1324,6 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
   RunAllTasksUntilIdle();
 }
 
-}  // namespace
-
-// Not in the anonymous namespace to friend IndexedDBBackingStore.
 TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   // No |path_base|.
   std::string message;
@@ -1417,4 +1414,5 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   EXPECT_EQ("foo", message);
 }
 
+}  // namespace indexed_db_backing_store_unittest
 }  // namespace content

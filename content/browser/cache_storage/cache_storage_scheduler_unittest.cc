@@ -11,8 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
-namespace {
+namespace cache_storage_scheduler_unittest {
 
 class TestTask {
  public:
@@ -28,8 +27,6 @@ class TestTask {
   CacheStorageScheduler* scheduler_;
   int callback_count_;
 };
-
-}  // namespace
 
 class CacheStorageSchedulerTest : public testing::Test {
  protected:
@@ -79,4 +76,5 @@ TEST_F(CacheStorageSchedulerTest, ScheduledOperations) {
   EXPECT_FALSE(scheduler_.ScheduledOperations());
 }
 
+}  // namespace cache_storage_scheduler_unittest
 }  // namespace content

@@ -34,6 +34,10 @@ class Iterator;
 namespace content {
 class IndexedDBBackingStore;
 
+namespace indexed_db_tombstone_sweeper_unittest {
+class IndexedDBTombstoneSweeperTest;
+}
+
 // Facilitates iterating a whole container with an abnormal starting position.
 // If the starting position is not 0, then the iteration will wrap to the
 // beginning of the container until the starting position is reached again.
@@ -94,7 +98,8 @@ class CONTENT_EXPORT IndexedDBTombstoneSweeper
       std::map<int64_t, IndexedDBObjectStoreMetadata>;
   using IndexMetadataMap = std::map<int64_t, IndexedDBIndexMetadata>;
 
-  friend class IndexedDBTombstoneSweeperTest;
+  friend class indexed_db_tombstone_sweeper_unittest::
+      IndexedDBTombstoneSweeperTest;
 
   enum class Status { SWEEPING, DONE_REACHED_MAX, DONE_ERROR, DONE_COMPLETE };
 

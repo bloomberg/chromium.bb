@@ -26,6 +26,8 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 
 namespace content {
+namespace indexed_db_transaction_unittest {
+
 const int kFakeProcessId = 10;
 
 class AbortObserver {
@@ -503,4 +505,5 @@ INSTANTIATE_TEST_CASE_P(IndexedDBTransactions,
                         IndexedDBTransactionTestMode,
                         ::testing::ValuesIn(kTestModes));
 
+}  // namespace indexed_db_transaction_unittest
 }  // namespace content
