@@ -26,10 +26,10 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
     : AppInfoPanel(profile, app),
       app_list_observer_(this),
       manage_link_(nullptr) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
-                           ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   manage_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_ARC_APPLICATION_INFO_MANAGE_LINK));
   manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

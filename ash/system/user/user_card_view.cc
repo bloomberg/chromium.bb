@@ -282,10 +282,9 @@ void PublicAccountUserDetails::DeterminePreferredSize() {
 }  // namespace
 
 UserCardView::UserCardView(int user_index) : user_index_(user_index) {
-  auto* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                           kTrayPopupLabelHorizontalPadding);
-  SetLayoutManager(layout);
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      kTrayPopupLabelHorizontalPadding));
   layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -415,7 +414,7 @@ void UserCardView::AddUserContent(views::BoxLayout* layout) {
   AddChildView(stack_of_labels);
   layout->SetFlexForView(stack_of_labels, 1);
   stack_of_labels->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   stack_of_labels->AddChildView(user_name_);
   stack_of_labels->AddChildView(user_email);
   // The name and email have different font sizes. This border is designed
@@ -438,7 +437,8 @@ void UserCardView::AddUserContent(views::BoxLayout* layout) {
   media_capture_icon_->SetVisible(false);
 
   media_capture_container_ = new views::View();
-  media_capture_container_->SetLayoutManager(new views::FillLayout());
+  media_capture_container_->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
   media_capture_container_->AddChildView(media_capture_icon_);
   AddChildView(media_capture_container_);
 

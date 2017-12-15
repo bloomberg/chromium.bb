@@ -72,7 +72,7 @@ class TrayUpdate::UpdateView : public ActionableView {
   explicit UpdateView(TrayUpdate* owner)
       : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
         update_label_(nullptr) {
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();

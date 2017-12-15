@@ -54,13 +54,13 @@ TilesDefaultView::TilesDefaultView(SystemTrayItem* owner)
 TilesDefaultView::~TilesDefaultView() = default;
 
 void TilesDefaultView::Init() {
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(0, 4));
+  auto box_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(0, 4));
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(box_layout);
+  SetLayoutManager(std::move(box_layout));
 
   // Show the buttons in this row as disabled if the user is at the login
   // screen, lock screen, or in a secondary account flow. The exception is

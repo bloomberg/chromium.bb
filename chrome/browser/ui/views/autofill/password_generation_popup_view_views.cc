@@ -45,11 +45,11 @@ class PasswordTextBox : public views::View {
   // |generated_password| is the generated password.
   void Init(const base::string16& suggestion_text,
             const base::string16& generated_password) {
-    views::BoxLayout* box_layout = new views::BoxLayout(
+    auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical, gfx::Insets(12, 0), 5);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-    SetLayoutManager(box_layout);
+    SetLayoutManager(std::move(box_layout));
 
     views::Label* suggestion_label = new views::Label(
         suggestion_text, CONTEXT_DEPRECATED_SMALL, STYLE_EMPHASIZED);
@@ -88,13 +88,13 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
   // |password| is the generated password, |suggestion| is the text prompting
   // the user to select the password.
   void Init(const base::string16& password, const base::string16& suggestion) {
-    views::BoxLayout* box_layout = new views::BoxLayout(
+    auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal,
         gfx::Insets(0, PasswordGenerationPopupController::kHorizontalPadding),
         PasswordGenerationPopupController::kHorizontalPadding);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-    SetLayoutManager(box_layout);
+    SetLayoutManager(std::move(box_layout));
 
     views::ImageView* key_image = new views::ImageView();
     key_image->SetImage(

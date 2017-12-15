@@ -61,6 +61,7 @@ split_static_library("ui") {
     "autofill/credit_card_scanner_view.cc",
     "autofill/credit_card_scanner_view.h",
     "autofill/credit_card_scanner_view_delegate.h",
+    "autofill/password_generation_popup_controller.cc",
     "autofill/password_generation_popup_controller.h",
     "autofill/password_generation_popup_controller_impl.cc",
     "autofill/password_generation_popup_controller_impl.h",

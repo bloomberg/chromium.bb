@@ -306,7 +306,7 @@ ControlledSettingIndicatorView::ControlledSettingIndicatorView(
   image_view_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_CONTROLLED_SETTING_POLICY));
   AddChildView(image_view_);
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
 ControlledSettingIndicatorView::~ControlledSettingIndicatorView() {}

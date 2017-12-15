@@ -49,7 +49,7 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
 SystemTrayView::SystemTrayView(SystemTrayType system_tray_type,
                                const std::vector<ash::SystemTrayItem*>& items)
     : items_(items), system_tray_type_(system_tray_type) {
-  SetLayoutManager(new BottomAlignedBoxLayout());
+  SetLayoutManager(std::make_unique<BottomAlignedBoxLayout>());
 }
 
 SystemTrayView::~SystemTrayView() {

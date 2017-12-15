@@ -85,7 +85,7 @@ PlatformVerificationDialog::PlatformVerificationDialog(
     : content::WebContentsObserver(web_contents),
       domain_(domain),
       callback_(callback) {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   gfx::Insets dialog_insets =
       ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG);

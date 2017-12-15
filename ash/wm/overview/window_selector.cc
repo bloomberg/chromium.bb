@@ -167,11 +167,10 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
                bundle.GetFontList(kTextFilterFontStyle).GetHeight());
   DCHECK(text_height);
   const int vertical_padding = (params.bounds.height() - text_height) / 2;
-  views::BoxLayout* layout = new views::BoxLayout(
+  auto* layout = container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
       gfx::Insets(vertical_padding, kTextFilterHorizontalPadding),
-      kTextFilterHorizontalPadding);
-  container->SetLayoutManager(layout);
+      kTextFilterHorizontalPadding));
 
   views::Textfield* textfield = new views::Textfield;
   textfield->set_controller(controller);

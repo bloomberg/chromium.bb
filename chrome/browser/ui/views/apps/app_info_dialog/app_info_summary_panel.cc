@@ -140,10 +140,10 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
       licenses_link_(NULL),
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
-                           ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   AddSubviews();
 }
@@ -157,9 +157,10 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
     views::View* vertical_stack) {
   views::View* description_and_labels_stack = new views::View();
   description_and_labels_stack->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
-                           ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical, gfx::Insets(),
+          ChromeLayoutProvider::Get()->GetDistanceMetric(
+              DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 
   if (!app_->description().empty()) {
     // TODO(sashab): Clip the app's description to 4 lines, and use Label's

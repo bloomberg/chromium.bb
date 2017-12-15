@@ -68,7 +68,7 @@ IdleActionWarningDialogView::IdleActionWarningDialogView(
       ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
                                                                  views::TEXT)));
   AddChildView(label_);
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   UpdateLabel();
 

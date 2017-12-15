@@ -194,10 +194,10 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
   // Local storage checkbox and (?) tooltip.
   storage_row_ = new views::View();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  views::BoxLayout* storage_row_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal,
-      provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION));
-  storage_row_->SetLayoutManager(storage_row_layout);
+  auto* storage_row_layout =
+      storage_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal,
+          provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION)));
   storage_row_->SetBorder(
       views::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
   storage_row_->SetBackground(views::CreateSolidBackground(kLightShadingColor));
@@ -330,8 +330,8 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   // The main content view is a box layout with two things in it: the permanent
   // error label layout, and |main_contents|.
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets()));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets()));
 
   // This is a big red-background section at the top of the dialog in case there
   // is a permanent error. It is not in an inset layout because the red
@@ -354,14 +354,14 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   // overlay on top of the actual contents in |controls_container|
   // (instructions, input fields).
   views::View* main_contents = new views::View();
-  main_contents->SetLayoutManager(new views::FillLayout());
+  main_contents->SetLayoutManager(std::make_unique<views::FillLayout>());
   // Inset the whole main section.
   main_contents->SetBorder(views::CreateEmptyBorder(
       provider->GetInsetsMetric(views::INSETS_DIALOG)));
   AddChildView(main_contents);
 
   controls_container_ = new views::View();
-  controls_container_->SetLayoutManager(new views::BoxLayout(
+  controls_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   main_contents->AddChildView(controls_container_);
@@ -375,7 +375,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   // Input row, containing month/year dropdowns if needed and the CVC field.
   input_row_ = new views::View();
-  input_row_->SetLayoutManager(new views::BoxLayout(
+  input_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
 
@@ -404,10 +404,11 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   // Temporary error view, just below the input field(s).
   views::View* temporary_error = new views::View();
-  views::BoxLayout* temporary_error_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-  temporary_error->SetLayoutManager(temporary_error_layout);
+  auto* temporary_error_layout =
+      temporary_error->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal, gfx::Insets(),
+          provider->GetDistanceMetric(
+              views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
   temporary_error_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
 
@@ -426,14 +427,14 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   // On top of the main contents, we add the progress overlay and hide it.
   progress_overlay_ = new views::View();
-  views::BoxLayout* progress_layout = new views::BoxLayout(
+  auto progress_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   progress_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   progress_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  progress_overlay_->SetLayoutManager(progress_layout);
+  progress_overlay_->SetLayoutManager(std::move(progress_layout));
   progress_overlay_->SetVisible(false);
 
   progress_throbber_ = new views::Throbber();

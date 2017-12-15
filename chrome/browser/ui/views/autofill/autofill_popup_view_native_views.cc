@@ -78,11 +78,11 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
     views::Widget* parent_widget)
     : AutofillPopupBaseView(controller, parent_widget),
       controller_(controller) {
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical);
+  auto box_layout =
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  SetLayoutManager(box_layout);
+  SetLayoutManager(std::move(box_layout));
 
   CreateChildViews();
   SetBackground(views::CreateThemedSolidBackground(
@@ -129,11 +129,11 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       child_view->AddChildView(label);
 
-      auto* box_layout =
-          new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(4, 13));
+      auto box_layout = std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical, gfx::Insets(4, 13));
       box_layout->set_main_axis_alignment(
           views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-      child_view->SetLayoutManager(box_layout);
+      child_view->SetLayoutManager(std::move(box_layout));
     }
     AddChildView(child_view);
   }

@@ -118,8 +118,8 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
                              Profile* profile,
                              const extensions::Extension* app)
     : profile_(profile), app_id_(app->id()) {
-  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical);
-  SetLayoutManager(layout);
+  views::BoxLayout* layout = SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   const int kHorizontalSeparatorHeight = 1;
   dialog_header_ = new AppInfoHeaderPanel(profile, app);
@@ -139,7 +139,7 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   // dialog.
   views::View* dialog_body_contents = new views::View();
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  dialog_body_contents->SetLayoutManager(new views::BoxLayout(
+  dialog_body_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
       provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));

@@ -68,11 +68,11 @@ void TrayContainer::UpdateLayout() {
   int vertical_margin = cross_axis_margin_;
   if (!is_horizontal)
     std::swap(horizontal_margin, vertical_margin);
-  views::BoxLayout* layout = new views::BoxLayout(
-      orientation, gfx::Insets(vertical_margin, horizontal_margin), 0);
 
+  auto layout = std::make_unique<views::BoxLayout>(
+      orientation, gfx::Insets(vertical_margin, horizontal_margin), 0);
   layout->set_minimum_cross_axis_size(kTrayItemSize);
-  views::View::SetLayoutManager(layout);
+  views::View::SetLayoutManager(std::move(layout));
 
   PreferredSizeChanged();
 }

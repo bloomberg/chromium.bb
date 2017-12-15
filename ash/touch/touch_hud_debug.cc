@@ -318,7 +318,7 @@ TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
 
   label_container_ = new views::View;
   label_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   for (int i = 0; i < kMaxTouchPoints; ++i) {
     touch_labels_[i] = new views::Label;

@@ -18,7 +18,7 @@ namespace ash {
 LabelTrayView::LabelTrayView(ViewClickListener* click_listener,
                              const gfx::VectorIcon& icon)
     : click_listener_(click_listener), icon_(icon) {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   SetVisible(false);
 }
 

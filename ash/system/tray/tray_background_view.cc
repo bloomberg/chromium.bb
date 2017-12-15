@@ -173,7 +173,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
 
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBackground(std::unique_ptr<views::Background>(background_));
 
   AddChildView(tray_container_);

@@ -78,10 +78,10 @@ class SplitViewOverviewOverlay::RotatedImageLabelView : public RoundedRectView {
     label_->SetEnabledColor(kSplitviewLabelEnabledColor);
     label_->SetBackgroundColor(kSplitviewLabelBackgroundColor);
 
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical,
-                             gfx::Insets(kSplitviewLabelVerticalInsetDp,
-                                         kSplitviewLabelHorizontalInsetDp)));
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(kSplitviewLabelVerticalInsetDp,
+                    kSplitviewLabelHorizontalInsetDp)));
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     AddChildView(label_);

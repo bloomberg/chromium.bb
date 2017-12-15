@@ -17,7 +17,7 @@ TrayInfoLabel::TrayInfoLabel(TrayInfoLabel::Delegate* delegate, int message_id)
       label_(TrayPopupUtils::CreateDefaultLabel()),
       message_id_(message_id),
       delegate_(delegate) {
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
   tri_view->SetInsets(gfx::Insets(0,

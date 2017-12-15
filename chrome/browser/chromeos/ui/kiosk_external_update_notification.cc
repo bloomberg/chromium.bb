@@ -36,7 +36,7 @@ class KioskExternalUpdateNotificationView : public views::WidgetDelegateView {
       KioskExternalUpdateNotification* owner)
       : owner_(owner), widget_closed_(false) {
     AddLabel();
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
   }
 
   ~KioskExternalUpdateNotificationView() override {
