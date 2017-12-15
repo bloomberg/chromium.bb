@@ -15,6 +15,7 @@
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/back_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
@@ -76,6 +77,14 @@ const float kDraggedImageOpacity = 0.5f;
 
 namespace {
 
+// Helper to check if tablet mode is enabled.
+bool IsTabletModeEnabled() {
+  return Shell::Get()->tablet_mode_controller() &&
+         Shell::Get()
+             ->tablet_mode_controller()
+             ->IsTabletModeWindowManagerEnabled();
+}
+
 // A class to temporarily disable a given bounds animator.
 class BoundsAnimatorDisabler {
  public:
@@ -106,7 +115,7 @@ class ShelfFocusSearch : public views::FocusSearch {
       : FocusSearch(nullptr, true, true), view_model_(view_model) {}
   ~ShelfFocusSearch() override = default;
 
-  // views::FocusSearch overrides:
+  // views::FocusSearch:
   View* FindNextFocusableView(View* starting_view,
                               bool reverse,
                               Direction direction,
@@ -114,18 +123,26 @@ class ShelfFocusSearch : public views::FocusSearch {
                               views::FocusTraversable** focus_traversable,
                               View** focus_traversable_view) override {
     int index = view_model_->GetIndexOfView(starting_view);
-    if (index == -1)
-      return view_model_->view_at(0);
+    // The back button (item with index 0 on the model) only exists in tablet
+    // mode, so punt focus to the app list button (item with index 1 on the
+    // model).
+    const bool tablet_mode = IsTabletModeEnabled();
+    if (!tablet_mode && index == 0)
+      ++index;
 
+    // Increment or decrement index based on the cycle, unless we are at either
+    // edge, then we loop to the back or front. Skip the back button (item with
+    // index 0) when not in tablet mode.
     if (reverse) {
       --index;
-      if (index < 0)
+      if (index < 0 || (index == 0 && !tablet_mode))
         index = view_model_->view_size() - 1;
     } else {
       ++index;
       if (index >= view_model_->view_size())
-        index = 0;
+        index = tablet_mode ? 0 : 1;
     }
+
     return view_model_->view_at(index);
   }
 
@@ -245,6 +262,7 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
       shelf_widget_(shelf_widget),
       view_model_(new views::ViewModel),
       tooltip_(this),
+      shelf_item_background_color_(kShelfDefaultBaseColor),
       weak_factory_(this) {
   DCHECK(model_);
   DCHECK(shelf_);
@@ -274,6 +292,10 @@ void ShelfView::Init() {
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
+
+  GetBackButton()->layer()->SetOpacity(IsTabletModeEnabled() ? 1.f : 0.f);
+  GetBackButton()->SetFocusBehavior(
+      IsTabletModeEnabled() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
 
   // We'll layout when our bounds change.
 }
@@ -367,10 +389,25 @@ AppListButton* ShelfView::GetAppListButton() const {
   return nullptr;
 }
 
+BackButton* ShelfView::GetBackButton() const {
+  for (int i = 0; i < model_->item_count(); ++i) {
+    if (model_->items()[i].type == TYPE_BACK_BUTTON) {
+      views::View* view = view_model_->view_at(i);
+      CHECK_EQ(BackButton::kViewClassName, view->GetClassName());
+      return static_cast<BackButton*>(view);
+    }
+  }
+
+  NOTREACHED() << "Back button not found";
+  return nullptr;
+}
+
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
   gfx::Rect tooltip_bounds;
   for (int i = 0; i < child_count(); ++i) {
     const views::View* child = child_at(i);
+    if (!IsTabletModeEnabled() && child == GetBackButton())
+      continue;
     if (child != overflow_button_ && ShouldShowTooltipForView(child))
       tooltip_bounds.Union(child->GetMirroredBounds());
   }
@@ -450,6 +487,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
       break;
 
     case TYPE_APP_PANEL:
+    case TYPE_BACK_BUTTON:
     case TYPE_DIALOG:
       break;
 
@@ -686,8 +724,8 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   if (index == -1 || view_model_->view_size() <= 1)
     return;  // View is being deleted, ignore request.
 
-  if (view == GetAppListButton())
-    return;  // View is not draggable, ignore request.
+  if (view == GetAppListButton() || view == GetBackButton())
+    return;  // Views are not draggable, ignore request.
 
   // Only when the repost event occurs on the same shelf item, we should ignore
   // the call in ShelfView::ButtonPressed(...).
@@ -747,18 +785,9 @@ void ShelfView::LayoutToIdealBounds() {
 }
 
 void ShelfView::UpdateShelfItemBackground(SkColor color) {
-  GetAppListButton()->UpdateShelfItemBackground(color);
+  shelf_item_background_color_ = color;
   overflow_button_->UpdateShelfItemBackground(color);
-}
-
-double ShelfView::GetAppListButtonAnimationCurrentValue() {
-  DCHECK(bounds_animator_);
-  const gfx::SlideAnimation* animation =
-      bounds_animator_->GetAnimationForView(GetAppListButton());
-  if (!animation)
-    return 0.0;
-
-  return animation->GetCurrentValue();
+  SchedulePaint();
 }
 
 void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
@@ -789,30 +818,24 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
   int w = shelf_->PrimaryAxisValue(kShelfButtonSize, width());
   int h = shelf_->PrimaryAxisValue(height(), kShelfButtonSize);
 
-  const bool is_tablet_mode = Shell::Get()->tablet_mode_controller()
-                                  ? Shell::Get()
-                                        ->tablet_mode_controller()
-                                        ->IsTabletModeWindowManagerEnabled()
-                                  : false;
-
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
 
-    int width = w;
-    int height = h;
-    // If this is the app list button and we are in tablet mode, make space for
-    // the back button (which is part of the app list button).
-    if (i == 0 && is_tablet_mode) {
-      width = shelf_->PrimaryAxisValue(2 * w, w);
-      height = shelf_->PrimaryAxisValue(h, 2 * h);
-    }
+    view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
+    // If not in tablet mode do not increase |x| or |y|. Instead just let the
+    // next item (app list button) cover the back button, which will have
+    // opacity 0 anyways.
+    if (i == 0 && !IsTabletModeEnabled())
+      continue;
 
-    view_model_->set_ideal_bounds(i, gfx::Rect(x, y, width, height));
-    x = shelf_->PrimaryAxisValue(x + width + kShelfButtonSpacing, x);
-    y = shelf_->PrimaryAxisValue(y, y + height + kShelfButtonSpacing);
+    // There is no spacing between the first two elements. Do not worry about y
+    // since the back button only appears in tablet mode, which forces the shelf
+    // to be bottom aligned.
+    x = shelf_->PrimaryAxisValue(x + w + (i == 0 ? 0 : kShelfButtonSpacing), x);
+    y = shelf_->PrimaryAxisValue(y, y + h + kShelfButtonSpacing);
   }
 
   if (is_overflow_mode()) {
@@ -954,9 +977,6 @@ void ShelfView::AnimateToIdealBounds() {
     // padding of the first gets properly transferred to the new first item.
     if (i && view->border())
       view->SetBorder(views::NullBorder());
-
-    if (view == GetAppListButton())
-      GetAppListButton()->OnBoundsAnimationStarted();
   }
   overflow_button_->SetBoundsRect(overflow_bounds);
 }
@@ -978,6 +998,11 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
 
     case TYPE_APP_LIST: {
       view = new AppListButton(this, this, shelf_);
+      break;
+    }
+
+    case TYPE_BACK_BUTTON: {
+      view = new BackButton();
       break;
     }
 
@@ -1077,9 +1102,10 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   target_index =
       std::min(indices.second, std::max(target_index, indices.first));
 
-  // The app list button is always first, and it is the only non-draggable item.
+  // The back button and app list button are always first, and they are the
+  // only non-draggable items.
   int first_draggable_item = model_->GetItemIndexForType(TYPE_APP_LIST) + 1;
-  DCHECK_EQ(1, first_draggable_item);
+  DCHECK_EQ(2, first_draggable_item);
   target_index = std::max(target_index, first_draggable_item);
   DCHECK_LT(target_index, model_->item_count());
 
@@ -1303,7 +1329,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
 ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
   DCHECK(index >= 0 && index < model_->item_count());
   ShelfItemType type = model_->items()[index].type;
-  if (type == TYPE_APP_LIST || type == TYPE_DIALOG)
+  if (type == TYPE_APP_LIST || type == TYPE_DIALOG || type == TYPE_BACK_BUTTON)
     return NOT_REMOVABLE;
 
   if (model_->items()[index].pinned_by_policy)
@@ -1323,6 +1349,7 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
     case TYPE_APP_PANEL:
     case TYPE_APP_LIST:
     case TYPE_APP:
+    case TYPE_BACK_BUTTON:
     case TYPE_DIALOG:
       return typeb == typea;
     case TYPE_UNDEFINED:
@@ -1520,6 +1547,38 @@ void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
   if (IsShowingOverflowBubble())
     overflow_bubble_->Hide();
+}
+
+void ShelfView::OnPaint(gfx::Canvas* canvas) {
+  if (overflow_mode_)
+    return;
+
+  cc::PaintFlags flags;
+  flags.setColor(shelf_item_background_color_);
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+
+  // Draws a round rect around the back button and app list button. This will
+  // just be a circle if the back button is hidden.
+  const gfx::PointF circle_center(
+      GetAppListButton()->bounds().origin() +
+      gfx::Vector2d(GetAppListButton()->GetCenterPoint().x(),
+                    GetAppListButton()->GetCenterPoint().y()));
+  if (GetBackButton()->layer()->opacity() <= 0.f) {
+    canvas->DrawCircle(circle_center, kAppListButtonRadius, flags);
+    return;
+  }
+
+  const gfx::PointF back_center(
+      GetBackButton()->bounds().x() + kShelfButtonSize / 2,
+      GetBackButton()->bounds().y() + kShelfButtonSize / 2);
+  const gfx::RectF background_bounds(
+      back_center.x() - kAppListButtonRadius,
+      back_center.y() - kAppListButtonRadius,
+      std::abs(circle_center.x() - back_center.x()) + 2 * kAppListButtonRadius,
+      2 * kAppListButtonRadius);
+
+  canvas->DrawRoundRect(background_bounds, kAppListButtonRadius, flags);
 }
 
 views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
@@ -1803,6 +1862,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
   // Only selected shelf items with context menu opened can be dragged.
   const ShelfItem* item = ShelfItemForView(source);
   if (context_menu && item && item->type != TYPE_APP_LIST &&
+      item->type != TYPE_BACK_BUTTON &&
       source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
   }
@@ -1872,6 +1932,17 @@ void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
 void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
   shelf_->NotifyShelfIconPositionsChanged();
   PreferredSizeChanged();
+
+  float opacity = 0.f;
+  const gfx::SlideAnimation* animation =
+      bounds_animator_->GetAnimationForView(GetBackButton());
+  if (animation)
+    opacity = static_cast<float>(animation->GetCurrentValue());
+  if (!IsTabletModeEnabled())
+    opacity = 1.f - opacity;
+
+  GetBackButton()->layer()->SetOpacity(opacity);
+  GetBackButton()->SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
@@ -1896,8 +1967,9 @@ void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
     }
   }
 
-  if (GetAppListButton())
-    GetAppListButton()->OnBoundsAnimationFinished();
+  GetBackButton()->layer()->SetOpacity(IsTabletModeEnabled() ? 1.f : 0.f);
+  GetBackButton()->SetFocusBehavior(
+      IsTabletModeEnabled() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
 }
 
 bool ShelfView::IsRepostEvent(const ui::Event& event) {

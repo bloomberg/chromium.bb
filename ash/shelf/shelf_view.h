@@ -39,6 +39,7 @@ class MenuRunner;
 
 namespace ash {
 class AppListButton;
+class BackButton;
 class DragImageView;
 class OverflowBubble;
 class OverflowButton;
@@ -98,6 +99,7 @@ class ASH_EXPORT ShelfView : public views::View,
   }
 
   AppListButton* GetAppListButton() const;
+  BackButton* GetBackButton() const;
 
   // Returns true if the mouse cursor exits the area for launcher tooltip.
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
@@ -182,11 +184,6 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfView* main_shelf() { return main_shelf_; }
 
   const ShelfButton* drag_view() const { return drag_view_; }
-
-  // Returns the AppListButton's current animation value, or 0.0 if the
-  // animation is not running. Used to synchronize AppListButton and ShelfView's
-  // icons' animations.
-  double GetAppListButtonAnimationCurrentValue();
 
  private:
   friend class ShelfViewTestAPI;
@@ -300,6 +297,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnPaint(gfx::Canvas* canvas) override;
   FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ViewHierarchyChanged(
@@ -498,6 +496,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Tracks UMA metrics based on shelf button press actions.
   ShelfButtonPressedMetricTracker shelf_button_pressed_metric_tracker_;
+
+  // Color used to paint the background behind the app list button and back
+  // button.
+  SkColor shelf_item_background_color_;
 
   base::WeakPtrFactory<ShelfView> weak_factory_;
 

@@ -136,6 +136,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE" desc="The title used for the Ash Launcher in the Shelf to indicate loading/syncinc apps.">
         Launcher (syncing apps...)
       </message>
+      <message name="IDS_ASH_SHELF_BACK_BUTTON_TITLE" desc="The title used for the back button on the Shelf, which is avaliable in tablet mode.">
+        Back
+      </message>
       <message name="IDS_ASH_SHELF_OVERFLOW_NAME" desc="The title used for the Ash overflow button in the shelf">
         Overflow button
       </message>

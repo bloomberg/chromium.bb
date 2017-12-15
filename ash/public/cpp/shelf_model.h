@@ -23,6 +23,10 @@ class ShelfModelObserver;
 // Generated as crx_file::id_util::GenerateId("org.chromium.applist")
 ASH_PUBLIC_EXPORT extern const char kAppListId[];
 
+// An id for the BackButton item, which is added in the ShelfModel constructor.
+// Generated as crx_file::id_util::GenerateId("org.chromium.backbutton")
+ASH_PUBLIC_EXPORT extern const char kBackButtonId[];
+
 // Model used for shelf items. Owns ShelfItemDelegates but does not create them.
 class ASH_PUBLIC_EXPORT ShelfModel {
  public:
