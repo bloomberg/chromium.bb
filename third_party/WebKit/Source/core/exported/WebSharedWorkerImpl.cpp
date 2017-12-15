@@ -161,12 +161,6 @@ void WebSharedWorkerImpl::ResumeStartup() {
   }
 }
 
-WebDevToolsAgentClient::WebKitClientMessageLoop*
-WebSharedWorkerImpl::CreateClientMessageLoop() {
-  DCHECK(IsMainThread());
-  return client_->CreateDevToolsMessageLoop();
-}
-
 const WebString& WebSharedWorkerImpl::GetInstrumentationToken() {
   return instrumentation_token_;
 }

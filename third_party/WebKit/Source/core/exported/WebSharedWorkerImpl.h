@@ -79,8 +79,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
                            const WebString&,
                            const WebString&) override;
   void ResumeStartup() override;
-  WebDevToolsAgentClient::WebKitClientMessageLoop* CreateClientMessageLoop()
-      override;
   const WebString& GetInstrumentationToken() override;
 
   // WebSharedWorker methods:

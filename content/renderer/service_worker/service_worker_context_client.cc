@@ -31,7 +31,6 @@
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
-#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -920,11 +919,6 @@ void ServiceWorkerContextClient::SendDevToolsMessage(
     return;
   embedded_worker_client_->devtools_agent()->SendMessage(
       sender_.get(), session_id, call_id, message.Utf8(), state_cookie.Utf8());
-}
-
-blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-ServiceWorkerContextClient::CreateDevToolsMessageLoop() {
-  return DevToolsAgent::createMessageLoopWrapper();
 }
 
 void ServiceWorkerContextClient::DidHandleActivateEvent(

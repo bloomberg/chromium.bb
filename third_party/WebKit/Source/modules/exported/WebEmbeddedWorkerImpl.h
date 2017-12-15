@@ -100,8 +100,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
                            const WebString&,
                            const WebString&) override;
   void ResumeStartup() override;
-  WebDevToolsAgentClient::WebKitClientMessageLoop* CreateClientMessageLoop()
-      override;
   const WebString& GetInstrumentationToken() override;
 
   void OnScriptLoaderFinished();

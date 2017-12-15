@@ -158,12 +158,6 @@ class WebServiceWorkerContextClient {
                                    const WebString& message,
                                    const WebString& state) {}
 
-  // Message loop for debugging.
-  virtual WebDevToolsAgentClient::WebKitClientMessageLoop*
-  CreateDevToolsMessageLoop() {
-    return nullptr;
-  }
-
   // Called after an 'activate' event completed.
   virtual void DidHandleActivateEvent(int event_id,
                                       mojom::ServiceWorkerEventStatus,

@@ -17,7 +17,6 @@
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/renderer/appcache/appcache_dispatcher.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
-#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
@@ -253,11 +252,6 @@ void EmbeddedSharedWorkerStub::SendDevToolsMessage(
     const blink::WebString& state) {
   worker_devtools_agent_->SendDevToolsMessage(
       session_id, call_id, message, state);
-}
-
-blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-EmbeddedSharedWorkerStub::CreateDevToolsMessageLoop() {
-  return DevToolsAgent::createMessageLoopWrapper();
 }
 
 std::unique_ptr<blink::WebWorkerFetchContext>

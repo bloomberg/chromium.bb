@@ -77,10 +77,6 @@ class WebSharedWorkerClient {
                                    int call_id,
                                    const WebString& message,
                                    const WebString& state) {}
-  virtual WebDevToolsAgentClient::WebKitClientMessageLoop*
-  CreateDevToolsMessageLoop() {
-    return nullptr;
-  }
 
   // Returns a new WebWorkerFetchContext for the shared worker. Ownership of the
   // returned object is transferred to the caller. This is used only when
