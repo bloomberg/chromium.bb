@@ -17,6 +17,9 @@ namespace aura {
 
 class TestDispaterchWindowManagerClient : public aura::WindowManagerClient {
  public:
+  TestDispaterchWindowManagerClient() {}
+  ~TestDispaterchWindowManagerClient() override {}
+
   const std::vector<std::unique_ptr<ui::Event>>& events() const {
     return events_;
   }
@@ -72,10 +75,15 @@ class TestDispaterchWindowManagerClient : public aura::WindowManagerClient {
 
  private:
   std::vector<std::unique_ptr<ui::Event>> events_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDispaterchWindowManagerClient);
 };
 
 class SystemInputInjectorMusTest : public test::AuraTestBase {
  protected:
+  SystemInputInjectorMusTest() {}
+  ~SystemInputInjectorMusTest() override {}
+
   const std::vector<std::unique_ptr<ui::Event>>& events() const {
     return window_manager_client_.events();
   }
@@ -96,6 +104,8 @@ class SystemInputInjectorMusTest : public test::AuraTestBase {
  private:
   TestDispaterchWindowManagerClient window_manager_client_;
   std::unique_ptr<SystemInputInjectorMus> input_injector_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemInputInjectorMusTest);
 };
 
 TEST_F(SystemInputInjectorMusTest, MouseMove) {
