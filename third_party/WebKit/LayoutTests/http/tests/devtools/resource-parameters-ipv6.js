@@ -26,7 +26,7 @@
   function onRequestFinished(event) {
     var request = event.data;
     TestRunner.addResult(request.url());
-    TestRunner.addObject(new NetworkLog.HAREntry(request).build(), NetworkTestRunner.HARPropertyFormatters);
+    TestRunner.addObject(new NetworkLog.HAREntry(request).build(), NetworkTestRunner.HARPropertyFormattersWithSize);
     TestRunner.completeTest();
   }
 })();
