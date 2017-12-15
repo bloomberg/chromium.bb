@@ -41,6 +41,9 @@ class ServiceWorkerVersion;
 // but with mojom::URLLoader instead of URLRequest.
 // This also works as a URLLoaderClient for BlobURLLoader while reading
 // the blob content returned by SW.
+// This class is owned by the job wrapper until it is bound to a URLLoader
+// request. After it is bound |this| is kept alive until the Mojo connection
+// to this URLLoader is dropped.
 class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
                                                  public mojom::URLLoaderClient {
  public:
@@ -92,6 +95,13 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
   size_t GetURLChainSize() const;
   void Cancel();
   bool WasCanceled() const;
+
+  // The navigation request that was holding this job is
+  // going away. Calling this internally calls |DeleteIfNeeded()|
+  // and may delete |this| if it is not bound to a endpoint.
+  // Otherwise |this| will be kept around as far as the loader
+  // endpoint is held by the client.
+  void DetachedFromRequest();
 
  private:
   class StreamWaiter;
@@ -157,6 +167,8 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
+  void DeleteIfNeeded();
+
   ResponseType response_type_ = ResponseType::NOT_DETERMINED;
   LoaderCallback loader_callback_;
 
@@ -186,6 +198,8 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
     kCancelled
   };
   Status status_ = Status::kNotStarted;
+
+  bool detached_from_request_ = false;
 
   base::WeakPtrFactory<ServiceWorkerURLLoaderJob> weak_factory_;
 

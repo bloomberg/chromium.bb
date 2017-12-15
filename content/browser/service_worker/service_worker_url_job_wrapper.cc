@@ -19,7 +19,15 @@ ServiceWorkerURLJobWrapper::ServiceWorkerURLJobWrapper(
     std::unique_ptr<ServiceWorkerURLLoaderJob> url_loader_job)
     : url_loader_job_(std::move(url_loader_job)) {}
 
-ServiceWorkerURLJobWrapper::~ServiceWorkerURLJobWrapper() {}
+ServiceWorkerURLJobWrapper::~ServiceWorkerURLJobWrapper() {
+  if (url_loader_job_) {
+    // Detach the URLLoader from this wrapper (and therefore
+    // from the request handler). This may delete the
+    // |url_loader_job_| or may make it self-owned if it is
+    // bound to a Mojo endpoint.
+    url_loader_job_.release()->DetachedFromRequest();
+  }
+}
 
 void ServiceWorkerURLJobWrapper::FallbackToNetwork() {
   if (url_loader_job_) {
