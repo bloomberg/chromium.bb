@@ -63,7 +63,8 @@ void TestMediaTransferProtocolManagerChromeOS::ReadDirectory(
     const uint32_t file_id,
     const size_t max_size,
     const ReadDirectoryCallback& callback) {
-  callback.Run(std::vector<MtpFileEntry>(), false /* no more entries*/,
+  callback.Run(std::vector<device::mojom::MtpFileEntry>(),
+               false /* no more entries*/,
                true /* error */);
 }
 
@@ -80,7 +81,7 @@ void TestMediaTransferProtocolManagerChromeOS::GetFileInfo(
     const std::string& storage_handle,
     uint32_t file_id,
     const GetFileInfoCallback& callback) {
-  callback.Run(MtpFileEntry(), true);
+  callback.Run(device::mojom::MtpFileEntry(), true);
 }
 
 void TestMediaTransferProtocolManagerChromeOS::RenameObject(
