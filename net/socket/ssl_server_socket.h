@@ -30,6 +30,7 @@ class RSAPrivateKey;
 namespace net {
 
 struct SSLServerConfig;
+class SSLPrivateKey;
 class X509Certificate;
 
 // A server socket that uses SSL as the transport layer.
@@ -68,6 +69,11 @@ class SSLServerContext {
 NET_EXPORT std::unique_ptr<SSLServerContext> CreateSSLServerContext(
     X509Certificate* certificate,
     const crypto::RSAPrivateKey& key,
+    const SSLServerConfig& ssl_config);
+
+NET_EXPORT std::unique_ptr<SSLServerContext> CreateSSLServerContext(
+    X509Certificate* certificate,
+    scoped_refptr<SSLPrivateKey> key,
     const SSLServerConfig& ssl_config);
 
 }  // namespace net
