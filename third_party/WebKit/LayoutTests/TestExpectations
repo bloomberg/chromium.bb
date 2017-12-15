@@ -2904,7 +2904,9 @@ crbug.com/786249 http/tests/inspector-protocol/network/response-interception-req
 
 # ====== Begin of display: contents tests ======
 
+crbug.com/795217 external/wpt/css/css-display/display-contents-details.html [ Failure ]
 crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]
+crbug.com/795219 external/wpt/css/css-display/display-contents-fieldset.html [ Failure ]
 
 # ====== End of display: contents tests ======
 
