@@ -173,8 +173,7 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
 
   auto* document_loader = page_holder->GetFrame().Loader().GetDocumentLoader();
   ASSERT_TRUE(document_loader);
-  document_loader->GetTiming().SetNavigationStart(
-      MonotonicallyIncreasingTime());
+  document_loader->GetTiming().SetNavigationStart(CurrentTimeTicksInSeconds());
 
   EXPECT_EQ(&page_holder->GetFrame(), perf->GetFrame());
   EXPECT_EQ(&page_holder->GetFrame(), timing->GetFrame());

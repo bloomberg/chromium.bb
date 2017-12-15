@@ -192,7 +192,7 @@ void SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range,
   DEFINE_STATIC_LOCAL(CustomCountHistogram,
                       spell_checker_request_interval_histogram,
                       ("WebCore.SpellChecker.RequestInterval", 0, 10000, 50));
-  const double current_request_time = MonotonicallyIncreasingTime();
+  const double current_request_time = CurrentTimeTicksInSeconds();
   if (request_num == 0 && last_request_time_ > 0) {
     const double interval_ms =
         (current_request_time - last_request_time_) * 1000.0;

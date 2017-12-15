@@ -1129,7 +1129,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   double start_time = 0;
   Optional<CustomCountHistogram> timer;
   if (!IsPaint2D()) {
-    start_time = WTF::MonotonicallyIncreasingTime();
+    start_time = WTF::CurrentTimeTicksInSeconds();
     if (GetImageBuffer() && GetImageBuffer()->IsAccelerated()) {
       if (image_source->IsVideoElement()) {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -1296,7 +1296,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   if (!IsPaint2D()) {
     DCHECK(start_time);
-    timer->Count((WTF::MonotonicallyIncreasingTime() - start_time) *
+    timer->Count((WTF::CurrentTimeTicksInSeconds() - start_time) *
                  WTF::Time::kMicrosecondsPerSecond);
   }
 }

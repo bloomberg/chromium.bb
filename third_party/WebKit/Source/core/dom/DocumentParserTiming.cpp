@@ -26,14 +26,14 @@ void DocumentParserTiming::MarkParserStart() {
   if (parser_detached_ || parser_start_ > 0.0)
     return;
   DCHECK_EQ(parser_stop_, 0.0);
-  parser_start_ = MonotonicallyIncreasingTime();
+  parser_start_ = CurrentTimeTicksInSeconds();
   NotifyDocumentParserTimingChanged();
 }
 
 void DocumentParserTiming::MarkParserStop() {
   if (parser_detached_ || parser_start_ == 0.0 || parser_stop_ > 0.0)
     return;
-  parser_stop_ = MonotonicallyIncreasingTime();
+  parser_stop_ = CurrentTimeTicksInSeconds();
   NotifyDocumentParserTimingChanged();
 }
 

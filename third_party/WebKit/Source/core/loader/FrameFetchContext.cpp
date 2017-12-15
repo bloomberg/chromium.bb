@@ -623,7 +623,7 @@ void FrameFetchContext::DispatchDidFail(unsigned long identifier,
         InteractiveDetector::From(*document_));
     if (interactive_detector) {
       // We have not yet recorded load_finish_time. Pass nullopt here; we will
-      // call MonotonicallyIncreasingTime lazily when we need it.
+      // call CurrentTimeTicksInSeconds lazily when we need it.
       interactive_detector->OnResourceLoadEnd(WTF::nullopt);
     }
   }

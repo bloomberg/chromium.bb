@@ -1812,7 +1812,7 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
                               (!Opener() || !request.Url().IsEmpty());
   loader->SetReplacesCurrentHistoryItem(replace_current_item);
 
-  probe::lifecycleEvent(frame_, loader, "init", MonotonicallyIncreasingTime());
+  probe::lifecycleEvent(frame_, loader, "init", CurrentTimeTicksInSeconds());
   return loader;
 }
 

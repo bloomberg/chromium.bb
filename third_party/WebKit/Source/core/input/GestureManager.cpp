@@ -413,7 +413,7 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
 }
 
 WebInputEventResult GestureManager::HandleGestureShowPress() {
-  last_show_press_timestamp_ = TimeTicks::Now();
+  last_show_press_timestamp_ = CurrentTimeTicks();
 
   LocalFrameView* view = frame_->View();
   if (!view)

@@ -88,7 +88,7 @@ void SpeechSynthesis::StartSpeakingImmediately() {
   SpeechSynthesisUtterance* utterance = CurrentSpeechUtterance();
   DCHECK(utterance);
 
-  utterance->SetStartTime(MonotonicallyIncreasingTime());
+  utterance->SetStartTime(CurrentTimeTicksInSeconds());
   is_paused_ = false;
   platform_speech_synthesizer_->Speak(utterance->PlatformUtterance());
 }
@@ -130,7 +130,7 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
     return;
 
   double elapsed_time_millis =
-      (MonotonicallyIncreasingTime() - utterance->StartTime()) * 1000.0;
+      (CurrentTimeTicksInSeconds() - utterance->StartTime()) * 1000.0;
   utterance->DispatchEvent(SpeechSynthesisEvent::Create(
       type, utterance, char_index, elapsed_time_millis, name));
 }

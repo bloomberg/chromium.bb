@@ -18,7 +18,7 @@ TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double delta = -1000;
-  double embedder_navigation_start = MonotonicallyIncreasingTime() + delta;
+  double embedder_navigation_start = CurrentTimeTicksInSeconds() + delta;
   timing.SetNavigationStart(embedder_navigation_start);
 
   double real_wall_time = CurrentTime();
@@ -33,7 +33,7 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double navigation_start_delta = -456;
-  double current_monotonic_time = MonotonicallyIncreasingTime();
+  double current_monotonic_time = CurrentTimeTicksInSeconds();
   double embedder_navigation_start =
       current_monotonic_time + navigation_start_delta;
 

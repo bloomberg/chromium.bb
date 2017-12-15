@@ -148,7 +148,7 @@ std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::Profile(
       SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
   bitmap.eraseARGB(0, 0, 0, 0);
 
-  double now = WTF::MonotonicallyIncreasingTime();
+  double now = WTF::CurrentTimeTicksInSeconds();
   double stop_time = now + min_duration;
   for (unsigned step = 0; step < min_repeat_count || now < stop_time; ++step) {
     timings->push_back(Vector<double>());
@@ -164,7 +164,7 @@ std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::Profile(
     }
     canvas.SetTimings(current_timings);
     picture_->playback(&canvas);
-    now = WTF::MonotonicallyIncreasingTime();
+    now = WTF::CurrentTimeTicksInSeconds();
   }
   return timings;
 }

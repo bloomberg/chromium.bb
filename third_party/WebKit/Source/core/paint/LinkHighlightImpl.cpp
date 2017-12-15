@@ -78,7 +78,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
       is_scrolling_graphics_layer_(false),
       geometry_needs_update_(false),
       is_animating_(false),
-      start_time_(MonotonicallyIncreasingTime()),
+      start_time_(CurrentTimeTicksInSeconds()),
       unique_id_(NewUniqueObjectId()) {
   DCHECK(node_);
   DCHECK(owning_web_view);
@@ -315,7 +315,7 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   // to fade out.
   float extra_duration_required = std::max(
       0.f, kMinPreFadeDuration -
-               static_cast<float>(MonotonicallyIncreasingTime() - start_time_));
+               static_cast<float>(CurrentTimeTicksInSeconds() - start_time_));
   if (extra_duration_required) {
     curve->AddKeyframe(CompositorFloatKeyframe(extra_duration_required,
                                                kStartOpacity, timing_function));

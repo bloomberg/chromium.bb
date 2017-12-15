@@ -70,7 +70,7 @@ DOMHighResTimeStamp GetUnixAtZeroMonotonic() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       DOMHighResTimeStamp, unix_at_zero_monotonic,
       {ConvertSecondsToDOMHighResTimeStamp(CurrentTime() -
-                                           MonotonicallyIncreasingTime())});
+                                           CurrentTimeTicksInSeconds())});
   return unix_at_zero_monotonic;
 }
 
@@ -608,7 +608,7 @@ DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
 }
 
 DOMHighResTimeStamp PerformanceBase::now() const {
-  return MonotonicTimeToDOMHighResTimeStamp(MonotonicallyIncreasingTime());
+  return MonotonicTimeToDOMHighResTimeStamp(CurrentTimeTicksInSeconds());
 }
 
 ScriptValue PerformanceBase::toJSONForBinding(ScriptState* script_state) const {

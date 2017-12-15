@@ -447,7 +447,7 @@ void DocumentLoader::FinishedLoading(double finish_time) {
   if (!response_end_time)
     response_end_time = time_of_last_data_received_;
   if (!response_end_time)
-    response_end_time = MonotonicallyIncreasingTime();
+    response_end_time = CurrentTimeTicksInSeconds();
   GetTiming().SetResponseEnd(response_end_time);
   if (!MaybeCreateArchive()) {
     // If this is an empty document, it will not have actually been created yet.
@@ -561,7 +561,7 @@ void DocumentLoader::CancelLoadAfterCSPDenied(
   redirect_chain_.pop_back();
   AppendRedirect(blocked_url);
   response_ = ResourceResponse(blocked_url, "text/html");
-  FinishedLoading(MonotonicallyIncreasingTime());
+  FinishedLoading(CurrentTimeTicksInSeconds());
 
   return;
 }
@@ -749,7 +749,7 @@ void DocumentLoader::DataReceived(Resource* resource,
 
 void DocumentLoader::ProcessData(const char* data, size_t length) {
   application_cache_host_->MainResourceDataReceived(data, length);
-  time_of_last_data_received_ = MonotonicallyIncreasingTime();
+  time_of_last_data_received_ = CurrentTimeTicksInSeconds();
 
   if (IsArchiveMIMEType(GetResponse().MimeType()))
     return;
@@ -834,7 +834,7 @@ bool DocumentLoader::MaybeLoadEmpty() {
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     request_.SetURL(BlankURL());
   response_ = ResourceResponse(request_.Url(), "text/html");
-  FinishedLoading(MonotonicallyIncreasingTime());
+  FinishedLoading(CurrentTimeTicksInSeconds());
   return true;
 }
 

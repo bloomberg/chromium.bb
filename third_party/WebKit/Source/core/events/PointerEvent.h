@@ -21,7 +21,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   }
   static PointerEvent* Create(const AtomicString& type,
                               const PointerEventInit& initializer) {
-    return PointerEvent::Create(type, initializer, TimeTicks::Now());
+    return PointerEvent::Create(type, initializer, CurrentTimeTicks());
   }
 
   int pointerId() const { return pointer_id_; }

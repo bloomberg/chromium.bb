@@ -58,7 +58,7 @@ class HeapSizeCache {
 
  public:
   HeapSizeCache()
-      : last_update_time_(MonotonicallyIncreasingTime() -
+      : last_update_time_(CurrentTimeTicksInSeconds() -
                           kTwentyMinutesInSeconds) {}
 
   void GetCachedHeapSize(HeapInfo& info) {
@@ -77,7 +77,7 @@ class HeapSizeCache {
     // We rate-limit queries to once every twenty minutes to make it more
     // difficult for attackers to compare memory usage before and after some
     // event.
-    double now = MonotonicallyIncreasingTime();
+    double now = CurrentTimeTicksInSeconds();
     if (now - last_update_time_ >= kTwentyMinutesInSeconds) {
       Update();
       last_update_time_ = now;

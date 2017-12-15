@@ -803,14 +803,14 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   if (parser_blocking_load_start_time > 0.0) {
     DocumentParserTiming::From(element_->GetDocument())
         .RecordParserBlockedOnScriptLoadDuration(
-            MonotonicallyIncreasingTime() - parser_blocking_load_start_time,
+            CurrentTimeTicksInSeconds() - parser_blocking_load_start_time,
             WasCreatedDuringDocumentWrite());
   }
 
   if (was_canceled)
     return;
 
-  double script_exec_start_time = MonotonicallyIncreasingTime();
+  double script_exec_start_time = CurrentTimeTicksInSeconds();
 
   {
     CHECK_EQ(script->GetScriptType(), GetScriptType());
@@ -873,7 +873,7 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   if (async_exec_type_ == ScriptRunner::kNone) {
     DocumentParserTiming::From(element_->GetDocument())
         .RecordParserBlockedOnScriptExecutionDuration(
-            MonotonicallyIncreasingTime() - script_exec_start_time,
+            CurrentTimeTicksInSeconds() - script_exec_start_time,
             WasCreatedDuringDocumentWrite());
   }
 

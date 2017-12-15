@@ -147,7 +147,7 @@ bool History::ShouldThrottleStateObjectChanges() {
   if (state_flood_guard.count > kStateUpdateLimit) {
     static constexpr auto kStateUpdateLimitResetInterval =
         TimeDelta::FromSeconds(10);
-    const auto now = TimeTicks::Now();
+    const auto now = CurrentTimeTicks();
     if (now - state_flood_guard.last_updated > kStateUpdateLimitResetInterval) {
       state_flood_guard.count = 0;
       state_flood_guard.last_updated = now;

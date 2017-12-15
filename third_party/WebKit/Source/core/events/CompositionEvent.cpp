@@ -39,7 +39,7 @@ CompositionEvent::CompositionEvent(const AtomicString& type,
               true,
               true,
               ComposedMode::kComposed,
-              TimeTicks::Now(),
+              CurrentTimeTicks(),
               view,
               0,
               view ? view->GetInputDeviceCapabilities()->FiresTouchEvents(false)

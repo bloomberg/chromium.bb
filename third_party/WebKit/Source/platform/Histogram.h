@@ -65,21 +65,14 @@ class PLATFORM_EXPORT LinearHistogram : public CustomCountHistogram {
 
 class PLATFORM_EXPORT ScopedUsHistogramTimer {
  public:
-  explicit ScopedUsHistogramTimer(CustomCountHistogram& counter,
-                                  base::TickClock* clock = nullptr)
-      : clock_for_testing_(clock), start_time_(Now()), counter_(counter) {}
+  explicit ScopedUsHistogramTimer(CustomCountHistogram& counter)
+      : start_time_(CurrentTimeTicks()), counter_(counter) {}
 
   ~ScopedUsHistogramTimer() {
-    counter_.Count((Now() - start_time_).InMicroseconds());
+    counter_.Count((CurrentTimeTicks() - start_time_).InMicroseconds());
   }
 
  private:
-  TimeTicks Now() const {
-    return clock_for_testing_ ? TimeTicks(clock_for_testing_->NowTicks())
-                              : TimeTicks::Now();
-  }
-
-  base::TickClock* clock_for_testing_;
   TimeTicks start_time_;
   CustomCountHistogram& counter_;
 };

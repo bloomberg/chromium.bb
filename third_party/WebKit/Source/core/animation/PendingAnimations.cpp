@@ -134,7 +134,7 @@ bool PendingAnimations::Update(
   }
 
   // If not, go ahead and start any animations that were waiting.
-  NotifyCompositorAnimationStarted(MonotonicallyIncreasingTime());
+  NotifyCompositorAnimationStarted(CurrentTimeTicksInSeconds());
 
   DCHECK_EQ(pending_.size(), deferred.size());
   return false;

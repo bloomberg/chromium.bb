@@ -263,7 +263,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
         const EventInit&,
         TimeTicks platform_time_stamp);
   Event(const AtomicString& type, const EventInit& init)
-      : Event(type, init, TimeTicks::Now()) {}
+      : Event(type, init, CurrentTimeTicks()) {}
 
   virtual void ReceivedTarget();
 

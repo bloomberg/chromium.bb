@@ -341,7 +341,7 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
                     last_known_mouse_position_.Y()),
       WebFloatPoint(last_known_mouse_global_position_.X(),
                     last_known_mouse_global_position_.Y()),
-      button, 0, modifiers, TimeTicks::Now().InSeconds());
+      button, 0, modifiers, CurrentTimeTicks().InSeconds());
   // TODO(dtapuska): Update m_lastKnowMousePosition to be viewport coordinates.
   fake_mouse_move_event.SetFrameScale(1);
   Vector<WebMouseEvent> coalesced_events;
@@ -728,7 +728,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
         WebPointerProperties::Button::kLeft, 1,
         modifiers | WebInputEvent::Modifiers::kLeftButtonDown |
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
-        TimeTicks::Now().InSeconds());
+        CurrentTimeTicks().InSeconds());
     mouse_down_ = mouse_down_event;
 
     WebMouseEvent mouse_drag_event(
@@ -736,7 +736,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
         WebPointerProperties::Button::kLeft, 1,
         modifiers | WebInputEvent::Modifiers::kLeftButtonDown |
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
-        TimeTicks::Now().InSeconds());
+        CurrentTimeTicks().InSeconds());
     HitTestRequest request(HitTestRequest::kReadOnly);
     MouseEventWithHitTestResults mev =
         EventHandlingUtil::PerformMouseEventHitTest(frame_, request,

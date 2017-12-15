@@ -266,10 +266,10 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());
   ScriptForbiddenScope script_forbidden;
 
-  double start_time = WTF::MonotonicallyIncreasingTimeMS();
+  double start_time = WTF::CurrentTimeTicksInMilliseconds();
   Address result = LazySweepPages(allocation_size, gc_info_index);
   GetThreadState()->AccumulateSweepingTime(
-      WTF::MonotonicallyIncreasingTimeMS() - start_time);
+      WTF::CurrentTimeTicksInMilliseconds() - start_time);
   ThreadHeap::ReportMemoryUsageForTracing();
 
   return result;
@@ -313,7 +313,7 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
   while (!SweepingCompleted()) {
     SweepUnsweptPage();
     if (page_count % kDeadlineCheckInterval == 0) {
-      if (deadline_seconds <= MonotonicallyIncreasingTime()) {
+      if (deadline_seconds <= CurrentTimeTicksInSeconds()) {
         // Deadline has come.
         ThreadHeap::ReportMemoryUsageForTracing();
         if (normal_arena)

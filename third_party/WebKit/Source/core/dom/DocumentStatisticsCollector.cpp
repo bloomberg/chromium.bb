@@ -209,7 +209,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::CollectStatistics(
 
   features.is_mobile_friendly = IsMobileFriendly(document);
 
-  double start_time = MonotonicallyIncreasingTime();
+  double start_time = CurrentTimeTicksInSeconds();
 
   // This should be cheap since collectStatistics is only called right after
   // layout.
@@ -219,7 +219,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::CollectStatistics(
   CollectFeatures(*body, features);
   features.open_graph = HasOpenGraphArticle(*head);
 
-  double elapsed_time = MonotonicallyIncreasingTime() - start_time;
+  double elapsed_time = CurrentTimeTicksInSeconds() - start_time;
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, distillability_histogram,
                       ("WebCore.DistillabilityUs", 1, 1000000, 50));

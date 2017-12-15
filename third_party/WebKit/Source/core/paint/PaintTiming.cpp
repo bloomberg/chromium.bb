@@ -58,7 +58,7 @@ void PaintTiming::MarkFirstPaint() {
   // markFirstPaint().
   if (first_paint_ != 0.0)
     return;
-  SetFirstPaint(MonotonicallyIncreasingTime());
+  SetFirstPaint(CurrentTimeTicksInSeconds());
 }
 
 void PaintTiming::MarkFirstContentfulPaint() {
@@ -68,13 +68,13 @@ void PaintTiming::MarkFirstContentfulPaint() {
   // markFirstContentfulPaint().
   if (first_contentful_paint_ != 0.0)
     return;
-  SetFirstContentfulPaint(MonotonicallyIncreasingTime());
+  SetFirstContentfulPaint(CurrentTimeTicksInSeconds());
 }
 
 void PaintTiming::MarkFirstTextPaint() {
   if (first_text_paint_ != 0.0)
     return;
-  first_text_paint_ = MonotonicallyIncreasingTime();
+  first_text_paint_ = CurrentTimeTicksInSeconds();
   SetFirstContentfulPaint(first_text_paint_);
   RegisterNotifySwapTime(PaintEvent::kFirstTextPaint);
 }
@@ -82,7 +82,7 @@ void PaintTiming::MarkFirstTextPaint() {
 void PaintTiming::MarkFirstImagePaint() {
   if (first_image_paint_ != 0.0)
     return;
-  first_image_paint_ = MonotonicallyIncreasingTime();
+  first_image_paint_ = CurrentTimeTicksInSeconds();
   SetFirstContentfulPaint(first_image_paint_);
   RegisterNotifySwapTime(PaintEvent::kFirstImagePaint);
 }

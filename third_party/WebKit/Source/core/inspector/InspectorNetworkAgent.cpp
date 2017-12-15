@@ -599,7 +599,7 @@ void InspectorNetworkAgent::DidBlockRequest(
   String request_id = IdentifiersFactory::RequestId(identifier);
   String protocol_reason = BuildBlockedReason(reason);
   GetFrontend()->loadingFailed(
-      request_id, MonotonicallyIncreasingTime(),
+      request_id, CurrentTimeTicksInSeconds(),
       InspectorPageAgent::ResourceTypeJson(
           resources_data_->GetResourceType(request_id)),
       String(), false, protocol_reason);
@@ -611,7 +611,7 @@ void InspectorNetworkAgent::DidChangeResourcePriority(
   String request_id = IdentifiersFactory::RequestId(identifier);
   GetFrontend()->resourceChangedPriority(request_id,
                                          ResourcePriorityJSON(load_priority),
-                                         MonotonicallyIncreasingTime());
+                                         CurrentTimeTicksInSeconds());
 }
 
 void InspectorNetworkAgent::WillSendRequestInternal(
@@ -671,7 +671,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
     maybe_frame_id = frame_id;
   GetFrontend()->requestWillBeSent(
       request_id, loader_id, documentURL, std::move(request_info),
-      MonotonicallyIncreasingTime(), CurrentTime(), std::move(initiator_object),
+      CurrentTimeTicksInSeconds(), CurrentTime(), std::move(initiator_object),
       BuildObjectForResourceResponse(redirect_response), resource_type,
       std::move(maybe_frame_id));
   if (pending_xhr_replay_data_ && !pending_xhr_replay_data_->Async())
@@ -802,7 +802,7 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
     if (!frame_id.IsEmpty())
       maybe_frame_id = frame_id;
     GetFrontend()->responseReceived(
-        request_id, loader_id, MonotonicallyIncreasingTime(),
+        request_id, loader_id, CurrentTimeTicksInSeconds(),
         InspectorPageAgent::ResourceTypeJson(type),
         std::move(resource_response), std::move(maybe_frame_id));
   }
@@ -835,7 +835,7 @@ void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
   }
 
   GetFrontend()->dataReceived(
-      request_id, MonotonicallyIncreasingTime(), data_length,
+      request_id, CurrentTimeTicksInSeconds(), data_length,
       resources_data_->GetAndClearPendingEncodedDataLength(request_id));
 }
 
@@ -858,7 +858,7 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
   int pending_encoded_data_length =
       resources_data_->GetAndClearPendingEncodedDataLength(request_id);
   if (pending_encoded_data_length > 0) {
-    GetFrontend()->dataReceived(request_id, MonotonicallyIncreasingTime(), 0,
+    GetFrontend()->dataReceived(request_id, CurrentTimeTicksInSeconds(), 0,
                                 pending_encoded_data_length);
   }
 
@@ -872,7 +872,7 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
 
   resources_data_->MaybeDecodeDataToContent(request_id);
   if (!monotonic_finish_time)
-    monotonic_finish_time = MonotonicallyIncreasingTime();
+    monotonic_finish_time = CurrentTimeTicksInSeconds();
   GetFrontend()->loadingFinished(request_id, monotonic_finish_time,
                                  encoded_data_length);
 }
@@ -894,7 +894,7 @@ void InspectorNetworkAgent::DidFailLoading(unsigned long identifier,
   String request_id = IdentifiersFactory::RequestId(identifier);
   bool canceled = error.IsCancellation();
   GetFrontend()->loadingFailed(
-      request_id, MonotonicallyIncreasingTime(),
+      request_id, CurrentTimeTicksInSeconds(),
       InspectorPageAgent::ResourceTypeJson(
           resources_data_->GetResourceType(request_id)),
       error.LocalizedDescription(), canceled);
@@ -1052,7 +1052,7 @@ void InspectorNetworkAgent::WillDispatchEventSourceEvent(
   if (it == known_request_id_map_.end())
     return;
   GetFrontend()->eventSourceMessageReceived(
-      IdentifiersFactory::RequestId(it->value), MonotonicallyIncreasingTime(),
+      IdentifiersFactory::RequestId(it->value), CurrentTimeTicksInSeconds(),
       event_name.GetString(), event_id.GetString(), data);
 }
 
@@ -1168,7 +1168,7 @@ void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
           .setHeaders(BuildObjectForHeaders(request->HeaderFields()))
           .build();
   GetFrontend()->webSocketWillSendHandshakeRequest(
-      IdentifiersFactory::RequestId(identifier), MonotonicallyIncreasingTime(),
+      IdentifiersFactory::RequestId(identifier), CurrentTimeTicksInSeconds(),
       CurrentTime(), std::move(request_object));
 }
 
@@ -1194,14 +1194,14 @@ void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
       response_object->setRequestHeadersText(request->HeadersText());
   }
   GetFrontend()->webSocketHandshakeResponseReceived(
-      IdentifiersFactory::RequestId(identifier), MonotonicallyIncreasingTime(),
+      IdentifiersFactory::RequestId(identifier), CurrentTimeTicksInSeconds(),
       std::move(response_object));
 }
 
 void InspectorNetworkAgent::DidCloseWebSocket(Document*,
                                               unsigned long identifier) {
   GetFrontend()->webSocketClosed(IdentifiersFactory::RequestId(identifier),
-                                 MonotonicallyIncreasingTime());
+                                 CurrentTimeTicksInSeconds());
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketFrame(unsigned long identifier,
@@ -1217,7 +1217,7 @@ void InspectorNetworkAgent::DidReceiveWebSocketFrame(unsigned long identifier,
               String::FromUTF8WithLatin1Fallback(payload, payload_length))
           .build();
   GetFrontend()->webSocketFrameReceived(
-      IdentifiersFactory::RequestId(identifier), MonotonicallyIncreasingTime(),
+      IdentifiersFactory::RequestId(identifier), CurrentTimeTicksInSeconds(),
       std::move(frame_object));
 }
 
@@ -1234,7 +1234,7 @@ void InspectorNetworkAgent::DidSendWebSocketFrame(unsigned long identifier,
               String::FromUTF8WithLatin1Fallback(payload, payload_length))
           .build();
   GetFrontend()->webSocketFrameSent(IdentifiersFactory::RequestId(identifier),
-                                    MonotonicallyIncreasingTime(),
+                                    CurrentTimeTicksInSeconds(),
                                     std::move(frame_object));
 }
 
@@ -1242,7 +1242,7 @@ void InspectorNetworkAgent::DidReceiveWebSocketFrameError(
     unsigned long identifier,
     const String& error_message) {
   GetFrontend()->webSocketFrameError(IdentifiersFactory::RequestId(identifier),
-                                     MonotonicallyIncreasingTime(),
+                                     CurrentTimeTicksInSeconds(),
                                      error_message);
 }
 

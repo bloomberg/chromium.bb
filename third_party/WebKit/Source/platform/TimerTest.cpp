@@ -32,20 +32,20 @@ class TimerTest : public ::testing::Test {
   void SetUp() override {
     run_times_.clear();
     platform_->AdvanceClockSeconds(10.0);
-    start_time_ = MonotonicallyIncreasingTime();
+    start_time_ = CurrentTimeTicksInSeconds();
   }
 
   void CountingTask(TimerBase*) {
-    run_times_.push_back(MonotonicallyIncreasingTime());
+    run_times_.push_back(CurrentTimeTicksInSeconds());
   }
 
   void RecordNextFireTimeTask(TimerBase* timer) {
-    next_fire_times_.push_back(MonotonicallyIncreasingTime() +
+    next_fire_times_.push_back(CurrentTimeTicksInSeconds() +
                                timer->NextFireInterval());
   }
 
   void RunUntilDeadline(double deadline) {
-    double period = deadline - MonotonicallyIncreasingTime();
+    double period = deadline - CurrentTimeTicksInSeconds();
     EXPECT_GE(period, 0.0);
     platform_->RunForPeriodSeconds(period);
   }
@@ -228,7 +228,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost) {
   platform_->RunUntilIdle();
   EXPECT_FALSE(run_times_.size());
 
-  double second_post_time = MonotonicallyIncreasingTime();
+  double second_post_time = CurrentTimeTicksInSeconds();
   timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
 
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -495,7 +495,7 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
   // Simulate timer firing early. Next scheduled task to run at
   // m_startTime + 4.0
   platform_->AdvanceClockSeconds(1.9);
-  RunUntilDeadline(MonotonicallyIncreasingTime() + 0.2);
+  RunUntilDeadline(CurrentTimeTicksInSeconds() + 0.2);
 
   // Next scheduled task to run at m_startTime + 6.0
   platform_->RunForPeriodSeconds(2.0);
@@ -647,7 +647,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   TimerForTest<TimerTest> timer(web_task_runner1, this,
                                 &TimerTest::CountingTask);
 
-  double start_time = MonotonicallyIncreasingTime();
+  double start_time = CurrentTimeTicksInSeconds();
 
   timer.StartOneShot(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
 
@@ -687,7 +687,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   TimerForTest<TimerTest> timer(web_task_runner1, this,
                                 &TimerTest::CountingTask);
 
-  double start_time = MonotonicallyIncreasingTime();
+  double start_time = CurrentTimeTicksInSeconds();
 
   timer.StartRepeating(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
 

@@ -127,7 +127,7 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
   }
 
   TimeTicks timestamp = underlying_event ? underlying_event->PlatformTimeStamp()
-                                         : TimeTicks::Now();
+                                         : CurrentTimeTicks();
   MouseEvent* created_event = new MouseEvent(
       event_type, true, true, view, 0, screen_x, screen_y, 0, 0, 0, 0,
       modifiers, 0, 0, nullptr, timestamp, synthetic_type, String());

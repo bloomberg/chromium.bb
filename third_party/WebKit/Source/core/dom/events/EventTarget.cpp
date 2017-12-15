@@ -747,7 +747,7 @@ bool EventTarget::FireEventListeners(Event* event,
   TimeTicks now;
   bool should_report_blocked_event = false;
   if (blocked_event_threshold) {
-    now = TimeTicks::Now();
+    now = CurrentTimeTicks();
     should_report_blocked_event =
         (now - event->PlatformTimeStamp()).InSecondsF() >
         blocked_event_threshold;

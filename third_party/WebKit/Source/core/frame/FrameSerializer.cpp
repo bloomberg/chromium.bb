@@ -406,7 +406,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
   double css_start_time = 0;
   if (!is_serializing_css_) {
     is_serializing_css_ = true;
-    css_start_time = MonotonicallyIncreasingTime();
+    css_start_time = CurrentTimeTicksInSeconds();
   }
 
   // If this CSS is inlined its definition was already serialized with the frame
@@ -449,7 +449,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
                         ("PageSerialization.SerializationTime.CSSElement", 0,
                          maxSerializationTimeUmaMicroseconds, 50));
     css_histogram.Count(
-        static_cast<int64_t>((MonotonicallyIncreasingTime() - css_start_time) *
+        static_cast<int64_t>((CurrentTimeTicksInSeconds() - css_start_time) *
                              secondsToMicroseconds));
   }
 }
@@ -534,7 +534,7 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
 
   TRACE_EVENT2("page-serialization", "FrameSerializer::addImageToResources",
                "type", "image", "url", url.ElidedString().Utf8().data());
-  double image_start_time = MonotonicallyIncreasingTime();
+  double image_start_time = CurrentTimeTicksInSeconds();
 
   scoped_refptr<const SharedBuffer> data = image->GetImage()->Data();
   AddToResources(image->GetResponse().MimeType(),
@@ -549,9 +549,9 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
     DEFINE_STATIC_LOCAL(CustomCountHistogram, image_histogram,
                         ("PageSerialization.SerializationTime.ImageElement", 0,
                          maxSerializationTimeUmaMicroseconds, 50));
-    image_histogram.Count(static_cast<int64_t>(
-        (MonotonicallyIncreasingTime() - image_start_time) *
-        secondsToMicroseconds));
+    image_histogram.Count(
+        static_cast<int64_t>((CurrentTimeTicksInSeconds() - image_start_time) *
+                             secondsToMicroseconds));
   }
 }
 

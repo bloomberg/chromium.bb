@@ -306,7 +306,7 @@ ExitCode WorkerThread::GetExitCodeForTesting() {
 
 WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
                            WorkerReportingProxy& worker_reporting_proxy)
-    : time_origin_(MonotonicallyIncreasingTime()),
+    : time_origin_(CurrentTimeTicksInSeconds()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       inspector_task_runner_(std::make_unique<InspectorTaskRunner>()),

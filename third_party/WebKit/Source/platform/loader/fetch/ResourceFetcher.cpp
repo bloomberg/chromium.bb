@@ -347,7 +347,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     // Resources loaded from memory cache should be reported the first time
     // they're used.
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-        params.Options().initiator_info.name, MonotonicallyIncreasingTime(),
+        params.Options().initiator_info.name, CurrentTimeTicksInSeconds(),
         resource->GetType() == Resource::kMainResource);
     PopulateTimingInfo(info.get(), resource);
     info->ClearLoadTimings();
@@ -892,7 +892,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
   // startTime must be set accordingly.
   double start_time = resource->GetResourceRequest().NavigationStartTime()
                           ? resource->GetResourceRequest().NavigationStartTime()
-                          : MonotonicallyIncreasingTime();
+                          : CurrentTimeTicksInSeconds();
 
   // This buffer is created and populated for providing transferSize
   // and redirect timing opt-in information.

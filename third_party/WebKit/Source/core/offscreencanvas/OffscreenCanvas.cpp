@@ -336,7 +336,7 @@ void OffscreenCanvas::FinalizeFrame() {
 
 void OffscreenCanvas::DoCommit() {
   TRACE_EVENT0("blink", "OffscreenCanvas::DoCommit");
-  double commit_start_time = WTF::MonotonicallyIncreasingTime();
+  double commit_start_time = WTF::CurrentTimeTicksInSeconds();
   DCHECK(current_frame_);
   GetOrCreateFrameDispatcher()->DispatchFrame(
       std::move(current_frame_), commit_start_time, current_frame_damage_rect_);
@@ -390,7 +390,7 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
     return exception_state.Reject(script_state);
   }
 
-  double start_time = WTF::MonotonicallyIncreasingTime();
+  double start_time = WTF::CurrentTimeTicksInSeconds();
   String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
       options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
 

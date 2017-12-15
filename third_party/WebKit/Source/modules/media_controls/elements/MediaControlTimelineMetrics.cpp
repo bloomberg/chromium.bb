@@ -208,7 +208,7 @@ void RecordSeekTypeByWidth(int timeline_width, SeekType type) {
 void MediaControlTimelineMetrics::StartGesture(bool from_thumb) {
   // Initialize gesture tracking.
   state_ = from_thumb ? State::kGestureFromThumb : State::kGestureFromElsewhere;
-  drag_start_time_ticks_ = TimeTicks::Now();
+  drag_start_time_ticks_ = CurrentTimeTicks();
   drag_delta_media_seconds_ = 0;
   drag_sum_abs_delta_media_seconds_ = 0;
 }
@@ -245,7 +245,7 @@ void MediaControlTimelineMetrics::RecordEndGesture(
     return;  // Metrics below are only for drags.
 
   RecordDragGestureDurationByWidth(timeline_width,
-                                   TimeTicks::Now() - drag_start_time_ticks_);
+                                   CurrentTimeTicks() - drag_start_time_ticks_);
   if (std::isfinite(media_duration_seconds)) {
     RecordDragPercentByWidth(timeline_width, 100.0 * drag_delta_media_seconds_ /
                                                  media_duration_seconds);

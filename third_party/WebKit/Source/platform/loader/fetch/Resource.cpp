@@ -582,7 +582,7 @@ void Resource::ResponseReceived(const ResourceResponse& response,
   response_timestamp_ = CurrentTime();
   if (preload_discovery_time_) {
     int time_since_discovery = static_cast<int>(
-        1000 * (MonotonicallyIncreasingTime() - preload_discovery_time_));
+        1000 * (CurrentTimeTicksInSeconds() - preload_discovery_time_));
     DEFINE_STATIC_LOCAL(CustomCountHistogram,
                         preload_discovery_to_first_byte_histogram,
                         ("PreloadScanner.TTFB", 0, 10000, 50));
@@ -1087,7 +1087,7 @@ bool Resource::MatchPreload(const FetchParameters& params, WebTaskRunner*) {
 
   if (preload_discovery_time_) {
     int time_since_discovery = static_cast<int>(
-        1000 * (MonotonicallyIncreasingTime() - preload_discovery_time_));
+        1000 * (CurrentTimeTicksInSeconds() - preload_discovery_time_));
     DEFINE_STATIC_LOCAL(CustomCountHistogram, preload_discovery_histogram,
                         ("PreloadScanner.ReferenceTime", 0, 10000, 50));
     preload_discovery_histogram.Count(time_since_discovery);

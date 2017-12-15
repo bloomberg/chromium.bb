@@ -86,7 +86,7 @@ void IdlenessDetector::OnDidLoadResource() {
   if (request_count > 2)
     return;
 
-  double timestamp = MonotonicallyIncreasingTime();
+  double timestamp = CurrentTimeTicksInSeconds();
   // Arriving at =2 updates the quiet_2 base timestamp.
   // Arriving at <2 sets the quiet_2 base timestamp only if
   // it was not already set.

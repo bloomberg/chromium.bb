@@ -298,7 +298,7 @@ void CSSPreloaderResourceClient::ScanCSS(
   // TODO(csharrison): If this becomes an issue the CSSPreloadScanner may be
   // augmented to take care of this case without performing an additional
   // copy.
-  double start_time = MonotonicallyIncreasingTimeMS();
+  double start_time = CurrentTimeTicksInMilliseconds();
   const String& chunk = resource->SheetText(nullptr);
   if (chunk.IsNull())
     return;
@@ -318,8 +318,8 @@ void CSSPreloaderResourceClient::ScanCSS(
                            resource->GetResponse().Url());
   DEFINE_STATIC_LOCAL(CustomCountHistogram, css_scan_time_histogram,
                       ("PreloadScanner.ExternalCSS.ScanTime", 1, 1000000, 50));
-  css_scan_time_histogram.Count((MonotonicallyIncreasingTimeMS() - start_time) *
-                                1000);
+  css_scan_time_histogram.Count(
+      (CurrentTimeTicksInMilliseconds() - start_time) * 1000);
   FetchPreloads(preloads);
 }
 

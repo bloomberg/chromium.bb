@@ -64,7 +64,7 @@ class VRDisplayFrameRequestCallback
   void Invoke(double high_res_time_ms) override {
     double monotonic_time;
     if (!vr_display_->GetDocument() || !vr_display_->GetDocument()->Loader()) {
-      monotonic_time = WTF::MonotonicallyIncreasingTime();
+      monotonic_time = WTF::CurrentTimeTicksInSeconds();
     } else {
       // Convert document-zero time back to monotonic time.
       double reference_monotonic_time = vr_display_->GetDocument()
@@ -595,7 +595,7 @@ void VRDisplay::BeginPresent() {
   // Run window.rAF once manually so that applications get a chance to
   // schedule a VRDisplay.rAF in case they do so only while presenting.
   if (!pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
-    double timestamp = WTF::MonotonicallyIncreasingTime();
+    double timestamp = WTF::CurrentTimeTicksInSeconds();
     Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
                                    WrapWeakPersistent(this), timestamp));
@@ -842,14 +842,14 @@ void VRDisplay::WaitForPreviousTransfer() {
 
 WTF::TimeDelta VRDisplay::WaitForPreviousRenderToFinish() {
   TRACE_EVENT0("gpu", "waitForPreviousRenderToFinish");
-  WTF::TimeTicks start = WTF::TimeTicks::Now();
+  WTF::TimeTicks start = WTF::CurrentTimeTicks();
   while (pending_previous_frame_render_) {
     if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
       DLOG(ERROR) << "Failed to receive SubmitFrame response";
       break;
     }
   }
-  return WTF::TimeTicks::Now() - start;
+  return WTF::CurrentTimeTicks() - start;
 }
 
 Document* VRDisplay::GetDocument() {

@@ -803,7 +803,7 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
 }
 
 void InspectorPageAgent::DomContentLoadedEventFired(LocalFrame* frame) {
-  double timestamp = MonotonicallyIncreasingTime();
+  double timestamp = CurrentTimeTicksInSeconds();
   if (frame == inspected_frames_->Root())
     GetFrontend()->domContentEventFired(timestamp);
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
@@ -811,7 +811,7 @@ void InspectorPageAgent::DomContentLoadedEventFired(LocalFrame* frame) {
 }
 
 void InspectorPageAgent::LoadEventFired(LocalFrame* frame) {
-  double timestamp = MonotonicallyIncreasingTime();
+  double timestamp = CurrentTimeTicksInSeconds();
   if (frame == inspected_frames_->Root())
     GetFrontend()->loadEventFired(timestamp);
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();

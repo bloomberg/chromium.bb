@@ -47,7 +47,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
     WebMouseEvent event(
         WebInputEvent::kMouseMove, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
-        TimeTicks::Now().InSeconds());
+        CurrentTimeTicks().InSeconds());
     event.SetFrameScale(1);
     EventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>());
   }
@@ -57,7 +57,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
                         WebFloatPoint(x, y),
                         WebPointerProperties::Button::kLeft, 0,
                         WebInputEvent::Modifiers::kLeftButtonDown,
-                        TimeTicks::Now().InSeconds());
+                        CurrentTimeTicks().InSeconds());
     event.SetFrameScale(1);
     EventHandler().HandleMousePressEvent(event);
   }
@@ -67,7 +67,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
                         WebFloatPoint(x, y),
                         WebPointerProperties::Button::kLeft, 0,
                         WebInputEvent::Modifiers::kLeftButtonDown,
-                        TimeTicks::Now().InSeconds());
+                        CurrentTimeTicks().InSeconds());
     event.SetFrameScale(1);
     EventHandler().HandleMouseReleaseEvent(event);
   }
@@ -77,7 +77,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
                         WebFloatPoint(1, 1),
                         WebPointerProperties::Button::kLeft, 0,
                         WebInputEvent::Modifiers::kLeftButtonDown,
-                        TimeTicks::Now().InSeconds());
+                        CurrentTimeTicks().InSeconds());
     event.SetFrameScale(1);
     EventHandler().HandleMouseLeaveEvent(event);
   }
@@ -419,7 +419,7 @@ TEST_P(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
   DCHECK(scrollable_area->VerticalScrollbar());
   WebGestureEvent scroll_begin(WebInputEvent::kGestureScrollBegin,
                                WebInputEvent::kNoModifiers,
-                               TimeTicks::Now().InSeconds());
+                               CurrentTimeTicks().InSeconds());
   scroll_begin.x = scroll_begin.global_x =
       scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2;
   scroll_begin.y = scroll_begin.global_y = scrollable->OffsetTop();

@@ -36,9 +36,9 @@ class LongTaskDetectorTest : public ::testing::Test {
  public:
   // Public because it's executed on a task queue.
   void DummyTaskWithDuration(double duration_seconds) {
-    dummy_task_start_time_ = MonotonicallyIncreasingTime();
+    dummy_task_start_time_ = CurrentTimeTicksInSeconds();
     platform_->AdvanceClockSeconds(duration_seconds);
-    dummy_task_end_time_ = MonotonicallyIncreasingTime();
+    dummy_task_end_time_ = CurrentTimeTicksInSeconds();
   }
 
  protected:

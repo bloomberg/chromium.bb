@@ -165,7 +165,7 @@ void WebFrameWidgetBase::DragSourceEndedAt(
   WebMouseEvent fake_mouse_move(
       WebInputEvent::kMouseMove, point_in_root_frame, screen_point,
       WebPointerProperties::Button::kLeft, 0, WebInputEvent::kNoModifiers,
-      TimeTicks::Now().InSeconds());
+      CurrentTimeTicks().InSeconds());
   fake_mouse_move.SetFrameScale(1);
   ToCoreFrame(LocalRoot())
       ->GetEventHandler()
@@ -367,7 +367,7 @@ bool WebFrameWidgetBase::ScrollBy(const WebFloatSize& delta,
         RuntimeEnabledFeatures::TouchpadAndWheelScrollLatchingEnabled();
     WebMouseWheelEvent synthetic_wheel(WebInputEvent::kMouseWheel,
                                        fling_modifier_,
-                                       WTF::MonotonicallyIncreasingTime());
+                                       WTF::CurrentTimeTicksInSeconds());
     const float kTickDivisor = WheelEvent::kTickMultiplier;
 
     synthetic_wheel.delta_x = delta.width;
@@ -511,7 +511,7 @@ WebGestureEvent WebFrameWidgetBase::CreateGestureScrollEventFromFling(
     WebInputEvent::Type type,
     WebGestureDevice source_device) const {
   WebGestureEvent gesture_event(type, fling_modifier_,
-                                WTF::MonotonicallyIncreasingTime());
+                                WTF::CurrentTimeTicksInSeconds());
   gesture_event.source_device = source_device;
   gesture_event.x = position_on_fling_start_.x;
   gesture_event.y = position_on_fling_start_.y;

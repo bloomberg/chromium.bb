@@ -31,7 +31,7 @@ void MediaControlOverflowMenuListElement::MaybeRecordTimeTaken(
                                 : "Media.Controls.Overflow.TimeToDismiss",
                             1, 100, 100);
   histogram.Count(static_cast<int32_t>(
-      (TimeTicks::Now() - time_shown_.value()).InSeconds()));
+      (CurrentTimeTicks() - time_shown_.value()).InSeconds()));
 
   time_shown_.reset();
 }
@@ -49,7 +49,7 @@ void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
   // Record the time the overflow menu was shown to a histogram.
   if (wanted) {
     DCHECK(!time_shown_);
-    time_shown_ = TimeTicks::Now();
+    time_shown_ = CurrentTimeTicks();
   } else if (time_shown_) {
     // Records the time taken to dismiss using a task runner. This ensures the
     // time to dismiss is always called after the time to action (if there is

@@ -90,7 +90,7 @@ Response InspectorPerformanceAgent::getMetrics(
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> result =
       protocol::Array<protocol::Performance::Metric>::create();
 
-  double now = (TimeTicks::Now() - TimeTicks()).InSecondsF();
+  double now = (CurrentTimeTicks() - TimeTicks()).InSecondsF();
   AppendMetric(result.get(), "Timestamp", now);
 
   // Renderer instance counters.
