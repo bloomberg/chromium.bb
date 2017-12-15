@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "storage/browser/quota/storage_observer.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace content {
 class StorageMonitorTestBase;
@@ -95,7 +96,7 @@ class STORAGE_EXPORT HostStorageObservers {
  private:
   void StartInitialization(const StorageObserver::Filter& filter);
   void GotHostUsageAndQuota(const StorageObserver::Filter& filter,
-                            QuotaStatusCode status,
+                            blink::QuotaStatusCode status,
                             int64_t usage,
                             int64_t quota);
   void DispatchEvent(const StorageObserver::Filter& filter, bool is_update);

@@ -22,6 +22,7 @@
 #include "storage/common/fileapi/file_system_util.h"
 #include "storage/common/quota/quota_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/gurl.h"
 
 using content::AsyncFileTestHelper;
@@ -45,7 +46,7 @@ class FileSystemQuotaClientTest : public testing::Test {
  public:
   FileSystemQuotaClientTest()
       : additional_callback_count_(0),
-        deletion_status_(storage::kQuotaStatusUnknown),
+        deletion_status_(blink::QuotaStatusCode::kUnknown),
         weak_factory_(this) {}
 
   void SetUp() override {
@@ -200,7 +201,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   void DeleteOriginData(FileSystemQuotaClient* quota_client,
                         const std::string& origin,
                         storage::StorageType type) {
-    deletion_status_ = storage::kQuotaStatusUnknown;
+    deletion_status_ = blink::QuotaStatusCode::kUnknown;
     quota_client->DeleteOriginData(
         GURL(origin), type,
         base::Bind(&FileSystemQuotaClientTest::OnDeleteOrigin,
@@ -208,7 +209,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   }
 
   int64_t usage() const { return usage_; }
-  storage::QuotaStatusCode status() { return deletion_status_; }
+  blink::QuotaStatusCode status() { return deletion_status_; }
   int additional_callback_count() const { return additional_callback_count_; }
   void set_additional_callback_count(int count) {
     additional_callback_count_ = count;
@@ -225,7 +226,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     ++additional_callback_count_;
   }
 
-  void OnDeleteOrigin(storage::QuotaStatusCode status) {
+  void OnDeleteOrigin(blink::QuotaStatusCode status) {
     deletion_status_ = status;
   }
 
@@ -235,7 +236,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   int64_t usage_;
   int additional_callback_count_;
   std::set<GURL> origins_;
-  storage::QuotaStatusCode deletion_status_;
+  blink::QuotaStatusCode deletion_status_;
   base::WeakPtrFactory<FileSystemQuotaClientTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClientTest);
@@ -530,15 +531,15 @@ TEST_F(FileSystemQuotaClientTest, DeleteOriginTest) {
 
   DeleteOriginData(quota_client.get(), "http://foo.com/", kTemporary);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(storage::kQuotaStatusOk, status());
+  EXPECT_EQ(blink::QuotaStatusCode::kOk, status());
 
   DeleteOriginData(quota_client.get(), "http://bar.com/", kPersistent);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(storage::kQuotaStatusOk, status());
+  EXPECT_EQ(blink::QuotaStatusCode::kOk, status());
 
   DeleteOriginData(quota_client.get(), "http://buz.com/", kTemporary);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(storage::kQuotaStatusOk, status());
+  EXPECT_EQ(blink::QuotaStatusCode::kOk, status());
 
   EXPECT_EQ(0, GetOriginUsage(
       quota_client.get(), "http://foo.com/", kTemporary));

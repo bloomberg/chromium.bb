@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace storage {
 
@@ -21,7 +22,7 @@ namespace {
 void DidGetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
     const QuotaManagerProxy::UsageAndQuotaCallback& callback,
-    QuotaStatusCode status,
+    blink::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   if (!original_task_runner->RunsTasksInCurrentSequence()) {
@@ -139,7 +140,8 @@ void QuotaManagerProxy::GetUsageAndQuota(
     return;
   }
   if (!manager_) {
-    DidGetUsageAndQuota(original_task_runner, callback, kQuotaErrorAbort, 0, 0);
+    DidGetUsageAndQuota(original_task_runner, callback,
+                        blink::QuotaStatusCode::kErrorAbort, 0, 0);
     return;
   }
 

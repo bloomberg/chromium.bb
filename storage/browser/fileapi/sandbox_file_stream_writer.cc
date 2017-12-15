@@ -169,13 +169,13 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
 
 void SandboxFileStreamWriter::DidGetUsageAndQuota(
     const net::CompletionCallback& callback,
-    storage::QuotaStatusCode status,
+    blink::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   if (CancelIfRequested())
     return;
-  if (status != storage::kQuotaStatusOk) {
-    LOG(WARNING) << "Got unexpected quota error : " << status;
+  if (status != blink::QuotaStatusCode::kOk) {
+    LOG(WARNING) << "Got unexpected quota error : " << static_cast<int>(status);
 
     // crbug.com/349708
     TRACE_EVENT0("io", "SandboxFileStreamWriter::DidGetUsageAndQuota FAILED");

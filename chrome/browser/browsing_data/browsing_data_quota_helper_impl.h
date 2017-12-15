@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 class GURL;
 
@@ -65,7 +66,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
                                QuotaInfoMap* quota_info);
 
   void RevokeHostQuotaOnIOThread(const std::string& host);
-  void DidRevokeHostQuota(storage::QuotaStatusCode status, int64_t quota);
+  void DidRevokeHostQuota(blink::QuotaStatusCode status, int64_t quota);
 
   scoped_refptr<storage::QuotaManager> quota_manager_;
 

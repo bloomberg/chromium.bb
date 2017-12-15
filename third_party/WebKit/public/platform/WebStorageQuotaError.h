@@ -31,15 +31,36 @@
 #ifndef WebStorageQuotaError_h
 #define WebStorageQuotaError_h
 
+#include "third_party/WebKit/common/quota/quota_status_code.h"
+
 namespace blink {
 
-// The error code used for WebStorageQuota.
+// The error code used for WebStorageQuota. Values must match QuotaStatusCode.
+// TODO(sashab): Remove this class and update callers to use
+// blink::QuotaStatusCode instead.
 enum WebStorageQuotaError {
   kWebStorageQuotaErrorNotSupported = 7,
   kWebStorageQuotaErrorInvalidModification = 11,
   kWebStorageQuotaErrorInvalidAccess = 13,
   kWebStorageQuotaErrorAbort = 17,
 };
+
+static_assert(
+    static_cast<int>(kWebStorageQuotaErrorNotSupported) ==
+        static_cast<int>(QuotaStatusCode::kErrorNotSupported),
+    "WebStorageQuotaError and QuotaStatusCode enum values must match");
+static_assert(
+    static_cast<int>(kWebStorageQuotaErrorInvalidModification) ==
+        static_cast<int>(QuotaStatusCode::kErrorInvalidModification),
+    "WebStorageQuotaError and QuotaStatusCode enum values must match");
+static_assert(
+    static_cast<int>(kWebStorageQuotaErrorInvalidAccess) ==
+        static_cast<int>(QuotaStatusCode::kErrorInvalidAccess),
+    "WebStorageQuotaError and QuotaStatusCode enum values must match");
+static_assert(
+    static_cast<int>(kWebStorageQuotaErrorAbort) ==
+        static_cast<int>(QuotaStatusCode::kErrorAbort),
+    "WebStorageQuotaError and QuotaStatusCode enum values must match");
 
 }  // namespace blink
 

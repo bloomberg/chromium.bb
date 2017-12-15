@@ -13,7 +13,7 @@
 #include "storage/browser/fileapi/quota/quota_reservation_manager.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -75,7 +75,7 @@ class STORAGE_EXPORT QuotaBackendImpl
 
   void DidGetUsageAndQuotaForReserveQuota(const QuotaReservationInfo& info,
                                           const ReserveQuotaCallback& callback,
-                                          storage::QuotaStatusCode status,
+                                          blink::QuotaStatusCode status,
                                           int64_t usage,
                                           int64_t quota);
 

@@ -32,6 +32,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/quota/storage_observer.h"
 #include "storage/browser/storage_browser_export.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace base {
 class FilePath;
@@ -66,7 +67,7 @@ struct QuotaManagerDeleter;
 class STORAGE_EXPORT QuotaEvictionHandler {
  public:
   using EvictionRoundInfoCallback =
-      base::Callback<void(QuotaStatusCode status,
+      base::Callback<void(blink::QuotaStatusCode status,
                           const QuotaSettings& settings,
                           int64_t available_space,
                           int64_t total_space,
@@ -112,10 +113,10 @@ class STORAGE_EXPORT QuotaManager
       public base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter> {
  public:
   typedef base::Callback<
-      void(QuotaStatusCode, int64_t /* usage */, int64_t /* quota */)>
+      void(blink::QuotaStatusCode, int64_t /* usage */, int64_t /* quota */)>
       UsageAndQuotaCallback;
   typedef base::Callback<void(
-      QuotaStatusCode,
+      blink::QuotaStatusCode,
       int64_t /* usage */,
       int64_t /* quota */,
       base::flat_map<QuotaClient::ID, int64_t> /* usage breakdown */)>
@@ -297,7 +298,10 @@ class STORAGE_EXPORT QuotaManager
       DumpOriginInfoTableCallback;
 
   typedef CallbackQueue<base::Closure> ClosureQueue;
-  typedef CallbackQueueMap<QuotaCallback, std::string, QuotaStatusCode, int64_t>
+  typedef CallbackQueueMap<QuotaCallback,
+                           std::string,
+                           blink::QuotaStatusCode,
+                           int64_t>
       HostQuotaCallbackMap;
   using QuotaSettingsCallbackQueue =
       CallbackQueue<QuotaSettingsCallback, const QuotaSettings&>;
@@ -366,7 +370,7 @@ class STORAGE_EXPORT QuotaManager
                                 StorageType type,
                                 bool is_eviction);
 
-  void DidOriginDataEvicted(QuotaStatusCode status);
+  void DidOriginDataEvicted(blink::QuotaStatusCode status);
 
   void ReportHistogram();
   void DidGetTemporaryGlobalUsageForHistogram(int64_t usage,

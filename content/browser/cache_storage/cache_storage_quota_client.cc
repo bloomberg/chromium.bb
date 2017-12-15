@@ -6,6 +6,7 @@
 
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace content {
 
@@ -73,12 +74,12 @@ void CacheStorageQuotaClient::DeleteOriginData(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_) {
-    callback.Run(storage::kQuotaErrorAbort);
+    callback.Run(blink::QuotaStatusCode::kErrorAbort);
     return;
   }
 
   if (!DoesSupport(type)) {
-    callback.Run(storage::kQuotaStatusOk);
+    callback.Run(blink::QuotaStatusCode::kOk);
     return;
   }
 

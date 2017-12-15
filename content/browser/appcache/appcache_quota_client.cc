@@ -11,17 +11,18 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/appcache/appcache_service_impl.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 using storage::QuotaClient;
 
 namespace {
-storage::QuotaStatusCode NetErrorCodeToQuotaStatus(int code) {
+blink::QuotaStatusCode NetErrorCodeToQuotaStatus(int code) {
   if (code == net::OK)
-    return storage::kQuotaStatusOk;
+    return blink::QuotaStatusCode::kOk;
   else if (code == net::ERR_ABORTED)
-    return storage::kQuotaErrorAbort;
+    return blink::QuotaStatusCode::kErrorAbort;
   else
-    return storage::kQuotaStatusUnknown;
+    return blink::QuotaStatusCode::kUnknown;
 }
 
 void RunFront(content::AppCacheQuotaClient::RequestQueue* queue) {
@@ -117,7 +118,7 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   DCHECK(!quota_manager_is_destroyed_);
 
   if (!service_) {
-    callback.Run(storage::kQuotaErrorAbort);
+    callback.Run(blink::QuotaStatusCode::kErrorAbort);
     return;
   }
 
@@ -239,7 +240,7 @@ void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
     RunFront(&pending_serial_requests_);
 
   if (!current_delete_request_callback_.is_null()) {
-    current_delete_request_callback_.Run(storage::kQuotaErrorAbort);
+    current_delete_request_callback_.Run(blink::QuotaStatusCode::kErrorAbort);
     current_delete_request_callback_.Reset();
     GetServiceDeleteCallback()->Cancel();
   }

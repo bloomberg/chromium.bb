@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
 #include "storage/browser/database/database_util.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/origin.h"
 
 using storage::QuotaClient;
@@ -21,11 +22,11 @@ using storage::DatabaseUtil;
 namespace content {
 namespace {
 
-storage::QuotaStatusCode DeleteOriginDataOnIndexedDBThread(
+blink::QuotaStatusCode DeleteOriginDataOnIndexedDBThread(
     IndexedDBContextImpl* context,
     const GURL& origin) {
   context->DeleteForOrigin(origin);
-  return storage::kQuotaStatusOk;
+  return blink::QuotaStatusCode::kOk;
 }
 
 int64_t GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
@@ -138,7 +139,7 @@ void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
                                             storage::StorageType type,
                                             const DeletionCallback& callback) {
   if (type != storage::kStorageTypeTemporary) {
-    callback.Run(storage::kQuotaStatusOk);
+    callback.Run(blink::QuotaStatusCode::kOk);
     return;
   }
 

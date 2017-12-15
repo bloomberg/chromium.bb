@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/quota/quota_status_code.h"
 
 namespace storage {
 
@@ -217,11 +216,11 @@ void HostStorageObservers::StartInitialization(
 
 void HostStorageObservers::GotHostUsageAndQuota(
     const StorageObserver::Filter& filter,
-    QuotaStatusCode status,
+    blink::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   initializing_ = false;
-  if (status != kQuotaStatusOk)
+  if (status != blink::QuotaStatusCode::kOk)
     return;
   initialized_ = true;
   cached_quota_ = quota;

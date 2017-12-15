@@ -253,14 +253,11 @@ class FileSystemOperationImplTest
   }
 
   void GetUsageAndQuota(int64_t* usage, int64_t* quota) {
-    storage::QuotaStatusCode status =
-        AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(),
-                                              sandbox_file_system_.origin(),
-                                              sandbox_file_system_.type(),
-                                              usage,
-                                              quota);
+    blink::QuotaStatusCode status = AsyncFileTestHelper::GetUsageAndQuota(
+        quota_manager_.get(), sandbox_file_system_.origin(),
+        sandbox_file_system_.type(), usage, quota);
     scoped_task_environment_.RunUntilIdle();
-    ASSERT_EQ(storage::kQuotaStatusOk, status);
+    ASSERT_EQ(blink::QuotaStatusCode::kOk, status);
   }
 
   int64_t ComputePathCost(const FileSystemURL& url) {

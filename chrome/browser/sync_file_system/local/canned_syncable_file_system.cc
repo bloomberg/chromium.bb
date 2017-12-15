@@ -196,7 +196,7 @@ class WriteHelper {
 void DidGetUsageAndQuota(const storage::StatusCallback& callback,
                          int64_t* usage_out,
                          int64_t* quota_out,
-                         storage::QuotaStatusCode status,
+                         blink::QuotaStatusCode status,
                          int64_t usage,
                          int64_t quota) {
   *usage_out = usage;
@@ -464,10 +464,10 @@ File::Error CannedSyncableFileSystem::DeleteFileSystem() {
                      origin_, type_));
 }
 
-storage::QuotaStatusCode CannedSyncableFileSystem::GetUsageAndQuota(
+blink::QuotaStatusCode CannedSyncableFileSystem::GetUsageAndQuota(
     int64_t* usage,
     int64_t* quota) {
-  return RunOnThread<storage::QuotaStatusCode>(
+  return RunOnThread<blink::QuotaStatusCode>(
       io_task_runner_.get(), FROM_HERE,
       base::BindOnce(&CannedSyncableFileSystem::DoGetUsageAndQuota,
                      base::Unretained(this), usage, quota));

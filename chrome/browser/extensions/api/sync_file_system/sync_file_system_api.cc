@@ -67,6 +67,25 @@ std::string ErrorToString(SyncStatusCode code) {
       static_cast<int>(code));
 }
 
+const char* QuotaStatusCodeToString(blink::QuotaStatusCode status) {
+  switch (status) {
+    case blink::QuotaStatusCode::kOk:
+      return "OK.";
+    case blink::QuotaStatusCode::kErrorNotSupported:
+      return "Operation not supported.";
+    case blink::QuotaStatusCode::kErrorInvalidModification:
+      return "Invalid modification.";
+    case blink::QuotaStatusCode::kErrorInvalidAccess:
+      return "Invalid access.";
+    case blink::QuotaStatusCode::kErrorAbort:
+      return "Quota operation aborted.";
+    case blink::QuotaStatusCode::kUnknown:
+      return "Unknown error.";
+  }
+  NOTREACHED();
+  return "Unknown error.";
+}
+
 }  // namespace
 
 bool SyncFileSystemDeleteFileSystemFunction::RunAsync() {
@@ -323,7 +342,7 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
 }
 
 void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
-    storage::QuotaStatusCode status,
+    blink::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   // Repost to switch from IO thread to UI thread for SendResponse().
@@ -337,7 +356,7 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   }
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status != storage::kQuotaStatusOk) {
+  if (status != blink::QuotaStatusCode::kOk) {
     error_ = QuotaStatusCodeToString(status);
     SendResponse(false);
     return;

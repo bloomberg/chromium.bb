@@ -10,7 +10,7 @@
 
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 class GURL;
 
@@ -100,7 +100,7 @@ class AsyncFileTestHelper {
                               const storage::FileSystemURL& url);
 
   // Returns usage and quota. It's valid to pass NULL to |usage| and/or |quota|.
-  static storage::QuotaStatusCode GetUsageAndQuota(
+  static blink::QuotaStatusCode GetUsageAndQuota(
       storage::QuotaManager* quota_manager,
       const GURL& origin,
       storage::FileSystemType type,

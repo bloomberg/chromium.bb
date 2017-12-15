@@ -4,14 +4,15 @@
 
 mojom = "//storage/common/quota/quota_types.mojom"
 public_headers = [
-  "//storage/common/quota/quota_status_code.h",
+  "//third_party/WebKit/common/quota/quota_status_code.h",
   "//storage/common/quota/quota_types.h",
 ]
 traits_headers = [ "//storage/common/quota/quota_types_struct_traits.h" ]
 deps = [
   "//storage/common",
+  "//third_party/WebKit/common:blink_common",
 ]
 type_mappings = [
-  "storage.mojom.QuotaStatusCode=storage::QuotaStatusCode",
+  "storage.mojom.QuotaStatusCode=blink::QuotaStatusCode",
   "storage.mojom.StorageType=storage::StorageType",
 ]

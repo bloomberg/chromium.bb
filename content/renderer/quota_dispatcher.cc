@@ -21,7 +21,7 @@
 using blink::WebStorageQuotaCallbacks;
 using blink::WebStorageQuotaError;
 using blink::WebStorageQuotaType;
-using storage::QuotaStatusCode;
+using blink::QuotaStatusCode;
 using storage::StorageType;
 
 namespace content {
@@ -45,7 +45,7 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
   void DidGrantStorageQuota(int64_t usage, int64_t granted_quota) override {
     callbacks_.DidGrantStorageQuota(usage, granted_quota);
   }
-  void DidFail(storage::QuotaStatusCode error) override {
+  void DidFail(QuotaStatusCode error) override {
     callbacks_.DidFail(static_cast<WebStorageQuotaError>(error));
   }
 
@@ -86,7 +86,7 @@ QuotaDispatcher::~QuotaDispatcher() {
   base::IDMap<std::unique_ptr<Callback>>::iterator iter(
       &pending_quota_callbacks_);
   while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->DidFail(storage::kQuotaErrorAbort);
+    iter.GetCurrentValue()->DidFail(blink::QuotaStatusCode::kErrorAbort);
     iter.Advance();
   }
 
@@ -143,10 +143,10 @@ QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(
 }
 
 void QuotaDispatcher::DidGrantStorageQuota(int64_t request_id,
-                                           storage::QuotaStatusCode status,
+                                           QuotaStatusCode status,
                                            int64_t current_usage,
                                            int64_t granted_quota) {
-  if (status != storage::kQuotaStatusOk) {
+  if (status != blink::QuotaStatusCode::kOk) {
     DidFail(request_id, status);
     return;
   }
@@ -157,12 +157,11 @@ void QuotaDispatcher::DidGrantStorageQuota(int64_t request_id,
   pending_quota_callbacks_.Remove(request_id);
 }
 
-void QuotaDispatcher::DidQueryStorageUsageAndQuota(
-    int64_t request_id,
-    storage::QuotaStatusCode status,
-    int64_t current_usage,
-    int64_t current_quota) {
-  if (status != storage::kQuotaStatusOk) {
+void QuotaDispatcher::DidQueryStorageUsageAndQuota(int64_t request_id,
+                                                   QuotaStatusCode status,
+                                                   int64_t current_usage,
+                                                   int64_t current_quota) {
+  if (status != blink::QuotaStatusCode::kOk) {
     DidFail(request_id, status);
     return;
   }
@@ -190,10 +189,10 @@ static_assert(int(blink::kWebStorageQuotaTypePersistent) ==
               "mismatching enums: kStorageTypePersistent");
 
 static_assert(int(blink::kWebStorageQuotaErrorNotSupported) ==
-                  int(storage::kQuotaErrorNotSupported),
+                  int(blink::QuotaStatusCode::kErrorNotSupported),
               "mismatching enums: kQuotaErrorNotSupported");
 static_assert(int(blink::kWebStorageQuotaErrorAbort) ==
-                  int(storage::kQuotaErrorAbort),
+                  int(blink::QuotaStatusCode::kErrorAbort),
               "mismatching enums: kQuotaErrorAbort");
 
 }  // namespace content

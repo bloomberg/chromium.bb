@@ -80,7 +80,7 @@ void StorageInfoFetcher::OnFetchCompleted() {
   Release();
 }
 
-void StorageInfoFetcher::OnUsageClearedInternal(storage::QuotaStatusCode code) {
+void StorageInfoFetcher::OnUsageClearedInternal(blink::QuotaStatusCode code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   quota_manager_->ResetUsageTracker(type_to_delete_);
@@ -90,7 +90,7 @@ void StorageInfoFetcher::OnUsageClearedInternal(storage::QuotaStatusCode code) {
       base::Bind(&StorageInfoFetcher::OnClearCompleted, this, code));
 }
 
-void StorageInfoFetcher::OnClearCompleted(storage::QuotaStatusCode code) {
+void StorageInfoFetcher::OnClearCompleted(blink::QuotaStatusCode code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   clear_callback_.Run(code);

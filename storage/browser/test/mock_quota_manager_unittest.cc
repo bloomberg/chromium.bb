@@ -18,7 +18,6 @@
 #include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::kQuotaStatusOk;
 using storage::kStorageTypePersistent;
 using storage::kStorageTypeTemporary;
 
@@ -79,9 +78,9 @@ class MockQuotaManagerTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void DeletedOriginData(QuotaStatusCode status) {
+  void DeletedOriginData(blink::QuotaStatusCode status) {
     ++deletion_callback_count_;
-    EXPECT_EQ(kQuotaStatusOk, status);
+    EXPECT_EQ(blink::QuotaStatusCode::kOk, status);
   }
 
   int deletion_callback_count() const {

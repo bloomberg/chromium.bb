@@ -5,8 +5,6 @@
 #ifndef STORAGE_COMMON_QUOTA_QUOTA_TYPES_H_
 #define STORAGE_COMMON_QUOTA_QUOTA_TYPES_H_
 
-#include "storage/common/quota/quota_status_code.h"
-
 namespace storage {
 
 enum StorageType {

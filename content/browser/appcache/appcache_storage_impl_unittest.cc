@@ -298,7 +298,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     void CallCallback(const UsageAndQuotaCallback& callback) {
-      callback.Run(storage::kQuotaStatusOk, 0, kMockQuota);
+      callback.Run(blink::QuotaStatusCode::kOk, 0, kMockQuota);
     }
 
     bool async_;

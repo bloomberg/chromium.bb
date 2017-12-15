@@ -15,7 +15,7 @@
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace storage {
 class FileSystemContext;
@@ -93,7 +93,7 @@ class SyncFileSystemGetUsageAndQuotaFunction
   bool RunAsync() override;
 
  private:
-  void DidGetUsageAndQuota(storage::QuotaStatusCode status,
+  void DidGetUsageAndQuota(blink::QuotaStatusCode status,
                            int64_t usage,
                            int64_t quota);
 };

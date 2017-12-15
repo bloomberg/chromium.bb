@@ -6,9 +6,9 @@
 #define CONTENT_COMMON_QUOTA_MESSAGES_STRUCT_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "storage/common/quota/quota_status_code.h"
 #include "storage/common/quota/quota_types.h"
 #include "storage/common/quota/quota_types.mojom.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace mojo {
 
@@ -58,21 +58,21 @@ struct EnumTraits<storage::mojom::StorageType, storage::StorageType> {
 };
 
 template <>
-struct EnumTraits<storage::mojom::QuotaStatusCode, storage::QuotaStatusCode> {
+struct EnumTraits<storage::mojom::QuotaStatusCode, blink::QuotaStatusCode> {
   static storage::mojom::QuotaStatusCode ToMojom(
-      storage::QuotaStatusCode status_code) {
+      blink::QuotaStatusCode status_code) {
     switch (status_code) {
-      case storage::kQuotaStatusOk:
+      case blink::QuotaStatusCode::kOk:
         return storage::mojom::QuotaStatusCode::kOk;
-      case storage::kQuotaErrorNotSupported:
+      case blink::QuotaStatusCode::kErrorNotSupported:
         return storage::mojom::QuotaStatusCode::kErrorNotSupported;
-      case storage::kQuotaErrorInvalidModification:
+      case blink::QuotaStatusCode::kErrorInvalidModification:
         return storage::mojom::QuotaStatusCode::kErrorInvalidModification;
-      case storage::kQuotaErrorInvalidAccess:
+      case blink::QuotaStatusCode::kErrorInvalidAccess:
         return storage::mojom::QuotaStatusCode::kErrorInvalidAccess;
-      case storage::kQuotaErrorAbort:
+      case blink::QuotaStatusCode::kErrorAbort:
         return storage::mojom::QuotaStatusCode::kErrorAbort;
-      case storage::kQuotaStatusUnknown:
+      case blink::QuotaStatusCode::kUnknown:
         return storage::mojom::QuotaStatusCode::kUnknown;
     }
     NOTREACHED();
@@ -80,25 +80,25 @@ struct EnumTraits<storage::mojom::QuotaStatusCode, storage::QuotaStatusCode> {
   }
 
   static bool FromMojom(storage::mojom::QuotaStatusCode status_code,
-                        storage::QuotaStatusCode* out) {
+                        blink::QuotaStatusCode* out) {
     switch (status_code) {
       case storage::mojom::QuotaStatusCode::kOk:
-        *out = storage::kQuotaStatusOk;
+        *out = blink::QuotaStatusCode::kOk;
         return true;
       case storage::mojom::QuotaStatusCode::kErrorNotSupported:
-        *out = storage::kQuotaErrorNotSupported;
+        *out = blink::QuotaStatusCode::kErrorNotSupported;
         return true;
       case storage::mojom::QuotaStatusCode::kErrorInvalidModification:
-        *out = storage::kQuotaErrorInvalidModification;
+        *out = blink::QuotaStatusCode::kErrorInvalidModification;
         return true;
       case storage::mojom::QuotaStatusCode::kErrorInvalidAccess:
-        *out = storage::kQuotaErrorInvalidAccess;
+        *out = blink::QuotaStatusCode::kErrorInvalidAccess;
         return true;
       case storage::mojom::QuotaStatusCode::kErrorAbort:
-        *out = storage::kQuotaErrorAbort;
+        *out = blink::QuotaStatusCode::kErrorAbort;
         return true;
       case storage::mojom::QuotaStatusCode::kUnknown:
-        *out = storage::kQuotaStatusUnknown;
+        *out = blink::QuotaStatusCode::kUnknown;
         return true;
     }
     NOTREACHED();

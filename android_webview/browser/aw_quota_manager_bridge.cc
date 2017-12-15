@@ -17,6 +17,7 @@
 #include "jni/AwQuotaManagerBridge_jni.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -50,7 +51,7 @@ class GetOriginsTask : public base::RefCountedThreadSafe<GetOriginsTask> {
                          storage::StorageType type);
 
   void OnUsageAndQuotaObtained(const GURL& origin,
-                               storage::QuotaStatusCode status_code,
+                               blink::QuotaStatusCode status_code,
                                int64_t usage,
                                int64_t quota);
 
@@ -105,13 +106,12 @@ void GetOriginsTask::OnOriginsObtained(const std::set<GURL>& origins,
   CheckDone();
 }
 
-void GetOriginsTask::OnUsageAndQuotaObtained(
-    const GURL& origin,
-    storage::QuotaStatusCode status_code,
-    int64_t usage,
-    int64_t quota) {
+void GetOriginsTask::OnUsageAndQuotaObtained(const GURL& origin,
+                                             blink::QuotaStatusCode status_code,
+                                             int64_t usage,
+                                             int64_t quota) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status_code == storage::kQuotaStatusOk) {
+  if (status_code == blink::QuotaStatusCode::kOk) {
     origin_.push_back(origin.spec());
     usage_.push_back(usage);
     quota_.push_back(quota);
@@ -274,11 +274,11 @@ namespace {
 
 void OnUsageAndQuotaObtained(
     const AwQuotaManagerBridge::QuotaUsageCallback& ui_callback,
-    storage::QuotaStatusCode status_code,
+    blink::QuotaStatusCode status_code,
     int64_t usage,
     int64_t quota) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status_code != storage::kQuotaStatusOk) {
+  if (status_code != blink::QuotaStatusCode::kOk) {
     usage = 0;
     quota = 0;
   }

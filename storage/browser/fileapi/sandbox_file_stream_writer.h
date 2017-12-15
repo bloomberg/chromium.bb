@@ -18,7 +18,7 @@
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -58,7 +58,7 @@ class STORAGE_EXPORT SandboxFileStreamWriter : public FileStreamWriter {
       const base::FilePath& platform_path,
       scoped_refptr<storage::ShareableFileReference> file_ref);
   void DidGetUsageAndQuota(const net::CompletionCallback& callback,
-                           storage::QuotaStatusCode status,
+                           blink::QuotaStatusCode status,
                            int64_t usage,
                            int64_t quota);
   void DidInitializeForWrite(net::IOBuffer* buf, int buf_len,

@@ -16,8 +16,8 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "storage/browser/quota/quota_client.h"
-#include "storage/common/quota/quota_status_code.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 class GURL;
 
@@ -29,14 +29,15 @@ typedef std::vector<UsageInfo> UsageInfoEntries;
 // Common callback types that are used throughout in the quota module.
 typedef base::Callback<void(int64_t usage, int64_t unlimited_usage)>
     GlobalUsageCallback;
-typedef base::Callback<void(QuotaStatusCode status, int64_t quota)>
+typedef base::Callback<void(blink::QuotaStatusCode status, int64_t quota)>
     QuotaCallback;
 typedef base::Callback<void(int64_t usage)> UsageCallback;
 typedef base::Callback<void(int64_t usage,
                             base::flat_map<QuotaClient::ID, int64_t>)>
     UsageWithBreakdownCallback;
-typedef base::Callback<void(QuotaStatusCode, int64_t)> AvailableSpaceCallback;
-typedef base::Callback<void(QuotaStatusCode)> StatusCallback;
+typedef base::Callback<void(blink::QuotaStatusCode, int64_t)>
+    AvailableSpaceCallback;
+typedef base::Callback<void(blink::QuotaStatusCode)> StatusCallback;
 typedef base::Callback<void(const std::set<GURL>& origins,
                             StorageType type)> GetOriginsCallback;
 typedef base::Callback<void(const UsageInfoEntries&)> GetUsageInfoCallback;

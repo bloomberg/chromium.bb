@@ -21,7 +21,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
-#include "storage/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
 
 namespace crypto {
@@ -155,7 +155,7 @@ class CONTENT_EXPORT CacheStorageCache {
       BadMessageCallback bad_message_callback,
       uint64_t space_required,
       uint64_t side_data_size,
-      storage::QuotaStatusCode status_code,
+      blink::QuotaStatusCode status_code,
       int64_t usage,
       int64_t quota);
   // Callback passed to operations. If |error| is a real error, invokes
@@ -307,7 +307,7 @@ class CONTENT_EXPORT CacheStorageCache {
                                 base::Time expected_response_time,
                                 scoped_refptr<net::IOBuffer> buffer,
                                 int buf_len,
-                                storage::QuotaStatusCode status_code,
+                                blink::QuotaStatusCode status_code,
                                 int64_t usage,
                                 int64_t quota);
 
@@ -321,7 +321,7 @@ class CONTENT_EXPORT CacheStorageCache {
                                         base::Time expected_response_time,
                                         scoped_refptr<net::IOBuffer> buffer,
                                         int buf_len,
-                                        storage::QuotaStatusCode status_code,
+                                        blink::QuotaStatusCode status_code,
                                         int64_t usage,
                                         int64_t quota);
   void WriteSideDataDidOpenEntry(ErrorCallback callback,
@@ -353,7 +353,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void PutDidDeleteEntry(std::unique_ptr<PutContext> put_context,
                          blink::mojom::CacheStorageError error);
   void PutDidGetUsageAndQuota(std::unique_ptr<PutContext> put_context,
-                              storage::QuotaStatusCode status_code,
+                              blink::QuotaStatusCode status_code,
                               int64_t usage,
                               int64_t quota);
   void PutDidCreateEntry(std::unique_ptr<disk_cache::Entry*> entry_ptr,

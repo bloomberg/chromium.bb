@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/renderer/worker_thread.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace blink {
 class WebStorageQuotaCallbacks;
@@ -40,7 +41,7 @@ class QuotaDispatcher : public WorkerThread::Observer {
     virtual ~Callback() {}
     virtual void DidQueryStorageUsageAndQuota(int64_t usage, int64_t quota) = 0;
     virtual void DidGrantStorageQuota(int64_t usage, int64_t granted_quota) = 0;
-    virtual void DidFail(storage::QuotaStatusCode status) = 0;
+    virtual void DidFail(blink::QuotaStatusCode status) = 0;
   };
 
   explicit QuotaDispatcher(
@@ -69,14 +70,14 @@ class QuotaDispatcher : public WorkerThread::Observer {
  private:
   // Message handlers.
   void DidQueryStorageUsageAndQuota(int64_t request_id,
-                                    storage::QuotaStatusCode status,
+                                    blink::QuotaStatusCode status,
                                     int64_t current_usage,
                                     int64_t current_quota);
   void DidGrantStorageQuota(int64_t request_id,
-                            storage::QuotaStatusCode status,
+                            blink::QuotaStatusCode status,
                             int64_t current_usage,
                             int64_t granted_quota);
-  void DidFail(int request_id, storage::QuotaStatusCode error);
+  void DidFail(int request_id, blink::QuotaStatusCode error);
 
   content::mojom::QuotaDispatcherHostPtr quota_host_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
