@@ -792,7 +792,7 @@ void SkiaRenderer::UpdateRenderPassTextures(
 }
 
 void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
-    const RenderPassId render_pass_id,
+    const RenderPassId& render_pass_id,
     const gfx::Size& enlarged_size,
     ResourceTextureHint texturehint) {
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -810,7 +810,7 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
 }
 
 bool SkiaRenderer::IsRenderPassResourceAllocated(
-    const RenderPassId render_pass_id) const {
+    const RenderPassId& render_pass_id) const {
   auto texture_it = render_pass_textures_.find(render_pass_id);
   if (texture_it == render_pass_textures_.end())
     return false;
@@ -820,17 +820,11 @@ bool SkiaRenderer::IsRenderPassResourceAllocated(
   return texture->id() != 0;
 }
 
-const gfx::Size& SkiaRenderer::GetRenderPassTextureSize(
-    const RenderPassId render_pass_id) {
+gfx::Size SkiaRenderer::GetRenderPassTextureSize(
+    const RenderPassId& render_pass_id) {
   cc::ScopedResource* texture = render_pass_textures_[render_pass_id].get();
   DCHECK(texture);
   return texture->size();
-}
-
-bool SkiaRenderer::HasAllocatedResourcesForTesting(
-    const RenderPassId render_pass_id) const {
-  auto iter = render_pass_textures_.find(render_pass_id);
-  return iter != render_pass_textures_.end() && iter->second->id();
 }
 
 }  // namespace viz

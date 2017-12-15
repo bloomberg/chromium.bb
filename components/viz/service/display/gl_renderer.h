@@ -73,8 +73,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       const gpu::TextureInUseResponses& responses) override;
 
   virtual bool IsContextLost();
-  bool HasAllocatedResourcesForTesting(
-      const RenderPassId render_pass_id) const override;
 
  protected:
   void DidChangeVisibility() override;
@@ -104,13 +102,13 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       const base::flat_map<RenderPassId, RenderPassRequirements>&
           render_passes_in_frame) override;
   void AllocateRenderPassResourceIfNeeded(
-      const RenderPassId render_pass_id,
+      const RenderPassId& render_pass_id,
       const gfx::Size& enlarged_size,
       ResourceTextureHint texturehint) override;
   bool IsRenderPassResourceAllocated(
-      const RenderPassId render_pass_id) const override;
-  const gfx::Size& GetRenderPassTextureSize(
-      const RenderPassId render_pass_id) override;
+      const RenderPassId& render_pass_id) const override;
+  gfx::Size GetRenderPassTextureSize(
+      const RenderPassId& render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
   void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
