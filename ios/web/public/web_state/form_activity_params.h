@@ -37,6 +37,9 @@ struct FormActivityParams {
   // |input_missing| is set to true if at least one of the members above isn't
   // set.
   bool input_missing = false;
+
+  // |is_main_frame| is true when the activity was registered in the main frame.
+  bool is_main_frame = false;
 };
 
 }  // namespace web

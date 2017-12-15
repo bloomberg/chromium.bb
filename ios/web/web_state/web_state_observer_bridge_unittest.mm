@@ -216,13 +216,15 @@ TEST_F(WebStateObserverBridgeTest, DocumentSubmitted) {
   ASSERT_FALSE([observer_ submitDocumentInfo]);
 
   std::string kTestFormName("form-name");
-  BOOL user_initiated = YES;
+  bool user_initiated = true;
+  bool is_main_frame = true;
   observer_bridge_.DocumentSubmitted(&test_web_state_, kTestFormName,
-                                     user_initiated);
+                                     user_initiated, is_main_frame);
   ASSERT_TRUE([observer_ submitDocumentInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ submitDocumentInfo]->web_state);
   EXPECT_EQ(kTestFormName, [observer_ submitDocumentInfo]->form_name);
   EXPECT_EQ(user_initiated, [observer_ submitDocumentInfo]->user_initiated);
+  EXPECT_EQ(is_main_frame, [observer_ submitDocumentInfo]->is_main_frame);
 }
 
 // Tests |webState:didRegisterFormActivity:...| forwarding.

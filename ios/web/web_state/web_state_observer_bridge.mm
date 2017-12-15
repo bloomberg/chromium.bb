@@ -126,13 +126,15 @@ void WebStateObserverBridge::DidSuppressDialog(web::WebState* web_state) {
 
 void WebStateObserverBridge::DocumentSubmitted(web::WebState* web_state,
                                                const std::string& form_name,
-                                               bool user_initiated) {
-  SEL selector =
-      @selector(webState:didSubmitDocumentWithFormNamed:userInitiated:);
+                                               bool user_initiated,
+                                               bool is_main_frame) {
+  SEL selector = @selector
+      (webState:didSubmitDocumentWithFormNamed:userInitiated:isMainFrame:);
   if ([observer_ respondsToSelector:selector]) {
     [observer_ webState:web_state
         didSubmitDocumentWithFormNamed:form_name
-                         userInitiated:user_initiated];
+                         userInitiated:user_initiated
+                           isMainFrame:is_main_frame];
   }
 }
 

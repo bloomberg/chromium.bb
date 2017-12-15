@@ -230,11 +230,13 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated {
+                     userInitiated:(BOOL)userInitiated
+                       isMainFrame:(BOOL)isMainFrame {
   _submitDocumentInfo = base::MakeUnique<web::TestSubmitDocumentInfo>();
   _submitDocumentInfo->web_state = webState;
   _submitDocumentInfo->form_name = formName;
   _submitDocumentInfo->user_initiated = userInitiated;
+  _submitDocumentInfo->is_main_frame = isMainFrame;
 }
 
 - (void)webState:(web::WebState*)webState

@@ -163,6 +163,7 @@
                                            fieldType:@""
                                                 type:nil
                                           typedValue:@" "
+                                         isMainFrame:YES
                                             webState:_webState
                                    completionHandler:availableHandler];
 }
@@ -290,12 +291,15 @@
 
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated {
+                     userInitiated:(BOOL)userInitiated
+                       isMainFrame:(BOOL)isMainFrame {
   if ([_delegate respondsToSelector:@selector
-                 (autofillController:didSubmitFormWithName:userInitiated:)]) {
+                 (autofillController:didSubmitFormWithName:userInitiated
+                                       :isMainFrame:)]) {
     [_delegate autofillController:self
             didSubmitFormWithName:base::SysUTF8ToNSString(formName)
-                    userInitiated:userInitiated];
+                    userInitiated:userInitiated
+                      isMainFrame:isMainFrame];
   }
 }
 

@@ -106,7 +106,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void OnPageLoaded(const GURL& url, bool load_success);
 
   // Called on form submission.
-  void OnDocumentSubmitted(const std::string& form_name, bool user_initiated);
+  void OnDocumentSubmitted(const std::string& form_name,
+                           bool user_initiated,
+                           bool is_main_frame);
 
   // Called when form activity is registered.
   void OnFormActivityRegistered(const FormActivityParams& params);

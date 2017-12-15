@@ -92,6 +92,7 @@ struct TestSubmitDocumentInfo {
   WebState* web_state;
   std::string form_name;
   bool user_initiated;
+  bool is_main_frame;
 };
 
 // Arguments passed to |FormActivityRegistered|.

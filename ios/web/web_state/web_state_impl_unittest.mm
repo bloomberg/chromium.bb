@@ -316,12 +316,14 @@ TEST_F(WebStateImplTest, ObserverTest) {
   // Test that DocumentSubmitted() is called.
   ASSERT_FALSE(observer->submit_document_info());
   const std::string kTestFormName("form-name");
-  BOOL user_initiated = true;
-  web_state_->OnDocumentSubmitted(kTestFormName, user_initiated);
+  bool user_initiated = true;
+  bool is_main_frame = false;
+  web_state_->OnDocumentSubmitted(kTestFormName, user_initiated, is_main_frame);
   ASSERT_TRUE(observer->submit_document_info());
   EXPECT_EQ(web_state_.get(), observer->submit_document_info()->web_state);
   EXPECT_EQ(kTestFormName, observer->submit_document_info()->form_name);
   EXPECT_EQ(user_initiated, observer->submit_document_info()->user_initiated);
+  EXPECT_EQ(is_main_frame, observer->submit_document_info()->is_main_frame);
 
   // Test that FormActivityRegistered() is called.
   ASSERT_FALSE(observer->form_activity_info());
@@ -332,6 +334,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   params.type = "type";
   params.value = "value";
   params.input_missing = true;
+  params.is_main_frame = false;
   web_state_->OnFormActivityRegistered(params);
   ASSERT_TRUE(observer->form_activity_info());
   EXPECT_EQ(web_state_.get(), observer->form_activity_info()->web_state);
@@ -344,6 +347,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(params.type, observer->form_activity_info()->form_activity.type);
   EXPECT_EQ(params.value, observer->form_activity_info()->form_activity.value);
   EXPECT_TRUE(observer->form_activity_info()->form_activity.input_missing);
+  EXPECT_FALSE(observer->form_activity_info()->form_activity.is_main_frame);
 
   // Test that FaviconUrlUpdated() is called.
   ASSERT_FALSE(observer->update_favicon_url_candidates_info());

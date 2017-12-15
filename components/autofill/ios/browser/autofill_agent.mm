@@ -557,9 +557,15 @@ void GetFormAndField(autofill::FormData* form,
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
+                               isMainFrame:(BOOL)isMainFrame
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
+  if (!isMainFrame) {
+    // Filling in iframes is not implemented.
+    completion(NO);
+    return;
+  }
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
   if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
@@ -647,7 +653,12 @@ void GetFormAndField(autofill::FormData* form,
 
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated {
+                     userInitiated:(BOOL)userInitiated
+                       isMainFrame:(BOOL)isMainFrame {
+  if (!isMainFrame) {
+    // Saving from iframes is not implemented.
+    return;
+  }
   DCHECK_EQ(webState_, webState);
   if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled))
     return;

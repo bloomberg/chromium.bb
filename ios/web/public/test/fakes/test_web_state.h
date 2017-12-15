@@ -110,7 +110,9 @@ class TestWebState : public WebState {
   void OnNavigationFinished(NavigationContext* navigation_context);
   void OnRenderProcessGone();
   void OnFormActivity(const FormActivityParams& params);
-  void OnDocumentSubmitted(const std::string& form_name, bool user_initiated);
+  void OnDocumentSubmitted(const std::string& form_name,
+                           bool user_initiated,
+                           bool is_main_frame);
   void OnVisibleSecurityStateChanged();
 
  private:

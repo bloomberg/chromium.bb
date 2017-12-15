@@ -116,7 +116,8 @@ class TestWebStateObserver : public WebStateObserver {
   void DidSuppressDialog(WebState* web_state) override;
   void DocumentSubmitted(WebState* web_state,
                          const std::string& form_name,
-                         bool user_initiated) override;
+                         bool user_initiated,
+                         bool is_main_frame) override;
   void FormActivityRegistered(WebState* web_state,
                               const FormActivityParams& params) override;
   void FaviconUrlUpdated(WebState* web_state,
