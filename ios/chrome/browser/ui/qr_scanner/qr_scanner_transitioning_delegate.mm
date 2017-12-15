@@ -58,37 +58,34 @@ enum QRScannerTransition { PRESENT, DISMISS };
   CGRect finalFrame =
       [transitionContext finalFrameForViewController:presentedViewController];
 
-  CGRect initialFrame;
   ProceduralBlock animations;
+
+  // Set the frame for the presented view.
+  presentedView.frame = finalFrame;
+  [presentedView layoutIfNeeded];
 
   switch (_transition) {
     case PRESENT: {
       [containerView insertSubview:presentedView belowSubview:presentingView];
-      initialFrame = finalFrame;
-      finalFrame.origin.y = -finalFrame.size.height;
       animations = ^void {
-        [presentingView setFrame:finalFrame];
+        presentingView.transform =
+            CGAffineTransformMakeTranslation(0, -finalFrame.size.height);
       };
       break;
     }
     case DISMISS: {
       [containerView insertSubview:presentedView aboveSubview:presentingView];
-      initialFrame = finalFrame;
-      initialFrame.origin.y = -initialFrame.size.height;
+      presentedView.transform =
+          CGAffineTransformMakeTranslation(0, -finalFrame.size.height);
       animations = ^void {
-        [presentedView setFrame:finalFrame];
+        presentedView.transform = CGAffineTransformIdentity;
       };
       break;
     }
   }
 
-  // Set the frame for the presented view.
-  if (!CGRectIsEmpty(initialFrame)) {
-    [presentedView setFrame:initialFrame];
-  }
-  [presentedView layoutIfNeeded];
-
   void (^completion)(BOOL) = ^void(BOOL finished) {
+    presentingView.transform = CGAffineTransformIdentity;
     [transitionContext completeTransition:finished];
   };
 

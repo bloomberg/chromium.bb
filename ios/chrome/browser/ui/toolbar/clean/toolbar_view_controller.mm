@@ -720,6 +720,15 @@
   self.buttonUpdater.forwardButton = self.forwardButton;
   self.buttonUpdater.voiceSearchButton = self.voiceSearchButton;
 
+  for (NSLayoutConstraint* constraint in buttonConstraints) {
+    // The buttons are added to a UIStackView. If the priority is
+    // |UILayoutPriorityRequired|, there is a conflict when the buttons are
+    // hidden as the stack view is setting their width to 0. Setting the
+    // priority to UILayoutPriorityDefaultHigh doesn't work as they would have a
+    // lower priority than the location bar which would expand.
+    constraint.priority = UILayoutPriorityRequired - 1;
+  }
+
   [NSLayoutConstraint activateConstraints:buttonConstraints];
 }
 
@@ -752,9 +761,13 @@
       ToolbarComponentVisibilityRegularWidth;
   self.locationBarLeadingButton.alpha = 0;
   self.locationBarLeadingButton.hidden = YES;
-  [self.locationBarLeadingButton.widthAnchor
-      constraintEqualToConstant:kLeadingLocationBarButtonWidth]
-      .active = YES;
+  NSLayoutConstraint* width = [self.locationBarLeadingButton.widthAnchor
+      constraintEqualToConstant:kLeadingLocationBarButtonWidth];
+  // The button is added to a UIStackView. If the priority is
+  // |UILayoutPriorityRequired|, there is a conflict when the button is hidden
+  // as the stack view is setting the width to 0.
+  width.priority = UILayoutPriorityRequired - 1;
+  width.active = YES;
   self.locationBarLeadingButton.imageEdgeInsets =
       UIEdgeInsetsMakeDirected(0, kLeadingLocationBarButtonImageInset, 0, 0);
 }
