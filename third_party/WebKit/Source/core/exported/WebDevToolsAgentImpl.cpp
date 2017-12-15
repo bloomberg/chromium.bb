@@ -107,9 +107,9 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   static void EnsureMainThreadDebuggerCreated(WebDevToolsAgentClient* client) {
     if (instance_)
       return;
-    std::unique_ptr<ClientMessageLoopAdapter> instance =
-        WTF::WrapUnique(new ClientMessageLoopAdapter(
-            WTF::WrapUnique(client->CreateClientMessageLoop())));
+    std::unique_ptr<ClientMessageLoopAdapter> instance(
+        new ClientMessageLoopAdapter(
+            Platform::Current()->CreateNestedMessageLoopRunner()));
     instance_ = instance.get();
     MainThreadDebugger::Instance()->SetClientMessageLoop(std::move(instance));
   }
@@ -131,8 +131,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 
  private:
   ClientMessageLoopAdapter(
-      std::unique_ptr<WebDevToolsAgentClient::WebKitClientMessageLoop>
-          message_loop)
+      std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop)
       : running_for_debug_break_(false),
         running_for_create_window_(false),
         message_loop_(std::move(message_loop)) {
@@ -218,8 +217,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 
   bool running_for_debug_break_;
   bool running_for_create_window_;
-  std::unique_ptr<WebDevToolsAgentClient::WebKitClientMessageLoop>
-      message_loop_;
+  std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop_;
 
   static ClientMessageLoopAdapter* instance_;
 };

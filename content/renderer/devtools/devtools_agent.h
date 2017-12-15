@@ -38,9 +38,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   explicit DevToolsAgent(RenderFrameImpl* frame);
   ~DevToolsAgent() override;
 
-  static blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-      createMessageLoopWrapper();
-
   void BindRequest(mojom::DevToolsAgentAssociatedRequest request);
   base::WeakPtr<DevToolsAgent> GetWeakPtr();
   bool IsAttached();
@@ -69,8 +66,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                            int call_id,
                            const blink::WebString& message,
                            const blink::WebString& state_cookie) override;
-  blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-  CreateClientMessageLoop() override;
   void WillEnterDebugLoop() override;
   void DidExitDebugLoop() override;
   bool RequestDevToolsForFrame(int session_id,

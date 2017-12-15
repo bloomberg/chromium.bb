@@ -59,13 +59,6 @@ class WebDevToolsAgentClient {
   // initialize its state.
   virtual void ResumeStartup() {}
 
-  class WebKitClientMessageLoop {
-   public:
-    virtual ~WebKitClientMessageLoop() {}
-    virtual void Run() = 0;
-    virtual void QuitNow() = 0;
-  };
-  virtual WebKitClientMessageLoop* CreateClientMessageLoop() { return 0; }
   virtual void WillEnterDebugLoop() {}
   virtual void DidExitDebugLoop() {}
 

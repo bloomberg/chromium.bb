@@ -324,11 +324,6 @@ void WebEmbeddedWorkerImpl::ResumeStartup() {
     shadow_page_->Initialize(worker_start_data_.script_url);
 }
 
-WebDevToolsAgentClient::WebKitClientMessageLoop*
-WebEmbeddedWorkerImpl::CreateClientMessageLoop() {
-  return worker_context_client_->CreateDevToolsMessageLoop();
-}
-
 const WebString& WebEmbeddedWorkerImpl::GetInstrumentationToken() {
   return instrumentation_token_;
 }

@@ -11,9 +11,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -47,37 +44,6 @@ namespace {
 // See kMaximumMojoMessageSize in services/service_manager/embedder/main.cc.
 const size_t kMaxDevToolsMessageChunkSize = 128 * 1024 * 1024 / 4;
 const char kPageGetAppManifest[] = "Page.getAppManifest";
-
-class WebKitClientMessageLoopImpl
-    : public WebDevToolsAgentClient::WebKitClientMessageLoop {
- public:
-  WebKitClientMessageLoopImpl() = default;
-  ~WebKitClientMessageLoopImpl() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  }
-  void Run() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    base::RunLoop* const previous_run_loop = run_loop_;
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    run_loop_ = &run_loop;
-
-    run_loop.Run();
-
-    run_loop_ = previous_run_loop;
-  }
-  void QuitNow() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(run_loop_);
-
-    run_loop_->Quit();
-  }
-
- private:
-  base::RunLoop* run_loop_ = nullptr;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-};
 
 } //  namespace
 
@@ -250,17 +216,6 @@ void DevToolsAgent::SendProtocolMessage(int session_id,
                                         const blink::WebString& state_cookie) {
   SendChunkedProtocolMessage(session_id, call_id, message.Utf8(),
                              state_cookie.Utf8());
-}
-
-// static
-blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-DevToolsAgent::createMessageLoopWrapper() {
-  return new WebKitClientMessageLoopImpl();
-}
-
-blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-DevToolsAgent::CreateClientMessageLoop() {
-  return createMessageLoopWrapper();
 }
 
 void DevToolsAgent::WillEnterDebugLoop() {

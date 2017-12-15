@@ -477,6 +477,18 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  // Returns an interface to run nested message loop. Used for debugging.
+  class NestedMessageLoopRunner {
+   public:
+    virtual ~NestedMessageLoopRunner() {}
+    virtual void Run() = 0;
+    virtual void QuitNow() = 0;
+  };
+  virtual std::unique_ptr<NestedMessageLoopRunner>
+  CreateNestedMessageLoopRunner() const {
+    return nullptr;
+  }
+
   // Testing -------------------------------------------------------------
 
   // Gets a pointer to URLLoaderMockFactory for testing. Will not be available

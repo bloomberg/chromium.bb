@@ -156,8 +156,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                            int call_id,
                            const blink::WebString& message,
                            const blink::WebString& state) override;
-  blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-  CreateDevToolsMessageLoop() override;
   void DidHandleActivateEvent(int request_id,
                               blink::mojom::ServiceWorkerEventStatus status,
                               double dispatch_event_time) override;

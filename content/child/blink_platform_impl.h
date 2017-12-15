@@ -116,6 +116,8 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   void WaitUntilWebThreadTLSUpdate(blink::scheduler::WebThreadBase* thread);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
+  std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
+      const override;
 
  private:
   void UpdateWebThreadTLS(blink::WebThread* thread, base::WaitableEvent* event);
