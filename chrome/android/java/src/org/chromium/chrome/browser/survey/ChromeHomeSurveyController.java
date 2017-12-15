@@ -48,8 +48,9 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     public static final String PARAM_NAME = "survey_override_site_id";
     public static final long REQUIRED_VISIBILITY_DURATION_MS = 5000;
 
-    private static final String TRIAL_NAME = "ChromeHome";
-    private static final String MAX_NUMBER = "MaxNumber";
+    private static final String CHROME_HOME_TRIAL_NAME = "ChromeHome";
+    private static final String HAPPINESS_SURVEY_TRIAL_NAME = "ChromeHomeHappinessSurvey";
+    private static final String MAX_NUMBER = "max-number";
     private static final String TEST_SITE_ID = "obw74vpeieqaw4xmw7o6qlpdbq";
 
     private static boolean sForceUmaEnabledForTesting;
@@ -98,7 +99,8 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY)) {
             siteId = TEST_SITE_ID;
         } else {
-            siteId = VariationsAssociatedData.getVariationParamValue(TRIAL_NAME, PARAM_NAME);
+            siteId = VariationsAssociatedData.getVariationParamValue(
+                    HAPPINESS_SURVEY_TRIAL_NAME, PARAM_NAME);
         }
 
         if (TextUtils.isEmpty(siteId)) return;
@@ -302,7 +304,8 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     @VisibleForTesting
     int getMaxNumber() {
         try {
-            String number = VariationsAssociatedData.getVariationParamValue(TRIAL_NAME, MAX_NUMBER);
+            String number = VariationsAssociatedData.getVariationParamValue(
+                    CHROME_HOME_TRIAL_NAME, MAX_NUMBER);
             if (TextUtils.isEmpty(number)) return -1;
             return Integer.parseInt(number);
         } catch (NumberFormatException e) {
