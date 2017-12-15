@@ -765,6 +765,64 @@ load_modules(struct weston_compositor *ec, const char *modules,
 }
 
 static int
+save_touch_device_calibration(struct weston_compositor *compositor,
+			      struct weston_touch_device *device,
+			      const struct weston_touch_device_matrix *calibration)
+{
+	struct weston_config_section *s;
+	struct weston_config *config = wet_get_config(compositor);
+	char *helper = NULL;
+	char *helper_cmd = NULL;
+	int ret = -1;
+	int status;
+	const float *m = calibration->m;
+
+	s = weston_config_get_section(config,
+				      "libinput", NULL, NULL);
+
+	weston_config_section_get_string(s, "calibration_helper",
+					 &helper, NULL);
+
+	if (!helper || strlen(helper) == 0) {
+		ret = 0;
+		goto out;
+	}
+
+	if (asprintf(&helper_cmd, "\"%s\" '%s' %f %f %f %f %f %f",
+		     helper, device->syspath,
+		     m[0], m[1], m[2],
+		     m[3], m[4], m[5]) < 0)
+		goto out;
+
+	status = system(helper_cmd);
+	free(helper_cmd);
+
+	if (status < 0) {
+		weston_log("Error: failed to run calibration helper '%s'.\n",
+			   helper);
+		goto out;
+	}
+
+	if (!WIFEXITED(status)) {
+		weston_log("Error: calibration helper '%s' possibly killed.\n",
+			   helper);
+		goto out;
+	}
+
+	if (WEXITSTATUS(status) == 0) {
+		ret = 0;
+	} else {
+		weston_log("Calibration helper '%s' exited with status %d.\n",
+			   helper, WEXITSTATUS(status));
+	}
+
+out:
+	free(helper);
+
+	return ret;
+}
+
+static int
 weston_compositor_init_config(struct weston_compositor *ec,
 			      struct weston_config *config)
 {
@@ -772,7 +830,9 @@ weston_compositor_init_config(struct weston_compositor *ec,
 	struct weston_config_section *s;
 	int repaint_msec;
 	int vt_switching;
+	int cal;
 
+	/* weston.ini [keyboard] */
 	s = weston_config_get_section(config, "keyboard", NULL, NULL);
 	weston_config_section_get_string(s, "keymap_rules",
 					 (char **) &xkb_names.rules, NULL);
@@ -797,6 +857,7 @@ weston_compositor_init_config(struct weston_compositor *ec,
 				       &vt_switching, true);
 	ec->vt_switching = vt_switching;
 
+	/* weston.ini [core] */
 	s = weston_config_get_section(config, "core", NULL, NULL);
 	weston_config_section_get_int(s, "repaint-window", &repaint_msec,
 				      ec->repaint_msec);
@@ -808,6 +869,13 @@ weston_compositor_init_config(struct weston_compositor *ec,
 	}
 	weston_log("Output repaint window is %d ms maximum.\n",
 		   ec->repaint_msec);
+
+	/* weston.ini [libinput] */
+	s = weston_config_get_section(config, "libinput", NULL, NULL);
+	weston_config_section_get_bool(s, "touchscreen_calibrator", &cal, 0);
+	if (cal)
+		weston_compositor_enable_touch_calibrator(ec,
+						save_touch_device_calibration);
 
 	return 0;
 }

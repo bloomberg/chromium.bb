@@ -200,8 +200,47 @@ Available configuration are:
 .TP 7
 .BI "enable_tap=" true
 enables tap to click on touchpad devices
+.TP 7
+.BI "touchscreen_calibrator=" true
+Advertise the touchscreen calibrator interface to all clients. This is a
+potential denial-of-service attack vector, so it should only be enabled on
+trusted userspace. Boolean, defaults to
+.BR false .
+
+The interface is required for running touchscreen calibrator applications. It
+provides the application raw touch events, bypassing the normal touch handling.
+It also allows the application to upload a new calibration into the compositor.
+
+Even though this option is listed in the libinput section, it does affect all
+Weston configurations regardless of the used backend. If the backend does not
+use libinput, the interface can still be advertised, but it will not list any
+devices.
+.TP 7
+.BI "calibration_helper=" /bin/echo
+An optional calibration helper program to permanently save a new touchscreen
+calibration. String, defaults to unset.
+
+The given program will be executed with seven arguments when a calibrator
+application requests the server to take a new calibration matrix into use.
+The program is executed synchronously and will therefore block Weston for its
+duration. If the program exit status is non-zero, Weston will not apply the
+new calibration. If the helper is unset or the program exit status is zero,
+Weston will use the new calibration immediately.
+
+The program is invoked as:
+.PP
+.RS 10
+.I calibration_helper syspath m1 m2 m3 m4 m5 m6
+.RE
 .RS
 .PP
+.RI "where " syspath
+is the udev sys path for the device and
+.IR m1 "  through " m6
+are the calibration matrix elements in libinput's
+.BR LIBINPUT_CALIBRATION_MATRIX " udev property format."
+The sys path is an absolute path and starts with the sys mount point.
+.RE
 
 .SH "SHELL SECTION"
 The
