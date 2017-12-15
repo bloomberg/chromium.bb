@@ -28,7 +28,9 @@
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
@@ -68,13 +70,11 @@ void SetFaviconCallback(Profile* profile,
     bookmark_added_event->Signal();
 }
 
-void JNI_PartnerBookmarksReader_PrepareAndSetFavicon(
-    JNIEnv* env,
-    jbyte* icon_bytes,
-    int icon_len,
-    BookmarkNode* node,
-    Profile* profile,
-    favicon_base::IconType icon_type) {
+void PrepareAndSetFavicon(jbyte* icon_bytes,
+                          int icon_len,
+                          BookmarkNode* node,
+                          Profile* profile,
+                          favicon_base::IconType icon_type) {
   SkBitmap icon_bitmap;
   if (!gfx::PNGCodec::Decode(
       reinterpret_cast<const unsigned char*>(icon_bytes),
@@ -177,8 +177,8 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
         const int icon_len = env->GetArrayLength(icon);
         jbyte* icon_bytes = env->GetByteArrayElements(icon, nullptr);
         if (icon_bytes)
-          JNI_PartnerBookmarksReader_PrepareAndSetFavicon(
-              env, icon_bytes, icon_len, node.get(), profile_, icon_type);
+          PrepareAndSetFavicon(icon_bytes, icon_len, node.get(), profile_,
+                               icon_type);
         env->ReleaseByteArrayElements(icon, icon_bytes, JNI_ABORT);
       } else {
         // We should attempt to read the favicon from cache or retrieve it from
@@ -234,7 +234,7 @@ void PartnerBookmarksReader::GetFaviconImpl(const GURL& page_url,
   }
 
   GetFaviconFromCacheOrServer(page_url, fallback_to_server,
-                              std::move(callback));
+                              false /* from_server */, std::move(callback));
 }
 
 favicon::LargeIconService* PartnerBookmarksReader::GetLargeIconService() {
@@ -248,12 +248,14 @@ favicon::LargeIconService* PartnerBookmarksReader::GetLargeIconService() {
 void PartnerBookmarksReader::GetFaviconFromCacheOrServer(
     const GURL& page_url,
     bool fallback_to_server,
+    bool from_server,
     FaviconFetchedCallback callback) {
   GetLargeIconService()->GetLargeIconOrFallbackStyle(
       page_url, kPartnerBookmarksMinimumFaviconSizePx, 0,
       base::Bind(&PartnerBookmarksReader::OnGetFaviconFromCacheFinished,
                  base::Unretained(this), page_url,
-                 base::Passed(std::move(callback)), fallback_to_server),
+                 base::Passed(std::move(callback)), fallback_to_server,
+                 from_server),
       &favicon_task_tracker_);
 }
 
@@ -261,10 +263,17 @@ void PartnerBookmarksReader::OnGetFaviconFromCacheFinished(
     const GURL& page_url,
     FaviconFetchedCallback callback,
     bool fallback_to_server,
+    bool from_server,
     const favicon_base::LargeIconResult& result) {
-  // We got an image from the cache.
+  // |from_server| tells us if we fetched the image from the cache after we went
+  // to server for it, so this successful cache retrieval should actually return
+  // SUCCESS_FROM_SERVER.
   if (result.bitmap.is_valid()) {
-    std::move(callback).Run(FaviconFetchResult::SUCCESS);
+    if (from_server) {
+      std::move(callback).Run(FaviconFetchResult::SUCCESS_FROM_SERVER);
+    } else {
+      std::move(callback).Run(FaviconFetchResult::SUCCESS_FROM_CACHE);
+    }
     return;
   }
 
@@ -309,18 +318,24 @@ void PartnerBookmarksReader::OnGetFaviconFromServerFinished(
     FaviconFetchedCallback callback,
     favicon_base::GoogleFaviconServerRequestStatus status) {
   if (status != favicon_base::GoogleFaviconServerRequestStatus::SUCCESS) {
-    std::move(callback).Run(
-        status == favicon_base::GoogleFaviconServerRequestStatus::
-                      FAILURE_CONNECTION_ERROR
-            ? FaviconFetchResult::FAILURE_CONNECTION_ERROR
-            : FaviconFetchResult::FAILURE_SERVER_ERROR);
+    FaviconFetchResult result;
+    if (status == favicon_base::GoogleFaviconServerRequestStatus::
+                      FAILURE_CONNECTION_ERROR) {
+      result = FaviconFetchResult::FAILURE_CONNECTION_ERROR;
+    } else if (status == favicon_base::GoogleFaviconServerRequestStatus::
+                             FAILURE_ON_WRITE) {
+      result = FaviconFetchResult::FAILURE_WRITING_FAVICON_CACHE;
+    } else {
+      result = FaviconFetchResult::FAILURE_SERVER_ERROR;
+    }
+    std::move(callback).Run(result);
     return;
   }
 
   // The icon was successfully retrieved from the server, now we just have to
   // retrieve it from the cache where it was stored.
   GetFaviconFromCacheOrServer(page_url, false /* fallback_to_server */,
-                              std::move(callback));
+                              true /* from_server */, std::move(callback));
 }
 
 void PartnerBookmarksReader::OnFaviconFetched(
@@ -331,14 +346,13 @@ void PartnerBookmarksReader::OnFaviconFetched(
                                              static_cast<int>(result));
 }
 
-// static
+// ----------------------------------------------------------------
+
 static void JNI_PartnerBookmarksReader_DisablePartnerBookmarksEditing(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   PartnerBookmarksShim::DisablePartnerBookmarksEditing();
 }
-
-// ----------------------------------------------------------------
 
 static jlong JNI_PartnerBookmarksReader_Init(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
@@ -348,4 +362,13 @@ static jlong JNI_PartnerBookmarksReader_Init(JNIEnv* env,
   PartnerBookmarksReader* reader = new PartnerBookmarksReader(
       partner_bookmarks_shim, profile);
   return reinterpret_cast<intptr_t>(reader);
+}
+
+static base::android::ScopedJavaLocalRef<jstring>
+JNI_PartnerBookmarksReader_GetNativeUrlString(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& j_url) {
+  GURL url(ConvertJavaStringToUTF8(j_url));
+  return ConvertUTF8ToJavaString(env, url.spec());
 }

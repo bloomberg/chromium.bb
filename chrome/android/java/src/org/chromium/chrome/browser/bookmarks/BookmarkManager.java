@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -41,7 +42,8 @@ import java.util.Stack;
  * {@link BookmarkActivity} (phone) and {@link BookmarkPage} (tablet).
  */
 public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
-                                        SelectableBottomSheetContentManager<BookmarkId> {
+                                        SelectableBottomSheetContentManager<BookmarkId>,
+                                        PartnerBookmarksReader.FaviconUpdateObserver {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
     /**
@@ -66,6 +68,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     private SelectionDelegate<BookmarkId> mSelectionDelegate;
     private final Stack<BookmarkUIState> mStateStack = new Stack<>();
     private LargeIconBridge mLargeIconBridge;
+    private boolean mFaviconsNeedRefresh;
     private String mInitialUrl;
     private boolean mIsDialogUi;
     private boolean mIsDestroyed;
@@ -116,6 +119,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     public BookmarkManager(Activity activity, boolean isDialogUi, SnackbarManager snackbarManager) {
         mActivity = activity;
         mIsDialogUi = isDialogUi;
+
+        PartnerBookmarksReader.addFaviconUpdateObserver(this);
 
         mSelectionDelegate = new SelectionDelegate<BookmarkId>() {
             @Override
@@ -183,6 +188,20 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         ContextUtils.getAppSharedPreferences().edit().remove(PREF_SEARCH_HISTORY).apply();
     }
 
+    @Override
+    public void onUpdateFavicon(String url) {
+        mLargeIconBridge.clearFavicon(url);
+        mFaviconsNeedRefresh = true;
+    }
+
+    @Override
+    public void onCompletedFaviconLoading() {
+        if (mFaviconsNeedRefresh) {
+            mAdapter.refresh();
+            mFaviconsNeedRefresh = false;
+        }
+    }
+
     /**
      * Destroys and cleans up itself. This must be called after done using this class.
      */
@@ -206,6 +225,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         mBookmarkModel = null;
         mLargeIconBridge.destroy();
         mLargeIconBridge = null;
+        PartnerBookmarksReader.removeFaviconUpdateObserver(this);
     }
 
     /**

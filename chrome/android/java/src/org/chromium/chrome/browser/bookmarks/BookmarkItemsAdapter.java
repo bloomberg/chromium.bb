@@ -60,6 +60,7 @@ class BookmarkItemsAdapter
     private Context mContext;
     private BookmarkPromoHeader mPromoHeaderManager;
     private String mSearchText;
+    private BookmarkId mCurrentFolder;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -310,6 +311,7 @@ class BookmarkItemsAdapter
         assert mDelegate != null;
 
         mSearchText = EMPTY_QUERY;
+        mCurrentFolder = folder;
 
         if (folder.equals(mDelegate.getModel().getRootFolderId())) {
             setBookmarks(mTopLevelFolders, new ArrayList<BookmarkId>());
@@ -326,6 +328,14 @@ class BookmarkItemsAdapter
 
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {}
+
+    /**
+     * Refresh the list of bookmarks within the currently visible folder.
+     */
+    public void refresh() {
+        if (mCurrentFolder == null) return;
+        onFolderStateSet(mCurrentFolder);
+    }
 
     /**
      * Synchronously searches for the given query.
