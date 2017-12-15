@@ -36595,6 +36595,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Load"/>
 </enum>
 
+<enum name="RSAKeyUsage">
+  <int value="0" label="Not an RSA key"/>
+  <int value="1" label="OK (no extension)"/>
+  <int value="2" label="OK (both bits present)"/>
+  <int value="3" label="OK (digitalSignature present)"/>
+  <int value="4" label="OK (keyEncipherment present)"/>
+  <int value="5" label="Missing digitalSignature"/>
+  <int value="6" label="Missing keyEncipherment"/>
+  <int value="7" label="Error parsing certificate"/>
+</enum>
+
 <enum name="RunningMode">
   <obsolete>
     Removed 9/2016.
