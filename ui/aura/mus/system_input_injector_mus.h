@@ -5,6 +5,7 @@
 #ifndef UI_AURA_MUS_SYSTEM_INPUT_INJECTOR_MUS_H_
 #define UI_AURA_MUS_SYSTEM_INPUT_INJECTOR_MUS_H_
 
+#include "ui/aura/aura_export.h"
 #include "ui/events/event_modifiers.h"
 #include "ui/events/system_input_injector.h"
 
@@ -12,7 +13,7 @@ namespace aura {
 
 class WindowManagerClient;
 
-class SystemInputInjectorMus : public ui::SystemInputInjector {
+class AURA_EXPORT SystemInputInjectorMus : public ui::SystemInputInjector {
  public:
   explicit SystemInputInjectorMus(WindowManagerClient* client);
   ~SystemInputInjectorMus() override;
@@ -26,6 +27,9 @@ class SystemInputInjectorMus : public ui::SystemInputInjector {
                       bool suppress_auto_repeat) override;
 
  private:
+  // Forwards |event| to the display at |location|.
+  void InjectEventAt(const ui::Event& event, const gfx::Point& location);
+
   // Updates |modifiers_| based on an incoming event.
   void UpdateModifier(unsigned int modifier, bool down);
 
