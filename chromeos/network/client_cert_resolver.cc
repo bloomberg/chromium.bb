@@ -123,9 +123,13 @@ struct MatchCertWithPattern {
 
   bool operator()(const CertAndIssuer& cert_and_issuer) {
     if (!pattern.issuer().Empty() || !pattern.subject().Empty()) {
+      // Allow UTF-8 inside PrintableStrings in client certificates. See
+      // crbug.com/770323 and crbug.com/788655.
+      net::X509Certificate::UnsafeCreateOptions options;
+      options.printable_string_is_utf8 = true;
       scoped_refptr<net::X509Certificate> x509_cert =
           net::x509_util::CreateX509CertificateFromCERTCertificate(
-              cert_and_issuer.cert.get());
+              cert_and_issuer.cert.get(), {}, options);
       if (!x509_cert)
         return false;
       if (!pattern.issuer().Empty() &&
