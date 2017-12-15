@@ -25,8 +25,15 @@ function performChromiumSetup() {
 
   // Load the Chromium-specific resources.
   let root = window.location.pathname.match(/.*LayoutTests/);
-  let resource_prefix = `${root}/resources`;
-  let gen_prefix = 'file:///gen/';
+  let resource_prefix, gen_prefix;
+  if (root === null) {
+    // Use the correct aliases for tests using an HTTP server.
+    resource_prefix = `/js-test-resources`;
+    gen_prefix = `/gen`;
+  } else {
+    resource_prefix = `${root}/resources`;
+    gen_prefix = 'file:///gen/';
+  }
   return loadScripts([
     `${gen_prefix}/layout_test_data/mojo/public/js/mojo_bindings.js`,
     `${gen_prefix}/content/test/data/mojo_layouttest_test.mojom.js`,
