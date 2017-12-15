@@ -4271,14 +4271,17 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="CanonicalURLResult">
   <int value="0" label="Canonical URL not retrieved: Visible URL not HTTPS"/>
   <int value="1"
-      label="Canonical URL not retrieved: Canonical URL not HTTPS (but
-             visible URL is)"/>
+      label="(obsolete) Canonical URL not retrieved: Canonical URL not HTTPS
+             (but visible URL is)"/>
   <int value="2"
       label="Canonical URL not retrieved: Page had no canonical URL defined"/>
   <int value="3"
       label="Canonical URL not retrieved: Page's canonical URL was invalid"/>
   <int value="4" label="Canonical URL retrieved: Differed from visible URL"/>
   <int value="5" label="Canonical URL retrieved: Same as visible URL"/>
+  <int value="6"
+      label="Canonical URL retrieved: Canonical URL not HTTPS (but visible
+             URL is)"/>
 </enum>
 
 <enum name="CanvasContextType">
