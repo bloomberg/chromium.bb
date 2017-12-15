@@ -1023,9 +1023,25 @@ class GitRepoPatch(PatchQuery):
     return dict(line.split('\t', 1)[::-1] for line in lines)
 
   def _AmendCommitMessage(self, git_repo):
-    """"Amend the commit and update our sha1 with the new commit."""
-    git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message])
-    self.sha1 = ParseSHA1(self._PullData('HEAD', git_repo)[0], error_ok=False)
+    """"Amend the commit and update our sha1 with the new commit.
+
+    If |git_repo| is already checked out at this patch, then amend it at leave
+    HEAD pointing at the amended commit.
+
+    If |git_repo| is not currently checked ouat at this patch, amend the patch
+    and return HEAD to where it currently points.
+    """
+    sha1_before = ParseSHA1(self._PullData('HEAD', git_repo)[0], error_ok=False)
+    reset_before_and_after = (sha1_before != self.sha1)
+    try:
+      if reset_before_and_after:
+        git.RunGit(git_repo, ['reset', '--hard', self.sha1])
+      git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message])
+      self.sha1 = ParseSHA1(self._PullData('HEAD', git_repo)[0],
+                            error_ok=False)
+    finally:
+      if reset_before_and_after:
+        git.RunGit(git_repo, ['reset', '--hard', sha1_before])
 
   # pylint: disable=unused-argument
   def Merge(self, git_repo, trivial=False, inflight=False, leave_dirty=False):

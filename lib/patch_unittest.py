@@ -1152,6 +1152,30 @@ class TestGerritPatch(TestGitRepoPatch):
           if set(footers) - set(patch._GetFooters(msg)):
             self.assertNotEqual(msg, patch._AddFooters(msg))
 
+  def testAmendCommitMessageInPlace(self):
+    git1 = self._MakeRepo('git1', self.source)
+    patch = self.CommitFile(git1, 'foo', 'bar')
+    patch.Fetch(git1)
+    sha1_before = patch.sha1
+    patch._AmendCommitMessage(git1)
+    sha1_after = patch.sha1
+    self.assertNotEqual(sha1_after, sha1_before)
+
+  def testAmendCommitMessageNonHeadPatch(self):
+    git1 = self._MakeRepo('git1', self.source)
+    patch1 = self.CommitFile(git1, 'foo', 'bar')
+    patch1.Fetch(git1)
+    patch2 = self.CommitFile(git1, 'bax', 'quz')
+    patch2.Fetch(git1)
+    p1_sha1_before = patch1.sha1
+    head_sha1_before = patch2.sha1
+
+    patch1._AmendCommitMessage(git1)
+    p1_sha1_after = patch1.sha1
+    self.assertNotEqual(p1_sha1_after, p1_sha1_before)
+
+    self.assertEqual(head_sha1_before, self._GetSha1(git1, 'HEAD'))
+
   def testConvertQueryResults(self):
     """Verify basic ConvertQueryResults behavior."""
     self.maxDiff = None
