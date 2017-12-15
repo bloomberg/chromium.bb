@@ -87,7 +87,7 @@ void BindingStateBase::BindInternal(
     bool has_sync_methods,
     MessageReceiverWithResponderStatus* stub,
     uint32_t interface_version) {
-  DCHECK(!router_);
+  DCHECK(!is_bound()) << "Attempting to bind interface that is already bound.";
 
   auto sequenced_runner =
       GetTaskRunnerToUseFromUserProvidedTaskRunner(std::move(runner));
