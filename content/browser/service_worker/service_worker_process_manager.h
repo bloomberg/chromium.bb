@@ -22,6 +22,7 @@ namespace content {
 
 class BrowserContext;
 class SiteInstance;
+class StoragePartitionImpl;
 
 // Interacts with the UI thread to keep RenderProcessHosts alive while the
 // ServiceWorker system is using them. It also tracks candidate processes
@@ -110,6 +111,10 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // dereferenced on the UI thread only.
   base::WeakPtr<ServiceWorkerProcessManager> AsWeakPtr() { return weak_this_; }
 
+  void set_storage_partition(StoragePartitionImpl* storage_partition) {
+    storage_partition_ = storage_partition;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest, SortProcess);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
@@ -164,7 +169,11 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // Protects |browser_context_|.
   base::Lock browser_context_lock_;
 
+  //////////////////////////////////////////////////////////////////////////////
   // All fields below are only accessed on the UI thread.
+
+  // May be null during initialization and in unit tests.
+  StoragePartitionImpl* storage_partition_;
 
   // Maps the ID of a running EmbeddedWorkerInstance to information about the
   // process it's running inside. Since the Instances themselves live on the IO

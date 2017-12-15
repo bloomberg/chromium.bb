@@ -166,7 +166,8 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     BrowserContext* browser_context)
     : core_observer_list_(
           new base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>()),
-      process_manager_(new ServiceWorkerProcessManager(browser_context)),
+      process_manager_(
+          std::make_unique<ServiceWorkerProcessManager>(browser_context)),
       is_incognito_(false),
       storage_partition_(nullptr),
       resource_context_(nullptr) {
@@ -236,6 +237,7 @@ void ServiceWorkerContextWrapper::set_storage_partition(
     StoragePartitionImpl* storage_partition) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   storage_partition_ = storage_partition;
+  process_manager_->set_storage_partition(storage_partition_);
 }
 
 ResourceContext* ServiceWorkerContextWrapper::resource_context() {

@@ -260,7 +260,7 @@ class RendererFreezerTestWithExtensions : public RendererFreezerTest {
         extensions::ProcessManager::Get(profile_)->GetSiteInstanceForURL(
             extensions::BackgroundInfo::GetBackgroundURL(extension)));
     std::unique_ptr<content::RenderProcessHost> rph(
-        rph_factory->CreateRenderProcessHost(profile_));
+        rph_factory->CreateRenderProcessHost(profile_, site_instance.get()));
 
     // Fake that the RenderProcessHost is hosting the gcm app.
     extensions::ProcessMap::Get(profile_)
@@ -297,7 +297,7 @@ TEST_F(RendererFreezerTestWithExtensions, FreezesNonExtensionRenderers) {
   scoped_refptr<content::SiteInstance> site_instance(
       content::SiteInstance::Create(profile_));
   std::unique_ptr<content::RenderProcessHost> rph(
-      rph_factory->CreateRenderProcessHost(profile_));
+      rph_factory->CreateRenderProcessHost(profile_, site_instance.get()));
 
   // Send the notification that the RenderProcessHost has been created.
   content::NotificationService::current()->Notify(

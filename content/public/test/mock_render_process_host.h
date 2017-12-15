@@ -30,6 +30,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 class StoragePartition;
+class SiteInstance;
 
 namespace content {
 
@@ -222,7 +223,8 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   ~MockRenderProcessHostFactory() override;
 
   RenderProcessHost* CreateRenderProcessHost(
-      BrowserContext* browser_context) const override;
+      BrowserContext* browser_context,
+      SiteInstance* site_instance) const override;
 
   // Removes the given MockRenderProcessHost from the MockRenderProcessHost list
   // without deleting it. When a test deletes a MockRenderProcessHost, we need

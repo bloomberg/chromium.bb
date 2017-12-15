@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -51,6 +52,7 @@ ServiceWorkerProcessManager::ProcessInfo::~ProcessInfo() {
 ServiceWorkerProcessManager::ServiceWorkerProcessManager(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
+      storage_partition_(nullptr),
       process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
       new_process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
       weak_this_factory_(this) {
@@ -186,6 +188,8 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
   // In non-PlzNavigate, we must manually track renderer processes in order to
   // use an existing process. In PlzNavigate, we can depend on SiteInstance to
   // return an existing process, so just skip this part.
+  // TODO(clamy): Remove this process reuse mechanism when the non-PlzNavigate
+  // code path is no longer needed (the feature flag is removed).
   if (!content::IsBrowserSideNavigationEnabled() && can_use_existing_process) {
     int process_id = FindAvailableProcess(pattern);
     if (process_id != ChildProcessHost::kInvalidUniqueID) {
@@ -200,14 +204,22 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
   }
 
   // ServiceWorkerProcessManager does not know of any renderer processes that
-  // are available for |pattern|. Create a SiteInstance and ask for a renderer
-  // process. Attempt to reuse an existing process if possible.
-  // TODO(clamy): Update the process reuse mechanism above following the
-  // implementation of
-  // SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE.
+  // are available for |pattern|. Create a SiteInstance to ask it for a renderer
+  // process. Use the site URL from the StoragePartition in case this
+  // StoragePartition is for guests (e.g., <webview>).
+  bool use_url_from_storage_partition =
+      storage_partition_ &&
+      !storage_partition_->site_for_service_worker().is_empty();
   scoped_refptr<SiteInstanceImpl> site_instance =
-      SiteInstanceImpl::CreateForURL(browser_context_, script_url);
+      SiteInstanceImpl::CreateForURL(
+          browser_context_, use_url_from_storage_partition
+                                ? storage_partition_->site_for_service_worker()
+                                : script_url);
   site_instance->set_is_for_service_worker();
+
+  // Attempt to reuse a renderer process if possible. Note that in the
+  // <webview> case, process reuse isn't currently supported and a new
+  // process will always be created (https://crbug.com/752667).
   DCHECK(site_instance->process_reuse_policy() ==
              SiteInstanceImpl::ProcessReusePolicy::DEFAULT ||
          site_instance->process_reuse_policy() ==
@@ -217,7 +229,11 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
         SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   }
 
+  // Get the process from the SiteInstance.
   RenderProcessHost* rph = site_instance->GetProcess();
+  DCHECK(!storage_partition_ ||
+         rph->InSameStoragePartition(storage_partition_));
+
   ServiceWorkerMetrics::StartSituation start_situation;
   if (!rph->HasConnection()) {
     // HasConnection() is false means that Init() has not been called or the

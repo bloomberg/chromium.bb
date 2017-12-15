@@ -82,7 +82,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DeleteAndStartOver();
 
   // The StoragePartition should only be used on the UI thread.
-  // Can be null before/during init and during/after shutdown.
+  // Can be null before/during init and during/after shutdown (and in tests).
   StoragePartitionImpl* storage_partition() const;
 
   void set_storage_partition(StoragePartitionImpl* storage_partition);
