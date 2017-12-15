@@ -221,8 +221,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       const cc::ClientTransferCacheEntry& entry) override;
   bool ThreadsafeLockTransferCacheEntry(cc::TransferCacheEntryType type,
                                         uint32_t id) override;
-  void UnlockTransferCacheEntry(cc::TransferCacheEntryType type,
-                                uint32_t id) override;
+  void UnlockTransferCacheEntries(
+      const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
+          entries) override;
   void DeleteTransferCacheEntry(cc::TransferCacheEntryType type,
                                 uint32_t id) override;
 

@@ -102,8 +102,9 @@ class ContextSupport {
       const cc::ClientTransferCacheEntry& entry) = 0;
   virtual bool ThreadsafeLockTransferCacheEntry(cc::TransferCacheEntryType type,
                                                 uint32_t id) = 0;
-  virtual void UnlockTransferCacheEntry(cc::TransferCacheEntryType type,
-                                        uint32_t id) = 0;
+  virtual void UnlockTransferCacheEntries(
+      const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
+          entries) = 0;
   virtual void DeleteTransferCacheEntry(cc::TransferCacheEntryType type,
                                         uint32_t id) = 0;
 

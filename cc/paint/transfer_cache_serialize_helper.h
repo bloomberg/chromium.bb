@@ -6,6 +6,7 @@
 #define CC_PAINT_TRANSFER_CACHE_SERIALIZE_HELPER_H_
 
 #include <set>
+#include <vector>
 
 #include "cc/paint/paint_export.h"
 #include "cc/paint/transfer_cache_entry.h"
@@ -27,7 +28,7 @@ class CC_PAINT_EXPORT TransferCacheSerializeHelper {
   using EntryKey = std::pair<TransferCacheEntryType, uint32_t>;
   virtual bool LockEntryInternal(TransferCacheEntryType type, uint32_t id) = 0;
   virtual void CreateEntryInternal(const ClientTransferCacheEntry& entry) = 0;
-  virtual void FlushEntriesInternal(const std::set<EntryKey>& entries) = 0;
+  virtual void FlushEntriesInternal(const std::vector<EntryKey>& entries) = 0;
 
   std::set<EntryKey> added_entries_;
 };

@@ -123,9 +123,8 @@ bool TestContextSupport::ThreadsafeLockTransferCacheEntry(
   NOTIMPLEMENTED();
   return false;
 }
-void TestContextSupport::UnlockTransferCacheEntry(
-    TransferCacheEntryType entry_type,
-    uint32_t entry_id) {
+void TestContextSupport::UnlockTransferCacheEntries(
+    const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries) {
   NOTIMPLEMENTED();
 }
 void TestContextSupport::DeleteTransferCacheEntry(

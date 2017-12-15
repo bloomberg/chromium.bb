@@ -57,7 +57,7 @@ void TransferCacheTestHelper::CreateEntryInternal(
 }
 
 void TransferCacheTestHelper::FlushEntriesInternal(
-    const std::set<EntryKey>& entries) {
+    const std::vector<EntryKey>& entries) {
   for (auto& entry : entries)
     locked_entries_.erase(entry);
 }
