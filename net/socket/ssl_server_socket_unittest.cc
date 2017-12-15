@@ -373,6 +373,13 @@ class SSLServerSocketTest : public PlatformTest {
     server_private_key_ = ReadTestKey("unittest.key.bin");
     ASSERT_TRUE(server_private_key_);
 
+    std::unique_ptr<crypto::RSAPrivateKey> key =
+        ReadTestKey("unittest.key.bin");
+    ASSERT_TRUE(key);
+    EVP_PKEY_up_ref(key->key());
+    server_ssl_private_key_ =
+        WrapOpenSSLPrivateKey(bssl::UniquePtr<EVP_PKEY>(key->key()));
+
     client_ssl_config_.false_start_enabled = false;
     client_ssl_config_.channel_id_enabled = false;
 
@@ -390,6 +397,16 @@ class SSLServerSocketTest : public PlatformTest {
     server_context_.reset();
     server_context_ = CreateSSLServerContext(
         server_cert_.get(), *server_private_key_, server_ssl_config_);
+  }
+
+  void CreateContextSSLPrivateKey() {
+    client_socket_.reset();
+    server_socket_.reset();
+    channel_1_.reset();
+    channel_2_.reset();
+    server_context_.reset();
+    server_context_ = CreateSSLServerContext(
+        server_cert_.get(), server_ssl_private_key_, server_ssl_config_);
   }
 
   void CreateSockets() {
@@ -489,6 +506,7 @@ class SSLServerSocketTest : public PlatformTest {
   std::unique_ptr<MockCTPolicyEnforcer> ct_policy_enforcer_;
   std::unique_ptr<SSLServerContext> server_context_;
   std::unique_ptr<crypto::RSAPrivateKey> server_private_key_;
+  scoped_refptr<SSLPrivateKey> server_ssl_private_key_;
   scoped_refptr<X509Certificate> server_cert_;
 };
 
@@ -1083,6 +1101,82 @@ TEST_F(SSLServerSocketTest, RequireEcdheFlag) {
   server_ssl_config_.require_ecdhe = true;
 
   ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
+
+  TestCompletionCallback connect_callback;
+  int client_ret = client_socket_->Connect(connect_callback.callback());
+
+  TestCompletionCallback handshake_callback;
+  int server_ret = server_socket_->Handshake(handshake_callback.callback());
+
+  client_ret = connect_callback.GetResult(client_ret);
+  server_ret = handshake_callback.GetResult(server_ret);
+
+  ASSERT_THAT(client_ret, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+  ASSERT_THAT(server_ret, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+}
+
+// This test executes Connect() on SSLClientSocket and Handshake() on
+// SSLServerSocket to make sure handshaking between the two sockets is
+// completed successfully. The server key is represented by SSLPrivateKey.
+TEST_F(SSLServerSocketTest, HandshakeServerSSLPrivateKey) {
+  ASSERT_NO_FATAL_FAILURE(CreateContextSSLPrivateKey());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
+
+  TestCompletionCallback handshake_callback;
+  int server_ret = server_socket_->Handshake(handshake_callback.callback());
+
+  TestCompletionCallback connect_callback;
+  int client_ret = client_socket_->Connect(connect_callback.callback());
+
+  client_ret = connect_callback.GetResult(client_ret);
+  server_ret = handshake_callback.GetResult(server_ret);
+
+  ASSERT_THAT(client_ret, IsOk());
+  ASSERT_THAT(server_ret, IsOk());
+
+  // Make sure the cert status is expected.
+  SSLInfo ssl_info;
+  ASSERT_TRUE(client_socket_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, ssl_info.cert_status);
+
+  // The default cipher suite should be ECDHE and an AEAD.
+  uint16_t cipher_suite =
+      SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
+  const char* key_exchange;
+  const char* cipher;
+  const char* mac;
+  bool is_aead;
+  bool is_tls13;
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, &is_tls13,
+                          cipher_suite);
+  EXPECT_TRUE(is_aead);
+  ASSERT_FALSE(is_tls13);
+  EXPECT_STREQ("ECDHE_RSA", key_exchange);
+}
+
+// Verifies that non-ECDHE ciphers are disabled when using SSLPrivateKey as the
+// server key.
+TEST_F(SSLServerSocketTest, HandshakeServerSSLPrivateKeyRequireEcdhe) {
+  // Disable all ECDHE suites on the client side.
+  uint16_t kEcdheCiphers[] = {
+      0xc007,  // ECDHE_ECDSA_WITH_RC4_128_SHA
+      0xc009,  // ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+      0xc00a,  // ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+      0xc011,  // ECDHE_RSA_WITH_RC4_128_SHA
+      0xc013,  // ECDHE_RSA_WITH_AES_128_CBC_SHA
+      0xc014,  // ECDHE_RSA_WITH_AES_256_CBC_SHA
+      0xc02b,  // ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+      0xc02f,  // ECDHE_RSA_WITH_AES_128_GCM_SHA256
+      0xcca8,  // ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      0xcca9,  // ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+  };
+  client_ssl_config_.disabled_cipher_suites.assign(
+      kEcdheCiphers, kEcdheCiphers + arraysize(kEcdheCiphers));
+  // TLS 1.3 always works with SSLPrivateKey.
+  client_ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+
+  ASSERT_NO_FATAL_FAILURE(CreateContextSSLPrivateKey());
   ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback connect_callback;
