@@ -363,6 +363,17 @@ void ClientControlledShellSurface::OnSurfaceCommit() {
     orientation_compositor_lock_.reset();
 }
 
+bool ClientControlledShellSurface::IsTouchEnabled(Surface* surface) const {
+  // The target for input events is selected by recursively hit-testing surfaces
+  // in the surface tree. During client-driven dragging/resizing, capture is set
+  // on the root surface. When capture is reset to a different target, mouse
+  // events are redirected from the old to the new target, but touch/gesture
+  // events are cancelled. To avoid prematurely ending the drag/resize, ensure
+  // that the target and capture windows are the same by disabling touch input
+  // for all but the root surface.
+  return surface == root_surface();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 void ClientControlledShellSurface::OnWindowBoundsChanged(
@@ -533,6 +544,8 @@ float ClientControlledShellSurface::GetScale() const {
 }
 
 aura::Window* ClientControlledShellSurface::GetDragWindow() {
+  // Set capture on the root surface rather than the focus surface, because
+  // the client may destroy the latter during dragging/resizing.
   return root_surface() ? root_surface()->window() : nullptr;
 }
 
