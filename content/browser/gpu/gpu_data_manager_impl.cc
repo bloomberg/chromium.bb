@@ -147,13 +147,6 @@ void GpuDataManagerImpl::SetGLStrings(const std::string& gl_vendor,
   private_->SetGLStrings(gl_vendor, gl_renderer, gl_version);
 }
 
-void GpuDataManagerImpl::GetGLStrings(std::string* gl_vendor,
-                                      std::string* gl_renderer,
-                                      std::string* gl_version) {
-  base::AutoLock auto_lock(lock_);
-  private_->GetGLStrings(gl_vendor, gl_renderer, gl_version);
-}
-
 void GpuDataManagerImpl::DisableHardwareAcceleration() {
   base::AutoLock auto_lock(lock_);
   private_->DisableHardwareAcceleration();

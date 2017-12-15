@@ -42,3 +42,7 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     # Seems to have become flaky on Windows recently.
     self.Flaky('GpuProcess_only_one_workaround', ['win'], bug=700522)
+
+    # TODO(zmo): Enable this test once about:gpu status reporting is wired
+    # with GpuFeatureInfo from GPU process.
+    self.Fail('GpuProcess_readback_webgl_gpu_process', ['linux'])
