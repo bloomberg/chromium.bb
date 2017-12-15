@@ -6,6 +6,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -49,12 +50,13 @@ void CullRect::UpdateCullRect(
 void CullRect::UpdateForScrollingContents(
     const IntRect& overflow_clip_rect,
     const AffineTransform& local_to_parent_transform) {
-  // The distance to expand the cull rect for scrolling contents.
-  static const int kPixelDistanceToExpand = 4000;
-
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   rect_.Intersect(overflow_clip_rect);
   UpdateCullRect(local_to_parent_transform);
+
   // TODO(wangxianzhu, chrishtr): How about non-composited scrolling contents?
+  // The distance to expand the cull rect for scrolling contents.
+  static const int kPixelDistanceToExpand = 4000;
   rect_.Inflate(kPixelDistanceToExpand);
 }
 
