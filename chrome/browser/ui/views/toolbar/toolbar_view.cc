@@ -296,8 +296,10 @@ void ToolbarView::ShowBookmarkBubble(
   views::Widget* bubble_widget = BookmarkBubbleView::ShowBubble(
       anchor_view, gfx::Rect(), nullptr, observer, std::move(delegate),
       browser_->profile(), url, already_bookmarked);
-  if (bubble_widget && star_view)
+  if (bubble_widget && star_view) {
+    star_view->SetHighlighted();
     bubble_widget->AddObserver(star_view);
+  }
 }
 
 void ToolbarView::ShowTranslateBubble(
