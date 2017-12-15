@@ -191,9 +191,14 @@ static constexpr float kOmniboxTextHeightDMM = 0.032f;
 static constexpr float kOmniboxTextMarginDMM = 0.024f;
 static constexpr float kOmniboxCloseButtonDiameterDMM = kButtonDiameterDMM;
 static constexpr float kOmniboxCloseButtonVerticalOffsetDMM = -0.75f;
+static constexpr float kOmniboxCornerRadiusDMM = 0.006f;
+static constexpr float kOmniboxCloseButtonDepthOffset = -0.35f;
+static constexpr float kOmniboxShadowOffset = 0.015f;
+static constexpr float kOmniboxShadowIntensity = 0.4f;
+static constexpr int kOmniboxTransitionMs = 300;
 
 static constexpr float kSuggestionHeightDMM = 0.088f;
-static constexpr float kSuggestionGapDMM = 0.008f;
+static constexpr float kSuggestionGapDMM = 0.0018f;
 static constexpr float kSuggestionLineGapDMM = 0.01f;
 static constexpr float kSuggestionIconSizeDMM = 0.036f;
 static constexpr float kSuggestionIconFieldWidthDMM = 0.104f;
@@ -202,6 +207,7 @@ static constexpr float kSuggestionTextFieldWidthDMM =
     kOmniboxWidthDMM - kSuggestionIconFieldWidthDMM - kSuggestionRightMarginDMM;
 static constexpr float kSuggestionContentTextHeightDMM = 0.024f;
 static constexpr float kSuggestionDescriptionTextHeightDMM = 0.020f;
+static constexpr float kSuggestionVerticalPaddingDMM = 0.008f;
 
 static constexpr int kControllerFadeInMs = 200;
 static constexpr int kControllerFadeOutMs = 550;
@@ -212,7 +218,7 @@ static constexpr int kSpeechRecognitionOpacityAnimationDurationMs = 200;
 
 static constexpr float kModalPromptFadeOpacity = 0.5f;
 
-static constexpr float kKeyboardDistance = 2.0f;
+static constexpr float kKeyboardDistance = 2.2f;
 static constexpr float kKeyboardVerticalOffsetDMM = -0.45f;
 static constexpr float kKeyboardRotationRadians = -0.14f;
 
