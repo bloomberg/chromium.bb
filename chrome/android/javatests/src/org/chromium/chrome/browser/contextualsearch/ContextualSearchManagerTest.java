@@ -863,20 +863,6 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * Waits for the manager to finish processing a gesture.
-     * Tells the manager that a gesture has started, and then waits for it to complete.
-     */
-    private void waitForGestureProcessing() {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Gesture processing did not complete.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return !mSelectionController.wasAnyTapGestureDetected();
-                    }
-                }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
-    }
-
-    /**
      * Shorthand for a common sequence:
      * 1) Waits for gesture processing,
      * 2) Waits for the panel to close,
@@ -884,7 +870,6 @@ public class ContextualSearchManagerTest {
      * @throws InterruptedException
      */
     private void waitForGestureToClosePanelAndAssertNoSelection() throws InterruptedException {
-        waitForGestureProcessing();
         waitForPanelToClose();
         assertPanelClosedOrUndefined();
         Assert.assertTrue(TextUtils.isEmpty(getSelectedText()));
@@ -999,6 +984,8 @@ public class ContextualSearchManagerTest {
      */
     private void tapBasePageToClosePanel() throws InterruptedException {
         // TODO(pedrosimonetti): This is not reliable. Find a better approach.
+        // This taps on the panel in an area that will be selected if the "intelligence" node has
+        // been tap-selected, and that will cause it to be long-press selected.
         // We use the far right side (x == 0.9f) to prevent simulating a tap on top of an
         // existing long-press selection (the pins are a tap target). This might not work on RTL.
         // We are using y == 0.35f because otherwise it will fail for long press cases.
@@ -1151,30 +1138,31 @@ public class ContextualSearchManagerTest {
         assertWaitForSelectActionBarVisible(true);
     }
 
-    /** @return The value of the given logged feature, or {@code null} if not logged. */
-    private Object loggedToRanker(ContextualSearchRankerLogger.Feature feature) {
+    /** Gets the Ranker Logger and asserts if we can't. **/
+    private ContextualSearchRankerLoggerImpl getRankerLogger() {
         ContextualSearchRankerLoggerImpl rankerLogger =
                 (ContextualSearchRankerLoggerImpl) mManager.getRankerLogger();
         Assert.assertNotNull(rankerLogger);
-        return rankerLogger.getFeaturesLogged().get(feature);
+        return rankerLogger;
     }
 
-    /** Asserts that the given feature has been logged to Ranker. **/
-    private void assertLoggedToRanker(ContextualSearchRankerLogger.Feature feature) {
-        Assert.assertNotNull(loggedToRanker(feature));
+    /** @return The value of the given logged feature, or {@code null} if not logged. */
+    private Object loggedToRanker(ContextualSearchRankerLogger.Feature feature) {
+        return getRankerLogger().getFeaturesLogged().get(feature);
     }
 
     /** Asserts that all the expected features have been logged to Ranker. **/
     private void assertLoggedAllExpectedFeaturesToRanker() {
         for (ContextualSearchRankerLogger.Feature feature : EXPECTED_RANKER_FEATURES) {
-            assertLoggedToRanker(feature);
+            Assert.assertNotNull(loggedToRanker(feature));
         }
     }
 
     /** Asserts that all the expected outcomes have been logged to Ranker. **/
     private void assertLoggedAllExpectedOutcomesToRanker() {
         for (ContextualSearchRankerLogger.Feature feature : EXPECTED_RANKER_OUTCOMES) {
-            assertLoggedToRanker(feature);
+            Assert.assertNotNull("Expected this outcome to be logged: " + feature,
+                    getRankerLogger().getOutcomesLogged().get(feature));
         }
     }
 
@@ -1253,19 +1241,17 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testTap() throws InterruptedException, TimeoutException {
-        clickWordNode("intelligence");
-
-        Assert.assertEquals("Intelligence", mFakeServer.getSearchTermRequested());
-        fakeResponse(false, 200, "Intelligence", "display-text", "alternate-term", false);
-        assertContainsParameters("Intelligence", "alternate-term");
-        waitForPanelToPeek();
+        simulateTapSearch("intelligence");
         assertLoadedLowPriorityUrl();
 
         assertLoggedAllExpectedFeaturesToRanker();
         Assert.assertEquals(
                 true, loggedToRanker(ContextualSearchRankerLogger.Feature.IS_LONG_WORD));
         // The panel must be closed for outcomes to be logged.
-        closePanel();
+        // Close the panel by clicking far away in order to make sure the outcomes get logged by
+        // the hideContextualSearchUi call to writeRankerLoggerOutcomesAndReset.
+        clickWordNode("states-far");
+        waitForPanelToClose();
         assertLoggedAllExpectedOutcomesToRanker();
     }
 
@@ -1458,7 +1444,6 @@ public class ContextualSearchManagerTest {
         waitForPanelToPeek();
         assertLoadedNoUrl();  // No load after long-press until opening panel.
         clickNode("question-mark");
-        waitForGestureProcessing();
         waitForPanelToCloseAndSelectionEmpty();
         Assert.assertTrue(TextUtils.isEmpty(getSelectedText()));
         assertLoadedNoUrl();
@@ -1491,7 +1476,6 @@ public class ContextualSearchManagerTest {
     public void testTapGestureOnSpecialCharacterDoesntSelect()
             throws InterruptedException, TimeoutException {
         clickNode("question-mark");
-        waitForGestureProcessing();
         Assert.assertNull(getSelectedText());
         assertPanelClosedOrUndefined();
         assertLoadedNoUrl();
@@ -1560,13 +1544,12 @@ public class ContextualSearchManagerTest {
         waitForPanelToClose();
         Assert.assertNull(getSelectedText());
         clickNode("states-far");
-        waitForGestureProcessing();
         waitForPanelToPeek();
         Assert.assertEquals("States", getSelectedText());
     }
 
     /**
-     * Tests that sequential Tap gestures nearby keep selecting.
+     * Tests a "retap" -- that sequential Tap gestures nearby keep selecting.
      */
     @Test
     @SmallTest
@@ -1575,6 +1558,7 @@ public class ContextualSearchManagerTest {
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
+        assertLoggedAllExpectedFeaturesToRanker();
         // Avoid issues with double-tap detection by ensuring sequential taps
         // aren't treated as such. Double-tapping can also select words much as
         // longpress, in turn showing the pins and preventing contextual tap
@@ -1586,9 +1570,12 @@ public class ContextualSearchManagerTest {
         // for the selection to change.
         clickNode("states-near");
         waitForSelectionToBe("StatesNear");
+        assertLoggedAllExpectedOutcomesToRanker();
+        assertLoggedAllExpectedFeaturesToRanker();
         Thread.sleep(ViewConfiguration.getDoubleTapTimeout());
         clickNode("states");
         waitForSelectionToBe("States");
+        assertLoggedAllExpectedOutcomesToRanker();
     }
 
     /**
