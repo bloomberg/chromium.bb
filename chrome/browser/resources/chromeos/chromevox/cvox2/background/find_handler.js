@@ -12,23 +12,9 @@ goog.scope(function() {
 var TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
 
 /**
- * Responds to mode changes.
- * @param {ChromeVoxMode} newMode
- * @param {?ChromeVoxMode} oldMode Can be null at startup when no range was
- *  previously set.
- */
-FindHandler.onModeChanged = function(newMode, oldMode) {
-  if (newMode == ChromeVoxMode.FORCE_NEXT)
-    FindHandler.init_();
-  else
-    FindHandler.uninit_();
-};
-
-/**
  * Initializes this module.
- * @private
  */
-FindHandler.init_ = function() {
+FindHandler.init = function() {
   chrome.automation.addTreeChangeObserver(
       TreeChangeObserverFilter.TEXT_MARKER_CHANGES, FindHandler.onTextMatch_);
 };

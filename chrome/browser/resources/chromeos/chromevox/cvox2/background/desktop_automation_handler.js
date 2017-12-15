@@ -81,9 +81,6 @@ DesktopAutomationHandler = function(node) {
   AutomationObjectConstructorInstaller.init(node, function() {
     chrome.automation.getFocus(
         (function(focus) {
-          if (ChromeVoxState.instance.mode != ChromeVoxMode.FORCE_NEXT)
-            return;
-
           if (focus) {
             var event =
                 new CustomAutomationEvent(EventType.FOCUS, focus, 'page');
@@ -137,9 +134,6 @@ DesktopAutomationHandler.prototype = {
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
 
-    if (!this.shouldOutput_(evt))
-      return;
-
     // Don't output if focused node hasn't changed.
     if (prevRange && evt.type == 'focus' &&
         ChromeVoxState.instance.currentRange.equals(prevRange))
@@ -162,9 +156,6 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onEventIfInRange: function(evt) {
-    if (!this.shouldOutput_(evt))
-      return;
-
     var prev = ChromeVoxState.instance.currentRange;
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
@@ -245,9 +236,6 @@ DesktopAutomationHandler.prototype = {
    */
   onAlert: function(evt) {
     var node = evt.target;
-    if (!node || !this.shouldOutput_(evt))
-      return;
-
     var range = cursors.Range.fromNode(node);
 
     new Output().withSpeechAndBraille(range, null, evt.type).go();
@@ -279,9 +267,6 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onChildrenChanged: function(evt) {
-    if (!this.shouldOutput_(evt))
-      return;
-
     var curRange = ChromeVoxState.instance.currentRange;
 
     // Always refresh the braille contents.
@@ -418,9 +403,6 @@ DesktopAutomationHandler.prototype = {
       return;
     }
 
-    if (!this.shouldOutput_(evt))
-      return;
-
     var t = evt.target;
     var fromDesktop = t.root.role == RoleType.DESKTOP;
     if (t.state.focused || fromDesktop ||
@@ -454,7 +436,7 @@ DesktopAutomationHandler.prototype = {
    */
   onScrollPositionChanged: function(evt) {
     var currentRange = ChromeVoxState.instance.currentRange;
-    if (currentRange && currentRange.isValid() && this.shouldOutput_(evt))
+    if (currentRange && currentRange.isValid())
       new Output().withLocation(currentRange, null, evt.type).go();
   },
 
@@ -559,19 +541,6 @@ DesktopAutomationHandler.prototype = {
   },
 
   /**
-   * Once an event handler updates ChromeVox's range based on |evt|
-   * which updates mode, returns whether |evt| should be outputted.
-   * @return {boolean}
-   */
-  shouldOutput_: function(evt) {
-    var mode = ChromeVoxState.instance.mode;
-    // Only output desktop rooted nodes or web nodes for next engine modes.
-    return evt.target.root.role == RoleType.DESKTOP ||
-        (mode == ChromeVoxMode.NEXT || mode == ChromeVoxMode.FORCE_NEXT ||
-         mode == ChromeVoxMode.CLASSIC_COMPAT);
-  },
-
-  /**
    * @param {AutomationEvent} evt
    * @private
    */
@@ -611,8 +580,6 @@ DesktopAutomationHandler.prototype = {
       }
 
       ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
-      if (!this.shouldOutput_(evt))
-        return;
 
       Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
       o.withRichSpeechAndBraille(
