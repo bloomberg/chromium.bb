@@ -94,7 +94,7 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
   // Use BoxLayout to provide insets around the label.
   footnote_view_ = new View();
   footnote_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   // Add a StyledLabel for each line of the legal message.
   for (const LegalMessageLine& line : controller_->GetLegalMessageLines()) {
@@ -290,7 +290,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   std::unique_ptr<views::View> view = std::make_unique<views::View>();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  view->SetLayoutManager(new views::BoxLayout(
+  view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
@@ -306,7 +306,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 
   // Add the card type icon, last four digits and expiration date.
   views::View* description_view = new views::View();
-  description_view->SetLayoutManager(new views::BoxLayout(
+  description_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
   view->AddChildView(description_view);
@@ -334,7 +334,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
   auto request_cvc_view = std::make_unique<views::View>();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  request_cvc_view->SetLayoutManager(new views::BoxLayout(
+  request_cvc_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   request_cvc_view->SetBackground(views::CreateThemedSolidBackground(
@@ -349,12 +349,12 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
   request_cvc_view->AddChildView(explanation_label);
 
   views::View* cvc_entry_view = new views::View();
-  views::BoxLayout* layout = new views::BoxLayout(
+  auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  cvc_entry_view->SetLayoutManager(layout);
+  cvc_entry_view->SetLayoutManager(std::move(layout));
 
   DCHECK(!cvc_textfield_);
   cvc_textfield_ = CreateCvcTextfield();
@@ -372,7 +372,8 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
 }
 
 void SaveCardBubbleViews::Init() {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   AddChildView(CreateMainContentView().release());
 }
 

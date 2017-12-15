@@ -17,13 +17,13 @@ namespace autofill {
 class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
  public:
   // Space above and below help section.
-  static constexpr int kHelpVerticalPadding = 15;
+  static const int kHelpVerticalPadding;
 
   // Spacing between the border of the popup and any text.
-  static constexpr int kHorizontalPadding = 16;
+  static const int kHorizontalPadding;
 
   // Desired height of the password section.
-  static constexpr int kPopupPasswordSectionHeight = 62;
+  static const int kPopupPasswordSectionHeight;
 
   // Called by the view when the password was accepted.
   virtual void PasswordAccepted() = 0;

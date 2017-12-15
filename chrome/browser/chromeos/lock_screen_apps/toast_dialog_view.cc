@@ -59,7 +59,7 @@ ToastDialogView::ToastDialogView(const base::string16& app_name,
                   kDialogTitleMarginBottomDp, kDialogTitleMarginEndDp));
   set_shadow(views::BubbleBorder::SMALL_SHADOW);
 
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   auto* label = new views::Label(l10n_util::GetStringFUTF16(
       IDS_LOCK_SCREEN_NOTE_APP_TOAST_DIALOG_MESSAGE, app_name_));
   label->SetMultiLine(true);

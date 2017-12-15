@@ -407,10 +407,10 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     // |cannot_snap_label_| and to give the label rounded corners.
     cannot_snap_container_ = new RoundedRectView(
         kSplitviewLabelRoundRectRadiusDp, kSplitviewLabelBackgroundColor);
-    cannot_snap_container_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical,
-                             gfx::Insets(kSplitviewLabelVerticalInsetDp,
-                                         kSplitviewLabelHorizontalInsetDp)));
+    cannot_snap_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(kSplitviewLabelVerticalInsetDp,
+                    kSplitviewLabelHorizontalInsetDp)));
     cannot_snap_container_->AddChildView(cannot_snap_label_);
     cannot_snap_container_->set_can_process_events_within_subtree(false);
     cannot_snap_container_->SetPaintToLayer();

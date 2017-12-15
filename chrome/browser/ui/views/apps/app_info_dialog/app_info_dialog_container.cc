@@ -216,7 +216,7 @@ class NativeDialogContainer : public BaseDialogContainer {
                         const gfx::Size& size,
                         const base::Closure& close_callback)
       : BaseDialogContainer(dialog_body, close_callback) {
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     chrome::RecordDialogCreation(chrome::DialogIdentifier::NATIVE_CONTAINER);
     SetPreferredSize(size);
   }

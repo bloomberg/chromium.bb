@@ -98,7 +98,7 @@ class CapsLockDefaultView : public ActionableView {
     shortcut_label_->SetEnabled(false);
 
     TriView* tri_view(TrayPopupUtils::CreateDefaultRowView());
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     AddChildView(tri_view);
 
     auto* image = TrayPopupUtils::CreateMainImageView();

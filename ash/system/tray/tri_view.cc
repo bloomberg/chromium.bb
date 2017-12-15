@@ -49,27 +49,26 @@ TriView::TriView(int padding_between_containers)
 
 TriView::TriView(Orientation orientation) : TriView(orientation, 0) {}
 
-TriView::TriView(Orientation orientation, int padding_between_containers)
-    : box_layout_(new views::BoxLayout(GetOrientation(orientation),
-                                       gfx::Insets(),
-                                       padding_between_containers)),
-      start_container_layout_manager_(new SizeRangeLayout),
-      center_container_layout_manager_(new SizeRangeLayout),
-      end_container_layout_manager_(new SizeRangeLayout) {
+TriView::TriView(Orientation orientation, int padding_between_containers) {
   AddChildView(new RelayoutView);
   AddChildView(new RelayoutView);
   AddChildView(new RelayoutView);
 
-  GetContainer(Container::START)
-      ->SetLayoutManager(GetLayoutManager(Container::START));
-  GetContainer(Container::CENTER)
-      ->SetLayoutManager(GetLayoutManager(Container::CENTER));
-  GetContainer(Container::END)
-      ->SetLayoutManager(GetLayoutManager(Container::END));
+  start_container_layout_manager_ =
+      GetContainer(Container::START)
+          ->SetLayoutManager(std::make_unique<SizeRangeLayout>());
+  center_container_layout_manager_ =
+      GetContainer(Container::CENTER)
+          ->SetLayoutManager(std::make_unique<SizeRangeLayout>());
+  end_container_layout_manager_ =
+      GetContainer(Container::END)
+          ->SetLayoutManager(std::make_unique<SizeRangeLayout>());
 
-  box_layout_->set_cross_axis_alignment(
+  auto layout = std::make_unique<views::BoxLayout>(
+      GetOrientation(orientation), gfx::Insets(), padding_between_containers);
+  layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  SetLayoutManager(box_layout_);
+  box_layout_ = SetLayoutManager(std::move(layout));
 
   enable_hierarchy_changed_dcheck_ = true;
 }

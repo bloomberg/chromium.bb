@@ -118,7 +118,7 @@ void HoverHighlightView::DoAddIconAndLabels(
   DCHECK(!is_populated_);
   is_populated_ = true;
 
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
   AddChildView(tri_view_);
 
@@ -151,7 +151,7 @@ void HoverHighlightView::AddLabelRow(const base::string16& text) {
   DCHECK(!is_populated_);
   is_populated_ = true;
 
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
   AddChildView(tri_view_);
 

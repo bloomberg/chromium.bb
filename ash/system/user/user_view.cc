@@ -88,11 +88,11 @@ bool IsUserDropdownEnabled() {
 views::View* CreateAddUserView(AddUserSessionPolicy policy) {
   auto* view = new views::View;
   const int icon_padding = (kMenuButtonSize - kMenuIconSize) / 2;
-  auto* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                           kTrayPopupLabelHorizontalPadding + icon_padding);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      kTrayPopupLabelHorizontalPadding + icon_padding);
   layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
-  view->SetLayoutManager(layout);
+  view->SetLayoutManager(std::move(layout));
   view->SetBackground(views::CreateThemedSolidBackground(
       view, ui::NativeTheme::kColorId_BubbleBackground));
 
@@ -209,8 +209,8 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login) : owner_(owner) {
   AddLogoutButton(login);
   AddUserCard(login);
 
-  auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
-  SetLayoutManager(layout);
+  auto* layout = SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   layout->SetFlexForView(user_card_container_, 1);
@@ -350,7 +350,7 @@ void UserView::ToggleUserDropdownWidget() {
   user_dropdown_padding->SetBorder(views::CreateSolidSidedBorder(
       kMenuSeparatorVerticalPadding - kSeparatorWidth, 0, 0, 0, bg_color));
   user_dropdown_padding->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   views::Separator* separator = new views::Separator();
   separator->SetPreferredHeight(kSeparatorWidth);
   separator->SetColor(
@@ -379,7 +379,7 @@ void UserView::ToggleUserDropdownWidget() {
   }
 
   container->AddChildView(user_dropdown_padding);
-  container->SetLayoutManager(new views::FillLayout());
+  container->SetLayoutManager(std::make_unique<views::FillLayout>());
   user_dropdown_widget_->SetContentsView(container);
 
   bounds.set_height(container->GetPreferredSize().height());

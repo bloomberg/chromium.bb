@@ -52,9 +52,9 @@ const int kTitleRowSeparatorIndex = 1;
 // row use set_id(VIEW_ID_STICKY_HEADER).
 class ScrollContentsView : public views::View {
  public:
-  ScrollContentsView()
-      : box_layout_(new views::BoxLayout(views::BoxLayout::kVertical)) {
-    SetLayoutManager(box_layout_);
+  ScrollContentsView() {
+    box_layout_ = SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   }
   ~ScrollContentsView() override = default;
 
@@ -221,7 +221,7 @@ class ScrollContentsView : public views::View {
     canvas->DrawRect(shadowed_area, flags);
   }
 
-  views::BoxLayout* box_layout_;
+  views::BoxLayout* box_layout_ = nullptr;
 
   // Header child views that stick to the top of visible viewport when scrolled.
   std::vector<Header> headers_;
@@ -244,13 +244,14 @@ const int kTitleRowPaddingBottom =
 
 TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
     : owner_(owner),
-      box_layout_(new views::BoxLayout(views::BoxLayout::kVertical)),
+      box_layout_(nullptr),
       scroller_(nullptr),
       scroll_content_(nullptr),
       progress_bar_(nullptr),
       tri_view_(nullptr),
       back_button_(nullptr) {
-  SetLayoutManager(box_layout_);
+  box_layout_ = SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   SetBackground(views::CreateThemedSolidBackground(
       this, ui::NativeTheme::kColorId_BubbleBackground));
 }

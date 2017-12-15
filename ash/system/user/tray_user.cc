@@ -163,7 +163,7 @@ void TrayUser::UpdateAfterShelfAlignmentChange() {
           kTrayLabelItemHorizontalPaddingBottomAlignment, vertical_pad,
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
-    layout_view_->SetLayoutManager(new views::BoxLayout(
+    layout_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(), kUserLabelToIconPadding));
   } else {
     if (avatar_) {
@@ -177,7 +177,7 @@ void TrayUser::UpdateAfterShelfAlignmentChange() {
           kTrayLabelItemVerticalPaddingVerticalAlignment,
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
-    layout_view_->SetLayoutManager(new views::BoxLayout(
+    layout_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical, gfx::Insets(), kUserLabelToIconPadding));
   }
 }

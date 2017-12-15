@@ -118,7 +118,7 @@ class IdleAppNameNotificationDelegateView
     AddLabel(app_name, rb->GetFontList(ui::ResourceBundle::BoldFont),
              error ? kErrorTextColor : kTextColor);
     spoken_text_ = app_name;
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
 
     // Set a timer which will trigger to remove the message after the given
     // time.

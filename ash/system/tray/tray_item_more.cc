@@ -26,7 +26,7 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner)
       label_(TrayPopupUtils::CreateDefaultLabel()),
       more_(TrayPopupUtils::CreateMoreImageView()) {
   AddChildView(tri_view_);
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   tri_view_->AddView(TriView::Container::START, icon_);
   tri_view_->AddView(TriView::Container::CENTER, label_);

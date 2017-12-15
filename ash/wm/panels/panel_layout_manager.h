@@ -48,7 +48,8 @@ class RootWindowController;
 //
 // The constructor takes a |panel_container| argument which is expected to set
 // its layout manager to this instance, e.g.:
-// panel_container->SetLayoutManager(new PanelLayoutManager(panel_container));
+// panel_container->SetLayoutManager(
+//     std::make_unique<PanelLayoutManager>(panel_container));
 
 class ASH_EXPORT PanelLayoutManager
     : public aura::LayoutManager,

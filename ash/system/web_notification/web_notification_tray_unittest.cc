@@ -77,7 +77,7 @@ class TestItem : public SystemTrayItem {
 
   views::View* CreateDefaultView(LoginStatus status) override {
     views::View* default_view = new views::View;
-    default_view->SetLayoutManager(new views::FillLayout);
+    default_view->SetLayoutManager(std::make_unique<views::FillLayout>());
     default_view->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
     return default_view;
   }

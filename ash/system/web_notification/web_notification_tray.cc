@@ -122,7 +122,7 @@ class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
     views::View::SetVisible(false);
     set_owned_by_client();
 
-    SetLayoutManager(new views::FillLayout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
 
     animation_.reset(new gfx::SlideAnimation(this));
     animation_->SetContainer(container);

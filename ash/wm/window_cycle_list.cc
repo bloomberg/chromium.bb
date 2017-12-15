@@ -230,12 +230,12 @@ class WindowCycleView : public views::WidgetDelegateView {
 
     const int kInsideBorderPaddingDip = 64;
     const int kBetweenChildPaddingDip = 10;
-    views::BoxLayout* layout = new views::BoxLayout(
+    auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(kInsideBorderPaddingDip),
         kBetweenChildPaddingDip);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-    mirror_container_->SetLayoutManager(layout);
+    mirror_container_->SetLayoutManager(std::move(layout));
     mirror_container_->SetPaintToLayer();
     mirror_container_->layer()->SetFillsBoundsOpaquely(false);
 
