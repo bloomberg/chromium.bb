@@ -17,5 +17,8 @@ Running: testInvalidGeolocation
 geolocation-emulation-tests.js:41 Latitude: 50 Longitude: 100
 
 Running: testTimestampOfOverridenPosition
-geolocation-emulation-tests.js:59 PASSED
+geolocation-emulation-tests.js:79 PASSED
+
+Running: testNoOverride
+Override was cleared correctly.
 
