@@ -409,14 +409,16 @@ void AppBannerManager::SendBannerPromptRequest() {
   // Any existing binding is invalid when we send a new beforeinstallprompt.
   ResetBindings();
 
+  blink::mojom::AppBannerControllerPtr controller;
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&controller_));
+      mojo::MakeRequest(&controller));
 
   blink::mojom::AppBannerServicePtr banner_proxy;
   binding_.Bind(mojo::MakeRequest(&banner_proxy));
-  controller_->BannerPromptRequest(
+  controller->BannerPromptRequest(
       std::move(banner_proxy), mojo::MakeRequest(&event_), {GetBannerType()},
-      base::Bind(&AppBannerManager::OnBannerPromptReply, GetWeakPtr()));
+      base::BindOnce(&AppBannerManager::OnBannerPromptReply, GetWeakPtr(),
+                     base::Passed(&controller)));
 }
 
 void AppBannerManager::UpdateState(State state) {
@@ -541,7 +543,6 @@ bool AppBannerManager::IsExperimentalAppBannersEnabled() {
 
 void AppBannerManager::ResetBindings() {
   binding_.Close();
-  controller_.reset();
   event_.reset();
 }
 
@@ -610,12 +611,9 @@ bool AppBannerManager::CheckIfShouldShowBanner() {
 }
 
 void AppBannerManager::OnBannerPromptReply(
+    blink::mojom::AppBannerControllerPtr controller,
     blink::mojom::AppBannerPromptReply reply,
     const std::string& referrer) {
-  // We don't need the controller any more, so reset it so the Blink-side object
-  // is destroyed.
-  controller_.reset();
-
   // The renderer might have requested the prompt to be canceled. They may
   // request that it is redisplayed later, so don't Terminate() here. However,
   // log that the cancelation was requested, so Terminate() can be called if a
