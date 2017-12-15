@@ -216,15 +216,6 @@ class FailureSpaceTabLineBreakTextMismatch(FailureTextMismatch):
         return 'spaces, tabs and newlines only'
 
 
-class FailureLayoutNGNameMismatch(FailureTextMismatch):
-
-    def message(self):
-        return 'text diff due to LayoutNG name mismatch'
-
-    def text_mismatch_category(self):
-        return 'LayoutNG name mismatch'
-
-
 class FailureMissingImageHash(TestFailure):
 
     def message(self):
@@ -313,7 +304,7 @@ ALL_FAILURE_CLASSES = (FailureTimeout, FailureCrash, FailureMissingResult,
                        FailureTestHarnessAssertion,
                        FailureTextMismatch, FailureSpacesAndTabsTextMismatch,
                        FailureLineBreaksTextMismatch, FailureSpaceTabLineBreakTextMismatch,
-                       FailureLayoutNGNameMismatch, FailureMissingImageHash,
+                       FailureMissingImageHash,
                        FailureMissingImage, FailureImageHashMismatch,
                        FailureImageHashIncorrect, FailureReftestMismatch,
                        FailureReftestMismatchDidNotOccur,

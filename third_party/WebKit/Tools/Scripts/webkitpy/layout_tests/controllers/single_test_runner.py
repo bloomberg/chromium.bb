@@ -357,9 +357,10 @@ class SingleTestRunner(object):
             processed = actual.replace('LayoutNGBlockFlow', 'LayoutBlockFlow').replace('LayoutNGListItem', 'LayoutListItem')
             return not self._port.do_text_results_differ(expected, processed)
 
-        # LayoutNG name mismatch
+        # LayoutNG name mismatch (e.g., LayoutBlockFlow vs. LayoutNGBlockFlow)
+        # is treated as pass
         if is_ng_name_mismatch(expected_text, normalized_actual_text):
-            return [test_failures.FailureLayoutNGNameMismatch()]
+            return []
 
         # General text mismatch
         if self._port.do_text_results_differ(
