@@ -35,8 +35,6 @@ class UiInputManager {
   enum ButtonState {
     UP,       // The button is released.
     DOWN,     // The button is pressed.
-    CLICKED,  // Since the last update the button has been pressed and released.
-              // The button is released now.
   };
 
   // When testing, it can be useful to hit test directly along the laser.
@@ -80,9 +78,9 @@ class UiInputManager {
                        const gfx::PointF& target_point);
   void SendScrollUpdate(GestureList* gesture_list,
                         const gfx::PointF& target_point);
-  void SendHoverLeave(UiElement* target);
-  bool SendHoverEnter(UiElement* target, const gfx::PointF& target_point);
-  void SendHoverMove(const gfx::PointF& target_point);
+
+  void SendHoverEvents(UiElement* target, const gfx::PointF& target_point);
+  void SendMove(UiElement* element, const gfx::PointF& target_point);
   void SendButtonDown(UiElement* target,
                       const gfx::PointF& target_point,
                       ButtonState button_state);
@@ -100,10 +98,10 @@ class UiInputManager {
   // independently and we should only cancel flings on the relevant element
   // when we do cancel flings.
   int fling_target_id_ = 0;
-  int input_locked_element_id_ = 0;
+  int input_capture_element_id_ = 0;
+  int focused_element_id_ = 0;
   bool in_click_ = false;
   bool in_scroll_ = false;
-  int focused_element_id_ = 0;
 
   HitTestStrategy hit_test_strategy_ = HitTestStrategy::PROJECT_TO_WORLD_ORIGIN;
 
