@@ -17,11 +17,11 @@ struct PdfRenderSettings;
 
 class PdfConverter {
  public:
-  using StartCallback = base::Callback<void(int page_count)>;
+  using StartCallback = base::OnceCallback<void(int page_count)>;
   using GetPageCallback =
-      base::Callback<void(int page_number,
-                          float scale_factor,
-                          std::unique_ptr<MetafilePlayer> file)>;
+      base::RepeatingCallback<void(int page_number,
+                                   float scale_factor,
+                                   std::unique_ptr<MetafilePlayer> file)>;
   virtual ~PdfConverter();
 
   // Starts conversion of PDF provided as |data|. Calls |start_callback|
@@ -29,7 +29,7 @@ class PdfConverter {
   static std::unique_ptr<PdfConverter> StartPdfConverter(
       const scoped_refptr<base::RefCountedMemory>& data,
       const PdfRenderSettings& conversion_settings,
-      const StartCallback& start_callback);
+      StartCallback start_callback);
 
   // Requests conversion of the page. |page_number| is 0-base page number in
   // PDF provided in Start() call.

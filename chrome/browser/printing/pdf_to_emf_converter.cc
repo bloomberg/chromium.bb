@@ -214,7 +214,7 @@ class PdfConverterUtilityProcessHostClient
       const PdfRenderSettings& settings);
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
-             const PdfConverter::StartCallback& start_callback);
+             PdfConverter::StartCallback start_callback);
 
   void GetPage(int page_number,
                const PdfConverter::GetPageCallback& get_page_callback);
@@ -333,18 +333,18 @@ class PdfConverterImpl : public PdfConverter {
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
-             const StartCallback& start_callback);
+             StartCallback start_callback);
 
   void GetPage(int page_number,
                const GetPageCallback& get_page_callback) override;
 
   // Helps to cancel callbacks if this object is destroyed.
-  void RunCallback(const base::Closure& callback);
+  void RunCallback(base::OnceClosure callback);
 
   void Start(
       const scoped_refptr<PdfConverterUtilityProcessHostClient>& utility_client,
       const scoped_refptr<base::RefCountedMemory>& data,
-      const StartCallback& start_callback);
+      StartCallback start_callback);
 
  private:
   scoped_refptr<PdfConverterUtilityProcessHostClient> utility_client_;
@@ -475,18 +475,18 @@ PdfConverterUtilityProcessHostClient::~PdfConverterUtilityProcessHostClient() {}
 
 void PdfConverterUtilityProcessHostClient::Start(
     const scoped_refptr<base::RefCountedMemory>& data,
-    const PdfConverter::StartCallback& start_callback) {
+    PdfConverter::StartCallback start_callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PdfConverterUtilityProcessHostClient::Start, this, data,
-                   start_callback));
+        base::BindOnce(&PdfConverterUtilityProcessHostClient::Start, this, data,
+                       std::move(start_callback)));
     return;
   }
 
   // Store callback before any OnFailed() call to make it called on failure.
   DCHECK(start_callback);
-  start_callback_ = start_callback;
+  start_callback_ = std::move(start_callback);
 
   // NOTE: This process _must_ be sandboxed, otherwise the pdf dll will load
   // gdiplus.dll, change how rendering happens, and not be able to correctly
@@ -540,7 +540,7 @@ void PdfConverterUtilityProcessHostClient::OnPageCount(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&PdfConverterImpl::RunCallback, converter_,
-                     base::Bind(start_callback_, page_count)));
+                     base::BindOnce(std::move(start_callback_), page_count)));
 }
 
 void PdfConverterUtilityProcessHostClient::GetPage(
@@ -604,8 +604,8 @@ void PdfConverterUtilityProcessHostClient::OnPageDone(bool success,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PdfConverterImpl::RunCallback, converter_,
-                 base::Bind(data.callback(), data.page_number(), scale_factor,
-                            base::Passed(&file))));
+                 base::BindRepeating(data.callback(), data.page_number(),
+                                     scale_factor, base::Passed(&file))));
   get_page_callbacks_.pop();
 }
 
@@ -701,10 +701,10 @@ PdfConverterImpl::~PdfConverterImpl() {
 void PdfConverterImpl::Start(
     const scoped_refptr<PdfConverterUtilityProcessHostClient>& utility_client,
     const scoped_refptr<base::RefCountedMemory>& data,
-    const StartCallback& start_callback) {
+    StartCallback start_callback) {
   DCHECK(!utility_client_);
   utility_client_ = utility_client;
-  utility_client_->Start(data, start_callback);
+  utility_client_->Start(data, std::move(start_callback));
 }
 
 void PdfConverterImpl::GetPage(int page_number,
@@ -712,9 +712,9 @@ void PdfConverterImpl::GetPage(int page_number,
   utility_client_->GetPage(page_number, get_page_callback);
 }
 
-void PdfConverterImpl::RunCallback(const base::Closure& callback) {
+void PdfConverterImpl::RunCallback(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 }  // namespace
@@ -725,12 +725,12 @@ PdfConverter::~PdfConverter() {}
 std::unique_ptr<PdfConverter> PdfConverter::StartPdfConverter(
     const scoped_refptr<base::RefCountedMemory>& data,
     const PdfRenderSettings& conversion_settings,
-    const StartCallback& start_callback) {
+    StartCallback start_callback) {
   std::unique_ptr<PdfConverterImpl> converter =
       base::MakeUnique<PdfConverterImpl>();
   converter->Start(new PdfConverterUtilityProcessHostClient(
                        converter->GetWeakPtr(), conversion_settings),
-                   data, start_callback);
+                   data, std::move(start_callback));
   return std::move(converter);
 }
 
