@@ -13,7 +13,6 @@
 #include <set>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -536,40 +535,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     WRITE_STATE_DO_WRITE_COMPLETE,
   };
 
-  // Container class for unclaimed pushed streams on a SpdySession.  Guarantees
-  // that |spdy_session_.pool_| gets notified every time a stream is pushed or
-  // an unclaimed pushed stream is claimed.
-  class NET_EXPORT_PRIVATE UnclaimedPushedStreamContainer {
-   public:
-    UnclaimedPushedStreamContainer() = delete;
-    explicit UnclaimedPushedStreamContainer(SpdySession* spdy_session);
-    ~UnclaimedPushedStreamContainer();
-
-    size_t CountStreamsForSession() const { return streams_.size(); }
-    SpdyStreamId FindStream(const GURL& url) const;
-
-    // Return true if there was an element with |url|, which was then erased.
-    bool erase(const GURL& url, SpdyStreamId stream_id) WARN_UNUSED_RESULT;
-
-    // Return true if there was not already an entry with |url|,
-    // in which case the insertion was successful.
-    bool insert(const GURL& url, SpdyStreamId stream_id) WARN_UNUSED_RESULT;
-
-    size_t EstimateMemoryUsage() const;
-
-   private:
-    using PushedStreamMap = std::map<GURL, SpdyStreamId>;
-
-    SpdySession* spdy_session_;
-
-    // (Bijective) map from the URL to the ID of the streams that have
-    // already started to be pushed by the server, but do not have
-    // consumers yet. Contains a subset of |active_streams_|.
-    PushedStreamMap streams_;
-
-    DISALLOW_COPY_AND_ASSIGN(UnclaimedPushedStreamContainer);
-  };
-
   // Called by SpdyStreamRequest to start a request to create a
   // stream. If OK is returned, then |stream| will be filled in with a
   // valid stream. If ERR_IO_PENDING is returned, then
@@ -935,8 +900,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // them into a separate ActiveStreamMap, and not deliver network events to
   // them?
   ActiveStreamMap active_streams_;
-
-  UnclaimedPushedStreamContainer unclaimed_pushed_streams_;
 
   // Not owned. |push_delegate_| outlives the session and handles server pushes
   // received by session.

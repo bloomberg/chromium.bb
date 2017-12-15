@@ -746,7 +746,6 @@ SpdySession::SpdySession(
       transport_security_state_(transport_security_state),
       stream_hi_water_mark_(kFirstStreamId),
       last_accepted_push_stream_id_(0),
-      unclaimed_pushed_streams_(this),
       push_delegate_(push_delegate),
       num_pushed_streams_(0u),
       num_active_pushed_streams_(0u),
@@ -857,7 +856,8 @@ int SpdySession::GetPushStream(const GURL& url,
 }
 
 void SpdySession::CancelPush(const GURL& url) {
-  const SpdyStreamId stream_id = unclaimed_pushed_streams_.FindStream(url);
+  const SpdyStreamId stream_id =
+      pool_->push_promise_index()->FindStream(url, this);
   if (stream_id == kNoPushedStreamFound)
     return;
 
@@ -1252,7 +1252,7 @@ std::unique_ptr<base::Value> SpdySession::GetInfoAsValue() const {
   dict->SetInteger("active_streams", active_streams_.size());
 
   dict->SetInteger("unclaimed_pushed_streams",
-                   unclaimed_pushed_streams_.CountStreamsForSession());
+                   pool_->push_promise_index()->CountStreamsForSession(this));
 
   dict->SetString(
       "negotiated_protocol",
@@ -1371,7 +1371,6 @@ size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
          SpdyEstimateMemoryUsage(spdy_session_key_) +
          SpdyEstimateMemoryUsage(pooled_aliases_) +
          SpdyEstimateMemoryUsage(active_streams_) +
-         SpdyEstimateMemoryUsage(unclaimed_pushed_streams_) +
          SpdyEstimateMemoryUsage(created_streams_) +
          SpdyEstimateMemoryUsage(write_queue_) +
          SpdyEstimateMemoryUsage(in_flight_write_) +
@@ -1379,59 +1378,6 @@ size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
          SpdyEstimateMemoryUsage(initial_settings_) +
          SpdyEstimateMemoryUsage(stream_send_unstall_queue_) +
          SpdyEstimateMemoryUsage(priority_dependency_state_);
-}
-
-SpdySession::UnclaimedPushedStreamContainer::UnclaimedPushedStreamContainer(
-    SpdySession* spdy_session)
-    : spdy_session_(spdy_session) {}
-SpdySession::UnclaimedPushedStreamContainer::~UnclaimedPushedStreamContainer() =
-    default;
-
-SpdyStreamId SpdySession::UnclaimedPushedStreamContainer::FindStream(
-    const GURL& url) const {
-  PushedStreamMap::const_iterator it = streams_.find(url);
-  if (it == streams_.end())
-    return kNoPushedStreamFound;
-  return it->second;
-}
-
-bool SpdySession::UnclaimedPushedStreamContainer::erase(
-    const GURL& url,
-    SpdyStreamId stream_id) {
-  DCHECK(spdy_session_->pool_);
-  PushedStreamMap::const_iterator it = streams_.find(url);
-  if (it == streams_.end() || it->second != stream_id)
-    return false;
-
-  // Only allow cross-origin push for secure resources.
-  if (it->first.SchemeIsCryptographic()) {
-    spdy_session_->pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
-        it->first, stream_id, spdy_session_);
-  }
-  streams_.erase(it);
-  return true;
-}
-
-bool SpdySession::UnclaimedPushedStreamContainer::insert(
-    const GURL& url,
-    SpdyStreamId stream_id) {
-  DCHECK(spdy_session_->pool_);
-  auto result = streams_.insert(std::make_pair(url, stream_id));
-  if (!result.second) {
-    // Only one pushed stream is allowed for each URL.
-    return false;
-  }
-  // Only allow cross-origin push for https resources.
-  if (url.SchemeIsCryptographic()) {
-    spdy_session_->pool_->push_promise_index()->RegisterUnclaimedPushedStream(
-        url, stream_id, spdy_session_);
-  }
-  return true;
-}
-
-size_t SpdySession::UnclaimedPushedStreamContainer::EstimateMemoryUsage()
-    const {
-  return SpdyEstimateMemoryUsage(streams_);
 }
 
 // {,Try}CreateStream() can be called with |in_io_loop_| set if a stream is
@@ -1681,7 +1627,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   }
 
   // Insertion fails if there already is a pushed stream with the same path.
-  if (!unclaimed_pushed_streams_.insert(gurl, stream_id)) {
+  if (!pool_->push_promise_index()->RegisterUnclaimedPushedStream(
+          gurl, stream_id, this)) {
     EnqueueResetStreamFrame(stream_id, request_priority,
                             ERROR_CODE_REFUSED_STREAM,
                             "Duplicate pushed stream with url: " + gurl.spec());
@@ -1751,8 +1698,8 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
   // push is hardly used. Write tests for this and fix this. (See
   // http://crbug.com/261712 .)
   if (owned_stream->type() == SPDY_PUSH_STREAM) {
-    if (unclaimed_pushed_streams_.erase(owned_stream->url(),
-                                        owned_stream->stream_id())) {
+    if (pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
+            owned_stream->url(), owned_stream->stream_id(), this)) {
       bytes_pushed_and_unclaimed_count_ += owned_stream->recv_bytes();
     }
     bytes_pushed_count_ += owned_stream->recv_bytes();
@@ -2428,11 +2375,14 @@ void SpdySession::DeleteStream(std::unique_ptr<SpdyStream> stream, int status) {
 }
 
 SpdyStream* SpdySession::GetActivePushStream(const GURL& url) {
-  const SpdyStreamId stream_id = unclaimed_pushed_streams_.FindStream(url);
+  const SpdyStreamId stream_id =
+      pool_->push_promise_index()->FindStream(url, this);
   if (stream_id == kNoPushedStreamFound)
     return nullptr;
 
-  const bool result = unclaimed_pushed_streams_.erase(url, stream_id);
+  const bool result =
+      pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
+          url, stream_id, this);
   DCHECK(result);
 
   ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
@@ -2500,7 +2450,7 @@ void SpdySession::DcheckDraining() const {
   DcheckGoingAway();
   DCHECK_EQ(availability_state_, STATE_DRAINING);
   DCHECK(active_streams_.empty());
-  DCHECK_EQ(0u, unclaimed_pushed_streams_.CountStreamsForSession());
+  DCHECK_EQ(0u, pool_->push_promise_index()->CountStreamsForSession(this));
 }
 
 void SpdySession::DoDrainSession(Error err, const SpdyString& description) {
@@ -2600,18 +2550,17 @@ void SpdySession::CancelPushedStreamIfUnclaimed(SpdyStreamId stream_id) {
   if (active_it == active_streams_.end())
     return;
 
-  // Grab URL for faster lookup in unclaimed_pushed_streams_.
-  const GURL& url = active_it->second->url();
   // Make sure to cancel the correct stream.  It is possible that the pushed
   // stream |stream_id| is already claimed, and another stream has been pushed
   // for the same URL.
-  if (unclaimed_pushed_streams_.FindStream(url) != stream_id) {
+  const GURL& url = active_it->second->url();
+  if (pool_->push_promise_index()->FindStream(url, this) != stream_id) {
     return;
   }
 
   LogAbandonedActiveStream(active_it, ERR_TIMED_OUT);
   // CloseActiveStreamIterator() will remove the stream from
-  // |unclaimed_pushed_streams_|.
+  // |pool_->push_promise_index()|.
   ResetStreamIterator(active_it, ERROR_CODE_REFUSED_STREAM,
                       "Stream not claimed.");
 }
@@ -2725,8 +2674,8 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
       NetLogEventType::HTTP2_SESSION_RECV_GOAWAY,
       base::Bind(&NetLogSpdyRecvGoAwayCallback, last_accepted_stream_id,
                  active_streams_.size(),
-                 unclaimed_pushed_streams_.CountStreamsForSession(), error_code,
-                 debug_data));
+                 pool_->push_promise_index()->CountStreamsForSession(this),
+                 error_code, debug_data));
   MakeUnavailable();
   if (error_code == ERROR_CODE_HTTP_1_1_REQUIRED) {
     // TODO(bnc): Record histogram with number of open streams capped at 50.
