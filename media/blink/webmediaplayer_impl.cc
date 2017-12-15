@@ -1524,7 +1524,8 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
       std::move(recorder),
       base::Bind(&WebMediaPlayerImpl::GetPipelineStatistics,
                  base::Unretained(this)),
-      pipeline_metadata_.video_decoder_config));
+      pipeline_metadata_.video_decoder_config,
+      frame_->GetTaskRunner(blink::TaskType::kUnthrottled)));
 
   if (delegate_->IsFrameHidden())
     video_decode_stats_reporter_->OnHidden();

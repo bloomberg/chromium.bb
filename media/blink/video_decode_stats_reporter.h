@@ -32,6 +32,7 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
       mojom::VideoDecodeStatsRecorderPtr recorder_ptr,
       GetPipelineStatsCB get_pipeline_stats_cb,
       const VideoDecoderConfig& video_config,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::TickClock* tick_clock = base::DefaultTickClock::GetInstance());
   ~VideoDecodeStatsReporter();
 

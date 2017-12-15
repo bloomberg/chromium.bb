@@ -170,7 +170,8 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
         std::move(recorder_ptr),
         base::Bind(&VideoDecodeStatsReporterTest::GetPipelineStatsCB,
                    base::Unretained(this)),
-        MakeDefaultVideoConfig(), clock_.get());
+        MakeDefaultVideoConfig(), base::ThreadTaskRunnerHandle::Get(),
+        clock_.get());
   }
 
   // Fast forward the task runner (and associated tick clock) by |milliseconds|.
