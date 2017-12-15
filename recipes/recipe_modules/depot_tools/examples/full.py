@@ -4,9 +4,10 @@
 
 DEPS = [
   'depot_tools',
-  'recipe_engine/step',
   'recipe_engine/path',
   'recipe_engine/platform',
+  'recipe_engine/runtime',
+  'recipe_engine/step',
 ]
 
 
@@ -36,8 +37,16 @@ def RunSteps(api):
       'presubmit_support_py_path',
       ['ls', api.depot_tools.presubmit_support_py_path])
 
+  with api.depot_tools.on_path():
+    api.step('on_path', ['echo', '$PATH'])
+
 
 def GenTests(api):
   yield api.test('basic')
+
+  yield (
+    api.test('basic_luci')
+    + api.runtime(is_experimental=False, is_luci=True)
+  )
 
   yield api.test('win') + api.platform('win', 32)
