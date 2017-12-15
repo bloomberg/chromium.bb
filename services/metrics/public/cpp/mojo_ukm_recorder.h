@@ -24,13 +24,11 @@ namespace ukm {
  *
  * Usage Example:
  *
- *  ukm::mojom::UkmRecorderInterfacePtr interface;
- *  content::RenderThread::Get()->GetConnector()->BindInterface(
- *      content::mojom::kBrowserServiceName, mojo::MakeRequest(&interface));
- *  ukm::MojoUkmRecorder ukm_recorder(std::move(interface));
+ *  std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder =
+ *      ukm::MojoUkmRecorder::Create(context()->connector());
  *  ukm::builders::MyEvent(source_id)
  *      .SetMyMetric(metric_value)
- *      .Record(ukm_recorder);
+ *      .Record(ukm_recorder.get());
  */
 class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
  public:

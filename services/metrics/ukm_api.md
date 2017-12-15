@@ -39,23 +39,29 @@ In order to record UKM events, your code needs a UkmRecorder object, defined by 
 
 There are two main ways of getting a UkmRecorder instance.
 
-1) Use ukm::UkmRecorder::Get().  This only works from the UI thread of the Browser process.
+1) Use ukm::UkmRecorder::Get().  This currently only works from the Browser process.
 
 2) Use a service connector and get a MojoUkmRecorder.
 
 ```
-ukm::mojom::UkmRecorderInterfacePtr interface;
-service_connector->BindInterface(
-      content::mojom::kBrowserServiceName,
-      mojo::MakeRequest(&interface));
-ukm::MojoUkmRecorder ukm_recorder(std::move(interface));
+std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder =
+    ukm::MojoUkmRecorder::Create(context()->connector());
+ukm::builders::MyEvent(source_id)
+    .SetMyMetric(metric_value)
+    .Record(ukm_recorder.get());
 ```
-
-Note: This will eventually move out of the browser service.
 
 ## Get a ukm::SourceId
 
 UKM identifies navigations by thier source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
+
+The main methods for doing this are using one of the following methods:
+
+```
+ukm::SourceId source_id = GetSourceIdForWebContentsDocument(web_contents);
+ukm::SourceId source_id = ukm::ConvertToSourceId(
+    navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+```
 
 Currently, however, the code for passing these IDs around is incomplete so you may need to temporarily create your own IDs and associate the URL with them.  Example:
 
