@@ -26,7 +26,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/include/core/SkImageDeserializer.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -45,35 +44,6 @@ class Picture {
   sk_sp<SkPicture> picture;
 };
 
-class GfxImageDeserializer final : public SkImageDeserializer {
- public:
-  sk_sp<SkImage> makeFromData(SkData* data, const SkIRect* subset) override {
-    return makeFromMemory(data->data(), data->size(), subset);
-  }
-  sk_sp<SkImage> makeFromMemory(const void* data,
-                                size_t size,
-                                const SkIRect* subset) override {
-    sk_sp<SkImage> img;
-    // Try PNG first.
-    SkBitmap bitmap;
-    if (gfx::PNGCodec::Decode((const uint8_t*)data, size, &bitmap)) {
-      bitmap.setImmutable();
-      img = SkImage::MakeFromBitmap(bitmap);
-    } else {
-      // Try JPEG.
-      std::unique_ptr<SkBitmap> decoded_jpeg(
-          gfx::JPEGCodec::Decode((const uint8_t*)data, size));
-      if (decoded_jpeg) {
-        decoded_jpeg->setImmutable();
-        img = SkImage::MakeFromBitmap(*decoded_jpeg);
-      }
-    }
-    if (img && subset)
-      img = img->makeSubset(*subset);
-    return img;
-  }
-};
-
 std::unique_ptr<base::Value> ParsePictureArg(v8::Isolate* isolate,
                                              v8::Local<v8::Value> arg) {
   return content::V8ValueConverter::Create()->FromV8Value(
@@ -84,10 +54,8 @@ std::unique_ptr<Picture> CreatePictureFromEncodedString(
     const std::string& encoded) {
   std::string decoded;
   base::Base64Decode(encoded, &decoded);
-  SkMemoryStream stream(decoded.data(), decoded.size());
-  GfxImageDeserializer deserializer;
   sk_sp<SkPicture> skpicture =
-      SkPicture::MakeFromStream(&stream, &deserializer);
+      SkPicture::MakeFromData(decoded.data(), decoded.size());
   if (!skpicture)
     return nullptr;
 
