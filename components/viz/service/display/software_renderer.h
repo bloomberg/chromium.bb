@@ -13,7 +13,6 @@
 namespace cc {
 class OutputSurface;
 class DisplayResourceProvider;
-class ScopedResource;
 }  // namespace cc
 
 namespace viz {
@@ -39,9 +38,6 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
     disable_picture_quad_image_filtering_ = disable;
   }
 
-  bool HasAllocatedResourcesForTesting(
-      const RenderPassId render_pass_id) const override;
-
  protected:
   bool CanPartialSwap() override;
   ResourceFormat BackbufferFormat() const override;
@@ -50,13 +46,13 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
       const base::flat_map<RenderPassId, RenderPassRequirements>&
           render_passes_in_frame) override;
   void AllocateRenderPassResourceIfNeeded(
-      const RenderPassId render_pass_id,
+      const RenderPassId& render_pass_id,
       const gfx::Size& enlarged_size,
       ResourceTextureHint texturehint) override;
   bool IsRenderPassResourceAllocated(
-      const RenderPassId render_pass_id) const override;
-  const gfx::Size& GetRenderPassTextureSize(
-      const RenderPassId render_pass_id) override;
+      const RenderPassId& render_pass_id) const override;
+  gfx::Size GetRenderPassTextureSize(
+      const RenderPassId& render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
   void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
@@ -103,9 +99,8 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
       const RenderPassDrawQuad* quad,
       SkShader::TileMode content_tile_mode) const;
 
-  // A map from RenderPass id to the texture used to draw the RenderPass from.
-  base::flat_map<RenderPassId, std::unique_ptr<cc::ScopedResource>>
-      render_pass_textures_;
+  // A map from RenderPass id to the bitmap used to draw the RenderPass from.
+  base::flat_map<RenderPassId, SkBitmap> render_pass_bitmaps_;
 
   bool disable_picture_quad_image_filtering_ = false;
 
@@ -116,8 +111,6 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
   SkPaint current_paint_;
-  std::unique_ptr<cc::ResourceProvider::ScopedWriteLockSoftware>
-      current_framebuffer_lock_;
   std::unique_ptr<SkCanvas> current_framebuffer_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);

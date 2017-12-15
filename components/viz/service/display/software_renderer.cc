@@ -8,7 +8,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/render_surface_filters.h"
-#include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
@@ -80,7 +79,6 @@ void SoftwareRenderer::BeginDrawingFrame() {
 
 void SoftwareRenderer::FinishDrawingFrame() {
   TRACE_EVENT0("viz", "SoftwareRenderer::FinishDrawingFrame");
-  current_framebuffer_lock_ = nullptr;
   current_framebuffer_canvas_.reset();
   current_canvas_ = nullptr;
   root_canvas_ = nullptr;
@@ -110,25 +108,17 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
 
 void SoftwareRenderer::BindFramebufferToOutputSurface() {
   DCHECK(!output_surface_->HasExternalStencilTest());
-  current_framebuffer_lock_ = nullptr;
   current_framebuffer_canvas_.reset();
   current_canvas_ = root_canvas_;
 }
 
 void SoftwareRenderer::BindFramebufferToTexture(
     const RenderPassId render_pass_id) {
-  cc::ScopedResource* texture = render_pass_textures_[render_pass_id].get();
-  DCHECK(texture);
-  DCHECK(texture->id());
+  auto it = render_pass_bitmaps_.find(render_pass_id);
+  DCHECK(it != render_pass_bitmaps_.end());
+  SkBitmap& bitmap = it->second;
 
-  // Explicitly release lock, otherwise we can crash when try to lock
-  // same texture again.
-  current_framebuffer_lock_ = nullptr;
-  current_framebuffer_lock_ =
-      std::make_unique<cc::ResourceProvider::ScopedWriteLockSoftware>(
-          resource_provider_, texture->id());
-  current_framebuffer_canvas_ =
-      std::make_unique<SkCanvas>(current_framebuffer_lock_->sk_bitmap());
+  current_framebuffer_canvas_ = std::make_unique<SkCanvas>(bitmap);
   current_canvas_ = current_framebuffer_canvas_.get();
 }
 
@@ -453,16 +443,10 @@ void SoftwareRenderer::DrawTileQuad(const TileDrawQuad* quad) {
 }
 
 void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
-  cc::ScopedResource* content_texture =
-      render_pass_textures_[quad->render_pass_id].get();
-  DCHECK(content_texture);
-  DCHECK(content_texture->id());
-  DCHECK(IsSoftwareResource(content_texture->id()));
-
-  cc::DisplayResourceProvider::ScopedReadLockSoftware lock(
-      resource_provider_, content_texture->id());
-  if (!lock.valid())
+  auto it = render_pass_bitmaps_.find(quad->render_pass_id);
+  if (it == render_pass_bitmaps_.end())
     return;
+  SkBitmap& source_bitmap = it->second;
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
   SkRect dest_visible_rect =
@@ -471,22 +455,20 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
           gfx::RectF(quad->visible_rect)));
   SkRect content_rect = RectFToSkRect(quad->tex_coord_rect);
 
-  const SkBitmap* content = lock.sk_bitmap();
-
   sk_sp<SkImage> filter_image;
   const cc::FilterOperations* filters = FiltersForPass(quad->render_pass_id);
   if (filters) {
     DCHECK(!filters->IsEmpty());
     auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-        *filters, gfx::SizeF(content_texture->size()));
+        *filters, gfx::SizeF(source_bitmap.width(), source_bitmap.height()));
     auto image_filter =
         paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
     if (image_filter) {
       SkIRect result_rect;
       // TODO(ajuma): Apply the filter in the same pass as the content where
       // possible (e.g. when there's no origin offset). See crbug.com/308201.
-      filter_image =
-          ApplyImageFilter(image_filter.get(), quad, *content, &result_rect);
+      filter_image = ApplyImageFilter(image_filter.get(), quad, source_bitmap,
+                                      &result_rect);
       if (result_rect.isEmpty()) {
         return;
       }
@@ -508,7 +490,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   sk_sp<SkShader> shader;
   if (!filter_image) {
     shader =
-        SkShader::MakeBitmapShader(*content, SkShader::kClamp_TileMode,
+        SkShader::MakeBitmapShader(source_bitmap, SkShader::kClamp_TileMode,
                                    SkShader::kClamp_TileMode, &content_mat);
   } else {
     shader = filter_image->makeShader(SkShader::kClamp_TileMode,
@@ -809,7 +791,7 @@ void SoftwareRenderer::UpdateRenderPassTextures(
     const base::flat_map<RenderPassId, RenderPassRequirements>&
         render_passes_in_frame) {
   std::vector<RenderPassId> passes_to_delete;
-  for (const auto& pair : render_pass_textures_) {
+  for (const auto& pair : render_pass_bitmaps_) {
     auto render_pass_it = render_passes_in_frame.find(pair.first);
     if (render_pass_it == render_passes_in_frame.end()) {
       passes_to_delete.push_back(pair.first);
@@ -817,59 +799,56 @@ void SoftwareRenderer::UpdateRenderPassTextures(
     }
 
     gfx::Size required_size = render_pass_it->second.size;
-    ResourceTextureHint required_hint = render_pass_it->second.hint;
-    cc::ScopedResource* texture = pair.second.get();
-    DCHECK(texture);
+    // The RenderPassRequirements have a hint, which is only used for gpu
+    // compositing so it is ignored here.
+    const SkBitmap& bitmap = pair.second;
 
-    bool size_appropriate = texture->size().width() >= required_size.width() &&
-                            texture->size().height() >= required_size.height();
-    bool hint_appropriate = (texture->hint() & required_hint) == required_hint;
-    if (texture->id() && (!size_appropriate || !hint_appropriate))
-      texture->Free();
+    bool size_appropriate = bitmap.width() >= required_size.width() &&
+                            bitmap.height() >= required_size.height();
+    if (!size_appropriate)
+      passes_to_delete.push_back(pair.first);
   }
 
-  // Delete RenderPass textures from the previous frame that will not be used
+  // Delete RenderPass bitmaps from the previous frame that will not be used
   // again.
-  for (size_t i = 0; i < passes_to_delete.size(); ++i)
-    render_pass_textures_.erase(passes_to_delete[i]);
+  for (const RenderPassId& id : passes_to_delete)
+    render_pass_bitmaps_.erase(id);
 }
 
 void SoftwareRenderer::AllocateRenderPassResourceIfNeeded(
-    const RenderPassId render_pass_id,
+    const RenderPassId& render_pass_id,
     const gfx::Size& enlarged_size,
-    ResourceTextureHint texturehint) {
-  auto& resource = render_pass_textures_[render_pass_id];
-  if (resource && resource->id())
+    ResourceTextureHint texture_hint) {
+  auto it = render_pass_bitmaps_.find(render_pass_id);
+  if (it != render_pass_bitmaps_.end())
     return;
 
-  if (!resource)
-    resource = std::make_unique<cc::ScopedResource>(resource_provider_);
-  resource->Allocate(enlarged_size, texturehint, BackbufferFormat(),
-                     current_frame()->current_render_pass->color_space);
+  // The |texture_hint| is only used for gpu-based rendering, so not used here.
+  //
+  // ColorSpace correctness for software compositing is a performance nightmare,
+  // so we don't do it. If we did, then the color space of the current frame's
+  // |current_render_pass| should be stored somewhere, but we should not set it
+  // on the bitmap itself. Instead, we'd use it with a SkColorSpaceXformCanvas
+  // that wraps the SkCanvas drawing into the bitmap.
+  SkImageInfo info = SkImageInfo::MakeN32(
+      enlarged_size.width(), enlarged_size.height(), kPremul_SkAlphaType);
+  SkBitmap bitmap;
+  bitmap.allocPixels(info);
+  render_pass_bitmaps_.emplace(render_pass_id, std::move(bitmap));
 }
 
 bool SoftwareRenderer::IsRenderPassResourceAllocated(
-    const RenderPassId render_pass_id) const {
-  auto texture_it = render_pass_textures_.find(render_pass_id);
-  if (texture_it == render_pass_textures_.end())
-    return false;
-
-  cc::ScopedResource* texture = texture_it->second.get();
-  DCHECK(texture);
-  return texture->id() != 0;
+    const RenderPassId& render_pass_id) const {
+  auto it = render_pass_bitmaps_.find(render_pass_id);
+  return it != render_pass_bitmaps_.end();
 }
 
-const gfx::Size& SoftwareRenderer::GetRenderPassTextureSize(
-    const RenderPassId render_pass_id) {
-  cc::ScopedResource* texture = render_pass_textures_[render_pass_id].get();
-  DCHECK(texture);
-  return texture->size();
-}
-
-bool SoftwareRenderer::HasAllocatedResourcesForTesting(
-    const RenderPassId render_pass_id) const {
-  auto iter = render_pass_textures_.find(render_pass_id);
-  return iter != render_pass_textures_.end() && iter->second->id();
+gfx::Size SoftwareRenderer::GetRenderPassTextureSize(
+    const RenderPassId& render_pass_id) {
+  auto it = render_pass_bitmaps_.find(render_pass_id);
+  DCHECK(it != render_pass_bitmaps_.end());
+  SkBitmap& bitmap = it->second;
+  return gfx::Size(bitmap.width(), bitmap.height());
 }
 
 }  // namespace viz

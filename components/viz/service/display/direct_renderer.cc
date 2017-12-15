@@ -13,6 +13,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/filter_operations.h"
@@ -673,6 +674,11 @@ ResourceTextureHint DirectRenderer::RenderPassTextureHint(
 void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
   current_frame_valid_ = true;
   current_frame_ = frame;
+}
+
+bool DirectRenderer::HasAllocatedResourcesForTesting(
+    const RenderPassId& render_pass_id) const {
+  return IsRenderPassResourceAllocated(render_pass_id);
 }
 
 }  // namespace viz
