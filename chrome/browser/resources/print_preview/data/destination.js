@@ -108,8 +108,37 @@ print_preview.CddCapabilities;
  */
 print_preview.Cdd;
 
+/**
+ * @typedef {{id: string,
+ *            origin: print_preview.DestinationOrigin,
+ *            account: string,
+ *            capabilities: ?print_preview.Cdd,
+ *            displayName: string,
+ *            extensionId: string,
+ *            extensionName: string}}
+ */
+print_preview.RecentDestination;
+
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * Creates a |RecentDestination| to represent |destination| in the app
+   * state.
+   * @param {!print_preview.Destination} destination The destination to store.
+   * @return {!print_preview.RecentDestination}
+   */
+  function makeRecentDestination(destination) {
+    return {
+      id: destination.id,
+      origin: destination.origin,
+      account: destination.account || '',
+      capabilities: destination.capabilities,
+      displayName: destination.displayName || '',
+      extensionId: destination.extensionId || '',
+      extensionName: destination.extensionName || '',
+    };
+  }
 
   class Destination {
     /**
@@ -599,5 +628,6 @@ cr.define('print_preview', function() {
   // Export
   return {
     Destination: Destination,
+    makeRecentDestination: makeRecentDestination,
   };
 });

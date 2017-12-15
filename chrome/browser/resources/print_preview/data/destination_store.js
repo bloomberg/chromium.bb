@@ -5,17 +5,6 @@
 cr.exportPath('print_preview');
 
 /**
- * @typedef {{id: string,
- *            origin: print_preview.DestinationOrigin,
- *            account: string,
- *            capabilities: ?print_preview.Cdd,
- *            displayName: string,
- *            extensionId: string,
- *            extensionName: string}}
- */
-print_preview.RecentDestination;
-
-/**
  * Printer search statuses used by the destination store.
  * @enum {string}
  */

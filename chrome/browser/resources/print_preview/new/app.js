@@ -59,63 +59,6 @@ Polymer({
     destination_: {
       type: Object,
       notify: true,
-      value: function() {
-        const dest = new print_preview.Destination(
-            'Foo Printer', print_preview.DestinationType.LOCAL,
-            print_preview.DestinationOrigin.LOCAL, 'Foo Printer', true,
-            print_preview.DestinationConnectionStatus.ONLINE,
-            {description: 'PrinterBrandAA 12345'});
-        dest.capabilities = {
-          version: '1.0',
-          printer: {
-            collate: {default: true},
-            color: {
-              option: [
-                {type: 'STANDARD_COLOR', is_default: true},
-                {type: 'STANDARD_MONOCHROME'}
-              ]
-            },
-            copies: {default: 1, max: 1000},
-            dpi: {
-              option: [
-                {horizontal_dpi: 200, vertical_dpi: 200, is_default: true},
-                {horizontal_dpi: 100, vertical_dpi: 100},
-              ]
-            },
-            duplex: {
-              option: [
-                {type: 'NO_DUPLEX', is_default: true}, {type: 'LONG_EDGE'},
-                {type: 'SHORT_EDGE'}
-              ]
-            },
-            page_orientation: {
-              option: [
-                {type: 'PORTRAIT', is_default: true}, {type: 'LANDSCAPE'},
-                {type: 'AUTO'}
-              ]
-            },
-            media_size: {
-              option: [
-                {
-                  name: 'NA_LETTER',
-                  width_microns: 215900,
-                  height_microns: 279400,
-                  is_default: true,
-                  custom_display_name: 'Letter',
-                },
-                {
-                  name: 'CUSTOM_SQUARE',
-                  width_microns: 215900,
-                  height_microns: 215900,
-                  custom_display_name: 'CUSTOM_SQUARE',
-                }
-              ]
-            },
-            vendor_capability: [],
-          }
-        };
-        return dest;
-      },
     },
 
     /** @private {!print_preview_new.State} */
@@ -132,6 +75,16 @@ Polymer({
     },
   },
 
+  observers: [
+    'updateRecentDestinations_(destination_, destination_.capabilities)',
+  ],
+
+  /**
+   * @private {number} Number of recent destinations to save.
+   * @const
+   */
+  NUM_DESTINATIONS_: 3,
+
   /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
 
@@ -140,6 +93,12 @@ Polymer({
 
   /** @private {?WebUIListenerTracker} */
   listenerTracker_: null,
+
+  /** @private {?print_preview.DestinationStore} */
+  destinationStore_: null,
+
+  /** @private {!EventTracker} */
+  tracker_: new EventTracker(),
 
   /** @type {!print_preview.MeasurementSystem} */
   measurementSystem_: new print_preview.MeasurementSystem(
@@ -156,6 +115,15 @@ Polymer({
     this.listenerTracker_ = new WebUIListenerTracker();
     this.destinationStore_ = new print_preview.DestinationStore(
         this.userInfo_, this.listenerTracker_);
+    this.tracker_.add(
+        this.destinationStore_,
+        print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+        this.onDestinationSelect_.bind(this));
+    this.tracker_.add(
+        this.destinationStore_,
+        print_preview.DestinationStore.EventType
+            .SELECTED_DESTINATION_CAPABILITIES_READY,
+        this.onDestinationUpdated_.bind(this));
     this.nativeLayer_.getInitialSettings().then(
         this.onInitialSettingsSet_.bind(this));
   },
@@ -163,6 +131,7 @@ Polymer({
   /** @override */
   detached: function() {
     this.listenerTracker_.removeAll();
+    this.tracker_.removeAll();
   },
 
   /**
@@ -191,6 +160,53 @@ Polymer({
         settings.isInAppKioskMode, settings.printerName,
         settings.serializedDefaultDestinationSelectionRulesStr,
         this.recentDestinations_);
+  },
+
+  /** @private */
+  onDestinationSelect_: function() {
+    this.destination_ = this.destinationStore_.selectedDestination;
+  },
+
+  /** @private */
+  onDestinationUpdated_: function() {
+    this.set(
+        'destination_.capabilities',
+        this.destinationStore_.selectedDestination.capabilities);
+  },
+
+  /** @private */
+  updateRecentDestinations_: function() {
+    if (!this.destination_)
+      return;
+
+    // Determine if this destination is already in the recent destinations,
+    // and where in the array it is located.
+    const newDestination =
+        print_preview.makeRecentDestination(assert(this.destination_));
+    let indexFound = this.recentDestinations_.findIndex(function(recent) {
+      return (
+          newDestination.id == recent.id &&
+          newDestination.origin == recent.origin);
+    });
+
+    // No change
+    if (indexFound == 0 &&
+        this.recentDestinations_[0].capabilities ==
+            newDestination.capabilities) {
+      return;
+    }
+
+    // Shift the array so that the nth most recent destination is located at
+    // index n.
+    if (indexFound == -1 &&
+        this.recentDestinations_.length == this.NUM_DESTINATIONS_) {
+      indexFound = this.NUM_DESTINATIONS_ - 1;
+    }
+    if (indexFound != -1)
+      this.recentDestinations_.splice(indexFound, 1);
+
+    // Add the most recent destination
+    this.recentDestinations_.splice(0, 0, newDestination);
   },
 
   /**

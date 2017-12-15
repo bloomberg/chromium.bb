@@ -12,13 +12,15 @@
 
       ::slotted([slot=controls]) {
         flex: 1;
+        overflow: hidden;
       }
 
       ::slotted([slot=title]) {
         -webkit-padding-end: 20px;
         color: #646464;
         font-size: 1em;
-        width: 70px;
+        max-width: 70px;
+        min-width: 70px;
         word-break: break-word;
       }
 

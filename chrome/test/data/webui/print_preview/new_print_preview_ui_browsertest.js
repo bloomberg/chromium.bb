@@ -50,6 +50,7 @@ PrintPreviewSettingsSectionsTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      'print_preview_test_utils.js',
       'settings_section_test.js',
     ]);
   }
@@ -103,7 +104,7 @@ PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
     return super.extraLibraries.concat([
       '../test_browser_proxy.js',
       'native_layer_stub.js',
-      'print_preview_tests.js',
+      'print_preview_test_utils.js',
       'restore_state_test.js',
     ]);
   }

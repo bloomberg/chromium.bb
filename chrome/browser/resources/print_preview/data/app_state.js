@@ -26,24 +26,6 @@ print_preview.AppStateField = {
   VENDOR_OPTIONS: 'vendorOptions'
 };
 
-/**
- * Creates a |RecentDestination| to represent |destination| in the app
- * state.
- * @param {!print_preview.Destination} destination The destination to store.
- * @return {!print_preview.RecentDestination}
- */
-function makeRecentDestination(destination) {
-  return {
-    id: destination.id,
-    origin: destination.origin,
-    account: destination.account || '',
-    capabilities: destination.capabilities,
-    displayName: destination.displayName || '',
-    extensionId: destination.extensionId || '',
-    extensionName: destination.extensionName || '',
-  };
-}
-
 cr.define('print_preview', function() {
   'use strict';
   class AppState extends cr.EventTarget {
@@ -221,7 +203,8 @@ cr.define('print_preview', function() {
 
       // Determine if this destination is already in the recent destinations,
       // and where in the array it is located.
-      const newDestination = makeRecentDestination(assert(destination));
+      const newDestination =
+          print_preview.makeRecentDestination(assert(destination));
       let indexFound =
           this.state_[print_preview.AppStateField.RECENT_DESTINATIONS]
               .findIndex(function(recent) {

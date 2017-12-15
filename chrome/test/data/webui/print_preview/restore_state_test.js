@@ -72,7 +72,7 @@ cr.define('restore_state_test', function() {
 
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test.getCddTemplate(initialSettings.printerName));
+          print_preview_test_utils.getCddTemplate(initialSettings.printerName));
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
