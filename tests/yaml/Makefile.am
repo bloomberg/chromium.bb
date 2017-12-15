@@ -78,6 +78,7 @@ EXTRA_DIST =					\
 	multipass.yaml				\
 	new_emph.yaml				\
 	nl-NL-g0_harness.yaml			\
+	nl-g0_backward.yaml			\
 	nl-g0_harness.yaml			\
 	no_8dot_harness.yaml			\
 	no_g1_harness.yaml			\
