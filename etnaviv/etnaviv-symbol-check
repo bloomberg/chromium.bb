@@ -42,6 +42,10 @@ etna_cmd_stream_flush
 etna_cmd_stream_flush2
 etna_cmd_stream_finish
 etna_cmd_stream_reloc
+etna_perfmon_create
+etna_perfmon_del
+etna_perfmon_get_dom_by_name
+etna_perfmon_get_sig_by_name
 EOF
 done)
 

@@ -151,6 +151,27 @@ struct etna_cmd_stream_priv {
 	void *reset_notify_priv;
 };
 
+struct etna_perfmon {
+	struct list_head domains;
+	struct etna_pipe *pipe;
+};
+
+struct etna_perfmon_domain
+{
+	struct list_head head;
+	struct list_head signals;
+	uint8_t id;
+	char name[64];
+};
+
+struct etna_perfmon_signal
+{
+	struct list_head head;
+	struct etna_perfmon_domain *domain;
+	uint8_t signal;
+	char name[64];
+};
+
 #define ALIGN(v,a) (((v) + (a) - 1) & ~((a) - 1))
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
