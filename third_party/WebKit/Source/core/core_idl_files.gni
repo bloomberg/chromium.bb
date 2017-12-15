@@ -523,6 +523,7 @@ core_typedefs_enums_only_idl_files =
                     "dom/CommonDefinitions.idl",
                     "timing/DOMHighResTimeStamp.idl",
                     "timing/PerformanceEntryList.idl",
+                    "workers/RequestCredentials.idl",
                   ],
                   "abspath")
 
@@ -619,6 +620,7 @@ core_dictionary_idl_files =
                     "offscreencanvas/ImageEncodeOptions.idl",
                     "page/scrolling/ScrollStateInit.idl",
                     "timing/PerformanceObserverInit.idl",
+                    "workers/WorkerOptions.idl",
                     "workers/WorkletOptions.idl",
                   ],
                   "abspath")

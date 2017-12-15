@@ -11,38 +11,18 @@
 #include "core/events/MessageEvent.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/MainThreadDebugger.h"
-#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/DedicatedWorker.h"
 #include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/DedicatedWorkerThread.h"
-#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerInspectorProxy.h"
+#include "core/workers/WorkerOptions.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
 #include "public/platform/TaskType.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
-#include "third_party/WebKit/public/platform/dedicated_worker_factory.mojom-blink.h"
 
 namespace blink {
-namespace {
-
-service_manager::mojom::blink::InterfaceProviderPtrInfo
-ConnectToWorkerInterfaceProvider(
-    Document* document,
-    scoped_refptr<const SecurityOrigin> script_origin) {
-  mojom::blink::DedicatedWorkerFactoryPtr worker_factory;
-  document->GetInterfaceProvider()->GetInterface(&worker_factory);
-  service_manager::mojom::blink::InterfaceProviderPtrInfo
-      interface_provider_ptr;
-  worker_factory->CreateDedicatedWorker(
-      script_origin, mojo::MakeRequest(&interface_provider_ptr));
-  return interface_provider_ptr;
-}
-
-}  // namespace
 
 struct DedicatedWorkerMessagingProxy::QueuedTask {
   scoped_refptr<SerializedScriptValue> message;
@@ -63,11 +43,11 @@ DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
 DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() = default;
 
 void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
+    const WorkerOptions& options,
     const KURL& script_url,
-    const String& user_agent,
-    const String& source_code,
-    ReferrerPolicy referrer_policy,
-    const v8_inspector::V8StackTraceId& stack_id) {
+    const v8_inspector::V8StackTraceId& stack_id,
+    const String& source_code) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate()) {
     // Worker.terminate() could be called from JS before the thread was
@@ -75,25 +55,15 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     return;
   }
 
-  Document* document = ToDocument(GetExecutionContext());
-  const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
+  // TODO(nhiroki): Move ReleaseWorkerClients() to DedicatedWorker for cleanup.
+  creation_params->worker_clients = ReleaseWorkerClients();
 
-  ContentSecurityPolicy* csp = document->GetContentSecurityPolicy();
-  DCHECK(csp);
-
-  auto global_scope_creation_params =
-      std::make_unique<GlobalScopeCreationParams>(
-          script_url, user_agent, csp->Headers().get(), referrer_policy,
-          starter_origin, ReleaseWorkerClients(), document->AddressSpace(),
-          OriginTrialContext::GetTokens(document).get(),
-          std::make_unique<WorkerSettings>(document->GetSettings()),
-          kV8CacheOptionsDefault,
-          ConnectToWorkerInterfaceProvider(document,
-                                           SecurityOrigin::Create(script_url)));
-
-  InitializeWorkerThread(std::move(global_scope_creation_params),
-                         CreateBackingThreadStartupData(ToIsolate(document)),
-                         script_url, stack_id, source_code);
+  // TODO(nhiroki): Support module scripts (https://crbug.com/680046).
+  DCHECK_EQ("classic", options.type());
+  InitializeWorkerThread(
+      std::move(creation_params),
+      CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())),
+      script_url, stack_id, source_code);
 
   // Post all queued tasks to the worker.
   for (auto& queued_task : queued_early_tasks_) {
