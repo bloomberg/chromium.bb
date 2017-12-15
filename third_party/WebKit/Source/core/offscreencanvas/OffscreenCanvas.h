@@ -24,6 +24,7 @@ namespace blink {
 
 class CanvasContextCreationAttributes;
 class ImageBitmap;
+class ImageBuffer;
 class
     OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext;
 typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext
@@ -87,7 +88,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   void DiscardImageBuffer() override;
   ImageBuffer* GetImageBuffer() const { return image_buffer_.get(); }
-  ImageBuffer* GetOrCreateImageBuffer() override;
+  ImageBuffer* GetOrCreateImageBuffer();
 
   void SetFrameSinkId(uint32_t client_id, uint32_t sink_id) {
     client_id_ = client_id;

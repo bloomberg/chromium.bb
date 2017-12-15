@@ -30,10 +30,8 @@
 
 #include "platform/graphics/ImageBufferSurface.h"
 
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 
@@ -42,14 +40,9 @@ namespace blink {
 ImageBufferSurface::ImageBufferSurface(const IntSize& size,
                                        const CanvasColorParams& color_params)
     : size_(size), color_params_(color_params) {
-  SetIsHidden(false);
 }
 
 ImageBufferSurface::~ImageBufferSurface() {}
-
-sk_sp<PaintRecord> ImageBufferSurface::GetRecord() {
-  return nullptr;
-}
 
 void ImageBufferSurface::Clear() {
   // Clear the background transparent or opaque, as required. It would be nice
@@ -61,25 +54,7 @@ void ImageBufferSurface::Clear() {
     } else {
       Canvas()->clear(SK_ColorTRANSPARENT);
     }
-    DidDraw(FloatRect(FloatPoint(0, 0), FloatSize(Size())));
   }
-}
-
-void ImageBufferSurface::Draw(GraphicsContext& context,
-                              const FloatRect& dest_rect,
-                              const FloatRect& src_rect,
-                              SkBlendMode op) {
-  scoped_refptr<StaticBitmapImage> snapshot =
-      NewImageSnapshot(kPreferAcceleration, kSnapshotReasonPaint);
-  if (!snapshot)
-    return;
-
-  // GraphicsContext cannot handle gpu resource serialization.
-  snapshot = snapshot->MakeUnaccelerated();
-
-  DCHECK(!snapshot->IsTextureBacked());
-  context.DrawImage(snapshot.get(), Image::kSyncDecode, dest_rect, &src_rect,
-                    op);
 }
 
 }  // namespace blink

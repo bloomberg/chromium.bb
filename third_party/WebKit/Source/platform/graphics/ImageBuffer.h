@@ -48,18 +48,7 @@
 #include "platform/wtf/typed_arrays/Uint8ClampedArray.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}
-}
-
 namespace blink {
-
-class DrawingBuffer;
-class GraphicsContext;
-class IntPoint;
-class IntRect;
 
 class PLATFORM_EXPORT ImageBuffer {
   WTF_MAKE_NONCOPYABLE(ImageBuffer);
@@ -75,83 +64,32 @@ class PLATFORM_EXPORT ImageBuffer {
 
   virtual ~ImageBuffer();
 
-  static bool CanCreateImageBuffer(const IntSize&);
   const IntSize& Size() const { return surface_->Size(); }
   bool IsAccelerated() const { return surface_->IsAccelerated(); }
-  void PrepareSurfaceForPaintingIfNeeded() {
-    surface_->PrepareSurfaceForPaintingIfNeeded();
-  }
-  bool IsSurfaceValid() const;
-  bool RestoreSurface() const;
-  void DidDraw(const FloatRect&) const;
-  bool WasDrawnToAfterSnapshot() const {
-    return snapshot_state_ == kDrawnToAfterSnapshot;
-  }
 
-  void SetFilterQuality(SkFilterQuality filter_quality) {
-    surface_->SetFilterQuality(filter_quality);
-  }
-  void SetIsHidden(bool hidden) { surface_->SetIsHidden(hidden); }
+  bool IsSurfaceValid() const;
 
   PaintCanvas* Canvas() const;
-  void DisableDeferral(DisableDeferralReason) const;
-
-  // Called at the end of a task that rendered a whole frame
-  void FinalizeFrame();
-  void DoPaintInvalidation(const FloatRect& dirty_rect);
-
-  void WillOverwriteCanvas() { surface_->WillOverwriteCanvas(); }
-
-  void PutByteArray(const unsigned char* source,
-                    const IntSize& source_size,
-                    const IntRect& source_rect,
-                    const IntPoint& dest_point);
-
-  WebLayer* PlatformLayer() const;
-
-  // Destroys the TEXTURE_2D binding for the active texture unit of the passed
-  // context. Assumes the destination texture has already been allocated.
-  bool CopyToPlatformTexture(SnapshotReason,
-                             gpu::gles2::GLES2Interface*,
-                             GLenum target,
-                             GLuint texture,
-                             bool premultiply_alpha,
-                             bool flip_y,
-                             const IntPoint& dest_point,
-                             const IntRect& source_sub_rectangle);
-
-  bool CopyRenderingResultsFromDrawingBuffer(DrawingBuffer*,
-                                             SourceDrawingBuffer);
 
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(
       AccelerationHint = kPreferNoAcceleration,
       SnapshotReason = kSnapshotReasonUnknown) const;
 
-  sk_sp<PaintRecord> GetRecord() { return surface_->GetRecord(); }
-
-  void Draw(GraphicsContext&, const FloatRect&, const FloatRect*, SkBlendMode);
-
-  void SetSurface(std::unique_ptr<ImageBufferSurface>);
-
-  // TODO(xlai): This function is an intermediate step making canvas element
-  // have reference to Canvas2DLayerBridge. See crbug.com/776806.
-  void OnCanvasDisposed();
   const CanvasColorParams& ColorParams() const {
     return surface_->ColorParams();
   }
 
   base::WeakPtrFactory<ImageBuffer> weak_ptr_factory_;
+  bool WritePixels(const SkImageInfo& orig_info,
+                   const void* pixels,
+                   size_t row_bytes,
+                   int x,
+                   int y);
 
  protected:
   ImageBuffer(std::unique_ptr<ImageBufferSurface>);
 
  private:
-  enum SnapshotState {
-    kInitialSnapshotState,
-    kDidAcquireSnapshot,
-    kDrawnToAfterSnapshot,
-  };
-  mutable SnapshotState snapshot_state_;
   std::unique_ptr<ImageBufferSurface> surface_;
 };
 

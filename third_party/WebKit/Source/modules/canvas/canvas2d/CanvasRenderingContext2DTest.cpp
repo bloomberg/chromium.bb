@@ -25,7 +25,6 @@
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/ColorCorrectionTestUtils.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
@@ -261,14 +260,11 @@ std::unique_ptr<Canvas2DLayerBridge> CanvasRenderingContext2DTest::MakeBridge(
 
 //============================================================================
 
-class FakeAcceleratedImageBufferSurface
-    : public UnacceleratedImageBufferSurface {
+class FakeAcceleratedImageBufferSurface : public Canvas2DLayerBridge {
  public:
   FakeAcceleratedImageBufferSurface(const IntSize& size,
                                     CanvasColorParams color_params)
-      : UnacceleratedImageBufferSurface(size,
-                                        kInitializeImagePixels,
-                                        color_params),
+      : Canvas2DLayerBridge(size, 0, kDisableAcceleration, color_params),
         is_accelerated_(true) {}
   ~FakeAcceleratedImageBufferSurface() override {}
   bool IsAccelerated() const override { return is_accelerated_; }
@@ -639,7 +635,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
       MakeBridge(size, Canvas2DLayerBridge::kForceAccelerationForTesting);
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge));
 
-  EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
   EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
   EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
 
@@ -651,7 +647,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
     CanvasElement().FinalizeFrame();
 
     EXPECT_FALSE(exception_state.HadException());
-    EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
     EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
   }
@@ -661,11 +657,11 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
 
   EXPECT_FALSE(exception_state.HadException());
   if (CanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration) {
-    EXPECT_FALSE(CanvasElement().GetImageBuffer()->IsAccelerated());
+    EXPECT_FALSE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
     EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
     EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
   } else {
-    EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
     EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
   }
@@ -706,7 +702,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_TextureUploadHeuristics) {
         MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
     CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge));
 
-    EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
     // 4 bytes per pixel * 2 buffers = 8
     EXPECT_EQ(8 * dst_size * dst_size, GetGlobalGPUMemoryUsage());
@@ -722,11 +718,11 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_TextureUploadHeuristics) {
     EXPECT_FALSE(exception_state.HadException());
 
     if (test_variant == kLargeTextureDisablesAcceleration) {
-      EXPECT_FALSE(CanvasElement().GetImageBuffer()->IsAccelerated());
+      EXPECT_FALSE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
       EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
       EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
     } else {
-      EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
+      EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
       EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
       EXPECT_EQ(8 * dst_size * dst_size, GetGlobalGPUMemoryUsage());
     }
@@ -750,10 +746,10 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration) {
   EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
 
   context->fillRect(10, 10, 100, 100);
-  EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
 
   CanvasElement().DisableAcceleration();
-  EXPECT_FALSE(CanvasElement().GetImageBuffer()->IsAccelerated());
+  EXPECT_FALSE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
 
   context->fillRect(10, 10, 100, 100);
 
@@ -1099,9 +1095,9 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   bridge->DontUseIdleSchedulingForTesting();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge));
 
-  EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
   // Take a snapshot to trigger lazy resource provider creation
-  CanvasElement().GetImageBuffer()->NewImageSnapshot(kPreferAcceleration,
+  CanvasElement().Canvas2DBuffer()->NewImageSnapshot(kPreferAcceleration,
                                                      kSnapshotReasonUnknown);
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
@@ -1137,7 +1133,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   bridge->DontUseIdleSchedulingForTesting();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge));
 
-  EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
 
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();

@@ -58,6 +58,8 @@ enum {
   kMaxSkiaDim = 32767  // Maximum width/height in CSS pixels.
 };
 
+bool PLATFORM_EXPORT IsValidImageSize(const IntSize&);
+
 SkBlendMode PLATFORM_EXPORT
     WebCoreCompositeToSkiaComposite(CompositeOperator,
                                     WebBlendMode = WebBlendMode::kNormal);

@@ -10,6 +10,8 @@
 #include "modules/canvas/canvas2d/BaseRenderingContext2D.h"
 #include "modules/csspaint/PaintRenderingContext2DSettings.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/graphics/paint/PaintRecord.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 
 namespace blink {
 

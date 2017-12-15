@@ -57,6 +57,8 @@
 
 namespace blink {
 
+class AcceleratedImageBufferSurface;
+class Canvas2DLayerBridge;
 class CanvasColorParams;
 class CanvasContextCreationAttributes;
 class CanvasRenderingContext;
@@ -66,8 +68,6 @@ class HitTestCanvasResult;
 class HTMLCanvasElement;
 class Image;
 class ImageBitmapOptions;
-class ImageBuffer;
-class ImageBufferSurface;
 class IntSize;
 
 class
@@ -159,15 +159,15 @@ class CORE_EXPORT HTMLCanvasElement final
   bool Is2d() const;
   bool IsAnimated2d() const;
 
+  Canvas2DLayerBridge* Canvas2DBuffer() { return canvas2d_buffer_.get(); }
+  AcceleratedImageBufferSurface* WebGLBuffer() { return webgl_buffer_.get(); }
+  bool HasImageBuffer() { return !!canvas2d_buffer_ || !!webgl_buffer_; }
   void DiscardImageBuffer() override;
-  ImageBuffer* GetImageBuffer() const override { return image_buffer_.get(); }
-  ImageBuffer* GetOrCreateImageBuffer() override;
+  bool TryCreateImageBuffer();
 
   FontSelector* GetFontSelector() override;
 
   bool ShouldBeDirectComposited() const;
-
-  void PrepareSurfaceForPaintingIfNeeded();
 
   const AtomicString ImageSourceURL() const override;
 
@@ -226,7 +226,7 @@ class CORE_EXPORT HTMLCanvasElement final
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   void CreateImageBufferUsingSurfaceForTesting(
-      std::unique_ptr<ImageBufferSurface>);
+      std::unique_ptr<Canvas2DLayerBridge>);
 
   static void RegisterRenderingContextFactory(
       std::unique_ptr<CanvasRenderingContextFactory>);
@@ -309,13 +309,11 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void Reset();
 
-  std::unique_ptr<ImageBufferSurface> CreateWebGLImageBufferSurface();
-  std::unique_ptr<ImageBufferSurface> CreateAcceleratedImageBufferSurface(
+  std::unique_ptr<AcceleratedImageBufferSurface> CreateWebGLBuffer();
+  std::unique_ptr<Canvas2DLayerBridge> CreateAccelerated2dBuffer(
       int* msaa_sample_count);
-  std::unique_ptr<ImageBufferSurface> CreateUnacceleratedImageBufferSurface();
-  void CreateImageBuffer();
-  void CreateImageBufferInternal(
-      std::unique_ptr<ImageBufferSurface> external_surface);
+  std::unique_ptr<Canvas2DLayerBridge> CreateUnaccelerated2dBuffer();
+  void CreateImageBufferInternal(std::unique_ptr<Canvas2DLayerBridge>);
 
   void SetSurfaceSize(const IntSize&);
 
@@ -342,11 +340,19 @@ class CORE_EXPORT HTMLCanvasElement final
   bool origin_clean_;
   bool needs_unbuffered_input_ = false;
 
-  // It prevents HTMLCanvasElement::buffer() from continuously re-attempting to
-  // allocate an imageBuffer after the first attempt failed.
-  mutable bool did_fail_to_create_image_buffer_;
-  bool image_buffer_is_clear_;
-  std::unique_ptr<ImageBuffer> image_buffer_;
+  // It prevents HTMLCanvasElement::TryCreateImageBuffer() from continuously
+  // re-attempting to allocate a Canvas2DLayerBridge (or
+  // AcceleratedImageBufferSurface) after the first attempt failed.
+  mutable bool did_fail_to_create_buffer_;
+  bool buffer_is_clear_;
+  // Buffers: canvas2d_buffer_ for 2d context and webgl_buffer_ for webgl
+  // context.
+  std::unique_ptr<Canvas2DLayerBridge> canvas2d_buffer_;
+  std::unique_ptr<AcceleratedImageBufferSurface> webgl_buffer_;
+  void ReplaceExistingCanvas2DBuffer(std::unique_ptr<Canvas2DLayerBridge>);
+
+  scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
+                                                    SnapshotReason);
 
   // FIXME: This is temporary for platforms that have to copy the image buffer
   // to render (and for CSSCanvasValue).

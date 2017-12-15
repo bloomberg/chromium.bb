@@ -28,7 +28,6 @@
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/Image.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StrokeData.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
@@ -1130,7 +1129,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   Optional<CustomCountHistogram> timer;
   if (!IsPaint2D()) {
     start_time = WTF::CurrentTimeTicksInSeconds();
-    if (GetImageBuffer() && GetImageBuffer()->IsAccelerated()) {
+    if (CanCreateCanvas2DBuffer() && IsAccelerated()) {
       if (image_source->IsVideoElement()) {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram, scoped_us_counter_video_gpu,
@@ -1201,10 +1200,9 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   FloatSize default_object_size(Width(), Height());
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   if (!image_source->IsVideoElement()) {
-    AccelerationHint hint =
-        (HasImageBuffer() && GetImageBuffer()->IsAccelerated())
-            ? kPreferAcceleration
-            : kPreferNoAcceleration;
+    AccelerationHint hint = (HasCanvas2DBuffer() && IsAccelerated())
+                                ? kPreferAcceleration
+                                : kPreferNoAcceleration;
     image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
                                                   kSnapshotReasonDrawImage,
                                                   default_object_size);
@@ -1252,8 +1250,8 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   // Heuristic for disabling acceleration based on anticipated texture upload
   // overhead.
   // See comments in CanvasHeuristicParameters.h for explanation.
-  ImageBuffer* buffer = GetImageBuffer();
-  if (buffer && buffer->IsAccelerated() && !image_source->IsAccelerated()) {
+  if (CanCreateCanvas2DBuffer() && IsAccelerated() &&
+      !image_source->IsAccelerated()) {
     float src_area = src_rect.Width() * src_rect.Height();
     if (src_area >
         CanvasHeuristicParameters::kDrawImageTextureUploadHardSizeLimit) {
@@ -1565,7 +1563,7 @@ ImageData* BaseRenderingContext2D::getImageData(
 
   Optional<ScopedUsHistogramTimer> timer;
   if (!IsPaint2D()) {
-    if (GetImageBuffer() && GetImageBuffer()->IsAccelerated()) {
+    if (CanCreateCanvas2DBuffer() && IsAccelerated()) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, scoped_us_counter_gpu,
           ("Blink.Canvas.GetImageData.GPU", 0, 10000000, 50));
@@ -1579,10 +1577,10 @@ ImageData* BaseRenderingContext2D::getImageData(
   }
 
   IntRect image_data_rect(sx, sy, sw, sh);
-  ImageBuffer* buffer = GetImageBuffer();
+  bool hasImageBuffer = CanCreateCanvas2DBuffer();
   ImageDataColorSettings color_settings =
       GetColorSettingsAsImageDataColorSettings();
-  if (!buffer || isContextLost()) {
+  if (!hasImageBuffer || isContextLost()) {
     ImageData* result =
         ImageData::Create(image_data_rect.Size(), &color_settings);
     if (!result)
@@ -1592,13 +1590,12 @@ ImageData* BaseRenderingContext2D::getImageData(
 
   WTF::ArrayBufferContents contents;
 
-  const CanvasColorParams& color_params = buffer->ColorParams();
-  scoped_refptr<StaticBitmapImage> snapshot = buffer->NewImageSnapshot(
-      kPreferNoAcceleration, kSnapshotReasonGetImageData);
+  const CanvasColorParams& color_params = ColorParams();
+  scoped_refptr<StaticBitmapImage> snapshot =
+      GetImage(kPreferNoAcceleration, kSnapshotReasonGetImageData);
 
   if (!StaticBitmapImage::ConvertToArrayBufferContents(
-          snapshot, contents, image_data_rect, color_params,
-          buffer->IsAccelerated())) {
+          snapshot, contents, image_data_rect, color_params, IsAccelerated())) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
   }
@@ -1658,8 +1655,8 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
     return;
   }
 
-  ImageBuffer* buffer = GetImageBuffer();
-  if (!buffer)
+  bool hasImageBuffer = CanCreateCanvas2DBuffer();
+  if (!hasImageBuffer)
     return;
 
   if (dirty_width < 0) {
@@ -1676,13 +1673,13 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   dest_rect.Intersect(IntRect(0, 0, data->width(), data->height()));
   IntSize dest_offset(static_cast<int>(dx), static_cast<int>(dy));
   dest_rect.Move(dest_offset);
-  dest_rect.Intersect(IntRect(IntPoint(), buffer->Size()));
+  dest_rect.Intersect(IntRect(0, 0, Width(), Height()));
   if (dest_rect.IsEmpty())
     return;
 
   Optional<ScopedUsHistogramTimer> timer;
   if (!IsPaint2D()) {
-    if (GetImageBuffer() && GetImageBuffer()->IsAccelerated()) {
+    if (hasImageBuffer && IsAccelerated()) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, scoped_us_counter_gpu,
           ("Blink.Canvas.PutImageData.GPU", 0, 10000000, 50));
@@ -1708,25 +1705,79 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   // is needed.
   CanvasColorParams data_color_params = data->GetCanvasColorParams();
   CanvasColorParams context_color_params =
-      CanvasColorParams(ColorSpace(), PixelFormat(), kNonOpaque);
+      CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque);
   if (data_color_params.NeedsColorConversion(context_color_params) ||
       PixelFormat() == kF16CanvasPixelFormat) {
     unsigned data_length =
         data->Size().Area() * context_color_params.BytesPerPixel();
     std::unique_ptr<uint8_t[]> converted_pixels(new uint8_t[data_length]);
-    if (data->ImageDataInCanvasColorSettings(ColorSpace(), PixelFormat(),
-                                             converted_pixels.get(),
-                                             kRGBAColorType)) {
-      buffer->PutByteArray(converted_pixels.get(),
-                           IntSize(data->width(), data->height()), source_rect,
-                           IntPoint(dest_offset));
+    if (data->ImageDataInCanvasColorSettings(
+            ColorParams().ColorSpace(), PixelFormat(), converted_pixels.get(),
+            kRGBAColorType)) {
+      PutByteArray(converted_pixels.get(),
+                   IntSize(data->width(), data->height()), source_rect,
+                   IntPoint(dest_offset));
     }
   } else {
-    buffer->PutByteArray(data->data()->Data(),
-                         IntSize(data->width(), data->height()), source_rect,
-                         IntPoint(dest_offset));
+    PutByteArray(data->data()->Data(), IntSize(data->width(), data->height()),
+                 source_rect, IntPoint(dest_offset));
   }
   DidDraw(dest_rect);
+}
+
+void BaseRenderingContext2D::PutByteArray(const unsigned char* source,
+                                          const IntSize& source_size,
+                                          const IntRect& source_rect,
+                                          const IntPoint& dest_point) {
+  if (!IsCanvas2DBufferValid())
+    return;
+  uint8_t bytes_per_pixel = ColorParams().BytesPerPixel();
+
+  DCHECK_GT(source_rect.Width(), 0);
+  DCHECK_GT(source_rect.Height(), 0);
+
+  int origin_x = source_rect.X();
+  int dest_x = dest_point.X() + source_rect.X();
+  DCHECK_GE(dest_x, 0);
+  DCHECK_LT(dest_x, Width());
+  DCHECK_GE(origin_x, 0);
+  DCHECK_LT(origin_x, source_rect.MaxX());
+
+  int origin_y = source_rect.Y();
+  int dest_y = dest_point.Y() + source_rect.Y();
+  DCHECK_GE(dest_y, 0);
+  DCHECK_LT(dest_y, Height());
+  DCHECK_GE(origin_y, 0);
+  DCHECK_LT(origin_y, source_rect.MaxY());
+
+  const size_t src_bytes_per_row = bytes_per_pixel * source_size.Width();
+  const void* src_addr =
+      source + origin_y * src_bytes_per_row + origin_x * bytes_per_pixel;
+
+  SkAlphaType alpha_type;
+  if (kOpaque == ColorParams().GetOpacityMode()) {
+    // If the surface is opaque, tell it that we are writing opaque
+    // pixels.  Writing non-opaque pixels to opaque is undefined in
+    // Skia.  There is some discussion about whether it should be
+    // defined in skbug.com/6157.  For now, we can get the desired
+    // behavior (memcpy) by pretending the write is opaque.
+    alpha_type = kOpaque_SkAlphaType;
+  } else {
+    alpha_type = kUnpremul_SkAlphaType;
+  }
+
+  SkImageInfo info;
+  if (ColorParams().GetSkColorSpaceForSkSurfaces()) {
+    info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
+                             ColorParams().GetSkColorType(), alpha_type,
+                             ColorParams().GetSkColorSpaceForSkSurfaces());
+    if (info.colorType() == kN32_SkColorType)
+      info = info.makeColorType(kRGBA_8888_SkColorType);
+  } else {
+    info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
+                             kRGBA_8888_SkColorType, alpha_type);
+  }
+  WritePixels(info, src_addr, src_bytes_per_row, dest_x, dest_y);
 }
 
 void BaseRenderingContext2D::InflateStrokeRect(FloatRect& rect) const {
@@ -1812,7 +1863,7 @@ void BaseRenderingContext2D::CheckOverdraw(
         image_type == CanvasRenderingContext2DState::kNoImage) {
       if (flags->HasShader()) {
         if (flags->ShaderIsOpaque() && alpha == 0xFF)
-          this->WillOverwriteCanvas();
+          WillOverwriteCanvas();
         return;
       }
     }
@@ -1826,7 +1877,7 @@ void BaseRenderingContext2D::CheckOverdraw(
       return;
   }
 
-  this->WillOverwriteCanvas();
+  WillOverwriteCanvas();
 }
 
 float BaseRenderingContext2D::GetFontBaseline(

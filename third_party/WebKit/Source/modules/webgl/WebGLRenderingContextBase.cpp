@@ -773,17 +773,14 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
         std::make_unique<AcceleratedImageBufferSurface>(size, ColorParams());
     if (!surface->IsValid())
       return nullptr;
-    std::unique_ptr<ImageBuffer> buffer =
-        ImageBuffer::Create(std::move(surface));
-    if (!buffer->CopyRenderingResultsFromDrawingBuffer(GetDrawingBuffer(),
-                                                       kBackBuffer)) {
+    if (!CopyRenderingResultsFromDrawingBuffer(surface.get(), kBackBuffer)) {
       // copyRenderingResultsFromDrawingBuffer is expected to always succeed
       // because we've explicitly created an Accelerated surface and have
       // already validated it.
       NOTREACHED();
       return nullptr;
     }
-    return buffer->NewImageSnapshot(hint, reason);
+    return surface->NewImageSnapshot(hint, reason);
   }
 
   // If on a worker thread, create a copy from the drawing buffer and create
@@ -1463,17 +1460,15 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   canvas()->ClearCopiedImage();
   marked_canvas_dirty_ = false;
 
-  if (!canvas()->GetOrCreateImageBuffer())
+  if (!canvas()->TryCreateImageBuffer())
     return false;
 
   ScopedTexture2DRestorer restorer(this);
   ScopedFramebufferRestorer fbo_restorer(this);
 
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  if (!canvas()
-           ->GetOrCreateImageBuffer()
-           ->CopyRenderingResultsFromDrawingBuffer(GetDrawingBuffer(),
-                                                   source_buffer)) {
+  if (!CopyRenderingResultsFromDrawingBuffer(canvas()->WebGLBuffer(),
+                                             source_buffer)) {
     // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
     // succeed because cases where canvas()-buffer() is not accelerated are
     // handle before reaching this point.  If that assumption ever stops holding
@@ -1483,6 +1478,29 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   }
 
   return true;
+}
+
+bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
+    AcceleratedImageBufferSurface* webgl_buffer,
+    SourceDrawingBuffer source_buffer) const {
+  if (!drawing_buffer_)
+    return false;
+  std::unique_ptr<WebGraphicsContext3DProvider> provider =
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
+  if (!provider)
+    return false;
+  gpu::gles2::GLES2Interface* gl = provider->ContextGL();
+  GLuint texture_id = webgl_buffer->GetBackingTextureHandleForOverwrite();
+  if (!texture_id)
+    return false;
+
+  // TODO(xlai): Flush should not be necessary if the synchronization in
+  // CopyToPlatformTexture is done correctly. See crbug.com/794706.
+  gl->Flush();
+
+  return drawing_buffer_->CopyToPlatformTexture(
+      gl, GL_TEXTURE_2D, texture_id, true, false, IntPoint(0, 0),
+      IntRect(IntPoint(0, 0), drawing_buffer_->Size()), source_buffer);
 }
 
 IntSize WebGLRenderingContextBase::DrawingBufferSize() const {
@@ -4960,14 +4978,19 @@ void WebGLRenderingContextBase::TexImageCanvasByGPU(
     GLint yoffset,
     const IntRect& source_sub_rectangle) {
   if (!canvas->Is3d()) {
-    ImageBuffer* buffer = canvas->GetOrCreateImageBuffer();
-    if (buffer &&
-        !buffer->CopyToPlatformTexture(
-            FunctionIDToSnapshotReason(function_id), ContextGL(), target,
-            target_texture, unpack_premultiply_alpha_, unpack_flip_y_,
-            IntPoint(xoffset, yoffset), source_sub_rectangle)) {
-      NOTREACHED();
+    if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target) &&
+        canvas->TryCreateImageBuffer()) {
+      scoped_refptr<StaticBitmapImage> image =
+          canvas->Canvas2DBuffer()->NewImageSnapshot(
+              kPreferAcceleration, FunctionIDToSnapshotReason(function_id));
+      if (!!image && image->CopyImageToPlatformTexture(
+                         ContextGL(), target, target_texture,
+                         unpack_premultiply_alpha_, unpack_flip_y_,
+                         IntPoint(xoffset, yoffset), source_sub_rectangle)) {
+        return;
+      }
     }
+    NOTREACHED();
   } else {
     WebGLRenderingContextBase* gl =
         ToWebGLRenderingContextBase(canvas->RenderingContext());
@@ -5304,34 +5327,34 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   if (use_copyTextureCHROMIUM) {
     // Try using an accelerated image buffer, this allows YUV conversion to be
     // done on the GPU.
-    std::unique_ptr<ImageBufferSurface> surface =
+    std::unique_ptr<AcceleratedImageBufferSurface> surface =
         WTF::WrapUnique(new AcceleratedImageBufferSurface(
             IntSize(video->videoWidth(), video->videoHeight())));
     if (surface->IsValid()) {
-      std::unique_ptr<ImageBuffer> image_buffer(
-          ImageBuffer::Create(std::move(surface)));
-      if (image_buffer) {
-        // The video element paints an RGBA frame into our surface here. By
-        // using an AcceleratedImageBufferSurface, we enable the WebMediaPlayer
-        // implementation to do any necessary color space conversion on the GPU
-        // (though it may still do a CPU conversion and upload the results).
-        video->PaintCurrentFrame(
-            image_buffer->Canvas(),
-            IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr,
-            already_uploaded_id, frame_metadata_ptr);
+      // The video element paints an RGBA frame into our surface here. By
+      // using an AcceleratedImageBufferSurface, we enable the WebMediaPlayer
+      // implementation to do any necessary color space conversion on the GPU
+      // (though it may still do a CPU conversion and upload the results).
+      video->PaintCurrentFrame(
+          surface->Canvas(),
+          IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr,
+          already_uploaded_id, frame_metadata_ptr);
 
-        // This is a straight GPU-GPU copy, any necessary color space conversion
-        // was handled in the paintCurrentFrameInContext() call.
+      // This is a straight GPU-GPU copy, any necessary color space conversion
+      // was handled in the paintCurrentFrameInContext() call.
 
-        // Note that copyToPlatformTexture no longer allocates the destination
-        // texture.
-        TexImage2DBase(target, level, internalformat, video->videoWidth(),
-                       video->videoHeight(), 0, format, type, nullptr);
+      // Note that copyToPlatformTexture no longer allocates the destination
+      // texture.
+      TexImage2DBase(target, level, internalformat, video->videoWidth(),
+                     video->videoHeight(), 0, format, type, nullptr);
 
-        if (image_buffer->CopyToPlatformTexture(
-                FunctionIDToSnapshotReason(function_id), ContextGL(), target,
-                texture->Object(), unpack_premultiply_alpha_, unpack_flip_y_,
-                IntPoint(0, 0),
+      if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target)) {
+        scoped_refptr<StaticBitmapImage> image = surface->NewImageSnapshot(
+            kPreferAcceleration, FunctionIDToSnapshotReason(function_id));
+        if (!!image &&
+            image->CopyImageToPlatformTexture(
+                ContextGL(), target, texture->Object(),
+                unpack_premultiply_alpha_, unpack_flip_y_, IntPoint(0, 0),
                 IntRect(0, 0, video->videoWidth(), video->videoHeight()))) {
           texture->UpdateLastUploadedFrame(frame_metadata);
           return;

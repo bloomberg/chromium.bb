@@ -13,7 +13,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/heap/GarbageCollected.h"
 
 namespace blink {
@@ -47,8 +46,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
                                ExceptionState&);
 
   virtual void DiscardImageBuffer() = 0;
-  virtual ImageBuffer* GetImageBuffer() const = 0;
-  virtual ImageBuffer* GetOrCreateImageBuffer() = 0;
 
   // If WebGL1 is disabled by enterprise policy or command line switch.
   virtual bool IsWebGL1Enabled() const = 0;
