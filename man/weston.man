@@ -46,6 +46,13 @@ the parent server.
 The X11 backend runs on an X server. Each Weston output becomes an
 X window. This is a cheap way to test multi-monitor support of a
 Wayland shell, desktop, or applications.
+.TP
+.I rdp-backend.so
+The RDP backend runs in memory without the need of graphical hardware. Access
+to the desktop is done by using the RDP protocol. Each connecting
+client has its own seat making it a cheap way to test multi-seat support. See
+.BR weston-rdp (7),
+if installed.
 .
 .\" ***************************************************************
 .SH SHELLS
@@ -234,6 +241,11 @@ Use the pixman renderer.  By default weston will try to use EGL and
 GLES2 for rendering.  Passing this option will make weston use the
 pixman library for software compsiting.
 .
+.SS RDP backend options:
+See
+.BR weston-rdp (7).
+.
+.
 .\" ***************************************************************
 .SH FILES
 .
@@ -349,5 +361,6 @@ weston
 .\" ***************************************************************
 .SH "SEE ALSO"
 .BR weston-drm (7)
+.BR weston-rdp (7)
 .\".BR weston-launch (1),
 .\".BR weston.ini (5)

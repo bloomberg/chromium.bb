@@ -1563,6 +1563,10 @@ if ENABLE_DRM_COMPOSITOR
 man_MANS += weston-drm.7
 endif
 
+if ENABLE_RDP_COMPOSITOR
+man_MANS += weston-rdp.7
+endif
+
 MAN_SUBSTS =								\
 	-e 's|__weston_native_backend__|$(WESTON_NATIVE_BACKEND)|g'	\
 	-e 's|__weston_modules_dir__|$(pkglibdir)|g'			\
@@ -1577,6 +1581,7 @@ SUFFIXES = .1 .5 .7 .man
 EXTRA_DIST +=					\
 	man/weston.man				\
 	man/weston-drm.man			\
+	man/weston-rdp.man			\
 	man/weston.ini.man
 
 CLEANFILES += $(man_MANS)
