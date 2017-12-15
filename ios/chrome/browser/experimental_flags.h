@@ -51,9 +51,6 @@ bool IsNewClearBrowsingDataUIEnabled();
 // Whether the page icon for downgraded HTTPS is enabled.
 bool IsPageIconForDowngradedHTTPSEnabled();
 
-// Whether the Physical Web feature is enabled.
-bool IsPhysicalWebEnabled();
-
 // Whether startup crash is enabled.
 bool IsStartupCrashEnabled();
 

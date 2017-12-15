@@ -16,8 +16,6 @@ source_set("webui") {
     "ntp_tiles_internals_ui.h",
     "password_manager_internals_ui_ios.h",
     "password_manager_internals_ui_ios.mm",
-    "physical_web_ui.cc",
-    "physical_web_ui.h",
     "suggestions_ui.cc",
     "suggestions_ui.h",
     "terms_ui.h",

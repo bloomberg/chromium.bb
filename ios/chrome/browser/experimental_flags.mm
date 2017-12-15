@@ -111,12 +111,6 @@ bool IsPageIconForDowngradedHTTPSEnabled() {
                            base::CompareCase::INSENSITIVE_ASCII);
 }
 
-bool IsPhysicalWebEnabled() {
-  // TODO(crbug.com/760104): Remove this function and its associated code.
-  // Either by replacing it with a base::Feature or by removing all its uses.
-  return false;
-}
-
 bool IsStartupCrashEnabled() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableStartupCrash];
 }

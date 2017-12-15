@@ -94,20 +94,6 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [ChromeEarlGrey waitForWebViewContainingText:userAgent];
 }
 
-// Tests that chrome://physical-web renders and the page title is present.
-// TODO(crbug.com/760104): Re-enable this test once physical web is re-enabled.
-- (void)DISABLED_testPhysicalWeb {
-  // Enable the Physical Web via Chrome variation.
-  base::FieldTrialList::CreateFieldTrial("PhysicalWebEnabled", "Enabled");
-
-  LoadWebUIUrl(kChromeUIPhysicalWebHost);
-
-  // Verify that the title string is present on the page.
-  const std::string pageTitle =
-      l10n_util::GetStringUTF8(IDS_PHYSICAL_WEB_UI_TITLE);
-  [ChromeEarlGrey waitForWebViewContainingText:pageTitle];
-}
-
 // Tests that clicking on a chrome://terms link from chrome://chrome-urls
 // navigates to terms page.
 - (void)testChromeURLNavigateToTerms {
@@ -178,10 +164,6 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
     // TODO(crbug.com/753599): Remove the checking of BookmarksHost when clean
     // up.
     if (host == kChromeUIBookmarksHost || host == kChromeUINewTabHost) {
-      continue;
-    }
-    if (host == kChromeUIPhysicalWebHost &&
-        !experimental_flags::IsPhysicalWebEnabled()) {
       continue;
     }
     LoadWebUIUrl(host);

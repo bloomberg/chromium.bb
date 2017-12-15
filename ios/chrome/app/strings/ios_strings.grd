@@ -808,9 +808,6 @@ For example, some websites may respond to this request by showing you ads that a
 
 Handoff must also be enabled in the General section of Settings, and your devices must use the same iCloud account.
       </message>
-      <message name="IDS_IOS_OPTIONS_ENABLE_PHYSICAL_WEB" desc="Title for the option to enable scanning for nearby devices broadcasting URLs. [Length: 20em] [iOS only]">
-        Physical Web
-      </message>
       <message name="IDS_IOS_OPTIONS_GENERAL_TAB_LABEL" desc="The title of the Basics section of the Settings page. [iOS only]" meaning="The title of the Basics section of the Settings page.">
         Basics
       </message>

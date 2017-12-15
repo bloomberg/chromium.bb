@@ -59,7 +59,6 @@ class ApplicationContextImpl : public ApplicationContext {
   gcm::GCMDriver* GetGCMDriver() override;
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
-  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override;
 
  private:
   // Sets the locale used by the application.
@@ -82,8 +81,6 @@ class ApplicationContextImpl : public ApplicationContext {
   std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
   std::unique_ptr<ios::ChromeBrowserStateManager> chrome_browser_state_manager_;
   std::string application_locale_;
-  std::unique_ptr<physical_web::PhysicalWebDataSource>
-      physical_web_data_source_;
 
   // Sequenced task runner for local state related I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;

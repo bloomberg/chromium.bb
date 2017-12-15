@@ -25,7 +25,6 @@ source_set("main") {
     "//ios/chrome/browser/browsing_data:browsing_data_internal",
     "//ios/chrome/browser/crash_report:crash_report_internal",
     "//ios/chrome/browser/device_sharing",
-    "//ios/chrome/browser/physical_web",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/tabs",
