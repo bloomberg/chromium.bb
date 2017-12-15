@@ -29,7 +29,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   __gCrWeb['findPasswordForms'] = function() {
     var formDataList = [];
     if (hasPasswordField_(window)) {
-      __gCrWeb.getPasswordFormDataList(formDataList, window);
+      getPasswordFormDataList_(formDataList, window);
     }
     return __gCrWeb.stringify(formDataList);
   };
@@ -257,7 +257,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @param {Window} win A window (or frame) in which the function should
    *    look for password forms.
    */
-  __gCrWeb.getPasswordFormDataList = function(formDataList, win) {
+  var getPasswordFormDataList_ = function(formDataList, win) {
     var doc = win.document;
     var forms = doc.forms;
     for (var i = 0; i < forms.length; i++) {
@@ -271,7 +271,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     // Recursively invoke for all iframes.
     var frames = getSameOriginFrames_(win);
     for (var i = 0; i < frames.length; i++) {
-      __gCrWeb.getPasswordFormDataList(formDataList, frames[i]);
+      getPasswordFormDataList_(formDataList, frames[i]);
     }
   };
 
@@ -287,10 +287,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     var passwords = [];
     var firstPasswordIndex = 0;
     for (var j = 0; j < inputs.length; j++) {
-      // TODO(dplotnikov): figure out a way to identify the activated
-      // submit, which is the button that the user has already hit
-      // before this code is called.
-
       var input = inputs[j];
 
       fields.push({
