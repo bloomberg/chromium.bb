@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/scoped_refptr.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
@@ -57,24 +56,24 @@ class IDBRequestQueueItem {
                       IDBKey*,
                       base::OnceClosure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
-                      scoped_refptr<IDBValue>,
+                      std::unique_ptr<IDBValue>,
                       bool attach_loader,
                       base::OnceClosure on_load_complete);
   IDBRequestQueueItem(IDBRequest*,
-                      const Vector<scoped_refptr<IDBValue>>&,
+                      Vector<std::unique_ptr<IDBValue>>,
                       bool attach_loader,
                       base::OnceClosure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       IDBKey*,
                       IDBKey* primary_key,
-                      scoped_refptr<IDBValue>,
+                      std::unique_ptr<IDBValue>,
                       bool attach_loader,
                       base::OnceClosure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       std::unique_ptr<WebIDBCursor>,
                       IDBKey*,
                       IDBKey* primary_key,
-                      scoped_refptr<IDBValue>,
+                      std::unique_ptr<IDBValue>,
                       bool attach_loader,
                       base::OnceClosure on_result_load_complete);
   ~IDBRequestQueueItem();
@@ -143,7 +142,7 @@ class IDBRequestQueueItem {
   Persistent<DOMException> error_;
 
   // All the values that will be passed back to the IDBRequest.
-  Vector<scoped_refptr<IDBValue>> values_;
+  Vector<std::unique_ptr<IDBValue>> values_;
 
   // The cursor argument to the IDBRequest callback.
   std::unique_ptr<WebIDBCursor> cursor_;

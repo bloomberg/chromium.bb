@@ -59,7 +59,7 @@ static v8::Local<v8::Value> DeserializeIDBValueData(v8::Isolate*,
 static v8::Local<v8::Value> DeserializeIDBValueArray(
     v8::Isolate*,
     v8::Local<v8::Object> creation_context,
-    const Vector<scoped_refptr<IDBValue>>*);
+    const Vector<std::unique_ptr<IDBValue>>&);
 
 v8::Local<v8::Value> ToV8(const IDBKeyPath& value,
                           v8::Local<v8::Object> creation_context,
@@ -392,7 +392,7 @@ static v8::Local<v8::Value> DeserializeIDBValueData(v8::Isolate* isolate,
   scoped_refptr<SerializedScriptValue> serialized_value =
       value->CreateSerializedValue();
   SerializedScriptValue::DeserializeOptions options;
-  options.blob_info = value->BlobInfo();
+  options.blob_info = &value->BlobInfo();
   options.read_wasm_from_stream = true;
 
   // deserialize() returns null when serialization fails.  This is sub-optimal
@@ -438,14 +438,14 @@ v8::Local<v8::Value> DeserializeIDBValue(v8::Isolate* isolate,
 static v8::Local<v8::Value> DeserializeIDBValueArray(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context,
-    const Vector<scoped_refptr<IDBValue>>* values) {
+    const Vector<std::unique_ptr<IDBValue>>& values) {
   DCHECK(isolate->InContext());
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  v8::Local<v8::Array> array = v8::Array::New(isolate, values->size());
-  for (size_t i = 0; i < values->size(); ++i) {
+  v8::Local<v8::Array> array = v8::Array::New(isolate, values.size());
+  for (size_t i = 0; i < values.size(); ++i) {
     v8::Local<v8::Value> v8_value =
-        DeserializeIDBValue(isolate, creation_context, values->at(i).get());
+        DeserializeIDBValue(isolate, creation_context, values[i].get());
     if (v8_value.IsEmpty())
       v8_value = v8::Undefined(isolate);
     if (!V8CallBoolean(array->CreateDataProperty(context, i, v8_value)))

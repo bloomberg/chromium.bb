@@ -4,7 +4,9 @@
 
 #include "modules/indexeddb/IDBValue.h"
 
-#include "base/memory/scoped_refptr.h"
+#include <memory>
+#include <utility>
+
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/PtrUtil.h"
@@ -32,41 +34,33 @@ IDBValue::IDBValue(scoped_refptr<SharedBuffer> data,
                    IDBKey* primary_key,
                    const IDBKeyPath& key_path)
     : data_(std::move(data)),
-      blob_data_(std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>()),
-      blob_info_(
-          WTF::WrapUnique(new Vector<WebBlobInfo>(web_blob_info.size()))),
       primary_key_(primary_key && primary_key->IsValid() ? primary_key
                                                          : nullptr),
       key_path_(key_path) {
-  for (size_t i = 0; i < web_blob_info.size(); ++i) {
-    const WebBlobInfo& info = (*blob_info_)[i] = web_blob_info[i];
-    blob_data_->push_back(
+  blob_info_.ReserveInitialCapacity(web_blob_info.size());
+  blob_data_.ReserveInitialCapacity(web_blob_info.size());
+
+  for (const WebBlobInfo& info : web_blob_info) {
+    blob_info_.push_back(info);
+    blob_data_.push_back(
         BlobDataHandle::Create(info.Uuid(), info.GetType(), info.size()));
   }
 }
 
-IDBValue::IDBValue(const IDBValue* value,
+IDBValue::IDBValue(std::unique_ptr<IDBValue> value,
                    IDBKey* primary_key,
                    const IDBKeyPath& key_path)
-    : data_(value->data_),
-      blob_data_(std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>()),
-      blob_info_(
-          WTF::WrapUnique(new Vector<WebBlobInfo>(value->blob_info_->size()))),
+    : data_(std::move(value->data_)),
+      blob_data_(std::move(value->blob_data_)),
+      blob_info_(std::move(value->blob_info_)),
       primary_key_(primary_key),
-      key_path_(key_path) {
-  for (size_t i = 0; i < value->blob_info_->size(); ++i) {
-    const WebBlobInfo& info = (*blob_info_)[i] = value->blob_info_->at(i);
-    blob_data_->push_back(
-        BlobDataHandle::Create(info.Uuid(), info.GetType(), info.size()));
-  }
-}
+      key_path_(key_path) {}
 
-IDBValue::IDBValue(
-    scoped_refptr<SharedBuffer> unwrapped_data,
-    std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data,
-    std::unique_ptr<Vector<WebBlobInfo>> blob_info,
-    const IDBKey* primary_key,
-    const IDBKeyPath& key_path)
+IDBValue::IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
+                   Vector<scoped_refptr<BlobDataHandle>> blob_data,
+                   Vector<WebBlobInfo> blob_info,
+                   const IDBKey* primary_key,
+                   const IDBKeyPath& key_path)
     : data_(std::move(unwrapped_data)),
       blob_data_(std::move(blob_data)),
       blob_info_(std::move(blob_info)),
@@ -78,36 +72,36 @@ IDBValue::~IDBValue() {
     isolate_->AdjustAmountOfExternalAllocatedMemory(-external_allocated_size_);
 }
 
-scoped_refptr<IDBValue> IDBValue::Create() {
-  return base::AdoptRef(new IDBValue());
+std::unique_ptr<IDBValue> IDBValue::Create() {
+  return WTF::WrapUnique(new IDBValue());
 }
 
-scoped_refptr<IDBValue> IDBValue::Create(const WebIDBValue& value,
-                                         v8::Isolate* isolate) {
-  return base::AdoptRef(new IDBValue(value, isolate));
+std::unique_ptr<IDBValue> IDBValue::Create(const WebIDBValue& value,
+                                           v8::Isolate* isolate) {
+  return WTF::WrapUnique(new IDBValue(value, isolate));
 }
 
-scoped_refptr<IDBValue> IDBValue::Create(const IDBValue* value,
-                                         IDBKey* primary_key,
-                                         const IDBKeyPath& key_path) {
-  return base::AdoptRef(new IDBValue(value, primary_key, key_path));
+std::unique_ptr<IDBValue> IDBValue::Create(std::unique_ptr<IDBValue> value,
+                                           IDBKey* primary_key,
+                                           const IDBKeyPath& key_path) {
+  return WTF::WrapUnique(new IDBValue(std::move(value), primary_key, key_path));
 }
 
-scoped_refptr<IDBValue> IDBValue::Create(
+std::unique_ptr<IDBValue> IDBValue::Create(
     scoped_refptr<SharedBuffer> unwrapped_data,
-    std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data,
-    std::unique_ptr<Vector<WebBlobInfo>> blob_info,
+    Vector<scoped_refptr<BlobDataHandle>> blob_data,
+    Vector<WebBlobInfo> blob_info,
     const IDBKey* primary_key,
     const IDBKeyPath& key_path) {
-  return base::AdoptRef(new IDBValue(std::move(unwrapped_data),
-                                     std::move(blob_data), std::move(blob_info),
-                                     primary_key, key_path));
+  return WTF::WrapUnique(
+      new IDBValue(std::move(unwrapped_data), std::move(blob_data),
+                   std::move(blob_info), primary_key, key_path));
 }
 
 Vector<String> IDBValue::GetUUIDs() const {
   Vector<String> uuids;
-  uuids.ReserveCapacity(blob_info_->size());
-  for (const auto& info : *blob_info_)
+  uuids.ReserveCapacity(blob_info_.size());
+  for (const WebBlobInfo& info : blob_info_)
     uuids.push_back(info.Uuid());
   return uuids;
 }

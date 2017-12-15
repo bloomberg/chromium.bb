@@ -5,7 +5,8 @@
 #ifndef IDBObservation_h
 #define IDBObservation_h
 
-#include "base/memory/scoped_refptr.h"
+#include <memory>
+
 #include "bindings/core/v8/ScriptValue.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -13,8 +14,8 @@
 
 namespace blink {
 
+class IDBAny;
 class IDBKeyRange;
-class IDBValue;
 class ScriptState;
 struct WebIDBObservation;
 
@@ -36,7 +37,7 @@ class IDBObservation final : public ScriptWrappable {
  private:
   IDBObservation(const WebIDBObservation&, v8::Isolate*);
   Member<IDBKeyRange> key_range_;
-  scoped_refptr<IDBValue> value_;
+  Member<IDBAny> value_;
   const WebIDBOperationType operation_type_;
 };
 

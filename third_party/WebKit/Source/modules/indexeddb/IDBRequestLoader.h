@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/scoped_refptr.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
@@ -37,7 +36,7 @@ class IDBRequestLoader : public FileReaderLoaderClient {
   // result_values must be kept alive until the loader calls
   // IDBRequestQueueItem::OnResultLoadComplete().
   IDBRequestLoader(IDBRequestQueueItem*,
-                   Vector<scoped_refptr<IDBValue>>* result_values);
+                   Vector<std::unique_ptr<IDBValue>>& result_values);
 
   ~IDBRequestLoader() override;
 
@@ -76,13 +75,13 @@ class IDBRequestLoader : public FileReaderLoaderClient {
   //
   // The Vector is owned by the IDBRequestLoader owner, which is currently a
   // IDBRequestQueueItem.
-  Vector<scoped_refptr<IDBValue>>* const values_;
+  Vector<std::unique_ptr<IDBValue>>& values_;
 
   // Buffer used to unwrap an IDBValue.
   Vector<char> wrapped_data_;
 
   // The value being currently unwrapped.
-  Vector<scoped_refptr<IDBValue>>::iterator current_value_;
+  Vector<std::unique_ptr<IDBValue>>::iterator current_value_;
 
 #if DCHECK_IS_ON()
   // True after Start() is called.

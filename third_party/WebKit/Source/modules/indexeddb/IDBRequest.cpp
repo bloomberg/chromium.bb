@@ -254,7 +254,7 @@ IDBCursor* IDBRequest::GetResultCursor() const {
 void IDBRequest::SetResultCursor(IDBCursor* cursor,
                                  IDBKey* key,
                                  IDBKey* primary_key,
-                                 scoped_refptr<IDBValue>&& value) {
+                                 std::unique_ptr<IDBValue> value) {
   DCHECK_EQ(ready_state_, PENDING);
   cursor_key_ = key;
   cursor_primary_key_ = primary_key;
@@ -263,18 +263,18 @@ void IDBRequest::SetResultCursor(IDBCursor* cursor,
   EnqueueResultInternal(IDBAny::Create(cursor));
 }
 
-void IDBRequest::AckReceivedBlobs(const IDBValue* value) {
+void IDBRequest::AckReceivedBlobs(const IDBValue& value) {
   if (!transaction_ || !transaction_->BackendDB())
     return;
-  Vector<String> uuids = value->GetUUIDs();
+  Vector<String> uuids = value.GetUUIDs();
   if (!uuids.IsEmpty())
     transaction_->BackendDB()->AckReceivedBlobs(uuids);
 }
 
 void IDBRequest::AckReceivedBlobs(
-    const Vector<scoped_refptr<IDBValue>>& values) {
+    const Vector<std::unique_ptr<IDBValue>>& values) {
   for (size_t i = 0; i < values.size(); ++i)
-    AckReceivedBlobs(values[i].get());
+    AckReceivedBlobs(*values[i]);
 }
 
 bool IDBRequest::ShouldEnqueueEvent() const {
@@ -344,10 +344,10 @@ void IDBRequest::HandleResponse() {
 void IDBRequest::HandleResponse(std::unique_ptr<WebIDBCursor> backend,
                                 IDBKey* key,
                                 IDBKey* primary_key,
-                                scoped_refptr<IDBValue>&& value) {
+                                std::unique_ptr<IDBValue> value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  AckReceivedBlobs(value.get());
+  AckReceivedBlobs(*value);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped) {
     return EnqueueResponse(std::move(backend), key, primary_key,
@@ -359,10 +359,10 @@ void IDBRequest::HandleResponse(std::unique_ptr<WebIDBCursor> backend,
                 WrapPersistent(transaction_.Get()))));
 }
 
-void IDBRequest::HandleResponse(scoped_refptr<IDBValue>&& value) {
+void IDBRequest::HandleResponse(std::unique_ptr<IDBValue> value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  AckReceivedBlobs(value.get());
+  AckReceivedBlobs(*value);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(std::move(value));
@@ -372,25 +372,25 @@ void IDBRequest::HandleResponse(scoped_refptr<IDBValue>&& value) {
                 WrapPersistent(transaction_.Get()))));
 }
 
-void IDBRequest::HandleResponse(const Vector<scoped_refptr<IDBValue>>& values) {
+void IDBRequest::HandleResponse(Vector<std::unique_ptr<IDBValue>> values) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
   AckReceivedBlobs(values);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(values);
   if (!transaction_->HasQueuedResults() && !is_wrapped)
-    return EnqueueResponse(values);
+    return EnqueueResponse(std::move(values));
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
-      this, values, is_wrapped,
+      this, std::move(values), is_wrapped,
       WTF::Bind(&IDBTransaction::OnResultReady,
                 WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(IDBKey* key,
                                 IDBKey* primary_key,
-                                scoped_refptr<IDBValue>&& value) {
+                                std::unique_ptr<IDBValue> value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  AckReceivedBlobs(value.get());
+  AckReceivedBlobs(*value);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(key, primary_key, std::move(value));
@@ -432,7 +432,7 @@ void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
 void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
                                  IDBKey* key,
                                  IDBKey* primary_key,
-                                 scoped_refptr<IDBValue>&& value) {
+                                 std::unique_ptr<IDBValue> value) {
   IDB_TRACE1("IDBRequest::EnqueueResponse(IDBCursor)", "size",
              value ? value->DataSize() : 0);
   if (!ShouldEnqueueEvent()) {
@@ -474,7 +474,7 @@ void IDBRequest::EnqueueResponse(IDBKey* idb_key) {
 }
 
 namespace {
-size_t SizeOfValues(const Vector<scoped_refptr<IDBValue>>& values) {
+size_t SizeOfValues(const Vector<std::unique_ptr<IDBValue>>& values) {
   size_t size = 0;
   for (const auto& value : values)
     size += value->DataSize();
@@ -482,8 +482,7 @@ size_t SizeOfValues(const Vector<scoped_refptr<IDBValue>>& values) {
 }
 }  // namespace
 
-void IDBRequest::EnqueueResponse(
-    const Vector<scoped_refptr<IDBValue>>& values) {
+void IDBRequest::EnqueueResponse(Vector<std::unique_ptr<IDBValue>> values) {
   IDB_TRACE1("IDBRequest::EnqueueResponse([IDBValue])", "size",
              SizeOfValues(values));
   if (!ShouldEnqueueEvent()) {
@@ -491,7 +490,7 @@ void IDBRequest::EnqueueResponse(
     return;
   }
 
-  EnqueueResultInternal(IDBAny::Create(values));
+  EnqueueResultInternal(IDBAny::Create(std::move(values)));
   metrics_.RecordAndReset();
 }
 
@@ -507,7 +506,7 @@ static IDBObjectStore* EffectiveObjectStore(IDBAny* source) {
 }
 #endif  // DCHECK_IS_ON()
 
-void IDBRequest::EnqueueResponse(scoped_refptr<IDBValue>&& value) {
+void IDBRequest::EnqueueResponse(std::unique_ptr<IDBValue> value) {
   IDB_TRACE1("IDBRequest::EnqueueResponse(IDBValue)", "size",
              value ? value->DataSize() : 0);
   if (!ShouldEnqueueEvent()) {
@@ -518,7 +517,7 @@ void IDBRequest::EnqueueResponse(scoped_refptr<IDBValue>&& value) {
   if (pending_cursor_) {
     // Value should be null, signifying the end of the cursor's range.
     DCHECK(value->IsNull());
-    DCHECK(!value->BlobInfo()->size());
+    DCHECK(!value->BlobInfo().size());
     pending_cursor_->Close();
     pending_cursor_.Clear();
   }
@@ -567,7 +566,7 @@ void IDBRequest::SetResult(IDBAny* result) {
 
 void IDBRequest::EnqueueResponse(IDBKey* key,
                                  IDBKey* primary_key,
-                                 scoped_refptr<IDBValue>&& value) {
+                                 std::unique_ptr<IDBValue> value) {
   IDB_TRACE("IDBRequest::EnqueueResponse(IDBKey, IDBKey primaryKey, IDBValue)");
   if (!ShouldEnqueueEvent()) {
     metrics_.RecordAndReset();

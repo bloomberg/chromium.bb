@@ -92,7 +92,7 @@ class IDBCursor : public ScriptWrappable {
   void PostSuccessHandlerCallback();
   bool IsDeleted() const;
   void Close();
-  void SetValueReady(IDBKey*, IDBKey* primary_key, scoped_refptr<IDBValue>);
+  void SetValueReady(IDBKey*, IDBKey* primary_key, std::unique_ptr<IDBValue>);
   IDBKey* IdbPrimaryKey() const { return primary_key_; }
   virtual bool IsKeyCursor() const { return true; }
   virtual bool IsCursorWithValue() const { return false; }
@@ -118,7 +118,11 @@ class IDBCursor : public ScriptWrappable {
   bool value_dirty_ = true;
   Member<IDBKey> key_;
   Member<IDBKey> primary_key_;
-  scoped_refptr<IDBValue> value_;
+  Member<IDBAny> value_;
+
+#if DCHECK_IS_ON()
+  bool value_has_injected_primary_key_ = false;
+#endif  // DCHECK_IS_ON()
 };
 
 }  // namespace blink

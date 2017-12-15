@@ -6,6 +6,8 @@
 #define IDBValue_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBKey.h"
@@ -20,18 +22,21 @@ class SerializedScriptValue;
 class WebBlobInfo;
 struct WebIDBValue;
 
-class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
+class MODULES_EXPORT IDBValue final {
  public:
-  static scoped_refptr<IDBValue> Create();
-  static scoped_refptr<IDBValue> Create(const WebIDBValue&, v8::Isolate*);
-  static scoped_refptr<IDBValue> Create(const IDBValue*,
-                                        IDBKey*,
-                                        const IDBKeyPath&);
+  static std::unique_ptr<IDBValue> Create();
+  static std::unique_ptr<IDBValue> Create(const WebIDBValue&, v8::Isolate*);
+
+  // Injects a primary key into a value coming from the backend.
+  static std::unique_ptr<IDBValue> Create(std::unique_ptr<IDBValue>,
+                                          IDBKey*,
+                                          const IDBKeyPath&);
+
   // Used by IDBValueUnwrapper and its tests.
-  static scoped_refptr<IDBValue> Create(
+  static std::unique_ptr<IDBValue> Create(
       scoped_refptr<SharedBuffer> unwrapped_data,
-      std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>>,
-      std::unique_ptr<Vector<WebBlobInfo>>,
+      Vector<scoped_refptr<BlobDataHandle>>,
+      Vector<WebBlobInfo>,
       const IDBKey*,
       const IDBKeyPath&);
 
@@ -42,11 +47,18 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
   bool IsNull() const;
   Vector<String> GetUUIDs() const;
   scoped_refptr<SerializedScriptValue> CreateSerializedValue() const;
-  Vector<WebBlobInfo>* BlobInfo() const { return blob_info_.get(); }
+  const Vector<WebBlobInfo>& BlobInfo() const { return blob_info_; }
   const IDBKey* PrimaryKey() const { return primary_key_; }
   const IDBKeyPath& KeyPath() const { return key_path_; }
 
+  Vector<scoped_refptr<BlobDataHandle>> TakeBlobData() {
+    return std::move(blob_data_);
+  }
+  Vector<WebBlobInfo> TakeBlobInfo() { return std::move(blob_info_); }
+
  private:
+  DISALLOW_COPY_AND_ASSIGN(IDBValue);
+
   friend class IDBValueUnwrapper;
 
   IDBValue();
@@ -55,25 +67,28 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
            const WebVector<WebBlobInfo>&,
            IDBKey*,
            const IDBKeyPath&);
-  IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
+  IDBValue(std::unique_ptr<IDBValue>, IDBKey*, const IDBKeyPath&);
   IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
-           std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>>,
-           std::unique_ptr<Vector<WebBlobInfo>>,
+           Vector<scoped_refptr<BlobDataHandle>>,
+           Vector<WebBlobInfo>,
            const IDBKey*,
            const IDBKeyPath&);
 
   // Keep this private to prevent new refs because we manually bookkeep the
   // memory to V8.
-  const scoped_refptr<SharedBuffer> data_;
-  const std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data_;
-  const std::unique_ptr<Vector<WebBlobInfo>> blob_info_;
+  scoped_refptr<SharedBuffer> data_;
+
+  Vector<scoped_refptr<BlobDataHandle>> blob_data_;
+  Vector<WebBlobInfo> blob_info_;
+
   const Persistent<const IDBKey> primary_key_;
   const IDBKeyPath key_path_;
-  int64_t external_allocated_size_ = 0;
+
   // Used to register memory externally allocated by the WebIDBValue, and to
   // unregister that memory in the destructor. Unused in other construction
   // paths.
   v8::Isolate* isolate_ = nullptr;
+  int64_t external_allocated_size_ = 0;
 };
 
 }  // namespace blink
