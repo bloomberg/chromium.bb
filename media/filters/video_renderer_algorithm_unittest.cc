@@ -1606,4 +1606,18 @@ TEST_F(VideoRendererAlgorithmTest, CadenceForFutureFrames) {
   ASSERT_TRUE(is_using_cadence());
 }
 
+TEST_F(VideoRendererAlgorithmTest, InfiniteDurationMetadata) {
+  TickGenerator tg(tick_clock_->NowTicks(), 50);
+
+  auto frame = CreateFrame(kInfiniteDuration);
+  frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                  tg.interval(1));
+  algorithm_.EnqueueFrame(frame);
+
+  // This should not crash or fail.
+  size_t frames_dropped = 0;
+  frame = RenderAndStep(&tg, &frames_dropped);
+  EXPECT_TRUE(algorithm_.average_frame_duration().is_zero());
+}
+
 }  // namespace media
