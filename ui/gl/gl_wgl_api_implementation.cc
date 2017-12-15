@@ -17,12 +17,11 @@ RealWGLApi* g_real_wgl = nullptr;
 DebugWGLApi* g_debug_wgl = nullptr;
 
 void InitializeStaticGLBindingsWGL() {
-  auto writer = base::AutoWritableMemory::Create(g_driver_wgl);
-  g_driver_wgl->InitializeStaticBindings();
+  g_driver_wgl.InitializeStaticBindings();
   if (!g_real_wgl) {
     g_real_wgl = new RealWGLApi();
   }
-  g_real_wgl->Initialize(&*g_driver_wgl);
+  g_real_wgl->Initialize(&g_driver_wgl);
   g_current_wgl_context = g_real_wgl;
 }
 
@@ -43,8 +42,7 @@ void ClearBindingsWGL() {
     g_real_wgl = NULL;
   }
   g_current_wgl_context = NULL;
-  auto writer = base::AutoWritableMemory::Create(g_driver_wgl);
-  g_driver_wgl->ClearBindings();
+  g_driver_wgl.ClearBindings();
 }
 
 WGLApi::WGLApi() {

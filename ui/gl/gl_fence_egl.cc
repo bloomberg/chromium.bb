@@ -77,7 +77,7 @@ EGLint GLFenceEGL::ClientWaitWithTimeoutNanos(EGLTimeKHR timeout) {
 }
 
 void GLFenceEGL::ServerWait() {
-  if (!g_driver_egl->ext.b_EGL_KHR_wait_sync) {
+  if (!g_driver_egl.ext.b_EGL_KHR_wait_sync) {
     ClientWait();
     return;
   }

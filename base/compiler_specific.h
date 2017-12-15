@@ -187,13 +187,6 @@
 #endif
 #endif
 
-// DISABLE_CFI_ICALL -- Disable Control Flow Integrity indirect call checks.
-#if !defined(DISABLE_CFI_ICALL) && defined(__clang__)
-#define DISABLE_CFI_ICALL __attribute__((no_sanitize("cfi-icall")))
-#else
-#define DISABLE_CFI_ICALL
-#endif
-
 // Macro useful for writing cross-platform function pointers.
 #if !defined(CDECL)
 #if defined(OS_WIN)

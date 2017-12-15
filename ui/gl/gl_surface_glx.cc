@@ -456,8 +456,7 @@ bool GLSurfaceGLX::InitializeExtensionSettingsOneOff() {
   if (!initialized_)
     return false;
 
-  auto writer = base::AutoWritableMemory::Create(g_driver_glx);
-  g_driver_glx->InitializeExtensionBindings();
+  g_driver_glx.InitializeExtensionBindings();
 
   g_glx_context_create = HasGLXExtension("GLX_ARB_create_context");
   g_glx_create_context_robustness_supported =
@@ -694,7 +693,7 @@ bool NativeViewGLSurfaceGLX::SupportsPresentationCallback() {
 }
 
 bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
-  return g_driver_glx->ext.b_GLX_MESA_copy_sub_buffer;
+  return g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer;
 }
 
 void* NativeViewGLSurfaceGLX::GetConfig() {
@@ -717,7 +716,7 @@ gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
     int width,
     int height,
     const PresentationCallback& callback) {
-  DCHECK(g_driver_glx->ext.b_GLX_MESA_copy_sub_buffer);
+  DCHECK(g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
   PreSwapBuffers(callback);
   glXCopySubBufferMESA(g_display, GetDrawableHandle(), x, y, width, height);
   PostSwapBuffers();

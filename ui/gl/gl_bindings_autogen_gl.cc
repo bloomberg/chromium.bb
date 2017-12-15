@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/memory/protected_memory.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -2253,49 +2251,40 @@ void DriverGL::ClearBindings() {
   memset(this, 0, sizeof(*this));
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glActiveTextureFn(GLenum texture) {
   driver_->fn.glActiveTextureFn(texture);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glApplyFramebufferAttachmentCMAAINTELFn(void) {
   driver_->fn.glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glAttachShaderFn(GLuint program, GLuint shader) {
   driver_->fn.glAttachShaderFn(program, shader);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBeginQueryFn(GLenum target, GLuint id) {
   driver_->fn.glBeginQueryFn(target, id);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBeginTransformFeedbackFn(GLenum primitiveMode) {
   driver_->fn.glBeginTransformFeedbackFn(primitiveMode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindAttribLocationFn(GLuint program,
                                        GLuint index,
                                        const char* name) {
   driver_->fn.glBindAttribLocationFn(program, index, name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindBufferFn(GLenum target, GLuint buffer) {
   driver_->fn.glBindBufferFn(target, buffer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindBufferBaseFn(GLenum target, GLuint index, GLuint buffer) {
   driver_->fn.glBindBufferBaseFn(target, index, buffer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindBufferRangeFn(GLenum target,
                                     GLuint index,
                                     GLuint buffer,
@@ -2304,14 +2293,12 @@ void GLApiBase::glBindBufferRangeFn(GLenum target,
   driver_->fn.glBindBufferRangeFn(target, index, buffer, offset, size);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindFragDataLocationFn(GLuint program,
                                          GLuint colorNumber,
                                          const char* name) {
   driver_->fn.glBindFragDataLocationFn(program, colorNumber, name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindFragDataLocationIndexedFn(GLuint program,
                                                 GLuint colorNumber,
                                                 GLuint index,
@@ -2320,12 +2307,10 @@ void GLApiBase::glBindFragDataLocationIndexedFn(GLuint program,
                                               name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
   driver_->fn.glBindFramebufferEXTFn(target, framebuffer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindImageTextureEXTFn(GLuint index,
                                         GLuint texture,
                                         GLint level,
@@ -2337,44 +2322,36 @@ void GLApiBase::glBindImageTextureEXTFn(GLuint index,
                                       access, format);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindRenderbufferEXTFn(GLenum target, GLuint renderbuffer) {
   driver_->fn.glBindRenderbufferEXTFn(target, renderbuffer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindSamplerFn(GLuint unit, GLuint sampler) {
   driver_->fn.glBindSamplerFn(unit, sampler);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindTextureFn(GLenum target, GLuint texture) {
   driver_->fn.glBindTextureFn(target, texture);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindTransformFeedbackFn(GLenum target, GLuint id) {
   driver_->fn.glBindTransformFeedbackFn(target, id);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindUniformLocationCHROMIUMFn(GLuint program,
                                                 GLint location,
                                                 const char* name) {
   driver_->fn.glBindUniformLocationCHROMIUMFn(program, location, name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBindVertexArrayOESFn(GLuint array) {
   driver_->fn.glBindVertexArrayOESFn(array);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBlendBarrierKHRFn(void) {
   driver_->fn.glBlendBarrierKHRFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBlendColorFn(GLclampf red,
                                GLclampf green,
                                GLclampf blue,
@@ -2382,22 +2359,18 @@ void GLApiBase::glBlendColorFn(GLclampf red,
   driver_->fn.glBlendColorFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBlendEquationFn(GLenum mode) {
   driver_->fn.glBlendEquationFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) {
   driver_->fn.glBlendEquationSeparateFn(modeRGB, modeAlpha);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
   driver_->fn.glBlendFuncFn(sfactor, dfactor);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBlendFuncSeparateFn(GLenum srcRGB,
                                       GLenum dstRGB,
                                       GLenum srcAlpha,
@@ -2405,7 +2378,6 @@ void GLApiBase::glBlendFuncSeparateFn(GLenum srcRGB,
   driver_->fn.glBlendFuncSeparateFn(srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBlitFramebufferFn(GLint srcX0,
                                     GLint srcY0,
                                     GLint srcX1,
@@ -2420,7 +2392,6 @@ void GLApiBase::glBlitFramebufferFn(GLint srcX0,
                                   dstX1, dstY1, mask, filter);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBufferDataFn(GLenum target,
                                GLsizeiptr size,
                                const void* data,
@@ -2428,7 +2399,6 @@ void GLApiBase::glBufferDataFn(GLenum target,
   driver_->fn.glBufferDataFn(target, size, data, usage);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glBufferSubDataFn(GLenum target,
                                   GLintptr offset,
                                   GLsizeiptr size,
@@ -2436,17 +2406,14 @@ void GLApiBase::glBufferSubDataFn(GLenum target,
   driver_->fn.glBufferSubDataFn(target, offset, size, data);
 }
 
-DISABLE_CFI_ICALL
 GLenum GLApiBase::glCheckFramebufferStatusEXTFn(GLenum target) {
   return driver_->fn.glCheckFramebufferStatusEXTFn(target);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearFn(GLbitfield mask) {
   driver_->fn.glClearFn(mask);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearBufferfiFn(GLenum buffer,
                                   GLint drawbuffer,
                                   const GLfloat depth,
@@ -2454,28 +2421,24 @@ void GLApiBase::glClearBufferfiFn(GLenum buffer,
   driver_->fn.glClearBufferfiFn(buffer, drawbuffer, depth, stencil);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearBufferfvFn(GLenum buffer,
                                   GLint drawbuffer,
                                   const GLfloat* value) {
   driver_->fn.glClearBufferfvFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearBufferivFn(GLenum buffer,
                                   GLint drawbuffer,
                                   const GLint* value) {
   driver_->fn.glClearBufferivFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearBufferuivFn(GLenum buffer,
                                    GLint drawbuffer,
                                    const GLuint* value) {
   driver_->fn.glClearBufferuivFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearColorFn(GLclampf red,
                                GLclampf green,
                                GLclampf blue,
@@ -2483,29 +2446,24 @@ void GLApiBase::glClearColorFn(GLclampf red,
   driver_->fn.glClearColorFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearDepthFn(GLclampd depth) {
   driver_->fn.glClearDepthFn(depth);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearDepthfFn(GLclampf depth) {
   driver_->fn.glClearDepthfFn(depth);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glClearStencilFn(GLint s) {
   driver_->fn.glClearStencilFn(s);
 }
 
-DISABLE_CFI_ICALL
 GLenum GLApiBase::glClientWaitSyncFn(GLsync sync,
                                      GLbitfield flags,
                                      GLuint64 timeout) {
   return driver_->fn.glClientWaitSyncFn(sync, flags, timeout);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glColorMaskFn(GLboolean red,
                               GLboolean green,
                               GLboolean blue,
@@ -2513,18 +2471,15 @@ void GLApiBase::glColorMaskFn(GLboolean red,
   driver_->fn.glColorMaskFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompileShaderFn(GLuint shader) {
   driver_->fn.glCompileShaderFn(shader);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
                                                   GLuint destId) {
   driver_->fn.glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedTexImage2DFn(GLenum target,
                                          GLint level,
                                          GLenum internalformat,
@@ -2537,7 +2492,6 @@ void GLApiBase::glCompressedTexImage2DFn(GLenum target,
                                        height, border, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedTexImage2DRobustANGLEFn(GLenum target,
                                                     GLint level,
                                                     GLenum internalformat,
@@ -2552,7 +2506,6 @@ void GLApiBase::glCompressedTexImage2DRobustANGLEFn(GLenum target,
                                                   imageSize, dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedTexImage3DFn(GLenum target,
                                          GLint level,
                                          GLenum internalformat,
@@ -2566,7 +2519,6 @@ void GLApiBase::glCompressedTexImage3DFn(GLenum target,
                                        height, depth, border, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedTexImage3DRobustANGLEFn(GLenum target,
                                                     GLint level,
                                                     GLenum internalformat,
@@ -2582,7 +2534,6 @@ void GLApiBase::glCompressedTexImage3DRobustANGLEFn(GLenum target,
                                                   imageSize, dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedTexSubImage2DFn(GLenum target,
                                             GLint level,
                                             GLint xoffset,
@@ -2596,7 +2547,6 @@ void GLApiBase::glCompressedTexSubImage2DFn(GLenum target,
       target, level, xoffset, yoffset, width, height, format, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedTexSubImage2DRobustANGLEFn(GLenum target,
                                                        GLint level,
                                                        GLint xoffset,
@@ -2612,7 +2562,6 @@ void GLApiBase::glCompressedTexSubImage2DRobustANGLEFn(GLenum target,
       dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedTexSubImage3DFn(GLenum target,
                                             GLint level,
                                             GLint xoffset,
@@ -2629,7 +2578,6 @@ void GLApiBase::glCompressedTexSubImage3DFn(GLenum target,
                                           imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCompressedTexSubImage3DRobustANGLEFn(GLenum target,
                                                        GLint level,
                                                        GLint xoffset,
@@ -2647,7 +2595,6 @@ void GLApiBase::glCompressedTexSubImage3DRobustANGLEFn(GLenum target,
       imageSize, dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCopyBufferSubDataFn(GLenum readTarget,
                                       GLenum writeTarget,
                                       GLintptr readOffset,
@@ -2657,7 +2604,6 @@ void GLApiBase::glCopyBufferSubDataFn(GLenum readTarget,
                                     writeOffset, size);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCopySubTextureCHROMIUMFn(GLuint sourceId,
                                            GLint sourceLevel,
                                            GLenum destTarget,
@@ -2678,7 +2624,6 @@ void GLApiBase::glCopySubTextureCHROMIUMFn(GLuint sourceId,
       unpackUnmultiplyAlpha);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCopyTexImage2DFn(GLenum target,
                                    GLint level,
                                    GLenum internalformat,
@@ -2691,7 +2636,6 @@ void GLApiBase::glCopyTexImage2DFn(GLenum target,
                                  height, border);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCopyTexSubImage2DFn(GLenum target,
                                       GLint level,
                                       GLint xoffset,
@@ -2704,7 +2648,6 @@ void GLApiBase::glCopyTexSubImage2DFn(GLenum target,
                                     width, height);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCopyTexSubImage3DFn(GLenum target,
                                       GLint level,
                                       GLint xoffset,
@@ -2718,7 +2661,6 @@ void GLApiBase::glCopyTexSubImage3DFn(GLenum target,
                                     y, width, height);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCopyTextureCHROMIUMFn(GLuint sourceId,
                                         GLint sourceLevel,
                                         GLenum destTarget,
@@ -2734,12 +2676,10 @@ void GLApiBase::glCopyTextureCHROMIUMFn(GLuint sourceId,
       destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCoverageModulationNVFn(GLenum components) {
   driver_->fn.glCoverageModulationNVFn(components);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                              GLenum pathNameType,
                                              const void* paths,
@@ -2752,12 +2692,10 @@ void GLApiBase::glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                            transformValues);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
   driver_->fn.glCoverFillPathNVFn(path, coverMode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCoverStrokePathInstancedNVFn(GLsizei numPaths,
                                                GLenum pathNameType,
                                                const void* paths,
@@ -2770,33 +2708,27 @@ void GLApiBase::glCoverStrokePathInstancedNVFn(GLsizei numPaths,
                                              transformValues);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
   driver_->fn.glCoverStrokePathNVFn(name, coverMode);
 }
 
-DISABLE_CFI_ICALL
 GLuint GLApiBase::glCreateProgramFn(void) {
   return driver_->fn.glCreateProgramFn();
 }
 
-DISABLE_CFI_ICALL
 GLuint GLApiBase::glCreateShaderFn(GLenum type) {
   return driver_->fn.glCreateShaderFn(type);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glCullFaceFn(GLenum mode) {
   driver_->fn.glCullFaceFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDebugMessageCallbackFn(GLDEBUGPROC callback,
                                          const void* userParam) {
   driver_->fn.glDebugMessageCallbackFn(callback, userParam);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDebugMessageControlFn(GLenum source,
                                         GLenum type,
                                         GLenum severity,
@@ -2807,7 +2739,6 @@ void GLApiBase::glDebugMessageControlFn(GLenum source,
                                       enabled);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDebugMessageInsertFn(GLenum source,
                                        GLenum type,
                                        GLuint id,
@@ -2817,126 +2748,102 @@ void GLApiBase::glDebugMessageInsertFn(GLenum source,
   driver_->fn.glDebugMessageInsertFn(source, type, id, severity, length, buf);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   driver_->fn.glDeleteBuffersARBFn(n, buffers);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
   driver_->fn.glDeleteFencesAPPLEFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
   driver_->fn.glDeleteFencesNVFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteFramebuffersEXTFn(GLsizei n,
                                           const GLuint* framebuffers) {
   driver_->fn.glDeleteFramebuffersEXTFn(n, framebuffers);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeletePathsNVFn(GLuint path, GLsizei range) {
   driver_->fn.glDeletePathsNVFn(path, range);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteProgramFn(GLuint program) {
   driver_->fn.glDeleteProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteQueriesFn(GLsizei n, const GLuint* ids) {
   driver_->fn.glDeleteQueriesFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteRenderbuffersEXTFn(GLsizei n,
                                            const GLuint* renderbuffers) {
   driver_->fn.glDeleteRenderbuffersEXTFn(n, renderbuffers);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteSamplersFn(GLsizei n, const GLuint* samplers) {
   driver_->fn.glDeleteSamplersFn(n, samplers);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteShaderFn(GLuint shader) {
   driver_->fn.glDeleteShaderFn(shader);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteSyncFn(GLsync sync) {
   driver_->fn.glDeleteSyncFn(sync);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
   driver_->fn.glDeleteTexturesFn(n, textures);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteTransformFeedbacksFn(GLsizei n, const GLuint* ids) {
   driver_->fn.glDeleteTransformFeedbacksFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDeleteVertexArraysOESFn(GLsizei n, const GLuint* arrays) {
   driver_->fn.glDeleteVertexArraysOESFn(n, arrays);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDepthFuncFn(GLenum func) {
   driver_->fn.glDepthFuncFn(func);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDepthMaskFn(GLboolean flag) {
   driver_->fn.glDepthMaskFn(flag);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDepthRangeFn(GLclampd zNear, GLclampd zFar) {
   driver_->fn.glDepthRangeFn(zNear, zFar);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDepthRangefFn(GLclampf zNear, GLclampf zFar) {
   driver_->fn.glDepthRangefFn(zNear, zFar);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDetachShaderFn(GLuint program, GLuint shader) {
   driver_->fn.glDetachShaderFn(program, shader);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDisableFn(GLenum cap) {
   driver_->fn.glDisableFn(cap);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDisableVertexAttribArrayFn(GLuint index) {
   driver_->fn.glDisableVertexAttribArrayFn(index);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDiscardFramebufferEXTFn(GLenum target,
                                           GLsizei numAttachments,
                                           const GLenum* attachments) {
   driver_->fn.glDiscardFramebufferEXTFn(target, numAttachments, attachments);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDrawArraysFn(GLenum mode, GLint first, GLsizei count) {
   driver_->fn.glDrawArraysFn(mode, first, count);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDrawArraysInstancedANGLEFn(GLenum mode,
                                              GLint first,
                                              GLsizei count,
@@ -2944,17 +2851,14 @@ void GLApiBase::glDrawArraysInstancedANGLEFn(GLenum mode,
   driver_->fn.glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDrawBufferFn(GLenum mode) {
   driver_->fn.glDrawBufferFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDrawBuffersARBFn(GLsizei n, const GLenum* bufs) {
   driver_->fn.glDrawBuffersARBFn(n, bufs);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDrawElementsFn(GLenum mode,
                                  GLsizei count,
                                  GLenum type,
@@ -2962,7 +2866,6 @@ void GLApiBase::glDrawElementsFn(GLenum mode,
   driver_->fn.glDrawElementsFn(mode, count, type, indices);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDrawElementsInstancedANGLEFn(GLenum mode,
                                                GLsizei count,
                                                GLenum type,
@@ -2972,7 +2875,6 @@ void GLApiBase::glDrawElementsInstancedANGLEFn(GLenum mode,
                                              primcount);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glDrawRangeElementsFn(GLenum mode,
                                       GLuint start,
                                       GLuint end,
@@ -2982,71 +2884,58 @@ void GLApiBase::glDrawRangeElementsFn(GLenum mode,
   driver_->fn.glDrawRangeElementsFn(mode, start, end, count, type, indices);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glEGLImageTargetRenderbufferStorageOESFn(GLenum target,
                                                          GLeglImageOES image) {
   driver_->fn.glEGLImageTargetRenderbufferStorageOESFn(target, image);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glEGLImageTargetTexture2DOESFn(GLenum target,
                                                GLeglImageOES image) {
   driver_->fn.glEGLImageTargetTexture2DOESFn(target, image);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glEnableFn(GLenum cap) {
   driver_->fn.glEnableFn(cap);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glEnableVertexAttribArrayFn(GLuint index) {
   driver_->fn.glEnableVertexAttribArrayFn(index);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glEndQueryFn(GLenum target) {
   driver_->fn.glEndQueryFn(target);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glEndTransformFeedbackFn(void) {
   driver_->fn.glEndTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 GLsync GLApiBase::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   return driver_->fn.glFenceSyncFn(condition, flags);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFinishFn(void) {
   driver_->fn.glFinishFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFinishFenceAPPLEFn(GLuint fence) {
   driver_->fn.glFinishFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFinishFenceNVFn(GLuint fence) {
   driver_->fn.glFinishFenceNVFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFlushFn(void) {
   driver_->fn.glFlushFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFlushMappedBufferRangeFn(GLenum target,
                                            GLintptr offset,
                                            GLsizeiptr length) {
   driver_->fn.glFlushMappedBufferRangeFn(target, offset, length);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFramebufferRenderbufferEXTFn(GLenum target,
                                                GLenum attachment,
                                                GLenum renderbuffertarget,
@@ -3055,7 +2944,6 @@ void GLApiBase::glFramebufferRenderbufferEXTFn(GLenum target,
                                              renderbuffertarget, renderbuffer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFramebufferTexture2DEXTFn(GLenum target,
                                             GLenum attachment,
                                             GLenum textarget,
@@ -3065,7 +2953,6 @@ void GLApiBase::glFramebufferTexture2DEXTFn(GLenum target,
                                           texture, level);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                                                        GLenum attachment,
                                                        GLenum textarget,
@@ -3076,7 +2963,6 @@ void GLApiBase::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
       target, attachment, textarget, texture, level, samples);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFramebufferTextureLayerFn(GLenum target,
                                             GLenum attachment,
                                             GLuint texture,
@@ -3086,72 +2972,58 @@ void GLApiBase::glFramebufferTextureLayerFn(GLenum target,
                                           layer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glFrontFaceFn(GLenum mode) {
   driver_->fn.glFrontFaceFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenBuffersARBFn(GLsizei n, GLuint* buffers) {
   driver_->fn.glGenBuffersARBFn(n, buffers);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenerateMipmapEXTFn(GLenum target) {
   driver_->fn.glGenerateMipmapEXTFn(target);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
   driver_->fn.glGenFencesAPPLEFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenFencesNVFn(GLsizei n, GLuint* fences) {
   driver_->fn.glGenFencesNVFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   driver_->fn.glGenFramebuffersEXTFn(n, framebuffers);
 }
 
-DISABLE_CFI_ICALL
 GLuint GLApiBase::glGenPathsNVFn(GLsizei range) {
   return driver_->fn.glGenPathsNVFn(range);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenQueriesFn(GLsizei n, GLuint* ids) {
   driver_->fn.glGenQueriesFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) {
   driver_->fn.glGenRenderbuffersEXTFn(n, renderbuffers);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenSamplersFn(GLsizei n, GLuint* samplers) {
   driver_->fn.glGenSamplersFn(n, samplers);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenTexturesFn(GLsizei n, GLuint* textures) {
   driver_->fn.glGenTexturesFn(n, textures);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenTransformFeedbacksFn(GLsizei n, GLuint* ids) {
   driver_->fn.glGenTransformFeedbacksFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGenVertexArraysOESFn(GLsizei n, GLuint* arrays) {
   driver_->fn.glGenVertexArraysOESFn(n, arrays);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetActiveAttribFn(GLuint program,
                                     GLuint index,
                                     GLsizei bufsize,
@@ -3163,7 +3035,6 @@ void GLApiBase::glGetActiveAttribFn(GLuint program,
                                   name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetActiveUniformFn(GLuint program,
                                      GLuint index,
                                      GLsizei bufsize,
@@ -3175,7 +3046,6 @@ void GLApiBase::glGetActiveUniformFn(GLuint program,
                                    name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetActiveUniformBlockivFn(GLuint program,
                                             GLuint uniformBlockIndex,
                                             GLenum pname,
@@ -3184,7 +3054,6 @@ void GLApiBase::glGetActiveUniformBlockivFn(GLuint program,
                                           params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetActiveUniformBlockivRobustANGLEFn(GLuint program,
                                                        GLuint uniformBlockIndex,
                                                        GLenum pname,
@@ -3195,7 +3064,6 @@ void GLApiBase::glGetActiveUniformBlockivRobustANGLEFn(GLuint program,
       program, uniformBlockIndex, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetActiveUniformBlockNameFn(GLuint program,
                                               GLuint uniformBlockIndex,
                                               GLsizei bufSize,
@@ -3205,7 +3073,6 @@ void GLApiBase::glGetActiveUniformBlockNameFn(GLuint program,
                                             length, uniformBlockName);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetActiveUniformsivFn(GLuint program,
                                         GLsizei uniformCount,
                                         const GLuint* uniformIndices,
@@ -3215,7 +3082,6 @@ void GLApiBase::glGetActiveUniformsivFn(GLuint program,
                                       pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetAttachedShadersFn(GLuint program,
                                        GLsizei maxcount,
                                        GLsizei* count,
@@ -3223,12 +3089,10 @@ void GLApiBase::glGetAttachedShadersFn(GLuint program,
   driver_->fn.glGetAttachedShadersFn(program, maxcount, count, shaders);
 }
 
-DISABLE_CFI_ICALL
 GLint GLApiBase::glGetAttribLocationFn(GLuint program, const char* name) {
   return driver_->fn.glGetAttribLocationFn(program, name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetBooleani_vRobustANGLEFn(GLenum target,
                                              GLuint index,
                                              GLsizei bufSize,
@@ -3238,12 +3102,10 @@ void GLApiBase::glGetBooleani_vRobustANGLEFn(GLenum target,
                                            data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetBooleanvFn(GLenum pname, GLboolean* params) {
   driver_->fn.glGetBooleanvFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetBooleanvRobustANGLEFn(GLenum pname,
                                            GLsizei bufSize,
                                            GLsizei* length,
@@ -3251,7 +3113,6 @@ void GLApiBase::glGetBooleanvRobustANGLEFn(GLenum pname,
   driver_->fn.glGetBooleanvRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetBufferParameteri64vRobustANGLEFn(GLenum target,
                                                       GLenum pname,
                                                       GLsizei bufSize,
@@ -3261,14 +3122,12 @@ void GLApiBase::glGetBufferParameteri64vRobustANGLEFn(GLenum target,
                                                     length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetBufferParameterivFn(GLenum target,
                                          GLenum pname,
                                          GLint* params) {
   driver_->fn.glGetBufferParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetBufferParameterivRobustANGLEFn(GLenum target,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -3278,7 +3137,6 @@ void GLApiBase::glGetBufferParameterivRobustANGLEFn(GLenum target,
                                                   length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetBufferPointervRobustANGLEFn(GLenum target,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -3288,7 +3146,6 @@ void GLApiBase::glGetBufferPointervRobustANGLEFn(GLenum target,
                                                params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetDebugMessageLogFn(GLuint count,
                                        GLsizei bufSize,
                                        GLenum* sources,
@@ -3301,22 +3158,18 @@ void GLApiBase::glGetDebugMessageLogFn(GLuint count,
                                      severities, lengths, messageLog);
 }
 
-DISABLE_CFI_ICALL
 GLenum GLApiBase::glGetErrorFn(void) {
   return driver_->fn.glGetErrorFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) {
   driver_->fn.glGetFenceivNVFn(fence, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetFloatvFn(GLenum pname, GLfloat* params) {
   driver_->fn.glGetFloatvFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetFloatvRobustANGLEFn(GLenum pname,
                                          GLsizei bufSize,
                                          GLsizei* length,
@@ -3324,17 +3177,14 @@ void GLApiBase::glGetFloatvRobustANGLEFn(GLenum pname,
   driver_->fn.glGetFloatvRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 GLint GLApiBase::glGetFragDataIndexFn(GLuint program, const char* name) {
   return driver_->fn.glGetFragDataIndexFn(program, name);
 }
 
-DISABLE_CFI_ICALL
 GLint GLApiBase::glGetFragDataLocationFn(GLuint program, const char* name) {
   return driver_->fn.glGetFragDataLocationFn(program, name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetFramebufferAttachmentParameterivEXTFn(GLenum target,
                                                            GLenum attachment,
                                                            GLenum pname,
@@ -3343,7 +3193,6 @@ void GLApiBase::glGetFramebufferAttachmentParameterivEXTFn(GLenum target,
                                                          pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetFramebufferAttachmentParameterivRobustANGLEFn(
     GLenum target,
     GLenum attachment,
@@ -3355,7 +3204,6 @@ void GLApiBase::glGetFramebufferAttachmentParameterivRobustANGLEFn(
       target, attachment, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetFramebufferParameterivRobustANGLEFn(GLenum target,
                                                          GLenum pname,
                                                          GLsizei bufSize,
@@ -3365,19 +3213,16 @@ void GLApiBase::glGetFramebufferParameterivRobustANGLEFn(GLenum target,
                                                        length, params);
 }
 
-DISABLE_CFI_ICALL
 GLenum GLApiBase::glGetGraphicsResetStatusARBFn(void) {
   return driver_->fn.glGetGraphicsResetStatusARBFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetInteger64i_vFn(GLenum target,
                                     GLuint index,
                                     GLint64* data) {
   driver_->fn.glGetInteger64i_vFn(target, index, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetInteger64i_vRobustANGLEFn(GLenum target,
                                                GLuint index,
                                                GLsizei bufSize,
@@ -3387,12 +3232,10 @@ void GLApiBase::glGetInteger64i_vRobustANGLEFn(GLenum target,
                                              data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetInteger64vFn(GLenum pname, GLint64* params) {
   driver_->fn.glGetInteger64vFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetInteger64vRobustANGLEFn(GLenum pname,
                                              GLsizei bufSize,
                                              GLsizei* length,
@@ -3400,12 +3243,10 @@ void GLApiBase::glGetInteger64vRobustANGLEFn(GLenum pname,
   driver_->fn.glGetInteger64vRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetIntegeri_vFn(GLenum target, GLuint index, GLint* data) {
   driver_->fn.glGetIntegeri_vFn(target, index, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetIntegeri_vRobustANGLEFn(GLenum target,
                                              GLuint index,
                                              GLsizei bufSize,
@@ -3415,12 +3256,10 @@ void GLApiBase::glGetIntegeri_vRobustANGLEFn(GLenum target,
                                            data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetIntegervFn(GLenum pname, GLint* params) {
   driver_->fn.glGetIntegervFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetIntegervRobustANGLEFn(GLenum pname,
                                            GLsizei bufSize,
                                            GLsizei* length,
@@ -3428,7 +3267,6 @@ void GLApiBase::glGetIntegervRobustANGLEFn(GLenum pname,
   driver_->fn.glGetIntegervRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetInternalformativFn(GLenum target,
                                         GLenum internalformat,
                                         GLenum pname,
@@ -3438,7 +3276,6 @@ void GLApiBase::glGetInternalformativFn(GLenum target,
                                       params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetInternalformativRobustANGLEFn(GLenum target,
                                                    GLenum internalformat,
                                                    GLenum pname,
@@ -3449,12 +3286,10 @@ void GLApiBase::glGetInternalformativRobustANGLEFn(GLenum target,
                                                  bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetMultisamplefvFn(GLenum pname, GLuint index, GLfloat* val) {
   driver_->fn.glGetMultisamplefvFn(pname, index, val);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                 GLuint index,
                                                 GLsizei bufSize,
@@ -3464,7 +3299,6 @@ void GLApiBase::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                               val);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetnUniformfvRobustANGLEFn(GLuint program,
                                              GLint location,
                                              GLsizei bufSize,
@@ -3474,7 +3308,6 @@ void GLApiBase::glGetnUniformfvRobustANGLEFn(GLuint program,
                                            params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetnUniformivRobustANGLEFn(GLuint program,
                                              GLint location,
                                              GLsizei bufSize,
@@ -3484,7 +3317,6 @@ void GLApiBase::glGetnUniformivRobustANGLEFn(GLuint program,
                                            params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetnUniformuivRobustANGLEFn(GLuint program,
                                               GLint location,
                                               GLsizei bufSize,
@@ -3494,7 +3326,6 @@ void GLApiBase::glGetnUniformuivRobustANGLEFn(GLuint program,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetObjectLabelFn(GLenum identifier,
                                    GLuint name,
                                    GLsizei bufSize,
@@ -3503,7 +3334,6 @@ void GLApiBase::glGetObjectLabelFn(GLenum identifier,
   driver_->fn.glGetObjectLabelFn(identifier, name, bufSize, length, label);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetObjectPtrLabelFn(void* ptr,
                                       GLsizei bufSize,
                                       GLsizei* length,
@@ -3511,12 +3341,10 @@ void GLApiBase::glGetObjectPtrLabelFn(void* ptr,
   driver_->fn.glGetObjectPtrLabelFn(ptr, bufSize, length, label);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetPointervFn(GLenum pname, void** params) {
   driver_->fn.glGetPointervFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                                       GLsizei bufSize,
                                                       GLsizei* length,
@@ -3525,7 +3353,6 @@ void GLApiBase::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                                     params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetProgramBinaryFn(GLuint program,
                                      GLsizei bufSize,
                                      GLsizei* length,
@@ -3535,7 +3362,6 @@ void GLApiBase::glGetProgramBinaryFn(GLuint program,
                                    binary);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetProgramInfoLogFn(GLuint program,
                                       GLsizei bufsize,
                                       GLsizei* length,
@@ -3543,7 +3369,6 @@ void GLApiBase::glGetProgramInfoLogFn(GLuint program,
   driver_->fn.glGetProgramInfoLogFn(program, bufsize, length, infolog);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetProgramInterfaceivFn(GLuint program,
                                           GLenum programInterface,
                                           GLenum pname,
@@ -3552,7 +3377,6 @@ void GLApiBase::glGetProgramInterfaceivFn(GLuint program,
                                         params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetProgramInterfaceivRobustANGLEFn(GLuint program,
                                                      GLenum programInterface,
                                                      GLenum pname,
@@ -3563,12 +3387,10 @@ void GLApiBase::glGetProgramInterfaceivRobustANGLEFn(GLuint program,
       program, programInterface, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   driver_->fn.glGetProgramivFn(program, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetProgramivRobustANGLEFn(GLuint program,
                                             GLenum pname,
                                             GLsizei bufSize,
@@ -3578,7 +3400,6 @@ void GLApiBase::glGetProgramivRobustANGLEFn(GLuint program,
                                           params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetProgramResourceivFn(GLuint program,
                                          GLenum programInterface,
                                          GLuint index,
@@ -3592,7 +3413,6 @@ void GLApiBase::glGetProgramResourceivFn(GLuint program,
                                        params);
 }
 
-DISABLE_CFI_ICALL
 GLint GLApiBase::glGetProgramResourceLocationFn(GLuint program,
                                                 GLenum programInterface,
                                                 const char* name) {
@@ -3600,7 +3420,6 @@ GLint GLApiBase::glGetProgramResourceLocationFn(GLuint program,
                                                     name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetProgramResourceNameFn(GLuint program,
                                            GLenum programInterface,
                                            GLuint index,
@@ -3611,12 +3430,10 @@ void GLApiBase::glGetProgramResourceNameFn(GLuint program,
                                          bufSize, length, name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
   driver_->fn.glGetQueryivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryivRobustANGLEFn(GLenum target,
                                           GLenum pname,
                                           GLsizei bufSize,
@@ -3625,14 +3442,12 @@ void GLApiBase::glGetQueryivRobustANGLEFn(GLenum target,
   driver_->fn.glGetQueryivRobustANGLEFn(target, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryObjecti64vFn(GLuint id,
                                        GLenum pname,
                                        GLint64* params) {
   driver_->fn.glGetQueryObjecti64vFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryObjecti64vRobustANGLEFn(GLuint id,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -3642,12 +3457,10 @@ void GLApiBase::glGetQueryObjecti64vRobustANGLEFn(GLuint id,
                                                 params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) {
   driver_->fn.glGetQueryObjectivFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryObjectivRobustANGLEFn(GLuint id,
                                                 GLenum pname,
                                                 GLsizei bufSize,
@@ -3657,14 +3470,12 @@ void GLApiBase::glGetQueryObjectivRobustANGLEFn(GLuint id,
                                               params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryObjectui64vFn(GLuint id,
                                         GLenum pname,
                                         GLuint64* params) {
   driver_->fn.glGetQueryObjectui64vFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryObjectui64vRobustANGLEFn(GLuint id,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -3674,12 +3485,10 @@ void GLApiBase::glGetQueryObjectui64vRobustANGLEFn(GLuint id,
                                                  params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryObjectuivFn(GLuint id, GLenum pname, GLuint* params) {
   driver_->fn.glGetQueryObjectuivFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetQueryObjectuivRobustANGLEFn(GLuint id,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -3689,14 +3498,12 @@ void GLApiBase::glGetQueryObjectuivRobustANGLEFn(GLuint id,
                                                params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetRenderbufferParameterivEXTFn(GLenum target,
                                                   GLenum pname,
                                                   GLint* params) {
   driver_->fn.glGetRenderbufferParameterivEXTFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetRenderbufferParameterivRobustANGLEFn(GLenum target,
                                                           GLenum pname,
                                                           GLsizei bufSize,
@@ -3706,14 +3513,12 @@ void GLApiBase::glGetRenderbufferParameterivRobustANGLEFn(GLenum target,
                                                         length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetSamplerParameterfvFn(GLuint sampler,
                                           GLenum pname,
                                           GLfloat* params) {
   driver_->fn.glGetSamplerParameterfvFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                      GLenum pname,
                                                      GLsizei bufSize,
@@ -3723,7 +3528,6 @@ void GLApiBase::glGetSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                    length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                       GLenum pname,
                                                       GLsizei bufSize,
@@ -3733,7 +3537,6 @@ void GLApiBase::glGetSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                     length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                        GLenum pname,
                                                        GLsizei bufSize,
@@ -3743,14 +3546,12 @@ void GLApiBase::glGetSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                      length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetSamplerParameterivFn(GLuint sampler,
                                           GLenum pname,
                                           GLint* params) {
   driver_->fn.glGetSamplerParameterivFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                      GLenum pname,
                                                      GLsizei bufSize,
@@ -3760,7 +3561,6 @@ void GLApiBase::glGetSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                    length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetShaderInfoLogFn(GLuint shader,
                                      GLsizei bufsize,
                                      GLsizei* length,
@@ -3768,12 +3568,10 @@ void GLApiBase::glGetShaderInfoLogFn(GLuint shader,
   driver_->fn.glGetShaderInfoLogFn(shader, bufsize, length, infolog);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetShaderivFn(GLuint shader, GLenum pname, GLint* params) {
   driver_->fn.glGetShaderivFn(shader, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetShaderivRobustANGLEFn(GLuint shader,
                                            GLenum pname,
                                            GLsizei bufSize,
@@ -3783,7 +3581,6 @@ void GLApiBase::glGetShaderivRobustANGLEFn(GLuint shader,
                                          params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetShaderPrecisionFormatFn(GLenum shadertype,
                                              GLenum precisiontype,
                                              GLint* range,
@@ -3792,7 +3589,6 @@ void GLApiBase::glGetShaderPrecisionFormatFn(GLenum shadertype,
                                            precision);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetShaderSourceFn(GLuint shader,
                                     GLsizei bufsize,
                                     GLsizei* length,
@@ -3800,17 +3596,14 @@ void GLApiBase::glGetShaderSourceFn(GLuint shader,
   driver_->fn.glGetShaderSourceFn(shader, bufsize, length, source);
 }
 
-DISABLE_CFI_ICALL
 const GLubyte* GLApiBase::glGetStringFn(GLenum name) {
   return driver_->fn.glGetStringFn(name);
 }
 
-DISABLE_CFI_ICALL
 const GLubyte* GLApiBase::glGetStringiFn(GLenum name, GLuint index) {
   return driver_->fn.glGetStringiFn(name, index);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetSyncivFn(GLsync sync,
                               GLenum pname,
                               GLsizei bufSize,
@@ -3819,7 +3612,6 @@ void GLApiBase::glGetSyncivFn(GLsync sync,
   driver_->fn.glGetSyncivFn(sync, pname, bufSize, length, values);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexLevelParameterfvFn(GLenum target,
                                            GLint level,
                                            GLenum pname,
@@ -3827,7 +3619,6 @@ void GLApiBase::glGetTexLevelParameterfvFn(GLenum target,
   driver_->fn.glGetTexLevelParameterfvFn(target, level, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexLevelParameterfvRobustANGLEFn(GLenum target,
                                                       GLint level,
                                                       GLenum pname,
@@ -3838,7 +3629,6 @@ void GLApiBase::glGetTexLevelParameterfvRobustANGLEFn(GLenum target,
                                                     bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexLevelParameterivFn(GLenum target,
                                            GLint level,
                                            GLenum pname,
@@ -3846,7 +3636,6 @@ void GLApiBase::glGetTexLevelParameterivFn(GLenum target,
   driver_->fn.glGetTexLevelParameterivFn(target, level, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexLevelParameterivRobustANGLEFn(GLenum target,
                                                       GLint level,
                                                       GLenum pname,
@@ -3857,14 +3646,12 @@ void GLApiBase::glGetTexLevelParameterivRobustANGLEFn(GLenum target,
                                                     bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexParameterfvFn(GLenum target,
                                       GLenum pname,
                                       GLfloat* params) {
   driver_->fn.glGetTexParameterfvFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexParameterfvRobustANGLEFn(GLenum target,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -3874,7 +3661,6 @@ void GLApiBase::glGetTexParameterfvRobustANGLEFn(GLenum target,
                                                params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexParameterIivRobustANGLEFn(GLenum target,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -3884,7 +3670,6 @@ void GLApiBase::glGetTexParameterIivRobustANGLEFn(GLenum target,
                                                 params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexParameterIuivRobustANGLEFn(GLenum target,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -3894,14 +3679,12 @@ void GLApiBase::glGetTexParameterIuivRobustANGLEFn(GLenum target,
                                                  params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexParameterivFn(GLenum target,
                                       GLenum pname,
                                       GLint* params) {
   driver_->fn.glGetTexParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTexParameterivRobustANGLEFn(GLenum target,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -3911,7 +3694,6 @@ void GLApiBase::glGetTexParameterivRobustANGLEFn(GLenum target,
                                                params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTransformFeedbackVaryingFn(GLuint program,
                                                 GLuint index,
                                                 GLsizei bufSize,
@@ -3923,7 +3705,6 @@ void GLApiBase::glGetTransformFeedbackVaryingFn(GLuint program,
                                               size, type, name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
                                                    GLsizei bufsize,
                                                    GLsizei* length,
@@ -3932,20 +3713,17 @@ void GLApiBase::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
                                                  source);
 }
 
-DISABLE_CFI_ICALL
 GLuint GLApiBase::glGetUniformBlockIndexFn(GLuint program,
                                            const char* uniformBlockName) {
   return driver_->fn.glGetUniformBlockIndexFn(program, uniformBlockName);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetUniformfvFn(GLuint program,
                                  GLint location,
                                  GLfloat* params) {
   driver_->fn.glGetUniformfvFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetUniformfvRobustANGLEFn(GLuint program,
                                             GLint location,
                                             GLsizei bufSize,
@@ -3955,7 +3733,6 @@ void GLApiBase::glGetUniformfvRobustANGLEFn(GLuint program,
                                           params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetUniformIndicesFn(GLuint program,
                                       GLsizei uniformCount,
                                       const char* const* uniformNames,
@@ -3964,14 +3741,12 @@ void GLApiBase::glGetUniformIndicesFn(GLuint program,
                                     uniformIndices);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetUniformivFn(GLuint program,
                                  GLint location,
                                  GLint* params) {
   driver_->fn.glGetUniformivFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetUniformivRobustANGLEFn(GLuint program,
                                             GLint location,
                                             GLsizei bufSize,
@@ -3981,19 +3756,16 @@ void GLApiBase::glGetUniformivRobustANGLEFn(GLuint program,
                                           params);
 }
 
-DISABLE_CFI_ICALL
 GLint GLApiBase::glGetUniformLocationFn(GLuint program, const char* name) {
   return driver_->fn.glGetUniformLocationFn(program, name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetUniformuivFn(GLuint program,
                                   GLint location,
                                   GLuint* params) {
   driver_->fn.glGetUniformuivFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetUniformuivRobustANGLEFn(GLuint program,
                                              GLint location,
                                              GLsizei bufSize,
@@ -4003,14 +3775,12 @@ void GLApiBase::glGetUniformuivRobustANGLEFn(GLuint program,
                                            params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetVertexAttribfvFn(GLuint index,
                                       GLenum pname,
                                       GLfloat* params) {
   driver_->fn.glGetVertexAttribfvFn(index, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetVertexAttribfvRobustANGLEFn(GLuint index,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -4020,7 +3790,6 @@ void GLApiBase::glGetVertexAttribfvRobustANGLEFn(GLuint index,
                                                params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetVertexAttribIivRobustANGLEFn(GLuint index,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -4030,7 +3799,6 @@ void GLApiBase::glGetVertexAttribIivRobustANGLEFn(GLuint index,
                                                 params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetVertexAttribIuivRobustANGLEFn(GLuint index,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -4040,14 +3808,12 @@ void GLApiBase::glGetVertexAttribIuivRobustANGLEFn(GLuint index,
                                                  params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetVertexAttribivFn(GLuint index,
                                       GLenum pname,
                                       GLint* params) {
   driver_->fn.glGetVertexAttribivFn(index, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetVertexAttribivRobustANGLEFn(GLuint index,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -4057,14 +3823,12 @@ void GLApiBase::glGetVertexAttribivRobustANGLEFn(GLuint index,
                                                params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetVertexAttribPointervFn(GLuint index,
                                             GLenum pname,
                                             void** pointer) {
   driver_->fn.glGetVertexAttribPointervFn(index, pname, pointer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glGetVertexAttribPointervRobustANGLEFn(GLuint index,
                                                        GLenum pname,
                                                        GLsizei bufSize,
@@ -4074,24 +3838,20 @@ void GLApiBase::glGetVertexAttribPointervRobustANGLEFn(GLuint index,
                                                      length, pointer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glHintFn(GLenum target, GLenum mode) {
   driver_->fn.glHintFn(target, mode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glInsertEventMarkerEXTFn(GLsizei length, const char* marker) {
   driver_->fn.glInsertEventMarkerEXTFn(length, marker);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glInvalidateFramebufferFn(GLenum target,
                                           GLsizei numAttachments,
                                           const GLenum* attachments) {
   driver_->fn.glInvalidateFramebufferFn(target, numAttachments, attachments);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glInvalidateSubFramebufferFn(GLenum target,
                                              GLsizei numAttachments,
                                              const GLenum* attachments,
@@ -4103,97 +3863,78 @@ void GLApiBase::glInvalidateSubFramebufferFn(GLenum target,
                                            x, y, width, height);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsBufferFn(GLuint buffer) {
   return driver_->fn.glIsBufferFn(buffer);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsEnabledFn(GLenum cap) {
   return driver_->fn.glIsEnabledFn(cap);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsFenceAPPLEFn(GLuint fence) {
   return driver_->fn.glIsFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsFenceNVFn(GLuint fence) {
   return driver_->fn.glIsFenceNVFn(fence);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsFramebufferEXTFn(GLuint framebuffer) {
   return driver_->fn.glIsFramebufferEXTFn(framebuffer);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsPathNVFn(GLuint path) {
   return driver_->fn.glIsPathNVFn(path);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsProgramFn(GLuint program) {
   return driver_->fn.glIsProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsQueryFn(GLuint query) {
   return driver_->fn.glIsQueryFn(query);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsRenderbufferEXTFn(GLuint renderbuffer) {
   return driver_->fn.glIsRenderbufferEXTFn(renderbuffer);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsSamplerFn(GLuint sampler) {
   return driver_->fn.glIsSamplerFn(sampler);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsShaderFn(GLuint shader) {
   return driver_->fn.glIsShaderFn(shader);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsSyncFn(GLsync sync) {
   return driver_->fn.glIsSyncFn(sync);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsTextureFn(GLuint texture) {
   return driver_->fn.glIsTextureFn(texture);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsTransformFeedbackFn(GLuint id) {
   return driver_->fn.glIsTransformFeedbackFn(id);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glIsVertexArrayOESFn(GLuint array) {
   return driver_->fn.glIsVertexArrayOESFn(array);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glLineWidthFn(GLfloat width) {
   driver_->fn.glLineWidthFn(width);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glLinkProgramFn(GLuint program) {
   driver_->fn.glLinkProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void* GLApiBase::glMapBufferFn(GLenum target, GLenum access) {
   return driver_->fn.glMapBufferFn(target, access);
 }
 
-DISABLE_CFI_ICALL
 void* GLApiBase::glMapBufferRangeFn(GLenum target,
                                     GLintptr offset,
                                     GLsizeiptr length,
@@ -4201,22 +3942,18 @@ void* GLApiBase::glMapBufferRangeFn(GLenum target,
   return driver_->fn.glMapBufferRangeFn(target, offset, length, access);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
   driver_->fn.glMatrixLoadfEXTFn(matrixMode, m);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   driver_->fn.glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glMemoryBarrierEXTFn(GLbitfield barriers) {
   driver_->fn.glMemoryBarrierEXTFn(barriers);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glObjectLabelFn(GLenum identifier,
                                 GLuint name,
                                 GLsizei length,
@@ -4224,14 +3961,12 @@ void GLApiBase::glObjectLabelFn(GLenum identifier,
   driver_->fn.glObjectLabelFn(identifier, name, length, label);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glObjectPtrLabelFn(void* ptr,
                                    GLsizei length,
                                    const char* label) {
   driver_->fn.glObjectPtrLabelFn(ptr, length, label);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPathCommandsNVFn(GLuint path,
                                    GLsizei numCommands,
                                    const GLubyte* commands,
@@ -4242,62 +3977,50 @@ void GLApiBase::glPathCommandsNVFn(GLuint path,
                                  coordType, coords);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPathParameterfNVFn(GLuint path, GLenum pname, GLfloat value) {
   driver_->fn.glPathParameterfNVFn(path, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
   driver_->fn.glPathParameteriNVFn(path, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
   driver_->fn.glPathStencilFuncNVFn(func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPauseTransformFeedbackFn(void) {
   driver_->fn.glPauseTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPixelStoreiFn(GLenum pname, GLint param) {
   driver_->fn.glPixelStoreiFn(pname, param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPointParameteriFn(GLenum pname, GLint param) {
   driver_->fn.glPointParameteriFn(pname, param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPolygonModeFn(GLenum face, GLenum mode) {
   driver_->fn.glPolygonModeFn(face, mode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   driver_->fn.glPolygonOffsetFn(factor, units);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPopDebugGroupFn() {
   driver_->fn.glPopDebugGroupFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPopGroupMarkerEXTFn(void) {
   driver_->fn.glPopGroupMarkerEXTFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPrimitiveRestartIndexFn(GLuint index) {
   driver_->fn.glPrimitiveRestartIndexFn(index);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glProgramBinaryFn(GLuint program,
                                   GLenum binaryFormat,
                                   const GLvoid* binary,
@@ -4305,14 +4028,12 @@ void GLApiBase::glProgramBinaryFn(GLuint program,
   driver_->fn.glProgramBinaryFn(program, binaryFormat, binary, length);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glProgramParameteriFn(GLuint program,
                                       GLenum pname,
                                       GLint value) {
   driver_->fn.glProgramParameteriFn(program, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glProgramPathFragmentInputGenNVFn(GLuint program,
                                                   GLint location,
                                                   GLenum genMode,
@@ -4322,7 +4043,6 @@ void GLApiBase::glProgramPathFragmentInputGenNVFn(GLuint program,
                                                 components, coeffs);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPushDebugGroupFn(GLenum source,
                                    GLuint id,
                                    GLsizei length,
@@ -4330,22 +4050,18 @@ void GLApiBase::glPushDebugGroupFn(GLenum source,
   driver_->fn.glPushDebugGroupFn(source, id, length, message);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glPushGroupMarkerEXTFn(GLsizei length, const char* marker) {
   driver_->fn.glPushGroupMarkerEXTFn(length, marker);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glQueryCounterFn(GLuint id, GLenum target) {
   driver_->fn.glQueryCounterFn(id, target);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glReadBufferFn(GLenum src) {
   driver_->fn.glReadBufferFn(src);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glReadnPixelsRobustANGLEFn(GLint x,
                                            GLint y,
                                            GLsizei width,
@@ -4361,7 +4077,6 @@ void GLApiBase::glReadnPixelsRobustANGLEFn(GLint x,
                                          bufSize, length, columns, rows, data);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glReadPixelsFn(GLint x,
                                GLint y,
                                GLsizei width,
@@ -4372,7 +4087,6 @@ void GLApiBase::glReadPixelsFn(GLint x,
   driver_->fn.glReadPixelsFn(x, y, width, height, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glReadPixelsRobustANGLEFn(GLint x,
                                           GLint y,
                                           GLsizei width,
@@ -4388,12 +4102,10 @@ void GLApiBase::glReadPixelsRobustANGLEFn(GLint x,
                                         bufSize, length, columns, rows, pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glReleaseShaderCompilerFn(void) {
   driver_->fn.glReleaseShaderCompilerFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glRenderbufferStorageEXTFn(GLenum target,
                                            GLenum internalformat,
                                            GLsizei width,
@@ -4401,7 +4113,6 @@ void GLApiBase::glRenderbufferStorageEXTFn(GLenum target,
   driver_->fn.glRenderbufferStorageEXTFn(target, internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glRenderbufferStorageMultisampleFn(GLenum target,
                                                    GLsizei samples,
                                                    GLenum internalformat,
@@ -4411,7 +4122,6 @@ void GLApiBase::glRenderbufferStorageMultisampleFn(GLenum target,
                                                  internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                       GLsizei samples,
                                                       GLenum internalformat,
@@ -4421,36 +4131,30 @@ void GLApiBase::glRenderbufferStorageMultisampleEXTFn(GLenum target,
       target, samples, internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glRequestExtensionANGLEFn(const char* name) {
   driver_->fn.glRequestExtensionANGLEFn(name);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glResumeTransformFeedbackFn(void) {
   driver_->fn.glResumeTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSampleCoverageFn(GLclampf value, GLboolean invert) {
   driver_->fn.glSampleCoverageFn(value, invert);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSamplerParameterfFn(GLuint sampler,
                                       GLenum pname,
                                       GLfloat param) {
   driver_->fn.glSamplerParameterfFn(sampler, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSamplerParameterfvFn(GLuint sampler,
                                        GLenum pname,
                                        const GLfloat* params) {
   driver_->fn.glSamplerParameterfvFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -4458,14 +4162,12 @@ void GLApiBase::glSamplerParameterfvRobustANGLEFn(GLuint sampler,
   driver_->fn.glSamplerParameterfvRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSamplerParameteriFn(GLuint sampler,
                                       GLenum pname,
                                       GLint param) {
   driver_->fn.glSamplerParameteriFn(sampler, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -4474,7 +4176,6 @@ void GLApiBase::glSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                  param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -4483,14 +4184,12 @@ void GLApiBase::glSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                   param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSamplerParameterivFn(GLuint sampler,
                                        GLenum pname,
                                        const GLint* params) {
   driver_->fn.glSamplerParameterivFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -4498,22 +4197,18 @@ void GLApiBase::glSamplerParameterivRobustANGLEFn(GLuint sampler,
   driver_->fn.glSamplerParameterivRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glScissorFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   driver_->fn.glScissorFn(x, y, width, height);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSetFenceAPPLEFn(GLuint fence) {
   driver_->fn.glSetFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glSetFenceNVFn(GLuint fence, GLenum condition) {
   driver_->fn.glSetFenceNVFn(fence, condition);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glShaderBinaryFn(GLsizei n,
                                  const GLuint* shaders,
                                  GLenum binaryformat,
@@ -4522,7 +4217,6 @@ void GLApiBase::glShaderBinaryFn(GLsizei n,
   driver_->fn.glShaderBinaryFn(n, shaders, binaryformat, binary, length);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glShaderSourceFn(GLuint shader,
                                  GLsizei count,
                                  const char* const* str,
@@ -4530,7 +4224,6 @@ void GLApiBase::glShaderSourceFn(GLuint shader,
   driver_->fn.glShaderSourceFn(shader, count, str, length);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilFillPathInstancedNVFn(GLsizei numPaths,
                                                GLenum pathNameType,
                                                const void* paths,
@@ -4544,19 +4237,16 @@ void GLApiBase::glStencilFillPathInstancedNVFn(GLsizei numPaths,
                                              transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilFillPathNVFn(GLuint path,
                                       GLenum fillMode,
                                       GLuint mask) {
   driver_->fn.glStencilFillPathNVFn(path, fillMode, mask);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   driver_->fn.glStencilFuncFn(func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilFuncSeparateFn(GLenum face,
                                         GLenum func,
                                         GLint ref,
@@ -4564,22 +4254,18 @@ void GLApiBase::glStencilFuncSeparateFn(GLenum face,
   driver_->fn.glStencilFuncSeparateFn(face, func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilMaskFn(GLuint mask) {
   driver_->fn.glStencilMaskFn(mask);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilMaskSeparateFn(GLenum face, GLuint mask) {
   driver_->fn.glStencilMaskSeparateFn(face, mask);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilOpFn(GLenum fail, GLenum zfail, GLenum zpass) {
   driver_->fn.glStencilOpFn(fail, zfail, zpass);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilOpSeparateFn(GLenum face,
                                       GLenum fail,
                                       GLenum zfail,
@@ -4587,7 +4273,6 @@ void GLApiBase::glStencilOpSeparateFn(GLenum face,
   driver_->fn.glStencilOpSeparateFn(face, fail, zfail, zpass);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilStrokePathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -4602,14 +4287,12 @@ void GLApiBase::glStencilStrokePathInstancedNVFn(
                                                transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilStrokePathNVFn(GLuint path,
                                         GLint reference,
                                         GLuint mask) {
   driver_->fn.glStencilStrokePathNVFn(path, reference, mask);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilThenCoverFillPathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -4625,7 +4308,6 @@ void GLApiBase::glStencilThenCoverFillPathInstancedNVFn(
       transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilThenCoverFillPathNVFn(GLuint path,
                                                GLenum fillMode,
                                                GLuint mask,
@@ -4633,7 +4315,6 @@ void GLApiBase::glStencilThenCoverFillPathNVFn(GLuint path,
   driver_->fn.glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilThenCoverStrokePathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -4649,7 +4330,6 @@ void GLApiBase::glStencilThenCoverStrokePathInstancedNVFn(
       transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glStencilThenCoverStrokePathNVFn(GLuint path,
                                                  GLint reference,
                                                  GLuint mask,
@@ -4658,24 +4338,20 @@ void GLApiBase::glStencilThenCoverStrokePathNVFn(GLuint path,
                                                coverMode);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glTestFenceAPPLEFn(GLuint fence) {
   return driver_->fn.glTestFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glTestFenceNVFn(GLuint fence) {
   return driver_->fn.glTestFenceNVFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexBufferFn(GLenum target,
                               GLenum internalformat,
                               GLuint buffer) {
   driver_->fn.glTexBufferFn(target, internalformat, buffer);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexBufferRangeFn(GLenum target,
                                    GLenum internalformat,
                                    GLuint buffer,
@@ -4684,7 +4360,6 @@ void GLApiBase::glTexBufferRangeFn(GLenum target,
   driver_->fn.glTexBufferRangeFn(target, internalformat, buffer, offset, size);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexImage2DFn(GLenum target,
                                GLint level,
                                GLint internalformat,
@@ -4698,7 +4373,6 @@ void GLApiBase::glTexImage2DFn(GLenum target,
                              border, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexImage2DRobustANGLEFn(GLenum target,
                                           GLint level,
                                           GLint internalformat,
@@ -4714,7 +4388,6 @@ void GLApiBase::glTexImage2DRobustANGLEFn(GLenum target,
                                         pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexImage3DFn(GLenum target,
                                GLint level,
                                GLint internalformat,
@@ -4729,7 +4402,6 @@ void GLApiBase::glTexImage3DFn(GLenum target,
                              depth, border, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexImage3DRobustANGLEFn(GLenum target,
                                           GLint level,
                                           GLint internalformat,
@@ -4746,19 +4418,16 @@ void GLApiBase::glTexImage3DRobustANGLEFn(GLenum target,
                                         bufSize, pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexParameterfFn(GLenum target, GLenum pname, GLfloat param) {
   driver_->fn.glTexParameterfFn(target, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexParameterfvFn(GLenum target,
                                    GLenum pname,
                                    const GLfloat* params) {
   driver_->fn.glTexParameterfvFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexParameterfvRobustANGLEFn(GLenum target,
                                               GLenum pname,
                                               GLsizei bufSize,
@@ -4766,12 +4435,10 @@ void GLApiBase::glTexParameterfvRobustANGLEFn(GLenum target,
   driver_->fn.glTexParameterfvRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexParameteriFn(GLenum target, GLenum pname, GLint param) {
   driver_->fn.glTexParameteriFn(target, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexParameterIivRobustANGLEFn(GLenum target,
                                                GLenum pname,
                                                GLsizei bufSize,
@@ -4779,7 +4446,6 @@ void GLApiBase::glTexParameterIivRobustANGLEFn(GLenum target,
   driver_->fn.glTexParameterIivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexParameterIuivRobustANGLEFn(GLenum target,
                                                 GLenum pname,
                                                 GLsizei bufSize,
@@ -4787,14 +4453,12 @@ void GLApiBase::glTexParameterIuivRobustANGLEFn(GLenum target,
   driver_->fn.glTexParameterIuivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexParameterivFn(GLenum target,
                                    GLenum pname,
                                    const GLint* params) {
   driver_->fn.glTexParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexParameterivRobustANGLEFn(GLenum target,
                                               GLenum pname,
                                               GLsizei bufSize,
@@ -4802,7 +4466,6 @@ void GLApiBase::glTexParameterivRobustANGLEFn(GLenum target,
   driver_->fn.glTexParameterivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexStorage2DEXTFn(GLenum target,
                                     GLsizei levels,
                                     GLenum internalformat,
@@ -4812,7 +4475,6 @@ void GLApiBase::glTexStorage2DEXTFn(GLenum target,
                                   height);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexStorage3DFn(GLenum target,
                                  GLsizei levels,
                                  GLenum internalformat,
@@ -4823,7 +4485,6 @@ void GLApiBase::glTexStorage3DFn(GLenum target,
                                depth);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexSubImage2DFn(GLenum target,
                                   GLint level,
                                   GLint xoffset,
@@ -4837,7 +4498,6 @@ void GLApiBase::glTexSubImage2DFn(GLenum target,
                                 format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexSubImage2DRobustANGLEFn(GLenum target,
                                              GLint level,
                                              GLint xoffset,
@@ -4853,7 +4513,6 @@ void GLApiBase::glTexSubImage2DRobustANGLEFn(GLenum target,
                                            pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexSubImage3DFn(GLenum target,
                                   GLint level,
                                   GLint xoffset,
@@ -4869,7 +4528,6 @@ void GLApiBase::glTexSubImage3DFn(GLenum target,
                                 height, depth, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTexSubImage3DRobustANGLEFn(GLenum target,
                                              GLint level,
                                              GLint xoffset,
@@ -4887,7 +4545,6 @@ void GLApiBase::glTexSubImage3DRobustANGLEFn(GLenum target,
                                            format, type, bufSize, pixels);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glTransformFeedbackVaryingsFn(GLuint program,
                                               GLsizei count,
                                               const char* const* varyings,
@@ -4896,97 +4553,80 @@ void GLApiBase::glTransformFeedbackVaryingsFn(GLuint program,
                                             bufferMode);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform1fFn(GLint location, GLfloat x) {
   driver_->fn.glUniform1fFn(location, x);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform1fvFn(GLint location,
                                GLsizei count,
                                const GLfloat* v) {
   driver_->fn.glUniform1fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform1iFn(GLint location, GLint x) {
   driver_->fn.glUniform1iFn(location, x);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform1ivFn(GLint location, GLsizei count, const GLint* v) {
   driver_->fn.glUniform1ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform1uiFn(GLint location, GLuint v0) {
   driver_->fn.glUniform1uiFn(location, v0);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform1uivFn(GLint location,
                                 GLsizei count,
                                 const GLuint* v) {
   driver_->fn.glUniform1uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform2fFn(GLint location, GLfloat x, GLfloat y) {
   driver_->fn.glUniform2fFn(location, x, y);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform2fvFn(GLint location,
                                GLsizei count,
                                const GLfloat* v) {
   driver_->fn.glUniform2fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform2iFn(GLint location, GLint x, GLint y) {
   driver_->fn.glUniform2iFn(location, x, y);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform2ivFn(GLint location, GLsizei count, const GLint* v) {
   driver_->fn.glUniform2ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform2uiFn(GLint location, GLuint v0, GLuint v1) {
   driver_->fn.glUniform2uiFn(location, v0, v1);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform2uivFn(GLint location,
                                 GLsizei count,
                                 const GLuint* v) {
   driver_->fn.glUniform2uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform3fFn(GLint location, GLfloat x, GLfloat y, GLfloat z) {
   driver_->fn.glUniform3fFn(location, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform3fvFn(GLint location,
                                GLsizei count,
                                const GLfloat* v) {
   driver_->fn.glUniform3fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform3iFn(GLint location, GLint x, GLint y, GLint z) {
   driver_->fn.glUniform3iFn(location, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform3ivFn(GLint location, GLsizei count, const GLint* v) {
   driver_->fn.glUniform3ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform3uiFn(GLint location,
                                GLuint v0,
                                GLuint v1,
@@ -4994,14 +4634,12 @@ void GLApiBase::glUniform3uiFn(GLint location,
   driver_->fn.glUniform3uiFn(location, v0, v1, v2);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform3uivFn(GLint location,
                                 GLsizei count,
                                 const GLuint* v) {
   driver_->fn.glUniform3uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform4fFn(GLint location,
                               GLfloat x,
                               GLfloat y,
@@ -5010,14 +4648,12 @@ void GLApiBase::glUniform4fFn(GLint location,
   driver_->fn.glUniform4fFn(location, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform4fvFn(GLint location,
                                GLsizei count,
                                const GLfloat* v) {
   driver_->fn.glUniform4fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform4iFn(GLint location,
                               GLint x,
                               GLint y,
@@ -5026,12 +4662,10 @@ void GLApiBase::glUniform4iFn(GLint location,
   driver_->fn.glUniform4iFn(location, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform4ivFn(GLint location, GLsizei count, const GLint* v) {
   driver_->fn.glUniform4ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform4uiFn(GLint location,
                                GLuint v0,
                                GLuint v1,
@@ -5040,14 +4674,12 @@ void GLApiBase::glUniform4uiFn(GLint location,
   driver_->fn.glUniform4uiFn(location, v0, v1, v2, v3);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniform4uivFn(GLint location,
                                 GLsizei count,
                                 const GLuint* v) {
   driver_->fn.glUniform4uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformBlockBindingFn(GLuint program,
                                         GLuint uniformBlockIndex,
                                         GLuint uniformBlockBinding) {
@@ -5055,7 +4687,6 @@ void GLApiBase::glUniformBlockBindingFn(GLuint program,
                                       uniformBlockBinding);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix2fvFn(GLint location,
                                      GLsizei count,
                                      GLboolean transpose,
@@ -5063,7 +4694,6 @@ void GLApiBase::glUniformMatrix2fvFn(GLint location,
   driver_->fn.glUniformMatrix2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix2x3fvFn(GLint location,
                                        GLsizei count,
                                        GLboolean transpose,
@@ -5071,7 +4701,6 @@ void GLApiBase::glUniformMatrix2x3fvFn(GLint location,
   driver_->fn.glUniformMatrix2x3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix2x4fvFn(GLint location,
                                        GLsizei count,
                                        GLboolean transpose,
@@ -5079,7 +4708,6 @@ void GLApiBase::glUniformMatrix2x4fvFn(GLint location,
   driver_->fn.glUniformMatrix2x4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix3fvFn(GLint location,
                                      GLsizei count,
                                      GLboolean transpose,
@@ -5087,7 +4715,6 @@ void GLApiBase::glUniformMatrix3fvFn(GLint location,
   driver_->fn.glUniformMatrix3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix3x2fvFn(GLint location,
                                        GLsizei count,
                                        GLboolean transpose,
@@ -5095,7 +4722,6 @@ void GLApiBase::glUniformMatrix3x2fvFn(GLint location,
   driver_->fn.glUniformMatrix3x2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix3x4fvFn(GLint location,
                                        GLsizei count,
                                        GLboolean transpose,
@@ -5103,7 +4729,6 @@ void GLApiBase::glUniformMatrix3x4fvFn(GLint location,
   driver_->fn.glUniformMatrix3x4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix4fvFn(GLint location,
                                      GLsizei count,
                                      GLboolean transpose,
@@ -5111,7 +4736,6 @@ void GLApiBase::glUniformMatrix4fvFn(GLint location,
   driver_->fn.glUniformMatrix4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix4x2fvFn(GLint location,
                                        GLsizei count,
                                        GLboolean transpose,
@@ -5119,7 +4743,6 @@ void GLApiBase::glUniformMatrix4x2fvFn(GLint location,
   driver_->fn.glUniformMatrix4x2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUniformMatrix4x3fvFn(GLint location,
                                        GLsizei count,
                                        GLboolean transpose,
@@ -5127,42 +4750,34 @@ void GLApiBase::glUniformMatrix4x3fvFn(GLint location,
   driver_->fn.glUniformMatrix4x3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 GLboolean GLApiBase::glUnmapBufferFn(GLenum target) {
   return driver_->fn.glUnmapBufferFn(target);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glUseProgramFn(GLuint program) {
   driver_->fn.glUseProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glValidateProgramFn(GLuint program) {
   driver_->fn.glValidateProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttrib1fFn(GLuint indx, GLfloat x) {
   driver_->fn.glVertexAttrib1fFn(indx, x);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttrib1fvFn(GLuint indx, const GLfloat* values) {
   driver_->fn.glVertexAttrib1fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttrib2fFn(GLuint indx, GLfloat x, GLfloat y) {
   driver_->fn.glVertexAttrib2fFn(indx, x, y);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttrib2fvFn(GLuint indx, const GLfloat* values) {
   driver_->fn.glVertexAttrib2fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttrib3fFn(GLuint indx,
                                    GLfloat x,
                                    GLfloat y,
@@ -5170,12 +4785,10 @@ void GLApiBase::glVertexAttrib3fFn(GLuint indx,
   driver_->fn.glVertexAttrib3fFn(indx, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttrib3fvFn(GLuint indx, const GLfloat* values) {
   driver_->fn.glVertexAttrib3fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttrib4fFn(GLuint indx,
                                    GLfloat x,
                                    GLfloat y,
@@ -5184,17 +4797,14 @@ void GLApiBase::glVertexAttrib4fFn(GLuint indx,
   driver_->fn.glVertexAttrib4fFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttrib4fvFn(GLuint indx, const GLfloat* values) {
   driver_->fn.glVertexAttrib4fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttribDivisorANGLEFn(GLuint index, GLuint divisor) {
   driver_->fn.glVertexAttribDivisorANGLEFn(index, divisor);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttribI4iFn(GLuint indx,
                                     GLint x,
                                     GLint y,
@@ -5203,12 +4813,10 @@ void GLApiBase::glVertexAttribI4iFn(GLuint indx,
   driver_->fn.glVertexAttribI4iFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttribI4ivFn(GLuint indx, const GLint* values) {
   driver_->fn.glVertexAttribI4ivFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttribI4uiFn(GLuint indx,
                                      GLuint x,
                                      GLuint y,
@@ -5217,12 +4825,10 @@ void GLApiBase::glVertexAttribI4uiFn(GLuint indx,
   driver_->fn.glVertexAttribI4uiFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttribI4uivFn(GLuint indx, const GLuint* values) {
   driver_->fn.glVertexAttribI4uivFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttribIPointerFn(GLuint indx,
                                          GLint size,
                                          GLenum type,
@@ -5231,7 +4837,6 @@ void GLApiBase::glVertexAttribIPointerFn(GLuint indx,
   driver_->fn.glVertexAttribIPointerFn(indx, size, type, stride, ptr);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glVertexAttribPointerFn(GLuint indx,
                                         GLint size,
                                         GLenum type,
@@ -5242,55 +4847,46 @@ void GLApiBase::glVertexAttribPointerFn(GLuint indx,
                                       ptr);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   driver_->fn.glViewportFn(x, y, width, height);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   driver_->fn.glWaitSyncFn(sync, flags, timeout);
 }
 
-DISABLE_CFI_ICALL
 void GLApiBase::glWindowRectanglesEXTFn(GLenum mode,
                                         GLsizei n,
                                         const GLint* box) {
   driver_->fn.glWindowRectanglesEXTFn(mode, n, box);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glActiveTextureFn(GLenum texture) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glActiveTexture")
   gl_api_->glActiveTextureFn(texture);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0(
       "gpu", "TraceGLAPI::glApplyFramebufferAttachmentCMAAINTEL")
   gl_api_->glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glAttachShaderFn(GLuint program, GLuint shader) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glAttachShader")
   gl_api_->glAttachShaderFn(program, shader);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBeginQueryFn(GLenum target, GLuint id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBeginQuery")
   gl_api_->glBeginQueryFn(target, id);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBeginTransformFeedbackFn(GLenum primitiveMode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBeginTransformFeedback")
   gl_api_->glBeginTransformFeedbackFn(primitiveMode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindAttribLocationFn(GLuint program,
                                         GLuint index,
                                         const char* name) {
@@ -5298,13 +4894,11 @@ void TraceGLApi::glBindAttribLocationFn(GLuint program,
   gl_api_->glBindAttribLocationFn(program, index, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindBufferFn(GLenum target, GLuint buffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBindBuffer")
   gl_api_->glBindBufferFn(target, buffer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindBufferBaseFn(GLenum target,
                                     GLuint index,
                                     GLuint buffer) {
@@ -5312,7 +4906,6 @@ void TraceGLApi::glBindBufferBaseFn(GLenum target,
   gl_api_->glBindBufferBaseFn(target, index, buffer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindBufferRangeFn(GLenum target,
                                      GLuint index,
                                      GLuint buffer,
@@ -5322,7 +4915,6 @@ void TraceGLApi::glBindBufferRangeFn(GLenum target,
   gl_api_->glBindBufferRangeFn(target, index, buffer, offset, size);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindFragDataLocationFn(GLuint program,
                                           GLuint colorNumber,
                                           const char* name) {
@@ -5330,7 +4922,6 @@ void TraceGLApi::glBindFragDataLocationFn(GLuint program,
   gl_api_->glBindFragDataLocationFn(program, colorNumber, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindFragDataLocationIndexedFn(GLuint program,
                                                  GLuint colorNumber,
                                                  GLuint index,
@@ -5340,13 +4931,11 @@ void TraceGLApi::glBindFragDataLocationIndexedFn(GLuint program,
   gl_api_->glBindFragDataLocationIndexedFn(program, colorNumber, index, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBindFramebufferEXT")
   gl_api_->glBindFramebufferEXTFn(target, framebuffer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindImageTextureEXTFn(GLuint index,
                                          GLuint texture,
                                          GLint level,
@@ -5359,31 +4948,26 @@ void TraceGLApi::glBindImageTextureEXTFn(GLuint index,
                                    access, format);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindRenderbufferEXTFn(GLenum target, GLuint renderbuffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBindRenderbufferEXT")
   gl_api_->glBindRenderbufferEXTFn(target, renderbuffer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindSamplerFn(GLuint unit, GLuint sampler) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBindSampler")
   gl_api_->glBindSamplerFn(unit, sampler);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindTextureFn(GLenum target, GLuint texture) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBindTexture")
   gl_api_->glBindTextureFn(target, texture);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindTransformFeedbackFn(GLenum target, GLuint id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBindTransformFeedback")
   gl_api_->glBindTransformFeedbackFn(target, id);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindUniformLocationCHROMIUMFn(GLuint program,
                                                  GLint location,
                                                  const char* name) {
@@ -5392,19 +4976,16 @@ void TraceGLApi::glBindUniformLocationCHROMIUMFn(GLuint program,
   gl_api_->glBindUniformLocationCHROMIUMFn(program, location, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBindVertexArrayOESFn(GLuint array) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBindVertexArrayOES")
   gl_api_->glBindVertexArrayOESFn(array);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBlendBarrierKHRFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendBarrierKHR")
   gl_api_->glBlendBarrierKHRFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBlendColorFn(GLclampf red,
                                 GLclampf green,
                                 GLclampf blue,
@@ -5413,25 +4994,21 @@ void TraceGLApi::glBlendColorFn(GLclampf red,
   gl_api_->glBlendColorFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBlendEquationFn(GLenum mode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendEquation")
   gl_api_->glBlendEquationFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendEquationSeparate")
   gl_api_->glBlendEquationSeparateFn(modeRGB, modeAlpha);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendFunc")
   gl_api_->glBlendFuncFn(sfactor, dfactor);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
                                        GLenum dstRGB,
                                        GLenum srcAlpha,
@@ -5440,7 +5017,6 @@ void TraceGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
   gl_api_->glBlendFuncSeparateFn(srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBlitFramebufferFn(GLint srcX0,
                                      GLint srcY0,
                                      GLint srcX1,
@@ -5456,7 +5032,6 @@ void TraceGLApi::glBlitFramebufferFn(GLint srcX0,
                                dstY1, mask, filter);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBufferDataFn(GLenum target,
                                 GLsizeiptr size,
                                 const void* data,
@@ -5465,7 +5040,6 @@ void TraceGLApi::glBufferDataFn(GLenum target,
   gl_api_->glBufferDataFn(target, size, data, usage);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glBufferSubDataFn(GLenum target,
                                    GLintptr offset,
                                    GLsizeiptr size,
@@ -5474,20 +5048,17 @@ void TraceGLApi::glBufferSubDataFn(GLenum target,
   gl_api_->glBufferSubDataFn(target, offset, size, data);
 }
 
-DISABLE_CFI_ICALL
 GLenum TraceGLApi::glCheckFramebufferStatusEXTFn(GLenum target) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "TraceGLAPI::glCheckFramebufferStatusEXT")
   return gl_api_->glCheckFramebufferStatusEXTFn(target);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearFn(GLbitfield mask) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClear")
   gl_api_->glClearFn(mask);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearBufferfiFn(GLenum buffer,
                                    GLint drawbuffer,
                                    const GLfloat depth,
@@ -5496,7 +5067,6 @@ void TraceGLApi::glClearBufferfiFn(GLenum buffer,
   gl_api_->glClearBufferfiFn(buffer, drawbuffer, depth, stencil);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearBufferfvFn(GLenum buffer,
                                    GLint drawbuffer,
                                    const GLfloat* value) {
@@ -5504,7 +5074,6 @@ void TraceGLApi::glClearBufferfvFn(GLenum buffer,
   gl_api_->glClearBufferfvFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearBufferivFn(GLenum buffer,
                                    GLint drawbuffer,
                                    const GLint* value) {
@@ -5512,7 +5081,6 @@ void TraceGLApi::glClearBufferivFn(GLenum buffer,
   gl_api_->glClearBufferivFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearBufferuivFn(GLenum buffer,
                                     GLint drawbuffer,
                                     const GLuint* value) {
@@ -5520,7 +5088,6 @@ void TraceGLApi::glClearBufferuivFn(GLenum buffer,
   gl_api_->glClearBufferuivFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearColorFn(GLclampf red,
                                 GLclampf green,
                                 GLclampf blue,
@@ -5529,25 +5096,21 @@ void TraceGLApi::glClearColorFn(GLclampf red,
   gl_api_->glClearColorFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearDepthFn(GLclampd depth) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClearDepth")
   gl_api_->glClearDepthFn(depth);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearDepthfFn(GLclampf depth) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClearDepthf")
   gl_api_->glClearDepthfFn(depth);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glClearStencilFn(GLint s) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClearStencil")
   gl_api_->glClearStencilFn(s);
 }
 
-DISABLE_CFI_ICALL
 GLenum TraceGLApi::glClientWaitSyncFn(GLsync sync,
                                       GLbitfield flags,
                                       GLuint64 timeout) {
@@ -5555,7 +5118,6 @@ GLenum TraceGLApi::glClientWaitSyncFn(GLsync sync,
   return gl_api_->glClientWaitSyncFn(sync, flags, timeout);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glColorMaskFn(GLboolean red,
                                GLboolean green,
                                GLboolean blue,
@@ -5564,13 +5126,11 @@ void TraceGLApi::glColorMaskFn(GLboolean red,
   gl_api_->glColorMaskFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompileShaderFn(GLuint shader) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCompileShader")
   gl_api_->glCompileShaderFn(shader);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
                                                    GLuint destId) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
@@ -5578,7 +5138,6 @@ void TraceGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
   gl_api_->glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedTexImage2DFn(GLenum target,
                                           GLint level,
                                           GLenum internalformat,
@@ -5592,7 +5151,6 @@ void TraceGLApi::glCompressedTexImage2DFn(GLenum target,
                                     height, border, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedTexImage2DRobustANGLEFn(GLenum target,
                                                      GLint level,
                                                      GLenum internalformat,
@@ -5609,7 +5167,6 @@ void TraceGLApi::glCompressedTexImage2DRobustANGLEFn(GLenum target,
                                                dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedTexImage3DFn(GLenum target,
                                           GLint level,
                                           GLenum internalformat,
@@ -5624,7 +5181,6 @@ void TraceGLApi::glCompressedTexImage3DFn(GLenum target,
                                     height, depth, border, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedTexImage3DRobustANGLEFn(GLenum target,
                                                      GLint level,
                                                      GLenum internalformat,
@@ -5642,7 +5198,6 @@ void TraceGLApi::glCompressedTexImage3DRobustANGLEFn(GLenum target,
                                                imageSize, dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedTexSubImage2DFn(GLenum target,
                                              GLint level,
                                              GLint xoffset,
@@ -5657,7 +5212,6 @@ void TraceGLApi::glCompressedTexSubImage2DFn(GLenum target,
                                        height, format, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedTexSubImage2DRobustANGLEFn(GLenum target,
                                                         GLint level,
                                                         GLint xoffset,
@@ -5675,7 +5229,6 @@ void TraceGLApi::glCompressedTexSubImage2DRobustANGLEFn(GLenum target,
       dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedTexSubImage3DFn(GLenum target,
                                              GLint level,
                                              GLint xoffset,
@@ -5693,7 +5246,6 @@ void TraceGLApi::glCompressedTexSubImage3DFn(GLenum target,
                                        data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCompressedTexSubImage3DRobustANGLEFn(GLenum target,
                                                         GLint level,
                                                         GLint xoffset,
@@ -5713,7 +5265,6 @@ void TraceGLApi::glCompressedTexSubImage3DRobustANGLEFn(GLenum target,
       imageSize, dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCopyBufferSubDataFn(GLenum readTarget,
                                        GLenum writeTarget,
                                        GLintptr readOffset,
@@ -5724,7 +5275,6 @@ void TraceGLApi::glCopyBufferSubDataFn(GLenum readTarget,
                                  writeOffset, size);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
                                             GLint sourceLevel,
                                             GLenum destTarget,
@@ -5746,7 +5296,6 @@ void TraceGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
       unpackUnmultiplyAlpha);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCopyTexImage2DFn(GLenum target,
                                     GLint level,
                                     GLenum internalformat,
@@ -5760,7 +5309,6 @@ void TraceGLApi::glCopyTexImage2DFn(GLenum target,
                               height, border);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCopyTexSubImage2DFn(GLenum target,
                                        GLint level,
                                        GLint xoffset,
@@ -5774,7 +5322,6 @@ void TraceGLApi::glCopyTexSubImage2DFn(GLenum target,
                                  height);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCopyTexSubImage3DFn(GLenum target,
                                        GLint level,
                                        GLint xoffset,
@@ -5789,7 +5336,6 @@ void TraceGLApi::glCopyTexSubImage3DFn(GLenum target,
                                  width, height);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
                                          GLint sourceLevel,
                                          GLenum destTarget,
@@ -5806,13 +5352,11 @@ void TraceGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
       destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCoverageModulationNVFn(GLenum components) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverageModulationNV")
   gl_api_->glCoverageModulationNVFn(components);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                               GLenum pathNameType,
                                               const void* paths,
@@ -5826,13 +5370,11 @@ void TraceGLApi::glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                         transformValues);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverFillPathNV")
   gl_api_->glCoverFillPathNVFn(path, coverMode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCoverStrokePathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -5848,38 +5390,32 @@ void TraceGLApi::glCoverStrokePathInstancedNVFn(
                                           transformValues);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverStrokePathNV")
   gl_api_->glCoverStrokePathNVFn(name, coverMode);
 }
 
-DISABLE_CFI_ICALL
 GLuint TraceGLApi::glCreateProgramFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCreateProgram")
   return gl_api_->glCreateProgramFn();
 }
 
-DISABLE_CFI_ICALL
 GLuint TraceGLApi::glCreateShaderFn(GLenum type) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCreateShader")
   return gl_api_->glCreateShaderFn(type);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glCullFaceFn(GLenum mode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCullFace")
   gl_api_->glCullFaceFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDebugMessageCallbackFn(GLDEBUGPROC callback,
                                           const void* userParam) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDebugMessageCallback")
   gl_api_->glDebugMessageCallbackFn(callback, userParam);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDebugMessageControlFn(GLenum source,
                                          GLenum type,
                                          GLenum severity,
@@ -5890,7 +5426,6 @@ void TraceGLApi::glDebugMessageControlFn(GLenum source,
   gl_api_->glDebugMessageControlFn(source, type, severity, count, ids, enabled);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDebugMessageInsertFn(GLenum source,
                                         GLenum type,
                                         GLuint id,
@@ -5901,135 +5436,113 @@ void TraceGLApi::glDebugMessageInsertFn(GLenum source,
   gl_api_->glDebugMessageInsertFn(source, type, id, severity, length, buf);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteBuffersARB")
   gl_api_->glDeleteBuffersARBFn(n, buffers);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteFencesAPPLE")
   gl_api_->glDeleteFencesAPPLEFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteFencesNV")
   gl_api_->glDeleteFencesNVFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
                                            const GLuint* framebuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteFramebuffersEXT")
   gl_api_->glDeleteFramebuffersEXTFn(n, framebuffers);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeletePathsNV")
   gl_api_->glDeletePathsNVFn(path, range);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteProgramFn(GLuint program) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteProgram")
   gl_api_->glDeleteProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteQueriesFn(GLsizei n, const GLuint* ids) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteQueries")
   gl_api_->glDeleteQueriesFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteRenderbuffersEXTFn(GLsizei n,
                                             const GLuint* renderbuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteRenderbuffersEXT")
   gl_api_->glDeleteRenderbuffersEXTFn(n, renderbuffers);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteSamplersFn(GLsizei n, const GLuint* samplers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteSamplers")
   gl_api_->glDeleteSamplersFn(n, samplers);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteShaderFn(GLuint shader) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteShader")
   gl_api_->glDeleteShaderFn(shader);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteSyncFn(GLsync sync) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteSync")
   gl_api_->glDeleteSyncFn(sync);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteTextures")
   gl_api_->glDeleteTexturesFn(n, textures);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteTransformFeedbacksFn(GLsizei n, const GLuint* ids) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteTransformFeedbacks")
   gl_api_->glDeleteTransformFeedbacksFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDeleteVertexArraysOESFn(GLsizei n, const GLuint* arrays) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteVertexArraysOES")
   gl_api_->glDeleteVertexArraysOESFn(n, arrays);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDepthFuncFn(GLenum func) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDepthFunc")
   gl_api_->glDepthFuncFn(func);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDepthMaskFn(GLboolean flag) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDepthMask")
   gl_api_->glDepthMaskFn(flag);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDepthRangeFn(GLclampd zNear, GLclampd zFar) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDepthRange")
   gl_api_->glDepthRangeFn(zNear, zFar);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDepthRangefFn(GLclampf zNear, GLclampf zFar) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDepthRangef")
   gl_api_->glDepthRangefFn(zNear, zFar);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDetachShaderFn(GLuint program, GLuint shader) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDetachShader")
   gl_api_->glDetachShaderFn(program, shader);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDisableFn(GLenum cap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDisable")
   gl_api_->glDisableFn(cap);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDisableVertexAttribArrayFn(GLuint index) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDisableVertexAttribArray")
   gl_api_->glDisableVertexAttribArrayFn(index);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDiscardFramebufferEXTFn(GLenum target,
                                            GLsizei numAttachments,
                                            const GLenum* attachments) {
@@ -6037,13 +5550,11 @@ void TraceGLApi::glDiscardFramebufferEXTFn(GLenum target,
   gl_api_->glDiscardFramebufferEXTFn(target, numAttachments, attachments);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDrawArraysFn(GLenum mode, GLint first, GLsizei count) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDrawArrays")
   gl_api_->glDrawArraysFn(mode, first, count);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDrawArraysInstancedANGLEFn(GLenum mode,
                                               GLint first,
                                               GLsizei count,
@@ -6052,19 +5563,16 @@ void TraceGLApi::glDrawArraysInstancedANGLEFn(GLenum mode,
   gl_api_->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDrawBufferFn(GLenum mode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDrawBuffer")
   gl_api_->glDrawBufferFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDrawBuffersARBFn(GLsizei n, const GLenum* bufs) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDrawBuffersARB")
   gl_api_->glDrawBuffersARBFn(n, bufs);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDrawElementsFn(GLenum mode,
                                   GLsizei count,
                                   GLenum type,
@@ -6073,7 +5581,6 @@ void TraceGLApi::glDrawElementsFn(GLenum mode,
   gl_api_->glDrawElementsFn(mode, count, type, indices);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
                                                 GLsizei count,
                                                 GLenum type,
@@ -6085,7 +5592,6 @@ void TraceGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
                                           primcount);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glDrawRangeElementsFn(GLenum mode,
                                        GLuint start,
                                        GLuint end,
@@ -6096,7 +5602,6 @@ void TraceGLApi::glDrawRangeElementsFn(GLenum mode,
   gl_api_->glDrawRangeElementsFn(mode, start, end, count, type, indices);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glEGLImageTargetRenderbufferStorageOESFn(GLenum target,
                                                           GLeglImageOES image) {
   TRACE_EVENT_BINARY_EFFICIENT0(
@@ -6104,7 +5609,6 @@ void TraceGLApi::glEGLImageTargetRenderbufferStorageOESFn(GLenum target,
   gl_api_->glEGLImageTargetRenderbufferStorageOESFn(target, image);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glEGLImageTargetTexture2DOESFn(GLenum target,
                                                 GLeglImageOES image) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
@@ -6112,61 +5616,51 @@ void TraceGLApi::glEGLImageTargetTexture2DOESFn(GLenum target,
   gl_api_->glEGLImageTargetTexture2DOESFn(target, image);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glEnableFn(GLenum cap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glEnable")
   gl_api_->glEnableFn(cap);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glEnableVertexAttribArrayFn(GLuint index) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glEnableVertexAttribArray")
   gl_api_->glEnableVertexAttribArrayFn(index);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glEndQueryFn(GLenum target) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glEndQuery")
   gl_api_->glEndQueryFn(target);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glEndTransformFeedbackFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glEndTransformFeedback")
   gl_api_->glEndTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 GLsync TraceGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFenceSync")
   return gl_api_->glFenceSyncFn(condition, flags);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFinishFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFinish")
   gl_api_->glFinishFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFinishFenceAPPLEFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFinishFenceAPPLE")
   gl_api_->glFinishFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFinishFenceNVFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFinishFenceNV")
   gl_api_->glFinishFenceNVFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFlushFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFlush")
   gl_api_->glFlushFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFlushMappedBufferRangeFn(GLenum target,
                                             GLintptr offset,
                                             GLsizeiptr length) {
@@ -6174,7 +5668,6 @@ void TraceGLApi::glFlushMappedBufferRangeFn(GLenum target,
   gl_api_->glFlushMappedBufferRangeFn(target, offset, length);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFramebufferRenderbufferEXTFn(GLenum target,
                                                 GLenum attachment,
                                                 GLenum renderbuffertarget,
@@ -6185,7 +5678,6 @@ void TraceGLApi::glFramebufferRenderbufferEXTFn(GLenum target,
                                           renderbuffertarget, renderbuffer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFramebufferTexture2DEXTFn(GLenum target,
                                              GLenum attachment,
                                              GLenum textarget,
@@ -6196,7 +5688,6 @@ void TraceGLApi::glFramebufferTexture2DEXTFn(GLenum target,
                                        level);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                                                         GLenum attachment,
                                                         GLenum textarget,
@@ -6209,7 +5700,6 @@ void TraceGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                                                   texture, level, samples);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFramebufferTextureLayerFn(GLenum target,
                                              GLenum attachment,
                                              GLuint texture,
@@ -6220,85 +5710,71 @@ void TraceGLApi::glFramebufferTextureLayerFn(GLenum target,
                                        layer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glFrontFaceFn(GLenum mode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFrontFace")
   gl_api_->glFrontFaceFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenBuffersARBFn(GLsizei n, GLuint* buffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenBuffersARB")
   gl_api_->glGenBuffersARBFn(n, buffers);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenerateMipmapEXTFn(GLenum target) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenerateMipmapEXT")
   gl_api_->glGenerateMipmapEXTFn(target);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenFencesAPPLE")
   gl_api_->glGenFencesAPPLEFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenFencesNV")
   gl_api_->glGenFencesNVFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenFramebuffersEXT")
   gl_api_->glGenFramebuffersEXTFn(n, framebuffers);
 }
 
-DISABLE_CFI_ICALL
 GLuint TraceGLApi::glGenPathsNVFn(GLsizei range) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenPathsNV")
   return gl_api_->glGenPathsNVFn(range);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenQueriesFn(GLsizei n, GLuint* ids) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenQueries")
   gl_api_->glGenQueriesFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenRenderbuffersEXT")
   gl_api_->glGenRenderbuffersEXTFn(n, renderbuffers);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenSamplersFn(GLsizei n, GLuint* samplers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenSamplers")
   gl_api_->glGenSamplersFn(n, samplers);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenTexturesFn(GLsizei n, GLuint* textures) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenTextures")
   gl_api_->glGenTexturesFn(n, textures);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenTransformFeedbacksFn(GLsizei n, GLuint* ids) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenTransformFeedbacks")
   gl_api_->glGenTransformFeedbacksFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGenVertexArraysOESFn(GLsizei n, GLuint* arrays) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenVertexArraysOES")
   gl_api_->glGenVertexArraysOESFn(n, arrays);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetActiveAttribFn(GLuint program,
                                      GLuint index,
                                      GLsizei bufsize,
@@ -6311,7 +5787,6 @@ void TraceGLApi::glGetActiveAttribFn(GLuint program,
                                name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetActiveUniformFn(GLuint program,
                                       GLuint index,
                                       GLsizei bufsize,
@@ -6324,7 +5799,6 @@ void TraceGLApi::glGetActiveUniformFn(GLuint program,
                                 name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetActiveUniformBlockivFn(GLuint program,
                                              GLuint uniformBlockIndex,
                                              GLenum pname,
@@ -6334,7 +5808,6 @@ void TraceGLApi::glGetActiveUniformBlockivFn(GLuint program,
                                        params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetActiveUniformBlockivRobustANGLEFn(
     GLuint program,
     GLuint uniformBlockIndex,
@@ -6348,7 +5821,6 @@ void TraceGLApi::glGetActiveUniformBlockivRobustANGLEFn(
       program, uniformBlockIndex, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetActiveUniformBlockNameFn(GLuint program,
                                                GLuint uniformBlockIndex,
                                                GLsizei bufSize,
@@ -6360,7 +5832,6 @@ void TraceGLApi::glGetActiveUniformBlockNameFn(GLuint program,
                                          length, uniformBlockName);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetActiveUniformsivFn(GLuint program,
                                          GLsizei uniformCount,
                                          const GLuint* uniformIndices,
@@ -6371,7 +5842,6 @@ void TraceGLApi::glGetActiveUniformsivFn(GLuint program,
                                    params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetAttachedShadersFn(GLuint program,
                                         GLsizei maxcount,
                                         GLsizei* count,
@@ -6380,13 +5850,11 @@ void TraceGLApi::glGetAttachedShadersFn(GLuint program,
   gl_api_->glGetAttachedShadersFn(program, maxcount, count, shaders);
 }
 
-DISABLE_CFI_ICALL
 GLint TraceGLApi::glGetAttribLocationFn(GLuint program, const char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetAttribLocation")
   return gl_api_->glGetAttribLocationFn(program, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetBooleani_vRobustANGLEFn(GLenum target,
                                               GLuint index,
                                               GLsizei bufSize,
@@ -6396,13 +5864,11 @@ void TraceGLApi::glGetBooleani_vRobustANGLEFn(GLenum target,
   gl_api_->glGetBooleani_vRobustANGLEFn(target, index, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetBooleanvFn(GLenum pname, GLboolean* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetBooleanv")
   gl_api_->glGetBooleanvFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetBooleanvRobustANGLEFn(GLenum pname,
                                             GLsizei bufSize,
                                             GLsizei* length,
@@ -6411,7 +5877,6 @@ void TraceGLApi::glGetBooleanvRobustANGLEFn(GLenum pname,
   gl_api_->glGetBooleanvRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetBufferParameteri64vRobustANGLEFn(GLenum target,
                                                        GLenum pname,
                                                        GLsizei bufSize,
@@ -6423,7 +5888,6 @@ void TraceGLApi::glGetBufferParameteri64vRobustANGLEFn(GLenum target,
                                                  params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetBufferParameterivFn(GLenum target,
                                           GLenum pname,
                                           GLint* params) {
@@ -6431,7 +5895,6 @@ void TraceGLApi::glGetBufferParameterivFn(GLenum target,
   gl_api_->glGetBufferParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetBufferParameterivRobustANGLEFn(GLenum target,
                                                      GLenum pname,
                                                      GLsizei bufSize,
@@ -6443,7 +5906,6 @@ void TraceGLApi::glGetBufferParameterivRobustANGLEFn(GLenum target,
                                                params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -6455,7 +5917,6 @@ void TraceGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetDebugMessageLogFn(GLuint count,
                                         GLsizei bufSize,
                                         GLenum* sources,
@@ -6469,25 +5930,21 @@ void TraceGLApi::glGetDebugMessageLogFn(GLuint count,
                                   severities, lengths, messageLog);
 }
 
-DISABLE_CFI_ICALL
 GLenum TraceGLApi::glGetErrorFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetError")
   return gl_api_->glGetErrorFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetFenceivNV")
   gl_api_->glGetFenceivNVFn(fence, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetFloatvFn(GLenum pname, GLfloat* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetFloatv")
   gl_api_->glGetFloatvFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetFloatvRobustANGLEFn(GLenum pname,
                                           GLsizei bufSize,
                                           GLsizei* length,
@@ -6496,19 +5953,16 @@ void TraceGLApi::glGetFloatvRobustANGLEFn(GLenum pname,
   gl_api_->glGetFloatvRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 GLint TraceGLApi::glGetFragDataIndexFn(GLuint program, const char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetFragDataIndex")
   return gl_api_->glGetFragDataIndexFn(program, name);
 }
 
-DISABLE_CFI_ICALL
 GLint TraceGLApi::glGetFragDataLocationFn(GLuint program, const char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetFragDataLocation")
   return gl_api_->glGetFragDataLocationFn(program, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetFramebufferAttachmentParameterivEXTFn(GLenum target,
                                                             GLenum attachment,
                                                             GLenum pname,
@@ -6519,7 +5973,6 @@ void TraceGLApi::glGetFramebufferAttachmentParameterivEXTFn(GLenum target,
                                                       params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetFramebufferAttachmentParameterivRobustANGLEFn(
     GLenum target,
     GLenum attachment,
@@ -6533,7 +5986,6 @@ void TraceGLApi::glGetFramebufferAttachmentParameterivRobustANGLEFn(
       target, attachment, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetFramebufferParameterivRobustANGLEFn(GLenum target,
                                                           GLenum pname,
                                                           GLsizei bufSize,
@@ -6545,14 +5997,12 @@ void TraceGLApi::glGetFramebufferParameterivRobustANGLEFn(GLenum target,
                                                     length, params);
 }
 
-DISABLE_CFI_ICALL
 GLenum TraceGLApi::glGetGraphicsResetStatusARBFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "TraceGLAPI::glGetGraphicsResetStatusARB")
   return gl_api_->glGetGraphicsResetStatusARBFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetInteger64i_vFn(GLenum target,
                                      GLuint index,
                                      GLint64* data) {
@@ -6560,7 +6010,6 @@ void TraceGLApi::glGetInteger64i_vFn(GLenum target,
   gl_api_->glGetInteger64i_vFn(target, index, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetInteger64i_vRobustANGLEFn(GLenum target,
                                                 GLuint index,
                                                 GLsizei bufSize,
@@ -6571,13 +6020,11 @@ void TraceGLApi::glGetInteger64i_vRobustANGLEFn(GLenum target,
   gl_api_->glGetInteger64i_vRobustANGLEFn(target, index, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetInteger64vFn(GLenum pname, GLint64* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetInteger64v")
   gl_api_->glGetInteger64vFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetInteger64vRobustANGLEFn(GLenum pname,
                                               GLsizei bufSize,
                                               GLsizei* length,
@@ -6586,13 +6033,11 @@ void TraceGLApi::glGetInteger64vRobustANGLEFn(GLenum pname,
   gl_api_->glGetInteger64vRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetIntegeri_vFn(GLenum target, GLuint index, GLint* data) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetIntegeri_v")
   gl_api_->glGetIntegeri_vFn(target, index, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetIntegeri_vRobustANGLEFn(GLenum target,
                                               GLuint index,
                                               GLsizei bufSize,
@@ -6602,13 +6047,11 @@ void TraceGLApi::glGetIntegeri_vRobustANGLEFn(GLenum target,
   gl_api_->glGetIntegeri_vRobustANGLEFn(target, index, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetIntegerv")
   gl_api_->glGetIntegervFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetIntegervRobustANGLEFn(GLenum pname,
                                             GLsizei bufSize,
                                             GLsizei* length,
@@ -6617,7 +6060,6 @@ void TraceGLApi::glGetIntegervRobustANGLEFn(GLenum pname,
   gl_api_->glGetIntegervRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetInternalformativFn(GLenum target,
                                          GLenum internalformat,
                                          GLenum pname,
@@ -6628,7 +6070,6 @@ void TraceGLApi::glGetInternalformativFn(GLenum target,
                                    params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                                     GLenum internalformat,
                                                     GLenum pname,
@@ -6641,7 +6082,6 @@ void TraceGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                               bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetMultisamplefvFn(GLenum pname,
                                       GLuint index,
                                       GLfloat* val) {
@@ -6649,7 +6089,6 @@ void TraceGLApi::glGetMultisamplefvFn(GLenum pname,
   gl_api_->glGetMultisamplefvFn(pname, index, val);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                  GLuint index,
                                                  GLsizei bufSize,
@@ -6660,7 +6099,6 @@ void TraceGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
   gl_api_->glGetMultisamplefvRobustANGLEFn(pname, index, bufSize, length, val);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetnUniformfvRobustANGLEFn(GLuint program,
                                               GLint location,
                                               GLsizei bufSize,
@@ -6671,7 +6109,6 @@ void TraceGLApi::glGetnUniformfvRobustANGLEFn(GLuint program,
                                         params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetnUniformivRobustANGLEFn(GLuint program,
                                               GLint location,
                                               GLsizei bufSize,
@@ -6682,7 +6119,6 @@ void TraceGLApi::glGetnUniformivRobustANGLEFn(GLuint program,
                                         params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetnUniformuivRobustANGLEFn(GLuint program,
                                                GLint location,
                                                GLsizei bufSize,
@@ -6694,7 +6130,6 @@ void TraceGLApi::glGetnUniformuivRobustANGLEFn(GLuint program,
                                          params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetObjectLabelFn(GLenum identifier,
                                     GLuint name,
                                     GLsizei bufSize,
@@ -6704,7 +6139,6 @@ void TraceGLApi::glGetObjectLabelFn(GLenum identifier,
   gl_api_->glGetObjectLabelFn(identifier, name, bufSize, length, label);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetObjectPtrLabelFn(void* ptr,
                                        GLsizei bufSize,
                                        GLsizei* length,
@@ -6713,13 +6147,11 @@ void TraceGLApi::glGetObjectPtrLabelFn(void* ptr,
   gl_api_->glGetObjectPtrLabelFn(ptr, bufSize, length, label);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetPointervFn(GLenum pname, void** params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetPointerv")
   gl_api_->glGetPointervFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                                        GLsizei bufSize,
                                                        GLsizei* length,
@@ -6730,7 +6162,6 @@ void TraceGLApi::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                                  params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetProgramBinaryFn(GLuint program,
                                       GLsizei bufSize,
                                       GLsizei* length,
@@ -6740,7 +6171,6 @@ void TraceGLApi::glGetProgramBinaryFn(GLuint program,
   gl_api_->glGetProgramBinaryFn(program, bufSize, length, binaryFormat, binary);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetProgramInfoLogFn(GLuint program,
                                        GLsizei bufsize,
                                        GLsizei* length,
@@ -6749,7 +6179,6 @@ void TraceGLApi::glGetProgramInfoLogFn(GLuint program,
   gl_api_->glGetProgramInfoLogFn(program, bufsize, length, infolog);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetProgramInterfaceivFn(GLuint program,
                                            GLenum programInterface,
                                            GLenum pname,
@@ -6758,7 +6187,6 @@ void TraceGLApi::glGetProgramInterfaceivFn(GLuint program,
   gl_api_->glGetProgramInterfaceivFn(program, programInterface, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetProgramInterfaceivRobustANGLEFn(GLuint program,
                                                       GLenum programInterface,
                                                       GLenum pname,
@@ -6771,13 +6199,11 @@ void TraceGLApi::glGetProgramInterfaceivRobustANGLEFn(GLuint program,
                                                 pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetProgramiv")
   gl_api_->glGetProgramivFn(program, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetProgramivRobustANGLEFn(GLuint program,
                                              GLenum pname,
                                              GLsizei bufSize,
@@ -6787,7 +6213,6 @@ void TraceGLApi::glGetProgramivRobustANGLEFn(GLuint program,
   gl_api_->glGetProgramivRobustANGLEFn(program, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetProgramResourceivFn(GLuint program,
                                           GLenum programInterface,
                                           GLuint index,
@@ -6801,7 +6226,6 @@ void TraceGLApi::glGetProgramResourceivFn(GLuint program,
                                     props, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 GLint TraceGLApi::glGetProgramResourceLocationFn(GLuint program,
                                                  GLenum programInterface,
                                                  const char* name) {
@@ -6811,7 +6235,6 @@ GLint TraceGLApi::glGetProgramResourceLocationFn(GLuint program,
                                                  name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetProgramResourceNameFn(GLuint program,
                                             GLenum programInterface,
                                             GLuint index,
@@ -6823,13 +6246,11 @@ void TraceGLApi::glGetProgramResourceNameFn(GLuint program,
                                       length, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetQueryiv")
   gl_api_->glGetQueryivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryivRobustANGLEFn(GLenum target,
                                            GLenum pname,
                                            GLsizei bufSize,
@@ -6839,7 +6260,6 @@ void TraceGLApi::glGetQueryivRobustANGLEFn(GLenum target,
   gl_api_->glGetQueryivRobustANGLEFn(target, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryObjecti64vFn(GLuint id,
                                         GLenum pname,
                                         GLint64* params) {
@@ -6847,7 +6267,6 @@ void TraceGLApi::glGetQueryObjecti64vFn(GLuint id,
   gl_api_->glGetQueryObjecti64vFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryObjecti64vRobustANGLEFn(GLuint id,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -6859,13 +6278,11 @@ void TraceGLApi::glGetQueryObjecti64vRobustANGLEFn(GLuint id,
                                              params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetQueryObjectiv")
   gl_api_->glGetQueryObjectivFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryObjectivRobustANGLEFn(GLuint id,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -6876,7 +6293,6 @@ void TraceGLApi::glGetQueryObjectivRobustANGLEFn(GLuint id,
   gl_api_->glGetQueryObjectivRobustANGLEFn(id, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryObjectui64vFn(GLuint id,
                                          GLenum pname,
                                          GLuint64* params) {
@@ -6884,7 +6300,6 @@ void TraceGLApi::glGetQueryObjectui64vFn(GLuint id,
   gl_api_->glGetQueryObjectui64vFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryObjectui64vRobustANGLEFn(GLuint id,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -6896,7 +6311,6 @@ void TraceGLApi::glGetQueryObjectui64vRobustANGLEFn(GLuint id,
                                               params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryObjectuivFn(GLuint id,
                                        GLenum pname,
                                        GLuint* params) {
@@ -6904,7 +6318,6 @@ void TraceGLApi::glGetQueryObjectuivFn(GLuint id,
   gl_api_->glGetQueryObjectuivFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetQueryObjectuivRobustANGLEFn(GLuint id,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -6915,7 +6328,6 @@ void TraceGLApi::glGetQueryObjectuivRobustANGLEFn(GLuint id,
   gl_api_->glGetQueryObjectuivRobustANGLEFn(id, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetRenderbufferParameterivEXTFn(GLenum target,
                                                    GLenum pname,
                                                    GLint* params) {
@@ -6924,7 +6336,6 @@ void TraceGLApi::glGetRenderbufferParameterivEXTFn(GLenum target,
   gl_api_->glGetRenderbufferParameterivEXTFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetRenderbufferParameterivRobustANGLEFn(GLenum target,
                                                            GLenum pname,
                                                            GLsizei bufSize,
@@ -6936,7 +6347,6 @@ void TraceGLApi::glGetRenderbufferParameterivRobustANGLEFn(GLenum target,
                                                      length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetSamplerParameterfvFn(GLuint sampler,
                                            GLenum pname,
                                            GLfloat* params) {
@@ -6944,7 +6354,6 @@ void TraceGLApi::glGetSamplerParameterfvFn(GLuint sampler,
   gl_api_->glGetSamplerParameterfvFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                       GLenum pname,
                                                       GLsizei bufSize,
@@ -6956,7 +6365,6 @@ void TraceGLApi::glGetSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                 params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                        GLenum pname,
                                                        GLsizei bufSize,
@@ -6968,7 +6376,6 @@ void TraceGLApi::glGetSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                  length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                         GLenum pname,
                                                         GLsizei bufSize,
@@ -6980,7 +6387,6 @@ void TraceGLApi::glGetSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                   length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetSamplerParameterivFn(GLuint sampler,
                                            GLenum pname,
                                            GLint* params) {
@@ -6988,7 +6394,6 @@ void TraceGLApi::glGetSamplerParameterivFn(GLuint sampler,
   gl_api_->glGetSamplerParameterivFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                       GLenum pname,
                                                       GLsizei bufSize,
@@ -7000,7 +6405,6 @@ void TraceGLApi::glGetSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                 params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetShaderInfoLogFn(GLuint shader,
                                       GLsizei bufsize,
                                       GLsizei* length,
@@ -7009,13 +6413,11 @@ void TraceGLApi::glGetShaderInfoLogFn(GLuint shader,
   gl_api_->glGetShaderInfoLogFn(shader, bufsize, length, infolog);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetShaderivFn(GLuint shader, GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetShaderiv")
   gl_api_->glGetShaderivFn(shader, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetShaderivRobustANGLEFn(GLuint shader,
                                             GLenum pname,
                                             GLsizei bufSize,
@@ -7025,7 +6427,6 @@ void TraceGLApi::glGetShaderivRobustANGLEFn(GLuint shader,
   gl_api_->glGetShaderivRobustANGLEFn(shader, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetShaderPrecisionFormatFn(GLenum shadertype,
                                               GLenum precisiontype,
                                               GLint* range,
@@ -7035,7 +6436,6 @@ void TraceGLApi::glGetShaderPrecisionFormatFn(GLenum shadertype,
                                         precision);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetShaderSourceFn(GLuint shader,
                                      GLsizei bufsize,
                                      GLsizei* length,
@@ -7044,19 +6444,16 @@ void TraceGLApi::glGetShaderSourceFn(GLuint shader,
   gl_api_->glGetShaderSourceFn(shader, bufsize, length, source);
 }
 
-DISABLE_CFI_ICALL
 const GLubyte* TraceGLApi::glGetStringFn(GLenum name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetString")
   return gl_api_->glGetStringFn(name);
 }
 
-DISABLE_CFI_ICALL
 const GLubyte* TraceGLApi::glGetStringiFn(GLenum name, GLuint index) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetStringi")
   return gl_api_->glGetStringiFn(name, index);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetSyncivFn(GLsync sync,
                                GLenum pname,
                                GLsizei bufSize,
@@ -7066,7 +6463,6 @@ void TraceGLApi::glGetSyncivFn(GLsync sync,
   gl_api_->glGetSyncivFn(sync, pname, bufSize, length, values);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexLevelParameterfvFn(GLenum target,
                                             GLint level,
                                             GLenum pname,
@@ -7075,7 +6471,6 @@ void TraceGLApi::glGetTexLevelParameterfvFn(GLenum target,
   gl_api_->glGetTexLevelParameterfvFn(target, level, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexLevelParameterfvRobustANGLEFn(GLenum target,
                                                        GLint level,
                                                        GLenum pname,
@@ -7088,7 +6483,6 @@ void TraceGLApi::glGetTexLevelParameterfvRobustANGLEFn(GLenum target,
                                                  length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexLevelParameterivFn(GLenum target,
                                             GLint level,
                                             GLenum pname,
@@ -7097,7 +6491,6 @@ void TraceGLApi::glGetTexLevelParameterivFn(GLenum target,
   gl_api_->glGetTexLevelParameterivFn(target, level, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexLevelParameterivRobustANGLEFn(GLenum target,
                                                        GLint level,
                                                        GLenum pname,
@@ -7110,7 +6503,6 @@ void TraceGLApi::glGetTexLevelParameterivRobustANGLEFn(GLenum target,
                                                  length, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexParameterfvFn(GLenum target,
                                        GLenum pname,
                                        GLfloat* params) {
@@ -7118,7 +6510,6 @@ void TraceGLApi::glGetTexParameterfvFn(GLenum target,
   gl_api_->glGetTexParameterfvFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexParameterfvRobustANGLEFn(GLenum target,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -7130,7 +6521,6 @@ void TraceGLApi::glGetTexParameterfvRobustANGLEFn(GLenum target,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexParameterIivRobustANGLEFn(GLenum target,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -7142,7 +6532,6 @@ void TraceGLApi::glGetTexParameterIivRobustANGLEFn(GLenum target,
                                              params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexParameterIuivRobustANGLEFn(GLenum target,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -7154,7 +6543,6 @@ void TraceGLApi::glGetTexParameterIuivRobustANGLEFn(GLenum target,
                                               params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexParameterivFn(GLenum target,
                                        GLenum pname,
                                        GLint* params) {
@@ -7162,7 +6550,6 @@ void TraceGLApi::glGetTexParameterivFn(GLenum target,
   gl_api_->glGetTexParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTexParameterivRobustANGLEFn(GLenum target,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -7174,7 +6561,6 @@ void TraceGLApi::glGetTexParameterivRobustANGLEFn(GLenum target,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTransformFeedbackVaryingFn(GLuint program,
                                                  GLuint index,
                                                  GLsizei bufSize,
@@ -7188,7 +6574,6 @@ void TraceGLApi::glGetTransformFeedbackVaryingFn(GLuint program,
                                            size, type, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
                                                     GLsizei bufsize,
                                                     GLsizei* length,
@@ -7198,14 +6583,12 @@ void TraceGLApi::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
   gl_api_->glGetTranslatedShaderSourceANGLEFn(shader, bufsize, length, source);
 }
 
-DISABLE_CFI_ICALL
 GLuint TraceGLApi::glGetUniformBlockIndexFn(GLuint program,
                                             const char* uniformBlockName) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetUniformBlockIndex")
   return gl_api_->glGetUniformBlockIndexFn(program, uniformBlockName);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetUniformfvFn(GLuint program,
                                   GLint location,
                                   GLfloat* params) {
@@ -7213,7 +6596,6 @@ void TraceGLApi::glGetUniformfvFn(GLuint program,
   gl_api_->glGetUniformfvFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetUniformfvRobustANGLEFn(GLuint program,
                                              GLint location,
                                              GLsizei bufSize,
@@ -7224,7 +6606,6 @@ void TraceGLApi::glGetUniformfvRobustANGLEFn(GLuint program,
                                        params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetUniformIndicesFn(GLuint program,
                                        GLsizei uniformCount,
                                        const char* const* uniformNames,
@@ -7234,7 +6615,6 @@ void TraceGLApi::glGetUniformIndicesFn(GLuint program,
                                  uniformIndices);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetUniformivFn(GLuint program,
                                   GLint location,
                                   GLint* params) {
@@ -7242,7 +6622,6 @@ void TraceGLApi::glGetUniformivFn(GLuint program,
   gl_api_->glGetUniformivFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetUniformivRobustANGLEFn(GLuint program,
                                              GLint location,
                                              GLsizei bufSize,
@@ -7253,13 +6632,11 @@ void TraceGLApi::glGetUniformivRobustANGLEFn(GLuint program,
                                        params);
 }
 
-DISABLE_CFI_ICALL
 GLint TraceGLApi::glGetUniformLocationFn(GLuint program, const char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetUniformLocation")
   return gl_api_->glGetUniformLocationFn(program, name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetUniformuivFn(GLuint program,
                                    GLint location,
                                    GLuint* params) {
@@ -7267,7 +6644,6 @@ void TraceGLApi::glGetUniformuivFn(GLuint program,
   gl_api_->glGetUniformuivFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetUniformuivRobustANGLEFn(GLuint program,
                                               GLint location,
                                               GLsizei bufSize,
@@ -7278,7 +6654,6 @@ void TraceGLApi::glGetUniformuivRobustANGLEFn(GLuint program,
                                         params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetVertexAttribfvFn(GLuint index,
                                        GLenum pname,
                                        GLfloat* params) {
@@ -7286,7 +6661,6 @@ void TraceGLApi::glGetVertexAttribfvFn(GLuint index,
   gl_api_->glGetVertexAttribfvFn(index, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetVertexAttribfvRobustANGLEFn(GLuint index,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -7298,7 +6672,6 @@ void TraceGLApi::glGetVertexAttribfvRobustANGLEFn(GLuint index,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetVertexAttribIivRobustANGLEFn(GLuint index,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -7310,7 +6683,6 @@ void TraceGLApi::glGetVertexAttribIivRobustANGLEFn(GLuint index,
                                              params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetVertexAttribIuivRobustANGLEFn(GLuint index,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -7322,7 +6694,6 @@ void TraceGLApi::glGetVertexAttribIuivRobustANGLEFn(GLuint index,
                                               params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetVertexAttribivFn(GLuint index,
                                        GLenum pname,
                                        GLint* params) {
@@ -7330,7 +6701,6 @@ void TraceGLApi::glGetVertexAttribivFn(GLuint index,
   gl_api_->glGetVertexAttribivFn(index, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetVertexAttribivRobustANGLEFn(GLuint index,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -7342,7 +6712,6 @@ void TraceGLApi::glGetVertexAttribivRobustANGLEFn(GLuint index,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetVertexAttribPointervFn(GLuint index,
                                              GLenum pname,
                                              void** pointer) {
@@ -7350,7 +6719,6 @@ void TraceGLApi::glGetVertexAttribPointervFn(GLuint index,
   gl_api_->glGetVertexAttribPointervFn(index, pname, pointer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glGetVertexAttribPointervRobustANGLEFn(GLuint index,
                                                         GLenum pname,
                                                         GLsizei bufSize,
@@ -7362,19 +6730,16 @@ void TraceGLApi::glGetVertexAttribPointervRobustANGLEFn(GLuint index,
                                                   pointer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glHintFn(GLenum target, GLenum mode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glHint")
   gl_api_->glHintFn(target, mode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glInsertEventMarkerEXTFn(GLsizei length, const char* marker) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glInsertEventMarkerEXT")
   gl_api_->glInsertEventMarkerEXTFn(length, marker);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glInvalidateFramebufferFn(GLenum target,
                                            GLsizei numAttachments,
                                            const GLenum* attachments) {
@@ -7382,7 +6747,6 @@ void TraceGLApi::glInvalidateFramebufferFn(GLenum target,
   gl_api_->glInvalidateFramebufferFn(target, numAttachments, attachments);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glInvalidateSubFramebufferFn(GLenum target,
                                               GLsizei numAttachments,
                                               const GLenum* attachments,
@@ -7395,115 +6759,96 @@ void TraceGLApi::glInvalidateSubFramebufferFn(GLenum target,
                                         y, width, height);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsBufferFn(GLuint buffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsBuffer")
   return gl_api_->glIsBufferFn(buffer);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsEnabledFn(GLenum cap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsEnabled")
   return gl_api_->glIsEnabledFn(cap);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsFenceAPPLEFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsFenceAPPLE")
   return gl_api_->glIsFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsFenceNVFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsFenceNV")
   return gl_api_->glIsFenceNVFn(fence);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsFramebufferEXT")
   return gl_api_->glIsFramebufferEXTFn(framebuffer);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsPathNVFn(GLuint path) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsPathNV")
   return gl_api_->glIsPathNVFn(path);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsProgramFn(GLuint program) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsProgram")
   return gl_api_->glIsProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsQueryFn(GLuint query) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsQuery")
   return gl_api_->glIsQueryFn(query);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsRenderbufferEXTFn(GLuint renderbuffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsRenderbufferEXT")
   return gl_api_->glIsRenderbufferEXTFn(renderbuffer);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsSamplerFn(GLuint sampler) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsSampler")
   return gl_api_->glIsSamplerFn(sampler);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsShaderFn(GLuint shader) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsShader")
   return gl_api_->glIsShaderFn(shader);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsSyncFn(GLsync sync) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsSync")
   return gl_api_->glIsSyncFn(sync);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsTextureFn(GLuint texture) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsTexture")
   return gl_api_->glIsTextureFn(texture);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsTransformFeedbackFn(GLuint id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsTransformFeedback")
   return gl_api_->glIsTransformFeedbackFn(id);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glIsVertexArrayOESFn(GLuint array) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsVertexArrayOES")
   return gl_api_->glIsVertexArrayOESFn(array);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glLineWidthFn(GLfloat width) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glLineWidth")
   gl_api_->glLineWidthFn(width);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glLinkProgramFn(GLuint program) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glLinkProgram")
   gl_api_->glLinkProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void* TraceGLApi::glMapBufferFn(GLenum target, GLenum access) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMapBuffer")
   return gl_api_->glMapBufferFn(target, access);
 }
 
-DISABLE_CFI_ICALL
 void* TraceGLApi::glMapBufferRangeFn(GLenum target,
                                      GLintptr offset,
                                      GLsizeiptr length,
@@ -7512,25 +6857,21 @@ void* TraceGLApi::glMapBufferRangeFn(GLenum target,
   return gl_api_->glMapBufferRangeFn(target, offset, length, access);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMatrixLoadfEXT")
   gl_api_->glMatrixLoadfEXTFn(matrixMode, m);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMatrixLoadIdentityEXT")
   gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMemoryBarrierEXT")
   gl_api_->glMemoryBarrierEXTFn(barriers);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glObjectLabelFn(GLenum identifier,
                                  GLuint name,
                                  GLsizei length,
@@ -7539,7 +6880,6 @@ void TraceGLApi::glObjectLabelFn(GLenum identifier,
   gl_api_->glObjectLabelFn(identifier, name, length, label);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glObjectPtrLabelFn(void* ptr,
                                     GLsizei length,
                                     const char* label) {
@@ -7547,7 +6887,6 @@ void TraceGLApi::glObjectPtrLabelFn(void* ptr,
   gl_api_->glObjectPtrLabelFn(ptr, length, label);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPathCommandsNVFn(GLuint path,
                                     GLsizei numCommands,
                                     const GLubyte* commands,
@@ -7559,7 +6898,6 @@ void TraceGLApi::glPathCommandsNVFn(GLuint path,
                               coords);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPathParameterfNVFn(GLuint path,
                                       GLenum pname,
                                       GLfloat value) {
@@ -7567,67 +6905,56 @@ void TraceGLApi::glPathParameterfNVFn(GLuint path,
   gl_api_->glPathParameterfNVFn(path, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathParameteriNV")
   gl_api_->glPathParameteriNVFn(path, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathStencilFuncNV")
   gl_api_->glPathStencilFuncNVFn(func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPauseTransformFeedbackFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPauseTransformFeedback")
   gl_api_->glPauseTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPixelStoreiFn(GLenum pname, GLint param) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPixelStorei")
   gl_api_->glPixelStoreiFn(pname, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPointParameteriFn(GLenum pname, GLint param) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPointParameteri")
   gl_api_->glPointParameteriFn(pname, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPolygonModeFn(GLenum face, GLenum mode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPolygonMode")
   gl_api_->glPolygonModeFn(face, mode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPolygonOffset")
   gl_api_->glPolygonOffsetFn(factor, units);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPopDebugGroupFn() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPopDebugGroup")
   gl_api_->glPopDebugGroupFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPopGroupMarkerEXTFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPopGroupMarkerEXT")
   gl_api_->glPopGroupMarkerEXTFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPrimitiveRestartIndexFn(GLuint index) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPrimitiveRestartIndex")
   gl_api_->glPrimitiveRestartIndexFn(index);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glProgramBinaryFn(GLuint program,
                                    GLenum binaryFormat,
                                    const GLvoid* binary,
@@ -7636,7 +6963,6 @@ void TraceGLApi::glProgramBinaryFn(GLuint program,
   gl_api_->glProgramBinaryFn(program, binaryFormat, binary, length);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glProgramParameteriFn(GLuint program,
                                        GLenum pname,
                                        GLint value) {
@@ -7644,7 +6970,6 @@ void TraceGLApi::glProgramParameteriFn(GLuint program,
   gl_api_->glProgramParameteriFn(program, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
                                                    GLint location,
                                                    GLenum genMode,
@@ -7656,7 +6981,6 @@ void TraceGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
                                              components, coeffs);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPushDebugGroupFn(GLenum source,
                                     GLuint id,
                                     GLsizei length,
@@ -7665,25 +6989,21 @@ void TraceGLApi::glPushDebugGroupFn(GLenum source,
   gl_api_->glPushDebugGroupFn(source, id, length, message);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glPushGroupMarkerEXTFn(GLsizei length, const char* marker) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPushGroupMarkerEXT")
   gl_api_->glPushGroupMarkerEXTFn(length, marker);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glQueryCounterFn(GLuint id, GLenum target) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glQueryCounter")
   gl_api_->glQueryCounterFn(id, target);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glReadBufferFn(GLenum src) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glReadBuffer")
   gl_api_->glReadBufferFn(src);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glReadnPixelsRobustANGLEFn(GLint x,
                                             GLint y,
                                             GLsizei width,
@@ -7700,7 +7020,6 @@ void TraceGLApi::glReadnPixelsRobustANGLEFn(GLint x,
                                       bufSize, length, columns, rows, data);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glReadPixelsFn(GLint x,
                                 GLint y,
                                 GLsizei width,
@@ -7712,7 +7031,6 @@ void TraceGLApi::glReadPixelsFn(GLint x,
   gl_api_->glReadPixelsFn(x, y, width, height, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glReadPixelsRobustANGLEFn(GLint x,
                                            GLint y,
                                            GLsizei width,
@@ -7729,13 +7047,11 @@ void TraceGLApi::glReadPixelsRobustANGLEFn(GLint x,
                                      length, columns, rows, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glReleaseShaderCompilerFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glReleaseShaderCompiler")
   gl_api_->glReleaseShaderCompilerFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glRenderbufferStorageEXTFn(GLenum target,
                                             GLenum internalformat,
                                             GLsizei width,
@@ -7744,7 +7060,6 @@ void TraceGLApi::glRenderbufferStorageEXTFn(GLenum target,
   gl_api_->glRenderbufferStorageEXTFn(target, internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                                     GLsizei samples,
                                                     GLenum internalformat,
@@ -7756,7 +7071,6 @@ void TraceGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                               width, height);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                        GLsizei samples,
                                                        GLenum internalformat,
@@ -7768,25 +7082,21 @@ void TraceGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                  internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glRequestExtensionANGLEFn(const char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glRequestExtensionANGLE")
   gl_api_->glRequestExtensionANGLEFn(name);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glResumeTransformFeedbackFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glResumeTransformFeedback")
   gl_api_->glResumeTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSampleCoverageFn(GLclampf value, GLboolean invert) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glSampleCoverage")
   gl_api_->glSampleCoverageFn(value, invert);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSamplerParameterfFn(GLuint sampler,
                                        GLenum pname,
                                        GLfloat param) {
@@ -7794,7 +7104,6 @@ void TraceGLApi::glSamplerParameterfFn(GLuint sampler,
   gl_api_->glSamplerParameterfFn(sampler, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSamplerParameterfvFn(GLuint sampler,
                                         GLenum pname,
                                         const GLfloat* params) {
@@ -7802,7 +7111,6 @@ void TraceGLApi::glSamplerParameterfvFn(GLuint sampler,
   gl_api_->glSamplerParameterfvFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -7812,7 +7120,6 @@ void TraceGLApi::glSamplerParameterfvRobustANGLEFn(GLuint sampler,
   gl_api_->glSamplerParameterfvRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSamplerParameteriFn(GLuint sampler,
                                        GLenum pname,
                                        GLint param) {
@@ -7820,7 +7127,6 @@ void TraceGLApi::glSamplerParameteriFn(GLuint sampler,
   gl_api_->glSamplerParameteriFn(sampler, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -7830,7 +7136,6 @@ void TraceGLApi::glSamplerParameterIivRobustANGLEFn(GLuint sampler,
   gl_api_->glSamplerParameterIivRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                      GLenum pname,
                                                      GLsizei bufSize,
@@ -7840,7 +7145,6 @@ void TraceGLApi::glSamplerParameterIuivRobustANGLEFn(GLuint sampler,
   gl_api_->glSamplerParameterIuivRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSamplerParameterivFn(GLuint sampler,
                                         GLenum pname,
                                         const GLint* params) {
@@ -7848,7 +7152,6 @@ void TraceGLApi::glSamplerParameterivFn(GLuint sampler,
   gl_api_->glSamplerParameterivFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -7858,25 +7161,21 @@ void TraceGLApi::glSamplerParameterivRobustANGLEFn(GLuint sampler,
   gl_api_->glSamplerParameterivRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glScissorFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glScissor")
   gl_api_->glScissorFn(x, y, width, height);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSetFenceAPPLEFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glSetFenceAPPLE")
   gl_api_->glSetFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glSetFenceNVFn(GLuint fence, GLenum condition) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glSetFenceNV")
   gl_api_->glSetFenceNVFn(fence, condition);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glShaderBinaryFn(GLsizei n,
                                   const GLuint* shaders,
                                   GLenum binaryformat,
@@ -7886,7 +7185,6 @@ void TraceGLApi::glShaderBinaryFn(GLsizei n,
   gl_api_->glShaderBinaryFn(n, shaders, binaryformat, binary, length);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glShaderSourceFn(GLuint shader,
                                   GLsizei count,
                                   const char* const* str,
@@ -7895,7 +7193,6 @@ void TraceGLApi::glShaderSourceFn(GLuint shader,
   gl_api_->glShaderSourceFn(shader, count, str, length);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilFillPathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -7912,7 +7209,6 @@ void TraceGLApi::glStencilFillPathInstancedNVFn(
                                           transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilFillPathNVFn(GLuint path,
                                        GLenum fillMode,
                                        GLuint mask) {
@@ -7920,13 +7216,11 @@ void TraceGLApi::glStencilFillPathNVFn(GLuint path,
   gl_api_->glStencilFillPathNVFn(path, fillMode, mask);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilFunc")
   gl_api_->glStencilFuncFn(func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilFuncSeparateFn(GLenum face,
                                          GLenum func,
                                          GLint ref,
@@ -7935,25 +7229,21 @@ void TraceGLApi::glStencilFuncSeparateFn(GLenum face,
   gl_api_->glStencilFuncSeparateFn(face, func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilMaskFn(GLuint mask) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilMask")
   gl_api_->glStencilMaskFn(mask);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilMaskSeparateFn(GLenum face, GLuint mask) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilMaskSeparate")
   gl_api_->glStencilMaskSeparateFn(face, mask);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilOpFn(GLenum fail, GLenum zfail, GLenum zpass) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilOp")
   gl_api_->glStencilOpFn(fail, zfail, zpass);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilOpSeparateFn(GLenum face,
                                        GLenum fail,
                                        GLenum zfail,
@@ -7962,7 +7252,6 @@ void TraceGLApi::glStencilOpSeparateFn(GLenum face,
   gl_api_->glStencilOpSeparateFn(face, fail, zfail, zpass);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilStrokePathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -7979,7 +7268,6 @@ void TraceGLApi::glStencilStrokePathInstancedNVFn(
                                             transformValues);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilStrokePathNVFn(GLuint path,
                                          GLint reference,
                                          GLuint mask) {
@@ -7987,7 +7275,6 @@ void TraceGLApi::glStencilStrokePathNVFn(GLuint path,
   gl_api_->glStencilStrokePathNVFn(path, reference, mask);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilThenCoverFillPathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -8005,7 +7292,6 @@ void TraceGLApi::glStencilThenCoverFillPathInstancedNVFn(
       transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
                                                 GLenum fillMode,
                                                 GLuint mask,
@@ -8015,7 +7301,6 @@ void TraceGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
   gl_api_->glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilThenCoverStrokePathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -8033,7 +7318,6 @@ void TraceGLApi::glStencilThenCoverStrokePathInstancedNVFn(
       transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
                                                   GLint reference,
                                                   GLuint mask,
@@ -8043,19 +7327,16 @@ void TraceGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
   gl_api_->glStencilThenCoverStrokePathNVFn(path, reference, mask, coverMode);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glTestFenceAPPLEFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glTestFenceAPPLE")
   return gl_api_->glTestFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glTestFenceNVFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glTestFenceNV")
   return gl_api_->glTestFenceNVFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexBufferFn(GLenum target,
                                GLenum internalformat,
                                GLuint buffer) {
@@ -8063,7 +7344,6 @@ void TraceGLApi::glTexBufferFn(GLenum target,
   gl_api_->glTexBufferFn(target, internalformat, buffer);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexBufferRangeFn(GLenum target,
                                     GLenum internalformat,
                                     GLuint buffer,
@@ -8073,7 +7353,6 @@ void TraceGLApi::glTexBufferRangeFn(GLenum target,
   gl_api_->glTexBufferRangeFn(target, internalformat, buffer, offset, size);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexImage2DFn(GLenum target,
                                 GLint level,
                                 GLint internalformat,
@@ -8088,7 +7367,6 @@ void TraceGLApi::glTexImage2DFn(GLenum target,
                           format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexImage2DRobustANGLEFn(GLenum target,
                                            GLint level,
                                            GLint internalformat,
@@ -8105,7 +7383,6 @@ void TraceGLApi::glTexImage2DRobustANGLEFn(GLenum target,
                                      pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexImage3DFn(GLenum target,
                                 GLint level,
                                 GLint internalformat,
@@ -8121,7 +7398,6 @@ void TraceGLApi::glTexImage3DFn(GLenum target,
                           border, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexImage3DRobustANGLEFn(GLenum target,
                                            GLint level,
                                            GLint internalformat,
@@ -8139,13 +7415,11 @@ void TraceGLApi::glTexImage3DRobustANGLEFn(GLenum target,
                                      bufSize, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexParameterfFn(GLenum target, GLenum pname, GLfloat param) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glTexParameterf")
   gl_api_->glTexParameterfFn(target, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexParameterfvFn(GLenum target,
                                     GLenum pname,
                                     const GLfloat* params) {
@@ -8153,7 +7427,6 @@ void TraceGLApi::glTexParameterfvFn(GLenum target,
   gl_api_->glTexParameterfvFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexParameterfvRobustANGLEFn(GLenum target,
                                                GLenum pname,
                                                GLsizei bufSize,
@@ -8163,13 +7436,11 @@ void TraceGLApi::glTexParameterfvRobustANGLEFn(GLenum target,
   gl_api_->glTexParameterfvRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexParameteriFn(GLenum target, GLenum pname, GLint param) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glTexParameteri")
   gl_api_->glTexParameteriFn(target, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexParameterIivRobustANGLEFn(GLenum target,
                                                 GLenum pname,
                                                 GLsizei bufSize,
@@ -8179,7 +7450,6 @@ void TraceGLApi::glTexParameterIivRobustANGLEFn(GLenum target,
   gl_api_->glTexParameterIivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexParameterIuivRobustANGLEFn(GLenum target,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -8189,7 +7459,6 @@ void TraceGLApi::glTexParameterIuivRobustANGLEFn(GLenum target,
   gl_api_->glTexParameterIuivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexParameterivFn(GLenum target,
                                     GLenum pname,
                                     const GLint* params) {
@@ -8197,7 +7466,6 @@ void TraceGLApi::glTexParameterivFn(GLenum target,
   gl_api_->glTexParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexParameterivRobustANGLEFn(GLenum target,
                                                GLenum pname,
                                                GLsizei bufSize,
@@ -8207,7 +7475,6 @@ void TraceGLApi::glTexParameterivRobustANGLEFn(GLenum target,
   gl_api_->glTexParameterivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexStorage2DEXTFn(GLenum target,
                                      GLsizei levels,
                                      GLenum internalformat,
@@ -8217,7 +7484,6 @@ void TraceGLApi::glTexStorage2DEXTFn(GLenum target,
   gl_api_->glTexStorage2DEXTFn(target, levels, internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexStorage3DFn(GLenum target,
                                   GLsizei levels,
                                   GLenum internalformat,
@@ -8229,7 +7495,6 @@ void TraceGLApi::glTexStorage3DFn(GLenum target,
                             depth);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexSubImage2DFn(GLenum target,
                                    GLint level,
                                    GLint xoffset,
@@ -8244,7 +7509,6 @@ void TraceGLApi::glTexSubImage2DFn(GLenum target,
                              format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexSubImage2DRobustANGLEFn(GLenum target,
                                               GLint level,
                                               GLint xoffset,
@@ -8260,7 +7524,6 @@ void TraceGLApi::glTexSubImage2DRobustANGLEFn(GLenum target,
                                         height, format, type, bufSize, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexSubImage3DFn(GLenum target,
                                    GLint level,
                                    GLint xoffset,
@@ -8277,7 +7540,6 @@ void TraceGLApi::glTexSubImage3DFn(GLenum target,
                              height, depth, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTexSubImage3DRobustANGLEFn(GLenum target,
                                               GLint level,
                                               GLint xoffset,
@@ -8296,7 +7558,6 @@ void TraceGLApi::glTexSubImage3DRobustANGLEFn(GLenum target,
                                         type, bufSize, pixels);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glTransformFeedbackVaryingsFn(GLuint program,
                                                GLsizei count,
                                                const char* const* varyings,
@@ -8306,13 +7567,11 @@ void TraceGLApi::glTransformFeedbackVaryingsFn(GLuint program,
   gl_api_->glTransformFeedbackVaryingsFn(program, count, varyings, bufferMode);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform1fFn(GLint location, GLfloat x) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform1f")
   gl_api_->glUniform1fFn(location, x);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform1fvFn(GLint location,
                                 GLsizei count,
                                 const GLfloat* v) {
@@ -8320,25 +7579,21 @@ void TraceGLApi::glUniform1fvFn(GLint location,
   gl_api_->glUniform1fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform1iFn(GLint location, GLint x) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform1i")
   gl_api_->glUniform1iFn(location, x);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform1ivFn(GLint location, GLsizei count, const GLint* v) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform1iv")
   gl_api_->glUniform1ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform1uiFn(GLint location, GLuint v0) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform1ui")
   gl_api_->glUniform1uiFn(location, v0);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform1uivFn(GLint location,
                                  GLsizei count,
                                  const GLuint* v) {
@@ -8346,13 +7601,11 @@ void TraceGLApi::glUniform1uivFn(GLint location,
   gl_api_->glUniform1uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform2fFn(GLint location, GLfloat x, GLfloat y) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform2f")
   gl_api_->glUniform2fFn(location, x, y);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform2fvFn(GLint location,
                                 GLsizei count,
                                 const GLfloat* v) {
@@ -8360,25 +7613,21 @@ void TraceGLApi::glUniform2fvFn(GLint location,
   gl_api_->glUniform2fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform2iFn(GLint location, GLint x, GLint y) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform2i")
   gl_api_->glUniform2iFn(location, x, y);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform2ivFn(GLint location, GLsizei count, const GLint* v) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform2iv")
   gl_api_->glUniform2ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform2uiFn(GLint location, GLuint v0, GLuint v1) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform2ui")
   gl_api_->glUniform2uiFn(location, v0, v1);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform2uivFn(GLint location,
                                  GLsizei count,
                                  const GLuint* v) {
@@ -8386,7 +7635,6 @@ void TraceGLApi::glUniform2uivFn(GLint location,
   gl_api_->glUniform2uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform3fFn(GLint location,
                                GLfloat x,
                                GLfloat y,
@@ -8395,7 +7643,6 @@ void TraceGLApi::glUniform3fFn(GLint location,
   gl_api_->glUniform3fFn(location, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform3fvFn(GLint location,
                                 GLsizei count,
                                 const GLfloat* v) {
@@ -8403,19 +7650,16 @@ void TraceGLApi::glUniform3fvFn(GLint location,
   gl_api_->glUniform3fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform3iFn(GLint location, GLint x, GLint y, GLint z) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform3i")
   gl_api_->glUniform3iFn(location, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform3ivFn(GLint location, GLsizei count, const GLint* v) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform3iv")
   gl_api_->glUniform3ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform3uiFn(GLint location,
                                 GLuint v0,
                                 GLuint v1,
@@ -8424,7 +7668,6 @@ void TraceGLApi::glUniform3uiFn(GLint location,
   gl_api_->glUniform3uiFn(location, v0, v1, v2);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform3uivFn(GLint location,
                                  GLsizei count,
                                  const GLuint* v) {
@@ -8432,7 +7675,6 @@ void TraceGLApi::glUniform3uivFn(GLint location,
   gl_api_->glUniform3uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform4fFn(GLint location,
                                GLfloat x,
                                GLfloat y,
@@ -8442,7 +7684,6 @@ void TraceGLApi::glUniform4fFn(GLint location,
   gl_api_->glUniform4fFn(location, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform4fvFn(GLint location,
                                 GLsizei count,
                                 const GLfloat* v) {
@@ -8450,7 +7691,6 @@ void TraceGLApi::glUniform4fvFn(GLint location,
   gl_api_->glUniform4fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform4iFn(GLint location,
                                GLint x,
                                GLint y,
@@ -8460,13 +7700,11 @@ void TraceGLApi::glUniform4iFn(GLint location,
   gl_api_->glUniform4iFn(location, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform4ivFn(GLint location, GLsizei count, const GLint* v) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUniform4iv")
   gl_api_->glUniform4ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform4uiFn(GLint location,
                                 GLuint v0,
                                 GLuint v1,
@@ -8476,7 +7714,6 @@ void TraceGLApi::glUniform4uiFn(GLint location,
   gl_api_->glUniform4uiFn(location, v0, v1, v2, v3);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniform4uivFn(GLint location,
                                  GLsizei count,
                                  const GLuint* v) {
@@ -8484,7 +7721,6 @@ void TraceGLApi::glUniform4uivFn(GLint location,
   gl_api_->glUniform4uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformBlockBindingFn(GLuint program,
                                          GLuint uniformBlockIndex,
                                          GLuint uniformBlockBinding) {
@@ -8493,7 +7729,6 @@ void TraceGLApi::glUniformBlockBindingFn(GLuint program,
                                    uniformBlockBinding);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix2fvFn(GLint location,
                                       GLsizei count,
                                       GLboolean transpose,
@@ -8502,7 +7737,6 @@ void TraceGLApi::glUniformMatrix2fvFn(GLint location,
   gl_api_->glUniformMatrix2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix2x3fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -8511,7 +7745,6 @@ void TraceGLApi::glUniformMatrix2x3fvFn(GLint location,
   gl_api_->glUniformMatrix2x3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix2x4fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -8520,7 +7753,6 @@ void TraceGLApi::glUniformMatrix2x4fvFn(GLint location,
   gl_api_->glUniformMatrix2x4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix3fvFn(GLint location,
                                       GLsizei count,
                                       GLboolean transpose,
@@ -8529,7 +7761,6 @@ void TraceGLApi::glUniformMatrix3fvFn(GLint location,
   gl_api_->glUniformMatrix3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix3x2fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -8538,7 +7769,6 @@ void TraceGLApi::glUniformMatrix3x2fvFn(GLint location,
   gl_api_->glUniformMatrix3x2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix3x4fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -8547,7 +7777,6 @@ void TraceGLApi::glUniformMatrix3x4fvFn(GLint location,
   gl_api_->glUniformMatrix3x4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix4fvFn(GLint location,
                                       GLsizei count,
                                       GLboolean transpose,
@@ -8556,7 +7785,6 @@ void TraceGLApi::glUniformMatrix4fvFn(GLint location,
   gl_api_->glUniformMatrix4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix4x2fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -8565,7 +7793,6 @@ void TraceGLApi::glUniformMatrix4x2fvFn(GLint location,
   gl_api_->glUniformMatrix4x2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUniformMatrix4x3fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -8574,49 +7801,41 @@ void TraceGLApi::glUniformMatrix4x3fvFn(GLint location,
   gl_api_->glUniformMatrix4x3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 GLboolean TraceGLApi::glUnmapBufferFn(GLenum target) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUnmapBuffer")
   return gl_api_->glUnmapBufferFn(target);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glUseProgramFn(GLuint program) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glUseProgram")
   gl_api_->glUseProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glValidateProgramFn(GLuint program) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glValidateProgram")
   gl_api_->glValidateProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttrib1fFn(GLuint indx, GLfloat x) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttrib1f")
   gl_api_->glVertexAttrib1fFn(indx, x);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttrib1fvFn(GLuint indx, const GLfloat* values) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttrib1fv")
   gl_api_->glVertexAttrib1fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttrib2fFn(GLuint indx, GLfloat x, GLfloat y) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttrib2f")
   gl_api_->glVertexAttrib2fFn(indx, x, y);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttrib2fvFn(GLuint indx, const GLfloat* values) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttrib2fv")
   gl_api_->glVertexAttrib2fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttrib3fFn(GLuint indx,
                                     GLfloat x,
                                     GLfloat y,
@@ -8625,13 +7844,11 @@ void TraceGLApi::glVertexAttrib3fFn(GLuint indx,
   gl_api_->glVertexAttrib3fFn(indx, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttrib3fvFn(GLuint indx, const GLfloat* values) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttrib3fv")
   gl_api_->glVertexAttrib3fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttrib4fFn(GLuint indx,
                                     GLfloat x,
                                     GLfloat y,
@@ -8641,19 +7858,16 @@ void TraceGLApi::glVertexAttrib4fFn(GLuint indx,
   gl_api_->glVertexAttrib4fFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttrib4fvFn(GLuint indx, const GLfloat* values) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttrib4fv")
   gl_api_->glVertexAttrib4fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttribDivisorANGLEFn(GLuint index, GLuint divisor) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttribDivisorANGLE")
   gl_api_->glVertexAttribDivisorANGLEFn(index, divisor);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttribI4iFn(GLuint indx,
                                      GLint x,
                                      GLint y,
@@ -8663,13 +7877,11 @@ void TraceGLApi::glVertexAttribI4iFn(GLuint indx,
   gl_api_->glVertexAttribI4iFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttribI4ivFn(GLuint indx, const GLint* values) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttribI4iv")
   gl_api_->glVertexAttribI4ivFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttribI4uiFn(GLuint indx,
                                       GLuint x,
                                       GLuint y,
@@ -8679,13 +7891,11 @@ void TraceGLApi::glVertexAttribI4uiFn(GLuint indx,
   gl_api_->glVertexAttribI4uiFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttribI4uivFn(GLuint indx, const GLuint* values) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glVertexAttribI4uiv")
   gl_api_->glVertexAttribI4uivFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttribIPointerFn(GLuint indx,
                                           GLint size,
                                           GLenum type,
@@ -8695,7 +7905,6 @@ void TraceGLApi::glVertexAttribIPointerFn(GLuint indx,
   gl_api_->glVertexAttribIPointerFn(indx, size, type, stride, ptr);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glVertexAttribPointerFn(GLuint indx,
                                          GLint size,
                                          GLenum type,
@@ -8706,19 +7915,16 @@ void TraceGLApi::glVertexAttribPointerFn(GLuint indx,
   gl_api_->glVertexAttribPointerFn(indx, size, type, normalized, stride, ptr);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glViewport")
   gl_api_->glViewportFn(x, y, width, height);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glWaitSync")
   gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
-DISABLE_CFI_ICALL
 void TraceGLApi::glWindowRectanglesEXTFn(GLenum mode,
                                          GLsizei n,
                                          const GLint* box) {
@@ -8726,14 +7932,12 @@ void TraceGLApi::glWindowRectanglesEXTFn(GLenum mode,
   gl_api_->glWindowRectanglesEXTFn(mode, n, box);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glActiveTextureFn(GLenum texture) {
   GL_SERVICE_LOG("glActiveTexture"
                  << "(" << GLEnums::GetStringEnum(texture) << ")");
   gl_api_->glActiveTextureFn(texture);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
   GL_SERVICE_LOG("glApplyFramebufferAttachmentCMAAINTEL"
                  << "("
@@ -8741,28 +7945,24 @@ void DebugGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
   gl_api_->glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glAttachShaderFn(GLuint program, GLuint shader) {
   GL_SERVICE_LOG("glAttachShader"
                  << "(" << program << ", " << shader << ")");
   gl_api_->glAttachShaderFn(program, shader);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBeginQueryFn(GLenum target, GLuint id) {
   GL_SERVICE_LOG("glBeginQuery"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << id << ")");
   gl_api_->glBeginQueryFn(target, id);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBeginTransformFeedbackFn(GLenum primitiveMode) {
   GL_SERVICE_LOG("glBeginTransformFeedback"
                  << "(" << GLEnums::GetStringEnum(primitiveMode) << ")");
   gl_api_->glBeginTransformFeedbackFn(primitiveMode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindAttribLocationFn(GLuint program,
                                         GLuint index,
                                         const char* name) {
@@ -8771,7 +7971,6 @@ void DebugGLApi::glBindAttribLocationFn(GLuint program,
   gl_api_->glBindAttribLocationFn(program, index, name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindBufferFn(GLenum target, GLuint buffer) {
   GL_SERVICE_LOG("glBindBuffer"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << buffer
@@ -8779,7 +7978,6 @@ void DebugGLApi::glBindBufferFn(GLenum target, GLuint buffer) {
   gl_api_->glBindBufferFn(target, buffer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindBufferBaseFn(GLenum target,
                                     GLuint index,
                                     GLuint buffer) {
@@ -8789,7 +7987,6 @@ void DebugGLApi::glBindBufferBaseFn(GLenum target,
   gl_api_->glBindBufferBaseFn(target, index, buffer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindBufferRangeFn(GLenum target,
                                      GLuint index,
                                      GLuint buffer,
@@ -8801,7 +7998,6 @@ void DebugGLApi::glBindBufferRangeFn(GLenum target,
   gl_api_->glBindBufferRangeFn(target, index, buffer, offset, size);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindFragDataLocationFn(GLuint program,
                                           GLuint colorNumber,
                                           const char* name) {
@@ -8811,7 +8007,6 @@ void DebugGLApi::glBindFragDataLocationFn(GLuint program,
   gl_api_->glBindFragDataLocationFn(program, colorNumber, name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindFragDataLocationIndexedFn(GLuint program,
                                                  GLuint colorNumber,
                                                  GLuint index,
@@ -8822,7 +8017,6 @@ void DebugGLApi::glBindFragDataLocationIndexedFn(GLuint program,
   gl_api_->glBindFragDataLocationIndexedFn(program, colorNumber, index, name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
   GL_SERVICE_LOG("glBindFramebufferEXT"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << framebuffer
@@ -8830,7 +8024,6 @@ void DebugGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
   gl_api_->glBindFramebufferEXTFn(target, framebuffer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindImageTextureEXTFn(GLuint index,
                                          GLuint texture,
                                          GLint level,
@@ -8846,7 +8039,6 @@ void DebugGLApi::glBindImageTextureEXTFn(GLuint index,
                                    access, format);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindRenderbufferEXTFn(GLenum target, GLuint renderbuffer) {
   GL_SERVICE_LOG("glBindRenderbufferEXT"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
@@ -8854,14 +8046,12 @@ void DebugGLApi::glBindRenderbufferEXTFn(GLenum target, GLuint renderbuffer) {
   gl_api_->glBindRenderbufferEXTFn(target, renderbuffer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindSamplerFn(GLuint unit, GLuint sampler) {
   GL_SERVICE_LOG("glBindSampler"
                  << "(" << unit << ", " << sampler << ")");
   gl_api_->glBindSamplerFn(unit, sampler);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindTextureFn(GLenum target, GLuint texture) {
   GL_SERVICE_LOG("glBindTexture"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << texture
@@ -8869,14 +8059,12 @@ void DebugGLApi::glBindTextureFn(GLenum target, GLuint texture) {
   gl_api_->glBindTextureFn(target, texture);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindTransformFeedbackFn(GLenum target, GLuint id) {
   GL_SERVICE_LOG("glBindTransformFeedback"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << id << ")");
   gl_api_->glBindTransformFeedbackFn(target, id);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindUniformLocationCHROMIUMFn(GLuint program,
                                                  GLint location,
                                                  const char* name) {
@@ -8885,14 +8073,12 @@ void DebugGLApi::glBindUniformLocationCHROMIUMFn(GLuint program,
   gl_api_->glBindUniformLocationCHROMIUMFn(program, location, name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBindVertexArrayOESFn(GLuint array) {
   GL_SERVICE_LOG("glBindVertexArrayOES"
                  << "(" << array << ")");
   gl_api_->glBindVertexArrayOESFn(array);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBlendBarrierKHRFn(void) {
   GL_SERVICE_LOG("glBlendBarrierKHR"
                  << "("
@@ -8900,7 +8086,6 @@ void DebugGLApi::glBlendBarrierKHRFn(void) {
   gl_api_->glBlendBarrierKHRFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBlendColorFn(GLclampf red,
                                 GLclampf green,
                                 GLclampf blue,
@@ -8911,14 +8096,12 @@ void DebugGLApi::glBlendColorFn(GLclampf red,
   gl_api_->glBlendColorFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBlendEquationFn(GLenum mode) {
   GL_SERVICE_LOG("glBlendEquation"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
   gl_api_->glBlendEquationFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) {
   GL_SERVICE_LOG("glBlendEquationSeparate"
                  << "(" << GLEnums::GetStringEnum(modeRGB) << ", "
@@ -8926,7 +8109,6 @@ void DebugGLApi::glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) {
   gl_api_->glBlendEquationSeparateFn(modeRGB, modeAlpha);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
   GL_SERVICE_LOG("glBlendFunc"
                  << "(" << GLEnums::GetStringEnum(sfactor) << ", "
@@ -8934,7 +8116,6 @@ void DebugGLApi::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
   gl_api_->glBlendFuncFn(sfactor, dfactor);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
                                        GLenum dstRGB,
                                        GLenum srcAlpha,
@@ -8947,7 +8128,6 @@ void DebugGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
   gl_api_->glBlendFuncSeparateFn(srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBlitFramebufferFn(GLint srcX0,
                                      GLint srcY0,
                                      GLint srcX1,
@@ -8967,7 +8147,6 @@ void DebugGLApi::glBlitFramebufferFn(GLint srcX0,
                                dstY1, mask, filter);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBufferDataFn(GLenum target,
                                 GLsizeiptr size,
                                 const void* data,
@@ -8979,7 +8158,6 @@ void DebugGLApi::glBufferDataFn(GLenum target,
   gl_api_->glBufferDataFn(target, size, data, usage);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glBufferSubDataFn(GLenum target,
                                    GLintptr offset,
                                    GLsizeiptr size,
@@ -8991,7 +8169,6 @@ void DebugGLApi::glBufferSubDataFn(GLenum target,
   gl_api_->glBufferSubDataFn(target, offset, size, data);
 }
 
-DISABLE_CFI_ICALL
 GLenum DebugGLApi::glCheckFramebufferStatusEXTFn(GLenum target) {
   GL_SERVICE_LOG("glCheckFramebufferStatusEXT"
                  << "(" << GLEnums::GetStringEnum(target) << ")");
@@ -9002,14 +8179,12 @@ GLenum DebugGLApi::glCheckFramebufferStatusEXTFn(GLenum target) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearFn(GLbitfield mask) {
   GL_SERVICE_LOG("glClear"
                  << "(" << mask << ")");
   gl_api_->glClearFn(mask);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearBufferfiFn(GLenum buffer,
                                    GLint drawbuffer,
                                    const GLfloat depth,
@@ -9020,7 +8195,6 @@ void DebugGLApi::glClearBufferfiFn(GLenum buffer,
   gl_api_->glClearBufferfiFn(buffer, drawbuffer, depth, stencil);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearBufferfvFn(GLenum buffer,
                                    GLint drawbuffer,
                                    const GLfloat* value) {
@@ -9030,7 +8204,6 @@ void DebugGLApi::glClearBufferfvFn(GLenum buffer,
   gl_api_->glClearBufferfvFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearBufferivFn(GLenum buffer,
                                    GLint drawbuffer,
                                    const GLint* value) {
@@ -9040,7 +8213,6 @@ void DebugGLApi::glClearBufferivFn(GLenum buffer,
   gl_api_->glClearBufferivFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearBufferuivFn(GLenum buffer,
                                     GLint drawbuffer,
                                     const GLuint* value) {
@@ -9050,7 +8222,6 @@ void DebugGLApi::glClearBufferuivFn(GLenum buffer,
   gl_api_->glClearBufferuivFn(buffer, drawbuffer, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearColorFn(GLclampf red,
                                 GLclampf green,
                                 GLclampf blue,
@@ -9061,28 +8232,24 @@ void DebugGLApi::glClearColorFn(GLclampf red,
   gl_api_->glClearColorFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearDepthFn(GLclampd depth) {
   GL_SERVICE_LOG("glClearDepth"
                  << "(" << depth << ")");
   gl_api_->glClearDepthFn(depth);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearDepthfFn(GLclampf depth) {
   GL_SERVICE_LOG("glClearDepthf"
                  << "(" << depth << ")");
   gl_api_->glClearDepthfFn(depth);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glClearStencilFn(GLint s) {
   GL_SERVICE_LOG("glClearStencil"
                  << "(" << s << ")");
   gl_api_->glClearStencilFn(s);
 }
 
-DISABLE_CFI_ICALL
 GLenum DebugGLApi::glClientWaitSyncFn(GLsync sync,
                                       GLbitfield flags,
                                       GLuint64 timeout) {
@@ -9093,7 +8260,6 @@ GLenum DebugGLApi::glClientWaitSyncFn(GLsync sync,
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glColorMaskFn(GLboolean red,
                                GLboolean green,
                                GLboolean blue,
@@ -9106,14 +8272,12 @@ void DebugGLApi::glColorMaskFn(GLboolean red,
   gl_api_->glColorMaskFn(red, green, blue, alpha);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompileShaderFn(GLuint shader) {
   GL_SERVICE_LOG("glCompileShader"
                  << "(" << shader << ")");
   gl_api_->glCompileShaderFn(shader);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
                                                    GLuint destId) {
   GL_SERVICE_LOG("glCompressedCopyTextureCHROMIUM"
@@ -9121,7 +8285,6 @@ void DebugGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
   gl_api_->glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedTexImage2DFn(GLenum target,
                                           GLint level,
                                           GLenum internalformat,
@@ -9139,7 +8302,6 @@ void DebugGLApi::glCompressedTexImage2DFn(GLenum target,
                                     height, border, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedTexImage2DRobustANGLEFn(GLenum target,
                                                      GLint level,
                                                      GLenum internalformat,
@@ -9160,7 +8322,6 @@ void DebugGLApi::glCompressedTexImage2DRobustANGLEFn(GLenum target,
                                                dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedTexImage3DFn(GLenum target,
                                           GLint level,
                                           GLenum internalformat,
@@ -9180,7 +8341,6 @@ void DebugGLApi::glCompressedTexImage3DFn(GLenum target,
                                     height, depth, border, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedTexImage3DRobustANGLEFn(GLenum target,
                                                      GLint level,
                                                      GLenum internalformat,
@@ -9202,7 +8362,6 @@ void DebugGLApi::glCompressedTexImage3DRobustANGLEFn(GLenum target,
                                                imageSize, dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedTexSubImage2DFn(GLenum target,
                                              GLint level,
                                              GLint xoffset,
@@ -9221,7 +8380,6 @@ void DebugGLApi::glCompressedTexSubImage2DFn(GLenum target,
                                        height, format, imageSize, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedTexSubImage2DRobustANGLEFn(GLenum target,
                                                         GLint level,
                                                         GLint xoffset,
@@ -9243,7 +8401,6 @@ void DebugGLApi::glCompressedTexSubImage2DRobustANGLEFn(GLenum target,
       dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedTexSubImage3DFn(GLenum target,
                                              GLint level,
                                              GLint xoffset,
@@ -9266,7 +8423,6 @@ void DebugGLApi::glCompressedTexSubImage3DFn(GLenum target,
                                        data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCompressedTexSubImage3DRobustANGLEFn(GLenum target,
                                                         GLint level,
                                                         GLint xoffset,
@@ -9290,7 +8446,6 @@ void DebugGLApi::glCompressedTexSubImage3DRobustANGLEFn(GLenum target,
       imageSize, dataSize, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCopyBufferSubDataFn(GLenum readTarget,
                                        GLenum writeTarget,
                                        GLintptr readOffset,
@@ -9304,7 +8459,6 @@ void DebugGLApi::glCopyBufferSubDataFn(GLenum readTarget,
                                  writeOffset, size);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
                                             GLint sourceLevel,
                                             GLenum destTarget,
@@ -9333,7 +8487,6 @@ void DebugGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
       unpackUnmultiplyAlpha);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCopyTexImage2DFn(GLenum target,
                                     GLint level,
                                     GLenum internalformat,
@@ -9351,7 +8504,6 @@ void DebugGLApi::glCopyTexImage2DFn(GLenum target,
                               height, border);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCopyTexSubImage2DFn(GLenum target,
                                        GLint level,
                                        GLint xoffset,
@@ -9368,7 +8520,6 @@ void DebugGLApi::glCopyTexSubImage2DFn(GLenum target,
                                  height);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCopyTexSubImage3DFn(GLenum target,
                                        GLint level,
                                        GLint xoffset,
@@ -9387,7 +8538,6 @@ void DebugGLApi::glCopyTexSubImage3DFn(GLenum target,
                                  width, height);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
                                          GLint sourceLevel,
                                          GLenum destTarget,
@@ -9411,14 +8561,12 @@ void DebugGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
       destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCoverageModulationNVFn(GLenum components) {
   GL_SERVICE_LOG("glCoverageModulationNV"
                  << "(" << GLEnums::GetStringEnum(components) << ")");
   gl_api_->glCoverageModulationNVFn(components);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                               GLenum pathNameType,
                                               const void* paths,
@@ -9438,7 +8586,6 @@ void DebugGLApi::glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                         transformValues);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
   GL_SERVICE_LOG("glCoverFillPathNV"
                  << "(" << path << ", " << GLEnums::GetStringEnum(coverMode)
@@ -9446,7 +8593,6 @@ void DebugGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
   gl_api_->glCoverFillPathNVFn(path, coverMode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCoverStrokePathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -9467,7 +8613,6 @@ void DebugGLApi::glCoverStrokePathInstancedNVFn(
                                           transformValues);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
   GL_SERVICE_LOG("glCoverStrokePathNV"
                  << "(" << name << ", " << GLEnums::GetStringEnum(coverMode)
@@ -9475,7 +8620,6 @@ void DebugGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
   gl_api_->glCoverStrokePathNVFn(name, coverMode);
 }
 
-DISABLE_CFI_ICALL
 GLuint DebugGLApi::glCreateProgramFn(void) {
   GL_SERVICE_LOG("glCreateProgram"
                  << "("
@@ -9485,7 +8629,6 @@ GLuint DebugGLApi::glCreateProgramFn(void) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLuint DebugGLApi::glCreateShaderFn(GLenum type) {
   GL_SERVICE_LOG("glCreateShader"
                  << "(" << GLEnums::GetStringEnum(type) << ")");
@@ -9494,14 +8637,12 @@ GLuint DebugGLApi::glCreateShaderFn(GLenum type) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glCullFaceFn(GLenum mode) {
   GL_SERVICE_LOG("glCullFace"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
   gl_api_->glCullFaceFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDebugMessageCallbackFn(GLDEBUGPROC callback,
                                           const void* userParam) {
   GL_SERVICE_LOG("glDebugMessageCallback"
@@ -9510,7 +8651,6 @@ void DebugGLApi::glDebugMessageCallbackFn(GLDEBUGPROC callback,
   gl_api_->glDebugMessageCallbackFn(callback, userParam);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDebugMessageControlFn(GLenum source,
                                          GLenum type,
                                          GLenum severity,
@@ -9526,7 +8666,6 @@ void DebugGLApi::glDebugMessageControlFn(GLenum source,
   gl_api_->glDebugMessageControlFn(source, type, severity, count, ids, enabled);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDebugMessageInsertFn(GLenum source,
                                         GLenum type,
                                         GLuint id,
@@ -9541,7 +8680,6 @@ void DebugGLApi::glDebugMessageInsertFn(GLenum source,
   gl_api_->glDebugMessageInsertFn(source, type, id, severity, length, buf);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   GL_SERVICE_LOG("glDeleteBuffersARB"
                  << "(" << n << ", " << static_cast<const void*>(buffers)
@@ -9549,7 +8687,6 @@ void DebugGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   gl_api_->glDeleteBuffersARBFn(n, buffers);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
   GL_SERVICE_LOG("glDeleteFencesAPPLE"
                  << "(" << n << ", " << static_cast<const void*>(fences)
@@ -9557,7 +8694,6 @@ void DebugGLApi::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
   gl_api_->glDeleteFencesAPPLEFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
   GL_SERVICE_LOG("glDeleteFencesNV"
                  << "(" << n << ", " << static_cast<const void*>(fences)
@@ -9565,7 +8701,6 @@ void DebugGLApi::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
   gl_api_->glDeleteFencesNVFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
                                            const GLuint* framebuffers) {
   GL_SERVICE_LOG("glDeleteFramebuffersEXT"
@@ -9574,28 +8709,24 @@ void DebugGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
   gl_api_->glDeleteFramebuffersEXTFn(n, framebuffers);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
   GL_SERVICE_LOG("glDeletePathsNV"
                  << "(" << path << ", " << range << ")");
   gl_api_->glDeletePathsNVFn(path, range);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteProgramFn(GLuint program) {
   GL_SERVICE_LOG("glDeleteProgram"
                  << "(" << program << ")");
   gl_api_->glDeleteProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteQueriesFn(GLsizei n, const GLuint* ids) {
   GL_SERVICE_LOG("glDeleteQueries"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
   gl_api_->glDeleteQueriesFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteRenderbuffersEXTFn(GLsizei n,
                                             const GLuint* renderbuffers) {
   GL_SERVICE_LOG("glDeleteRenderbuffersEXT"
@@ -9604,7 +8735,6 @@ void DebugGLApi::glDeleteRenderbuffersEXTFn(GLsizei n,
   gl_api_->glDeleteRenderbuffersEXTFn(n, renderbuffers);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteSamplersFn(GLsizei n, const GLuint* samplers) {
   GL_SERVICE_LOG("glDeleteSamplers"
                  << "(" << n << ", " << static_cast<const void*>(samplers)
@@ -9612,21 +8742,18 @@ void DebugGLApi::glDeleteSamplersFn(GLsizei n, const GLuint* samplers) {
   gl_api_->glDeleteSamplersFn(n, samplers);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteShaderFn(GLuint shader) {
   GL_SERVICE_LOG("glDeleteShader"
                  << "(" << shader << ")");
   gl_api_->glDeleteShaderFn(shader);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteSyncFn(GLsync sync) {
   GL_SERVICE_LOG("glDeleteSync"
                  << "(" << sync << ")");
   gl_api_->glDeleteSyncFn(sync);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
   GL_SERVICE_LOG("glDeleteTextures"
                  << "(" << n << ", " << static_cast<const void*>(textures)
@@ -9634,14 +8761,12 @@ void DebugGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
   gl_api_->glDeleteTexturesFn(n, textures);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteTransformFeedbacksFn(GLsizei n, const GLuint* ids) {
   GL_SERVICE_LOG("glDeleteTransformFeedbacks"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
   gl_api_->glDeleteTransformFeedbacksFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDeleteVertexArraysOESFn(GLsizei n, const GLuint* arrays) {
   GL_SERVICE_LOG("glDeleteVertexArraysOES"
                  << "(" << n << ", " << static_cast<const void*>(arrays)
@@ -9649,56 +8774,48 @@ void DebugGLApi::glDeleteVertexArraysOESFn(GLsizei n, const GLuint* arrays) {
   gl_api_->glDeleteVertexArraysOESFn(n, arrays);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDepthFuncFn(GLenum func) {
   GL_SERVICE_LOG("glDepthFunc"
                  << "(" << GLEnums::GetStringEnum(func) << ")");
   gl_api_->glDepthFuncFn(func);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDepthMaskFn(GLboolean flag) {
   GL_SERVICE_LOG("glDepthMask"
                  << "(" << GLEnums::GetStringBool(flag) << ")");
   gl_api_->glDepthMaskFn(flag);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDepthRangeFn(GLclampd zNear, GLclampd zFar) {
   GL_SERVICE_LOG("glDepthRange"
                  << "(" << zNear << ", " << zFar << ")");
   gl_api_->glDepthRangeFn(zNear, zFar);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDepthRangefFn(GLclampf zNear, GLclampf zFar) {
   GL_SERVICE_LOG("glDepthRangef"
                  << "(" << zNear << ", " << zFar << ")");
   gl_api_->glDepthRangefFn(zNear, zFar);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDetachShaderFn(GLuint program, GLuint shader) {
   GL_SERVICE_LOG("glDetachShader"
                  << "(" << program << ", " << shader << ")");
   gl_api_->glDetachShaderFn(program, shader);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDisableFn(GLenum cap) {
   GL_SERVICE_LOG("glDisable"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
   gl_api_->glDisableFn(cap);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDisableVertexAttribArrayFn(GLuint index) {
   GL_SERVICE_LOG("glDisableVertexAttribArray"
                  << "(" << index << ")");
   gl_api_->glDisableVertexAttribArrayFn(index);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDiscardFramebufferEXTFn(GLenum target,
                                            GLsizei numAttachments,
                                            const GLenum* attachments) {
@@ -9709,7 +8826,6 @@ void DebugGLApi::glDiscardFramebufferEXTFn(GLenum target,
   gl_api_->glDiscardFramebufferEXTFn(target, numAttachments, attachments);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDrawArraysFn(GLenum mode, GLint first, GLsizei count) {
   GL_SERVICE_LOG("glDrawArrays"
                  << "(" << GLEnums::GetStringEnum(mode) << ", " << first << ", "
@@ -9717,7 +8833,6 @@ void DebugGLApi::glDrawArraysFn(GLenum mode, GLint first, GLsizei count) {
   gl_api_->glDrawArraysFn(mode, first, count);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDrawArraysInstancedANGLEFn(GLenum mode,
                                               GLint first,
                                               GLsizei count,
@@ -9728,21 +8843,18 @@ void DebugGLApi::glDrawArraysInstancedANGLEFn(GLenum mode,
   gl_api_->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDrawBufferFn(GLenum mode) {
   GL_SERVICE_LOG("glDrawBuffer"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
   gl_api_->glDrawBufferFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDrawBuffersARBFn(GLsizei n, const GLenum* bufs) {
   GL_SERVICE_LOG("glDrawBuffersARB"
                  << "(" << n << ", " << static_cast<const void*>(bufs) << ")");
   gl_api_->glDrawBuffersARBFn(n, bufs);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDrawElementsFn(GLenum mode,
                                   GLsizei count,
                                   GLenum type,
@@ -9754,7 +8866,6 @@ void DebugGLApi::glDrawElementsFn(GLenum mode,
   gl_api_->glDrawElementsFn(mode, count, type, indices);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
                                                 GLsizei count,
                                                 GLenum type,
@@ -9769,7 +8880,6 @@ void DebugGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
                                           primcount);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glDrawRangeElementsFn(GLenum mode,
                                        GLuint start,
                                        GLuint end,
@@ -9783,7 +8893,6 @@ void DebugGLApi::glDrawRangeElementsFn(GLenum mode,
   gl_api_->glDrawRangeElementsFn(mode, start, end, count, type, indices);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glEGLImageTargetRenderbufferStorageOESFn(GLenum target,
                                                           GLeglImageOES image) {
   GL_SERVICE_LOG("glEGLImageTargetRenderbufferStorageOES"
@@ -9792,7 +8901,6 @@ void DebugGLApi::glEGLImageTargetRenderbufferStorageOESFn(GLenum target,
   gl_api_->glEGLImageTargetRenderbufferStorageOESFn(target, image);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glEGLImageTargetTexture2DOESFn(GLenum target,
                                                 GLeglImageOES image) {
   GL_SERVICE_LOG("glEGLImageTargetTexture2DOES"
@@ -9801,28 +8909,24 @@ void DebugGLApi::glEGLImageTargetTexture2DOESFn(GLenum target,
   gl_api_->glEGLImageTargetTexture2DOESFn(target, image);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glEnableFn(GLenum cap) {
   GL_SERVICE_LOG("glEnable"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
   gl_api_->glEnableFn(cap);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glEnableVertexAttribArrayFn(GLuint index) {
   GL_SERVICE_LOG("glEnableVertexAttribArray"
                  << "(" << index << ")");
   gl_api_->glEnableVertexAttribArrayFn(index);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glEndQueryFn(GLenum target) {
   GL_SERVICE_LOG("glEndQuery"
                  << "(" << GLEnums::GetStringEnum(target) << ")");
   gl_api_->glEndQueryFn(target);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glEndTransformFeedbackFn(void) {
   GL_SERVICE_LOG("glEndTransformFeedback"
                  << "("
@@ -9830,7 +8934,6 @@ void DebugGLApi::glEndTransformFeedbackFn(void) {
   gl_api_->glEndTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 GLsync DebugGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   GL_SERVICE_LOG("glFenceSync"
                  << "(" << GLEnums::GetStringEnum(condition) << ", " << flags
@@ -9840,7 +8943,6 @@ GLsync DebugGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFinishFn(void) {
   GL_SERVICE_LOG("glFinish"
                  << "("
@@ -9848,21 +8950,18 @@ void DebugGLApi::glFinishFn(void) {
   gl_api_->glFinishFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFinishFenceAPPLEFn(GLuint fence) {
   GL_SERVICE_LOG("glFinishFenceAPPLE"
                  << "(" << fence << ")");
   gl_api_->glFinishFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFinishFenceNVFn(GLuint fence) {
   GL_SERVICE_LOG("glFinishFenceNV"
                  << "(" << fence << ")");
   gl_api_->glFinishFenceNVFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFlushFn(void) {
   GL_SERVICE_LOG("glFlush"
                  << "("
@@ -9870,7 +8969,6 @@ void DebugGLApi::glFlushFn(void) {
   gl_api_->glFlushFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFlushMappedBufferRangeFn(GLenum target,
                                             GLintptr offset,
                                             GLsizeiptr length) {
@@ -9880,7 +8978,6 @@ void DebugGLApi::glFlushMappedBufferRangeFn(GLenum target,
   gl_api_->glFlushMappedBufferRangeFn(target, offset, length);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFramebufferRenderbufferEXTFn(GLenum target,
                                                 GLenum attachment,
                                                 GLenum renderbuffertarget,
@@ -9894,7 +8991,6 @@ void DebugGLApi::glFramebufferRenderbufferEXTFn(GLenum target,
                                           renderbuffertarget, renderbuffer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFramebufferTexture2DEXTFn(GLenum target,
                                              GLenum attachment,
                                              GLenum textarget,
@@ -9909,7 +9005,6 @@ void DebugGLApi::glFramebufferTexture2DEXTFn(GLenum target,
                                        level);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                                                         GLenum attachment,
                                                         GLenum textarget,
@@ -9925,7 +9020,6 @@ void DebugGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                                                   texture, level, samples);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFramebufferTextureLayerFn(GLenum target,
                                              GLenum attachment,
                                              GLuint texture,
@@ -9939,14 +9033,12 @@ void DebugGLApi::glFramebufferTextureLayerFn(GLenum target,
                                        layer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glFrontFaceFn(GLenum mode) {
   GL_SERVICE_LOG("glFrontFace"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
   gl_api_->glFrontFaceFn(mode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenBuffersARBFn(GLsizei n, GLuint* buffers) {
   GL_SERVICE_LOG("glGenBuffersARB"
                  << "(" << n << ", " << static_cast<const void*>(buffers)
@@ -9954,14 +9046,12 @@ void DebugGLApi::glGenBuffersARBFn(GLsizei n, GLuint* buffers) {
   gl_api_->glGenBuffersARBFn(n, buffers);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenerateMipmapEXTFn(GLenum target) {
   GL_SERVICE_LOG("glGenerateMipmapEXT"
                  << "(" << GLEnums::GetStringEnum(target) << ")");
   gl_api_->glGenerateMipmapEXTFn(target);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
   GL_SERVICE_LOG("glGenFencesAPPLE"
                  << "(" << n << ", " << static_cast<const void*>(fences)
@@ -9969,7 +9059,6 @@ void DebugGLApi::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
   gl_api_->glGenFencesAPPLEFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
   GL_SERVICE_LOG("glGenFencesNV"
                  << "(" << n << ", " << static_cast<const void*>(fences)
@@ -9977,7 +9066,6 @@ void DebugGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
   gl_api_->glGenFencesNVFn(n, fences);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   GL_SERVICE_LOG("glGenFramebuffersEXT"
                  << "(" << n << ", " << static_cast<const void*>(framebuffers)
@@ -9985,7 +9073,6 @@ void DebugGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   gl_api_->glGenFramebuffersEXTFn(n, framebuffers);
 }
 
-DISABLE_CFI_ICALL
 GLuint DebugGLApi::glGenPathsNVFn(GLsizei range) {
   GL_SERVICE_LOG("glGenPathsNV"
                  << "(" << range << ")");
@@ -9994,14 +9081,12 @@ GLuint DebugGLApi::glGenPathsNVFn(GLsizei range) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenQueriesFn(GLsizei n, GLuint* ids) {
   GL_SERVICE_LOG("glGenQueries"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
   gl_api_->glGenQueriesFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) {
   GL_SERVICE_LOG("glGenRenderbuffersEXT"
                  << "(" << n << ", " << static_cast<const void*>(renderbuffers)
@@ -10009,7 +9094,6 @@ void DebugGLApi::glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) {
   gl_api_->glGenRenderbuffersEXTFn(n, renderbuffers);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenSamplersFn(GLsizei n, GLuint* samplers) {
   GL_SERVICE_LOG("glGenSamplers"
                  << "(" << n << ", " << static_cast<const void*>(samplers)
@@ -10017,7 +9101,6 @@ void DebugGLApi::glGenSamplersFn(GLsizei n, GLuint* samplers) {
   gl_api_->glGenSamplersFn(n, samplers);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenTexturesFn(GLsizei n, GLuint* textures) {
   GL_SERVICE_LOG("glGenTextures"
                  << "(" << n << ", " << static_cast<const void*>(textures)
@@ -10025,14 +9108,12 @@ void DebugGLApi::glGenTexturesFn(GLsizei n, GLuint* textures) {
   gl_api_->glGenTexturesFn(n, textures);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenTransformFeedbacksFn(GLsizei n, GLuint* ids) {
   GL_SERVICE_LOG("glGenTransformFeedbacks"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
   gl_api_->glGenTransformFeedbacksFn(n, ids);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGenVertexArraysOESFn(GLsizei n, GLuint* arrays) {
   GL_SERVICE_LOG("glGenVertexArraysOES"
                  << "(" << n << ", " << static_cast<const void*>(arrays)
@@ -10040,7 +9121,6 @@ void DebugGLApi::glGenVertexArraysOESFn(GLsizei n, GLuint* arrays) {
   gl_api_->glGenVertexArraysOESFn(n, arrays);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetActiveAttribFn(GLuint program,
                                      GLuint index,
                                      GLsizei bufsize,
@@ -10058,7 +9138,6 @@ void DebugGLApi::glGetActiveAttribFn(GLuint program,
                                name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetActiveUniformFn(GLuint program,
                                       GLuint index,
                                       GLsizei bufsize,
@@ -10076,7 +9155,6 @@ void DebugGLApi::glGetActiveUniformFn(GLuint program,
                                 name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetActiveUniformBlockivFn(GLuint program,
                                              GLuint uniformBlockIndex,
                                              GLenum pname,
@@ -10089,7 +9167,6 @@ void DebugGLApi::glGetActiveUniformBlockivFn(GLuint program,
                                        params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetActiveUniformBlockivRobustANGLEFn(
     GLuint program,
     GLuint uniformBlockIndex,
@@ -10106,7 +9183,6 @@ void DebugGLApi::glGetActiveUniformBlockivRobustANGLEFn(
       program, uniformBlockIndex, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetActiveUniformBlockNameFn(GLuint program,
                                                GLuint uniformBlockIndex,
                                                GLsizei bufSize,
@@ -10120,7 +9196,6 @@ void DebugGLApi::glGetActiveUniformBlockNameFn(GLuint program,
                                          length, uniformBlockName);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetActiveUniformsivFn(GLuint program,
                                          GLsizei uniformCount,
                                          const GLuint* uniformIndices,
@@ -10135,7 +9210,6 @@ void DebugGLApi::glGetActiveUniformsivFn(GLuint program,
                                    params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetAttachedShadersFn(GLuint program,
                                         GLsizei maxcount,
                                         GLsizei* count,
@@ -10147,7 +9221,6 @@ void DebugGLApi::glGetAttachedShadersFn(GLuint program,
   gl_api_->glGetAttachedShadersFn(program, maxcount, count, shaders);
 }
 
-DISABLE_CFI_ICALL
 GLint DebugGLApi::glGetAttribLocationFn(GLuint program, const char* name) {
   GL_SERVICE_LOG("glGetAttribLocation"
                  << "(" << program << ", " << name << ")");
@@ -10156,7 +9229,6 @@ GLint DebugGLApi::glGetAttribLocationFn(GLuint program, const char* name) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetBooleani_vRobustANGLEFn(GLenum target,
                                               GLuint index,
                                               GLsizei bufSize,
@@ -10169,7 +9241,6 @@ void DebugGLApi::glGetBooleani_vRobustANGLEFn(GLenum target,
   gl_api_->glGetBooleani_vRobustANGLEFn(target, index, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetBooleanvFn(GLenum pname, GLboolean* params) {
   GL_SERVICE_LOG("glGetBooleanv"
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
@@ -10177,7 +9248,6 @@ void DebugGLApi::glGetBooleanvFn(GLenum pname, GLboolean* params) {
   gl_api_->glGetBooleanvFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetBooleanvRobustANGLEFn(GLenum pname,
                                             GLsizei bufSize,
                                             GLsizei* length,
@@ -10189,7 +9259,6 @@ void DebugGLApi::glGetBooleanvRobustANGLEFn(GLenum pname,
   gl_api_->glGetBooleanvRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetBufferParameteri64vRobustANGLEFn(GLenum target,
                                                        GLenum pname,
                                                        GLsizei bufSize,
@@ -10204,7 +9273,6 @@ void DebugGLApi::glGetBufferParameteri64vRobustANGLEFn(GLenum target,
                                                  params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetBufferParameterivFn(GLenum target,
                                           GLenum pname,
                                           GLint* params) {
@@ -10215,7 +9283,6 @@ void DebugGLApi::glGetBufferParameterivFn(GLenum target,
   gl_api_->glGetBufferParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetBufferParameterivRobustANGLEFn(GLenum target,
                                                      GLenum pname,
                                                      GLsizei bufSize,
@@ -10230,7 +9297,6 @@ void DebugGLApi::glGetBufferParameterivRobustANGLEFn(GLenum target,
                                                params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -10244,7 +9310,6 @@ void DebugGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetDebugMessageLogFn(GLuint count,
                                         GLsizei bufSize,
                                         GLenum* sources,
@@ -10265,7 +9330,6 @@ void DebugGLApi::glGetDebugMessageLogFn(GLuint count,
                                   severities, lengths, messageLog);
 }
 
-DISABLE_CFI_ICALL
 GLenum DebugGLApi::glGetErrorFn(void) {
   GL_SERVICE_LOG("glGetError"
                  << "("
@@ -10277,7 +9341,6 @@ GLenum DebugGLApi::glGetErrorFn(void) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) {
   GL_SERVICE_LOG("glGetFenceivNV"
                  << "(" << fence << ", " << GLEnums::GetStringEnum(pname)
@@ -10285,7 +9348,6 @@ void DebugGLApi::glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) {
   gl_api_->glGetFenceivNVFn(fence, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetFloatvFn(GLenum pname, GLfloat* params) {
   GL_SERVICE_LOG("glGetFloatv"
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
@@ -10293,7 +9355,6 @@ void DebugGLApi::glGetFloatvFn(GLenum pname, GLfloat* params) {
   gl_api_->glGetFloatvFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetFloatvRobustANGLEFn(GLenum pname,
                                           GLsizei bufSize,
                                           GLsizei* length,
@@ -10305,7 +9366,6 @@ void DebugGLApi::glGetFloatvRobustANGLEFn(GLenum pname,
   gl_api_->glGetFloatvRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 GLint DebugGLApi::glGetFragDataIndexFn(GLuint program, const char* name) {
   GL_SERVICE_LOG("glGetFragDataIndex"
                  << "(" << program << ", " << name << ")");
@@ -10314,7 +9374,6 @@ GLint DebugGLApi::glGetFragDataIndexFn(GLuint program, const char* name) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLint DebugGLApi::glGetFragDataLocationFn(GLuint program, const char* name) {
   GL_SERVICE_LOG("glGetFragDataLocation"
                  << "(" << program << ", " << name << ")");
@@ -10323,7 +9382,6 @@ GLint DebugGLApi::glGetFragDataLocationFn(GLuint program, const char* name) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetFramebufferAttachmentParameterivEXTFn(GLenum target,
                                                             GLenum attachment,
                                                             GLenum pname,
@@ -10337,7 +9395,6 @@ void DebugGLApi::glGetFramebufferAttachmentParameterivEXTFn(GLenum target,
                                                       params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetFramebufferAttachmentParameterivRobustANGLEFn(
     GLenum target,
     GLenum attachment,
@@ -10355,7 +9412,6 @@ void DebugGLApi::glGetFramebufferAttachmentParameterivRobustANGLEFn(
       target, attachment, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetFramebufferParameterivRobustANGLEFn(GLenum target,
                                                           GLenum pname,
                                                           GLsizei bufSize,
@@ -10370,7 +9426,6 @@ void DebugGLApi::glGetFramebufferParameterivRobustANGLEFn(GLenum target,
                                                     length, params);
 }
 
-DISABLE_CFI_ICALL
 GLenum DebugGLApi::glGetGraphicsResetStatusARBFn(void) {
   GL_SERVICE_LOG("glGetGraphicsResetStatusARB"
                  << "("
@@ -10380,7 +9435,6 @@ GLenum DebugGLApi::glGetGraphicsResetStatusARBFn(void) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetInteger64i_vFn(GLenum target,
                                      GLuint index,
                                      GLint64* data) {
@@ -10390,7 +9444,6 @@ void DebugGLApi::glGetInteger64i_vFn(GLenum target,
   gl_api_->glGetInteger64i_vFn(target, index, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetInteger64i_vRobustANGLEFn(GLenum target,
                                                 GLuint index,
                                                 GLsizei bufSize,
@@ -10403,7 +9456,6 @@ void DebugGLApi::glGetInteger64i_vRobustANGLEFn(GLenum target,
   gl_api_->glGetInteger64i_vRobustANGLEFn(target, index, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetInteger64vFn(GLenum pname, GLint64* params) {
   GL_SERVICE_LOG("glGetInteger64v"
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
@@ -10411,7 +9463,6 @@ void DebugGLApi::glGetInteger64vFn(GLenum pname, GLint64* params) {
   gl_api_->glGetInteger64vFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetInteger64vRobustANGLEFn(GLenum pname,
                                               GLsizei bufSize,
                                               GLsizei* length,
@@ -10423,7 +9474,6 @@ void DebugGLApi::glGetInteger64vRobustANGLEFn(GLenum pname,
   gl_api_->glGetInteger64vRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetIntegeri_vFn(GLenum target, GLuint index, GLint* data) {
   GL_SERVICE_LOG("glGetIntegeri_v"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << index
@@ -10431,7 +9481,6 @@ void DebugGLApi::glGetIntegeri_vFn(GLenum target, GLuint index, GLint* data) {
   gl_api_->glGetIntegeri_vFn(target, index, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetIntegeri_vRobustANGLEFn(GLenum target,
                                               GLuint index,
                                               GLsizei bufSize,
@@ -10444,7 +9493,6 @@ void DebugGLApi::glGetIntegeri_vRobustANGLEFn(GLenum target,
   gl_api_->glGetIntegeri_vRobustANGLEFn(target, index, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
   GL_SERVICE_LOG("glGetIntegerv"
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
@@ -10452,7 +9500,6 @@ void DebugGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
   gl_api_->glGetIntegervFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetIntegervRobustANGLEFn(GLenum pname,
                                             GLsizei bufSize,
                                             GLsizei* length,
@@ -10464,7 +9511,6 @@ void DebugGLApi::glGetIntegervRobustANGLEFn(GLenum pname,
   gl_api_->glGetIntegervRobustANGLEFn(pname, bufSize, length, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetInternalformativFn(GLenum target,
                                          GLenum internalformat,
                                          GLenum pname,
@@ -10479,7 +9525,6 @@ void DebugGLApi::glGetInternalformativFn(GLenum target,
                                    params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                                     GLenum internalformat,
                                                     GLenum pname,
@@ -10496,7 +9541,6 @@ void DebugGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                               bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetMultisamplefvFn(GLenum pname,
                                       GLuint index,
                                       GLfloat* val) {
@@ -10506,7 +9550,6 @@ void DebugGLApi::glGetMultisamplefvFn(GLenum pname,
   gl_api_->glGetMultisamplefvFn(pname, index, val);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                  GLuint index,
                                                  GLsizei bufSize,
@@ -10519,7 +9562,6 @@ void DebugGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
   gl_api_->glGetMultisamplefvRobustANGLEFn(pname, index, bufSize, length, val);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetnUniformfvRobustANGLEFn(GLuint program,
                                               GLint location,
                                               GLsizei bufSize,
@@ -10533,7 +9575,6 @@ void DebugGLApi::glGetnUniformfvRobustANGLEFn(GLuint program,
                                         params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetnUniformivRobustANGLEFn(GLuint program,
                                               GLint location,
                                               GLsizei bufSize,
@@ -10547,7 +9588,6 @@ void DebugGLApi::glGetnUniformivRobustANGLEFn(GLuint program,
                                         params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetnUniformuivRobustANGLEFn(GLuint program,
                                                GLint location,
                                                GLsizei bufSize,
@@ -10561,7 +9601,6 @@ void DebugGLApi::glGetnUniformuivRobustANGLEFn(GLuint program,
                                          params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetObjectLabelFn(GLenum identifier,
                                     GLuint name,
                                     GLsizei bufSize,
@@ -10574,7 +9613,6 @@ void DebugGLApi::glGetObjectLabelFn(GLenum identifier,
   gl_api_->glGetObjectLabelFn(identifier, name, bufSize, length, label);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetObjectPtrLabelFn(void* ptr,
                                        GLsizei bufSize,
                                        GLsizei* length,
@@ -10586,7 +9624,6 @@ void DebugGLApi::glGetObjectPtrLabelFn(void* ptr,
   gl_api_->glGetObjectPtrLabelFn(ptr, bufSize, length, label);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetPointervFn(GLenum pname, void** params) {
   GL_SERVICE_LOG("glGetPointerv"
                  << "(" << GLEnums::GetStringEnum(pname) << ", " << params
@@ -10594,7 +9631,6 @@ void DebugGLApi::glGetPointervFn(GLenum pname, void** params) {
   gl_api_->glGetPointervFn(pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                                        GLsizei bufSize,
                                                        GLsizei* length,
@@ -10607,7 +9643,6 @@ void DebugGLApi::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                                  params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetProgramBinaryFn(GLuint program,
                                       GLsizei bufSize,
                                       GLsizei* length,
@@ -10621,7 +9656,6 @@ void DebugGLApi::glGetProgramBinaryFn(GLuint program,
   gl_api_->glGetProgramBinaryFn(program, bufSize, length, binaryFormat, binary);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetProgramInfoLogFn(GLuint program,
                                        GLsizei bufsize,
                                        GLsizei* length,
@@ -10633,7 +9667,6 @@ void DebugGLApi::glGetProgramInfoLogFn(GLuint program,
   gl_api_->glGetProgramInfoLogFn(program, bufsize, length, infolog);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetProgramInterfaceivFn(GLuint program,
                                            GLenum programInterface,
                                            GLenum pname,
@@ -10646,7 +9679,6 @@ void DebugGLApi::glGetProgramInterfaceivFn(GLuint program,
   gl_api_->glGetProgramInterfaceivFn(program, programInterface, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetProgramInterfaceivRobustANGLEFn(GLuint program,
                                                       GLenum programInterface,
                                                       GLenum pname,
@@ -10663,7 +9695,6 @@ void DebugGLApi::glGetProgramInterfaceivRobustANGLEFn(GLuint program,
                                                 pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   GL_SERVICE_LOG("glGetProgramiv"
                  << "(" << program << ", " << GLEnums::GetStringEnum(pname)
@@ -10671,7 +9702,6 @@ void DebugGLApi::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   gl_api_->glGetProgramivFn(program, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetProgramivRobustANGLEFn(GLuint program,
                                              GLenum pname,
                                              GLsizei bufSize,
@@ -10684,7 +9714,6 @@ void DebugGLApi::glGetProgramivRobustANGLEFn(GLuint program,
   gl_api_->glGetProgramivRobustANGLEFn(program, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetProgramResourceivFn(GLuint program,
                                           GLenum programInterface,
                                           GLuint index,
@@ -10703,7 +9732,6 @@ void DebugGLApi::glGetProgramResourceivFn(GLuint program,
                                     props, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 GLint DebugGLApi::glGetProgramResourceLocationFn(GLuint program,
                                                  GLenum programInterface,
                                                  const char* name) {
@@ -10717,7 +9745,6 @@ GLint DebugGLApi::glGetProgramResourceLocationFn(GLuint program,
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetProgramResourceNameFn(GLuint program,
                                             GLenum programInterface,
                                             GLuint index,
@@ -10733,7 +9760,6 @@ void DebugGLApi::glGetProgramResourceNameFn(GLuint program,
                                       length, name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
   GL_SERVICE_LOG("glGetQueryiv"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
@@ -10742,7 +9768,6 @@ void DebugGLApi::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
   gl_api_->glGetQueryivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryivRobustANGLEFn(GLenum target,
                                            GLenum pname,
                                            GLsizei bufSize,
@@ -10756,7 +9781,6 @@ void DebugGLApi::glGetQueryivRobustANGLEFn(GLenum target,
   gl_api_->glGetQueryivRobustANGLEFn(target, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryObjecti64vFn(GLuint id,
                                         GLenum pname,
                                         GLint64* params) {
@@ -10766,7 +9790,6 @@ void DebugGLApi::glGetQueryObjecti64vFn(GLuint id,
   gl_api_->glGetQueryObjecti64vFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryObjecti64vRobustANGLEFn(GLuint id,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -10780,7 +9803,6 @@ void DebugGLApi::glGetQueryObjecti64vRobustANGLEFn(GLuint id,
                                              params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) {
   GL_SERVICE_LOG("glGetQueryObjectiv"
                  << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
@@ -10788,7 +9810,6 @@ void DebugGLApi::glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) {
   gl_api_->glGetQueryObjectivFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryObjectivRobustANGLEFn(GLuint id,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -10801,7 +9822,6 @@ void DebugGLApi::glGetQueryObjectivRobustANGLEFn(GLuint id,
   gl_api_->glGetQueryObjectivRobustANGLEFn(id, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryObjectui64vFn(GLuint id,
                                          GLenum pname,
                                          GLuint64* params) {
@@ -10811,7 +9831,6 @@ void DebugGLApi::glGetQueryObjectui64vFn(GLuint id,
   gl_api_->glGetQueryObjectui64vFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryObjectui64vRobustANGLEFn(GLuint id,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -10825,7 +9844,6 @@ void DebugGLApi::glGetQueryObjectui64vRobustANGLEFn(GLuint id,
                                               params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryObjectuivFn(GLuint id,
                                        GLenum pname,
                                        GLuint* params) {
@@ -10835,7 +9853,6 @@ void DebugGLApi::glGetQueryObjectuivFn(GLuint id,
   gl_api_->glGetQueryObjectuivFn(id, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetQueryObjectuivRobustANGLEFn(GLuint id,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -10848,7 +9865,6 @@ void DebugGLApi::glGetQueryObjectuivRobustANGLEFn(GLuint id,
   gl_api_->glGetQueryObjectuivRobustANGLEFn(id, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetRenderbufferParameterivEXTFn(GLenum target,
                                                    GLenum pname,
                                                    GLint* params) {
@@ -10859,7 +9875,6 @@ void DebugGLApi::glGetRenderbufferParameterivEXTFn(GLenum target,
   gl_api_->glGetRenderbufferParameterivEXTFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetRenderbufferParameterivRobustANGLEFn(GLenum target,
                                                            GLenum pname,
                                                            GLsizei bufSize,
@@ -10874,7 +9889,6 @@ void DebugGLApi::glGetRenderbufferParameterivRobustANGLEFn(GLenum target,
                                                      length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetSamplerParameterfvFn(GLuint sampler,
                                            GLenum pname,
                                            GLfloat* params) {
@@ -10884,7 +9898,6 @@ void DebugGLApi::glGetSamplerParameterfvFn(GLuint sampler,
   gl_api_->glGetSamplerParameterfvFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                       GLenum pname,
                                                       GLsizei bufSize,
@@ -10898,7 +9911,6 @@ void DebugGLApi::glGetSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                 params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                        GLenum pname,
                                                        GLsizei bufSize,
@@ -10912,7 +9924,6 @@ void DebugGLApi::glGetSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                  length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                         GLenum pname,
                                                         GLsizei bufSize,
@@ -10926,7 +9937,6 @@ void DebugGLApi::glGetSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                   length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetSamplerParameterivFn(GLuint sampler,
                                            GLenum pname,
                                            GLint* params) {
@@ -10936,7 +9946,6 @@ void DebugGLApi::glGetSamplerParameterivFn(GLuint sampler,
   gl_api_->glGetSamplerParameterivFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                       GLenum pname,
                                                       GLsizei bufSize,
@@ -10950,7 +9959,6 @@ void DebugGLApi::glGetSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                 params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetShaderInfoLogFn(GLuint shader,
                                       GLsizei bufsize,
                                       GLsizei* length,
@@ -10962,7 +9970,6 @@ void DebugGLApi::glGetShaderInfoLogFn(GLuint shader,
   gl_api_->glGetShaderInfoLogFn(shader, bufsize, length, infolog);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetShaderivFn(GLuint shader, GLenum pname, GLint* params) {
   GL_SERVICE_LOG("glGetShaderiv"
                  << "(" << shader << ", " << GLEnums::GetStringEnum(pname)
@@ -10970,7 +9977,6 @@ void DebugGLApi::glGetShaderivFn(GLuint shader, GLenum pname, GLint* params) {
   gl_api_->glGetShaderivFn(shader, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetShaderivRobustANGLEFn(GLuint shader,
                                             GLenum pname,
                                             GLsizei bufSize,
@@ -10983,7 +9989,6 @@ void DebugGLApi::glGetShaderivRobustANGLEFn(GLuint shader,
   gl_api_->glGetShaderivRobustANGLEFn(shader, pname, bufSize, length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetShaderPrecisionFormatFn(GLenum shadertype,
                                               GLenum precisiontype,
                                               GLint* range,
@@ -10997,7 +10002,6 @@ void DebugGLApi::glGetShaderPrecisionFormatFn(GLenum shadertype,
                                         precision);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetShaderSourceFn(GLuint shader,
                                      GLsizei bufsize,
                                      GLsizei* length,
@@ -11009,7 +10013,6 @@ void DebugGLApi::glGetShaderSourceFn(GLuint shader,
   gl_api_->glGetShaderSourceFn(shader, bufsize, length, source);
 }
 
-DISABLE_CFI_ICALL
 const GLubyte* DebugGLApi::glGetStringFn(GLenum name) {
   GL_SERVICE_LOG("glGetString"
                  << "(" << GLEnums::GetStringEnum(name) << ")");
@@ -11018,7 +10021,6 @@ const GLubyte* DebugGLApi::glGetStringFn(GLenum name) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 const GLubyte* DebugGLApi::glGetStringiFn(GLenum name, GLuint index) {
   GL_SERVICE_LOG("glGetStringi"
                  << "(" << GLEnums::GetStringEnum(name) << ", " << index
@@ -11028,7 +10030,6 @@ const GLubyte* DebugGLApi::glGetStringiFn(GLenum name, GLuint index) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetSyncivFn(GLsync sync,
                                GLenum pname,
                                GLsizei bufSize,
@@ -11041,7 +10042,6 @@ void DebugGLApi::glGetSyncivFn(GLsync sync,
   gl_api_->glGetSyncivFn(sync, pname, bufSize, length, values);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexLevelParameterfvFn(GLenum target,
                                             GLint level,
                                             GLenum pname,
@@ -11053,7 +10053,6 @@ void DebugGLApi::glGetTexLevelParameterfvFn(GLenum target,
   gl_api_->glGetTexLevelParameterfvFn(target, level, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexLevelParameterfvRobustANGLEFn(GLenum target,
                                                        GLint level,
                                                        GLenum pname,
@@ -11069,7 +10068,6 @@ void DebugGLApi::glGetTexLevelParameterfvRobustANGLEFn(GLenum target,
                                                  length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexLevelParameterivFn(GLenum target,
                                             GLint level,
                                             GLenum pname,
@@ -11081,7 +10079,6 @@ void DebugGLApi::glGetTexLevelParameterivFn(GLenum target,
   gl_api_->glGetTexLevelParameterivFn(target, level, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexLevelParameterivRobustANGLEFn(GLenum target,
                                                        GLint level,
                                                        GLenum pname,
@@ -11097,7 +10094,6 @@ void DebugGLApi::glGetTexLevelParameterivRobustANGLEFn(GLenum target,
                                                  length, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexParameterfvFn(GLenum target,
                                        GLenum pname,
                                        GLfloat* params) {
@@ -11108,7 +10104,6 @@ void DebugGLApi::glGetTexParameterfvFn(GLenum target,
   gl_api_->glGetTexParameterfvFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexParameterfvRobustANGLEFn(GLenum target,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -11123,7 +10118,6 @@ void DebugGLApi::glGetTexParameterfvRobustANGLEFn(GLenum target,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexParameterIivRobustANGLEFn(GLenum target,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -11138,7 +10132,6 @@ void DebugGLApi::glGetTexParameterIivRobustANGLEFn(GLenum target,
                                              params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexParameterIuivRobustANGLEFn(GLenum target,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -11153,7 +10146,6 @@ void DebugGLApi::glGetTexParameterIuivRobustANGLEFn(GLenum target,
                                               params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexParameterivFn(GLenum target,
                                        GLenum pname,
                                        GLint* params) {
@@ -11164,7 +10156,6 @@ void DebugGLApi::glGetTexParameterivFn(GLenum target,
   gl_api_->glGetTexParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTexParameterivRobustANGLEFn(GLenum target,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -11179,7 +10170,6 @@ void DebugGLApi::glGetTexParameterivRobustANGLEFn(GLenum target,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTransformFeedbackVaryingFn(GLuint program,
                                                  GLuint index,
                                                  GLsizei bufSize,
@@ -11197,7 +10187,6 @@ void DebugGLApi::glGetTransformFeedbackVaryingFn(GLuint program,
                                            size, type, name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
                                                     GLsizei bufsize,
                                                     GLsizei* length,
@@ -11209,7 +10198,6 @@ void DebugGLApi::glGetTranslatedShaderSourceANGLEFn(GLuint shader,
   gl_api_->glGetTranslatedShaderSourceANGLEFn(shader, bufsize, length, source);
 }
 
-DISABLE_CFI_ICALL
 GLuint DebugGLApi::glGetUniformBlockIndexFn(GLuint program,
                                             const char* uniformBlockName) {
   GL_SERVICE_LOG("glGetUniformBlockIndex"
@@ -11219,7 +10207,6 @@ GLuint DebugGLApi::glGetUniformBlockIndexFn(GLuint program,
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetUniformfvFn(GLuint program,
                                   GLint location,
                                   GLfloat* params) {
@@ -11229,7 +10216,6 @@ void DebugGLApi::glGetUniformfvFn(GLuint program,
   gl_api_->glGetUniformfvFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetUniformfvRobustANGLEFn(GLuint program,
                                              GLint location,
                                              GLsizei bufSize,
@@ -11243,7 +10229,6 @@ void DebugGLApi::glGetUniformfvRobustANGLEFn(GLuint program,
                                        params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetUniformIndicesFn(GLuint program,
                                        GLsizei uniformCount,
                                        const char* const* uniformNames,
@@ -11256,7 +10241,6 @@ void DebugGLApi::glGetUniformIndicesFn(GLuint program,
                                  uniformIndices);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetUniformivFn(GLuint program,
                                   GLint location,
                                   GLint* params) {
@@ -11266,7 +10250,6 @@ void DebugGLApi::glGetUniformivFn(GLuint program,
   gl_api_->glGetUniformivFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetUniformivRobustANGLEFn(GLuint program,
                                              GLint location,
                                              GLsizei bufSize,
@@ -11280,7 +10263,6 @@ void DebugGLApi::glGetUniformivRobustANGLEFn(GLuint program,
                                        params);
 }
 
-DISABLE_CFI_ICALL
 GLint DebugGLApi::glGetUniformLocationFn(GLuint program, const char* name) {
   GL_SERVICE_LOG("glGetUniformLocation"
                  << "(" << program << ", " << name << ")");
@@ -11289,7 +10271,6 @@ GLint DebugGLApi::glGetUniformLocationFn(GLuint program, const char* name) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetUniformuivFn(GLuint program,
                                    GLint location,
                                    GLuint* params) {
@@ -11299,7 +10280,6 @@ void DebugGLApi::glGetUniformuivFn(GLuint program,
   gl_api_->glGetUniformuivFn(program, location, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetUniformuivRobustANGLEFn(GLuint program,
                                               GLint location,
                                               GLsizei bufSize,
@@ -11313,7 +10293,6 @@ void DebugGLApi::glGetUniformuivRobustANGLEFn(GLuint program,
                                         params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetVertexAttribfvFn(GLuint index,
                                        GLenum pname,
                                        GLfloat* params) {
@@ -11323,7 +10302,6 @@ void DebugGLApi::glGetVertexAttribfvFn(GLuint index,
   gl_api_->glGetVertexAttribfvFn(index, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetVertexAttribfvRobustANGLEFn(GLuint index,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -11337,7 +10315,6 @@ void DebugGLApi::glGetVertexAttribfvRobustANGLEFn(GLuint index,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetVertexAttribIivRobustANGLEFn(GLuint index,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -11351,7 +10328,6 @@ void DebugGLApi::glGetVertexAttribIivRobustANGLEFn(GLuint index,
                                              params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetVertexAttribIuivRobustANGLEFn(GLuint index,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -11365,7 +10341,6 @@ void DebugGLApi::glGetVertexAttribIuivRobustANGLEFn(GLuint index,
                                               params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetVertexAttribivFn(GLuint index,
                                        GLenum pname,
                                        GLint* params) {
@@ -11375,7 +10350,6 @@ void DebugGLApi::glGetVertexAttribivFn(GLuint index,
   gl_api_->glGetVertexAttribivFn(index, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetVertexAttribivRobustANGLEFn(GLuint index,
                                                   GLenum pname,
                                                   GLsizei bufSize,
@@ -11389,7 +10363,6 @@ void DebugGLApi::glGetVertexAttribivRobustANGLEFn(GLuint index,
                                             params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetVertexAttribPointervFn(GLuint index,
                                              GLenum pname,
                                              void** pointer) {
@@ -11399,7 +10372,6 @@ void DebugGLApi::glGetVertexAttribPointervFn(GLuint index,
   gl_api_->glGetVertexAttribPointervFn(index, pname, pointer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glGetVertexAttribPointervRobustANGLEFn(GLuint index,
                                                         GLenum pname,
                                                         GLsizei bufSize,
@@ -11413,7 +10385,6 @@ void DebugGLApi::glGetVertexAttribPointervRobustANGLEFn(GLuint index,
                                                   pointer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glHintFn(GLenum target, GLenum mode) {
   GL_SERVICE_LOG("glHint"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
@@ -11421,14 +10392,12 @@ void DebugGLApi::glHintFn(GLenum target, GLenum mode) {
   gl_api_->glHintFn(target, mode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glInsertEventMarkerEXTFn(GLsizei length, const char* marker) {
   GL_SERVICE_LOG("glInsertEventMarkerEXT"
                  << "(" << length << ", " << marker << ")");
   gl_api_->glInsertEventMarkerEXTFn(length, marker);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glInvalidateFramebufferFn(GLenum target,
                                            GLsizei numAttachments,
                                            const GLenum* attachments) {
@@ -11439,7 +10408,6 @@ void DebugGLApi::glInvalidateFramebufferFn(GLenum target,
   gl_api_->glInvalidateFramebufferFn(target, numAttachments, attachments);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glInvalidateSubFramebufferFn(GLenum target,
                                               GLsizei numAttachments,
                                               const GLenum* attachments,
@@ -11456,7 +10424,6 @@ void DebugGLApi::glInvalidateSubFramebufferFn(GLenum target,
                                         y, width, height);
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsBufferFn(GLuint buffer) {
   GL_SERVICE_LOG("glIsBuffer"
                  << "(" << buffer << ")");
@@ -11465,7 +10432,6 @@ GLboolean DebugGLApi::glIsBufferFn(GLuint buffer) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsEnabledFn(GLenum cap) {
   GL_SERVICE_LOG("glIsEnabled"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
@@ -11474,7 +10440,6 @@ GLboolean DebugGLApi::glIsEnabledFn(GLenum cap) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsFenceAPPLEFn(GLuint fence) {
   GL_SERVICE_LOG("glIsFenceAPPLE"
                  << "(" << fence << ")");
@@ -11483,7 +10448,6 @@ GLboolean DebugGLApi::glIsFenceAPPLEFn(GLuint fence) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsFenceNVFn(GLuint fence) {
   GL_SERVICE_LOG("glIsFenceNV"
                  << "(" << fence << ")");
@@ -11492,7 +10456,6 @@ GLboolean DebugGLApi::glIsFenceNVFn(GLuint fence) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
   GL_SERVICE_LOG("glIsFramebufferEXT"
                  << "(" << framebuffer << ")");
@@ -11501,7 +10464,6 @@ GLboolean DebugGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsPathNVFn(GLuint path) {
   GL_SERVICE_LOG("glIsPathNV"
                  << "(" << path << ")");
@@ -11510,7 +10472,6 @@ GLboolean DebugGLApi::glIsPathNVFn(GLuint path) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsProgramFn(GLuint program) {
   GL_SERVICE_LOG("glIsProgram"
                  << "(" << program << ")");
@@ -11519,7 +10480,6 @@ GLboolean DebugGLApi::glIsProgramFn(GLuint program) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsQueryFn(GLuint query) {
   GL_SERVICE_LOG("glIsQuery"
                  << "(" << query << ")");
@@ -11528,7 +10488,6 @@ GLboolean DebugGLApi::glIsQueryFn(GLuint query) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsRenderbufferEXTFn(GLuint renderbuffer) {
   GL_SERVICE_LOG("glIsRenderbufferEXT"
                  << "(" << renderbuffer << ")");
@@ -11537,7 +10496,6 @@ GLboolean DebugGLApi::glIsRenderbufferEXTFn(GLuint renderbuffer) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsSamplerFn(GLuint sampler) {
   GL_SERVICE_LOG("glIsSampler"
                  << "(" << sampler << ")");
@@ -11546,7 +10504,6 @@ GLboolean DebugGLApi::glIsSamplerFn(GLuint sampler) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsShaderFn(GLuint shader) {
   GL_SERVICE_LOG("glIsShader"
                  << "(" << shader << ")");
@@ -11555,7 +10512,6 @@ GLboolean DebugGLApi::glIsShaderFn(GLuint shader) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsSyncFn(GLsync sync) {
   GL_SERVICE_LOG("glIsSync"
                  << "(" << sync << ")");
@@ -11564,7 +10520,6 @@ GLboolean DebugGLApi::glIsSyncFn(GLsync sync) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsTextureFn(GLuint texture) {
   GL_SERVICE_LOG("glIsTexture"
                  << "(" << texture << ")");
@@ -11573,7 +10528,6 @@ GLboolean DebugGLApi::glIsTextureFn(GLuint texture) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsTransformFeedbackFn(GLuint id) {
   GL_SERVICE_LOG("glIsTransformFeedback"
                  << "(" << id << ")");
@@ -11582,7 +10536,6 @@ GLboolean DebugGLApi::glIsTransformFeedbackFn(GLuint id) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glIsVertexArrayOESFn(GLuint array) {
   GL_SERVICE_LOG("glIsVertexArrayOES"
                  << "(" << array << ")");
@@ -11591,21 +10544,18 @@ GLboolean DebugGLApi::glIsVertexArrayOESFn(GLuint array) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glLineWidthFn(GLfloat width) {
   GL_SERVICE_LOG("glLineWidth"
                  << "(" << width << ")");
   gl_api_->glLineWidthFn(width);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glLinkProgramFn(GLuint program) {
   GL_SERVICE_LOG("glLinkProgram"
                  << "(" << program << ")");
   gl_api_->glLinkProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void* DebugGLApi::glMapBufferFn(GLenum target, GLenum access) {
   GL_SERVICE_LOG("glMapBuffer"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
@@ -11615,7 +10565,6 @@ void* DebugGLApi::glMapBufferFn(GLenum target, GLenum access) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void* DebugGLApi::glMapBufferRangeFn(GLenum target,
                                      GLintptr offset,
                                      GLsizeiptr length,
@@ -11628,7 +10577,6 @@ void* DebugGLApi::glMapBufferRangeFn(GLenum target,
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
   GL_SERVICE_LOG("glMatrixLoadfEXT"
                  << "(" << GLEnums::GetStringEnum(matrixMode) << ", "
@@ -11636,21 +10584,18 @@ void DebugGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
   gl_api_->glMatrixLoadfEXTFn(matrixMode, m);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   GL_SERVICE_LOG("glMatrixLoadIdentityEXT"
                  << "(" << GLEnums::GetStringEnum(matrixMode) << ")");
   gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   GL_SERVICE_LOG("glMemoryBarrierEXT"
                  << "(" << barriers << ")");
   gl_api_->glMemoryBarrierEXTFn(barriers);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glObjectLabelFn(GLenum identifier,
                                  GLuint name,
                                  GLsizei length,
@@ -11661,7 +10606,6 @@ void DebugGLApi::glObjectLabelFn(GLenum identifier,
   gl_api_->glObjectLabelFn(identifier, name, length, label);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glObjectPtrLabelFn(void* ptr,
                                     GLsizei length,
                                     const char* label) {
@@ -11671,7 +10615,6 @@ void DebugGLApi::glObjectPtrLabelFn(void* ptr,
   gl_api_->glObjectPtrLabelFn(ptr, length, label);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPathCommandsNVFn(GLuint path,
                                     GLsizei numCommands,
                                     const GLubyte* commands,
@@ -11687,7 +10630,6 @@ void DebugGLApi::glPathCommandsNVFn(GLuint path,
                               coords);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPathParameterfNVFn(GLuint path,
                                       GLenum pname,
                                       GLfloat value) {
@@ -11697,7 +10639,6 @@ void DebugGLApi::glPathParameterfNVFn(GLuint path,
   gl_api_->glPathParameterfNVFn(path, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
   GL_SERVICE_LOG("glPathParameteriNV"
                  << "(" << path << ", " << GLEnums::GetStringEnum(pname) << ", "
@@ -11705,7 +10646,6 @@ void DebugGLApi::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
   gl_api_->glPathParameteriNVFn(path, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
   GL_SERVICE_LOG("glPathStencilFuncNV"
                  << "(" << GLEnums::GetStringEnum(func) << ", " << ref << ", "
@@ -11713,7 +10653,6 @@ void DebugGLApi::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
   gl_api_->glPathStencilFuncNVFn(func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPauseTransformFeedbackFn(void) {
   GL_SERVICE_LOG("glPauseTransformFeedback"
                  << "("
@@ -11721,7 +10660,6 @@ void DebugGLApi::glPauseTransformFeedbackFn(void) {
   gl_api_->glPauseTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPixelStoreiFn(GLenum pname, GLint param) {
   GL_SERVICE_LOG("glPixelStorei"
                  << "(" << GLEnums::GetStringEnum(pname) << ", " << param
@@ -11729,7 +10667,6 @@ void DebugGLApi::glPixelStoreiFn(GLenum pname, GLint param) {
   gl_api_->glPixelStoreiFn(pname, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPointParameteriFn(GLenum pname, GLint param) {
   GL_SERVICE_LOG("glPointParameteri"
                  << "(" << GLEnums::GetStringEnum(pname) << ", " << param
@@ -11737,7 +10674,6 @@ void DebugGLApi::glPointParameteriFn(GLenum pname, GLint param) {
   gl_api_->glPointParameteriFn(pname, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPolygonModeFn(GLenum face, GLenum mode) {
   GL_SERVICE_LOG("glPolygonMode"
                  << "(" << GLEnums::GetStringEnum(face) << ", "
@@ -11745,14 +10681,12 @@ void DebugGLApi::glPolygonModeFn(GLenum face, GLenum mode) {
   gl_api_->glPolygonModeFn(face, mode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   GL_SERVICE_LOG("glPolygonOffset"
                  << "(" << factor << ", " << units << ")");
   gl_api_->glPolygonOffsetFn(factor, units);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPopDebugGroupFn() {
   GL_SERVICE_LOG("glPopDebugGroup"
                  << "("
@@ -11760,7 +10694,6 @@ void DebugGLApi::glPopDebugGroupFn() {
   gl_api_->glPopDebugGroupFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPopGroupMarkerEXTFn(void) {
   GL_SERVICE_LOG("glPopGroupMarkerEXT"
                  << "("
@@ -11768,14 +10701,12 @@ void DebugGLApi::glPopGroupMarkerEXTFn(void) {
   gl_api_->glPopGroupMarkerEXTFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPrimitiveRestartIndexFn(GLuint index) {
   GL_SERVICE_LOG("glPrimitiveRestartIndex"
                  << "(" << index << ")");
   gl_api_->glPrimitiveRestartIndexFn(index);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glProgramBinaryFn(GLuint program,
                                    GLenum binaryFormat,
                                    const GLvoid* binary,
@@ -11787,7 +10718,6 @@ void DebugGLApi::glProgramBinaryFn(GLuint program,
   gl_api_->glProgramBinaryFn(program, binaryFormat, binary, length);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glProgramParameteriFn(GLuint program,
                                        GLenum pname,
                                        GLint value) {
@@ -11797,7 +10727,6 @@ void DebugGLApi::glProgramParameteriFn(GLuint program,
   gl_api_->glProgramParameteriFn(program, pname, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
                                                    GLint location,
                                                    GLenum genMode,
@@ -11811,7 +10740,6 @@ void DebugGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
                                              components, coeffs);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPushDebugGroupFn(GLenum source,
                                     GLuint id,
                                     GLsizei length,
@@ -11822,28 +10750,24 @@ void DebugGLApi::glPushDebugGroupFn(GLenum source,
   gl_api_->glPushDebugGroupFn(source, id, length, message);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glPushGroupMarkerEXTFn(GLsizei length, const char* marker) {
   GL_SERVICE_LOG("glPushGroupMarkerEXT"
                  << "(" << length << ", " << marker << ")");
   gl_api_->glPushGroupMarkerEXTFn(length, marker);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glQueryCounterFn(GLuint id, GLenum target) {
   GL_SERVICE_LOG("glQueryCounter"
                  << "(" << id << ", " << GLEnums::GetStringEnum(target) << ")");
   gl_api_->glQueryCounterFn(id, target);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glReadBufferFn(GLenum src) {
   GL_SERVICE_LOG("glReadBuffer"
                  << "(" << GLEnums::GetStringEnum(src) << ")");
   gl_api_->glReadBufferFn(src);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glReadnPixelsRobustANGLEFn(GLint x,
                                             GLint y,
                                             GLsizei width,
@@ -11867,7 +10791,6 @@ void DebugGLApi::glReadnPixelsRobustANGLEFn(GLint x,
                                       bufSize, length, columns, rows, data);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glReadPixelsFn(GLint x,
                                 GLint y,
                                 GLsizei width,
@@ -11883,7 +10806,6 @@ void DebugGLApi::glReadPixelsFn(GLint x,
   gl_api_->glReadPixelsFn(x, y, width, height, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glReadPixelsRobustANGLEFn(GLint x,
                                            GLint y,
                                            GLsizei width,
@@ -11907,7 +10829,6 @@ void DebugGLApi::glReadPixelsRobustANGLEFn(GLint x,
                                      length, columns, rows, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glReleaseShaderCompilerFn(void) {
   GL_SERVICE_LOG("glReleaseShaderCompiler"
                  << "("
@@ -11915,7 +10836,6 @@ void DebugGLApi::glReleaseShaderCompilerFn(void) {
   gl_api_->glReleaseShaderCompilerFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glRenderbufferStorageEXTFn(GLenum target,
                                             GLenum internalformat,
                                             GLsizei width,
@@ -11927,7 +10847,6 @@ void DebugGLApi::glRenderbufferStorageEXTFn(GLenum target,
   gl_api_->glRenderbufferStorageEXTFn(target, internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                                     GLsizei samples,
                                                     GLenum internalformat,
@@ -11941,7 +10860,6 @@ void DebugGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                               width, height);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                        GLsizei samples,
                                                        GLenum internalformat,
@@ -11955,14 +10873,12 @@ void DebugGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                  internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glRequestExtensionANGLEFn(const char* name) {
   GL_SERVICE_LOG("glRequestExtensionANGLE"
                  << "(" << name << ")");
   gl_api_->glRequestExtensionANGLEFn(name);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glResumeTransformFeedbackFn(void) {
   GL_SERVICE_LOG("glResumeTransformFeedback"
                  << "("
@@ -11970,7 +10886,6 @@ void DebugGLApi::glResumeTransformFeedbackFn(void) {
   gl_api_->glResumeTransformFeedbackFn();
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSampleCoverageFn(GLclampf value, GLboolean invert) {
   GL_SERVICE_LOG("glSampleCoverage"
                  << "(" << value << ", " << GLEnums::GetStringBool(invert)
@@ -11978,7 +10893,6 @@ void DebugGLApi::glSampleCoverageFn(GLclampf value, GLboolean invert) {
   gl_api_->glSampleCoverageFn(value, invert);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSamplerParameterfFn(GLuint sampler,
                                        GLenum pname,
                                        GLfloat param) {
@@ -11988,7 +10902,6 @@ void DebugGLApi::glSamplerParameterfFn(GLuint sampler,
   gl_api_->glSamplerParameterfFn(sampler, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSamplerParameterfvFn(GLuint sampler,
                                         GLenum pname,
                                         const GLfloat* params) {
@@ -11998,7 +10911,6 @@ void DebugGLApi::glSamplerParameterfvFn(GLuint sampler,
   gl_api_->glSamplerParameterfvFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSamplerParameterfvRobustANGLEFn(GLuint sampler,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -12010,7 +10922,6 @@ void DebugGLApi::glSamplerParameterfvRobustANGLEFn(GLuint sampler,
   gl_api_->glSamplerParameterfvRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSamplerParameteriFn(GLuint sampler,
                                        GLenum pname,
                                        GLint param) {
@@ -12020,7 +10931,6 @@ void DebugGLApi::glSamplerParameteriFn(GLuint sampler,
   gl_api_->glSamplerParameteriFn(sampler, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSamplerParameterIivRobustANGLEFn(GLuint sampler,
                                                     GLenum pname,
                                                     GLsizei bufSize,
@@ -12032,7 +10942,6 @@ void DebugGLApi::glSamplerParameterIivRobustANGLEFn(GLuint sampler,
   gl_api_->glSamplerParameterIivRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSamplerParameterIuivRobustANGLEFn(GLuint sampler,
                                                      GLenum pname,
                                                      GLsizei bufSize,
@@ -12044,7 +10953,6 @@ void DebugGLApi::glSamplerParameterIuivRobustANGLEFn(GLuint sampler,
   gl_api_->glSamplerParameterIuivRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSamplerParameterivFn(GLuint sampler,
                                         GLenum pname,
                                         const GLint* params) {
@@ -12054,7 +10962,6 @@ void DebugGLApi::glSamplerParameterivFn(GLuint sampler,
   gl_api_->glSamplerParameterivFn(sampler, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSamplerParameterivRobustANGLEFn(GLuint sampler,
                                                    GLenum pname,
                                                    GLsizei bufSize,
@@ -12066,7 +10973,6 @@ void DebugGLApi::glSamplerParameterivRobustANGLEFn(GLuint sampler,
   gl_api_->glSamplerParameterivRobustANGLEFn(sampler, pname, bufSize, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glScissorFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   GL_SERVICE_LOG("glScissor"
                  << "(" << x << ", " << y << ", " << width << ", " << height
@@ -12074,14 +10980,12 @@ void DebugGLApi::glScissorFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   gl_api_->glScissorFn(x, y, width, height);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSetFenceAPPLEFn(GLuint fence) {
   GL_SERVICE_LOG("glSetFenceAPPLE"
                  << "(" << fence << ")");
   gl_api_->glSetFenceAPPLEFn(fence);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glSetFenceNVFn(GLuint fence, GLenum condition) {
   GL_SERVICE_LOG("glSetFenceNV"
                  << "(" << fence << ", " << GLEnums::GetStringEnum(condition)
@@ -12089,7 +10993,6 @@ void DebugGLApi::glSetFenceNVFn(GLuint fence, GLenum condition) {
   gl_api_->glSetFenceNVFn(fence, condition);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glShaderBinaryFn(GLsizei n,
                                   const GLuint* shaders,
                                   GLenum binaryformat,
@@ -12102,7 +11005,6 @@ void DebugGLApi::glShaderBinaryFn(GLsizei n,
   gl_api_->glShaderBinaryFn(n, shaders, binaryformat, binary, length);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glShaderSourceFn(GLuint shader,
                                   GLsizei count,
                                   const char* const* str,
@@ -12129,7 +11031,6 @@ void DebugGLApi::glShaderSourceFn(GLuint shader,
   });
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilFillPathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -12151,7 +11052,6 @@ void DebugGLApi::glStencilFillPathInstancedNVFn(
                                           transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilFillPathNVFn(GLuint path,
                                        GLenum fillMode,
                                        GLuint mask) {
@@ -12161,7 +11061,6 @@ void DebugGLApi::glStencilFillPathNVFn(GLuint path,
   gl_api_->glStencilFillPathNVFn(path, fillMode, mask);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   GL_SERVICE_LOG("glStencilFunc"
                  << "(" << GLEnums::GetStringEnum(func) << ", " << ref << ", "
@@ -12169,7 +11068,6 @@ void DebugGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   gl_api_->glStencilFuncFn(func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilFuncSeparateFn(GLenum face,
                                          GLenum func,
                                          GLint ref,
@@ -12181,21 +11079,18 @@ void DebugGLApi::glStencilFuncSeparateFn(GLenum face,
   gl_api_->glStencilFuncSeparateFn(face, func, ref, mask);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilMaskFn(GLuint mask) {
   GL_SERVICE_LOG("glStencilMask"
                  << "(" << mask << ")");
   gl_api_->glStencilMaskFn(mask);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilMaskSeparateFn(GLenum face, GLuint mask) {
   GL_SERVICE_LOG("glStencilMaskSeparate"
                  << "(" << GLEnums::GetStringEnum(face) << ", " << mask << ")");
   gl_api_->glStencilMaskSeparateFn(face, mask);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilOpFn(GLenum fail, GLenum zfail, GLenum zpass) {
   GL_SERVICE_LOG("glStencilOp"
                  << "(" << GLEnums::GetStringEnum(fail) << ", "
@@ -12204,7 +11099,6 @@ void DebugGLApi::glStencilOpFn(GLenum fail, GLenum zfail, GLenum zpass) {
   gl_api_->glStencilOpFn(fail, zfail, zpass);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilOpSeparateFn(GLenum face,
                                        GLenum fail,
                                        GLenum zfail,
@@ -12217,7 +11111,6 @@ void DebugGLApi::glStencilOpSeparateFn(GLenum face,
   gl_api_->glStencilOpSeparateFn(face, fail, zfail, zpass);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilStrokePathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -12238,7 +11131,6 @@ void DebugGLApi::glStencilStrokePathInstancedNVFn(
                                             transformValues);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilStrokePathNVFn(GLuint path,
                                          GLint reference,
                                          GLuint mask) {
@@ -12247,7 +11139,6 @@ void DebugGLApi::glStencilStrokePathNVFn(GLuint path,
   gl_api_->glStencilStrokePathNVFn(path, reference, mask);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilThenCoverFillPathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -12271,7 +11162,6 @@ void DebugGLApi::glStencilThenCoverFillPathInstancedNVFn(
       transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
                                                 GLenum fillMode,
                                                 GLuint mask,
@@ -12283,7 +11173,6 @@ void DebugGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
   gl_api_->glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilThenCoverStrokePathInstancedNVFn(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -12306,7 +11195,6 @@ void DebugGLApi::glStencilThenCoverStrokePathInstancedNVFn(
       transformType, transformValues);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
                                                   GLint reference,
                                                   GLuint mask,
@@ -12317,7 +11205,6 @@ void DebugGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
   gl_api_->glStencilThenCoverStrokePathNVFn(path, reference, mask, coverMode);
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glTestFenceAPPLEFn(GLuint fence) {
   GL_SERVICE_LOG("glTestFenceAPPLE"
                  << "(" << fence << ")");
@@ -12326,7 +11213,6 @@ GLboolean DebugGLApi::glTestFenceAPPLEFn(GLuint fence) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glTestFenceNVFn(GLuint fence) {
   GL_SERVICE_LOG("glTestFenceNV"
                  << "(" << fence << ")");
@@ -12335,7 +11221,6 @@ GLboolean DebugGLApi::glTestFenceNVFn(GLuint fence) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexBufferFn(GLenum target,
                                GLenum internalformat,
                                GLuint buffer) {
@@ -12346,7 +11231,6 @@ void DebugGLApi::glTexBufferFn(GLenum target,
   gl_api_->glTexBufferFn(target, internalformat, buffer);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexBufferRangeFn(GLenum target,
                                     GLenum internalformat,
                                     GLuint buffer,
@@ -12359,7 +11243,6 @@ void DebugGLApi::glTexBufferRangeFn(GLenum target,
   gl_api_->glTexBufferRangeFn(target, internalformat, buffer, offset, size);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexImage2DFn(GLenum target,
                                 GLint level,
                                 GLint internalformat,
@@ -12379,7 +11262,6 @@ void DebugGLApi::glTexImage2DFn(GLenum target,
                           format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexImage2DRobustANGLEFn(GLenum target,
                                            GLint level,
                                            GLint internalformat,
@@ -12401,7 +11283,6 @@ void DebugGLApi::glTexImage2DRobustANGLEFn(GLenum target,
                                      pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexImage3DFn(GLenum target,
                                 GLint level,
                                 GLint internalformat,
@@ -12423,7 +11304,6 @@ void DebugGLApi::glTexImage3DFn(GLenum target,
                           border, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexImage3DRobustANGLEFn(GLenum target,
                                            GLint level,
                                            GLint internalformat,
@@ -12447,7 +11327,6 @@ void DebugGLApi::glTexImage3DRobustANGLEFn(GLenum target,
                                      bufSize, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexParameterfFn(GLenum target, GLenum pname, GLfloat param) {
   GL_SERVICE_LOG("glTexParameterf"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
@@ -12455,7 +11334,6 @@ void DebugGLApi::glTexParameterfFn(GLenum target, GLenum pname, GLfloat param) {
   gl_api_->glTexParameterfFn(target, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexParameterfvFn(GLenum target,
                                     GLenum pname,
                                     const GLfloat* params) {
@@ -12466,7 +11344,6 @@ void DebugGLApi::glTexParameterfvFn(GLenum target,
   gl_api_->glTexParameterfvFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexParameterfvRobustANGLEFn(GLenum target,
                                                GLenum pname,
                                                GLsizei bufSize,
@@ -12478,7 +11355,6 @@ void DebugGLApi::glTexParameterfvRobustANGLEFn(GLenum target,
   gl_api_->glTexParameterfvRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexParameteriFn(GLenum target, GLenum pname, GLint param) {
   GL_SERVICE_LOG("glTexParameteri"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
@@ -12486,7 +11362,6 @@ void DebugGLApi::glTexParameteriFn(GLenum target, GLenum pname, GLint param) {
   gl_api_->glTexParameteriFn(target, pname, param);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexParameterIivRobustANGLEFn(GLenum target,
                                                 GLenum pname,
                                                 GLsizei bufSize,
@@ -12498,7 +11373,6 @@ void DebugGLApi::glTexParameterIivRobustANGLEFn(GLenum target,
   gl_api_->glTexParameterIivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexParameterIuivRobustANGLEFn(GLenum target,
                                                  GLenum pname,
                                                  GLsizei bufSize,
@@ -12510,7 +11384,6 @@ void DebugGLApi::glTexParameterIuivRobustANGLEFn(GLenum target,
   gl_api_->glTexParameterIuivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexParameterivFn(GLenum target,
                                     GLenum pname,
                                     const GLint* params) {
@@ -12521,7 +11394,6 @@ void DebugGLApi::glTexParameterivFn(GLenum target,
   gl_api_->glTexParameterivFn(target, pname, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexParameterivRobustANGLEFn(GLenum target,
                                                GLenum pname,
                                                GLsizei bufSize,
@@ -12533,7 +11405,6 @@ void DebugGLApi::glTexParameterivRobustANGLEFn(GLenum target,
   gl_api_->glTexParameterivRobustANGLEFn(target, pname, bufSize, params);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexStorage2DEXTFn(GLenum target,
                                      GLsizei levels,
                                      GLenum internalformat,
@@ -12546,7 +11417,6 @@ void DebugGLApi::glTexStorage2DEXTFn(GLenum target,
   gl_api_->glTexStorage2DEXTFn(target, levels, internalformat, width, height);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexStorage3DFn(GLenum target,
                                   GLsizei levels,
                                   GLenum internalformat,
@@ -12561,7 +11431,6 @@ void DebugGLApi::glTexStorage3DFn(GLenum target,
                             depth);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexSubImage2DFn(GLenum target,
                                    GLint level,
                                    GLint xoffset,
@@ -12581,7 +11450,6 @@ void DebugGLApi::glTexSubImage2DFn(GLenum target,
                              format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexSubImage2DRobustANGLEFn(GLenum target,
                                               GLint level,
                                               GLint xoffset,
@@ -12602,7 +11470,6 @@ void DebugGLApi::glTexSubImage2DRobustANGLEFn(GLenum target,
                                         height, format, type, bufSize, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexSubImage3DFn(GLenum target,
                                    GLint level,
                                    GLint xoffset,
@@ -12625,7 +11492,6 @@ void DebugGLApi::glTexSubImage3DFn(GLenum target,
                              height, depth, format, type, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTexSubImage3DRobustANGLEFn(GLenum target,
                                               GLint level,
                                               GLint xoffset,
@@ -12650,7 +11516,6 @@ void DebugGLApi::glTexSubImage3DRobustANGLEFn(GLenum target,
                                         type, bufSize, pixels);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glTransformFeedbackVaryingsFn(GLuint program,
                                                GLsizei count,
                                                const char* const* varyings,
@@ -12662,14 +11527,12 @@ void DebugGLApi::glTransformFeedbackVaryingsFn(GLuint program,
   gl_api_->glTransformFeedbackVaryingsFn(program, count, varyings, bufferMode);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform1fFn(GLint location, GLfloat x) {
   GL_SERVICE_LOG("glUniform1f"
                  << "(" << location << ", " << x << ")");
   gl_api_->glUniform1fFn(location, x);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform1fvFn(GLint location,
                                 GLsizei count,
                                 const GLfloat* v) {
@@ -12679,14 +11542,12 @@ void DebugGLApi::glUniform1fvFn(GLint location,
   gl_api_->glUniform1fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform1iFn(GLint location, GLint x) {
   GL_SERVICE_LOG("glUniform1i"
                  << "(" << location << ", " << x << ")");
   gl_api_->glUniform1iFn(location, x);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform1ivFn(GLint location, GLsizei count, const GLint* v) {
   GL_SERVICE_LOG("glUniform1iv"
                  << "(" << location << ", " << count << ", "
@@ -12694,14 +11555,12 @@ void DebugGLApi::glUniform1ivFn(GLint location, GLsizei count, const GLint* v) {
   gl_api_->glUniform1ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform1uiFn(GLint location, GLuint v0) {
   GL_SERVICE_LOG("glUniform1ui"
                  << "(" << location << ", " << v0 << ")");
   gl_api_->glUniform1uiFn(location, v0);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform1uivFn(GLint location,
                                  GLsizei count,
                                  const GLuint* v) {
@@ -12711,14 +11570,12 @@ void DebugGLApi::glUniform1uivFn(GLint location,
   gl_api_->glUniform1uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform2fFn(GLint location, GLfloat x, GLfloat y) {
   GL_SERVICE_LOG("glUniform2f"
                  << "(" << location << ", " << x << ", " << y << ")");
   gl_api_->glUniform2fFn(location, x, y);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform2fvFn(GLint location,
                                 GLsizei count,
                                 const GLfloat* v) {
@@ -12728,14 +11585,12 @@ void DebugGLApi::glUniform2fvFn(GLint location,
   gl_api_->glUniform2fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform2iFn(GLint location, GLint x, GLint y) {
   GL_SERVICE_LOG("glUniform2i"
                  << "(" << location << ", " << x << ", " << y << ")");
   gl_api_->glUniform2iFn(location, x, y);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform2ivFn(GLint location, GLsizei count, const GLint* v) {
   GL_SERVICE_LOG("glUniform2iv"
                  << "(" << location << ", " << count << ", "
@@ -12743,14 +11598,12 @@ void DebugGLApi::glUniform2ivFn(GLint location, GLsizei count, const GLint* v) {
   gl_api_->glUniform2ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform2uiFn(GLint location, GLuint v0, GLuint v1) {
   GL_SERVICE_LOG("glUniform2ui"
                  << "(" << location << ", " << v0 << ", " << v1 << ")");
   gl_api_->glUniform2uiFn(location, v0, v1);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform2uivFn(GLint location,
                                  GLsizei count,
                                  const GLuint* v) {
@@ -12760,7 +11613,6 @@ void DebugGLApi::glUniform2uivFn(GLint location,
   gl_api_->glUniform2uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform3fFn(GLint location,
                                GLfloat x,
                                GLfloat y,
@@ -12771,7 +11623,6 @@ void DebugGLApi::glUniform3fFn(GLint location,
   gl_api_->glUniform3fFn(location, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform3fvFn(GLint location,
                                 GLsizei count,
                                 const GLfloat* v) {
@@ -12781,7 +11632,6 @@ void DebugGLApi::glUniform3fvFn(GLint location,
   gl_api_->glUniform3fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform3iFn(GLint location, GLint x, GLint y, GLint z) {
   GL_SERVICE_LOG("glUniform3i"
                  << "(" << location << ", " << x << ", " << y << ", " << z
@@ -12789,7 +11639,6 @@ void DebugGLApi::glUniform3iFn(GLint location, GLint x, GLint y, GLint z) {
   gl_api_->glUniform3iFn(location, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform3ivFn(GLint location, GLsizei count, const GLint* v) {
   GL_SERVICE_LOG("glUniform3iv"
                  << "(" << location << ", " << count << ", "
@@ -12797,7 +11646,6 @@ void DebugGLApi::glUniform3ivFn(GLint location, GLsizei count, const GLint* v) {
   gl_api_->glUniform3ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform3uiFn(GLint location,
                                 GLuint v0,
                                 GLuint v1,
@@ -12808,7 +11656,6 @@ void DebugGLApi::glUniform3uiFn(GLint location,
   gl_api_->glUniform3uiFn(location, v0, v1, v2);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform3uivFn(GLint location,
                                  GLsizei count,
                                  const GLuint* v) {
@@ -12818,7 +11665,6 @@ void DebugGLApi::glUniform3uivFn(GLint location,
   gl_api_->glUniform3uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform4fFn(GLint location,
                                GLfloat x,
                                GLfloat y,
@@ -12830,7 +11676,6 @@ void DebugGLApi::glUniform4fFn(GLint location,
   gl_api_->glUniform4fFn(location, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform4fvFn(GLint location,
                                 GLsizei count,
                                 const GLfloat* v) {
@@ -12840,7 +11685,6 @@ void DebugGLApi::glUniform4fvFn(GLint location,
   gl_api_->glUniform4fvFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform4iFn(GLint location,
                                GLint x,
                                GLint y,
@@ -12852,7 +11696,6 @@ void DebugGLApi::glUniform4iFn(GLint location,
   gl_api_->glUniform4iFn(location, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform4ivFn(GLint location, GLsizei count, const GLint* v) {
   GL_SERVICE_LOG("glUniform4iv"
                  << "(" << location << ", " << count << ", "
@@ -12860,7 +11703,6 @@ void DebugGLApi::glUniform4ivFn(GLint location, GLsizei count, const GLint* v) {
   gl_api_->glUniform4ivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform4uiFn(GLint location,
                                 GLuint v0,
                                 GLuint v1,
@@ -12872,7 +11714,6 @@ void DebugGLApi::glUniform4uiFn(GLint location,
   gl_api_->glUniform4uiFn(location, v0, v1, v2, v3);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniform4uivFn(GLint location,
                                  GLsizei count,
                                  const GLuint* v) {
@@ -12882,7 +11723,6 @@ void DebugGLApi::glUniform4uivFn(GLint location,
   gl_api_->glUniform4uivFn(location, count, v);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformBlockBindingFn(GLuint program,
                                          GLuint uniformBlockIndex,
                                          GLuint uniformBlockBinding) {
@@ -12893,7 +11733,6 @@ void DebugGLApi::glUniformBlockBindingFn(GLuint program,
                                    uniformBlockBinding);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix2fvFn(GLint location,
                                       GLsizei count,
                                       GLboolean transpose,
@@ -12905,7 +11744,6 @@ void DebugGLApi::glUniformMatrix2fvFn(GLint location,
   gl_api_->glUniformMatrix2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix2x3fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -12917,7 +11755,6 @@ void DebugGLApi::glUniformMatrix2x3fvFn(GLint location,
   gl_api_->glUniformMatrix2x3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix2x4fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -12929,7 +11766,6 @@ void DebugGLApi::glUniformMatrix2x4fvFn(GLint location,
   gl_api_->glUniformMatrix2x4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix3fvFn(GLint location,
                                       GLsizei count,
                                       GLboolean transpose,
@@ -12941,7 +11777,6 @@ void DebugGLApi::glUniformMatrix3fvFn(GLint location,
   gl_api_->glUniformMatrix3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix3x2fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -12953,7 +11788,6 @@ void DebugGLApi::glUniformMatrix3x2fvFn(GLint location,
   gl_api_->glUniformMatrix3x2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix3x4fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -12965,7 +11799,6 @@ void DebugGLApi::glUniformMatrix3x4fvFn(GLint location,
   gl_api_->glUniformMatrix3x4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix4fvFn(GLint location,
                                       GLsizei count,
                                       GLboolean transpose,
@@ -12977,7 +11810,6 @@ void DebugGLApi::glUniformMatrix4fvFn(GLint location,
   gl_api_->glUniformMatrix4fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix4x2fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -12989,7 +11821,6 @@ void DebugGLApi::glUniformMatrix4x2fvFn(GLint location,
   gl_api_->glUniformMatrix4x2fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUniformMatrix4x3fvFn(GLint location,
                                         GLsizei count,
                                         GLboolean transpose,
@@ -13001,7 +11832,6 @@ void DebugGLApi::glUniformMatrix4x3fvFn(GLint location,
   gl_api_->glUniformMatrix4x3fvFn(location, count, transpose, value);
 }
 
-DISABLE_CFI_ICALL
 GLboolean DebugGLApi::glUnmapBufferFn(GLenum target) {
   GL_SERVICE_LOG("glUnmapBuffer"
                  << "(" << GLEnums::GetStringEnum(target) << ")");
@@ -13010,28 +11840,24 @@ GLboolean DebugGLApi::glUnmapBufferFn(GLenum target) {
   return result;
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glUseProgramFn(GLuint program) {
   GL_SERVICE_LOG("glUseProgram"
                  << "(" << program << ")");
   gl_api_->glUseProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glValidateProgramFn(GLuint program) {
   GL_SERVICE_LOG("glValidateProgram"
                  << "(" << program << ")");
   gl_api_->glValidateProgramFn(program);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttrib1fFn(GLuint indx, GLfloat x) {
   GL_SERVICE_LOG("glVertexAttrib1f"
                  << "(" << indx << ", " << x << ")");
   gl_api_->glVertexAttrib1fFn(indx, x);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttrib1fvFn(GLuint indx, const GLfloat* values) {
   GL_SERVICE_LOG("glVertexAttrib1fv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
@@ -13039,14 +11865,12 @@ void DebugGLApi::glVertexAttrib1fvFn(GLuint indx, const GLfloat* values) {
   gl_api_->glVertexAttrib1fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttrib2fFn(GLuint indx, GLfloat x, GLfloat y) {
   GL_SERVICE_LOG("glVertexAttrib2f"
                  << "(" << indx << ", " << x << ", " << y << ")");
   gl_api_->glVertexAttrib2fFn(indx, x, y);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttrib2fvFn(GLuint indx, const GLfloat* values) {
   GL_SERVICE_LOG("glVertexAttrib2fv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
@@ -13054,7 +11878,6 @@ void DebugGLApi::glVertexAttrib2fvFn(GLuint indx, const GLfloat* values) {
   gl_api_->glVertexAttrib2fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttrib3fFn(GLuint indx,
                                     GLfloat x,
                                     GLfloat y,
@@ -13064,7 +11887,6 @@ void DebugGLApi::glVertexAttrib3fFn(GLuint indx,
   gl_api_->glVertexAttrib3fFn(indx, x, y, z);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttrib3fvFn(GLuint indx, const GLfloat* values) {
   GL_SERVICE_LOG("glVertexAttrib3fv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
@@ -13072,7 +11894,6 @@ void DebugGLApi::glVertexAttrib3fvFn(GLuint indx, const GLfloat* values) {
   gl_api_->glVertexAttrib3fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttrib4fFn(GLuint indx,
                                     GLfloat x,
                                     GLfloat y,
@@ -13084,7 +11905,6 @@ void DebugGLApi::glVertexAttrib4fFn(GLuint indx,
   gl_api_->glVertexAttrib4fFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttrib4fvFn(GLuint indx, const GLfloat* values) {
   GL_SERVICE_LOG("glVertexAttrib4fv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
@@ -13092,14 +11912,12 @@ void DebugGLApi::glVertexAttrib4fvFn(GLuint indx, const GLfloat* values) {
   gl_api_->glVertexAttrib4fvFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttribDivisorANGLEFn(GLuint index, GLuint divisor) {
   GL_SERVICE_LOG("glVertexAttribDivisorANGLE"
                  << "(" << index << ", " << divisor << ")");
   gl_api_->glVertexAttribDivisorANGLEFn(index, divisor);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttribI4iFn(GLuint indx,
                                      GLint x,
                                      GLint y,
@@ -13111,7 +11929,6 @@ void DebugGLApi::glVertexAttribI4iFn(GLuint indx,
   gl_api_->glVertexAttribI4iFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttribI4ivFn(GLuint indx, const GLint* values) {
   GL_SERVICE_LOG("glVertexAttribI4iv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
@@ -13119,7 +11936,6 @@ void DebugGLApi::glVertexAttribI4ivFn(GLuint indx, const GLint* values) {
   gl_api_->glVertexAttribI4ivFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttribI4uiFn(GLuint indx,
                                       GLuint x,
                                       GLuint y,
@@ -13131,7 +11947,6 @@ void DebugGLApi::glVertexAttribI4uiFn(GLuint indx,
   gl_api_->glVertexAttribI4uiFn(indx, x, y, z, w);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttribI4uivFn(GLuint indx, const GLuint* values) {
   GL_SERVICE_LOG("glVertexAttribI4uiv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
@@ -13139,7 +11954,6 @@ void DebugGLApi::glVertexAttribI4uivFn(GLuint indx, const GLuint* values) {
   gl_api_->glVertexAttribI4uivFn(indx, values);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttribIPointerFn(GLuint indx,
                                           GLint size,
                                           GLenum type,
@@ -13152,7 +11966,6 @@ void DebugGLApi::glVertexAttribIPointerFn(GLuint indx,
   gl_api_->glVertexAttribIPointerFn(indx, size, type, stride, ptr);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glVertexAttribPointerFn(GLuint indx,
                                          GLint size,
                                          GLenum type,
@@ -13167,7 +11980,6 @@ void DebugGLApi::glVertexAttribPointerFn(GLuint indx,
   gl_api_->glVertexAttribPointerFn(indx, size, type, normalized, stride, ptr);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   GL_SERVICE_LOG("glViewport"
                  << "(" << x << ", " << y << ", " << width << ", " << height
@@ -13175,14 +11987,12 @@ void DebugGLApi::glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   gl_api_->glViewportFn(x, y, width, height);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   GL_SERVICE_LOG("glWaitSync"
                  << "(" << sync << ", " << flags << ", " << timeout << ")");
   gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
-DISABLE_CFI_ICALL
 void DebugGLApi::glWindowRectanglesEXTFn(GLenum mode,
                                          GLsizei n,
                                          const GLint* box) {

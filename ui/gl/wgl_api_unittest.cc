@@ -21,10 +21,9 @@ class WGLApiTest : public testing::Test {
     fake_arb_extension_string_ = "";
     fake_ext_extension_string_ = "";
 
-    auto writer = base::AutoWritableMemory::Create(g_driver_wgl);
-    g_driver_wgl->ClearBindings();
-    g_driver_wgl->fn.wglGetExtensionsStringARBFn = &FakeGetExtensionsStringARB;
-    g_driver_wgl->fn.wglGetExtensionsStringEXTFn = &FakeGetExtensionsStringEXT;
+    g_driver_wgl.ClearBindings();
+    g_driver_wgl.fn.wglGetExtensionsStringARBFn = &FakeGetExtensionsStringARB;
+    g_driver_wgl.fn.wglGetExtensionsStringEXTFn = &FakeGetExtensionsStringEXT;
     SetGLImplementation(kGLImplementationDesktopGL);
     SetGLGetProcAddressProc(&FakeGLGetProcAddress);
   }
@@ -32,7 +31,7 @@ class WGLApiTest : public testing::Test {
   void TearDown() override {
     g_current_wgl_context = nullptr;
     api_.reset(nullptr);
-    g_driver_wgl->ClearBindings();
+    g_driver_wgl.ClearBindings();
 
     fake_ext_extension_string_ = "";
     fake_arb_extension_string_ = "";
@@ -41,12 +40,11 @@ class WGLApiTest : public testing::Test {
   void InitializeAPI(const char* disabled_extensions) {
     api_.reset(new RealWGLApi());
     g_current_wgl_context = api_.get();
-    api_->Initialize(&*g_driver_wgl);
+    api_->Initialize(&g_driver_wgl);
     if (disabled_extensions) {
       SetDisabledExtensionsWGL(disabled_extensions);
     }
-    auto writer = base::AutoWritableMemory::Create(g_driver_wgl);
-    g_driver_wgl->InitializeExtensionBindings();
+    g_driver_wgl.InitializeExtensionBindings();
   }
 
   void SetFakeEXTExtensionString(const char* fake_string) {
@@ -94,17 +92,17 @@ TEST_F(WGLApiTest, DisabledExtensionBitTest) {
 
   InitializeAPI(nullptr);
 
-  EXPECT_FALSE(g_driver_wgl->ext.b_WGL_ARB_extensions_string);
+  EXPECT_FALSE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
   // NULL simulates not being able to resolve wglGetExtensionsStringARB
   SetFakeARBExtensionString(nullptr);
   SetFakeEXTExtensionString(kFakeExtensions);
 
   InitializeAPI(nullptr);
-  EXPECT_TRUE(g_driver_wgl->ext.b_WGL_ARB_extensions_string);
+  EXPECT_TRUE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
   InitializeAPI(kFakeExtensions);
-  EXPECT_FALSE(g_driver_wgl->ext.b_WGL_ARB_extensions_string);
+  EXPECT_FALSE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
   SetFakeARBExtensionString("");
   SetFakeEXTExtensionString(kFakeExtensions);
@@ -113,16 +111,16 @@ TEST_F(WGLApiTest, DisabledExtensionBitTest) {
   // We expect false here, because wglGetExtensionsStringARB
   // always takes precedence over wglGetExtensionsStringEXT
   // if it is available.
-  EXPECT_FALSE(g_driver_wgl->ext.b_WGL_ARB_extensions_string);
+  EXPECT_FALSE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
   SetFakeARBExtensionString(kFakeExtensions);
   SetFakeEXTExtensionString("");
 
   InitializeAPI(nullptr);
-  EXPECT_TRUE(g_driver_wgl->ext.b_WGL_ARB_extensions_string);
+  EXPECT_TRUE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
   InitializeAPI(kFakeDisabledExtensions);
-  EXPECT_FALSE(g_driver_wgl->ext.b_WGL_ARB_extensions_string);
+  EXPECT_FALSE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 }
 
 TEST_F(WGLApiTest, DisabledExtensionStringTest) {
