@@ -983,6 +983,30 @@
     },
   },
 
+  'linux_viz_isolated_scripts': {
+    'telemetry_perf_unittests': {
+      'args': [
+        '--extra-browser-args=--enable-viz',
+      ],
+      'swarming': {
+        'hard_timeout': 960,
+        'shards': 12,
+      },
+    },
+    'telemetry_unittests': {
+      'args': [
+        '--extra-browser-args=--enable-viz',
+        '--skip=telemetry.internal.backends.chrome_inspector.inspector_page_unittest.InspectorPageTest.testCaptureScreenshot',
+        '--skip=telemetry.internal.browser.tab_unittest.GpuTabTest.testScreenshot',
+        '--skip=telemetry.internal.actions.scroll_unittest.ScrollActionTest.testWheelScrollDistanceWhileZoomed',
+        '--skip=telemetry.page.cache_temperature_unittest.CacheTemperatureTests.testEnsureHotAfterColdRun',
+      ],
+      'swarming': {
+        'shards': 4,
+      },
+     },
+   },
+
   'linux_viz_gtests': {
     # TODO(jonross): merge all viz tests into one config, use exceptions to
     # differentiate between the fyi and cq filters.
