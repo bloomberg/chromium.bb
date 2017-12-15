@@ -155,6 +155,10 @@ public class PartnerBookmarksReader {
         }
     }
 
+    void recordPartnerBookmarkCount(int count) {
+        RecordHistogram.recordCount100Histogram("PartnerBookmark.Count2", count);
+    }
+
     /** Handles fetching partner bookmarks in a background thread. */
     private class ReadBookmarksTask extends AsyncTask<Void, Void, Void> {
         private final Object mRootSync = new Object();
@@ -163,6 +167,7 @@ public class PartnerBookmarksReader {
             SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
             editor.putLong(LAST_EMPTY_READ_PREFS_NAME, System.currentTimeMillis());
             editor.apply();
+            recordPartnerBookmarkCount(0);
 
             Log.w(TAG,
                     "Obtained zero partner bookmarks. "
@@ -216,7 +221,7 @@ public class PartnerBookmarksReader {
             }
             bookmarkIterator.close();
             int count = urlSet.size();
-            RecordHistogram.recordCount100Histogram("PartnerBookmark.Count", count);
+            recordPartnerBookmarkCount(count);
 
             if (count == 0) {
                 handleZeroBookmark();

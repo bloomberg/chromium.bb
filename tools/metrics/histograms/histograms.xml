@@ -58848,6 +58848,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PartnerBookmark.Count" units="bookmarks">
+  <obsolete>
+    Deprecated 2017-12 by PartnerBookmark.Count2.
+  </obsolete>
   <owner>wychen@chromium.org</owner>
   <summary>
     The number of partner bookmark entries. Note that zero would be
@@ -58855,6 +58858,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Logged when using the bookmark, not skipped (PartnerBookmark.Skipped ==
     False), and at most once per cold start. Note that the distribution is
     weighted by bookmark usage.
+  </summary>
+</histogram>
+
+<histogram name="PartnerBookmark.Count2" units="bookmarks">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    The number of partner bookmark entries. Logged when using the bookmark, and
+    at most once per cold start. Note that the distribution is weighted by
+    bookmark usage.
   </summary>
 </histogram>
 
