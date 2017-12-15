@@ -785,7 +785,7 @@ are declared in build/common.gypi.
         </message>
       </if>
       <!-- Since Flash is a proper noun we don't have to distinguish between title and non-title case. -->
-      <message name="IDS_CONTENT_CONTEXT_ENABLE_FLASH" desc="The name of the Enable Flash command on the blocked plugin context menu">
+      <message name="IDS_CONTENT_CONTEXT_ENABLE_FLASH" desc="The name of the Enable Flash command on the blocked plugin context menu. 'Flash' is the name of a plugin and should not be translated.">
         Enable Flash
       </message>
 
@@ -2320,13 +2320,13 @@ are declared in build/common.gypi.
       <message name="IDS_BLOCKED_JAVASCRIPT_LINK" desc="Link to JavaScript section of content blocking management dialog, displayed in bubble when a page tries to run JavaScript.">
         Manage JavaScript blocking...
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to run Flash.">
+      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
         Flash was blocked on this page
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_MESSAGE" desc="Tooltip on the icon when a page is not allowed to run Flash.">
+      <message name="IDS_BLOCKED_PLUGINS_MESSAGE" desc="Tooltip on the icon when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
         Flash was blocked on this page.
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plugins.">
+      <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plugins. 'Flash' is the name of a plugin and should not be translated.">
         Run Flash this time
       </message>
       <message name="IDS_BLOCKED_SOUND_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to play sound.">
@@ -5097,7 +5097,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLASH_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
       Loading...
       </message>
-      <message name="IDS_FLASH_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
+      <message name="IDS_FLASH_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved. 'Flash' is the name of a plugin and should not be translated.">
       About Flash
       </message>
 
@@ -5687,7 +5687,7 @@ the Bookmarks menu.">
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
         Clear browsing data
       </message>
-      <message name="IDS_FLASH_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to use Flash Plugins on the page. Preceded by the prompt 'This site would like to:'">
+      <message name="IDS_FLASH_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to use Flash Plugins on the page. Preceded by the prompt 'This site would like to:'. 'Flash' is the name of a plugin and should not be translated.">
         Run Flash
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_FOOTER" desc="A text shown at the bottom of the Clear Browsing Data dialog, informing the user that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
