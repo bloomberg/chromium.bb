@@ -84,10 +84,9 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
   int rect_type2_shift = 0;
   if (rect_type == 2 || rect_type == -2) {
     const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
-    // For 64x16 / 16x64 shift 3 bits, for 32x8 / 8x32 shift 2 bits, for
-    // 16x4 / 4x16 shift by 1 bit.
-    rect_type2_shift =
-        (txfm_size_max == 64 ? 3 : (txfm_size_max == 32 ? 2 : 1));
+    // For 64x16 / 16x64 / 32x8 / 8x32 shift 2 bits, and
+    // For 16x4 / 4x16 shift by 1 bit.
+    rect_type2_shift = (txfm_size_max >= 32) ? 2 : 1;
   }
   // Take the shift from the larger dimension in the rectangular case.
   const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift

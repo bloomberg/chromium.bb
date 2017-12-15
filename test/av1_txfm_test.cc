@@ -124,8 +124,7 @@ double get_amplification_factor(TX_TYPE tx_type, TX_SIZE tx_size) {
     amplify_factor *= pow(2, 0.5);
   } else if (abs(rect_type) == 2) {
     const int tx_max_dim = AOMMAX(tx_width, tx_height);
-    const int rect_type2_shift =
-        tx_max_dim == 64 ? 3 : tx_max_dim == 32 ? 2 : 1;
+    const int rect_type2_shift = (tx_max_dim >= 32) ? 2 : 1;
     amplify_factor *= pow(2, rect_type2_shift);
   }
   return amplify_factor;

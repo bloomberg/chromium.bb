@@ -162,7 +162,7 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X64, 136, 7));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X32, 136, 7));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X64, 16, 1.6));
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X16, 16, 1.6));
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X16, 20, 2.0));
     }
 #endif  // CONFIG_TX64X64
   }
