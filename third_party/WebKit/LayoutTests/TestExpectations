@@ -1996,6 +1996,7 @@ crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass 
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Android Win7 ] external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Timeout ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/css-color/t425-hsla-onscreen-b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-color/t32-opacity-offscreen-b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-color/t32-opacity-offscreen-with-alpha-c.xht [ Failure ]
