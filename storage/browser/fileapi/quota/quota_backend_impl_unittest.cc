@@ -72,7 +72,7 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
                         const GURL& origin,
                         storage::StorageType type,
                         const UsageAndQuotaCallback& callback) override {
-    callback.Run(storage::kQuotaStatusOk, usage_, quota_);
+    callback.Run(blink::QuotaStatusCode::kOk, usage_, quota_);
   }
 
   int storage_modified_count() { return storage_modified_count_; }

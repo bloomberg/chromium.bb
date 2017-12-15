@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/browser/quota_permission_context.h"
-#include "storage/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace storage {
 class QuotaManager;
@@ -47,7 +47,7 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
 
  private:
   void DidQueryStorageUsageAndQuota(RequestStorageQuotaCallback callback,
-                                    storage::QuotaStatusCode status,
+                                    blink::QuotaStatusCode status,
                                     int64_t usage,
                                     int64_t quota);
   void DidGetPersistentUsageAndQuota(int64_t render_frame_id,
@@ -55,7 +55,7 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
                                      storage::StorageType storage_type,
                                      uint64_t requested_quota,
                                      RequestStorageQuotaCallback callback,
-                                     storage::QuotaStatusCode status,
+                                     blink::QuotaStatusCode status,
                                      int64_t usage,
                                      int64_t quota);
   void DidGetPermissionResponse(
@@ -67,11 +67,11 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
       QuotaPermissionContext::QuotaPermissionResponse response);
   void DidSetHostQuota(int64_t current_usage,
                        RequestStorageQuotaCallback callback,
-                       storage::QuotaStatusCode status,
+                       blink::QuotaStatusCode status,
                        int64_t new_quota);
   void DidGetTemporaryUsageAndQuota(int64_t requested_quota,
                                     RequestStorageQuotaCallback callback,
-                                    storage::QuotaStatusCode status,
+                                    blink::QuotaStatusCode status,
                                     int64_t usage,
                                     int64_t quota);
 

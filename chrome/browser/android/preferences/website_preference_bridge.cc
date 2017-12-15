@@ -45,7 +45,7 @@
 #include "jni/WebsitePreferenceBridge_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 
@@ -679,7 +679,7 @@ void OnStorageInfoReady(const ScopedJavaGlobalRef<jobject>& java_callback,
 }
 
 void OnStorageInfoCleared(const ScopedJavaGlobalRef<jobject>& java_callback,
-                          storage::QuotaStatusCode code) {
+                          blink::QuotaStatusCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Java_StorageInfoClearedCallback_onStorageInfoCleared(

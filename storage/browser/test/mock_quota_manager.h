@@ -23,7 +23,6 @@
 using storage::GetOriginsCallback;
 using storage::QuotaClient;
 using storage::QuotaManager;
-using storage::QuotaStatusCode;
 using storage::SpecialStoragePolicy;
 using storage::StatusCallback;
 using storage::StorageType;
@@ -138,7 +137,7 @@ class MockQuotaManager : public QuotaManager {
                            std::set<GURL>* origins,
                            StorageType storage_type);
   void DidDeleteOriginData(const StatusCallback& callback,
-                           QuotaStatusCode status);
+                           blink::QuotaStatusCode status);
 
   // The list of stored origins that have been added via AddOrigin.
   std::vector<OriginInfo> origins_;

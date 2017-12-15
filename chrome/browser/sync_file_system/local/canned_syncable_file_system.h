@@ -25,6 +25,7 @@
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -151,7 +152,7 @@ class CannedSyncableFileSystem
   base::File::Error DeleteFileSystem();
 
   // Retrieves the quota and usage.
-  storage::QuotaStatusCode GetUsageAndQuota(int64_t* usage, int64_t* quota);
+  blink::QuotaStatusCode GetUsageAndQuota(int64_t* usage, int64_t* quota);
 
   // ChangeTracker related methods. They run on file task runner.
   void GetChangedURLsInTracker(storage::FileSystemURLSet* urls);

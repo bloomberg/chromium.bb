@@ -16,7 +16,7 @@
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 class GURL;
 
@@ -83,14 +83,14 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor {
 
   void StartEvictionTimerWithDelay(int delay_ms);
   void ConsiderEviction();
-  void OnGotEvictionRoundInfo(QuotaStatusCode status,
+  void OnGotEvictionRoundInfo(blink::QuotaStatusCode status,
                               const QuotaSettings& settings,
                               int64_t available_space,
                               int64_t total_space,
                               int64_t current_usage,
                               bool current_usage_is_complete);
   void OnGotEvictionOrigin(const GURL& origin);
-  void OnEvictionComplete(QuotaStatusCode status);
+  void OnEvictionComplete(blink::QuotaStatusCode status);
 
   void OnEvictionRoundStarted();
   void OnEvictionRoundFinished();

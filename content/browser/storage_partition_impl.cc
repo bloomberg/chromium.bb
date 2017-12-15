@@ -49,6 +49,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/host_zoom_map_impl.h"
@@ -124,12 +125,12 @@ void OnQuotaManagedOriginDeleted(const GURL& origin,
                                  storage::StorageType type,
                                  size_t* deletion_task_count,
                                  const base::Closure& callback,
-                                 storage::QuotaStatusCode status) {
+                                 blink::QuotaStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(*deletion_task_count, 0u);
-  if (status != storage::kQuotaStatusOk) {
+  if (status != blink::QuotaStatusCode::kOk) {
     DLOG(ERROR) << "Couldn't remove data of type " << type << " for origin "
-                << origin << ". Status: " << status;
+                << origin << ". Status: " << static_cast<int>(status);
   }
 
   (*deletion_task_count)--;

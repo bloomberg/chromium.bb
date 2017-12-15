@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -27,7 +28,7 @@ class STORAGE_EXPORT QuotaClient {
   typedef base::Callback<void(int64_t usage)> GetUsageCallback;
   typedef base::Callback<void(const std::set<GURL>& origins)>
       GetOriginsCallback;
-  typedef base::Callback<void(QuotaStatusCode status)> DeletionCallback;
+  typedef base::Callback<void(blink::QuotaStatusCode status)> DeletionCallback;
 
   virtual ~QuotaClient() {}
 

@@ -569,8 +569,8 @@ void CacheStorageCache::BatchOperation(
 
   BatchDidGetUsageAndQuota(
       operations, std::move(callback), std::move(bad_message_callback),
-      0 /* space_required */, 0 /* side_data_size */, storage::kQuotaStatusOk,
-      0 /* usage */, 0 /* quota */);
+      0 /* space_required */, 0 /* side_data_size */,
+      blink::QuotaStatusCode::kOk, 0 /* usage */, 0 /* quota */);
 }
 
 void CacheStorageCache::BatchDidGetUsageAndQuota(
@@ -579,7 +579,7 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
     BadMessageCallback bad_message_callback,
     uint64_t space_required,
     uint64_t side_data_size,
-    storage::QuotaStatusCode status_code,
+    blink::QuotaStatusCode status_code,
     int64_t usage,
     int64_t quota) {
   base::CheckedNumeric<uint64_t> safe_space_required = space_required;
@@ -596,7 +596,7 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
         base::BindOnce(std::move(callback), CacheStorageError::kErrorStorage));
     return;
   }
-  if (status_code != storage::kQuotaStatusOk ||
+  if (status_code != blink::QuotaStatusCode::kOk ||
       safe_space_required.ValueOrDie() > quota) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
@@ -1089,10 +1089,10 @@ void CacheStorageCache::WriteSideDataDidGetQuota(
     base::Time expected_response_time,
     scoped_refptr<net::IOBuffer> buffer,
     int buf_len,
-    storage::QuotaStatusCode status_code,
+    blink::QuotaStatusCode status_code,
     int64_t usage,
     int64_t quota) {
-  if (status_code != storage::kQuotaStatusOk || (buf_len > quota - usage)) {
+  if (status_code != blink::QuotaStatusCode::kOk || (buf_len > quota - usage)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   CacheStorageError::kErrorQuotaExceeded));

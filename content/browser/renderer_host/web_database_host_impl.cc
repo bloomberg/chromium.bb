@@ -18,13 +18,12 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
-#include "storage/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using storage::DatabaseUtil;
 using storage::VfsBackend;
 using storage::QuotaManager;
-using storage::QuotaStatusCode;
 
 namespace content {
 namespace {
@@ -188,10 +187,10 @@ void WebDatabaseHostImpl::GetSpaceAvailable(
       db_tracker_->task_runner(), origin.GetURL(),
       storage::kStorageTypeTemporary,
       base::Bind(
-          [](GetSpaceAvailableCallback callback,
-             storage::QuotaStatusCode status, int64_t usage, int64_t quota) {
+          [](GetSpaceAvailableCallback callback, blink::QuotaStatusCode status,
+             int64_t usage, int64_t quota) {
             int64_t available = 0;
-            if ((status == storage::kQuotaStatusOk) && (usage < quota)) {
+            if ((status == blink::QuotaStatusCode::kOk) && (usage < quota)) {
               available = quota - usage;
             }
             std::move(callback).Run(available);

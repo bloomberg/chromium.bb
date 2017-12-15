@@ -17,6 +17,7 @@ jumbo_component("blink_common") {
     "//content/*",
     "//third_party/WebKit/*",
     "//components/*",
+    "//storage/*",
     ":*",
   ]
 
@@ -52,6 +53,7 @@ jumbo_component("blink_common") {
     "origin_trials/trial_token.h",
     "origin_trials/trial_token_validator.cc",
     "origin_trials/trial_token_validator.h",
+    "quota/quota_status_code.h",
     "sandbox_flags.h",
   ]
 

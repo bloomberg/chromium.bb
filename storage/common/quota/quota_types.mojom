@@ -13,7 +13,7 @@ enum StorageType {
   kUnknown,
 };
 
-// TODO(sashab): Remove duplicate definition storage::QuotaStatusCode.
+// TODO(sashab): Remove duplicate definition blink::QuotaStatusCode.
 enum QuotaStatusCode {
   kOk = 0,
   kErrorNotSupported,

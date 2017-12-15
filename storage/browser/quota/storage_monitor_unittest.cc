@@ -20,14 +20,12 @@
 #include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using blink::QuotaStatusCode;
 using storage::HostStorageObservers;
-using storage::kQuotaErrorNotSupported;
-using storage::kQuotaStatusOk;
 using storage::kStorageTypePersistent;
 using storage::kStorageTypeTemporary;
 using storage::QuotaClient;
 using storage::QuotaManager;
-using storage::QuotaStatusCode;
 using storage::SpecialStoragePolicy;
 using storage::StorageMonitor;
 using storage::StorageObserver;
@@ -73,7 +71,7 @@ class UsageMockQuotaManager : public QuotaManager {
                      storage::GetQuotaSettingsFunc()),
         callback_usage_(0),
         callback_quota_(0),
-        callback_status_(kQuotaStatusOk),
+        callback_status_(QuotaStatusCode::kOk),
         initialized_(false) {}
 
   void SetCallbackParams(int64_t usage, int64_t quota, QuotaStatusCode status) {
@@ -322,7 +320,7 @@ TEST_F(HostStorageObserversTest, InitializeOnUsageChange) {
                                         false);
   const int64_t kUsage = 324554;
   const int64_t kQuota = 234354354;
-  quota_manager_->SetCallbackParams(kUsage, kQuota, kQuotaStatusOk);
+  quota_manager_->SetCallbackParams(kUsage, kQuota, QuotaStatusCode::kOk);
 
   MockObserver mock_observer;
   HostStorageObservers host_observers(quota_manager_.get());
@@ -350,7 +348,7 @@ TEST_F(HostStorageObserversTest, InitializeOnUsageChange) {
 TEST_F(HostStorageObserversTest, InitializeOnObserver) {
   const int64_t kUsage = 74387;
   const int64_t kQuota = 92834743;
-  quota_manager_->SetCallbackParams(kUsage, kQuota, kQuotaStatusOk);
+  quota_manager_->SetCallbackParams(kUsage, kQuota, QuotaStatusCode::kOk);
   HostStorageObservers host_observers(quota_manager_.get());
 
   // |host_observers| should not be initialized after the first observer is
@@ -408,7 +406,7 @@ TEST_F(HostStorageObserversTest, NegativeUsageAndQuota) {
                                         false);
   const int64_t kUsage = -324554;
   const int64_t kQuota = -234354354;
-  quota_manager_->SetCallbackParams(kUsage, kQuota, kQuotaStatusOk);
+  quota_manager_->SetCallbackParams(kUsage, kQuota, QuotaStatusCode::kOk);
 
   MockObserver mock_observer;
   HostStorageObservers host_observers(quota_manager_.get());
@@ -432,7 +430,8 @@ TEST_F(HostStorageObserversTest, RecoverFromBadUsageInit) {
   // Set up the quota manager to return an error status.
   const int64_t kUsage = 6656;
   const int64_t kQuota = 99585556;
-  quota_manager_->SetCallbackParams(kUsage, kQuota, kQuotaErrorNotSupported);
+  quota_manager_->SetCallbackParams(kUsage, kQuota,
+                                    QuotaStatusCode::kErrorNotSupported);
 
   // Verify that |host_observers| is not initialized and an event has not been
   // dispatched.
@@ -443,7 +442,7 @@ TEST_F(HostStorageObserversTest, RecoverFromBadUsageInit) {
   EXPECT_EQ(0, GetRequiredUpdatesCount(host_observers));
 
   // Now ensure that quota manager returns a good status.
-  quota_manager_->SetCallbackParams(kUsage, kQuota, kQuotaStatusOk);
+  quota_manager_->SetCallbackParams(kUsage, kQuota, QuotaStatusCode::kOk);
   host_observers.NotifyUsageChange(params.filter, 9048543);
   StorageObserver::Event expected_event(params.filter, kUsage, kQuota);
   EXPECT_EQ(1, mock_observer.EventCount());
@@ -482,7 +481,7 @@ TEST_F(HostStorageObserversTest, AsyncInitialization) {
   EXPECT_EQ(0, GetRequiredUpdatesCount(host_observers));
 
   // Simulate an asynchronous callback from QuotaManager.
-  quota_manager_->SetCallbackParams(kUsage, kQuota, kQuotaStatusOk);
+  quota_manager_->SetCallbackParams(kUsage, kQuota, QuotaStatusCode::kOk);
   quota_manager_->InvokeCallback();
   StorageObserver::Event expected_event(params.filter, kUsage + kDelta, kQuota);
   EXPECT_EQ(1, mock_observer.EventCount());
@@ -614,7 +613,7 @@ TEST_F(StorageMonitorTest, EventDispatch) {
   // Verify dispatch of events.
   const int64_t kUsage = 5325;
   const int64_t kQuota = 903845;
-  quota_manager_->SetCallbackParams(kUsage, kQuota, kQuotaStatusOk);
+  quota_manager_->SetCallbackParams(kUsage, kQuota, QuotaStatusCode::kOk);
   storage_monitor_->NotifyUsageChange(params1_.filter, 9048543);
 
   StorageObserver::Event expected_event(params1_.filter, kUsage, kQuota);

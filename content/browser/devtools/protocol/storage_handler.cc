@@ -16,7 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -45,12 +45,12 @@ Storage::StorageType GetTypeName(storage::QuotaClient::ID id) {
 
 void ReportUsageAndQuotaDataOnUIThread(
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback,
-    storage::QuotaStatusCode code,
+    blink::QuotaStatusCode code,
     int64_t usage,
     int64_t quota,
     base::flat_map<storage::QuotaClient::ID, int64_t> usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (code != storage::kQuotaStatusOk) {
+  if (code != blink::QuotaStatusCode::kOk) {
     return callback->sendFailure(
         Response::Error("Quota information is not available"));
   }
@@ -70,7 +70,7 @@ void ReportUsageAndQuotaDataOnUIThread(
 
 void GotUsageAndQuotaDataCallback(
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback,
-    storage::QuotaStatusCode code,
+    blink::QuotaStatusCode code,
     int64_t usage,
     int64_t quota,
     base::flat_map<storage::QuotaClient::ID, int64_t> usage_breakdown) {

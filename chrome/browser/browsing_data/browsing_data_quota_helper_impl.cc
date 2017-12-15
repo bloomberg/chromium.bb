@@ -170,5 +170,5 @@ void BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread(
 }
 
 void BrowsingDataQuotaHelperImpl::DidRevokeHostQuota(
-    storage::QuotaStatusCode /*status*/,
+    blink::QuotaStatusCode /*status*/,
     int64_t /*quota*/) {}

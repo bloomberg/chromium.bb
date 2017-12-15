@@ -16,7 +16,7 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::kQuotaStatusOk;
+using blink::QuotaStatusCode;
 using storage::kStorageTypeTemporary;
 using storage::QuotaClient;
 using storage::QuotaClientList;
@@ -109,7 +109,7 @@ class MockQuotaClient : public QuotaClient {
     EXPECT_EQ(kStorageTypeTemporary, type);
     usage_map_.erase(origin);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, kQuotaStatusOk));
+        FROM_HERE, base::Bind(callback, QuotaStatusCode::kOk));
   }
 
   bool DoesSupport(storage::StorageType type) const override {

@@ -37,6 +37,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace content {
 
@@ -601,7 +602,7 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
                          AppCache* newest_cache);
 
   void GetQuotaThenSchedule();
-  void OnQuotaCallback(storage::QuotaStatusCode status,
+  void OnQuotaCallback(blink::QuotaStatusCode status,
                        int64_t usage,
                        int64_t quota);
 
@@ -673,11 +674,11 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(
-    storage::QuotaStatusCode status,
+    blink::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   if (storage_) {
-    if (status == storage::kQuotaStatusOk)
+    if (status == blink::QuotaStatusCode::kOk)
       space_available_ = std::max(static_cast<int64_t>(0), quota - usage);
     else
       space_available_ = 0;
