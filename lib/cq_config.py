@@ -35,26 +35,28 @@ class MalformedCQConfigException(Exception):
 class CQConfigParser(object):
   """Class to parse options for a change from its CQ config files."""
 
-  def __init__(self, build_root, change):
+  def __init__(self, build_root, change, forgiving=True):
     """Initialize a CQConfigParser instance for a change.
 
     Args:
       build_root: The path to the build root.
       change: An instance of cros_patch.GerritPatch.
+      forgiving: If false, throw MalformedCQConfigException if encountering
+                 parsing errors. Otherwise, log them and discard failures.
+                 Default: True.
     """
     self.build_root = build_root
     self.change = change
     self._common_config_file = self.GetCommonConfigFileForChange(
         build_root, change)
+    self.forgiving = forgiving
 
-  def GetOption(self, section, option, forgiven=True, config_path=None):
+  def GetOption(self, section, option, config_path=None):
     """Get |option| from |section| for self.change.
 
     Args:
       section: Section header name (string).
       option: Option name (string).
-      forgiven: Option boolean indicating whether a malformed config can be
-        forgiven. Default to True.
       config_path: The path to the config to get the option value. When
         config_path is None, use self._common_config_file as the default config.
 
@@ -62,8 +64,8 @@ class CQConfigParser(object):
       The value of the option (string) or None.
 
     Raises:
-      MalformedCQConfigException if the config is malformed and forgiven is
-      False.
+      MalformedCQConfigException if the config is malformed and parser is
+      non-forgiving.
     """
     result = None
     config_path = config_path or self._common_config_file
@@ -74,8 +76,9 @@ class CQConfigParser(object):
       except ConfigParser.Error as e:
         error = MalformedCQConfigException(
             self.change, config_path, e)
-        logging.error('Malformed CQ config: %s', error)
-        if not forgiven:
+        if self.forgiving:
+          logging.error('Forgiving a malformed CQ config: %s', error)
+        else:
           raise error
     return result
 

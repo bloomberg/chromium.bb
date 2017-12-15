@@ -84,7 +84,7 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
     self.common_config_file = '/build_root/repo/COMMIT-QUEUE.ini'
 
   def CreateCQConfigParser(self, build_root=None, change=None, checkout=None,
-                           common_config_file=None):
+                           common_config_file=None, forgiving=True):
     if build_root is None:
       build_root = self.build_root
     if change is None:
@@ -98,7 +98,7 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
                      return_value=checkout)
     self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange',
                      return_value=common_config_file)
-    return cq_config.CQConfigParser(build_root, change)
+    return cq_config.CQConfigParser(build_root, change, forgiving=forgiving)
 
   def testGetOption(self):
     """Test GetOption."""
@@ -128,15 +128,16 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
 
       self.assertEqual(None, result)
 
-  def testGetOptionForBadConfigFileWithFalseForgiven(self):
+  def testGetOptionForBadConfigFileWithFalseForgiving(self):
     """Test whether exception is raised when handle a malformat config file."""
     with osutils.TempDir(set_global=True) as tempdir:
       path = os.path.join(tempdir, 'COMMIT-QUEUE.ini')
       osutils.WriteFile(path, 'foo\n')
-      parser = self.CreateCQConfigParser(common_config_file=path)
+      parser = self.CreateCQConfigParser(common_config_file=path,
+                                         forgiving=False)
 
-      self.assertRaises(cq_config.MalformedCQConfigException,
-                        parser.GetOption, 'a', 'b', forgiven=False)
+      with self.assertRaises(cq_config.MalformedCQConfigException):
+        parser.GetOption('a', 'b')
 
   def testGetPreCQConfigs(self):
     """Test GetPreCQConfigs."""
