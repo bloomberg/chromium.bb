@@ -202,6 +202,24 @@ int64_t GetDisplayIdForView(View* view) {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
 
+// Whether |item_view| is a ShelfButton and its state is STATE_DRAGGING.
+bool ShelfButtonIsInDrag(const ShelfItemType item_type,
+                         const views::View* item_view) {
+  switch (item_type) {
+    case TYPE_PINNED_APP:
+    case TYPE_BROWSER_SHORTCUT:
+    case TYPE_APP:
+      return static_cast<const ShelfButton*>(item_view)->state() &
+             ShelfButton::STATE_DRAGGING;
+    case TYPE_DIALOG:
+    case TYPE_APP_PANEL:
+    case TYPE_BACK_BUTTON:
+    case TYPE_APP_LIST:
+    case TYPE_UNDEFINED:
+      return false;
+  }
+}
+
 }  // namespace
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
@@ -1861,8 +1879,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
 
   // Only selected shelf items with context menu opened can be dragged.
   const ShelfItem* item = ShelfItemForView(source);
-  if (context_menu && item && item->type != TYPE_APP_LIST &&
-      item->type != TYPE_BACK_BUTTON &&
+  if (context_menu && item && ShelfButtonIsInDrag(item->type, source) &&
       source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
   }
