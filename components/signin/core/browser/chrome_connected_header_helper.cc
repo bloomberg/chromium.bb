@@ -150,12 +150,22 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
     const GURL& url,
     const std::string& account_id,
     int profile_mode_mask) {
+// If we are not on Chrome OS, an empty |account_id| corresponds to the user not
+// signed in to Chrome. Do NOT enforce account consistency otherwise users will
+// not be able to use Google services at all. Therefore, send an empty header.
+// On Chrome OS, an empty |account_id| corresponds to Public Sessions, Guest
+// Sessions and Active Directory logins. Guest Sessions have already been
+// filtered upstream and we want to enforce account consistency in Public
+// Sessions and Active Directory logins.
+#if !defined(OS_CHROMEOS)
   if (account_id.empty())
     return std::string();
+#endif
 
   std::vector<std::string> parts;
-  if (IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {
-    // Only set the Gaia ID on domains that actually requires it.
+  if (!account_id.empty() &&
+      IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {
+    // Only set the Gaia ID on domains that actually require it.
     parts.push_back(
         base::StringPrintf("%s=%s", kGaiaIdAttrName, account_id.c_str()));
   }
