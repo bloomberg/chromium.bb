@@ -28,11 +28,9 @@ libdbus-1-3 \
 libdbus-glib-1-2 \
 libdbusmenu \
 libdbusmenu-glib4 \
-libdconf1 \
 libexpat1 \
 libffi6 \
 libfontconfig1 \
-libgconf-2-4 \
 libgcrypt11 \
 libgdk-pixbuf2.0-0 \
 libglib2.0-0 \
