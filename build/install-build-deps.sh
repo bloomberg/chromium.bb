@@ -169,11 +169,9 @@ dev_list="\
   libcap-dev
   libcups2-dev
   libcurl4-gnutls-dev
-  libdconf-dev
   libdrm-dev
   libelf-dev
   libffi-dev
-  libgconf2-dev
   libglib2.0-dev
   libglu1-mesa-dev
   libgnome-keyring-dev
@@ -236,7 +234,6 @@ lib_list="\
   libcairo2
   libcap2
   libcups2
-  libdconf1
   libexpat1
   libffi6
   libfontconfig1
@@ -421,9 +418,7 @@ nacl_list="\
   libasound2:i386
   libcap2:i386
   libelf-dev:i386
-  libdconf1:i386
   libfontconfig1:i386
-  libgconf-2-4:i386
   libglib2.0-0:i386
   libgpm2:i386
   libgtk2.0-0:i386
