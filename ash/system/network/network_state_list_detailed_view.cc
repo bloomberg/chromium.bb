@@ -294,10 +294,8 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
   if (list_type_ == LIST_TYPE_NETWORK) {
     NetworkStateHandler* network_state_handler =
         NetworkHandler::Get()->network_state_handler();
-    // TODO(crbug.com/756092): Add | operator to NetworkTypePattern.
-    const bool scanning =
-        network_state_handler->GetScanningByType(NetworkTypePattern::WiFi()) ||
-        network_state_handler->GetScanningByType(NetworkTypePattern::Tether());
+    const bool scanning = network_state_handler->GetScanningByType(
+        NetworkTypePattern::WiFi() | NetworkTypePattern::Tether());
     ShowProgress(-1, scanning);
   }
 }

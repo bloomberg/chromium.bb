@@ -19,6 +19,7 @@ class NetworkTypePatternTest : public testing::Test {
         default_(NetworkTypePattern::Default()),
         ethernet_(NetworkTypePattern::Ethernet()),
         mobile_(NetworkTypePattern::Mobile()),
+        physical_(NetworkTypePattern::Physical()),
         non_virtual_(NetworkTypePattern::NonVirtual()),
         wimax_(NetworkTypePattern::Wimax()),
         wireless_(NetworkTypePattern::Wireless()),
@@ -38,6 +39,7 @@ class NetworkTypePatternTest : public testing::Test {
   const NetworkTypePattern default_;
   const NetworkTypePattern ethernet_;
   const NetworkTypePattern mobile_;
+  const NetworkTypePattern physical_;
   const NetworkTypePattern non_virtual_;
   const NetworkTypePattern wimax_;
   const NetworkTypePattern wireless_;
@@ -64,6 +66,14 @@ TEST_F(NetworkTypePatternTest, MatchesType) {
   EXPECT_TRUE(wireless_.MatchesType(kTypeTether));
   EXPECT_FALSE(wireless_.MatchesType(shill::kTypeEthernet));
   EXPECT_FALSE(wireless_.MatchesType(shill::kTypeVPN));
+
+  // Networks managed by Shill (excludes Tether and VPN).
+  EXPECT_TRUE(physical_.MatchesType(shill::kTypeCellular));
+  EXPECT_TRUE(physical_.MatchesType(shill::kTypeWifi));
+  EXPECT_TRUE(physical_.MatchesType(shill::kTypeEthernet));
+  EXPECT_TRUE(physical_.MatchesType(shill::kTypeWimax));
+  EXPECT_FALSE(physical_.MatchesType(kTypeTether));
+  EXPECT_FALSE(physical_.MatchesType(shill::kTypeVPN));
 
   // Non-virtual contains everything except VPN.
   EXPECT_TRUE(non_virtual_.MatchesType(shill::kTypeCellular));
@@ -119,6 +129,13 @@ TEST_F(NetworkTypePatternTest, Primitive) {
       NetworkTypePattern::Primitive(shill::kTypeWimax);
   EXPECT_TRUE(wimax_.Equals(primitive_wimax));
   EXPECT_TRUE(primitive_wimax.Equals(wimax_));
+}
+
+TEST_F(NetworkTypePatternTest, Or) {
+  NetworkTypePattern compound = wifi_ | cellular_;
+  EXPECT_TRUE(cellular_.MatchesPattern(compound));
+  EXPECT_TRUE(wifi_.MatchesPattern(compound));
+  EXPECT_FALSE(ethernet_.MatchesPattern(compound));
 }
 
 TEST_F(NetworkTypePatternTest, ToDebugString) {

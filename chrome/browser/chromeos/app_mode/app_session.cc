@@ -135,10 +135,9 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
                                               ->GetAccountId())) {
       // If we were in demo mode, we disabled all our network technologies,
       // re-enable them.
-      NetworkStateHandler* handler =
-          NetworkHandler::Get()->network_state_handler();
-      handler->SetTechnologyEnabled(NetworkTypePattern::NonVirtual(), true,
-                                    chromeos::network_handler::ErrorCallback());
+      NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+          NetworkTypePattern::Physical(), true,
+          chromeos::network_handler::ErrorCallback());
     }
 
     app_session_->OnLastAppWindowClosed();

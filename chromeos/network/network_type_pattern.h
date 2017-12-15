@@ -23,6 +23,9 @@ class CHROMEOS_EXPORT NetworkTypePattern {
   // Matches Cellular, WiMAX, or Tether networks.
   static NetworkTypePattern Mobile();
 
+  // Matches Physical networks (i.e. excludes Tether and VPN).
+  static NetworkTypePattern Physical();
+
   // Matches non virtual networks.
   static NetworkTypePattern NonVirtual();
 
@@ -54,6 +57,8 @@ class CHROMEOS_EXPORT NetworkTypePattern {
   // symmetric and reflexive but not transitive.
   // See the unit test for examples.
   bool MatchesPattern(const NetworkTypePattern& other_pattern) const;
+
+  NetworkTypePattern operator|(const NetworkTypePattern& other) const;
 
   std::string ToDebugString() const;
 
