@@ -15,19 +15,20 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.test.util.browser.ChromeHome;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 
 /**
  * Junit4 rule for tests testing the Chrome Home bottom sheet.
  */
-@CommandLineFlags.Add({ChromeHome.ENABLE_FLAGS, DISABLE_FIRST_RUN_EXPERIENCE,
-        DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({DISABLE_FIRST_RUN_EXPERIENCE, DISABLE_NETWORK_PREDICTION_FLAG})
 public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     /** An observer used to record events that occur with respect to the bottom sheet. */
     public static class Observer extends EmptyBottomSheetObserver {
@@ -98,6 +99,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     private @BottomSheet.SheetState int mStartingBottomSheetState = BottomSheet.SHEET_STATE_FULL;
 
     protected void beforeStartingActivity() {
+        Features.getInstance().enable(ChromeFeatureList.CHROME_HOME);
         mChromeHomeEnabler.setPrefs(true);
     }
 

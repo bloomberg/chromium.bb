@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -29,9 +28,7 @@ import java.lang.annotation.Target;
  * @see ChromeHome.Processor
  * @see FeatureUtilities#isChromeHomeEnabled()
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface ChromeHome {
+public interface ChromeHome {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.TYPE})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
@@ -43,11 +40,6 @@ public @interface ChromeHome {
     @Features.DisableFeatures(ChromeFeatureList.CHROME_HOME)
     @interface Disable {}
 
-    boolean value() default true;
-
-    String FEATURES = ChromeFeatureList.CHROME_HOME;
-    String ENABLE_FLAGS = "enable-features=" + FEATURES;
-
     /**
      * Rule to handle setting and resetting the cached feature state for ChromeHome. Can be used by
      * explicitly calling methods ({@link #setPrefs(boolean)} and {@link #clearTestState()}) or by
@@ -57,23 +49,12 @@ public @interface ChromeHome {
         private Boolean mOldState;
 
         public Processor() {
-            super(ChromeHome.class, ChromeHome.Enable.class, ChromeHome.Disable.class);
+            super(ChromeHome.Enable.class, ChromeHome.Disable.class);
         }
 
         @Override
         protected void before() throws Throwable {
-            boolean featureEnabled;
-            Annotation annotation = getClosestAnnotation();
-            if (annotation instanceof ChromeHome) {
-                featureEnabled = ((ChromeHome) annotation).value();
-                if (featureEnabled) {
-                    Features.getInstance().enable(ChromeFeatureList.CHROME_HOME);
-                } else {
-                    Features.getInstance().disable(ChromeFeatureList.CHROME_HOME);
-                }
-            } else {
-                featureEnabled = annotation instanceof ChromeHome.Enable;
-            }
+            boolean featureEnabled = getClosestAnnotation() instanceof ChromeHome.Enable;
             setPrefs(featureEnabled);
         }
 
