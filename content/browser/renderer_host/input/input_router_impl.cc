@@ -82,7 +82,7 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
       wheel_scroll_latching_enabled_(base::FeatureList::IsEnabled(
           features::kTouchpadAndWheelScrollLatching)),
       wheel_event_queue_(this, wheel_scroll_latching_enabled_),
-      gesture_event_queue_(this, this, config.gesture_config),
+      gesture_event_queue_(this, this, this, config.gesture_config),
       device_scale_factor_(1.f),
       host_binding_(this),
       frame_host_binding_(this),
@@ -201,6 +201,10 @@ void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
     host_binding_.Close();
     host_binding_.Bind(std::move(request));
   }
+}
+
+void InputRouterImpl::ProgressFling(base::TimeTicks current_time) {
+  gesture_event_queue_.ProgressFling(current_time);
 }
 
 void InputRouterImpl::CancelTouchTimeout() {
@@ -342,6 +346,16 @@ void InputRouterImpl::OnGestureEventAck(
     InputEventAckState ack_result) {
   touch_event_queue_->OnGestureEventAck(event, ack_result);
   disposition_handler_->OnGestureEventAck(event, ack_source, ack_result);
+}
+
+void InputRouterImpl::SendGeneratedWheelEvent(
+    const MouseWheelEventWithLatencyInfo& wheel_event) {
+  client_->ForwardWheelEventWithLatencyInfo(wheel_event.event,
+                                            wheel_event.latency);
+}
+
+void InputRouterImpl::SetNeedsBeginFrameForFlingProgress() {
+  client_->SetNeedsBeginFrameForFlingProgress();
 }
 
 void InputRouterImpl::SendMouseWheelEventImmediately(

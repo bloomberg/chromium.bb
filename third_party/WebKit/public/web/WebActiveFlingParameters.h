@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebActiveWheelFlingParameters_h
-#define WebActiveWheelFlingParameters_h
+#ifndef WebActiveFlingParameters_h
+#define WebActiveFlingParameters_h
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebFloatPoint.h"
@@ -34,7 +34,7 @@
 
 namespace blink {
 
-struct WebActiveWheelFlingParameters {
+struct WebActiveFlingParameters {
   WebFloatPoint delta;
   WebPoint point;
   WebPoint global_point;
@@ -43,9 +43,9 @@ struct WebActiveWheelFlingParameters {
   WebSize cumulative_scroll;
   double start_time;
 
-  WebActiveWheelFlingParameters()
+  WebActiveFlingParameters()
       : modifiers(0), source_device(kWebGestureDeviceTouchpad), start_time(0) {}
 };
-}
+}  // namespace blink
 
 #endif

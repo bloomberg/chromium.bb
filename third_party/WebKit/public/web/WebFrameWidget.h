@@ -42,7 +42,6 @@ class WebDragData;
 class WebLocalFrame;
 class WebInputMethodController;
 class WebWidgetClient;
-struct WebActiveWheelFlingParameters;
 struct WebFloatPoint;
 
 class WebFrameWidget : public WebWidget {
@@ -131,12 +130,6 @@ class WebFrameWidget : public WebWidget {
   // across processes.
   virtual void UpdateRenderThrottlingStatus(bool is_throttled,
                                             bool subtree_throttled) {}
-
-  // Called to inform the WebFrameWidget that a wheel fling animation was
-  // started externally (for instance by the compositor) but must be completed
-  // by the WebFrameWidget.
-  virtual void TransferActiveWheelFlingAnimation(
-      const WebActiveWheelFlingParameters&) = 0;
 
   // Returns the currently focused WebLocalFrame (if any) inside this
   // WebFrameWidget. That is a WebLocalFrame which is focused and shares the

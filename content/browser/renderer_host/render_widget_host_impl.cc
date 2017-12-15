@@ -1179,18 +1179,36 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     DCHECK(!is_in_gesture_scroll_[gesture_event.source_device]);
     is_in_gesture_scroll_[gesture_event.source_device] = true;
   } else if (gesture_event.GetType() ==
-                 blink::WebInputEvent::kGestureScrollEnd ||
-             gesture_event.GetType() ==
-                 blink::WebInputEvent::kGestureFlingStart) {
-    DCHECK(is_in_gesture_scroll_[gesture_event.source_device] ||
-           gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart);
+             blink::WebInputEvent::kGestureScrollEnd) {
+    DCHECK(is_in_gesture_scroll_[gesture_event.source_device]);
     is_in_gesture_scroll_[gesture_event.source_device] = false;
-  }
+  } else if (gesture_event.GetType() ==
+             blink::WebInputEvent::kGestureFlingStart) {
+    if (gesture_event.source_device ==
+        blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
+      if (GetView()->wheel_scroll_latching_enabled()) {
+        // When wheel scroll latching is enabled, no GSE is sent before GFS, so
+        // is_in_gesture_scroll must be true.
+        DCHECK(is_in_gesture_scroll_[gesture_event.source_device]);
 
-  if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
-      gesture_event.source_device ==
-          blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
-    is_in_touchpad_gesture_fling_ = true;
+        // When wheel scroll latching is enabled GFS with touchpad source is
+        // handled by FlingController on browser side and GSU events with
+        // inertial phase will be sent to the renderer. Therefore,
+        // is_in_gesture_scroll must stay true till the fling progress is
+        // finished. Then the FlingController will generate and send a GSE event
+        // to show the end of a scroll sequence.
+      } else {
+        // When wheel scroll latching is disabled a GSE is sent before a GFS.
+        // The GSE has already finished the scroll sequence.
+        DCHECK(!is_in_gesture_scroll_[gesture_event.source_device]);
+      }
+
+      is_in_touchpad_gesture_fling_ = true;
+    } else {  // gesture_event.source_device !=
+              // blink::WebGestureDevice::kWebGestureDeviceTouchpad
+      DCHECK(is_in_gesture_scroll_[gesture_event.source_device]);
+      is_in_gesture_scroll_[gesture_event.source_device] = false;
+    }
   }
 
   // TODO(wjmaclean) Remove the code for supporting resending gesture events
@@ -2305,6 +2323,10 @@ void RenderWidgetHostImpl::DidStopFlinging() {
     view_->DidStopFlinging();
 }
 
+void RenderWidgetHostImpl::SetNeedsBeginFrameForFlingProgress() {
+  SetNeedsBeginFrame(true);
+}
+
 void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
     const blink::WebInputEvent& event,
     ui::LatencyInfo* latency) {
@@ -2874,6 +2896,11 @@ void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
                                     std::move(host));
     input_router_->BindHost(std::move(host_request), false);
   }
+}
+
+void RenderWidgetHostImpl::ProgressFling(base::TimeTicks current_time) {
+  if (input_router_)
+    input_router_->ProgressFling(current_time);
 }
 
 }  // namespace content

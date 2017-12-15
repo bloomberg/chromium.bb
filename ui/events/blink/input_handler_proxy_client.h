@@ -9,7 +9,6 @@
 
 namespace blink {
 class WebGestureCurve;
-struct WebActiveWheelFlingParameters;
 struct WebFloatPoint;
 struct WebSize;
 }
@@ -21,11 +20,6 @@ class InputHandlerProxyClient {
  public:
   // Called just before the InputHandlerProxy shuts down.
   virtual void WillShutdown() = 0;
-
-  // Transfers an active wheel fling animation initiated by a previously
-  // handled input event out to the client.
-  virtual void TransferActiveWheelFlingAnimation(
-      const blink::WebActiveWheelFlingParameters& params) = 0;
 
   // Dispatch a non blocking event to the main thread. This is used when a
   // gesture fling from a touchpad is processed and the target only has

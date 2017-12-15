@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/public/browser/overscroll_configuration.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
@@ -35,7 +36,9 @@ float ClampAbsoluteValue(float value, float max_abs) {
 
 }  // namespace
 
-OverscrollController::OverscrollController() {}
+OverscrollController::OverscrollController()
+    : wheel_scroll_latching_enabled_(base::FeatureList::IsEnabled(
+          features::kTouchpadAndWheelScrollLatching)) {}
 
 OverscrollController::~OverscrollController() {}
 
@@ -192,13 +195,16 @@ bool OverscrollController::DispatchEventCompletesAction (
       event.GetType() != blink::WebInputEvent::kGestureFlingStart)
     return false;
 
-  // Avoid completing the action on GestureScrollEnd generated
-  // from the touchpad since it is sent based on a timeout not
-  // when the user has stopped interacting.
   if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
       overscroll_source_ == OverscrollSource::TOUCHPAD) {
     DCHECK(IsGestureEventFromTouchpad(event));
-    return false;
+    // Complete the action for a GSE with touchpad source only when it is in
+    // momentumPhase.
+    const blink::WebGestureEvent gesture_event =
+        static_cast<const blink::WebGestureEvent&>(event);
+    if (gesture_event.data.scroll_end.inertial_phase !=
+        blink::WebGestureEvent::kMomentumPhase)
+      return false;
   }
 
   if (!delegate_)
@@ -268,18 +274,24 @@ bool OverscrollController::ProcessEventForOverscroll(
   bool event_processed = false;
   switch (event.GetType()) {
     case blink::WebInputEvent::kGestureScrollBegin: {
-      // Avoid resetting the state on GestureScrollBegin generated
-      // from the touchpad since it is sent based on a timeout.
+      // When wheel scroll latching is disabled avoid resetting the state on
+      // GestureScrollBegin generated from the touchpad since it is sent for
+      // every wheel event.
       if (overscroll_mode_ != OVERSCROLL_NONE &&
-          !IsGestureEventFromTouchpad(event)) {
+          (!IsGestureEventFromTouchpad(event) ||
+           wheel_scroll_latching_enabled_)) {
         SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);
       }
       break;
     }
     case blink::WebInputEvent::kGestureScrollEnd: {
-      // Avoid resetting the state on GestureScrollEnd generated
-      // from the touchpad since it is sent based on a timeout.
-      bool reset_scroll_state = !IsGestureEventFromTouchpad(event);
+      // Only reset the state on  GestureScrollEnd generated from the touchpad
+      // when the scrolling is in inertial state.
+      const blink::WebGestureEvent gesture_event =
+          static_cast<const blink::WebGestureEvent&>(event);
+      bool reset_scroll_state = !IsGestureEventFromTouchpad(event) ||
+                                (gesture_event.data.scroll_end.inertial_phase ==
+                                 blink::WebGestureEvent::kMomentumPhase);
 
       if (reset_scroll_state)
         ResetScrollState();

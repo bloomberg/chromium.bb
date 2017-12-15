@@ -123,6 +123,7 @@ class MockInputRouter : public InputRouter {
   void SetForceEnableZoom(bool enabled) override {}
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override {}
+  void ProgressFling(base::TimeTicks time) override {}
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override {

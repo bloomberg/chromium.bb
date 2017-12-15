@@ -145,6 +145,17 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 
   void DidStopFlinging() override { input_router_client_.DidStopFlinging(); }
 
+  void SetNeedsBeginFrameForFlingProgress() override {
+    input_router_client_.SetNeedsBeginFrameForFlingProgress();
+  }
+
+  void ForwardWheelEventWithLatencyInfo(
+      const blink::WebMouseWheelEvent& wheel_event,
+      const ui::LatencyInfo& latency_info) override {
+    input_router_client_.ForwardWheelEventWithLatencyInfo(wheel_event,
+                                                          latency_info);
+  }
+
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& latency_info) override {
@@ -2325,9 +2336,19 @@ TEST_F(InputRouterImplScaleGestureEventTest, GestureTwoFingerTap) {
 }
 
 TEST_F(InputRouterImplScaleGestureEventTest, GestureFlingStart) {
+  // Simulate a GSB since touchscreen flings must happen inside scroll.
+  SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      10.f, 20.f, blink::kWebGestureDeviceTouchscreen));
+  FlushGestureEvent(WebInputEvent::kGestureScrollBegin);
+
   const gfx::Point orig(10, 20), scaled(20, 40);
   WebGestureEvent event =
       BuildGestureEvent(WebInputEvent::kGestureFlingStart, orig);
+  // Set the source device to touchscreen to make sure that the event gets
+  // dispatched to the renderer. When wheel scroll latching is enabled touchpad
+  // flings are not dispatched to the renderer, instead they are handled on the
+  // browser side.
+  event.source_device = blink::kWebGestureDeviceTouchscreen;
   event.data.fling_start.velocity_x = 30;
   event.data.fling_start.velocity_y = 40;
   SimulateGestureEvent(event);

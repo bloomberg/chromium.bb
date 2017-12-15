@@ -27,6 +27,7 @@ GestureEventQueue::Config::Config() {
 GestureEventQueue::GestureEventQueue(
     GestureEventQueueClient* client,
     TouchpadTapSuppressionControllerClient* touchpad_client,
+    FlingControllerClient* fling_client,
     const Config& config)
     : client_(client),
       fling_in_progress_(false),
@@ -35,9 +36,13 @@ GestureEventQueue::GestureEventQueue(
       allow_multiple_inflight_events_(
           base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)),
       debounce_interval_(config.debounce_interval),
-      fling_controller_(this, touchpad_client, config.fling_config) {
+      fling_controller_(this,
+                        touchpad_client,
+                        fling_client,
+                        config.fling_config) {
   DCHECK(client);
   DCHECK(touchpad_client);
+  DCHECK(fling_client);
 }
 
 GestureEventQueue::~GestureEventQueue() { }
@@ -50,11 +55,40 @@ void GestureEventQueue::QueueEvent(
     return;
   }
 
+  // fling_controller_ is in charge of handling GFS events from touchpad source
+  // when wheel scroll latching is enabled. In this case instead of queuing the
+  // GFS event to be sent to the renderer, the controller processes the fling
+  // and generates wheel events with momentum phase which are handled in the
+  // renderer normally.
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart &&
+      gesture_event.event.source_device == blink::kWebGestureDeviceTouchpad) {
+    fling_controller_.ProcessGestureFlingStart(gesture_event);
+    fling_in_progress_ = true;
+    return;
+  }
+
+  // If the GestureFlingStart event is processed by the fling_controller_, the
+  // GestureFlingCancel event should be the same.
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel &&
+      fling_controller_.fling_in_progress()) {
+    fling_controller_.ProcessGestureFlingCancel(gesture_event);
+    fling_in_progress_ = false;
+    return;
+  }
+
   QueueAndForwardIfNecessary(gesture_event);
+}
+
+void GestureEventQueue::ProgressFling(base::TimeTicks current_time) {
+  fling_controller_.ProgressFling(current_time);
 }
 
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
+  // When the GFS is processed by the fling_controller_ the controller handles
+  // GFC filtering as well.
+  DCHECK(!(fling_controller_.fling_in_progress()));
+
   if (coalesced_gesture_events_.empty() && fling_in_progress_)
     return false;
   GestureQueueWithAckState::const_reverse_iterator it =
@@ -73,6 +107,13 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (debounce_interval_ <= base::TimeDelta())
     return true;
+
+  // Don't debounce any gesture events while a fling is in progress on the
+  // browser side. A GSE event in this case ends fling progress and it shouldn't
+  // get cancelled by its next GSB event.
+  if (fling_controller_.fling_in_progress())
+    return true;
+
   switch (gesture_event.event.GetType()) {
     case WebInputEvent::kGestureScrollUpdate:
       if (fling_in_progress_)
@@ -225,12 +266,7 @@ void GestureEventQueue::AckGestureEventToClient(
   // can be coalesced with existing queued events prior to dispatch.
   client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
 
-  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  if (event_with_latency.event.GetType() ==
-      WebInputEvent::kGestureFlingCancel) {
-    fling_controller_.GestureFlingCancelAck(
-        event_with_latency.event.source_device, processed);
-  }
+  fling_controller_.OnGestureEventAck(event_with_latency, ack_result);
 }
 
 void GestureEventQueue::LegacyProcessGestureAck(
@@ -261,11 +297,8 @@ void GestureEventQueue::LegacyProcessGestureAck(
   // can be coalesced with existing queued events prior to dispatch.
   client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
 
-  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  if (type == WebInputEvent::kGestureFlingCancel) {
-    fling_controller_.GestureFlingCancelAck(
-        event_with_latency.event.source_device, processed);
-  }
+  fling_controller_.OnGestureEventAck(event_with_latency, ack_result);
+
   DCHECK_LT(event_index, coalesced_gesture_events_.size());
   coalesced_gesture_events_.erase(coalesced_gesture_events_.begin() +
                                   event_index);

@@ -36,7 +36,8 @@ namespace content {
 
 class GestureEventQueueTest : public testing::Test,
                               public GestureEventQueueClient,
-                              public TouchpadTapSuppressionControllerClient {
+                              public TouchpadTapSuppressionControllerClient,
+                              public FlingControllerClient {
  public:
   GestureEventQueueTest() : GestureEventQueueTest(false) {}
 
@@ -55,7 +56,7 @@ class GestureEventQueueTest : public testing::Test,
 
   // testing::Test
   void SetUp() override {
-    queue_.reset(new GestureEventQueue(this, this, DefaultConfig()));
+    queue_.reset(new GestureEventQueue(this, this, this, DefaultConfig()));
   }
 
   void TearDown() override {
@@ -75,7 +76,7 @@ class GestureEventQueueTest : public testing::Test,
     gesture_config.fling_config.touchscreen_tap_suppression_config
         .max_tap_gap_time =
         base::TimeDelta::FromMilliseconds(max_tap_gap_time_ms);
-    queue_.reset(new GestureEventQueue(this, this, gesture_config));
+    queue_.reset(new GestureEventQueue(this, this, this, gesture_config));
   }
 
   // GestureEventQueueClient
@@ -103,6 +104,11 @@ class GestureEventQueueTest : public testing::Test,
   // TouchpadTapSuppressionControllerClient
   void SendMouseEventImmediately(
       const MouseEventWithLatencyInfo& event) override {}
+
+  // FlingControllerClient
+  void SendGeneratedWheelEvent(
+      const MouseWheelEventWithLatencyInfo& wheel_event) override {}
+  void SetNeedsBeginFrameForFlingProgress() override {}
 
  protected:
   static GestureEventQueue::Config DefaultConfig() {
@@ -995,6 +1001,11 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEventWithSyncAck) {
 TEST_P(GestureEventQueueWithSourceTest, GestureFlingCancelsFiltered) {
   WebGestureDevice source_device = GetParam();
 
+  // GFS and GFC events with touchpad source are not queued since fling
+  // controller handles them.
+  if (source_device == blink::kWebGestureDeviceTouchpad)
+    return;
+
   // GFC without previous GFS is dropped.
   SimulateGestureEvent(WebInputEvent::kGestureFlingCancel, source_device);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
@@ -1159,18 +1170,20 @@ TEST_F(GestureEventQueueTest, DebounceEndsWithFlingStartEvent) {
   EXPECT_EQ(1U, GestureEventQueueSize());
   EXPECT_EQ(1U, GestureEventDebouncingQueueSize());
 
-  // The deferred events are correctly queued in coalescing queue.
+  // The deferred events are correctly queued in coalescing queue. The GFS with
+  // touchpad source is not queued since it is handled by fling controller.
   SimulateGestureFlingStartEvent(0, 10, blink::kWebGestureDeviceTouchpad);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(3U, GestureEventQueueSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
   EXPECT_FALSE(ScrollingInProgress());
   EXPECT_TRUE(FlingInProgress());
 
+  // While fling is in progress events don't get debounced.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchpad);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(4U, GestureEventQueueSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollUpdate,
@@ -1186,9 +1199,9 @@ TEST_F(GestureEventQueueTest, DebounceEndsWithFlingStartEvent) {
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
 
   // Verify that the coalescing queue contains the correct events.
-  WebInputEvent::Type expected[] = {
-      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kGestureScrollEnd,
-      WebInputEvent::kGestureFlingStart, WebInputEvent::kGestureScrollBegin};
+  WebInputEvent::Type expected[] = {WebInputEvent::kGestureScrollUpdate,
+                                    WebInputEvent::kGestureScrollEnd,
+                                    WebInputEvent::kGestureScrollBegin};
 
   for (unsigned i = 0; i < sizeof(expected) / sizeof(WebInputEvent::Type);
       i++) {

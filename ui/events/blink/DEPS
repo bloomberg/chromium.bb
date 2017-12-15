@@ -15,7 +15,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebMouseWheelEvent.h",
   "+third_party/WebKit/public/platform/WebPoint.h",
   "+third_party/WebKit/public/platform/WebTouchEvent.h",
-  "+third_party/WebKit/public/web/WebActiveWheelFlingParameters.h",
+  "+third_party/WebKit/public/web/WebActiveFlingParameters.h",
 
   "+ui/display/win",
   "+ui/gfx",

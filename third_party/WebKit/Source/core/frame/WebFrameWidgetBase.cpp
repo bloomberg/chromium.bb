@@ -26,7 +26,6 @@
 #include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGestureCurve.h"
-#include "public/web/WebActiveWheelFlingParameters.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebWidgetClient.h"
 
@@ -481,26 +480,6 @@ WebInputEventResult WebFrameWidgetBase::HandleGestureFlingEvent(
       NOTREACHED();
   }
   return event_result;
-}
-
-void WebFrameWidgetBase::TransferActiveWheelFlingAnimation(
-    const WebActiveWheelFlingParameters& parameters) {
-  TRACE_EVENT0("blink",
-               "WebFrameWidgetBase::TransferActiveWheelFlingAnimation");
-  DCHECK(!gesture_animation_);
-  position_on_fling_start_ = parameters.point;
-  global_position_on_fling_start_ = parameters.global_point;
-  fling_modifier_ = parameters.modifiers;
-  std::unique_ptr<WebGestureCurve> curve =
-      Platform::Current()->CreateFlingAnimationCurve(
-          parameters.source_device, WebFloatPoint(parameters.delta),
-          parameters.cumulative_scroll);
-  DCHECK(curve);
-  gesture_animation_ = WebActiveGestureAnimation::CreateWithTimeOffset(
-      std::move(curve), this, parameters.start_time);
-  DCHECK_NE(parameters.source_device, kWebGestureDeviceUninitialized);
-  fling_source_device_ = parameters.source_device;
-  ScheduleAnimation();
 }
 
 WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {

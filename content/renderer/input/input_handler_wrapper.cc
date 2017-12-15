@@ -43,14 +43,6 @@ void InputHandlerWrapper::NeedsMainFrame() {
       base::BindOnce(&RenderWidget::SetNeedsMainFrame, render_widget_));
 }
 
-void InputHandlerWrapper::TransferActiveWheelFlingAnimation(
-    const blink::WebActiveWheelFlingParameters& params) {
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RenderWidget::TransferActiveWheelFlingAnimation,
-                     render_widget_, params));
-}
-
 void InputHandlerWrapper::DispatchNonBlockingEventToMainThread(
     ui::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info) {
