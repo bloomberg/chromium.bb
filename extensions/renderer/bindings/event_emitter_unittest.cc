@@ -25,7 +25,22 @@ void DoNothingOnListenerChange(binding::EventListenersChanged changed,
 
 }  // namespace
 
-using EventEmitterUnittest = APIBindingTest;
+class EventEmitterUnittest : public APIBindingTest {
+ public:
+  EventEmitterUnittest() = default;
+  ~EventEmitterUnittest() override = default;
+
+  // A helper method to dispose of a context and set a flag.
+  void DisposeContextWrapper(bool* did_invalidate,
+                             v8::Local<v8::Context> context) {
+    EXPECT_FALSE(*did_invalidate);
+    *did_invalidate = true;
+    DisposeContext(context);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EventEmitterUnittest);
+};
 
 TEST_F(EventEmitterUnittest, TestDispatchMethod) {
   v8::HandleScope handle_scope(isolate());
@@ -110,6 +125,62 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
   ASSERT_EQ(1u, logged_errors.size());
   EXPECT_THAT(logged_errors[0],
               testing::StartsWith("Error in event handler: Error: hahaha"));
+}
+
+// Test dispatching an event when the first listener invalidates the context.
+// Nothing should break, and we shouldn't continue to dispatch the event.
+TEST_F(EventEmitterUnittest, ListenersDestroyingContext) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  struct ListenerClosureData {
+    EventEmitterUnittest& test;
+    bool did_invalidate_context;
+  } closure_data = {*this, false};
+
+  // A wrapper that just calls DisposeContextWrapper() on the curried in data.
+  auto listener_wrapper = [](const v8::FunctionCallbackInfo<v8::Value>& info) {
+    ASSERT_TRUE(info.Data()->IsExternal());
+    auto& data = *static_cast<ListenerClosureData*>(
+        info.Data().As<v8::External>()->Value());
+    data.test.DisposeContextWrapper(&data.did_invalidate_context,
+                                    info.GetIsolate()->GetCurrentContext());
+  };
+
+  auto listeners = std::make_unique<UnfilteredEventListeners>(
+      base::BindRepeating(&DoNothingOnListenerChange), binding::kNoListenerMax,
+      true);
+  ExceptionHandler exception_handler(base::BindRepeating(
+      [](v8::Local<v8::Context> context, const std::string& error) {}));
+  gin::Handle<EventEmitter> event = gin::CreateHandle(
+      isolate(),
+      new EventEmitter(false, std::move(listeners), &exception_handler));
+
+  v8::Local<v8::Value> v8_event = event.ToV8();
+
+  const char kAddListener[] =
+      "(function(event, listener) { event.addListener(listener); })";
+  v8::Local<v8::Function> add_listener_function =
+      FunctionFromString(context, kAddListener);
+
+  // Queue up three listeners. The first triggered will invalidate the context.
+  // The others should never be triggered.
+  constexpr size_t kNumListeners = 3;
+  for (size_t i = 0; i < kNumListeners; ++i) {
+    v8::Local<v8::Function> listener =
+        v8::Function::New(context, listener_wrapper,
+                          v8::External::New(isolate(), &closure_data))
+            .ToLocalChecked();
+    v8::Local<v8::Value> args[] = {v8_event, listener};
+    RunFunction(add_listener_function, context, arraysize(args), args);
+  }
+
+  EXPECT_EQ(kNumListeners, event->GetNumListeners());
+
+  std::vector<v8::Local<v8::Value>> args;
+  event->Fire(context, &args, nullptr);
+
+  EXPECT_TRUE(closure_data.did_invalidate_context);
 }
 
 }  // namespace extensions

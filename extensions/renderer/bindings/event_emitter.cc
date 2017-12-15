@@ -166,10 +166,16 @@ v8::Local<v8::Value> EventEmitter::DispatchSync(
     // (through e.g. calling alert() or print()). That should suspend this
     // message loop as well (though a nested message loop will run). This is a
     // bit ugly, but should hopefully be safe.
+    v8::MaybeLocal<v8::Value> maybe_result = js_runner->RunJSFunctionSync(
+        listener, context, args->size(), args->data());
+
+    // Any of the listeners could invalidate the context. If that happens,
+    // bail out.
+    if (!binding::IsContextValid(context))
+      return v8::Undefined(isolate);
+
     v8::Local<v8::Value> listener_result;
-    if (js_runner
-            ->RunJSFunctionSync(listener, context, args->size(), args->data())
-            .ToLocal(&listener_result)) {
+    if (maybe_result.ToLocal(&listener_result)) {
       if (!listener_result->IsUndefined()) {
         CHECK(
             results
