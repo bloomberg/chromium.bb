@@ -86,11 +86,10 @@ void NetworkScreenHandler::Show() {
     return;
   }
 
-  // Make sure all our network technologies are turned on. On OOBE, the user
+  // Make sure all physical network technologies are enabled. On OOBE, the user
   // should be able to select any of the available networks on the device.
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  handler->SetTechnologyEnabled(NetworkTypePattern::NonVirtual(),
-                                true,
+  handler->SetTechnologyEnabled(NetworkTypePattern::Physical(), true,
                                 chromeos::network_handler::ErrorCallback());
 
   base::DictionaryValue network_screen_params;

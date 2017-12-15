@@ -269,8 +269,8 @@ void TetherService::DeviceListChanged() {
 
 void TetherService::DevicePropertiesUpdated(
     const chromeos::DeviceState* device) {
-  if (device->Matches(chromeos::NetworkTypePattern::Tether()) ||
-      device->Matches(chromeos::NetworkTypePattern::WiFi())) {
+  if (device->Matches(chromeos::NetworkTypePattern::Tether() |
+                      chromeos::NetworkTypePattern::WiFi())) {
     UpdateEnabledState();
   }
 }

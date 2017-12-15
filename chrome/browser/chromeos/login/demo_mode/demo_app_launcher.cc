@@ -88,9 +88,9 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
 
   // Disable network before launching the app.
   LOG(WARNING) << "Disabling network before launching demo app..";
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  handler->SetTechnologyEnabled(NetworkTypePattern::NonVirtual(), false,
-                                chromeos::network_handler::ErrorCallback());
+  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+      NetworkTypePattern::Physical(), false,
+      chromeos::network_handler::ErrorCallback());
 
   OpenApplication(AppLaunchParams(profile, extension,
                                   extensions::LAUNCH_CONTAINER_WINDOW,
