@@ -3,6 +3,7 @@
 #  Copyright (C) 2014 by Bert Frees
 #  Copyright (C) 2014 by CBB <http://www.cbb.nl>
 #  Copyright (C) 2015, 2016 by Dedicon <http://www.dedicon.nl>
+#  Copyright (C) 2017 by Babbage <http://www.babbage.com>
 #
 #  This file is part of liblouis.
 #
@@ -92,6 +93,9 @@ punctuation \x002E        256                 .                   FULL STOP
 math        \x002F        34                  /                   SOLIDUS
 
 include digits6Dots.uti
+
+#   this is a bad work-around adapted from en-ueb-chardefs for doing numeric mode backwards
+include litdigits6Dots.uti
 
 punctuation \x003A        25                  :                   COLON
 punctuation \x003B        23                  ;                   SEMICOLON
