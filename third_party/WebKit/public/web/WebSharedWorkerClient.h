@@ -79,8 +79,7 @@ class WebSharedWorkerClient {
                                    const WebString& state) {}
 
   // Returns a new WebWorkerFetchContext for the shared worker. Ownership of the
-  // returned object is transferred to the caller. This is used only when
-  // off-main-thread-fetch is enabled.
+  // returned object is transferred to the caller.
   virtual std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext(
       WebServiceWorkerNetworkProvider*) {
     return nullptr;

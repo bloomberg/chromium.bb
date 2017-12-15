@@ -36,7 +36,6 @@
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -48,16 +47,12 @@ ThreadableLoader* ThreadableLoader::Create(
   DCHECK(client);
 
   if (context.IsWorkerGlobalScope()) {
-    if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
-      ToWorkerGlobalScope(&context)->EnsureFetcher();
-      // TODO(horo): Rename DocumentThreadableLoader. We will use it on the
-      // worker thread when off-main-thread-fetch is enabled.
-      return DocumentThreadableLoader::Create(
-          *ThreadableLoadingContext::Create(*ToWorkerGlobalScope(&context)),
-          client, options, resource_loader_options);
-    }
-    return WorkerThreadableLoader::Create(ToWorkerGlobalScope(context), client,
-                                          options, resource_loader_options);
+    ToWorkerGlobalScope(&context)->EnsureFetcher();
+    // TODO(horo): Rename DocumentThreadableLoader. We are using it on the
+    // worker thread also.
+    return DocumentThreadableLoader::Create(
+        *ThreadableLoadingContext::Create(*ToWorkerGlobalScope(&context)),
+        client, options, resource_loader_options);
   }
 
   return DocumentThreadableLoader::Create(

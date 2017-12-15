@@ -3228,7 +3228,6 @@ RenderFrameImpl::CreateWorkerContentSettingsClient() {
 
 std::unique_ptr<blink::WebWorkerFetchContext>
 RenderFrameImpl::CreateWorkerFetchContext() {
-  DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
   blink::WebServiceWorkerNetworkProvider* web_provider =
       frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
   DCHECK(web_provider);

@@ -289,9 +289,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(
           features::kServiceWorkerScriptFullCodeCache));
 
-  WebRuntimeFeatures::EnableOffMainThreadFetch(
-      base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
-
   WebRuntimeFeatures::EnableMojoBlobs(features::IsMojoBlobsEnabled());
 
   WebRuntimeFeatures::EnableNetworkService(

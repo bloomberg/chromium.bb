@@ -103,7 +103,8 @@ void WebURLLoaderMockFactoryImpl::UnregisterAllURLsAndClearMemoryCache() {
   url_to_response_info_.clear();
   url_to_error_info_.clear();
   protocol_to_response_info_.clear();
-  GetMemoryCache()->EvictResources();
+  if (IsMainThread())
+    GetMemoryCache()->EvictResources();
 }
 
 void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {

@@ -64,7 +64,6 @@ CONTENT_EXPORT extern const base::Feature kMojoVideoEncodeAccelerator;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsImportMetaUrl;
 CONTENT_EXPORT extern const base::Feature kNotificationsWithMojo;
-CONTENT_EXPORT extern const base::Feature kOffMainThreadFetch;
 CONTENT_EXPORT extern const base::Feature kOriginManifest;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;
 CONTENT_EXPORT extern const base::Feature kOutOfBlinkCORS;

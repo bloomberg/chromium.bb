@@ -93,6 +93,7 @@ class WorkerThreadForTest : public WorkerThread {
   void StartWithSourceCode(const SecurityOrigin* security_origin,
                            const String& source,
                            ParentFrameTaskRunners* parent_frame_task_runners,
+                           const KURL& script_url = KURL("http://fake.url/"),
                            WorkerClients* worker_clients = nullptr) {
     auto headers = std::make_unique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType header_and_type("contentSecurityPolicy",
@@ -100,9 +101,8 @@ class WorkerThreadForTest : public WorkerThread {
     headers->push_back(header_and_type);
 
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        KURL("http://fake.url/"), "fake user agent", headers.get(),
-        kReferrerPolicyDefault, security_origin, worker_clients,
-        kWebAddressSpaceLocal, nullptr,
+        script_url, "fake user agent", headers.get(), kReferrerPolicyDefault,
+        security_origin, worker_clients, kWebAddressSpaceLocal, nullptr,
         std::make_unique<WorkerSettings>(Settings::Create().get()),
         kV8CacheOptionsDefault);
 

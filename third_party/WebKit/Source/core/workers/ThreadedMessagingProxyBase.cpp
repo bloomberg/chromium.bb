@@ -14,7 +14,6 @@
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebWorkerFetchContext.h"
@@ -41,10 +40,11 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
   DCHECK(IsParentContextThread());
   g_live_messaging_proxy_count++;
 
-  if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
-    Document* document = ToDocument(execution_context_);
-    WebLocalFrameImpl* web_frame =
-        WebLocalFrameImpl::FromFrame(document->GetFrame());
+  Document* document = ToDocument(execution_context_);
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(document->GetFrame());
+  // |web_frame| is null in some unit tests.
+  if (web_frame) {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         web_frame->Client()->CreateWorkerFetchContext();
     DCHECK(web_worker_fetch_context);

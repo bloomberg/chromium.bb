@@ -257,7 +257,6 @@ void EmbeddedSharedWorkerStub::SendDevToolsMessage(
 std::unique_ptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {
-  DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
   DCHECK(web_network_provider);
   ServiceWorkerProviderContext* context =
       static_cast<WebServiceWorkerNetworkProviderForSharedWorker*>(

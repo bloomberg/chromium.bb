@@ -939,11 +939,6 @@ const char kOfflineAutoReloadVisibleOnlyDescription[] =
     "Pages that fail to load while the browser is offline will only be "
     "auto-reloaded if their tab is visible.";
 
-const char kOffMainThreadFetchName[] = "Off-main-thread fetch for Web Workers";
-const char kOffMainThreadFetchDescription[] =
-    "If enabled, the resource fetches from worker threads will not be blocked "
-    "by the busy main thread.";
-
 const char kOmniboxDisplayTitleForCurrentUrlName[] =
     "Include title for the current URL in the omnibox";
 const char kOmniboxDisplayTitleForCurrentUrlDescription[] =

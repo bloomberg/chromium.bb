@@ -1359,36 +1359,7 @@ class MockContentBrowserClient : public TestContentBrowserClient {
   bool data_saver_enabled_;
 };
 
-class ServiceWorkerVersionOffMainThreadFetchTest
-    : public ServiceWorkerVersionBrowserTest {
- public:
-  ServiceWorkerVersionOffMainThreadFetchTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kOffMainThreadFetch);
-  }
-
-  ~ServiceWorkerVersionOffMainThreadFetchTest() override {}
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionOffMainThreadFetchTest);
-};
-
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithSaveData) {
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&VerifySaveDataHeaderInRequest));
-  StartServerAndNavigateToSetup();
-  MockContentBrowserClient content_browser_client;
-  content_browser_client.set_data_saver_enabled(true);
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&content_browser_client);
-  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  InstallTestHelper("/service_worker/fetch_in_install.js", SERVICE_WORKER_OK);
-  SetBrowserClientForTesting(old_client);
-}
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionOffMainThreadFetchTest,
-                       FetchWithSaveData) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&VerifySaveDataHeaderInRequest));
   StartServerAndNavigateToSetup();

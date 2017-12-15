@@ -228,7 +228,6 @@ bool SubresourceFilterAgent::OnMessageReceived(const IPC::Message& message) {
 
 void SubresourceFilterAgent::WillCreateWorkerFetchContext(
     blink::WebWorkerFetchContext* worker_fetch_context) {
-  DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
   if (!filter_for_last_committed_load_)
     return;
   if (!ruleset_dealer_->IsRulesetFileAvailable())
