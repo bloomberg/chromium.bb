@@ -18,6 +18,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_launcher.h"
 #include "content/shell/browser/shell.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
@@ -118,6 +119,37 @@ IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, PRE_DataPersists) {
 IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, MAYBE_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
 }
+
+// On Windows file://localhost/C:/src/chromium/src/content/test/data/title1.html
+// doesn't work.
+#if !defined(OS_WIN)
+// Regression test for https://crbug.com/776160.  The test verifies that there
+// is no disagreement between 1) site URL used for browser-side isolation
+// enforcement and 2) the origin requested by Blink.  Before this bug was fixed,
+// (1) was file://localhost/ and (2) was file:// - this led to renderer kills.
+IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, FileUrlWithHost) {
+  // Navigate to file://localhost/.../title1.html
+  GURL regular_file_url = GetTestUrl(nullptr, "title1.html");
+  GURL::Replacements host_replacement;
+  host_replacement.SetHostStr("localhost");
+  GURL file_with_host_url =
+      regular_file_url.ReplaceComponents(host_replacement);
+  EXPECT_TRUE(NavigateToURL(shell(), file_with_host_url));
+  EXPECT_THAT(shell()->web_contents()->GetLastCommittedURL().spec(),
+              testing::StartsWith("file://localhost/"));
+  EXPECT_THAT(shell()->web_contents()->GetLastCommittedURL().spec(),
+              testing::EndsWith("/title1.html"));
+
+  // Verify that window.localStorage works fine.
+  std::string result;
+  std::string script = R"(
+      localStorage["foo"] = "bar";
+      domAutomationController.send(localStorage["foo"]);
+  )";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &result));
+  EXPECT_EQ("bar", result);
+}
+#endif
 
 class DOMStorageMigrationBrowserTest : public DOMStorageBrowserTest {
  public:

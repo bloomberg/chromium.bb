@@ -331,11 +331,14 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
 
-  // Some file URLs have hosts in the path.
+  // Some file URLs have hosts in the path.  For consistency with Blink (which
+  // maps *all* file://... URLs into "file://" origin) such file URLs still need
+  // to map into "file:" site URL.  See also https://crbug.com/776160.
   test_url = GURL("file://server/path");
   site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
-  EXPECT_EQ(GURL("file://server"), site_url);
-  EXPECT_EQ("server", site_url.host());
+  EXPECT_EQ(GURL("file:"), site_url);
+  EXPECT_EQ("file", site_url.scheme());
+  EXPECT_FALSE(site_url.has_host());
 
   // Data URLs should include the scheme.
   test_url = GURL("data:text/html,foo");
