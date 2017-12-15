@@ -1582,6 +1582,7 @@ test("ash_unittests") {
     "//device/bluetooth",
     "//mojo/edk/system",
     "//net:net",
+    "//services/ui/public/cpp/input_devices:test_support",
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gmock",

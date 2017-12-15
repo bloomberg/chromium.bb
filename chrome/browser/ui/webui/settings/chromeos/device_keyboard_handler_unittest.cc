@@ -13,9 +13,9 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/test/test_web_ui.h"
+#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/test/device_data_manager_test_api.h"
 
 namespace chromeos {
 namespace settings {
@@ -38,7 +38,7 @@ class KeyboardHandlerTest : public testing::Test {
     handler_.AllowJavascriptForTesting();
 
     // Make sure that we start out without any keyboards reported.
-    device_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>());
+    input_device_client_test_api_.SetKeyboardDevices({});
   }
 
  protected:
@@ -87,7 +87,7 @@ class KeyboardHandlerTest : public testing::Test {
     return has_diamond_key;
   }
 
-  ui::test::DeviceDataManagerTestAPI device_test_api_;
+  ui::InputDeviceClientTestApi input_device_client_test_api_;
   content::TestWebUI web_ui_;
   TestKeyboardHandler handler_;
   KeyboardHandler::TestAPI handler_test_api_;
@@ -116,7 +116,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // An internal keyboard shouldn't change the defaults.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kHasChromeOSKeyboard);
-  device_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"}});
   handler_test_api_.Initialize();
   EXPECT_FALSE(HasCapsLock());
@@ -124,15 +124,17 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
 
   // Simulate an external keyboard being connected. We should assume there's a
   // Caps Lock key now.
-  device_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_EXTERNAL, "external keyboard"}});
-  device_test_api_.NotifyObserversKeyboardDeviceConfigurationChanged();
+  input_device_client_test_api_
+      .NotifyObserversKeyboardDeviceConfigurationChanged();
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
 
   // Disconnect the external keyboard and check that the key goes away.
-  device_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>());
-  device_test_api_.NotifyObserversKeyboardDeviceConfigurationChanged();
+  input_device_client_test_api_.SetKeyboardDevices({});
+  input_device_client_test_api_
+      .NotifyObserversKeyboardDeviceConfigurationChanged();
   EXPECT_FALSE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
 }
