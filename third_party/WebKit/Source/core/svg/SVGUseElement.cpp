@@ -498,12 +498,11 @@ Path SVGUseElement::ToClipPath() const {
   if (!element || !element->IsSVGGeometryElement())
     return Path();
 
+  DCHECK(GetLayoutObject());
   Path path = ToSVGGeometryElement(*element).ToClipPath();
-  // FIXME: Avoid manual resolution of x/y here. Its potentially harmful.
-  SVGLengthContext length_context(this);
-  path.Translate(FloatSize(x_->CurrentValue()->Value(length_context),
-                           y_->CurrentValue()->Value(length_context)));
-  path.Transform(CalculateTransform(SVGElement::kIncludeMotionTransform));
+  AffineTransform transform = GetLayoutObject()->LocalSVGTransform();
+  if (!transform.IsIdentity())
+    path.Transform(transform);
   return path;
 }
 

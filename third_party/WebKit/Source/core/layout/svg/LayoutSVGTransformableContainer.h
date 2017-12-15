@@ -48,6 +48,7 @@ class LayoutSVGTransformableContainer final : public LayoutSVGContainer {
   AffineTransform LocalSVGTransform() const override {
     return local_transform_;
   }
+  bool IsUseElement() const;
 
   bool needs_transform_update_ : 1;
   AffineTransform local_transform_;
