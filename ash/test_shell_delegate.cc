@@ -66,10 +66,6 @@ base::string16 TestShellDelegate::GetProductName() const {
   return base::string16();
 }
 
-gfx::Image TestShellDelegate::GetDeprecatedAcceleratorImage() const {
-  return gfx::Image();
-}
-
 ui::InputDeviceControllerClient*
 TestShellDelegate::GetInputDeviceControllerClient() {
   return nullptr;

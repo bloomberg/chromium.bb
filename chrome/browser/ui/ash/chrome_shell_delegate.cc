@@ -377,11 +377,6 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
   Navigate(&params);
 }
 
-gfx::Image ChromeShellDelegate::GetDeprecatedAcceleratorImage() const {
-  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_BLUETOOTH_KEYBOARD);
-}
-
 std::unique_ptr<keyboard::KeyboardUI> ChromeShellDelegate::CreateKeyboardUI() {
   return base::MakeUnique<ChromeKeyboardUI>(
       ProfileManager::GetActiveUserProfile());

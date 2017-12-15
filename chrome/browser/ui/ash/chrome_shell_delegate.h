@@ -43,7 +43,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   base::string16 GetProductName() const override;
   void OpenKeyboardShortcutHelpPage() const override;
-  gfx::Image GetDeprecatedAcceleratorImage() const override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
   // content::NotificationObserver override:

@@ -78,10 +78,6 @@ base::string16 ShellDelegateImpl::GetProductName() const {
   return base::string16();
 }
 
-gfx::Image ShellDelegateImpl::GetDeprecatedAcceleratorImage() const {
-  return gfx::Image();
-}
-
 ui::InputDeviceControllerClient*
 ShellDelegateImpl::GetInputDeviceControllerClient() {
   return nullptr;
