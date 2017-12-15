@@ -122,5 +122,15 @@ class MonorailAPI(object):
         self.api = self._api_discovery.build(
             'monorail', 'v1', discoveryServiceUrl=self._DISCOVERY_URL, credentials=credentials, cache_discovery=False)
 
+    @staticmethod
+    def _fix_cc_in_body(body):
+        # TODO(crbug.com/monorail/3300): Despite the docs, 'cc' is in fact a
+        # list of dictionaries with only one string field 'name'. Hide the bug
+        # and expose the cleaner, documented API for now.
+        if 'cc' in body:
+            body['cc'] = [{'name': email} for email in body['cc']]
+        return body
+
     def insert_issue(self, issue):
-        return self.api.issues().insert(projectId=issue.project_id, body=issue.body).execute()
+        body = self._fix_cc_in_body(issue.body)
+        return self.api.issues().insert(projectId=issue.project_id, body=body).execute()
