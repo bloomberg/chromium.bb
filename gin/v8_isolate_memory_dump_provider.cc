@@ -81,6 +81,36 @@ void DumpCodeStatistics(
       code_statistics.bytecode_and_metadata_size());
 }
 
+// Dump the number of native and detached contexts.
+// The result looks as follows in the Chrome trace viewer:
+// ======================================
+// Component                 object_count
+// - v8
+//   - isolate
+//     - contexts
+//       - detached_context  10
+//       - native_context    20
+// ======================================
+void DumpContextStatistics(
+    base::trace_event::ProcessMemoryDump* process_memory_dump,
+    std::string dump_base_name,
+    size_t number_of_detached_contexts,
+    size_t number_of_native_contexts) {
+  std::string dump_name_prefix = dump_base_name + "/contexts";
+  std::string native_context_name = dump_name_prefix + "/native_context";
+  auto* native_context_dump =
+      process_memory_dump->CreateAllocatorDump(native_context_name);
+  native_context_dump->AddScalar(
+      "object_count", base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+      number_of_native_contexts);
+  std::string detached_context_name = dump_name_prefix + "/detached_context";
+  auto* detached_context_dump =
+      process_memory_dump->CreateAllocatorDump(detached_context_name);
+  detached_context_dump->AddScalar(
+      "object_count", base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+      number_of_detached_contexts);
+}
+
 }  // namespace anonymous
 
 void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
@@ -175,6 +205,10 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
     process_memory_dump->AddSuballocation(malloc_dump->guid(),
                                           system_allocator_name);
   }
+
+  DumpContextStatistics(process_memory_dump, dump_base_name,
+                        heap_statistics.number_of_detached_contexts(),
+                        heap_statistics.number_of_native_contexts());
 
   // Add an empty row for the heap_spaces. This is to keep the shape of the
   // dump stable, whether code stats are enabled or not.

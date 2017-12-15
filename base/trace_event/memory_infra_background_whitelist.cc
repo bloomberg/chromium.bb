@@ -179,6 +179,8 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "skia/sk_resource_cache",
     "sqlite",
     "ui/resource_manager_0x?",
+    "v8/isolate_0x?/contexts/detached_context",
+    "v8/isolate_0x?/contexts/native_context",
     "v8/isolate_0x?/heap_spaces",
     "v8/isolate_0x?/heap_spaces/code_space",
     "v8/isolate_0x?/heap_spaces/large_object_space",
