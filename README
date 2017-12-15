@@ -15,9 +15,27 @@ with an older kernel.
 Compiling
 ---------
 
-libdrm  is  a  standard  autotools  package and  follows  the  normal
-configure, build  and install steps.   The first step is  to configure
-the package, which is done by running the configure shell script:
+libdrm has two build systems, a legacy autotools build system, and a newer
+meson build system. The meson build system is much faster, and offers a
+slightly different interface, but otherwise provides an equivalent feature set.
+
+To use it:
+
+    meson builddir/
+
+By default this will install into /usr/local, you can change your prefix
+with --prefix=/usr (or `meson configure builddir/ -Dprefix=/usr` after 
+the initial meson setup).
+
+Then use ninja to build and install:
+
+    ninja -C builddir/ install
+
+If you are installing into a system location you will need to run install
+separately, and as root.
+
+
+Alternatively you can invoke autotools configure:
 
 	./configure
 
