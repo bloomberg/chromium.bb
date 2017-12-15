@@ -73,27 +73,33 @@ void LayoutSVGTransformableContainer::SetNeedsTransformUpdate() {
   needs_transform_update_ = true;
 }
 
+bool LayoutSVGTransformableContainer::IsUseElement() const {
+  const SVGElement& element = *GetElement();
+  if (IsSVGUseElement(element))
+    return true;
+  // Nested <use> are replaced by <g> during shadow tree expansion.
+  if (IsSVGGElement(element) && ToSVGGElement(element).InUseShadowTree())
+    return IsSVGUseElement(element.CorrespondingElement());
+  return false;
+}
+
 SVGTransformChange LayoutSVGTransformableContainer::CalculateLocalTransform() {
-  SVGGraphicsElement* element = ToSVGGraphicsElement(GetElement());
+  SVGElement* element = GetElement();
   DCHECK(element);
 
-  // If we're either the layoutObject for a <use> element, or for any <g>
+  // If we're either the LayoutObject for a <use> element, or for any <g>
   // element inside the shadow tree, that was created during the use/symbol/svg
   // expansion in SVGUseElement. These containers need to respect the
   // translations induced by their corresponding use elements x/y attributes.
-  SVGUseElement* use_element = ToSVGUseElementOrNull(*element);
-  if (!use_element && IsSVGGElement(*element) &&
-      ToSVGGElement(element)->InUseShadowTree())
-    use_element = ToSVGUseElementOrNull(element->CorrespondingElement());
-
-  if (use_element) {
+  if (IsUseElement()) {
+    const ComputedStyle& style = StyleRef();
+    const SVGComputedStyle& svg_style = style.SvgStyle();
     SVGLengthContext length_context(element);
-    FloatSize translation(
-        use_element->x()->CurrentValue()->Value(length_context),
-        use_element->y()->CurrentValue()->Value(length_context));
-    // TODO(fs): Signal this on style update instead. (Since these are
-    // suppose to be presentation attributes now, this does feel a bit
-    // broken...)
+    FloatSize translation(length_context.ValueForLength(svg_style.X(), style,
+                                                        SVGLengthMode::kWidth),
+                          length_context.ValueForLength(
+                              svg_style.Y(), style, SVGLengthMode::kHeight));
+    // TODO(fs): Signal this on style update instead.
     if (translation != additional_translation_)
       SetNeedsTransformUpdate();
     additional_translation_ = translation;
