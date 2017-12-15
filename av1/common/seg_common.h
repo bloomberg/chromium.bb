@@ -37,10 +37,8 @@ typedef enum {
   SEG_LVL_SKIP,        // Optional Segment (0,0) + skip mode
 #if CONFIG_SEGMENT_GLOBALMV
   SEG_LVL_GLOBALMV,
-  SEG_LVL_MAX
-#else
-  SEG_LVL_MAX
 #endif
+  SEG_LVL_MAX
 } SEG_LVL_FEATURES;
 #else  // CONFIG_LOOPFILTER_LEVEL
 // Segment level features.
@@ -51,10 +49,8 @@ typedef enum {
   SEG_LVL_SKIP = 3,  // Optional Segment (0,0) + skip mode
 #if CONFIG_SEGMENT_GLOBALMV
   SEG_LVL_GLOBALMV = 4,
-  SEG_LVL_MAX = 5
-#else
-  SEG_LVL_MAX = 4
 #endif
+  SEG_LVL_MAX
 } SEG_LVL_FEATURES;
 #endif  // CONFIG_LOOPFILTER_LEVEL
 
