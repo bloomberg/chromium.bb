@@ -171,13 +171,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_LV_MAP_MULTI
     const int coeff_ctx = get_nz_map_ctx(levels, pos, bwl, height, c,
                                          c == *eob - 1, tx_size, tx_type);
-#if USE_BASE_EOB_ALPHABET
     aom_cdf_prob *cdf;
     int nsymbs;
     if (c == *eob - 1) {
-      cdf = ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type]
-                                      [coeff_ctx - SIG_COEF_CONTEXTS +
-                                       SIG_COEF_CONTEXTS_EOB];
+      cdf = ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx];
       nsymbs = 3;
     } else {
       cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx];
@@ -186,22 +183,14 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     const int level = av1_read_record_symbol(counts, r, cdf, nsymbs, ACCT_STR) +
                       (c == *eob - 1);
     if (counts) {
-      if (c < *eob - 1) {
-        ++counts->nz_map[txs_ctx][plane_type][coeff_ctx][level != 0];
-      }
-      if (level != 0) {
-        for (int k = 0; k < NUM_BASE_LEVELS; ++k) {
-          ++counts
-                ->coeff_base[txs_ctx][plane_type][k][coeff_ctx][level > k + 1];
-          if (level == k + 1) break;
-        }
+      if (c == *eob - 1) {
+        ++counts
+              ->coeff_base_eob_multi[txs_ctx][plane_type][coeff_ctx][level - 1];
+      } else {
+        ++counts->coeff_base_multi[txs_ctx][plane_type][coeff_ctx][level];
       }
     }
-#else
-    const int level = av1_read_record_symbol(
-        counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4,
-        ACCT_STR);
-#endif
+
     // printf("base_cdf: %d %d %2d\n", txs_ctx, plane_type, coeff_ctx);
     // printf("base_cdf: %d %d %2d : %3d %3d %3d\n", txs_ctx, plane_type,
     // coeff_ctx,

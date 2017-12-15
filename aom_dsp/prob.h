@@ -247,7 +247,15 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   // Single loop (faster)
   for (i = 0; i < nsymbs - 1; ++i, tmp -= tmp0) {
     tmp -= (i == val ? diff : 0);
+#if CONFIG_LV_MAP_MULTI
+    if (tmp < cdf[i]) {
+      cdf[i] -= ((cdf[i] - tmp) >> rate);
+    } else {
+      cdf[i] += ((tmp - cdf[i]) >> rate);
+    }
+#else
     cdf[i] += ((tmp - cdf[i]) >> rate);
+#endif
   }
 
 #endif

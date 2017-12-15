@@ -86,13 +86,14 @@ typedef struct frame_contexts {
 
 #if CONFIG_LV_MAP
   aom_prob txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS];
-  aom_prob nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS];
   aom_prob eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
   aom_prob eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
   aom_prob dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS];
+
+#if !CONFIG_LV_MAP_MULTI
+  aom_prob nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS];
   aom_prob coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                      [COEFF_BASE_CONTEXTS];
-#if !CONFIG_LV_MAP_MULTI
   aom_prob coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS];
   aom_prob coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS];
 #else
@@ -110,10 +111,8 @@ typedef struct frame_contexts {
                             [CDF_SIZE(2)];
   aom_cdf_prob dc_sign_cdf[PLANE_TYPES][DC_SIGN_CONTEXTS][CDF_SIZE(2)];
 #if CONFIG_LV_MAP_MULTI
-#if USE_BASE_EOB_ALPHABET
   aom_cdf_prob coeff_base_eob_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS_EOB]
                                  [CDF_SIZE(3)];
-#endif
   aom_cdf_prob coeff_base_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]
                              [CDF_SIZE(4)];
   aom_cdf_prob coeff_br_cdf[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
@@ -265,13 +264,14 @@ typedef struct FRAME_COUNTS {
 
 #if CONFIG_LV_MAP
   unsigned int txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS][2];
-  unsigned int nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS][2];
   unsigned int eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
   unsigned int eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
   unsigned int dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS][2];
+
+#if !CONFIG_LV_MAP_MULTI
+  unsigned int nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS][2];
   unsigned int coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                          [COEFF_BASE_CONTEXTS][2];
-#if !CONFIG_LV_MAP_MULTI
   unsigned int coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS]
                        [2];
   unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS][2];
@@ -280,6 +280,10 @@ typedef struct FRAME_COUNTS {
                         [2];
   unsigned int coeff_lps_multi[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
                               [BR_CDF_SIZE];
+  unsigned int coeff_base_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]
+                               [NUM_BASE_LEVELS + 2];
+  unsigned int coeff_base_eob_multi[TX_SIZES][PLANE_TYPES]
+                                   [SIG_COEF_CONTEXTS_EOB][NUM_BASE_LEVELS + 1];
 #endif
 #endif  // CONFIG_LV_MAP
 

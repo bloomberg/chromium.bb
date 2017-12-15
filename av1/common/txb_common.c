@@ -247,7 +247,7 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_LV_MAP_MULTI
   for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
     for (plane = 0; plane < PLANE_TYPES; ++plane) {
-#if USE_BASE_EOB_ALPHABET
+#if 0
       for (ctx = 0; ctx < SIG_COEF_CONTEXTS_EOB; ++ctx) {
         int p = fc->coeff_base[tx_size][plane][0][SIG_COEF_CONTEXTS -
                                                   SIG_COEF_CONTEXTS_EOB + ctx] *
@@ -261,7 +261,6 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
         fc->coeff_base_eob_cdf[tx_size][plane][ctx][2] = AOM_ICDF(32768);
         fc->coeff_base_eob_cdf[tx_size][plane][ctx][3] = 0;
       }
-#endif
       for (ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx) {
         int p = fc->nz_map[tx_size][plane][ctx] * 128;
         fc->coeff_base_cdf[tx_size][plane][ctx][0] = AOM_ICDF(p);
@@ -272,6 +271,9 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
         fc->coeff_base_cdf[tx_size][plane][ctx][3] = AOM_ICDF(32768);
         fc->coeff_base_cdf[tx_size][plane][ctx][4] = 0;
       }
+#else
+      (void)plane;
+#endif
     }
   }
 #else

@@ -201,18 +201,22 @@ static int counts_to_cdf(const aom_count_type *counts, aom_cdf_prob *cdf,
     fprintf(stderr, "Allocating csum array failed!\n");
     return 1;
   }
-  csum[0] = counts[0];
-  for (int i = 1; i < modes; ++i) csum[i] = counts[i] + csum[i - 1];
+  csum[0] = counts[0] + 1;
+  for (int i = 1; i < modes; ++i) csum[i] = counts[i] + 1 + csum[i - 1];
 
   int64_t sum = csum[modes - 1];
   int64_t round_shift = sum >> 1;
   for (int i = 0; i < modes; ++i) {
-    if (sum <= 0)
-      cdf[i] = CDF_PROB_TOP;
-    else
+    if (sum <= 0) {
+      cdf[i] = CDF_PROB_TOP - modes + i + 1;
+    } else {
       cdf[i] = (csum[i] * CDF_PROB_TOP + round_shift) / sum;
+      cdf[i] = AOMMIN(cdf[i], CDF_PROB_TOP - (modes - 1 + i) * 4);
+      cdf[i] = (i == 0) ? AOMMAX(cdf[i], 4) : AOMMAX(cdf[i], cdf[i - 1] + 4);
+    }
   }
-  if (sum <= 0) cdf[0] = CDF_PROB_TOP - 1;
+  // if (sum <= 0) cdf[0] = CDF_PROB_TOP - 1;
+
   return 0;
 }
 
@@ -568,20 +572,6 @@ int main(int argc, const char **argv) {
 #endif
 
 #if CONFIG_LV_MAP
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = NUM_BASE_LEVELS;
-  cts_each_dim[3] = COEFF_BASE_CONTEXTS;
-  cts_each_dim[4] = 2;
-  optimize_entropy_table(&fc.coeff_base[0][0][0][0][0], probsfile, 5,
-                         cts_each_dim, NULL, 1,
-                         "static const aom_prob "
-                         "default_coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_"
-                         "LEVELS][COEFF_BASE_CONTEXTS]");
-  optimize_cdf_table(&fc.coeff_base[0][0][0][0][0], probsfile, 5, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_coeff_base_cdf[TX_SIZES][PLANE_TYPES][NUM_BASE_"
-                     "LEVELS][COEFF_BASE_CONTEXTS][CDF_SIZE(2)]");
 
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = TXB_SKIP_CONTEXTS;
@@ -591,19 +581,6 @@ int main(int argc, const char **argv) {
       "static const aom_prob "
       "default_txk_skip[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]");
   optimize_cdf_table(&fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_"
-                     "CONTEXTS][CDF_SIZE(2)]");
-
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = SIG_COEF_CONTEXTS;
-  cts_each_dim[3] = 2;
-  optimize_entropy_table(
-      &fc.nz_map[0][0][0][0], probsfile, 4, cts_each_dim, NULL, 1,
-      "static const aom_prob "
-      "default_nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]");
-  optimize_cdf_table(&fc.nz_map[0][0][0][0], probsfile, 4, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_"
                      "CONTEXTS][CDF_SIZE(2)]");
@@ -631,6 +608,7 @@ int main(int argc, const char **argv) {
       "default_eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]");
 
 #if CONFIG_LV_MAP_MULTI
+
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = PLANE_TYPES;
   cts_each_dim[2] = BR_CDF_SIZE - 1;
@@ -650,7 +628,52 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob "
                      "default_coeff_lps_multi[TX_SIZES][PLANE_TYPES][LEVEL_"
                      "CONTEXTS][CDF_SIZE(BR_CDF_SIZE)]");
+
+  cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = SIG_COEF_CONTEXTS_2D + SIG_COEF_CONTEXTS_1D;
+  cts_each_dim[3] = 4;
+  optimize_cdf_table(
+      &fc.coeff_base_multi[0][0][0][0], probsfile, 4, cts_each_dim,
+      "static const aom_cdf_prob "
+      "default_coeff_base_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]"
+      "[CDF_SIZE(NUM_BASE_LEVELS+2)]");
+
+  cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = SIG_COEF_CONTEXTS_EOB;
+  cts_each_dim[3] = 3;
+  optimize_cdf_table(
+      &fc.coeff_base_eob_multi[0][0][0][0], probsfile, 4, cts_each_dim,
+      "static const aom_cdf_prob "
+      "default_coeff_base_eob_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_"
+      "CONTEXTS_EOB][CDF_SIZE(NUM_BASE_LEVELS+1)]");
 #else
+
+  cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = NUM_BASE_LEVELS;
+  cts_each_dim[3] = COEFF_BASE_CONTEXTS;
+  cts_each_dim[4] = 2;
+  optimize_entropy_table(&fc.coeff_base[0][0][0][0][0], probsfile, 5,
+                         cts_each_dim, NULL, 1,
+                         "static const aom_prob "
+                         "default_coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_"
+                         "LEVELS][COEFF_BASE_CONTEXTS]");
+
+  cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = SIG_COEF_CONTEXTS;
+  cts_each_dim[3] = 2;
+  optimize_entropy_table(
+      &fc.nz_map[0][0][0][0], probsfile, 4, cts_each_dim, NULL, 1,
+      "static const aom_prob "
+      "default_nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]");
+  optimize_cdf_table(&fc.nz_map[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "default_nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_"
+                     "CONTEXTS][CDF_SIZE(2)]");
+
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = PLANE_TYPES;
   cts_each_dim[2] = LEVEL_CONTEXTS;

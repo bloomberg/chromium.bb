@@ -531,10 +531,10 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
                                  const TX_SIZE tx_size, const TX_TYPE tx_type) {
 #if CONFIG_LV_MAP_MULTI
   if (is_eob) {
-    if (scan_idx == 0) return SIG_COEF_CONTEXTS - 4;
-    if (scan_idx <= (height << bwl) / 8) return SIG_COEF_CONTEXTS - 3;
-    if (scan_idx <= (height << bwl) / 4) return SIG_COEF_CONTEXTS - 2;
-    return SIG_COEF_CONTEXTS - 1;
+    if (scan_idx == 0) return 0;
+    if (scan_idx <= (height << bwl) / 8) return 1;
+    if (scan_idx <= (height << bwl) / 4) return 2;
+    return 3;
   }
 #endif
   const TX_CLASS tx_class = tx_type_to_class[tx_type];

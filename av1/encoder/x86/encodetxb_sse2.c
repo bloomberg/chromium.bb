@@ -438,7 +438,7 @@ void av1_get_nz_map_contexts_sse2(const uint8_t *const levels,
 #if CONFIG_LV_MAP_MULTI
   const int last_idx = eob - 1;
   if (!last_idx) {
-    coeff_contexts[0] = SIG_COEF_CONTEXTS - 4;
+    coeff_contexts[0] = 0;
     return;
   }
 #else
@@ -503,10 +503,10 @@ void av1_get_nz_map_contexts_sse2(const uint8_t *const levels,
   const int bwl = get_txb_bwl(tx_size);
   const int pos = scan[last_idx];
   if (last_idx <= (height << bwl) / 8)
-    coeff_contexts[pos] = SIG_COEF_CONTEXTS - 3;
+    coeff_contexts[pos] = 1;
   else if (last_idx <= (height << bwl) / 4)
-    coeff_contexts[pos] = SIG_COEF_CONTEXTS - 2;
+    coeff_contexts[pos] = 2;
   else
-    coeff_contexts[pos] = SIG_COEF_CONTEXTS - 1;
+    coeff_contexts[pos] = 3;
 #endif
 }

@@ -937,15 +937,12 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(dc_sign_cdf)
   AVERAGE_TILE_CDFS(coeff_base_cdf)
 #if CONFIG_LV_MAP_MULTI
-#if USE_BASE_EOB_ALPHABET
   AVERAGE_TILE_CDFS(coeff_base_eob_cdf)
-#endif
-#endif
-#if !CONFIG_LV_MAP_MULTI
+#else  // CONFIG_LV_MAP_MULTI
   AVERAGE_TILE_CDFS(coeff_lps_cdf)
 #endif
   AVERAGE_TILE_CDFS(coeff_br_cdf)
-#else
+#else  // CONFI_LV_MAP
   AVERAGE_TILE_CDFS(coef_head_cdfs)
   AVERAGE_TILE_CDFS(coef_tail_cdfs)
 #endif
