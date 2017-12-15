@@ -526,8 +526,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxShiftSearch) {
     if (utterance == "Click me")
       break;
   }
-  speech_monitor_.GetNextUtterance();
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 
   // Press Search+/ to enter ChromeVox's "find in page".
   SendKeyPressWithSearch(ui::VKEY_OEM_2);
