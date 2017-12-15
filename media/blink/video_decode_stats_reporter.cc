@@ -17,6 +17,7 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
     mojom::VideoDecodeStatsRecorderPtr recorder_ptr,
     GetPipelineStatsCB get_pipeline_stats_cb,
     const VideoDecoderConfig& video_config,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::TickClock* tick_clock)
     : kRecordingInterval(
           base::TimeDelta::FromMilliseconds(kRecordingIntervalMs)),
@@ -34,6 +35,7 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
 
   recorder_ptr_.set_connection_error_handler(base::BindRepeating(
       &VideoDecodeStatsReporter::OnIpcConnectionError, base::Unretained(this)));
+  stats_cb_timer_.SetTaskRunner(task_runner);
 }
 
 VideoDecodeStatsReporter::~VideoDecodeStatsReporter() = default;
