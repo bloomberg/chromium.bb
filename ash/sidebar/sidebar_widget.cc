@@ -40,15 +40,14 @@ display::Display GetCurrentDisplay(aura::Window* window) {
 
 const SkColor kLightShadingColor = SkColorSetARGB(200, 0, 0, 0);
 
-// TODO(yoshiki): Remove the margins from the sidebar.
-constexpr size_t kWidth = message_center::kNotificationWidth + 2;
-
 // The blur radius of the background.
 constexpr int kSidebarBackgroundBlurRadius = 30;
 
 gfx::Rect CalculateBounds(const gfx::Rect& display_bounds) {
-  return gfx::Rect(display_bounds.x() + display_bounds.width() - kWidth,
-                   display_bounds.y(), kWidth, display_bounds.height());
+  return gfx::Rect(display_bounds.x() + display_bounds.width() -
+                       message_center::kNotificationWidth,
+                   display_bounds.y(), message_center::kNotificationWidth,
+                   display_bounds.height());
 }
 
 }  // namespace
