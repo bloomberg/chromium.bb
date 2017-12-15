@@ -80,9 +80,9 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
           gbm_bo_get_num_planes(bo), gbm_bo_get_width(bo),
           gbm_bo_get_height(bo), addfb_flags);
       for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
-        LOG(ERROR) << base::StringPrintf(
-            "handle: %u, stride: %u, offset: %u, modifier: %zu", handles[i],
-            strides[i], offsets[i], modifiers[i]);
+        LOG(ERROR) << "handles: " << handles[i] << ", stride: " << strides[i]
+                   << ", offset: " << offsets[i]
+                   << ", modifier: " << modifiers[i];
       }
     }
     DCHECK(ret);
