@@ -42,11 +42,6 @@ class EVENTS_DEVICES_EXPORT InputDeviceManager {
   virtual void AddObserver(InputDeviceEventObserver* observer) = 0;
   virtual void RemoveObserver(InputDeviceEventObserver* observer) = 0;
 
-  virtual void SetKeyboardDevicesForTesting(
-      const std::vector<InputDevice>& devices) = 0;
-  virtual void SetTouchscreenDevicesForTesting(
-      const std::vector<TouchscreenDevice>& devices) = 0;
-
  protected:
   // Sets the instance. This should only be set once per thread.
   static void SetInstance(InputDeviceManager* instance);

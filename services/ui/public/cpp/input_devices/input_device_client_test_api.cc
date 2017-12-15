@@ -61,18 +61,21 @@ void InputDeviceClientTestApi::OnDeviceListsComplete() {
 
 void InputDeviceClientTestApi::SetKeyboardDevices(
     const std::vector<InputDevice>& devices) {
-  if (DeviceDataManager::instance_)
-    DeviceDataManager::instance_->keyboard_devices_ = devices;
-  else
-    GetInputDeviceClient()->keyboard_devices_ = devices;
+  if (DeviceDataManager::instance_) {
+    DeviceDataManager::instance_->OnKeyboardDevicesUpdated(devices);
+  } else {
+    GetInputDeviceClient()->OnKeyboardDeviceConfigurationChanged(devices);
+  }
 }
 
 void InputDeviceClientTestApi::SetTouchscreenDevices(
     const std::vector<TouchscreenDevice>& devices) {
-  if (DeviceDataManager::instance_)
-    DeviceDataManager::instance_->touchscreen_devices_ = devices;
-  else
-    GetInputDeviceClient()->touchscreen_devices_ = devices;
+  if (DeviceDataManager::instance_) {
+    DeviceDataManager::instance_->OnTouchscreenDevicesUpdated(devices);
+  } else {
+    GetInputDeviceClient()->OnTouchscreenDeviceConfigurationChanged(devices,
+                                                                    false);
+  }
 }
 
 InputDeviceClient* InputDeviceClientTestApi::GetInputDeviceClient() {

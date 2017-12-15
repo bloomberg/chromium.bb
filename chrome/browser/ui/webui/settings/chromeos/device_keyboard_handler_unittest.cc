@@ -125,16 +125,12 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // Simulate an external keyboard being connected. We should assume there's a
   // Caps Lock key now.
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
-      {1, ui::INPUT_DEVICE_EXTERNAL, "external keyboard"}});
-  input_device_client_test_api_
-      .NotifyObserversKeyboardDeviceConfigurationChanged();
+      {2, ui::INPUT_DEVICE_EXTERNAL, "external keyboard"}});
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
 
   // Disconnect the external keyboard and check that the key goes away.
   input_device_client_test_api_.SetKeyboardDevices({});
-  input_device_client_test_api_
-      .NotifyObserversKeyboardDeviceConfigurationChanged();
   EXPECT_FALSE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
 }
