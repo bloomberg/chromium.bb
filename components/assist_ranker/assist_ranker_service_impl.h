@@ -7,13 +7,13 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "components/assist_ranker/assist_ranker_service.h"
-
-class GURL;
+#include "components/assist_ranker/predictor_config.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -21,6 +21,7 @@ class URLRequestContextGetter;
 
 namespace assist_ranker {
 
+class BasePredictor;
 class BinaryClassifierPredictor;
 
 class AssistRankerServiceImpl : public AssistRankerService {
@@ -31,10 +32,8 @@ class AssistRankerServiceImpl : public AssistRankerService {
   ~AssistRankerServiceImpl() override;
 
   // AssistRankerService...
-  std::unique_ptr<BinaryClassifierPredictor> FetchBinaryClassifierPredictor(
-      GURL model_url,
-      const std::string& model_filename,
-      const std::string& uma_prefix) override;
+  base::WeakPtr<BinaryClassifierPredictor> FetchBinaryClassifierPredictor(
+      const PredictorConfig& config) override;
 
  private:
   // Returns the full path to the model cache.
@@ -45,6 +44,9 @@ class AssistRankerServiceImpl : public AssistRankerService {
 
   // Base path where models are stored.
   const base::FilePath base_path_;
+
+  std::unordered_map<std::string, std::unique_ptr<BasePredictor>>
+      predictor_map_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

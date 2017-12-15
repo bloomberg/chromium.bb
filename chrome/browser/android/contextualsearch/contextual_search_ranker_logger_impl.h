@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_RANKER_LOGGER_IMPL_H_
 
 #include "base/android/jni_android.h"
+#include "base/memory/weak_ptr.h"
 
 namespace content {
 class BrowserContext;
@@ -16,10 +17,6 @@ namespace assist_ranker {
 class BinaryClassifierPredictor;
 class RankerExample;
 }  // namespace assist_ranker
-
-namespace ukm {
-class UkmEntryBuilder;
-}  // namespace ukm
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.contextualsearch
@@ -65,28 +62,30 @@ class ContextualSearchRankerLoggerImpl {
   // ready to start logging the next set of data.
   void WriteLogAndReset(JNIEnv* env, jobject obj);
 
+  // Returns whether or not AssistRanker query is enabled.
+  bool IsQueryEnabled(JNIEnv* env, jobject obj);
+
  private:
-  // Log the current UKM entry (if any) and start a new one.
-  // TODO(donnd): write a test using TestAutoSetUkmRecorder.
-  void ResetUkmEntry();
+  // Returns whether or not AssistRanker query is enabled.
+  bool IsQueryEnabledInternal();
+
+  // Adds feature to the RankerExample.
+  void LogFeature(const std::string& feature_name, int value);
 
   // Sets up the Ranker Predictor for the given |web_contents|.
-  void SetupRankerPredictor(content::WebContents* web_contents);
+  void SetupRankerPredictor();
 
-  // Whether querying Ranker for model loading and prediction is enabled.
-  bool IsRankerQueryEnabled();
-
-  // The UKM source ID being used for this session.
-  int32_t source_id_;
-
-  // The entry builder for the current record, or nullptr if not yet configured.
-  std::unique_ptr<ukm::UkmEntryBuilder> builder_;
+  // The WebContents object used to produce the source_id for UKMs, and to get
+  // browser_context when fetching the predictor. The object is not owned by
+  // ContextualSearchRankerLoggerImpl.
+  content::WebContents* web_contents_ = nullptr;
 
   // The Ranker Predictor for whether a tap gesture should be suppressed or not.
-  std::unique_ptr<assist_ranker::BinaryClassifierPredictor> predictor_;
+  base::WeakPtr<assist_ranker::BinaryClassifierPredictor> predictor_;
 
   // The |BrowserContext| currently associated with the above predictor.
-  content::BrowserContext* browser_context_;
+  // The object not owned by ContextualSearchRankerLoggerImpl.
+  content::BrowserContext* browser_context_ = nullptr;
 
   // The current RankerExample or null.
   // Set of features from one example of a Tap to predict a suppression
@@ -94,7 +93,7 @@ class ContextualSearchRankerLoggerImpl {
   std::unique_ptr<assist_ranker::RankerExample> ranker_example_;
 
   // Whether Ranker has predicted the decision yet.
-  bool has_predicted_decision_;
+  bool has_predicted_decision_ = false;
 
   // The linked Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

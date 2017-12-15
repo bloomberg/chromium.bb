@@ -15,6 +15,10 @@ static_library("assist_ranker") {
     "fake_ranker_model_loader.h",
     "generic_logistic_regression_inference.cc",
     "generic_logistic_regression_inference.h",
+    "predictor_config.cc",
+    "predictor_config.h",
+    "predictor_config_definitions.cc",
+    "predictor_config_definitions.h",
     "ranker_example_util.cc",
     "ranker_example_util.h",
     "ranker_model.cc",
@@ -32,6 +36,7 @@ static_library("assist_ranker") {
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//url",
   ]
 }
@@ -40,6 +45,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "base_predictor_unittest.cc",
     "binary_classifier_predictor_unittest.cc",
     "generic_logistic_regression_inference_unittest.cc",
     "ranker_example_util_unittest.cc",
@@ -51,6 +57,7 @@ source_set("unit_tests") {
     ":assist_ranker",
     "//base",
     "//components/assist_ranker/proto",
+    "//components/ukm:test_support",
     "//net:test_support",
     "//testing/gtest",
   ]

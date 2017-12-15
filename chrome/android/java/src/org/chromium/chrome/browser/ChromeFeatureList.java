@@ -193,7 +193,6 @@ public abstract class ChromeFeatureList {
             "ContentSuggestionsThumbnailDominantColor";
     public static final String CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION =
             "ContextualSearchMlTapSuppression";
-    public static final String CONTEXTUAL_SEARCH_RANKER_QUERY = "ContextualSearchRankerQuery";
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
     public static final String CONTEXTUAL_SUGGESTIONS_CAROUSEL = "ContextualSuggestionsCarousel";
     public static final String COPYLESS_PASTE = "CopylessPaste";

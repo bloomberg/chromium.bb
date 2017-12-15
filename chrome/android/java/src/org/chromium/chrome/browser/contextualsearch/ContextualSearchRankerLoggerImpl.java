@@ -111,6 +111,12 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
         mIsLoggingReadyForPage = true;
         mBasePageWebContents = basePageWebContents;
         mHasInferenceOccurred = false;
+        nativeSetupLoggingAndRanker(mNativePointer, basePageWebContents);
+    }
+
+    @Override
+    public boolean isQueryEnabled() {
+        return nativeIsQueryEnabled(mNativePointer);
     }
 
     @Override
@@ -138,7 +144,6 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
         mHasInferenceOccurred = true;
         if (isEnabled() && mBasePageWebContents != null && mFeaturesToLog != null
                 && !mFeaturesToLog.isEmpty()) {
-            nativeSetupLoggingAndRanker(mNativePointer, mBasePageWebContents);
             for (Map.Entry<Feature, Object> entry : mFeaturesToLog.entrySet()) {
                 logObject(entry.getKey(), entry.getValue());
             }
@@ -260,4 +265,5 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
     // Returns an AssistRankerPrediction integer value.
     private native int nativeRunInference(long nativeContextualSearchRankerLoggerImpl);
     private native void nativeWriteLogAndReset(long nativeContextualSearchRankerLoggerImpl);
+    private native boolean nativeIsQueryEnabled(long nativeContextualSearchRankerLoggerImpl);
 }
