@@ -99,6 +99,7 @@
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -598,13 +599,6 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
 
   Browser* new_window = new Browser(create_params);
 
-#if defined(OS_CHROMEOS)
-  if (create_data &&
-      create_data->state == windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
-    SetWindowTrustedPinned(new_window->window(), true);
-  }
-#endif
-
   for (const GURL& url : urls) {
     NavigateParams navigate_params(new_window, url, ui::PAGE_TRANSITION_LINK);
     navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -640,6 +634,16 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     chrome::NewTab(new_window);
   }
   chrome::SelectNumberedTab(new_window, 0);
+
+#if defined(OS_CHROMEOS)
+  // Lock the window fullscreen only after the new tab has been created
+  // (otherwise the tabstrip is empty).
+  if (create_data &&
+      create_data->state == windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
+    SetWindowTrustedPinned(new_window->window(), true);
+    new_window->command_controller()->LockedFullscreenStateChanged();
+  }
+#endif
 
   if (focused)
     new_window->window()->Show();
@@ -696,10 +700,14 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
       params->update_info.state != windows::WINDOW_STATE_LOCKED_FULLSCREEN &&
       params->update_info.state != windows::WINDOW_STATE_NONE) {
     SetWindowTrustedPinned(controller->window(), false);
+    controller->GetBrowser()->command_controller()->
+        LockedFullscreenStateChanged();
   } else if (!is_window_trusted_pinned &&
              params->update_info.state ==
                  windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
     SetWindowTrustedPinned(controller->window(), true);
+    controller->GetBrowser()->command_controller()->
+        LockedFullscreenStateChanged();
   }
 #endif
 

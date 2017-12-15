@@ -386,7 +386,7 @@ class ImmersiveModeBrowserViewTest : public InProcessBrowserTest,
   void RunTest(int command, int expected_index) {
     reveal_started_ = reveal_ended_ = false;
     expected_index_ = expected_index;
-    browser()->command_controller()->command_updater()->ExecuteCommand(command);
+    browser()->command_controller()->ExecuteCommand(command);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(reveal_ended_);
   }

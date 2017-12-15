@@ -198,7 +198,7 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
   gfx::NativeWindow window = browser->window()->GetNativeWindow();
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   views::FocusManager* focus_manager = widget->GetFocusManager();
-  CommandUpdater* updater = browser->command_controller()->command_updater();
+  CommandUpdater* updater = browser->command_controller();
 
   // Send focus to the toolbar as if the user pressed Alt+Shift+T.
   updater->ExecuteCommand(IDC_FOCUS_TOOLBAR);
@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {
 }
 
 IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocusWithBookmarkBar) {
-  CommandUpdater* updater = browser()->command_controller()->command_updater();
+  CommandUpdater* updater = browser()->command_controller();
   updater->ExecuteCommand(IDC_SHOW_BOOKMARK_BAR);
 
   BookmarkModel* model =

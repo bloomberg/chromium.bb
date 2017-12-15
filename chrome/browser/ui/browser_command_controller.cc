@@ -69,8 +69,11 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_pin_type.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/browser_commands_chromeos.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_types.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -95,7 +98,7 @@ namespace chrome {
 
 BrowserCommandController::BrowserCommandController(Browser* browser)
     : browser_(browser),
-      command_updater_(this) {
+      command_updater_(nullptr) {
   browser_->tab_strip_model()->AddObserver(this);
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -242,6 +245,12 @@ void BrowserCommandController::FullscreenStateChanged() {
   UpdateCommandsForFullscreenMode();
 }
 
+#if defined(OS_CHROMEOS)
+void BrowserCommandController::LockedFullscreenStateChanged() {
+  UpdateCommandsForLockedFullscreenMode();
+}
+#endif
+
 void BrowserCommandController::PrintingStateChanged() {
   UpdatePrintingState();
 }
@@ -257,11 +266,30 @@ void BrowserCommandController::ExtensionStateChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, CommandUpdaterDelegate implementation:
+// BrowserCommandController, CommandUpdater implementation:
 
-void BrowserCommandController::ExecuteCommandWithDisposition(
-    int id,
-    WindowOpenDisposition disposition) {
+bool BrowserCommandController::SupportsCommand(int id) const {
+  return command_updater_.SupportsCommand(id);
+}
+
+bool BrowserCommandController::IsCommandEnabled(int id) const {
+  return command_updater_.IsCommandEnabled(id);
+}
+
+bool BrowserCommandController::ExecuteCommand(int id) {
+  return ExecuteCommandWithDisposition(id, WindowOpenDisposition::CURRENT_TAB);
+}
+
+bool BrowserCommandController::ExecuteCommandWithDisposition(
+    int id, WindowOpenDisposition disposition) {
+  // Doesn't go through the command_updater_ to avoid dealing with having a
+  // naming collision for ExecuteCommandWithDisposition (both
+  // CommandUpdaterDelegate and CommandUpdater declare this function so we
+  // choose to not implement CommandUpdaterDelegate inside this class and
+  // therefore command_updater_ doesn't have the delegate set).
+  if (!SupportsCommand(id) || !IsCommandEnabled(id))
+    return false;
+
   // No commands are enabled if there is not yet any selected tab.
   // TODO(pkasting): It seems like we should not need this, because either
   // most/all commands should not have been enabled yet anyway or the ones that
@@ -270,7 +298,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
   // crashes, e.g. from Windows sending WM_COMMANDs at random times during
   // window construction.  This probably could use closer examination someday.
   if (browser_->tab_strip_model()->active_index() == TabStripModel::kNoTab)
-    return;
+    return true;
 
   DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
                                                 << id;
@@ -668,6 +696,30 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;
   }
+
+  return true;
+}
+
+void BrowserCommandController::AddCommandObserver(int id,
+                                                  CommandObserver* observer) {
+  command_updater_.AddCommandObserver(id, observer);
+}
+
+void BrowserCommandController::RemoveCommandObserver(
+    int id, CommandObserver* observer) {
+  command_updater_.RemoveCommandObserver(id, observer);
+}
+
+void BrowserCommandController::RemoveCommandObserver(
+    CommandObserver* observer) {
+  command_updater_.RemoveCommandObserver(observer);
+}
+
+bool BrowserCommandController::UpdateCommandEnabled(int id, bool state) {
+  if (is_locked_fullscreen_)
+    return false;
+
+  return command_updater_.UpdateCommandEnabled(id, state);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -763,6 +815,9 @@ void BrowserCommandController::InitCommandState() {
   // All browser commands whose state isn't set automagically some other way
   // (like Back & Forward with initial page load) must have their state
   // initialized here, otherwise they will be forever disabled.
+
+  if (is_locked_fullscreen_)
+    return;
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_RELOAD, true);
@@ -923,6 +978,9 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
 }
 
 void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
+  if (is_locked_fullscreen_)
+    return;
+
   UpdateSharedCommandsForIncognitoAvailability(&command_updater_, profile());
 
   if (!IsShowingMainUI()) {
@@ -932,6 +990,9 @@ void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
 }
 
 void BrowserCommandController::UpdateCommandsForTabState() {
+  if (is_locked_fullscreen_)
+    return;
+
   WebContents* current_web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!current_web_contents)  // May be NULL during tab restore.
@@ -1011,6 +1072,9 @@ void BrowserCommandController::UpdateCommandsForContentRestrictionState() {
 }
 
 void BrowserCommandController::UpdateCommandsForDevTools() {
+  if (is_locked_fullscreen_)
+    return;
+
   bool dev_tools_enabled =
       !profile()->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS,
@@ -1030,6 +1094,9 @@ void BrowserCommandController::UpdateCommandsForDevTools() {
 }
 
 void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
+  if (is_locked_fullscreen_)
+    return;
+
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
                                         CanBookmarkCurrentPage(browser_));
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
@@ -1040,6 +1107,9 @@ void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
 }
 
 void BrowserCommandController::UpdateCommandsForBookmarkBar() {
+  if (is_locked_fullscreen_)
+    return;
+
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_BOOKMARK_BAR,
       browser_defaults::bookmarks_enabled && !profile()->IsGuestSession() &&
@@ -1050,11 +1120,17 @@ void BrowserCommandController::UpdateCommandsForBookmarkBar() {
 }
 
 void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
+  if (is_locked_fullscreen_)
+    return;
+
   UpdateSaveAsState();
   UpdateOpenFileState(&command_updater_);
 }
 
 void BrowserCommandController::UpdateCommandsForFullscreenMode() {
+  if (is_locked_fullscreen_)
+    return;
+
   const bool is_fullscreen = window() && window()->IsFullscreen();
   const bool show_main_ui = IsShowingMainUI();
   const bool main_not_fullscreen = show_main_ui && !is_fullscreen;
@@ -1113,7 +1189,70 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   UpdateCommandsForIncognitoAvailability();
 }
 
+#if defined(OS_CHROMEOS)
+namespace {
+
+#if DCHECK_IS_ON()
+// Makes sure that all commands that are not whitelisted are disabled. DCHECKs
+// otherwise. Compiled only in debug mode.
+void NonWhitelistedCommandsAreDisabled(CommandUpdaterImpl* command_updater) {
+  constexpr int kWhitelistedIds[] = {
+    IDC_CUT, IDC_COPY, IDC_PASTE,
+    IDC_FIND, IDC_FIND_NEXT, IDC_FIND_PREVIOUS,
+    IDC_ZOOM_PLUS, IDC_ZOOM_NORMAL, IDC_ZOOM_MINUS,
+  };
+
+  // Go through all the command ids, skip the whitelisted ones.
+  for (int id : command_updater->GetAllIds()) {
+    if (std::find(std::begin(kWhitelistedIds), std::end(kWhitelistedIds), id)
+            != std::end(kWhitelistedIds)) {
+      continue;
+    }
+    DCHECK(!command_updater->IsCommandEnabled(id));
+  }
+}
+#endif
+
+}  // namespace
+
+void BrowserCommandController::UpdateCommandsForLockedFullscreenMode() {
+  // Reset the clipboard when entering or exiting locked fullscreen (security
+  // concerns).
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
+
+  bool is_locked_fullscreen = ash::IsWindowTrustedPinned(browser_->window());
+  // Sanity check to make sure this function is called only on state change.
+  DCHECK_NE(is_locked_fullscreen, is_locked_fullscreen_);
+  if (is_locked_fullscreen == is_locked_fullscreen_)
+    return;
+  is_locked_fullscreen_ = is_locked_fullscreen;
+
+  if (is_locked_fullscreen_) {
+    command_updater_.DisableAllCommands();
+    // Update the state of whitelisted commands:
+    // IDC_CUT/IDC_COPY/IDC_PASTE,
+    UpdateCommandsForContentRestrictionState();
+    // IDC_FIND/IDC_FIND_NEXT/IDC_FIND_PREVIOUS,
+    UpdateCommandsForFind();
+    // IDC_ZOOM_PLUS/IDC_ZOOM_NORMAL/IDC_ZOOM_MINUS.
+    UpdateCommandsForZoomState();
+    // All other commands will be disabled (there is an early return in their
+    // corresponding UpdateCommandsFor* functions).
+#if DCHECK_IS_ON()
+    NonWhitelistedCommandsAreDisabled(&command_updater_);
+#endif
+  } else {
+    // Do an init call to re-initialize command state after the
+    // DisableAllCommands.
+    InitCommandState();
+  }
+}
+#endif
+
 void BrowserCommandController::UpdatePrintingState() {
+  if (is_locked_fullscreen_)
+    return;
+
   bool print_enabled = CanPrint(browser_);
   command_updater_.UpdateCommandEnabled(IDC_PRINT, print_enabled);
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -1123,10 +1262,16 @@ void BrowserCommandController::UpdatePrintingState() {
 }
 
 void BrowserCommandController::UpdateSaveAsState() {
+  if (is_locked_fullscreen_)
+    return;
+
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, CanSavePage(browser_));
 }
 
 void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
+  if (is_locked_fullscreen_)
+    return;
+
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_SYNC_SETUP, show_main_ui && pref_signin_allowed_.GetValue());
 }
@@ -1144,11 +1289,17 @@ void BrowserCommandController::UpdateOpenFileState(
 
 void BrowserCommandController::UpdateReloadStopState(bool is_loading,
                                                      bool force) {
+  if (is_locked_fullscreen_)
+    return;
+
   window()->UpdateReloadStopState(is_loading, force);
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
 }
 
 void BrowserCommandController::UpdateTabRestoreCommandState() {
+  if (is_locked_fullscreen_)
+    return;
+
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
   // The command is enabled if the service hasn't loaded yet to trigger loading.
@@ -1171,6 +1322,9 @@ void BrowserCommandController::UpdateCommandsForFind() {
 }
 
 void BrowserCommandController::UpdateCommandsForMediaRouter() {
+  if (is_locked_fullscreen_)
+    return;
+
   command_updater_.UpdateCommandEnabled(IDC_ROUTE_MEDIA,
                                         CanRouteMedia(browser_));
 }

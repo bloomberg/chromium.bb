@@ -12,7 +12,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
-#include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -127,7 +127,7 @@ class StubBubbleModelDelegate : public ContentSettingBubbleModelDelegate {
 SimpleWebViewDialog::SimpleWebViewDialog(Profile* profile)
     : profile_(profile),
       bubble_model_delegate_(new StubBubbleModelDelegate) {
-  command_updater_.reset(new CommandUpdater(this));
+  command_updater_.reset(new CommandUpdaterImpl(this));
   command_updater_->UpdateCommandEnabled(IDC_BACK, true);
   command_updater_->UpdateCommandEnabled(IDC_FORWARD, true);
   command_updater_->UpdateCommandEnabled(IDC_STOP, true);
