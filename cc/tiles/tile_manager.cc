@@ -93,7 +93,7 @@ class RasterTaskImpl : public TileTask {
                  std::unique_ptr<RasterBuffer> raster_buffer,
                  TileTask::Vector* dependencies,
                  bool is_gpu_rasterization,
-                 base::Optional<PlaybackImageProvider> image_provider)
+                 PlaybackImageProvider image_provider)
       : TileTask(!is_gpu_rasterization, dependencies),
         tile_manager_(tile_manager),
         tile_id_(tile->id()),
@@ -113,9 +113,7 @@ class RasterTaskImpl : public TileTask {
         raster_buffer_(std::move(raster_buffer)),
         image_provider_(std::move(image_provider)) {
     DCHECK(origin_thread_checker_.CalledOnValidThread());
-
-    if (image_provider_.has_value())
-      playback_settings_.image_provider = &image_provider_.value();
+    playback_settings_.image_provider = &image_provider_;
   }
 
   // Overridden from Task:
@@ -180,7 +178,7 @@ class RasterTaskImpl : public TileTask {
   int source_frame_number_;
   bool is_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
-  base::Optional<PlaybackImageProvider> image_provider_;
+  PlaybackImageProvider image_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
@@ -1216,23 +1214,17 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       raster_buffer_provider_->AcquireBufferForRaster(
           resource, resource_content_id, tile->invalidated_id());
 
-  base::Optional<PlaybackImageProvider> image_provider;
-  const bool has_sync_decoded_images = !sync_decoded_images.empty();
-  const bool has_at_raster_images = !at_raster_images.empty();
-  if (skip_images || has_checker_images || has_sync_decoded_images ||
-      has_at_raster_images) {
-    base::Optional<PlaybackImageProvider::Settings> settings;
-    if (!skip_images) {
-      settings.emplace();
-      settings->images_to_skip = std::move(images_to_skip);
-      settings->at_raster_images = std::move(at_raster_images);
-      settings->image_to_current_frame_index =
-          std::move(image_id_to_current_frame_index);
-    }
-
-    image_provider.emplace(image_controller_.cache(), color_space,
-                           std::move(settings));
+  base::Optional<PlaybackImageProvider::Settings> settings;
+  if (!skip_images) {
+    settings.emplace();
+    settings->images_to_skip = std::move(images_to_skip);
+    settings->at_raster_images = std::move(at_raster_images);
+    settings->image_to_current_frame_index =
+        std::move(image_id_to_current_frame_index);
   }
+
+  PlaybackImageProvider image_provider(image_controller_.cache(), color_space,
+                                       std::move(settings));
 
   return base::MakeRefCounted<RasterTaskImpl>(
       this, tile, resource, prioritized_tile.raster_source(), playback_settings,
