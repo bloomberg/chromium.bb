@@ -45,40 +45,13 @@
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/TextEncoding.h"
-#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkImageDeserializer.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/core/SkStream.h"
 
 namespace blink {
 
 PictureSnapshot::PictureSnapshot(sk_sp<const SkPicture> picture)
     : picture_(std::move(picture)) {}
-
-class SkiaImageDecoder final : public SkImageDeserializer {
- public:
-  sk_sp<SkImage> makeFromMemory(const void* data,
-                                size_t length,
-                                const SkIRect* subset) override {
-    // No need to copy the data; this decodes immediately.
-    scoped_refptr<SegmentReader> segment_reader =
-        SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(data, length));
-    std::unique_ptr<ImageDecoder> image_decoder = ImageDecoder::Create(
-        std::move(segment_reader), true, ImageDecoder::kAlphaPremultiplied,
-        ColorBehavior::Ignore());
-    if (!image_decoder)
-      return nullptr;
-
-    ImageFrame* frame = image_decoder->DecodeFrameBufferAtIndex(0);
-    return (frame && !image_decoder->Failed())
-               ? frame->FinalizePixelsAndGetImage()
-               : nullptr;
-  }
-  sk_sp<SkImage> makeFromData(SkData* data, const SkIRect* subset) override {
-    return this->makeFromMemory(data->data(), data->size(), subset);
-  }
-};
 
 scoped_refptr<PictureSnapshot> PictureSnapshot::Load(
     const Vector<scoped_refptr<TilePictureStream>>& tiles) {
@@ -87,9 +60,8 @@ scoped_refptr<PictureSnapshot> PictureSnapshot::Load(
   pictures.ReserveCapacity(tiles.size());
   FloatRect union_rect;
   for (const auto& tile_stream : tiles) {
-    SkMemoryStream stream(tile_stream->data.begin(), tile_stream->data.size());
-    SkiaImageDecoder factory;
-    sk_sp<SkPicture> picture = SkPicture::MakeFromStream(&stream, &factory);
+    sk_sp<SkPicture> picture = SkPicture::MakeFromData(
+        tile_stream->data.begin(), tile_stream->data.size());
     if (!picture)
       return nullptr;
     FloatRect cull_rect(picture->cullRect());
