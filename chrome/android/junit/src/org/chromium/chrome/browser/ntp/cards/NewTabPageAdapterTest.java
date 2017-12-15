@@ -25,6 +25,7 @@ import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestio
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.registerCategory;
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.stringify;
 
+import android.accounts.Account;
 import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
@@ -79,7 +80,11 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.test.util.AccountHolder;
+import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -89,10 +94,11 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Unit tests for {@link NewTabPageAdapter}.
+ * Unit tests for {@link NewTabPageAdapter}. {@link AccountManagerFacade} uses AsyncTasks, thus
+ * the need for {@link CustomShadowAsyncTask}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 @DisableFeatures({ChromeFeatureList.NTP_CONDENSED_LAYOUT, ChromeFeatureList.CHROME_HOME,
         ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
         ChromeFeatureList.ANDROID_SIGNIN_PROMOS})
@@ -281,7 +287,15 @@ public class NewTabPageAdapterTest {
         FeatureUtilities.resetChromeHomeEnabledForTests();
 
         // Set empty variation params for the test.
-        CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
+        CardsVariationParameters.setTestVariationParams(new HashMap<>());
+
+        // Initialise AccountManagerFacade and add one dummy account.
+        FakeAccountManagerDelegate fakeAccountManager = new FakeAccountManagerDelegate(
+                FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(fakeAccountManager);
+        Account account = AccountManagerFacade.createAccountFromName("test@gmail.com");
+        fakeAccountManager.addAccountHolderExplicitly(new AccountHolder.Builder(account).build());
+        assertFalse(AccountManagerFacade.get().isUpdatePending());
 
         // Initialise the sign in state. We will be signed in by default in the tests.
         assertFalse(
