@@ -39,15 +39,19 @@ public class PartnerBookmarksShim {
 
         PartnerBookmarksReader reader = new PartnerBookmarksReader(context);
 
+        boolean systemOrPreStable =
+                (context.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) == 1
+                || !ChromeVersionInfo.isStableBuild();
+        if (!systemOrPreStable) {
+            reader.onBookmarksRead();
+            return;
+        }
+
         boolean skip = shouldSkipReading();
         RecordHistogram.recordBooleanHistogram("PartnerBookmark.Skipped", skip);
         if (skip) {
             Log.i(TAG, "Skip reading partner bookmarks since recent result was empty.");
-        }
-        boolean systemOrPreStable =
-                (context.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) == 1
-                || !ChromeVersionInfo.isStableBuild();
-        if (skip || !systemOrPreStable) {
+            reader.recordPartnerBookmarkCount(0);
             reader.onBookmarksRead();
             return;
         }
