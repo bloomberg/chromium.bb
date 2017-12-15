@@ -1,12 +1,12 @@
 {
     "archives": {
-        "GUIMark Vector Chart Test": {
+        "GUIMark_Vector_Chart_Test": {
             "DEFAULT": "tough_path_rendering_cases_002.wprgo"
         },
-        "MotionMark Canvas Fill Shapes": {
+        "MotionMark_Canvas_Fill_Shapes": {
             "DEFAULT": "tough_path_rendering_cases_002.wprgo"
         },
-        "MotionMark Canvas Stroke Shapes": {
+        "MotionMark_Canvas_Stroke_Shapes": {
             "DEFAULT": "tough_path_rendering_cases_002.wprgo"
         },
         "http://ie.microsoft.com/testdrive/Performance/Chalkboard/": {

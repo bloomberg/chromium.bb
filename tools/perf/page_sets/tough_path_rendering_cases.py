@@ -31,11 +31,11 @@ class ToughPathRenderingCasesPageSet(story.StorySet):
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
     page_list = [
-      ('GUIMark Vector Chart Test',
+      ('GUIMark_Vector_Chart_Test',
       'http://www.craftymind.com/factory/guimark2/HTML5ChartingTest.html'),
-      ('MotionMark Canvas Fill Shapes',
+      ('MotionMark_Canvas_Fill_Shapes',
       'http://rawgit.com/WebKit/webkit/master/PerformanceTests/MotionMark/developer.html?test-name=Fillshapes&test-interval=20&display=minimal&tiles=big&controller=fixed&frame-rate=50&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Canvassuite&complexity=1000'), # pylint: disable=line-too-long
-      ('MotionMark Canvas Stroke Shapes',
+      ('MotionMark_Canvas_Stroke_Shapes',
       'http://rawgit.com/WebKit/webkit/master/PerformanceTests/MotionMark/developer.html?test-name=Strokeshapes&test-interval=20&display=minimal&tiles=big&controller=fixed&frame-rate=50&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Canvassuite&complexity=1000'), # pylint: disable=line-too-long
     ]
 
@@ -47,5 +47,5 @@ class ToughPathRenderingCasesPageSet(story.StorySet):
     # http://ie.microsoft.com/testdrive/Performance/Chalkboard/.
     chalkboard_url = ('https://testdrive-archive.azurewebsites.net'
                       '/performance/chalkboard/')
-    name = 'IE Chalkboard'
+    name = 'IE_Chalkboard'
     self.AddStory(ChalkboardPage(chalkboard_url, self, name=name))
