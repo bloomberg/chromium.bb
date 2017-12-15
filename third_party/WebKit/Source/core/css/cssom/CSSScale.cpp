@@ -11,6 +11,10 @@ namespace blink {
 
 namespace {
 
+bool IsValidScaleCoord(CSSNumericValue* coord) {
+  return coord && coord->Type().MatchesNumber();
+}
+
 CSSScale* FromScale(const CSSFunctionValue& value) {
   DCHECK(value.length() == 1U || value.length() == 2U);
   CSSNumericValue* x =
@@ -64,7 +68,7 @@ CSSScale* CSSScale::Create(const CSSNumberish& x,
   CSSNumericValue* x_value = CSSNumericValue::FromNumberish(x);
   CSSNumericValue* y_value = CSSNumericValue::FromNumberish(y);
 
-  if (!IsValidCoordinate(x_value) || !IsValidCoordinate(y_value)) {
+  if (!IsValidScaleCoord(x_value) || !IsValidScaleCoord(y_value)) {
     exception_state.ThrowTypeError("Must specify an number unit");
     return nullptr;
   }
@@ -80,8 +84,8 @@ CSSScale* CSSScale::Create(const CSSNumberish& x,
   CSSNumericValue* y_value = CSSNumericValue::FromNumberish(y);
   CSSNumericValue* z_value = CSSNumericValue::FromNumberish(z);
 
-  if (!IsValidCoordinate(x_value) || !IsValidCoordinate(y_value) ||
-      !IsValidCoordinate(z_value)) {
+  if (!IsValidScaleCoord(x_value) || !IsValidScaleCoord(y_value) ||
+      !IsValidScaleCoord(z_value)) {
     exception_state.ThrowTypeError("Must specify a number for X, Y and Z");
     return nullptr;
   }
@@ -108,7 +112,7 @@ CSSScale* CSSScale::FromCSSValue(const CSSFunctionValue& value) {
 void CSSScale::setX(const CSSNumberish& x, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(x);
 
-  if (!IsValidCoordinate(value)) {
+  if (!IsValidScaleCoord(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
     return;
   }
@@ -119,7 +123,7 @@ void CSSScale::setX(const CSSNumberish& x, ExceptionState& exception_state) {
 void CSSScale::setY(const CSSNumberish& y, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(y);
 
-  if (!IsValidCoordinate(value)) {
+  if (!IsValidScaleCoord(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
     return;
   }
@@ -130,7 +134,7 @@ void CSSScale::setY(const CSSNumberish& y, ExceptionState& exception_state) {
 void CSSScale::setZ(const CSSNumberish& z, ExceptionState& exception_state) {
   CSSNumericValue* value = CSSNumericValue::FromNumberish(z);
 
-  if (!IsValidCoordinate(value)) {
+  if (!IsValidScaleCoord(value)) {
     exception_state.ThrowTypeError("Must specify a number unit");
     return;
   }
@@ -170,14 +174,9 @@ CSSScale::CSSScale(CSSNumericValue* x,
                    CSSNumericValue* z,
                    bool is2D)
     : CSSTransformComponent(is2D), x_(x), y_(y), z_(z) {
-  DCHECK(IsValidCoordinate(x));
-  DCHECK(IsValidCoordinate(y));
-  DCHECK(IsValidCoordinate(z));
-}
-
-// static
-bool CSSScale::IsValidCoordinate(CSSNumericValue* coord) {
-  return coord && coord->Type().MatchesNumber();
+  DCHECK(IsValidScaleCoord(x));
+  DCHECK(IsValidScaleCoord(y));
+  DCHECK(IsValidScaleCoord(z));
 }
 
 }  // namespace blink
