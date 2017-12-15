@@ -85,7 +85,7 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
         ASSERT_EQ(tx_type_, DCT_DCT);
         libaom_test::reference_hybrid_2d(ref_input, ref_coeffs, tx_type_,
                                          tx_size_);
-        int32_t ref_coeffs_int[64 * 64] = { 0 };
+        DECLARE_ALIGNED(16, int32_t, ref_coeffs_int[64 * 64]) = { 0 };
         ASSERT_LE(txfm2d_size, NELEMENTS(ref_coeffs_int));
         for (int ni = 0; ni < txfm2d_size; ++ni) {
           ref_coeffs_int[ni] = (int32_t)round(ref_coeffs[ni]);
