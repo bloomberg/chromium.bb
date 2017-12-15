@@ -31,14 +31,30 @@ runs. Rather than communicating directly with the underlying operating system,
 Blink is designed to run in a sandbox and interacts with the operating system
 via the platform API. The central interface in this part of the API is
 Platform, which is a pure virtual interface from which Blink obtains many other
-interfaces.
+interfaces. public/platform/ is implemented by WebKit/Source/platform/exported/.
 
 The public/web directory defines an interface to Blink's implementation of the
 web platform, including the Document Object Model (DOM). The central interface
 in this part of the API is WebView, which is a good starting point for
-exploring the API.
+exploring the API. public/web/ is implemented by
+WebKit/Source/{core,modules,controller}/exported/.
 
 Note that public/platform should not depend on public/web.
+
+Notes
+-----
+
+As mentioned above, conceptually public/platform/ and public/web/ should be
+used as follows:
+
+  - public/platform/ is implemented by the underlying functionalities and used by Blink
+  - public/web/ is implemented by Blink and used by Chromium
+
+In reality, however, they are sometimes abused. Due to the dependency constraint
+(public/web/ => controller/ => modules/ => core/ => platform/ => public/platform/),
+people sometimes define classes in public/platform/ or public/web/ just because
+that place is more convenient. This is already happening in many places but keep
+the concept in mind.
 
 Basic Types
 -----------
