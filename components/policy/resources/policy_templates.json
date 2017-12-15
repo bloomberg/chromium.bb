@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 405
+#   For your editing convenience: highest ID currently used: 406
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -4491,6 +4491,28 @@
 
       If the policy is left not set, the default value 'MultiProfileUserBehaviorMustBePrimary' applies for enterprise-managed users and 'MultiProfileUserBehaviorUnrestricted' will be used for non-managed users.''',
       'arc_support': 'When multiple users are logged in, only the primary user can use Android apps.',
+    },
+    {
+      'name': 'SecondaryGoogleAccountSigninAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:65-'],
+      'features': {
+        # The case where a user is already signed into an unmanaged account from the content area cannot be handled right now and hence this is not dynamic.
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 406,
+      'caption': '''Allow Multiple Sign-in Within the Browser''',
+      'tags': [],
+      'desc': '''This setting allows users to switch between Google accounts within the content area of their browser window after they sign into their <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device.
+
+      If this policy is set to false, signing in to a different account from non-Incognito browser content area will not be allowed.
+
+      If this policy is unset or set to true, the default behavior will be used: signing in to a different account from the browser content area will be allowed, except for child accounts where it will be blocked for non-Incognito content area.
+
+      In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy.''',
     },
     {
       'name': 'InstantEnabled',

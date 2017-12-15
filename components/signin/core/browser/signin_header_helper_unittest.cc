@@ -122,13 +122,25 @@ class SigninHeaderHelperTest : public testing::Test {
   std::unique_ptr<BooleanPrefMember> dice_enabled_pref_member_;
 };
 
-// Tests that no Mirror request is returned when the user is not signed in (no
+#if defined(OS_CHROMEOS)
+// Tests that Mirror request is returned on Chrome OS for Public Sessions (no
 // account id).
+TEST_F(SigninHeaderHelperTest, TestMirrorRequestNoAccountIdChromeOS) {
+  ScopedAccountConsistencyMirror scoped_mirror;
+  CheckMirrorHeaderRequest(GURL("https://docs.google.com"), "",
+                           "mode=0,enable_account_consistency=true");
+  CheckMirrorCookieRequest(GURL("https://docs.google.com"), "",
+                           "mode=0:enable_account_consistency=true");
+}
+#else  // !defined(OS_CHROMEOS)
+// Tests that no Mirror request is returned when the user is not signed in (no
+// account id), for non Chrome OS platforms.
 TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestNoAccountId) {
   ScopedAccountConsistencyMirror scoped_mirror;
   CheckMirrorHeaderRequest(GURL("https://docs.google.com"), "", "");
   CheckMirrorCookieRequest(GURL("https://docs.google.com"), "", "");
 }
+#endif
 
 // Tests that no Mirror request is returned when the cookies aren't allowed to
 // be set.
