@@ -12,12 +12,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/blocking_method_caller.h"
@@ -44,6 +46,25 @@ const int kTpmDBusTimeoutMs = 2 * 60 * 1000;
 void FillIdentificationProtobuf(const cryptohome::Identification& id,
                                 cryptohome::AccountIdentifier* id_proto) {
   id_proto->set_account_id(id.id());
+}
+
+// Values for the attestation server switch.
+const char kAttestationServerDefault[] = "default";
+const char kAttestationServerTest[] = "test";
+
+static attestation::VerifiedAccessType GetVerifiedAccessType() {
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kAttestationServer);
+  if (value.empty() || value == kAttestationServerDefault) {
+    return attestation::DEFAULT_VA;
+  }
+  if (value == kAttestationServerTest) {
+    return attestation::TEST_VA;
+  }
+  LOG(WARNING) << "Invalid Verified Access server value: " << value
+               << ". Using default.";
+  return attestation::DEFAULT_VA;
 }
 
 // The CryptohomeClient implementation.
@@ -624,8 +645,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
       AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationSignEnterpriseChallenge);
+        cryptohome::kCryptohomeTpmAttestationSignEnterpriseVaChallenge);
     dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(GetVerifiedAccessType());
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
     writer.AppendString(cryptohome_id.id());
