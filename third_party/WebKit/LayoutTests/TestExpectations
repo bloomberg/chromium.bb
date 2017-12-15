@@ -3503,8 +3503,6 @@ crbug.com/762423 [ Android ] http/tests/dom/create-contextual-fragment-from-svg-
 crbug.com/762399 [ Android ] http/tests/cache/zero-length-xhr.html [ Pass Crash ]
 
 # Sheriff failures 2017-09-08
-crbug.com/763208 http/tests/devtools/sources/debugger-ui/source-frame-count.js [ Pass Failure ]
-
 crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
 
 # Sheriff failures 2017-09-11
