@@ -68,7 +68,6 @@ static INLINE void av1_k_means(const float *data, float *centroids,
 // method.
 int av1_remove_duplicates(float *centroids, int num_centroids);
 
-#if CONFIG_PALETTE_DELTA_ENCODING
 // Given a color cache and a set of base colors, find if each cache color is
 // present in the base colors, record the binary results in "cache_color_found".
 // Record the colors that are not in the color cache in "out_cache_colors".
@@ -80,20 +79,14 @@ int av1_index_color_cache(const uint16_t *color_cache, int n_cache,
 // assign zero_count with the number of deltas being 0.
 int av1_get_palette_delta_bits_v(const PALETTE_MODE_INFO *const pmi,
                                  int bit_depth, int *zero_count, int *min_bits);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 // Return the rate cost for transmitting luma palette color values.
 int av1_palette_color_cost_y(const PALETTE_MODE_INFO *const pmi,
-#if CONFIG_PALETTE_DELTA_ENCODING
-                             uint16_t *color_cache, int n_cache,
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
-                             int bit_depth);
+                             uint16_t *color_cache, int n_cache, int bit_depth);
 
 // Return the rate cost for transmitting chroma palette color values.
 int av1_palette_color_cost_uv(const PALETTE_MODE_INFO *const pmi,
-#if CONFIG_PALETTE_DELTA_ENCODING
                               uint16_t *color_cache, int n_cache,
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
                               int bit_depth);
 
 #ifdef __cplusplus

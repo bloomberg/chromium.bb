@@ -268,7 +268,6 @@ EXPERIMENT_LIST="
     ext_tile
     q_adapt_probs
     inter_stats_only
-    palette_delta_encoding
     kf_ctx
     cfl
     xiphrc
@@ -520,7 +519,6 @@ post_process_cmdline() {
       soft_enable kf_ctx
       soft_enable striped_loop_restoration
       soft_enable ext_intra_mod
-      soft_enable palette_delta_encoding
       soft_enable frame_size
       soft_enable segment_globalmv
       soft_enable short_filter

@@ -48,9 +48,7 @@
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/mcomp.h"
-#if CONFIG_PALETTE_DELTA_ENCODING
 #include "av1/encoder/palette.h"
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
@@ -901,7 +899,6 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_PALETTE_DELTA_ENCODING
 // Transmit color values with delta encoding. Write the first value as
 // literal, and the deltas between each value and the previous one. "min_val" is
 // the smallest possible value of the deltas.
@@ -1019,7 +1016,6 @@ static void write_palette_colors_uv(const MACROBLOCKD *const xd,
     }
   }
 }
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                     const MODE_INFO *const mi, aom_writer *w) {
@@ -1050,14 +1046,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
                        xd->tile_ctx->palette_y_size_cdf[block_palette_idx],
                        PALETTE_SIZES);
-#if CONFIG_PALETTE_DELTA_ENCODING
       write_palette_colors_y(xd, pmi, cm->bit_depth, w);
-#else
-      for (int i = 0; i < n; ++i) {
-        assert(pmi->palette_colors[i] < (1 << cm->bit_depth));
-        aom_write_literal(w, pmi->palette_colors[i], cm->bit_depth);
-      }
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
     }
   }
 
@@ -1075,20 +1064,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
                        xd->tile_ctx->palette_uv_size_cdf[block_palette_idx],
                        PALETTE_SIZES);
-#if CONFIG_PALETTE_DELTA_ENCODING
       write_palette_colors_uv(xd, pmi, cm->bit_depth, w);
-#else
-      for (int i = 0; i < n; ++i) {
-        assert(pmi->palette_colors[PALETTE_MAX_SIZE + i] <
-               (1 << cm->bit_depth));
-        assert(pmi->palette_colors[2 * PALETTE_MAX_SIZE + i] <
-               (1 << cm->bit_depth));
-        aom_write_literal(w, pmi->palette_colors[PALETTE_MAX_SIZE + i],
-                          cm->bit_depth);
-        aom_write_literal(w, pmi->palette_colors[2 * PALETTE_MAX_SIZE + i],
-                          cm->bit_depth);
-      }
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
     }
   }
 }

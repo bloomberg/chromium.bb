@@ -43,7 +43,6 @@ int av1_remove_duplicates(float *centroids, int num_centroids) {
   return num_unique;
 }
 
-#if CONFIG_PALETTE_DELTA_ENCODING
 static int delta_encode_cost(const int *colors, int num, int bit_depth,
                              int min_val) {
   if (num <= 0) return 0;
@@ -116,15 +115,11 @@ int av1_get_palette_delta_bits_v(const PALETTE_MODE_INFO *const pmi,
   }
   return AOMMAX(av1_ceil_log2(max_d + 1), *min_bits);
 }
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 int av1_palette_color_cost_y(const PALETTE_MODE_INFO *const pmi,
-#if CONFIG_PALETTE_DELTA_ENCODING
                              uint16_t *color_cache, int n_cache,
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
                              int bit_depth) {
   const int n = pmi->palette_size[0];
-#if CONFIG_PALETTE_DELTA_ENCODING
   int out_cache_colors[PALETTE_MAX_SIZE];
   uint8_t cache_color_found[2 * PALETTE_MAX_SIZE];
   const int n_out_cache =
@@ -133,18 +128,12 @@ int av1_palette_color_cost_y(const PALETTE_MODE_INFO *const pmi,
   const int total_bits =
       n_cache + delta_encode_cost(out_cache_colors, n_out_cache, bit_depth, 1);
   return total_bits * av1_cost_bit(128, 0);
-#else
-  return bit_depth * n * av1_cost_bit(128, 0);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 }
 
 int av1_palette_color_cost_uv(const PALETTE_MODE_INFO *const pmi,
-#if CONFIG_PALETTE_DELTA_ENCODING
                               uint16_t *color_cache, int n_cache,
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
                               int bit_depth) {
   const int n = pmi->palette_size[1];
-#if CONFIG_PALETTE_DELTA_ENCODING
   int total_bits = 0;
   // U channel palette color cost.
   int out_cache_colors[PALETTE_MAX_SIZE];
@@ -164,7 +153,4 @@ int av1_palette_color_cost_uv(const PALETTE_MODE_INFO *const pmi,
   const int bits_using_raw = bit_depth * n;
   total_bits += 1 + AOMMIN(bits_using_delta, bits_using_raw);
   return total_bits * av1_cost_bit(128, 0);
-#else
-  return 2 * bit_depth * n * av1_cost_bit(128, 0);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 }

@@ -706,7 +706,6 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
   }
 }
 
-#if CONFIG_PALETTE_DELTA_ENCODING
 // Merge the sorted list of cached colors(cached_colors[0...n_cached_colors-1])
 // and the sorted list of transmitted colors(colors[n_cached_colors...n-1]) into
 // one single sorted list(colors[...]).
@@ -814,7 +813,6 @@ static void read_palette_colors_uv(MACROBLOCKD *const xd, int bit_depth,
     }
   }
 }
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                    aom_reader *r) {
@@ -847,12 +845,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                           xd->tile_ctx->palette_y_size_cdf[block_palette_idx],
                           PALETTE_SIZES, ACCT_STR) +
           2;
-#if CONFIG_PALETTE_DELTA_ENCODING
       read_palette_colors_y(xd, cm->bit_depth, pmi, r);
-#else
-      for (int i = 0; i < pmi->palette_size[0]; ++i)
-        pmi->palette_colors[i] = aom_read_literal(r, cm->bit_depth, ACCT_STR);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
     }
   }
   if (mbmi->uv_mode == UV_DC_PRED) {
@@ -865,16 +858,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                           xd->tile_ctx->palette_uv_size_cdf[block_palette_idx],
                           PALETTE_SIZES, ACCT_STR) +
           2;
-#if CONFIG_PALETTE_DELTA_ENCODING
       read_palette_colors_uv(xd, cm->bit_depth, pmi, r);
-#else
-      for (int i = 0; i < pmi->palette_size[1]; ++i) {
-        pmi->palette_colors[PALETTE_MAX_SIZE + i] =
-            aom_read_literal(r, cm->bit_depth, ACCT_STR);
-        pmi->palette_colors[2 * PALETTE_MAX_SIZE + i] =
-            aom_read_literal(r, cm->bit_depth, ACCT_STR);
-      }
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
     }
   }
 }

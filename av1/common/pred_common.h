@@ -177,14 +177,12 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd, int dir);
 int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd);
 #endif
 
-#if CONFIG_PALETTE_DELTA_ENCODING
 // Get a list of palette base colors that are used in the above and left blocks,
 // referred to as "color cache". The return value is the number of colors in the
 // cache (<= 2 * PALETTE_MAX_SIZE). The color values are stored in "cache"
 // in ascending order.
 int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
                           uint16_t *cache);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 int av1_get_intra_inter_context(const MACROBLOCKD *xd);
 

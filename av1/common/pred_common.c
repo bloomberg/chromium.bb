@@ -100,7 +100,6 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
 }
 #endif
 
-#if CONFIG_PALETTE_DELTA_ENCODING
 static void palette_add_to_cache(uint16_t *cache, int *n, uint16_t val) {
   // Do not add an already existing value
   if (*n > 0 && val == cache[*n - 1]) return;
@@ -153,7 +152,6 @@ int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
   assert(n <= 2 * PALETTE_MAX_SIZE);
   return n;
 }
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 // The mode info data structure has a one element border above and to the
 // left of the entries corresponding to real macroblocks.

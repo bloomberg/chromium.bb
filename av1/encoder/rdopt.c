@@ -2793,7 +2793,6 @@ static void extend_palette_color_map(uint8_t *const color_map, int orig_width,
   }
 }
 
-#if CONFIG_PALETTE_DELTA_ENCODING
 // Bias toward using colors in the cache.
 // TODO(huisu): Try other schemes to improve compression.
 static void optimize_palette_colors(uint16_t *color_cache, int n_cache,
@@ -2813,17 +2812,13 @@ static void optimize_palette_colors(uint16_t *color_cache, int n_cache,
     if (min_diff < 1.5) centroids[i] = color_cache[idx];
   }
 }
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 // Given the base colors as specified in centroids[], calculate the RD cost
 // of palette mode.
 static void palette_rd_y(const AV1_COMP *const cpi, MACROBLOCK *x,
                          MB_MODE_INFO *mbmi, BLOCK_SIZE bsize, int palette_ctx,
                          int dc_mode_cost, const float *data, float *centroids,
-                         int n,
-#if CONFIG_PALETTE_DELTA_ENCODING
-                         uint16_t *color_cache, int n_cache,
-#endif
+                         int n, uint16_t *color_cache, int n_cache,
                          MB_MODE_INFO *best_mbmi,
                          uint8_t *best_palette_color_map, int64_t *best_rd,
                          int64_t *best_model_rd, int *rate, int *rate_tokenonly,
@@ -2835,9 +2830,7 @@ static void palette_rd_y(const AV1_COMP *const cpi, MACROBLOCK *x,
     assert(!isnan(centroids[i]));
   }
 #endif  // NDEBUG
-#if CONFIG_PALETTE_DELTA_ENCODING
   optimize_palette_colors(color_cache, n_cache, n, 1, centroids);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
   int k = av1_remove_duplicates(centroids, n);
   if (k < PALETTE_MIN_SIZE) {
     // Too few unique colors to create a palette. And DC_PRED will work
@@ -2867,10 +2860,7 @@ static void palette_rd_y(const AV1_COMP *const cpi, MACROBLOCK *x,
       x->palette_y_size_cost[bsize - BLOCK_8X8][k - PALETTE_MIN_SIZE] +
       write_uniform_cost(k, color_map[0]) +
       x->palette_y_mode_cost[bsize - BLOCK_8X8][palette_ctx][1];
-  palette_mode_cost += av1_palette_color_cost_y(pmi,
-#if CONFIG_PALETTE_DELTA_ENCODING
-                                                color_cache, n_cache,
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
+  palette_mode_cost += av1_palette_color_cost_y(pmi, color_cache, n_cache,
                                                 cpi->common.bit_depth);
   palette_mode_cost +=
       av1_cost_color_map(x, 0, bsize, mbmi->tx_size, PALETTE_MAP);
@@ -2986,10 +2976,8 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     if (rows * cols > MAX_PALETTE_SQUARE) return 0;
 
-#if CONFIG_PALETTE_DELTA_ENCODING
     uint16_t color_cache[2 * PALETTE_MAX_SIZE];
     const int n_cache = av1_get_palette_cache(xd, 0, color_cache);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
     // Find the dominant colors, stored in top_colors[].
     int top_colors[PALETTE_MAX_SIZE] = { 0 };
@@ -3011,12 +2999,9 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     for (n = AOMMIN(colors, PALETTE_MAX_SIZE); n >= 2; --n) {
       for (i = 0; i < n; ++i) centroids[i] = (float)(top_colors[i]);
       palette_rd_y(cpi, x, mbmi, bsize, palette_ctx, dc_mode_cost, data,
-                   centroids, n,
-#if CONFIG_PALETTE_DELTA_ENCODING
-                   color_cache, n_cache,
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
-                   best_mbmi, best_palette_color_map, best_rd, best_model_rd,
-                   rate, rate_tokenonly, &rate_overhead, distortion, skippable);
+                   centroids, n, color_cache, n_cache, best_mbmi,
+                   best_palette_color_map, best_rd, best_model_rd, rate,
+                   rate_tokenonly, &rate_overhead, distortion, skippable);
     }
 
     // K-means clustering.
@@ -3035,12 +3020,9 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
         av1_k_means(data, centroids, color_map, rows * cols, n, 1, max_itr);
       }
       palette_rd_y(cpi, x, mbmi, bsize, palette_ctx, dc_mode_cost, data,
-                   centroids, n,
-#if CONFIG_PALETTE_DELTA_ENCODING
-                   color_cache, n_cache,
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
-                   best_mbmi, best_palette_color_map, best_rd, best_model_rd,
-                   rate, rate_tokenonly, &rate_overhead, distortion, skippable);
+                   centroids, n, color_cache, n_cache, best_mbmi,
+                   best_palette_color_map, best_rd, best_model_rd, rate,
+                   rate_tokenonly, &rate_overhead, distortion, skippable);
     }
   }
 
@@ -5191,10 +5173,8 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_PALETTE_DELTA_ENCODING
   uint16_t color_cache[2 * PALETTE_MAX_SIZE];
   const int n_cache = av1_get_palette_cache(xd, 1, color_cache);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
   colors = colors_u > colors_v ? colors_u : colors_v;
   if (colors > 1 && colors <= 64) {
@@ -5265,7 +5245,6 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
         assert(!isnan(centroids[i]));
       }
 #endif  // NDEBUG
-#if CONFIG_PALETTE_DELTA_ENCODING
       optimize_palette_colors(color_cache, n_cache, n, 2, centroids);
       // Sort the U channel colors in ascending order.
       for (i = 0; i < 2 * (n - 1); i += 2) {
@@ -5281,7 +5260,6 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
         }
       }
       av1_calc_indices(data, centroids, color_map, rows * cols, n, 2);
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
       extend_palette_color_map(color_map, cols, rows, plane_block_width,
                                plane_block_height);
       pmi->palette_size[1] = n;
@@ -5305,10 +5283,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
           x->palette_uv_size_cost[bsize - BLOCK_8X8][n - PALETTE_MIN_SIZE] +
           write_uniform_cost(n, color_map[0]) +
           x->palette_uv_mode_cost[pmi->palette_size[0] > 0][1];
-      this_rate += av1_palette_color_cost_uv(pmi,
-#if CONFIG_PALETTE_DELTA_ENCODING
-                                             color_cache, n_cache,
-#endif  // CONFIG_PALETTE_DELTA_ENCODING
+      this_rate += av1_palette_color_cost_uv(pmi, color_cache, n_cache,
                                              cpi->common.bit_depth);
       this_rate += av1_cost_color_map(x, 1, bsize, mbmi->tx_size, PALETTE_MAP);
       this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
