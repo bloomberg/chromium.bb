@@ -3269,6 +3269,12 @@ void Document::ImplicitClose() {
         (!GetLayoutViewItem().FirstChild() ||
          GetLayoutViewItem().NeedsLayout()))
       View()->UpdateLayout();
+
+    // TODO(bokan): This is a temporary fix to https://crbug.com/788486.
+    // There's some better cleanups that should be done to follow-up:
+    // https://crbug.com/795381.
+    if (View() && goto_anchor_needed_after_stylesheets_load_)
+      View()->ProcessUrlFragment(url_);
   }
 
   load_event_progress_ = kLoadEventCompleted;
