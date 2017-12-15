@@ -131,10 +131,10 @@ static CSSValueList* CreatePositionListForLayer(const CSSProperty& property,
 
 static CSSValue* ValueForFillSize(const FillSize& fill_size,
                                   const ComputedStyle& style) {
-  if (fill_size.type == kContain)
+  if (fill_size.type == EFillSizeType::kContain)
     return CSSIdentifierValue::Create(CSSValueContain);
 
-  if (fill_size.type == kCover)
+  if (fill_size.type == EFillSizeType::kCover)
     return CSSIdentifierValue::Create(CSSValueCover);
 
   if (fill_size.size.Height().IsAuto())

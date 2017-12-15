@@ -66,7 +66,7 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
   LayoutSize image_intrinsic_size = image->ImageSize(
       obj.GetDocument(), obj.Style()->EffectiveZoom(), positioning_area_size);
   switch (type) {
-    case kSizeLength: {
+    case EFillSizeType::kSizeLength: {
       LayoutSize tile_size(positioning_area_size);
 
       Length layer_width = fill_layer.Size().size.Width();
@@ -112,7 +112,7 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
       tile_size.ClampNegativeToZero();
       return tile_size;
     }
-    case kSizeNone: {
+    case EFillSizeType::kSizeNone: {
       // If both values are 'auto' then the intrinsic width and/or height of the
       // image should be used, if any.
       if (!image_intrinsic_size.IsEmpty())
@@ -120,10 +120,10 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
 
       // If the image has neither an intrinsic width nor an intrinsic height,
       // its size is determined as for 'contain'.
-      type = kContain;
+      type = EFillSizeType::kContain;
     }
-    case kContain:
-    case kCover: {
+    case EFillSizeType::kContain:
+    case EFillSizeType::kCover: {
       float horizontal_scale_factor =
           image_intrinsic_size.Width()
               ? positioning_area_size.Width().ToFloat() /
@@ -138,7 +138,7 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
       // positioningAreaSize in that dimension, so that rounding of floating
       // point approximation to LayoutUnit do not shrink the image to smaller
       // than the positioningAreaSize.
-      if (type == kContain) {
+      if (type == EFillSizeType::kContain) {
         if (horizontal_scale_factor < vertical_scale_factor)
           return LayoutSize(
               positioning_area_size.Width(),

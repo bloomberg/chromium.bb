@@ -132,7 +132,12 @@ enum class EFillRepeat : unsigned {
 enum class EFillLayerType : unsigned { kBackground, kMask };
 
 // CSS3 Background Values
-enum EFillSizeType { kContain, kCover, kSizeLength, kSizeNone };
+enum class EFillSizeType : unsigned {
+  kContain,
+  kCover,
+  kSizeLength,
+  kSizeNone
+};
 
 // CSS3 Background Position
 enum BackgroundEdgeOrigin { kTopEdge, kRightEdge, kBottomEdge, kLeftEdge };
