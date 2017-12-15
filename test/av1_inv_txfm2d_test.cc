@@ -59,7 +59,7 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
     const int count = 500;
 
     for (int ci = 0; ci < count; ci++) {
-      int16_t input[64 * 64] = { 0 };
+      DECLARE_ALIGNED(16, int16_t, input[64 * 64]) = { 0 };
       ASSERT_LE(txfm2d_size, NELEMENTS(input));
 
       for (int ni = 0; ni < txfm2d_size; ++ni) {
@@ -71,7 +71,7 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
         }
       }
 
-      uint16_t expected[64 * 64] = { 0 };
+      DECLARE_ALIGNED(16, uint16_t, expected[64 * 64]) = { 0 };
       ASSERT_LE(txfm2d_size, NELEMENTS(expected));
       if (TxfmUsesApproximation()) {
         // Compare reference forward HT + inverse HT vs forward HT + inverse HT.
@@ -98,11 +98,11 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
         }
       }
 
-      int32_t coeffs[64 * 64] = { 0 };
+      DECLARE_ALIGNED(16, int32_t, coeffs[64 * 64]) = { 0 };
       ASSERT_LE(txfm2d_size, NELEMENTS(coeffs));
       fwd_txfm_func(input, coeffs, tx_w, tx_type_, bd);
 
-      uint16_t actual[64 * 64] = { 0 };
+      DECLARE_ALIGNED(16, uint16_t, actual[64 * 64]) = { 0 };
       ASSERT_LE(txfm2d_size, NELEMENTS(actual));
       inv_txfm_func(coeffs, actual, tx_w, tx_type_, bd);
 
