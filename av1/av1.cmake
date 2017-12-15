@@ -401,6 +401,14 @@ if (CONFIG_CFL)
       ${AOM_AV1_COMMON_SOURCES}
     "${AOM_ROOT}/av1/common/cfl.c"
     "${AOM_ROOT}/av1/common/cfl.h")
+
+  set(AOM_AV1_COMMON_INTRIN_SSE2
+    ${AOM_AV1_COMMON_INTRIN_SSE2}
+    "${AOM_ROOT}/av1/common/cfl_sse2.c")
+
+  set(AOM_AV1_COMMON_INTRIN_AVX2
+    ${AOM_AV1_COMMON_INTRIN_AVX2}
+    "${AOM_ROOT}/av1/common/cfl_avx2.c")
 endif ()
 
 if (CONFIG_LOOP_RESTORATION)

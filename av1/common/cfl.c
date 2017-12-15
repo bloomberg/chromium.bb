@@ -13,6 +13,8 @@
 #include "av1/common/common_data.h"
 #include "av1/common/onyxc_int.h"
 
+#include "./av1_rtcd.h"
+
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
   assert(block_size_wide[CFL_MAX_BLOCK_SIZE] == CFL_BUF_LINE);
   assert(block_size_high[CFL_MAX_BLOCK_SIZE] == CFL_BUF_LINE);
@@ -128,6 +130,16 @@ static INLINE void cfl_pad(CFL_CTX *cfl, int width, int height) {
   }
 }
 
+void av1_cfl_subtract_c(int16_t *pred_buf_q3, int width, int height,
+                        int16_t avg_q3) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      pred_buf_q3[i] -= avg_q3;
+    }
+    pred_buf_q3 += CFL_BUF_LINE;
+  }
+}
+
 static void cfl_subtract_average(CFL_CTX *cfl, TX_SIZE tx_size) {
   const int tx_height = tx_size_high[tx_size];
   const int tx_width = tx_size_wide[tx_size];
@@ -150,14 +162,7 @@ static void cfl_subtract_average(CFL_CTX *cfl, TX_SIZE tx_size) {
   // Loss is never more than 1/2 (in Q3)
   assert(abs((avg_q3 * (1 << num_pel_log2)) - sum_q3) <= 1 << num_pel_log2 >>
          1);
-  pred_buf_q3 = cfl->pred_buf_q3;
-  for (int j = 0; j < tx_height; j++) {
-    assert(pred_buf_q3 + tx_width <= cfl->pred_buf_q3 + CFL_BUF_SQUARE);
-    for (int i = 0; i < tx_width; i++) {
-      pred_buf_q3[i] -= avg_q3;
-    }
-    pred_buf_q3 += CFL_BUF_LINE;
-  }
+  av1_cfl_subtract(cfl->pred_buf_q3, tx_width, tx_height, avg_q3);
 }
 
 static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,

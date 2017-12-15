@@ -124,6 +124,9 @@ endif
 LIBAOM_TEST_SRCS-yes                   += divu_small_test.cc
 #LIBAOM_TEST_SRCS-yes                   += encoder_parms_get_to_decoder.cc
 endif
+ifeq ($(CONFIG_CFL),yes)
+  LIBAOM_TEST_SRCS-yes                 += cfl_test.cc
+endif
 
 LIBAOM_TEST_SRCS-yes                   += convolve_test.cc
 LIBAOM_TEST_SRCS-yes                   += lpf_test.cc
