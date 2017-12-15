@@ -12,6 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"
@@ -109,7 +110,7 @@ RecyclableCompositorMac::RecyclableCompositorMac()
                   content::GetContextFactory(),
                   content::GetContextFactoryPrivate(),
                   ui::WindowResizeHelperMac::Get()->task_runner(),
-                  false /* enable_surface_synchronization */,
+                  features::IsSurfaceSynchronizationEnabled(),
                   false /* enable_pixel_canvas */) {
   compositor_.SetAcceleratedWidget(
       accelerated_widget_mac_->accelerated_widget());
@@ -188,9 +189,8 @@ BrowserCompositorMac::BrowserCompositorMac(
   g_browser_compositor_count += 1;
 
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
-  // TODO(fsamuel): Plumb surface synchronization settings.
   delegated_frame_host_.reset(new DelegatedFrameHost(
-      frame_sink_id, this, false /* enable_surface_synchronization */,
+      frame_sink_id, this, features::IsSurfaceSynchronizationEnabled(),
       enable_viz_));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
@@ -342,14 +342,24 @@ void BrowserCompositorMac::WasResized() {
   // In non-viz, the ui::Compositor is resized in sync with frames coming from
   // the renderer. In viz, the ui::Compositor can only resize in sync with the
   // NSView.
-  if (enable_viz_ && recyclable_compositor_) {
-    gfx::Size dip_size;
-    float scale_factor = 1.f;
-    GetViewProperties(&dip_size, &scale_factor, nullptr);
-    gfx::Size pixel_size = gfx::ConvertSizeToPixel(scale_factor, dip_size);
-    recyclable_compositor_->compositor()->SetScaleAndSize(scale_factor,
-                                                          pixel_size);
-  }
+  if (!enable_viz_ || !recyclable_compositor_)
+    return;
+
+  gfx::Size dip_size;
+  float scale_factor = 1.f;
+  GetViewProperties(&dip_size, &scale_factor, nullptr);
+  gfx::Size pixel_size = gfx::ConvertSizeToPixel(scale_factor, dip_size);
+
+  gfx::Size old_pixel_size = recyclable_compositor_->compositor()->size();
+  float old_scale_factor =
+      recyclable_compositor_->compositor()->device_scale_factor();
+
+  if (pixel_size == old_pixel_size && scale_factor == old_scale_factor)
+    return;
+
+  compositor_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+  recyclable_compositor_->compositor()->SetScaleAndSize(
+      scale_factor, pixel_size, compositor_surface_id_);
 }
 
 bool BrowserCompositorMac::HasFrameOfSize(const gfx::Size& desired_size) {
@@ -499,7 +509,7 @@ bool BrowserCompositorMac::DelegatedFrameCanCreateResizeLock() const {
 }
 
 viz::LocalSurfaceId BrowserCompositorMac::GetLocalSurfaceId() const {
-  return client_->GetLocalSurfaceId();
+  return compositor_surface_id_;
 }
 
 std::unique_ptr<CompositorResizeLock>
