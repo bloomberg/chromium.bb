@@ -11,6 +11,8 @@
 
 namespace blink {
 
+std::unique_ptr<IDBValue> CreateNullIDBValueForTesting();
+
 // The created value is an array of true. If create_wrapped_value is true, the
 // IDBValue's byte array will be wrapped in a Blob, otherwise it will not be.
 std::unique_ptr<IDBValue> CreateIDBValueForTesting(v8::Isolate*,

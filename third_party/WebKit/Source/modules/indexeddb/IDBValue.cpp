@@ -16,8 +16,6 @@
 
 namespace blink {
 
-IDBValue::IDBValue() = default;
-
 IDBValue::IDBValue(const WebIDBValue& value, v8::Isolate* isolate)
     : IDBValue(value.data,
                value.web_blob_info,
@@ -70,10 +68,6 @@ IDBValue::IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
 IDBValue::~IDBValue() {
   if (isolate_)
     isolate_->AdjustAmountOfExternalAllocatedMemory(-external_allocated_size_);
-}
-
-std::unique_ptr<IDBValue> IDBValue::Create() {
-  return WTF::WrapUnique(new IDBValue());
 }
 
 std::unique_ptr<IDBValue> IDBValue::Create(const WebIDBValue& value,

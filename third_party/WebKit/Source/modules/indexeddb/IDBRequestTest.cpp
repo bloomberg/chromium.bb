@@ -108,13 +108,14 @@ void EnsureIDBCallbacksDontThrow(IDBRequest* request,
   request->HandleResponse(
       DOMException::Create(kAbortError, "Description goes here."));
   request->HandleResponse(nullptr, IDBKey::CreateInvalid(),
-                          IDBKey::CreateInvalid(), IDBValue::Create());
+                          IDBKey::CreateInvalid(),
+                          CreateNullIDBValueForTesting());
   request->HandleResponse(IDBKey::CreateInvalid());
-  request->HandleResponse(IDBValue::Create());
+  request->HandleResponse(CreateNullIDBValueForTesting());
   request->HandleResponse(static_cast<int64_t>(0));
   request->HandleResponse();
   request->HandleResponse(IDBKey::CreateInvalid(), IDBKey::CreateInvalid(),
-                          IDBValue::Create());
+                          CreateNullIDBValueForTesting());
   request->EnqueueResponse(Vector<String>());
 
   EXPECT_TRUE(!exception_state.HadException());
