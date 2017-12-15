@@ -520,6 +520,7 @@ void ContentSettingBubbleContents::Init() {
   if (!bubble_content.custom_link.empty()) {
     custom_link_ = new views::Link(bubble_content.custom_link);
     custom_link_->SetEnabled(bubble_content.custom_link_enabled);
+    custom_link_->SetMultiLine(true);
     custom_link_->set_listener(this);
     if (!bubble_content_empty)
       layout->AddPaddingRow(0, related_control_vertical_spacing);
