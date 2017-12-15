@@ -23,6 +23,7 @@ class Shadow : public UiElement {
               const CameraModel& camera_model) const override;
 
   void LayOutChildren() override;
+  void set_intensity(float intensity) { intensity_ = intensity; }
 
   class Renderer : public BaseQuadRenderer {
    public:
@@ -53,6 +54,7 @@ class Shadow : public UiElement {
 
  private:
   float depth_;
+  float intensity_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };

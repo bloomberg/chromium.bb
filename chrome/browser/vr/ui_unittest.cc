@@ -77,7 +77,7 @@ const std::set<UiElementName> kHitTestableElements = {
     kSpeechRecognitionResultBackplane,
 };
 const std::set<UiElementType> kHitTestableElementTypes = {
-    kTypeButtonHitTarget, kTypeTextInputText,
+    kTypeButtonHitTarget, kTypeTextInputText, kTypeOmniboxSuggestionSpacer,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarningBackground, kExitWarningText};
@@ -118,10 +118,13 @@ const std::vector<std::string> kElementsInDrawOrder = {
     "kAudioPermissionPromptBackplane",
     "kAudioPermissionPromptShadow",
     "kAudioPermissionPrompt",
+    "kOmniboxShadow",
     "kOmniboxContainer",
     "kOmniboxTextField:kTypeTextInputHint",
     "kOmniboxTextField:kTypeTextInputText",
     "kOmniboxTextField:kTypeTextInputCursor",
+    "kNone:kTypeOmniboxSuggestionSpacer",
+    "kNone:kTypeOmniboxSuggestionSpacer",
     "kOmniboxCloseButton",
     "kOmniboxCloseButton:kTypeButtonBackground",
     "kOmniboxCloseButton:kTypeButtonForeground",
