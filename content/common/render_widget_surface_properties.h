@@ -26,6 +26,8 @@ struct CONTENT_EXPORT RenderWidgetSurfaceProperties {
   bool operator==(const RenderWidgetSurfaceProperties& other) const;
   bool operator!=(const RenderWidgetSurfaceProperties& other) const;
 
+  std::string ToDiffString(const RenderWidgetSurfaceProperties& other) const;
+
   gfx::Size size;
   float device_scale_factor = 0;
 #ifdef OS_ANDROID
