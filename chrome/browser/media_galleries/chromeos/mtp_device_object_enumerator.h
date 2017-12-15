@@ -13,12 +13,13 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "device/media_transfer_protocol/mtp_file_entry.pb.h"
+#include "device/media_transfer_protocol/public/interfaces/mtp_file_entry.mojom.h"
 
 // Used to enumerate top-level files of an media file system.
 class MTPDeviceObjectEnumerator {
  public:
-  explicit MTPDeviceObjectEnumerator(const std::vector<MtpFileEntry>& entries);
+  explicit MTPDeviceObjectEnumerator(
+      const std::vector<device::mojom::MtpFileEntry>& entries);
 
   ~MTPDeviceObjectEnumerator();
 
@@ -41,7 +42,7 @@ class MTPDeviceObjectEnumerator {
   bool IsIndexReadyAndInRange() const;
 
   // List of directory file entries information.
-  const std::vector<MtpFileEntry> file_entries_;
+  const std::vector<device::mojom::MtpFileEntry> file_entries_;
 
   // Index into |file_entries_|.
   // Should only be used when |is_index_ready_| is true.

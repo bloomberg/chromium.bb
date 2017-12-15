@@ -37,7 +37,7 @@ void TestNextEntryIsEmpty(MTPDeviceObjectEnumerator* enumerator) {
 typedef testing::Test MTPDeviceObjectEnumeratorTest;
 
 TEST_F(MTPDeviceObjectEnumeratorTest, Empty) {
-  std::vector<MtpFileEntry> entries;
+  std::vector<device::mojom::MtpFileEntry> entries;
   MTPDeviceObjectEnumerator enumerator(entries);
   TestEnumeratorIsEmpty(&enumerator);
   TestNextEntryIsEmpty(&enumerator);
@@ -46,15 +46,15 @@ TEST_F(MTPDeviceObjectEnumeratorTest, Empty) {
 }
 
 TEST_F(MTPDeviceObjectEnumeratorTest, Traversal) {
-  std::vector<MtpFileEntry> entries;
+  std::vector<device::mojom::MtpFileEntry> entries;
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    MtpFileEntry entry;
-    entry.set_file_name(kTestCases[i].name);
-    entry.set_file_size(kTestCases[i].size);
-    entry.set_file_type(kTestCases[i].is_directory ?
-        MtpFileEntry::FILE_TYPE_FOLDER :
-        MtpFileEntry::FILE_TYPE_OTHER);
-    entry.set_modification_time(kTestCases[i].modification_time);
+    device::mojom::MtpFileEntry entry;
+    entry.file_name = kTestCases[i].name;
+    entry.file_size = kTestCases[i].size;
+    entry.file_type = kTestCases[i].is_directory
+        ? device::mojom::MtpFileEntry::FileType::FILE_TYPE_FOLDER
+        : device::mojom::MtpFileEntry::FileType::FILE_TYPE_OTHER;
+    entry.modification_time = kTestCases[i].modification_time;
     entries.push_back(entry);
   }
   MTPDeviceObjectEnumerator enumerator(entries);

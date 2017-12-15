@@ -15,12 +15,12 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "device/media_transfer_protocol/public/interfaces/mtp_file_entry.mojom.h"
 
 #if !defined(OS_CHROMEOS)
 #error "Only used on ChromeOS"
 #endif
 
-class MtpFileEntry;
 class MtpStorageInfo;
 
 namespace device {
@@ -55,7 +55,7 @@ class MediaTransferProtocolManager {
   // The second argument is true if there are more file entries.
   // The third argument is true if there was an error.
   using ReadDirectoryCallback =
-      base::Callback<void(const std::vector<MtpFileEntry>& file_entries,
+      base::Callback<void(const std::vector<mojom::MtpFileEntry>& file_entries,
                           bool has_more,
                           bool error)>;
 
@@ -69,7 +69,7 @@ class MediaTransferProtocolManager {
   // The first argument is a file entry.
   // The second argument is true if there was an error.
   using GetFileInfoCallback =
-      base::Callback<void(const MtpFileEntry& file_entry, bool error)>;
+      base::Callback<void(const mojom::MtpFileEntry& file_entry, bool error)>;
 
   // A callback to handle the result of RenameObject.
   // The first argument is true if there was an error.
