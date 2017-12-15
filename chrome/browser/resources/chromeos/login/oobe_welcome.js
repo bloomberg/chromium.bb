@@ -326,7 +326,7 @@ Polymer({
    */
   onDefaultNetworkChanged_: function(event) {
     var state = event.detail;
-    this.defaultNetworkGuid_ = state.GUID;
+    this.defaultNetworkGuid_ = (state ? state.GUID : '');
     this.isConnected_ =
         !!state && state.ConnectionState == CrOnc.ConnectionState.CONNECTED;
     if (!state || state.GUID != this.networkLastSelectedGuid_)
@@ -346,6 +346,7 @@ Polymer({
    */
   onNetworkListNetworkItemSelected_: function(event) {
     var state = event.detail;
+    assert(state);
     // If the user has not previously made a selection and the default network
     // is selected and connected, continue to the next screen.
     if (this.networkLastSelectedGuid_ == '' &&
@@ -359,7 +360,10 @@ Polymer({
     // is pending connection attempt. So even if new selection is currently
     // connected, it may get disconnected at any time.
     // So just send one more connection request to cancel current attempts.
-    this.networkLastSelectedGuid_ = state.GUID;
+    this.networkLastSelectedGuid_ = (state ? state.GUID : '');
+
+    if (!state)
+      return;
 
     var self = this;
     var networkStateCopy = Object.assign({}, state);
