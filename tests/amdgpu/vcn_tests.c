@@ -144,6 +144,8 @@ int suite_vcn_tests_clean(void)
 	r = amdgpu_device_deinitialize(device_handle);
 	if (r)
 		return CUE_SCLEAN_FAILED;
+
+	return CUE_SUCCESS;
 }
 
 static int submit(unsigned ndw, unsigned ip)
