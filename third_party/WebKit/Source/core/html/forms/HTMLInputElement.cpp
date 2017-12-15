@@ -1937,4 +1937,12 @@ void HTMLInputElement::SetFilesFromPaths(const Vector<String>& paths) {
   return input_type_->SetFilesFromPaths(paths);
 }
 
+void HTMLInputElement::ChildrenChanged(const ChildrenChange& change) {
+  // Some input types only need shadow roots to hide any children that may
+  // have been appended by script. For such types, shadow roots are lazily
+  // created when children are added for the first time.
+  EnsureUserAgentShadowRoot();
+  ContainerNode::ChildrenChanged(change);
+}
+
 }  // namespace blink
