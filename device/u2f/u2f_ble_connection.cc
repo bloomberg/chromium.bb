@@ -311,7 +311,7 @@ void U2fBleConnection::ConnectToU2fService() {
       device->GetGattServices();
   auto found =
       std::find_if(services.begin(), services.end(), [](const auto* service) {
-        return service->GetUUID().canonical_value() == U2F_SERVICE_UUID;
+        return service->GetUUID().canonical_value() == kU2fServiceUUID;
       });
 
   if (found == services.end()) {
@@ -328,19 +328,19 @@ void U2fBleConnection::ConnectToU2fService() {
     // NOTE: Since GetUUID() returns a temporary |uuid| can't be a reference,
     // even though canonical_value() returns a const reference.
     const std::string uuid = characteristic->GetUUID().canonical_value();
-    if (uuid == U2F_CONTROL_POINT_LENGTH_UUID) {
+    if (uuid == kU2fControlPointLengthUUID) {
       control_point_length_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Control Point Length: " << *control_point_length_id_;
-    } else if (uuid == U2F_CONTROL_POINT_UUID) {
+    } else if (uuid == kU2fControlPointUUID) {
       control_point_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Control Point: " << *control_point_id_;
-    } else if (uuid == U2F_STATUS_UUID) {
+    } else if (uuid == kU2fStatusUUID) {
       status_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Status: " << *status_id_;
-    } else if (uuid == U2F_SERVICE_REVISION_UUID) {
+    } else if (uuid == kU2fServiceRevisionUUID) {
       service_revision_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Service Revision: " << *service_revision_id_;
-    } else if (uuid == U2F_SERVICE_REVISION_BITFIELD_UUID) {
+    } else if (uuid == kU2fServiceRevisionBitfieldUUID) {
       service_revision_bitfield_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Service Revision Bitfield: "
                << *service_revision_bitfield_id_;
