@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -137,6 +138,7 @@ class URLRequestFakerForPostRequestsInterceptor
   DISALLOW_COPY_AND_ASSIGN(URLRequestFakerForPostRequestsInterceptor);
 };
 
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 class FakeBackgroundModeManager : public BackgroundModeManager {
  public:
   FakeBackgroundModeManager()
@@ -156,6 +158,7 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
   bool background_mode_active_;
 
 };
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
 }  // namespace
 
@@ -276,8 +279,10 @@ class BetterSessionRestoreTest : public InProcessBrowserTest,
         SessionServiceFactory::GetForProfile(browser()->profile()));
     helper.SetForceBrowserNotAliveWithNoWindows(true);
     helper.ReleaseService();
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
     g_browser_process->set_background_mode_manager_for_test(
         std::unique_ptr<BackgroundModeManager>(new FakeBackgroundModeManager));
+#endif  //  BUILDFLAG(ENABLE_BACKGROUND_MODE)
   }
 
   void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
@@ -429,6 +434,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest,
     return test_path_;
   }
 
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   void EnableBackgroundMode() {
     static_cast<FakeBackgroundModeManager*>(
         g_browser_process->background_mode_manager())->
@@ -440,6 +446,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest,
         g_browser_process->background_mode_manager())->
         SetBackgroundModeActive(false);
   }
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
  private:
   std::string last_upload_bytes_;
@@ -596,27 +603,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   // and check the stored data.
   CheckReloadedPageRestored(new_browser);
 }
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       CookiesClearedOnBrowserClose) {
-  StoreDataWithPage("cookies.html");
-  // Normally cookies are restored.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), false);
-  CheckReloadedPageRestored(new_browser);
-  // ... but not if the content setting is set to clear on exit.
-  CookieSettingsFactory::GetForProfile(new_browser->profile())
-      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
-  // ... unless background mode is active.
-  EnableBackgroundMode();
-  new_browser = QuitBrowserAndRestore(new_browser, false);
-  CheckReloadedPageRestored(new_browser);
-
-  DisableBackgroundMode();
-  new_browser = QuitBrowserAndRestore(new_browser, false);
-  if (browser_defaults::kBrowserAliveWithNoWindows)
-    CheckReloadedPageRestored(new_browser);
-  else
-    CheckReloadedPageNotRestored(new_browser);
-}
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PostBrowserClose) {
   PostFormWithPage("post.html", false);
@@ -652,6 +638,47 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   CheckReloadedPageRestored(new_browser);
 }
 
+// Check that form data is restored after wrench menu quit.
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PostCloseAllBrowsers) {
+  PostFormWithPage("post.html", false);
+  Browser* new_browser = QuitBrowserAndRestore(browser(), true);
+  CheckFormRestored(new_browser, true, false);
+}
+
+// Check that form data with a password field is cleared after wrench menu quit.
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
+                       PostWithPasswordCloseAllBrowsers) {
+  PostFormWithPage("post_with_password.html", true);
+  Browser* new_browser = QuitBrowserAndRestore(browser(), true);
+  CheckReloadedPageRestored(new_browser);
+  // The form data contained passwords, so it's removed completely.
+  CheckFormRestored(new_browser, false, false);
+}
+
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
+                       CookiesClearedOnBrowserClose) {
+  StoreDataWithPage("cookies.html");
+  // Normally cookies are restored.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), false);
+  CheckReloadedPageRestored(new_browser);
+  // ... but not if the content setting is set to clear on exit.
+  CookieSettingsFactory::GetForProfile(new_browser->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  // ... unless background mode is active.
+  EnableBackgroundMode();
+  new_browser = QuitBrowserAndRestore(new_browser, false);
+  CheckReloadedPageRestored(new_browser);
+
+  DisableBackgroundMode();
+  new_browser = QuitBrowserAndRestore(new_browser, false);
+  if (browser_defaults::kBrowserAliveWithNoWindows)
+    CheckReloadedPageRestored(new_browser);
+  else
+    CheckReloadedPageNotRestored(new_browser);
+}
+
 // Check that cookies are cleared on a wrench menu quit only if cookies are set
 // to current session only, regardless of whether background mode is enabled.
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
@@ -673,23 +700,7 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   CheckReloadedPageNotRestored(new_browser);
 }
 
-// Check that form data is restored after wrench menu quit.
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PostCloseAllBrowsers) {
-  PostFormWithPage("post.html", false);
-  Browser* new_browser = QuitBrowserAndRestore(browser(), true);
-  CheckFormRestored(new_browser, true, false);
-}
-
-// Check that form data with a password field is cleared after wrench menu quit.
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       PostWithPasswordCloseAllBrowsers) {
-  PostFormWithPage("post_with_password.html", true);
-  Browser* new_browser = QuitBrowserAndRestore(browser(), true);
-  CheckReloadedPageRestored(new_browser);
-  // The form data contained passwords, so it's removed completely.
-  CheckFormRestored(new_browser, false, false);
-}
-
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 // ChromeOS does not override the SessionStartupPreference upon controlled
 // system restart.
 #if !defined(OS_CHROMEOS)
@@ -863,19 +874,6 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnExit) {
   StoreDataWithPage("local_storage.html");
 }
 
-IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, SessionCookiesBrowserClose) {
-  StoreDataWithPage("session_cookies.html");
-  EnableBackgroundMode();
-  Browser* new_browser = QuitBrowserAndRestore(browser(), false);
-  NavigateAndCheckStoredData(new_browser, "session_cookies.html");
-  DisableBackgroundMode();
-  new_browser = QuitBrowserAndRestore(new_browser, false);
-  if (browser_defaults::kBrowserAliveWithNoWindows)
-    NavigateAndCheckStoredData(new_browser, "session_cookies.html");
-  else
-    StoreDataWithPage(new_browser, "session_cookies.html");
-}
-
 // Tests that session cookies are not cleared when only a popup window is open.
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
                        SessionCookiesBrowserCloseWithPopupOpen) {
@@ -901,6 +899,29 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
     NavigateAndCheckStoredData(new_browser, "session_cookies.html");
   else
     StoreDataWithPage(new_browser, "session_cookies.html");
+}
+
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+// Check that cookies are cleared on a wrench menu quit only if cookies are set
+// to current session only, regardless of whether background mode is enabled.
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
+                       SubdomainCookiesClearedOnCloseAllBrowsers) {
+  StoreDataWithPage("subdomain_cookies.html");
+
+  // Normally cookies are restored.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), true);
+  NavigateAndCheckStoredData(new_browser, "subdomain_cookies.html");
+
+  // ... but not if the content setting is set to clear on exit.
+  auto cookie_settings =
+      CookieSettingsFactory::GetForProfile(new_browser->profile());
+  cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  cookie_settings->SetCookieSetting(GURL("http://www.test.com"),
+                                    CONTENT_SETTING_SESSION_ONLY);
+
+  // Cookie for .test.com is created on www.test.com and deleted on shutdown.
+  new_browser = QuitBrowserAndRestore(new_browser, true);
+  StoreDataWithPage(new_browser, "subdomain_cookies.html");
 }
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnBrowserClose) {
@@ -957,24 +978,17 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnCloseAllBrowsers) {
   StoreDataWithPage(new_browser, "cookies.html");
 }
 
-// Check that cookies are cleared on a wrench menu quit only if cookies are set
-// to current session only, regardless of whether background mode is enabled.
-IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
-                       SubdomainCookiesClearedOnCloseAllBrowsers) {
-  StoreDataWithPage("subdomain_cookies.html");
-
-  // Normally cookies are restored.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), true);
-  NavigateAndCheckStoredData(new_browser, "subdomain_cookies.html");
-
-  // ... but not if the content setting is set to clear on exit.
-  auto cookie_settings =
-      CookieSettingsFactory::GetForProfile(new_browser->profile());
-  cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
-  cookie_settings->SetCookieSetting(GURL("http://www.test.com"),
-                                    CONTENT_SETTING_SESSION_ONLY);
-
-  // Cookie for .test.com is created on www.test.com and deleted on shutdown.
-  new_browser = QuitBrowserAndRestore(new_browser, true);
-  StoreDataWithPage(new_browser, "subdomain_cookies.html");
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, SessionCookiesBrowserClose) {
+  StoreDataWithPage("session_cookies.html");
+  EnableBackgroundMode();
+  Browser* new_browser = QuitBrowserAndRestore(browser(), false);
+  NavigateAndCheckStoredData(new_browser, "session_cookies.html");
+  DisableBackgroundMode();
+  new_browser = QuitBrowserAndRestore(new_browser, false);
+  if (browser_defaults::kBrowserAliveWithNoWindows)
+    NavigateAndCheckStoredData(new_browser, "session_cookies.html");
+  else
+    StoreDataWithPage(new_browser, "session_cookies.html");
 }
+
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)

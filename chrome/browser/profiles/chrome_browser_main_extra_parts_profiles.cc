@@ -205,7 +205,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AccountReconcilorFactory::GetInstance();
   AccountTrackerServiceFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_CONTENTS)
   BackgroundContentsServiceFactory::GetInstance();
 #endif
   BookmarkModelFactory::GetInstance();

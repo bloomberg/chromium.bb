@@ -22,7 +22,8 @@ declare_args() {
   enable_app_list = is_chromeos
 
   # Enables support for background apps.
-  enable_background = !is_android && !is_chromecast
+  enable_background_contents = !is_android && !is_chromecast
+  enable_background_mode = !is_android && !is_chromecast && !is_chromeos
 
   # Enable the printing system dialog for platforms that support printing
   # and have a system dialog.
@@ -78,7 +79,8 @@ _enable_printing = enable_basic_printing || enable_print_preview
 # proper build flags can be set.
 chrome_grit_defines = [
   "enable_app_list=$enable_app_list",
-  "enable_background=$enable_background",
+  "enable_background_mode=$enable_background_mode",
+  "enable_background_contents=$enable_background_contents",
   "enable_extensions=$enable_extensions",
   "enable_google_now=$enable_google_now",
   "enable_hangout_services_extension=$enable_hangout_services_extension",

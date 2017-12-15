@@ -56,7 +56,7 @@
 #include "ui/message_center/notifier_id.h"
 #include "url/url_constants.h"
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #endif
@@ -143,7 +143,7 @@ PlatformNotificationServiceImpl::GetInstance() {
 }
 
 PlatformNotificationServiceImpl::PlatformNotificationServiceImpl() {
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   pending_click_dispatch_events_ = 0;
 #endif
 }
@@ -180,7 +180,7 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     metrics_logger->LogPersistentNotificationClick();
   }
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   // Ensure the browser stays alive while the event is processed.
   if (pending_click_dispatch_events_++ == 0) {
     click_dispatch_keep_alive_.reset(
@@ -445,7 +445,7 @@ void PlatformNotificationServiceImpl::OnClickEventDispatchComplete(
       "Notifications.PersistentWebNotificationClickResult", status,
       content::PersistentNotificationStatus::
           PERSISTENT_NOTIFICATION_STATUS_MAX);
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   DCHECK_GT(pending_click_dispatch_events_, 0);
   if (--pending_click_dispatch_events_ == 0) {
     click_dispatch_keep_alive_.reset();

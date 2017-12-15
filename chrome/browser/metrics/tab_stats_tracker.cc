@@ -8,15 +8,19 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
-#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/daily_event.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+#include "chrome/browser/background/background_mode_manager.h"
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
 namespace metrics {
 
@@ -180,10 +184,12 @@ void TabStatsTracker::UmaStatsReportingDelegate::ReportDailyMetrics(
 
 bool TabStatsTracker::UmaStatsReportingDelegate::
     IsChromeBackgroundedWithoutWindows() {
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   if (g_browser_process && g_browser_process->background_mode_manager()
                                ->IsBackgroundWithoutWindows()) {
     return true;
   }
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
   return false;
 }
 
