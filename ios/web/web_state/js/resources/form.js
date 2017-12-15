@@ -14,8 +14,8 @@ goog.require('__crWeb.message');
 
 /** Beginning of anonymous object */
 (function() {
-  // Skip iframes that have the same origin as the main frame. For such frames
-  // no form related actions (eg. filling, saving) are supported.
+  // Skip iframes that have different origins from the main frame. For such
+  // frames no form related actions (eg. filling, saving) are supported.
   try {
     // The following line generates exception for iframes that have different
     // origin that.

@@ -574,11 +574,6 @@ void GetFormAndField(autofill::FormData* form,
   }
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
-    DLOG(WARNING) << "Suggestions not offered on untrusted page";
-    completion(NO);
-    return;
-  }
 
   // Once the active form and field are extracted, send a query to the
   // AutofillManager for suggestions.
