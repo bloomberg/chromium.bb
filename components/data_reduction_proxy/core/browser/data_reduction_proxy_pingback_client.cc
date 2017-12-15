@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
-#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
@@ -97,10 +96,6 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
           request_data.effective_connection_type()));
   request->set_compressed_page_size_bytes(timing.network_bytes);
   request->set_original_page_size_bytes(timing.original_network_bytes);
-  data_reduction_proxy::DeviceInfo* device_info =
-      request->mutable_device_info();
-  device_info->set_total_device_memory_kb(
-      base::SysInfo::AmountOfPhysicalMemory() / 1024);
 
   if (request_data.page_id()) {
     request->set_page_id(request_data.page_id().value());
