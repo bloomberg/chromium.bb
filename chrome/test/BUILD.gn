@@ -363,7 +363,12 @@ test("browser_tests") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   if (is_win) {
-    data += [ "$root_out_dir/chrome_200_percent.pak" ]
+    data += [
+      "$root_out_dir/chrome_200_percent.pak",
+
+      # Needed for VR browser tests
+      "//third_party/WebKit/LayoutTests/resources/testharness.js",
+    ]
     deps += [ "//chrome/app:chrome_dll_resources" ]
   }
   if (is_chromeos) {
@@ -1830,7 +1835,14 @@ test("browser_tests") {
         "../browser/ui/views/accessibility/invert_bubble_view_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
+        "../browser/vr/test/vr_browser_test.cc",
+        "../browser/vr/test/vr_browser_test.h",
+        "../browser/vr/test/vr_transition_utils.cc",
+        "../browser/vr/test/vr_transition_utils.h",
+        "../browser/vr/webvr_transition_browser_test.cc",
       ]
+
+      data_deps += [ "../../device/vr:openvr_mock" ]
     }
     if (is_mac || is_win) {
       sources += [
