@@ -522,14 +522,17 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     return session->active_streams_.size();
   }
 
-  size_t num_unclaimed_pushed_streams(base::WeakPtr<SpdySession> session) {
-    return session->unclaimed_pushed_streams_.CountStreamsForSession();
+  static size_t num_unclaimed_pushed_streams(
+      base::WeakPtr<SpdySession> session) {
+    return session->pool_->push_promise_index()->CountStreamsForSession(
+        session.get());
   }
 
-  bool has_unclaimed_pushed_stream_for_url(base::WeakPtr<SpdySession> session,
-                                           const GURL& url) {
-    return session->unclaimed_pushed_streams_.FindStream(url) !=
-           kNoPushedStreamFound;
+  static bool has_unclaimed_pushed_stream_for_url(
+      base::WeakPtr<SpdySession> session,
+      const GURL& url) {
+    return session->pool_->push_promise_index()->FindStream(
+               url, session.get()) != kNoPushedStreamFound;
   }
 
   const GURL default_url_;

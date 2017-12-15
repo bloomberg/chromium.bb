@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
@@ -24,28 +25,20 @@ class Http2PushPromiseIndexPeer;
 
 }  // namespace test
 
-// This value is returned by Http2PushPromiseIndex::FindSession() and
-// UnclaimedPushedStreamContainer::FindStream() if no stream is found.
-// TODO(bnc): Move UnclaimedPushedStreamContainer::FindStream() to this class.
-// https://crbug.com/791054
+// Value returned by FindSession() and FindStream() if no stream is found.
 const SpdyStreamId kNoPushedStreamFound = 0;
 
-// This class manages cross-origin unclaimed pushed streams (push promises) from
-// the receipt of PUSH_PROMISE frame until they are matched to a request.  Each
-// SpdySessionPool owns one instance of this class, which then allows requests
-// to be matched with a pushed stream regardless of which HTTP/2 connection the
-// stream is on.
-// Only pushed streams with cryptographic schemes (for example, https) are
-// allowed to be shared across connections.  Non-cryptographic scheme pushes
-// (for example, http) are fully managed within each SpdySession.
-// TODO(bnc): Move unclaimed pushed stream management out of SpdySession,
-// regardless of scheme, to avoid redundant bookkeeping and complicated
-// interactions between SpdySession::UnclaimedPushedStreamContainer and
-// Http2PushPromiseIndex.  https://crbug.com/791054.
+// This class manages unclaimed pushed streams (push promises) from the receipt
+// of PUSH_PROMISE frame until they are matched to a request.
+// Each SpdySessionPool owns one instance of this class.
+// SpdySession uses this class to register, unregister and query pushed streams.
+// HttpStreamFactoryImpl::Job uses this class to find a SpdySession with a
+// pushed stream matching the request, if such exists, which is only allowed for
+// requests with a cryptographic scheme.
 class NET_EXPORT Http2PushPromiseIndex {
  public:
   // Interface for validating pushed streams, signaling when a pushed stream is
-  // claimed, and generating weak pointer.
+  // claimed, and generating SpdySession weak pointer.
   class NET_EXPORT Delegate {
    public:
     Delegate() {}
@@ -54,11 +47,13 @@ class NET_EXPORT Http2PushPromiseIndex {
     // Return true if the pushed stream can be used for a request with |key|.
     virtual bool ValidatePushedStream(const SpdySessionKey& key) const = 0;
 
-    // Called when a pushed stream is claimed.
+    // Called when a pushed stream is claimed.  Guaranateed to be called
+    // synchronously after ValidatePushedStream() is called and returns true.
     virtual void OnPushedStreamClaimed(const GURL& url,
                                        SpdyStreamId stream_id) = 0;
 
-    // Generate weak pointer.
+    // Generate weak pointer.  Guaranateed to be called synchronously after
+    // ValidatePushedStream() is called and returns true.
     virtual base::WeakPtr<SpdySession> GetWeakPtrToSession() = 0;
 
    private:
@@ -67,6 +62,29 @@ class NET_EXPORT Http2PushPromiseIndex {
 
   Http2PushPromiseIndex();
   ~Http2PushPromiseIndex();
+
+  // Tries to register a Delegate with an unclaimed pushed stream for |url|.
+  // Caller must make sure |delegate| stays valid by unregistering the exact
+  // same entry before |delegate| is destroyed.
+  // Returns true if there is no unclaimed pushed stream with the same URL for
+  // the same Delegate, in which case the stream is registered.
+  bool RegisterUnclaimedPushedStream(const GURL& url,
+                                     SpdyStreamId stream_id,
+                                     Delegate* delegate) WARN_UNUSED_RESULT;
+
+  // Tries to unregister a Delegate with an unclaimed pushed stream for |url|
+  // with given |stream_id|.
+  // Returns true if this exact entry is found, in which case it is removed.
+  bool UnregisterUnclaimedPushedStream(const GURL& url,
+                                       SpdyStreamId stream_id,
+                                       Delegate* delegate) WARN_UNUSED_RESULT;
+
+  // Returns the number of pushed streams registered for |delegate|.
+  size_t CountStreamsForSession(const Delegate* delegate) const;
+
+  // Returns the stream ID of the entry registered for |delegate| with |url|,
+  // or kNoPushedStreamFound if no such entry exists.
+  SpdyStreamId FindStream(const GURL& url, const Delegate* delegate) const;
 
   // If there exists a session compatible with |key| that has an unclaimed push
   // stream for |url|, then sets |*session| and |*stream| to one such session
@@ -78,61 +96,35 @@ class NET_EXPORT Http2PushPromiseIndex {
                    base::WeakPtr<SpdySession>* session,
                    SpdyStreamId* stream_id) const;
 
-  // (Un)registers a Delegate with an unclaimed pushed stream for |url|.
-  // Caller must make sure |delegate| stays valid by unregistering the exact
-  // same entry before |delegate| is destroyed.
-  void RegisterUnclaimedPushedStream(const GURL& url,
-                                     SpdyStreamId stream_id,
-                                     Delegate* delegate);
-  void UnregisterUnclaimedPushedStream(const GURL& url,
-                                       SpdyStreamId stream_id,
-                                       Delegate* delegate);
+  // Return the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
 
  private:
   friend test::Http2PushPromiseIndexPeer;
 
   // An unclaimed pushed stream entry.
-  struct UnclaimedPushedStream {
+  struct NET_EXPORT UnclaimedPushedStream {
     GURL url;
-    SpdyStreamId stream_id;
     Delegate* delegate;
+    SpdyStreamId stream_id;
+    size_t EstimateMemoryUsage() const;
   };
 
   // Function object satisfying the requirements of "Compare", see
   // http://en.cppreference.com/w/cpp/concept/Compare.
-  // Used for sorting entries by URL.  Among entries with identical URL, put the
-  // one with |stream_id == kNoPushedStreamFound| first, so that it can be used
-  // with lower_bound() to search for the first entry with given URL.  For
-  // entries with identical URL and stream ID, sort by |delegate| memory
-  // address.
-  struct CompareByUrl {
+  // A set ordered by this function object supports O(log n) lookup
+  // of the first entry with a given URL, by calling lower_bound() with an entry
+  // with that URL and with delegate = nullptr.
+  struct NET_EXPORT CompareByUrl {
     bool operator()(const UnclaimedPushedStream& a,
-                    const UnclaimedPushedStream& b) const {
-      if (a.url < b.url)
-        return true;
-      if (a.url > b.url)
-        return false;
-      // Identical URL.
-      if (a.stream_id == kNoPushedStreamFound &&
-          b.stream_id != kNoPushedStreamFound) {
-        return true;
-      }
-      if (a.stream_id != kNoPushedStreamFound &&
-          b.stream_id == kNoPushedStreamFound) {
-        return false;
-      }
-      if (a.stream_id < b.stream_id)
-        return true;
-      if (a.stream_id > b.stream_id)
-        return false;
-      // Identical URL and stream ID.
-      return a.delegate < b.delegate;
-    }
+                    const UnclaimedPushedStream& b) const;
   };
 
-  // A collection of all unclaimed pushed streams.  Delegate must unregister its
-  // streams before destruction, so that all pointers remain valid.  It is
-  // possible that multiple Delegates have pushed streams for the same GURL.
+  // Collection of all unclaimed pushed streams.  Delegate must unregister
+  // its streams before destruction, so that all pointers remain valid.
+  // Each Delegate can have at most one pushed stream for each URL (but each
+  // Delegate can have pushed streams for different URLs, and different
+  // Delegates can have pushed streams for the same GURL).
   std::set<UnclaimedPushedStream, CompareByUrl> unclaimed_pushed_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(Http2PushPromiseIndex);

@@ -321,12 +321,13 @@ class SpdySessionTest : public PlatformTest {
   size_t num_created_streams() { return session_->created_streams_.size(); }
 
   size_t num_unclaimed_pushed_streams() {
-    return session_->unclaimed_pushed_streams_.CountStreamsForSession();
+    return spdy_session_pool_->push_promise_index()->CountStreamsForSession(
+        session_.get());
   }
 
   bool has_unclaimed_pushed_stream_for_url(const GURL& url) {
-    return session_->unclaimed_pushed_streams_.FindStream(url) !=
-           kNoPushedStreamFound;
+    return spdy_session_pool_->push_promise_index()->FindStream(
+               url, session_.get()) != kNoPushedStreamFound;
   }
 
   // Original socket limits.  Some tests set these.  Safest to always restore
