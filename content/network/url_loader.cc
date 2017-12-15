@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/common/loader_util.h"
+#include "content/network/data_pipe_element_reader.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
 #include "content/public/common/referrer.h"
@@ -142,109 +143,6 @@ class RawFileElementReader : public net::UploadFileElementReader {
   scoped_refptr<ResourceRequestBody> resource_request_body_;
 
   DISALLOW_COPY_AND_ASSIGN(RawFileElementReader);
-};
-
-// A subclass of net::UploadElementReader to read data pipes.
-class DataPipeElementReader : public net::UploadElementReader {
- public:
-  DataPipeElementReader(
-      scoped_refptr<ResourceRequestBody> resource_request_body,
-      network::mojom::DataPipeGetterPtr data_pipe_getter_)
-      : resource_request_body_(std::move(resource_request_body)),
-        data_pipe_getter_(std::move(data_pipe_getter_)),
-        handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-        weak_factory_(this) {}
-
-  ~DataPipeElementReader() override {}
-
- private:
-  void ReadCallback(int32_t status, uint64_t size) {
-    if (status == net::OK)
-      size_ = size;
-    if (!init_callback_.is_null())
-      std::move(init_callback_).Run(status);
-  }
-
-  void OnHandleReadable(MojoResult result) {
-    if (result == MOJO_RESULT_OK) {
-      int read = Read(buf_.get(), buf_length_, net::CompletionCallback());
-      DCHECK_GT(read, 0);
-      std::move(read_callback_).Run(read);
-    } else {
-      std::move(read_callback_).Run(net::ERR_FAILED);
-    }
-    buf_ = nullptr;
-    buf_length_ = 0;
-  }
-
-  // net::UploadElementReader implementation:
-  int Init(const net::CompletionCallback& callback) override {
-    // Init rewinds the stream. Throw away current state.
-    if (!read_callback_.is_null())
-      std::move(read_callback_).Run(net::ERR_FAILED);
-    buf_ = nullptr;
-    buf_length_ = 0;
-    handle_watcher_.Cancel();
-    size_ = 0;
-    bytes_read_ = 0;
-
-    // Get a new data pipe and start.
-    mojo::DataPipe data_pipe;
-    data_pipe_getter_->Read(std::move(data_pipe.producer_handle),
-                            base::BindOnce(&DataPipeElementReader::ReadCallback,
-                                           weak_factory_.GetWeakPtr()));
-    data_pipe_ = std::move(data_pipe.consumer_handle);
-    handle_watcher_.Watch(data_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                          base::Bind(&DataPipeElementReader::OnHandleReadable,
-                                     base::Unretained(this)));
-
-    init_callback_ = std::move(callback);
-    return net::ERR_IO_PENDING;
-  }
-
-  uint64_t GetContentLength() const override { return size_; }
-
-  uint64_t BytesRemaining() const override { return size_ - bytes_read_; }
-
-  int Read(net::IOBuffer* buf,
-           int buf_length,
-           const net::CompletionCallback& callback) override {
-    if (!BytesRemaining())
-      return net::OK;
-
-    uint32_t num_bytes = buf_length;
-    MojoResult rv =
-        data_pipe_->ReadData(buf->data(), &num_bytes, MOJO_READ_DATA_FLAG_NONE);
-    if (rv == MOJO_RESULT_OK) {
-      bytes_read_ += num_bytes;
-      return num_bytes;
-    }
-
-    if (rv == MOJO_RESULT_SHOULD_WAIT) {
-      buf_ = buf;
-      buf_length_ = buf_length;
-      handle_watcher_.ArmOrNotify();
-      read_callback_ = std::move(callback);
-      return net::ERR_IO_PENDING;
-    }
-
-    return net::ERR_FAILED;
-  }
-
-  scoped_refptr<ResourceRequestBody> resource_request_body_;
-  network::mojom::DataPipeGetterPtr data_pipe_getter_;
-  mojo::ScopedDataPipeConsumerHandle data_pipe_;
-  mojo::SimpleWatcher handle_watcher_;
-  scoped_refptr<net::IOBuffer> buf_;
-  int buf_length_ = 0;
-  uint64_t size_ = 0;
-  uint64_t bytes_read_ = 0;
-  net::CompletionCallback init_callback_;
-  net::CompletionCallback read_callback_;
-
-  base::WeakPtrFactory<DataPipeElementReader> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataPipeElementReader);
 };
 
 // TODO: copied from content/browser/loader/upload_data_stream_builder.cc.

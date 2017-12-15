@@ -38,6 +38,8 @@ jumbo_source_set("network_sources") {
     "cache_url_loader.h",
     "cookie_manager.cc",
     "cookie_manager.h",
+    "data_pipe_element_reader.cc",
+    "data_pipe_element_reader.h",
     "http_server_properties_pref_delegate.cc",
     "http_server_properties_pref_delegate.h",
     "network_change_manager.cc",
