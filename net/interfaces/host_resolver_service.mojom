@@ -13,13 +13,7 @@
 module net.interfaces;
 
 import "net/interfaces/ip_endpoint.mojom";
-
-// Mirror of net::AddressFamily.
-enum AddressFamily {
-  UNSPECIFIED,
-  IPV4,
-  IPV6,
-};
+import "net/interfaces/address_family.mojom";
 
 // Mirror of net::HostResolver::RequestInfo.
 struct HostResolverRequestInfo {
