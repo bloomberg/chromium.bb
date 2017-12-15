@@ -6,10 +6,6 @@
 <dom-module id="cr-expand-button">
   <template>
     <style include="cr-icons cr-shared-style">
-      :host {
-        display: inline-block;
-      }
-
       :host([disabled]) {
         pointer-events: none;
       }
@@ -17,13 +13,24 @@
       button[is=paper-icon-button-light] {
         @apply(--cr-paper-icon-button-margin);
       }
+
+      #outer {
+        align-items: center;
+        display: flex;
+      }
+
+      #label {
+        flex: 1;
+      }
     </style>
-    <content></content>
-    <button is="paper-icon-button-light" class$="[[iconName_(expanded)]]"
-        toggles active="{{expanded}}" disabled="[[disabled]]" alt="[[alt]]"
-        aria-active-attribute="aria-expanded" on-tap="toggleExpand_"
-        tabindex$="[[tabIndex]]">
-    </button>
+    <div id="outer" on-tap="toggleExpand_">
+      <div id="label" on-tap="toggleExpand_"><slot></slot></div>
+      <button is="paper-icon-button-light" class$="[[iconName_(expanded)]]"
+          toggles active="{{expanded}}" disabled="[[disabled]]" alt="[[alt]]"
+          aria-active-attribute="aria-expanded"
+          tabindex$="[[tabIndex]]">
+      </button>
+    </div>
   </template>
   <script src="cr_expand_button.js"></script>
 </dom-module>
