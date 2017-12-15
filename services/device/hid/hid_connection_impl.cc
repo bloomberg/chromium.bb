@@ -54,10 +54,9 @@ void HidConnectionImpl::Write(uint8_t report_id,
 
   memcpy(io_buffer->front() + 1, buffer.data(), buffer.size());
 
-  hid_connection_->Write(
-      io_buffer, io_buffer->size(),
-      base::BindOnce(&HidConnectionImpl::OnWrite, weak_factory_.GetWeakPtr(),
-                     std::move(callback)));
+  hid_connection_->Write(io_buffer, base::BindOnce(&HidConnectionImpl::OnWrite,
+                                                   weak_factory_.GetWeakPtr(),
+                                                   std::move(callback)));
 }
 
 void HidConnectionImpl::OnWrite(WriteCallback callback, bool success) {
@@ -100,7 +99,7 @@ void HidConnectionImpl::SendFeatureReport(uint8_t report_id,
   memcpy(io_buffer->front() + 1, buffer.data(), buffer.size());
 
   hid_connection_->SendFeatureReport(
-      io_buffer, io_buffer->size(),
+      io_buffer,
       base::BindOnce(&HidConnectionImpl::OnSendFeatureReport,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }

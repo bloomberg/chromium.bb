@@ -195,7 +195,7 @@ TEST_F(HidConnectionTest, ReadWrite) {
     }
 
     TestIoCallback write_callback;
-    conn->Write(buffer, buffer->size(), write_callback.GetWriteCallback());
+    conn->Write(buffer, write_callback.GetWriteCallback());
     ASSERT_TRUE(write_callback.WaitForResult());
 
     TestIoCallback read_callback;

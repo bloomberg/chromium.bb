@@ -61,17 +61,19 @@ class HidConnectionLinux::BlockingTaskHelper {
   }
 
   void Write(scoped_refptr<base::RefCountedBytes> buffer,
-             size_t size,
              WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    ssize_t result = HANDLE_EINTR(write(fd_.get(), buffer->front(), size));
+    ssize_t result =
+        HANDLE_EINTR(write(fd_.get(), buffer->front(), buffer->size()));
     if (result < 0) {
       HID_PLOG(EVENT) << "Write failed";
       origin_task_runner_->PostTask(FROM_HERE,
                                     base::BindOnce(std::move(callback), false));
     } else {
-      if (static_cast<size_t>(result) != size)
-        HID_LOG(EVENT) << "Incomplete HID write: " << result << " != " << size;
+      if (static_cast<size_t>(result) != buffer->size()) {
+        HID_LOG(EVENT) << "Incomplete HID write: " << result
+                       << " != " << buffer->size();
+      }
       origin_task_runner_->PostTask(FROM_HERE,
                                     base::BindOnce(std::move(callback), true));
     }
@@ -106,11 +108,10 @@ class HidConnectionLinux::BlockingTaskHelper {
   }
 
   void SendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
-                         size_t size,
                          WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    int result =
-        HANDLE_EINTR(ioctl(fd_.get(), HIDIOCSFEATURE(size), buffer->front()));
+    int result = HANDLE_EINTR(
+        ioctl(fd_.get(), HIDIOCSFEATURE(buffer->size()), buffer->front()));
     if (result < 0) {
       HID_PLOG(EVENT) << "Failed to send feature report";
       origin_task_runner_->PostTask(FROM_HERE,
@@ -210,13 +211,12 @@ void HidConnectionLinux::PlatformRead(ReadCallback callback) {
 
 void HidConnectionLinux::PlatformWrite(
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
   // Linux expects the first byte of the buffer to always be a report ID so the
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskHelper::Write,
-                                base::Unretained(helper_.get()), buffer, size,
+                                base::Unretained(helper_.get()), buffer,
                                 std::move(callback)));
 }
 
@@ -237,13 +237,12 @@ void HidConnectionLinux::PlatformGetFeatureReport(uint8_t report_id,
 
 void HidConnectionLinux::PlatformSendFeatureReport(
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
   // Linux expects the first byte of the buffer to always be a report ID so the
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskHelper::SendFeatureReport,
-                                base::Unretained(helper_.get()), buffer, size,
+                                base::Unretained(helper_.get()), buffer,
                                 std::move(callback)));
 }
 

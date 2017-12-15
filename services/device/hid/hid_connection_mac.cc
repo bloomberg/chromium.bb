@@ -83,12 +83,11 @@ void HidConnectionMac::PlatformRead(ReadCallback callback) {
 
 void HidConnectionMac::PlatformWrite(
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&HidConnectionMac::SetReportAsync, this,
-                                kIOHIDReportTypeOutput, buffer, size,
-                                std::move(callback)));
+      FROM_HERE,
+      base::BindOnce(&HidConnectionMac::SetReportAsync, this,
+                     kIOHIDReportTypeOutput, buffer, std::move(callback)));
 }
 
 void HidConnectionMac::PlatformGetFeatureReport(uint8_t report_id,
@@ -100,12 +99,11 @@ void HidConnectionMac::PlatformGetFeatureReport(uint8_t report_id,
 
 void HidConnectionMac::PlatformSendFeatureReport(
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&HidConnectionMac::SetReportAsync, this,
-                                kIOHIDReportTypeFeature, buffer, size,
-                                std::move(callback)));
+      FROM_HERE,
+      base::BindOnce(&HidConnectionMac::SetReportAsync, this,
+                     kIOHIDReportTypeFeature, buffer, std::move(callback)));
 }
 
 // static
@@ -200,9 +198,9 @@ void HidConnectionMac::GetFeatureReportAsync(uint8_t report_id,
 void HidConnectionMac::SetReportAsync(
     IOHIDReportType report_type,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
   uint8_t* data = buffer->front();
+  size_t size = buffer->size();
   DCHECK_GE(size, 1u);
   uint8_t report_id = data[0];
   if (report_id == 0) {

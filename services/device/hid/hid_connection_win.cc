@@ -117,26 +117,20 @@ void HidConnectionWin::PlatformRead(HidConnection::ReadCallback callback) {
 
 void HidConnectionWin::PlatformWrite(
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
-  size_t expected_size = device_info()->max_output_report_size() + 1;
-  DCHECK(size <= expected_size);
   // The Windows API always wants either a report ID (if supported) or zero at
   // the front of every output report and requires that the buffer size be equal
   // to the maximum output report size supported by this collection.
-  if (size < expected_size) {
-    auto tmp_buffer =
-        base::MakeRefCounted<base::RefCountedBytes>(expected_size);
-    memcpy(tmp_buffer->front(), buffer->front(), size);
-    buffer = tmp_buffer;
-    size = expected_size;
-  }
+  size_t expected_size = device_info()->max_output_report_size() + 1;
+  DCHECK(buffer->size() <= expected_size);
+  buffer->data().resize(expected_size);
+
   transfers_.push_back(std::make_unique<PendingHidTransfer>(
       buffer, base::BindOnce(&HidConnectionWin::OnWriteComplete, this,
                              std::move(callback))));
-  transfers_.back()->TakeResultFromWindowsAPI(
-      WriteFile(file_.Get(), buffer->front(), static_cast<DWORD>(size), NULL,
-                transfers_.back()->GetOverlapped()));
+  transfers_.back()->TakeResultFromWindowsAPI(WriteFile(
+      file_.Get(), buffer->front(), static_cast<DWORD>(buffer->size()), NULL,
+      transfers_.back()->GetOverlapped()));
 }
 
 void HidConnectionWin::PlatformGetFeatureReport(uint8_t report_id,
@@ -157,7 +151,6 @@ void HidConnectionWin::PlatformGetFeatureReport(uint8_t report_id,
 
 void HidConnectionWin::PlatformSendFeatureReport(
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
   // The Windows API always wants either a report ID (if supported) or
   // zero at the front of every output report.
@@ -166,7 +159,7 @@ void HidConnectionWin::PlatformSendFeatureReport(
                              std::move(callback))));
   transfers_.back()->TakeResultFromWindowsAPI(
       DeviceIoControl(file_.Get(), IOCTL_HID_SET_FEATURE, buffer->front(),
-                      static_cast<DWORD>(size), NULL, 0, NULL,
+                      static_cast<DWORD>(buffer->size()), NULL, 0, NULL,
                       transfers_.back()->GetOverlapped()));
 }
 
