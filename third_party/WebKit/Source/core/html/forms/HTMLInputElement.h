@@ -296,6 +296,8 @@ class CORE_EXPORT HTMLInputElement
   bool SupportsPlaceholder() const final;
   String GetPlaceholderValue() const final;
 
+  void ChildrenChanged(const ChildrenChange&) override;
+
  protected:
   HTMLInputElement(Document&, bool created_by_parser);
 
