@@ -99,9 +99,13 @@ class NullInputRouterClient : public InputRouterClient {
   void OnSetWhiteListedTouchAction(
       cc::TouchAction white_listed_touch_action) override {}
   void DidStopFlinging() override {}
+  void ForwardWheelEventWithLatencyInfo(
+      const blink::WebMouseWheelEvent& event,
+      const ui::LatencyInfo& latency_info) override {}
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& event,
       const ui::LatencyInfo& latency_info) override {}
+  void SetNeedsBeginFrameForFlingProgress() override {}
 };
 
 class NullIPCSender : public IPC::Sender {

@@ -52,7 +52,7 @@ WebActiveGestureAnimation::WebActiveGestureAnimation(
 bool WebActiveGestureAnimation::Animate(double time) {
   // All WebGestureCurves assume zero-based time, so we subtract
   // the animation start time before passing to the curve.
-  return curve_->Apply(time - start_time_, target_);
+  return curve_->AdvanceAndApplyToTarget(time - start_time_, target_);
 }
 
 }  // namespace blink

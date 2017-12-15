@@ -144,6 +144,8 @@ class CONTENT_EXPORT OverscrollController {
   // owned by this controller.
   OverscrollControllerDelegate* delegate_ = nullptr;
 
+  bool wheel_scroll_latching_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(OverscrollController);
 };
 

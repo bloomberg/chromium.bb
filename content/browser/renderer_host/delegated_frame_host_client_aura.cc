@@ -77,8 +77,8 @@ viz::LocalSurfaceId DelegatedFrameHostClientAura::GetLocalSurfaceId() const {
   return render_widget_host_view_->GetLocalSurfaceId();
 }
 
-void DelegatedFrameHostClientAura::OnBeginFrame() {
-  render_widget_host_view_->OnBeginFrame();
+void DelegatedFrameHostClientAura::OnBeginFrame(base::TimeTicks frame_time) {
+  render_widget_host_view_->OnBeginFrame(frame_time);
 }
 
 bool DelegatedFrameHostClientAura::IsAutoResizeEnabled() const {

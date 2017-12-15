@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/web/WebActiveWheelFlingParameters.h"
+#include "third_party/WebKit/public/web/WebActiveFlingParameters.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
@@ -135,9 +135,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // Helper functions for handling more complicated input events.
   EventDisposition HandleMouseWheel(
       const blink::WebMouseWheelEvent& event);
-  EventDisposition FlingScrollByMouseWheel(
-      const blink::WebMouseWheelEvent& event,
-      cc::EventListenerProperties listener_properties);
   EventDisposition HandleGestureScrollBegin(
       const blink::WebGestureEvent& event);
   EventDisposition HandleGestureScrollUpdate(
@@ -149,9 +146,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   EventDisposition HandleTouchStart(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchMove(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchEnd(const blink::WebTouchEvent& event);
-
-  // Returns true if we scrolled by the increment.
-  bool TouchpadFlingScroll(const blink::WebFloatSize& increment);
 
   // Returns true if we actually had an active fling to cancel, also notifying
   // the client that the fling has ended. Note that if a boosted fling is active
@@ -198,7 +192,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   std::unique_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to
   // transfer it out later.
-  blink::WebActiveWheelFlingParameters fling_parameters_;
+  blink::WebActiveFlingParameters fling_parameters_;
 
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;

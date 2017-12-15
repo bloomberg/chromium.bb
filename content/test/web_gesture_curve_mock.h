@@ -20,8 +20,10 @@ class WebGestureCurveMock : public blink::WebGestureCurve {
                       const blink::WebSize& cumulative_scroll);
   ~WebGestureCurveMock() override;
 
-  // Returns false if curve has finished and can no longer be applied.
-  bool Apply(double time, blink::WebGestureCurveTarget* target) override;
+  // Returns false if curve has finished and can no longer advance.
+  bool Advance(double time,
+               gfx::Vector2dF& out_current_velocity,
+               gfx::Vector2dF& out_delta_to_scroll) override;
 
  private:
   blink::WebFloatPoint velocity_;

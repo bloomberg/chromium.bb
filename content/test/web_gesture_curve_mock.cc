@@ -16,15 +16,14 @@ WebGestureCurveMock::WebGestureCurveMock(const blink::WebFloatPoint& velocity,
 WebGestureCurveMock::~WebGestureCurveMock() {
 }
 
-bool WebGestureCurveMock::Apply(double time,
-                                blink::WebGestureCurveTarget* target) {
+bool WebGestureCurveMock::Advance(double time,
+                                  gfx::Vector2dF& out_current_velocity,
+                                  gfx::Vector2dF& out_delta_to_scroll) {
   blink::WebSize displacement(velocity_.x * time, velocity_.y * time);
-  blink::WebFloatSize increment(displacement.width - cumulative_scroll_.width,
-      displacement.height - cumulative_scroll_.height);
+  out_delta_to_scroll =
+      gfx::Vector2dF(displacement.width - cumulative_scroll_.width,
+                     displacement.height - cumulative_scroll_.height);
   cumulative_scroll_ = displacement;
-  blink::WebFloatSize velocity(velocity_.x, velocity_.y);
-  // scrollBy() could delete this curve if the animation is over, so don't
-  // touch any member variables after making that call.
-  target->ScrollBy(increment, velocity);
+  out_current_velocity = gfx::Vector2dF(velocity_.x, velocity_.y);
   return true;
 }

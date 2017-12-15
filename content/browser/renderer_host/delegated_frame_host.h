@@ -71,7 +71,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   DelegatedFrameHostCreateResizeLock() = 0;
   virtual viz::LocalSurfaceId GetLocalSurfaceId() const = 0;
 
-  virtual void OnBeginFrame() = 0;
+  virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual bool IsAutoResizeEnabled() const = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
 };

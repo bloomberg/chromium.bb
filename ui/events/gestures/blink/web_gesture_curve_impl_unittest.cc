@@ -49,22 +49,23 @@ TEST(WebGestureCurveImplTest, Basic) {
 
   // coded into the create call above.
   MockGestureCurveTarget target;
-  EXPECT_TRUE(curve->Apply(0, &target));
-  EXPECT_TRUE(curve->Apply(0.25, &target));
+  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(0, &target));
+  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(0.25, &target));
   EXPECT_NEAR(target.current_velocity().width, 1878, 1);
   EXPECT_EQ(target.current_velocity().height, 0);
   EXPECT_GT(target.cumulative_delta().width, 0);
-  EXPECT_TRUE(curve->Apply(0.45, &target));  // Use non-uniform tick spacing.
+  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(
+      0.45, &target));  // Use non-uniform tick spacing.
 
   // Ensure fling persists even if successive timestamps are identical.
   gfx::Vector2dF cumulative_delta = target.cumulative_delta();
   gfx::Vector2dF current_velocity = target.current_velocity();
-  EXPECT_TRUE(curve->Apply(0.45, &target));
+  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(0.45, &target));
   EXPECT_EQ(cumulative_delta, gfx::Vector2dF(target.cumulative_delta()));
   EXPECT_EQ(current_velocity, gfx::Vector2dF(target.current_velocity()));
 
-  EXPECT_TRUE(curve->Apply(0.75, &target));
-  EXPECT_FALSE(curve->Apply(1.5, &target));
+  EXPECT_TRUE(curve->AdvanceAndApplyToTarget(0.75, &target));
+  EXPECT_FALSE(curve->AdvanceAndApplyToTarget(1.5, &target));
   EXPECT_NEAR(target.cumulative_delta().width, 1193, 1);
   EXPECT_EQ(target.cumulative_delta().height, 0);
   EXPECT_EQ(target.current_velocity().width, 0);

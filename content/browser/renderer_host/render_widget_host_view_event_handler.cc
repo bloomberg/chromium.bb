@@ -550,14 +550,18 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       // the current scroll.
       mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
       mouse_wheel_phase_handler_.SendWheelEndIfNeeded();
-    } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
-      // Make sure that the next wheel event will have phase = |kPhaseBegan|.
-      // This is for maintaining the correct phase info when some of the wheel
-      // events get ignored while a touchscreen scroll is going on.
-      mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
-      mouse_wheel_phase_handler_.ResetScrollSequence();
     } else if (event->type() == ui::ET_SCROLL_FLING_START) {
       RecordAction(base::UserMetricsAction("TouchscreenScrollFling"));
+    }
+
+    if (event->type() == ui::ET_GESTURE_SCROLL_END ||
+        event->type() == ui::ET_SCROLL_FLING_START) {
+      // Scrolling with touchscreen has finished. Make sure that the next wheel
+      // event will have phase = |kPhaseBegan|. This is for maintaining the
+      // correct phase info when some of the wheel events get ignored while a
+      // touchscreen scroll is going on.
+      mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
+      mouse_wheel_phase_handler_.ResetScrollSequence();
     }
 
     if (ShouldRouteEvent(event)) {

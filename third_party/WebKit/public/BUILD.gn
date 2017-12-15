@@ -460,7 +460,7 @@ source_set("blink_headers") {
     "platform/scheduler/renderer_process_type.h",
     "web/WebAXEnums.h",
     "web/WebAXObject.h",
-    "web/WebActiveWheelFlingParameters.h",
+    "web/WebActiveFlingParameters.h",
     "web/WebApplyConstraintsRequest.h",
     "web/WebArrayBuffer.h",
     "web/WebArrayBufferConverter.h",

@@ -88,8 +88,6 @@ class CORE_EXPORT WebFrameWidgetBase
                          WebDragOperation) override;
   void DragSourceSystemDragEnded() override;
 
-  void TransferActiveWheelFlingAnimation(
-      const WebActiveWheelFlingParameters&) override;
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
 
   // Called when a drag-n-drop operation should begin.

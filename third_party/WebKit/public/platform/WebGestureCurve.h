@@ -25,9 +25,11 @@
 #ifndef WebGestureCurve_h
 #define WebGestureCurve_h
 
-namespace blink {
+#include "third_party/WebKit/public/platform/WebFloatSize.h"
+#include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
-class WebGestureCurveTarget;
+namespace blink {
 
 // Abstract interface for curves used by ActivePlatformGestureAnimation. A
 // WebGestureCurve defines the animation parameters as a function of time
@@ -38,7 +40,30 @@ class WebGestureCurve {
   virtual ~WebGestureCurve() {}
 
   // Returns false if curve has finished and can no longer be applied.
-  virtual bool Apply(double time, WebGestureCurveTarget*) = 0;
+  // TODO(sahel): This will get removed once touchscreen and autoscroll flings
+  // are handled on browser side (crbug.com/249063).
+  bool AdvanceAndApplyToTarget(double time, WebGestureCurveTarget* target) {
+    gfx::Vector2dF velocity, delta;
+    bool still_active = Advance(time, velocity, delta);
+
+    // As successive timestamps can be arbitrarily close (but monotonic!), don't
+    // assume that a zero delta means the curve has terminated.
+    if (delta.IsZero())
+      return still_active;
+
+    // scrollBy() could delete this curve if the animation is over, so don't
+    // touch any member variables after making that call.
+    bool did_scroll =
+        target->ScrollBy(blink::WebFloatSize(delta.x(), delta.y()),
+                         blink::WebFloatSize(velocity.x(), velocity.y()));
+    return did_scroll && still_active;
+  }
+
+  // Returns false if curve has finished and can no longer advance.
+  // This function is used for browser side fling.
+  virtual bool Advance(double time,
+                       gfx::Vector2dF& out_current_velocity,
+                       gfx::Vector2dF& out_delta_to_scroll) = 0;
 };
 
 }  // namespace blink

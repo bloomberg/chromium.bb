@@ -385,9 +385,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const ui::LatencyInfo& latency);  // Virtual for testing.
   void ForwardMouseEventWithLatencyInfo(const blink::WebMouseEvent& mouse_event,
                                         const ui::LatencyInfo& latency);
-  virtual void ForwardWheelEventWithLatencyInfo(
+  void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
-      const ui::LatencyInfo& latency);  // Virtual for testing.
+      const ui::LatencyInfo& latency) override;
 
   // Returns an emulator for this widget. See TouchEmulator for more details.
   TouchEmulator* GetTouchEmulator();
@@ -627,6 +627,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const std::vector<gfx::Rect>& character_bounds) override;
   void OnImeCancelComposition() override;
 
+  void ProgressFling(base::TimeTicks current_time);
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -755,6 +757,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DidStopFlinging() override;
   void OnSetWhiteListedTouchAction(
       cc::TouchAction white_listed_touch_action) override {}
+  void SetNeedsBeginFrameForFlingProgress() override;
 
   // Dispatch input events with latency information
   void DispatchInputEventWithLatencyInfo(const blink::WebInputEvent& event,

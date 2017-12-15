@@ -4,7 +4,9 @@ include_rules = [
   "+components/viz/host",
   "+components/viz/service",
   "+services/ui/public",
+  "+third_party/WebKit/public/platform/WebGestureCurve.h",
   "+third_party/zlib",
+  "+ui/events/gestures/blink/web_gesture_curve_impl.h",
   "+ui/latency",
 
   # The renderer_host files should only call upwards in the layering via the
