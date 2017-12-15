@@ -106697,6 +106697,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Clients.MultiTabLoading"
       label="PageLoadMetrics for page loads that started while there are
              other loading tabs."/>
+  <suffix name="Clients.MultiTabLoading.2OrMore"
+      label="PageLoadMetrics for page loads that started while there are 2 or
+             more other loading tabs."/>
+  <suffix name="Clients.MultiTabLoading.5OrMore"
+      label="PageLoadMetrics for page loads that started while there are 5 or
+             more other loading tabs."/>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram
