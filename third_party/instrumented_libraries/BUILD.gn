@@ -111,11 +111,9 @@ if (use_locally_built_instrumented_libraries) {
       ":libdbus-glib-1-2",
       ":libdbusmenu",
       ":libdbusmenu-glib4",
-      ":libdconf1",
       ":libexpat1",
       ":libffi6",
       ":libfontconfig1",
-      ":libgconf-2-4",
       ":libgcrypt11",
       ":libgdk-pixbuf2.0-0",
       ":libglib2.0-0",
@@ -462,13 +460,6 @@ if (use_locally_built_instrumented_libraries) {
     pre_build = "scripts/pre-build/autogen.sh"
   }
 
-  instrumented_library("libdconf1") {
-    extra_configure_flags = [
-      "--disable-static",
-      "--disable-introspection",
-    ]
-  }
-
   instrumented_library("libexpat1") {
     extra_configure_flags = [ "--disable-static" ]
   }
@@ -487,19 +478,6 @@ if (use_locally_built_instrumented_libraries) {
       "--with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts",
     ]
     patch = "patches/libfontconfig.${instrumented_libraries_platform}.diff"
-  }
-
-  instrumented_library("libgconf-2-4") {
-    extra_configure_flags = [
-      "--disable-static",
-
-      # From debian/rules. (Even though --with-gtk=3.0 doesn't make sense.)
-      "--with-gtk=3.0",
-      "--disable-orbit",
-
-      # See above.
-      "--disable-introspection",
-    ]
   }
 
   instrumented_library("libgcrypt11") {
