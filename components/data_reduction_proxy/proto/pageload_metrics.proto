@@ -10,12 +10,21 @@ import "client_config.proto";
 
 package data_reduction_proxy;
 
+// Information about the device the user is on.
+message PageloadDeviceInfo {
+  // Kilobytes of total device memory.
+  optional int64 total_device_memory_kb = 1;
+}
+
 // Request message to record metrics for one or more pageloads.
 message RecordPageloadMetricsRequest {
   // The pageload metrics to record.
   repeated PageloadMetrics pageloads = 1;
   // Time metrics were sent.
   optional Timestamp metrics_sent_time = 2;
+
+  // Added in M65.
+  optional PageloadDeviceInfo device_info = 3;
 }
 
 // Metrics for a single pageload.

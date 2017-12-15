@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
@@ -131,11 +132,15 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
 
 // Adds |current_time| as the metrics sent time to |request_data|, and returns
 // the serialized request.
-std::string AddTimeAndSerializeRequest(
+std::string AddBatchInfoAndSerializeRequest(
     RecordPageloadMetricsRequest* request_data,
     base::Time current_time) {
   request_data->set_allocated_metrics_sent_time(
       protobuf_parser::CreateTimestampFromTime(current_time).release());
+  data_reduction_proxy::PageloadDeviceInfo* device_info =
+      request_data->mutable_device_info();
+  device_info->set_total_device_memory_kb(
+      base::SysInfo::AmountOfPhysicalMemory() / 1024);
   std::string serialized_request;
   request_data->SerializeToString(&serialized_request);
   return serialized_request;
@@ -185,7 +190,7 @@ void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
   DCHECK(!current_fetcher_);
   DCHECK_GE(metrics_request_.pageloads_size(), 1);
   std::string serialized_request =
-      AddTimeAndSerializeRequest(&metrics_request_, CurrentTime());
+      AddBatchInfoAndSerializeRequest(&metrics_request_, CurrentTime());
   metrics_request_.Clear();
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("data_reduction_proxy_pingback", R"(
