@@ -969,6 +969,12 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
   if (!src_.IsValid())
     return;
 
+  // SMPTEST2084_NON_HDR is not a valid destination.
+  if (dst.transfer_ == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
+    DLOG(ERROR) << "Invalid dst transfer function, returning identity.";
+    return;
+  }
+
   // If the target color space is not defined, just apply the adjust and
   // tranfer matrices. This path is used by YUV to RGB color conversion
   // when full color conversion is not enabled.
