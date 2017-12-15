@@ -4,6 +4,8 @@
 
 #include "ui/gl/gl_surface_stub.h"
 
+#include "base/time/time.h"
+
 namespace gl {
 
 void GLSurfaceStub::Destroy() {
@@ -22,6 +24,8 @@ bool GLSurfaceStub::IsOffscreen() {
 
 gfx::SwapResult GLSurfaceStub::SwapBuffers(
     const PresentationCallback& callback) {
+  callback.Run(gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                         base::TimeDelta(), 0 /* flags */));
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -47,6 +51,10 @@ bool GLSurfaceStub::SupportsDCLayers() const {
 
 gfx::Vector2d GLSurfaceStub::GetDrawOffset() const {
   return supports_draw_rectangle_ ? gfx::Vector2d(100, 200) : gfx::Vector2d();
+}
+
+bool GLSurfaceStub::SupportsPresentationCallback() {
+  return true;
 }
 
 GLSurfaceStub::~GLSurfaceStub() {}

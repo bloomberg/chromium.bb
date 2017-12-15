@@ -12,6 +12,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_switches_util.h"
 
 namespace gpu {
 
@@ -36,8 +37,7 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     MultiWindowSwapInterval multi_window_swap_interval)
     : GLSurfaceAdapter(surface),
       is_gpu_vsync_disabled_(HasSwitch(switches::kDisableGpuVsync)),
-      is_presentation_callback_enabled_(
-          HasSwitch(switches::kEnablePresentationCallback)),
+      is_presentation_callback_enabled_(gl::IsPresentationCallbackEnabled()),
       delegate_(delegate),
       multi_window_swap_interval_(multi_window_swap_interval),
       weak_ptr_factory_(this) {}

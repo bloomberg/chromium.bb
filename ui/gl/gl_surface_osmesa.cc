@@ -109,7 +109,13 @@ bool GLSurfaceOSMesaHeadless::IsOffscreen() { return false; }
 
 gfx::SwapResult GLSurfaceOSMesaHeadless::SwapBuffers(
     const PresentationCallback& callback) {
+  callback.Run(gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                         base::TimeDelta(), 0 /* flags */));
   return gfx::SwapResult::SWAP_ACK;
+}
+
+bool GLSurfaceOSMesaHeadless::SupportsPresentationCallback() {
+  return true;
 }
 
 GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless()

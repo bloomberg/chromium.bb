@@ -54,8 +54,10 @@ class GL_EXPORT GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
  public:
   GLSurfaceOSMesaHeadless();
 
+  // GLSurfaceOSMesa overrides:
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  bool SupportsPresentationCallback() override;
 
  protected:
   ~GLSurfaceOSMesaHeadless() override;

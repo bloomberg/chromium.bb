@@ -18,6 +18,7 @@ class GLSurfaceOSMesaPng : public gl::GLSurfaceOSMesa {
   // gl::GLSurfaceOSMesa:
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  bool SupportsPresentationCallback() override;
 
  private:
   ~GLSurfaceOSMesaPng() override;
