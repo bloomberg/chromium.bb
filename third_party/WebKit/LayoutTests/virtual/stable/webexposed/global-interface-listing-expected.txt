@@ -2205,6 +2205,7 @@ interface HTMLImageElement : HTMLElement
     getter complete
     getter crossOrigin
     getter currentSrc
+    getter decoding
     getter height
     getter hspace
     getter isMap
@@ -2228,6 +2229,7 @@ interface HTMLImageElement : HTMLElement
     setter alt
     setter border
     setter crossOrigin
+    setter decoding
     setter height
     setter hspace
     setter isMap
@@ -3205,6 +3207,7 @@ interface Image
     getter complete
     getter crossOrigin
     getter currentSrc
+    getter decoding
     getter height
     getter hspace
     getter isMap
@@ -3228,6 +3231,7 @@ interface Image
     setter alt
     setter border
     setter crossOrigin
+    setter decoding
     setter height
     setter hspace
     setter isMap
@@ -5178,6 +5182,7 @@ interface SVGGraphicsElement : SVGElement
     method getScreenCTM
 interface SVGImageElement : SVGGraphicsElement
     attribute @@toStringTag
+    getter decoding
     getter height
     getter href
     getter preserveAspectRatio
@@ -5186,6 +5191,7 @@ interface SVGImageElement : SVGGraphicsElement
     getter y
     method constructor
     method decode
+    setter decoding
 interface SVGLength
     attribute @@toStringTag
     attribute SVG_LENGTHTYPE_CM
