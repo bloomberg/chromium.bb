@@ -17,6 +17,7 @@ config("libjingle_xmpp_common_config") {
 }
 
 rtc_static_library("rtc_task_runner") {
+  visibility = [ "*" ]
   sources = [
     "task_runner/task.cc",
     "task_runner/task.h",
@@ -28,6 +29,7 @@ rtc_static_library("rtc_task_runner") {
 }
 
 rtc_static_library("rtc_xmllite") {
+  visibility = [ "*" ]
   sources = [
     "xmllite/qname.cc",
     "xmllite/qname.h",
@@ -64,6 +66,7 @@ config("rtc_xmpp_warnings_config") {
 }
 
 rtc_static_library("rtc_xmpp") {
+  visibility = [ "*" ]
   cflags = []
   sources = [
     "xmpp/asyncsocket.h",
