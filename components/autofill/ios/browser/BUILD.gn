@@ -65,3 +65,22 @@ js_compile_checked("injected_js") {
     "resources/suggestion_controller.js",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "autofill_agent_unittests.mm",
+  ]
+  deps = [
+    ":browser",
+    "//base",
+    "//components/autofill/core/browser:test_support",
+    "//components/prefs",
+    "//ios/web/public",
+    "//ios/web/public/test/fakes",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
