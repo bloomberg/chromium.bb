@@ -109,5 +109,8 @@ const char kVirtualTimeBudget[] = "virtual-time-budget";
 // Sets the initial window size. Provided as string in the format "800,600".
 const char kWindowSize[] = "window-size";
 
+// Whitelist for Negotitate Auth servers.
+const char kAuthServerWhitelist[] = "auth-server-whitelist";
+
 }  // namespace switches
 }  // namespace headless

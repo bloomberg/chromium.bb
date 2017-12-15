@@ -32,6 +32,7 @@ extern const char kUserAgent[];
 extern const char kUserDataDir[];
 extern const char kVirtualTimeBudget[];
 extern const char kWindowSize[];
+extern const char kAuthServerWhitelist[];
 
 // Switches which are replicated from content.
 using ::switches::kHostResolverRules;
