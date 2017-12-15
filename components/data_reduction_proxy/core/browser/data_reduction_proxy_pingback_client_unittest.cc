@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/sys_info.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
@@ -221,6 +222,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
       PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
       pageload_metrics.effective_connection_type());
   EXPECT_EQ(std::string(), pageload_metrics.holdback_group());
+  EXPECT_EQ(base::SysInfo::AmountOfPhysicalMemory() / 1024,
+            batched_request.device_info().total_device_memory_kb());
+
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
   histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
@@ -293,6 +297,8 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
   EXPECT_EQ(batched_request.pageloads_size(), 2);
   EXPECT_EQ(current_time, protobuf_parser::TimestampToTime(
                               batched_request.metrics_sent_time()));
+  EXPECT_EQ(base::SysInfo::AmountOfPhysicalMemory() / 1024,
+            batched_request.device_info().total_device_memory_kb());
 
   // Verify the content of both pingbacks.
   for (size_t i = 0; i < 2; ++i) {
