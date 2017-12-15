@@ -46,6 +46,7 @@
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
@@ -201,7 +202,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (auto* image = ToHTMLImageElementOrNull(element)) {
-    if (image->IsCollapsed())
+    if (image->IsCollapsed() || style.Display() == EDisplay::kContents)
       style.SetDisplay(EDisplay::kNone);
     return;
   }
@@ -226,6 +227,10 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (IsHTMLFrameElementBase(element)) {
+    if (style.Display() == EDisplay::kContents) {
+      style.SetDisplay(EDisplay::kNone);
+      return;
+    }
     // Frames cannot overflow (they are always the size we ask them to be).
     // Some compositing code paths may try to draw scrollbars anyhow.
     style.SetOverflowX(EOverflow::kVisible);
@@ -261,13 +266,29 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     style.SetOverflowY(style.OverflowY() == EOverflow::kVisible
                            ? EOverflow::kAuto
                            : style.OverflowY());
+    if (style.Display() == EDisplay::kContents)
+      style.SetDisplay(EDisplay::kNone);
     return;
   }
 
   if (IsHTMLPlugInElement(element)) {
     style.SetRequiresAcceleratedCompositingForExternalReasons(
         ToHTMLPlugInElement(element).ShouldAccelerate());
+    if (style.Display() == EDisplay::kContents)
+      style.SetDisplay(EDisplay::kNone);
     return;
+  }
+
+  if (style.Display() == EDisplay::kContents) {
+    // See https://drafts.csswg.org/css-display/#unbox-html
+    // Some of these elements are handled with other adjustments above.
+    if (IsHTMLBRElement(element) || IsHTMLWBRElement(element) ||
+        IsHTMLMeterElement(element) || IsHTMLProgressElement(element) ||
+        IsHTMLCanvasElement(element) || IsHTMLMediaElement(element) ||
+        IsHTMLInputElement(element) || IsHTMLTextAreaElement(element) ||
+        IsHTMLSelectElement(element)) {
+      style.SetDisplay(EDisplay::kNone);
+    }
   }
 }
 
