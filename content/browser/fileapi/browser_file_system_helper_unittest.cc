@@ -24,11 +24,9 @@
 #include "url/origin.h"
 
 namespace content {
-namespace {
+namespace browser_file_system_helper_unittest {
 
 const int kRendererID = 42;
-
-}  // namespace
 
 TEST(BrowserFileSystemHelperTest,
      PrepareDropDataForChildProcess_FileSystemFiles) {
@@ -185,4 +183,5 @@ TEST(BrowserFileSystemHelperTest, PrepareDropDataForChildProcess_LocalFiles) {
   p->Remove(kRendererID);
 }
 
+}  // namespace browser_file_system_helper_unittest
 }  // namespace content

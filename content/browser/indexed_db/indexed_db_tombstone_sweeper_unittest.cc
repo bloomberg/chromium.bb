@@ -26,7 +26,7 @@
 namespace content {
 class BrowserContext;
 
-namespace {
+namespace indexed_db_tombstone_sweeper_unittest {
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Return;
@@ -77,8 +77,6 @@ class Comparator : public LevelDBComparator {
   }
   const char* Name() const override { return "idb_cmp1"; }
 };
-
-}  // namespace
 
 class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
  public:
@@ -247,8 +245,6 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   // Used to verify recorded data.
   base::HistogramTester histogram_tester_;
 };
-
-namespace {
 
 TEST_P(IndexedDBTombstoneSweeperTest, EmptyDB) {
   SetupMockDB();
@@ -594,6 +590,5 @@ INSTANTIATE_TEST_CASE_P(/* No prefix needed */,
                         IndexedDBTombstoneSweeperTest,
                         testing::Values(Mode::STATISTICS, Mode::DELETION));
 
-}  // namespace
-
+}  // namespace indexed_db_tombstone_sweeper_unittest
 }  // namespace content

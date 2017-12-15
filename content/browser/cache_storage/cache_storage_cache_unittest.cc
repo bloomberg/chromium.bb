@@ -52,8 +52,8 @@
 using blink::mojom::CacheStorageError;
 
 namespace content {
+namespace cache_storage_cache_unittest {
 
-namespace {
 const char kTestData[] = "Hello World";
 const char kOrigin[] = "http://example.com";
 const char kCacheName[] = "test_cache";
@@ -288,8 +288,6 @@ void OnBadMessage(base::Optional<bad_message::BadMessageReason>* result,
                   bad_message::BadMessageReason reason) {
   *result = reason;
 }
-
-}  // namespace
 
 // A CacheStorageCache that can optionally delay during backend creation.
 class TestCacheStorageCache : public CacheStorageCache {
@@ -1930,4 +1928,5 @@ INSTANTIATE_TEST_CASE_P(CacheStorageCacheTest,
                         CacheStorageCacheTestP,
                         ::testing::Values(false, true));
 
+}  // namespace cache_storage_cache_unittest
 }  // namespace content

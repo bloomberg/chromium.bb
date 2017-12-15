@@ -35,6 +35,10 @@ namespace content {
 
 class CacheStorageQuotaClient;
 
+namespace cache_storage_manager_unittest {
+class CacheStorageManagerTest;
+}
+
 // Keeps track of a CacheStorage per origin. There is one
 // CacheStorageManager per ServiceWorkerContextCore.
 // TODO(jkarlin): Remove CacheStorage from memory once they're no
@@ -98,7 +102,7 @@ class CONTENT_EXPORT CacheStorageManager {
 
  private:
   friend class CacheStorageContextImpl;
-  friend class CacheStorageManagerTest;
+  friend class cache_storage_manager_unittest::CacheStorageManagerTest;
   friend class CacheStorageQuotaClient;
 
   typedef std::map<GURL, std::unique_ptr<CacheStorage>> CacheStorageMap;
