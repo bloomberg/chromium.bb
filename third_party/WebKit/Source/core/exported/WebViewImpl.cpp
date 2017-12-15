@@ -3495,7 +3495,7 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
 
   WebGestureEvent tap_event(WebInputEvent::kGestureTap,
                             WebInputEvent::kNoModifiers,
-                            WTF::MonotonicallyIncreasingTime());
+                            WTF::CurrentTimeTicksInSeconds());
   tap_event.x = tap_point_window_pos.x;
   tap_event.y = tap_point_window_pos.y;
   // GestureTap is only ever from a touchscreen.

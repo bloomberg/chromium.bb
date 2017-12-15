@@ -533,7 +533,7 @@ void WebDevToolsAgentImpl::InspectElementAt(
   HitTestRequest request(hit_type);
   WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WTF::MonotonicallyIncreasingTimeMS());
+                            WTF::CurrentTimeTicksInMilliseconds());
   dummy_event.SetPositionInWidget(point_in_root_frame.x, point_in_root_frame.y);
   IntPoint transformed_point = FlooredIntPoint(
       TransformWebMouseEvent(web_local_frame_impl_->GetFrameView(), dummy_event)

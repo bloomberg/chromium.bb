@@ -578,8 +578,7 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
     return;
   }
 
-  double idle_delta_in_seconds =
-      deadline_seconds - MonotonicallyIncreasingTime();
+  double idle_delta_in_seconds = deadline_seconds - CurrentTimeTicksInSeconds();
   if (idle_delta_in_seconds <= heap_->HeapStats().EstimatedMarkingTime() &&
       !Platform::Current()
            ->CurrentThread()
@@ -616,18 +615,18 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
 
   TRACE_EVENT1("blink_gc,devtools.timeline",
                "ThreadState::performIdleLazySweep", "idleDeltaInSeconds",
-               deadline_seconds - MonotonicallyIncreasingTime());
+               deadline_seconds - CurrentTimeTicksInSeconds());
 
   SweepForbiddenScope scope(this);
   ScriptForbiddenScope script_forbidden_scope;
 
-  double start_time = WTF::MonotonicallyIncreasingTimeMS();
+  double start_time = WTF::CurrentTimeTicksInMilliseconds();
   bool sweep_completed = Heap().AdvanceLazySweep(deadline_seconds);
   // We couldn't finish the sweeping within the deadline.
   // We request another idle task for the remaining sweeping.
   if (!sweep_completed)
     ScheduleIdleLazySweep();
-  AccumulateSweepingTime(WTF::MonotonicallyIncreasingTimeMS() - start_time);
+  AccumulateSweepingTime(WTF::CurrentTimeTicksInMilliseconds() - start_time);
 
   if (sweep_completed)
     PostSweep();
@@ -895,9 +894,9 @@ void ThreadState::EagerSweep() {
   SweepForbiddenScope scope(this);
   ScriptForbiddenScope script_forbidden_scope;
 
-  double start_time = WTF::MonotonicallyIncreasingTimeMS();
+  double start_time = WTF::CurrentTimeTicksInMilliseconds();
   Heap().Arena(BlinkGC::kEagerSweepArenaIndex)->CompleteSweep();
-  AccumulateSweepingTime(WTF::MonotonicallyIncreasingTimeMS() - start_time);
+  AccumulateSweepingTime(WTF::CurrentTimeTicksInMilliseconds() - start_time);
 }
 
 void ThreadState::CompleteSweep() {
@@ -916,12 +915,12 @@ void ThreadState::CompleteSweep() {
   ScriptForbiddenScope script_forbidden_scope;
 
   TRACE_EVENT0("blink_gc,devtools.timeline", "ThreadState::completeSweep");
-  double start_time = WTF::MonotonicallyIncreasingTimeMS();
+  double start_time = WTF::CurrentTimeTicksInMilliseconds();
 
   Heap().CompleteSweep();
 
   double time_for_complete_sweep =
-      WTF::MonotonicallyIncreasingTimeMS() - start_time;
+      WTF::CurrentTimeTicksInMilliseconds() - start_time;
   AccumulateSweepingTime(time_for_complete_sweep);
 
   if (IsMainThread()) {
@@ -1191,7 +1190,7 @@ void ThreadState::InvokePreFinalizers() {
   // ressurecting them.
   ObjectResurrectionForbiddenScope object_resurrection_forbidden(this);
 
-  double start_time = WTF::MonotonicallyIncreasingTimeMS();
+  double start_time = WTF::CurrentTimeTicksInMilliseconds();
   if (!ordered_pre_finalizers_.IsEmpty()) {
     // Call the prefinalizers in the opposite order to their registration.
     //
@@ -1212,7 +1211,7 @@ void ThreadState::InvokePreFinalizers() {
   }
   if (IsMainThread()) {
     double time_for_invoking_pre_finalizers =
-        WTF::MonotonicallyIncreasingTimeMS() - start_time;
+        WTF::CurrentTimeTicksInMilliseconds() - start_time;
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, pre_finalizers_histogram,
         ("BlinkGC.TimeForInvokingPreFinalizers", 1, 10 * 1000, 50));
@@ -1329,7 +1328,7 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
 }
 
 void ThreadState::MarkPhaseVisitRoots() {
-  double start_time = WTF::MonotonicallyIncreasingTimeMS();
+  double start_time = WTF::CurrentTimeTicksInMilliseconds();
 
   ScriptForbiddenScope script_forbidden;
   // Disallow allocation during garbage collection (but not during the
@@ -1346,11 +1345,11 @@ void ThreadState::MarkPhaseVisitRoots() {
     Heap().VisitStackRoots(current_gc_data_.visitor.get());
   }
   current_gc_data_.marking_time_in_milliseconds +=
-      WTF::MonotonicallyIncreasingTimeMS() - start_time;
+      WTF::CurrentTimeTicksInMilliseconds() - start_time;
 }
 
 bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
-  double start_time = WTF::MonotonicallyIncreasingTimeMS();
+  double start_time = WTF::CurrentTimeTicksInMilliseconds();
 
   ScriptForbiddenScope script_forbidden;
   // Disallow allocation during garbage collection (but not during the
@@ -1363,7 +1362,7 @@ bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
       current_gc_data_.visitor.get(), deadline_seconds);
 
   current_gc_data_.marking_time_in_milliseconds +=
-      WTF::MonotonicallyIncreasingTimeMS() - start_time;
+      WTF::CurrentTimeTicksInMilliseconds() - start_time;
   return complete;
 }
 

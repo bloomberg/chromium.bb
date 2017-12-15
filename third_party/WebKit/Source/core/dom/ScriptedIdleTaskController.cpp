@@ -58,7 +58,7 @@ class IdleRequestCallbackWrapper
     if (ScriptedIdleTaskController* controller =
             callback_wrapper->Controller()) {
       controller->CallbackFired(callback_wrapper->Id(),
-                                MonotonicallyIncreasingTime(),
+                                CurrentTimeTicksInSeconds(),
                                 IdleDeadline::CallbackType::kCalledByTimeout);
     }
     callback_wrapper->Cancel();
@@ -214,7 +214,7 @@ void ScriptedIdleTaskController::RunCallback(
     return;
 
   double allotted_time_millis =
-      std::max((deadline_seconds - MonotonicallyIncreasingTime()) * 1000, 0.0);
+      std::max((deadline_seconds - CurrentTimeTicksInSeconds()) * 1000, 0.0);
 
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, idle_callback_deadline_histogram,
@@ -249,7 +249,7 @@ void ScriptedIdleTaskController::Unpause() {
   Vector<CallbackId> pending_timeouts;
   pending_timeouts_.swap(pending_timeouts);
   for (auto& id : pending_timeouts)
-    RunCallback(id, MonotonicallyIncreasingTime(),
+    RunCallback(id, CurrentTimeTicksInSeconds(),
                 IdleDeadline::CallbackType::kCalledByTimeout);
 
   // Repost idle tasks for any remaining callbacks.

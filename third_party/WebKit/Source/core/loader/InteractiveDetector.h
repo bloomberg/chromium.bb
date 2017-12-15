@@ -48,7 +48,7 @@ class CORE_EXPORT InteractiveDetector
   static InteractiveDetector* From(Document&);
   virtual ~InteractiveDetector();
 
-  // Calls to MonotonicallyIncreasingTime is expensive, so we try not to call it
+  // Calls to CurrentTimeTicksInSeconds is expensive, so we try not to call it
   // unless we really have to. If we already have the event time available, we
   // pass it in as an argument.
   void OnResourceLoadBegin(WTF::Optional<double> load_begin_time);

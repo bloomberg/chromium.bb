@@ -78,7 +78,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   const double kMinimumSecondToShowValidationMessage = 5.0;
   const double kSecondPerCharacter = 0.05;
   finish_time_ =
-      MonotonicallyIncreasingTime() +
+      CurrentTimeTicksInSeconds() +
       std::max(kMinimumSecondToShowValidationMessage,
                (message.length() + sub_message.length()) * kSecondPerCharacter);
 
@@ -144,7 +144,7 @@ void ValidationMessageClientImpl::DocumentDetached(const Document& document) {
 void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   DCHECK(current_anchor_);
   if ((!LayoutTestSupport::IsRunningLayoutTest() &&
-       MonotonicallyIncreasingTime() >= finish_time_) ||
+       CurrentTimeTicksInSeconds() >= finish_time_) ||
       !CurrentView()) {
     HideValidationMessage(*current_anchor_);
     return;

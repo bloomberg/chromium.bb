@@ -75,7 +75,7 @@ Event::Event(const AtomicString& event_type,
             can_bubble_arg,
             cancelable_arg,
             composed_mode,
-            TimeTicks::Now()) {}
+            CurrentTimeTicks()) {}
 
 Event::Event(const AtomicString& event_type,
              bool can_bubble_arg,

@@ -17,7 +17,7 @@ constexpr TimeDelta kActivationLifespan = TimeDelta::FromSeconds(3600);
 void UserActivationState::Activate() {
   has_been_active_ = true;
   is_active_ = true;
-  activation_timestamp_ = TimeTicks::Now();
+  activation_timestamp_ = CurrentTimeTicks();
 }
 
 void UserActivationState::Clear() {
@@ -27,7 +27,7 @@ void UserActivationState::Clear() {
 
 bool UserActivationState::IsActive() {
   if (is_active_ &&
-      (TimeTicks::Now() - activation_timestamp_ > kActivationLifespan)) {
+      (CurrentTimeTicks() - activation_timestamp_ > kActivationLifespan)) {
     is_active_ = false;
   }
   return is_active_;

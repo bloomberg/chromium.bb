@@ -94,7 +94,7 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
   // Skip document background-only paints.
   if (paint_timing_->FirstPaintRendered() == 0.0)
     return;
-  provisional_first_meaningful_paint_ = MonotonicallyIncreasingTime();
+  provisional_first_meaningful_paint_ = CurrentTimeTicksInSeconds();
   next_paint_is_meaningful_ = false;
 
   if (network2_quiet_reached_)

@@ -2212,7 +2212,7 @@ void Document::UpdateStyle() {
   TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
   RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
                            RuntimeCallStats::CounterId::kUpdateStyle);
-  double start_time = MonotonicallyIncreasingTime();
+  double start_time = CurrentTimeTicksInSeconds();
 
   unsigned initial_element_count = GetStyleEngine().StyleForElementCount();
 
@@ -2293,7 +2293,7 @@ void Document::UpdateStyle() {
         GetStyleEngine().StyleForElementCount() - initial_element_count);
   }
 
-  double update_duration_seconds = MonotonicallyIncreasingTime() - start_time;
+  double update_duration_seconds = CurrentTimeTicksInSeconds() - start_time;
   DEFINE_STATIC_LOCAL(CustomCountHistogram, update_histogram,
                       ("Style.UpdateTime", 0, 10000000, 50));
   update_histogram.Count(update_duration_seconds * 1000 * 1000);
@@ -3369,9 +3369,9 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   BeforeUnloadEvent* before_unload_event = BeforeUnloadEvent::Create();
   before_unload_event->initEvent(EventTypeNames::beforeunload, false, true);
   load_event_progress_ = kBeforeUnloadEventInProgress;
-  const double beforeunload_event_start = MonotonicallyIncreasingTime();
+  const double beforeunload_event_start = CurrentTimeTicksInSeconds();
   dom_window_->DispatchEvent(before_unload_event, this);
-  const double beforeunload_event_end = MonotonicallyIncreasingTime();
+  const double beforeunload_event_end = CurrentTimeTicksInSeconds();
   load_event_progress_ = kBeforeUnloadEventCompleted;
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, beforeunload_histogram,
@@ -3441,10 +3441,10 @@ void Document::DispatchUnloadEvents() {
     if (load_event_progress_ < kPageHideInProgress) {
       load_event_progress_ = kPageHideInProgress;
       if (LocalDOMWindow* window = domWindow()) {
-        const double pagehide_event_start = MonotonicallyIncreasingTime();
+        const double pagehide_event_start = CurrentTimeTicksInSeconds();
         window->DispatchEvent(
             PageTransitionEvent::Create(EventTypeNames::pagehide, false), this);
-        const double pagehide_event_end = MonotonicallyIncreasingTime();
+        const double pagehide_event_end = CurrentTimeTicksInSeconds();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, pagehide_histogram,
             ("DocumentEventTiming.PageHideDuration", 0, 10000000, 50));
@@ -3460,10 +3460,10 @@ void Document::DispatchUnloadEvents() {
         // Dispatch visibilitychange event, but don't bother doing
         // other notifications as we're about to be unloaded.
         const double pagevisibility_hidden_event_start =
-            MonotonicallyIncreasingTime();
+            CurrentTimeTicksInSeconds();
         DispatchEvent(Event::CreateBubble(EventTypeNames::visibilitychange));
         const double pagevisibility_hidden_event_end =
-            MonotonicallyIncreasingTime();
+            CurrentTimeTicksInSeconds();
         DEFINE_STATIC_LOCAL(CustomCountHistogram, pagevisibility_histogram,
                             ("DocumentEventTiming.PageVibilityHiddenDuration",
                              0, 10000000, 50));
@@ -3486,10 +3486,10 @@ void Document::DispatchUnloadEvents() {
           !document_loader->GetTiming().UnloadEventEnd()) {
         DocumentLoadTiming& timing = document_loader->GetTiming();
         DCHECK(timing.NavigationStart());
-        const double unload_event_start = MonotonicallyIncreasingTime();
+        const double unload_event_start = CurrentTimeTicksInSeconds();
         timing.MarkUnloadEventStart(unload_event_start);
         frame_->DomWindow()->DispatchEvent(unload_event, this);
-        const double unload_event_end = MonotonicallyIncreasingTime();
+        const double unload_event_end = CurrentTimeTicksInSeconds();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, unload_histogram,
             ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));

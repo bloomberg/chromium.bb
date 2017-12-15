@@ -5,7 +5,8 @@
 #include "platform/Histogram.h"
 
 #include "base/metrics/histogram_samples.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "platform/testing/wtf/ScopedMockClock.h"
+#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -24,8 +25,8 @@ class TestCustomCountHistogram : public CustomCountHistogram {
 TEST(ScopedUsHistogramTimerTest, Basic) {
   TestCustomCountHistogram scoped_us_counter("test", 0, 10000000, 50);
   {
-    base::SimpleTestTickClock clock;
-    ScopedUsHistogramTimer timer(scoped_us_counter, &clock);
+    WTF::ScopedMockClock clock;
+    ScopedUsHistogramTimer timer(scoped_us_counter);
     clock.Advance(TimeDelta::FromMilliseconds(500));
   }
   // 500ms == 500000us

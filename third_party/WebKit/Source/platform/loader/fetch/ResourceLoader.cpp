@@ -722,7 +722,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     });
     resource_->SetResourceBuffer(data_out);
   }
-  DidFinishLoading(MonotonicallyIncreasingTime(), encoded_data_length,
+  DidFinishLoading(CurrentTimeTicksInSeconds(), encoded_data_length,
                    encoded_body_length, decoded_body_length);
 }
 

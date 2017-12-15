@@ -15,7 +15,7 @@ IdleDeadline::IdleDeadline(double deadline_seconds, CallbackType callback_type)
     : deadline_seconds_(deadline_seconds), callback_type_(callback_type) {}
 
 double IdleDeadline::timeRemaining() const {
-  double time_remaining = deadline_seconds_ - MonotonicallyIncreasingTime();
+  double time_remaining = deadline_seconds_ - CurrentTimeTicksInSeconds();
   if (time_remaining < 0) {
     time_remaining = 0;
   } else if (Platform::Current()

@@ -122,7 +122,7 @@ void SVGImageChromeClient::AnimationTimerFired(TimerBase*) {
   if (!image_->GetImageObserver())
     return;
 
-  image_->ServiceAnimations(MonotonicallyIncreasingTime());
+  image_->ServiceAnimations(CurrentTimeTicksInSeconds());
 }
 
 }  // namespace blink

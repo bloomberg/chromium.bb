@@ -121,7 +121,7 @@ void ScriptWrappableVisitor::PerformLazyCleanup(double deadline_seconds) {
   TRACE_EVENT1("blink_gc,devtools.timeline",
                "ScriptWrappableVisitor::performLazyCleanup",
                "idleDeltaInSeconds",
-               deadline_seconds - MonotonicallyIncreasingTime());
+               deadline_seconds - CurrentTimeTicksInSeconds());
 
   const int kDeadlineCheckInterval = 2500;
   int processed_wrapper_count = 0;
@@ -139,7 +139,7 @@ void ScriptWrappableVisitor::PerformLazyCleanup(double deadline_seconds) {
 
     processed_wrapper_count++;
     if (processed_wrapper_count % kDeadlineCheckInterval == 0) {
-      if (deadline_seconds <= MonotonicallyIncreasingTime()) {
+      if (deadline_seconds <= CurrentTimeTicksInSeconds()) {
         ScheduleIdleLazyCleanup();
         return;
       }
@@ -197,7 +197,7 @@ bool ScriptWrappableVisitor::AdvanceTracing(
   WTF::AutoReset<bool>(&advancing_tracing_, true);
   while (actions.force_completion ==
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION ||
-         WTF::MonotonicallyIncreasingTimeMS() < deadline_in_ms) {
+         WTF::CurrentTimeTicksInMilliseconds() < deadline_in_ms) {
     if (marking_deque_.IsEmpty()) {
       return false;
     }

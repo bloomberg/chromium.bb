@@ -84,7 +84,7 @@ ScriptElementBase* PendingScript::GetElement() const {
 
 void PendingScript::MarkParserBlockingLoadStartTime() {
   DCHECK_EQ(parser_blocking_load_start_time_, 0.0);
-  parser_blocking_load_start_time_ = MonotonicallyIncreasingTime();
+  parser_blocking_load_start_time_ = CurrentTimeTicksInSeconds();
 }
 
 void PendingScript::Trace(blink::Visitor* visitor) {

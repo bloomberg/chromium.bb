@@ -304,7 +304,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
     return;
   }
 
-  request_started_seconds_ = MonotonicallyIncreasingTime();
+  request_started_seconds_ = CurrentTimeTicksInSeconds();
 
   // Save any headers on the request here. If this request redirects
   // cross-origin, we cancel the old request create a new one, and copy these
@@ -560,7 +560,7 @@ void DocumentThreadableLoader::OverrideTimeout(
   // behave differently, in which case this should be re-arranged somehow.
   if (timeout_milliseconds) {
     double elapsed_time =
-        MonotonicallyIncreasingTime() - request_started_seconds_;
+        CurrentTimeTicksInSeconds() - request_started_seconds_;
     double next_fire = timeout_milliseconds / 1000.0;
     double resolved_time = std::max(next_fire - elapsed_time, 0.0);
     timeout_timer_.StartOneShot(resolved_time, BLINK_FROM_HERE);

@@ -81,7 +81,7 @@ void InteractiveDetector::StartOrPostponeCITimer(double timer_fire_time) {
   if (timer_fire_time < time_to_interactive_timer_fire_time_)
     return;
 
-  double delay = timer_fire_time - MonotonicallyIncreasingTime();
+  double delay = timer_fire_time - CurrentTimeTicksInSeconds();
   time_to_interactive_timer_fire_time_ = timer_fire_time;
 
   if (delay <= 0.0) {
@@ -125,22 +125,22 @@ void InteractiveDetector::EndNetworkQuietPeriod(double current_time) {
 }
 
 // The optional opt_current_time, if provided, saves us a call to
-// MonotonicallyIncreasingTime.
+// CurrentTimeTicksInSeconds.
 void InteractiveDetector::UpdateNetworkQuietState(
     double request_count,
     WTF::Optional<double> opt_current_time) {
   if (request_count <= kNetworkQuietMaximumConnections &&
       active_network_quiet_window_start_ == 0.0) {
-    // Not using `value_or(MonotonicallyIncreasingTime())` here because
+    // Not using `value_or(CurrentTimeTicksInSeconds())` here because
     // arguments to functions are eagerly evaluated, which always call
-    // MonotonicallyIncreasingTime.
+    // CurrentTimeTicksInSeconds.
     double current_time = opt_current_time ? opt_current_time.value()
-                                           : MonotonicallyIncreasingTime();
+                                           : CurrentTimeTicksInSeconds();
     BeginNetworkQuietPeriod(current_time);
   } else if (request_count > kNetworkQuietMaximumConnections &&
              active_network_quiet_window_start_ != 0.0) {
     double current_time = opt_current_time ? opt_current_time.value()
-                                           : MonotonicallyIncreasingTime();
+                                           : CurrentTimeTicksInSeconds();
     EndNetworkQuietPeriod(current_time);
   }
 }
@@ -157,7 +157,7 @@ void InteractiveDetector::OnResourceLoadBegin(
 }
 
 // The optional load_finish_time, if provided, saves us a call to
-// MonotonicallyIncreasingTime.
+// CurrentTimeTicksInSeconds.
 void InteractiveDetector::OnResourceLoadEnd(
     WTF::Optional<double> load_finish_time) {
   if (!GetSupplementable())
@@ -186,7 +186,7 @@ void InteractiveDetector::OnFirstMeaningfulPaintDetected(double fmp_time) {
   DCHECK(page_event_times_.first_meaningful_paint ==
          0.0);  // Should not set FMP twice.
   page_event_times_.first_meaningful_paint = fmp_time;
-  if (MonotonicallyIncreasingTime() - fmp_time >=
+  if (CurrentTimeTicksInSeconds() - fmp_time >=
       kTimeToInteractiveWindowSeconds) {
     // We may have reached TTCI already. Check right away.
     CheckTimeToInteractiveReached();
@@ -318,7 +318,7 @@ void InteractiveDetector::CheckTimeToInteractiveReached() {
       page_event_times_.dom_content_loaded_end == 0.0)
     return;
 
-  const double current_time = MonotonicallyIncreasingTime();
+  const double current_time = CurrentTimeTicksInSeconds();
   if (current_time - page_event_times_.first_meaningful_paint <
       kTimeToInteractiveWindowSeconds) {
     // Too close to FMP to determine Time to Interactive.
@@ -336,7 +336,7 @@ void InteractiveDetector::CheckTimeToInteractiveReached() {
 
   interactive_time_ = std::max(
       {interactive_candidate, page_event_times_.dom_content_loaded_end});
-  interactive_detection_time_ = MonotonicallyIncreasingTime();
+  interactive_detection_time_ = CurrentTimeTicksInSeconds();
   OnTimeToInteractiveDetected();
 }
 

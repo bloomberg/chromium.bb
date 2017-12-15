@@ -1637,7 +1637,7 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
     // for at least a couple of frames.
-    active_interval = TimeTicks::Now() -
+    active_interval = CurrentTimeTicks() -
                       gesture_manager_->GetLastShowPressTimestamp().value();
     should_keep_active_for_min_interval =
         active_interval < kMinimumActiveInterval;
@@ -1877,7 +1877,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
       WebFloatPoint(location_in_root_frame.X(), location_in_root_frame.Y()),
       WebFloatPoint(global_position.X(), global_position.Y()),
       WebPointerProperties::Button::kNoButton, /* clickCount */ 0,
-      WebInputEvent::kNoModifiers, TimeTicks::Now().InSeconds(), source_type);
+      WebInputEvent::kNoModifiers, CurrentTimeTicks().InSeconds(), source_type);
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport
   // coordinates instead of root frame coordinates.

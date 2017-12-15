@@ -9,13 +9,13 @@ namespace probe {
 
 double ProbeBase::CaptureStartTime() const {
   if (!start_time_)
-    start_time_ = MonotonicallyIncreasingTime();
+    start_time_ = CurrentTimeTicksInSeconds();
   return start_time_;
 }
 
 double ProbeBase::CaptureEndTime() const {
   if (!end_time_)
-    end_time_ = MonotonicallyIncreasingTime();
+    end_time_ = CurrentTimeTicksInSeconds();
   return end_time_;
 }
 

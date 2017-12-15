@@ -87,7 +87,7 @@ class CORE_EXPORT UIEvent : public Event {
           const UIEventInit&,
           TimeTicks platform_time_stamp);
   UIEvent(const AtomicString& type, const UIEventInit& init)
-      : UIEvent(type, init, TimeTicks::Now()) {}
+      : UIEvent(type, init, CurrentTimeTicks()) {}
 
  private:
   Member<AbstractView> view_;

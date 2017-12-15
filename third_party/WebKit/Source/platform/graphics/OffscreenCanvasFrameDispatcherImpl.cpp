@@ -253,7 +253,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
 
   frame.render_pass_list.push_back(std::move(pass));
 
-  double elapsed_time = WTF::MonotonicallyIncreasingTime() - commit_start_time;
+  double elapsed_time = WTF::CurrentTimeTicksInSeconds() - commit_start_time;
 
   switch (commit_type) {
     case kCommitGPUCanvasGPUCompositing:

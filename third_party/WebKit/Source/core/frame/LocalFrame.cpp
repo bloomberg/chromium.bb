@@ -457,9 +457,9 @@ void LocalFrame::DidChangeVisibilityState() {
 void LocalFrame::DidFreeze() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (DomWindow()) {
-    const double freeze_event_start = MonotonicallyIncreasingTime();
+    const double freeze_event_start = CurrentTimeTicksInSeconds();
     DomWindow()->DispatchEvent(Event::Create(EventTypeNames::freeze));
-    const double freeze_event_end = MonotonicallyIncreasingTime();
+    const double freeze_event_end = CurrentTimeTicksInSeconds();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, freeze_histogram,
         ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
@@ -470,9 +470,9 @@ void LocalFrame::DidFreeze() {
 void LocalFrame::DidResume() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (DomWindow()) {
-    const double resume_event_start = MonotonicallyIncreasingTime();
+    const double resume_event_start = CurrentTimeTicksInSeconds();
     DomWindow()->DispatchEvent(Event::Create(EventTypeNames::resume));
-    const double resume_event_end = MonotonicallyIncreasingTime();
+    const double resume_event_end = CurrentTimeTicksInSeconds();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, resume_histogram,
         ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));

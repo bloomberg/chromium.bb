@@ -101,7 +101,7 @@ void MaybeLogScheduledNavigationClobber(ScheduledNavigationType type,
                                 ->GetTiming()
                                 .NavigationStart();
   if (navigation_start) {
-    scheduled_clobber_abort_time_histogram.Count(MonotonicallyIncreasingTime() -
+    scheduled_clobber_abort_time_histogram.Count(CurrentTimeTicksInSeconds() -
                                                  navigation_start);
   }
 }

@@ -2613,7 +2613,7 @@ void HTMLMediaElement::PlaybackProgressTimerFired(TimerBase*) {
 void HTMLMediaElement::ScheduleTimeupdateEvent(bool periodic_event) {
   // Per spec, consult current playback position to check for changing time.
   double media_time = CurrentPlaybackPosition();
-  TimeTicks now = TimeTicks::Now();
+  TimeTicks now = CurrentTimeTicks();
 
   bool have_not_recently_fired_timeupdate =
       (now - last_time_update_event_wall_time_) >= kMaxTimeupdateEventFrequency;

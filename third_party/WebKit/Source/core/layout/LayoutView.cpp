@@ -61,12 +61,12 @@ namespace {
 class HitTestLatencyRecorder {
  public:
   HitTestLatencyRecorder(bool allows_child_frame_content)
-      : start_(WTF::MonotonicallyIncreasingTime()),
+      : start_(WTF::CurrentTimeTicksInSeconds()),
         allows_child_frame_content_(allows_child_frame_content) {}
 
   ~HitTestLatencyRecorder() {
-    int duration = static_cast<int>(
-        (WTF::MonotonicallyIncreasingTime() - start_) * 1000000);
+    int duration =
+        static_cast<int>((WTF::CurrentTimeTicksInSeconds() - start_) * 1000000);
 
     if (allows_child_frame_content_) {
       DEFINE_STATIC_LOCAL(CustomCountHistogram, recursive_latency_histogram,

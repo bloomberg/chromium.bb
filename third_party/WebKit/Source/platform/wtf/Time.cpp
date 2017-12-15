@@ -42,13 +42,6 @@ double CurrentTime() {
   return base::Time::Now().ToDoubleT();
 }
 
-double MonotonicallyIncreasingTime() {
-  if (g_mock_time_function_for_testing)
-    return g_mock_time_function_for_testing();
-  return base::TimeTicks::Now().ToInternalValue() /
-         static_cast<double>(base::Time::kMicrosecondsPerSecond);
-}
-
 TimeFunction SetTimeFunctionsForTesting(TimeFunction new_function) {
   TimeFunction old_function = g_mock_time_function_for_testing;
   g_mock_time_function_for_testing = new_function;
@@ -57,6 +50,22 @@ TimeFunction SetTimeFunctionsForTesting(TimeFunction new_function) {
 
 TimeFunction GetTimeFunctionForTesting() {
   return g_mock_time_function_for_testing;
+}
+
+TimeTicks CurrentTimeTicks() {
+  if (g_mock_time_function_for_testing) {
+    return base::TimeTicks() +
+           base::TimeDelta::FromSecondsD(g_mock_time_function_for_testing());
+  }
+  return base::TimeTicks::Now();
+}
+
+double CurrentTimeTicksInSeconds() {
+  return CurrentTimeTicks().since_origin().InSecondsF();
+}
+
+double CurrentTimeTicksInMilliseconds() {
+  return CurrentTimeTicks().since_origin().InMillisecondsF();
 }
 
 }  // namespace WTF

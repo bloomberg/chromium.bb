@@ -223,7 +223,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              const MouseEventInit&,
              TimeTicks platform_time_stamp);
   MouseEvent(const AtomicString& type, const MouseEventInit& init)
-      : MouseEvent(type, init, TimeTicks::Now()) {}
+      : MouseEvent(type, init, CurrentTimeTicks()) {}
 
   MouseEvent();
 

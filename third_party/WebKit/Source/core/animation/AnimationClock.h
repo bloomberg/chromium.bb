@@ -48,7 +48,7 @@ class CORE_EXPORT AnimationClock {
 
  public:
   explicit AnimationClock(WTF::TimeFunction monotonically_increasing_time =
-                              WTF::MonotonicallyIncreasingTime)
+                              WTF::CurrentTimeTicksInSeconds)
       : monotonically_increasing_time_(monotonically_increasing_time),
         time_(0),
         task_for_which_time_was_calculated_(

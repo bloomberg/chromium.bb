@@ -79,7 +79,7 @@ WebGestureEvent OverscrollBehaviorTest::ScrollBegin(double hint_x,
                                                     double hint_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers,
-                        TimeTicks::Now().InSeconds());
+                        CurrentTimeTicks().InSeconds());
   event.x = event.global_x = 20;
   event.y = event.global_y = 20;
   event.source_device = WebGestureDevice::kWebGestureDeviceTouchscreen;
@@ -94,7 +94,7 @@ WebGestureEvent OverscrollBehaviorTest::ScrollUpdate(double delta_x,
                                                      double delta_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
                         WebInputEvent::kNoModifiers,
-                        TimeTicks::Now().InSeconds());
+                        CurrentTimeTicks().InSeconds());
   event.x = event.global_x = 20;
   event.y = event.global_y = 20;
   event.source_device = WebGestureDevice::kWebGestureDeviceTouchscreen;
@@ -107,7 +107,7 @@ WebGestureEvent OverscrollBehaviorTest::ScrollUpdate(double delta_x,
 WebGestureEvent OverscrollBehaviorTest::ScrollEnd() {
   WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
                         WebInputEvent::kNoModifiers,
-                        TimeTicks::Now().InSeconds());
+                        CurrentTimeTicks().InSeconds());
   event.x = event.global_x = 20;
   event.y = event.global_y = 20;
   event.source_device = WebGestureDevice::kWebGestureDeviceTouchscreen;

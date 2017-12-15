@@ -81,14 +81,14 @@ SkBitmap NotificationImageLoader::ScaleDownIfNeeded(const SkBitmap& image,
     double scale =
         std::min(static_cast<double>(max_width_px) / image.width(),
                  static_cast<double>(max_height_px) / image.height());
-    double start_time = MonotonicallyIncreasingTimeMS();
+    double start_time = CurrentTimeTicksInMilliseconds();
     // TODO(peter): Try using RESIZE_BETTER for large images.
     SkBitmap scaled_image =
         skia::ImageOperations::Resize(image, skia::ImageOperations::RESIZE_BEST,
                                       std::lround(scale * image.width()),
                                       std::lround(scale * image.height()));
     NOTIFICATION_HISTOGRAM_COUNTS(LoadScaleDownTime, type,
-                                  MonotonicallyIncreasingTimeMS() - start_time,
+                                  CurrentTimeTicksInMilliseconds() - start_time,
                                   1000 * 10 /* 10 seconds max */);
     return scaled_image;
   }
@@ -100,7 +100,7 @@ void NotificationImageLoader::Start(ExecutionContext* execution_context,
                                     ImageCallback image_callback) {
   DCHECK(!stopped_);
 
-  start_time_ = MonotonicallyIncreasingTimeMS();
+  start_time_ = CurrentTimeTicksInMilliseconds();
   image_callback_ = std::move(image_callback);
 
   ThreadableLoaderOptions threadable_loader_options;
@@ -150,7 +150,7 @@ void NotificationImageLoader::DidFinishLoading(
     return;
 
   NOTIFICATION_HISTOGRAM_COUNTS(LoadFinishTime, type_,
-                                MonotonicallyIncreasingTimeMS() - start_time_,
+                                CurrentTimeTicksInMilliseconds() - start_time_,
                                 1000 * 60 * 60 /* 1 hour max */);
 
   if (data_) {
@@ -174,7 +174,7 @@ void NotificationImageLoader::DidFinishLoading(
 
 void NotificationImageLoader::DidFail(const ResourceError& error) {
   NOTIFICATION_HISTOGRAM_COUNTS(LoadFailTime, type_,
-                                MonotonicallyIncreasingTimeMS() - start_time_,
+                                CurrentTimeTicksInMilliseconds() - start_time_,
                                 1000 * 60 * 60 /* 1 hour max */);
 
   RunCallbackWithEmptyBitmap();

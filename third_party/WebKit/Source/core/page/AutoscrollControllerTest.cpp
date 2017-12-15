@@ -60,7 +60,7 @@ TEST_F(AutoscrollControllerTest,
   WebMouseEvent event(WebInputEvent::kMouseDown, WebFloatPoint(5, 5),
                       WebFloatPoint(5, 5), WebPointerProperties::Button::kLeft,
                       0, WebInputEvent::Modifiers::kLeftButtonDown,
-                      TimeTicks::Now().InSeconds());
+                      CurrentTimeTicks().InSeconds());
   event.SetFrameScale(1);
 
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);

@@ -66,15 +66,15 @@ bool AutoplayUmaHelper::operator==(const EventListener& other) const {
 
 void AutoplayUmaHelper::OnLoadStarted() {
   if (element_->GetLoadType() == WebMediaPlayer::kLoadTypeURL)
-    load_start_time_ms_ = MonotonicallyIncreasingTimeMS();
+    load_start_time_ms_ = CurrentTimeTicksInMilliseconds();
 }
 
 void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   int32_t autoplay_wait_time_ms = -1;
   if (load_start_time_ms_ != 0.0) {
-    autoplay_wait_time_ms = static_cast<int32_t>(
-        std::min<int64_t>(MonotonicallyIncreasingTimeMS() - load_start_time_ms_,
-                          std::numeric_limits<int32_t>::max()));
+    autoplay_wait_time_ms = static_cast<int32_t>(std::min<int64_t>(
+        CurrentTimeTicksInMilliseconds() - load_start_time_ms_,
+        std::numeric_limits<int32_t>::max()));
   }
   DEFINE_STATIC_LOCAL(EnumerationHistogram, video_histogram,
                       ("Media.Video.Autoplay",
@@ -335,11 +335,11 @@ void AutoplayUmaHelper::OnVisibilityChangedForMutedVideoOffscreenDuration(
 
   if (is_visible) {
     muted_video_autoplay_offscreen_duration_ms_ +=
-        static_cast<int64_t>(MonotonicallyIncreasingTimeMS()) -
+        static_cast<int64_t>(CurrentTimeTicksInMilliseconds()) -
         muted_video_autoplay_offscreen_start_time_ms_;
   } else {
     muted_video_autoplay_offscreen_start_time_ms_ =
-        static_cast<int64_t>(MonotonicallyIncreasingTimeMS());
+        static_cast<int64_t>(CurrentTimeTicksInMilliseconds());
   }
 
   is_visible_ = is_visible;
@@ -413,7 +413,7 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
 
   // Start recording muted video playing offscreen duration.
   muted_video_autoplay_offscreen_start_time_ms_ =
-      static_cast<int64_t>(MonotonicallyIncreasingTimeMS());
+      static_cast<int64_t>(CurrentTimeTicksInMilliseconds());
   is_visible_ = false;
   muted_video_offscreen_duration_visibility_observer_ =
       new ElementVisibilityObserver(
@@ -432,7 +432,7 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
 
   if (!is_visible_) {
     muted_video_autoplay_offscreen_duration_ms_ +=
-        static_cast<int64_t>(MonotonicallyIncreasingTimeMS()) -
+        static_cast<int64_t>(CurrentTimeTicksInMilliseconds()) -
         muted_video_autoplay_offscreen_start_time_ms_;
   }
 

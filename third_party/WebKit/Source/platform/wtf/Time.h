@@ -33,16 +33,6 @@ inline double CurrentTimeMS() {
   return CurrentTime() * 1000.0;
 }
 
-// Provides a monotonically increasing time in seconds since an arbitrary point
-// in the past.  On unsupported platforms, this function only guarantees the
-// result will be non-decreasing.
-WTF_EXPORT double MonotonicallyIncreasingTime();
-
-// Same thing, in milliseconds.
-inline double MonotonicallyIncreasingTimeMS() {
-  return MonotonicallyIncreasingTime() * 1000.0;
-}
-
 using TimeFunction = double (*)();
 
 // Make all the time functions (currentTime(), monotonicallyIncreasingTime(),
@@ -59,14 +49,6 @@ class TimeTicks {
   TimeTicks() {}
   TimeTicks(base::TimeTicks value) : value_(value) {}
 
-  static TimeTicks Now() {
-    if (WTF::GetTimeFunctionForTesting()) {
-      double seconds = (WTF::GetTimeFunctionForTesting())();
-      return TimeTicks() + TimeDelta::FromSecondsD(seconds);
-    }
-    return TimeTicks(base::TimeTicks::Now());
-  }
-
   static TimeTicks UnixEpoch() {
     return TimeTicks(base::TimeTicks::UnixEpoch());
   }
@@ -81,6 +63,8 @@ class TimeTicks {
   static TimeTicks FromSeconds(double seconds) {
     return TimeTicks() + TimeDelta::FromSecondsD(seconds);
   }
+
+  TimeDelta since_origin() const { return value_.since_origin(); }
 
   bool is_null() const { return value_.is_null(); }
 
@@ -120,12 +104,22 @@ class TimeTicks {
   base::TimeTicks value_;
 };
 
+// Monotonically increasing clock time since an arbitrary and unspecified origin
+// time. Mockable using SetTimeFunctionsForTesting().
+WTF_EXPORT TimeTicks CurrentTimeTicks();
+// Convenience functions that return seconds and milliseconds since the origin
+// time. Prefer CurrentTimeTicks() where possible to avoid potential unit
+// confusion errors.
+WTF_EXPORT double CurrentTimeTicksInSeconds();
+WTF_EXPORT double CurrentTimeTicksInMilliseconds();
+
 }  // namespace WTF
 
 using WTF::CurrentTime;
 using WTF::CurrentTimeMS;
-using WTF::MonotonicallyIncreasingTime;
-using WTF::MonotonicallyIncreasingTimeMS;
+using WTF::CurrentTimeTicks;
+using WTF::CurrentTimeTicksInMilliseconds;
+using WTF::CurrentTimeTicksInSeconds;
 using WTF::SetTimeFunctionsForTesting;
 using WTF::Time;
 using WTF::TimeDelta;

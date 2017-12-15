@@ -132,7 +132,7 @@ class CORE_EXPORT PreloadRequest {
         resource_type_(resource_type),
         script_type_(ScriptType::kClassic),
         cross_origin_(kCrossOriginAttributeNotSet),
-        discovery_time_(MonotonicallyIncreasingTime()),
+        discovery_time_(CurrentTimeTicksInSeconds()),
         defer_(FetchParameters::kNoDefer),
         resource_width_(resource_width),
         client_hints_preferences_(client_hints_preferences),

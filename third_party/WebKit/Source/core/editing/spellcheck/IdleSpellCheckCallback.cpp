@@ -211,7 +211,7 @@ void IdleSpellCheckCallback::ForceInvocationForTesting() {
     return;
 
   IdleDeadline* deadline = IdleDeadline::Create(
-      kForcedInvocationDeadlineSeconds + MonotonicallyIncreasingTime(),
+      kForcedInvocationDeadlineSeconds + CurrentTimeTicksInSeconds(),
       IdleDeadline::CallbackType::kCalledWhenIdle);
 
   switch (state_) {

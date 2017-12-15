@@ -351,7 +351,7 @@ void ImageResource::AppendData(const char* data, size_t length) {
     // words, we only invalidate this image every |kFlushDelaySeconds| seconds
     // while loading.
     if (!flush_timer_.IsActive()) {
-      double now = WTF::MonotonicallyIncreasingTime();
+      double now = WTF::CurrentTimeTicksInSeconds();
       if (!last_flush_time_)
         last_flush_time_ = now;
 
@@ -368,7 +368,7 @@ void ImageResource::FlushImageIfNeeded(TimerBase*) {
   // We might have already loaded the image fully, in which case we don't need
   // to call |updateImage()|.
   if (IsLoading()) {
-    last_flush_time_ = WTF::MonotonicallyIncreasingTime();
+    last_flush_time_ = WTF::CurrentTimeTicksInSeconds();
     UpdateImage(Data(), ImageResourceContent::kUpdateImage, false);
   }
 }
@@ -386,7 +386,7 @@ void ImageResource::DecodeError(bool all_data_received) {
   if (!all_data_received && Loader()) {
     // Observers are notified via ImageResource::finish().
     // TODO(hiroshige): Do not call didFinishLoading() directly.
-    Loader()->DidFinishLoading(MonotonicallyIncreasingTime(), size, size, size);
+    Loader()->DidFinishLoading(CurrentTimeTicksInSeconds(), size, size, size);
   } else {
     auto result = GetContent()->UpdateImage(
         nullptr, GetStatus(),

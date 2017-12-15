@@ -23,7 +23,7 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
 
   double AdvanceClockAndGetTime() {
     platform_->AdvanceClockSeconds(1);
-    return MonotonicallyIncreasingTime();
+    return CurrentTimeTicksInSeconds();
   }
 
   PaintTiming& GetPaintTiming() { return PaintTiming::From(GetDocument()); }
@@ -78,20 +78,20 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
     platform_->AdvanceClockSeconds(0.001);
     GetPaintTiming().ReportSwapTime(PaintEvent::kFirstPaint,
                                     WebLayerTreeView::SwapResult::kDidSwap,
-                                    MonotonicallyIncreasingTime());
+                                    CurrentTimeTicksInSeconds());
   }
 
   void ClearFirstContentfulPaintSwapPromise() {
     platform_->AdvanceClockSeconds(0.001);
     GetPaintTiming().ReportSwapTime(PaintEvent::kFirstContentfulPaint,
                                     WebLayerTreeView::SwapResult::kDidSwap,
-                                    MonotonicallyIncreasingTime());
+                                    CurrentTimeTicksInSeconds());
   }
 
   void ClearProvisionalFirstMeaningfulPaintSwapPromise() {
     platform_->AdvanceClockSeconds(0.001);
     ClearProvisionalFirstMeaningfulPaintSwapPromise(
-        MonotonicallyIncreasingTime());
+        CurrentTimeTicksInSeconds());
   }
 
   void ClearProvisionalFirstMeaningfulPaintSwapPromise(double timestamp) {

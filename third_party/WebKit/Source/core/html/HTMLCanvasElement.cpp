@@ -425,7 +425,7 @@ void HTMLCanvasElement::FinalizeFrame() {
 
     if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
       // Push a frame
-      double start_time = WTF::MonotonicallyIncreasingTime();
+      double start_time = WTF::CurrentTimeTicksInSeconds();
       scoped_refptr<StaticBitmapImage> image = image_buffer_->NewImageSnapshot(
           kPreferAcceleration, kSnapshotReasonLowLatencyFrame);
       FloatRect src_rect(0, 0, Size().Width(), Size().Height());
@@ -868,7 +868,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     return;
   }
 
-  double start_time = WTF::MonotonicallyIncreasingTime();
+  double start_time = WTF::CurrentTimeTicksInSeconds();
   double quality = kUndefinedQualityValue;
   if (!quality_argument.IsEmpty()) {
     v8::Local<v8::Value> v8_value = quality_argument.V8Value();
