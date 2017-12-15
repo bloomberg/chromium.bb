@@ -572,6 +572,7 @@ bool RenderThreadImpl::HistogramCustomizer::IsAlexaTop10NonGoogleSite(
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
     const InProcessChildThreadParams& params) {
+  TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
       blink::scheduler::RendererScheduler::Create();
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
@@ -583,6 +584,7 @@ RenderThreadImpl* RenderThreadImpl::Create(
 RenderThreadImpl* RenderThreadImpl::Create(
     std::unique_ptr<base::MessageLoop> main_message_loop,
     std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler) {
+  TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   return new RenderThreadImpl(std::move(main_message_loop),
                               std::move(renderer_scheduler));
 }

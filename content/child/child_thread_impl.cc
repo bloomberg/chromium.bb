@@ -34,6 +34,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/tracing/child/child_trace_message_filter.h"
 #include "content/child/child_histogram_fetcher_impl.h"
@@ -235,6 +236,7 @@ base::LazyInstance<QuitClosure>::DestructorAtExit g_quit_closure =
 
 std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation>
 InitializeMojoIPCChannel() {
+  TRACE_EVENT0("startup", "InitializeMojoIPCChannel");
   mojo::edk::ScopedPlatformHandle platform_channel;
 #if defined(OS_WIN)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -431,6 +433,7 @@ void ChildThreadImpl::ConnectChannel(
 }
 
 void ChildThreadImpl::Init(const Options& options) {
+  TRACE_EVENT0("startup", "ChildThreadImpl::Init");
   g_lazy_tls.Pointer()->Set(this);
   on_channel_error_called_ = false;
   message_loop_ = base::MessageLoop::current();
