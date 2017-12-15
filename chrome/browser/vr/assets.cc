@@ -47,12 +47,12 @@ void Assets::OnComponentReady(const base::Version& version,
                      weak_ptr_factory_.GetWeakPtr(), version, install_dir));
 }
 
-void Assets::LoadWhenComponentReady(OnAssetsLoadedCallback on_loaded) {
+void Assets::Load(OnAssetsLoadedCallback on_loaded) {
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Assets::LoadWhenComponentReadyInternal,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::ThreadTaskRunnerHandle::Get(),
-                                std::move(on_loaded)));
+      FROM_HERE,
+      base::BindOnce(&Assets::LoadInternal, weak_ptr_factory_.GetWeakPtr(),
+                     base::ThreadTaskRunnerHandle::Get(),
+                     std::move(on_loaded)));
 }
 
 MetricsHelper* Assets::GetMetricsHelper() {
@@ -66,6 +66,11 @@ MetricsHelper* Assets::GetMetricsHelper() {
     metrics_helper_ = base::MakeUnique<MetricsHelper>();
   }
   return metrics_helper_.get();
+}
+
+bool Assets::ComponentReady() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  return component_ready_;
 }
 
 // static
@@ -141,29 +146,22 @@ Assets::~Assets() = default;
 
 void Assets::OnComponentReadyInternal(const base::Version& version,
                                       const base::FilePath& install_dir) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   component_version_ = version;
   component_install_dir_ = install_dir;
   component_ready_ = true;
   GetMetricsHelper()->OnComponentReady(version);
-  if (on_assets_loaded_) {
-    LoadWhenComponentReadyInternal(on_assets_loaded_task_runner_,
-                                   std::move(on_assets_loaded_));
-    on_assets_loaded_task_runner_ = nullptr;
-  }
 }
 
-void Assets::LoadWhenComponentReadyInternal(
+void Assets::LoadInternal(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     OnAssetsLoadedCallback on_loaded) {
-  if (component_ready_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-        base::BindOnce(&Assets::LoadAssetsTask, task_runner, component_version_,
-                       component_install_dir_, std::move(on_loaded)));
-  } else {
-    on_assets_loaded_ = std::move(on_loaded);
-    on_assets_loaded_task_runner_ = task_runner;
-  }
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK(component_ready_);
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      base::BindOnce(&Assets::LoadAssetsTask, task_runner, component_version_,
+                     component_install_dir_, std::move(on_loaded)));
 }
 
 }  // namespace vr
