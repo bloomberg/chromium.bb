@@ -3066,10 +3066,6 @@ const FeatureEntry kFeatureEntries[] = {
          kSpeculativeResourcePrefetchingFeatureVariations,
          "SpeculativeResourcePrefetchingValidation")},
 
-    {"enable-off-main-thread-fetch", flag_descriptions::kOffMainThreadFetchName,
-     flag_descriptions::kOffMainThreadFetchDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kOffMainThreadFetch)},
-
     {"enable-speculative-service-worker-start-on-query-input",
      flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputName,
      flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputDescription,

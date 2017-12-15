@@ -717,9 +717,6 @@
       status: "experimental",
     },
     {
-      name: "OffMainThreadFetch",
-    },
-    {
       name: "OnDeviceChange",
       status: "stable",
     },

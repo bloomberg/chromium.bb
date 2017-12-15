@@ -16,7 +16,6 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/TaskType.h"
 
@@ -97,7 +96,6 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
-  DCHECK(RuntimeEnabledFeatures::OffMainThreadFetchEnabled());
   DCHECK(!IsMainThreadWorkletGlobalScope());
   if (resource_fetcher_)
     return resource_fetcher_;
@@ -107,7 +105,6 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   return resource_fetcher_;
 }
 ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
-  DCHECK(RuntimeEnabledFeatures::OffMainThreadFetchEnabled());
   DCHECK(!IsMainThreadWorkletGlobalScope());
   DCHECK(resource_fetcher_);
   return resource_fetcher_;

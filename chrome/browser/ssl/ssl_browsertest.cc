@@ -3077,17 +3077,11 @@ enum class SSLUIWorkerFetchTestType { kUseFetch, kUseImportScripts };
 // TODO(estark): adapt this test class to work with committed interstitials.
 // https://crbug.com/752327
 class SSLUIWorkerFetchTest
-    : public testing::WithParamInterface<
-          std::pair<OffMainThreadFetchMode, SSLUIWorkerFetchTestType>>,
+    : public testing::WithParamInterface<SSLUIWorkerFetchTestType>,
       public SSLUITestBase {
  public:
   SSLUIWorkerFetchTest() {
     EXPECT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    if (GetParam().first == OffMainThreadFetchMode::kEnabled) {
-      scoped_feature_list_.InitAndEnableFeature(features::kOffMainThreadFetch);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(features::kOffMainThreadFetch);
-    }
   }
 
   ~SSLUIWorkerFetchTest() override {}
@@ -3110,7 +3104,7 @@ class SSLUIWorkerFetchTest
               "    'message',"
               "    event => { document.title = event.data; });"
               "</script>");
-    switch (GetParam().second) {
+    switch (GetParam()) {
       case SSLUIWorkerFetchTestType::kUseFetch:
         WriteFile(FILE_PATH_LITERAL("worker_test_data.txt.mock-http-headers"),
                   "HTTP/1.1 200 OK\n"
@@ -3521,15 +3515,8 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MAYBE_MixedContentSubFrame) {
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     SSLUIWorkerFetchTest,
-    ::testing::Values(
-        std::make_pair(OffMainThreadFetchMode::kDisabled,
-                       SSLUIWorkerFetchTestType::kUseFetch),
-        std::make_pair(OffMainThreadFetchMode::kDisabled,
-                       SSLUIWorkerFetchTestType::kUseImportScripts),
-        std::make_pair(OffMainThreadFetchMode::kEnabled,
-                       SSLUIWorkerFetchTestType::kUseFetch),
-        std::make_pair(OffMainThreadFetchMode::kEnabled,
-                       SSLUIWorkerFetchTestType::kUseImportScripts)));
+    ::testing::Values(SSLUIWorkerFetchTestType::kUseFetch,
+                      SSLUIWorkerFetchTestType::kUseImportScripts));
 
 // Visits a page with unsafe content and makes sure that if a user exception
 // to the certificate error is present, the image is loaded and script

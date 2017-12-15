@@ -173,8 +173,7 @@ class BLINK_EXPORT WebFrameClient {
   }
 
   // Returns a new WebWorkerFetchContext for a dedicated worker. Ownership of
-  // the returned object is transferred to the caller. This is used only when
-  // off-main-thread-fetch is enabled.
+  // the returned object is transferred to the caller.
   virtual std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
     return nullptr;
   }

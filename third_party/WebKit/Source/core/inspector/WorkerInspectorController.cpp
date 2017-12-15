@@ -77,8 +77,7 @@ void WorkerInspectorController::ConnectFrontend(
       debugger_->ContextGroupId(thread_), nullptr);
   session->Append(new InspectorLogAgent(thread_->GetConsoleMessageStorage(),
                                         nullptr, session->V8Session()));
-  if (thread_->GlobalScope()->IsWorkerGlobalScope() &&
-      RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
+  if (thread_->GlobalScope()->IsWorkerGlobalScope()) {
     DCHECK(ToWorkerGlobalScope(thread_->GlobalScope())->EnsureFetcher());
     session->Append(new InspectorNetworkAgent(
         new InspectedFrames(nullptr, parent_instrumentation_token),

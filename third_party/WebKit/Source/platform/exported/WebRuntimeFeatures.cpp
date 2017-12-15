@@ -220,10 +220,6 @@ void WebRuntimeFeatures::EnableNetworkService(bool enable) {
   RuntimeEnabledFeatures::SetNetworkServiceEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableOffMainThreadFetch(bool enable) {
-  RuntimeEnabledFeatures::SetOffMainThreadFetchEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableOnDeviceChange(bool enable) {
   RuntimeEnabledFeatures::SetOnDeviceChangeEnabled(enable);
 }

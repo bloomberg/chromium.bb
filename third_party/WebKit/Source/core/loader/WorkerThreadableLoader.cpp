@@ -195,15 +195,13 @@ WorkerThreadableLoader::WorkerThreadableLoader(
     WorkerGlobalScope& worker_global_scope,
     ThreadableLoaderClient* client,
     const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resource_loader_options,
-    BlockingBehavior blocking_behavior)
+    const ResourceLoaderOptions& resource_loader_options)
     : worker_global_scope_(&worker_global_scope),
       parent_frame_task_runners_(
           worker_global_scope.GetThread()->GetParentFrameTaskRunners()),
       client_(client),
       threadable_loader_options_(options),
-      resource_loader_options_(resource_loader_options),
-      blocking_behavior_(blocking_behavior) {
+      resource_loader_options_(resource_loader_options) {
   DCHECK(client);
 }
 
@@ -214,7 +212,7 @@ void WorkerThreadableLoader::LoadResourceSynchronously(
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options) {
   (new WorkerThreadableLoader(worker_global_scope, &client, options,
-                              resource_loader_options, kLoadSynchronously))
+                              resource_loader_options))
       ->Start(request);
 }
 
@@ -233,8 +231,7 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
   }
 
   scoped_refptr<WaitableEventWithTasks> event_with_tasks;
-  if (blocking_behavior_ == kLoadSynchronously)
-    event_with_tasks = WaitableEventWithTasks::Create();
+  event_with_tasks = WaitableEventWithTasks::Create();
 
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
   scoped_refptr<WebTaskRunner> worker_loading_task_runner =
@@ -251,9 +248,6 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
                   worker_thread->GetWorkerThreadLifecycleContext()),
               request, threadable_loader_options_, resource_loader_options_,
               event_with_tasks));
-
-  if (blocking_behavior_ == kLoadAsynchronously)
-    return;
 
   event_with_tasks->Wait();
 

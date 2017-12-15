@@ -92,7 +92,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // MainThreadWorkletGlobalScope) or after dispose() is called.
   virtual WorkerThread* GetThread() const = 0;
 
-  // Available only when off-main-thread-fetch is enabled.
   ResourceFetcher* Fetcher() const override;
   ResourceFetcher* EnsureFetcher();
 

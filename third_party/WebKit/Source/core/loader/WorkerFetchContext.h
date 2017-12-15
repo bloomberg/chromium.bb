@@ -27,8 +27,7 @@ CORE_EXPORT void ProvideWorkerFetchContextToWorker(
     std::unique_ptr<WebWorkerFetchContext>);
 
 // The WorkerFetchContext is a FetchContext for workers (dedicated, shared and
-// service workers) and threaded worklets (animation and audio worklets). This
-// class is used only when off-main-thread-fetch is enabled.
+// service workers) and threaded worklets (animation and audio worklets).
 class WorkerFetchContext final : public BaseFetchContext {
  public:
   static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&);

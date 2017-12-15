@@ -287,7 +287,7 @@ class WebServiceWorkerContextClient {
   CreateServiceWorkerNetworkProvider() = 0;
 
   // Creates a WebWorkerFetchContext for a service worker. This is called on the
-  // main thread. This is used only when off-main-thread-fetch is enabled.
+  // main thread.
   virtual std::unique_ptr<blink::WebWorkerFetchContext>
   CreateServiceWorkerFetchContext() {
     return nullptr;

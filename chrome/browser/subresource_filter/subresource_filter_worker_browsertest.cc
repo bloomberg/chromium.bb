@@ -26,22 +26,10 @@
 
 namespace subresource_filter {
 
-enum class OffMainThreadFetchPolicy {
-  kEnabled,
-  kDisabled,
-};
-
 class SubresourceFilterWorkerFetchBrowserTest
-    : public SubresourceFilterBrowserTest,
-      public ::testing::WithParamInterface<OffMainThreadFetchPolicy> {
+    : public SubresourceFilterBrowserTest {
  public:
-  SubresourceFilterWorkerFetchBrowserTest() {
-    if (GetParam() == OffMainThreadFetchPolicy::kEnabled) {
-      scoped_feature_list_.InitAndEnableFeature(features::kOffMainThreadFetch);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(features::kOffMainThreadFetch);
-    }
-  }
+  SubresourceFilterWorkerFetchBrowserTest() {}
 
   ~SubresourceFilterWorkerFetchBrowserTest() override {}
 
@@ -57,7 +45,7 @@ class SubresourceFilterWorkerFetchBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterWorkerFetchBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(SubresourceFilterWorkerFetchBrowserTest, WorkerFetch) {
+IN_PROC_BROWSER_TEST_F(SubresourceFilterWorkerFetchBrowserTest, WorkerFetch) {
   const base::string16 fetch_succeeded_title =
       base::ASCIIToUTF16("FetchSucceeded");
   const base::string16 fetch_failed_title = base::ASCIIToUTF16("FetchFailed");
@@ -97,10 +85,5 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterWorkerFetchBrowserTest, WorkerFetch) {
     EXPECT_EQ(fetch_succeeded_title, title_watcher.WaitAndGetTitle());
   }
 }
-
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SubresourceFilterWorkerFetchBrowserTest,
-                        ::testing::Values(OffMainThreadFetchPolicy::kEnabled,
-                                          OffMainThreadFetchPolicy::kDisabled));
 
 }  // namespace subresource_filter

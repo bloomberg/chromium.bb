@@ -648,9 +648,9 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   std::unique_ptr<protocol::Network::Request> request_info(
       BuildObjectForResourceRequest(request));
 
-  // |loader| is null while inspecting worker if off-main-thread-fetch is
-  // enabled. TODO(horo): Refactor MixedContentChecker and set mixed content
-  // type even if |loader| is null.
+  // |loader| is null while inspecting worker.
+  // TODO(horo): Refactor MixedContentChecker and set mixed content type even if
+  // |loader| is null.
   if (loader) {
     request_info->setMixedContentType(MixedContentTypeForContextType(
         MixedContentChecker::ContextTypeForInspector(loader->GetFrame(),

@@ -32,10 +32,9 @@ class ResourceDispatcher;
 class ThreadSafeSender;
 
 // This class is used while fetching resource requests on workers (dedicated
-// worker and shared worker) when off-main-thread-fetch is enabled. This class
-// is created on the main thread and passed to the worker thread.
-// This class is not used for service workers. For service workers,
-// ServiceWorkerFetchContextImpl class is used instead.
+// worker and shared worker). This class is created on the main thread and
+// passed to the worker thread. This class is not used for service workers. For
+// service workers, ServiceWorkerFetchContextImpl class is used instead.
 class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
                                public mojom::ServiceWorkerWorkerClient {
  public:

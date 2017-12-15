@@ -1191,7 +1191,6 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
 std::unique_ptr<blink::WebWorkerFetchContext>
 ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
 
   scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter =
       RenderThreadImpl::current()
