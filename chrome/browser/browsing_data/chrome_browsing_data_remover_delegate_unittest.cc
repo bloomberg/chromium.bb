@@ -942,6 +942,11 @@ class MockReportingService : public net::ReportingService {
     last_origin_filter_ = origin_filter;
   }
 
+  bool RequestIsUpload(const net::URLRequest& request) override {
+    NOTREACHED();
+    return true;
+  }
+
   int remove_calls() const { return remove_calls_; }
   int last_data_type_mask() const { return last_data_type_mask_; }
   base::Callback<bool(const GURL&)> last_origin_filter() const {

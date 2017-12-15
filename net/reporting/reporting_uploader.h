@@ -15,6 +15,7 @@ class GURL;
 
 namespace net {
 
+class URLRequest;
 class URLRequestContext;
 
 // Uploads already-serialized reports and converts responses to one of the
@@ -34,6 +35,9 @@ class NET_EXPORT ReportingUploader {
   virtual void StartUpload(const GURL& url,
                            const std::string& json,
                            UploadCallback callback) = 0;
+
+  // Returns whether |request| is an upload request sent by this uploader.
+  virtual bool RequestIsUpload(const URLRequest& request) = 0;
 
   // Creates a real implementation of |ReportingUploader| that uploads reports
   // using |context|.
