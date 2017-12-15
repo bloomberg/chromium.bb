@@ -53,6 +53,14 @@ class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 class WebContents;
 
+namespace service_worker_dispatcher_host_unittest {
+class ServiceWorkerDispatcherHostTest;
+FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
+                     DispatchExtendableMessageEvent);
+FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
+                     DispatchExtendableMessageEvent_Fail);
+}  // namespace service_worker_dispatcher_host_unittest
+
 // This class is the browser-process representation of a service worker
 // provider. There are two general types of providers: 1) those for a client
 // (windows or shared workers), and 2) those for hosting a running service
@@ -345,10 +353,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            Update_ElongatedScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
                            Update_EmptyScript);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
-                           DispatchExtendableMessageEvent);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
-                           DispatchExtendableMessageEvent_Fail);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
+      DispatchExtendableMessageEvent);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
+      DispatchExtendableMessageEvent_Fail);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest, ContextSecurity);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, RegisterDuplicateScript);

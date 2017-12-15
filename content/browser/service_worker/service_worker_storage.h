@@ -47,6 +47,22 @@ class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
 struct ServiceWorkerRegistrationInfo;
 
+namespace service_worker_write_to_cache_job_unittest {
+class ServiceWorkerWriteToCacheJobTest;
+}  // namespace service_worker_write_to_cache_job_unittest
+
+namespace service_worker_storage_unittest {
+class ServiceWorkerStorageTest;
+class ServiceWorkerResourceStorageTest;
+class ServiceWorkerResourceStorageDiskTest;
+FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart);
+FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver);
+FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
+                     DeleteAndStartOver_UnrelatedFileExists);
+FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
+                     DeleteAndStartOver_OpenedFileExists);
+}  // namespace service_worker_storage_unittest
+
 // This class provides an interface to store and retrieve ServiceWorker
 // registration data. The lifetime is equal to ServiceWorkerContextCore that is
 // an owner of this class. When a storage operation fails, this is marked as
@@ -259,17 +275,23 @@ class CONTENT_EXPORT ServiceWorkerStorage
   bool LazyInitializeForTest(base::OnceClosure callback);
 
  private:
-  friend class ServiceWorkerStorageTest;
-  friend class ServiceWorkerResourceStorageTest;
-  friend class ServiceWorkerWriteToCacheJobTest;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
-                           CleanupOnRestart);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
-                           DeleteAndStartOver);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
-                           DeleteAndStartOver_UnrelatedFileExists);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
-                           DeleteAndStartOver_OpenedFileExists);
+  friend class service_worker_storage_unittest::ServiceWorkerStorageTest;
+  friend class service_worker_storage_unittest::
+      ServiceWorkerResourceStorageTest;
+  friend class service_worker_write_to_cache_job_unittest::
+      ServiceWorkerWriteToCacheJobTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
+      CleanupOnRestart);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
+      DeleteAndStartOver);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
+      DeleteAndStartOver_UnrelatedFileExists);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
+      DeleteAndStartOver_OpenedFileExists);
 
   struct InitialData {
     int64_t next_registration_id;

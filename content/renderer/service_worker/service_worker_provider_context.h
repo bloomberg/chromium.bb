@@ -24,13 +24,17 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-}
+}  // namespace base
 
 namespace content {
 
 namespace mojom {
 class URLLoaderFactory;
-}
+}  // namespace mojom
+
+namespace service_worker_provider_context_unittest {
+class ServiceWorkerProviderContextTest;
+}  // namespace service_worker_provider_context_unittest
 
 class ServiceWorkerHandleReference;
 class WebServiceWorkerRegistrationImpl;
@@ -173,7 +177,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   friend class base::DeleteHelper<ServiceWorkerProviderContext>;
   friend class base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                           ServiceWorkerProviderContextDeleter>;
-  friend class ServiceWorkerProviderContextTest;
+  friend class service_worker_provider_context_unittest::
+      ServiceWorkerProviderContextTest;
   friend class WebServiceWorkerRegistrationImpl;
   friend struct ServiceWorkerProviderContextDeleter;
   struct ProviderStateForClient;

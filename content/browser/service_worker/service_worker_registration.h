@@ -26,6 +26,10 @@ namespace content {
 class ServiceWorkerVersion;
 struct ServiceWorkerRegistrationInfo;
 
+namespace service_worker_registration_unittest {
+class ServiceWorkerActivationTest;
+}  // namespace service_worker_registration_unittest
+
 // Represents the core of a service worker registration object. Other
 // registration derivatives (WebServiceWorkerRegistration etc) ultimately refer
 // to this class. This is refcounted via ServiceWorkerRegistrationObjectHost to
@@ -165,7 +169,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
  private:
   friend class base::RefCounted<ServiceWorkerRegistration>;
-  friend class ServiceWorkerActivationTest;
+  friend class service_worker_registration_unittest::
+      ServiceWorkerActivationTest;
 
   void UnsetVersionInternal(
       ServiceWorkerVersion* version,
