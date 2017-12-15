@@ -177,8 +177,11 @@ TEST_F(UiInputManagerTest, FocusableChildStealsFocus) {
   // Focus child.
   EXPECT_CALL(*p_child, OnHoverEnter(_)).InSequence(s);
   EXPECT_CALL(*p_child, OnButtonDown(_)).InSequence(s);
-  EXPECT_CALL(*p_element, OnFocusChanged(false)).InSequence(s);
   HandleInput(kForwardVector, kDown);
+  EXPECT_CALL(*p_child, OnMove(_)).InSequence(s);
+  EXPECT_CALL(*p_child, OnButtonUp(_)).InSequence(s);
+  EXPECT_CALL(*p_element, OnFocusChanged(false)).InSequence(s);
+  HandleInput(kForwardVector, kUp);
 }
 
 // Verify that a non-focusable child does not clear focus off its parent.
