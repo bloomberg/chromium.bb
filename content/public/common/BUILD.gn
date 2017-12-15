@@ -243,6 +243,8 @@ jumbo_source_set("common_sources") {
     "url_loader_throttle.h",
     "url_utils.cc",
     "url_utils.h",
+    "use_zoom_for_dsf_policy.cc",
+    "use_zoom_for_dsf_policy.h",
     "user_agent.h",
     "web_preferences.cc",
     "web_preferences.h",

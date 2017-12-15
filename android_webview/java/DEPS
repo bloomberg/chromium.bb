@@ -10,7 +10,6 @@ include_rules = [
 
   "-content/public/android/java",
   "+content/public/android/java/src/org/chromium/content_public",
-  "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
   "!content/public/android/java/src/org/chromium/content/browser/AppWebMessagePort.java",
   "!content/public/android/java/src/org/chromium/content/browser/BrowserStartupController.java",
   "!content/public/android/java/src/org/chromium/content/browser/ChildProcessCreationParams.java",
