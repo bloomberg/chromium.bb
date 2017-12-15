@@ -80,6 +80,11 @@ class TestReportingService : public ReportingService {
     NOTREACHED();
   }
 
+  bool RequestIsUpload(const URLRequest& request) override {
+    NOTREACHED();
+    return true;
+  }
+
  private:
   std::vector<Report> reports_;
 

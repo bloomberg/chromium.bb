@@ -22,6 +22,7 @@ namespace net {
 
 class ReportingContext;
 struct ReportingPolicy;
+class URLRequest;
 class URLRequestContext;
 
 // The external interface to the Reporting system, used by the embedder of //net
@@ -64,6 +65,10 @@ class NET_EXPORT ReportingService {
   virtual void RemoveBrowsingData(
       int data_type_mask,
       base::RepeatingCallback<bool(const GURL&)> origin_filter) = 0;
+
+  // Checks whether |request| is a Reporting upload, to avoid loops of reporting
+  // about report uploads.
+  virtual bool RequestIsUpload(const URLRequest& request) = 0;
 
  protected:
   ReportingService() {}

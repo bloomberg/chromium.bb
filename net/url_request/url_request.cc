@@ -31,6 +31,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
+#include "net/reporting/reporting_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
@@ -1193,6 +1194,10 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
   details.elapsed_time =
       base::TimeTicks::Now() - load_timing_info_.request_start;
   details.type = status().ToNetError();
+
+  details.is_reporting_upload =
+      context()->reporting_service() &&
+      context()->reporting_service()->RequestIsUpload(*this);
 
   delegate->OnNetworkError(details);
 }
