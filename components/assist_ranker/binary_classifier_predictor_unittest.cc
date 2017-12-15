@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "components/assist_ranker/fake_ranker_model_loader.h"
 #include "components/assist_ranker/proto/ranker_model.pb.h"
@@ -21,10 +22,13 @@ using ::assist_ranker::testing::FakeRankerModelLoader;
 class BinaryClassifierPredictorTest : public ::testing::Test {
  public:
   std::unique_ptr<BinaryClassifierPredictor> InitPredictor(
-      std::unique_ptr<RankerModel> ranker_model);
+      std::unique_ptr<RankerModel> ranker_model,
+      const PredictorConfig& config);
 
   // This model will return the value of |feature| as a prediction.
   GenericLogisticRegressionModel GetSimpleLogisticRegressionModel();
+
+  PredictorConfig GetConfig();
 
  protected:
   const std::string feature_ = "feature";
@@ -33,16 +37,31 @@ class BinaryClassifierPredictorTest : public ::testing::Test {
 
 std::unique_ptr<BinaryClassifierPredictor>
 BinaryClassifierPredictorTest::InitPredictor(
-    std::unique_ptr<RankerModel> ranker_model) {
+    std::unique_ptr<RankerModel> ranker_model,
+    const PredictorConfig& config) {
   std::unique_ptr<BinaryClassifierPredictor> predictor(
-      new BinaryClassifierPredictor());
-  auto fake_model_loader = base::MakeUnique<FakeRankerModelLoader>(
+      new BinaryClassifierPredictor(config));
+  auto fake_model_loader = std::make_unique<FakeRankerModelLoader>(
       base::Bind(&BinaryClassifierPredictor::ValidateModel),
       base::Bind(&BinaryClassifierPredictor::OnModelAvailable,
                  base::Unretained(predictor.get())),
       std::move(ranker_model));
   predictor->LoadModel(std::move(fake_model_loader));
   return predictor;
+}
+
+const base::Feature kTestRankerQuery{"TestRankerQuery",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::FeatureParam<std::string> kTestRankerUrl{
+    &kTestRankerQuery, "url-param-name", "https://default.model.url"};
+
+PredictorConfig BinaryClassifierPredictorTest::GetConfig() {
+  PredictorConfig config("model_name", "logging_name", "uma_prefix", LOG_NONE,
+                         GetEmptyWhitelist(), &kTestRankerQuery,
+                         &kTestRankerUrl);
+
+  return config;
 }
 
 GenericLogisticRegressionModel
@@ -58,7 +77,7 @@ BinaryClassifierPredictorTest::GetSimpleLogisticRegressionModel() {
 
 TEST_F(BinaryClassifierPredictorTest, EmptyRankerModel) {
   auto ranker_model = base::MakeUnique<RankerModel>();
-  auto predictor = InitPredictor(std::move(ranker_model));
+  auto predictor = InitPredictor(std::move(ranker_model), GetConfig());
   EXPECT_FALSE(predictor->IsReady());
 
   RankerExample ranker_example;
@@ -78,7 +97,7 @@ TEST_F(BinaryClassifierPredictorTest, NoInferenceModuleForModel) {
       ->mutable_translate()
       ->mutable_translate_logistic_regression_model()
       ->set_bias(1);
-  auto predictor = InitPredictor(std::move(ranker_model));
+  auto predictor = InitPredictor(std::move(ranker_model), GetConfig());
   EXPECT_FALSE(predictor->IsReady());
 
   RankerExample ranker_example;
@@ -94,7 +113,7 @@ TEST_F(BinaryClassifierPredictorTest, GenericLogisticRegressionModel) {
   auto ranker_model = base::MakeUnique<RankerModel>();
   *ranker_model->mutable_proto()->mutable_logistic_regression() =
       GetSimpleLogisticRegressionModel();
-  auto predictor = InitPredictor(std::move(ranker_model));
+  auto predictor = InitPredictor(std::move(ranker_model), GetConfig());
   EXPECT_TRUE(predictor->IsReady());
 
   RankerExample ranker_example;

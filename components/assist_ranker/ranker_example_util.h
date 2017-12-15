@@ -25,12 +25,25 @@ bool GetFeatureValueAsFloat(const std::string& key,
                             const RankerExample& example,
                             float* value) WARN_UNUSED_RESULT;
 
+// Returns a int value for this feature. Float values are multiplied by a given
+// constant that defines the precision. String features are hashed.
+bool FeatureToInt(const Feature& feature, int* int_value) WARN_UNUSED_RESULT;
+
 // Extract category from one-hot feature. Returns true and fills
 // in |value| if the feature is found and is of type string_value. Returns false
 // otherwise.
 bool GetOneHotValue(const std::string& key,
                     const RankerExample& example,
                     std::string* value) WARN_UNUSED_RESULT;
+
+// Converts a string to a hex ahsh string.
+std::string HashFeatureName(const std::string& feature_name);
+
+// Hashes feature names to an hex string.
+// Features logged through UKM will apply this transformation when logging
+// features, so models trained on UKM data are expected to have hashed input
+// feature names.
+RankerExample HashExampleFeatureNames(const RankerExample& example);
 
 }  // namespace assist_ranker
 

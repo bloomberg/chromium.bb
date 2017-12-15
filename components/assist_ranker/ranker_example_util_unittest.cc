@@ -103,4 +103,53 @@ TEST_F(RankerExampleUtilTest, GetOneHotValue) {
   EXPECT_FALSE(GetOneHotValue("foo", example_, &value));
 }
 
+TEST_F(RankerExampleUtilTest, FeatureToInt) {
+  Feature feature;
+  int int_value;
+  feature.set_bool_value(true);
+  EXPECT_TRUE(FeatureToInt(feature, &int_value));
+  EXPECT_EQ(1, int_value);
+  feature.set_bool_value(false);
+  EXPECT_TRUE(FeatureToInt(feature, &int_value));
+  EXPECT_EQ(0, int_value);
+
+  feature.set_int32_value(42);
+  EXPECT_TRUE(FeatureToInt(feature, &int_value));
+  EXPECT_EQ(42, int_value);
+  feature.set_int32_value(-3);
+  EXPECT_TRUE(FeatureToInt(feature, &int_value));
+  EXPECT_EQ(-3, int_value);
+
+  // Float and string values are not implemented yet.
+  feature.set_float_value(12.345f);
+  EXPECT_FALSE(FeatureToInt(feature, &int_value));
+  feature.set_string_value("foo");
+  EXPECT_FALSE(FeatureToInt(feature, &int_value));
+}
+
+TEST_F(RankerExampleUtilTest, HashExampleFeatureNames) {
+  auto hashed_example = HashExampleFeatureNames(example_);
+  // Hashed example has the same number of features.
+  EXPECT_EQ(example_.features().size(), hashed_example.features().size());
+
+  // But the feature names have changed.
+  EXPECT_FALSE(SafeGetFeature(bool_name_, hashed_example, nullptr));
+  EXPECT_FALSE(SafeGetFeature(int32_name_, hashed_example, nullptr));
+  EXPECT_FALSE(SafeGetFeature(float_name_, hashed_example, nullptr));
+  EXPECT_FALSE(SafeGetFeature(one_hot_name_, hashed_example, nullptr));
+
+  EXPECT_TRUE(
+      SafeGetFeature(HashFeatureName(bool_name_), hashed_example, nullptr));
+
+  // Values have not changed.
+  float float_value;
+  EXPECT_TRUE(GetFeatureValueAsFloat(HashFeatureName(float_name_),
+                                     hashed_example, &float_value));
+  EXPECT_EQ(float_value_, float_value);
+  std::string string_value;
+  EXPECT_TRUE(GetOneHotValue(HashFeatureName(one_hot_name_), hashed_example,
+                             &string_value));
+  EXPECT_EQ(one_hot_value_, string_value);
+}
+
 }  // namespace assist_ranker

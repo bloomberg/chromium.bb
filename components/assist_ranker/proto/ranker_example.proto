@@ -32,5 +32,9 @@ message RankerExample {
   // This field represents the ground truth that the ranker is
   // expected to predict, and is typically derived from user feedback. It is
   // used for training only and is not required for inference.
+  // NOTE: this field will not be logged. If you want to log an outcome, add it
+  // to the features field before calling LogExample.
+  // TODO(chrome-ranker-team) Add a metadata field to log metrics that are not
+  // used as model input.
   optional Feature target = 2;
 }

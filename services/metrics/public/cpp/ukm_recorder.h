@@ -17,7 +17,6 @@
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 #include "url/gurl.h"
 
-class ContextualSearchRankerLoggerImpl;
 class DocumentWritePageLoadMetricsObserver;
 class FromGWSPageLoadMetricsLogger;
 class PluginInfoHostImpl;
@@ -26,6 +25,10 @@ class SubresourceFilterMetricsObserver;
 class UkmPageLoadMetricsObserver;
 class UseCounterPageLoadMetricsObserver;
 class LocalNetworkRequestsPageLoadMetricsObserver;
+
+namespace assist_ranker {
+class BasePredictor;
+}
 
 namespace blink {
 class AutoplayUmaHelper;
@@ -85,7 +88,7 @@ class METRICS_EXPORT UkmRecorder {
   virtual void UpdateSourceURL(SourceId source_id, const GURL& url) = 0;
 
  private:
-  friend ContextualSearchRankerLoggerImpl;
+  friend assist_ranker::BasePredictor;
   friend DelegatingUkmRecorder;
   friend DocumentWritePageLoadMetricsObserver;
   friend FromGWSPageLoadMetricsLogger;

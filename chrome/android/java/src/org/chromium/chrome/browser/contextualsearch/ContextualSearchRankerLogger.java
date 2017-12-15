@@ -55,6 +55,11 @@ public interface ContextualSearchRankerLogger {
     void logFeature(Feature feature, Object value);
 
     /**
+     * Returns whether or not AssistRanker query is enabled.
+     */
+    boolean isQueryEnabled();
+
+    /**
      * Logs an outcome value at training time that indicates an ML label as a key/value pair.
      * @param feature The feature to log.
      * @param value The outcome label value.

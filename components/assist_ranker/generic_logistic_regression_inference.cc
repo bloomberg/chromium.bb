@@ -29,7 +29,7 @@ float GenericLogisticRegressionInference::PredictScore(
     const FeatureWeight& feature_weight = weight_it.second;
     switch (feature_weight.feature_type_case()) {
       case FeatureWeight::FEATURE_TYPE_NOT_SET: {
-        DVLOG(1) << "Feature type not set for " << feature_name;
+        DVLOG(0) << "Feature type not set for " << feature_name;
         break;
       }
       case FeatureWeight::kScalar: {
@@ -37,6 +37,8 @@ float GenericLogisticRegressionInference::PredictScore(
         if (GetFeatureValueAsFloat(feature_name, example, &value)) {
           const float weight = feature_weight.scalar();
           activation += value * weight;
+        } else {
+          DVLOG(1) << "Feature not in example: " << feature_name;
         }
         break;
       }
@@ -50,19 +52,22 @@ float GenericLogisticRegressionInference::PredictScore(
           } else {
             // If the category is not found, use the default weight.
             activation += feature_weight.one_hot().default_weight();
+            DVLOG(1) << "Unknown feature value for " << feature_name << ": "
+                     << value;
           }
         } else {
           // If the feature is missing, use the default weight.
           activation += feature_weight.one_hot().default_weight();
+          DVLOG(1) << "Feature not in example: " << feature_name;
         }
         break;
       }
       case FeatureWeight::kSparse: {
-        DVLOG(1) << "Sparse features not implemented yet.";
+        DVLOG(0) << "Sparse features not implemented yet.";
         break;
       }
       case FeatureWeight::kBucketized: {
-        DVLOG(1) << "Bucketized features not implemented yet.";
+        DVLOG(0) << "Bucketized features not implemented yet.";
         break;
       }
     }
