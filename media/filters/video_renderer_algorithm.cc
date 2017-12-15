@@ -545,6 +545,8 @@ void VideoRendererAlgorithm::UpdateFrameStatistics() {
     // Note: This may be called multiple times, so we don't want to update the
     // frame duration calculator with our estimate.
     average_frame_duration_ = frame.end_time - frame.start_time;
+    if (average_frame_duration_.is_zero())
+      return;
   }
 
   // ITU-R BR.265 recommends a maximum acceptable drift of +/- half of the frame
