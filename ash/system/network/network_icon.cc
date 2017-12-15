@@ -389,9 +389,12 @@ Badge ConnectingVpnBadge(double animation, IconType icon_type) {
 }
 
 int StrengthIndex(int strength) {
+  if (strength == 0)
+    return 0;
   // Return an index in the range [1, kNumNetworkImages - 1].
-  const float findex = (static_cast<float>(strength) / 100.0f) *
-                       nextafter(static_cast<float>(kNumNetworkImages - 1), 0);
+  // This logic is equivalent to cr_network_icon.js:strengthToIndex_().
+  const float findex = (static_cast<float>(strength - 1) / 100.0f) *
+                       static_cast<float>(kNumNetworkImages - 1);
   int index = 1 + static_cast<int>(findex);
   index = std::max(std::min(index, kNumNetworkImages - 1), 1);
   return index;
@@ -434,7 +437,6 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
     return gfx::CreateVectorIcon(kNetworkEthernetIcon,
                                  GetDefaultColorForIconType(ICON_TYPE_LIST));
   } else if (network->Matches(NetworkTypePattern::Wireless())) {
-    DCHECK(strength_index > 0);
     return GetImageForIndex(ImageTypeForNetwork(network, icon_type), icon_type,
                             strength_index);
   } else if (network->Matches(NetworkTypePattern::VPN())) {
@@ -595,7 +597,9 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   } else if (type == shill::kTypeWimax) {
     technology_badge_ = {&kNetworkBadgeTechnology4gIcon, icon_color};
   } else if (type == shill::kTypeCellular) {
-    if (network->roaming() == shill::kRoamingStateRoaming) {
+    // technology_badge_ is set in UpdateCellularState.
+    if (network->IsConnectedState() &&
+        network->roaming() == shill::kRoamingStateRoaming) {
       // For networks that are always in roaming don't show roaming badge.
       const DeviceState* device =
           NetworkHandler::Get()->network_state_handler()->GetDeviceState(
@@ -607,13 +611,12 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
       }
     }
   }
-  if (!network->IsConnectingState()) {
+  // Only show technology, VPN, and captive portal badges when connected.
+  if (network->IsConnectedState()) {
     badges->top_left = technology_badge_;
     badges->bottom_left = vpn_badge_;
-  }
-
-  if (behind_captive_portal_) {
-    badges->bottom_right = {&kNetworkBadgeCaptivePortalIcon, icon_color};
+    if (behind_captive_portal_)
+      badges->bottom_right = {&kNetworkBadgeCaptivePortalIcon, icon_color};
   }
 }
 
@@ -768,8 +771,8 @@ void SignalStrengthImageSource::DrawBars(gfx::Canvas* canvas) {
     flags.setColor(color_);
     // As a percentage of the bg triangle, the length of one of the short
     // sides of the fg triangle, indexed by signal strength.
-    static constexpr float kTriangleSidePercents[] = {0.f, 0.5f, 0.625f, 0.75f,
-                                                      1.f};
+    static constexpr float kTriangleSidePercents[] = {0.f, 0.375f, 0.5833f,
+                                                      0.75f, 1.f};
     canvas->DrawPath(make_triangle(kTriangleSidePercents[signal_strength_] *
                                    kFullTriangleSide),
                      flags);
@@ -1019,6 +1022,8 @@ SignalStrength GetSignalStrengthForNetwork(
   // attempted to be split evenly from |kNumNetworkImages| - 1. Remainders go
   // first to the lowest bucket and then the second lowest bucket.
   const int index = StrengthIndex(network->signal_strength());
+  if (index == 0)
+    return SignalStrength::NONE;
   const int seperations = kNumNetworkImages - 1;
   const int bucket_size = seperations / 3;
 

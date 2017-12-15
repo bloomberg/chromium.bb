@@ -217,20 +217,20 @@ TEST_F(NetworkIconTest, NetworkSignalStrength) {
             GetSignalStrengthForNetwork(ethernet_network_.get()));
   EXPECT_NE(ss::NOT_WIRELESS, GetSignalStrengthForNetwork(wifi_network_.get()));
 
-  // Signal strength is divided into three categories: weak, medium and strong.
-  // They are meant to match the number of sections in the wifi icon. The wifi
-  // icon currently has four levels; signals [0, 100] are mapped to [1, 4].
-  // There are only three signal strengths so icons that were mapped to 2 are
-  // also considered weak.
+  // Signal strength is divided into four categories: none, weak, medium and
+  // strong. They are meant to match the number of sections in the wifi icon.
+  // The wifi icon currently has four levels; signals [0, 100] are mapped to [1,
+  // 4]. There are only three signal strengths so icons that were mapped to 2
+  // are also considered weak.
   wifi_network_->set_signal_strength(0);
-  EXPECT_EQ(ss::WEAK, GetSignalStrengthForNetwork(wifi_network_.get()));
-  wifi_network_->set_signal_strength(49);
-  EXPECT_EQ(ss::WEAK, GetSignalStrengthForNetwork(wifi_network_.get()));
+  EXPECT_EQ(ss::NONE, GetSignalStrengthForNetwork(wifi_network_.get()));
   wifi_network_->set_signal_strength(50);
-  EXPECT_EQ(ss::MEDIUM, GetSignalStrengthForNetwork(wifi_network_.get()));
-  wifi_network_->set_signal_strength(74);
+  EXPECT_EQ(ss::WEAK, GetSignalStrengthForNetwork(wifi_network_.get()));
+  wifi_network_->set_signal_strength(51);
   EXPECT_EQ(ss::MEDIUM, GetSignalStrengthForNetwork(wifi_network_.get()));
   wifi_network_->set_signal_strength(75);
+  EXPECT_EQ(ss::MEDIUM, GetSignalStrengthForNetwork(wifi_network_.get()));
+  wifi_network_->set_signal_strength(76);
   EXPECT_EQ(ss::STRONG, GetSignalStrengthForNetwork(wifi_network_.get()));
   wifi_network_->set_signal_strength(100);
   EXPECT_EQ(ss::STRONG, GetSignalStrengthForNetwork(wifi_network_.get()));
