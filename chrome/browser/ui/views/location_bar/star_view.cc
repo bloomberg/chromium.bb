@@ -30,6 +30,12 @@ StarView::StarView(CommandUpdater* command_updater, Browser* browser)
 
 StarView::~StarView() {}
 
+void StarView::SetHighlighted() {
+  views::InkDrop* ink_drop = GetInkDrop();
+  if (ink_drop && !ink_drop->IsHighlightFadingInOrVisible())
+    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+}
+
 void StarView::SetToggled(bool on) {
   BubbleIconView::SetActiveInternal(on);
   SetTooltipText(l10n_util::GetStringUTF16(

@@ -21,6 +21,7 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 
 #if defined(OS_WIN)
 #include "ui/aura/window.h"
@@ -66,6 +67,19 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
   EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
   star_view->OnMouseReleased(released_event);
   EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
+}
+
+IN_PROC_BROWSER_TEST_F(StarViewTest, InkDropHighlighted) {
+  BrowserView* browser_view =
+      reinterpret_cast<BrowserView*>(browser()->window());
+  StarView* star_view = browser_view->toolbar()->location_bar()->star_view();
+  views::test::InkDropHostViewTestApi ink_drop_test_api(star_view);
+
+  if (ink_drop_test_api.HasInkDrop()) {
+    browser_view->ShowBookmarkBubble(GURL("http://test.com"), false);
+    EXPECT_EQ(ink_drop_test_api.GetInkDrop()->GetTargetInkDropState(),
+              views::InkDropState::ACTIVATED);
+  }
 }
 
 }  // namespace

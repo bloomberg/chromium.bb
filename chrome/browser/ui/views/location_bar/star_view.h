@@ -19,6 +19,9 @@ class StarView : public BubbleIconView {
   StarView(CommandUpdater* command_updater, Browser* browser);
   ~StarView() override;
 
+  // Show the Animated Ink drop highlight.
+  void SetHighlighted();
+
   // Toggles the star on or off.
   void SetToggled(bool on);
 
