@@ -5,6 +5,7 @@ Running: selectNode
 Selected node: 'span'
 
 Running: firstReloadWithoutNodeInDOM
+Page reloaded.
 Selected node: 'body'
 
 Running: secondReloadWithNodeInDOM
