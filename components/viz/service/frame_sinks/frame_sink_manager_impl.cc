@@ -47,9 +47,10 @@ operator=(SinkAndSupport&& other) = default;
 
 FrameSinkManagerImpl::FrameSinkManagerImpl(
     SurfaceManager::LifetimeType lifetime_type,
+    uint32_t number_of_frames_to_activation_deadline,
     DisplayProvider* display_provider)
     : display_provider_(display_provider),
-      surface_manager_(lifetime_type),
+      surface_manager_(lifetime_type, number_of_frames_to_activation_deadline),
       hit_test_manager_(this),
       binding_(this) {
   surface_manager_.AddObserver(&hit_test_manager_);

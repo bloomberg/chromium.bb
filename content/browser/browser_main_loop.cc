@@ -1516,8 +1516,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
           parsed_command_line_.HasSwitch(switches::kDisableSurfaceReferences)
               ? viz::SurfaceManager::LifetimeType::SEQUENCES
               : viz::SurfaceManager::LifetimeType::REFERENCES;
-      frame_sink_manager_impl_ =
-          std::make_unique<viz::FrameSinkManagerImpl>(surface_lifetime_type);
+      frame_sink_manager_impl_ = std::make_unique<viz::FrameSinkManagerImpl>(
+          surface_lifetime_type, switches::GetDeadlineToSynchronizeSurfaces());
 
       surface_utils::ConnectWithLocalFrameSinkManager(
           host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());

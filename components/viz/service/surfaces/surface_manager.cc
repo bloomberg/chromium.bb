@@ -44,9 +44,10 @@ SurfaceManager::TemporaryReferenceData::TemporaryReferenceData() = default;
 
 SurfaceManager::TemporaryReferenceData::~TemporaryReferenceData() = default;
 
-SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
+SurfaceManager::SurfaceManager(LifetimeType lifetime_type,
+                               uint32_t number_of_frames_to_activation_deadline)
     : lifetime_type_(lifetime_type),
-      dependency_tracker_(this),
+      dependency_tracker_(this, number_of_frames_to_activation_deadline),
       root_surface_id_(FrameSinkId(0u, 0u),
                        LocalSurfaceId(1u, base::UnguessableToken::Create())),
       weak_factory_(this) {

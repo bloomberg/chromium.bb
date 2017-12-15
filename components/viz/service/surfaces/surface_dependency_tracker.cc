@@ -10,13 +10,11 @@
 
 namespace viz {
 
-namespace {
-constexpr uint32_t kDefaultNumberOfFramesToDeadline = 4;
-}
-
 SurfaceDependencyTracker::SurfaceDependencyTracker(
-    SurfaceManager* surface_manager)
-    : surface_manager_(surface_manager) {}
+    SurfaceManager* surface_manager,
+    uint32_t number_of_frames_to_deadline)
+    : surface_manager_(surface_manager),
+      number_of_frames_to_deadline_(number_of_frames_to_deadline) {}
 
 SurfaceDependencyTracker::~SurfaceDependencyTracker() = default;
 
@@ -150,7 +148,7 @@ void SurfaceDependencyTracker::UpdateSurfaceDeadline(Surface* surface) {
   // If there are no CompositorFrames currently blocked on this surface, then
   // set a default deadline for this surface.
   if (!surface->has_deadline()) {
-    surface->SetActivationDeadline(kDefaultNumberOfFramesToDeadline);
+    surface->SetActivationDeadline(number_of_frames_to_deadline_);
     deadline_changed = true;
   }
 

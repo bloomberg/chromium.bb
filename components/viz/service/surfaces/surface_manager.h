@@ -50,7 +50,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
     SEQUENCES,
   };
 
-  explicit SurfaceManager(LifetimeType lifetime_type = LifetimeType::SEQUENCES);
+  SurfaceManager(LifetimeType lifetime_type,
+                 uint32_t number_of_frames_to_activation_deadline);
   ~SurfaceManager();
 
 #if DCHECK_IS_ON()
