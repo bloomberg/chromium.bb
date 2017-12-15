@@ -1677,6 +1677,42 @@ COMMON_GTESTS = {
     ],
     'test': 'video_decode_accelerator_unittest',
   },
+  'vr_browser_tests': {
+    'tester_configs': [
+      {
+        'predicate': Predicates.FYI_ONLY,
+        'os_types': ['win']
+      },
+    ],
+    # We currently only want to run this on Win10 Release (NVIDIA)
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Win7 Release (NVIDIA)',
+          'Win7 Debug (NVIDIA)',
+          'Win7 dEQP Release (NVIDIA)',
+          'Win7 Experimental Release (NVIDIA)',
+          'Win10 Debug (NVIDIA)',
+          'Win7 Release (AMD)',
+          'Win7 Debug (AMD)',
+          'Win7 dEQP Release (AMD)',
+          'Win10 Release (Intel HD 630)',
+          'Win10 Release (NVIDIA Quadro P400)',
+          'Win7 x64 Release (NVIDIA)',
+          'Win7 x64 Debug (NVIDIA)',
+          'Win7 x64 dEQP Release (NVIDIA)',
+        ],
+      }
+    ],
+    'args': [
+      '--enable-gpu',
+      '--test-launcher-bot-mode',
+      '--test-launcher-jobs=1',
+      '--gtest_filter=VrBrowserTest.*',
+      '--gtest_also_run_disabled_tests',
+    ],
+    'test': 'browser_tests',
+  }
 }
 
 # This requires a hack because the isolate's name is different than
