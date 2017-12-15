@@ -57,7 +57,7 @@ class TextInputClientMacTest : public testing::Test {
         delegate_(),
         thread_("TextInputClientMacTestThread") {
     RenderProcessHost* rph =
-        process_factory_.CreateRenderProcessHost(&browser_context_);
+        process_factory_.CreateRenderProcessHost(&browser_context_, nullptr);
     int32_t routing_id = rph->GetNextRoutingID();
     mojom::WidgetPtr widget;
     mock_widget_impl_ =

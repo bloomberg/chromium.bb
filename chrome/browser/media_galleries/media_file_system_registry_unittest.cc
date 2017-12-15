@@ -57,6 +57,10 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
+namespace content {
+class SiteInstance;
+}
+
 using content::BrowserThread;
 using storage_monitor::StorageInfo;
 using storage_monitor::StorageMonitor;
@@ -202,7 +206,8 @@ class MockProfileSharedRenderProcessHostFactory
       content::BrowserContext* browser_context);
 
   content::RenderProcessHost* CreateRenderProcessHost(
-      content::BrowserContext* browser_context) const override;
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) const override;
 
  private:
   mutable std::map<content::BrowserContext*,
@@ -416,7 +421,8 @@ MockProfileSharedRenderProcessHostFactory::ReleaseRPH(
 
 content::RenderProcessHost*
 MockProfileSharedRenderProcessHostFactory::CreateRenderProcessHost(
-    content::BrowserContext* browser_context) const {
+    content::BrowserContext* browser_context,
+    content::SiteInstance* site_instance) const {
   auto existing = rph_map_.find(browser_context);
   if (existing != rph_map_.end())
     return existing->second.get();

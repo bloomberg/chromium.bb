@@ -8,9 +8,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/site_instance_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -19,6 +22,37 @@
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+// Keeps track of the most recent |site_instance| passed to
+// CreateRenderProcessHost().
+class SiteInstanceRenderProcessHostFactory : public RenderProcessHostFactory {
+ public:
+  SiteInstanceRenderProcessHostFactory() = default;
+  ~SiteInstanceRenderProcessHostFactory() override = default;
+
+  RenderProcessHost* CreateRenderProcessHost(
+      BrowserContext* browser_context,
+      SiteInstance* site_instance) const override {
+    processes_.push_back(
+        std::make_unique<MockRenderProcessHost>(browser_context));
+    last_site_instance_used_ = site_instance;
+    return processes_.back().get();
+  }
+
+  SiteInstance* last_site_instance_used() const {
+    return last_site_instance_used_;
+  }
+
+ private:
+  mutable std::vector<std::unique_ptr<MockRenderProcessHost>> processes_;
+  mutable SiteInstance* last_site_instance_used_;
+
+  DISALLOW_COPY_AND_ASSIGN(SiteInstanceRenderProcessHostFactory);
+};
+
+}  // namespace
 
 class ServiceWorkerProcessManagerTest : public testing::Test {
  public:
@@ -30,7 +64,8 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
         new ServiceWorkerProcessManager(browser_context_.get()));
     pattern_ = GURL("http://www.example.com/");
     script_url_ = GURL("http://www.example.com/sw.js");
-    render_process_host_factory_.reset(new MockRenderProcessHostFactory());
+    render_process_host_factory_.reset(
+        new SiteInstanceRenderProcessHostFactory());
     RenderProcessHostImpl::set_render_process_host_factory(
         render_process_host_factory_.get());
   }
@@ -52,9 +87,10 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
   std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   GURL pattern_;
   GURL script_url_;
+  std::unique_ptr<SiteInstanceRenderProcessHostFactory>
+      render_process_host_factory_;
 
  private:
-  std::unique_ptr<MockRenderProcessHostFactory> render_process_host_factory_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProcessManagerTest);
 };
 
@@ -306,6 +342,68 @@ TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
   EXPECT_EQ(ServiceWorkerMetrics::StartSituation::UNKNOWN,
             process_info.start_situation);
   EXPECT_TRUE(process_manager_->instance_info_.empty());
+}
+
+// Tests that ServiceWorkerProcessManager uses
+// StoragePartitionImpl::site_for_service_worker() when it's set. This enables
+// finding the appropriate process when inside a StoragePartition for guests
+// (e.g., the <webview> tag). https://crbug.com/781313
+TEST_F(ServiceWorkerProcessManagerTest,
+       AllocateWorkerProcess_StoragePartitionForGuests) {
+  const GURL kGuestSiteUrl =
+      GURL(std::string(content::kGuestScheme).append("://someapp/somepath"));
+
+  // Allocate a process to a worker. It should use |script_url_| as the
+  // site URL of the SiteInstance.
+  {
+    const int kEmbeddedWorkerId = 55;  // dummy value
+    ServiceWorkerProcessManager::AllocatedProcessInfo process_info;
+    ServiceWorkerStatusCode status = process_manager_->AllocateWorkerProcess(
+        kEmbeddedWorkerId, pattern_, script_url_,
+        true /* can_use_existing_process */, &process_info);
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    // Instead of testing the input to the CreateRenderProcessHost(), it'd be
+    // more interesting to check the StoragePartition of the returned process
+    // here and below. Alas, MockRenderProcessHosts always use the default
+    // StoragePartition.
+    EXPECT_EQ(
+        GURL("http://example.com"),
+        render_process_host_factory_->last_site_instance_used()->GetSiteURL());
+
+    // Release the process.
+    process_manager_->ReleaseWorkerProcess(kEmbeddedWorkerId);
+  }
+
+  // Now change ServiceWorkerProcessManager to use a StoragePartition with
+  // |site_for_service_worker| set. We must set |site_for_service_worker|
+  // manually since the production codepath in CreateRenderProcessHost() isn't
+  // hit here since we are using RenderProcessHostFactory.
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      SiteInstanceImpl::CreateForURL(browser_context_.get(), kGuestSiteUrl);
+  // It'd be more realistic to create a non-default StoragePartition, but there
+  // would be no added value to this test since MockRenderProcessHost is not
+  // StoragePartition-aware.
+  StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context_.get()));
+  storage_partition->set_site_for_service_worker(site_instance->GetSiteURL());
+  process_manager_->set_storage_partition(storage_partition);
+
+  // Allocate a process to a worker. It should use kGuestSiteUrl instead of
+  // |script_url_| as the site URL of the SiteInstance.
+  {
+    const int kEmbeddedWorkerId = 77;  // dummy value
+    ServiceWorkerProcessManager::AllocatedProcessInfo process_info;
+    ServiceWorkerStatusCode status = process_manager_->AllocateWorkerProcess(
+        kEmbeddedWorkerId, pattern_, script_url_,
+        true /* can_use_existing_process */, &process_info);
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    EXPECT_EQ(
+        kGuestSiteUrl,
+        render_process_host_factory_->last_site_instance_used()->GetSiteURL());
+
+    // Release the process.
+    process_manager_->ReleaseWorkerProcess(kEmbeddedWorkerId);
+  }
 }
 
 }  // namespace content

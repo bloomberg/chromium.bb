@@ -42,6 +42,10 @@ using content::BrowserThread;
 using content::MockRenderProcessHost;
 using content::RenderViewHostTester;
 
+namespace content {
+class SiteInstance;
+}
+
 namespace visitedlink {
 
 namespace {
@@ -629,7 +633,8 @@ class VisitedLinkRenderProcessHostFactory
  public:
   VisitedLinkRenderProcessHostFactory() : context_(new VisitCountingContext) {}
   content::RenderProcessHost* CreateRenderProcessHost(
-      content::BrowserContext* browser_context) const override {
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) const override {
     return new VisitRelayingRenderProcessHost(browser_context, context_.get());
   }
 

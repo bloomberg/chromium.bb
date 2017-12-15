@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -445,14 +446,15 @@ void MockRenderProcessHost::OverrideRendererInterfaceForTesting(
 MockRenderProcessHostFactory::MockRenderProcessHostFactory() {}
 
 MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
-  // Detach this object from MockRenderProcesses to prevent STLDeleteElements()
-  // from calling MockRenderProcessHostFactory::Remove().
+  // Detach this object from MockRenderProcesses to prevent them from calling
+  // MockRenderProcessHostFactory::Remove() when destroyed.
   for (const auto& process : processes_)
     process->SetFactory(nullptr);
 }
 
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
-    BrowserContext* browser_context) const {
+    BrowserContext* browser_context,
+    SiteInstance* site_instance) const {
   processes_.push_back(
       std::make_unique<MockRenderProcessHost>(browser_context));
   processes_.back()->SetFactory(this);

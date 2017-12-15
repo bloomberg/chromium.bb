@@ -854,7 +854,7 @@ TEST_F(RenderProcessHostUnitTest,
 
   // Create a foo.com SiteInstance and check that its process does not
   // reuse the foo process from the first navigation, since it's now in a
-  // different StoragePartiiton.
+  // different StoragePartition.
   scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
   site_instance->set_process_reuse_policy(
