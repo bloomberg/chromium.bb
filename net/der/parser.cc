@@ -11,34 +11,6 @@ namespace net {
 
 namespace der {
 
-namespace {
-
-bool TagFromCBS(unsigned tag_value, Tag* out) {
-  unsigned tag_number = tag_value & CBS_ASN1_TAG_NUMBER_MASK;
-  if (tag_number >= 31) {
-    // Tag can only represent small tag numbers.
-    return false;
-  }
-  *out = static_cast<Tag>(tag_number);
-  if (tag_value & CBS_ASN1_CONSTRUCTED) {
-    *out |= kTagConstructed;
-  }
-  switch (tag_value & CBS_ASN1_CLASS_MASK) {
-    case CBS_ASN1_APPLICATION:
-      *out |= kTagApplication;
-      break;
-    case CBS_ASN1_CONTEXT_SPECIFIC:
-      *out |= kTagContextSpecific;
-      break;
-    case CBS_ASN1_PRIVATE:
-      *out |= kTagPrivate;
-      break;
-  }
-  return true;
-}
-
-}  // namespace
-
 Parser::Parser() : advance_len_(0) {
   CBS_init(&cbs_, nullptr, 0);
 }
@@ -53,10 +25,11 @@ bool Parser::PeekTagAndValue(Tag* tag, Input* out) {
   size_t header_len;
   unsigned tag_value;
   if (!CBS_get_any_asn1_element(&peeker, &tmp_out, &tag_value, &header_len) ||
-      !CBS_skip(&tmp_out, header_len) || !TagFromCBS(tag_value, tag)) {
+      !CBS_skip(&tmp_out, header_len)) {
     return false;
   }
   advance_len_ = CBS_len(&tmp_out) + header_len;
+  *tag = tag_value;
   *out = Input(CBS_data(&tmp_out), CBS_len(&tmp_out));
   return true;
 }
