@@ -906,7 +906,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForShownTriggerOnWifi) {
   // Open NTP again after too short delay (one minute missing). UserClassifier
   // defaults to UserClass::ACTIVE_NTP_USER - we work with the default interval
   // for this class here. This time no fetch is executed.
-  test_clock()->Advance(base::TimeDelta::FromHours(10) -
+  test_clock()->Advance(base::TimeDelta::FromHours(4) -
                         base::TimeDelta::FromMinutes(1));
   scheduler()->OnSuggestionsSurfaceOpened();
 
@@ -971,11 +971,12 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   std::move(signal_fetch_done).Run(Status::Success());
 
   // Open NTP again after too short delay. This time no fetch is executed.
-  test_clock()->Advance(base::TimeDelta::FromHours(5));
+  test_clock()->Advance(base::TimeDelta::FromHours(4) -
+                        base::TimeDelta::FromMinutes(1));
   scheduler()->OnSuggestionsSurfaceOpened();
 
   // Open NTP after another delay, now together long enough to issue a fetch.
-  test_clock()->Advance(base::TimeDelta::FromHours(7));
+  test_clock()->Advance(base::TimeDelta::FromMinutes(2));
   EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnSuggestionsSurfaceOpened();
 }

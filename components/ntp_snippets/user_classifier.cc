@@ -46,9 +46,9 @@ const double kActiveConsumerClicksAtLeastOncePerHours = 96;
 const char kActiveConsumerClicksAtLeastOncePerHoursParam[] =
     "user_classifier_active_consumer_clicks_at_least_once_per_hours";
 
-// The previous value in production was 72, i.e. 3 days. The new value is a
-// cautios shift in the direction we want (having slightly more rare users).
-const double kRareUserOpensNTPAtMostOncePerHours = 66;
+// The previous value in production was 66, i.e. 2.75 days. The new value is a
+// shift in the direction we want (having more active users).
+const double kRareUserOpensNTPAtMostOncePerHours = 96;
 const char kRareUserOpensNTPAtMostOncePerHoursParam[] =
     "user_classifier_rare_user_opens_ntp_at_most_once_per_hours";
 
