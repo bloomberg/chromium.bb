@@ -86,10 +86,8 @@
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 -WebContentsImplBrowserTest.LoadingStateChangedForSameDocumentNavigation
 -WebContentsImplBrowserTest.UserAgentOverride
--WorkerFetchTest.WorkerTlsClientAuthFetch/0
--WorkerFetchTest.WorkerTlsClientAuthFetch/1
--WorkerFetchTest.WorkerTlsClientAuthImportScripts/0
--WorkerFetchTest.WorkerTlsClientAuthImportScripts/1
+-WorkerTest.WorkerTlsClientAuthFetch
+-WorkerTest.WorkerTlsClientAuthImportScripts
 
 # content/network/url_loader_impl.cc should handle failure in
 # URLLoaderImpl::OnResponseBodyStreamRead(). Note this is flaky, so it will pass
@@ -108,10 +106,8 @@
 
 # http://crbug.com/783990
 # Add support for http auth.
--WorkerFetchTest.SharedWorkerHttpAuth/0
--WorkerFetchTest.SharedWorkerHttpAuth/1
--WorkerFetchTest.WorkerHttpAuth/0
--WorkerFetchTest.WorkerHttpAuth/1
+-WorkerTest.SharedWorkerHttpAuth
+-WorkerTest.WorkerHttpAuth
 
 # http://crbug.com/787614
 -ResourceDispatcherHostBrowserTest.ContentDispositionEmpty
