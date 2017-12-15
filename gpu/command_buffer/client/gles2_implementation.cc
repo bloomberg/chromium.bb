@@ -3860,8 +3860,6 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
              "GL_EXT_unpack_subimage "
              "GL_CHROMIUM_map_sub "
              "GL_CHROMIUM_image";
-      if (capabilities_.future_sync_points)
-        str += " GL_CHROMIUM_future_sync_point";
     }
 
     // Because of WebGL the extensions can change. We have to cache each unique
