@@ -66,7 +66,6 @@ const char* const kKnownSettings[] = {
     kDeviceAttestationEnabled,
     kDeviceDisabled,
     kDeviceDisabledMessage,
-    kDeviceEnrollmentIdNeeded,
     kDeviceHostnameTemplate,
     kDeviceLoginScreenAppInstallList,
     kDeviceLoginScreenInputMethods,
@@ -605,15 +604,6 @@ void DecodeGenericPolicies(
     if (container.has_name()) {
       new_values_cache->SetValue(
           kCastReceiverName, base::MakeUnique<base::Value>(container.name()));
-    }
-  }
-
-  if (policy.has_forced_reenrollment()) {
-    const em::ForcedReenrollmentProto& container(policy.forced_reenrollment());
-    if (container.has_enrollment_id_needed()) {
-      new_values_cache->SetValue(
-          kDeviceEnrollmentIdNeeded,
-          base::MakeUnique<base::Value>(container.enrollment_id_needed()));
     }
   }
 

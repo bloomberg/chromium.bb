@@ -135,8 +135,6 @@ CHROMEOS_EXPORT extern const char kMinimumRequiredChromeVersion[];
 
 CHROMEOS_EXPORT extern const char kCastReceiverName[];
 
-CHROMEOS_EXPORT extern const char kDeviceEnrollmentIdNeeded[];
-
 CHROMEOS_EXPORT extern const char kUnaffiliatedArcAllowed[];
 
 CHROMEOS_EXPORT extern const char kDeviceHostnameTemplate[];

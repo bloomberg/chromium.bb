@@ -294,10 +294,6 @@ const char kMinimumRequiredChromeVersion[] = "cros.min_version.chrome";
 // If the string is empty or blank the system name will be used.
 const char kCastReceiverName[] = "cros.device.cast_receiver.name";
 
-// Boolean indicating whether the client needs to upload an enrollment ID
-// which can be used for automatic forced re-enrollment.
-const char kDeviceEnrollmentIdNeeded[] = "cros.device.enrollment_id_needed";
-
 // A boolean pref that indicates whether unaffiliated users are allowed to
 // use ARC.
 const char kUnaffiliatedArcAllowed[] = "cros.device.unaffiliated_arc_allowed";
