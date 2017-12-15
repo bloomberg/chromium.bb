@@ -122,6 +122,7 @@ class ExtensionServiceTestBase : public testing::Test {
 
   content::BrowserContext* browser_context();
   Profile* profile();
+  TestingProfile* testing_profile() { return profile_.get(); }
   sync_preferences::TestingPrefServiceSyncable* testing_pref_service();
   ExtensionService* service() { return service_; }
   ExtensionRegistry* registry() { return registry_; }

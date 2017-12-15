@@ -41,7 +41,7 @@ namespace extensions {
 namespace {
 
 // This should only be set during tests.
-bool g_bypass_for_test = false;
+ScopedInstallVerifierBypassForTest::ForceType* g_bypass_for_test = nullptr;
 
 enum VerifyStatus {
   NONE = 0,   // Do not request install signatures, and do not enforce them.
@@ -108,10 +108,16 @@ VerifyStatus GetCommandLineStatus() {
 }
 
 VerifyStatus GetStatus() {
-  if (g_bypass_for_test)
-    return NONE;
-  else
-    return std::max(GetExperimentStatus(), GetCommandLineStatus());
+  if (g_bypass_for_test) {
+    switch (*g_bypass_for_test) {
+      case ScopedInstallVerifierBypassForTest::kForceOn:
+        return ENFORCE_STRICT;
+      case ScopedInstallVerifierBypassForTest::kForceOff:
+        return NONE;
+    }
+  }
+
+  return std::max(GetExperimentStatus(), GetCommandLineStatus());
 }
 
 bool ShouldFetchSignature() {
@@ -204,20 +210,10 @@ bool InstallVerifier::NeedsVerification(const Extension& extension) {
   return IsFromStore(extension) && CanUseExtensionApis(extension);
 }
 
-
-
 // static
 bool InstallVerifier::IsFromStore(const Extension& extension) {
-  if (extension.from_webstore() || ManifestURL::UpdatesFromGallery(&extension))
-    return true;
-
-  // If an extension has no update url, our autoupdate code will ask the
-  // webstore about it (to aid in migrating to the webstore from self-hosting
-  // or sideloading based installs). So we want to do verification checks on
-  // such extensions too so that we don't accidentally disable old installs of
-  // extensions that did migrate to the webstore.
-  return (ManifestURL::GetUpdateURL(&extension).is_empty() &&
-          Manifest::IsAutoUpdateableLocation(extension.location()));
+  return extension.from_webstore() ||
+         ManifestURL::UpdatesFromGallery(&extension);
 }
 
 void InstallVerifier::Init() {
@@ -415,14 +411,20 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
     // will bootstrap itself once the ExtensionsSystem is ready.
     outcome = NO_SIGNATURE;
   } else if (!IsVerified(extension->id())) {
+    // Transient network failures can create a stale signature missing recently
+    // added extension ids. To avoid false positives, consider all extensions to
+    // be from the webstore unless the signature explicitly lists the extension
+    // as invalid.
     if (signature_.get() &&
-        !base::ContainsKey(signature_->invalid_ids, extension->id())) {
+        !base::ContainsKey(signature_->invalid_ids, extension->id()) &&
+        GetStatus() < ENFORCE_STRICT) {
       outcome = NOT_VERIFIED_BUT_UNKNOWN_ID;
     } else {
       verified = false;
       outcome = NOT_VERIFIED;
     }
   }
+
   if (!verified && !ShouldEnforce()) {
     verified = true;
     outcome = NOT_VERIFIED_BUT_NOT_ENFORCING;
@@ -430,6 +432,12 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
   MustRemainDisabledHistogram(outcome);
 
   if (!verified) {
+    DLOG(WARNING) << "Disabling extension " << extension->id() << " ('"
+                  << extension->name()
+                  << "') due to install verification failure. In tests you "
+                  << "might want to use a ScopedInstallVerifierBypassForTest "
+                  << "instance to prevent this.";
+
     if (reason)
       *reason = disable_reason::DISABLE_NOT_VERIFIED;
     if (error)
@@ -658,18 +666,14 @@ void InstallVerifier::SignatureCallback(
     BeginFetch();
 }
 
-ScopedInstallVerifierBypassForTest::ScopedInstallVerifierBypassForTest()
-    : old_value_(ShouldBypass()) {
-  g_bypass_for_test = true;
+ScopedInstallVerifierBypassForTest::ScopedInstallVerifierBypassForTest(
+    ForceType force_type)
+    : value_(force_type), old_value_(g_bypass_for_test) {
+  g_bypass_for_test = &value_;
 }
 
 ScopedInstallVerifierBypassForTest::~ScopedInstallVerifierBypassForTest() {
   g_bypass_for_test = old_value_;
-}
-
-// static
-bool ScopedInstallVerifierBypassForTest::ShouldBypass() {
-  return g_bypass_for_test;
 }
 
 }  // namespace extensions
