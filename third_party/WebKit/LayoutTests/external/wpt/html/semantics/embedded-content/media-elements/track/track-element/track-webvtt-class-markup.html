@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <title>Tests cues with class markup &lt;c&gt;.</title>
 <script src="track-helpers.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
-check_cues_from_track("captions-webvtt/tc025-class.vtt", function(track) {
+check_cues_from_track("resources/class.vtt", function(track) {
     assert_equals(track.cues.length, 3);
 
     var children = [
@@ -28,7 +28,7 @@ check_cues_from_track("captions-webvtt/tc025-class.vtt", function(track) {
     assert_cue_fragment(track.cues[2], children);
 });
 
-check_cues_from_track("captions-webvtt/tc025-class-bad.vtt", function(track) {
+check_cues_from_track("resources/class-bad.vtt", function(track) {
     assert_equals(track.cues.length, 3);
 
     var children = [
