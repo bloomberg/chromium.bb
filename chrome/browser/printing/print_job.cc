@@ -226,9 +226,9 @@ class PrintJob::PdfConversionState {
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
-             const PdfConverter::StartCallback& start_callback) {
-    converter_ = PdfConverter::StartPdfConverter(
-          data, conversion_settings, start_callback);
+             PdfConverter::StartCallback start_callback) {
+    converter_ = PdfConverter::StartPdfConverter(data, conversion_settings,
+                                                 std::move(start_callback));
   }
 
   void GetMorePages(const PdfConverter::GetPageCallback& get_page_callback) {
