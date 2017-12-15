@@ -33,6 +33,7 @@ class OfflinePageTabHelper :
 
   void SetOfflinePage(const OfflinePageItem& offline_page,
                       const OfflinePageHeader& offline_header,
+                      bool is_trusted,
                       bool is_offline_preview);
 
   const OfflinePageItem* offline_page() {
@@ -42,6 +43,9 @@ class OfflinePageTabHelper :
   const OfflinePageHeader& offline_header() const {
     return offline_info_.offline_header;
   }
+
+  // Returns whether a trusted offline page is being displayed.
+  bool IsShowingTrustedOfflinePage() const;
 
   // Returns nullptr if the page is not an offline preview. Returns the
   // OfflinePageItem related to the page if the page is an offline preview.
@@ -78,6 +82,9 @@ class OfflinePageTabHelper :
     // The offline header that is provided when offline page is loaded.
     OfflinePageHeader offline_header;
 
+    // Whether the page is deemed trusted or not.
+    bool is_trusted;
+
     // Whether the page is an offline preview. Offline page previews are shown
     // when a user's effective connection type is prohibitively slow.
     bool is_showing_offline_preview;
@@ -92,6 +99,16 @@ class OfflinePageTabHelper :
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  // Finalize the offline info when the navigation is done.
+  void FinalizeOfflineInfo(content::NavigationHandle* navigation_handle);
+
+  // Report the metrics essential to PrefetchService.
+  void ReportPrefetchMetrics(content::NavigationHandle* navigation_handle);
+
+  // Reload the URL in order to fetch the offline page on certain net errors.
+  void TryLoadingOfflinePageOnNetError(
+      content::NavigationHandle* navigation_handle);
 
   void SelectPageForURLDone(const OfflinePageItem* offline_page);
 

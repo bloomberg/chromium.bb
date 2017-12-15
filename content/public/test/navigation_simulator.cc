@@ -237,6 +237,7 @@ NavigationSimulator::NavigationSimulator(const GURL& original_url,
       browser_initiated_(browser_initiated),
       transition_(browser_initiated ? ui::PAGE_TRANSITION_TYPED
                                     : ui::PAGE_TRANSITION_LINK),
+      contents_mime_type_("text/html"),
       weak_factory_(this) {
   // For renderer-initiated navigation, the RenderFrame must be initialized. Do
   // it if it hasn't happened yet.
@@ -471,7 +472,7 @@ void NavigationSimulator::Commit() {
   params.did_create_new_entry = DidCreateNewEntry();
   params.gesture =
       has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
-  params.contents_mime_type = "text/html";
+  params.contents_mime_type = contents_mime_type_;
   params.method = "GET";
   params.http_status_code = 200;
   params.history_list_was_cleared = false;
@@ -641,7 +642,7 @@ void NavigationSimulator::CommitSameDocument() {
   params.did_create_new_entry = false;
   params.gesture =
       has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
-  params.contents_mime_type = "text/html";
+  params.contents_mime_type = contents_mime_type_;
   params.method = "GET";
   params.http_status_code = 200;
   params.history_list_was_cleared = false;
@@ -711,6 +712,13 @@ void NavigationSimulator::SetInterfaceProviderRequest(
                                "after the navigation has committed or failed";
   CHECK(request.is_pending());
   interface_provider_request_ = std::move(request);
+}
+
+void NavigationSimulator::SetContentsMimeType(
+    const std::string& contents_mime_type) {
+  CHECK_LE(state_, STARTED) << "The contents mime type cannot be set after the "
+                               "navigation has committed or failed";
+  contents_mime_type_ = contents_mime_type;
 }
 
 NavigationThrottle::ThrottleCheckResult

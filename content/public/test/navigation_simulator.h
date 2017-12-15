@@ -233,6 +233,10 @@ class NavigationSimulator : public WebContentsObserver {
   virtual void SetInterfaceProviderRequest(
       service_manager::mojom::InterfaceProviderRequest request);
 
+  // Provides the contents mime type to be set at commit. It should be
+  // specified before calling |Commit|.
+  virtual void SetContentsMimeType(const std::string& contents_mime_type);
+
   // --------------------------------------------------------------------------
 
   // Gets the last throttle check result computed by the navigation throttles.
@@ -352,6 +356,7 @@ class NavigationSimulator : public WebContentsObserver {
   int session_history_offset_ = 0;
   bool has_user_gesture_ = true;
   service_manager::mojom::InterfaceProviderRequest interface_provider_request_;
+  std::string contents_mime_type_;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.

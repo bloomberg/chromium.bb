@@ -177,17 +177,21 @@ const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(
   const OfflinePageItem* offline_page = tab_helper->offline_page();
   if (!offline_page)
     return nullptr;
+  // TODO(jianli): Remove this when the UI knows how to handle untrusted
+  // offline pages.
+  if (!tab_helper->IsShowingTrustedOfflinePage())
+    return nullptr;
 
-  // Returns the cached offline page only if the offline URL matches with
-  // current tab URL (skipping fragment identifier part). This is to prevent
+  // If a pending navigation that hasn't committed yet, don't return the cached
+  // offline page that was set at the last commit time. This is to prevent
   // from returning the wrong offline page if DidStartNavigation is never called
   // to clear it up.
-  GURL::Replacements remove_params;
-  remove_params.ClearRef();
-  GURL offline_url = offline_page->url.ReplaceComponents(remove_params);
-  GURL web_contents_url =
-      web_contents->GetVisibleURL().ReplaceComponents(remove_params);
-  return offline_url == web_contents_url ? offline_page : nullptr;
+  if (!EqualsIgnoringFragment(web_contents->GetVisibleURL(),
+                              web_contents->GetLastCommittedURL())) {
+    return nullptr;
+  }
+
+  return offline_page;
 }
 
 // static
