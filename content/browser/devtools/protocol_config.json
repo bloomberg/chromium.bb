@@ -48,9 +48,9 @@
                 "domain": "Page",
                 "include": ["enable", "disable", "reload", "navigate", "stopLoading", "getNavigationHistory", "navigateToHistoryEntry", "captureScreenshot",
                     "startScreencast", "stopScreencast", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "requestAppBanner",
-                    "printToPDF", "bringToFront", "setDownloadBehavior"],
+                    "printToPDF", "bringToFront", "setDownloadBehavior", "getAppManifest"],
                 "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "screencastVisibilityChanged", "screencastFrame"],
-                "async": ["captureScreenshot", "printToPDF", "navigate"]
+                "async": ["captureScreenshot", "printToPDF", "navigate", "getAppManifest"]
             },
             {
                 "domain": "Runtime",

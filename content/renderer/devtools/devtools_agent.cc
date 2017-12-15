@@ -42,7 +42,6 @@ namespace {
 // TODO(dgozman): somehow get this from a mojo config.
 // See kMaximumMojoMessageSize in services/service_manager/embedder/main.cc.
 const size_t kMaxDevToolsMessageChunkSize = 128 * 1024 * 1024 / 4;
-const char kPageGetAppManifest[] = "Page.getAppManifest";
 
 } //  namespace
 
@@ -279,12 +278,6 @@ void DevToolsAgent::DispatchOnInspectorBackend(int session_id,
                                                const std::string& method,
                                                const std::string& message) {
   TRACE_EVENT0("devtools", "DevToolsAgent::DispatchOnInspectorBackend");
-  if (method == kPageGetAppManifest) {
-    frame_->GetManifestManager().RequestManifestDebugInfo(
-        base::BindOnce(&DevToolsAgent::GotManifest, weak_factory_.GetWeakPtr(),
-                       session_id, call_id));
-    return;
-  }
   GetWebAgent()->DispatchOnInspectorBackend(session_id, call_id,
                                             WebString::FromUTF8(method),
                                             WebString::FromUTF8(message));
@@ -328,42 +321,6 @@ void DevToolsAgent::DetachAllSessions() {
   hosts_.clear();
   io_sessions_.clear();
   sessions_.clear();
-}
-
-void DevToolsAgent::GotManifest(int session_id,
-                                int call_id,
-                                const GURL& manifest_url,
-                                blink::mojom::ManifestDebugInfoPtr debug_info) {
-  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  response->SetInteger("id", call_id);
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  std::unique_ptr<base::ListValue> errors(new base::ListValue());
-
-  bool failed = false;
-  if (debug_info) {
-    for (const auto& error : debug_info->errors) {
-      std::unique_ptr<base::DictionaryValue> error_value(
-          new base::DictionaryValue());
-      error_value->SetString("message", error->message);
-      error_value->SetBoolean("critical", error->critical);
-      error_value->SetInteger("line", error->line);
-      error_value->SetInteger("column", error->column);
-      if (error->critical)
-        failed = true;
-      errors->Append(std::move(error_value));
-    }
-    if (!failed)
-      result->SetString("data", debug_info->raw_manifest);
-  }
-
-  result->SetString("url", manifest_url.possibly_invalid_spec());
-  result->Set("errors", std::move(errors));
-  response->Set("result", std::move(result));
-
-  std::string json_message;
-  base::JSONWriter::Write(*response, &json_message);
-  SendChunkedProtocolMessage(session_id, call_id, std::move(json_message),
-                             std::string());
 }
 
 }  // namespace content

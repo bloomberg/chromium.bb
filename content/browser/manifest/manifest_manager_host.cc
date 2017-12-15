@@ -39,6 +39,11 @@ void ManifestManagerHost::GetManifest(const GetManifestCallback& callback) {
                      base::Unretained(this), request_id));
 }
 
+void ManifestManagerHost::RequestManifestDebugInfo(
+    blink::mojom::ManifestManager::RequestManifestDebugInfoCallback callback) {
+  GetManifestManager().RequestManifestDebugInfo(std::move(callback));
+}
+
 blink::mojom::ManifestManager& ManifestManagerHost::GetManifestManager() {
   if (manifest_manager_frame_ != web_contents()->GetMainFrame())
     OnConnectionError();

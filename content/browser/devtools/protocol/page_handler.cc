@@ -26,6 +26,7 @@
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -737,6 +738,18 @@ Response PageHandler::SetDownloadBehavior(const std::string& behavior,
   return Response::OK();
 }
 
+void PageHandler::GetAppManifest(
+    std::unique_ptr<GetAppManifestCallback> callback) {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (!web_contents || !web_contents->GetManifestManagerHost()) {
+    callback->sendFailure(Response::Error("Cannot retrieve manifest"));
+    return;
+  }
+  web_contents->GetManifestManagerHost()->RequestManifestDebugInfo(
+      base::BindOnce(&PageHandler::GotManifest, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
+}
+
 WebContentsImpl* PageHandler::GetWebContents() {
   return host_ ?
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host_)) :
@@ -900,6 +913,30 @@ void PageHandler::ScreenshotCaptured(
   } else {
     callback->sendSuccess(EncodeImage(image, format, quality));
   }
+}
+
+void PageHandler::GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
+                              const GURL& manifest_url,
+                              blink::mojom::ManifestDebugInfoPtr debug_info) {
+  std::unique_ptr<Array<Page::AppManifestError>> errors =
+      Array<Page::AppManifestError>::create();
+  bool failed = true;
+  if (debug_info) {
+    failed = false;
+    for (const auto& error : debug_info->errors) {
+      errors->addItem(Page::AppManifestError::Create()
+                          .SetMessage(error->message)
+                          .SetCritical(error->critical)
+                          .SetLine(error->line)
+                          .SetColumn(error->column)
+                          .Build());
+      if (error->critical)
+        failed = true;
+    }
+  }
+  callback->sendSuccess(
+      manifest_url.possibly_invalid_spec(), std::move(errors),
+      failed ? Maybe<std::string>() : debug_info->raw_manifest);
 }
 
 Response PageHandler::StopLoading() {

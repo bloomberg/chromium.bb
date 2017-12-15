@@ -37,6 +37,9 @@ class ManifestManagerHost : public WebContentsObserver,
   // have an empty manifest.
   void GetManifest(const GetManifestCallback& callback);
 
+  void RequestManifestDebugInfo(
+      blink::mojom::ManifestManager::RequestManifestDebugInfoCallback callback);
+
   // WebContentsObserver
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
