@@ -3208,14 +3208,10 @@ split_static_library("browser") {
     deps += [ "//ui/app_list" ]
   }
 
-  if (enable_background) {
+  if (enable_background_mode) {
     sources += [
       "background/background_application_list_model.cc",
       "background/background_application_list_model.h",
-      "background/background_contents_service.cc",
-      "background/background_contents_service.h",
-      "background/background_contents_service_factory.cc",
-      "background/background_contents_service_factory.h",
       "background/background_mode_manager.cc",
       "background/background_mode_manager.h",
       "background/background_mode_manager_aura.cc",
@@ -3229,6 +3225,14 @@ split_static_library("browser") {
     if (!use_aura || is_win || is_chromeos) {
       sources -= [ "background/background_mode_manager_aura.cc" ]
     }
+  }
+  if (enable_background_contents) {
+    sources += [
+      "background/background_contents_service.cc",
+      "background/background_contents_service.h",
+      "background/background_contents_service_factory.cc",
+      "background/background_contents_service_factory.h",
+    ]
   }
 
   if (enable_basic_printing || enable_print_preview) {

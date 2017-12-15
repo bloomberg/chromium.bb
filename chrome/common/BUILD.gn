@@ -34,7 +34,8 @@ buildflag_header("features") {
   header = "features.h"
   flags = [
     "ENABLE_APP_LIST=$enable_app_list",
-    "ENABLE_BACKGROUND=$enable_background",
+    "ENABLE_BACKGROUND_MODE=$enable_background_mode",
+    "ENABLE_BACKGROUND_CONTENTS=$enable_background_contents",
     "ENABLE_BASIC_PRINT_DIALOG=$enable_basic_print_dialog",
     "ENABLE_CAPTIVE_PORTAL_DETECTION=$enable_captive_portal_detection",
     "ENABLE_DOWNLOADABLE_STRINGS=$enable_downloadable_strings",

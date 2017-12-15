@@ -66,7 +66,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/notification.h"
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
@@ -186,7 +186,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // Returns true when KeepAlives are not supported by the platform, or when
   // the registration state is equal to the expectation.
   bool IsRegisteredKeepAliveEqualTo(bool expectation) {
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
     return expectation ==
            KeepAliveRegistry::GetInstance()->IsOriginRegistered(
                KeepAliveOrigin::IN_FLIGHT_PUSH_MESSAGE);
@@ -2401,8 +2401,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
   ASSERT_EQ("false - not subscribed", script_result);
 }
 
-// None of the following should matter on ChromeOS: crbug.com/527045
-#if BUILDFLAG(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 // Push background mode is disabled by default.
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        BackgroundModeDisabledByDefault) {
@@ -2501,4 +2500,4 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBackgroundModeDisabledBrowserTest,
   run_loop.Run();
   ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
 }
-#endif  // BUILDFLAG(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)

@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -223,6 +224,7 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   }
 };
 
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 class FakeBackgroundModeManager : public BackgroundModeManager {
  public:
   FakeBackgroundModeManager()
@@ -250,6 +252,7 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
 
   DISALLOW_COPY_AND_ASSIGN(FakeBackgroundModeManager);
 };
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
 }  // namespace
 
@@ -1259,6 +1262,8 @@ INSTANTIATE_TEST_CASE_P(BrowserCloseManagerWithDownloadsBrowserTest,
                         BrowserCloseManagerWithDownloadsBrowserTest,
                         testing::Bool());
 
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+
 class BrowserCloseManagerWithBackgroundModeBrowserTest
     : public BrowserCloseManagerBrowserTest {
  public:
@@ -1355,3 +1360,4 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
 INSTANTIATE_TEST_CASE_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
                         BrowserCloseManagerWithBackgroundModeBrowserTest,
                         testing::Bool());
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)

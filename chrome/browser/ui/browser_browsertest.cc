@@ -65,6 +65,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -2027,6 +2028,7 @@ IN_PROC_BROWSER_TEST_F(LaunchBrowserWithTrailingSlashDatadir,
 }
 #endif  // defined(OS_WIN)
 
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 // Tests to ensure that the browser continues running in the background after
 // the last window closes.
 class RunInBackgroundTest : public BrowserTest {
@@ -2056,6 +2058,7 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
 // Tests to ensure that the browser continues running in the background after
 // the last window closes.

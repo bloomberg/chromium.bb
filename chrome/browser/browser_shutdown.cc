@@ -55,7 +55,7 @@
 #include "chrome/browser/lifetime/termination_notification.h"
 #endif
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
@@ -356,9 +356,9 @@ void SetTryingToQuit(bool quitting) {
     pref_service->ClearPref(prefs::kRestartLastSessionOnShutdown);
   }
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   BackgroundModeManager::set_should_restart_in_background(false);
-#endif  // BUILDFLAG(ENABLE_BACKGROUND)
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 }
 
 bool IsTryingToQuit() {

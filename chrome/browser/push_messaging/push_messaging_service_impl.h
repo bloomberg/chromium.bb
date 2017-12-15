@@ -290,7 +290,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   MessageDispatchedCallback message_dispatched_callback_for_testing_;
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   // KeepAlive registered while we have in-flight push messages, to make sure
   // we can finish processing them without being interrupted.
   std::unique_ptr<ScopedKeepAlive> in_flight_keep_alive_;

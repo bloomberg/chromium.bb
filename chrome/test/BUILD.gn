@@ -1176,7 +1176,6 @@ test("browser_tests") {
         "../browser/extensions/app_process_apitest.cc",
         "../browser/extensions/app_window_overrides_browsertest.cc",
         "../browser/extensions/autoplay_browsertest.cc",
-        "../browser/extensions/background_app_browsertest.cc",
         "../browser/extensions/background_page_apitest.cc",
         "../browser/extensions/background_scripts_apitest.cc",
         "../browser/extensions/background_xhr_browsertest.cc",
@@ -1286,6 +1285,10 @@ test("browser_tests") {
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
         "../browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc",
       ]
+
+      if (enable_background_mode) {
+        sources += [ "../browser/extensions/background_app_browsertest.cc" ]
+      }
 
       deps += [
         "//chrome/common/extensions/api",
@@ -3069,10 +3072,13 @@ test("unit_tests") {
       "//ash/strings",
     ]
   }
-  if (enable_background) {
+  if (enable_background_contents) {
+    sources +=
+        [ "../browser/background/background_contents_service_unittest.cc" ]
+  }
+  if (enable_background_mode) {
     sources += [
       "../browser/background/background_application_list_model_unittest.cc",
-      "../browser/background/background_contents_service_unittest.cc",
       "../browser/background/background_mode_manager_unittest.cc",
       "../browser/background/background_mode_optimizer_unittest.cc",
     ]

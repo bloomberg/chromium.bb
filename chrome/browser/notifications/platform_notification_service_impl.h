@@ -138,7 +138,7 @@ class PlatformNotificationServiceImpl
   void RecordSiteEngagement(content::BrowserContext* browser_context,
                             const GURL& origin);
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   // Makes sure we keep the browser alive while the event in being processed.
   // As we have no control on the click handling, the notification could be
   // closed before a browser is brought up, thus terminating Chrome if it was

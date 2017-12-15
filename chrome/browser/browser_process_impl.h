@@ -265,7 +265,7 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_notification_bridge_;
   std::unique_ptr<NotificationPlatformBridge> notification_bridge_;
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   std::unique_ptr<BackgroundModeManager> background_mode_manager_;
 #endif
 
