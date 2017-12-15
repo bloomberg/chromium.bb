@@ -14,6 +14,7 @@
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -80,6 +81,12 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // content verification; this should be overridden by derived tests which care
   // about content verification.
   virtual bool ShouldEnableContentVerification();
+
+  // Extensions used in tests are typically not from the web store and will fail
+  // install verification. The default implementation disables install
+  // verification; this should be overridden by derived tests which care
+  // about install verification.
+  virtual bool ShouldEnableInstallVerification();
 
   static const extensions::Extension* GetExtensionByPath(
       const extensions::ExtensionSet& extensions,
@@ -410,6 +417,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Conditionally disable content verification.
   std::unique_ptr<extensions::ScopedIgnoreContentVerifierForTest>
       ignore_content_verification_;
+
+  // Conditionally disable install verification.
+  std::unique_ptr<extensions::ScopedInstallVerifierBypassForTest>
+      ignore_install_verification_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBrowserTest);
 };

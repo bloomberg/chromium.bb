@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_management_policy.h"
@@ -60,6 +61,9 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   // Disable extension content verification.
   extensions::ScopedIgnoreContentVerifierForTest ignore_content_verification_;
+
+  // Disable extension install verification.
+  extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;
 
   // Used to enable the error console.
   std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
