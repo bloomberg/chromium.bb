@@ -1,6 +1,7 @@
 # Finnish 6-dot braille based on the official specification document
 #
 #  Copyright (C) 2014,2015 Celia Library https://www.celia.fi
+#  Copyright (C) 2017 Babbage B.V. http://www.babbage.com
 #
 #  This file is part of liblouis.
 #
@@ -26,6 +27,7 @@
 # Includes
 include latinLetterDef6Dots.uti
 include digits6Dots.uti
+include litdigits6Dots.uti
 include braille-patterns.cti
 
 # Finnish-specific letters

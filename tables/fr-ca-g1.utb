@@ -2,6 +2,7 @@
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
 # Copyright (C) 2012 Nicolas Pitre <nico@cam.org>
+# Copyright (C) 2017 Babbage B.V. <http://www.babbage.com>
 
 # This file is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -70,6 +71,7 @@ punctuation - 36		trait d'union
 sign # 3456					dièse
 
 include digits6Dots.uti
+include litdigits6Dots.uti
 
 sign \x00A8 46			diaeresis sign
 # always n 34				divisé par
