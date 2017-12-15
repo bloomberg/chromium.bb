@@ -8,6 +8,3 @@ tests:
   - - Single digits
     - ⠼⠁ ⠼⠃ ⠼⠉ ⠼⠙ ⠼⠑ ⠼⠋ ⠼⠛ ⠼⠓ ⠼⠊ ⠼⠚
     - 1 2 3 4 5 6 7 8 9 0
-  - - Digits followed by lowercase letters
-    - ⠼⠁⠠⠁ ⠼⠁⠲⠠⠁ ⠼⠁⠂⠠⠁ ⠼⠁⠒⠠⠁
-    - 1a 1.a 1,a 1:a

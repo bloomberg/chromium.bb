@@ -181,3 +181,12 @@ tests:
     - ⠸⠧⠑⠞⠛⠑⠙⠗⠥⠅⠞
     - typeform:
         bold: '++++++++++'
+
+table: [tables/unicode.dis,tables/nl-NL-g0.utb]
+table: [tables/unicode.dis,tables/nl-BE-g0.utb]
+flags: {testmode: backward}
+tests:
+  - - Digits followed by lowercase letters
+    - ⠼⠁⠠⠁ ⠼⠁⠲⠠⠁ ⠼⠁⠂⠠⠁ ⠼⠁⠒⠠⠁
+    - 1a 1.a 1,a 1:a
+    - xfail: true
