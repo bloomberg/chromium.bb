@@ -398,6 +398,15 @@ function onMostVisitedChange() {
  * them to the iframe.
  */
 function reloadTiles() {
+  // Don't attempt to load tiles if the MV data isn't available yet - this can
+  // happen occasionally, see https://crbug.com/794942. In that case, we should
+  // get an onMostVisitedChange call once they are available.
+  // Note that MV data being available is different from having > 0 tiles. There
+  // can legitimately be 0 tiles, e.g. if the user blacklisted them all.
+  if (!ntpApiHandle.mostVisitedAvailable) {
+    return;
+  }
+
   var pages = ntpApiHandle.mostVisited;
   var cmds = [];
   for (var i = 0; i < Math.min(MAX_NUM_TILES_TO_SHOW, pages.length); ++i) {
