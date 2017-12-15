@@ -166,6 +166,9 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     if (!surface)
       return false;
 
+    if (event.IsTouchEvent() && !surface->IsTouchEnabled(surface))
+      return false;
+
     gfx::Point local_point = event.location();
     if (window->parent())
       aura::Window::ConvertPointToTarget(window->parent(), window,
@@ -606,7 +609,11 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
 }
 
 bool Surface::IsSynchronized() const {
-  return delegate_ ? delegate_->IsSurfaceSynchronized() : false;
+  return delegate_ && delegate_->IsSurfaceSynchronized();
+}
+
+bool Surface::IsTouchEnabled(Surface* surface) const {
+  return !delegate_ || delegate_->IsTouchEnabled(surface);
 }
 
 bool Surface::HasHitTestRegion() const {

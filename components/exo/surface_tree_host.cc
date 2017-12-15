@@ -217,6 +217,10 @@ bool SurfaceTreeHost::IsSurfaceSynchronized() const {
   return false;
 }
 
+bool SurfaceTreeHost::IsTouchEnabled(Surface*) const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // cc::BeginFrameObserverBase overrides:
 
