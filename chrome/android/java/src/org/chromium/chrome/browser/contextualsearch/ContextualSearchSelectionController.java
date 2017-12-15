@@ -61,7 +61,6 @@ public class ContextualSearchSelectionController {
     private boolean mWasTapGestureDetected;
     // Reflects whether the last tap was valid and whether we still have a tap-based selection.
     private ContextualSearchTapState mLastTapState;
-    private boolean mIsWaitingForInvalidTapDetection;
     private boolean mShouldHandleSelectionModification;
     // Whether the selection was automatically expanded due to an adjustment (e.g. Resolve).
     private boolean mDidExpandSelection;
@@ -497,14 +496,6 @@ public class ContextualSearchSelectionController {
     // ============================================================================================
     // Misc.
     // ============================================================================================
-
-    /**
-     * @return whether a tap gesture has been detected, for testing.
-     */
-    @VisibleForTesting
-    boolean wasAnyTapGestureDetected() {
-        return mIsWaitingForInvalidTapDetection;
-    }
 
     /**
      * @return whether selection is empty, for testing.
