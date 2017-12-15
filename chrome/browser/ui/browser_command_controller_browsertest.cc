@@ -29,8 +29,14 @@
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_pin_type.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "chromeos/chromeos_switches.h"
+#include "ui/aura/window.h"
 #endif
+
+namespace chrome {
 
 class BrowserCommandControllerBrowserTest: public InProcessBrowserTest {
  public:
@@ -105,8 +111,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   // on to a CallbackList::Subscription forever.
   TemplateURLServiceFactory::GetForProfile(guest)->set_loaded(true);
 
-  const CommandUpdater* command_updater =
-      browser->command_controller()->command_updater();
+  const CommandUpdater* command_updater = browser->command_controller();
   #if defined(OS_CHROMEOS)
     // Chrome OS uses system tray menu to handle multi-profiles.
     EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
@@ -114,3 +119,62 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
     EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
   #endif
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
+  CommandUpdaterImpl* command_updater =
+      &browser()->command_controller()->command_updater_;
+  // IDC_EXIT is always enabled in regular mode so it's a perfect candidate for
+  // testing.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_EXIT));
+  // Set locked fullscreen mode.
+  browser()->window()->GetNativeWindow()->SetProperty(
+      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+  // Update the corresponding command_controller state.
+  browser()->command_controller()->LockedFullscreenStateChanged();
+  // Update some more states just to make sure the wrong commands don't get
+  // enabled.
+  browser()->command_controller()->TabStateChanged();
+  browser()->command_controller()->FullscreenStateChanged();
+  browser()->command_controller()->PrintingStateChanged();
+  browser()->command_controller()->ExtensionStateChanged();
+  // IDC_EXIT is not enabled in locked fullscreen.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_EXIT));
+
+  constexpr int kWhitelistedIds[] = {
+    IDC_CUT, IDC_COPY, IDC_PASTE,
+    IDC_FIND, IDC_FIND_NEXT, IDC_FIND_PREVIOUS,
+    IDC_ZOOM_PLUS, IDC_ZOOM_NORMAL, IDC_ZOOM_MINUS,
+  };
+
+  // Go through all the command ids and make sure all non-whitelisted commands
+  // are disabled.
+  for (int id : command_updater->GetAllIds()) {
+    if (std::find(std::begin(kWhitelistedIds), std::end(kWhitelistedIds), id)
+            != std::end(kWhitelistedIds)) {
+      continue;
+    }
+    EXPECT_FALSE(command_updater->IsCommandEnabled(id));
+  }
+
+  // Verify the set of whitelisted commands. All but IDC_ZOOM_NORMAL should be
+  // enabled.
+  for (int id : kWhitelistedIds) {
+    if (id == IDC_ZOOM_NORMAL) {
+      EXPECT_FALSE(command_updater->IsCommandEnabled(id));
+      continue;
+    }
+    EXPECT_TRUE(command_updater->IsCommandEnabled(id));
+  }
+
+  // Exit locked fullscreen mode.
+  browser()->window()->GetNativeWindow()->SetProperty(
+      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::NONE);
+  // Update the corresponding command_controller state.
+  browser()->command_controller()->LockedFullscreenStateChanged();
+  // IDC_EXIT is enabled again.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_EXIT));
+}
+#endif
+
+}  // namespace chrome

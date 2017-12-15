@@ -46,7 +46,7 @@ TEST_F(BrowserCommandsTest, TabNavigationAccelerators) {
   // Select the second tab.
   browser()->tab_strip_model()->ActivateTabAt(1, false);
 
-  CommandUpdater* updater = browser()->command_controller()->command_updater();
+  CommandUpdater* updater = browser()->command_controller();
 
   // Navigate to the first tab using an accelerator.
   updater->ExecuteCommand(IDC_SELECT_TAB_0);

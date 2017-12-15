@@ -206,7 +206,7 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
     notificationBridge_.reset(
         new BrowserTouchBarNotificationBridge(self, bwc_));
 
-    commandUpdater_ = browser->command_controller()->command_updater();
+    commandUpdater_ = browser->command_controller();
     commandUpdater_->AddCommandObserver(IDC_BACK, notificationBridge_.get());
     commandUpdater_->AddCommandObserver(IDC_FORWARD, notificationBridge_.get());
 

@@ -366,7 +366,7 @@ bool IsTabDetachingInFullscreenEnabled() {
     // registering for the appropriate command state changes from the back-end.
     // Adds the toolbar to the content area.
     toolbarController_.reset([[ToolbarController alloc]
-        initWithCommands:browser->command_controller()->command_updater()
+        initWithCommands:browser->command_controller()
                  profile:browser->profile()
                  browser:browser]);
     [[toolbarController_ toolbarView] setResizeDelegate:self];

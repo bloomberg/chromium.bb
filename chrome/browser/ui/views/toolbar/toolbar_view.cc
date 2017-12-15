@@ -127,10 +127,9 @@ ToolbarView::~ToolbarView() {
 }
 
 void ToolbarView::Init() {
-  location_bar_ =
-      new LocationBarView(browser_, browser_->profile(),
-                          browser_->command_controller()->command_updater(),
-                          this, !is_display_mode_normal());
+  location_bar_ = new LocationBarView(browser_, browser_->profile(),
+                                      browser_->command_controller(), this,
+                                      !is_display_mode_normal());
 
   if (!is_display_mode_normal()) {
     AddChildView(location_bar_);
@@ -164,8 +163,8 @@ void ToolbarView::Init() {
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
   forward_->Init();
 
-  reload_ = new ReloadButton(browser_->profile(),
-                             browser_->command_controller()->command_updater());
+  reload_ =
+      new ReloadButton(browser_->profile(), browser_->command_controller());
   reload_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   reload_->set_tag(IDC_RELOAD);

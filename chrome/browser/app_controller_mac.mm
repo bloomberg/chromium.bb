@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/features.h"
 #include "base/auto_reset.h"
@@ -34,7 +36,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -1249,7 +1251,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (void)initMenuState {
-  menuState_.reset(new CommandUpdater(NULL));
+  menuState_ = std::make_unique<CommandUpdaterImpl>(nullptr);
   menuState_->UpdateCommandEnabled(IDC_NEW_TAB, true);
   menuState_->UpdateCommandEnabled(IDC_NEW_WINDOW, true);
   menuState_->UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW, true);

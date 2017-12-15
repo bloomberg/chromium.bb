@@ -154,16 +154,16 @@ class LocationBarViewMacTest : public CocoaProfileTest {
     field_.reset([[AutocompleteTextField alloc] initWithFrame:frame]);
 
     location_bar_.reset(new TestingLocationBarViewMac(
-        field_.get(), browser()->command_controller()->command_updater(),
-        browser()->profile(), browser()));
+        field_.get(), browser()->command_controller(), browser()->profile(),
+        browser()));
 
     location_bar_->page_info_decoration_.reset(
         new TestingPageInfoBubbleDecoration(location_bar_.get()));
     decoration()->disable_animations_during_testing_ = true;
 
-    omnibox_view_ = new MockOmniboxView(
-        nullptr, browser()->profile(),
-        browser()->command_controller()->command_updater(), field_.get());
+    omnibox_view_ =
+        new MockOmniboxView(nullptr, browser()->profile(),
+                            browser()->command_controller(), field_.get());
 
     location_bar_->omnibox_view_.reset(omnibox_view_);
   }

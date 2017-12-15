@@ -7,8 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
+#include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
@@ -68,7 +68,7 @@ class ManagePasswordsDecorationTest : public CocoaTest {
 
  private:
   TestCommandUpdaterDelegate commandDelegate_;
-  CommandUpdater commandUpdater_;
+  CommandUpdaterImpl commandUpdater_;
   ManagePasswordsDecoration decoration_;
 };
 

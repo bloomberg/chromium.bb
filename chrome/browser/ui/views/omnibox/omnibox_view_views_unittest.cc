@@ -13,6 +13,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -208,7 +209,7 @@ class OmniboxViewViewsTest : public ChromeViewsTestBase {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TemplateURLServiceFactoryTestUtil util_;
-  CommandUpdater command_updater_;
+  CommandUpdaterImpl command_updater_;
   TestToolbarModel toolbar_model_;
   TestingOmniboxEditController omnibox_edit_controller_;
   std::unique_ptr<TestingOmniboxView> omnibox_view_;

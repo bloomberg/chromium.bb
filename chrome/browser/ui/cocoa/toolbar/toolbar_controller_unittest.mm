@@ -120,14 +120,13 @@ class ToolbarControllerTest : public CocoaProfileTest {
 
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
 
-    CommandUpdater* updater =
-        browser()->command_controller()->command_updater();
+    CommandUpdater* updater = browser()->command_controller();
     // The default state for the commands is true, set a couple to false to
     // ensure they get picked up correct on initialization
     updater->UpdateCommandEnabled(IDC_BACK, false);
     updater->UpdateCommandEnabled(IDC_FORWARD, false);
     bar_.reset([[TestToolbarController alloc]
-        initWithCommands:browser()->command_controller()->command_updater()
+        initWithCommands:browser()->command_controller()
                  profile:profile()
                  browser:browser()]);
     [[bar_ toolbarView] setResizeDelegate:resizeDelegate_.get()];
@@ -179,7 +178,7 @@ TEST_VIEW(ToolbarControllerTest, [bar_ view])
 
 // Test the initial state that everything is sync'd up
 TEST_F(ToolbarControllerTest, InitialState) {
-  CommandUpdater* updater = browser()->command_controller()->command_updater();
+  CommandUpdater* updater = browser()->command_controller();
   CompareState(updater, [bar_ toolbarViews]);
 }
 
@@ -312,7 +311,7 @@ TEST_F(ToolbarControllerTest, UpdateEnabledState) {
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FORWARD));
   chrome::UpdateCommandEnabled(browser(), IDC_BACK, true);
   chrome::UpdateCommandEnabled(browser(), IDC_FORWARD, true);
-  CommandUpdater* updater = browser()->command_controller()->command_updater();
+  CommandUpdater* updater = browser()->command_controller();
   CompareState(updater, [bar_ toolbarViews]);
 
   // Change an unwatched command and ensure the last state does not change.

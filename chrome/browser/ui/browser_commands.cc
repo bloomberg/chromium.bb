@@ -306,44 +306,38 @@ bool PrintPreviewShowing(const Browser* browser) {
 }  // namespace
 
 bool IsCommandEnabled(Browser* browser, int command) {
-  return browser->command_controller()->command_updater()->IsCommandEnabled(
-      command);
+  return browser->command_controller()->IsCommandEnabled(command);
 }
 
 bool SupportsCommand(Browser* browser, int command) {
-  return browser->command_controller()->command_updater()->SupportsCommand(
-      command);
+  return browser->command_controller()->SupportsCommand(command);
 }
 
 bool ExecuteCommand(Browser* browser, int command) {
-  return browser->command_controller()->command_updater()->ExecuteCommand(
-      command);
+  return browser->command_controller()->ExecuteCommand(command);
 }
 
 bool ExecuteCommandWithDisposition(Browser* browser,
                                    int command,
                                    WindowOpenDisposition disposition) {
-  return browser->command_controller()->command_updater()->
-      ExecuteCommandWithDisposition(command, disposition);
+  return browser->command_controller()->ExecuteCommandWithDisposition(
+      command, disposition);
 }
 
 void UpdateCommandEnabled(Browser* browser, int command, bool enabled) {
-  browser->command_controller()->command_updater()->UpdateCommandEnabled(
-      command, enabled);
+  browser->command_controller()->UpdateCommandEnabled(command, enabled);
 }
 
 void AddCommandObserver(Browser* browser,
                         int command,
                         CommandObserver* observer) {
-  browser->command_controller()->command_updater()->AddCommandObserver(
-      command, observer);
+  browser->command_controller()->AddCommandObserver(command, observer);
 }
 
 void RemoveCommandObserver(Browser* browser,
                            int command,
                            CommandObserver* observer) {
-  browser->command_controller()->command_updater()->RemoveCommandObserver(
-      command, observer);
+  browser->command_controller()->RemoveCommandObserver(command, observer);
 }
 
 int GetContentRestrictions(const Browser* browser) {

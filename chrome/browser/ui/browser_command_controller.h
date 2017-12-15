@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
+#include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
@@ -26,14 +28,15 @@ struct NativeWebKeyboardEvent;
 
 namespace chrome {
 
-class BrowserCommandController : public CommandUpdaterDelegate,
+// This class needs to expose the internal command_updater_ in some way, hence
+// it implements CommandUpdater as the public API for it (so it's not directly
+// exposed).
+class BrowserCommandController : public CommandUpdater,
                                  public TabStripModelObserver,
                                  public sessions::TabRestoreServiceObserver {
  public:
   explicit BrowserCommandController(Browser* browser);
   ~BrowserCommandController() override;
-
-  CommandUpdater* command_updater() { return &command_updater_; }
 
   // Returns true if |command_id| is a reserved command whose keyboard shortcuts
   // should not be sent to the renderer or |event| was triggered by a key that
@@ -47,9 +50,28 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   void ZoomStateChanged();
   void ContentRestrictionsChanged();
   void FullscreenStateChanged();
+#if defined(OS_CHROMEOS)
+  // Called when the browser goes in or out of the special locked fullscreen
+  // mode. In this mode the user is basically locked into the current browser
+  // window and tab hence we disable most keyboard shortcuts and we also
+  // prevent changing the state of enabled shortcuts while in this mode (so the
+  // other *Changed() functions will be a NO-OP in this state).
+  void LockedFullscreenStateChanged();
+#endif
   void PrintingStateChanged();
   void LoadingStateChanged(bool is_loading, bool force);
   void ExtensionStateChanged();
+
+  // Overriden from CommandUpdater:
+  bool SupportsCommand(int id) const override;
+  bool IsCommandEnabled(int id) const override;
+  bool ExecuteCommand(int id) override;
+  bool ExecuteCommandWithDisposition(int id, WindowOpenDisposition disposition)
+      override;
+  void AddCommandObserver(int id, CommandObserver* observer) override;
+  void RemoveCommandObserver(int id, CommandObserver* observer) override;
+  void RemoveCommandObserver(CommandObserver* observer) override;
+  bool UpdateCommandEnabled(int id, bool state) override;
 
   // Shared state updating: these functions are static and public to share with
   // outside code.
@@ -65,10 +87,8 @@ class BrowserCommandController : public CommandUpdaterDelegate,
 
  private:
   class InterstitialObserver;
-
-  // Overridden from CommandUpdaterDelegate:
-  void ExecuteCommandWithDisposition(int id, WindowOpenDisposition disposition)
-      override;
+  FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerBrowserTest,
+                           LockedFullscreen);
 
   // Overridden from TabStripModelObserver:
   void TabInsertedAt(TabStripModel* tab_strip_model,
@@ -127,6 +147,12 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // window is in.
   void UpdateCommandsForFullscreenMode();
 
+#if defined(OS_CHROMEOS)
+  // Update commands whose state depends on whether the window is in locked
+  // fullscreen mode or not.
+  void UpdateCommandsForLockedFullscreenMode();
+#endif
+
   // Updates the printing command state.
   void UpdatePrintingState();
 
@@ -162,14 +188,17 @@ class BrowserCommandController : public CommandUpdaterDelegate,
 
   Browser* const browser_;
 
-  // The CommandUpdater that manages the browser window commands.
-  CommandUpdater command_updater_;
+  // The CommandUpdaterImpl that manages the browser window commands.
+  CommandUpdaterImpl command_updater_;
 
   std::vector<InterstitialObserver*> interstitial_observers_;
 
   PrefChangeRegistrar profile_pref_registrar_;
   PrefChangeRegistrar local_pref_registrar_;
   BooleanPrefMember pref_signin_allowed_;
+
+  // In locked fullscreen mode disallow enabling/disabling commands.
+  bool is_locked_fullscreen_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCommandController);
 };

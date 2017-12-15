@@ -159,9 +159,10 @@ TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
   TestingProfile* testprofile = browser()->profile()->AsTestingProfile();
   EXPECT_TRUE(testprofile);
   testprofile->SetGuestSession(true);
-  chrome::BrowserCommandController
-    ::UpdateSharedCommandsForIncognitoAvailability(
-      browser()->command_controller()->command_updater(), testprofile);
+  chrome::BrowserCommandController ::
+      UpdateSharedCommandsForIncognitoAvailability(
+          browser()->command_controller(),
+          testprofile);
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
@@ -169,9 +170,10 @@ TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
   testprofile->SetGuestSession(false);
   IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
                                       IncognitoModePrefs::FORCED);
-  chrome::BrowserCommandController
-    ::UpdateSharedCommandsForIncognitoAvailability(
-      browser()->command_controller()->command_updater(), testprofile);
+  chrome::BrowserCommandController ::
+      UpdateSharedCommandsForIncognitoAvailability(
+          browser()->command_controller(),
+          testprofile);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
@@ -195,7 +197,7 @@ TEST_F(BrowserCommandControllerTest, AvatarAcceleratorEnabledOnDesktop) {
   TestingProfileManager* testing_profile_manager = profile_manager();
   ProfileManager* profile_manager = testing_profile_manager->profile_manager();
   chrome::BrowserCommandController command_controller(browser());
-  const CommandUpdater* command_updater = command_controller.command_updater();
+  const CommandUpdater* command_updater = &command_controller;
 
   bool enabled = true;
 #if defined(OS_CHROMEOS)
@@ -230,7 +232,7 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
       CreateBrowserWithTestWindowForParams(&profile_params));
 
   chrome::BrowserCommandController command_controller(otr_browser.get());
-  const CommandUpdater* command_updater = command_controller.command_updater();
+  const CommandUpdater* command_updater = &command_controller;
 
   // The avatar menu should be disabled.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
@@ -473,7 +475,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
       CreateBrowserWithTestWindowForParams(&profile_params));
 
   chrome::BrowserCommandController command_controller(browser2.get());
-  const CommandUpdater* command_updater = command_controller.command_updater();
+  const CommandUpdater* command_updater = &command_controller;
 
   // Check that the SYNC_SETUP command is updated on preference change.
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
@@ -483,7 +485,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
 
 TEST_F(BrowserCommandControllerTest, OnSigninAllowedPrefChange) {
   chrome::BrowserCommandController command_controller(browser());
-  const CommandUpdater* command_updater = command_controller.command_updater();
+  const CommandUpdater* command_updater = &command_controller;
 
   // Check that the SYNC_SETUP command is updated on preference change.
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
