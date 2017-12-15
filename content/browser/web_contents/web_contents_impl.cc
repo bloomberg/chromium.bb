@@ -3651,12 +3651,16 @@ void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
 }
 
 void WebContentsImpl::DidStartNavigation(NavigationHandle* navigation_handle) {
+  TRACE_EVENT1("navigation", "WebContentsImpl::DidStartNavigation",
+               "navigation_handle", navigation_handle);
   for (auto& observer : observers_)
     observer.DidStartNavigation(navigation_handle);
 }
 
 void WebContentsImpl::DidRedirectNavigation(
     NavigationHandle* navigation_handle) {
+  TRACE_EVENT1("navigation", "WebContentsImpl::DidRedirectNavigation",
+               "navigation_handle", navigation_handle);
   for (auto& observer : observers_)
     observer.DidRedirectNavigation(navigation_handle);
 
@@ -3676,6 +3680,8 @@ void WebContentsImpl::DidRedirectNavigation(
 
 void WebContentsImpl::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
+  TRACE_EVENT1("navigation", "WebContentsImpl::ReadyToCommitNavigation",
+               "navigation_handle", navigation_handle);
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(navigation_handle);
 
@@ -3690,6 +3696,8 @@ void WebContentsImpl::ReadyToCommitNavigation(
 }
 
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
+  TRACE_EVENT1("navigation", "WebContentsImpl::DidFinishNavigation",
+               "navigation_handle", navigation_handle);
   for (auto& observer : observers_)
     observer.DidFinishNavigation(navigation_handle);
 
