@@ -538,6 +538,8 @@ sub parselicense($) {
         $license = "BSD-like $license";
     } elsif ($licensetext =~ /GOVERNED BY A BSD-STYLE SOURCE LICENSE/) {
         $license = "BSD-like $license";
+    } elsif ($licensetext =~ /BSD 2 Clause License/) {
+        $license = "BSD (2 clause) $license";
     } elsif ($licensetext =~ /BSD 3-Clause license/) {
         $license = "BSD (3 clause) $license";
     }
