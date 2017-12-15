@@ -162,6 +162,32 @@ int TranslateBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+base::string16 TranslateBubbleView::GetWindowTitle() const {
+  // The 2016Q2 UI doesn't use a window title.
+  if (Use2016Q2UI())
+    return base::string16();
+  int id = 0;
+  switch (model_->GetViewState()) {
+    case TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE:
+      id = IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE;
+      break;
+    case TranslateBubbleModel::VIEW_STATE_TRANSLATING:
+      id = IDS_TRANSLATE_BUBBLE_TRANSLATING;
+      break;
+    case TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE:
+      id = IDS_TRANSLATE_BUBBLE_TRANSLATED_TITLE;
+      break;
+    case TranslateBubbleModel::VIEW_STATE_ERROR:
+      id = IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE;
+      break;
+    case TranslateBubbleModel::VIEW_STATE_ADVANCED:
+      id = IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE;
+      break;
+  }
+
+  return l10n_util::GetStringUTF16(id);
+}
+
 void TranslateBubbleView::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
 
@@ -201,7 +227,7 @@ views::View* TranslateBubbleView::GetInitiallyFocusedView() {
 }
 
 bool TranslateBubbleView::ShouldShowCloseButton() const {
-  return Use2016Q2UI();
+  return true;
 }
 
 void TranslateBubbleView::WindowClosing() {
@@ -276,17 +302,29 @@ void TranslateBubbleView::OnMenuButtonClicked(views::MenuButton* source,
                                               const ui::Event* event) {
   if (!denial_menu_runner_) {
     denial_menu_model_.reset(new ui::SimpleMenuModel(this));
+
     denial_menu_model_->AddItem(
         DenialMenuItem::NEVER_TRANSLATE_LANGUAGE,
         l10n_util::GetStringFUTF16(
             IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
             model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
 
-    denial_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    // TODO(crbug.com/793925): Blacklisting should probably not be possible in
+    // incognito mode as it leaves a trace of the user.
+    if (model_->CanBlacklistSite()) {
+      if (Use2016Q2UI()) {
+        denial_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      }
 
-    denial_menu_model_->AddItemWithStringId(
-        DenialMenuItem::NEVER_TRANSLATE_SITE,
-        IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
+      denial_menu_model_->AddItemWithStringId(
+          DenialMenuItem::NEVER_TRANSLATE_SITE,
+          IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
+    }
+
+    if (!Use2016Q2UI()) {
+      denial_menu_model_->AddItemWithStringId(
+          DenialMenuItem::MORE_OPTIONS, IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON);
+    }
 
     denial_menu_runner_.reset(
         new views::MenuRunner(denial_menu_model_.get(), 0));
@@ -306,21 +344,27 @@ bool TranslateBubbleView::IsCommandIdEnabled(int command_id) const {
 }
 
 void TranslateBubbleView::ExecuteCommand(int command_id, int event_flags) {
-  model_->DeclineTranslation();
   switch (command_id) {
     case DenialMenuItem::NEVER_TRANSLATE_LANGUAGE:
-      model_->SetNeverTranslateLanguage(true);
       translate::ReportUiAction(
           translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
+      model_->SetNeverTranslateLanguage(true);
+      model_->DeclineTranslation();
+      GetWidget()->Close();
       break;
     case DenialMenuItem::NEVER_TRANSLATE_SITE:
-      model_->SetNeverTranslateSite(true);
       translate::ReportUiAction(translate::NEVER_TRANSLATE_SITE_MENU_CLICKED);
+      model_->SetNeverTranslateSite(true);
+      model_->DeclineTranslation();
+      GetWidget()->Close();
+      break;
+    case DenialMenuItem::MORE_OPTIONS:
+      translate::ReportUiAction(translate::ADVANCED_MENU_CLICKED);
+      SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
       break;
     default:
       NOTREACHED();
   }
-  GetWidget()->Close();
 }
 
 void TranslateBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
@@ -358,7 +402,6 @@ TranslateBubbleView::TranslateBubbleView(
       after_translate_view_(NULL),
       error_view_(NULL),
       advanced_view_(NULL),
-      denial_combobox_(NULL),
       source_language_combobox_(NULL),
       target_language_combobox_(NULL),
       before_always_translate_checkbox_(NULL),
@@ -443,6 +486,11 @@ void TranslateBubbleView::HandleButtonPressed(
                                     : translate::ALWAYS_TRANSLATE_UNCHECKED);
       break;
     }
+    case BUTTON_ID_ADVANCED: {
+      SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
+      translate::ReportUiAction(translate::ADVANCED_BUTTON_CLICKED);
+      break;
+    }
   }
 }
 
@@ -468,31 +516,6 @@ void TranslateBubbleView::HandleLinkClicked(
 void TranslateBubbleView::HandleComboboxPerformAction(
     TranslateBubbleView::ComboboxID sender_id) {
   switch (sender_id) {
-    case COMBOBOX_ID_DENIAL: {
-      model_->DeclineTranslation();
-      DenialComboboxIndex index =
-          static_cast<DenialComboboxIndex>(denial_combobox_->selected_index());
-      switch (index) {
-        case DenialComboboxIndex::DONT_TRANSLATE:
-          translate::ReportUiAction(translate::NOPE_MENU_CLICKED);
-          break;
-        case DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE:
-          model_->SetNeverTranslateLanguage(true);
-          translate::ReportUiAction(
-              translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
-          break;
-        case DenialComboboxIndex::NEVER_TRANSLATE_SITE:
-          model_->SetNeverTranslateSite(true);
-          translate::ReportUiAction(
-              translate::NEVER_TRANSLATE_SITE_MENU_CLICKED);
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
-      GetWidget()->Close();
-      break;
-    }
     case COMBOBOX_ID_SOURCE_LANGUAGE: {
       if (model_->GetOriginalLanguageIndex() ==
           source_language_combobox_->selected_index()) {
@@ -519,7 +542,7 @@ void TranslateBubbleView::HandleComboboxPerformAction(
 }
 
 void TranslateBubbleView::UpdateChildVisibilities() {
-  // Update the statew of the always translate checkbox
+  // Update the state of the always translate checkbox
   if (advanced_always_translate_checkbox_)
     advanced_always_translate_checkbox_->SetChecked(should_always_translate_);
   if (before_always_translate_checkbox_)
@@ -528,6 +551,8 @@ void TranslateBubbleView::UpdateChildVisibilities() {
     views::View* view = child_at(i);
     view->SetVisible(view == GetCurrentView());
   }
+  if (!Use2016Q2UI() && GetWidget())
+    GetWidget()->UpdateWindowTitle();
   // BoxLayout only considers visible children, so ensure any newly visible
   // child views are positioned correctly.
   Layout();
@@ -605,17 +630,14 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
         style_info);
     styled_label->SizeToFit(kQuestionWidth);
     layout->AddView(styled_label);
-  } else {
-    layout->AddView(new views::Label(
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE)));
-    layout->AddView(
-        CreateLink(this, IDS_TRANSLATE_BUBBLE_ADVANCED, LINK_ID_ADVANCED));
   }
+
+  const int vertical_spacing =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
 
   // In an incognito window, the "Always translate" checkbox shouldn't be shown.
   if (Use2016Q2UI() && !is_in_incognito_window_) {
-    layout->AddPaddingRow(0, provider->GetDistanceMetric(
-                                 views::DISTANCE_RELATED_CONTROL_VERTICAL));
+    layout->AddPaddingRow(0, vertical_spacing);
     layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
     layout->SkipColumns(1);
     before_always_translate_checkbox_ = new views::Checkbox(
@@ -625,8 +647,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     layout->AddView(before_always_translate_checkbox_);
   }
 
-  layout->AddPaddingRow(0, provider->GetDistanceMetric(
-                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
+  layout->AddPaddingRow(0, vertical_spacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
   views::LabelButton* accept_button =
@@ -638,39 +659,12 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   accept_button->set_id(BUTTON_ID_TRANSLATE);
   layout->AddView(accept_button);
   accept_button->SetIsDefault(true);
-  if (Use2016Q2UI()) {
-    denial_menu_button_ = new views::MenuButton(
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON),
-        this, true);
-    denial_menu_button_->SetStyleDeprecated(views::Button::STYLE_BUTTON);
-    layout->AddView(denial_menu_button_);
-  } else {
-    // Can the site of the current page be blacklisted? This will be false for
-    // example for file:///... URLs.
-    const bool can_blacklist_site = model_->CanBlacklistSite();
-
-    // Number of items in the combobox.
-    const size_t menu_size = static_cast<size_t>(
-        can_blacklist_site ? DenialComboboxIndex::MENU_SIZE
-                           : DenialComboboxIndex::MENU_SIZE_NO_BLACKLIST);
-
-    std::vector<base::string16> items(menu_size);
-    items[static_cast<size_t>(DenialComboboxIndex::DONT_TRANSLATE)] =
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY);
-    items[static_cast<size_t>(DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE)] =
-        l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
-                                   original_language_name);
-    if (can_blacklist_site) {
-      items[static_cast<size_t>(DenialComboboxIndex::NEVER_TRANSLATE_SITE)] =
-          l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
-    }
-    denial_combobox_model_.reset(new ui::SimpleComboboxModel(items));
-    denial_combobox_ = new views::Combobox(denial_combobox_model_.get(),
-                                           views::Combobox::STYLE_ACTION);
-    denial_combobox_->set_id(COMBOBOX_ID_DENIAL);
-    denial_combobox_->set_listener(this);
-    layout->AddView(denial_combobox_);
-  }
+  const bool show_dropdown_arrow = Use2016Q2UI();
+  denial_menu_button_ = new views::MenuButton(
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON), this,
+      show_dropdown_arrow);
+  denial_menu_button_->SetStyleDeprecated(views::Button::STYLE_BUTTON);
+  layout->AddView(denial_menu_button_);
 
   return view;
 }
@@ -678,8 +672,6 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
 views::View* TranslateBubbleView::CreateViewTranslating() {
   base::string16 target_language_name =
       model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
-  views::Label* label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRANSLATING));
 
   views::View* view = new views::View();
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
@@ -709,10 +701,18 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
-  if (Use2016Q2UI())
+  if (Use2016Q2UI()) {
+    layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
     AddIconToLayout(layout);
-  layout->AddView(label);
+    views::Label* label = new views::Label(
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRANSLATING));
+    layout->AddView(label);
+  } else {
+    cs->AddPaddingColumn(0, provider->GetDistanceMetric(
+                                views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+    cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                  GridLayout::USE_PREF, 0, 0);
+  }
 
   layout->AddPaddingRow(0, provider->GetDistanceMetric(
                                views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
@@ -724,14 +724,18 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
   revert_button->set_id(BUTTON_ID_SHOW_ORIGINAL);
   revert_button->SetEnabled(false);
   layout->AddView(revert_button);
+  if (!Use2016Q2UI()) {
+    views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON));
+    button->set_id(BUTTON_ID_ADVANCED);
+    button->SetEnabled(false);
+    layout->AddView(button);
+  }
 
   return view;
 }
 
 views::View* TranslateBubbleView::CreateViewAfterTranslate() {
-  views::Label* label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRANSLATED));
-
   views::View* view = new views::View();
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
 
@@ -745,13 +749,13 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_MESSAGE);
-
+  const int button_spacing =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
   // TODO(ftang) Restore icon without causing layout defects: crbug.com/610351
 
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, provider->GetDistanceMetric(
-                              views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+  cs->AddPaddingColumn(0, button_spacing);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
@@ -761,10 +765,18 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
-  layout->AddView(label);
-  layout->AddView(
-      CreateLink(this, IDS_TRANSLATE_BUBBLE_ADVANCED, LINK_ID_ADVANCED));
+  if (Use2016Q2UI()) {
+    layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
+    views::Label* label = new views::Label(
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRANSLATED));
+    layout->AddView(label);
+    layout->AddView(
+        CreateLink(this, IDS_TRANSLATE_BUBBLE_ADVANCED_LINK, LINK_ID_ADVANCED));
+  } else {
+    cs->AddPaddingColumn(0, button_spacing);
+    cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                  GridLayout::USE_PREF, 0, 0);
+  }
 
   layout->AddPaddingRow(0, provider->GetDistanceMetric(
                                views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
@@ -774,14 +786,17 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
   button->set_id(BUTTON_ID_SHOW_ORIGINAL);
   layout->AddView(button);
+  if (!Use2016Q2UI()) {
+    views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON));
+    button->set_id(BUTTON_ID_ADVANCED);
+    layout->AddView(button);
+  }
 
   return view;
 }
 
 views::View* TranslateBubbleView::CreateViewError() {
-  views::Label* label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE));
-
   views::View* view = new views::View();
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
 
@@ -795,13 +810,14 @@ views::View* TranslateBubbleView::CreateViewError() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_MESSAGE);
+  const int button_spacing =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
 
   // TODO(ftang) Restore icon without causing layout defects: crbug.com/610351
 
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, provider->GetDistanceMetric(
-                              views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+  cs->AddPaddingColumn(0, button_spacing);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
@@ -811,10 +827,18 @@ views::View* TranslateBubbleView::CreateViewError() {
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
-  layout->AddView(label);
-  layout->AddView(
-      CreateLink(this, IDS_TRANSLATE_BUBBLE_ADVANCED, LINK_ID_ADVANCED));
+  if (Use2016Q2UI()) {
+    layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
+    views::Label* label = new views::Label(
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE));
+    layout->AddView(label);
+    layout->AddView(
+        CreateLink(this, IDS_TRANSLATE_BUBBLE_ADVANCED_LINK, LINK_ID_ADVANCED));
+  } else {
+    cs->AddPaddingColumn(0, button_spacing);
+    cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                  GridLayout::USE_PREF, 0, 0);
+  }
 
   layout->AddPaddingRow(0, provider->GetDistanceMetric(
                                views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
@@ -824,6 +848,12 @@ views::View* TranslateBubbleView::CreateViewError() {
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN));
   button->set_id(BUTTON_ID_TRY_AGAIN);
   layout->AddView(button);
+  if (!Use2016Q2UI()) {
+    views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON));
+    button->set_id(BUTTON_ID_ADVANCED);
+    layout->AddView(button);
+  }
 
   return view;
 }
@@ -914,8 +944,7 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
     layout->AddView(advanced_always_translate_checkbox_);
   }
 
-  layout->AddPaddingRow(0, provider->GetDistanceMetric(
-                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
+  layout->AddPaddingRow(0, vertical_spacing);
 
   layout->StartRow(0, COLUMN_SET_ID_BUTTONS);
   // TODO(estade): this should use CreateExtraView().

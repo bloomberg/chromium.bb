@@ -36,10 +36,6 @@ class LabelButton;
 class View;
 }
 
-namespace ui {
-class SimpleComboboxModel;
-}
-
 class TranslateBubbleView : public LocationBarBubbleDelegateView,
                             public views::ButtonListener,
                             public views::ComboboxListener,
@@ -49,19 +45,12 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                             public views::StyledLabelListener,
                             public content::WebContentsObserver {
  public:
-  // Commands shown in the action-style combobox. The value corresponds to the
-  // position in the combobox menu.
-  enum class DenialComboboxIndex {
-    DONT_TRANSLATE = 0,
-    NEVER_TRANSLATE_LANGUAGE = 1,
-    SEPARATOR = 2,
-    MENU_SIZE_NO_BLACKLIST = SEPARATOR,
-    NEVER_TRANSLATE_SITE = 3,
-    MENU_SIZE = 4,
-  };
-
   // Item IDs for the denial button's menu.
-  enum DenialMenuItem { NEVER_TRANSLATE_LANGUAGE, NEVER_TRANSLATE_SITE };
+  enum DenialMenuItem {
+    NEVER_TRANSLATE_LANGUAGE,
+    NEVER_TRANSLATE_SITE,
+    MORE_OPTIONS
+  };
 
   ~TranslateBubbleView() override;
 
@@ -88,6 +77,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // views::BubbleDialogDelegateView methods.
   int GetDialogButtons() const override;
+  base::string16 GetWindowTitle() const override;
   void Init() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -147,10 +137,10 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
     BUTTON_ID_SHOW_ORIGINAL,
     BUTTON_ID_TRY_AGAIN,
     BUTTON_ID_ALWAYS_TRANSLATE,
+    BUTTON_ID_ADVANCED,
   };
 
   enum ComboboxID {
-    COMBOBOX_ID_DENIAL,
     COMBOBOX_ID_SOURCE_LANGUAGE,
     COMBOBOX_ID_TARGET_LANGUAGE,
   };
@@ -163,6 +153,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
       const ::base::string16&);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TranslateButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TranslateButtonIn2016Q2UI);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, CloseButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, CloseButtonIn2016Q2UI);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, AdvancedLink);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, AdvancedLinkIn2016Q2UI);
@@ -180,6 +171,12 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            CancelButtonReturningAfterTranslate);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, CancelButtonReturningError);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           DenialMenuNeverTranslateLanguage);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           DenialMenuRespectsBlacklistSite);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           DenialMenuNeverTranslateSite);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageBrowserTest, TranslateAndRevert);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewBrowserTest,
                            CheckNeverTranslateThisSiteBlacklist);
@@ -243,11 +240,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   views::View* error_view_;
   views::View* advanced_view_;
 
-  std::unique_ptr<ui::SimpleComboboxModel> denial_combobox_model_;
   std::unique_ptr<LanguageComboboxModel> source_language_combobox_model_;
   std::unique_ptr<LanguageComboboxModel> target_language_combobox_model_;
 
-  views::Combobox* denial_combobox_;
   views::Combobox* source_language_combobox_;
   views::Combobox* target_language_combobox_;
 

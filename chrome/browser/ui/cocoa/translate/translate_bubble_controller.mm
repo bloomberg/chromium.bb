@@ -426,7 +426,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
       l10n_util::GetNSStringWithFixup(IDS_TRANSLATE_BUBBLE_TRANSLATED);
   NSTextField* textLabel = [self addText:message
                                   toView:view];
-  message = l10n_util::GetNSStringWithFixup(IDS_TRANSLATE_BUBBLE_ADVANCED);
+  message = l10n_util::GetNSStringWithFixup(IDS_TRANSLATE_BUBBLE_ADVANCED_LINK);
   NSButton* advancedLinkButton =
       [self addLinkButtonWithText:message
                            action:@selector(handleAdvancedLinkButtonPressed:)
@@ -471,7 +471,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
   NSString* message =
       l10n_util::GetNSString(IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE);
   NSTextField* textLabel = [self addText:message toView:view];
-  message = l10n_util::GetNSStringWithFixup(IDS_TRANSLATE_BUBBLE_ADVANCED);
+  message = l10n_util::GetNSStringWithFixup(IDS_TRANSLATE_BUBBLE_ADVANCED_LINK);
   NSButton* advancedLinkButton =
       [self addLinkButtonWithText:message
                            action:@selector(handleAdvancedLinkButtonPressed:)

@@ -18,12 +18,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/test/combobox_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -189,8 +190,15 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
     views::ViewsTestBase::TearDown();
   }
 
-  views::Combobox* denial_combobox() { return bubble_->denial_combobox_; }
   bool denial_button_clicked() { return mock_model_->translation_declined_; }
+  void TriggerDenialMenu() {
+    bubble_->denial_menu_button_->OnKeyPressed(ui::KeyEvent(
+        ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::DomCode::ENTER, ui::EF_NONE));
+  }
+
+  ui::SimpleMenuModel* denial_menu_model() {
+    return bubble_->denial_menu_model_.get();
+  }
 
   std::unique_ptr<views::Widget> anchor_widget_;
   MockTranslateBubbleModel* mock_model_;
@@ -234,41 +242,54 @@ TEST_F(TranslateBubbleViewTest, CloseButtonIn2016Q2UI) {
   EXPECT_TRUE(mock_model_->translation_declined_);
 }
 
-TEST_F(TranslateBubbleViewTest, ComboboxNope) {
+TEST_F(TranslateBubbleViewTest, CloseButton) {
+  TurnOnTranslate2016Q2UIFlag();
   CreateAndShowBubble();
-  views::test::ComboboxTestApi test_api(denial_combobox());
-  EXPECT_FALSE(denial_button_clicked());
+  EXPECT_FALSE(mock_model_->translate_called_);
+  EXPECT_FALSE(mock_model_->translation_declined_);
   EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
 
-  test_api.PerformActionAt(static_cast<int>(
-      TranslateBubbleView::DenialComboboxIndex::DONT_TRANSLATE));
-  EXPECT_TRUE(denial_button_clicked());
-  EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
+  // Press the "Close" button.
+  bubble_->GetBubbleFrameView()->ButtonPressed(
+      bubble_->GetBubbleFrameView()->GetCloseButtonForTest(),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
+
+  EXPECT_FALSE(mock_model_->translate_called_);
+  EXPECT_TRUE(mock_model_->translation_declined_);
 }
 
-TEST_F(TranslateBubbleViewTest, ComboboxNeverTranslateLanguage) {
+TEST_F(TranslateBubbleViewTest, DenialMenuNeverTranslateLanguage) {
   CreateAndShowBubble();
-  views::test::ComboboxTestApi test_api(denial_combobox());
+
   EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
   EXPECT_FALSE(mock_model_->never_translate_language_);
   EXPECT_FALSE(denial_button_clicked());
 
-  test_api.PerformActionAt(static_cast<int>(
-      TranslateBubbleView::DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE));
+  TriggerDenialMenu();
+  const int index = bubble_->denial_menu_model_->GetIndexOfCommandId(
+      TranslateBubbleView::NEVER_TRANSLATE_LANGUAGE);
+  bubble_->denial_menu_model_->ActivatedAt(index);
+
   EXPECT_TRUE(denial_button_clicked());
   EXPECT_TRUE(mock_model_->never_translate_language_);
   EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
 }
 
-TEST_F(TranslateBubbleViewTest, ComboboxNeverTranslateSite) {
+TEST_F(TranslateBubbleViewTest, DenialMenuNeverTranslateSite) {
+  // NEVER_TRANSLATE_SITE should only show up for sites that can be blacklisted.
+  mock_model_->SetCanBlacklistSite(true);
   CreateAndShowBubble();
-  views::test::ComboboxTestApi test_api(denial_combobox());
+
   EXPECT_FALSE(mock_model_->never_translate_site_);
   EXPECT_FALSE(denial_button_clicked());
   EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
 
-  test_api.PerformActionAt(static_cast<int>(
-      TranslateBubbleView::DenialComboboxIndex::NEVER_TRANSLATE_SITE));
+  TriggerDenialMenu();
+  const int index = bubble_->denial_menu_model_->GetIndexOfCommandId(
+      TranslateBubbleView::NEVER_TRANSLATE_SITE);
+  bubble_->denial_menu_model_->ActivatedAt(index);
+
   EXPECT_TRUE(denial_button_clicked());
   EXPECT_TRUE(mock_model_->never_translate_site_);
   EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
@@ -478,44 +499,15 @@ TEST_F(TranslateBubbleViewTest, CancelButtonReturningError) {
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ERROR, bubble_->GetViewState());
 }
 
-TEST_F(TranslateBubbleViewTest, ComboboxCanBlacklistSite) {
-  EXPECT_TRUE(mock_model_->CanBlacklistSite());
-  CreateAndShowBubble();
-  views::Combobox* const combobox = denial_combobox();
-  EXPECT_FALSE(denial_button_clicked());
-  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
-  // Check menu rows are DENY, NEVER_TRANSLATE_LANG, [SEPARATOR], and
-  // NEVER_TRANSLATE_SITE.
-  EXPECT_EQ(4, combobox->GetRowCount());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY),
-            combobox->GetTextForRow(static_cast<size_t>(
-                TranslateBubbleView::DenialComboboxIndex::DONT_TRANSLATE)));
-  EXPECT_EQ(
-      l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
-                                 base::ASCIIToUTF16("English")),
-      combobox->GetTextForRow(static_cast<size_t>(
-          TranslateBubbleView::DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE)));
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE),
-      combobox->GetTextForRow(static_cast<size_t>(
-          TranslateBubbleView::DenialComboboxIndex::NEVER_TRANSLATE_SITE)));
-}
-
-TEST_F(TranslateBubbleViewTest, ComboboxCantBlacklistSite) {
+TEST_F(TranslateBubbleViewTest, DenialMenuRespectsBlacklistSite) {
   mock_model_->SetCanBlacklistSite(false);
   CreateAndShowBubble();
-  views::Combobox* const combobox = denial_combobox();
-  //  views::test::ComboboxTestApi test_api(combobox);
-  EXPECT_FALSE(denial_button_clicked());
-  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
-  // Check the menu rows are DENY and NEVER_TRANSLATE_LANG.
-  EXPECT_EQ(2, combobox->GetRowCount());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY),
-            combobox->GetTextForRow(static_cast<size_t>(
-                TranslateBubbleView::DenialComboboxIndex::DONT_TRANSLATE)));
-  EXPECT_EQ(
-      l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
-                                 base::ASCIIToUTF16("English")),
-      combobox->GetTextForRow(static_cast<size_t>(
-          TranslateBubbleView::DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE)));
+
+  TriggerDenialMenu();
+  // NEVER_TRANSLATE_SITE shouldn't show up for sites that can't be blacklisted.
+  EXPECT_EQ(-1, bubble_->denial_menu_model_->GetIndexOfCommandId(
+                    TranslateBubbleView::NEVER_TRANSLATE_SITE));
+  // Verify that the menu is populated so previous check makes sense.
+  EXPECT_GE(0, bubble_->denial_menu_model_->GetIndexOfCommandId(
+                   TranslateBubbleView::NEVER_TRANSLATE_LANGUAGE));
 }
