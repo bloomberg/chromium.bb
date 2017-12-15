@@ -120,21 +120,11 @@ public class ContextualSearchPanelMetrics {
             if (mWasContextualCardsDataShown) {
                 ContextualSearchUma.logContextualCardsResultsSeen(mWasSearchContentViewSeen);
             }
-            if (mRankerLogger != null) {
-                mRankerLogger.logOutcome(
-                        ContextualSearchRankerLogger.Feature.OUTCOME_WAS_CARDS_DATA_SHOWN,
-                        mWasContextualCardsDataShown);
-            }
             if (mWasQuickActionShown) {
                 ContextualSearchUma.logQuickActionResultsSeen(mWasSearchContentViewSeen,
                         mQuickActionCategory);
                 ContextualSearchUma.logQuickActionClicked(mWasQuickActionClicked,
                         mQuickActionCategory);
-                if (mRankerLogger != null) {
-                    mRankerLogger.logOutcome(
-                            ContextualSearchRankerLogger.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED,
-                            mWasQuickActionClicked);
-                }
             }
 
             if (mResultsSeenExperiments != null) {
@@ -142,10 +132,7 @@ public class ContextualSearchPanelMetrics {
                         mWasSearchContentViewSeen, mWasActivatedByTap);
                 mResultsSeenExperiments.logPanelViewedDurations(
                         panelViewDurationMs, mPanelOpenedBeyondPeekDurationMs);
-                if (mRankerLogger != null) {
-                    mResultsSeenExperiments.logRankerTapSuppressionOutcome(mRankerLogger);
-                }
-                mResultsSeenExperiments = null;
+                if (!isChained) mResultsSeenExperiments = null;
             }
             mPanelOpenedBeyondPeekDurationMs = 0;
 
@@ -153,23 +140,9 @@ public class ContextualSearchPanelMetrics {
                 boolean wasAnySuppressionHeuristicSatisfied = mWasAnyHeuristicSatisfiedOnPanelShow;
                 ContextualSearchUma.logAnyTapSuppressionHeuristicSatisfied(
                         mWasSearchContentViewSeen, wasAnySuppressionHeuristicSatisfied);
-                // Update The Ranker logger.
-                if (mRankerLogger != null) {
-                    // Tell Ranker about the primary outcome.
-                    mRankerLogger.logOutcome(
-                            ContextualSearchRankerLogger.Feature.OUTCOME_WAS_PANEL_OPENED,
-                            mWasSearchContentViewSeen);
-                    ContextualSearchUma.logRankerInference(mWasSearchContentViewSeen,
-                            mRankerLogger.getPredictionForTapSuppression());
-                }
                 ContextualSearchUma.logSelectionLengthResultsSeen(
                         mWasSearchContentViewSeen, mSelectionLength);
             }
-
-            // Reset writing to Ranker so whatever interactions occurred are recorded as a
-            // complete record.
-            if (mRankerLogger != null) mRankerLogger.writeLogAndReset();
-            mRankerLogger = null;
 
             // Notifications to Feature Engagement.
             ContextualSearchIPH.doSearchFinishedNotifications(profile, mWasSearchContentViewSeen,
@@ -348,6 +321,34 @@ public class ContextualSearchPanelMetrics {
      */
     public void setRankerLogger(ContextualSearchRankerLogger rankerLogger) {
         mRankerLogger = rankerLogger;
+    }
+
+    /**
+     * Writes all the outcome features to the Ranker Logger and resets the logger.
+     * @param rankerLogger The {@link ContextualSearchRankerLogger} currently being used to measure
+     *                     or suppress the UI by Ranker.
+     */
+    public void writeRankerLoggerOutcomesAndReset() {
+        if (mRankerLogger != null && mWasActivatedByTap) {
+            // Tell Ranker about the primary outcome.
+            mRankerLogger.logOutcome(ContextualSearchRankerLogger.Feature.OUTCOME_WAS_PANEL_OPENED,
+                    mWasSearchContentViewSeen);
+            ContextualSearchUma.logRankerInference(
+                    mWasSearchContentViewSeen, mRankerLogger.getPredictionForTapSuppression());
+            mRankerLogger.logOutcome(
+                    ContextualSearchRankerLogger.Feature.OUTCOME_WAS_CARDS_DATA_SHOWN,
+                    mWasContextualCardsDataShown);
+            if (mWasQuickActionShown) {
+                mRankerLogger.logOutcome(
+                        ContextualSearchRankerLogger.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED,
+                        mWasQuickActionClicked);
+            }
+            if (mResultsSeenExperiments != null) {
+                mResultsSeenExperiments.logRankerTapSuppressionOutcome(mRankerLogger);
+            }
+            mRankerLogger.writeLogAndReset();
+            mRankerLogger = null;
+        }
     }
 
     /**
