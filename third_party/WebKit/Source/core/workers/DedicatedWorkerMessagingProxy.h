@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
 #include "platform/heap/Handle.h"
@@ -26,6 +27,7 @@ class DedicatedWorker;
 class DedicatedWorkerObjectProxy;
 class SerializedScriptValue;
 class WorkerClients;
+class WorkerOptions;
 
 // A proxy class to talk to the DedicatedWorkerGlobalScope on a worker thread
 // via the DedicatedWorkerMessagingProxy from the main thread. See class
@@ -39,11 +41,11 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   ~DedicatedWorkerMessagingProxy() override;
 
   // These methods should only be used on the parent context thread.
-  void StartWorkerGlobalScope(const KURL& script_url,
-                              const String& user_agent,
-                              const String& source_code,
-                              ReferrerPolicy,
-                              const v8_inspector::V8StackTraceId&);
+  void StartWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                              const WorkerOptions&,
+                              const KURL& script_url,
+                              const v8_inspector::V8StackTraceId&,
+                              const String& source_code);
   void PostMessageToWorkerGlobalScope(scoped_refptr<SerializedScriptValue>,
                                       Vector<MessagePortChannel>,
                                       const v8_inspector::V8StackTraceId&);
