@@ -246,7 +246,7 @@ ScopedFocusNavigation::ScopedFocusNavigation(
     ContainerNode& scoping_root_node,
     const Element* current,
     FocusController::OwnerMap& owner_map)
-    : current_(const_cast<Element*>(current)) {
+    : current_(current) {
   if (HTMLSlotElement* slot = ToHTMLSlotElementOrNull(scoping_root_node)) {
     if (slot->AssignedNodes().IsEmpty()) {
       navigation_ = new FocusNavigation(scoping_root_node, *slot, owner_map);

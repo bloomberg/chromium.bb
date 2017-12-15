@@ -62,7 +62,8 @@ LayoutUnit NoXPosForVerticalArrowNavigation() {
   return LayoutUnit::Min();
 }
 
-bool SelectionModifier::ShouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
+bool SelectionModifier::ShouldAlwaysUseDirectionalSelection(
+    const LocalFrame* frame) {
   return !frame ||
          frame->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional();
 }
@@ -71,7 +72,7 @@ SelectionModifier::SelectionModifier(
     const LocalFrame& frame,
     const SelectionInDOMTree& selection,
     LayoutUnit x_pos_for_vertical_arrow_navigation)
-    : frame_(const_cast<LocalFrame*>(&frame)),
+    : frame_(&frame),
       current_selection_(selection),
       x_pos_for_vertical_arrow_navigation_(
           x_pos_for_vertical_arrow_navigation) {}

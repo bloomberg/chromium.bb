@@ -70,9 +70,9 @@ class SelectionModifier {
  private:
   // TODO(editing-dev): We should make |GetFrame()| to return |LocalFrame&|
   // since it can not be |nullptr|.
-  LocalFrame* GetFrame() const { return frame_; }
+  const LocalFrame* GetFrame() const { return frame_; }
 
-  static bool ShouldAlwaysUseDirectionalSelection(LocalFrame*);
+  static bool ShouldAlwaysUseDirectionalSelection(const LocalFrame*);
   TextDirection DirectionOfEnclosingBlock() const;
   TextDirection DirectionOfSelection() const;
   VisiblePosition PositionForPlatform(bool is_get_start) const;
@@ -103,7 +103,7 @@ class SelectionModifier {
   static VisiblePosition RightWordPosition(const VisiblePosition&,
                                            bool skips_space_when_moving_right);
 
-  Member<LocalFrame> frame_;
+  Member<const LocalFrame> frame_;
   // TODO(editing-dev): We should get rid of |selection_| once we change
   // all member functions not to use |selection_|.
   // |selection_| is used as implicit parameter or a cache instead of pass it.
