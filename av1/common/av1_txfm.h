@@ -169,7 +169,6 @@ static INLINE void set_flip_cfg(TX_TYPE tx_type, TXFM_2D_FLIP_CFG *cfg) {
   }
 }
 
-#if CONFIG_TXMG
 static INLINE TX_SIZE av1_rotate_tx_size(TX_SIZE tx_size) {
   switch (tx_size) {
     case TX_4X4: return TX_4X4;
@@ -220,7 +219,6 @@ static INLINE TX_TYPE av1_rotate_tx_type(TX_TYPE tx_type) {
     default: assert(0); return TX_TYPES;
   }
 }
-#endif  // CONFIG_TXMG
 
 // Utility function that returns the log of the ratio of the col and row
 // sizes.
