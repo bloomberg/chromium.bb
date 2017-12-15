@@ -416,29 +416,19 @@ void WebRtcAudioDeviceImpl::RemovePlayoutSink(
   playout_sinks_.remove(sink);
 }
 
-bool WebRtcAudioDeviceImpl::GetAuthorizedDeviceInfoForAudioRenderer(
-    int* session_id,
-    int* output_sample_rate,
-    int* output_frames_per_buffer) {
+int WebRtcAudioDeviceImpl::GetAuthorizedDeviceSessionIdForAudioRenderer() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   // If there is no capturer or there are more than one open capture devices,
   // return false.
   if (capturers_.size() != 1)
-    return false;
+    return 0;
 
-  // Don't set output parameters unless all of them are valid.
   const MediaStreamDevice& device = capturers_.back()->device();
-  if (device.session_id <= 0 || !device.matched_output.sample_rate() ||
-      !device.matched_output.frames_per_buffer()) {
-    return false;
-  }
+  if (device.session_id <= 0 || device.matched_output_device_id.empty())
+    return 0;
 
-  *session_id = device.session_id;
-  *output_sample_rate = device.matched_output.sample_rate();
-  *output_frames_per_buffer = device.matched_output.frames_per_buffer();
-
-  return true;
+  return device.session_id;
 }
 
 }  // namespace content

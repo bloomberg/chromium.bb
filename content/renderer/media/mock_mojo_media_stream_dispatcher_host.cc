@@ -37,6 +37,8 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
     audio_device.name = "microphone";
     audio_device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
     audio_device.session_id = session_id_;
+    audio_device.matched_output_device_id =
+        "associated_output_device_id" + base::IntToString(request_id_);
     audio_devices_.push_back(audio_device);
   }
 

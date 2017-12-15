@@ -69,7 +69,6 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   void HashDeviceId(
       AuthorizationCompletedCallback cb,
       const std::string& raw_device_id,
-      const media::AudioParameters& params,
       const std::pair<std::string, url::Origin>& salt_and_origin) const;
 
   void AccessChecked(AuthorizationCompletedCallback cb,

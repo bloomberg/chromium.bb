@@ -338,7 +338,6 @@ TEST_F(AudioInputDeviceManagerNoDevicesTest,
     // Expects that device parameters stored by the manager are valid.
     const MediaStreamDevice* device = manager_->GetOpenedDeviceById(session_id);
     EXPECT_TRUE(device->input.IsValid());
-    EXPECT_TRUE(device->matched_output.IsValid());
 
     manager_->Close(session_id);
     EXPECT_CALL(*audio_input_listener_, Closed(device_request.type, session_id))
