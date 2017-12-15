@@ -8,6 +8,9 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -102,6 +105,54 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   // Expect that only the scroll position was restored.
   EXPECT_EQ(3.0f, web_view->PageScaleFactor());
   EXPECT_EQ(400, web_view->MainFrameImpl()->GetScrollOffset().height);
+}
+
+class ProgrammaticScrollSimTest : public ::testing::WithParamInterface<bool>,
+                                  private ScopedRootLayerScrollingForTest,
+                                  public SimTest {
+ public:
+  ProgrammaticScrollSimTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(All, ProgrammaticScrollSimTest, ::testing::Bool());
+
+TEST_P(ProgrammaticScrollSimTest, NavigateToHash) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/test.html#target", "text/html");
+  SimRequest css_resource("https://example.com/test.css", "text/css");
+
+  LoadURL("https://example.com/test.html#target");
+
+  // Finish loading the main document before the stylesheet is loaded so that
+  // rendering is blocked when parsing finishes. This will delay closing the
+  // document until the load event.
+  main_resource.Start();
+  main_resource.Write(
+      "<!DOCTYPE html><link id=link rel=stylesheet href=test.css>");
+  css_resource.Start();
+  main_resource.Write(R"HTML(
+    <style>
+      body {
+        height: 4000px;
+      }
+      h2 {
+        position: absolute;
+        top: 3000px;
+      }
+    </style>
+    <h2 id="target">Target</h2>
+  )HTML");
+  main_resource.Finish();
+  css_resource.Complete();
+  Compositor().BeginFrame();
+
+  // Run pending tasks to fire the load event and close the document. This
+  // should cause the document to scroll to the hash.
+  testing::RunPendingTasks();
+
+  ScrollableArea* layout_viewport =
+      GetDocument().View()->LayoutViewportScrollableArea();
+  EXPECT_EQ(3001, layout_viewport->GetScrollOffset().Height());
 }
 
 }  // namespace blink
