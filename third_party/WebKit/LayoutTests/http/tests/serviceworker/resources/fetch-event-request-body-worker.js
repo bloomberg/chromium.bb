@@ -6,6 +6,7 @@ self.addEventListener('message', event => {
 
 self.addEventListener('fetch', event => {
     if (event.request.url.indexOf('fetch-with-body') != -1) {
+      event.respondWith(new Response('(unused response)'));
       event.waitUntil(Promise.resolve()
         .then(() => { return event.request.text(); })
         .then(body => { source.postMessage(body); }));

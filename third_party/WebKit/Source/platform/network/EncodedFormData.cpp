@@ -96,6 +96,15 @@ scoped_refptr<EncodedFormData> EncodedFormData::DeepCopy() const {
         form_data->elements_.UncheckedAppend(FormDataElement(
             e.blob_uuid_.IsolatedCopy(), e.optional_blob_data_handle_));
         break;
+      case FormDataElement::kDataPipe:
+        network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
+        (*e.data_pipe_getter_->GetPtr())
+            ->Clone(mojo::MakeRequest(&data_pipe_getter));
+        auto wrapped = base::MakeRefCounted<WrappedDataPipeGetter>(
+            std::move(data_pipe_getter));
+        form_data->elements_.UncheckedAppend(
+            FormDataElement(std::move(wrapped)));
+        break;
     }
   }
   return form_data;
@@ -129,8 +138,13 @@ void EncodedFormData::AppendBlob(
   elements_.push_back(FormDataElement(uuid, std::move(optional_handle)));
 }
 
+void EncodedFormData::AppendDataPipe(
+    scoped_refptr<WrappedDataPipeGetter> handle) {
+  elements_.emplace_back(std::move(handle));
+}
+
 void EncodedFormData::Flatten(Vector<char>& data) const {
-  // Concatenate all the byte arrays, but omit any files.
+  // Concatenate all the byte arrays, but omit everything else.
   data.clear();
   size_t n = elements_.size();
   for (size_t i = 0; i < n; ++i) {
@@ -162,6 +176,14 @@ unsigned long long EncodedFormData::SizeInBytes() const {
       case FormDataElement::kEncodedBlob:
         if (e.optional_blob_data_handle_)
           size += e.optional_blob_data_handle_->size();
+        break;
+      case FormDataElement::kDataPipe:
+        // We can get the size but it'd be async. Data pipe elements only exist
+        // for requests intercepted by service workers (and possibly
+        // subsequently redirected). But this function is only called for
+        // requests initiated by PingLoader, assume this function isn't needed
+        // in that case.
+        NOTREACHED();
         break;
     }
   }

@@ -64,9 +64,12 @@ class FormDataBytesConsumer final : public BytesConsumer {
   }
 
  private:
+  static BytesConsumer* GetImpl(ExecutionContext*,
+                                scoped_refptr<EncodedFormData>,
+                                BytesConsumer* consumer_for_testing);
   MODULES_EXPORT FormDataBytesConsumer(ExecutionContext*,
                                        scoped_refptr<EncodedFormData>,
-                                       BytesConsumer*);
+                                       BytesConsumer* consumer_for_testing);
 
   const Member<BytesConsumer> impl_;
 };

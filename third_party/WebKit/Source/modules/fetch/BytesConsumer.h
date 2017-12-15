@@ -85,11 +85,11 @@ class MODULES_EXPORT BytesConsumer
   // Returns ShouldWait when it's waiting.
   // Returns Done when it's closed.
   // Returns Error when errored.
-  // When not readable, the caller don't have to (and must not) call
-  // endRead, because the read session implicitly ends in that case.
+  // When not readable, the caller doesn't have to (and must not) call
+  // EndRead, because the read session implicitly ends in that case.
   //
   // |*buffer| will become invalid when this object becomes unreachable,
-  // even if endRead is not called.
+  // even if EndRead is not called.
   //
   // |*buffer| will be set to null and |*available| will be set to 0 if not
   // readable.
@@ -105,8 +105,8 @@ class MODULES_EXPORT BytesConsumer
 
   // Drains the data as a BlobDataHandle.
   // When this function returns a non-null value, the returned blob handle
-  // contains bytes that would be read through beginRead and
-  // endRead functions without calling this function. In such a case, this
+  // contains bytes that would be read through the BeginRead and
+  // EndRead functions without calling this function. In such a case, this
   // object becomes closed.
   // When this function returns null value, this function does nothing.
   // When |policy| is DisallowBlobWithInvalidSize, this function doesn't
@@ -119,8 +119,8 @@ class MODULES_EXPORT BytesConsumer
 
   // Drains the data as an EncodedFormData.
   // When this function returns a non-null value, the returned form data
-  // contains bytes that would be read through beginRead and
-  // endRead functions without calling this function. In such a case, this
+  // contains bytes that would be read through the BeginRead and
+  // EndRead functions without calling this function. In such a case, this
   // object becomes closed.
   // When this function returns null value, this function does nothing.
   // This function returns a non-null form data when the handle is made

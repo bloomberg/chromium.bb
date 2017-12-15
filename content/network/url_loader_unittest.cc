@@ -166,7 +166,9 @@ class SimpleDataPipeGetter : public network::mojom::DataPipeGetter {
  public:
   SimpleDataPipeGetter(const std::string& str,
                        network::mojom::DataPipeGetterRequest request)
-      : str_(str), binding_(this, std::move(request)) {}
+      : str_(str) {
+    bindings_.AddBinding(this, std::move(request));
+  }
   ~SimpleDataPipeGetter() override = default;
 
   // network::mojom::DataPipeGetter implementation:
@@ -177,9 +179,13 @@ class SimpleDataPipeGetter : public network::mojom::DataPipeGetter {
     std::move(callback).Run(net::OK, str_.length());
   }
 
+  void Clone(network::mojom::DataPipeGetterRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
  private:
   std::string str_;
-  mojo::Binding<network::mojom::DataPipeGetter> binding_;
+  mojo::BindingSet<network::mojom::DataPipeGetter> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDataPipeGetter);
 };

@@ -10,10 +10,14 @@
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"
+#include "mojo/common/data_pipe_utils.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebHTTPBody.h"
+#include "public/platform/WebString.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,6 +31,42 @@ using ::testing::InSequence;
 using ::testing::Return;
 using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 using MockBytesConsumer = BytesConsumerTestUtil::MockBytesConsumer;
+
+class SimpleDataPipeGetter : public network::mojom::blink::DataPipeGetter {
+ public:
+  SimpleDataPipeGetter(const String& str,
+                       network::mojom::blink::DataPipeGetterRequest request)
+      : str_(str) {
+    bindings_.set_connection_error_handler(WTF::BindRepeating(
+        &SimpleDataPipeGetter::OnConnectionError, WTF::Unretained(this)));
+    bindings_.AddBinding(this, std::move(request));
+  }
+  ~SimpleDataPipeGetter() override = default;
+
+  // network::mojom::DataPipeGetter implementation:
+  void Read(mojo::ScopedDataPipeProducerHandle handle,
+            ReadCallback callback) override {
+    bool result =
+        mojo::common::BlockingCopyFromString(WebString(str_).Utf8(), handle);
+    ASSERT_TRUE(result);
+    std::move(callback).Run(0 /* OK */, str_.length());
+  }
+
+  void Clone(network::mojom::blink::DataPipeGetterRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  void OnConnectionError() {
+    if (bindings_.empty())
+      delete this;
+  }
+
+ private:
+  String str_;
+  mojo::BindingSet<network::mojom::blink::DataPipeGetter> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleDataPipeGetter);
+};
 
 scoped_refptr<EncodedFormData> ComplexFormData() {
   scoped_refptr<EncodedFormData> data = EncodedFormData::Create();
@@ -43,6 +83,33 @@ scoped_refptr<EncodedFormData> ComplexFormData() {
   boundary.Append("\0", 1);
   data->SetBoundary(boundary);
   return data;
+}
+
+scoped_refptr<EncodedFormData> DataPipeFormData() {
+  WebHTTPBody body;
+  body.Initialize();
+  // Add data.
+  body.AppendData(WebData("foo", 3));
+
+  // Add data pipe.
+  network::mojom::blink::DataPipeGetterPtr data_pipe_getter_ptr;
+  // Object deletes itself.
+  new SimpleDataPipeGetter(String(" hello world"),
+                           mojo::MakeRequest(&data_pipe_getter_ptr));
+  body.AppendDataPipe(data_pipe_getter_ptr.PassInterface().PassHandle());
+
+  // Add another data pipe.
+  network::mojom::blink::DataPipeGetterPtr data_pipe_getter_ptr2;
+  // Object deletes itself.
+  new SimpleDataPipeGetter(String(" here's another data pipe "),
+                           mojo::MakeRequest(&data_pipe_getter_ptr2));
+  body.AppendDataPipe(data_pipe_getter_ptr2.PassInterface().PassHandle());
+
+  // Add some more data.
+  body.AppendData(WebData("bar baz", 7));
+
+  body.SetUniqueBoundary();
+  return body;
 }
 
 class NoopClient final : public GarbageCollectedFinalized<NoopClient>,
@@ -383,6 +450,56 @@ TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
   checkpoint.Call(1);
   consumer->Cancel();
   checkpoint.Call(2);
+}
+
+// Tests consuming an EncodedFormData with data pipe elements.
+TEST_F(FormDataBytesConsumerTest, DataPipeFormData) {
+  scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
+  auto* consumer = new FormDataBytesConsumer(GetDocument(), input_form_data);
+  auto* reader = new BytesConsumerTestUtil::TwoPhaseReader(consumer);
+  std::pair<BytesConsumer::Result, Vector<char>> result = reader->Run();
+  EXPECT_EQ(Result::kDone, result.first);
+  EXPECT_EQ("foo hello world here's another data pipe bar baz",
+            BytesConsumerTestUtil::CharVectorToString(result.second));
+}
+
+// Tests DrainAsFormData() on an EncodedFormData with data pipe elements.
+TEST_F(FormDataBytesConsumerTest, DataPipeFormData_DrainAsFormData) {
+  scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
+  auto* consumer = new FormDataBytesConsumer(GetDocument(), input_form_data);
+  scoped_refptr<EncodedFormData> drained_form_data =
+      consumer->DrainAsFormData();
+  EXPECT_EQ(*input_form_data, *drained_form_data);
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, consumer->GetPublicState());
+}
+
+// Tests DrainAsFormData() on an EncodedFormData with data pipe elements after
+// starting to read.
+TEST_F(FormDataBytesConsumerTest,
+       DataPipeFormData_DrainAsFormDataWhileReading) {
+  // Create the consumer and start reading.
+  scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
+  auto* consumer = new FormDataBytesConsumer(GetDocument(), input_form_data);
+  const char* buffer = nullptr;
+  size_t available = 0;
+  EXPECT_EQ(BytesConsumer::Result::kOk,
+            consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ("foo", String(buffer, available));
+
+  // Try to drain form data. It should return null since we started reading.
+  scoped_refptr<EncodedFormData> drained_form_data =
+      consumer->DrainAsFormData();
+  EXPECT_FALSE(drained_form_data);
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            consumer->GetPublicState());
+  EXPECT_EQ(BytesConsumer::Result::kOk, consumer->EndRead(available));
+
+  // The consumer should still be readable. Finish reading.
+  auto* reader = new BytesConsumerTestUtil::TwoPhaseReader(consumer);
+  std::pair<BytesConsumer::Result, Vector<char>> result = reader->Run();
+  EXPECT_EQ(Result::kDone, result.first);
+  EXPECT_EQ(" hello world here's another data pipe bar baz",
+            BytesConsumerTestUtil::CharVectorToString(result.second));
 }
 
 }  // namespace

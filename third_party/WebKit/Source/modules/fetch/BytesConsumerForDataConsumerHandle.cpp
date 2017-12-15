@@ -4,14 +4,14 @@
 
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 
+#include <algorithm>
+#include <string>
+
 #include "core/dom/ExecutionContext.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
-
-#include <algorithm>
-#include <string.h>
 
 namespace blink {
 
@@ -49,7 +49,7 @@ BytesConsumer::Result BytesConsumerForDataConsumerHandle::BeginRead(
     case WebDataConsumerHandle::kBusy:
     case WebDataConsumerHandle::kResourceExhausted:
     case WebDataConsumerHandle::kUnexpectedError:
-      GetError();
+      SetError();
       return Result::kError;
   }
   NOTREACHED();
@@ -64,7 +64,7 @@ BytesConsumer::Result BytesConsumerForDataConsumerHandle::EndRead(size_t read) {
   WebDataConsumerHandle::Result r = reader_->EndRead(read);
   if (r != WebDataConsumerHandle::kOk) {
     has_pending_notification_ = false;
-    GetError();
+    SetError();
     return Result::kError;
   }
   if (has_pending_notification_) {
@@ -131,7 +131,7 @@ void BytesConsumerForDataConsumerHandle::DidGetReadable() {
     case WebDataConsumerHandle::kBusy:
     case WebDataConsumerHandle::kResourceExhausted:
     case WebDataConsumerHandle::kUnexpectedError:
-      GetError();
+      SetError();
       if (client)
         client->OnStateChange();
       return;
@@ -156,7 +156,7 @@ void BytesConsumerForDataConsumerHandle::Close() {
   ClearClient();
 }
 
-void BytesConsumerForDataConsumerHandle::GetError() {
+void BytesConsumerForDataConsumerHandle::SetError() {
   DCHECK(!is_in_two_phase_read_);
   if (state_ == InternalState::kErrored)
     return;

@@ -5,14 +5,14 @@
 #ifndef BytesConsumerForDataConsumerHandle_h
 #define BytesConsumerForDataConsumerHandle_h
 
+#include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebDataConsumerHandle.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -51,7 +51,7 @@ class MODULES_EXPORT BytesConsumerForDataConsumerHandle final
 
  private:
   void Close();
-  void GetError();
+  void SetError();
   void Notify();
 
   Member<ExecutionContext> execution_context_;

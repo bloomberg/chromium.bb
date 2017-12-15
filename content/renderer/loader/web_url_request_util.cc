@@ -106,8 +106,8 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
   std::string buffer_;
 };
 
-// Vends data pipes to read a Blob. It stays alive by StrongBinding to the Mojo
-// request.
+// Vends data pipes to read a Blob. It stays alive until all Mojo connections
+// close.
 class DataPipeGetter : public network::mojom::DataPipeGetter {
  public:
   DataPipeGetter(blink::mojom::BlobPtr blob,
@@ -162,8 +162,15 @@ class DataPipeGetter : public network::mojom::DataPipeGetter {
 
   void BindInternal(blink::mojom::BlobPtrInfo blob,
                     network::mojom::DataPipeGetterRequest request) {
-    mojo::MakeStrongBinding(base::WrapUnique(this), std::move(request));
+    bindings_.set_connection_error_handler(base::BindRepeating(
+        &DataPipeGetter::OnConnectionError, base::Unretained(this)));
+    bindings_.AddBinding(this, std::move(request));
     blob_.Bind(std::move(blob));
+  }
+
+  void OnConnectionError() {
+    if (bindings_.empty())
+      delete this;
   }
 
   // network::mojom::DataPipeGetter implementation:
@@ -176,8 +183,13 @@ class DataPipeGetter : public network::mojom::DataPipeGetter {
     blob_->ReadAll(std::move(handle), std::move(blob_reader_client_ptr));
   }
 
+  void Clone(network::mojom::DataPipeGetterRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
  private:
   blink::mojom::BlobPtr blob_;
+  mojo::BindingSet<network::mojom::DataPipeGetter> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPipeGetter);
 };
@@ -367,13 +379,12 @@ int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
   return load_flags;
 }
 
-WebHTTPBody GetWebHTTPBodyForRequestBody(
-    const scoped_refptr<ResourceRequestBody>& input) {
+WebHTTPBody GetWebHTTPBodyForRequestBody(const ResourceRequestBody& input) {
   WebHTTPBody http_body;
   http_body.Initialize();
-  http_body.SetIdentifier(input->identifier());
-  http_body.SetContainsPasswordData(input->contains_sensitive_info());
-  for (const auto& element : *input->elements()) {
+  http_body.SetIdentifier(input.identifier());
+  http_body.SetContainsPasswordData(input.contains_sensitive_info());
+  for (auto& element : *input.elements()) {
     switch (element.type()) {
       case ResourceRequestBody::Element::TYPE_BYTES:
         http_body.AppendData(WebData(element.bytes(), element.length()));
@@ -389,13 +400,22 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
       case ResourceRequestBody::Element::TYPE_BLOB:
         http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()));
         break;
-      case ResourceRequestBody::Element::TYPE_DATA_PIPE:
-        // TODO(falken): Implement this.
-        NOTIMPLEMENTED() << "data pipe";
+      case ResourceRequestBody::Element::TYPE_DATA_PIPE: {
+        // Append the cloned data pipe to the |http_body|. This might not be
+        // needed for all callsites today but it respects the constness of
+        // |input|, as opposed to moving the data pipe out of |input|.
+        network::mojom::DataPipeGetterPtr cloned_data_pipe_getter;
+        const_cast<network::mojom::DataPipeGetterPtr&>(element.data_pipe())
+            ->Clone(mojo::MakeRequest(&cloned_data_pipe_getter));
+        http_body.AppendDataPipe(
+            cloned_data_pipe_getter.PassInterface().PassHandle());
         break;
+      }
+      case ResourceRequestBody::Element::TYPE_UNKNOWN:
       case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
-      default:
+      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+      case ResourceRequestBody::Element::TYPE_RAW_FILE:
         NOTREACHED();
         break;
     }
@@ -494,8 +514,23 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         }
         break;
       }
-      default:
-        NOTREACHED();
+      case WebHTTPBody::Element::kTypeDataPipe: {
+        // Convert the raw message pipe to network::mojom::DataPipeGetterPtr.
+        network::mojom::DataPipeGetterPtr data_pipe_getter;
+        data_pipe_getter.Bind(network::mojom::DataPipeGetterPtrInfo(
+            std::move(element.data_pipe_getter), 0u));
+
+        // Set the cloned DataPipeGetter to the output |request_body|, while
+        // keeping the original message pipe back in the input |httpBody|. This
+        // way the consumer of the |httpBody| can retrieve the data pipe
+        // multiple times (e.g. during redirects) until the request is finished.
+        network::mojom::DataPipeGetterPtr cloned_getter;
+        data_pipe_getter->Clone(mojo::MakeRequest(&cloned_getter));
+        request_body->AppendDataPipe(std::move(cloned_getter));
+        element.data_pipe_getter =
+            data_pipe_getter.PassInterface().PassHandle();
+        break;
+      }
     }
   }
   request_body->set_identifier(httpBody.Identifier());

@@ -28,9 +28,30 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
+#include "services/network/public/interfaces/data_pipe_getter.mojom-blink.h"
+
 namespace blink {
 
 class BlobDataHandle;
+
+// Refcounted wrapper around a DataPipeGetter to allow sharing the move-only
+// type. This is only needed so EncodedFormData/FormDataElement have a copy
+// constructor.
+class PLATFORM_EXPORT WrappedDataPipeGetter final
+    : public RefCounted<WrappedDataPipeGetter> {
+ public:
+  explicit WrappedDataPipeGetter(
+      network::mojom::blink::DataPipeGetterPtr data_pipe_getter)
+      : data_pipe_getter_(std::move(data_pipe_getter)) {}
+  ~WrappedDataPipeGetter() = default;
+
+  network::mojom::blink::DataPipeGetterPtr* GetPtr() {
+    return &data_pipe_getter_;
+  }
+
+ private:
+  network::mojom::blink::DataPipeGetterPtr data_pipe_getter_;
+};
 
 class PLATFORM_EXPORT FormDataElement final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -39,7 +60,6 @@ class PLATFORM_EXPORT FormDataElement final {
   FormDataElement() : type_(kData) {}
   explicit FormDataElement(const Vector<char>& array)
       : type_(kData), data_(array) {}
-
   FormDataElement(const String& filename,
                   long long file_start,
                   long long file_length,
@@ -49,15 +69,18 @@ class PLATFORM_EXPORT FormDataElement final {
         file_start_(file_start),
         file_length_(file_length),
         expected_file_modification_time_(expected_file_modification_time) {}
-  explicit FormDataElement(const String& blob_uuid,
-                           scoped_refptr<BlobDataHandle> optional_handle)
+  FormDataElement(const String& blob_uuid,
+                  scoped_refptr<BlobDataHandle> optional_handle)
       : type_(kEncodedBlob),
         blob_uuid_(blob_uuid),
         optional_blob_data_handle_(std::move(optional_handle)) {}
+  explicit FormDataElement(
+      scoped_refptr<WrappedDataPipeGetter> data_pipe_getter)
+      : type_(kDataPipe), data_pipe_getter_(std::move(data_pipe_getter)) {}
 
   bool IsSafeToSendToAnotherThread() const;
 
-  enum Type { kData, kEncodedFile, kEncodedBlob } type_;
+  enum Type { kData, kEncodedFile, kEncodedBlob, kDataPipe } type_;
   Vector<char> data_;
   String filename_;
   String blob_uuid_;
@@ -65,6 +88,7 @@ class PLATFORM_EXPORT FormDataElement final {
   long long file_start_;
   long long file_length_;
   double expected_file_modification_time_;
+  scoped_refptr<WrappedDataPipeGetter> data_pipe_getter_;
 };
 
 inline bool operator==(const FormDataElement& a, const FormDataElement& b) {
@@ -82,6 +106,8 @@ inline bool operator==(const FormDataElement& a, const FormDataElement& b) {
                b.expected_file_modification_time_;
   if (a.type_ == FormDataElement::kEncodedBlob)
     return a.blob_uuid_ == b.blob_uuid_;
+  if (a.type_ == FormDataElement::kDataPipe)
+    return a.data_pipe_getter_ == b.data_pipe_getter_;
 
   return true;
 }
@@ -114,12 +140,14 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
                        double expected_modification_time);
   void AppendBlob(const String& blob_uuid,
                   scoped_refptr<BlobDataHandle> optional_handle);
+  void AppendDataPipe(scoped_refptr<WrappedDataPipeGetter> handle);
 
   void Flatten(Vector<char>&) const;  // omits files
   String FlattenToString() const;     // omits files
 
   bool IsEmpty() const { return elements_.IsEmpty(); }
   const Vector<FormDataElement>& Elements() const { return elements_; }
+  Vector<FormDataElement>& MutableElements() { return elements_; }
 
   const Vector<char>& Boundary() const { return boundary_; }
   void SetBoundary(Vector<char> boundary) { boundary_ = boundary; }

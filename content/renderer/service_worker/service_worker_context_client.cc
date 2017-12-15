@@ -198,7 +198,7 @@ void ToWebServiceWorkerRequest(const ResourceRequest& request,
   }
   if (request.request_body) {
     blink::WebHTTPBody body =
-        GetWebHTTPBodyForRequestBody(request.request_body);
+        GetWebHTTPBodyForRequestBody(*request.request_body);
     body.SetUniqueBoundary();
     web_request->SetBody(body);
   }
