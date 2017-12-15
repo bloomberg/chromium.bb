@@ -87,13 +87,9 @@ static constexpr float kWebVrAngleRadians = 9.88f * base::kPiFloat / 180;
 static constexpr int kToastTimeoutSeconds = kWebVrUrlToastTimeoutSeconds;
 
 static constexpr float kSplashScreenTextDistance = 2.5f;
-static constexpr float kSplashScreenTextFontHeightM =
-    0.05f * kSplashScreenTextDistance;
-static constexpr float kSplashScreenTextWidthM =
-    0.9f * kSplashScreenTextDistance;
-static constexpr float kSplashScreenTextHeightM =
-    0.08f * kSplashScreenTextDistance;
-static constexpr float kSplashScreenTextVerticalOffset = -0.18f;
+static constexpr float kSplashScreenTextFontHeightDMM = 0.05f;
+static constexpr float kSplashScreenTextWidthDMM = 0.9f;
+static constexpr float kSplashScreenTextVerticalOffsetDMM = -0.072f;
 static constexpr float kSplashScreenMinDurationSeconds = 3;
 
 static constexpr float kButtonDiameterDMM = 0.088f;
@@ -152,8 +148,9 @@ static constexpr float kUnderDevelopmentNoticeRotationRad = -0.78f;
 
 static constexpr float kSpinnerWidth = kCloseButtonWidth;
 static constexpr float kSpinnerHeight = kCloseButtonHeight;
-static constexpr float kSpinnerVerticalOffset = kSplashScreenTextVerticalOffset;
 static constexpr float kSpinnerDistance = kSplashScreenTextDistance;
+static constexpr float kSpinnerVerticalOffset =
+    kSplashScreenTextVerticalOffsetDMM * kSpinnerDistance;
 
 static constexpr float kTimeoutMessageHorizontalPaddingDMM = 0.04f;
 static constexpr float kTimeoutMessageVerticalPaddingDMM = 0.024f;

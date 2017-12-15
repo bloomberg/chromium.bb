@@ -28,8 +28,7 @@ class TextInput : public UiElement {
   // Called when the user commits text while this element is focused.
   typedef base::RepeatingCallback<void(const TextInputInfo&)>
       OnInputCommittedCallback;
-  TextInput(int maximum_width_pixels,
-            float font_height_meters,
+  TextInput(float font_height_meters,
             OnFocusChangedCallback focus_changed_callback,
             OnInputEditedCallback input_edit_callback);
   ~TextInput() override;

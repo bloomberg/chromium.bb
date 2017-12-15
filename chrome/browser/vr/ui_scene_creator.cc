@@ -106,26 +106,25 @@ void OnSuggestionModelAdded(UiScene* scene,
   icon_box->SetSize(kSuggestionIconFieldWidthDMM, kSuggestionHeightDMM);
   icon_box->AddChild(std::move(icon));
 
-  auto content_text =
-      base::MakeUnique<Text>(1024, kSuggestionContentTextHeightDMM);
+  auto content_text = base::MakeUnique<Text>(kSuggestionContentTextHeightDMM);
   content_text->SetDrawPhase(kPhaseForeground);
   content_text->SetType(kTypeOmniboxSuggestionContentText);
   content_text->set_hit_testable(false);
+  content_text->SetTextLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   content_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   content_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
-  content_text->SetMultiLine(false);
   BindColor(model, content_text.get(), &ColorScheme::omnibox_suggestion_content,
             &Text::SetColor);
   Text* p_content_text = content_text.get();
 
   auto description_text =
-      base::MakeUnique<Text>(1024, kSuggestionDescriptionTextHeightDMM);
+      base::MakeUnique<Text>(kSuggestionDescriptionTextHeightDMM);
   description_text->SetDrawPhase(kPhaseForeground);
   description_text->SetType(kTypeOmniboxSuggestionDescriptionText);
   description_text->set_hit_testable(false);
+  content_text->SetTextLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   description_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   description_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
-  description_text->SetMultiLine(false);
   BindColor(model, description_text.get(),
             &ColorScheme::omnibox_suggestion_description, &Text::SetColor);
   Text* p_description_text = description_text.get();
@@ -339,14 +338,12 @@ void UiSceneCreator::CreateWebVRExitWarning() {
 
   // Create transient exit warning.
   auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kExitWarningDistance);
-  auto exit_warning_text =
-      base::MakeUnique<Text>(1024, kExitWarningFontHeightDMM);
+  auto exit_warning_text = base::MakeUnique<Text>(kExitWarningFontHeightDMM);
   exit_warning_text->SetName(kExitWarningText);
   exit_warning_text->SetDrawPhase(kPhaseOverlayForeground);
   exit_warning_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_BROWSER_UNSUPPORTED_PAGE));
   exit_warning_text->SetSize(kExitWarningTextWidthDMM, 0);
-  exit_warning_text->SetMultiLine(true);
   exit_warning_text->SetVisible(true);
   exit_warning_text->set_hit_testable(false);
   BindColor(model_, exit_warning_text.get(),
@@ -516,17 +513,19 @@ void UiSceneCreator::CreateSplashScreenForDirectWebVrLaunch() {
                        std::move(transient_parent));
 
   // Add "Powered by Chrome" text.
-  auto text = base::MakeUnique<Text>(512, kSplashScreenTextFontHeightM);
+  auto text_scaler =
+      base::MakeUnique<ScaledDepthAdjuster>(kSplashScreenTextDistance);
+  auto text = base::MakeUnique<Text>(kSplashScreenTextFontHeightDMM);
   BindColor(model_, text.get(), &ColorScheme::splash_screen_text_color,
             &Text::SetColor);
   text->SetText(l10n_util::GetStringUTF16(IDS_VR_POWERED_BY_CHROME_MESSAGE));
   text->SetName(kSplashScreenText);
   text->SetDrawPhase(kPhaseOverlayForeground);
   text->set_hit_testable(false);
-  text->SetSize(kSplashScreenTextWidthM, kSplashScreenTextHeightM);
-  text->SetTranslate(0, kSplashScreenTextVerticalOffset,
-                     -kSplashScreenTextDistance);
-  scene_->AddUiElement(kSplashScreenTransientParent, std::move(text));
+  text->SetSize(kSplashScreenTextWidthDMM, 0);
+  text->SetTranslate(0, kSplashScreenTextVerticalOffsetDMM, 0);
+  text_scaler->AddChild(std::move(text));
+  scene_->AddUiElement(kSplashScreenTransientParent, std::move(text_scaler));
 
   // Add splash screen background.
   auto bg = base::MakeUnique<FullScreenRect>();
@@ -593,7 +592,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
                         kTimeoutMessageIconHeightDMM);
 
   auto timeout_text =
-      Create<Text>(kWebVrTimeoutMessageText, kPhaseOverlayForeground, 512,
+      Create<Text>(kWebVrTimeoutMessageText, kPhaseOverlayForeground,
                    kTimeoutMessageTextFontHeightDMM);
   timeout_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_TIMEOUT_MESSAGE));
@@ -622,7 +621,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
                    &DiscButton::SetButtonColors);
 
   auto timeout_button_text =
-      Create<Text>(kWebVrTimeoutMessageButtonText, kPhaseOverlayForeground, 512,
+      Create<Text>(kWebVrTimeoutMessageButtonText, kPhaseOverlayForeground,
                    kTimeoutMessageTextFontHeightDMM);
 
   // Disk-style button text is not uppercase. See crbug.com/787654.
@@ -645,7 +644,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
 }
 
 void UiSceneCreator::CreateUnderDevelopmentNotice() {
-  auto text = base::MakeUnique<Text>(512, kUnderDevelopmentNoticeFontHeightDMM);
+  auto text = base::MakeUnique<Text>(kUnderDevelopmentNoticeFontHeightDMM);
   BindColor(model_, text.get(), &ColorScheme::world_background_text,
             &Text::SetColor);
   text->SetText(l10n_util::GetStringUTF16(IDS_VR_UNDER_DEVELOPMENT_NOTICE));
@@ -796,7 +795,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
           },
           speech_result_parent)));
   auto speech_result =
-      base::MakeUnique<Text>(256, kVoiceSearchRecognitionResultTextHeight);
+      base::MakeUnique<Text>(kVoiceSearchRecognitionResultTextHeight);
   speech_result->SetName(kSpeechRecognitionResultText);
   speech_result->SetDrawPhase(kPhaseForeground);
   speech_result->SetTranslate(0.f, kSpeechRecognitionResultTextYOffset, 0.f);
@@ -990,13 +989,12 @@ void UiSceneCreator::CreateController() {
 }
 
 std::unique_ptr<TextInput> UiSceneCreator::CreateTextInput(
-    int maximum_width_pixels,
     float font_height_meters,
     Model* model,
     TextInputInfo* text_input_model,
     TextInputDelegate* text_input_delegate) {
   auto text_input = base::MakeUnique<TextInput>(
-      maximum_width_pixels, font_height_meters,
+      font_height_meters,
       base::BindRepeating(
           [](Model* model, bool focused) { model->editing_input = focused; },
           base::Unretained(model)),
@@ -1155,7 +1153,7 @@ void UiSceneCreator::CreateOmnibox() {
 
   float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM;
   auto omnibox_text_field =
-      CreateTextInput(1024, kOmniboxTextHeightDMM, model_,
+      CreateTextInput(kOmniboxTextHeightDMM, model_,
                       &model_->omnibox_text_field_info, text_input_delegate_);
   omnibox_text_field->set_input_committed_callback(base::BindRepeating(
       [](Model* model, UiBrowserInterface* browser, const TextInputInfo& text) {

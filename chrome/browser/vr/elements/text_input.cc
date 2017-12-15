@@ -16,13 +16,12 @@ constexpr int kCursorBlinkHalfPeriodMs = 600;
 
 namespace vr {
 
-TextInput::TextInput(int maximum_width_pixels,
-                     float font_height_meters,
+TextInput::TextInput(float font_height_meters,
                      OnFocusChangedCallback focus_changed_callback,
                      OnInputEditedCallback input_edit_callback)
     : focus_changed_callback_(focus_changed_callback),
       input_edit_callback_(input_edit_callback) {
-  auto text = base::MakeUnique<Text>(maximum_width_pixels, font_height_meters);
+  auto text = base::MakeUnique<Text>(font_height_meters);
   text->SetType(kTypeTextInputHint);
   text->SetDrawPhase(kPhaseForeground);
   text->set_hit_testable(false);
@@ -30,12 +29,12 @@ TextInput::TextInput(int maximum_width_pixels,
   text->set_x_anchoring(LEFT);
   text->set_x_centering(LEFT);
   text->SetSize(1, 1);
-  text->SetMultiLine(false);
+  text->SetTextLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
   hint_element_ = text.get();
   this->AddChild(std::move(text));
 
-  text = base::MakeUnique<Text>(maximum_width_pixels, font_height_meters);
+  text = base::MakeUnique<Text>(font_height_meters);
   text->SetType(kTypeTextInputText);
   text->SetDrawPhase(kPhaseForeground);
   text->set_hit_testable(true);
@@ -44,7 +43,7 @@ TextInput::TextInput(int maximum_width_pixels,
   text->set_x_centering(LEFT);
   text->set_bubble_events(true);
   text->SetSize(1, 1);
-  text->SetMultiLine(false);
+  text->SetTextLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
   text->SetCursorEnabled(true);
   text_element_ = text.get();

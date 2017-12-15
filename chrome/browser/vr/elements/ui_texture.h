@@ -34,10 +34,14 @@ class UiTexture {
   virtual ~UiTexture();
 
   void DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size);
+  void MeasureSize();
+  // TODO(bshe): make this pure virtual.
+  virtual void OnMeasureSize();
   virtual gfx::Size GetPreferredTextureSize(int maximum_width) const = 0;
   virtual gfx::SizeF GetDrawnSize() const = 0;
   virtual bool LocalHitTest(const gfx::PointF& point) const;
 
+  bool measured() const { return measured_; }
   bool dirty() const { return dirty_; }
 
   void OnInitialized();
@@ -126,12 +130,17 @@ class UiTexture {
   static bool IsRTL();
   static void SetForceFontFallbackFailureForTesting(bool force);
 
-  void set_dirty() { dirty_ = true; }
+  void set_dirty() {
+    measured_ = false;
+    dirty_ = true;
+  }
+
   SkColor foreground_color() const;
   SkColor background_color() const;
 
  private:
   bool dirty_ = true;
+  bool measured_ = false;
   base::Optional<SkColor> foreground_color_;
   base::Optional<SkColor> background_color_;
 
