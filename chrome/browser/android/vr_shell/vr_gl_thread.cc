@@ -69,7 +69,7 @@ void VrGLThread::Init() {
 
   vr_shell_gl_ = base::MakeUnique<VrShellGl>(
       this, std::move(ui), gvr_api_, reprojected_rendering_, daydream_support_,
-      ui_initial_state_.in_web_vr);
+      ui_initial_state_.in_web_vr, ui_initial_state_.assets_available);
 
   browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
 

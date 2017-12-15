@@ -32,10 +32,10 @@ struct AssetsSingletonTrait;
 // Manages VR assets such as the environment. Gets updated by the VR assets
 // component.
 //
-// All function are thread-safe. The reason is that the component will be made
-// available on a different thread than the asset load request. Internally, the
-// function calls will be posted on the main thread. The asset load may be
-// performed on a worker thread.
+// If not noted otherwise the functions are thread-safe. The reason is that the
+// component will be made available on a different thread than the asset load
+// request. Internally, the function calls will be posted on the main thread.
+// The asset load may be performed on a worker thread.
 class Assets {
  public:
   typedef base::OnceCallback<void(AssetsLoadStatus status,
@@ -51,11 +51,16 @@ class Assets {
                         const base::FilePath& install_dir,
                         std::unique_ptr<base::DictionaryValue> manifest);
 
-  // Calls |on_loaded| when a component version is ready and the containing
-  // assets are loaded. |on_loaded| will be called on the caller's thread.
-  void LoadWhenComponentReady(OnAssetsLoadedCallback on_loaded);
+  // Loads asset files and calls |on_loaded| passing the loaded asset files.
+  // |on_loaded| will be called on the caller's thread. Component must be ready
+  // when calling this function.
+  void Load(OnAssetsLoadedCallback on_loaded);
 
   MetricsHelper* GetMetricsHelper();
+
+  // Returns true if the component is ready.
+  // Must be called on the main thread.
+  bool ComponentReady();
 
  private:
   static void LoadAssetsTask(
@@ -68,15 +73,12 @@ class Assets {
   ~Assets();
   void OnComponentReadyInternal(const base::Version& version,
                                 const base::FilePath& install_dir);
-  void LoadWhenComponentReadyInternal(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      OnAssetsLoadedCallback on_loaded);
+  void LoadInternal(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                    OnAssetsLoadedCallback on_loaded);
 
   bool component_ready_ = false;
   base::Version component_version_;
   base::FilePath component_install_dir_;
-  OnAssetsLoadedCallback on_assets_loaded_;
-  scoped_refptr<base::SingleThreadTaskRunner> on_assets_loaded_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<MetricsHelper> metrics_helper_;
 

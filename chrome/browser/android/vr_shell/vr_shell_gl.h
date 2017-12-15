@@ -83,7 +83,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
             gvr_context* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
-            bool start_in_web_vr_mode);
+            bool start_in_web_vr_mode,
+            bool assets_available);
   ~VrShellGl() override;
 
   void Initialize();
@@ -291,6 +292,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   gfx::Transform last_used_head_pose_;
 
   vr::ControllerModel controller_model_;
+
+  bool assets_available_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

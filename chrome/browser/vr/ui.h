@@ -37,6 +37,7 @@ struct UiInitialState {
   bool browsing_disabled = false;
   bool has_or_can_request_audio_permission = true;
   bool skips_redraw_when_not_dirty = false;
+  bool assets_available = false;
 };
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
