@@ -468,16 +468,6 @@ void WebDevToolsAgentImpl::LayerTreeViewChanged(
     it.value->SetLayerTreeId(layer_tree_id_);
 }
 
-void WebDevToolsAgentImpl::EnableTracing(const String& category_filter) {
-  if (client_)
-    client_->EnableTracing(category_filter);
-}
-
-void WebDevToolsAgentImpl::DisableTracing() {
-  if (client_)
-    client_->DisableTracing();
-}
-
 void WebDevToolsAgentImpl::ShowReloadingBlanket() {
   for (auto& it : overlay_agents_)
     it.value->ShowReloadingBlanket();

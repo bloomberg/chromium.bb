@@ -13,7 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
 #include "content/child/child_process.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
@@ -239,23 +238,6 @@ bool DevToolsAgent::RequestDevToolsForFrame(int session_id,
       base::Bind(&DevToolsAgent::OnRequestNewWindowCompleted,
                  weak_factory_.GetWeakPtr(), session_id));
   return true;
-}
-
-void DevToolsAgent::EnableTracing(const WebString& category_filter) {
-  // Tracing is already started by DevTools TracingHandler::Start for the
-  // renderer target in the browser process. It will eventually start tracing in
-  // the renderer process via IPC. But we still need a redundant
-  // TraceLog::SetEnabled call here for
-  // InspectorTracingAgent::emitMetadataEvents(), at which point, we are not
-  // sure if tracing is already started in the renderer process.
-  TraceLog* trace_log = TraceLog::GetInstance();
-  trace_log->SetEnabled(
-      base::trace_event::TraceConfig(category_filter.Utf8(), ""),
-      TraceLog::RECORDING_MODE);
-}
-
-void DevToolsAgent::DisableTracing() {
-  TraceLog::GetInstance()->SetDisabled();
 }
 
 void DevToolsAgent::SetCPUThrottlingRate(double rate) {

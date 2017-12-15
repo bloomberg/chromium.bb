@@ -7,7 +7,9 @@
 
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "platform/PlatformExport.h"
 #include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace WTF {
 
@@ -34,6 +36,9 @@ inline base::TimeTicks ToTraceTimestamp(double seconds) {
 
 // This is to avoid error of passing a chromium time internal value.
 void ToTraceTimestamp(int64_t);
+
+PLATFORM_EXPORT void EnableTracing(const String& category_filter);
+PLATFORM_EXPORT void DisableTracing();
 
 }  // namespace TraceEvent
 }  // namespace blink

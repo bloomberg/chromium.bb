@@ -15,6 +15,7 @@ jumbo_source_set("instrumentation") {
     "resource_coordinator/RendererResourceCoordinator.h",
     "tracing/MemoryCacheDumpProvider.cpp",
     "tracing/MemoryCacheDumpProvider.h",
+    "tracing/TraceEvent.cpp",
     "tracing/TraceEvent.h",
     "tracing/TracedValue.cpp",
     "tracing/TracedValue.h",

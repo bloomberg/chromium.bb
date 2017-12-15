@@ -26,8 +26,6 @@ class CORE_EXPORT InspectorTracingAgent final
    public:
     virtual ~Client() {}
 
-    virtual void EnableTracing(const String& category_filter) = 0;
-    virtual void DisableTracing() = 0;
     virtual void ShowReloadingBlanket() = 0;
     virtual void HideReloadingBlanket() = 0;
   };
