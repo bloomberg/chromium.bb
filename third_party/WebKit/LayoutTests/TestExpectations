@@ -3687,3 +3687,6 @@ crbug.com/794180 http/tests/devtools/layers/layer-compositing-reasons.js [ Failu
 crbug.com/779087 external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
 crbug.com/779087 external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
 crbug.com/779087 external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
+
+# Sheriff failures 2017-12-15
+crbug.com/795250 [ Win7 ] virtual/scroll_customization/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
