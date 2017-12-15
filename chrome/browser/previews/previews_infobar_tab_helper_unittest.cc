@@ -240,7 +240,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateOfflineInfoBar) {
   int64_t expected_file_size = .55 * item.file_size;
   offline_pages::OfflinePageHeader header;
   offline_pages::OfflinePageTabHelper::FromWebContents(web_contents())
-      ->SetOfflinePage(item, header, true);
+      ->SetOfflinePage(item, header, true, true);
 
   auto* data_reduction_proxy_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
