@@ -682,7 +682,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
                                       void *user_priv, long deadline) {
   const uint8_t *data_start = data;
   const uint8_t *const data_end = data + data_sz;
-  aom_codec_err_t res;
+  aom_codec_err_t res = AOM_CODEC_OK;
   uint32_t frame_sizes[8];
   int frame_count = 0;
 
