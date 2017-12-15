@@ -9,7 +9,22 @@ source_set("cpp") {
     "location_provider.h",
   ]
 
-  deps = [
+  public_deps = [
     "//device/geolocation/public/interfaces",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "scoped_geolocation_overrider.cc",
+    "scoped_geolocation_overrider.h",
+  ]
+
+  deps = [
+    ":cpp",
+    "//services/device/public/interfaces",
+    "//services/service_manager/public/cpp",
   ]
 }
