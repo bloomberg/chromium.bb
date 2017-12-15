@@ -19,6 +19,20 @@ fun:*InterceptionAgent*sandbox*
 fun:*ResolverThunk*sandbox*
 fun:*Target*SandboxFactory*sandbox*
 fun:*ProcessState*sandbox*
+
+# These functions run pre-binding in the 64 bit build, when the shadow is not
+# available, and thus can't be instrumented.
+fun:*InternalThunk*
+fun:*TargetNtCreateFile64
+fun:*TargetNtMapViewOfSection*
+fun:*TargetNtOpenFile64
+fun:*TargetNtOpenProcessToken64
+fun:*TargetNtOpenThreadToken*
+fun:*TargetNtQueryAttributesFile64
+fun:*TargetNtSetInformationThread
+fun:*TargetNtSetInformationThread64
+fun:*TargetNtUnmapViewOfSection64
+
 src:*pe_image.h
 src:*pe_image.cc
 src:*resolver_32.cc
