@@ -27,7 +27,8 @@ class NGLineBoxFragmentBuilder;
 class NGTextFragmentBuilder;
 struct NGPositionedFloat;
 
-// A class for inline layout (e.g. a <span> with no special style).
+// A class for laying out an inline formatting context, i.e. a block with inline
+// children.
 //
 // This class determines the position of NGInlineItem and build line boxes.
 //
