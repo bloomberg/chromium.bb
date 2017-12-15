@@ -7,16 +7,7 @@
       `Verify that last selected element is restored properly later, even if it failed to do so once.\n`);
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
-  await TestRunner.loadHTML(`
-      <p>
-      Verify that last selected element is restored properly later, even if
-      it failed to do so once.
-      </p>
-      <div>
-          <span id="inspected"></span>
-      </div>
-    `);
-  await TestRunner.addScriptTag('../resources/elements-panel-shadow-selection-on-refresh.js');
+  await TestRunner.navigatePromise('./resources/elements-panel-restore-selection-when-node-comes-later.html');
 
   var node;
 
@@ -80,17 +71,15 @@
   }
 
   /**
-     * @param {string} pathToIgnore
-     */
+   * @param {string} pathToIgnore
+   */
   function overridePushNodeForPath(pathToIgnore) {
     var original = TestRunner.override(SDK.DOMModel.prototype, 'pushNodeByPathToFrontend', override);
 
-    function override(nodePath, callback) {
-      if (nodePath === pathToIgnore) {
-        setTimeout(callback.bind(null), 0);
-        return;
-      }
-      original(nodePath, callback);
+    function override(nodePath) {
+      if (nodePath === pathToIgnore)
+        return Promise.resolve(null);
+      return original(nodePath);
     }
   }
 })();
