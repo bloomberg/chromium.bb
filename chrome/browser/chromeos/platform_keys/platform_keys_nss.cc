@@ -599,8 +599,13 @@ void FilterCertificatesOnWorkerThread(
     if (cert_slot != state->slot_)
       continue;
 
+    // Allow UTF-8 inside PrintableStrings in client certificates. See
+    // crbug.com/770323 and crbug.com/788655.
+    net::X509Certificate::UnsafeCreateOptions options;
+    options.printable_string_is_utf8 = true;
     scoped_refptr<net::X509Certificate> cert =
-        net::x509_util::CreateX509CertificateFromCERTCertificate(cert_handle);
+        net::x509_util::CreateX509CertificateFromCERTCertificate(cert_handle,
+                                                                 {}, options);
     if (!cert)
       continue;
 
