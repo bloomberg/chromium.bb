@@ -484,9 +484,8 @@ void NGBoxFragmentPainter::PaintText(const NGPaintFragment& text_fragment,
       paint_info.context, text_fragment,
       DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
 
-  const Document& document = box_fragment_.GetLayoutObject()->GetDocument();
   NGTextFragmentPainter text_painter(text_fragment);
-  text_painter.Paint(document, paint_info, paint_offset);
+  text_painter.Paint(paint_info, paint_offset);
 }
 
 bool NGBoxFragmentPainter::

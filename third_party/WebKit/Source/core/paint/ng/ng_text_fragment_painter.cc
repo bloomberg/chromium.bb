@@ -111,12 +111,12 @@ static void PaintSelection(GraphicsContext& context,
 
 // This is copied from InlineTextBoxPainter::PaintSelection() but lacks of
 // ltr, expanding new line wrap or so which uses InlineTextBox functions.
-void NGTextFragmentPainter::Paint(const Document& document,
-                                  const PaintInfo& paint_info,
+void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
                                   const LayoutPoint& paint_offset) {
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
+  const Document& document = fragment_.GetLayoutObject()->GetDocument();
 
   if (!ShouldPaintTextFragment(text_fragment, style))
     return;
