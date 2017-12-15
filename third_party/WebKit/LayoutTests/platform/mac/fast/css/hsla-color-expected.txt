@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x570.56 [bgcolor=#FFFF00]
-      LayoutBlockFlow {H1} at (0,0) size 784x37 [color=#FF00007F]
+      LayoutBlockFlow {H1} at (0,0) size 784x37 [color=#FF000080]
         LayoutText {#text} at (0,0) size 394x37
           text run at (0,0) width 394: "This should be red, alpha 0.5"
-      LayoutBlockFlow {H1} at (0,58.44) size 784x37 [color=#FF00007F]
+      LayoutBlockFlow {H1} at (0,58.44) size 784x37 [color=#FF000080]
         LayoutText {#text} at (0,0) size 455x37
           text run at (0,0) width 455: "This should also be red, alpha 0.5"
       LayoutBlockFlow {H1} at (0,116.88) size 784x37 [color=#00FF0000]

@@ -44,7 +44,7 @@ debug("Valid value 'hsl(240, 100%, 50%)':");
 test("hsl(240, 100%, 50%)", "rgb(0, 0, 255)", "rgb(0, 0, 255)");
 
 debug("Valid value 'hsla(240, 100%, 50%, 0.5)':");
-test("hsla(240, 100%, 50%, 0.5)", "rgba(0, 0, 255, 0.498)", "rgba(0, 0, 255, 0.498)");
+test("hsla(240, 100%, 50%, 0.5)", "rgba(0, 0, 255, 0.5)", "rgba(0, 0, 255, 0.5)");
 
 debug("Initial value:");
 test("initial", "initial", "rgb(0, 0, 0)");
