@@ -27,7 +27,6 @@ void MockHidConnection::PlatformRead(ReadCallback callback) {
 
 void MockHidConnection::PlatformWrite(
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
   std::move(callback).Run(true);
 }
@@ -42,7 +41,6 @@ void MockHidConnection::PlatformGetFeatureReport(uint8_t report_id,
 
 void MockHidConnection::PlatformSendFeatureReport(
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size,
     WriteCallback callback) {
   std::move(callback).Run(true);
 }

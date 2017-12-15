@@ -49,7 +49,6 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   // The report ID (or 0 if report IDs are not supported by the device) is
   // always expected in the first byte of the buffer.
   void Write(scoped_refptr<base::RefCountedBytes> buffer,
-             size_t size,
              WriteCallback callback);
 
   // The buffer will contain whatever report data was received from the device.
@@ -60,7 +59,6 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   // The report ID (or 0 if report IDs are not supported by the device) is
   // always expected in the first byte of the buffer.
   void SendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
-                         size_t size,
                          WriteCallback callback);
 
  protected:
@@ -72,13 +70,11 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   virtual void PlatformClose() = 0;
   virtual void PlatformRead(ReadCallback callback) = 0;
   virtual void PlatformWrite(scoped_refptr<base::RefCountedBytes> buffer,
-                             size_t size,
                              WriteCallback callback) = 0;
   virtual void PlatformGetFeatureReport(uint8_t report_id,
                                         ReadCallback callback) = 0;
   virtual void PlatformSendFeatureReport(
       scoped_refptr<base::RefCountedBytes> buffer,
-      size_t size,
       WriteCallback callback) = 0;
 
   bool IsReportIdProtected(uint8_t report_id);
