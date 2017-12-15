@@ -53,8 +53,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   }
 
  private:
-  CSSSkew(CSSNumericValue* ax, CSSNumericValue* ay)
-      : CSSTransformComponent(true /* is2D */), ax_(ax), ay_(ay) {}
+  CSSSkew(CSSNumericValue* ax, CSSNumericValue* ay);
 
   Member<CSSNumericValue> ax_;
   Member<CSSNumericValue> ay_;

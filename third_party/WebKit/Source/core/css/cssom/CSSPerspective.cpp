@@ -10,15 +10,19 @@
 
 namespace blink {
 
+namespace {
+
+bool IsValidPerspectiveLength(CSSNumericValue* value) {
+  return value &&
+         value->Type().MatchesBaseType(CSSNumericValueType::BaseType::kLength);
+}
+
+}  // namespace
+
 CSSPerspective* CSSPerspective::Create(CSSNumericValue* length,
                                        ExceptionState& exception_state) {
-  if (length->GetType() != CSSStyleValue::StyleValueType::kLengthType) {
+  if (!IsValidPerspectiveLength(length)) {
     exception_state.ThrowTypeError("Must pass length to CSSPerspective");
-    return nullptr;
-  }
-  if (length->ContainsPercent()) {
-    exception_state.ThrowTypeError(
-        "CSSPerspective does not support CSSNumericValues with percent units");
     return nullptr;
   }
   return new CSSPerspective(length);
@@ -26,13 +30,8 @@ CSSPerspective* CSSPerspective::Create(CSSNumericValue* length,
 
 void CSSPerspective::setLength(CSSNumericValue* length,
                                ExceptionState& exception_state) {
-  if (length->GetType() != CSSStyleValue::StyleValueType::kLengthType) {
+  if (!IsValidPerspectiveLength(length)) {
     exception_state.ThrowTypeError("Must pass length to CSSPerspective");
-    return;
-  }
-  if (length->ContainsPercent()) {
-    exception_state.ThrowTypeError(
-        "CSSPerspective does not support CSSNumericValues with percent units");
     return;
   }
   length_ = length;
@@ -41,17 +40,8 @@ void CSSPerspective::setLength(CSSNumericValue* length,
 CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_EQ(value.FunctionType(), CSSValuePerspective);
   DCHECK_EQ(value.length(), 1U);
-  if (!value.Item(0).IsPrimitiveValue() ||
-      !ToCSSPrimitiveValue(value.Item(0)).IsLength() ||
-      ToCSSPrimitiveValue(value.Item(0)).IsCalculated())
-    return nullptr;
   CSSNumericValue* length =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
-  // TODO(meade): This shouldn't happen once CSSNumericValue is fully
-  // implemented, so once that happens this check can be removed.
-  if (!length)
-    return nullptr;
-  DCHECK(!length->ContainsPercent());
   return new CSSPerspective(length);
 }
 
@@ -83,6 +73,11 @@ const CSSFunctionValue* CSSPerspective::ToCSSValue(
   CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
   result->Append(*length_->ToCSSValue(secure_context_mode));
   return result;
+}
+
+CSSPerspective::CSSPerspective(CSSNumericValue* length)
+    : CSSTransformComponent(false /* is2D */), length_(length) {
+  DCHECK(length);
 }
 
 }  // namespace blink
