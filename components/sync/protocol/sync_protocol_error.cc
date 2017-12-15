@@ -47,6 +47,8 @@ const char* GetClientActionString(ClientAction action) {
   return "";
 }
 
+#undef ENUM_CASE
+
 SyncProtocolError::SyncProtocolError()
     : error_type(UNKNOWN_ERROR), action(UNKNOWN_ACTION) {}
 
