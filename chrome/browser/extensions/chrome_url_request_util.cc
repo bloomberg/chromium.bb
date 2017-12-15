@@ -92,6 +92,9 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                       std::string* read_mime_type,
                       const net::CompletionCallback& callback,
                       bool read_result) {
+    response_info_.headers->AddHeader(
+        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
+                           read_mime_type->c_str()));
     *out_mime_type = *read_mime_type;
     if (base::StartsWith(*read_mime_type, "text/",
                          base::CompareCase::INSENSITIVE_ASCII)) {
