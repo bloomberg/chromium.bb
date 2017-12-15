@@ -38,12 +38,16 @@ IsolateHolder::IsolateHolder(
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode)
-    : IsolateHolder(std::move(task_runner), access_mode, kAllowAtomicsWait) {}
+    : IsolateHolder(std::move(task_runner),
+                    access_mode,
+                    kAllowAtomicsWait,
+                    nullptr) {}
 
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode,
-    AllowAtomicsWaitMode atomics_wait_mode)
+    AllowAtomicsWaitMode atomics_wait_mode,
+    v8::StartupData* startup_data)
     : access_mode_(access_mode) {
   v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
   CHECK(allocator) << "You need to invoke gin::IsolateHolder::Initialize first";
@@ -56,6 +60,14 @@ IsolateHolder::IsolateHolder(
   params.array_buffer_allocator = allocator;
   params.allow_atomics_wait = atomics_wait_mode == kAllowAtomicsWait;
   params.external_references = g_reference_table;
+
+  if (startup_data) {
+    CHECK(g_reference_table);
+    V8Initializer::GetV8ContextSnapshotData(startup_data);
+    if (startup_data->data) {
+      params.snapshot_blob = startup_data;
+    }
+  }
   isolate_ = v8::Isolate::New(params);
 
   // TODO(ssid): Make sure the task runner is never null here, crbug.com/762723.
