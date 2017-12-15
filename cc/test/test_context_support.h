@@ -58,8 +58,9 @@ class TestContextSupport : public gpu::ContextSupport {
   void CreateTransferCacheEntry(const ClientTransferCacheEntry& entry) override;
   bool ThreadsafeLockTransferCacheEntry(TransferCacheEntryType entry_type,
                                         uint32_t entry_id) override;
-  void UnlockTransferCacheEntry(TransferCacheEntryType entry_type,
-                                uint32_t entry_id) override;
+  void UnlockTransferCacheEntries(
+      const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries)
+      override;
   void DeleteTransferCacheEntry(TransferCacheEntryType entry_type,
                                 uint32_t entry_id) override;
 

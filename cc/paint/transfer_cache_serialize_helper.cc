@@ -35,7 +35,8 @@ void TransferCacheSerializeHelper::CreateEntry(
 }
 
 void TransferCacheSerializeHelper::FlushEntries() {
-  FlushEntriesInternal(added_entries_);
+  FlushEntriesInternal(
+      std::vector<EntryKey>(added_entries_.begin(), added_entries_.end()));
   added_entries_.clear();
 }
 

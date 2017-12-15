@@ -6,7 +6,7 @@
 #define CC_TEST_TRANSFER_CACHE_TEST_HELPER_H_
 
 #include <map>
-#include <set>
+#include <vector>
 
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
@@ -31,7 +31,7 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
   // Serialization helpers.
   bool LockEntryInternal(TransferCacheEntryType type, uint32_t id) override;
   void CreateEntryInternal(const ClientTransferCacheEntry& entry) override;
-  void FlushEntriesInternal(const std::set<EntryKey>& entries) override;
+  void FlushEntriesInternal(const std::vector<EntryKey>& entries) override;
 
   std::map<EntryKey, std::unique_ptr<ServiceTransferCacheEntry>> entries_;
   std::set<EntryKey> locked_entries_;

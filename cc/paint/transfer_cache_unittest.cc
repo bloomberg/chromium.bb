@@ -103,7 +103,7 @@ TEST_F(TransferCacheTest, Basic) {
   EXPECT_NE(nullptr, service_cache->GetEntry(entry.Type(), entry.Id()));
 
   // Unlock on client side and flush to service.
-  context_support->UnlockTransferCacheEntry(entry.Type(), entry.Id());
+  context_support->UnlockTransferCacheEntries({{entry.Type(), entry.Id()}});
   gl->Finish();
 
   // Re-lock on client side and validate state. No need to flush as lock is
@@ -131,7 +131,7 @@ TEST_F(TransferCacheTest, Eviction) {
   EXPECT_NE(nullptr, service_cache->GetEntry(entry.Type(), entry.Id()));
 
   // Unlock on client side and flush to service.
-  context_support->UnlockTransferCacheEntry(entry.Type(), entry.Id());
+  context_support->UnlockTransferCacheEntries({{entry.Type(), entry.Id()}});
   gl->Finish();
 
   // Evict on the service side.

@@ -119,11 +119,9 @@ class TransferCacheSerializeHelperImpl
   }
 
   void FlushEntriesInternal(
-      const std::set<std::pair<cc::TransferCacheEntryType, uint32_t>>& entries)
-      final {
-    // TODO(vmpstr): Add a bulk unlock API instead.
-    for (auto& entry : entries)
-      gl_->UnlockTransferCacheEntry(entry.first, entry.second);
+      const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
+          entries) final {
+    gl_->UnlockTransferCacheEntries(entries);
   }
 
   GLES2Implementation* gl_;
@@ -6195,10 +6193,10 @@ bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(
   return share_group()->transfer_cache()->LockTransferCacheEntry(type, id);
 }
 
-void GLES2Implementation::UnlockTransferCacheEntry(
-    cc::TransferCacheEntryType type,
-    uint32_t id) {
-  share_group()->transfer_cache()->UnlockTransferCacheEntry(helper_, type, id);
+void GLES2Implementation::UnlockTransferCacheEntries(
+    const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
+        entries) {
+  share_group()->transfer_cache()->UnlockTransferCacheEntries(helper_, entries);
 }
 
 void GLES2Implementation::DeleteTransferCacheEntry(

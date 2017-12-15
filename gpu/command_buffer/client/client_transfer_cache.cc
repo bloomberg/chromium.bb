@@ -53,13 +53,17 @@ bool ClientTransferCache::LockTransferCacheEntry(
   return false;
 }
 
-void ClientTransferCache::UnlockTransferCacheEntry(
+void ClientTransferCache::UnlockTransferCacheEntries(
     gles2::GLES2CmdHelper* helper,
-    cc::TransferCacheEntryType type,
-    uint32_t id) {
+    const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
+        entries) {
   base::AutoLock hold(lock_);
-  DCHECK(!FindDiscardableHandleId(type, id).is_null());
-  helper->UnlockTransferCacheEntryINTERNAL(static_cast<uint32_t>(type), id);
+  for (const auto& entry : entries) {
+    auto type = entry.first;
+    auto id = entry.second;
+    DCHECK(!FindDiscardableHandleId(type, id).is_null());
+    helper->UnlockTransferCacheEntryINTERNAL(static_cast<uint32_t>(type), id);
+  }
 }
 
 void ClientTransferCache::DeleteTransferCacheEntry(

@@ -24,7 +24,7 @@ class MappedMemoryManager;
 // them available for consumption in the GPU process. Typical usage is:
 //   1) Insert a new entry via CreateCacheEntry. It starts locked.
 //   2) Use the new entry's ID in one or more commands.
-//   3) Unlock the entry via UnlockTransferCacheEntry after dependent commands
+//   3) Unlock the entry via UnlockTransferCacheEntries after dependent commands
 //      have been issued.
 //
 // If an entry is needed again:
@@ -48,9 +48,10 @@ class GLES2_IMPL_EXPORT ClientTransferCache {
                         MappedMemoryManager* mapped_memory,
                         const cc::ClientTransferCacheEntry& entry);
   bool LockTransferCacheEntry(cc::TransferCacheEntryType type, uint32_t id);
-  void UnlockTransferCacheEntry(gles2::GLES2CmdHelper* helper,
-                                cc::TransferCacheEntryType type,
-                                uint32_t id);
+  void UnlockTransferCacheEntries(
+      gles2::GLES2CmdHelper* helper,
+      const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
+          entries);
   void DeleteTransferCacheEntry(gles2::GLES2CmdHelper* helper,
                                 cc::TransferCacheEntryType type,
                                 uint32_t id);
