@@ -5,6 +5,6 @@
 // Options for creating a CSSMatrixComponent. See CSSMatrixComponent for usage.
 // Spec: https://drafts.css-houdini.org/css-typed-om/#dictdef-cssmatrixcomponentoptions
 dictionary CSSMatrixComponentOptions {
-  boolean is2D = false;
+  boolean is2D;
 };
 
