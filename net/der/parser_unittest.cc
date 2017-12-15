@@ -13,12 +13,12 @@ namespace der {
 namespace test {
 
 TEST(ParserTest, ConsumesAllBytesOfTLV) {
-  const uint8_t der[] = {0x04, 0x00};
+  const uint8_t der[] = {0x04 /* OCTET STRING */, 0x00};
   Parser parser((Input(der)));
   Tag tag;
   Input value;
   ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
-  ASSERT_EQ(0x04, tag);
+  ASSERT_EQ(kOctetString, tag);
   ASSERT_FALSE(parser.HasMore());
 }
 
@@ -66,26 +66,26 @@ TEST(ParserTest, FailsIfLengthOverlapsAnotherTLV) {
 }
 
 TEST(ParserTest, CanSkipOptionalTagAtEndOfInput) {
-  const uint8_t der[] = {0x02, 0x01, 0x01};
+  const uint8_t der[] = {0x02 /* INTEGER */, 0x01, 0x01};
   Parser parser((Input(der)));
 
   Tag tag;
   Input value;
   ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
   bool present;
-  ASSERT_TRUE(parser.ReadOptionalTag(0x02, &value, &present));
+  ASSERT_TRUE(parser.ReadOptionalTag(kInteger, &value, &present));
   ASSERT_FALSE(present);
   ASSERT_FALSE(parser.HasMore());
 }
 
 TEST(ParserTest, SkipOptionalTagDoesntConsumePresentNonMatchingTLVs) {
-  const uint8_t der[] = {0x02, 0x01, 0x01};
+  const uint8_t der[] = {0x02 /* INTEGER */, 0x01, 0x01};
   Parser parser((Input(der)));
 
   bool present;
-  ASSERT_TRUE(parser.SkipOptionalTag(0x04, &present));
+  ASSERT_TRUE(parser.SkipOptionalTag(kOctetString, &present));
   ASSERT_FALSE(present);
-  ASSERT_TRUE(parser.SkipOptionalTag(0x02, &present));
+  ASSERT_TRUE(parser.SkipOptionalTag(kInteger, &present));
   ASSERT_TRUE(present);
   ASSERT_FALSE(parser.HasMore());
 }

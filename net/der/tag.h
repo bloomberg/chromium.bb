@@ -8,63 +8,66 @@
 #include <stdint.h>
 
 #include "net/base/net_export.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
 
 namespace net {
 
 namespace der {
 
-// This Tag type represents the identifier for an ASN.1 tag as encoded with DER.
-// It follows the same bit-for-bit representation (including the class, tag
-// number, and primitive/constructed bit) as DER. Constants are provided for
-// universal class types, and functions are provided for building context
-// specific tags. Tags can also be built from the provided constants and
-// bitmasks.
-using Tag = uint8_t;
+// This Tag type represents the identifier for an ASN.1 tag as encoded with
+// DER. It matches the BoringSSL CBS and CBB in-memory representation for a
+// tag.
+//
+// Callers must not assume it matches the DER representation for small tag
+// numbers. Instead, constants are provided for universal class types, and
+// functions are provided for building context specific tags. Tags can also be
+// built from the provided constants and bitmasks.
+using Tag = unsigned;
 
 // Universal class primitive types
-const Tag kBool = 0x01;
-const Tag kInteger = 0x02;
-const Tag kBitString = 0x03;
-const Tag kOctetString = 0x04;
-const Tag kNull = 0x05;
-const Tag kOid = 0x06;
-const Tag kEnumerated = 0x0A;
-const Tag kUtf8String = 0x0C;
-const Tag kPrintableString = 0x13;
-const Tag kTeletexString = 0x14;
-const Tag kIA5String = 0x16;
-const Tag kUtcTime = 0x17;
-const Tag kGeneralizedTime = 0x18;
-const Tag kUniversalString = 0x1C;
-const Tag kBmpString = 0x1E;
+const Tag kBool = CBS_ASN1_BOOLEAN;
+const Tag kInteger = CBS_ASN1_INTEGER;
+const Tag kBitString = CBS_ASN1_BITSTRING;
+const Tag kOctetString = CBS_ASN1_OCTETSTRING;
+const Tag kNull = CBS_ASN1_NULL;
+const Tag kOid = CBS_ASN1_OBJECT;
+const Tag kEnumerated = CBS_ASN1_ENUMERATED;
+const Tag kUtf8String = CBS_ASN1_UTF8STRING;
+const Tag kPrintableString = CBS_ASN1_PRINTABLESTRING;
+const Tag kTeletexString = CBS_ASN1_T61STRING;
+const Tag kIA5String = CBS_ASN1_IA5STRING;
+const Tag kUtcTime = CBS_ASN1_UTCTIME;
+const Tag kGeneralizedTime = CBS_ASN1_GENERALIZEDTIME;
+const Tag kUniversalString = CBS_ASN1_UNIVERSALSTRING;
+const Tag kBmpString = CBS_ASN1_BMPSTRING;
 
 // Universal class constructed types
-const Tag kSequence = 0x30;
-const Tag kSet = 0x31;
+const Tag kSequence = CBS_ASN1_SEQUENCE;
+const Tag kSet = CBS_ASN1_SET;
 
 // Primitive/constructed bits
-const uint8_t kTagPrimitive = 0x00;
-const uint8_t kTagConstructed = 0x20;
+const unsigned kTagPrimitive = 0x00;
+const unsigned kTagConstructed = CBS_ASN1_CONSTRUCTED;
 
 // Tag classes
-const uint8_t kTagUniversal = 0x00;
-const uint8_t kTagApplication = 0x40;
-const uint8_t kTagContextSpecific = 0x80;
-const uint8_t kTagPrivate = 0xC0;
+const unsigned kTagUniversal = 0x00;
+const unsigned kTagApplication = CBS_ASN1_APPLICATION;
+const unsigned kTagContextSpecific = CBS_ASN1_CONTEXT_SPECIFIC;
+const unsigned kTagPrivate = CBS_ASN1_PRIVATE;
 
 // Masks for the 3 components of a tag (class, primitive/constructed, number)
-const uint8_t kTagNumberMask = 0x1F;
-const uint8_t kTagConstructionMask = 0x20;
-const uint8_t kTagClassMask = 0xC0;
+const unsigned kTagNumberMask = CBS_ASN1_TAG_NUMBER_MASK;
+const unsigned kTagConstructionMask = CBS_ASN1_CONSTRUCTED;
+const unsigned kTagClassMask = CBS_ASN1_CLASS_MASK;
 
 // Creates the value for the outter tag of an explicitly tagged type.
 //
 // The ASN.1 keyword for this is:
-//     [class_number] EXPLICIT
+//     [tag_number] EXPLICIT
 //
 // (Note, the EXPLICIT may be omitted if the entire schema is in
 // EXPLICIT mode, the default)
-NET_EXPORT Tag ContextSpecificConstructed(uint8_t class_number);
+NET_EXPORT Tag ContextSpecificConstructed(uint8_t tag_number);
 
 NET_EXPORT Tag ContextSpecificPrimitive(uint8_t base);
 
