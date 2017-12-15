@@ -285,6 +285,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   void NotifyManifestUrlChanged(const base::Optional<GURL>& manifest_url);
 
+  ManifestManagerHost* GetManifestManagerHost() const {
+    return manifest_manager_host_.get();
+  }
+
 #if defined(OS_ANDROID)
   std::set<RenderWidgetHostImpl*> GetAllRenderWidgetHosts();
   void SetImportance(ChildProcessImportance importance);

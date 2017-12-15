@@ -17,14 +17,11 @@
 #include "content/common/devtools.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "third_party/WebKit/public/platform/modules/manifest/manifest.mojom.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
 
 namespace blink {
 class WebDevToolsAgent;
 }
-
-class GURL;
 
 namespace content {
 
@@ -80,10 +77,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                                   const std::string& message);
   void InspectElement(int session_id, const gfx::Point& point);
   void OnRequestNewWindowCompleted(int session_id, bool success);
-  void GotManifest(int session_id,
-                   int command_id,
-                   const GURL& manifest_url,
-                   blink::mojom::ManifestDebugInfoPtr debug_info);
   void SendChunkedProtocolMessage(int session_id,
                                   int call_id,
                                   std::string message,

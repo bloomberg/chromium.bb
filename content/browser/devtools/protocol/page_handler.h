@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/common/javascript_dialog_type.h"
+#include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
 #include "url/gurl.h"
 
 class SkBitmap;
@@ -136,6 +137,9 @@ class PageHandler : public DevToolsDomainHandler,
   Response SetDownloadBehavior(const std::string& behavior,
                                Maybe<std::string> download_path) override;
 
+  void GetAppManifest(
+      std::unique_ptr<GetAppManifestCallback> callback) override;
+
  private:
   enum EncodingFormat { PNG, JPEG };
 
@@ -157,6 +161,10 @@ class PageHandler : public DevToolsDomainHandler,
       const gfx::Size& requested_image_size,
       const blink::WebDeviceEmulationParams& original_params,
       const gfx::Image& image);
+
+  void GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
+                   const GURL& manifest_url,
+                   blink::mojom::ManifestDebugInfoPtr debug_info);
 
   // NotificationObserver overrides.
   void Observe(int type,
