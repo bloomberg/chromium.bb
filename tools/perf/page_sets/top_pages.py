@@ -105,7 +105,7 @@ class GoogleDocPage(TopPages):
         # pylint: disable=line-too-long
         url='https://docs.google.com/document/d/1X-IKNjtEnx-WW5JIKRLsyhz5sbsat3mfTpAPUSX3_s4/view',
         page_set=page_set,
-        name='Docs  (1 open document tab)',
+        name='Docs_(1_open_document_tab)',
         shared_page_state_class=shared_page_state_class)
 
   def RunNavigateSteps(self, action_runner):
@@ -225,7 +225,7 @@ class WikipediaPage(TopPages):
                shared_page_state_class=shared_page_state.SharedPageState):
     super(WikipediaPage, self).__init__(
         url='http://en.wikipedia.org/wiki/Wikipedia', page_set=page_set,
-        name='Wikipedia (1 tab)',
+        name='Wikipedia_(1_tab)',
         shared_page_state_class=shared_page_state_class)
 
 

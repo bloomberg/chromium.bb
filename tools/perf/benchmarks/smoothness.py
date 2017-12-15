@@ -56,7 +56,7 @@ class SmoothnessTop25(_Smoothness):
         self.DisableStory('http://www.amazon.com',
                           [story_module.expectations.ALL],
                           'crbug.com/667432')
-        self.DisableStory('Docs  (1 open document tab)',
+        self.DisableStory('Docs_(1_open_document_tab)',
                           [story_module.expectations.ALL_WIN],
                           'crbug.com/762165')
         self.DisableStory('http://www.youtube.com',

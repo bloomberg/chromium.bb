@@ -28,7 +28,7 @@ class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory('Docs  (1 open document tab)',
+        self.DisableStory('Docs_(1_open_document_tab)',
                           [story.expectations.ALL_WIN],
                           'crbug.com/770982')
     return StoryExpectations()
