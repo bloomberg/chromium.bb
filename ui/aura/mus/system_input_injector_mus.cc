@@ -4,12 +4,14 @@
 
 #include "ui/aura/mus/system_input_injector_mus.h"
 
+#include "ui/aura/env.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace aura {
 
@@ -49,19 +51,62 @@ SystemInputInjectorMus::SystemInputInjectorMus(WindowManagerClient* client)
 SystemInputInjectorMus::~SystemInputInjectorMus() {}
 
 void SystemInputInjectorMus::MoveCursorTo(const gfx::PointF& location) {
-  // TODO(erg): This appears to never be receiving the events from the remote
-  // side of the connection. I think this is because it doesn't send mouse
-  // events before the first paint.
-  NOTIMPLEMENTED();
+  ui::MouseEvent event(
+      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
+      modifiers_.GetModifierFlags(),
+      /* changed_button_flags */ 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE));
+  event.set_location_f(location);
+  event.set_root_location_f(location);
+
+  InjectEventAt(ui::PointerEvent(event), gfx::ToRoundedPoint(location));
 }
 
 void SystemInputInjectorMus::InjectMouseButton(ui::EventFlags button,
                                                bool down) {
-  NOTIMPLEMENTED();
+  gfx::Point location = aura::Env::GetInstance()->last_mouse_location();
+
+  int modifier = ui::MODIFIER_NONE;
+  switch (button) {
+    case ui::EF_LEFT_MOUSE_BUTTON:
+      modifier = ui::MODIFIER_LEFT_MOUSE_BUTTON;
+      break;
+    case ui::EF_RIGHT_MOUSE_BUTTON:
+      modifier = ui::MODIFIER_RIGHT_MOUSE_BUTTON;
+      break;
+    case ui::EF_MIDDLE_MOUSE_BUTTON:
+      modifier = ui::MODIFIER_MIDDLE_MOUSE_BUTTON;
+    default:
+      LOG(WARNING) << "Invalid flag: " << button << " for the button parameter";
+      return;
+  }
+
+  int flag = modifiers_.GetEventFlagFromModifier(modifier);
+  bool was_down = modifiers_.GetModifierFlags() & flag;
+  modifiers_.UpdateModifier(modifier, down);
+  down = modifiers_.GetModifierFlags() & flag;
+
+  // Suppress nested clicks. EventModifiers counts presses, we only
+  // dispatch an event on 0-1 (first press) and 1-0 (last release) transitions.
+  if (down == was_down)
+    return;
+
+  ui::MouseEvent event(
+      down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED, location, location,
+      ui::EventTimeForNow(), modifiers_.GetModifierFlags() | flag,
+      /* changed_button_flags */ flag,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE));
+  InjectEventAt(ui::PointerEvent(event), location);
 }
 
 void SystemInputInjectorMus::InjectMouseWheel(int delta_x, int delta_y) {
-  NOTIMPLEMENTED();
+  gfx::Point location = aura::Env::GetInstance()->last_mouse_location();
+
+  ui::MouseWheelEvent event(gfx::Vector2d(delta_x, delta_y), location, location,
+                            ui::EventTimeForNow(),
+                            modifiers_.GetModifierFlags(),
+                            /* changed_button_flags */ 0);
+  InjectEventAt(ui::PointerEvent(event), location);
 }
 
 void SystemInputInjectorMus::InjectKeyEvent(ui::DomCode dom_code,
@@ -77,22 +122,24 @@ void SystemInputInjectorMus::InjectKeyEvent(ui::DomCode dom_code,
   ui::KeyEvent e(down ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED, key_code,
                  dom_code, modifiers_.GetModifierFlags());
 
-  // Even when we're dispatching a key event, we need to have a valid display
-  // for event targeting, so grab the display of where the cursor currently is.
+  InjectEventAt(e, display::Screen::GetScreen()->GetCursorScreenPoint());
+}
+
+void SystemInputInjectorMus::InjectEventAt(const ui::Event& event,
+                                           const gfx::Point& location) {
   display::Screen* screen = display::Screen::GetScreen();
-  display::Display display =
-      screen->GetDisplayNearestPoint(screen->GetCursorScreenPoint());
-  client_->InjectEvent(e, display.id());
+  display::Display display = screen->GetDisplayNearestPoint(location);
+  client_->InjectEvent(event, display.id());
 }
 
 void SystemInputInjectorMus::UpdateModifier(unsigned int modifier, bool down) {
   if (modifier == ui::MODIFIER_NONE)
     return;
 
-  if (modifier == ui::MODIFIER_CAPS_LOCK)
-    modifiers_.UpdateModifier(ui::MODIFIER_MOD3, down);
-  else
-    modifiers_.UpdateModifier(modifier, down);
+  // KeyboardEvdev performs a transformation here from MODIFIER_CAPS_LOCK to
+  // MODIFIER_MOD3. That was needed to work around X11, we actually want to
+  // ship this state across the wire without modification.
+  modifiers_.UpdateModifier(modifier, down);
 }
 
 }  // namespace aura
