@@ -560,7 +560,8 @@ class GitCookiesCheckerTest(TestCase):
     # Specical case because we know there are no subdomains in chromium.org.
     self.assertEqual(self.c._parse_identity('git-note.period.chromium.org'),
                      ('note.period', 'chromium.org'))
-    # Pathological: .period. can be either ldap OR domain, more likely domain.
+    # Pathological: ".period." can be either username OR domain, more likely
+    # domain.
     self.assertEqual(self.c._parse_identity('git-note.period.example.com'),
                      ('note', 'period.example.com'))
 

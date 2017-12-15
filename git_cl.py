@@ -3883,8 +3883,8 @@ class _GitCookiesChecker(object):
 
   @staticmethod
   def _parse_identity(identity):
-    """Parses identity "git-<ldap>.example.com" into <ldap> and domain."""
-    # Special case: users whose ldaps contain ".", which are generally not
+    """Parses identity "git-<username>.domain" into <username> and domain."""
+    # Special case: usernames that contain ".", which are generally not
     # distinguishable from sub-domains. But we do know typical domains:
     if identity.endswith('.chromium.org'):
       domain = 'chromium.org'
