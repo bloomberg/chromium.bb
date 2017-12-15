@@ -33,7 +33,7 @@ enum IconType {
 enum ImageType { ARCS, BARS, NONE };
 
 // Strength of a wireless signal.
-enum class SignalStrength { WEAK, MEDIUM, STRONG, NOT_WIRELESS };
+enum class SignalStrength { NONE, WEAK, MEDIUM, STRONG, NOT_WIRELESS };
 
 // Depicts a given signal strength using arcs (e.g. for WiFi connections) or
 // bars (e.g. for cell connections).

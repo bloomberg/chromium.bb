@@ -128,6 +128,7 @@ class NetworkTrayView : public TrayItemView,
       // to |connected_network|.
       base::string16 signal_strength_string;
       switch (network_icon::GetSignalStrengthForNetwork(connected_network)) {
+        case SignalStrength::NONE:
         case SignalStrength::NOT_WIRELESS:
           break;
         case SignalStrength::WEAK:
@@ -141,9 +142,6 @@ class NetworkTrayView : public TrayItemView,
         case SignalStrength::STRONG:
           signal_strength_string = l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG);
-          break;
-        default:
-          NOTREACHED();
           break;
       }
 
