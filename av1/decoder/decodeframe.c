@@ -2156,11 +2156,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                   cm->lf.filter_level_v, 2, 1, mi_row, mi_col);
             }
 #else
-            // apply deblocking filtering right after each superblock is decoded
-            const int filter_lvl =
-                cm->mi[mi_row * cm->mi_stride + mi_col].mbmi.filt_lvl;
             av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                                  filter_lvl, 0, 1, mi_row, mi_col);
+                                  cm->lf.filter_level, 0, 1, mi_row, mi_col);
 #endif  // CONFIG_LOOPFILTER_LEVEL
           }
 #endif  // CONFIG_LPF_SB

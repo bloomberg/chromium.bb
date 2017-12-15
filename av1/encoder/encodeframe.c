@@ -3252,9 +3252,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       filter_lvl = lf->filter_level;
       av1_loop_filter_frame(get_frame_new_buffer(cm), cm, xd, filter_lvl, 0, 1,
                             mi_row, mi_col);
-      // if filter_lvl is 0, we still need to set mi info
-      if (filter_lvl == 0)
-        av1_loop_filter_sb_level_init(cm, mi_row, mi_col, filter_lvl);
 #endif  // CONFIG_LOOPFILTER_LEVEL
     }
 #endif  // CONFIG_LPF_SB

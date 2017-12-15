@@ -48,7 +48,7 @@ int av1_get_max_filter_level(const AV1_COMP *cpi) {
   }
 }
 
-#if !CONFIG_LPF_SB  // CONFIG_LPF_SB
+#if !CONFIG_LPF_SB
 static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 AV1_COMP *const cpi, int filt_level,
                                 int partial_frame
@@ -278,7 +278,7 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level = clamp(filt_guess, min_filter_level, max_filter_level);
 #endif
   } else {
-#if !CONFIG_LPF_SB  // !CONFIG_LPF_SB
+#if !CONFIG_LPF_SB
 #if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = lf->filter_level[1] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 2);
@@ -295,6 +295,6 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level =
         search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL);
 #endif  // CONFIG_LOOPFILTER_LEVEL
-#endif  // CONFIG_LPF_SB
+#endif  // !CONFIG_LPF_SB
   }
 }
