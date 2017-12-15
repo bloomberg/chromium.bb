@@ -25,6 +25,7 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/events/Event.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
@@ -35,7 +36,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
-#include "core/plugins/PluginView.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -44,7 +44,7 @@ namespace blink {
 
 namespace {
 
-using PluginSet = PersistentHeapHashSet<Member<PluginView>>;
+using PluginSet = PersistentHeapHashSet<Member<WebPluginContainerImpl>>;
 PluginSet& PluginsPendingDispose() {
   DEFINE_STATIC_LOCAL(PluginSet, set, ());
   return set;
@@ -172,7 +172,7 @@ bool HTMLFrameOwnerElement::IsKeyboardFocusable() const {
   return content_frame_ && HTMLElement::IsKeyboardFocusable();
 }
 
-void HTMLFrameOwnerElement::DisposePluginSoon(PluginView* plugin) {
+void HTMLFrameOwnerElement::DisposePluginSoon(WebPluginContainerImpl* plugin) {
   if (PluginDisposeSuspendScope::suspend_count_) {
     PluginsPendingDispose().insert(plugin);
     PluginDisposeSuspendScope::suspend_count_ |= 1;
@@ -233,7 +233,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     if (embedded_content_view_->IsAttached()) {
       embedded_content_view_->DetachFromLayout();
       if (embedded_content_view_->IsPluginView())
-        DisposePluginSoon(ToPluginView(embedded_content_view_));
+        DisposePluginSoon(ToWebPluginContainerImpl(embedded_content_view_));
       else
         embedded_content_view_->Dispose();
     }

@@ -318,13 +318,13 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void SelectorMatchChanged(const Vector<String>&,
                             const Vector<String>&) override {}
   LocalFrame* CreateFrame(const AtomicString&, HTMLFrameOwnerElement*) override;
-  PluginView* CreatePlugin(HTMLPlugInElement&,
-                           const KURL&,
-                           const Vector<String>&,
-                           const Vector<String>&,
-                           const String&,
-                           bool,
-                           DetachedPluginPolicy) override;
+  WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
+                                       const KURL&,
+                                       const Vector<String>&,
+                                       const Vector<String>&,
+                                       const String&,
+                                       bool,
+                                       DetachedPluginPolicy) override;
   bool CanCreatePluginWithoutRenderer(const String& mime_type) const override {
     return false;
   }

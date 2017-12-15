@@ -172,13 +172,14 @@ LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
   return nullptr;
 }
 
-PluginView* EmptyLocalFrameClient::CreatePlugin(HTMLPlugInElement&,
-                                                const KURL&,
-                                                const Vector<String>&,
-                                                const Vector<String>&,
-                                                const String&,
-                                                bool,
-                                                DetachedPluginPolicy) {
+WebPluginContainerImpl* EmptyLocalFrameClient::CreatePlugin(
+    HTMLPlugInElement&,
+    const KURL&,
+    const Vector<String>&,
+    const Vector<String>&,
+    const String&,
+    bool,
+    DetachedPluginPolicy) {
   return nullptr;
 }
 

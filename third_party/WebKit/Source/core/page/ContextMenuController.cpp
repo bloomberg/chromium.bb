@@ -55,7 +55,6 @@
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/plugins/PluginView.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -366,11 +365,12 @@ bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
              IsHTMLEmbedElement(*r.InnerNode())) {
     LayoutObject* object = r.InnerNode()->GetLayoutObject();
     if (object && object->IsLayoutEmbeddedContent()) {
-      PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
-      if (plugin_view && plugin_view->IsPluginContainer()) {
+      WebPluginContainerImpl* plugin_view =
+          ToLayoutEmbeddedContent(object)->Plugin();
+      if (plugin_view) {
         data.media_type = WebContextMenuData::kMediaTypePlugin;
 
-        WebPlugin* plugin = ToWebPluginContainerImpl(plugin_view)->Plugin();
+        WebPlugin* plugin = plugin_view->Plugin();
         data.link_url = plugin->LinkAtPosition(data.mouse_position);
 
         HTMLPlugInElement* plugin_element = ToHTMLPlugInElement(r.InnerNode());

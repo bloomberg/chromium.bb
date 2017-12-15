@@ -41,6 +41,7 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/ErrorEvent.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
@@ -99,7 +100,6 @@
 #include "core/paint/compositing/CompositedSelection.h"
 #include "core/paint/compositing/CompositingInputsUpdater.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
-#include "core/plugins/PluginView.h"
 #include "core/probe/CoreProbes.h"
 #include "core/resize_observer/ResizeObserverController.h"
 #include "core/style/ComputedStyle.h"
@@ -3150,7 +3150,7 @@ void LocalFrameView::ClearPrintContext() {
 }
 
 // TODO(leviw): We don't assert lifecycle information from documents in child
-// PluginViews.
+// WebPluginContainerImpls.
 void LocalFrameView::UpdateLifecyclePhasesInternal(
     DocumentLifecycle::LifecycleState target_state) {
   if (current_update_lifecycle_phases_target_state_ !=
@@ -4042,7 +4042,7 @@ void LocalFrameView::DetachFromLayout() {
   SetSubtreeNeedsPaintPropertyUpdate();
 }
 
-void LocalFrameView::AddPlugin(PluginView* plugin) {
+void LocalFrameView::AddPlugin(WebPluginContainerImpl* plugin) {
   DCHECK(!plugins_.Contains(plugin));
   plugins_.insert(plugin);
 }

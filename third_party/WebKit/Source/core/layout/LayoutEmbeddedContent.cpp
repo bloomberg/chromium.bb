@@ -25,6 +25,7 @@
 #include "core/layout/LayoutEmbeddedContent.h"
 
 #include "core/dom/AXObjectCache.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/EmbeddedContentView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -38,7 +39,6 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/paint/EmbeddedContentPainter.h"
-#include "core/plugins/PluginView.h"
 
 namespace blink {
 
@@ -97,10 +97,10 @@ LocalFrameView* LayoutEmbeddedContent::ChildFrameView() const {
   return nullptr;
 }
 
-PluginView* LayoutEmbeddedContent::Plugin() const {
+WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
   EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
   if (embedded_content_view && embedded_content_view->IsPluginView())
-    return ToPluginView(embedded_content_view);
+    return ToWebPluginContainerImpl(embedded_content_view);
   return nullptr;
 }
 
@@ -123,7 +123,7 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   // a plugin LayoutObject and the plugin has a layer, then we need a layer.
   // Second, if this is a LayoutObject with a contentDocument and that document
   // needs a layer, then we need a layer.
-  PluginView* plugin_view = Plugin();
+  WebPluginContainerImpl* plugin_view = Plugin();
   if (plugin_view && plugin_view->PlatformLayer())
     return true;
 

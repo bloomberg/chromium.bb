@@ -80,7 +80,7 @@ class HTMLPlugInElement;
 class HistoryItem;
 class KURL;
 class LocalFrame;
-class PluginView;
+class WebPluginContainerImpl;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
@@ -235,13 +235,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   };
   virtual bool CanCreatePluginWithoutRenderer(
       const String& mime_type) const = 0;
-  virtual PluginView* CreatePlugin(HTMLPlugInElement&,
-                                   const KURL&,
-                                   const Vector<String>&,
-                                   const Vector<String>&,
-                                   const String&,
-                                   bool load_manually,
-                                   DetachedPluginPolicy) = 0;
+  virtual WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
+                                               const KURL&,
+                                               const Vector<String>&,
+                                               const Vector<String>&,
+                                               const String&,
+                                               bool load_manually,
+                                               DetachedPluginPolicy) = 0;
 
   virtual std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,

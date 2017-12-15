@@ -28,6 +28,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/events/Event.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
@@ -45,7 +46,6 @@
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/plugins/PluginView.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -101,7 +101,7 @@ bool HTMLPlugInElement::HasPendingActivity() const {
   return image_loader_ && image_loader_->HasPendingActivity();
 }
 
-void HTMLPlugInElement::SetPersistedPlugin(PluginView* plugin) {
+void HTMLPlugInElement::SetPersistedPlugin(WebPluginContainerImpl* plugin) {
   if (persisted_plugin_ == plugin)
     return;
   if (persisted_plugin_) {
@@ -112,7 +112,7 @@ void HTMLPlugInElement::SetPersistedPlugin(PluginView* plugin) {
 }
 
 void HTMLPlugInElement::SetFocused(bool focused, WebFocusType focus_type) {
-  PluginView* plugin = OwnedPlugin();
+  WebPluginContainerImpl* plugin = OwnedPlugin();
   if (plugin)
     plugin->SetFocused(focused, focus_type);
   HTMLFrameOwnerElement::SetFocused(focused, focus_type);
@@ -168,7 +168,7 @@ bool HTMLPlugInElement::WillRespondToMouseClickEvents() {
 
 void HTMLPlugInElement::RemoveAllEventListeners() {
   HTMLFrameOwnerElement::RemoveAllEventListeners();
-  PluginView* plugin = OwnedPlugin();
+  WebPluginContainerImpl* plugin = OwnedPlugin();
   if (plugin)
     plugin->EventListenersRemoved();
 }
@@ -265,7 +265,7 @@ void HTMLPlugInElement::CreatePluginWithoutLayoutObject() {
 }
 
 bool HTMLPlugInElement::ShouldAccelerate() const {
-  PluginView* plugin = OwnedPlugin();
+  WebPluginContainerImpl* plugin = OwnedPlugin();
   return plugin && plugin->PlatformLayer();
 }
 
@@ -297,9 +297,9 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
   }
 
   // Only try to persist a plugin we actually own.
-  PluginView* plugin = OwnedPlugin();
+  WebPluginContainerImpl* plugin = OwnedPlugin();
   if (plugin && context.performing_reattach) {
-    SetPersistedPlugin(ToPluginView(ReleaseEmbeddedContentView()));
+    SetPersistedPlugin(ToWebPluginContainerImpl(ReleaseEmbeddedContentView()));
   } else {
     // Clear the plugin; will trigger disposal of it with Oilpan.
     SetEmbeddedContentView(nullptr);
@@ -352,7 +352,7 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
   // edge-case is OK.
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
   if (plugin_wrapper_.IsEmpty()) {
-    PluginView* plugin;
+    WebPluginContainerImpl* plugin;
 
     if (persisted_plugin_)
       plugin = persisted_plugin_;
@@ -365,17 +365,17 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
   return plugin_wrapper_.Get(isolate);
 }
 
-PluginView* HTMLPlugInElement::PluginEmbeddedContentView() const {
+WebPluginContainerImpl* HTMLPlugInElement::PluginEmbeddedContentView() const {
   if (LayoutEmbeddedContent* layout_embedded_content =
           LayoutEmbeddedContentForJSBindings())
     return layout_embedded_content->Plugin();
   return nullptr;
 }
 
-PluginView* HTMLPlugInElement::OwnedPlugin() const {
+WebPluginContainerImpl* HTMLPlugInElement::OwnedPlugin() const {
   EmbeddedContentView* view = OwnedEmbeddedContentView();
   if (view && view->IsPluginView())
-    return ToPluginView(view);
+    return ToWebPluginContainerImpl(view);
   return nullptr;
 }
 
@@ -428,7 +428,7 @@ void HTMLPlugInElement::DefaultEventHandler(Event* event) {
             .ShowsUnavailablePluginIndicator())
       return;
   }
-  PluginView* plugin = OwnedPlugin();
+  WebPluginContainerImpl* plugin = OwnedPlugin();
   if (!plugin)
     return;
   plugin->HandleEvent(event);
@@ -464,7 +464,6 @@ bool HTMLPlugInElement::IsPluginElement() const {
 
 bool HTMLPlugInElement::IsErrorplaceholder() {
   if (PluginEmbeddedContentView() &&
-      PluginEmbeddedContentView()->IsPluginContainer() &&
       PluginEmbeddedContentView()->IsErrorplaceholder())
     return true;
   return false;
@@ -588,7 +587,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
     LocalFrameClient::DetachedPluginPolicy policy =
         require_layout_object ? LocalFrameClient::kFailOnDetachedPlugin
                               : LocalFrameClient::kAllowDetachedPlugin;
-    PluginView* plugin =
+    WebPluginContainerImpl* plugin =
         frame->Client()->CreatePlugin(*this, url, param_names, param_values,
                                       mime_type, load_manually, policy);
     if (!plugin) {

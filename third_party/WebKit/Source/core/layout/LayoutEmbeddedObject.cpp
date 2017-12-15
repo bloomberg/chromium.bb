@@ -25,6 +25,7 @@
 #include "core/layout/LayoutEmbeddedObject.h"
 
 #include "core/CSSValueKeywords.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -34,7 +35,6 @@
 #include "core/page/Page.h"
 #include "core/paint/EmbeddedObjectPaintInvalidator.h"
 #include "core/paint/EmbeddedObjectPainter.h"
-#include "core/plugins/PluginView.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {

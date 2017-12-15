@@ -164,13 +164,13 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   LocalFrame* CreateFrame(const WTF::AtomicString& name,
                           HTMLFrameOwnerElement*) override;
   virtual bool CanCreatePluginWithoutRenderer(const String& mime_type) const;
-  PluginView* CreatePlugin(HTMLPlugInElement&,
-                           const KURL&,
-                           const Vector<WTF::String>&,
-                           const Vector<WTF::String>&,
-                           const WTF::String&,
-                           bool load_manually,
-                           DetachedPluginPolicy) override;
+  WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
+                                       const KURL&,
+                                       const Vector<WTF::String>&,
+                                       const Vector<WTF::String>&,
+                                       const WTF::String&,
+                                       bool load_manually,
+                                       DetachedPluginPolicy) override;
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
