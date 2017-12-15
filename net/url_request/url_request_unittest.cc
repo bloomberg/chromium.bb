@@ -7043,11 +7043,6 @@ class TestReportingService : public ReportingService {
     NOTIMPLEMENTED();
   }
 
-  bool RequestIsUpload(const URLRequest& request) override {
-    NOTIMPLEMENTED();
-    return true;
-  }
-
  private:
   std::vector<Header> headers_;
 };

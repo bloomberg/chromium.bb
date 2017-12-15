@@ -23,15 +23,6 @@ namespace net {
 
 namespace {
 
-class UploadUserData : public base::SupportsUserData::Data {
- public:
-  static const void* const kUserDataKey;
-};
-
-// SetUserData needs a unique const void* to serve as the key, so create a const
-// void* and use its own address as the unique pointer.
-const void* const UploadUserData::kUserDataKey = &UploadUserData::kUserDataKey;
-
 ReportingUploader::Outcome ResponseCodeToOutcome(int response_code) {
   if (response_code >= 200 && response_code <= 299)
     return ReportingUploader::Outcome::SUCCESS;
@@ -94,9 +85,6 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     request->set_upload(
         ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
 
-    request->SetUserData(UploadUserData::kUserDataKey,
-                         std::make_unique<UploadUserData>());
-
     // This inherently sets mode = "no-cors", but that doesn't matter, because
     // the origins that are included in the upload don't actually get to see
     // the response.
@@ -108,11 +96,6 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     // before std::move(request).
     std::unique_ptr<Upload>* upload = &uploads_[request.get()];
     *upload = std::make_unique<Upload>(std::move(request), std::move(callback));
-  }
-
-  // static
-  bool RequestIsUpload(const net::URLRequest& request) override {
-    return request.GetUserData(UploadUserData::kUserDataKey);
   }
 
   // URLRequest::Delegate implementation:
