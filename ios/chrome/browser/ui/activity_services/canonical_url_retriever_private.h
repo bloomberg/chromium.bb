@@ -14,9 +14,8 @@ enum CanonicalURLResult {
   // The canonical URL retrieval failed because the visible URL is not HTTPS.
   FAILED_VISIBLE_URL_NOT_HTTPS = 0,
 
-  // The canonical URL retrieval failed because the canonical URL is not HTTPS
-  // (but the visible URL is).
-  FAILED_CANONICAL_URL_NOT_HTTPS,
+  // Deprecated.
+  FAILED_CANONICAL_URL_NOT_HTTPS_DEPRECATED,
 
   // The canonical URL retrieval failed because the page did not define one.
   FAILED_NO_CANONICAL_URL_DEFINED,
@@ -32,6 +31,10 @@ enum CanonicalURLResult {
   // The canonical URL retrieval succeeded. The retrieved canonical URL is the
   // same as the visible URL.
   SUCCESS_CANONICAL_URL_SAME_AS_VISIBLE,
+
+  // The canonical URL retrieval succeeded. The canonical URL is not HTTPS
+  // (but the visible URL is).
+  SUCCESS_CANONICAL_URL_NOT_HTTPS,
 
   // The count of canonical URL results. This must be the last item in the enum.
   CANONICAL_URL_RESULT_COUNT

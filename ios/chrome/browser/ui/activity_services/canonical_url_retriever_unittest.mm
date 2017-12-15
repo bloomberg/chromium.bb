@@ -165,8 +165,8 @@ TEST_F(CanonicalURLRetrieverTest, TestCanonicalURLHTTPSUpgrade) {
       activity_services::FAILED_VISIBLE_URL_NOT_HTTPS, 1);
 }
 
-// Validates that if the visible URL is HTTPS but the canonical URL is HTTP, an
-// empty GURL is given to the completion block.
+// Validates that if the visible URL is HTTPS but the canonical URL is HTTP, it
+// is found and given to the completion block.
 TEST_F(CanonicalURLRetrieverTest, TestCanonicalLinkHTTPSDowngrade) {
   LoadHtml(@"<link rel=\"canonical\" href=\"http://chromium.test\">",
            GURL("https://m.chromium.test/"));
@@ -175,8 +175,8 @@ TEST_F(CanonicalURLRetrieverTest, TestCanonicalLinkHTTPSDowngrade) {
   bool success = RetrieveCanonicalUrl(&url);
 
   ASSERT_TRUE(success);
-  EXPECT_TRUE(url.is_empty());
+  EXPECT_EQ("http://chromium.test/", url);
   histogram_tester_.ExpectUniqueSample(
       activity_services::kCanonicalURLResultHistogram,
-      activity_services::FAILED_CANONICAL_URL_NOT_HTTPS, 1);
+      activity_services::SUCCESS_CANONICAL_URL_NOT_HTTPS, 1);
 }
