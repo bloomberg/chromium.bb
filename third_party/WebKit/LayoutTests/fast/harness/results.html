@@ -15,7 +15,11 @@ body {
 button {
   margin-top: 4px;
 }
-
+input {
+  vertical-align: middle;
+  margin-top: 0;
+  margin-bottom: 0;
+}
 p, h2, h3, h4 {
   margin: 8px 0 4px 0;
 }
@@ -142,11 +146,6 @@ p, h2, h3, h4 {
   font-family: sans-serif;
   font-size: smaller;
 }
-#filters input {
-  vertical-align: middle;
-  margin-top: 0;
-  margin-bottom: 0;
-}
 
 .flag {
   display: inline-block;
@@ -169,6 +168,10 @@ p, h2, h3, h4 {
   color: gray;
 }
 
+#copied {
+  color: #4F8A10;
+  margin-left: 5px;
+}
 </style>
 <body>
 <h3>Test run summary <span id="builder_name"></span></h3>
@@ -187,12 +190,12 @@ p, h2, h3, h4 {
   <li><b>Tab</b> to select the next test.
   <li><b>Enter</b> to see test details. This will automatically close other details.
   <li><b>ctrl A</b> to select text of all tests for easy copying.
-  <li><b>f</b> to flag.
+  <li><b>f</b> to flag/unflag a test.
   </ul>
   <p>Modifiers:</p>
   <ul>
   <li><b>Shift</b> hold shift key to keep other details open.
-  <li><b>Meta</b> meta means all. Toggle all flags, open all results (max 100).
+  <li><b>Meta</b> meta means all. Set/unset all flags or open/close all results (max 100).
   </ul>
   <p>This page lets you query and display test results.</p>
 
@@ -322,12 +325,12 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
       <option value="crashsite">Crash site</option>
       <option value="textmismatch">Text mismatch</option>
     </select>
-  &nbsp;
   <span style="margin-left: 20px">
-    <button id="copy_report" title="Copy the shown tests to clipboard in the current format"
-        onclick="GUI.copyReport()" disabled>Copy report</button>
-    <button id="copy_single_line" title="Copy the shown tests to clipboard in a single line for use in command lines."
-        onclick="GUI.copySingleLine()" disabled>Copy single line</button>
+    <button id="copy_report" title="Copy the shown/flagged tests to clipboard in the current format"
+        onclick="GUI.copyResult(false)" disabled>Copy report</button>
+    <button id="copy_single_line" title="Copy the shown/flagged tests to clipboard in a single line for use in command lines."
+        onclick="GUI.copyResult(true)" disabled>Copy single line</button>
+    <label id="flagged_only" class="hidden"><input id="flagged_only_checkbox" type="checkbox" checked>Flagged only</label>
     <span id="copied" class="hidden">Copied.</span>
   </span>
 </div>
@@ -378,8 +381,10 @@ class Traversal {
   }
 
   traverse(filter, action) {
+    console.time("traverse");
     action = action || function() {};
     this._helper(this.root, "", filter, action);
+    console.timeEnd("traverse");
   }
 
   reset() {
@@ -472,7 +477,8 @@ const Report = {
   },
 
   printFlag: (test) => {
-   return `<div class="flag ${test.flagged ? "flagged" : ""}"></div>`;
+    return `<div class="flag ${test.flagged ? "flagged" : ""}"
+                title="Hold Meta key to flag/unflag all tests."></div>`;
   },
 
   printPlainTest: (test, path, traversal) => {
@@ -557,8 +563,7 @@ const Report = {
     report.appendChild(pre);
   },
 
-  renderResultList: (html) => {
-    let report = document.querySelector("#report");
+  renderResultList: (html, report) => {
     if (report.childNodes.length === 0 && html.length === 0) {
       Report.indicateNone(report);
       return;
@@ -599,8 +604,7 @@ const Report = {
     return container;
   },
 
-  renderGroup: (html, keyed_title, null_title) => {
-    let report = document.querySelector("#report");
+  renderGroup: (html, report, keyed_title, null_title) => {
     if (report.childNodes.length === 0 && html.length === 0) {
       Report.indicateNone(report);
       return;
@@ -622,12 +626,12 @@ const Report = {
       renderMap[key].container.insertAdjacentHTML('beforeend', renderMap[key].html);
   },
 
-  renderGroupCrashSite: (html) => {
-    Report.renderGroup(html, "Crash site", "Didn't crash");
+  renderGroupCrashSite: (html, report) => {
+    Report.renderGroup(html, report, "Crash site", "Didn't crash");
   },
 
-  renderGroupTextMismatch: (html) => {
-    Report.renderGroup(html, "Text mismatch failure", "Didn't find text mismatch");
+  renderGroupTextMismatch: (html, report) => {
+    Report.renderGroup(html, report, "Text mismatch failure", "Didn't find text mismatch");
   },
 
   getTestById: (testId) => {
@@ -794,6 +798,7 @@ const Query = {
   // generateReport is async, returns promise.
   // promise id fullfilled when traversal completes. Display will continue async.
   generateReport: function(name, filter, report) {
+    console.time("generateReport");
     if (this.currentRAF)
       window.cancelAnimationFrame(this.currentRAF);
     report = report || Report.getDefaultPrinter();
@@ -816,15 +821,15 @@ const Query = {
     let callback = _ => {
       this.currentRAF = null;
       let html = traversal.html.slice(index, index + chunkSize);
-      report.render(html);
+      report.render(html, document.querySelector("#report"));
       index += chunkSize;
       document.querySelector("#progress").style.width = Math.min((index / traversal.html.length * 100), 100) + "%";
       if (index < traversal.html.length) {
         this.currentRAF = window.requestAnimationFrame(callback);
       } else {
         document.querySelector("#report_count").innerText = traversal.filteredCount;
-        document.querySelector("#copy_report").disabled = traversal.html.length == 0;
-        document.querySelector("#copy_single_line").disabled = traversal.html.length == 0;
+        GUI.updateCopyButtons();
+        console.timeEnd("generateReport");
       }
     };
     window.setTimeout( _ => {
@@ -1049,7 +1054,7 @@ const GUI = {
         ; // Clicks in anchor, input or result-frame should perform default action
       } else if (GUI.isFlag(ev.target)) {
         GUI.toggleFlag(ev.target, ev);
-      } else if (expectation) {
+      } else if (expectation && window.getSelection().type != "Range") {
         GUI.toggleResults(expectation, ev);
         ev.preventDefault();
         ev.stopPropagation();
@@ -1140,22 +1145,50 @@ const GUI = {
     }, 2000);
   },
 
-  copyReport: function() {
-    GUI.copyText(document.querySelector("#report"));
+  copyResult: function(asSingleLine) {
+    console.time("copyResult");
+    let flaggedOnly = document.querySelector(".flagged") &&
+                      document.querySelector("#flagged_only_checkbox").checked;
+    if (!flaggedOnly && !asSingleLine) {
+      GUI.copyText(document.querySelector("#report"));
+      return;
+    }
+
+    let printer = Report.getDefaultPrinter();
+    let singleLine = "";
+    let traversal = new Traversal(globalResults.tests);
+    traversal.traverse(Query.lastReport.filter, (test, path) => {
+      if (flaggedOnly && !test.flagged)
+        return;
+      if (asSingleLine) {
+        let pathParser = new PathParser(path);
+        singleLine += pathParser.dir + pathParser.file + " ";
+      } else {
+        printer.print(test, path, traversal);
+      }
+    });
+    let div = document.createElement("div");
+    div.setAttribute("style", "overflow: hidden; color: white; height: 1px");
+    if (asSingleLine)
+      div.textContent = singleLine;
+    else
+      printer.render(traversal.html, div);
+    document.body.appendChild(div);
+    GUI.copyText(div);
+    document.body.removeChild(div);
+    console.timeEnd("copyResult");
   },
 
-  copySingleLine: function() {
-    let singleLine = "";
-    new Traversal(globalResults.tests).traverse(Query.lastReport.filter, (_, path) => {
-      let pathParser = new PathParser(path);
-      singleLine += pathParser.dir + pathParser.file + " ";
-    });
-    let pre = document.createElement("pre");
-    pre.setAttribute("style", "overflow: hidden; color: white; height: 1px");
-    pre.textContent = singleLine;
-    document.body.appendChild(pre);
-    GUI.copyText(pre);
-    document.body.removeChild(pre);
+  updateCopyButtons: function() {
+    let has_result = document.querySelector(".expect");
+    document.querySelector("#copy_report").disabled = !has_result;
+    document.querySelector("#copy_single_line").disabled = !has_result;
+
+    let flagged_only = document.querySelector("#flagged_only");
+    if (document.querySelector(".flagged"))
+      flagged_only.classList.remove("hidden");
+    else
+      flagged_only.classList.add("hidden");
   },
 
   printSummary: function (fullResults) {
@@ -1242,6 +1275,7 @@ const GUI = {
         }
       }
     }
+    GUI.updateCopyButtons();
   },
 
   toggleResults: function(expectation, event) {
