@@ -57825,6 +57825,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Experimental.Renderer.FirstMeaningfulPaintDetector.FirstMeaningfulPaintOrdering"
     enum="FirstMeaningfulPaintOrdering">
+  <obsolete>
+    Renamed to
+    PageLoad.Internal.Renderer.FirstMeaningfulPaintDetector.FirstMeaningfulPaintOrdering
+  </obsolete>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Whether the two variants of First Meaningful Paint reported different
@@ -57835,6 +57839,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Experimental.Renderer.FirstMeaningfulPaintDetector.HadNetworkQuiet"
     enum="NetworkQuietStatus">
+  <obsolete>
+    Renamed to
+    PageLoad.Internal.Renderer.FirstMeaningfulPaintDetector.HadNetworkQuiet
+  </obsolete>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Recorded when the page load reached network 0-quiet (no active network
@@ -58073,6 +58081,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     other navigations with the same url (before redirects). It's logged when a
     provisional abort does not share a URL, or when a load finally commits. Note
     that we don't log chains of length 0.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Internal.Renderer.FirstMeaningfulPaintDetector.FirstMeaningfulPaintOrdering"
+    enum="FirstMeaningfulPaintOrdering">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Whether the two variants of First Meaningful Paint reported different
+    values, and if so, which one was reported first.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Internal.Renderer.FirstMeaningfulPaintDetector.HadNetworkQuiet"
+    enum="NetworkQuietStatus">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Recorded when the page load reached network 0-quiet (no active network
+    connection for 0.5 seconds), or network 2-quiet (no more than 2 active
+    network connections for 2 seconds).
+    PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintSignalStatus2
+    histogram gives the fraction of page loads that had network 2-quiet, so it
+    can be used as a baseline.
   </summary>
 </histogram>
 

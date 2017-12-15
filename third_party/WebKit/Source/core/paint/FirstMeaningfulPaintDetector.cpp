@@ -209,7 +209,7 @@ void FirstMeaningfulPaintDetector::ReportHistograms() {
     kHadNetworkQuietEnumMax
   };
   DEFINE_STATIC_LOCAL(EnumerationHistogram, had_network_quiet_histogram,
-                      ("PageLoad.Experimental.Renderer."
+                      ("PageLoad.Internal.Renderer."
                        "FirstMeaningfulPaintDetector.HadNetworkQuiet",
                        kHadNetworkQuietEnumMax));
 
@@ -222,7 +222,7 @@ void FirstMeaningfulPaintDetector::ReportHistograms() {
   };
   DEFINE_STATIC_LOCAL(
       EnumerationHistogram, first_meaningful_paint_ordering_histogram,
-      ("PageLoad.Experimental.Renderer.FirstMeaningfulPaintDetector."
+      ("PageLoad.Internal.Renderer.FirstMeaningfulPaintDetector."
        "FirstMeaningfulPaintOrdering",
        kFMPOrderingEnumMax));
 
