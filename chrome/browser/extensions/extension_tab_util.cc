@@ -283,26 +283,6 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
 }
 
 Browser* ExtensionTabUtil::GetBrowserFromWindowID(
-    ChromeUIThreadExtensionFunction* function,
-    int window_id,
-    std::string* error) {
-  if (window_id == extension_misc::kCurrentWindowId) {
-    Browser* result = function->GetCurrentBrowser();
-    if (!result || !result->window()) {
-      if (error)
-        *error = keys::kNoCurrentWindowError;
-      return nullptr;
-    }
-    return result;
-  } else {
-    return GetBrowserInProfileWithId(function->GetProfile(),
-                                     window_id,
-                                     function->include_incognito(),
-                                     error);
-  }
-}
-
-Browser* ExtensionTabUtil::GetBrowserFromWindowID(
     const ChromeExtensionFunctionDetails& details,
     int window_id,
     std::string* error) {
