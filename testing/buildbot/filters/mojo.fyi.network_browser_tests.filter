@@ -824,3 +824,8 @@
 # Prevent tests from making real network requests.
 # https://crbug.com/793899
 -ExtensionApiTest.DoNotOpenUninstallUrlForBlacklistedExtensions
+
+# Session cookies tests are flaky.
+# https://crbug.com/795417
+-ContinueWhereILeftOffTest.SessionCookies
+-RestartTest.SessionCookies
