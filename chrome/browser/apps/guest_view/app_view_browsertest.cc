@@ -196,8 +196,13 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewGoodDataShouldSucceed) {
 }
 
 // Tests that <appview> correctly handles multiple successive connects.
-// TODO(crbug.com/794490) Reenable after fixing timeout issues.
-IN_PROC_BROWSER_TEST_P(AppViewTest, DISABLED_TestAppViewMultipleConnects) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewMultipleConnects) {
+  // TODO(crbug.com/794490) Skip this test for the BrowserPlugin ("/0")
+  // case until we either (i) find the cause of the TIMEOUT or (ii)
+  // remove BrowserPlugin.
+  if (!GetParam())
+    return;
+
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewMultipleConnects",
