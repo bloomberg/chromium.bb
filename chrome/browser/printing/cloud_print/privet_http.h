@@ -21,7 +21,7 @@ class Size;
 }
 
 namespace printing {
-class PWGRasterConverter;
+class PwgRasterConverter;
 }
 
 namespace cloud_print {
@@ -174,8 +174,8 @@ class PrivetLocalPrintOperation {
   virtual void SetPageSize(const gfx::Size& page_size) = 0;
 
   // For testing, inject an alternative PWG raster converter.
-  virtual void SetPWGRasterConverterForTesting(
-      std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter) = 0;
+  virtual void SetPwgRasterConverterForTesting(
+      std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter) = 0;
 
   virtual PrivetHTTPClient* GetHTTPClient() = 0;
 };

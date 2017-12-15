@@ -37,7 +37,7 @@ class Size;
 }
 
 namespace printing {
-class PWGRasterConverter;
+class PwgRasterConverter;
 }
 
 // Implementation of PrinterHandler interface backed by printerProvider
@@ -71,8 +71,8 @@ class ExtensionPrinterHandler : public PrinterHandler {
  private:
   friend class ExtensionPrinterHandlerTest;
 
-  void SetPWGRasterConverterForTesting(
-      std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter);
+  void SetPwgRasterConverterForTesting(
+      std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter);
 
   // Converts |data| to PWG raster format (from PDF) for a printer described
   // by |printer_description|.
@@ -109,7 +109,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
   Profile* const profile_;
   GetPrintersDoneCallback done_callback_;
   PrintJobCallback print_job_callback_;
-  std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter_;
+  std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;
 
   base::WeakPtrFactory<ExtensionPrinterHandler> weak_ptr_factory_;
