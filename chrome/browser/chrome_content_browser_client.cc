@@ -731,49 +731,6 @@ AppLoadedInTabSource ClassifyAppLoadedInTabSource(
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-void CreateUsbDeviceManager(device::mojom::UsbDeviceManagerRequest request,
-                            content::RenderFrameHost* render_frame_host) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (render_frame_host->GetSiteInstance()->GetSiteURL().SchemeIs(
-          extensions::kExtensionScheme)) {
-    return;
-  }
-#endif
-
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents) {
-    NOTREACHED();
-    return;
-  }
-
-  UsbTabHelper* tab_helper =
-      UsbTabHelper::GetOrCreateForWebContents(web_contents);
-  tab_helper->CreateDeviceManager(render_frame_host, std::move(request));
-}
-
-void CreateWebUsbChooserService(
-    device::mojom::UsbChooserServiceRequest request,
-    content::RenderFrameHost* render_frame_host) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (render_frame_host->GetSiteInstance()->GetSiteURL().SchemeIs(
-          extensions::kExtensionScheme)) {
-    return;
-  }
-#endif
-
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents) {
-    NOTREACHED();
-    return;
-  }
-
-  UsbTabHelper* tab_helper =
-      UsbTabHelper::GetOrCreateForWebContents(web_contents);
-  tab_helper->CreateChooserService(render_frame_host, std::move(request));
-}
-
 void CreateBudgetService(blink::mojom::BudgetServiceRequest request,
                          content::RenderFrameHost* render_frame_host) {
   BudgetServiceImpl::Create(std::move(request), render_frame_host->GetProcess(),
@@ -3625,13 +3582,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::MakeUnique<service_manager::BinderRegistryWithArgs<
           content::RenderProcessHost*, const url::Origin&>>();
 
-  if (base::FeatureList::IsEnabled(features::kWebUsb)) {
-    frame_interfaces_parameterized_->AddInterface(
-        base::Bind(&CreateUsbDeviceManager));
-    frame_interfaces_parameterized_->AddInterface(
-        base::Bind(&CreateWebUsbChooserService));
-  }
-
   // Register mojo ContentTranslateDriver interface only for main frame.
   // Use feature to determine whether translate or language code handles
   // language detection. See crbug.com/736929.
@@ -3792,6 +3742,58 @@ bool ChromeContentBrowserClient::ShouldForceDownloadResource(
 #else
   return false;
 #endif
+}
+
+void ChromeContentBrowserClient::CreateUsbDeviceManager(
+    content::RenderFrameHost* render_frame_host,
+    device::mojom::UsbDeviceManagerRequest request) {
+  if (!base::FeatureList::IsEnabled(features::kWebUsb))
+    return;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // WebUSB is not supported in Apps/Extensions. https://crbug.com/770896
+  if (render_frame_host->GetSiteInstance()->GetSiteURL().SchemeIs(
+          extensions::kExtensionScheme)) {
+    return;
+  }
+#endif
+
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents) {
+    NOTREACHED();
+    return;
+  }
+
+  UsbTabHelper* tab_helper =
+      UsbTabHelper::GetOrCreateForWebContents(web_contents);
+  tab_helper->CreateDeviceManager(render_frame_host, std::move(request));
+}
+
+void ChromeContentBrowserClient::CreateUsbChooserService(
+    content::RenderFrameHost* render_frame_host,
+    device::mojom::UsbChooserServiceRequest request) {
+  if (!base::FeatureList::IsEnabled(features::kWebUsb))
+    return;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // WebUSB is not supported in Apps/Extensions. https://crbug.com/770896
+  if (render_frame_host->GetSiteInstance()->GetSiteURL().SchemeIs(
+          extensions::kExtensionScheme)) {
+    return;
+  }
+#endif
+
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents) {
+    NOTREACHED();
+    return;
+  }
+
+  UsbTabHelper* tab_helper =
+      UsbTabHelper::GetOrCreateForWebContents(web_contents);
+  tab_helper->CreateChooserService(render_frame_host, std::move(request));
 }
 
 // Static; handles rewriting Web UI URLs.

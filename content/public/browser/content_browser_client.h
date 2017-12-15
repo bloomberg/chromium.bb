@@ -25,6 +25,8 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom.h"
+#include "device/usb/public/interfaces/chooser_service.mojom.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "media/media_features.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "net/base/mime_util.h"
@@ -984,6 +986,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // render MHTML page from http/https URLs.
   virtual bool ShouldForceDownloadResource(const GURL& url,
                                            const std::string& mime_type);
+
+  virtual void CreateUsbDeviceManager(
+      RenderFrameHost* render_frame_host,
+      device::mojom::UsbDeviceManagerRequest request);
+
+  virtual void CreateUsbChooserService(
+      RenderFrameHost* render_frame_host,
+      device::mojom::UsbChooserServiceRequest request);
 };
 
 }  // namespace content

@@ -331,6 +331,7 @@ jumbo_source_set("browser_sources") {
     "//cc",
     "//content/browser",  # Must not be public_deps!
     "//device/geolocation",
+    "//device/usb/public/interfaces",
     "//gpu",
     "//media",
     "//net",
