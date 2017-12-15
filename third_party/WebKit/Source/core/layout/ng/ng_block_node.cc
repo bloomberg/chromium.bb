@@ -342,16 +342,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
   box_->SetLogicalHeight(logical_height);
   box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
-
-  // LayoutBox::Margin*() should be used value, while we set computed value
-  // here. This is not entirely correct, but these values are not used for
-  // layout purpose.
-  // BaselinePosition() relies on margins set to the box, and computed value is
-  // good enough for it to work correctly.
-  // Set this only for atomic inlines, or we end up adding margins twice.
-  if (box_->IsAtomicInlineLevel()) {
-    box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
-  }
+  box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
 
   LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(*box_);
   if (flow_thread) {

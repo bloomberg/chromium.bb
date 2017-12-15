@@ -1092,17 +1092,17 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
   auto left_floating_object = floating_objects.TakeFirst();
   ASSERT_TRUE(left_floating_object->IsPlaced());
   // 80 = float_inline_offset(25) + accumulative offset of empty blocks(35 + 20)
-  EXPECT_THAT(left_floating_object->X(), LayoutUnit(25));
+  EXPECT_THAT(left_floating_object->X(), LayoutUnit(15));
   // 10 = left float's margin
-  EXPECT_THAT(left_floating_object->Y(), LayoutUnit(10));
+  EXPECT_THAT(left_floating_object->Y(), LayoutUnit());
 
   auto right_floating_object = floating_objects.TakeFirst();
   ASSERT_TRUE(right_floating_object->IsPlaced());
   // 150 = float_inline_offset(25) +
   //       right float offset(125)
-  EXPECT_THAT(right_floating_object->X(), LayoutUnit(150));
+  EXPECT_THAT(right_floating_object->X(), LayoutUnit(140));
   // 15 = right float's margin
-  EXPECT_THAT(right_floating_object->Y(), LayoutUnit(15));
+  EXPECT_THAT(right_floating_object->Y(), LayoutUnit(0));
 }
 
 // Verifies that left/right floating and regular blocks can be positioned
@@ -1532,8 +1532,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
   ASSERT_EQ(1UL, floating_objects.size());
   auto floating_object = floating_objects.TakeFirst();
   // left-float's margin = 15.
-  EXPECT_THAT(floating_object->X(), LayoutUnit(15));
-  EXPECT_THAT(floating_object->Y(), LayoutUnit(15));
+  EXPECT_THAT(floating_object->X(), LayoutUnit());
+  EXPECT_THAT(floating_object->Y(), LayoutUnit());
 
   scoped_refptr<const NGPhysicalBoxFragment> html_fragment;
   std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
