@@ -82,12 +82,6 @@ class NotificationPromo {
   // payload.
   bool IsPayloadParam(const std::string& param_name) const;
 
-  // Transition data saved in old prefs structure to new structure that supports
-  // storing multiple promos.
-  // TODO(crbug.com/623726) Remove this method when migration is no longer
-  // needed as most users have been upgraded to the new pref structure.
-  void MigrateOldPrefs();
-
   PrefService* local_state_;
 
   std::string promo_text_;
