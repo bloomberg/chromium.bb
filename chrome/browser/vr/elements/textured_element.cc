@@ -34,7 +34,6 @@ void TexturedElement::Initialize(SkiaSurfaceProvider* provider) {
   DCHECK(provider);
   provider_ = provider;
   DCHECK(GetTexture());
-  texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
   GetTexture()->OnInitialized();
   initialized_ = true;
 }
@@ -54,6 +53,11 @@ bool TexturedElement::PrepareToDraw() {
       !(GetTexture()->dirty() || g_rerender_if_not_dirty_for_testing_) ||
       !IsVisible())
     return false;
+  GetTexture()->MeasureSize();
+  DCHECK(GetTexture()->measured());
+  texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
+  // PreferredTextureSize might change due to text element has new layout or new
+  // text. So we need to get the latest value before create surface.
   surface_ = provider_->MakeSurface(texture_size_);
   DCHECK(surface_.get());
   GetTexture()->DrawAndLayout(surface_->getCanvas(), texture_size_);

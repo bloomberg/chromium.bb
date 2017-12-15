@@ -51,6 +51,13 @@ void UiTexture::DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size) {
   Draw(canvas, texture_size);
 }
 
+void UiTexture::MeasureSize() {
+  OnMeasureSize();
+  measured_ = true;
+}
+
+void UiTexture::OnMeasureSize() {}
+
 bool UiTexture::LocalHitTest(const gfx::PointF& point) const {
   return false;
 }

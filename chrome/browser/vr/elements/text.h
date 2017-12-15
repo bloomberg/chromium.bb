@@ -20,16 +20,22 @@ namespace vr {
 
 class TextTexture;
 
+enum TextLayoutMode {
+  kSingleLineFixedWidth,
+  kSingleLineFixedHeight,
+  kMultiLineFixedWidth,
+};
+
 class Text : public TexturedElement {
  public:
-  Text(int maximum_width_pixels, float font_height_meters);
+  explicit Text(float font_height_dmms);
   ~Text() override;
 
   void SetText(const base::string16& text);
   void SetColor(SkColor color);
 
   void SetTextAlignment(UiTexture::TextAlignment alignment);
-  void SetMultiLine(bool multiline);
+  void SetTextLayoutMode(TextLayoutMode mode);
 
   // This text element does not typically feature a cursor, but since the cursor
   // position is deterined while laying out text, a parent may wish to supply
@@ -46,14 +52,15 @@ class Text : public TexturedElement {
   gfx::RectF GetCursorBounds() const;
 
   void OnSetSize(const gfx::SizeF& size) override;
+  void UpdateElementSize() override;
 
-  std::vector<std::unique_ptr<gfx::RenderText>> LayOutTextForTest(
-      const gfx::Size& texture_size);
+  const std::vector<std::unique_ptr<gfx::RenderText>>& LayOutTextForTest();
   gfx::SizeF GetTextureSizeForTest() const;
 
  private:
   UiTexture* GetTexture() const override;
 
+  TextLayoutMode text_layout_mode_ = kMultiLineFixedWidth;
   std::unique_ptr<TextTexture> texture_;
   DISALLOW_COPY_AND_ASSIGN(Text);
 };

@@ -19,7 +19,6 @@ namespace vr {
 
 namespace {
 
-constexpr int kMaximumTextWidthPixels = 512;
 constexpr size_t kNumberOfRuns = 35;
 constexpr float kFontHeightMeters = 0.05f;
 constexpr float kTextWidthMeters = 1.0f;
@@ -33,8 +32,7 @@ class TextPerfTest : public testing::Test {
         base::MakeUnique<GlTestEnvironment>(kPixelHalfScreen);
     provider_ = base::MakeUnique<GaneshSurfaceProvider>();
 
-    text_element_ =
-        base::MakeUnique<Text>(kMaximumTextWidthPixels, kFontHeightMeters);
+    text_element_ = base::MakeUnique<Text>(kFontHeightMeters);
     text_element_->SetSize(kTextWidthMeters, 0);
     text_element_->Initialize(provider_.get());
   }
