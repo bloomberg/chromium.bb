@@ -48,6 +48,7 @@ void GeolocationContext::SetOverride(mojom::GeopositionPtr geoposition) {
 }
 
 void GeolocationContext::ClearOverride() {
+  geoposition_override_.reset();
   for (auto& impl : impls_) {
     impl->ClearOverride();
   }

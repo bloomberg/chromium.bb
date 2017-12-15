@@ -51,6 +51,26 @@
           navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
       }
 
+      function getPositionPromise()
+      {
+          return new Promise((resolve, reject) => {
+              function testSuccess(position)
+              {
+                  if (position && position.coords)
+                      resolve("Latitude: " + position.coords.latitude + " Longitude: " + position.coords.longitude);
+                  else
+                      resolve("Unexpected error occured. Test failed.");
+              }
+
+              function testFailed(error)
+              {
+                  resolve(serializeGeolocationError(error));
+              }
+
+              navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
+          });
+      }
+
       function overridenTimestampGeolocation()
       {
           function testSuccess(position)
@@ -78,10 +98,18 @@
     });
   }
 
+  var positionBeforeOverride;
+
   TestRunner.runTestSuite([
     function testPermissionGranted(next) {
-      consoleSniffAndDump(next);
+      consoleSniffAndDump(savePositionBeforeOverride);
       TestRunner.evaluateInPage('grantGeolocationPermission()');
+
+      async function savePositionBeforeOverride() {
+        positionBeforeOverride = await TestRunner.evaluateInPageAsync('getPositionPromise()');
+        Console.ConsoleView.clearConsole();
+        next();
+      }
     },
 
     function testGeolocationUnavailable(next) {
@@ -112,5 +140,15 @@
       consoleSniffAndDump(next);
       TestRunner.evaluateInPage('overridenTimestampGeolocation()');
     },
+
+    async function testNoOverride(next) {
+      TestRunner.EmulationAgent.clearGeolocationOverride();
+      var positionString = await TestRunner.evaluateInPageAsync('getPositionPromise()');
+      if (positionString === positionBeforeOverride)
+        TestRunner.addResult('Override was cleared correctly.');
+      else
+        TestRunner.addResult('Position differs from value before override.');
+      next();
+    }
   ]);
 })();
