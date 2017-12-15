@@ -290,6 +290,7 @@ EXPERIMENT_LIST="
     reference_buffer
     entropy_stats
     dependent_horztiles
+    dependent_horztilegroups
     dist_8x8
     palette_throughput
     ref_adapt
