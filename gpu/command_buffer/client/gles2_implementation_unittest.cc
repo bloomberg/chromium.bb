@@ -3196,9 +3196,11 @@ TEST_F(GLES2ImplementationTest, GetString) {
   // GL_CHROMIUM_map_sub is hard coded into GLES2Implementation.
   const char* expected_str =
       "foobar "
-      "GL_EXT_unpack_subimage "
+      "GL_CHROMIUM_image "
       "GL_CHROMIUM_map_sub "
-      "GL_CHROMIUM_image";
+      "GL_CHROMIUM_ordering_barrier "
+      "GL_CHROMIUM_sync_point "
+      "GL_EXT_unpack_subimage";
   const char kBad = 0x12;
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
