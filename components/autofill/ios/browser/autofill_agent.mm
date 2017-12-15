@@ -149,6 +149,10 @@ void GetFormAndField(autofill::FormData* form,
 // key/value suggestions if the user hasn't started typing.
 - (NSArray*)processSuggestions:(NSArray*)suggestions;
 
+// Sends the the |formData| to the JavaScript manager of |webState_| to actually
+// fill the data.
+- (void)sendDataToWebState:(NSString*)formData;
+
 @end
 
 @implementation AutofillAgent {
@@ -192,6 +196,8 @@ void GetFormAndField(autofill::FormData* form,
   // The reference is weak because a weak pointer is sent to our
   // AutofillManagerDelegate.
   base::WeakPtr<autofill::AutofillPopupDelegate> popupDelegate_;
+  // The autofill data that needs to be send when the |webState_| is shown.
+  NSString* pendingFormData_;
 }
 
 - (instancetype)initWithPrefService:(PrefService*)prefService
@@ -651,6 +657,14 @@ void GetFormAndField(autofill::FormData* form,
   [self detachFromWebState];
 }
 
+- (void)webStateWasShown:(web::WebState*)webState {
+  DCHECK_EQ(webState_, webState);
+  if (pendingFormData_) {
+    [self sendDataToWebState:pendingFormData_];
+  }
+  pendingFormData_ = nil;
+}
+
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
                      userInitiated:(BOOL)userInitiated
@@ -877,14 +891,24 @@ void GetFormAndField(autofill::FormData* form,
   // Stringify the JSON data and send it to the UIWebView-side fillForm method.
   std::string dataString;
   base::JSONWriter::Write(*formData.get(), &dataString);
+  NSString* nsDataString = base::SysUTF8ToNSString(dataString);
 
+  if (!webState_->IsVisible()) {
+    pendingFormData_ = nsDataString;
+    return;
+  }
+  [self sendDataToWebState:nsDataString];
+}
+
+- (void)sendDataToWebState:(NSString*)formData {
+  DCHECK(webState_->IsVisible());
   // It is possible that the fill was not initiated by selecting a suggestion.
   // In this case we provide an empty callback.
   if (!suggestionHandledCompletion_)
     suggestionHandledCompletion_ = [^{
     } copy];
   [jsAutofillManager_
-                fillForm:base::SysUTF8ToNSString(dataString)
+                fillForm:formData
       forceFillFieldName:base::SysUTF16ToNSString(pendingAutocompleteField_)
        completionHandler:suggestionHandledCompletion_];
   suggestionHandledCompletion_ = nil;
