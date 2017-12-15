@@ -20,6 +20,9 @@
 #include "headless/lib/browser/headless_network_delegate.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_preferences.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_service.h"
@@ -149,14 +152,26 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
           std::make_unique<HeadlessNetworkDelegate>(headless_browser_context_));
     }
 
+    std::unique_ptr<net::HostResolver> host_resolver(
+        net::HostResolver::CreateDefaultResolver(net_log_));
+
     if (!host_resolver_rules_.empty()) {
-      std::unique_ptr<net::HostResolver> host_resolver(
-          net::HostResolver::CreateDefaultResolver(net_log_));
       std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
           new net::MappedHostResolver(std::move(host_resolver)));
       mapped_host_resolver->SetRulesFromString(host_resolver_rules_);
-      builder.set_host_resolver(std::move(mapped_host_resolver));
+      host_resolver = std::move(mapped_host_resolver);
     }
+
+    net::HttpAuthPreferences* prefs(new net::HttpAuthPreferences());
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    prefs->SetServerWhitelist(
+        command_line->GetSwitchValueASCII(switches::kAuthServerWhitelist));
+    std::unique_ptr<net::HttpAuthHandlerRegistryFactory> factory =
+        net::HttpAuthHandlerRegistryFactory::CreateDefault(host_resolver.get());
+    factory->SetHttpAuthPreferences(net::kNegotiateAuthScheme,
+                                    std::move(prefs));
+    builder.SetHttpAuthHandlerFactory(std::move(factory));
+    builder.set_host_resolver(std::move(host_resolver));
 
     // Extra headers are required for network emulation and are removed in
     // DevToolsNetworkTransaction. If a protocol handler is set for http or
