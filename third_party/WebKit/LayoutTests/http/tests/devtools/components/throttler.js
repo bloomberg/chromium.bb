@@ -8,91 +8,91 @@
   class TimeoutMock {
     constructor() {
       this._timeoutId = 0;
-      this._timeoutIdToProcess = {};
-      this._timeoutIdToMillis = {};
+      this._timeoutIdToProcess = new Map();
+      this._timeoutIdToMillis = new Map();
+      this._time = 1;
       this.setTimeout = this.setTimeout.bind(this);
       this.clearTimeout = this.clearTimeout.bind(this);
+      this.getTime = this.getTime.bind(this);
     }
 
     /**
-         * @param {!Function} operation
-         * @param {number} timeout
-         */
+     * @param {!Function} operation
+     * @param {number} timeout
+     */
     setTimeout(operation, timeout) {
-      this._timeoutIdToProcess[++this._timeoutId] = operation;
-      this._timeoutIdToMillis[this._timeoutId] = timeout;
+      this._timeoutIdToProcess.set(++this._timeoutId, operation);
+      this._timeoutIdToMillis.set(this._timeoutId, timeout);
       return this._timeoutId;
     }
 
     /**
-            *
-            * @param {number} timeoutId
-            */
+     *
+     * @param {number} timeoutId
+     */
     clearTimeout(timeoutId) {
-      delete this._timeoutIdToProcess[timeoutId];
-      delete this._timeoutIdToMillis[timeoutId];
+      this._timeoutIdToProcess.delete(timeoutId);
+      this._timeoutIdToMillis.delete(timeoutId);
     }
 
     /**
-            * @return {!Array<number>}
-            */
+     * @return {!Array<number>}
+     */
     activeTimersTimeouts() {
-      return Object.values(this._timeoutIdToMillis);
+      return Array.from(this._timeoutIdToMillis.values());
+    }
+
+    getTime() {
+      return this._time;
     }
 
     fireAllTimers() {
-      for (const timeoutId in this._timeoutIdToProcess)
-        this._timeoutIdToProcess[timeoutId].call(window);
-      this._timeoutIdToProcess = {};
-      this._timeoutIdToMillis = {};
+      this._time = Math.max(...this.activeTimersTimeouts()) + 1;
+      for (const timeoutId of this._timeoutIdToProcess.keys())
+        this._timeoutIdToProcess.get(timeoutId).call(window);
+      this._timeoutIdToProcess.clear();
+      this._timeoutIdToMillis.clear();
     }
   }
 
-  var ProcessMock = function(name, runnable) {
-    this._runnable = runnable;
-    this.processName = name;
-    this.run = this.run.bind(this);
-    this.run.processName = name;
+  class ProcessMock {
+    constructor(name, runnable) {
+      this._runnable = runnable;
+      this.processName = name;
+      this.run = this.run.bind(this);
+      this.run.processName = name;
 
-    this.startPromise = new Promise(onStart.bind(this));
-    this.finishPromise = new Promise(onFinish.bind(this));
-
-    function onStart(startCallback) {
-      this._startCallback = startCallback;
+      this.startPromise = new Promise(fulfill => this._startCallback = fulfill);
+      this.finishPromise = new Promise(fulfill => this._finishCallback = fulfill);
     }
 
-    function onFinish(finishCallback) {
-      this._finishCallback = finishCallback;
-    }
-  };
-
-  ProcessMock.create = function(name, runnable) {
-    return new ProcessMock(name, runnable);
-  };
-
-  ProcessMock.prototype = {
-    run: function() {
+    run() {
       TestRunner.addResult('Process \'' + this.processName + '\' STARTED.');
       this._startCallback();
       if (this._runnable)
         this._runnable.call(null);
       return this.finishPromise;
-    },
+    }
 
-    finish: function() {
+    finish() {
       this.startPromise.then(onFinish.bind(this));
 
       function onFinish() {
         TestRunner.addResult('Process \'' + this.processName + '\' FINISHED.');
         this._finishCallback();
       }
-    },
-  };
+    }
+
+    static create(name, runnable) {
+      return new ProcessMock(name, runnable);
+    }
+  }
 
   var throttler = new Common.Throttler(1989);
   var timeoutMock = new TimeoutMock();
   throttler._setTimeout = timeoutMock.setTimeout;
   throttler._clearTimeout = timeoutMock.clearTimeout;
+  throttler._getTime = timeoutMock.getTime;
   TestRunner.addSniffer(throttler, 'schedule', logSchedule, true);
 
   function testSimpleSchedule(next, runningProcess) {
@@ -107,14 +107,12 @@
       promise = waitForProcessFinish();
     }
 
-    promise
-        .then(function() {
-          assertThrottlerTimeout();
-          timeoutMock.fireAllTimers();
-          process.finish();
-          return waitForProcessFinish();
-        })
-        .then(next);
+    promise.then(() => {
+      assertThrottlerTimeout();
+      timeoutMock.fireAllTimers();
+      process.finish();
+      return waitForProcessFinish();
+    }).then(next);
   }
 
   function testAsSoonAsPossibleOverrideTimeout(next, runningProcess) {
