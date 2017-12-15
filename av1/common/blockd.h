@@ -183,13 +183,6 @@ static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
    modes for the Y blocks to the left and above us; for interframes, there
    is a single probability table. */
 
-typedef struct {
-  PREDICTION_MODE as_mode;
-  int_mv as_mv[2];  // first, second inter predictor motion vectors
-  int_mv pred_mv[2];
-  int_mv ref_mv[2];
-} b_mode_info;
-
 typedef int8_t MV_REFERENCE_FRAME;
 
 typedef struct {
