@@ -31,7 +31,6 @@ import devil_chromium
 
 sys.path.append(os.path.join(_SRC_PATH, 'tools', 'android', 'loading'))
 import chrome_setup
-import device_setup
 
 
 # Local build of Chrome (not Chromium).
@@ -137,61 +136,54 @@ def ParseResult(result_line):
                 max(_INVALID_VALUE, int(tokens[8]) - intent_sent_timestamp))
 
 
-def LoopOnDevice(device, configs, output_filename, wpr_archive_path=None,
-                 wpr_record=None, network_condition=None, wpr_log_path=None,
-                 once=False, should_stop=None):
+def LoopOnDevice(device, configs, output_filename, once=False,
+                 should_stop=None):
   """Loops the tests on a device.
 
   Args:
     device: (DeviceUtils) device to run the tests on.
     configs: ([dict])
     output_filename: (str) Output filename. '-' for stdout.
-    wpr_archive_path: (str) Path to the WPR archive.
-    wpr_record: (bool) Whether WPR is set to recording.
-    network_condition: (str) Name of the network configuration for throttling.
-    wpr_log_path: (str) Path the the WPR log.
     once: (bool) Run only once.
     should_stop: (threading.Event or None) When the event is set, stop looping.
   """
-  with SetupWpr(device, wpr_archive_path, wpr_record, network_condition,
-                wpr_log_path) as wpr_attributes:
-    to_stdout = output_filename == '-'
-    out = sys.stdout if to_stdout else open(output_filename, 'a')
-    try:
-      while should_stop is None or not should_stop.is_set():
-        config = configs[random.randint(0, len(configs) - 1)]
-        chrome_args = chrome_setup.CHROME_ARGS + wpr_attributes.chrome_args
-        if config['speculation_mode'] == 'no_state_prefetch':
-          # NoStatePrefetch is enabled through an experiment.
-          chrome_args.extend([
-              '--force-fieldtrials=trial/group',
-              '--force-fieldtrial-params=trial.group:mode/no_state_prefetch',
-              '--enable-features=NoStatePrefetch<trial'])
-        elif config['speculation_mode'] == 'speculative_prefetch':
-          # Speculative Prefetch is enabled through an experiment.
-          chrome_args.extend([
-              '--force-fieldtrials=trial/group',
-              '--force-fieldtrial-params=trial.group:mode/external-prefetching',
-              '--enable-features=SpeculativeResourcePrefetching<trial'])
+  to_stdout = output_filename == '-'
+  out = sys.stdout if to_stdout else open(output_filename, 'a')
+  try:
+    while should_stop is None or not should_stop.is_set():
+      config = configs[random.randint(0, len(configs) - 1)]
+      chrome_args = chrome_setup.CHROME_ARGS
+      if config['speculation_mode'] == 'no_state_prefetch':
+        # NoStatePrefetch is enabled through an experiment.
+        chrome_args.extend([
+            '--force-fieldtrials=trial/group',
+            '--force-fieldtrial-params=trial.group:mode/no_state_prefetch',
+            '--enable-features=NoStatePrefetch<trial'])
+      elif config['speculation_mode'] == 'speculative_prefetch':
+        # Speculative Prefetch is enabled through an experiment.
+        chrome_args.extend([
+            '--force-fieldtrials=trial/group',
+            '--force-fieldtrial-params=trial.group:mode/external-prefetching',
+            '--enable-features=SpeculativeResourcePrefetching<trial'])
 
-        result = RunOnce(device, config['url'], config['speculated_url'],
-                         config['warmup'], config['skip_launcher_activity'],
-                         config['speculation_mode'],
-                         config['delay_to_may_launch_url'],
-                         config['delay_to_launch_url'], config['cold'],
-                         chrome_args, reset_chrome_state=True)
-        if result is not None:
-          out.write(result + '\n')
-          out.flush()
-        if once:
-          return
-        if should_stop is not None:
-          should_stop.wait(10.)
-        else:
-          time.sleep(10)
-    finally:
-      if not to_stdout:
-        out.close()
+      result = RunOnce(device, config['url'], config['speculated_url'],
+                       config['warmup'], config['skip_launcher_activity'],
+                       config['speculation_mode'],
+                       config['delay_to_may_launch_url'],
+                       config['delay_to_launch_url'], config['cold'],
+                       chrome_args, reset_chrome_state=True)
+      if result is not None:
+        out.write(result + '\n')
+        out.flush()
+      if once:
+        return
+      if should_stop is not None:
+        should_stop.wait(10.)
+      else:
+        time.sleep(10)
+  finally:
+    if not to_stdout:
+      out.close()
 
 
 def ProcessOutput(filename):
@@ -246,40 +238,11 @@ def _CreateOptionParser():
   parser.add_option('--cold', help='Purge the page cache before each run.',
                     default=False, action='store_true')
   parser.add_option('--output_file', help='Output file (append). "-" for '
-                    'stdout')
+                    'stdout (this is the default)', default='-')
   parser.add_option('--once', help='Run only one iteration.',
                     action='store_true', default=False)
 
-  # WebPageReplay-related options.
-  group = optparse.OptionGroup(
-      parser, 'WebPageReplay options',
-      'Setting any of these enables WebPageReplay.')
-  group.add_option('--record', help='Record the WPR archive.',
-                   action='store_true', default=False)
-  group.add_option('--wpr_archive', help='WPR archive path.')
-  group.add_option('--wpr_log', help='WPR log path.')
-  group.add_option('--network_condition',
-                   help='Network condition for emulation.')
-  parser.add_option_group(group)
-
   return parser
-
-
-@contextlib.contextmanager
-def DummyWprHost():
-  """Dummy context used to run without WebPageReplay."""
-  yield device_setup.WprAttribute(chrome_args=[], chrome_env_override={})
-
-
-def SetupWpr(device, wpr_archive_path, record, network_condition_name,
-             out_log_path):
-  """Sets up the WebPageReplay server if needed."""
-  if wpr_archive_path or record or network_condition_name or out_log_path:
-    return device_setup.RemoteWprHost(device, wpr_archive_path, record,
-                                      network_condition_name,
-                                      out_log_path=out_log_path)
-  # WebPageReplay disabled.
-  return DummyWprHost()
 
 
 def main():
@@ -308,9 +271,7 @@ def main():
       'delay_to_launch_url': options.delay_to_launch_url,
       'cold': options.cold,
   }
-  LoopOnDevice(device, [config], options.output_file, options.wpr_archive,
-               options.record, options.network_condition, options.wpr_log,
-               once=options.once)
+  LoopOnDevice(device, [config], options.output_file, once=options.once)
 
 
 if __name__ == '__main__':
