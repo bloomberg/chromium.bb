@@ -25,18 +25,22 @@
 
 #include "platform/audio/VectorMath.h"
 
-#include <stdint.h>
+#include <cmath>
+
 #include "build/build_config.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CPU.h"
-#include "platform/wtf/MathExtras.h"
+
+#if !defined(OS_MACOSX)
+#if defined(ARCH_CPU_X86_FAMILY)
+#include "platform/audio/cpu/x86/VectorMathX86.h"
+#else
+#include "platform/audio/VectorMathScalar.h"
+#endif
+#endif
 
 #if defined(OS_MACOSX)
 #include <Accelerate/Accelerate.h>
-#endif
-
-#if defined(ARCH_CPU_X86_FAMILY)
-#include <emmintrin.h>
 #endif
 
 #if WTF_CPU_ARM_NEON
@@ -47,13 +51,7 @@
 #include "platform/cpu/mips/CommonMacrosMSA.h"
 #endif
 
-#include <math.h>
 #include <algorithm>
-
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
-// Define the blink::VectorMath::SSE namespace.
-#include "platform/audio/cpu/x86/VectorMathImpl.cpp"
-#endif
 
 namespace blink {
 
@@ -175,36 +173,24 @@ void Vclip(const float* source_p,
 }
 #else
 
+namespace {
+#if defined(ARCH_CPU_X86_FAMILY)
+namespace Impl = X86;
+#else
+namespace Impl = Scalar;
+#endif
+}  // namespace
+
 void Vsma(const float* source_p,
           int source_stride,
           const float* scale,
           float* dest_p,
           int dest_stride,
           size_t frames_to_process) {
+#if HAVE_MIPS_MSA_INTRINSICS || WTF_CPU_ARM_NEON
   int n = frames_to_process;
 
-#if defined(ARCH_CPU_X86_FAMILY)
-  if ((source_stride == 1) && (dest_stride == 1)) {
-    size_t i = 0u;
-
-    // If the source_p address is not 16-byte aligned, the first several frames
-    // (at most three) should be processed separately.
-    for (; !SSE::IsAligned(source_p + i) && i < frames_to_process; ++i)
-      dest_p[i] += *scale * source_p[i];
-
-    // Now the source_p+i address is 16-byte aligned. Start to apply SSE.
-    size_t sse_frames_to_process =
-        (frames_to_process - i) & SSE::kFramesToProcessMask;
-    if (sse_frames_to_process > 0u) {
-      SSE::Vsma(source_p + i, scale, dest_p + i, sse_frames_to_process);
-      i += sse_frames_to_process;
-    }
-
-    source_p += i;
-    dest_p += i;
-    n -= i;
-  }
-#elif WTF_CPU_ARM_NEON
+#if WTF_CPU_ARM_NEON
   if ((source_stride == 1) && (dest_stride == 1)) {
     int tail_frames = n % 4;
     const float* end_p = dest_p + n - tail_frames;
@@ -244,12 +230,12 @@ void Vsma(const float* source_p,
     }
   }
 #endif
-  while (n) {
-    *dest_p += *source_p * *scale;
-    source_p += source_stride;
-    dest_p += dest_stride;
-    n--;
-  }
+
+  frames_to_process = n;
+#endif
+
+  Impl::Vsma(source_p, source_stride, scale, dest_p, dest_stride,
+             frames_to_process);
 }
 
 void Vsmul(const float* source_p,
@@ -258,30 +244,10 @@ void Vsmul(const float* source_p,
            float* dest_p,
            int dest_stride,
            size_t frames_to_process) {
+#if HAVE_MIPS_MSA_INTRINSICS || WTF_CPU_ARM_NEON
   int n = frames_to_process;
 
-#if defined(ARCH_CPU_X86_FAMILY)
-  if ((source_stride == 1) && (dest_stride == 1)) {
-    size_t i = 0u;
-
-    // If the source_p address is not 16-byte aligned, the first several frames
-    // (at most three) should be processed separately.
-    for (; !SSE::IsAligned(source_p + i) && i < frames_to_process; ++i)
-      dest_p[i] = *scale * source_p[i];
-
-    // Now the source_p+i address is 16-byte aligned. Start to apply SSE.
-    size_t sse_frames_to_process =
-        (frames_to_process - i) & SSE::kFramesToProcessMask;
-    if (sse_frames_to_process > 0u) {
-      SSE::Vsmul(source_p + i, scale, dest_p + i, sse_frames_to_process);
-      i += sse_frames_to_process;
-    }
-
-    source_p += i;
-    dest_p += i;
-    n -= i;
-  }
-#elif WTF_CPU_ARM_NEON
+#if WTF_CPU_ARM_NEON
   if ((source_stride == 1) && (dest_stride == 1)) {
     float k = *scale;
     int tail_frames = n % 4;
@@ -315,12 +281,12 @@ void Vsmul(const float* source_p,
     }
   }
 #endif
-  float k = *scale;
-  while (n--) {
-    *dest_p = k * *source_p;
-    source_p += source_stride;
-    dest_p += dest_stride;
-  }
+
+  frames_to_process = n;
+#endif
+
+  Impl::Vsmul(source_p, source_stride, scale, dest_p, dest_stride,
+              frames_to_process);
 }
 
 void Vadd(const float* source1p,
@@ -330,31 +296,10 @@ void Vadd(const float* source1p,
           float* dest_p,
           int dest_stride,
           size_t frames_to_process) {
+#if HAVE_MIPS_MSA_INTRINSICS || WTF_CPU_ARM_NEON
   int n = frames_to_process;
 
-#if defined(ARCH_CPU_X86_FAMILY)
-  if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
-    size_t i = 0u;
-
-    // If the source1p address is not 16-byte aligned, the first several frames
-    // (at most three) should be processed separately.
-    for (; !SSE::IsAligned(source1p + i) && i < frames_to_process; ++i)
-      dest_p[i] = source1p[i] + source2p[i];
-
-    // Now the source1p+i address is 16-byte aligned. Start to apply SSE.
-    size_t sse_frames_to_process =
-        (frames_to_process - i) & SSE::kFramesToProcessMask;
-    if (sse_frames_to_process > 0u) {
-      SSE::Vadd(source1p + i, source2p + i, dest_p + i, sse_frames_to_process);
-      i += sse_frames_to_process;
-    }
-
-    source1p += i;
-    source2p += i;
-    dest_p += i;
-    n -= i;
-  }
-#elif WTF_CPU_ARM_NEON
+#if WTF_CPU_ARM_NEON
   if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
     int tail_frames = n % 4;
     const float* end_p = dest_p + n - tail_frames;
@@ -391,12 +336,12 @@ void Vadd(const float* source1p,
     }
   }
 #endif
-  while (n--) {
-    *dest_p = *source1p + *source2p;
-    source1p += source_stride1;
-    source2p += source_stride2;
-    dest_p += dest_stride;
-  }
+
+  frames_to_process = n;
+#endif
+
+  Impl::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
+             dest_stride, frames_to_process);
 }
 
 void Vmul(const float* source1p,
@@ -406,31 +351,10 @@ void Vmul(const float* source1p,
           float* dest_p,
           int dest_stride,
           size_t frames_to_process) {
+#if HAVE_MIPS_MSA_INTRINSICS || WTF_CPU_ARM_NEON
   int n = frames_to_process;
 
-#if defined(ARCH_CPU_X86_FAMILY)
-  if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
-    size_t i = 0u;
-
-    // If the source1p address is not 16-byte aligned, the first several
-    // frames  (at most three) should be processed separately.
-    for (; !SSE::IsAligned(source1p + i) && i < frames_to_process; ++i)
-      dest_p[i] = source1p[i] * source2p[i];
-
-    // Now the source1p+i address is 16-byte aligned. Start to apply SSE.
-    size_t sse_frames_to_process =
-        (frames_to_process - i) & SSE::kFramesToProcessMask;
-    if (sse_frames_to_process > 0u) {
-      SSE::Vmul(source1p + i, source2p + i, dest_p + i, sse_frames_to_process);
-      i += sse_frames_to_process;
-    }
-
-    source1p += i;
-    source2p += i;
-    dest_p += i;
-    n -= i;
-  }
-#elif WTF_CPU_ARM_NEON
+#if WTF_CPU_ARM_NEON
   if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
     int tail_frames = n % 4;
     const float* end_p = dest_p + n - tail_frames;
@@ -467,13 +391,12 @@ void Vmul(const float* source1p,
     }
   }
 #endif
-  while (n) {
-    *dest_p = *source1p * *source2p;
-    source1p += source_stride1;
-    source2p += source_stride2;
-    dest_p += dest_stride;
-    n--;
-  }
+
+  frames_to_process = n;
+#endif
+
+  Impl::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
+             dest_stride, frames_to_process);
 }
 
 void Zvmul(const float* real1p,
@@ -484,28 +407,8 @@ void Zvmul(const float* real1p,
            float* imag_dest_p,
            size_t frames_to_process) {
   unsigned i = 0;
-#if defined(ARCH_CPU_X86_FAMILY)
-  // If the real1p address is not 16-byte aligned, the first several
-  // frames  (at most three) should be processed separately.
-  for (; !SSE::IsAligned(real1p + i) && i < frames_to_process; ++i) {
-    // Read and compute result before storing them, in case the
-    // destination is the same as one of the sources.
-    float real_result = real1p[i] * real2p[i] - imag1p[i] * imag2p[i];
-    float imag_result = real1p[i] * imag2p[i] + imag1p[i] * real2p[i];
 
-    real_dest_p[i] = real_result;
-    imag_dest_p[i] = imag_result;
-  }
-
-  // Now the real1p+i address is 16-byte aligned. Start to apply SSE.
-  size_t sse_frames_to_process =
-      (frames_to_process - i) & SSE::kFramesToProcessMask;
-  if (sse_frames_to_process > 0u) {
-    SSE::Zvmul(real1p + i, imag1p + i, real2p + i, imag2p + i, real_dest_p + i,
-               imag_dest_p + i, sse_frames_to_process);
-    i += sse_frames_to_process;
-  }
-#elif WTF_CPU_ARM_NEON
+#if WTF_CPU_ARM_NEON
   unsigned end_size = frames_to_process - frames_to_process % 4;
   while (i < end_size) {
     float32x4_t real1 = vld1q_f32(real1p + i);
@@ -522,45 +425,20 @@ void Zvmul(const float* real1p,
     i += 4;
   }
 #endif
-  for (; i < frames_to_process; ++i) {
-    // Read and compute result before storing them, in case the
-    // destination is the same as one of the sources.
-    float real_result = real1p[i] * real2p[i] - imag1p[i] * imag2p[i];
-    float imag_result = real1p[i] * imag2p[i] + imag1p[i] * real2p[i];
 
-    real_dest_p[i] = real_result;
-    imag_dest_p[i] = imag_result;
-  }
+  Impl::Zvmul(real1p + i, imag1p + i, real2p + i, imag2p + i, real_dest_p + i,
+              imag_dest_p + i, frames_to_process - i);
 }
 
 void Vsvesq(const float* source_p,
             int source_stride,
             float* sum_p,
             size_t frames_to_process) {
-  int n = frames_to_process;
   float sum = 0;
 
-#if defined(ARCH_CPU_X86_FAMILY)
-  if (source_stride == 1) {
-    size_t i = 0u;
+#if WTF_CPU_ARM_NEON
+  int n = frames_to_process;
 
-    // If the source_p address is not 16-byte aligned, the first several
-    // frames  (at most three) should be processed separately.
-    for (; !SSE::IsAligned(source_p + i) && i < frames_to_process; ++i)
-      sum += source_p[i] * source_p[i];
-
-    // Now the source_p+i address is 16-byte aligned. Start to apply SSE.
-    size_t sse_frames_to_process =
-        (frames_to_process - i) & SSE::kFramesToProcessMask;
-    if (sse_frames_to_process > 0u) {
-      SSE::Vsvesq(source_p + i, &sum, sse_frames_to_process);
-      i += sse_frames_to_process;
-    }
-
-    source_p += i;
-    n -= i;
-  }
-#elif WTF_CPU_ARM_NEON
   if (source_stride == 1) {
     int tail_frames = n % 4;
     const float* end_p = source_p + n - tail_frames;
@@ -580,13 +458,11 @@ void Vsvesq(const float* source_p,
 
     n = tail_frames;
   }
+
+  frames_to_process = n;
 #endif
 
-  while (n--) {
-    float sample = *source_p;
-    sum += sample * sample;
-    source_p += source_stride;
-  }
+  Impl::Vsvesq(source_p, source_stride, &sum, frames_to_process);
 
   DCHECK(sum_p);
   *sum_p = sum;
@@ -596,30 +472,12 @@ void Vmaxmgv(const float* source_p,
              int source_stride,
              float* max_p,
              size_t frames_to_process) {
-  int n = frames_to_process;
   float max = 0;
 
-#if defined(ARCH_CPU_X86_FAMILY)
-  if (source_stride == 1) {
-    size_t i = 0u;
+#if HAVE_MIPS_MSA_INTRINSICS || WTF_CPU_ARM_NEON
+  int n = frames_to_process;
 
-    // If the source_p address is not 16-byte aligned, the first several
-    // frames  (at most three) should be processed separately.
-    for (; !SSE::IsAligned(source_p + i) && i < frames_to_process; ++i)
-      max = std::max(max, fabsf(source_p[i]));
-
-    // Now the source_p+i address is 16-byte aligned. Start to apply SSE.
-    size_t sse_frames_to_process =
-        (frames_to_process - i) & SSE::kFramesToProcessMask;
-    if (sse_frames_to_process > 0u) {
-      SSE::Vmaxmgv(source_p + i, &max, sse_frames_to_process);
-      i += sse_frames_to_process;
-    }
-
-    source_p += i;
-    n -= i;
-  }
-#elif WTF_CPU_ARM_NEON
+#if WTF_CPU_ARM_NEON
   if (source_stride == 1) {
     int tail_frames = n % 4;
     const float* end_p = source_p + n - tail_frames;
@@ -663,10 +521,10 @@ void Vmaxmgv(const float* source_p,
   }
 #endif
 
-  while (n--) {
-    max = std::max(max, fabsf(*source_p));
-    source_p += source_stride;
-  }
+  frames_to_process = n;
+#endif
+
+  Impl::Vmaxmgv(source_p, source_stride, &max, frames_to_process);
 
   DCHECK(max_p);
   *max_p = max;
@@ -679,7 +537,6 @@ void Vclip(const float* source_p,
            float* dest_p,
            int dest_stride,
            size_t frames_to_process) {
-  int n = frames_to_process;
   float low_threshold = *low_threshold_p;
   float high_threshold = *high_threshold_p;
 
@@ -692,29 +549,10 @@ void Vclip(const float* source_p,
   DCHECK_LE(low_threshold, high_threshold);
 #endif
 
-#if defined(ARCH_CPU_X86_FAMILY)
-  if (source_stride == 1 && dest_stride == 1) {
-    size_t i = 0u;
+#if HAVE_MIPS_MSA_INTRINSICS || WTF_CPU_ARM_NEON
+  int n = frames_to_process;
 
-    // If the source_p address is not 16-byte aligned, the first several
-    // frames  (at most three) should be processed separately.
-    for (; !SSE::IsAligned(source_p + i) && i < frames_to_process; ++i)
-      dest_p[i] = clampTo(source_p[i], low_threshold, high_threshold);
-
-    // Now the source_p+i address is 16-byte aligned. Start to apply SSE.
-    size_t sse_frames_to_process =
-        (frames_to_process - i) & SSE::kFramesToProcessMask;
-    if (sse_frames_to_process > 0u) {
-      SSE::Vclip(source_p + i, &low_threshold, &high_threshold, dest_p + i,
-                 sse_frames_to_process);
-      i += sse_frames_to_process;
-    }
-
-    source_p += i;
-    dest_p += i;
-    n -= i;
-  }
-#elif WTF_CPU_ARM_NEON
+#if WTF_CPU_ARM_NEON
   if ((source_stride == 1) && (dest_stride == 1)) {
     int tail_frames = n % 4;
     const float* end_p = dest_p + n - tail_frames;
@@ -752,11 +590,12 @@ void Vclip(const float* source_p,
     }
   }
 #endif
-  while (n--) {
-    *dest_p = clampTo(*source_p, low_threshold, high_threshold);
-    source_p += source_stride;
-    dest_p += dest_stride;
-  }
+
+  frames_to_process = n;
+#endif
+
+  Impl::Vclip(source_p, source_stride, &low_threshold, &high_threshold, dest_p,
+              dest_stride, frames_to_process);
 }
 
 #endif  // defined(OS_MACOSX)
