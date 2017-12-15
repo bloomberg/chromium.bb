@@ -25,6 +25,8 @@ BackgroundTest.prototype = {
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
 
+    // Reset notifications so only explicit mode changes can cause them to trigger.
+    Notifications.reset();
     this.forceContextualLastOutput();
   },
 
@@ -510,6 +512,78 @@ TEST_F('BackgroundTest', 'DISABLED_ActiveOrInactive', function() {
 
       mockFeedback.replay();
     });
+});
+
+TEST_F('BackgroundTest', 'ModeSwitching', function() {
+  this.runWithLoadedTree('<button></button>', function(root) {
+    var fakeDesktop = {};
+    fakeDesktop.role = 'desktop';
+    fakeDesktop.root = fakeDesktop;
+
+    var fakeWebRoot = {};
+    fakeWebRoot.root = fakeWebRoot;
+    fakeWebRoot.parent = fakeDesktop;
+    fakeWebRoot.role = RoleType.ROOT_WEB_AREA;
+    fakeWebRoot.makeVisible = function() {};
+    fakeWebRoot.unclippedLocation = {left: 1, top: 1, width: 1, height: 1};
+    var fakeSubRoot = {};
+    fakeSubRoot.root = fakeSubRoot;
+    fakeSubRoot.parent = fakeWebRoot;
+    fakeSubRoot.role = RoleType.ROOT_WEB_AREA;
+    fakeSubRoot.makeVisible = function() {};
+    fakeSubRoot.unclippedLocation = {left: 1, top: 1, width: 1, height: 1};
+    var bk = ChromeVoxState.instance;
+
+    // Tests default to force next mode.
+    assertEquals('force_next', bk.mode);
+
+    // Force next mode stays set regardless of where the range lands.
+    fakeWebRoot.docUrl = 'http://google.com';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('force_next', bk.mode);
+    // Empty urls occur before document load or when root is desktop.
+    fakeWebRoot.docUrl = '';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('force_next', bk.mode);
+
+    // Verify force next -> classic compat switching.
+    localStorage['useClassic'] = true;
+    fakeWebRoot.docUrl = 'chrome://foobar';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('classic_compat', bk.mode);
+
+    // Classic compat -> classic.
+    fakeWebRoot.docUrl = 'http://google.com';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('classic', bk.mode);
+
+    // Ensure we switch to classic compat if our current range has focused
+    // state set and is not in web content.
+    assertTrue(root.parent.state.focused);
+    bk.setCurrentRange(cursors.Range.fromNode(root.parent));
+    assertEquals('classic_compat', bk.mode);
+
+    // And back to classic.
+    bk.setCurrentRange(cursors.Range.fromNode(root));
+    assertEquals('classic', bk.mode);
+
+    // Now, verify mode switching uses the top level root.
+    fakeWebRoot.docUrl = 'http://google.com/#chromevox_next_test';
+    fakeSubRoot.docUrl = 'http://chromevox.com';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('next', bk.mode);
+
+    // Next compat switching.
+    localStorage['useClassic'] = false;
+    fakeWebRoot.docUrl = 'http://docs.google.com/document/#123123';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('force_next', bk.mode);
+
+    // And, back to force next.
+    fakeWebRoot.docUrl = 'http://docs.google.com/form/123';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('force_next', bk.mode);
+  }.bind(this));
 });
 
 TEST_F('BackgroundTest', 'ShouldNotFocusIframe', function() {

@@ -12,7 +12,6 @@ goog.require('ChromeVoxState');
 goog.require('CustomAutomationEvent');
 goog.require('Output');
 goog.require('cvox.ChromeVoxBackground');
-goog.require('cvox.ChromeVoxKbHandler');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -40,7 +39,7 @@ CommandHandler.onCommand = function(command) {
       ChromeVoxState.instance.setCurrentRange(null);
   });
 
-  // These commands don't require a current range.
+  // These commands don't require a current range and work in all modes.
   switch (command) {
     case 'speakTimeAndDate':
       chrome.automation.getDesktop(function(d) {
@@ -236,6 +235,10 @@ CommandHandler.onCommand = function(command) {
 
   // Require a current range.
   if (!ChromeVoxState.instance.currentRange_)
+    return true;
+
+  // Next/classic compat commands hereafter.
+  if (ChromeVoxState.instance.mode == ChromeVoxMode.CLASSIC)
     return true;
 
   var current = ChromeVoxState.instance.currentRange_;
@@ -810,6 +813,24 @@ CommandHandler.onCommand = function(command) {
 };
 
 /**
+ * React to mode changes.
+ * @param {ChromeVoxMode} newMode
+ * @param {ChromeVoxMode?} oldMode
+ */
+CommandHandler.onModeChanged = function(newMode, oldMode) {
+  // Previously uninitialized.
+  if (!oldMode)
+    cvox.ChromeVoxKbHandler.commandHandler = CommandHandler.onCommand;
+
+  var hasListener =
+      chrome.commands.onCommand.hasListener(CommandHandler.onCommand);
+  if (newMode == ChromeVoxMode.CLASSIC && hasListener)
+    chrome.commands.onCommand.removeListener(CommandHandler.onCommand);
+  else if (newMode == ChromeVoxMode.CLASSIC && !hasListener)
+    chrome.commands.onCommand.addListener(CommandHandler.onCommand);
+};
+
+/**
  * Increase or decrease a speech property and make an announcement.
  * @param {string} propertyName The name of the property to change.
  * @param {boolean} increase If true, increases the property value by one
@@ -906,9 +927,9 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
 
 /**
  * Performs global initialization.
+ * @private
  */
-CommandHandler.init = function() {
-  cvox.ChromeVoxKbHandler.commandHandler = CommandHandler.onCommand;
+CommandHandler.init_ = function() {
   var firstRunId = 'jdgcneonijmofocbhmijhacgchbihela';
   chrome.runtime.onMessageExternal.addListener(function(
       request, sender, sendResponse) {
@@ -933,5 +954,7 @@ CommandHandler.init = function() {
     }
   });
 };
+
+CommandHandler.init_();
 
 });  //  goog.scope
