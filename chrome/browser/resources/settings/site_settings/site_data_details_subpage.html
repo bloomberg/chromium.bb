@@ -23,8 +23,8 @@
     </style>
     <template is="dom-repeat" items="[[entries_]]">
       <div class="settings-box" first$="[[!index]]">
-        <div class="start">[[getEntryDescription_(item)]]</div>
-        <cr-expand-button expanded="{{item.expanded_}}">
+        <cr-expand-button class="start" expanded="{{item.expanded_}}">
+          [[getEntryDescription_(item)]]
         </cr-expand-button>
         <div class="separator"></div>
         <button is="paper-icon-button-light" data-id-path$="[[item.idPath]]"
