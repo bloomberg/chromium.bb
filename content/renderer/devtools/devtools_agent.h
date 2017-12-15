@@ -70,8 +70,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   void DidExitDebugLoop() override;
   bool RequestDevToolsForFrame(int session_id,
                                blink::WebLocalFrame* frame) override;
-  void EnableTracing(const blink::WebString& category_filter) override;
-  void DisableTracing() override;
   void SetCPUThrottlingRate(double rate) override;
 
   void DetachSession(int session_id);

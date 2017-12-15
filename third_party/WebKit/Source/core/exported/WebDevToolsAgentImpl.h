@@ -108,8 +108,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
                        bool include_view_agents);
 
   // InspectorTracingAgent::Client implementation.
-  void EnableTracing(const WTF::String& category_filter) override;
-  void DisableTracing() override;
   void ShowReloadingBlanket() override;
   void HideReloadingBlanket() override;
 

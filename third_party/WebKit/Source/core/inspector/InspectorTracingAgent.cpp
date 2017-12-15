@@ -75,13 +75,20 @@ void InspectorTracingAgent::start(Maybe<String> categories,
   instrumenting_agents_->addInspectorTracingAgent(this);
   state_->setString(TracingAgentState::kSessionId,
                     IdentifiersFactory::CreateIdentifier());
-  client_->EnableTracing(categories.fromMaybe(String()));
+
+  // Tracing is already started by DevTools TracingHandler::Start for the
+  // renderer target in the browser process. It will eventually start tracing
+  // in the renderer process via IPC. But we still need a redundant enable here
+  // for EmitMetadataEvents, at which point we are not sure if tracing
+  // is already started in the renderer process.
+  TraceEvent::EnableTracing(categories.fromMaybe(String()));
+
   EmitMetadataEvents();
   callback->sendSuccess();
 }
 
 void InspectorTracingAgent::end(std::unique_ptr<EndCallback> callback) {
-  client_->DisableTracing();
+  TraceEvent::DisableTracing();
   InnerDisable();
   callback->sendSuccess();
 }
