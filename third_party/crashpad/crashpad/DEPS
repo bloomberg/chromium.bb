@@ -28,7 +28,7 @@ deps = {
       '5e2b3ddde7cda5eb6bc09a5546a76b00e49d888f',
   'crashpad/third_party/mini_chromium/mini_chromium':
       Var('chromium_git') + '/chromium/mini_chromium@' +
-      'a12ed4a613a7df900059c8a7885acdad550a5319',
+      '20182dd263312db9fad52042fc92c33331ec6904',
   'crashpad/third_party/zlib/zlib':
       Var('chromium_git') + '/chromium/src/third_party/zlib@' +
       '13dc246a58e4b72104d35f9b1809af95221ebda7',
@@ -142,6 +142,36 @@ hooks = [
       'fuchsia/clang/linux-amd64',
       'latest',
       '-root', 'crashpad/third_party/fuchsia/clang/linux-amd64',
+      '-log-level', 'info',
+    ],
+  },
+  {
+    # Same rationale for using "install" rather than "ensure" as for clang
+    # packages. https://crbug.com/789364.
+    'name': 'fuchsia_qemu_mac',
+    'pattern': '.',
+    'condition': 'checkout_fuchsia and host_os == "mac"',
+    'action': [
+      'cipd',
+      'install',
+      'fuchsia/qemu/mac-amd64',
+      'latest',
+      '-root', 'crashpad/third_party/fuchsia/qemu/mac-amd64',
+      '-log-level', 'info',
+    ],
+  },
+  {
+    # Same rationale for using "install" rather than "ensure" as for clang
+    # packages. https://crbug.com/789364.
+    'name': 'fuchsia_qemu_linux',
+    'pattern': '.',
+    'condition': 'checkout_fuchsia and host_os == "linux"',
+    'action': [
+      'cipd',
+      'install',
+      'fuchsia/qemu/linux-amd64',
+      'latest',
+      '-root', 'crashpad/third_party/fuchsia/qemu/linux-amd64',
       '-log-level', 'info',
     ],
   },

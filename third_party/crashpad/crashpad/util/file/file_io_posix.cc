@@ -25,6 +25,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "build/build_config.h"
 
 namespace crashpad {
 
@@ -66,7 +67,12 @@ FileHandle OpenFileForOutput(int rdwr_or_wronly,
                              const base::FilePath& path,
                              FileWriteMode mode,
                              FilePermissions permissions) {
+#if defined(OS_FUCHSIA)
+  // O_NOCTTY is invalid on Fuchsia, and O_CLOEXEC isn't necessary.
+  int flags = 0;
+#else
   int flags = O_NOCTTY | O_CLOEXEC;
+#endif
 
   DCHECK(rdwr_or_wronly & (O_RDWR | O_WRONLY));
   DCHECK_EQ(rdwr_or_wronly & ~(O_RDWR | O_WRONLY), 0);
