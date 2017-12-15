@@ -383,8 +383,9 @@ bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 bool QuicHttpStream::GetAlternativeService(
     AlternativeService* alternative_service) const {
   alternative_service->protocol = kProtoQUIC;
-  alternative_service->host = quic_session()->server_id().host();
-  alternative_service->port = quic_session()->server_id().port();
+  const HostPortPair& destination = quic_session()->destination();
+  alternative_service->host = destination.host();
+  alternative_service->port = destination.port();
   return true;
 }
 
@@ -515,6 +516,7 @@ int QuicHttpStream::DoLoop(int rv) {
 
 int QuicHttpStream::DoRequestStream() {
   next_state_ = STATE_REQUEST_STREAM_COMPLETE;
+
   return quic_session()->RequestStream(
       request_info_->method == "POST",
       base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
@@ -553,6 +555,7 @@ int QuicHttpStream::DoSetRequestPriority() {
   // Set priority according to request
   DCHECK(stream_);
   DCHECK(response_info_);
+
   SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
   stream_->SetPriority(priority);
   next_state_ = STATE_SEND_HEADERS;

@@ -209,7 +209,8 @@ class QuicProxyClientSocketTest
 
     writer->set_delegate(session_.get());
 
-    session_handle_ = session_->CreateHandle();
+    session_handle_ =
+        session_->CreateHandle(HostPortPair("mail.example.org", 80));
 
     session_->Initialize();
     TestCompletionCallback callback;

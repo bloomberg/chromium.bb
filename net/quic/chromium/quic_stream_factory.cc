@@ -911,7 +911,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
         static_cast<QuicChromiumClientSession*>(promised->session());
     DCHECK(session);
     if (session->server_id().privacy_mode() == server_id.privacy_mode()) {
-      request->SetSession(session->CreateHandle());
+      request->SetSession(session->CreateHandle(destination));
       ++num_push_streams_created_;
       return OK;
     }
@@ -927,7 +927,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
     SessionMap::iterator it = active_sessions_.find(server_id);
     if (it != active_sessions_.end()) {
       QuicChromiumClientSession* session = it->second;
-      request->SetSession(session->CreateHandle());
+      request->SetSession(session->CreateHandle(destination));
       return OK;
     }
   }
@@ -952,7 +952,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
       QuicChromiumClientSession* session = key_value.second;
       if (destination.Equals(all_sessions_[session].destination()) &&
           session->CanPool(server_id.host(), server_id.privacy_mode())) {
-        request->SetSession(session->CreateHandle());
+        request->SetSession(session->CreateHandle(destination));
         return OK;
       }
     }
@@ -986,7 +986,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
     if (it == active_sessions_.end())
       return ERR_QUIC_PROTOCOL_ERROR;
     QuicChromiumClientSession* session = it->second;
-    request->SetSession(session->CreateHandle());
+    request->SetSession(session->CreateHandle(destination));
   }
   return rv;
 }
@@ -1045,7 +1045,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     QuicChromiumClientSession* session = session_it->second;
     for (auto* request : iter->second->stream_requests()) {
       // Do not notify |request| yet.
-      request->SetSession(session->CreateHandle());
+      request->SetSession(session->CreateHandle(job->key().destination()));
     }
   }
 
@@ -1063,19 +1063,6 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
 
 void QuicStreamFactory::OnCertVerifyJobComplete(CertVerifierJob* job, int rv) {
   active_cert_verifier_jobs_.erase(job->server_id());
-}
-
-bool QuicStreamFactory::IsQuicBroken(QuicChromiumClientSession* session) {
-  const AlternativeService alternative_service(
-      kProtoQUIC, session->server_id().host_port_pair());
-  if (!http_server_properties_->IsAlternativeServiceBroken(
-          alternative_service)) {
-    return false;
-  }
-  // No longer send requests to a server for which QUIC is broken, but
-  // continue to service existing requests.
-  OnSessionGoingAway(session);
-  return true;
 }
 
 void QuicStreamFactory::OnIdleSession(QuicChromiumClientSession* session) {}

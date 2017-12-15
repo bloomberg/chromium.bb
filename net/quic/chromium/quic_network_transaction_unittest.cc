@@ -3069,6 +3069,72 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   ASSERT_TRUE(http_data.AllReadDataConsumed());
 }
 
+// Verify that when an origin has two alt-svc advertisements, one local and one
+// remote, that when the local is broken the request will go over QUIC via
+// the remote Alt-Svc.
+// This is a regression test for crbug/825646.
+TEST_P(QuicNetworkTransactionTest, RemoteAltSvcWorkingWhileLocalAltSvcBroken) {
+  session_params_.quic_allow_remote_alt_svc = true;
+
+  GURL origin1 = request_.url;  // mail.example.org
+  GURL origin2("https://www.example.org/");
+  ASSERT_NE(origin1.host(), origin2.host());
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
+  ASSERT_TRUE(cert->VerifyNameMatch("www.example.org", false));
+  ASSERT_TRUE(cert->VerifyNameMatch("mail.example.org", false));
+
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = cert;
+  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset request_header_offset(0);
+  QuicStreamOffset response_header_offset(0);
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &request_header_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &request_header_offset));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK"), &response_header_offset));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData mock_quic_data2;
+  mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+
+  // Set up alternative service for |origin1|.
+  AlternativeService local_alternative(kProtoQUIC, "mail.example.org", 443);
+  AlternativeService remote_alternative(kProtoQUIC, "www.example.org", 443);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  AlternativeServiceInfoVector alternative_services;
+  alternative_services.push_back(
+      AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          local_alternative, expiration,
+          session_->params().quic_supported_versions));
+  alternative_services.push_back(
+      AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          remote_alternative, expiration,
+          session_->params().quic_supported_versions));
+  http_server_properties_.SetAlternativeServices(url::SchemeHostPort(origin1),
+                                                 alternative_services);
+
+  http_server_properties_.MarkAlternativeServiceBroken(local_alternative);
+
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
 // Verify that with retry_without_alt_svc_on_quic_errors enabled, if a QUIC
 // request is reset from, then QUIC will be marked as broken and the request
 // retried over TCP. Then, subsequent requests will go over a new QUIC
@@ -3142,37 +3208,9 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  // Then the next request to the second origin will go over a new QUIC
-  // connection.
-  MockQuicData mock_quic_data2;
-  QuicTestPacketMaker client_maker3(version_, 0, &clock_, origin2.host(),
-                                    Perspective::IS_CLIENT);
-  QuicTestPacketMaker server_maker3(version_, 0, &clock_, origin2.host(),
-                                    Perspective::IS_SERVER);
-  QuicStreamOffset request_header_offset2(0);
-  QuicStreamOffset response_header_offset2(0);
-
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  mock_quic_data2.AddWrite(
-      client_maker3.MakeInitialSettingsPacket(1, &request_header_offset2));
-  mock_quic_data2.AddWrite(
-      client_maker3.MakeRequestHeadersPacketWithOffsetTracking(
-          2, GetNthClientInitiatedStreamId(0), true, true,
-          ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
-          GetRequestHeaders("GET", "https", "/", &client_maker3),
-          &request_header_offset2));
-  mock_quic_data2.AddRead(
-      server_maker2.MakeResponseHeadersPacketWithOffsetTracking(
-          1, GetNthClientInitiatedStreamId(0), false, false,
-          GetResponseHeaders("200 OK"), &response_header_offset2));
-  mock_quic_data2.AddRead(server_maker2.MakeDataPacket(
-      2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
-  mock_quic_data2.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
-  mock_quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
-  mock_quic_data2.AddRead(ASYNC, 0);               // EOF
-
-  mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
+  // Then the next request to the second origin will be sent over TCP.
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   CreateSession();
 
@@ -3198,14 +3236,14 @@ TEST_P(QuicNetworkTransactionTest,
   // After it is reset, it will fail back to QUIC and mark QUIC as broken.
   request_.url = origin2;
   SendRequestAndExpectHttpResponse("hello world");
-  EXPECT_TRUE(http_server_properties_.IsAlternativeServiceBroken(alternative1))
+  EXPECT_FALSE(http_server_properties_.IsAlternativeServiceBroken(alternative1))
       << alternative1.ToString();
-  EXPECT_FALSE(http_server_properties_.IsAlternativeServiceBroken(alternative2))
+  EXPECT_TRUE(http_server_properties_.IsAlternativeServiceBroken(alternative2))
       << alternative2.ToString();
 
   // The third request should use a new QUIC connection, not the broken
   // QUIC connection.
-  SendRequestAndExpectQuicResponse("hello!");
+  SendRequestAndExpectHttpResponse("hello world");
 }
 
 TEST_P(QuicNetworkTransactionTest,
