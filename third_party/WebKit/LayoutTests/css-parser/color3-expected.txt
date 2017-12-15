@@ -106,7 +106,7 @@ PASS colorTest.parseColor("hsL(0, 100%, 50%)") is "rgb(255, 0, 0)"
 PASS colorTest.parseColor("hsl(60, 100%, 37.5%)") is "rgb(191, 191, 0)"
 PASS colorTest.parseColor("hsl(780, 100%, 37.5%)") is "rgb(191, 191, 0)"
 PASS colorTest.parseColor("hsl(-300, 100%, 37.5%)") is "rgb(191, 191, 0)"
-PASS colorTest.parseColor("hsl(300, 50%, 50%)") is "rgb(191, 63, 191)"
+FAIL colorTest.parseColor("hsl(300, 50%, 50%)") should be rgb(191, 63, 191). Was rgb(191, 64, 191).
 PASS colorTest.parseColor("hsl(10, 50%, 0)") is "parse error"
 PASS colorTest.parseColor("hsl(50%, 50%, 0%)") is "parse error"
 PASS colorTest.parseColor("hsl(0, 0% 0%)") is "parse error"
@@ -129,7 +129,7 @@ PASS colorTest.parseColor("hsla(0, 0%, light, 1)") is "parse error"
 PASS colorTest.parseColor("hsla()") is "parse error"
 PASS colorTest.parseColor("hsla(0)") is "parse error"
 PASS colorTest.parseColor("hsla(0, 0%)") is "parse error"
-FAIL colorTest.parseColor("hsla(0, 0%, 0%, 50%)") should be parse error. Was rgba(0, 0, 0, 0.498).
+FAIL colorTest.parseColor("hsla(0, 0%, 0%, 50%)") should be parse error. Was rgba(0, 0, 0, 0.5).
 PASS colorTest.parseColor("hsla(0, 0%, 0%, 1, 0%)") is "parse error"
 PASS colorTest.parseColor("cmyk(0, 0, 0, 0)") is "parse error"
 PASS successfullyParsed is true

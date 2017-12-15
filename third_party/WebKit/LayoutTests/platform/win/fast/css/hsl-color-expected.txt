@@ -15,13 +15,13 @@ layer at (0,0) size 785x1366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {H1} at (0,175.31) size 769x37 [color=#0000FF]
         LayoutText {#text} at (0,0) size 572x36
           text run at (0,0) width 572: "This should be blue: hsl(240, 100%, 50%)"
-      LayoutBlockFlow {H1} at (0,233.75) size 769x37 [color=#7FFF7F]
+      LayoutBlockFlow {H1} at (0,233.75) size 769x37 [color=#80FF80]
         LayoutText {#text} at (0,0) size 660x36
           text run at (0,0) width 660: "This should be light green: hsl(120, 100%, 75%)"
-      LayoutBlockFlow {H1} at (0,292.19) size 769x37 [color=#007F00]
+      LayoutBlockFlow {H1} at (0,292.19) size 769x37 [color=#008000]
         LayoutText {#text} at (0,0) size 662x36
           text run at (0,0) width 662: "This should be dark green: hsl(120, 100%, 25%)"
-      LayoutBlockFlow {H1} at (0,350.63) size 769x37 [color=#3FBF3F]
+      LayoutBlockFlow {H1} at (0,350.63) size 769x37 [color=#40BF40]
         LayoutText {#text} at (0,0) size 661x36
           text run at (0,0) width 661: "This should be pastel green: hsl(120, 50%, 50%)"
       LayoutBlockFlow (anonymous) at (0,409.06) size 769x40
@@ -40,32 +40,32 @@ layer at (0,0) size 785x1366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,587.38) size 769x20
         LayoutText {#text} at (0,0) size 450x19
           text run at (0,0) width 450: "Check percentages less than 0% (negative values), should be limited to 0%"
-      LayoutBlockFlow {H1} at (0,628.81) size 769x37 [color=#7F7F7F]
+      LayoutBlockFlow {H1} at (0,628.81) size 769x37 [color=#808080]
         LayoutText {#text} at (0,0) size 540x36
           text run at (0,0) width 540: "This should be grey: hsl(120, 0%, 50%)"
-      LayoutBlockFlow {H1} at (0,687.25) size 769x37 [color=#7F7F7F]
+      LayoutBlockFlow {H1} at (0,687.25) size 769x37 [color=#808080]
         LayoutText {#text} at (0,0) size 640x36
           text run at (0,0) width 640: "This should be grey, too: hsl(120, -100%, 50%)"
       LayoutBlockFlow (anonymous) at (0,745.69) size 769x40
         LayoutText {#text} at (0,0) size 738x39
           text run at (0,0) width 738: "Check Hue values that are larger than 360, should be normalized back to a value between 0 and 360. As Hue values are in"
           text run at (0,20) width 416: "degrees, there is no maximum like percentages, they are loop around."
-      LayoutBlockFlow {H1} at (0,807.13) size 769x37 [color=#007F00]
+      LayoutBlockFlow {H1} at (0,807.13) size 769x37 [color=#008000]
         LayoutText {#text} at (0,0) size 662x36
           text run at (0,0) width 662: "This should be dark green: hsl(120, 100%, 25%)"
-      LayoutBlockFlow {H1} at (0,865.56) size 769x37 [color=#007F00]
+      LayoutBlockFlow {H1} at (0,865.56) size 769x37 [color=#008000]
         LayoutText {#text} at (0,0) size 721x36
           text run at (0,0) width 721: "This should be dark green, too: hsl(480, 100%, 25%)"
       LayoutBlockFlow (anonymous) at (0,924) size 769x20
         LayoutText {#text} at (0,0) size 242x19
           text run at (0,0) width 242: "Check Hue values with a negative angle."
-      LayoutBlockFlow {H1} at (0,965.44) size 769x37 [color=#7FFF7F]
+      LayoutBlockFlow {H1} at (0,965.44) size 769x37 [color=#80FF80]
         LayoutText {#text} at (0,0) size 660x36
           text run at (0,0) width 660: "This should be light green: hsl(120, 100%, 75%)"
-      LayoutBlockFlow {H1} at (0,1023.88) size 769x37 [color=#7FFF7F]
+      LayoutBlockFlow {H1} at (0,1023.88) size 769x37 [color=#80FF80]
         LayoutText {#text} at (0,0) size 730x36
           text run at (0,0) width 730: "This should be light green, too: hsl(-240, 100%, 75%)"
-      LayoutBlockFlow {H1} at (0,1082.31) size 769x37 [color=#7FFF7F]
+      LayoutBlockFlow {H1} at (0,1082.31) size 769x37 [color=#80FF80]
         LayoutText {#text} at (0,0) size 730x36
           text run at (0,0) width 730: "This should be light green, too: hsl(-600, 100%, 75%)"
       LayoutBlockFlow (anonymous) at (0,1140.75) size 769x20

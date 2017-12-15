@@ -94,12 +94,12 @@ RGBA32 MakeRGBAFromHSLA(double hue,
                         double saturation,
                         double lightness,
                         double alpha) {
-  const double scale_factor = nextafter(256.0, 0.0);
+  const double scale_factor = 255.0;
 
   if (!saturation) {
-    int grey_value = static_cast<int>(lightness * scale_factor);
+    int grey_value = static_cast<int>(round(lightness * scale_factor));
     return MakeRGBA(grey_value, grey_value, grey_value,
-                    static_cast<int>(alpha * scale_factor));
+                    static_cast<int>(round(alpha * scale_factor)));
   }
 
   double temp2 = lightness <= 0.5
@@ -108,10 +108,10 @@ RGBA32 MakeRGBAFromHSLA(double hue,
   double temp1 = 2.0 * lightness - temp2;
 
   return MakeRGBA(
-      static_cast<int>(CalcHue(temp1, temp2, hue + 2.0) * scale_factor),
-      static_cast<int>(CalcHue(temp1, temp2, hue) * scale_factor),
-      static_cast<int>(CalcHue(temp1, temp2, hue - 2.0) * scale_factor),
-      static_cast<int>(alpha * scale_factor));
+      static_cast<int>(round(CalcHue(temp1, temp2, hue + 2.0) * scale_factor)),
+      static_cast<int>(round(CalcHue(temp1, temp2, hue) * scale_factor)),
+      static_cast<int>(round(CalcHue(temp1, temp2, hue - 2.0) * scale_factor)),
+      static_cast<int>(round(alpha * scale_factor)));
 }
 
 RGBA32 MakeRGBAFromCMYKA(float c, float m, float y, float k, float a) {
