@@ -3178,16 +3178,15 @@ TEST_P(QuicNetworkTransactionTest,
 
   // Set up alternative service for |origin1|.
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  AlternativeService alternative1(kProtoQUIC, origin1.host(), 443);
   http_server_properties_.SetQuicAlternativeService(
-      url::SchemeHostPort(origin1),
-      AlternativeService(kProtoQUIC, "mail.example.com", 443), expiration,
+      url::SchemeHostPort(origin1), alternative1, expiration,
       supported_versions_);
 
   // Set up alternative service for |origin2|.
-  AlternativeServiceInfoVector alternative_services;
+  AlternativeService alternative2(kProtoQUIC, origin2.host(), 443);
   http_server_properties_.SetQuicAlternativeService(
-      url::SchemeHostPort(origin2),
-      AlternativeService(kProtoQUIC, "www.example.com", 443), expiration,
+      url::SchemeHostPort(origin2), alternative2, expiration,
       supported_versions_);
 
   // First request opens connection to |destination1|
@@ -3199,6 +3198,10 @@ TEST_P(QuicNetworkTransactionTest,
   // After it is reset, it will fail back to QUIC and mark QUIC as broken.
   request_.url = origin2;
   SendRequestAndExpectHttpResponse("hello world");
+  EXPECT_TRUE(http_server_properties_.IsAlternativeServiceBroken(alternative1))
+      << alternative1.ToString();
+  EXPECT_FALSE(http_server_properties_.IsAlternativeServiceBroken(alternative2))
+      << alternative2.ToString();
 
   // The third request should use a new QUIC connection, not the broken
   // QUIC connection.
