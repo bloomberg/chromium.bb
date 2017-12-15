@@ -97,7 +97,7 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   // Skip over canceled tasks, except for the last one since we always return
   // something.
   while (work_queue_.size() > 1u) {
-    if (work_queue_.front().task.IsCancelled()) {
+    if (!work_queue_.front().task || work_queue_.front().task.IsCancelled()) {
       work_queue_.pop_front();
     } else {
       break;
