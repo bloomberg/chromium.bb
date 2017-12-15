@@ -217,10 +217,10 @@ class InfobarView : public views::View {
                               ChromeLayoutProvider::Get()->GetDistanceMetric(
                                   DISTANCE_RELATED_CONTROL_VERTICAL_SMALL),
                               dialog_insets.right());
-    content_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, layout_insets,
-                             ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                 DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
+    content_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kHorizontal, layout_insets,
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
     content_->AddChildView(info_image_);
     content_->AddChildView(label_);
     UpdateVisibility(false, CONTENT_SETTING_BLOCK, base::string16());
@@ -563,7 +563,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
   auto view = std::make_unique<views::View>();
-  view->SetLayoutManager(new views::FillLayout);
+  view->SetLayoutManager(std::make_unique<views::FillLayout>());
 
   {
     auto allowed = std::make_unique<views::View>();

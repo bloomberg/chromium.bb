@@ -55,7 +55,7 @@ views::ScrollView* CreateCredentialsView(
     content::mojom::URLLoaderFactory* loader_factory) {
   views::View* list_view = new views::View;
   list_view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   int item_height = 0;
   for (const auto& form : forms) {
     std::pair<base::string16, base::string16> titles =
@@ -178,7 +178,7 @@ void AccountChooserDialogView::ButtonPressed(views::Button* sender,
 }
 
 void AccountChooserDialogView::InitWindow() {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(
       CreateCredentialsView(controller_->GetLocalForms(), this,
                             content::BrowserContext::GetDefaultStoragePartition(

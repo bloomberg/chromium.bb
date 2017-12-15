@@ -77,7 +77,7 @@ NetworkProfileBubbleView::~NetworkProfileBubbleView() {
 }
 
 void NetworkProfileBubbleView::Init() {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   views::Label* label = new views::Label(
       l10n_util::GetStringFUTF16(IDS_PROFILE_ON_NETWORK_WARNING,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));

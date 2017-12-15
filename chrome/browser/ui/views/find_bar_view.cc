@@ -199,12 +199,10 @@ FindBarView::FindBarView(FindBarHost* host)
 
   find_text_->SetBorder(views::NullBorder());
 
-  views::BoxLayout* manager = new views::BoxLayout(
+  auto* manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
       gfx::Insets(provider->GetInsetsMetric(INSETS_TOAST) - horizontal_margin),
-      0);
-
-  SetLayoutManager(manager);
+      0));
   manager->SetFlexForView(find_text_, 1);
 }
 

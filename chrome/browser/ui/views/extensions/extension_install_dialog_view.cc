@@ -93,7 +93,8 @@ class RatingsView : public views::View {
   RatingsView(double rating, int rating_count)
       : rating_(rating), rating_count_(rating_count) {
     set_id(ExtensionInstallDialogView::kRatingsViewId);
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
+    SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
   }
   ~RatingsView() override {}
 
@@ -692,10 +693,10 @@ void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)
 ExpandableContainerView::DetailsView::DetailsView(
     const PermissionDetails& details)
     : state_(0) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
-                           ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
   for (auto& detail : details) {
     views::Label* detail_label =
         new views::Label(PrepareForDisplay(detail, false));

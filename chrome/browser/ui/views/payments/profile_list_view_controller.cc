@@ -192,7 +192,7 @@ class ShippingProfileViewController : public ProfileListViewController,
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-    header_view->SetLayoutManager(layout.release());
+    header_view->SetLayoutManager(std::move(layout));
 
     auto label = base::MakeUnique<views::Label>(
         spec()->selected_shipping_option_error().empty()
@@ -392,7 +392,7 @@ void ProfileListViewController::FillContentView(views::View* content_view) {
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  content_view->SetLayoutManager(layout.release());
+  content_view->SetLayoutManager(std::move(layout));
   std::unique_ptr<views::View> header_view = CreateHeaderView();
   if (header_view)
     content_view->AddChildView(header_view.release());
@@ -405,9 +405,9 @@ std::unique_ptr<views::View>
 ProfileListViewController::CreateExtraFooterView() {
   auto extra_view = base::MakeUnique<views::View>();
 
-  extra_view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                           kPaymentRequestButtonSpacing));
+  extra_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      kPaymentRequestButtonSpacing));
 
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(GetSecondaryButtonTextId()));

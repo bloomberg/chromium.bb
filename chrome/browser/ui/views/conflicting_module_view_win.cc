@@ -135,10 +135,10 @@ base::string16 ConflictingModuleView::GetDialogButtonLabel(
 void ConflictingModuleView::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                           ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
 
   views::ImageView* icon = new views::ImageView();
   icon->SetImage(rb.GetImageSkiaNamed(IDR_INPUT_ALERT_MENU));

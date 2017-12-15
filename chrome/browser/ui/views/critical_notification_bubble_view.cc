@@ -120,7 +120,7 @@ base::string16 CriticalNotificationBubbleView::GetDialogButtonLabel(
 void CriticalNotificationBubbleView::Init() {
   bubble_created_ = base::TimeTicks::Now();
 
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   views::Label* message = new views::Label();
   message->SetMultiLine(true);

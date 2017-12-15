@@ -71,7 +71,7 @@ PaymentRequestDialogView::PaymentRequestDialogView(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   request->spec()->AddObserver(this);
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   view_stack_ = base::MakeUnique<ViewStack>();
   view_stack_->set_owned_by_client();

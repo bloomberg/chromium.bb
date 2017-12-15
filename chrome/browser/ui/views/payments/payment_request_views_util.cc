@@ -69,7 +69,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
       views::BoxLayout::kVertical, gfx::Insets(), 0);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  container->SetLayoutManager(layout.release());
+  container->SetLayoutManager(std::move(layout));
 
   if (!s1.empty()) {
     const int text_style = type == AddressStyleType::DETAILED
@@ -259,12 +259,12 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
 std::unique_ptr<views::View> CreateProductLogoFooterView() {
   std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
 
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(), 0);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(), 0);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  content_view->SetLayoutManager(layout);
+  content_view->SetLayoutManager(std::move(layout));
 
   // Adds the Chrome logo image.
   std::unique_ptr<views::ImageView> chrome_logo =
@@ -375,11 +375,11 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   DCHECK(accessible_content);
   std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
 
-  std::unique_ptr<views::BoxLayout> layout = base::MakeUnique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0);
+  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical,
+                                                   gfx::Insets(), 0);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  container->SetLayoutManager(layout.release());
+  container->SetLayoutManager(std::move(layout));
 
   if (shipping_option) {
     const base::string16& text = base::UTF8ToUTF16(shipping_option->label);

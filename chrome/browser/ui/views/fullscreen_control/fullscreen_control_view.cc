@@ -37,7 +37,7 @@ class CloseFullscreenButton : public views::Button {
     close_image_view->SetImage(gfx::CreateVectorIcon(
         vector_icons::kCloseIcon, kCloseIconSize, SK_ColorWHITE));
     AddChildView(close_image_view.release());
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
   }
 
  private:
@@ -61,7 +61,7 @@ FullscreenControlView::FullscreenControlView(
     : on_button_pressed_(on_button_pressed),
       exit_fullscreen_button_(new CloseFullscreenButton(this)) {
   AddChildView(exit_fullscreen_button_);
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   exit_fullscreen_button_->SetPreferredSize(
       gfx::Size(kCircleButtonDiameter, kCircleButtonDiameter));
 }
