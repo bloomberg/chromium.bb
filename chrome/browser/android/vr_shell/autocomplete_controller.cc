@@ -19,7 +19,7 @@ namespace vr_shell {
 
 namespace {
 constexpr size_t kMaxNumberOfSuggestions = 4;
-constexpr int kSuggestionThrottlingDelayMs = 300;
+constexpr int kSuggestionThrottlingDelayMs = 150;
 }  // namespace
 
 AutocompleteController::AutocompleteController(vr::BrowserUiInterface* ui)
