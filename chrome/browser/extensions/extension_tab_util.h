@@ -14,7 +14,6 @@
 
 class Browser;
 class ChromeExtensionFunctionDetails;
-class ChromeUIThreadExtensionFunction;
 class GURL;
 class TabStripModel;
 class UIThreadExtensionFunction;
@@ -79,14 +78,6 @@ class ExtensionTabUtil {
   static std::unique_ptr<base::ListValue> CreateTabList(
       const Browser* browser,
       const Extension* extension);
-
-  // DEPRECATED: Please consider using ChromeExtensionFunctionDetails instead
-  // of the deprecated ChromeUIThreadExtensionFunction and use the overload
-  // below
-  static Browser* GetBrowserFromWindowID(
-      ChromeUIThreadExtensionFunction* function,
-      int window_id,
-      std::string* error_message);
 
   static Browser* GetBrowserFromWindowID(
       const ChromeExtensionFunctionDetails& details,
