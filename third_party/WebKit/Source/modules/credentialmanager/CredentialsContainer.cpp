@@ -155,9 +155,7 @@ class NotificationCallbacks
   ~NotificationCallbacks() override {}
 
   void OnSuccess() override {
-    Frame* frame =
-        ToDocument(ExecutionContext::From(resolver_->GetScriptState()))
-            ->GetFrame();
+    Frame* frame = resolver_->GetFrame();
     SECURITY_CHECK(!frame ||
                    same_origin_requirement_ ==
                        SameOriginRequirement::kCanBeCrossOrigin ||
@@ -183,16 +181,10 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
       : resolver_(resolver) {}
   ~RequestCallbacks() override {}
 
-  void OnSuccess(std::unique_ptr<WebCredential> web_credential) override {
-    ExecutionContext* context =
-        ExecutionContext::From(resolver_->GetScriptState());
-    if (!context)
-      return;
-    Frame* frame = ToDocument(context)->GetFrame();
+  void OnSuccess(std::unique_ptr<WebCredential> credential) override {
+    Frame* frame = resolver_->GetFrame();
     SECURITY_CHECK(!frame || IsSameOriginWithAncestors(frame));
 
-    std::unique_ptr<WebCredential> credential =
-        WTF::WrapUnique(web_credential.release());
     if (!frame) {
       resolver_->Resolve();
       return;
@@ -235,11 +227,7 @@ class PublicKeyCallbacks : public WebAuthenticationClient::PublicKeyCallbacks {
 
   void OnSuccess(
       webauth::mojom::blink::PublicKeyCredentialInfoPtr credential) override {
-    ExecutionContext* context =
-        ExecutionContext::From(resolver_->GetScriptState());
-    if (!context)
-      return;
-    Frame* frame = ToDocument(context)->GetFrame();
+    Frame* frame = resolver_->GetFrame();
     SECURITY_CHECK(!frame || frame == frame->Tree().Top());
 
     if (!frame) {
