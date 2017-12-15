@@ -1213,6 +1213,7 @@ copy("cronet_package_copy") {
     "$target_gen_dir/cronet_impl_native_proguard.cfg",
     "//AUTHORS",
     "//chrome/VERSION",
+    "api_version.txt",
     "cronet_impl_common_proguard.cfg",
     "cronet_impl_platform_proguard.cfg",
   ]
