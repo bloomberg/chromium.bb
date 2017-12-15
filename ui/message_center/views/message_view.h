@@ -38,6 +38,13 @@ class MESSAGE_CENTER_EXPORT MessageView
  public:
   static const char kViewClassName[];
 
+  // Notify this notification view is in the sidebar. This is necessary until
+  // removing the experimental flag for Sidebar, since the flag exists in Ash,
+  // so we don't refer the flag directly. Some layout and behavior may change by
+  // this flag.
+  // TODO(yoshiki, tetsui): Remove this after removing the flag for Sidebar.
+  static void SetSidebarEnabled();
+
   explicit MessageView(const Notification& notification);
   ~MessageView() override;
 
