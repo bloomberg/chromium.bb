@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/ui_features.h"
 #include "ui/views/view.h"
@@ -87,5 +88,6 @@ void PageInfoBubbleViewBase::WasHidden() {
 
 void PageInfoBubbleViewBase::DidStartNavigation(
     content::NavigationHandle* handle) {
-  GetWidget()->Close();
+  if (handle->IsInMainFrame())
+    GetWidget()->Close();
 }
