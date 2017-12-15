@@ -99,6 +99,16 @@ class ExceedUnionPreCQLimitException(Exception):
     self.limit = limit
 
 
+class UnknownPreCQConfigRequestedError(Exception):
+  """Raised when a config file asked for a config that doesn't exist."""
+
+  def __init__(self, pre_cq_configs):
+    super(UnknownPreCQConfigRequestedError, self).__init__(
+        'One of the requested pre-cq configs is invalid or nonexistant: %s'
+        % pre_cq_configs)
+    self.pre_cq_configs = pre_cq_configs
+
+
 class PatchChangesStage(generic_stages.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
 
@@ -1165,6 +1175,7 @@ class PreCQSyncStage(SyncStage):
     changes = self.pool.applied or self.patches
     self.WriteChangesToMetadata(changes)
 
+
 class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
 
@@ -1250,18 +1261,29 @@ class PreCQLauncherStage(SyncStage):
     Returns:
       A set of valid Pre-CQ configs (strings) or None.
     """
-    cq_config_parser = cq_config.CQConfigParser(self._build_root, change)
-    pre_cq_configs = None
-    if cq_config_parser.GetUnionPreCQSubConfigsFlag():
-      pre_cq_configs = self._ParsePreCQsFromOption(
-          cq_config_parser.GetUnionedPreCQConfigs())
-      if (union_pre_cq_limit is not None and pre_cq_configs and
-          len(pre_cq_configs) > union_pre_cq_limit):
-        raise ExceedUnionPreCQLimitException(pre_cq_configs, union_pre_cq_limit)
+    try:
+      cq_config_parser = cq_config.CQConfigParser(self._build_root, change,
+                                                  forgiving=False)
+      pre_cq_configs = None
+      if cq_config_parser.GetUnionPreCQSubConfigsFlag():
+        pre_cq_configs = self._ParsePreCQsFromOption(
+            cq_config_parser.GetUnionedPreCQConfigs())
+        if (union_pre_cq_limit is not None and pre_cq_configs and
+            len(pre_cq_configs) > union_pre_cq_limit):
+          raise ExceedUnionPreCQLimitException(pre_cq_configs,
+                                               union_pre_cq_limit)
 
-      return pre_cq_configs
-    else:
-      return self._ParsePreCQsFromOption(cq_config_parser.GetPreCQConfigs())
+        return pre_cq_configs
+      else:
+        return self._ParsePreCQsFromOption(
+            cq_config_parser.GetPreCQConfigs())
+    except (UnknownPreCQConfigRequestedError,
+            cq_config.MalformedCQConfigException):
+      logging.exception('Exception encountered when parsing pre-cq options '
+                        'for change %s. Falling back to default set.', change)
+      m = 'chromeos/cbuildbot/pre-cq/bad_pre_cq_options_count'
+      metrics.Counter(m).increment()
+      return None
 
   def _ConfiguredVerificationsForChange(self, change):
     """Determine which configs to test |change| with.
@@ -1283,7 +1305,12 @@ class PreCQLauncherStage(SyncStage):
     lines = cros_patch.GetOptionLinesFromCommitMessage(
         change.commit_message, constants.CQ_CONFIG_PRE_CQ_CONFIGS_REGEX)
     if lines is not None:
-      configs_to_test = self._ParsePreCQsFromOption(lines)
+      try:
+        configs_to_test = self._ParsePreCQsFromOption(lines)
+      except UnknownPreCQConfigRequestedError:
+        logging.exception('Unknown config requested in commit message '
+                          'for change %s. Falling back to default set.',
+                          change)
 
     configs_from_options = None
     try:
@@ -1338,6 +1365,8 @@ class PreCQLauncherStage(SyncStage):
       # Verify that all of the configs are valid.
       if all(c in self._run.site_config for c in configs_to_test):
         return configs_to_test
+      else:
+        raise UnknownPreCQConfigRequestedError(configs_to_test)
 
     return None
 
