@@ -79,7 +79,7 @@ InterpolationValue SizeInterpolationFunctions::ConvertFillSizeSide(
     float zoom,
     bool convert_width) {
   switch (fill_size.type) {
-    case kSizeLength: {
+    case EFillSizeType::kSizeLength: {
       const Length& side =
           convert_width ? fill_size.size.Width() : fill_size.size.Height();
       if (side.IsAuto())
@@ -87,11 +87,11 @@ InterpolationValue SizeInterpolationFunctions::ConvertFillSizeSide(
       return WrapConvertedLength(
           LengthInterpolationFunctions::MaybeConvertLength(side, zoom));
     }
-    case kContain:
+    case EFillSizeType::kContain:
       return ConvertKeyword(CSSValueContain);
-    case kCover:
+    case EFillSizeType::kCover:
       return ConvertKeyword(CSSValueCover);
-    case kSizeNone:
+    case EFillSizeType::kSizeNone:
     default:
       NOTREACHED();
       return nullptr;
@@ -199,10 +199,10 @@ FillSize SizeInterpolationFunctions::CreateFillSize(
     switch (side_a.Keyword()) {
       case CSSValueCover:
         DCHECK_EQ(side_a.Keyword(), side_b.Keyword());
-        return FillSize(kCover, LengthSize());
+        return FillSize(EFillSizeType::kCover, LengthSize());
       case CSSValueContain:
         DCHECK_EQ(side_a.Keyword(), side_b.Keyword());
-        return FillSize(kContain, LengthSize());
+        return FillSize(EFillSizeType::kContain, LengthSize());
       case CSSValueAuto:
         break;
       default:
@@ -211,7 +211,7 @@ FillSize SizeInterpolationFunctions::CreateFillSize(
     }
   }
   return FillSize(
-      kSizeLength,
+      EFillSizeType::kSizeLength,
       LengthSize(CreateLength(interpolable_value_a, side_a, conversion_data),
                  CreateLength(interpolable_value_b, side_b, conversion_data)));
 }

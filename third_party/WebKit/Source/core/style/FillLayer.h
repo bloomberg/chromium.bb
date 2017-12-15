@@ -38,7 +38,7 @@ namespace blink {
 
 struct FillSize {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  FillSize() : type(kSizeLength) {}
+  FillSize() : type(EFillSizeType::kSizeLength) {}
 
   FillSize(EFillSizeType t, const LengthSize& l) : type(t), size(l) {}
 
@@ -112,7 +112,9 @@ class CORE_EXPORT FillLayer {
   bool IsRepeatYSet() const { return repeat_y_set_; }
   bool IsCompositeSet() const { return composite_set_; }
   bool IsBlendModeSet() const { return blend_mode_set_; }
-  bool IsSizeSet() const { return size_type_ != kSizeNone; }
+  bool IsSizeSet() const {
+    return size_type_ != static_cast<unsigned>(EFillSizeType::kSizeNone);
+  }
   bool IsMaskSourceTypeSet() const { return mask_source_type_set_; }
 
   void SetImage(StyleImage* i) {
@@ -170,10 +172,10 @@ class CORE_EXPORT FillLayer {
     blend_mode_ = static_cast<unsigned>(b);
     blend_mode_set_ = true;
   }
-  void SetSizeType(EFillSizeType b) { size_type_ = b; }
+  void SetSizeType(EFillSizeType b) { size_type_ = static_cast<unsigned>(b); }
   void SetSizeLength(const LengthSize& length) { size_length_ = length; }
   void SetSize(const FillSize& f) {
-    size_type_ = f.type;
+    size_type_ = static_cast<unsigned>(f.type);
     size_length_ = f.size;
   }
   void SetMaskSourceType(EMaskSourceType m) {
@@ -201,7 +203,9 @@ class CORE_EXPORT FillLayer {
   void ClearRepeatY() { repeat_y_set_ = false; }
   void ClearComposite() { composite_set_ = false; }
   void ClearBlendMode() { blend_mode_set_ = false; }
-  void ClearSize() { size_type_ = kSizeNone; }
+  void ClearSize() {
+    size_type_ = static_cast<unsigned>(EFillSizeType::kSizeNone);
+  }
   void ClearMaskSourceType() { mask_source_type_set_ = false; }
 
   FillLayer& operator=(const FillLayer&);
@@ -274,7 +278,7 @@ class CORE_EXPORT FillLayer {
     return WebBlendMode::kNormal;
   }
   static EFillSizeType InitialFillSizeType(EFillLayerType) {
-    return kSizeLength;
+    return EFillSizeType::kSizeLength;
   }
   static LengthSize InitialFillSizeLength(EFillLayerType) {
     return LengthSize();

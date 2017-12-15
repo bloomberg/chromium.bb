@@ -56,8 +56,10 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
       repeat_x_(static_cast<unsigned>(FillLayer::InitialFillRepeatX(type))),
       repeat_y_(static_cast<unsigned>(FillLayer::InitialFillRepeatY(type))),
       composite_(FillLayer::InitialFillComposite(type)),
-      size_type_(use_initial_values ? FillLayer::InitialFillSizeType(type)
-                                    : kSizeNone),
+      size_type_(
+          use_initial_values
+              ? static_cast<unsigned>(FillLayer::InitialFillSizeType(type))
+              : static_cast<unsigned>(EFillSizeType::kSizeNone)),
       blend_mode_(static_cast<unsigned>(FillLayer::InitialFillBlendMode(type))),
       mask_source_type_(FillLayer::InitialFillMaskSourceType(type)),
       background_x_origin_(kLeftEdge),

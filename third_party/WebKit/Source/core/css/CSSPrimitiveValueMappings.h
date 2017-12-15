@@ -844,16 +844,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFillSizeType fill_size)
     : CSSValue(kIdentifierClass) {
   switch (fill_size) {
-    case kContain:
+    case EFillSizeType::kContain:
       value_id_ = CSSValueContain;
       break;
-    case kCover:
+    case EFillSizeType::kCover:
       value_id_ = CSSValueCover;
       break;
-    case kSizeNone:
+    case EFillSizeType::kSizeNone:
       value_id_ = CSSValueNone;
       break;
-    case kSizeLength:
+    case EFillSizeType::kSizeLength:
     default:
       NOTREACHED();
   }

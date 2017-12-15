@@ -193,12 +193,12 @@ void CSSToStyleMap::MapFillSize(StyleResolverState& state,
 
   if (value.IsIdentifierValue() &&
       ToCSSIdentifierValue(value).GetValueID() == CSSValueContain)
-    layer->SetSizeType(kContain);
+    layer->SetSizeType(EFillSizeType::kContain);
   else if (value.IsIdentifierValue() &&
            ToCSSIdentifierValue(value).GetValueID() == CSSValueCover)
-    layer->SetSizeType(kCover);
+    layer->SetSizeType(EFillSizeType::kCover);
   else
-    layer->SetSizeType(kSizeLength);
+    layer->SetSizeType(EFillSizeType::kSizeLength);
 
   LengthSize b = FillLayer::InitialFillSizeLength(layer->GetType());
 

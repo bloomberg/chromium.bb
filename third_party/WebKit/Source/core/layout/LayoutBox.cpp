@@ -5736,10 +5736,11 @@ bool LayoutBox::MustInvalidateFillLayersPaintOnHeightChange(
 
   EFillSizeType size_type = layer.SizeType();
 
-  if (size_type == kContain || size_type == kCover)
+  if (size_type == EFillSizeType::kContain ||
+      size_type == EFillSizeType::kCover)
     return true;
 
-  if (size_type == kSizeLength) {
+  if (size_type == EFillSizeType::kSizeLength) {
     // TODO(alancutter): Make this work correctly for calc lengths.
     if (layer.SizeLength().Height().IsPercentOrCalc() &&
         !layer.SizeLength().Height().IsZero())
@@ -5777,10 +5778,11 @@ bool LayoutBox::MustInvalidateFillLayersPaintOnWidthChange(
 
   EFillSizeType size_type = layer.SizeType();
 
-  if (size_type == kContain || size_type == kCover)
+  if (size_type == EFillSizeType::kContain ||
+      size_type == EFillSizeType::kCover)
     return true;
 
-  if (size_type == kSizeLength) {
+  if (size_type == EFillSizeType::kSizeLength) {
     // TODO(alancutter): Make this work correctly for calc lengths.
     if (layer.SizeLength().Width().IsPercentOrCalc() &&
         !layer.SizeLength().Width().IsZero())
