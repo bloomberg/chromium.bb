@@ -49,15 +49,12 @@ enum SoftwareReporterExperimentError {
 };
 
 // Callback for running the software reporter after it is downloaded.
-using SwReporterRunner = base::Callback<void(
-    safe_browsing::SwReporterInvocationType invocation_type,
+using OnComponentReadyCallback = base::Callback<void(
     safe_browsing::SwReporterInvocationSequence&& invocations)>;
 
 class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  SwReporterInstallerPolicy(
-      const SwReporterRunner& reporter_runner,
-      safe_browsing::SwReporterInvocationType invocation_type);
+  explicit SwReporterInstallerPolicy(const OnComponentReadyCallback& callback);
   ~SwReporterInstallerPolicy() override;
 
   // ComponentInstallerPolicy implementation.
@@ -81,19 +78,10 @@ class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
  private:
   friend class SwReporterInstallerTest;
 
-  SwReporterRunner reporter_runner_;
-
-  const safe_browsing::SwReporterInvocationType invocation_type_;
+  OnComponentReadyCallback on_component_ready_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SwReporterInstallerPolicy);
 };
-
-// Installs the SwReporter component and runs the reporter once it's available.
-// Once ready, this may trigger either a periodic or a user-initiated run of
-// the reporter, depending on |invocation_type|.
-void RegisterSwReporterComponentWithParams(
-    safe_browsing::SwReporterInvocationType invocation_type,
-    ComponentUpdateService* cus);
 
 // Call once during startup to make the component update service aware of the
 // SwReporter. Once ready, this may trigger a periodic run of the reporter.
