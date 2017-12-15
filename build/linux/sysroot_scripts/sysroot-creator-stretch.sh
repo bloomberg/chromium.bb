@@ -72,8 +72,6 @@ DEBIAN_PACKAGES="\
   libdbus-1-3
   libdbus-1-dev
   libdbus-glib-1-2
-  libdconf-dev
-  libdconf1
   libdrm-amdgpu1
   libdrm-dev
   libdrm-nouveau2
@@ -98,9 +96,6 @@ DEBIAN_PACKAGES="\
   libgbm1
   libgcc-6-dev
   libgcc1
-  libgconf-2-4
-  libgconf2-4
-  libgconf2-dev
   libgcrypt20
   libgcrypt20-dev
   libgdk-pixbuf2.0-0
