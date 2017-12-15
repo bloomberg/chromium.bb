@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<title>Tests cue vertical alignment (direction) from settings.</title>
+<title>Cue vertical alignment (direction) from settings</title>
 <script src="track-helpers.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
-check_cues_from_track("captions-webvtt/tc021-valign.vtt", testTrack);
-check_cues_from_track("captions-webvtt/tc021-valign-ltr.vtt", testTrack);
-check_cues_from_track("captions-webvtt/tc021-valign-bad.vtt", function(track) {
+check_cues_from_track("resources/valign.vtt", testTrack);
+check_cues_from_track("resources/valign-ltr.vtt", testTrack);
+check_cues_from_track("resources/valign-bad.vtt", function(track) {
     var expected = [
         { vertical: "" },
         { vertical: "" },
