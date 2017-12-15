@@ -61,6 +61,7 @@
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using content::BrowserThread;
 using testing::HasSubstr;
@@ -1410,9 +1411,14 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
   EXPECT_EQ(0u, cross_site_connection_listener_->GetAcceptedSocketCount());
 
   // Now, navigate using a renderer initiated navigation and expect preconnects.
+  // Need to navigate to about:blank first so the referring site is different
+  // from the request site.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.location.href='/title1.html'"));
+      base::StringPrintf(
+          "window.location.href='%s'",
+          embedded_test_server()->GetURL("/title1.html").spec().c_str())));
 
   // The renderer initiated navigation is not synchronous, so just wait for the
   // preconnects to go through.
