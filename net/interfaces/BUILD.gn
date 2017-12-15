@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
+    "address_family.mojom",
     "host_resolver_service.mojom",
     "ip_address.mojom",
     "ip_endpoint.mojom",

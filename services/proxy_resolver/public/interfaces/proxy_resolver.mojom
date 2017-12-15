@@ -7,6 +7,7 @@
 // TODO(amistry): Resolve the conflict between these two sets of definitions.
 module proxy_resolver.mojom;
 
+import "net/interfaces/address_family.mojom";
 import "net/interfaces/host_resolver_service.mojom";
 import "url/mojo/url.mojom";
 

@@ -11,7 +11,6 @@ sources = [
 type_mappings = [
   "net.interfaces.HostResolverRequestInfo=std::unique_ptr<net::HostResolver::RequestInfo>[move_only]",
   "net.interfaces.AddressList=net::AddressList",
-  "net.interfaces.AddressFamily=net::AddressFamily",
 ]
 public_deps = [
   "//net",

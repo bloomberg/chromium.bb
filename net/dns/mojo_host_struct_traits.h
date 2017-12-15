@@ -9,17 +9,10 @@
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/dns/host_resolver.h"
+#include "net/interfaces/address_family.mojom.h"
 #include "net/interfaces/host_resolver_service.mojom.h"
 
 namespace mojo {
-
-template <>
-struct EnumTraits<net::interfaces::AddressFamily, net::AddressFamily> {
-  static net::interfaces::AddressFamily ToMojom(
-      net::AddressFamily address_family);
-  static bool FromMojom(net::interfaces::AddressFamily address_family,
-                        net::AddressFamily* out);
-};
 
 template <>
 struct StructTraits<net::interfaces::HostResolverRequestInfoDataView,
