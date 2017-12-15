@@ -201,4 +201,16 @@ void etna_perfmon_del(struct etna_perfmon *perfmon);
 struct etna_perfmon_domain *etna_perfmon_get_dom_by_name(struct etna_perfmon *pm, const char *name);
 struct etna_perfmon_signal *etna_perfmon_get_sig_by_name(struct etna_perfmon_domain *dom, const char *name);
 
+struct etna_perf {
+#define ETNA_PM_PROCESS_PRE             0x0001
+#define ETNA_PM_PROCESS_POST            0x0002
+	uint32_t flags;
+	uint32_t sequence;
+	struct etna_perfmon_signal *signal;
+	struct etna_bo *bo;
+	uint32_t offset;
+};
+
+void etna_cmd_stream_perf(struct etna_cmd_stream *stream, const struct etna_perf *p);
+
 #endif /* ETNAVIV_DRMIF_H_ */

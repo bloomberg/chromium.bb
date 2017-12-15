@@ -105,6 +105,7 @@ void etna_cmd_stream_del(struct etna_cmd_stream *stream)
 
 	free(stream->buffer);
 	free(priv->submit.relocs);
+	free(priv->submit.pmrs);
 	free(priv);
 }
 
@@ -115,6 +116,7 @@ static void reset_buffer(struct etna_cmd_stream *stream)
 	stream->offset = 0;
 	priv->submit.nr_bos = 0;
 	priv->submit.nr_relocs = 0;
+	priv->submit.nr_pmrs = 0;
 	priv->nr_bos = 0;
 
 	if (priv->reset_notify)
@@ -191,6 +193,8 @@ static void flush(struct etna_cmd_stream *stream, int in_fence_fd,
 		.nr_bos = priv->submit.nr_bos,
 		.relocs = VOID2U64(priv->submit.relocs),
 		.nr_relocs = priv->submit.nr_relocs,
+		.pmrs = VOID2U64(priv->submit.pmrs),
+		.nr_pmrs = priv->submit.nr_pmrs,
 		.stream = VOID2U64(stream->buffer),
 		.stream_size = stream->offset * 4, /* in bytes */
 	};
@@ -259,4 +263,20 @@ void etna_cmd_stream_reloc(struct etna_cmd_stream *stream, const struct etna_rel
 	reloc->flags = 0;
 
 	etna_cmd_stream_emit(stream, addr);
+}
+
+void etna_cmd_stream_perf(struct etna_cmd_stream *stream, const struct etna_perf *p)
+{
+	struct etna_cmd_stream_priv *priv = etna_cmd_stream_priv(stream);
+	struct drm_etnaviv_gem_submit_pmr *pmr;
+	uint32_t idx = APPEND(&priv->submit, pmrs);
+
+	pmr = &priv->submit.pmrs[idx];
+
+	pmr->flags = p->flags;
+	pmr->sequence = p->sequence;
+	pmr->read_offset = p->offset;
+	pmr->read_idx = bo2idx(stream, p->bo, ETNA_SUBMIT_BO_READ | ETNA_SUBMIT_BO_WRITE);
+	pmr->domain = p->signal->domain->id;
+	pmr->signal = p->signal->signal;
 }
