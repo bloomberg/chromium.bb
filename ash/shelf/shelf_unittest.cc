@@ -105,8 +105,8 @@ TEST_F(ShelfTest, ShowOverflowBubble) {
   EXPECT_TRUE(shelf_widget->IsShowingOverflowBubble());
 
   // Remove one of the first items in the main shelf view.
-  ASSERT_GT(shelf_model()->item_count(), 1);
-  shelf_model()->RemoveItemAt(1);
+  ASSERT_GT(shelf_model()->item_count(), 2);
+  shelf_model()->RemoveItemAt(2);
 
   // Waits for all transitions to finish and there should be no crash.
   test_api()->RunMessageLoopUntilAnimationsDone();

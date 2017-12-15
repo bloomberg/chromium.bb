@@ -152,6 +152,8 @@ struct EnumTraits<ash::mojom::ShelfItemType, ash::ShelfItemType> {
         return ash::mojom::ShelfItemType::APP;
       case ash::TYPE_DIALOG:
         return ash::mojom::ShelfItemType::DIALOG;
+      case ash::TYPE_BACK_BUTTON:
+        return ash::mojom::ShelfItemType::BACK_BUTTON;
       case ash::TYPE_UNDEFINED:
         return ash::mojom::ShelfItemType::UNDEFINED;
     }
@@ -179,6 +181,9 @@ struct EnumTraits<ash::mojom::ShelfItemType, ash::ShelfItemType> {
         return true;
       case ash::mojom::ShelfItemType::DIALOG:
         *out = ash::TYPE_DIALOG;
+        return true;
+      case ash::mojom::ShelfItemType::BACK_BUTTON:
+        *out = ash::TYPE_BACK_BUTTON;
         return true;
       case ash::mojom::ShelfItemType::UNDEFINED:
         *out = ash::TYPE_UNDEFINED;

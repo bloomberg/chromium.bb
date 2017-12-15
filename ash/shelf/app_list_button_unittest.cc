@@ -19,12 +19,10 @@
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
-#include "base/i18n/rtl.h"
 #include "base/test/scoped_command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -98,7 +96,7 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
 
   // Start the drags from the center of the app list button.
-  gfx::Point start = app_list_button()->GetAppListButtonCenterPoint();
+  gfx::Point start = app_list_button()->GetCenterPoint();
   views::View::ConvertPointToScreen(app_list_button(), &start);
   // Swiping up less than the threshold should trigger a peeking app list.
   gfx::Point end = start;
@@ -124,6 +122,23 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
   EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
   EXPECT_EQ(app_list::mojom::AppListState::FULLSCREEN_ALL_APPS,
             test_app_list_presenter.app_list_state());
+}
+
+TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
+  // Finish all setup tasks. In particular we want to finish the
+  // GetSwitchStates post task in (Fake)PowerManagerClient which is triggered
+  // by TabletModeController otherwise this will cause tablet mode to exit
+  // while we wait for animations in the test.
+  RunAllPendingInMessageLoop();
+
+  ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  test_api.RunMessageLoopUntilAnimationsDone();
+  EXPECT_GT(app_list_button()->bounds().x(), 0);
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  test_api.RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(0, app_list_button()->bounds().x());
 }
 
 class VoiceInteractionAppListButtonTest : public AppListButtonTest {
@@ -222,70 +237,6 @@ TEST_F(VoiceInteractionAppListButtonTest,
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
   EXPECT_EQ(2u, test_app_list_presenter.voice_session_count());
-}
-
-namespace {
-
-class BackButtonAppListButtonTest : public AppListButtonTest,
-                                    public testing::WithParamInterface<bool> {
- public:
-  BackButtonAppListButtonTest() : is_rtl_(GetParam()) {}
-  ~BackButtonAppListButtonTest() override = default;
-
-  void SetUp() override {
-    if (is_rtl_) {
-      original_locale_ = base::i18n::GetConfiguredLocale();
-      base::i18n::SetICUDefaultLocale("he");
-    }
-    AppListButtonTest::SetUp();
-    ASSERT_EQ(is_rtl_, base::i18n::IsRTL());
-  }
-
-  void TearDown() override {
-    if (is_rtl_)
-      base::i18n::SetICUDefaultLocale(original_locale_);
-    AppListButtonTest::TearDown();
-  }
-
- private:
-  bool is_rtl_ = false;
-  std::string original_locale_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackButtonAppListButtonTest);
-};
-
-INSTANTIATE_TEST_CASE_P(
-    /* prefix intentionally left blank due to only one parameterization */,
-    BackButtonAppListButtonTest,
-    testing::Bool());
-
-}  // namespace
-
-// Verify the locations of the back button and app list button.
-TEST_P(BackButtonAppListButtonTest, BackButtonAppListButtonLocation) {
-  ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
-
-  // Finish all setup tasks. In particular we want to finish the GetSwitchStates
-  // post task in (Fake)PowerManagerClient which is triggered by
-  // TabletModeController otherwise this will cause tablet mode to exit while we
-  // wait for animations in the test.
-  RunAllPendingInMessageLoop();
-
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  test_api.RunMessageLoopUntilAnimationsDone();
-
-  gfx::Point back_button_center = app_list_button()->GetBackButtonCenterPoint();
-  gfx::Point app_list_button_center =
-      app_list_button()->GetAppListButtonCenterPoint();
-
-  // Verify that in rtl, the app list button is left of the back button and vice
-  // versa.
-  if (base::i18n::IsRTL())
-    EXPECT_LT(app_list_button_center.x(), back_button_center.x());
-  else
-    EXPECT_GT(app_list_button_center.x(), back_button_center.x());
-
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
 }
 
 }  // namespace ash

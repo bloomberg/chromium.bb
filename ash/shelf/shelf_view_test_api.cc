@@ -47,8 +47,9 @@ int ShelfViewTestAPI::GetButtonCount() {
 }
 
 ShelfButton* ShelfViewTestAPI::GetButton(int index) {
-  // App list button is not a ShelfButton.
-  if (shelf_view_->model_->items()[index].type == ash::TYPE_APP_LIST)
+  // App list and back button are not ShelfButtons.
+  if (shelf_view_->model_->items()[index].type == ash::TYPE_APP_LIST ||
+      shelf_view_->model_->items()[index].type == ash::TYPE_BACK_BUTTON)
     return nullptr;
 
   return static_cast<ShelfButton*>(GetViewAt(index));

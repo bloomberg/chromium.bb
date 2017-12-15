@@ -192,10 +192,11 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   DCHECK(!instance_);
   instance_ = this;
 
-  // ShelfModel initializes the app list item.
+  // ShelfModel initializes the app list item and back button.
   DCHECK(model_);
-  DCHECK_EQ(1, model_->item_count());
-  DCHECK_EQ(ash::kAppListId, model_->items()[0].id.app_id);
+  DCHECK_EQ(2, model_->item_count());
+  DCHECK_EQ(ash::kBackButtonId, model_->items()[0].id.app_id);
+  DCHECK_EQ(ash::kAppListId, model_->items()[1].id.app_id);
 
   // Start observing the shelf controller.
   if (ConnectToShelfController()) {
@@ -972,8 +973,10 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
       profile()->GetPrefs(), launcher_controller_helper_.get());
 
   int index = 0;
-  // Skip app list items if it exists.
-  if (model_->items()[0].type == ash::TYPE_APP_LIST)
+  // Skip the app list and back button if they exist.
+  if (model_->items()[0].type == ash::TYPE_BACK_BUTTON)
+    ++index;
+  if (model_->items()[1].type == ash::TYPE_APP_LIST)
     ++index;
 
   // Apply pins in two steps. At the first step, go through the list of apps to
@@ -1243,16 +1246,22 @@ void ChromeLauncherController::OnShelfItemAdded(int32_t index,
   DCHECK(shelf_controller_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
 
+  // Ignore the back button; it should already exist in the local ShelfModel.
+  if (item.id.app_id == ash::kBackButtonId) {
+    DCHECK_EQ(0, model_->ItemIndexByID(item.id));
+    return;
+  }
+
   // Ignore the AppList item; it should already exist in the local ShelfModel.
   if (item.id.app_id == ash::kAppListId) {
-    DCHECK_EQ(0, model_->ItemIndexByID(item.id));
+    DCHECK_EQ(1, model_->ItemIndexByID(item.id));
     return;
   }
 
   // Ash items should be sent without images for efficiency.
   DCHECK(item.image.isNull()) << " Chrome does not need item images from Ash";
   DCHECK_LE(index, model_->item_count()) << " Index out of bounds";
-  DCHECK_GT(index, 0) << " Items can not preceed the AppList";
+  DCHECK_GT(index, 1) << " Items can not preceed the AppList";
   index = std::min(std::max(index, 1), model_->item_count());
   base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
   model_->AddAt(index, item);
@@ -1389,6 +1398,7 @@ void ChromeLauncherController::ShelfItemMoved(int start_index,
     shelf_controller_->MoveShelfItem(item.id, target_index);
 
   // Update the pin position preference as needed.
+  DCHECK_NE(ash::TYPE_BACK_BUTTON, item.type);
   DCHECK_NE(ash::TYPE_APP_LIST, item.type);
   if (ItemTypeIsPinned(item) && should_sync_pin_changes_)
     SyncPinPosition(item.id);

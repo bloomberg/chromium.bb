@@ -1288,8 +1288,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AltNumberAppsTabbing) {
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch", "Launched");
   ui::BaseWindow* window1 =
       CreateAppWindow(browser()->profile(), extension1)->GetBaseWindow();
-  const ash::ShelfItem& item = GetLastLauncherItem();
 
+  const ash::ShelfItem item = GetLastLauncherItem();
   EXPECT_EQ(ash::TYPE_APP, item.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 
@@ -1557,8 +1557,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
                        AltNumberBrowserTabbing) {
   // Get the number of items in the browser menu.
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
-  // The first activation should create a browser at index 1 (App List @ 0).
-  const ash::ShelfID browser_id = shelf_model()->items()[1].id;
+  // The first activation should create a browser at index 2 (App List @ 0 and
+  // back button @ 1).
+  const ash::ShelfID browser_id = shelf_model()->items()[2].id;
   SelectItem(browser_id, ui::ET_KEY_RELEASED);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   // A second activation should not create a new instance.
@@ -2050,7 +2051,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(2, shelf_model()->item_count());
+  EXPECT_EQ(3, shelf_model()->item_count());
 
   aura::Window* window = browser()->window()->GetNativeWindow();
 
@@ -2061,7 +2062,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   EXPECT_EQ(browser_id, id);
 
   ash::ShelfID app_id = CreateShortcut("app1");
-  EXPECT_EQ(3, shelf_model()->item_count());
+  EXPECT_EQ(4, shelf_model()->item_count());
 
   // Create and activate a new tab for "app1" and expect an application ShelfID.
   SelectItem(app_id);
@@ -2126,8 +2127,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsAndTaskManagerWindows) {
 
   // Get the number of items in the shelf and browser menu.
   int item_count = shelf_model()->item_count();
-  // At least App List should exist.
-  ASSERT_GE(item_count, 1);
+  // At least App List and back button should exist.
+  ASSERT_GE(item_count, 2);
   size_t browser_count = NumberOfDetectedLauncherBrowsers(false);
 
   // Open a settings window. Number of browser items should remain unchanged,
@@ -2276,13 +2277,15 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
       IsItemPresentInMenu(menu2.get(), LauncherContextMenu::MENU_CLOSE));
 }
 
-// Chrome's ShelfModel should have AppList and browser items and delegates.
+// Chrome's ShelfModel should have back button, AppList and browser items and
+// delegates.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ShelfModelInitialization) {
-  EXPECT_EQ(2, shelf_model()->item_count());
-  EXPECT_EQ(ash::kAppListId, shelf_model()->items()[0].id.app_id);
-  EXPECT_TRUE(
-      shelf_model()->GetShelfItemDelegate(shelf_model()->items()[0].id));
-  EXPECT_EQ(extension_misc::kChromeAppId, shelf_model()->items()[1].id.app_id);
+  EXPECT_EQ(3, shelf_model()->item_count());
+  EXPECT_EQ(ash::kBackButtonId, shelf_model()->items()[0].id.app_id);
+  EXPECT_EQ(ash::kAppListId, shelf_model()->items()[1].id.app_id);
   EXPECT_TRUE(
       shelf_model()->GetShelfItemDelegate(shelf_model()->items()[1].id));
+  EXPECT_EQ(extension_misc::kChromeAppId, shelf_model()->items()[2].id.app_id);
+  EXPECT_TRUE(
+      shelf_model()->GetShelfItemDelegate(shelf_model()->items()[2].id));
 }
