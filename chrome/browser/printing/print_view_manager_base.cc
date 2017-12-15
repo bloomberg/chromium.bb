@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -38,6 +40,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -107,6 +110,126 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
 }
 #endif
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+void PrintViewManagerBase::PrintForPrintPreview(
+    std::unique_ptr<base::DictionaryValue> job_settings,
+    const scoped_refptr<base::RefCountedBytes>& print_data,
+    content::RenderFrameHost* rfh,
+    PrinterHandler::PrintCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  int page_count;
+  job_settings->GetInteger(kSettingPreviewPageCount, &page_count);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PrintViewManagerBase::CreateQueryWithSettings,
+                     base::Unretained(this), std::move(job_settings), rfh,
+                     base::BindOnce(&PrintViewManagerBase::OnPrintSettingsDone,
+                                    base::Unretained(this), print_data,
+                                    page_count, std::move(callback))));
+}
+
+void PrintViewManagerBase::CreateQueryWithSettings(
+    std::unique_ptr<base::DictionaryValue> job_settings,
+    content::RenderFrameHost* rfh,
+    base::OnceCallback<void(scoped_refptr<printing::PrinterQuery>)> callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  scoped_refptr<printing::PrinterQuery> printer_query =
+      queue_->CreatePrinterQuery(rfh->GetProcess()->GetID(),
+                                 rfh->GetRoutingID());
+  printer_query->SetSettings(
+      std::move(job_settings),
+      base::BindOnce(std::move(callback), printer_query));
+}
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
+bool PrintViewManagerBase::PrintDocument(
+    PrintedDocument* document,
+    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const gfx::Size& page_size,
+    const gfx::Rect& content_area,
+    const gfx::Point& offsets) {
+  std::unique_ptr<PdfMetafileSkia> metafile =
+      std::make_unique<PdfMetafileSkia>(SkiaDocumentType::PDF);
+  if (!metafile->InitFromData(print_data->front(), print_data->size())) {
+    NOTREACHED() << "Invalid metafile";
+    web_contents()->Stop();
+    return false;
+  }
+
+#if defined(OS_WIN)
+  if (PrintedDocument::HasDebugDumpPath())
+    document->DebugDumpData(print_data.get(), FILE_PATH_LITERAL(".pdf"));
+
+  const auto& settings = document->settings();
+  if (settings.printer_is_textonly()) {
+    print_job_->StartPdfToTextConversion(print_data, page_size);
+  } else if ((settings.printer_is_ps2() || settings.printer_is_ps3()) &&
+             !base::FeatureList::IsEnabled(
+                 features::kDisablePostScriptPrinting)) {
+    print_job_->StartPdfToPostScriptConversion(
+        print_data, content_area, offsets, settings.printer_is_ps2());
+  } else {
+    // TODO(thestig): Figure out why rendering text with GDI results in random
+    // missing characters for some users. https://crbug.com/658606
+    // Update : The missing letters seem to have been caused by the same
+    // problem as https://crbug.com/659604 which was resolved. GDI printing
+    // seems to work with the fix for this bug applied.
+    bool print_text_with_gdi =
+        settings.print_text_with_gdi() && !settings.printer_is_xps() &&
+        base::FeatureList::IsEnabled(features::kGdiTextPrinting);
+    print_job_->StartPdfToEmfConversion(print_data, page_size, content_area,
+                                        print_text_with_gdi);
+  }
+#else
+  // Update the rendered document. It will send notifications to the listener.
+  document->SetDocument(std::move(metafile), page_size, content_area);
+  ShouldQuitFromInnerMessageLoop();
+#endif
+  return true;
+}
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+void PrintViewManagerBase::OnPrintSettingsDone(
+    const scoped_refptr<base::RefCountedBytes>& print_data,
+    int page_count,
+    PrinterHandler::PrintCallback callback,
+    scoped_refptr<printing::PrinterQuery> printer_query) {
+  queue_->QueuePrinterQuery(printer_query.get());
+
+  // Post task so that the query has time to reset the callback before calling
+  // OnDidGetPrintedPagesCount.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&PrintViewManagerBase::StartLocalPrintJob,
+                     base::Unretained(this), print_data, page_count,
+                     printer_query, std::move(callback)));
+}
+
+void PrintViewManagerBase::StartLocalPrintJob(
+    const scoped_refptr<base::RefCountedBytes>& print_data,
+    int page_count,
+    scoped_refptr<printing::PrinterQuery> printer_query,
+    PrinterHandler::PrintCallback callback) {
+  const printing::PrintSettings& settings = printer_query->settings();
+  OnDidGetPrintedPagesCount(printer_query->cookie(), page_count);
+
+  gfx::Size page_size = settings.page_setup_device_units().physical_size();
+  gfx::Rect content_area =
+      gfx::Rect(0, 0, page_size.width(), page_size.height());
+  gfx::Point offsets =
+      gfx::Point(settings.page_setup_device_units().content_area().x(),
+                 settings.page_setup_device_units().content_area().y());
+  // Print
+  PrintedDocument* document = GetDocument(printer_query->cookie());
+  if (!document ||
+      !PrintDocument(document, print_data, page_size, content_area, offsets)) {
+    std::move(callback).Run(base::Value("Failed to print"));
+  } else {
+    std::move(callback).Run(base::Value());
+  }
+}
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
 void PrintViewManagerBase::UpdatePrintingEnabled() {
   web_contents()->ForEachFrame(
       base::Bind(&PrintViewManagerBase::SendPrintingEnabled,
@@ -131,6 +254,19 @@ void PrintViewManagerBase::OnDidGetPrintedPagesCount(int cookie,
   OpportunisticallyCreatePrintJob(cookie);
 }
 
+PrintedDocument* PrintViewManagerBase::GetDocument(int cookie) {
+  if (!OpportunisticallyCreatePrintJob(cookie))
+    return nullptr;
+
+  PrintedDocument* document = print_job_->document();
+  if (!document || cookie != document->cookie()) {
+    // Out of sync. It may happen since we are completely asynchronous. Old
+    // spurious messages can be received if one of the processes is overloaded.
+    return nullptr;
+  }
+  return document;
+}
+
 void PrintViewManagerBase::OnComposePdfDone(
     const PrintHostMsg_DidPrintDocument_Params& params,
     mojom::PdfCompositor::Status status,
@@ -141,21 +277,25 @@ void PrintViewManagerBase::OnComposePdfDone(
     return;
   }
 
-  UpdateForPrintedDocument(params, GetShmFromMojoHandle(std::move(handle)));
+  PrintedDocument* document = print_job_->document();
+  if (!document)
+    return;
+
+  std::unique_ptr<base::SharedMemory> shared_buf =
+      GetShmFromMojoHandle(std::move(handle));
+  scoped_refptr<base::RefCountedBytes> bytes =
+      base::MakeRefCounted<base::RefCountedBytes>(
+          reinterpret_cast<const unsigned char*>(shared_buf->memory()),
+          shared_buf->mapped_size());
+  PrintDocument(document, bytes, params.page_size, params.content_area,
+                params.physical_offsets);
 }
 
 void PrintViewManagerBase::OnDidPrintDocument(
     const PrintHostMsg_DidPrintDocument_Params& params) {
-  // Ready to composite. Starting a print job.
-  if (!OpportunisticallyCreatePrintJob(params.document_cookie))
+  PrintedDocument* document = GetDocument(params.document_cookie);
+  if (!document)
     return;
-
-  PrintedDocument* document = print_job_->document();
-  if (!document || params.document_cookie != document->cookie()) {
-    // Out of sync. It may happen since we are completely asynchronous. Old
-    // spurious messages can be received if one of the processes is overloaded.
-    return;
-  }
 
   if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
     NOTREACHED() << "invalid memory handle";
@@ -179,63 +319,12 @@ void PrintViewManagerBase::OnDidPrintDocument(
     web_contents()->Stop();
     return;
   }
-
-  UpdateForPrintedDocument(params, std::move(shared_buf));
-}
-
-void PrintViewManagerBase::UpdateForPrintedDocument(
-    const PrintHostMsg_DidPrintDocument_Params& params,
-    std::unique_ptr<base::SharedMemory> shared_buf) {
-  PrintedDocument* document = print_job_->document();
-  if (!document)
-    return;
-
-#if defined(OS_WIN)
   scoped_refptr<base::RefCountedBytes> bytes =
       base::MakeRefCounted<base::RefCountedBytes>(
           reinterpret_cast<const unsigned char*>(shared_buf->memory()),
-          shared_buf->mapped_size());
-
-  if (PrintedDocument::HasDebugDumpPath())
-    document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
-
-  const auto& settings = document->settings();
-  if (settings.printer_is_textonly()) {
-    print_job_->StartPdfToTextConversion(bytes, params.page_size);
-  } else if ((settings.printer_is_ps2() || settings.printer_is_ps3()) &&
-             !base::FeatureList::IsEnabled(
-                 features::kDisablePostScriptPrinting)) {
-    print_job_->StartPdfToPostScriptConversion(bytes, params.content_area,
-                                               params.physical_offsets,
-                                               settings.printer_is_ps2());
-  } else {
-    // TODO(thestig): Figure out why rendering text with GDI results in random
-    // missing characters for some users. https://crbug.com/658606
-    // Update : The missing letters seem to have been caused by the same
-    // problem as https://crbug.com/659604 which was resolved. GDI printing
-    // seems to work with the fix for this bug applied.
-    bool print_text_with_gdi =
-        settings.print_text_with_gdi() && !settings.printer_is_xps() &&
-        base::FeatureList::IsEnabled(features::kGdiTextPrinting);
-    print_job_->StartPdfToEmfConversion(
-        bytes, params.page_size, params.content_area, print_text_with_gdi);
-  }
-#else
-  std::unique_ptr<PdfMetafileSkia> metafile =
-      std::make_unique<PdfMetafileSkia>(SkiaDocumentType::PDF);
-  if (!metafile->InitFromData(shared_buf->memory(),
-                              shared_buf->mapped_size())) {
-    NOTREACHED() << "Invalid metafile header";
-    web_contents()->Stop();
-    return;
-  }
-
-  // Update the rendered document. It will send notifications to the listener.
-  document->SetDocument(std::move(metafile), params.page_size,
-                        params.content_area);
-
-  ShouldQuitFromInnerMessageLoop();
-#endif
+          params.data_size);
+  PrintDocument(document, bytes, params.page_size, params.content_area,
+                params.physical_offsets);
 }
 
 void PrintViewManagerBase::OnPrintingFailed(int cookie) {

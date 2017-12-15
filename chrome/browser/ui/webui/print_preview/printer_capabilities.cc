@@ -9,18 +9,25 @@
 #include <utility>
 #include <vector>
 
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
+#include "chrome/browser/printing/print_view_manager.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 #include "chrome/common/crash_keys.h"
+#include "content/public/browser/render_frame_host.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/page_range.h"
 
 #if defined(OS_WIN)
 #include "base/strings/string_split.h"
@@ -161,6 +168,10 @@ bool VendorCapabilityInvalid(const base::Value& val) {
   return false;
 }
 
+void SystemDialogDone(const base::Value& error) {
+  // intentional no-op
+}
+
 }  // namespace
 
 std::pair<std::string, std::string> GetPrinterNameAndDescription(
@@ -281,4 +292,42 @@ std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
   return validated_cdd;
 }
 
+void StartLocalPrint(const std::string& ticket_json,
+                     const scoped_refptr<base::RefCountedBytes>& print_data,
+                     content::WebContents* preview_web_contents,
+                     PrinterHandler::PrintCallback callback) {
+  std::unique_ptr<base::DictionaryValue> job_settings =
+      base::DictionaryValue::From(base::JSONReader::Read(ticket_json));
+  if (!job_settings) {
+    std::move(callback).Run(base::Value("Invalid settings"));
+    return;
+  }
+
+  // Get print view manager.
+  PrintPreviewDialogController* dialog_controller =
+      PrintPreviewDialogController::GetInstance();
+  content::WebContents* initiator =
+      dialog_controller ? dialog_controller->GetInitiator(preview_web_contents)
+                        : nullptr;
+  PrintViewManager* print_view_manager =
+      PrintViewManager::FromWebContents(initiator);
+  if (!print_view_manager) {
+    std::move(callback).Run(base::Value("Initiator closed"));
+    return;
+  }
+
+  bool system_dialog = false;
+  job_settings->GetBoolean(printing::kSettingShowSystemDialog, &system_dialog);
+  bool open_in_pdf = false;
+  job_settings->GetBoolean(printing::kSettingOpenPDFInPreview, &open_in_pdf);
+  if (system_dialog || open_in_pdf) {
+    // Run the callback early, or the modal dialogs will prevent the preview
+    // from closing until they do.
+    std::move(callback).Run(base::Value());
+    callback = base::BindOnce(&SystemDialogDone);
+  }
+  print_view_manager->PrintForPrintPreview(std::move(job_settings), print_data,
+                                           preview_web_contents->GetMainFrame(),
+                                           std::move(callback));
+}
 }  // namespace printing

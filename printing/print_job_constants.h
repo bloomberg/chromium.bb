@@ -13,8 +13,6 @@ namespace printing {
 
 PRINTING_EXPORT extern const char kIsFirstRequest[];
 PRINTING_EXPORT extern const char kPreviewRequestID[];
-PRINTING_EXPORT extern const char kPreviewInitiatorHostId[];
-PRINTING_EXPORT extern const char kPreviewInitiatorRoutingId[];
 PRINTING_EXPORT extern const char kPreviewUIID[];
 PRINTING_EXPORT extern const char kSettingCapabilities[];
 PRINTING_EXPORT extern const char kSettingCloudPrintId[];

@@ -307,14 +307,8 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
   }
   printer_query = queue_->PopPrinterQuery(document_cookie);
   if (!printer_query.get()) {
-    int host_id;
-    int routing_id;
-    if (!new_settings->GetInteger(kPreviewInitiatorHostId, &host_id) ||
-        !new_settings->GetInteger(kPreviewInitiatorRoutingId, &routing_id)) {
-      host_id = content::ChildProcessHost::kInvalidUniqueID;
-      routing_id = MSG_ROUTING_NONE;
-    }
-    printer_query = queue_->CreatePrinterQuery(host_id, routing_id);
+    printer_query = queue_->CreatePrinterQuery(
+        content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
   }
   printer_query->SetSettings(
       std::move(new_settings),
