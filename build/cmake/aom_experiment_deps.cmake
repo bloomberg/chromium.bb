@@ -44,6 +44,12 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_TX64X64)
+    if (NOT CONFIG_TXMG)
+      change_config_and_warn(CONFIG_TXMG 1 CONFIG_TX64X64)
+    endif ()
+  endif ()
+
   if (CONFIG_DAALA_TX)
      set(CONFIG_HIGHBITDEPTH 1)
      set(CONFIG_DAALA_TX4 1)
