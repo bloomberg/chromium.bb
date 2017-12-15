@@ -24,60 +24,16 @@ cr.define('settings_sections_tests', function() {
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
-    });
 
-    /** @return {!print_preview.Cdd} */
-    function getCdd() {
-      return {
-        version: '1.0',
-        printer: {
-          collate: {default: true},
-          copies: {default: 1, max: 1000},
-          color: {
-            option: [
-              {type: 'STANDARD_COLOR', is_default: true},
-              {type: 'STANDARD_MONOCHROME'}
-            ]
-          },
-          dpi: {
-            option: [
-              {horizontal_dpi: 200, vertical_dpi: 200, is_default: true},
-              {horizontal_dpi: 100, vertical_dpi: 100},
-            ]
-          },
-          duplex: {
-            option: [
-              {type: 'NO_DUPLEX', is_default: true}, {type: 'LONG_EDGE'},
-              {type: 'SHORT_EDGE'}
-            ]
-          },
-          page_orientation: {
-            option: [
-              {type: 'PORTRAIT', is_default: true}, {type: 'LANDSCAPE'},
-              {type: 'AUTO'}
-            ]
-          },
-          media_size: {
-            option: [
-              {
-                name: 'NA_LETTER',
-                width_microns: 215900,
-                height_microns: 279400,
-                is_default: true,
-                custom_display_name: 'Letter',
-              },
-              {
-                name: 'CUSTOM_SQUARE',
-                width_microns: 215900,
-                height_microns: 215900,
-                custom_display_name: 'CUSTOM_SQUARE',
-              }
-            ]
-          },
-          vendor_capability: [],
-        },
-      };
-    }
+      const fooDestination = new print_preview.Destination(
+          'FooPrinter', print_preview.DestinationType.LOCAL,
+          print_preview.DestinationOrigin.LOCAL, 'Foo Printer',
+          false /*isRecent*/, print_preview.DestinationConnectionStatus.ONLINE);
+      fooDestination.capabilities =
+          print_preview_test_utils.getCddTemplate(fooDestination.id)
+              .capabilities;
+      page.set('destination_', fooDestination);
+    });
 
     /** @param {boolean} isPdf Whether the document should be a PDF. */
     function setPdfDocument(isPdf) {
@@ -93,7 +49,9 @@ cr.define('settings_sections_tests', function() {
           print_preview.DestinationOrigin.LOCAL,
           loadTimeData.getString('printToPDF'), false /*isRecent*/,
           print_preview.DestinationConnectionStatus.ONLINE);
-      saveAsPdfDestination.capabilities = getCdd();
+      saveAsPdfDestination.capabilities =
+          print_preview_test_utils.getCddTemplate(saveAsPdfDestination.id)
+              .capabilities;
       page.set('destination_', saveAsPdfDestination);
     }
 
@@ -102,7 +60,8 @@ cr.define('settings_sections_tests', function() {
       expectEquals(false, copiesElement.hidden);
 
       // Remove copies capability.
-      const capabilities = getCdd();
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       delete capabilities.printer.copies;
 
       // Copies section should now be hidden.
@@ -118,16 +77,16 @@ cr.define('settings_sections_tests', function() {
       expectEquals(false, layoutElement.hidden);
 
       // Remove layout capability.
-      let capabilities = getCdd();
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       delete capabilities.printer.page_orientation;
 
       // Each of these settings should not show the capability.
-      [
-        null,
-        {option: [{ type: 'PORTRAIT', is_default: true }]},
-        {option: [{ type: 'LANDSCAPE', is_default: true}]},
+      [null, {option: [{type: 'PORTRAIT', is_default: true}]},
+       {option: [{type: 'LANDSCAPE', is_default: true}]},
       ].forEach(layoutCap => {
-        capabilities = getCdd();
+        capabilities =
+            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
         capabilities.printer.page_orientation = layoutCap;
         // Layout section should now be hidden.
         page.set('destination_.capabilities', capabilities);
@@ -135,7 +94,8 @@ cr.define('settings_sections_tests', function() {
       });
 
       // Reset full capabilities
-      capabilities = getCdd();
+      capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
       expectEquals(false, layoutElement.hidden);
 
@@ -149,20 +109,26 @@ cr.define('settings_sections_tests', function() {
       expectEquals(false, colorElement.hidden);
 
       // Remove color capability.
-      let capabilities = getCdd();
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       delete capabilities.printer.color;
 
       // Each of these settings should not show the capability.
-      [
-        null,
-        {option: [{ type: 'STANDARD_COLOR', is_default: true }]},
-        {option: [{ type: 'STANDARD_COLOR', is_default: true },
-                  { type: 'CUSTOM_COLOR'}]},
-        {option: [{ type: 'STANDARD_MONOCHROME', is_default: true },
-                  { type: 'CUSTOM_MONOCHROME' }]},
-        {option: [{ type: 'STANDARD_MONOCHROME', is_default: true}]},
+      [null, {option: [{type: 'STANDARD_COLOR', is_default: true}]}, {
+        option: [
+          {type: 'STANDARD_COLOR', is_default: true}, {type: 'CUSTOM_COLOR'}
+        ]
+      },
+       {
+         option: [
+           {type: 'STANDARD_MONOCHROME', is_default: true},
+           {type: 'CUSTOM_MONOCHROME'}
+         ]
+       },
+       {option: [{type: 'STANDARD_MONOCHROME', is_default: true}]},
       ].forEach(colorCap => {
-        capabilities = getCdd();
+        capabilities =
+            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
         capabilities.printer.color = colorCap;
         // Layout section should now be hidden.
         page.set('destination_.capabilities', capabilities);
@@ -170,7 +136,8 @@ cr.define('settings_sections_tests', function() {
       });
 
       // Custom color and monochrome options should make the section visible.
-      capabilities = getCdd();
+      capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       capabilities.printer.color =
         {option: [{ type: 'CUSTOM_COLOR', is_default: true },
                   { type: 'CUSTOM_MONOCHROME' }]};
@@ -183,7 +150,8 @@ cr.define('settings_sections_tests', function() {
       expectEquals(false, mediaSizeElement.hidden);
 
       // Remove capability.
-      let capabilities = getCdd();
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       delete capabilities.printer.media_size;
 
       // Section should now be hidden.
@@ -191,7 +159,8 @@ cr.define('settings_sections_tests', function() {
       expectEquals(true, mediaSizeElement.hidden);
 
       // Reset
-      capabilities = getCdd();
+      capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
 
       // Set PDF document type.
@@ -224,7 +193,8 @@ cr.define('settings_sections_tests', function() {
       expectEquals(false, dpiElement.hidden);
 
       // Remove capability.
-      let capabilities = getCdd();
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       delete capabilities.printer.dpi;
 
       // Section should now be hidden.
@@ -232,7 +202,8 @@ cr.define('settings_sections_tests', function() {
       expectEquals(true, dpiElement.hidden);
 
       // Does not show up for only 1 option.
-      capabilities = getCdd();
+      capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       capabilities.printer.dpi.option.pop();
       page.set('destination_.capabilities', capabilities);
       expectEquals(true, dpiElement.hidden);
@@ -273,7 +244,8 @@ cr.define('settings_sections_tests', function() {
 
       // Start with HTML + duplex capability.
       setPdfDocument(false);
-      let capabilities = getCdd();
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
       expectEquals(false, optionsElement.hidden);
       expectEquals(false, headerFooter.hidden);
@@ -290,7 +262,8 @@ cr.define('settings_sections_tests', function() {
       expectEquals(false, selectionOnly.hidden);
 
       // Remove duplex capability.
-      capabilities = getCdd();
+      capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       delete capabilities.printer.duplex;
       page.set('destination_.capabilities', capabilities);
       expectEquals(false, optionsElement.hidden);
@@ -313,7 +286,8 @@ cr.define('settings_sections_tests', function() {
       expectEquals(true, selectionOnly.hidden);
 
       // Add duplex.
-      capabilities = getCdd();
+      capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
       expectEquals(false, optionsElement.hidden);
       expectEquals(false, duplex.hidden);

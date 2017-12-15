@@ -4,7 +4,7 @@
 
 /** @fileoverview Runs the Print Preview tests. */
 
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 /**
  * @constructor
@@ -59,6 +59,7 @@ PrintPreviewUIBrowserTest.prototype = {
     'print_preview_tests.js',
     'native_layer_stub.js',
     'plugin_stub.js',
+    'print_preview_test_utils.js',
   ],
 };
 
