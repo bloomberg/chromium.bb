@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -36,8 +37,10 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
+#include "net/cert/internal/parse_certificate.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/cert/x509_util.h"
+#include "net/der/parse_values.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -194,6 +197,95 @@ std::unique_ptr<base::Value> NetLogSSLMessageCallback(
   }
 
   return std::move(dict);
+}
+
+// This enum is used in histograms, so values may not be reused.
+enum class RSAKeyUsage {
+  // The TLS cipher suite was not RSA or ECDHE_RSA.
+  kNotRSA = 0,
+  // The Key Usage extension is not present, which is consistent with TLS usage.
+  kOKNoExtension = 1,
+  // The Key Usage extension has both the digitalSignature and keyEncipherment
+  // bits, which is consistent with TLS usage.
+  kOKHaveBoth = 2,
+  // The Key Usage extension contains only the digitalSignature bit, which is
+  // consistent with TLS usage.
+  kOKHaveDigitalSignature = 3,
+  // The Key Usage extension contains only the keyEncipherment bit, which is
+  // consistent with TLS usage.
+  kOKHaveKeyEncipherment = 4,
+  // The Key Usage extension is missing the digitalSignature bit.
+  kMissingDigitalSignature = 5,
+  // The Key Usage extension is missing the keyEncipherment bit.
+  kMissingKeyEncipherment = 6,
+  // There was an error processing the certificate.
+  kError = 7,
+
+  kLastValue = kError,
+};
+
+RSAKeyUsage CheckRSAKeyUsage(const X509Certificate* cert,
+                             const SSL_CIPHER* cipher) {
+  bool need_key_encipherment = false;
+  switch (SSL_CIPHER_get_kx_nid(cipher)) {
+    case NID_kx_rsa:
+      need_key_encipherment = true;
+      break;
+    case NID_kx_ecdhe:
+      if (SSL_CIPHER_get_auth_nid(cipher) != NID_auth_rsa) {
+        return RSAKeyUsage::kNotRSA;
+      }
+      break;
+    default:
+      return RSAKeyUsage::kNotRSA;
+  }
+
+  const CRYPTO_BUFFER* buffer = cert->cert_buffer();
+  der::Input tbs_certificate_tlv;
+  der::Input signature_algorithm_tlv;
+  der::BitString signature_value;
+  ParsedTbsCertificate tbs;
+  if (!ParseCertificate(
+          der::Input(CRYPTO_BUFFER_data(buffer), CRYPTO_BUFFER_len(buffer)),
+          &tbs_certificate_tlv, &signature_algorithm_tlv, &signature_value,
+          nullptr) ||
+      !ParseTbsCertificate(tbs_certificate_tlv,
+                           x509_util::DefaultParseCertificateOptions(), &tbs,
+                           nullptr)) {
+    return RSAKeyUsage::kError;
+  }
+
+  if (!tbs.has_extensions) {
+    return RSAKeyUsage::kOKNoExtension;
+  }
+
+  std::map<der::Input, ParsedExtension> extensions;
+  if (!ParseExtensions(tbs.extensions_tlv, &extensions)) {
+    return RSAKeyUsage::kError;
+  }
+  ParsedExtension key_usage_ext;
+  if (!ConsumeExtension(KeyUsageOid(), &extensions, &key_usage_ext)) {
+    return RSAKeyUsage::kOKNoExtension;
+  }
+  der::BitString key_usage;
+  if (!ParseKeyUsage(key_usage_ext.value, &key_usage)) {
+    return RSAKeyUsage::kError;
+  }
+
+  bool have_digital_signature =
+      key_usage.AssertsBit(KEY_USAGE_BIT_DIGITAL_SIGNATURE);
+  bool have_key_encipherment =
+      key_usage.AssertsBit(KEY_USAGE_BIT_KEY_ENCIPHERMENT);
+  if (have_digital_signature && have_key_encipherment) {
+    return RSAKeyUsage::kOKHaveBoth;
+  }
+
+  if (need_key_encipherment) {
+    return have_key_encipherment ? RSAKeyUsage::kOKHaveKeyEncipherment
+                                 : RSAKeyUsage::kMissingKeyEncipherment;
+  }
+  return have_digital_signature ? RSAKeyUsage::kOKHaveDigitalSignature
+                                : RSAKeyUsage::kMissingDigitalSignature;
 }
 
 }  // namespace
@@ -1252,6 +1344,22 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
 
     transport_security_state_->CheckExpectStaple(host_and_port_, ssl_info,
                                                  ocsp_response);
+
+    // See how feasible enforcing RSA key usage would be. See
+    // https://crbug.com/795089.
+    RSAKeyUsage rsa_key_usage = CheckRSAKeyUsage(
+        server_cert_.get(), SSL_get_current_cipher(ssl_.get()));
+    if (rsa_key_usage != RSAKeyUsage::kNotRSA) {
+      if (server_cert_verify_result_.is_issued_by_known_root) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Net.SSLRSAKeyUsage.KnownRoot", rsa_key_usage,
+            static_cast<int>(RSAKeyUsage::kLastValue) + 1);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Net.SSLRSAKeyUsage.UnknownRoot", rsa_key_usage,
+            static_cast<int>(RSAKeyUsage::kLastValue) + 1);
+      }
+    }
   }
 
   completed_connect_ = true;

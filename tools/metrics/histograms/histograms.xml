@@ -47431,6 +47431,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SSLRSAKeyUsage.KnownRoot" enum="RSAKeyUsage">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    For each TLS connection which uses a known root, an RSA key, and TLS 1.2 or
+    below, what the result of checking the RSA key usage would have been.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSLRSAKeyUsage.UnknownRoot" enum="RSAKeyUsage">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    For each TLS connection which uses a unknown root, an RSA key, and TLS 1.2
+    or below, what the result of checking the RSA key usage would have been.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLServerKeyExchangeHash" enum="SSLHashAlgorithm">
   <obsolete>
     Replaced by Net.SSLSignatureAlgorithm.
