@@ -3742,10 +3742,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
     // resize the view to match the container view upon creation.
     [_webView setFrame:[_containerView bounds]];
+  }
 
-    // If the visible NavigationItem should be loaded in this web view, display
-    // it immediately.  Otherwise, it will be displayed when the pending load is
-    // committed.
+  // If web view is not currently displayed and if the visible NavigationItem
+  // should be loaded in this web view, display it immediately.  Otherwise, it
+  // will be displayed when the pending load is committed.
+  if (![_containerView webViewContentView]) {
     web::NavigationItem* visibleItem =
         self.navigationManagerImpl->GetVisibleItem();
     const GURL& visibleURL =
