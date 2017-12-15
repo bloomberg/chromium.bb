@@ -93,21 +93,9 @@ extern "C" {
 #endif  // CONFIG_LOOPFILTER_LEVEL
 
 #if CONFIG_LPF_SB
-#define LPF_DELTA_BITS 3
-#define LPF_STEP 2
-#define DELTA_RANGE (1 << LPF_DELTA_BITS)
-#define MAX_LPF_OFFSET (LPF_STEP * ((1 << LPF_DELTA_BITS) - 1))
-
-#define LPF_REUSE_CONTEXT 2
-#define LPF_DELTA_CONTEXT DELTA_RANGE
-#define LPF_SIGN_CONTEXT 2
-
 // Half of maximum loop filter length (15-tap)
 #define FILT_BOUNDARY_OFFSET 0
 #define FILT_BOUNDARY_MI_OFFSET (FILT_BOUNDARY_OFFSET >> MI_SIZE_LOG2)
-
-#define USE_GUESS_LEVEL 1
-#define USE_LOOP_FILTER_SUPERBLOCK 1
 #endif  // CONFIG_LPF_SB
 
 #if CONFIG_JNT_COMP

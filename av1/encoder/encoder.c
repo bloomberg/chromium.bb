@@ -4617,7 +4617,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif  // CONFIG_EXT_TILE
       ) {
 #if CONFIG_LPF_SB
-    if (!USE_LOOP_FILTER_SUPERBLOCK) no_loopfilter = 1;
+    if (!cm->allow_screen_content_tools) no_loopfilter = 1;
 #else
     no_loopfilter = 1;
 #endif  // CONFIG_LPF_SB

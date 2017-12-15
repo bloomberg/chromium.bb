@@ -3223,46 +3223,28 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                         &dummy_rdc, INT64_MAX, pc_root, NULL);
     }
 #if CONFIG_LPF_SB
-    if (USE_LOOP_FILTER_SUPERBLOCK) {
+    // TODO(chengchen): change to allow intraBC. It requires to store the
+    // unfiltered frame to a buffer and process later.
+    if (cm->allow_screen_content_tools) {
 #if CONFIG_LOOPFILTER_LEVEL
       int filter_lvl[4];
 
-      if (USE_GUESS_LEVEL) {
-        struct loopfilter *lf = &cpi->common.lf;
-        filter_lvl[0] = lf->filter_level[0];
-        filter_lvl[1] = lf->filter_level[1];
-        filter_lvl[2] = lf->filter_level_u;
-        filter_lvl[3] = lf->filter_level_v;
-        av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[0],
-                              filter_lvl[1], 0, 1, mi_row, mi_col);
-        av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[2],
-                              filter_lvl[2], 1, 1, mi_row, mi_col);
-        av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[3],
-                              filter_lvl[3], 2, 1, mi_row, mi_col);
-      }
+      struct loopfilter *lf = &cpi->common.lf;
+      filter_lvl[0] = lf->filter_level[0];
+      filter_lvl[1] = lf->filter_level[1];
+      filter_lvl[2] = lf->filter_level_u;
+      filter_lvl[3] = lf->filter_level_v;
+      av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[0],
+                            filter_lvl[1], 0, 1, mi_row, mi_col);
+      av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[2],
+                            filter_lvl[2], 1, 1, mi_row, mi_col);
+      av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[3],
+                            filter_lvl[3], 2, 1, mi_row, mi_col);
 #else
       int filter_lvl;
 
-      if (USE_GUESS_LEVEL) {
-        struct loopfilter *lf = &cpi->common.lf;
-        filter_lvl = lf->filter_level;
-      } else {
-        // apply deblocking filtering right after each superblock is encoded.
-        int last_lvl;
-        if (mi_row == 0 && mi_col == 0) {
-          last_lvl = 0;
-        } else {
-          if (mi_col == 0) {
-            last_lvl =
-                cm->mi[(mi_row - MAX_MIB_SIZE) * cm->mi_stride].mbmi.filt_lvl;
-          } else {
-            last_lvl = cm->mi[mi_row * cm->mi_stride + mi_col - MAX_MIB_SIZE]
-                           .mbmi.filt_lvl;
-          }
-        }
-        filter_lvl = av1_search_filter_level(cpi->source, cpi, 1, NULL, mi_row,
-                                             mi_col, last_lvl);
-      }
+      struct loopfilter *lf = &cpi->common.lf;
+      filter_lvl = lf->filter_level;
       av1_loop_filter_frame(get_frame_new_buffer(cm), cm, xd, filter_lvl, 0, 1,
                             mi_row, mi_col);
       // if filter_lvl is 0, we still need to set mi info

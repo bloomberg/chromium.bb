@@ -767,135 +767,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     update_partition_context(xd, mi_row, mi_col, subsize, bsize);
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_LPF_SB
-#if CONFIG_LOOPFILTER_LEVEL
-  if (bsize == cm->sb_size && !USE_GUESS_LEVEL) {
-    int lvl_idx;
-    int filt_lvl[4];
-    if (mi_row == 0 && mi_col == 0) {
-      filt_lvl[0] = aom_read_literal(r, 6, ACCT_STR);
-      filt_lvl[1] = aom_read_literal(r, 6, ACCT_STR);
-      if (filt_lvl[0] || filt_lvl[1]) {
-        filt_lvl[2] = aom_read_literal(r, 6, ACCT_STR);
-        filt_lvl[3] = aom_read_literal(r, 6, ACCT_STR);
-      }
-      for (lvl_idx = 0; lvl_idx < 4; ++lvl_idx) {
-        cm->mi_grid_visible[0]->mbmi.reuse_sb_lvl[lvl_idx] = 0;
-        cm->mi_grid_visible[0]->mbmi.delta[lvl_idx] = 0;
-        cm->mi_grid_visible[0]->mbmi.sign[lvl_idx] = 0;
-      }
-    } else {
-      int prev_mi_row, prev_mi_col;
-      if (mi_col - MAX_MIB_SIZE < 0) {
-        prev_mi_row = mi_row - MAX_MIB_SIZE;
-        prev_mi_col = mi_col;
-      } else {
-        prev_mi_row = mi_row;
-        prev_mi_col = mi_col - MAX_MIB_SIZE;
-      }
-
-      MB_MODE_INFO *curr_mbmi =
-          &cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi;
-      MB_MODE_INFO *prev_mbmi =
-          &cm->mi_grid_visible[prev_mi_row * cm->mi_stride + prev_mi_col]->mbmi;
-      for (lvl_idx = 0; lvl_idx < 4; ++lvl_idx) {
-        const uint8_t prev_lvl = prev_mbmi->filt_lvl[lvl_idx];
-
-        const int reuse_ctx = prev_mbmi->reuse_sb_lvl[lvl_idx];
-        const int reuse_prev_lvl = aom_read_symbol(
-            r, xd->tile_ctx->lpf_reuse_cdf[lvl_idx][reuse_ctx], 2, ACCT_STR);
-        curr_mbmi->reuse_sb_lvl[lvl_idx] = reuse_prev_lvl;
-
-        if (reuse_prev_lvl) {
-          filt_lvl[lvl_idx] = prev_lvl;
-          curr_mbmi->delta[lvl_idx] = 0;
-          curr_mbmi->sign[lvl_idx] = 0;
-        } else {
-          const int delta_ctx = prev_mbmi->delta[lvl_idx];
-          unsigned int delta = aom_read_symbol(
-              r, xd->tile_ctx->lpf_delta_cdf[lvl_idx][delta_ctx], DELTA_RANGE,
-              ACCT_STR);
-          curr_mbmi->delta[lvl_idx] = delta;
-          delta *= LPF_STEP;
-
-          if (delta) {
-            const int sign_ctx = prev_mbmi->sign[lvl_idx];
-            const int sign = aom_read_symbol(
-                r, xd->tile_ctx->lpf_sign_cdf[lvl_idx][reuse_ctx][sign_ctx], 2,
-                ACCT_STR);
-            curr_mbmi->sign[lvl_idx] = sign;
-            filt_lvl[lvl_idx] = sign ? prev_lvl + delta : prev_lvl - delta;
-          } else {
-            filt_lvl[lvl_idx] = prev_lvl;
-            curr_mbmi->sign[lvl_idx] = 0;
-          }
-        }
-      }
-    }
-
-    av1_loop_filter_sb_level_init(cm, mi_row, mi_col, 0, 0, filt_lvl[0]);
-    av1_loop_filter_sb_level_init(cm, mi_row, mi_col, 0, 1, filt_lvl[1]);
-    av1_loop_filter_sb_level_init(cm, mi_row, mi_col, 1, 0, filt_lvl[2]);
-    av1_loop_filter_sb_level_init(cm, mi_row, mi_col, 2, 0, filt_lvl[3]);
-  }
-#else
-  if (bsize == cm->sb_size && !USE_GUESS_LEVEL) {
-    int filt_lvl;
-    if (mi_row == 0 && mi_col == 0) {
-      filt_lvl = aom_read_literal(r, 6, ACCT_STR);
-      cm->mi_grid_visible[0]->mbmi.reuse_sb_lvl = 0;
-      cm->mi_grid_visible[0]->mbmi.delta = 0;
-      cm->mi_grid_visible[0]->mbmi.sign = 0;
-    } else {
-      int prev_mi_row, prev_mi_col;
-      if (mi_col - MAX_MIB_SIZE < 0) {
-        prev_mi_row = mi_row - MAX_MIB_SIZE;
-        prev_mi_col = mi_col;
-      } else {
-        prev_mi_row = mi_row;
-        prev_mi_col = mi_col - MAX_MIB_SIZE;
-      }
-
-      MB_MODE_INFO *curr_mbmi =
-          &cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi;
-      MB_MODE_INFO *prev_mbmi =
-          &cm->mi_grid_visible[prev_mi_row * cm->mi_stride + prev_mi_col]->mbmi;
-      const uint8_t prev_lvl = prev_mbmi->filt_lvl;
-
-      const int reuse_ctx = prev_mbmi->reuse_sb_lvl;
-      const int reuse_prev_lvl = aom_read_symbol(
-          r, xd->tile_ctx->lpf_reuse_cdf[reuse_ctx], 2, ACCT_STR);
-      curr_mbmi->reuse_sb_lvl = reuse_prev_lvl;
-
-      if (reuse_prev_lvl) {
-        filt_lvl = prev_lvl;
-        curr_mbmi->delta = 0;
-        curr_mbmi->sign = 0;
-      } else {
-        const int delta_ctx = prev_mbmi->delta;
-        unsigned int delta = aom_read_symbol(
-            r, xd->tile_ctx->lpf_delta_cdf[delta_ctx], DELTA_RANGE, ACCT_STR);
-        curr_mbmi->delta = delta;
-        delta *= LPF_STEP;
-
-        if (delta) {
-          const int sign_ctx = prev_mbmi->sign;
-          const int sign = aom_read_symbol(
-              r, xd->tile_ctx->lpf_sign_cdf[reuse_ctx][sign_ctx], 2, ACCT_STR);
-          curr_mbmi->sign = sign;
-          filt_lvl = sign ? prev_lvl + delta : prev_lvl - delta;
-        } else {
-          filt_lvl = prev_lvl;
-          curr_mbmi->sign = 0;
-        }
-      }
-    }
-
-    av1_loop_filter_sb_level_init(cm, mi_row, mi_col, filt_lvl);
-  }
-#endif  // CONFIG_LOOPFILTER_LEVEL
-#endif  // CONFIG_LPF_SB
-
 #if CONFIG_LOOP_RESTORATION
   for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
@@ -1171,26 +1042,16 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #endif  // CONFIG_INTRABC && !CONFIG_LPF_SB
   struct loopfilter *lf = &cm->lf;
 #if CONFIG_LOOPFILTER_LEVEL
-#if CONFIG_LPF_SB
-  if (USE_GUESS_LEVEL) {
-#endif  // CONFIG_LPF_SB
-    lf->filter_level[0] = aom_rb_read_literal(rb, 6);
-    lf->filter_level[1] = aom_rb_read_literal(rb, 6);
-    if (av1_num_planes(cm) > 1) {
-      if (lf->filter_level[0] || lf->filter_level[1]) {
-        lf->filter_level_u = aom_rb_read_literal(rb, 6);
-        lf->filter_level_v = aom_rb_read_literal(rb, 6);
-      }
+  lf->filter_level[0] = aom_rb_read_literal(rb, 6);
+  lf->filter_level[1] = aom_rb_read_literal(rb, 6);
+  if (av1_num_planes(cm) > 1) {
+    if (lf->filter_level[0] || lf->filter_level[1]) {
+      lf->filter_level_u = aom_rb_read_literal(rb, 6);
+      lf->filter_level_v = aom_rb_read_literal(rb, 6);
     }
-#if CONFIG_LPF_SB
   }
-#endif  // CONFIG_LPF_SB
-#else
-#if CONFIG_LPF_SB
-  if (USE_GUESS_LEVEL) lf->filter_level = aom_rb_read_literal(rb, 6);
 #else
   lf->filter_level = aom_rb_read_literal(rb, 6);
-#endif  // CONFIG_LPF_SB
 #endif
   lf->sharpness_level = aom_rb_read_literal(rb, 3);
 
@@ -2280,23 +2141,19 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
           decode_partition(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                            cm->sb_size);
 #if CONFIG_LPF_SB
-          if (USE_LOOP_FILTER_SUPERBLOCK) {
+          if (cm->allow_screen_content_tools) {
 #if CONFIG_LOOPFILTER_LEVEL
-            if (USE_GUESS_LEVEL) {
-              if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
-                av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                                      cm->lf.filter_level[0],
-                                      cm->lf.filter_level[1], 0, 1, mi_row,
-                                      mi_col);
-                av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                                      cm->lf.filter_level_u,
-                                      cm->lf.filter_level_u, 1, 1, mi_row,
-                                      mi_col);
-                av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                                      cm->lf.filter_level_v,
-                                      cm->lf.filter_level_v, 2, 1, mi_row,
-                                      mi_col);
-              }
+            if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
+              av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                                    cm->lf.filter_level[0],
+                                    cm->lf.filter_level[1], 0, 1, mi_row,
+                                    mi_col);
+              av1_loop_filter_frame(
+                  get_frame_new_buffer(cm), cm, &pbi->mb, cm->lf.filter_level_u,
+                  cm->lf.filter_level_u, 1, 1, mi_row, mi_col);
+              av1_loop_filter_frame(
+                  get_frame_new_buffer(cm), cm, &pbi->mb, cm->lf.filter_level_v,
+                  cm->lf.filter_level_v, 2, 1, mi_row, mi_col);
             }
 #else
             // apply deblocking filtering right after each superblock is decoded
