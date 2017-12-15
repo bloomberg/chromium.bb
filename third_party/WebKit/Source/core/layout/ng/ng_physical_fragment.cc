@@ -208,6 +208,14 @@ Node* NGPhysicalFragment::GetNode() const {
   return layout_object_ ? layout_object_->GetNode() : nullptr;
 }
 
+bool NGPhysicalFragment::HasLayer() const {
+  return layout_object_->HasLayer();
+}
+
+bool NGPhysicalFragment::IsBlockFlow() const {
+  return layout_object_ && layout_object_->IsLayoutBlockFlow();
+}
+
 bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   // TODO(kojii): Move this to a flag for |LayoutNGBlockFlow::UpdateBlockLayout|
   // to set.

@@ -83,6 +83,8 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsOutOfFlowPositioned() const {
     return BoxType() == NGBoxType::kOutOfFlowPositioned;
   }
+  bool IsBlockFlow() const;
+
   // A box fragment that do not exist in LayoutObject tree. Its LayoutObject is
   // co-owned by other fragments.
   bool IsAnonymousBox() const { return BoxType() == NGBoxType::kAnonymousBox; }
@@ -119,6 +121,9 @@ class CORE_EXPORT NGPhysicalFragment
   NGBreakToken* BreakToken() const { return break_token_.get(); }
   const ComputedStyle& Style() const;
   Node* GetNode() const;
+
+  // Whether there is a PaintLayer associated with the fragment.
+  bool HasLayer() const;
 
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.

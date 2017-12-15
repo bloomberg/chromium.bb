@@ -51,6 +51,12 @@ bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
          BoxType() != kAnonymousBox;
 }
 
+bool NGPhysicalBoxFragment::ChildrenInline() const {
+  const LayoutObject* layout_object = GetLayoutObject();
+  DCHECK(layout_object);
+  return layout_object->ChildrenInline();
+}
+
 bool NGPhysicalBoxFragment::HasOverflowClip() const {
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
