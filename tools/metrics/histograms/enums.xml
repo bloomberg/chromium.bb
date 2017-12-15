@@ -14270,6 +14270,7 @@ Called by update_net_error_codes.py.-->
   <int value="1204" label="METRICSPRIVATE_RECORDBOOLEAN"/>
   <int value="1205" label="METRICSPRIVATE_RECORDENUMERATIONVALUE"/>
   <int value="1206" label="DEVELOPERPRIVATE_NOTIFYDRAGINSTALLINPROGRESS"/>
+  <int value="1207" label="AUTOTESTPRIVATE_GETPRINTERLIST"/>
 </enum>
 
 <enum name="ExtensionIconState">

@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -408,6 +409,51 @@ AutotestPrivateGetVisibleNotificationsFunction::Run() {
     values->Append(std::move(result));
   }
 
+#endif
+  return RespondNow(OneArgument(std::move(values)));
+}
+
+#if defined(OS_CHROMEOS)
+// static
+std::string AutotestPrivateGetPrinterListFunction::GetPrinterType(
+    chromeos::CupsPrintersManager::PrinterClass type) {
+  switch (type) {
+    case chromeos::CupsPrintersManager::PrinterClass::kConfigured:
+      return "configured";
+    case chromeos::CupsPrintersManager::PrinterClass::kEnterprise:
+      return "enterprise";
+    case chromeos::CupsPrintersManager::PrinterClass::kAutomatic:
+      return "automatic";
+    case chromeos::CupsPrintersManager::PrinterClass::kDiscovered:
+      return "discovered";
+    default:
+      return "unknown";
+  }
+}
+#endif
+
+ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetPrinterListFunction";
+  auto values = std::make_unique<base::ListValue>();
+#if defined(OS_CHROMEOS)
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<chromeos::CupsPrintersManager> printers_manager =
+      chromeos::CupsPrintersManager::Create(profile);
+  std::vector<chromeos::CupsPrintersManager::PrinterClass> printer_type = {
+      chromeos::CupsPrintersManager::PrinterClass::kConfigured,
+      chromeos::CupsPrintersManager::PrinterClass::kEnterprise,
+      chromeos::CupsPrintersManager::PrinterClass::kAutomatic};
+  for (const auto& type : printer_type) {
+    std::vector<chromeos::Printer> printer_list =
+        printers_manager->GetPrinters(type);
+    for (const auto& printer : printer_list) {
+      auto result = std::make_unique<base::DictionaryValue>();
+      result->SetString("printerName", printer.display_name());
+      result->SetString("printerId", printer.id());
+      result->SetString("printerType", GetPrinterType(type));
+      values->Append(std::move(result));
+    }
+  }
 #endif
   return RespondNow(OneArgument(std::move(values)));
 }
