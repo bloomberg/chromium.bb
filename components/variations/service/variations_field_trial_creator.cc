@@ -42,6 +42,23 @@ enum VariationsSeedExpiry {
   VARIATIONS_SEED_EXPIRY_ENUM_SIZE,
 };
 
+// Set of different possible values to report for the
+// Variations.LoadPermanentConsistencyCountryResult histogram. Values are
+// persisted to logs, and should therefore never be renumbered nor reused.
+enum LoadPermanentConsistencyCountryResult {
+  LOAD_COUNTRY_NO_PREF_NO_SEED = 0,
+  LOAD_COUNTRY_NO_PREF_HAS_SEED,
+  LOAD_COUNTRY_INVALID_PREF_NO_SEED,
+  LOAD_COUNTRY_INVALID_PREF_HAS_SEED,
+  LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ,
+  LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ,
+  LOAD_COUNTRY_MAX,
+};
+
 // Gets current form factor and converts it from enum DeviceFormFactor to enum
 // Study_FormFactor.
 Study::FormFactor GetCurrentFormFactor() {

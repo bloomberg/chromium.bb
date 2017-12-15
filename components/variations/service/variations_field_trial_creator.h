@@ -33,18 +33,7 @@ class VariationsFieldTrialCreator {
   // empty if it is not available.
   std::string GetLatestCountry() const;
 
-  // Creates field trials based on the variations seed loaded from local state.
-  // If there is a problem loading the seed data, all trials specified by the
-  // seed may not be created. Some field trials are configured to override or
-  // associate with (for reporting) specific features. These associations are
-  // registered with |feature_list|.
-  bool CreateTrialsFromSeed(
-      std::unique_ptr<const base::FieldTrial::EntropyProvider>
-          low_entropy_provider,
-      base::FeatureList* feature_list);
-
-  VariationsSeedStore& seed_store() { return seed_store_; }
-
+  VariationsSeedStore* seed_store() { return &seed_store_; }
   const VariationsSeedStore& seed_store() const { return seed_store_; }
 
   bool create_trials_from_seed_called() const {
@@ -96,36 +85,27 @@ class VariationsFieldTrialCreator {
   // Records the time of the most recent successful fetch.
   void RecordLastFetchTime();
 
-  // Loads the seed from the variations store into |seed|. If successfull,
-  // |seed| will contain the loaded data and true is returned. Set as virtual
-  // so that it can be overridden by tests.
+  // Loads the seed from the variations store into |seed|. If successful, |seed|
+  // will contain the loaded data and true is returned. Virtual for testing.
   virtual bool LoadSeed(VariationsSeed* seed);
 
-  // Allow the platform that is used to filter the set of active trials
-  // to be overridden.
+  // Allow the platform that is used to filter the set of active trials to be
+  // overridden.
   void OverrideVariationsPlatform(Study::Platform platform_override);
 
  private:
   PrefService* local_state() { return seed_store_.local_state(); }
-
   const PrefService* local_state() const { return seed_store_.local_state(); }
 
-  // Set of different possible values to report for the
-  // Variations.LoadPermanentConsistencyCountryResult histogram. This enum must
-  // be kept consistent with its counterpart in histograms.xml.
-  enum LoadPermanentConsistencyCountryResult {
-    LOAD_COUNTRY_NO_PREF_NO_SEED = 0,
-    LOAD_COUNTRY_NO_PREF_HAS_SEED,
-    LOAD_COUNTRY_INVALID_PREF_NO_SEED,
-    LOAD_COUNTRY_INVALID_PREF_HAS_SEED,
-    LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ,
-    LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ,
-    LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ,
-    LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ,
-    LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ,
-    LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ,
-    LOAD_COUNTRY_MAX,
-  };
+  // Creates field trials based on the variations seed loaded from local state.
+  // If there is a problem loading the seed data, all trials specified by the
+  // seed may not be created. Some field trials are configured to override or
+  // associate with (for reporting) specific features. These associations are
+  // registered with |feature_list|.
+  bool CreateTrialsFromSeed(
+      std::unique_ptr<const base::FieldTrial::EntropyProvider>
+          low_entropy_provider,
+      base::FeatureList* feature_list);
 
   VariationsServiceClient* client_;
 

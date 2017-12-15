@@ -436,7 +436,7 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::unique_ptr<VariationsSeed> seed(new VariationsSeed);
-  if (!field_trial_creator_.seed_store().StoreSeedData(
+  if (!field_trial_creator_.seed_store()->StoreSeedData(
           seed_data, seed_signature, country_code, date_fetched,
           is_delta_compressed, is_gzip_compressed, seed.get())) {
     return false;
@@ -499,14 +499,14 @@ bool VariationsService::DoFetchFromURL(const GURL& url) {
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(client_->GetURLRequestContext());
   bool enable_deltas = false;
-  if (!field_trial_creator_.seed_store().variations_serial_number().empty() &&
+  if (!field_trial_creator_.seed_store()->variations_serial_number().empty() &&
       !disable_deltas_for_next_request_) {
     // Tell the server that delta-compressed seeds are supported.
     enable_deltas = true;
     // Get the seed only if its serial number doesn't match what we have.
     // If the fetch is being done over HTTP, encrypt the If-None-Match header.
     const std::string& original_sn =
-        field_trial_creator_.seed_store().variations_serial_number();
+        field_trial_creator_.seed_store()->variations_serial_number();
     if (!url.SchemeIs(url::kHttpsScheme) &&
         base::FeatureList::IsEnabled(kHttpRetryFeature)) {
       std::string encrypted_sn;
@@ -666,7 +666,7 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
       // Update the seed date value in local state (used for expiry check on
       // next start up), since 304 is a successful response.
-      field_trial_creator_.seed_store().UpdateSeedDateAndLogDayChange(
+      field_trial_creator_.seed_store()->UpdateSeedDateAndLogDayChange(
           response_date);
     }
     return;
@@ -683,7 +683,7 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
                                 &is_gzip_compressed)) {
     // The header does not specify supported instance manipulations, unable to
     // process data. Details of errors were logged by GetInstanceManipulations.
-    field_trial_creator_.seed_store().ReportUnsupportedSeedFormatError();
+    field_trial_creator_.seed_store()->ReportUnsupportedSeedFormatError();
     return;
   }
 
