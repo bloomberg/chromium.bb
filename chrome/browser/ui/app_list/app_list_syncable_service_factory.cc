@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -67,7 +66,6 @@ AppListSyncableServiceFactory::AppListSyncableServiceFactory()
   dependent_factories.insert(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   dependent_factories.insert(ArcAppListPrefsFactory::GetInstance());
-  DriveAppProvider::AppendDependsOnFactories(&dependent_factories);
   for (FactorySet::iterator it = dependent_factories.begin();
        it != dependent_factories.end();
        ++it) {

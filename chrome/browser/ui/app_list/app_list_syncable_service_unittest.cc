@@ -413,3 +413,21 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate_BadData) {
 
   ASSERT_TRUE(GetSyncItem(kItemId));
 }
+
+TEST_F(AppListSyncableServiceTest, InitialMerge_NoDriveAppData) {
+  // Note that Drive app item id must start with "drive-app-" prefix as defined
+  // in kDriveAppSyncIdPrefix in AppListSyncableService.
+  constexpr char kDriveAppItemId[] = "drive-app-fake-drive-app";
+
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(
+      kDriveAppItemId, "Fake Drive App", kParentId(), "ordinal", "pinordinal"));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
+      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  ASSERT_FALSE(GetSyncItem(kDriveAppItemId));
+}
