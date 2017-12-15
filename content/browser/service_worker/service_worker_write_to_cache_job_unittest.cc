@@ -41,8 +41,7 @@
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
-
-namespace {
+namespace service_worker_write_to_cache_job_unittest {
 
 const char kHeaders[] =
     "HTTP/1.1 200 OK\n"
@@ -270,8 +269,6 @@ class ResponseVerifier : public base::RefCounted<ResponseVerifier> {
   scoped_refptr<net::IOBuffer> io_buffer_;
   size_t bytes_read_;
 };
-
-}  // namespace
 
 class ServiceWorkerWriteToCacheJobTest : public testing::Test {
  public:
@@ -688,4 +685,5 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, FailedWriteHeadersToCache) {
   EXPECT_EQ(net::ERR_FAILED, request_->status().error());
 }
 
+}  // namespace service_worker_write_to_cache_job_unittest
 }  // namespace content

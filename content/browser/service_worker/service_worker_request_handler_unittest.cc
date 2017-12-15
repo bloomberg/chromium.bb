@@ -26,12 +26,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
-namespace {
+namespace service_worker_request_handler_unittest {
 
 int kMockProviderId = 1;
-
-}
 
 class ServiceWorkerRequestHandlerTest : public testing::Test {
  public:
@@ -168,4 +165,5 @@ TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_IMAGE) {
   EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->document_url());
 }
 
+}  // namespace service_worker_request_handler_unittest
 }  // namespace content

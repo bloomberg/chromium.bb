@@ -31,8 +31,7 @@
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
 
 namespace content {
-
-namespace {
+namespace service_worker_provider_context_unittest {
 
 class MockServiceWorkerRegistrationObjectHost
     : public blink::mojom::ServiceWorkerRegistrationObjectHost {
@@ -155,8 +154,6 @@ class ServiceWorkerTestSender : public ThreadSafeSender {
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTestSender);
 };
-
-}  // namespace
 
 class ServiceWorkerProviderContextTest : public testing::Test {
  public:
@@ -569,4 +566,5 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
   EXPECT_EQ(0, remote_registration_object_host().GetBindingCount());
 }
 
+}  // namespace service_worker_provider_context_unittest
 }  // namespace content
