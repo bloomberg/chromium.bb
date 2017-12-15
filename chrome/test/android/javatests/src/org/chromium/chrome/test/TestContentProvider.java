@@ -65,7 +65,7 @@ public class TestContentProvider extends ContentProvider {
     private String mDataFilePath;
 
     // Content providers can be accessed from multiple threads.
-    private Object mLock = new Object();
+    private final Object mLock = new Object();
 
     public static String createContentUrl(String target) {
         return CONTENT_SCHEME + AUTHORITY + "/" + target;
