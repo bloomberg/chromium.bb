@@ -48,8 +48,7 @@ class CORE_EXPORT CSSPerspective final : public CSSTransformComponent {
   }
 
  private:
-  CSSPerspective(CSSNumericValue* length)
-      : CSSTransformComponent(false /* is2D */), length_(length) {}
+  CSSPerspective(CSSNumericValue* length);
 
   Member<CSSNumericValue> length_;
   DISALLOW_COPY_AND_ASSIGN(CSSPerspective);

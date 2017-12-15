@@ -114,25 +114,6 @@ runInlineStylePropertyMapTests( {
   invalidObjects: [CSS.px(4)]
 });
 
-let crashTestStrings = {
-  'skew(calc(5deg + 0.1rad))': 'skew(calc(10.7296deg))',
-  'skew(calc(5deg + 0.1rad), 5deg)': 'skew(calc(10.7296deg), 5deg)',
-  'skew(5deg, calc(5deg + 0.1rad))': 'skew(5deg, calc(10.7296deg))',
-  'skewX(calc(5deg + 0.1rad))': 'skewX(calc(10.7296deg))',
-  'skewY(calc(5deg + 0.1rad))': 'skewY(calc(10.7296deg))',
-  'perspective(calc(10px + 5em))': 'perspective(calc(10px + 5em))',
-};
-
-for (let inputString in crashTestStrings) {
-  test(() => {
-    testElement.style.transform = inputString;
-    let result = testElement.attributeStyleMap.get('transform');
-    assert_equals(result.constructor, CSSStyleValue,
-        'result is a base CSSStyleValue');
-    assert_equals(result.toString(), crashTestStrings[inputString]);
-  }, "Getting transform when it is set to " + inputString + " does not crash");
-}
-
 // TODO(meade): Remove/update this test once translate is supported.
 test(function() {
   testElement.style.transform = 'translateY(50px)';
