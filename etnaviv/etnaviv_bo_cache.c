@@ -124,20 +124,32 @@ static int is_idle(struct etna_bo *bo)
 
 static struct etna_bo *find_in_bucket(struct etna_bo_bucket *bucket, uint32_t flags)
 {
-	struct etna_bo *bo = NULL;
+	struct etna_bo *bo = NULL, *tmp;
 
 	pthread_mutex_lock(&table_lock);
-	while (!LIST_IS_EMPTY(&bucket->list)) {
-		bo = LIST_ENTRY(struct etna_bo, bucket->list.next, list);
 
-		if (bo->flags == flags && is_idle(bo)) {
-			list_del(&bo->list);
-			break;
+	if (LIST_IS_EMPTY(&bucket->list))
+		goto out_unlock;
+
+	LIST_FOR_EACH_ENTRY_SAFE(bo, tmp, &bucket->list, list) {
+		/* skip BOs with different flags */
+		if (bo->flags != flags)
+			continue;
+
+		/* check if the first BO with matching flags is idle */
+		if (is_idle(bo)) {
+			list_delinit(&bo->list);
+			goto out_unlock;
 		}
 
-		bo = NULL;
+		/* If the oldest BO is still busy, don't try younger ones */
 		break;
 	}
+
+	/* There was no matching buffer found */
+	bo = NULL;
+
+out_unlock:
 	pthread_mutex_unlock(&table_lock);
 
 	return bo;
