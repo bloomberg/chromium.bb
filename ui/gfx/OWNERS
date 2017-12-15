@@ -1,9 +1,6 @@
 # Font rendering and what not.
 asvitkine@chromium.org
 
-# Primitive graphics types (size, rect, vector ...)
-danakj@chromium.org
-
 # RenderText and related classes.
 msw@chromium.org
 
@@ -14,8 +11,13 @@ per-file screen*=oshima@chromium.org
 # Font-rendering configuration.
 per-file font_render_params*=derat@chromium.org
 
+# Canvas painting.
+per-file canvas*=danakj@chromium.org
+
 # Transform, interpolated transform and transform util.
+per-file transform*=danakj@chromium.org
 per-file transform*=vollick@chromium.org
+per-file interpolated_transform*=danakj@chromium.org
 per-file interpolated_transform*=vollick@chromium.org
 
 # GPU memory buffer and GpuFence interfaces.
