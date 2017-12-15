@@ -45,8 +45,9 @@ TEST(CredentialsContainerTest, TestGetWithDocumentDestroyed) {
   CredentialsContainer* credential_container = CredentialsContainer::Create();
   std::unique_ptr<WebCredentialManagerClient::RequestCallbacks> get_callback;
 
-  V8TestingScope scope;
   {
+    V8TestingScope scope;
+
     // Set up.
     scope.GetDocument().SetSecurityOrigin(
         SecurityOrigin::CreateFromString("https://example.test"));
