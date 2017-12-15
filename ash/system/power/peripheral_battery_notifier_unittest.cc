@@ -11,8 +11,8 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/events/devices/touchscreen_device.h"
-#include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 
@@ -184,11 +184,6 @@ TEST_F(PeripheralBatteryNotifierTest, DISABLED_DeviceRemove) {
 }
 
 TEST_F(PeripheralBatteryNotifierTest, StylusNotification) {
-  // DeviceDataManager is nullptr when the config is not classic.
-  // TODO(sammiequon): Make this work for mash.
-  if (Shell::GetAshConfig() != Config::CLASSIC)
-    return;
-
   const std::string kTestStylusBatteryPath =
       "/sys/class/power_supply/hid-AAAA:BBBB:CCCC.DDDD-battery";
   const std::string kTestStylusName = "test_stylus";
@@ -199,8 +194,7 @@ TEST_F(PeripheralBatteryNotifierTest, StylusNotification) {
                                1 /* touch_points */, true /* has_stylus */);
   stylus.sys_path = base::FilePath(kTestStylusBatteryPath);
 
-  ui::test::DeviceDataManagerTestAPI test_api;
-  test_api.SetTouchscreenDevices({stylus});
+  ui::InputDeviceClientTestApi().SetTouchscreenDevices({stylus});
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();

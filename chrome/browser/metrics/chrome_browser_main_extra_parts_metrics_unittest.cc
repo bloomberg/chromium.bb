@@ -14,8 +14,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/test_screen.h"
-#include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/gfx/geometry/size.h"
+
+#if defined(USE_OZONE) || defined(USE_X11)
+#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#endif
 
 namespace {
 
@@ -30,8 +33,9 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
   ~ChromeBrowserMainExtraPartsMetricsTest() override;
 
  protected:
-  // Test API wrapping |device_data_manager_|.
-  ui::test::DeviceDataManagerTestAPI device_data_manager_test_api_;
+#if defined(USE_OZONE) || defined(USE_X11)
+  ui::InputDeviceClientTestApi input_device_client_test_api_;
+#endif
 
  private:
   // Provides a message loop and allows the use of the task scheduler
@@ -84,7 +88,7 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
        VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart) {
   base::HistogramTester histogram_tester;
 
-  device_data_manager_test_api_.OnDeviceListsComplete();
+  input_device_client_test_api_.OnDeviceListsComplete();
 
   ChromeBrowserMainExtraPartsMetrics test_target;
 
@@ -101,7 +105,7 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
   ChromeBrowserMainExtraPartsMetrics test_target;
 
   test_target.PostBrowserStart();
-  device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
+  input_device_client_test_api_.NotifyObserversDeviceListsComplete();
   histogram_tester.ExpectTotalCount(
       kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }
@@ -114,8 +118,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
   ChromeBrowserMainExtraPartsMetrics test_target;
 
   test_target.PostBrowserStart();
-  device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
-  device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
+  input_device_client_test_api_.NotifyObserversDeviceListsComplete();
+  input_device_client_test_api_.NotifyObserversDeviceListsComplete();
   histogram_tester.ExpectTotalCount(
       kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }

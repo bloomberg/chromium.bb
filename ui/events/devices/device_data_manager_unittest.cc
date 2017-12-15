@@ -12,11 +12,9 @@
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/devices/touch_device_transform.h"
 #include "ui/events/devices/touchscreen_device.h"
-#include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
-namespace {
 
 class DeviceDataManagerTest : public testing::Test {
  public:
@@ -27,11 +25,14 @@ class DeviceDataManagerTest : public testing::Test {
   void SetUp() override { DeviceDataManager::CreateInstance(); }
   void TearDown() override { DeviceDataManager::DeleteInstance(); }
 
+ protected:
+  void CallOnDeviceListsComplete() {
+    DeviceDataManager::GetInstance()->OnDeviceListsComplete();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManagerTest);
 };
-
-}  // namespace
 
 TEST_F(DeviceDataManagerTest, DisplayIdUpdated) {
   DeviceDataManager* device_data_manager = DeviceDataManager::GetInstance();
@@ -85,7 +86,7 @@ TEST_F(DeviceDataManagerTest, AreTouchscreenTargetDisplaysValid) {
   ScopedObserver<DeviceDataManager, InputDeviceEventObserver> scoped_observer(
       &observer);
   scoped_observer.Add(device_data_manager);
-  test::DeviceDataManagerTestAPI().OnDeviceListsComplete();
+  CallOnDeviceListsComplete();
   EXPECT_FALSE(device_data_manager->AreTouchscreenTargetDisplaysValid());
   EXPECT_EQ(0, observer.on_touch_device_associations_changed_call_count());
 

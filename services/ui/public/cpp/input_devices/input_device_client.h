@@ -74,6 +74,12 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   void OnStylusStateChanged(StylusState state) override;
 
  private:
+  friend class InputDeviceClientTestApi;
+
+  void NotifyObserversDeviceListsComplete();
+  void NotifyObserversKeyboardDeviceConfigurationChanged();
+  void NotifyObserversTouchscreenDeviceConfigurationChanged();
+
   mojo::Binding<mojom::InputDeviceObserverMojo> binding_;
 
   bool is_input_device_manager_;
