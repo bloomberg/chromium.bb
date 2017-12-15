@@ -37,7 +37,7 @@ DragData BuildDragData(const WebDragData& web_drag_data) {
   for (size_t i = 0; i < item_list.size(); ++i) {
     const WebDragData::Item& item = item_list[i];
     if (item.storage_type == WebDragData::Item::kStorageTypeString) {
-      if (item.string_type == blink::kMimeTypeText) {
+      if (item.string_type == blink::kMimeTypeTextPlain) {
         result.text = item.string_data;
       } else if (item.string_type == blink::kMimeTypeTextHTML) {
         result.html = item.string_data;
