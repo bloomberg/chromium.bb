@@ -268,6 +268,7 @@ var NetworkUI = (function() {
    * @return {!HTMLTableRowElement} The created tr element for the expanded row.
    */
   var createExpandedRow = function(state, baseRow) {
+    assert(state);
     var guid = state.GUID || '';
     var expandedRow = createTableRowElement();
     expandedRow.className = 'state-table-row';

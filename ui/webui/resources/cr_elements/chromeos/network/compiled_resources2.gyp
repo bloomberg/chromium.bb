@@ -44,6 +44,7 @@
     {
       'target_name': 'cr_network_select',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(EXTERNS_GYP):networking_private',
         'cr_network_list_types',
         'cr_onc_types',
