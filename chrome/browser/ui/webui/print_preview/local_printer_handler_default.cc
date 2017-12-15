@@ -61,7 +61,9 @@ std::string GetDefaultPrinterAsync() {
 
 }  // namespace
 
-LocalPrinterHandlerDefault::LocalPrinterHandlerDefault() {}
+LocalPrinterHandlerDefault::LocalPrinterHandlerDefault(
+    content::WebContents* preview_web_contents)
+    : preview_web_contents_(preview_web_contents) {}
 
 LocalPrinterHandlerDefault::~LocalPrinterHandlerDefault() {}
 
@@ -106,5 +108,6 @@ void LocalPrinterHandlerDefault::StartPrint(
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedBytes>& print_data,
     PrintCallback callback) {
-  NOTREACHED();
+  printing::StartLocalPrint(ticket_json, print_data, preview_web_contents_,
+                            std::move(callback));
 }

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
@@ -23,7 +24,7 @@
 struct PrintHostMsg_DidPrintDocument_Params;
 
 namespace base {
-class SharedMemory;
+class RefCountedBytes;
 }
 
 namespace content {
@@ -36,6 +37,8 @@ class JobEventDetails;
 class PrintJob;
 class PrintJobWorkerOwner;
 class PrintQueriesQueue;
+class PrintedDocument;
+class PrinterQuery;
 
 // Base class for managing the print commands for a WebContents.
 class PrintViewManagerBase : public content::NotificationObserver,
@@ -49,6 +52,18 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // this function. Returns false if printing is impossible at the moment.
   virtual bool PrintNow(content::RenderFrameHost* rfh);
 #endif  // ENABLE_BASIC_PRINTING
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  // Prints the document in |print_data| with settings specified in
+  // |job_settings|. Runs |callback| with an error string on failure and with an
+  // empty string if the print job is started successfully. |rfh| is the render
+  // frame host for the preview initiator contents respectively.
+  void PrintForPrintPreview(
+      std::unique_ptr<base::DictionaryValue> job_settings,
+      const scoped_refptr<base::RefCountedBytes>& print_data,
+      content::RenderFrameHost* rfh,
+      PrinterHandler::PrintCallback callback);
+#endif
 
   // Whether printing is enabled or not.
   void UpdatePrintingEnabled();
@@ -93,15 +108,30 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void OnShowInvalidPrinterSettingsError();
   void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params);
 
-  // Handle extra tasks once the document is printed.
-  void UpdateForPrintedDocument(
-      const PrintHostMsg_DidPrintDocument_Params& params,
-      std::unique_ptr<base::SharedMemory> shared_buf);
-
   // IPC message handlers for service.
   void OnComposePdfDone(const PrintHostMsg_DidPrintDocument_Params& params,
                         mojom::PdfCompositor::Status status,
                         mojo::ScopedSharedBufferHandle handle);
+
+// Helpers for PrintForPrintPreview();
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void CreateQueryWithSettings(
+      std::unique_ptr<base::DictionaryValue> job_settings,
+      content::RenderFrameHost* rfh,
+      base::OnceCallback<void(scoped_refptr<printing::PrinterQuery>)> callback);
+
+  void OnPrintSettingsDone(
+      const scoped_refptr<base::RefCountedBytes>& print_data,
+      int page_count,
+      PrinterHandler::PrintCallback callback,
+      scoped_refptr<printing::PrinterQuery> printer_query);
+
+  void StartLocalPrintJob(
+      const scoped_refptr<base::RefCountedBytes>& print_data,
+      int page_count,
+      scoped_refptr<printing::PrinterQuery> printer_query,
+      PrinterHandler::PrintCallback callback);
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);
@@ -110,6 +140,19 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // No-op if no print job is pending. Returns true if at least one page has
   // been requested to the renderer.
   bool RenderAllMissingPagesNow();
+
+  // Checks that synchronization is correct and a print query exists for
+  // |cookie|. If so, returns the document associated with the cookie.
+  PrintedDocument* GetDocument(int cookie);
+
+  // Starts printing a document with data given in |print_data|. |print_data|
+  // must successfully initialize a metafile. |document| is the printed
+  // document associated with the print job. Returns true if successful.
+  bool PrintDocument(PrintedDocument* document,
+                     const scoped_refptr<base::RefCountedBytes>& print_data,
+                     const gfx::Size& page_size,
+                     const gfx::Rect& content_area,
+                     const gfx::Point& offsets);
 
   // Quits the current message loop if these conditions hold true: a document is
   // loaded and is complete and waiting_for_pages_to_be_rendered_ is true. This

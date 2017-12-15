@@ -71,8 +71,11 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
 
 }  // namespace
 
-LocalPrinterHandlerChromeos::LocalPrinterHandlerChromeos(Profile* profile)
-    : printers_manager_(CupsPrintersManager::Create(profile)),
+LocalPrinterHandlerChromeos::LocalPrinterHandlerChromeos(
+    Profile* profile,
+    content::WebContents* preview_web_contents)
+    : preview_web_contents_(preview_web_contents),
+      printers_manager_(CupsPrintersManager::Create(profile)),
       printer_configurer_(chromeos::PrinterConfigurer::Create(profile)),
       weak_factory_(this) {
   printers_manager_->Start();
@@ -152,17 +155,6 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
                      std::move(cb)));
 }
 
-void LocalPrinterHandlerChromeos::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
-    const base::string16& job_title,
-    const std::string& ticket_json,
-    const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedBytes>& print_data,
-    PrintCallback callback) {
-  NOTREACHED();
-}
-
 void LocalPrinterHandlerChromeos::HandlePrinterSetup(
     std::unique_ptr<chromeos::Printer> printer,
     GetCapabilityCallback cb,
@@ -202,4 +194,16 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
 
   // TODO(skau): Open printer settings if this is resolvable.
   std::move(cb).Run(nullptr);
+}
+
+void LocalPrinterHandlerChromeos::StartPrint(
+    const std::string& destination_id,
+    const std::string& capability,
+    const base::string16& job_title,
+    const std::string& ticket_json,
+    const gfx::Size& page_size,
+    const scoped_refptr<base::RefCountedBytes>& print_data,
+    PrintCallback callback) {
+  printing::StartLocalPrint(ticket_json, print_data, preview_web_contents_,
+                            std::move(callback));
 }

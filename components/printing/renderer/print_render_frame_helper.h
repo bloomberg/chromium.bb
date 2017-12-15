@@ -185,7 +185,6 @@ class PrintRenderFrameHelper
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   void OnPrintPages();
   void OnPrintForSystemDialog();
-  void OnPrintForPrintPreview(const base::DictionaryValue& job_settings);
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnInitiatePrintPreview(bool has_selection);
@@ -383,9 +382,6 @@ class PrintRenderFrameHelper
   // Let the browser process know of a printing failure. Only set to false when
   // the failure came from the browser in the first place.
   bool notify_browser_of_print_failure_;
-
-  // True, when printing from print preview.
-  bool print_for_preview_;
 
   // Used to check the prerendering status.
   const std::unique_ptr<Delegate> delegate_;

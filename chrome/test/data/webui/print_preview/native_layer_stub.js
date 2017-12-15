@@ -9,6 +9,7 @@ cr.define('print_preview', function() {
   class NativeLayerStub extends TestBrowserProxy {
     constructor() {
       super([
+        'dialogClose',
         'getInitialSettings',
         'getPrinters',
         'getPreview',
@@ -56,6 +57,11 @@ cr.define('print_preview', function() {
        * @private {string} The ID of a printer with a bad driver.
        */
       this.badPrinterId_ = '';
+    }
+
+    /** @override */
+    dialogClose(isCancel) {
+      this.methodCalled('dialogClose', isCancel);
     }
 
     /** @override */

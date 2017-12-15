@@ -322,12 +322,6 @@ class PrintPreviewHandler
 
   base::queue<std::string> preview_callbacks_;
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-  // Print settings to use in the local print request to send when
-  // HandleHidePreview() is called.
-  std::unique_ptr<base::DictionaryValue> settings_;
-#endif
-
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);

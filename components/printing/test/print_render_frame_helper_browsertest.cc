@@ -214,20 +214,6 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-#if defined(OS_WIN)
-  // Verifies that the correct page size was returned.
-  void VerifyPrintedPageSize(const gfx::Size& expected_page_size) {
-    const IPC::Message* print_msg =
-        render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_DidPrintDocument::ID);
-    PrintHostMsg_DidPrintDocument::Param post_did_print_page_param;
-    PrintHostMsg_DidPrintDocument::Read(print_msg, &post_did_print_page_param);
-    gfx::Size page_size_received =
-        std::get<0>(post_did_print_page_param).page_size;
-    EXPECT_EQ(expected_page_size, page_size_received);
-  }
-#endif
-
   // Verifies whether the pages printed or not.
   void VerifyPagesPrinted(bool expect_printed) {
     const IPC::Message* print_msg =
@@ -278,13 +264,6 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     render_thread_->sink().RemoveFilter(&filter);
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-  void OnPrintForPrintPreview(const base::DictionaryValue& dict) {
-    GetPrintRenderFrameHelper()->OnPrintForPrintPreview(dict);
-    base::RunLoop().RunUntilIdle();
-  }
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
   PrintRenderFrameHelper* GetPrintRenderFrameHelper() {
     return PrintRenderFrameHelper::Get(
@@ -1217,70 +1196,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCancel) {
   VerifyPagesPrinted(false);
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-// Tests that printing from print preview works and sending and receiving
-// messages through that channel all works.
-TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, OnPrintForPrintPreview) {
-  LoadHTML(kPrintPreviewHTML);
-
-  // Fill in some dummy values.
-  base::DictionaryValue dict;
-  CreatePrintSettingsDictionary(&dict);
-  OnPrintForPrintPreview(dict);
-
-  VerifyPrintFailed(false);
-  VerifyPagesPrinted(true);
-}
-
-// Tests that when printing non-default scaling values, the page size returned
-// by PrintRenderFrameHelper is still the real physical page size. See
-// crbug.com/686384
-TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
-       OnPrintForPrintPreviewWithScaling) {
-  LoadHTML(kPrintPreviewHTML);
-
-  // Fill in some dummy values.
-  base::DictionaryValue dict;
-  CreatePrintSettingsDictionary(&dict);
-
-  // Media size
-  gfx::Size page_size_in = gfx::Size(240, 480);
-  float device_microns_per_unit =
-      (printing::kHundrethsMMPerInch * 10.0f) / printing::kDefaultPdfDpi;
-  int height_microns =
-      static_cast<int>(page_size_in.height() * device_microns_per_unit);
-  int width_microns =
-      static_cast<int>(page_size_in.width() * device_microns_per_unit);
-  auto media_size = base::MakeUnique<base::DictionaryValue>();
-  media_size->SetInteger(kSettingMediaSizeHeightMicrons, height_microns);
-  media_size->SetInteger(kSettingMediaSizeWidthMicrons, width_microns);
-
-  // Non default scaling value
-  dict.SetInteger(kSettingScaleFactor, 80);
-  dict.Set(kSettingMediaSize, std::move(media_size));
-
-  OnPrintForPrintPreview(dict);
-
-  VerifyPrintFailed(false);
-  VerifyPagesPrinted(true);
-#if defined(OS_WIN)
-  VerifyPrintedPageSize(page_size_in);
-#endif
-}
-
-// Tests that printing from print preview fails and receiving error messages
-// through that channel all works.
-TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, OnPrintForPrintPreviewFail) {
-  LoadHTML(kPrintPreviewHTML);
-
-  // An empty dictionary should fail.
-  base::DictionaryValue empty_dict;
-  OnPrintForPrintPreview(empty_dict);
-
-  VerifyPagesPrinted(false);
-}
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
-
 // Tests that when default printer has invalid printer settings, print preview
 // receives error message.
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
@@ -1344,23 +1259,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPrintPreviewGenerated(false);
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
-       OnPrintForPrintPreviewUsingInvalidPrinterSettings) {
-  LoadHTML(kPrintPreviewHTML);
-
-  // Set mock printer to provide invalid settings.
-  print_render_thread_->printer()->UseInvalidSettings();
-
-  // Fill in some dummy values.
-  base::DictionaryValue dict;
-  CreatePrintSettingsDictionary(&dict);
-  OnPrintForPrintPreview(dict);
-
-  VerifyPrintFailed(true);
-  VerifyPagesPrinted(false);
-}
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #endif  // !defined(OS_CHROMEOS)

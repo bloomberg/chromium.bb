@@ -330,14 +330,6 @@ IPC_MESSAGE_ROUTED1(PrintMsg_InitiatePrintPreview, bool /* has_selection */)
 // node, depending on which mode the RenderFrame is in.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Tells the renderer to print the print preview tab's PDF plugin without
-// showing the print dialog. (This is the final step in the print preview
-// workflow.)
-IPC_MESSAGE_ROUTED1(PrintMsg_PrintForPrintPreview,
-                    base::DictionaryValue /* settings */)
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 // Tells the RenderFrame to switch the CSS to print media type, renders every
 // requested pages and switch back the CSS to display media type.

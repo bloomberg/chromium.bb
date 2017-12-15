@@ -561,39 +561,19 @@ cr.define('print_preview', function() {
       }
       const destination = assert(this.destinationStore_.selectedDestination);
       const whenPrintDone = this.sendPrintRequest_(destination);
-      if (this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW ||
-          (destination.isLocal && !destination.isPrivet &&
-           !destination.isExtension &&
-           destination.id !=
-               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF)) {
-        // Local printers resolve when print is ready to start. Hide the
-        // dialog. Mac "Open in Preview" is treated as a local printer.
-        const boundHideDialog = () => {
-          this.nativeLayer_.hidePreview();
-        };
-        whenPrintDone.then(boundHideDialog, boundHideDialog);
-      } else if (!destination.isLocal) {
+      if (destination.isLocal) {
+        const onError = destination.id ==
+                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
+            this.onFileSelectionCancel_.bind(this) :
+            this.onPrintFailed_.bind(this);
+        whenPrintDone.then(this.close_.bind(this), onError);
+      } else {
         // Cloud print resolves when print data is returned to submit to cloud
         // print, or if print ticket cannot be read, no PDF data is found, or
         // PDF is oversized.
         whenPrintDone.then(
             this.onPrintToCloud_.bind(this), this.onPrintFailed_.bind(this));
-      } else if (destination.isPrivet || destination.isExtension) {
-        // Privet and extension resolve when printing is complete or if there
-        // is an error printing.
-        whenPrintDone.then(
-            this.close_.bind(this, false),
-            this.onPrintFailed_.bind(this));
-      } else {
-        assert(
-            destination.id ==
-            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF);
-        // Save as PDF resolves when file selection is completed or cancelled.
-        whenPrintDone.then(
-            this.close_.bind(this, false),
-            this.onFileSelectionCancel_.bind(this));
       }
-
       this.showSystemDialogBeforeNextPrint_ = false;
       return print_preview.PrintAttemptResult_.PRINTED;
     },

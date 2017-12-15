@@ -946,7 +946,6 @@ PrintRenderFrameHelper::PrintRenderFrameHelper(
       ignore_css_margins_(false),
       is_printing_enabled_(true),
       notify_browser_of_print_failure_(true),
-      print_for_preview_(false),
       delegate_(std::move(delegate)),
       print_node_in_progress_(false),
       is_loading_(false),
@@ -1045,9 +1044,6 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintForSystemDialog, OnPrintForSystemDialog)
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
-#if BUILDFLAG(ENABLE_BASIC_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    IPC_MESSAGE_HANDLER(PrintMsg_PrintForPrintPreview, OnPrintForPrintPreview)
-#endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview, OnInitiatePrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
@@ -1110,68 +1106,6 @@ void PrintRenderFrameHelper::OnPrintForSystemDialog() {
   // just return.
 }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
-
-#if BUILDFLAG(ENABLE_BASIC_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-void PrintRenderFrameHelper::OnPrintForPrintPreview(
-    const base::DictionaryValue& job_settings) {
-  CHECK_LE(ipc_nesting_level_, 1);
-  // If still not finished with earlier print request simply ignore.
-  if (prep_frame_view_)
-    return;
-
-  blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
-  // <object>/<iframe> with id="pdf-viewer" is created in
-  // chrome/browser/resources/print_preview/print_preview.js
-  blink::WebElement pdf_element = document.GetElementById("pdf-viewer");
-  if (pdf_element.IsNull()) {
-    NOTREACHED();
-    return;
-  }
-
-  // The out-of-process plugin element is nested within a frame. In tests, there
-  // may not be an iframe containing the out-of-process plugin, so continue with
-  // the element with ID "pdf-viewer" if it isn't an iframe.
-  blink::WebLocalFrame* plugin_frame = pdf_element.GetDocument().GetFrame();
-  blink::WebElement plugin_element = pdf_element;
-  if (pdf_element.HasHTMLTagName("iframe")) {
-    plugin_frame = blink::WebLocalFrame::FromFrameOwnerElement(pdf_element);
-    plugin_element = delegate_->GetPdfElement(plugin_frame);
-    if (plugin_element.IsNull()) {
-      NOTREACHED();
-      return;
-    }
-  }
-
-  // Set |print_for_preview_| flag and autoreset it to back to original
-  // on return.
-  base::AutoReset<bool> set_printing_flag(&print_for_preview_, true);
-
-  if (!UpdatePrintSettings(plugin_frame, plugin_element, job_settings)) {
-    LOG(ERROR) << "UpdatePrintSettings failed";
-    DidFinishPrinting(FAIL_PRINT);
-    return;
-  }
-
-  // Print page onto entire page not just printable area. Preview PDF already
-  // has content in correct position taking into account page size and printable
-  // area.
-  // TODO(vitalybuka) : Make this consistent on all platform. This change
-  // affects Windows only. Linux and OSX RenderPagesForPrint do not use
-  // printable_area. Also we can't change printable_area deeper inside
-  // RenderPagesForPrint for Windows, because it's used also by native
-  // printing and it expects real printable_area value.
-  // See http://crbug.com/123408
-  PrintMsg_Print_Params& print_params = print_pages_params_->params;
-  printer_printable_area_ = print_params.printable_area;
-  print_params.printable_area = gfx::Rect(print_params.page_size);
-
-  // Render Pages for printing.
-  if (!RenderPagesForPrint(plugin_frame, plugin_element)) {
-    LOG(ERROR) << "RenderPagesForPrint failed";
-    DidFinishPrinting(FAIL_PRINT);
-  }
-}
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 void PrintRenderFrameHelper::GetPageSizeAndContentAreaFromPageLayout(
     const PageSizeMargins& page_layout_in_points,
@@ -1828,21 +1762,13 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
   const base::DictionaryValue* job_settings = &passed_job_settings;
   base::DictionaryValue modified_job_settings;
   if (job_settings->empty()) {
-    if (!print_for_preview_)
-      print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
+    print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
     return false;
   }
 
-  bool source_is_html = true;
-  if (print_for_preview_) {
-    if (!job_settings->GetBoolean(kSettingPreviewModifiable, &source_is_html)) {
-      NOTREACHED();
-    }
-  } else {
-    source_is_html = !PrintingNodeOrPdfFrame(frame, node);
-  }
+  bool source_is_html = !PrintingNodeOrPdfFrame(frame, node);
 
-  if (print_for_preview_ || !source_is_html) {
+  if (!source_is_html) {
     modified_job_settings.MergeDictionary(job_settings);
     modified_job_settings.SetBoolean(kSettingHeaderFooterEnabled, false);
     modified_job_settings.SetInteger(kSettingMarginsType, NO_MARGINS);
@@ -1868,32 +1794,27 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
     return false;
   }
 
-  if (!print_for_preview_) {
-    // Validate expected print preview settings.
-    if (!job_settings->GetInteger(kPreviewRequestID,
-                                  &settings.params.preview_request_id) ||
-        !job_settings->GetBoolean(kIsFirstRequest,
-                                  &settings.params.is_first_request)) {
-      NOTREACHED();
-      print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
-      return false;
-    }
-
-    settings.params.print_to_pdf = IsPrintToPdfRequested(*job_settings);
-    UpdateFrameMarginsCssInfo(*job_settings);
-    settings.params.print_scaling_option = GetPrintScalingOption(
-        frame, node, source_is_html, *job_settings, settings.params);
+  // Validate expected print preview settings.
+  if (!job_settings->GetInteger(kPreviewRequestID,
+                                &settings.params.preview_request_id) ||
+      !job_settings->GetBoolean(kIsFirstRequest,
+                                &settings.params.is_first_request)) {
+    NOTREACHED();
+    print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
+    return false;
   }
+
+  settings.params.print_to_pdf = IsPrintToPdfRequested(*job_settings);
+  UpdateFrameMarginsCssInfo(*job_settings);
+  settings.params.print_scaling_option = GetPrintScalingOption(
+      frame, node, source_is_html, *job_settings, settings.params);
 
   SetPrintPagesParams(settings);
 
   if (PrintMsg_Print_Params_IsValid(settings.params))
     return true;
 
-  if (print_for_preview_)
-    Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
-  else
-    print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
+  print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
   return false;
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
