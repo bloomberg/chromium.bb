@@ -23,8 +23,8 @@ SearchResultActionsView::SearchResultActionsView(
     SearchResultActionsViewDelegate* delegate)
     : delegate_(delegate),
       selected_action_(-1) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        gfx::Insets(10, 0), 0));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(10, 0), 0));
 }
 
 SearchResultActionsView::~SearchResultActionsView() {}

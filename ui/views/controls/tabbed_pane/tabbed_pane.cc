@@ -136,7 +136,7 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
 
   SetBorder(CreateEmptyBorder(
       gfx::Insets(kTabVerticalPadding, kTabHorizontalPadding)));
-  SetLayoutManager(new FillLayout);
+  SetLayoutManager(std::make_unique<FillLayout>());
 
   SetState(TAB_INACTIVE);
   AddChildView(title_);
@@ -323,12 +323,12 @@ const char TabStrip::kViewClassName[] = "TabStrip";
 
 TabStrip::TabStrip() {
   const int kTabStripLeadingEdgePadding = 9;
-  BoxLayout* layout = new BoxLayout(
+  auto layout = std::make_unique<BoxLayout>(
       BoxLayout::kHorizontal, gfx::Insets(0, kTabStripLeadingEdgePadding));
   layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
   layout->SetDefaultFlex(0);
-  SetLayoutManager(layout);
+  SetLayoutManager(std::move(layout));
 }
 
 TabStrip::~TabStrip() {}
@@ -395,11 +395,11 @@ Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
 }
 
 MdTabStrip::MdTabStrip() {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
+  auto layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
   layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   layout->SetDefaultFlex(1);
-  SetLayoutManager(layout);
+  SetLayoutManager(std::move(layout));
 
   // These durations are taken from the Paper Tabs source:
   // https://github.com/PolymerElements/paper-tabs/blob/master/paper-tabs.html

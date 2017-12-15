@@ -193,7 +193,7 @@ void SessionCrashedBubbleView::OnWidgetDestroying(views::Widget* widget) {
 }
 
 void SessionCrashedBubbleView::Init() {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Description text label.
   views::Label* text_label = new views::Label(

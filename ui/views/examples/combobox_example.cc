@@ -56,7 +56,7 @@ void ComboboxExample::CreateExampleView(View* container) {
   // default.
 
   container->SetLayoutManager(
-      new BoxLayout(BoxLayout::kVertical, gfx::Insets(10, 0), 5));
+      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10, 0), 5));
   container->AddChildView(combobox_);
   container->AddChildView(disabled_combobox_);
   container->AddChildView(action_combobox_);

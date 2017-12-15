@@ -48,25 +48,25 @@ class VectorIconGallery : public View,
     AddChildView(color_input_);
 
     image_view_container_->AddChildView(image_view_);
-    BoxLayout* image_layout = new BoxLayout(BoxLayout::kHorizontal);
+    auto image_layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
     image_layout->set_cross_axis_alignment(
         BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     image_layout->set_main_axis_alignment(
         BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-    image_view_container_->SetLayoutManager(image_layout);
+    image_view_container_->SetLayoutManager(std::move(image_layout));
     image_view_->SetBorder(CreateSolidSidedBorder(1, 1, 1, 1, SK_ColorBLACK));
     AddChildView(image_view_container_);
 
-    BoxLayout* box = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
-    SetLayoutManager(box);
+    BoxLayout* box = SetLayoutManager(
+        std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
     box->SetFlexForView(image_view_container_, 1);
 
     file_chooser_->set_placeholder_text(
         base::ASCIIToUTF16("Enter a file to read"));
     View* file_container = new View();
     BoxLayout* file_box =
-        new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
-    file_container->SetLayoutManager(file_box);
+        file_container->SetLayoutManager(std::make_unique<BoxLayout>(
+            BoxLayout::kHorizontal, gfx::Insets(10), 10));
     file_container->AddChildView(file_chooser_);
     file_container->AddChildView(file_go_button_);
     file_box->SetFlexForView(file_chooser_, 1);
@@ -152,7 +152,7 @@ VectorExample::VectorExample() : ExampleBase("Vector Icon") {}
 VectorExample::~VectorExample() {}
 
 void VectorExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(new FillLayout());
+  container->SetLayoutManager(std::make_unique<FillLayout>());
   container->AddChildView(new VectorIconGallery());
 }
 

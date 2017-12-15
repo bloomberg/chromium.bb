@@ -101,9 +101,9 @@ class NotificationItemView : public views::View {
 };
 
 NotificationItemView::NotificationItemView(const NotificationItem& item) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        gfx::Insets(),
-                                        kItemTitleToMessagePadding));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      kItemTitleToMessagePadding));
 
   views::Label* title = new views::Label(item.title);
   title->set_collapse_when_hidden(true);
@@ -182,7 +182,7 @@ NotificationView::NotificationView(const Notification& notification)
   // close button.
   top_view_ = new views::View();
   top_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   top_view_->SetBorder(
       MakeEmptyBorder(kTextTopPadding - 8, 0, kTextBottomPadding - 5, 0));
   AddChildView(top_view_);
@@ -190,7 +190,7 @@ NotificationView::NotificationView(const Notification& notification)
   // below the notification icon.
   bottom_view_ = new views::View();
   bottom_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   AddChildView(bottom_view_);
 
   control_buttons_view_ = new NotificationControlButtonsView(this);
@@ -565,7 +565,7 @@ void NotificationView::CreateOrUpdateImageView(
     DCHECK_EQ(this, bottom_view_->parent());
 
     image_container_ = new views::View();
-    image_container_->SetLayoutManager(new views::FillLayout());
+    image_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
     image_container_->SetBackground(
         views::CreateSolidBackground(kImageBackgroundColor));
 

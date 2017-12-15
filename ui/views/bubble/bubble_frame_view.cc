@@ -462,7 +462,7 @@ void BubbleFrameView::SetFootnoteView(View* view) {
   DCHECK(!footnote_container_);
   footnote_container_ = new FootnoteContainerView();
   footnote_container_->SetLayoutManager(
-      new BoxLayout(BoxLayout::kVertical, footnote_margins_, 0));
+      std::make_unique<BoxLayout>(BoxLayout::kVertical, footnote_margins_, 0));
   footnote_container_->SetBackground(
       CreateSolidBackground(kFootnoteBackgroundColor));
   footnote_container_->SetBorder(

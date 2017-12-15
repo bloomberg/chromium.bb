@@ -44,7 +44,8 @@ NotificationControlButtonsView::NotificationControlButtonsView(
       bgcolor_origin_(kInitialBackgroundColor),
       bgcolor_target_(kInitialBackgroundColor) {
   DCHECK(message_view);
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
 
   // Use layer to change the opacity.
   SetPaintToLayer();

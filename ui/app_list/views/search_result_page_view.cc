@@ -52,7 +52,7 @@ constexpr SkColor kSeparatorColor = SkColorSetARGBMacro(0x1F, 0x00, 0x00, 0x00);
 class SearchCardView : public views::View {
  public:
   explicit SearchCardView(views::View* content_view) {
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     AddChildView(content_view);
   }
 
@@ -145,8 +145,8 @@ SearchResultPageView::SearchResultPageView()
       contents_view_(new views::View) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  contents_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
+  contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(), 0));
 
   // Hides this view behind the search box by using the same color and
   // background border corner radius. All child views' background should be
@@ -167,7 +167,7 @@ SearchResultPageView::SearchResultPageView()
   scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
   AddChildView(scroller);
 
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
 SearchResultPageView::~SearchResultPageView() = default;

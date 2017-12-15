@@ -279,7 +279,7 @@ gfx::Size BoxLayoutExample::GetChildPanelSize() const {
 }
 
 void BoxLayoutExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(new FillLayout());
+  container->SetLayoutManager(std::make_unique<FillLayout>());
   full_panel_ = new FullPanel();
   container->AddChildView(full_panel_);
 
@@ -412,18 +412,18 @@ void BoxLayoutExample::UpdateLayoutManager() {
   base::StringToInt(between_child_spacing_->text(), &child_spacing);
   base::StringToInt(default_flex_->text(), &default_flex);
   base::StringToInt(min_cross_axis_size_->text(), &min_cross_size);
-  layout_ = new BoxLayout(
+  auto layout = std::make_unique<BoxLayout>(
       orientation_->selected_index() == 0 ? BoxLayout::Orientation::kHorizontal
                                           : BoxLayout::Orientation::kVertical,
       gfx::Insets(0, 0), child_spacing, collapse_margins_->checked());
-  layout_->set_cross_axis_alignment(static_cast<BoxLayout::CrossAxisAlignment>(
+  layout->set_cross_axis_alignment(static_cast<BoxLayout::CrossAxisAlignment>(
       cross_axis_alignment_->selected_index()));
-  layout_->set_main_axis_alignment(static_cast<BoxLayout::MainAxisAlignment>(
+  layout->set_main_axis_alignment(static_cast<BoxLayout::MainAxisAlignment>(
       main_axis_alignment_->selected_index()));
-  layout_->SetDefaultFlex(default_flex);
-  layout_->set_minimum_cross_axis_size(min_cross_size);
+  layout->SetDefaultFlex(default_flex);
+  layout->set_minimum_cross_axis_size(min_cross_size);
   UpdateBorderInsets();
-  box_layout_panel_->SetLayoutManager(layout_);
+  layout_ = box_layout_panel_->SetLayoutManager(std::move(layout));
   for (int i = 0; i < box_layout_panel_->child_count(); ++i) {
     ChildPanel* panel =
         static_cast<ChildPanel*>(box_layout_panel_->child_at(i));

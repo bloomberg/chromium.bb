@@ -56,7 +56,7 @@ InfoBubble::InfoBubble(View* anchor, const base::string16& message)
       gfx::Insets(kInfoBubbleVerticalMargin, kInfoBubbleHorizontalMargin));
   set_can_activate(false);
 
-  SetLayoutManager(new FillLayout);
+  SetLayoutManager(std::make_unique<FillLayout>());
   Label* label = new Label(message);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);

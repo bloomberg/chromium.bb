@@ -31,7 +31,7 @@ void SliderExample::CreateExampleView(View* container) {
   slider_->SetValue(0.5);
 
   container->SetLayoutManager(
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(3), 3));
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(3), 3));
   container->AddChildView(slider_);
   container->AddChildView(label_);
 }

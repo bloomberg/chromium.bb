@@ -78,9 +78,8 @@ SubtleNotificationView::InstructionView::InstructionView(
     SkColor background_color)
     : foreground_color_(foreground_color), background_color_(background_color) {
   // The |between_child_spacing| is the horizontal margin of the key name.
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kKeyNameMarginHorizPx);
-  SetLayoutManager(layout);
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(), kKeyNameMarginHorizPx));
 
   SetText(text);
 }
@@ -125,11 +124,11 @@ void SubtleNotificationView::InstructionView::AddTextSegment(
   }
 
   views::View* key = new views::View;
-  views::BoxLayout* key_name_layout = new views::BoxLayout(
+  auto key_name_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(0, kKeyNamePaddingPx), 0);
   key_name_layout->set_minimum_cross_axis_size(
       label->GetPreferredSize().height() + kKeyNamePaddingPx * 2);
-  key->SetLayoutManager(key_name_layout);
+  key->SetLayoutManager(std::move(key_name_layout));
   key->AddChildView(label);
   // The key name has a border around it.
   std::unique_ptr<views::Border> border(views::CreateRoundedRectBorder(
@@ -164,10 +163,9 @@ SubtleNotificationView::SubtleNotificationView(
   AddChildView(instruction_view_);
   AddChildView(link_);
 
-  views::BoxLayout* layout = new views::BoxLayout(
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
-      gfx::Insets(outer_padding_vert, outer_padding_horiz), kMiddlePaddingPx);
-  SetLayoutManager(layout);
+      gfx::Insets(outer_padding_vert, outer_padding_horiz), kMiddlePaddingPx));
 }
 
 SubtleNotificationView::~SubtleNotificationView() {}

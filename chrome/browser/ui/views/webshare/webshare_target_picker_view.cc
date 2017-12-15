@@ -84,11 +84,12 @@ WebShareTargetPickerView::WebShareTargetPickerView(
       table_model_(base::MakeUnique<TargetPickerTableModel>(targets_)),
       close_callback_(std::move(close_callback)) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kVertical,
-      provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
-  SetLayoutManager(layout);
+  views::BoxLayout* layout =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical,
+          provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL),
+          provider->GetDistanceMetric(
+              views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   views::Label* overview_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_WEBSHARE_TARGET_PICKER_LABEL));

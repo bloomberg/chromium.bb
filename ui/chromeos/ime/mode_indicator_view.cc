@@ -91,7 +91,7 @@ int ModeIndicatorView::GetDialogButtons() const {
 }
 
 void ModeIndicatorView::Init() {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(label_view_);
 
   SetAnchorRect(cursor_bounds_);

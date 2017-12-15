@@ -77,7 +77,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     url_entry_->SetText(base::ASCIIToUTF16(url.spec()));
   }
   void SetWebContents(WebContents* web_contents, const gfx::Size& size) {
-    contents_view_->SetLayoutManager(new views::FillLayout());
+    contents_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
     web_view_ = new views::WebView(web_contents->GetBrowserContext());
     web_view_->SetWebContents(web_contents);
     web_view_->SetPreferredSize(size);

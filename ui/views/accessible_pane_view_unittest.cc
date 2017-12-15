@@ -57,7 +57,7 @@ void TestBarView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 void TestBarView::Init() {
-  SetLayoutManager(new FillLayout());
+  SetLayoutManager(std::make_unique<FillLayout>());
   base::string16 label;
   child_button_.reset(new LabelButton(this, label));
   AddChildView(child_button_.get());

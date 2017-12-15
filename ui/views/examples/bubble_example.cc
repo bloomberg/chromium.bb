@@ -59,7 +59,8 @@ class ExampleBubble : public BubbleDialogDelegateView {
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   void Init() override {
-    SetLayoutManager(new BoxLayout(BoxLayout::kVertical, gfx::Insets(50)));
+    SetLayoutManager(
+        std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(50)));
     AddChildView(new Label(GetArrowName(arrow())));
   }
 
@@ -77,7 +78,7 @@ void BubbleExample::CreateExampleView(View* container) {
   PrintStatus("Click with optional modifiers: [Ctrl] for set_arrow(NONE), "
      "[Alt] for set_arrow(FLOAT), or [Shift] to reverse the arrow iteration.");
   container->SetLayoutManager(
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(), 10));
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(), 10));
   no_shadow_ = new LabelButton(this, ASCIIToUTF16("No Shadow"));
   container->AddChildView(no_shadow_);
   no_shadow_opaque_ = new LabelButton(this, ASCIIToUTF16("Opaque Border"));
