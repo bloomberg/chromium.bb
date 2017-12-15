@@ -72,8 +72,6 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
   Member<CSSNumericValue> y_;
   Member<CSSNumericValue> z_;
 
-  static bool IsValidCoordinate(CSSNumericValue* coord);
-
   DISALLOW_COPY_AND_ASSIGN(CSSScale);
 };
 

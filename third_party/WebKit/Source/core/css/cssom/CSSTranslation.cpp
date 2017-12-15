@@ -14,12 +14,12 @@ namespace blink {
 
 namespace {
 
-bool IsValidXYCoordinate(const CSSNumericValue* value) {
+bool IsValidTranslateXY(const CSSNumericValue* value) {
   return value && value->Type().MatchesBaseTypePercentage(
                       CSSNumericValueType::BaseType::kLength);
 }
 
-bool IsValidZCoordinate(const CSSNumericValue* value) {
+bool IsValidTranslateZ(const CSSNumericValue* value) {
   return value &&
          value->Type().MatchesBaseType(CSSNumericValueType::BaseType::kLength);
 }
@@ -87,7 +87,7 @@ CSSTranslation* FromCSSTranslate3D(const CSSFunctionValue& value) {
 CSSTranslation* CSSTranslation::Create(CSSNumericValue* x,
                                        CSSNumericValue* y,
                                        ExceptionState& exception_state) {
-  if (!IsValidXYCoordinate(x) || !IsValidXYCoordinate(y)) {
+  if (!IsValidTranslateXY(x) || !IsValidTranslateXY(y)) {
     exception_state.ThrowTypeError(
         "Must pass length or percentage to X and Y of CSSTranslation");
     return nullptr;
@@ -101,8 +101,8 @@ CSSTranslation* CSSTranslation::Create(CSSNumericValue* x,
                                        CSSNumericValue* y,
                                        CSSNumericValue* z,
                                        ExceptionState& exception_state) {
-  if (!IsValidXYCoordinate(x) || !IsValidXYCoordinate(y) ||
-      !IsValidZCoordinate(z)) {
+  if (!IsValidTranslateXY(x) || !IsValidTranslateXY(y) ||
+      !IsValidTranslateZ(z)) {
     exception_state.ThrowTypeError(
         "Must pass length or percentage to X, Y and Z of CSSTranslation");
     return nullptr;
@@ -139,7 +139,7 @@ CSSTranslation* CSSTranslation::FromCSSValue(const CSSFunctionValue& value) {
 }
 
 void CSSTranslation::setX(CSSNumericValue* x, ExceptionState& exception_state) {
-  if (!IsValidXYCoordinate(x)) {
+  if (!IsValidTranslateXY(x)) {
     exception_state.ThrowTypeError(
         "Must pass length or percentage to X of CSSTranslation");
     return;
@@ -148,7 +148,7 @@ void CSSTranslation::setX(CSSNumericValue* x, ExceptionState& exception_state) {
 }
 
 void CSSTranslation::setY(CSSNumericValue* y, ExceptionState& exception_state) {
-  if (!IsValidXYCoordinate(y)) {
+  if (!IsValidTranslateXY(y)) {
     exception_state.ThrowTypeError(
         "Must pass length or percent to Y of CSSTranslation");
     return;
@@ -157,7 +157,7 @@ void CSSTranslation::setY(CSSNumericValue* y, ExceptionState& exception_state) {
 }
 
 void CSSTranslation::setZ(CSSNumericValue* z, ExceptionState& exception_state) {
-  if (!IsValidZCoordinate(z)) {
+  if (!IsValidTranslateZ(z)) {
     exception_state.ThrowTypeError("Must pass length to Z of CSSTranslation");
     return;
   }
@@ -196,9 +196,9 @@ CSSTranslation::CSSTranslation(CSSNumericValue* x,
                                CSSNumericValue* z,
                                bool is2D)
     : CSSTransformComponent(is2D), x_(x), y_(y), z_(z) {
-  DCHECK(IsValidXYCoordinate(x));
-  DCHECK(IsValidXYCoordinate(y));
-  DCHECK(IsValidZCoordinate(z));
+  DCHECK(IsValidTranslateXY(x));
+  DCHECK(IsValidTranslateXY(y));
+  DCHECK(IsValidTranslateZ(z));
 }
 
 }  // namespace blink
