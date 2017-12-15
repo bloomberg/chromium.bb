@@ -12,7 +12,6 @@
 namespace blink {
 
 class LayoutPoint;
-class Document;
 class NGPaintFragment;
 struct PaintInfo;
 
@@ -25,7 +24,7 @@ class NGTextFragmentPainter {
  public:
   explicit NGTextFragmentPainter(const NGPaintFragment&);
 
-  void Paint(const Document&, const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint&);
 
  private:
   const NGPaintFragment& fragment_;
