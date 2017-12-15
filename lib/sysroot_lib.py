@@ -482,6 +482,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     filenames = ['%s-PREFLIGHT_BINHOST.conf' % p for p in prefixes]
 
     external = internal = None
+    return external, internal
     for filename in filenames:
       # The binhost file must exist and not be empty, both for internal and
       # external binhosts.
