@@ -43,7 +43,7 @@ class Top20StorySet(story.StorySet):
 
     # Why: #6 (Alexa) most visited worldwide,Picked an interesting page
     self.AddStory(Top20Page('http://en.wikipedia.org/wiki/Wikipedia', self,
-                                'Wikipedia (1 tab)'))
+                                'Wikipedia_(1_tab)'))
 
     # Why: #8 (Alexa global),Picked an interesting page
     self.AddStory(Top20Page('https://twitter.com/katyperry', self,
