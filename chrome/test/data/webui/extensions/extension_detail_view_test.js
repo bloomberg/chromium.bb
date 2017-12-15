@@ -106,8 +106,19 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.optionsPage', {openInTab: true, url: optionsUrl});
       expectTrue(testIsVisible('#extensions-options'));
 
-      // TODO(devlin): Add checks for homepage once it's added back to the
-      // mocks.
+      item.set('data.manifestHomePageUrl', 'http://example.com');
+      Polymer.dom.flush();
+      expectTrue(testIsVisible('#developerWebsite'));
+      item.set('data.manifestHomePageUrl', '');
+      Polymer.dom.flush();
+      expectFalse(testIsVisible('#developerWebsite'));
+
+      item.set('data.webStoreUrl', 'http://example.com');
+      Polymer.dom.flush();
+      expectTrue(testIsVisible('#viewInStore'));
+      item.set('data.webStoreUrl', '');
+      Polymer.dom.flush();
+      expectFalse(testIsVisible('#viewInStore'));
 
       expectFalse(testIsVisible('#id-section'));
       expectFalse(testIsVisible('#inspectable-views'));

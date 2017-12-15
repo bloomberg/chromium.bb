@@ -303,6 +303,7 @@ chrome.developerPrivate.Permission;
  *   location: !chrome.developerPrivate.Location,
  *   locationText: (string|undefined),
  *   manifestErrors: !Array<!chrome.developerPrivate.ManifestError>,
+ *   manifestHomePageUrl: string,
  *   mustRemainInstalled: boolean,
  *   name: string,
  *   offlineEnabled: boolean,
@@ -318,7 +319,8 @@ chrome.developerPrivate.Permission;
  *   updateUrl: string,
  *   userMayModify: boolean,
  *   version: string,
- *   views: !Array<!chrome.developerPrivate.ExtensionView>
+ *   views: !Array<!chrome.developerPrivate.ExtensionView>,
+ *   webStoreUrl: string
  * }}
  * @see https://developer.chrome.com/extensions/developerPrivate#type-ExtensionInfo
  */
@@ -734,7 +736,7 @@ chrome.developerPrivate.requestFileSource = function(properties, callback) {};
 chrome.developerPrivate.openDevTools = function(properties, callback) {};
 
 /**
- * Delete reported extension erors.
+ * Delete reported extension errors.
  * @param {!chrome.developerPrivate.DeleteExtensionErrorsProperties} properties
  *     The properties specifying the errors to remove.
  * @param {function():void=} callback

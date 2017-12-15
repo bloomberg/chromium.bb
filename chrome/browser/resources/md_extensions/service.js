@@ -174,6 +174,14 @@ cr.define('extensions', function() {
       });
     }
 
+    /**
+     * @param {string} url
+     * @override
+     */
+    openUrl(url) {
+      window.open(url);
+    }
+
     /** @override */
     reloadItem(id) {
       return new Promise(function(resolve, reject) {

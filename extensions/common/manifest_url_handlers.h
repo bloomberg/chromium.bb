@@ -6,6 +6,7 @@
 #define EXTENSIONS_COMMON_MANIFEST_URL_HANDLERS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "extensions/common/extension.h"
@@ -29,11 +30,22 @@ struct ManifestURL : public Extension::ManifestData {
   // If homepage_url was not specified in the manifest,
   // this returns the Google Gallery URL. For third-party extensions,
   // this returns a blank GURL.
+  // See also: GetManifestHomePageURL(), SpecifiedHomepageURL()
   static const GURL GetHomepageURL(const Extension* extension);
 
   // Returns true if the extension specified a valid home page url in the
   // manifest.
   static bool SpecifiedHomepageURL(const Extension* extension);
+
+  // Returns the homepage specified by the extension in its manifest, if it
+  // specifies a homepage. Otherwise, returns an empty url.
+  // See also: GetHomepageURL()
+  static const GURL GetManifestHomePageURL(const Extension* extension);
+
+  // Returns the Chrome Web Store URL for this extension if it is hosted in the
+  // webstore; otherwise returns an empty url.
+  // See also: GetHomepageURL()
+  static const GURL GetWebStoreURL(const Extension* extension);
 
   // Returns the Update URL for this extension.
   static const GURL& GetUpdateURL(const Extension* extension);
