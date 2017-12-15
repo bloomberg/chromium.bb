@@ -2984,7 +2984,6 @@ crbug.com/696407 [ Linux ] external/wpt/html/browsers/history/the-location-inter
 
 # Sheriff failures 2017-03-10
 crbug.com/741210 [ Mac ] inspector-protocol/emulation/device-emulation-restore.js [ Failure ]
-crbug.com/700374 [ Win ] http/tests/devtools/workers-on-navigation.js [ Failure Pass ]
 
 # Sheriff failures 2017-03-21
 crbug.com/703518 http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]
