@@ -38,8 +38,6 @@ class NET_EXPORT NetworkErrorLoggingDelegate {
     int status_code;
     base::TimeDelta elapsed_time;
     Error type;
-
-    bool is_reporting_upload;
   };
 
   static const char kHeaderName[];

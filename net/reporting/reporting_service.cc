@@ -16,7 +16,6 @@
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_header_parser.h"
-#include "net/reporting/reporting_uploader.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -27,8 +26,6 @@ class ReportingServiceImpl : public ReportingService {
  public:
   ReportingServiceImpl(std::unique_ptr<ReportingContext> context)
       : context_(std::move(context)) {}
-
-  // ReportingService implementation:
 
   ~ReportingServiceImpl() override = default;
 
@@ -53,10 +50,6 @@ class ReportingServiceImpl : public ReportingService {
       base::RepeatingCallback<bool(const GURL&)> origin_filter) override {
     ReportingBrowsingDataRemover::RemoveBrowsingData(
         context_->cache(), data_type_mask, origin_filter);
-  }
-
-  bool RequestIsUpload(const URLRequest& request) override {
-    return context_->uploader()->RequestIsUpload(request);
   }
 
  private:
