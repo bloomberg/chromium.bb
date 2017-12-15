@@ -113,8 +113,8 @@ public class WebApkInfoTest {
         bundle.putInt(WebApkMetaDataKeys.SHELL_APK_VERSION, SHELL_APK_VERSION);
         bundle.putString(WebApkMetaDataKeys.WEB_MANIFEST_URL, MANIFEST_URL);
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
-        bundle.putString(WebApkMetaDataKeys.ICON_URL, ICON_URL);
-        bundle.putString(WebApkMetaDataKeys.ICON_MURMUR2_HASH, ICON_MURMUR2_HASH + "L");
+        bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
+                ICON_URL + " " + ICON_MURMUR2_HASH);
         WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
 
         Intent intent = new Intent();
