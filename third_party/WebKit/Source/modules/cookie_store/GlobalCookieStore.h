@@ -11,6 +11,7 @@ namespace blink {
 
 class CookieStore;
 class LocalDOMWindow;
+class ServiceWorkerGlobalScope;
 
 // Exposes a CookieStore as the "cookieStore" attribute on the global scope.
 //
@@ -20,8 +21,7 @@ class GlobalCookieStore {
 
  public:
   static CookieStore* cookieStore(LocalDOMWindow&);
-
-  // TODO(crbug.com/729800): Expose to ServiceWorkerGlobalScope.
+  static CookieStore* cookieStore(ServiceWorkerGlobalScope&);
 };
 
 }  // namespace blink

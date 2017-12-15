@@ -654,6 +654,7 @@ modules_dependency_idl_files =
           "canvas/htmlcanvas/HTMLCanvasElementModule.idl",
           "canvas/canvas2d/CanvasPath.idl",
           "clipboard/NavigatorClipboard.idl",
+          "cookie_store/ServiceWorkerGlobalScopeCookieStore.idl",
           "cookie_store/WindowCookieStore.idl",
           "credentialmanager/CredentialUserData.idl",
           "credentialmanager/NavigatorCredentials.idl",

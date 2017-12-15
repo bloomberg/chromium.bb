@@ -5,7 +5,7 @@
 // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md
 
 [
-  Exposed=Window,
+  Exposed=(ServiceWorker,Window),
   RuntimeEnabled=AsyncCookies
 ] interface CookieStore {
   // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md#reading

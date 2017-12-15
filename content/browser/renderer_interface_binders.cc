@@ -16,11 +16,13 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/websockets/websocket_manager.h"
+#include "content/network/restricted_cookie_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/device/public/interfaces/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -85,6 +87,24 @@ void ForwardServiceRequest(const char* service_name,
   connector->BindInterface(service_name, std::move(request));
 }
 
+void GetRestrictedCookieManager(
+    network::mojom::RestrictedCookieManagerRequest request,
+    RenderProcessHost* render_process_host,
+    const url::Origin& origin) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    return;
+  }
+
+  StoragePartition* storage_partition =
+      render_process_host->GetStoragePartition();
+  mojom::NetworkContext* network_context =
+      storage_partition->GetNetworkContext();
+  uint32_t render_process_id = render_process_host->GetID();
+  network_context->GetRestrictedCookieManager(
+      std::move(request), render_process_id, MSG_ROUTING_NONE);
+}
+
 // Register renderer-exposed interfaces. Each registered interface binder is
 // exposed to all renderer-hosted execution context types (document/frame,
 // dedicated worker, shared worker and service worker) where the appropriate
@@ -142,6 +162,8 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       }));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&BackgroundFetchServiceImpl::Create));
+  parameterized_binder_registry_.AddInterface(
+      base::BindRepeating(GetRestrictedCookieManager));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {
