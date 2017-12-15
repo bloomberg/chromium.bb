@@ -46,14 +46,19 @@ def main():
   if os.path.isdir(output_dir):
     shutil.rmtree(output_dir)
 
-  bucket = 'gs://fuchsia/sdk/linux-amd64/'
-  with tempfile.NamedTemporaryFile() as f:
+  fd, tmp = tempfile.mkstemp()
+  os.close(fd)
+
+  try:
+    bucket = 'gs://fuchsia/sdk/linux-amd64/'
     cmd = [os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gsutil.py'),
-           'cp', bucket + sdk_hash, f.name]
+           'cp', bucket + sdk_hash, tmp]
     subprocess.check_call(cmd)
-    f.seek(0)
-    EnsureDirExists(output_dir)
-    tarfile.open(mode='r:gz', fileobj=f).extractall(path=output_dir)
+    with open(tmp, 'rb') as f:
+      EnsureDirExists(output_dir)
+      tarfile.open(mode='r:gz', fileobj=f).extractall(path=output_dir)
+  finally:
+    os.remove(tmp)
 
   with open(hash_filename, 'w') as f:
     f.write(sdk_hash)
