@@ -13,6 +13,7 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
@@ -72,25 +73,6 @@ const char kHistogramDataReductionProxyPrefix[] =
     "PageLoad.Clients.DataReductionProxy.";
 const char kHistogramDataReductionProxyLoFiOnPrefix[] =
     "PageLoad.Clients.DataReductionProxy.LoFiOn.";
-const char kHistogramDOMContentLoadedEventFiredSuffix[] =
-    "DocumentTiming.NavigationToDOMContentLoadedEventFired";
-const char kHistogramFirstLayoutSuffix[] =
-    "DocumentTiming.NavigationToFirstLayout";
-const char kHistogramLoadEventFiredSuffix[] =
-    "DocumentTiming.NavigationToLoadEventFired";
-const char kHistogramFirstContentfulPaintSuffix[] =
-    "PaintTiming.NavigationToFirstContentfulPaint";
-const char kHistogramFirstMeaningfulPaintSuffix[] =
-    "Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
-const char kHistogramFirstImagePaintSuffix[] =
-    "PaintTiming.NavigationToFirstImagePaint";
-const char kHistogramFirstPaintSuffix[] = "PaintTiming.NavigationToFirstPaint";
-const char kHistogramFirstTextPaintSuffix[] =
-    "PaintTiming.NavigationToFirstTextPaint";
-const char kHistogramParseStartSuffix[] = "ParseTiming.NavigationToParseStart";
-const char kHistogramParseBlockedOnScriptLoadSuffix[] =
-    "ParseTiming.ParseBlockedOnScriptLoad";
-const char kHistogramParseDurationSuffix[] = "ParseTiming.ParseDuration";
 
 const char kResourcesPercentProxied[] =
     "Experimental.CompletedResources.Network.PercentProxied";
@@ -340,7 +322,7 @@ void DataReductionProxyMetricsObserver::OnDomContentLoadedEventStart(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.document_timing->dom_content_loaded_event_start,
-      internal::kHistogramDOMContentLoadedEventFiredSuffix);
+      ::internal::kHistogramDOMContentLoadedEventFiredSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnLoadEventStart(
@@ -349,7 +331,7 @@ void DataReductionProxyMetricsObserver::OnLoadEventStart(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.document_timing->load_event_start,
-      internal::kHistogramLoadEventFiredSuffix);
+      ::internal::kHistogramLoadEventFiredSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstLayout(
@@ -358,16 +340,16 @@ void DataReductionProxyMetricsObserver::OnFirstLayout(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.document_timing->first_layout,
-      internal::kHistogramFirstLayoutSuffix);
+      ::internal::kHistogramFirstLayoutSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_,
-                                          timing.paint_timing->first_paint,
-                                          internal::kHistogramFirstPaintSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.paint_timing->first_paint,
+      ::internal::kHistogramFirstPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstTextPaintInPage(
@@ -376,7 +358,7 @@ void DataReductionProxyMetricsObserver::OnFirstTextPaintInPage(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing->first_text_paint,
-      internal::kHistogramFirstTextPaintSuffix);
+      ::internal::kHistogramFirstTextPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstImagePaintInPage(
@@ -385,7 +367,7 @@ void DataReductionProxyMetricsObserver::OnFirstImagePaintInPage(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing->first_image_paint,
-      internal::kHistogramFirstImagePaintSuffix);
+      ::internal::kHistogramFirstImagePaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstContentfulPaintInPage(
@@ -394,7 +376,7 @@ void DataReductionProxyMetricsObserver::OnFirstContentfulPaintInPage(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing->first_contentful_paint,
-      internal::kHistogramFirstContentfulPaintSuffix);
+      ::internal::kHistogramFirstContentfulPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::
@@ -404,16 +386,16 @@ void DataReductionProxyMetricsObserver::
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing->first_meaningful_paint,
-      internal::kHistogramFirstMeaningfulPaintSuffix);
+      ::internal::kHistogramFirstMeaningfulPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_,
-                                          timing.parse_timing->parse_start,
-                                          internal::kHistogramParseStartSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.parse_timing->parse_start,
+      ::internal::kHistogramParseStartSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnParseStop(
@@ -427,10 +409,10 @@ void DataReductionProxyMetricsObserver::OnParseStop(
   base::TimeDelta parse_duration = timing.parse_timing->parse_stop.value() -
                                    timing.parse_timing->parse_start.value();
   RECORD_HISTOGRAMS_FOR_SUFFIX(data_, parse_duration,
-                               internal::kHistogramParseDurationSuffix);
+                               ::internal::kHistogramParseDurationSuffix);
   RECORD_HISTOGRAMS_FOR_SUFFIX(
       data_, timing.parse_timing->parse_blocked_on_script_load_duration.value(),
-      internal::kHistogramParseBlockedOnScriptLoadSuffix);
+      ::internal::kHistogramParseBlockedOnScriptLoadSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnLoadedResource(

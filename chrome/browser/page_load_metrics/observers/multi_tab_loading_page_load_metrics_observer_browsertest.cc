@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
 
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -31,6 +32,11 @@ class MultiTabLoadingPageLoadMetricsBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+
+  std::string HistogramNameWithSuffix(const char* suffix) {
+    return std::string(internal::kHistogramPrefixMultiTabLoading)
+        .append(suffix);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(MultiTabLoadingPageLoadMetricsBrowserTest, SingleTab) {
@@ -41,9 +47,12 @@ IN_PROC_BROWSER_TEST_F(MultiTabLoadingPageLoadMetricsBrowserTest, SingleTab) {
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
-  histogram_tester.ExpectTotalCount(internal::kHistogramMultiTabLoadingLoad, 0);
   histogram_tester.ExpectTotalCount(
-      internal::kBackgroundHistogramMultiTabLoadingLoad, 0);
+      HistogramNameWithSuffix(internal::kHistogramLoadEventFiredSuffix), 0);
+  histogram_tester.ExpectTotalCount(
+      HistogramNameWithSuffix(
+          internal::kHistogramLoadEventFiredBackgroundSuffix),
+      0);
 }
 
 IN_PROC_BROWSER_TEST_F(MultiTabLoadingPageLoadMetricsBrowserTest,
@@ -60,9 +69,12 @@ IN_PROC_BROWSER_TEST_F(MultiTabLoadingPageLoadMetricsBrowserTest,
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
-  histogram_tester.ExpectTotalCount(internal::kHistogramMultiTabLoadingLoad, 1);
   histogram_tester.ExpectTotalCount(
-      internal::kBackgroundHistogramMultiTabLoadingLoad, 0);
+      HistogramNameWithSuffix(internal::kHistogramLoadEventFiredSuffix), 1);
+  histogram_tester.ExpectTotalCount(
+      HistogramNameWithSuffix(
+          internal::kHistogramLoadEventFiredBackgroundSuffix),
+      0);
 }
 
 IN_PROC_BROWSER_TEST_F(MultiTabLoadingPageLoadMetricsBrowserTest,
@@ -87,7 +99,10 @@ IN_PROC_BROWSER_TEST_F(MultiTabLoadingPageLoadMetricsBrowserTest,
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
-  histogram_tester.ExpectTotalCount(internal::kHistogramMultiTabLoadingLoad, 0);
   histogram_tester.ExpectTotalCount(
-      internal::kBackgroundHistogramMultiTabLoadingLoad, 1);
+      HistogramNameWithSuffix(internal::kHistogramLoadEventFiredSuffix), 0);
+  histogram_tester.ExpectTotalCount(
+      HistogramNameWithSuffix(
+          internal::kHistogramLoadEventFiredBackgroundSuffix),
+      1);
 }

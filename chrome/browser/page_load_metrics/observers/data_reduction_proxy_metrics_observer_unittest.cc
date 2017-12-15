@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
+#include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -222,28 +223,30 @@ class DataReductionProxyMetricsObserverTest
 
   void ValidateHistograms() {
     ValidateHistogramsForSuffix(
-        internal::kHistogramDOMContentLoadedEventFiredSuffix,
+        ::internal::kHistogramDOMContentLoadedEventFiredSuffix,
         timing_.document_timing->dom_content_loaded_event_start);
-    ValidateHistogramsForSuffix(internal::kHistogramFirstLayoutSuffix,
+    ValidateHistogramsForSuffix(::internal::kHistogramFirstLayoutSuffix,
                                 timing_.document_timing->first_layout);
-    ValidateHistogramsForSuffix(internal::kHistogramLoadEventFiredSuffix,
+    ValidateHistogramsForSuffix(::internal::kHistogramLoadEventFiredSuffix,
                                 timing_.document_timing->load_event_start);
-    ValidateHistogramsForSuffix(internal::kHistogramFirstContentfulPaintSuffix,
-                                timing_.paint_timing->first_contentful_paint);
-    ValidateHistogramsForSuffix(internal::kHistogramFirstMeaningfulPaintSuffix,
-                                timing_.paint_timing->first_meaningful_paint);
-    ValidateHistogramsForSuffix(internal::kHistogramFirstImagePaintSuffix,
+    ValidateHistogramsForSuffix(
+        ::internal::kHistogramFirstContentfulPaintSuffix,
+        timing_.paint_timing->first_contentful_paint);
+    ValidateHistogramsForSuffix(
+        ::internal::kHistogramFirstMeaningfulPaintSuffix,
+        timing_.paint_timing->first_meaningful_paint);
+    ValidateHistogramsForSuffix(::internal::kHistogramFirstImagePaintSuffix,
                                 timing_.paint_timing->first_image_paint);
-    ValidateHistogramsForSuffix(internal::kHistogramFirstPaintSuffix,
+    ValidateHistogramsForSuffix(::internal::kHistogramFirstPaintSuffix,
                                 timing_.paint_timing->first_paint);
-    ValidateHistogramsForSuffix(internal::kHistogramFirstTextPaintSuffix,
+    ValidateHistogramsForSuffix(::internal::kHistogramFirstTextPaintSuffix,
                                 timing_.paint_timing->first_text_paint);
-    ValidateHistogramsForSuffix(internal::kHistogramParseStartSuffix,
+    ValidateHistogramsForSuffix(::internal::kHistogramParseStartSuffix,
                                 timing_.parse_timing->parse_start);
     ValidateHistogramsForSuffix(
-        internal::kHistogramParseBlockedOnScriptLoadSuffix,
+        ::internal::kHistogramParseBlockedOnScriptLoadSuffix,
         timing_.parse_timing->parse_blocked_on_script_load_duration);
-    ValidateHistogramsForSuffix(internal::kHistogramParseDurationSuffix,
+    ValidateHistogramsForSuffix(::internal::kHistogramParseDurationSuffix,
                                 timing_.parse_timing->parse_stop.value() -
                                     timing_.parse_timing->parse_start.value());
   }
