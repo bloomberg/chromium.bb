@@ -71,10 +71,12 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   return self;
 }
 
-- (void)setFrame:(CGRect)frame {
-  [super setFrame:frame];
+- (void)layoutSubviews {
+  [super layoutSubviews];
 
-  CGFloat contentwidth = kSuggestionHorizontalMargin * 2;
+  CGRect frame = self.frame;
+
+  CGFloat contentwidth = kSuggestionHorizontalMargin;
   for (UIView* label in self.subviews) {
     contentwidth += CGRectGetWidth([label frame]) + kSuggestionHorizontalMargin;
   }
