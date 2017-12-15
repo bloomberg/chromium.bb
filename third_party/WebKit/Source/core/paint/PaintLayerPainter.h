@@ -151,7 +151,7 @@ class CORE_EXPORT PaintLayerPainter {
   // invisible and therefore can't impact painted output.
   bool PaintedOutputInvisible(const PaintLayerPaintingInfo&);
 
-  void AdjustForPaintOffsetTranslation(PaintLayerPaintingInfo&);
+  void AdjustForPaintProperties(PaintLayerPaintingInfo&, PaintLayerFlags&);
 
   PaintLayer& paint_layer_;
 };

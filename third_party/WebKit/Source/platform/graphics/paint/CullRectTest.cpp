@@ -6,6 +6,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -65,6 +66,8 @@ TEST_F(CullRectTest, IntersectsHorizontalRange) {
 }
 
 TEST_F(CullRectTest, UpdateForScrollingContents) {
+  ScopedSlimmingPaintV2ForTest spv2(true);
+
   CullRect cull_rect(IntRect(0, 0, 50, 100));
   AffineTransform transform;
   transform.Translate(10, 15);

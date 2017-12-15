@@ -9,8 +9,7 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='absolute green reflected'",
-      "position": [150, 150],
-      "bounds": [100, 100],
+      "bounds": [250, 250],
       "backgroundColor": "#008000",
       "transform": 3
     }

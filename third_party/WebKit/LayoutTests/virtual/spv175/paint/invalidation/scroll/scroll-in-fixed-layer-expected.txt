@@ -20,6 +20,11 @@
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [100, 1150, 100, 100],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "rect": [100, 1150, 100, 100],
+          "reason": "paint property change"
         }
       ],
       "transform": 1
