@@ -46,7 +46,6 @@ extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamRequestCvcIfMissing;
 extern const base::Feature kAutofillUpstreamSendDetectedValues;
 extern const base::Feature kAutofillUpstreamSendPanFirstSix;
-extern const base::Feature kAutofillUpstreamUseAutofillProfileComparator;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
 extern const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[];

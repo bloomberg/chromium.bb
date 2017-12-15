@@ -69,9 +69,6 @@ const base::Feature kAutofillUpstreamSendDetectedValues{
     "AutofillUpstreamSendDetectedValues", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamSendPanFirstSix{
     "AutofillUpstreamSendPanFirstSix", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillUpstreamUseAutofillProfileComparator{
-    "AutofillUpstreamUseAutofillProfileComparator",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";
 const char kAutofillCreditCardPopupDividerColorKey[] = "dropdown_divider_color";
