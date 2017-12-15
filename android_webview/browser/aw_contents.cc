@@ -77,6 +77,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/config/gpu_info.h"
 #include "jni/AwContents_jni.h"
 #include "net/base/auth.h"
@@ -1177,8 +1178,13 @@ void AwContents::OnWebLayoutContentsSizeChanged(
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
+  gfx::Size contents_size_css =
+      content::UseZoomForDSFEnabled()
+          ? ScaleToCeiledSize(contents_size,
+                              1 / browser_view_renderer_.dip_scale())
+          : contents_size;
   Java_AwContents_onWebLayoutContentsSizeChanged(
-      env, obj, contents_size.width(), contents_size.height());
+      env, obj, contents_size_css.width(), contents_size_css.height());
 }
 
 jlong AwContents::CapturePicture(JNIEnv* env,

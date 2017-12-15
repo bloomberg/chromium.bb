@@ -22,6 +22,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -656,14 +657,23 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
 
 void BrowserViewRenderer::UpdateRootLayerState(
     content::SynchronousCompositor* compositor,
-    const gfx::Vector2dF& total_scroll_offset_dip,
-    const gfx::Vector2dF& max_scroll_offset_dip,
-    const gfx::SizeF& scrollable_size_dip,
+    const gfx::Vector2dF& total_scroll_offset,
+    const gfx::Vector2dF& total_max_scroll_offset,
+    const gfx::SizeF& scrollable_size,
     float page_scale_factor,
     float min_page_scale_factor,
     float max_page_scale_factor) {
   if (compositor != compositor_)
     return;
+
+  gfx::Vector2dF total_scroll_offset_dip = total_scroll_offset;
+  gfx::Vector2dF max_scroll_offset_dip = total_max_scroll_offset;
+  gfx::SizeF scrollable_size_dip = scrollable_size;
+  if (content::UseZoomForDSFEnabled()) {
+    total_scroll_offset_dip.Scale(1 / dip_scale_);
+    max_scroll_offset_dip.Scale(1 / dip_scale_);
+    scrollable_size_dip.Scale(1 / dip_scale_);
+  }
 
   TRACE_EVENT_INSTANT1(
       "android_webview",

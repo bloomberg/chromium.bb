@@ -281,7 +281,10 @@ class AwContents : public FindHelper::Listener,
   void PostInvalidate() override;
   void OnNewPicture() override;
   gfx::Point GetLocationOnScreen() override;
+
+  // |new_value| is in physical pixel scale.
   void ScrollContainerViewTo(const gfx::Vector2d& new_value) override;
+
   void UpdateScrollState(const gfx::Vector2d& max_scroll_offset,
                          const gfx::SizeF& contents_size_dip,
                          float page_scale_factor,
