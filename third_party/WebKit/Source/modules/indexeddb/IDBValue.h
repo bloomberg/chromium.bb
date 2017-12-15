@@ -24,7 +24,6 @@ struct WebIDBValue;
 
 class MODULES_EXPORT IDBValue final {
  public:
-  static std::unique_ptr<IDBValue> Create();
   static std::unique_ptr<IDBValue> Create(const WebIDBValue&, v8::Isolate*);
 
   // Injects a primary key into a value coming from the backend.
@@ -61,7 +60,6 @@ class MODULES_EXPORT IDBValue final {
 
   friend class IDBValueUnwrapper;
 
-  IDBValue();
   IDBValue(const WebIDBValue&, v8::Isolate*);
   IDBValue(scoped_refptr<SharedBuffer>,
            const WebVector<WebBlobInfo>&,

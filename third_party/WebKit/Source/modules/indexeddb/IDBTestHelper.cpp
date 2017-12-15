@@ -17,6 +17,23 @@
 
 namespace blink {
 
+std::unique_ptr<IDBValue> CreateNullIDBValueForTesting() {
+  scoped_refptr<SerializedScriptValue> null_ssv =
+      SerializedScriptValue::NullValue();
+
+  StringView ssv_wire_bytes = null_ssv->GetWireData();
+  DCHECK(ssv_wire_bytes.Is8Bit());
+
+  scoped_refptr<SharedBuffer> idb_value_buffer = SharedBuffer::Create();
+  idb_value_buffer->Append(
+      reinterpret_cast<const char*>(ssv_wire_bytes.Characters8()),
+      ssv_wire_bytes.length());
+  return IDBValue::Create(std::move(idb_value_buffer),
+                          Vector<scoped_refptr<BlobDataHandle>>(),
+                          Vector<WebBlobInfo>(), IDBKey::CreateNumber(42.0),
+                          IDBKeyPath(String("primaryKey")));
+}
+
 std::unique_ptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
                                                    bool create_wrapped_value) {
   size_t element_count = create_wrapped_value ? 16 : 2;
