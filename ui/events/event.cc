@@ -457,8 +457,7 @@ CancelModeEvent::~CancelModeEvent() {
 ////////////////////////////////////////////////////////////////////////////////
 // LocatedEvent
 
-LocatedEvent::~LocatedEvent() {
-}
+LocatedEvent::~LocatedEvent() = default;
 
 LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
     : Event(native_event,
@@ -475,6 +474,8 @@ LocatedEvent::LocatedEvent(EventType type,
     : Event(type, time_stamp, flags),
       location_(location),
       root_location_(root_location) {}
+
+LocatedEvent::LocatedEvent(const LocatedEvent& copy) = default;
 
 void LocatedEvent::UpdateForRootTransform(
     const gfx::Transform& reversed_root_transform,
@@ -542,17 +543,7 @@ PointerDetails::PointerDetails(EventPointerType pointer_type,
   offset = pointer_offset;
 }
 
-PointerDetails::PointerDetails(const PointerDetails& other)
-    : pointer_type(other.pointer_type),
-      radius_x(other.radius_x),
-      radius_y(other.radius_y),
-      force(other.force),
-      tilt_x(other.tilt_x),
-      tilt_y(other.tilt_y),
-      tangential_pressure(other.tangential_pressure),
-      twist(other.twist),
-      id(other.id),
-      offset(other.offset) {}
+PointerDetails::PointerDetails(const PointerDetails& other) = default;
 
 const PointerId PointerDetails::kUnknownPointerId = -1;
 
@@ -635,6 +626,10 @@ MouseEvent::MouseEvent(EventType type,
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
     SetType(ET_MOUSE_DRAGGED);
 }
+
+MouseEvent::MouseEvent(const MouseEvent& other) = default;
+
+MouseEvent::~MouseEvent() = default;
 
 // static
 bool MouseEvent::IsRepeatedClickEvent(
@@ -810,6 +805,8 @@ MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
   // a MouseWheelEvent.
   SetType(ui::ET_MOUSEWHEEL);
 }
+
+MouseWheelEvent::~MouseWheelEvent() = default;
 
 #if defined(OS_WIN)
 // This value matches windows WHEEL_DELTA.
@@ -1449,6 +1446,10 @@ ScrollEvent::ScrollEvent(EventType type,
   latency()->set_source_event_type(ui::SourceEventType::WHEEL);
 }
 
+ScrollEvent::ScrollEvent(const ScrollEvent& other) = default;
+
+ScrollEvent::~ScrollEvent() = default;
+
 void ScrollEvent::Scale(const float factor) {
   x_offset_ *= factor;
   y_offset_ *= factor;
@@ -1475,7 +1476,8 @@ GestureEvent::GestureEvent(float x,
   latency()->set_source_event_type(ui::SourceEventType::TOUCH);
 }
 
-GestureEvent::~GestureEvent() {
-}
+GestureEvent::GestureEvent(const GestureEvent& other) = default;
+
+GestureEvent::~GestureEvent() = default;
 
 }  // namespace ui

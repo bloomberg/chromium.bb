@@ -51,6 +51,8 @@ using PointerId = int32_t;
 
 class EVENTS_EXPORT Event {
  public:
+  // Copies an arbitrary event. If you have a typed event (e.g. a MouseEvent)
+  // just use its copy constructor.
   static std::unique_ptr<Event> Clone(const Event& event);
 
   virtual ~Event();
@@ -390,6 +392,8 @@ class EVENTS_EXPORT LocatedEvent : public Event {
  protected:
   friend class LocatedEventTestApi;
 
+  LocatedEvent(const LocatedEvent& copy);
+
   explicit LocatedEvent(const base::NativeEvent& native_event);
 
   // Create a new LocatedEvent which is identical to the provided model.
@@ -496,6 +500,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
  public:
   static const PointerId kMousePointerId;
 
+  // NOTE: On some platforms this will allow an event to be constructed from a
+  // void*, see base::NativeEvent.
   explicit MouseEvent(const base::NativeEvent& native_event);
 
   // |pointer_event.IsMousePointerEvent()| must be true.
@@ -538,6 +544,9 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
              const PointerDetails& pointer_details =
                  PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
                                 kMousePointerId));
+
+  MouseEvent(const MouseEvent& copy);
+  ~MouseEvent() override;
 
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {
@@ -635,7 +644,8 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
   explicit MouseWheelEvent(const PointerEvent& pointer_event);
   MouseWheelEvent(const MouseEvent& mouse_event, int x_offset, int y_offset);
-  MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event);
+  MouseWheelEvent(const MouseWheelEvent& copy);
+  ~MouseWheelEvent() override;
 
   template <class T>
   MouseWheelEvent(const MouseWheelEvent& model,
@@ -998,6 +1008,9 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
               int finger_count,
               EventMomentumPhase momentum_phase = EventMomentumPhase::NONE);
 
+  ScrollEvent(const ScrollEvent& copy);
+  ~ScrollEvent() override;
+
   // Scale the scroll event's offset value.
   // This is useful in the multi-monitor setup where it needs to be scaled
   // to provide a consistent user experience.
@@ -1044,7 +1057,7 @@ class EVENTS_EXPORT GestureEvent : public LocatedEvent {
       : LocatedEvent(model, source, target),
         details_(model.details_) {
   }
-
+  GestureEvent(const GestureEvent& copy);
   ~GestureEvent() override;
 
   const GestureEventDetails& details() const { return details_; }
