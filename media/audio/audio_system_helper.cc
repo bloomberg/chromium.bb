@@ -93,9 +93,6 @@ void AudioSystemHelper::GetInputDeviceInfo(
 
   std::move(on_input_device_info_cb)
       .Run(ComputeInputParameters(input_device_id),
-           associated_output_device_id.empty()
-               ? base::Optional<AudioParameters>()
-               : ComputeOutputParameters(associated_output_device_id),
            associated_output_device_id);
 }
 

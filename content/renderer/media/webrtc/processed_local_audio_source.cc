@@ -87,12 +87,10 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   WebRtcLogMessage(base::StringPrintf(
       "ProcessedLocalAudioSource::EnsureSourceIsStarted. render_frame_id=%d"
       ", channel_layout=%d, sample_rate=%d, buffer_size=%d"
-      ", session_id=%d, paired_output_sample_rate=%d"
-      ", paired_output_frames_per_buffer=%d, effects=%d. ",
+      ", session_id=%d, effects=%d. ",
       consumer_render_frame_id_, device().input.channel_layout(),
       device().input.sample_rate(), device().input.frames_per_buffer(),
-      device().session_id, device().matched_output.sample_rate(),
-      device().matched_output.frames_per_buffer(), device().input.effects()));
+      device().session_id, device().input.effects()));
 
   MediaStreamDevice modified_device(device());
   bool device_is_modified = false;

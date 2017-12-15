@@ -313,15 +313,12 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   void AddAudioCapturer(ProcessedLocalAudioSource* capturer);
   void RemoveAudioCapturer(ProcessedLocalAudioSource* capturer);
 
-  // Gets paired device information of the capture device for the audio
-  // renderer. This is used to pass on a session id, sample rate and buffer
-  // size to a webrtc audio renderer (either local or remote), so that audio
-  // will be rendered to a matching output device.
-  // Returns true if the capture device has a paired output device, otherwise
-  // false. Note that if there are more than one open capture device the
-  // function will not be able to pick an appropriate device and return false.
-  bool GetAuthorizedDeviceInfoForAudioRenderer(
-      int* session_id, int* output_sample_rate, int* output_buffer_size);
+  // Returns the session id of the capture device if it has a paired output
+  // device, otherwise 0. The session id is passed on to a webrtc audio renderer
+  // (either local or remote), so that audio will be rendered to a matching
+  // output device. Note that if there are more than one open capture device the
+  // function will not be able to pick an appropriate device and return 0.
+  int GetAuthorizedDeviceSessionIdForAudioRenderer();
 
   const scoped_refptr<WebRtcAudioRenderer>& renderer() const {
     return renderer_;

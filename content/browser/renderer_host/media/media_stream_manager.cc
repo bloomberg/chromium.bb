@@ -1377,8 +1377,6 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
             FilterAudioEffects(request->controls, &effects);
             EnableHotwordEffect(request->controls, &effects);
             device.input.set_effects(effects);
-
-            device.matched_output = opened_device->matched_output;
           }
         }
         if (RequestDone(*request))

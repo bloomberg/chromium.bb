@@ -97,13 +97,6 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
         media_stream_manager_->audio_input_device_manager()
             ->GetOpenedDeviceById(session_id);
     if (device && !device->matched_output_device_id.empty()) {
-      media::AudioParameters params(
-          media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-          device->matched_output.channel_layout(),
-          device->matched_output.sample_rate(), 16,
-          device->matched_output.frames_per_buffer());
-      params.set_effects(device->matched_output.effects());
-
       // We don't need the origin for authorization in this case, but it's used
       // for hashing the device id before sending it back to the renderer.
       BrowserThread::PostTaskAndReplyWithResult(
@@ -112,7 +105,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
                          render_frame_id),
           base::BindOnce(&AudioOutputAuthorizationHandler::HashDeviceId,
                          weak_factory_.GetWeakPtr(), std::move(cb),
-                         device->matched_output_device_id, params));
+                         device->matched_output_device_id));
       return;
     }
     // Otherwise, the default device is used.
@@ -154,12 +147,16 @@ void AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
 void AudioOutputAuthorizationHandler::HashDeviceId(
     AuthorizationCompletedCallback cb,
     const std::string& raw_device_id,
-    const media::AudioParameters& params,
     const std::pair<std::string, url::Origin>& salt_and_origin) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!raw_device_id.empty());
   std::string hashed_device_id = GetHMACForMediaDeviceID(
       salt_and_origin.first, salt_and_origin.second, raw_device_id);
-  DeviceParametersReceived(std::move(cb), hashed_device_id, raw_device_id,
-                           params);
+  audio_system_->GetOutputStreamParameters(
+      raw_device_id,
+      base::BindOnce(&AudioOutputAuthorizationHandler::DeviceParametersReceived,
+                     weak_factory_.GetWeakPtr(), std::move(cb),
+                     hashed_device_id, raw_device_id));
 }
 
 void AudioOutputAuthorizationHandler::AccessChecked(

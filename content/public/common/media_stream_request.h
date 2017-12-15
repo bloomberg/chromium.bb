@@ -119,23 +119,15 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
   // The device id of a matched output device if any (otherwise empty).
   // Only applicable to audio devices.
+  // TODO(c.padhi): Change this to base::Optional. http://crbug.com/793255.
   std::string matched_output_device_id;
 
   // The device's "friendly" name. Not guaranteed to be unique.
   std::string name;
 
-  // These below two member variables are valid only when the type of device is
-  // audio (i.e. IsAudioInputMediaType returns true).
-
-  // Contains the device properties of the capture device.
+  // Contains the device properties of the capture device. It's valid only when
+  // the type of device is audio (i.e. IsAudioInputMediaType returns true).
   media::AudioParameters input =
-      media::AudioParameters::UnavailableDeviceParams();
-
-  // If the capture device has an associated output device (e.g. headphones),
-  // this will contain the properties for the output device.  If no such device
-  // exists (e.g. webcam w/mic), then the value of this member will be all
-  // zeros.
-  media::AudioParameters matched_output =
       media::AudioParameters::UnavailableDeviceParams();
 
   // Id for this capture session. Unique for all sessions of the same type.
