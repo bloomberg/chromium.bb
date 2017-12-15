@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -26,7 +27,6 @@ class BrowserCompositorMacClient {
  public:
   virtual SkColor BrowserCompositorMacGetGutterColor(SkColor color) const = 0;
   virtual void BrowserCompositorMacOnBeginFrame() = 0;
-  virtual viz::LocalSurfaceId GetLocalSurfaceId() const = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
 };
 
@@ -178,6 +178,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   const bool enable_viz_ = false;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
+  viz::LocalSurfaceId compositor_surface_id_;
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;
 };

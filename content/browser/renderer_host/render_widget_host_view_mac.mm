@@ -396,10 +396,6 @@ void RenderWidgetHostViewMac::BrowserCompositorMacOnBeginFrame() {
   UpdateNeedsBeginFramesInternal();
 }
 
-viz::LocalSurfaceId RenderWidgetHostViewMac::GetLocalSurfaceId() const {
-  return local_surface_id_;
-}
-
 void RenderWidgetHostViewMac::OnFrameTokenChanged(uint32_t frame_token) {
   OnFrameTokenChangedForView(frame_token);
 }
@@ -456,7 +452,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 
   viz::FrameSinkId frame_sink_id =
       render_widget_host_->AllocateFrameSinkId(is_guest_view_hack_);
-  local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
   browser_compositor_.reset(
       new BrowserCompositorMac(this, this, render_widget_host_->is_hidden(),
                                [cocoa_view_ window], frame_sink_id));
@@ -797,11 +792,6 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   if (rect.size().IsEmpty())
     return;
 
-  if (rect.size() != last_size_) {
-    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
-    last_size_ = rect.size();
-  }
-
   // Ignore the position of |rect| for non-popup rwhvs. This is because
   // background tabs do not have a window, but the window is required for the
   // coordinate conversions. Popups are always for a visible tab.
@@ -1102,7 +1092,6 @@ void RenderWidgetHostViewMac::UpdateScreenInfo(gfx::NativeView view) {
   if (!render_widget_host_ || !render_widget_host_->auto_resize_enabled())
     return;
 
-  local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
   render_widget_host_->DidAllocateLocalSurfaceIdForAutoResize(
       render_widget_host_->last_auto_resize_request_number());
   browser_compositor_->WasResized();
@@ -1786,10 +1775,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     return;
 
   if (changed_metrics & DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR) {
-    if (display.device_scale_factor() != last_device_scale_factor_) {
-      local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
-      last_device_scale_factor_ = display.device_scale_factor();
-    }
     RenderWidgetHostImpl* host =
         RenderWidgetHostImpl::From(GetRenderWidgetHost());
     if (host) {
