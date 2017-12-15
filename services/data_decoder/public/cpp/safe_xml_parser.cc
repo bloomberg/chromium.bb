@@ -76,14 +76,14 @@ void SafeXmlParser::ReportResults(std::unique_ptr<base::Value> parsed_xml,
   delete this;
 }
 
-const base::Value* GetChildren(const base::Value& element) {
+}  // namespace
+
+const base::Value* GetXmlElementChildren(const base::Value& element) {
   if (!element.is_dict())
     return nullptr;
   return element.FindKeyOfType(mojom::XmlParser::kChildrenKey,
                                base::Value::Type::LIST);
 }
-
-}  // namespace
 
 std::string GetXmlQualifiedName(const std::string& name_space,
                                 const std::string& name) {
@@ -127,7 +127,7 @@ bool GetXmlElementTagName(const base::Value& element, std::string* tag_name) {
 
 bool GetXmlElementText(const base::Value& element, std::string* text) {
   DCHECK(text);
-  const base::Value* children = GetChildren(element);
+  const base::Value* children = GetXmlElementChildren(element);
   if (!children)
     return false;
 
@@ -171,7 +171,7 @@ bool GetXmlElementNamespacePrefix(const base::Value& element,
 
 int GetXmlElementChildrenCount(const base::Value& element,
                                const std::string& name) {
-  const base::Value* children = GetChildren(element);
+  const base::Value* children = GetXmlElementChildren(element);
   if (!children)
     return 0;
   int child_count = 0;
@@ -187,7 +187,7 @@ int GetXmlElementChildrenCount(const base::Value& element,
 
 const base::Value* GetXmlElementChildWithType(const base::Value& element,
                                               const std::string& type) {
-  const base::Value* children = GetChildren(element);
+  const base::Value* children = GetXmlElementChildren(element);
   if (!children)
     return nullptr;
   for (const base::Value& value : children->GetList()) {
@@ -201,7 +201,7 @@ const base::Value* GetXmlElementChildWithType(const base::Value& element,
 
 const base::Value* GetXmlElementChildWithTag(const base::Value& element,
                                              const std::string& tag) {
-  const base::Value* children = GetChildren(element);
+  const base::Value* children = GetXmlElementChildren(element);
   if (!children)
     return nullptr;
   for (const base::Value& value : children->GetList()) {
@@ -216,7 +216,7 @@ bool GetAllXmlElementChildrenWithTag(
     const base::Value& element,
     const std::string& tag,
     std::vector<const base::Value*>* children_out) {
-  const base::Value* children = GetChildren(element);
+  const base::Value* children = GetXmlElementChildren(element);
   if (!children)
     return false;
   bool found = false;
