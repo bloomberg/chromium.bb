@@ -1120,8 +1120,6 @@ crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure 
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
-crbug.com/659456 http/tests/devtools/persistence/automapping-sourcemap.js [ Pass Failure ]
-
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphens-align.html [ Skip ]
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphens-auto.html [ Skip ]
@@ -3167,7 +3165,6 @@ crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/contr
 # For Skia roll
 crbug.com/630695 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
 
-crbug.com/v8/4958 http/tests/devtools/persistence/automapping-sourcemap-nameclash.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 inspector-protocol/debugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-functions.js [ NeedsManualRebaseline ]
