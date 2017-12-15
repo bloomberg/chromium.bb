@@ -3087,6 +3087,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     if (cm->allow_screen_content_tools &&
         (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
       aom_wb_write_bit(wb, cm->allow_intrabc);
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    // all eight fbs are refreshed, pick one that will live long enough
+    cm->fb_of_context_type[REGULAR_FRAME] = 0;
+#endif
   } else if (cm->frame_type == INTRA_ONLY_FRAME) {
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (!cm->error_resilient_mode) {
@@ -3097,7 +3101,19 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
 #endif
     cpi->refresh_frame_mask = get_refresh_mask(cpi);
-
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    int updated_fb = -1;
+    for (int i = 0; i < REF_FRAMES; i++) {
+      // If more than one frame is refreshed, it doesn't matter which one
+      // we pick, so pick the first.
+      if (cpi->refresh_frame_mask & (1 << i)) {
+        updated_fb = i;
+        break;
+      }
+    }
+    assert(updated_fb >= 0);
+    cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
+#endif
     if (cm->intra_only) {
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
       write_frame_size(cm, frame_size_override_flag, wb);
@@ -3123,6 +3139,20 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       cpi->refresh_frame_mask = get_refresh_mask(cpi);
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
     }
+
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    int updated_fb = -1;
+    for (int i = 0; i < REF_FRAMES; i++) {
+      // If more than one frame is refreshed, it doesn't matter which one
+      // we pick, so pick the first.
+      if (cpi->refresh_frame_mask & (1 << i)) {
+        updated_fb = i;
+        break;
+      }
+    }
+    assert(updated_fb >= 0);
+    cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
+#endif
 
     if (!cpi->refresh_frame_mask) {
       // NOTE: "cpi->refresh_frame_mask == 0" indicates that the coded frame
@@ -3226,6 +3256,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   aom_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);
+#else
+  if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
+    aom_wb_write_literal(wb, cm->primary_ref_frame, PRIMARY_REF_BITS);
+  }
 #endif
 #if CONFIG_TILE_INFO_FIRST
   write_tile_info(cm, saved_wb, wb);

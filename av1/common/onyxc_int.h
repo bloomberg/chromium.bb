@@ -73,6 +73,8 @@ extern "C" {
 #define FRAME_CONTEXTS (FRAME_BUFFERS + 1)
 // Extra frame context which is always kept at default values
 #define FRAME_CONTEXT_DEFAULTS (FRAME_CONTEXTS - 1)
+#define PRIMARY_REF_BITS 3
+#define PRIMARY_REF_NONE 7
 #else
 
 #define FRAME_CONTEXTS_LOG2 3
@@ -450,8 +452,10 @@ typedef struct AV1Common {
   FRAME_CONTEXT *fc;              /* this frame entropy */
   FRAME_CONTEXT *frame_contexts;  // FRAME_CONTEXTS
   FRAME_CONTEXT *pre_fc;          // Context referenced in this frame
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   unsigned int frame_context_idx; /* Context to use/update */
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  int fb_of_context_type[REF_FRAMES];
+  int primary_ref_frame;
 #endif
   FRAME_COUNTS counts;
 

@@ -2778,7 +2778,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_FRAME_REFS_SIGNALING
   cm->frame_refs_short_signaling = 0;
 #endif  // CONFIG_FRAME_REFS_SIGNALING
-
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  cm->primary_ref_frame = PRIMARY_REF_NONE;
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   if (cm->frame_type == KEY_FRAME) {
     wrap_around_current_video_frame(pbi);
     pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
@@ -3021,6 +3023,16 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   // This flag will be overridden by the call to av1_setup_past_independence
   // below, forcing the use of context 0 for those frame types.
   cm->frame_context_idx = aom_rb_read_literal(rb, FRAME_CONTEXTS_LOG2);
+#else
+  if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
+    cm->primary_ref_frame = aom_rb_read_literal(rb, PRIMARY_REF_BITS);
+    if (cm->primary_ref_frame != PRIMARY_REF_NONE &&
+        cm->frame_refs[cm->primary_ref_frame].idx < 0) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Reference frame containing this frame's initial "
+                         "frame context is unavailable.");
+    }
+  }
 #endif
 
   // Generate next_ref_frame_map.
@@ -3367,13 +3379,13 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y, num_planes);
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  if (cm->error_resilient_mode || frame_is_intra_only(cm)) {
+  if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     // use the default frame context values
     *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
     cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
   } else {
-    *cm->fc = cm->frame_contexts[cm->frame_refs[0].idx];
-    cm->pre_fc = &cm->frame_contexts[cm->frame_refs[0].idx];
+    *cm->fc = cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
+    cm->pre_fc = &cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
   }
 #else
   *cm->fc = cm->frame_contexts[cm->frame_context_idx];
