@@ -6,10 +6,14 @@ import csv
 import sys
 
 from core import path_util
+
 sys.path.insert(1, path_util.GetPerfDir())  # To resolve perf imports
-sys.path.insert(1, path_util.GetTelemetryDir()) # To resolve telemetry imports
+path_util.AddPyUtilsToPath()
+path_util.AddTelemetryToPath()
 import page_sets
 from page_sets.system_health import expectations
+from py_utils import expectations_parser
+from telemetry.story import expectations as expectations_module
 
 def IterAllSystemHealthStories():
   for s in page_sets.SystemHealthStorySet(platform='desktop'):
@@ -50,11 +54,24 @@ def PopulateExpectations(all_expectations):
 
 def GenerateSystemHealthCSV(file_path):
   system_health_stories = list(IterAllSystemHealthStories())
+
+  e = expectations_module.StoryExpectations()
+  with open(path_util.GetExpectationsPath()) as fp:
+    parser = expectations_parser.TestExpectationParser(fp.read())
+
+  benchmarks = ['system_health.common_desktop', 'system_health.common_mobile',
+                'system_health.memory_desktop', 'system_health.memory_mobile']
+  for benchmark in benchmarks:
+    e.GetBenchmarkExpectationsFromParser(parser.expectations, benchmark)
+
   all_expectations = [
+      e.AsDict()['stories'],
+      # TODO(rnephew): Delete these when system health uses file.
       expectations.SystemHealthDesktopCommonExpectations().AsDict()['stories'],
       expectations.SystemHealthDesktopMemoryExpectations().AsDict()['stories'],
       expectations.SystemHealthMobileCommonExpectations().AsDict()['stories'],
       expectations.SystemHealthMobileMemoryExpectations().AsDict()['stories'],]
+
   disabed_platforms = PopulateExpectations(all_expectations)
   system_health_stories.sort(key=lambda s: s.name)
   with open(file_path, 'w') as f:
