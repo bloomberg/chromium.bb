@@ -354,8 +354,9 @@ def _main(argv):
         CleanBuildRoot(root, repo, metrics_fields)
 
       # Get a checkout close enough to the branch that cbuildbot can handle it.
-      with metrics.SecondsTimer(METRIC_INITIAL, fields=metrics_fields):
-        InitialCheckout(repo)
+      if options.sync:
+        with metrics.SecondsTimer(METRIC_INITIAL, fields=metrics_fields):
+          InitialCheckout(repo)
 
       # Get a checkout close enough to the branch that cbuildbot can handle it.
       with metrics.SecondsTimer(METRIC_DEPOT_TOOLS, fields=metrics_fields):
