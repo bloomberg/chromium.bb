@@ -265,12 +265,10 @@ class CORE_EXPORT FrameLoader final {
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
 
-  DocumentLoader* CreateDocumentLoader(
-      const ResourceRequest&,
-      const FrameLoadRequest&,
-      FrameLoadType,
-      NavigationType,
-      const base::UnguessableToken& devtools_navigation_token);
+  DocumentLoader* CreateDocumentLoader(const ResourceRequest&,
+                                       const FrameLoadRequest&,
+                                       FrameLoadType,
+                                       NavigationType);
 
   LocalFrameClient* Client() const;
 
