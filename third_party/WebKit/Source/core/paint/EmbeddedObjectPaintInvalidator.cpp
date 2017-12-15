@@ -4,9 +4,9 @@
 
 #include "core/paint/EmbeddedObjectPaintInvalidator.h"
 
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/paint/BoxPaintInvalidator.h"
-#include "core/plugins/PluginView.h"
 
 namespace blink {
 
@@ -14,7 +14,7 @@ PaintInvalidationReason EmbeddedObjectPaintInvalidator::InvalidatePaint() {
   PaintInvalidationReason reason =
       BoxPaintInvalidator(embedded_object_, context_).InvalidatePaint();
 
-  PluginView* plugin = embedded_object_.Plugin();
+  WebPluginContainerImpl* plugin = embedded_object_.Plugin();
   if (plugin)
     plugin->InvalidatePaint();
 

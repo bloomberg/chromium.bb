@@ -501,11 +501,10 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
                 IsHTMLEmbedElement(*result.InnerNode()))) {
       LayoutObject* object = result.InnerNode()->GetLayoutObject();
       if (object && object->IsLayoutEmbeddedContent()) {
-        PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
-        if (plugin_view && plugin_view->IsPluginContainer()) {
-          WebPluginContainerImpl* plugin =
-              ToWebPluginContainerImpl(plugin_view);
-          url = plugin->Plugin()->LinkAtPosition(
+        WebPluginContainerImpl* plugin_view =
+            ToLayoutEmbeddedContent(object)->Plugin();
+        if (plugin_view) {
+          url = plugin_view->Plugin()->LinkAtPosition(
               result.RoundedPointInInnerNodeFrame());
         }
       }

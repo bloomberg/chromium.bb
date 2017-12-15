@@ -28,6 +28,7 @@
 #include <memory>
 
 #include "core/dom/DOMNodeIds.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
@@ -63,7 +64,6 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
-#include "core/plugins/PluginView.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/LengthFunctions.h"
 #include "platform/fonts/FontCache.h"
@@ -163,7 +163,8 @@ static bool ContentLayerSupportsDirectBackgroundComposition(
 static WebLayer* PlatformLayerForPlugin(LayoutObject& layout_object) {
   if (!layout_object.IsEmbeddedObject())
     return nullptr;
-  PluginView* plugin = ToLayoutEmbeddedObject(layout_object).Plugin();
+  WebPluginContainerImpl* plugin =
+      ToLayoutEmbeddedObject(layout_object).Plugin();
   return plugin ? plugin->PlatformLayer() : nullptr;
 }
 

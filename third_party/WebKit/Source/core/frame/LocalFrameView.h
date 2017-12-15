@@ -92,11 +92,11 @@ class LayoutView;
 class PaintArtifactCompositor;
 class PaintController;
 class Page;
-class PluginView;
 class PrintContext;
 class ScrollingCoordinator;
 class TracedValue;
 class TransformState;
+class WebPluginContainerImpl;
 struct AnnotatedRegionValue;
 struct CompositedSelection;
 
@@ -513,9 +513,9 @@ class CORE_EXPORT LocalFrameView final
   void AttachToLayout() override;
   void DetachFromLayout() override;
   bool IsAttached() const override { return is_attached_; }
-  using PluginSet = HeapHashSet<Member<PluginView>>;
+  using PluginSet = HeapHashSet<Member<WebPluginContainerImpl>>;
   const PluginSet& Plugins() const { return plugins_; }
-  void AddPlugin(PluginView*);
+  void AddPlugin(WebPluginContainerImpl*);
   // Custom scrollbars in PaintLayerScrollableArea need to be called with
   // StyleChanged whenever window focus is changed.
   void RemoveScrollbar(Scrollbar*);

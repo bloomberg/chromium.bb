@@ -31,7 +31,7 @@
 namespace blink {
 
 class HTMLPlugInElement;
-class PluginView;
+class WebPluginContainerImpl;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
  public:
@@ -44,7 +44,7 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
   }
   HTMLPlugInElement* PluginNode() { return plugin_node_; }
 
-  PluginView* GetPluginView();
+  WebPluginContainerImpl* GetPluginView();
 
   void Shutdown() override;
 

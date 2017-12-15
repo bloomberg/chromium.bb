@@ -76,6 +76,7 @@
 #include "core/events/TouchEvent.h"
 #include "core/events/UIEvent.h"
 #include "core/events/WheelEvent.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -94,7 +95,6 @@
 #include "core/mathml_names.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/Page.h"
-#include "core/plugins/PluginView.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -2685,10 +2685,7 @@ WebPluginContainerImpl* Node::GetWebPluginContainer() const {
 
   LayoutObject* object = GetLayoutObject();
   if (object && object->IsLayoutEmbeddedContent()) {
-    PluginView* plugin = ToLayoutEmbeddedContent(object)->Plugin();
-    if (plugin) {
-      return plugin->GetWebPluginContainer();
-    }
+    return ToLayoutEmbeddedContent(object)->Plugin();
   }
 
   return nullptr;

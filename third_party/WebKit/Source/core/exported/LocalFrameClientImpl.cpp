@@ -841,7 +841,7 @@ bool LocalFrameClientImpl::CanCreatePluginWithoutRenderer(
   return web_frame_->Client()->CanCreatePluginWithoutRenderer(mime_type);
 }
 
-PluginView* LocalFrameClientImpl::CreatePlugin(
+WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
     HTMLPlugInElement& element,
     const KURL& url,
     const Vector<String>& param_names,

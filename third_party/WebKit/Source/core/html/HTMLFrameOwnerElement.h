@@ -38,7 +38,7 @@ namespace blink {
 class ExceptionState;
 class Frame;
 class LayoutEmbeddedContent;
-class PluginView;
+class WebPluginContainerImpl;
 
 class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                                           public FrameOwner {
@@ -126,7 +126,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                               bool replace_current_item);
   bool IsKeyboardFocusable() const override;
 
-  void DisposePluginSoon(PluginView*);
+  void DisposePluginSoon(WebPluginContainerImpl*);
   void FrameOwnerPropertiesChanged();
 
   // Return the origin which is to be used for feature policy container

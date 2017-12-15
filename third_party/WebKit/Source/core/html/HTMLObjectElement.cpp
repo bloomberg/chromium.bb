@@ -32,6 +32,7 @@
 #include "core/dom/SyncReattachContext.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/Text.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
@@ -41,7 +42,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
 #include "core/layout/api/LayoutEmbeddedItem.h"
-#include "core/plugins/PluginView.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 
 namespace blink {

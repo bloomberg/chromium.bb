@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
@@ -38,7 +39,6 @@
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/plugins/PluginView.h"
 
 namespace blink {
 
@@ -66,7 +66,7 @@ class PluginDocumentParser : public RawDataDocumentParser {
 
   void CreateDocumentStructure();
 
-  PluginView* GetPluginView() const;
+  WebPluginContainerImpl* GetPluginView() const;
 
   Member<HTMLEmbedElement> embed_element_;
 };
@@ -123,8 +123,9 @@ void PluginDocumentParser::CreateDocumentStructure() {
 
   GetDocument()->UpdateStyleAndLayout();
 
-  // We need the plugin to load synchronously so we can get the PluginView
-  // below so flush the layout tasks now instead of waiting on the timer.
+  // We need the plugin to load synchronously so we can get the
+  // WebPluginContainerImpl below so flush the layout tasks now instead of
+  // waiting on the timer.
   frame->View()->FlushAnyPendingPostLayoutTasks();
   // Focus the plugin here, as the line above is where the plugin is created.
   if (frame->IsMainFrame()) {
@@ -136,7 +137,7 @@ void PluginDocumentParser::CreateDocumentStructure() {
     }
   }
 
-  if (PluginView* view = GetPluginView())
+  if (WebPluginContainerImpl* view = GetPluginView())
     view->DidReceiveResponse(GetDocument()->Loader()->GetResponse());
 }
 
@@ -149,7 +150,7 @@ void PluginDocumentParser::AppendBytes(const char* data, size_t length) {
 
   if (!length)
     return;
-  if (PluginView* view = GetPluginView())
+  if (WebPluginContainerImpl* view = GetPluginView())
     view->DidReceiveData(data, length);
 }
 
@@ -158,7 +159,7 @@ void PluginDocumentParser::Finish() {
   RawDataDocumentParser::Finish();
 }
 
-PluginView* PluginDocumentParser::GetPluginView() const {
+WebPluginContainerImpl* PluginDocumentParser::GetPluginView() const {
   return ToPluginDocument(GetDocument())->GetPluginView();
 }
 
@@ -172,7 +173,7 @@ DocumentParser* PluginDocument::CreateParser() {
   return PluginDocumentParser::Create(this);
 }
 
-PluginView* PluginDocument::GetPluginView() {
+WebPluginContainerImpl* PluginDocument::GetPluginView() {
   return plugin_node_ ? plugin_node_->OwnedPlugin() : nullptr;
 }
 

@@ -41,8 +41,7 @@ WebPlugin* WebPluginDocument::Plugin() {
   if (!IsPluginDocument())
     return nullptr;
   PluginDocument* doc = Unwrap<PluginDocument>();
-  WebPluginContainerImpl* container =
-      ToWebPluginContainerImpl(doc->GetPluginView());
+  WebPluginContainerImpl* container = doc->GetPluginView();
   return container ? container->Plugin() : nullptr;
 }
 

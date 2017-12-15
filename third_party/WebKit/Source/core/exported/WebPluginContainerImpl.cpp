@@ -749,7 +749,6 @@ void WebPluginContainerImpl::Dispose() {
 void WebPluginContainerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   ContextClient::Trace(visitor);
-  PluginView::Trace(visitor);
 }
 
 void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {

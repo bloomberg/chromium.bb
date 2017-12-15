@@ -49,6 +49,7 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/editing/suggestion/TextSuggestionController.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
@@ -76,7 +77,6 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
-#include "core/plugins/PluginView.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -1141,10 +1141,7 @@ WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
 
 WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
   if (GetDocument() && GetDocument()->IsPluginDocument()) {
-    PluginDocument* plugin_document = ToPluginDocument(GetDocument());
-    if (plugin_document->GetPluginView()) {
-      return plugin_document->GetPluginView()->GetWebPluginContainer();
-    }
+    return ToPluginDocument(GetDocument())->GetPluginView();
   }
   if (!node) {
     DCHECK(GetDocument());
