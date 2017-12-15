@@ -7458,7 +7458,6 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
     if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
 
     frame_mv[refs[0]] = x->best_mv;
-    xd->mi[0]->bmi[0].as_mv[0] = x->best_mv;
 
     // Estimate the rate implications of a new mv but discount this
     // under certain circumstances where we want to help initiate a weak
@@ -8490,8 +8489,6 @@ static int64_t handle_inter_mode(
     if (have_newmv_in_inter_mode(this_mode)) {
       mbmi->mv[0].as_int = best_mv[0].as_int;
       mbmi->mv[1].as_int = best_mv[1].as_int;
-      xd->mi[0]->bmi[0].as_mv[0].as_int = mbmi->mv[0].as_int;
-      xd->mi[0]->bmi[0].as_mv[1].as_int = mbmi->mv[1].as_int;
       if (use_masked_motion_search(mbmi->interinter_compound_type)) {
         rd_stats->rate += best_tmp_rate_mv - rate_mv;
         rate_mv = best_tmp_rate_mv;

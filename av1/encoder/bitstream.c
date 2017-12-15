@@ -1775,11 +1775,7 @@ static void dump_mode_info(MODE_INFO *mi) {
   printf("&& mi->mbmi.mi_col == %d\n", mi->mbmi.mi_col);
   printf("&& mi->mbmi.sb_type == %d\n", mi->mbmi.sb_type);
   printf("&& mi->mbmi.tx_size == %d\n", mi->mbmi.tx_size);
-  if (mi->mbmi.sb_type >= BLOCK_8X8) {
-    printf("&& mi->mbmi.mode == %d\n", mi->mbmi.mode);
-  } else {
-    printf("&& mi->bmi[0].as_mode == %d\n", mi->bmi[0].as_mode);
-  }
+  printf("&& mi->mbmi.mode == %d\n", mi->mbmi.mode);
 }
 static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
                                    int plane) {

@@ -359,10 +359,7 @@ typedef struct MB_MODE_INFO {
 #endif
 } MB_MODE_INFO;
 
-typedef struct MODE_INFO {
-  MB_MODE_INFO mbmi;
-  b_mode_info bmi[4];
-} MODE_INFO;
+typedef struct MODE_INFO { MB_MODE_INFO mbmi; } MODE_INFO;
 
 #if CONFIG_INTRABC
 #define NO_FILTER_FOR_IBC 1  // Disable in-loop filters for frame with intrabc

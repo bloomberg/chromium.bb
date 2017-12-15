@@ -291,7 +291,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   }
 #endif
 
-  x->e_mbd.mi[0]->bmi[0].as_mv[0] = x->best_mv;
+  x->e_mbd.mi[0]->mbmi.mv[0] = x->best_mv;
 
   // Restore input state
   x->plane[0].src = src;
@@ -379,8 +379,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 
         if (frames[frame] == NULL) continue;
 
-        mbd->mi[0]->bmi[0].as_mv[0].as_mv.row = 0;
-        mbd->mi[0]->bmi[0].as_mv[0].as_mv.col = 0;
+        mbd->mi[0]->mbmi.mv[0].as_mv.row = 0;
+        mbd->mi[0]->mbmi.mv[0].as_mv.col = 0;
 
         if (frame == alt_ref_index) {
           filter_weight = 2;
@@ -402,9 +402,9 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
               mbd, frames[frame]->y_buffer + mb_y_offset,
               frames[frame]->u_buffer + mb_uv_offset,
               frames[frame]->v_buffer + mb_uv_offset, frames[frame]->y_stride,
-              mb_uv_width, mb_uv_height, mbd->mi[0]->bmi[0].as_mv[0].as_mv.row,
-              mbd->mi[0]->bmi[0].as_mv[0].as_mv.col, predictor, scale,
-              mb_col * 16, mb_row * 16);
+              mb_uv_width, mb_uv_height, mbd->mi[0]->mbmi.mv[0].as_mv.row,
+              mbd->mi[0]->mbmi.mv[0].as_mv.col, predictor, scale, mb_col * 16,
+              mb_row * 16);
 
 // Apply the filter (YUV)
 #if CONFIG_HIGHBITDEPTH
