@@ -39,7 +39,13 @@ gfx::SwapResult GLSurfaceOSMesaPng::SwapBuffers(
   if (!output_path_.empty())
     WriteBufferToPng();
 
+  callback.Run(gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                         base::TimeDelta(), 0 /* flags */));
   return gfx::SwapResult::SWAP_ACK;
+}
+
+bool GLSurfaceOSMesaPng::SupportsPresentationCallback() {
+  return true;
 }
 
 GLSurfaceOSMesaPng::~GLSurfaceOSMesaPng() {

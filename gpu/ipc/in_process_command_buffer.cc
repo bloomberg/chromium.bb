@@ -56,6 +56,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_share_group.h"
+#include "ui/gl/gl_switches_util.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
@@ -1198,8 +1199,7 @@ void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
 void InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePresentationCallback));
+  DCHECK(!gl::IsPresentationCallbackEnabled());
   if (!update_vsync_parameters_completion_callback_.is_null())
     update_vsync_parameters_completion_callback_.Run(timebase, interval);
 }
@@ -1207,8 +1207,7 @@ void InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread(
 void InProcessCommandBuffer::BufferPresentedOnOriginThread(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePresentationCallback));
+  DCHECK(gl::IsPresentationCallbackEnabled());
   if (presentation_callback_)
     presentation_callback_.Run(swap_id, feedback);
   if (update_vsync_parameters_completion_callback_ &&

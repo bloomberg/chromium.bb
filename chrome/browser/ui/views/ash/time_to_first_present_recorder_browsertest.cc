@@ -8,13 +8,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_switches_util.h"
 
 using TimeToFirstPresentRecorderTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(TimeToFirstPresentRecorderTest, VerifyTimeCalculated) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePresentationCallback))
+  if (!gl::IsPresentationCallbackEnabled())
     return;
 
   ash::mojom::TimeToFirstPresentRecorderTestApiPtr recorder_test_api;

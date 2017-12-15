@@ -34,6 +34,7 @@ class GL_EXPORT GLSurfaceStub : public GLSurface {
   GLSurfaceFormat GetFormat() override;
   bool SupportsDCLayers() const override;
   gfx::Vector2d GetDrawOffset() const override;
+  bool SupportsPresentationCallback() override;
 
  protected:
   ~GLSurfaceStub() override;

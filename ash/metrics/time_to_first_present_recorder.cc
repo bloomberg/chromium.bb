@@ -6,21 +6,19 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
-#include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_switches_util.h"
 
 namespace ash {
 
 TimeToFirstPresentRecorder::TimeToFirstPresentRecorder(aura::Window* window) {
   aura::WindowTreeHost* window_tree_host = window->GetHost();
   DCHECK(window_tree_host);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePresentationCallback)) {
+  if (gl::IsPresentationCallbackEnabled()) {
     window_tree_host->compositor()->RequestPresentationTimeForNextFrame(
         base::BindOnce(&TimeToFirstPresentRecorder::DidPresentCompositorFrame,
                        base::Unretained(this)));
