@@ -367,11 +367,6 @@ class CreditCardSaveManagerTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(kAutofillUpstreamSendPanFirstSix);
   }
 
-  void EnableAutofillUpstreamUseAutofillProfileComparator() {
-    scoped_feature_list_.InitAndEnableFeature(
-        kAutofillUpstreamUseAutofillProfileComparator);
-  }
-
   void FormsSeen(const std::vector<FormData>& forms) {
     autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
   }
@@ -1539,7 +1534,8 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhitespace) {
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_ZipCodesDoNotDiscardWhitespace) {
   personal_data_.ClearProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1579,52 +1575,6 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhitespace) {
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
-}
-
-TEST_F(CreditCardSaveManagerTest,
-       UploadCreditCard_ZipCodesDiscardWhitespace_ComparatorEnabled) {
-  EnableAutofillUpstreamUseAutofillProfileComparator();
-  personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
-
-  // Create, fill and submit two address forms with different zip codes.
-  FormData address_form1, address_form2;
-  test::CreateTestAddressFormData(&address_form1);
-  test::CreateTestAddressFormData(&address_form2);
-
-  FormsSeen({address_form1, address_form2});
-
-  ManuallyFillAddressForm("Flo", "Master", "H3B2Y5", "CA", &address_form1);
-  FormSubmitted(address_form1);
-
-  ManuallyFillAddressForm("Flo", "Master", "h3b 2y5", "CA", &address_form2);
-  FormSubmitted(address_form2);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
-  FormsSeen({credit_card_form});
-
-  // Edit the data and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
-  credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // Zips match because we discard whitespace before comparison.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
-  EXPECT_THAT(
-      credit_card_save_manager_->GetActiveExperiments(),
-      UnorderedElementsAre(kAutofillUpstreamUseAutofillProfileComparator.name));
-
-  // Verify that the correct histogram entry (and only that) was logged.
-  ExpectUniqueCardUploadDecision(histogram_tester,
-                                 AutofillMetrics::UPLOAD_OFFERED);
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
@@ -1764,56 +1714,6 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest,
-       UploadCreditCard_CCFormHasMiddleInitial_ComparatorEnabled) {
-  EnableAutofillUpstreamUseAutofillProfileComparator();
-  personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
-
-  // Create, fill and submit two address forms with different names.
-  FormData address_form1, address_form2;
-  test::CreateTestAddressFormData(&address_form1);
-  test::CreateTestAddressFormData(&address_form2);
-  FormsSeen({address_form1, address_form2});
-
-  // Names can be different case.
-  ManuallyFillAddressForm("flo", "master", "77401", "US", &address_form1);
-  FormSubmitted(address_form1);
-
-  // And they can have a middle initial even if the other names don't.
-  ManuallyFillAddressForm("Flo W", "Master", "77401", "US", &address_form2);
-  FormSubmitted(address_form2);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
-  FormsSeen({credit_card_form});
-
-  // Edit the data, but use the name with a middle initial *and* period, and
-  // submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo W. Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
-  credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // Names match loosely, upload should happen.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
-  EXPECT_THAT(
-      credit_card_save_manager_->GetActiveExperiments(),
-      UnorderedElementsAre(kAutofillUpstreamUseAutofillProfileComparator.name));
-
-  // Verify that the correct histogram entry (and only that) was logged.
-  ExpectUniqueCardUploadDecision(histogram_tester,
-                                 AutofillMetrics::UPLOAD_OFFERED);
-  // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
-}
-
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
   personal_data_.ClearProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1857,50 +1757,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
 }
 
 TEST_F(CreditCardSaveManagerTest,
-       UploadCreditCard_NoMiddleInitialInCCForm_ComparatorEnabled) {
-  EnableAutofillUpstreamUseAutofillProfileComparator();
-  personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
-
-  // Create, fill and submit two address forms with different names.
-  FormData address_form1, address_form2;
-  test::CreateTestAddressFormData(&address_form1);
-  test::CreateTestAddressFormData(&address_form2);
-  FormsSeen({address_form1, address_form2});
-
-  // Names can have different variations of middle initials.
-  ManuallyFillAddressForm("flo w.", "master", "77401", "US", &address_form1);
-  FormSubmitted(address_form1);
-  ManuallyFillAddressForm("Flo W", "Master", "77401", "US", &address_form2);
-  FormSubmitted(address_form2);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
-  FormsSeen({credit_card_form});
-
-  // Edit the data, but do not use middle initial.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
-  credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // Names match loosely, upload should happen.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
-
-  // Verify that the correct histogram entry (and only that) was logged.
-  ExpectUniqueCardUploadDecision(histogram_tester,
-                                 AutofillMetrics::UPLOAD_OFFERED);
-  // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
-}
-
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName) {
+       UploadCreditCard_CCFormHasCardholderMiddleName) {
   personal_data_.ClearProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1925,8 +1782,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName) {
 
   base::HistogramTester histogram_tester;
 
-  // Names match loosely but we have disabled comparator. Upload should not
-  // happen.
+  // Names match loosely but middle name mismatches. Upload should not happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
@@ -1937,49 +1793,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName) {
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 }
 
-TEST_F(CreditCardSaveManagerTest,
-       UploadCreditCard_CCFormHasMiddleName_ComparatorEnabled) {
-  EnableAutofillUpstreamUseAutofillProfileComparator();
-  personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
-
-  // Create, fill and submit address form without middle name.
-  FormData address_form;
-  test::CreateTestAddressFormData(&address_form);
-  FormsSeen({address_form});
-  ManuallyFillAddressForm("John", "Adams", "77401", "US", &address_form);
-  FormSubmitted(address_form);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
-  FormsSeen({credit_card_form});
-
-  // Edit the name by adding a middle name.
-  credit_card_form.fields[0].value = ASCIIToUTF16("John Quincy Adams");
-  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
-  credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // Names match loosely, upload should happen.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
-  EXPECT_THAT(
-      credit_card_save_manager_->GetActiveExperiments(),
-      UnorderedElementsAre(kAutofillUpstreamUseAutofillProfileComparator.name));
-
-  // Verify that the correct histogram entry (and only that) was logged.
-  ExpectUniqueCardUploadDecision(histogram_tester,
-                                 AutofillMetrics::UPLOAD_OFFERED);
-  // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
-}
-
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasAddressMiddleName) {
   personal_data_.ClearProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2004,7 +1818,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
 
   base::HistogramTester histogram_tester;
 
-  // With the comparator disabled, names do not match; upload should not happen.
+  // Names match loosely but middle name mismatches. Upload should not happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
@@ -2016,48 +1830,6 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
-}
-
-TEST_F(CreditCardSaveManagerTest,
-       UploadCreditCard_CCFormRemovesMiddleName_ComparatorEnabled) {
-  EnableAutofillUpstreamUseAutofillProfileComparator();
-  personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
-
-  // Create, fill and submit address form with middle name.
-  FormData address_form;
-  test::CreateTestAddressFormData(&address_form);
-  FormsSeen({address_form});
-  ManuallyFillAddressForm("John Quincy", "Adams", "77401", "US", &address_form);
-  FormSubmitted(address_form);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
-  FormsSeen({credit_card_form});
-
-  // Edit the name by removing middle name.
-  credit_card_form.fields[0].value = ASCIIToUTF16("John Adams");
-  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
-  credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // Names match loosely, upload should happen.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
-  EXPECT_THAT(
-      credit_card_save_manager_->GetActiveExperiments(),
-      UnorderedElementsAre(kAutofillUpstreamUseAutofillProfileComparator.name));
-
-  // Verify that the correct histogram entry (and only that) was logged.
-  ExpectUniqueCardUploadDecision(histogram_tester,
-                                 AutofillMetrics::UPLOAD_OFFERED);
-  // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
