@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../vr/resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../vr/resources/mock-vr-service.js"></script>
+<script src="../vr/resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../vr/resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+xr_session_test( (t, session, mockService) => {
+  // Session must have a baseLayer or frame requests will be ignored.
+  let webglLayer = new XRWebGLLayer(session, gl);
+  session.baseLayer = webglLayer;
+
+  session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
+    function onFrame(xrFrame) {
+      let leftView = xrFrame.views[0];
+      let rightView = xrFrame.views[1];
+
+      let leftViewport = leftView.getViewport(webglLayer);
+      let rightViewport = rightView.getViewport(webglLayer);
+
+      // Ensure the views report the expected viewports into the WebGL layer.
+      t.step( () => {
+        assert_true(leftViewport instanceof XRViewport);
+        assert_true(rightViewport instanceof XRViewport);
+
+        assert_not_equals(leftViewport, null);
+        assert_not_equals(rightViewport, null);
+      }, "Viewports are of the right type and not null");
+
+      // Exact viewport values don't matter, but they must pass several tests:
+
+      t.step( () => {
+        assert_greater_than(leftViewport.width, 0);
+        assert_greater_than(leftViewport.height, 0);
+        assert_greater_than(rightViewport.width, 0);
+        assert_greater_than(rightViewport.height, 0);
+      }, "Viewports have non-zero widths and heights");
+
+      t.step( () => {
+        assert_greater_than_equal(leftViewport.x, 0);
+        assert_greater_than_equal(leftViewport.y, 0);
+        assert_greater_than_equal(leftViewport.x, 0);
+        assert_greater_than_equal(leftViewport.y, 0);
+
+        assert_less_than_equal(leftViewport.x + leftViewport.width, webglLayer.framebufferWidth);
+        assert_less_than_equal(leftViewport.y + leftViewport.height, webglLayer.framebufferHeight);
+        assert_less_than_equal(rightViewport.x + rightViewport.width, webglLayer.framebufferWidth);
+        assert_less_than_equal(rightViewport.y + rightViewport.height, webglLayer.framebufferHeight);
+      }, "Viewports are located within the framebuffer");
+
+      t.step( () => {
+        // Assumes that the left viewport will always be physically to the left
+        // of the right viewport.
+        assert_less_than_equal(leftViewport.x + leftViewport.width, rightViewport.x);
+      }, "XRViewports do not overlap");
+      t.done();
+    }
+
+    session.requestFrame(onFrame);
+  });
+}, fakeDisplays["Pixel"], { exclusive: true },
+"XRViewport attributes are valid");
+
+</script>

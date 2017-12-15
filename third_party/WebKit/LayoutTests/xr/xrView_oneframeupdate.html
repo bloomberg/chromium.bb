@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../vr/resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../vr/resources/mock-vr-service.js"></script>
+<script src="../vr/resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../vr/resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+let displayLeftEye = fakeDisplays["Pixel"].leftEye;
+let displayRightEye = fakeDisplays["Pixel"].rightEye;
+
+xr_session_test( (t, session, mockService) => {
+  // Session must have a baseLayer or frame requests will be ignored.
+  session.baseLayer = new XRWebGLLayer(session, gl);
+
+  session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
+    let counter = 0;
+
+    function onFrame(xrFrame) {
+      let leftView = xrFrame.views[0];
+      let rightView = xrFrame.views[1];
+
+      if (counter == 0) {
+        session.requestFrame(onFrame);
+
+        t.step( () => {
+          let expectedLeftProjection = perspectiveFromFieldOfView(
+              displayLeftEye.fieldOfView, session.depthNear, session.depthFar);
+          let expectedRightProjection = perspectiveFromFieldOfView(
+              displayRightEye.fieldOfView, session.depthNear, session.depthFar);
+
+          assert_matrices_approx_equal(leftView.projectionMatrix, expectedLeftProjection);
+          assert_matrices_approx_equal(rightView.projectionMatrix, expectedRightProjection);
+
+          // Update the near and far depths for the session.
+          session.depthNear = 1.0;
+          session.depthFar = 100.0;
+
+          // The projection matrices the views report should not take into
+          // account the new session depth values this frame.
+          assert_matrices_approx_equal(leftView.projectionMatrix, expectedLeftProjection);
+          assert_matrices_approx_equal(rightView.projectionMatrix, expectedRightProjection);
+        }, "Projection matrices do not update within the same frame");
+      } else {
+        t.step( () => {
+          // New depth values should be retained between frames.
+          assert_equals(session.depthNear, 1.0);
+          assert_equals(session.depthFar, 100.0);
+
+          let expectedLeftProjection = perspectiveFromFieldOfView(
+              displayLeftEye.fieldOfView, session.depthNear, session.depthFar);
+          let expectedRightProjection = perspectiveFromFieldOfView(
+              displayRightEye.fieldOfView, session.depthNear, session.depthFar);
+
+          // Projection matricies should now reflect the new depth values
+          assert_matrices_approx_equal(leftView.projectionMatrix, expectedLeftProjection);
+          assert_matrices_approx_equal(rightView.projectionMatrix, expectedRightProjection);
+        }, "Projection matrices do update on subsequent frames");
+        t.done();
+      }
+      counter++;
+    }
+
+    session.requestFrame(onFrame);
+  });
+}, fakeDisplays["Pixel"], { exclusive: true },
+"XRView projection matrices update near and far depths on the next frame");
+
+</script>

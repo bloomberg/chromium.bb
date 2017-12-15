@@ -160,6 +160,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/webshare",
     "//third_party/WebKit/Source/modules/websockets",
     "//third_party/WebKit/Source/modules/webusb",
+    "//third_party/WebKit/Source/modules/xr",
     "//third_party/icu",
     "//third_party/sqlite",
     "//third_party/zlib",

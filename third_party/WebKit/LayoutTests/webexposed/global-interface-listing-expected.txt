@@ -4499,9 +4499,9 @@ interface Navigator
     getter userAgent
     getter vendor
     getter vendorSub
-    getter vr
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
+    getter xr
     method cancelKeyboardLock
     method constructor
     method getBattery
@@ -7204,34 +7204,6 @@ interface USBOutTransferResult
     getter bytesWritten
     getter status
     method constructor
-interface VR : EventTarget
-    attribute @@toStringTag
-    getter ondeviceconnect
-    getter ondevicedisconnect
-    method constructor
-    method requestDevice
-    setter ondeviceconnect
-    setter ondevicedisconnect
-interface VRCoordinateSystem
-    attribute @@toStringTag
-    method constructor
-    method getTransformTo
-interface VRDevice : EventTarget
-    attribute @@toStringTag
-    getter deviceName
-    getter isExternal
-    method constructor
-    method requestSession
-    method supportsSession
-interface VRDeviceEvent : Event
-    attribute @@toStringTag
-    getter device
-    method constructor
-interface VRDevicePose
-    attribute @@toStringTag
-    getter poseModelMatrix
-    method constructor
-    method getViewMatrix
 interface VRDisplay : EventTarget
     attribute @@toStringTag
     getter capabilities
@@ -7278,14 +7250,6 @@ interface VRFrameData
     getter rightProjectionMatrix
     getter rightViewMatrix
     method constructor
-interface VRFrameOfReference : VRCoordinateSystem
-    attribute @@toStringTag
-    getter bounds
-    getter emulatedHeight
-    method constructor
-interface VRLayer
-    attribute @@toStringTag
-    method constructor
 interface VRPose
     attribute @@toStringTag
     getter angularAcceleration
@@ -7295,80 +7259,12 @@ interface VRPose
     getter orientation
     getter position
     method constructor
-interface VRPresentationFrame
-    attribute @@toStringTag
-    getter session
-    getter views
-    method constructor
-    method getDevicePose
-interface VRSession : EventTarget
-    attribute @@toStringTag
-    getter baseLayer
-    getter depthFar
-    getter depthNear
-    getter device
-    getter exclusive
-    getter onblur
-    getter onend
-    getter onfocus
-    getter onresetpose
-    method cancelFrame
-    method constructor
-    method end
-    method requestFrame
-    method requestFrameOfReference
-    setter baseLayer
-    setter depthFar
-    setter depthNear
-    setter onblur
-    setter onend
-    setter onfocus
-    setter onresetpose
-interface VRSessionEvent : Event
-    attribute @@toStringTag
-    getter session
-    method constructor
-interface VRStageBounds
-    attribute @@toStringTag
-    getter geometry
-    method constructor
-interface VRStageBoundsPoint
-    attribute @@toStringTag
-    getter x
-    getter z
-    method constructor
 interface VRStageParameters
     attribute @@toStringTag
     getter sittingToStandingTransform
     getter sizeX
     getter sizeZ
     method constructor
-interface VRView
-    attribute @@toStringTag
-    getter eye
-    getter projectionMatrix
-    method constructor
-    method getViewport
-interface VRViewport
-    attribute @@toStringTag
-    getter height
-    getter width
-    getter x
-    getter y
-    method constructor
-interface VRWebGLLayer : VRLayer
-    attribute @@toStringTag
-    getter alpha
-    getter antialias
-    getter context
-    getter depth
-    getter framebuffer
-    getter framebufferHeight
-    getter framebufferWidth
-    getter multiview
-    getter stencil
-    method constructor
-    method requestViewportScaling
 interface VTTCue : TextTrackCue
     attribute @@toStringTag
     getter align
@@ -8990,6 +8886,110 @@ interface XPathResult
     method constructor
     method iterateNext
     method snapshotItem
+interface XR : EventTarget
+    attribute @@toStringTag
+    getter ondeviceconnect
+    getter ondevicedisconnect
+    method constructor
+    method requestDevice
+    setter ondeviceconnect
+    setter ondevicedisconnect
+interface XRCoordinateSystem
+    attribute @@toStringTag
+    method constructor
+    method getTransformTo
+interface XRDevice : EventTarget
+    attribute @@toStringTag
+    getter deviceName
+    getter isExternal
+    method constructor
+    method requestSession
+    method supportsSession
+interface XRDeviceEvent : Event
+    attribute @@toStringTag
+    getter device
+    method constructor
+interface XRDevicePose
+    attribute @@toStringTag
+    getter poseModelMatrix
+    method constructor
+    method getViewMatrix
+interface XRFrameOfReference : XRCoordinateSystem
+    attribute @@toStringTag
+    getter bounds
+    getter emulatedHeight
+    method constructor
+interface XRLayer
+    attribute @@toStringTag
+    method constructor
+interface XRPresentationFrame
+    attribute @@toStringTag
+    getter session
+    getter views
+    method constructor
+    method getDevicePose
+interface XRSession : EventTarget
+    attribute @@toStringTag
+    getter baseLayer
+    getter depthFar
+    getter depthNear
+    getter device
+    getter exclusive
+    getter onblur
+    getter onend
+    getter onfocus
+    getter onresetpose
+    method cancelFrame
+    method constructor
+    method end
+    method requestFrame
+    method requestFrameOfReference
+    setter baseLayer
+    setter depthFar
+    setter depthNear
+    setter onblur
+    setter onend
+    setter onfocus
+    setter onresetpose
+interface XRSessionEvent : Event
+    attribute @@toStringTag
+    getter session
+    method constructor
+interface XRStageBounds
+    attribute @@toStringTag
+    getter geometry
+    method constructor
+interface XRStageBoundsPoint
+    attribute @@toStringTag
+    getter x
+    getter z
+    method constructor
+interface XRView
+    attribute @@toStringTag
+    getter eye
+    getter projectionMatrix
+    method constructor
+    method getViewport
+interface XRViewport
+    attribute @@toStringTag
+    getter height
+    getter width
+    getter x
+    getter y
+    method constructor
+interface XRWebGLLayer : XRLayer
+    attribute @@toStringTag
+    getter alpha
+    getter antialias
+    getter context
+    getter depth
+    getter framebuffer
+    getter framebufferHeight
+    getter framebufferWidth
+    getter multiview
+    getter stencil
+    method constructor
+    method requestViewportScaling
 interface XSLTProcessor
     attribute @@toStringTag
     method clearParameters
