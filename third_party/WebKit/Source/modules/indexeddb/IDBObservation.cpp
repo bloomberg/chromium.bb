@@ -28,11 +28,7 @@ ScriptValue IDBObservation::key(ScriptState* script_state) {
 }
 
 ScriptValue IDBObservation::value(ScriptState* script_state) {
-  if (!value_)
-    return ScriptValue::From(script_state,
-                             v8::Undefined(script_state->GetIsolate()));
-
-  return ScriptValue::From(script_state, IDBAny::Create(value_));
+  return ScriptValue::From(script_state, value_);
 }
 
 WebIDBOperationType IDBObservation::StringToOperationType(const String& type) {
@@ -77,11 +73,12 @@ IDBObservation* IDBObservation::Create(const WebIDBObservation& observation,
 IDBObservation::IDBObservation(const WebIDBObservation& observation,
                                v8::Isolate* isolate)
     : key_range_(observation.key_range),
-      value_(IDBValue::Create(observation.value, isolate)),
+      value_(IDBAny::Create(IDBValue::Create(observation.value, isolate))),
       operation_type_(observation.type) {}
 
 void IDBObservation::Trace(blink::Visitor* visitor) {
   visitor->Trace(key_range_);
+  visitor->Trace(value_);
   ScriptWrappable::Trace(visitor);
 }
 

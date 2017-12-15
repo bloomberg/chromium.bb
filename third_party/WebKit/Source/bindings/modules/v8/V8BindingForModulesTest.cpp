@@ -174,10 +174,10 @@ void SerializeV8Value(v8::Local<v8::Value> value,
   //           wire_data[kSSVHeaderV8VersionOffset]);
 }
 
-scoped_refptr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
-                                       Vector<char>& wire_bytes,
-                                       double primary_key,
-                                       const WebString& key_path) {
+std::unique_ptr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
+                                         Vector<char>& wire_bytes,
+                                         double primary_key,
+                                         const WebString& key_path) {
   WebData web_data(SharedBuffer::AdoptVector(wire_bytes));
   Vector<WebBlobInfo> web_blob_info;
   WebIDBKey web_idb_key = WebIDBKey::CreateNumber(primary_key);
@@ -317,7 +317,7 @@ TEST(DeserializeIDBValueTest, CurrentVersions) {
   Vector<char> object_bytes;
   v8::Local<v8::Object> empty_object = v8::Object::New(isolate);
   SerializeV8Value(empty_object, isolate, &object_bytes);
-  scoped_refptr<IDBValue> idb_value =
+  std::unique_ptr<IDBValue> idb_value =
       CreateIDBValue(isolate, object_bytes, 42.0, "foo");
 
   v8::Local<v8::Value> v8_value = DeserializeIDBValue(
@@ -349,7 +349,7 @@ TEST(DeserializeIDBValueTest, FutureV8Version) {
   // the serialized value uses a newer format version.
   //
   // http://crbug.com/703704 has a reproduction for this test's circumstances.
-  scoped_refptr<IDBValue> idb_value =
+  std::unique_ptr<IDBValue> idb_value =
       CreateIDBValue(isolate, object_bytes, 42.0, "foo");
 
   v8::Local<v8::Value> v8_value = DeserializeIDBValue(
@@ -367,7 +367,7 @@ TEST(DeserializeIDBValueTest, InjectionIntoNonObject) {
   Vector<char> object_bytes;
   v8::Local<v8::Number> number = v8::Number::New(isolate, 42.0);
   SerializeV8Value(number, isolate, &object_bytes);
-  scoped_refptr<IDBValue> idb_value =
+  std::unique_ptr<IDBValue> idb_value =
       CreateIDBValue(isolate, object_bytes, 42.0, "foo");
 
   v8::Local<v8::Value> v8_value = DeserializeIDBValue(
@@ -387,7 +387,7 @@ TEST(DeserializeIDBValueTest, NestedInjectionIntoNonObject) {
   Vector<char> object_bytes;
   v8::Local<v8::Number> number = v8::Number::New(isolate, 42.0);
   SerializeV8Value(number, isolate, &object_bytes);
-  scoped_refptr<IDBValue> idb_value =
+  std::unique_ptr<IDBValue> idb_value =
       CreateIDBValue(isolate, object_bytes, 42.0, "foo.bar");
 
   v8::Local<v8::Value> v8_value = DeserializeIDBValue(

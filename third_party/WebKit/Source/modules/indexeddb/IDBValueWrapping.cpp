@@ -208,7 +208,7 @@ bool IDBValueUnwrapper::IsWrapped(IDBValue* value) {
 }
 
 bool IDBValueUnwrapper::IsWrapped(
-    const Vector<scoped_refptr<IDBValue>>& values) {
+    const Vector<std::unique_ptr<IDBValue>>& values) {
   for (const auto& value : values) {
     if (IsWrapped(value.get()))
       return true;
@@ -216,28 +216,20 @@ bool IDBValueUnwrapper::IsWrapped(
   return false;
 }
 
-scoped_refptr<IDBValue> IDBValueUnwrapper::Unwrap(
-    IDBValue* wrapped_value,
+std::unique_ptr<IDBValue> IDBValueUnwrapper::Unwrap(
+    std::unique_ptr<IDBValue> wrapped_value,
     scoped_refptr<SharedBuffer>&& wrapper_blob_content) {
   DCHECK(wrapped_value);
   DCHECK(wrapped_value->data_);
-  DCHECK_GT(wrapped_value->blob_info_->size(), 0U);
-  DCHECK_EQ(wrapped_value->blob_info_->size(),
-            wrapped_value->blob_data_->size());
 
   // Create an IDBValue with the same blob information, minus the last blob.
-  unsigned blob_count = wrapped_value->BlobInfo()->size() - 1;
-  std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data =
-      std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>();
-  blob_data->ReserveCapacity(blob_count);
-  std::unique_ptr<Vector<WebBlobInfo>> blob_info =
-      std::make_unique<Vector<WebBlobInfo>>();
-  blob_info->ReserveCapacity(blob_count);
-
-  for (unsigned i = 0; i < blob_count; ++i) {
-    blob_data->push_back((*wrapped_value->blob_data_)[i]);
-    blob_info->push_back((*wrapped_value->blob_info_)[i]);
-  }
+  Vector<scoped_refptr<BlobDataHandle>> blob_data =
+      wrapped_value->TakeBlobData();
+  Vector<WebBlobInfo> blob_info = wrapped_value->TakeBlobInfo();
+  DCHECK_EQ(blob_data.size(), blob_info.size());
+  DCHECK_GT(blob_info.size(), 0U);
+  blob_data.pop_back();
+  blob_info.pop_back();
 
   return IDBValue::Create(std::move(wrapper_blob_content), std::move(blob_data),
                           std::move(blob_info), wrapped_value->PrimaryKey(),
@@ -260,11 +252,11 @@ bool IDBValueUnwrapper::Parse(IDBValue* value) {
   if (!ReadVarInt(blob_offset))
     return Reset();
 
-  size_t value_blob_count = value->blob_data_->size();
+  size_t value_blob_count = value->blob_data_.size();
   if (!value_blob_count || blob_offset != value_blob_count - 1)
     return Reset();
 
-  blob_handle_ = value->blob_data_->back();
+  blob_handle_ = value->blob_data_.back();
   if (blob_handle_->size() != blob_size_)
     return Reset();
 

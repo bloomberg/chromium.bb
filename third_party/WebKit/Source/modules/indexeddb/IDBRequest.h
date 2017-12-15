@@ -242,10 +242,10 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void HandleResponse(std::unique_ptr<WebIDBCursor>,
                       IDBKey*,
                       IDBKey* primary_key,
-                      scoped_refptr<IDBValue>&&);
-  void HandleResponse(IDBKey*, IDBKey* primary_key, scoped_refptr<IDBValue>&&);
-  void HandleResponse(scoped_refptr<IDBValue>&&);
-  void HandleResponse(const Vector<scoped_refptr<IDBValue>>&);
+                      std::unique_ptr<IDBValue>);
+  void HandleResponse(IDBKey*, IDBKey* primary_key, std::unique_ptr<IDBValue>);
+  void HandleResponse(std::unique_ptr<IDBValue>);
+  void HandleResponse(Vector<std::unique_ptr<IDBValue>>);
   void HandleResponse(int64_t);
   void HandleResponse();
 
@@ -349,19 +349,19 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void SetResultCursor(IDBCursor*,
                        IDBKey*,
                        IDBKey* primary_key,
-                       scoped_refptr<IDBValue>&&);
-  void AckReceivedBlobs(const IDBValue*);
-  void AckReceivedBlobs(const Vector<scoped_refptr<IDBValue>>&);
+                       std::unique_ptr<IDBValue>);
+  void AckReceivedBlobs(const IDBValue&);
+  void AckReceivedBlobs(const Vector<std::unique_ptr<IDBValue>>&);
 
   void EnqueueResponse(DOMException*);
   void EnqueueResponse(IDBKey*);
   void EnqueueResponse(std::unique_ptr<WebIDBCursor>,
                        IDBKey*,
                        IDBKey* primary_key,
-                       scoped_refptr<IDBValue>&&);
-  void EnqueueResponse(IDBKey*, IDBKey* primary_key, scoped_refptr<IDBValue>&&);
-  void EnqueueResponse(scoped_refptr<IDBValue>&&);
-  void EnqueueResponse(const Vector<scoped_refptr<IDBValue>>&);
+                       std::unique_ptr<IDBValue>);
+  void EnqueueResponse(IDBKey*, IDBKey* primary_key, std::unique_ptr<IDBValue>);
+  void EnqueueResponse(std::unique_ptr<IDBValue>);
+  void EnqueueResponse(Vector<std::unique_ptr<IDBValue>>);
   void EnqueueResponse();
 
   void ClearPutOperationBlobs() { transit_blob_handles_.clear(); }
@@ -383,7 +383,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // dispatched.
   Member<IDBKey> cursor_key_;
   Member<IDBKey> cursor_primary_key_;
-  scoped_refptr<IDBValue> cursor_value_;
+  std::unique_ptr<IDBValue> cursor_value_;
 
   Vector<scoped_refptr<BlobDataHandle>> transit_blob_handles_;
 

@@ -73,7 +73,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(
 
 IDBRequestQueueItem::IDBRequestQueueItem(
     IDBRequest* request,
-    scoped_refptr<IDBValue> value,
+    std::unique_ptr<IDBValue> value,
     bool attach_loader,
     base::OnceClosure on_result_load_complete)
     : request_(request),
@@ -85,16 +85,16 @@ IDBRequestQueueItem::IDBRequestQueueItem(
   request_->queue_item_ = this;
   values_.push_back(std::move(value));
   if (attach_loader)
-    loader_ = std::make_unique<IDBRequestLoader>(this, &values_);
+    loader_ = std::make_unique<IDBRequestLoader>(this, values_);
 }
 
 IDBRequestQueueItem::IDBRequestQueueItem(
     IDBRequest* request,
-    const Vector<scoped_refptr<IDBValue>>& values,
+    Vector<std::unique_ptr<IDBValue>> values,
     bool attach_loader,
     base::OnceClosure on_result_load_complete)
     : request_(request),
-      values_(values),
+      values_(std::move(values)),
       on_result_load_complete_(std::move(on_result_load_complete)),
       response_type_(kValueArray),
       ready_(!attach_loader) {
@@ -102,14 +102,14 @@ IDBRequestQueueItem::IDBRequestQueueItem(
   DCHECK_EQ(request->queue_item_, nullptr);
   request_->queue_item_ = this;
   if (attach_loader)
-    loader_ = std::make_unique<IDBRequestLoader>(this, &values_);
+    loader_ = std::make_unique<IDBRequestLoader>(this, values_);
 }
 
 IDBRequestQueueItem::IDBRequestQueueItem(
     IDBRequest* request,
     IDBKey* key,
     IDBKey* primary_key,
-    scoped_refptr<IDBValue> value,
+    std::unique_ptr<IDBValue> value,
     bool attach_loader,
     base::OnceClosure on_result_load_complete)
     : request_(request),
@@ -123,7 +123,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(
   request_->queue_item_ = this;
   values_.push_back(std::move(value));
   if (attach_loader)
-    loader_ = std::make_unique<IDBRequestLoader>(this, &values_);
+    loader_ = std::make_unique<IDBRequestLoader>(this, values_);
 }
 
 IDBRequestQueueItem::IDBRequestQueueItem(
@@ -131,7 +131,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(
     std::unique_ptr<WebIDBCursor> cursor,
     IDBKey* key,
     IDBKey* primary_key,
-    scoped_refptr<IDBValue> value,
+    std::unique_ptr<IDBValue> value,
     bool attach_loader,
     base::OnceClosure on_result_load_complete)
     : request_(request),
@@ -146,7 +146,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(
   request_->queue_item_ = this;
   values_.push_back(std::move(value));
   if (attach_loader)
-    loader_ = std::make_unique<IDBRequestLoader>(this, &values_);
+    loader_ = std::make_unique<IDBRequestLoader>(this, values_);
 }
 
 IDBRequestQueueItem::~IDBRequestQueueItem() {
@@ -264,7 +264,7 @@ void IDBRequestQueueItem::EnqueueResponse() {
       break;
 
     case kValueArray:
-      request_->EnqueueResponse(values_);
+      request_->EnqueueResponse(std::move(values_));
       break;
 
     case kVoid:

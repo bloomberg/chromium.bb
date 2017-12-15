@@ -147,10 +147,10 @@ void WebIDBCallbacksImpl::OnSuccess(const WebVector<WebIDBValue>& values) {
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
-  Vector<scoped_refptr<IDBValue>> idb_values(values.size());
+  Vector<std::unique_ptr<IDBValue>> idb_values(values.size());
   for (size_t i = 0; i < values.size(); ++i)
     idb_values[i] = IDBValue::Create(values[i], request_->GetIsolate());
-  request_->HandleResponse(idb_values);
+  request_->HandleResponse(std::move(idb_values));
 }
 
 void WebIDBCallbacksImpl::OnSuccess(long long value) {
