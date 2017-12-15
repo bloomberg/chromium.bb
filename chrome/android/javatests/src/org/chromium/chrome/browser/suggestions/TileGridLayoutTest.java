@@ -35,7 +35,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -64,7 +63,6 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServerRule;
-import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -173,8 +171,7 @@ public class TileGridLayoutTest {
     //@MediumTest
     @DisabledTest(message = "crbug.com/771648")
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeHome
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @ChromeHome.Enable
     public void testModernTileGridAppearance_Full() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
@@ -196,7 +193,7 @@ public class TileGridLayoutTest {
     //@MediumTest
     @DisabledTest(message = "crbug.com/771648")
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeHome(false)
+    @ChromeHome.Disable
     public void testTileGridAppearance_Full() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
@@ -219,8 +216,7 @@ public class TileGridLayoutTest {
     @DisabledTest(message = "crbug.com/771648")
     @RetryOnFailure
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeHome
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @ChromeHome.Enable
     public void testModernTileGridAppearance_Two() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(2));
 
@@ -236,7 +232,7 @@ public class TileGridLayoutTest {
     @DisabledTest(message = "crbug.com/771648")
     @RetryOnFailure
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeHome(false)
+    @ChromeHome.Disable
     public void testTileGridAppearance_Two() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(2));
 
@@ -250,8 +246,7 @@ public class TileGridLayoutTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeHome
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @ChromeHome.Enable
     public void testTileAppearanceModern()
             throws IOException, InterruptedException, TimeoutException {
         List<SiteSuggestion> suggestions = makeSuggestions(2);
@@ -267,7 +262,7 @@ public class TileGridLayoutTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeHome(false)
+    @ChromeHome.Disable
     public void testTileAppearanceClassic()
             throws IOException, InterruptedException, TimeoutException {
         List<SiteSuggestion> suggestions = makeSuggestions(2);
