@@ -611,14 +611,15 @@ public class ContextualSearchPanel extends OverlayPanel {
      *         the screen, in pixels.
      */
     public Rect getPanelRect() {
-        Rect visibleDisplayFrame = new Rect();
-        mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(visibleDisplayFrame);
+        int[] contentLocationInWindow = new int[2];
+        mActivity.findViewById(android.R.id.content).getLocationInWindow(contentLocationInWindow);
+        int leftPadding = contentLocationInWindow[0];
+        int topPadding = contentLocationInWindow[1];
 
         // getOffsetX() and getOffsetY() return the position of the panel relative to the activity,
-        // therefore visibleDisplayFrame.left and visibleDisplayFrame.top are added to get the
-        // position in the screen.
-        int left = (int) (getOffsetX() / mPxToDp) + visibleDisplayFrame.left;
-        int top = (int) ((getOffsetY()) / mPxToDp) + visibleDisplayFrame.top;
+        // therefore leftPadding and topPadding are added to get the position in the screen.
+        int left = (int) (getOffsetX() / mPxToDp) + leftPadding;
+        int top = (int) (getOffsetY() / mPxToDp) + topPadding;
         int bottom = top + (int) (getBarHeight() / mPxToDp);
         int right = left + (int) (getWidth() / mPxToDp);
 
