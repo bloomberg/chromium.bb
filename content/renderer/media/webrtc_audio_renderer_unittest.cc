@@ -192,13 +192,14 @@ TEST_F(WebRtcAudioRendererTest, MultipleRenderers) {
 TEST_F(WebRtcAudioRendererTest, VerifySinkParameters) {
   SetupRenderer(kDefaultOutputDeviceId);
   renderer_proxy_->Start();
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_FUCHSIA)
   static const int kExpectedBufferSize = kHardwareSampleRate / 100;
 #elif defined(OS_ANDROID)
   static const int kExpectedBufferSize = 2 * kHardwareSampleRate / 100;
-#else
-  // Windows.
+#elif defined(OS_WIN)
   static const int kExpectedBufferSize = kHardwareBufferSize;
+#else
+#error Unknown platform.
 #endif
   EXPECT_EQ(kExpectedBufferSize, renderer_->frames_per_buffer());
   EXPECT_EQ(kHardwareSampleRate, renderer_->sample_rate());
