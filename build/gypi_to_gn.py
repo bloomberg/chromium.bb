@@ -117,6 +117,7 @@ def LoadPythonDictionary(path):
   elements_to_strip = [
     'conditions',
     'target_conditions',
+    'target_defaults',
     'targets',
     'includes',
     'actions',
