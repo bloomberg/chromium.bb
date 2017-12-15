@@ -43,6 +43,8 @@ source_set("navigation") {
     "time_smoother.h",
     "wk_based_navigation_manager_impl.h",
     "wk_based_navigation_manager_impl.mm",
+    "wk_based_restore_session_util.h",
+    "wk_based_restore_session_util.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
