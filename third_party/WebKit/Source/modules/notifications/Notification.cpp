@@ -164,8 +164,9 @@ void Notification::SchedulePrepareShow() {
   DCHECK_EQ(state_, State::kLoading);
   DCHECK(!prepare_show_method_runner_);
 
-  prepare_show_method_runner_ =
-      AsyncMethodRunner<Notification>::Create(this, &Notification::PrepareShow);
+  prepare_show_method_runner_ = AsyncMethodRunner<Notification>::Create(
+      this, &Notification::PrepareShow,
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
   prepare_show_method_runner_->RunAsync();
 }
 

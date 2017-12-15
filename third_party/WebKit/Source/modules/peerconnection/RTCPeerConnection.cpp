@@ -91,6 +91,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebRTCAnswerOptions.h"
@@ -492,10 +493,13 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
       signaling_state_(kSignalingStateStable),
       ice_gathering_state_(kICEGatheringStateNew),
       ice_connection_state_(kICEConnectionStateNew),
+      // WebRTC spec specifies kNetworking as task source.
+      // https://www.w3.org/TR/webrtc/#operation
       dispatch_scheduled_event_runner_(
           AsyncMethodRunner<RTCPeerConnection>::Create(
               this,
-              &RTCPeerConnection::DispatchScheduledEvent)),
+              &RTCPeerConnection::DispatchScheduledEvent,
+              context->GetTaskRunner(TaskType::kNetworking))),
       stopped_(false),
       closed_(false),
       has_data_channels_(false) {

@@ -100,6 +100,8 @@ class MODULES_EXPORT MediaDevices final
 
   bool observing_;
   bool stopped_;
+  // Async runner may be null when there is no valid execution context.
+  // No async work may be posted in this scenario.
   Member<AsyncMethodRunner<MediaDevices>> dispatch_scheduled_event_runner_;
   HeapVector<Member<Event>> scheduled_events_;
   mojom::blink::MediaDevicesDispatcherHostPtr dispatcher_host_;

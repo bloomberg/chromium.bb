@@ -17,6 +17,7 @@
 #include "platform/AsyncMethodRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/fonts/FontSelector.h"
+#include "public/platform/TaskType.h"
 
 // Mac OS X 10.6 SDK defines check() macro that interferes with our check()
 // method
@@ -44,9 +45,11 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
         ready_(new ReadyProperty(GetExecutionContext(),
                                  this,
                                  ReadyProperty::kReady)),
+        // TODO(scheduler-dev): Create an internal task type for fonts.
         async_runner_(AsyncMethodRunner<FontFaceSet>::Create(
             this,
-            &FontFaceSet::HandlePendingEventsAndPromises)) {}
+            &FontFaceSet::HandlePendingEventsAndPromises,
+            context.GetTaskRunner(TaskType::kUnthrottled))) {}
   ~FontFaceSet() = default;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);

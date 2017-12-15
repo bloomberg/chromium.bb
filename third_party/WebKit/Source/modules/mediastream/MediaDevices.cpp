@@ -20,6 +20,7 @@
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Functional.h"
+#include "public/platform/TaskType.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 using blink::mojom::blink::MediaDeviceType;
@@ -69,9 +70,12 @@ MediaDevices::MediaDevices(ExecutionContext* context)
     : PausableObject(context),
       observing_(false),
       stopped_(false),
-      dispatch_scheduled_event_runner_(AsyncMethodRunner<MediaDevices>::Create(
-          this,
-          &MediaDevices::DispatchScheduledEvent)) {}
+      dispatch_scheduled_event_runner_(
+          context ? AsyncMethodRunner<MediaDevices>::Create(
+                        this,
+                        &MediaDevices::DispatchScheduledEvent,
+                        context->GetTaskRunner(TaskType::kMediaElementEvent))
+                  : nullptr) {}
 
 MediaDevices::~MediaDevices() {}
 
@@ -191,15 +195,18 @@ void MediaDevices::ContextDestroyed(ExecutionContext*) {
 }
 
 void MediaDevices::Pause() {
+  DCHECK(dispatch_scheduled_event_runner_);
   dispatch_scheduled_event_runner_->Pause();
 }
 
 void MediaDevices::Unpause() {
+  DCHECK(dispatch_scheduled_event_runner_);
   dispatch_scheduled_event_runner_->Unpause();
 }
 
 void MediaDevices::ScheduleDispatchEvent(Event* event) {
   scheduled_events_.push_back(event);
+  DCHECK(dispatch_scheduled_event_runner_);
   dispatch_scheduled_event_runner_->RunAsync();
 }
 
