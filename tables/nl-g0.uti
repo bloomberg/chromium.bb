@@ -109,14 +109,9 @@ replace  \\_
 
 # For numbers that are immediately followed by a letter a-j, a sign must be
 # inserted for terminating the number.
-class       digitletter            abcdefghij    # 1st class = $w
-noback context     $d[]%digitletter       @6
-noback context     $d","[]%digitletter    @6
-noback context     $d"."[]%digitletter    @6
-noback context     $d":"[]%digitletter    @6
-# Multiple dots 6 are collapsed into a single dot 6.
-noback pass2       [@6]@6                 ?
-noback pass3       $d[@6]@456             ?
+numericmodechars .,:
+nocontractsign 6
+numericnocontchars abcdefghij
 
 # §2.20 Sleutelteken tweede betekenis [1]
 
