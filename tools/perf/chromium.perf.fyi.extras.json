@@ -371,6 +371,78 @@
           "ignore_task_failure": false,
           "io_timeout": 360
         }
+      },
+      {
+        "args": [
+          "heap_profiling.mobile.disabled",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "heap_profiling.mobile.disabled",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "build46-b1--device2",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 3600,
+          "hard_timeout": 1080,
+          "ignore_task_failure": false,
+          "io_timeout": 360
+        }
+      },
+      {
+        "args": [
+          "heap_profiling.mobile.native",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "heap_profiling.mobile.native",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "build46-b1--device2",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 3600,
+          "hard_timeout": 1080,
+          "ignore_task_failure": false,
+          "io_timeout": 360
+        }
+      },
+      {
+        "args": [
+          "heap_profiling.mobile.pseudo",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "heap_profiling.mobile.pseudo",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "build46-b1--device2",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 3600,
+          "hard_timeout": 1080,
+          "ignore_task_failure": false,
+          "io_timeout": 360
+        }
       }
     ]
   },
