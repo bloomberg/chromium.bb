@@ -257,9 +257,10 @@ void TestWebState::OnFormActivity(const FormActivityParams& params) {
 }
 
 void TestWebState::OnDocumentSubmitted(const std::string& form_name,
-                                       bool user_initiated) {
+                                       bool user_initiated,
+                                       bool is_main_frame) {
   for (auto& observer : observers_) {
-    observer.DocumentSubmitted(this, form_name, user_initiated);
+    observer.DocumentSubmitted(this, form_name, user_initiated, is_main_frame);
   }
 }
 

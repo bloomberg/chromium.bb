@@ -469,7 +469,12 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated {
+                     userInitiated:(BOOL)userInitiated
+                       isMainFrame:(BOOL)isMainFrame {
+  if (!isMainFrame) {
+    // Saving from iframes is not implemented.
+    return;
+  }
   DCHECK_EQ(webState_, webState);
   __weak PasswordController* weakSelf = self;
   // This code is racing against the new page loading and will not get the
@@ -668,6 +673,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
+                               isMainFrame:(BOOL)isMainFrame
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {

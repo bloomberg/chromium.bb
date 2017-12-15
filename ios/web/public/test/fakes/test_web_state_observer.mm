@@ -140,12 +140,14 @@ void TestWebStateObserver::DidSuppressDialog(WebState* web_state) {
 
 void TestWebStateObserver::DocumentSubmitted(WebState* web_state,
                                              const std::string& form_name,
-                                             bool user_initiated) {
+                                             bool user_initiated,
+                                             bool is_main_frame) {
   ASSERT_EQ(web_state_, web_state);
   submit_document_info_ = base::MakeUnique<web::TestSubmitDocumentInfo>();
   submit_document_info_->web_state = web_state;
   submit_document_info_->form_name = form_name;
   submit_document_info_->user_initiated = user_initiated;
+  submit_document_info_->is_main_frame = is_main_frame;
 }
 
 void TestWebStateObserver::FormActivityRegistered(

@@ -49,7 +49,8 @@ CWV_EXPORT
 // as a result of user interaction.
 - (void)autofillController:(CWVAutofillController*)autofillController
      didSubmitFormWithName:(NSString*)formName
-             userInitiated:(BOOL)userInitiated;
+             userInitiated:(BOOL)userInitiated
+               isMainFrame:(BOOL)isMainFrame;
 
 @end
 

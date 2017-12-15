@@ -228,17 +228,21 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
   @autoreleasepool {
     [[delegate expect] autofillController:autofill_controller_
                     didSubmitFormWithName:kTestFormName
-                            userInitiated:YES];
+                            userInitiated:YES
+                              isMainFrame:YES];
 
     web_state_.OnDocumentSubmitted(base::SysNSStringToUTF8(kTestFormName),
-                                   /*user_initiated=*/true);
+                                   /*user_initiated=*/true,
+                                   /*is_main_frame=*/true);
 
     [[delegate expect] autofillController:autofill_controller_
                     didSubmitFormWithName:kTestFormName
-                            userInitiated:NO];
+                            userInitiated:NO
+                              isMainFrame:YES];
 
     web_state_.OnDocumentSubmitted(base::SysNSStringToUTF8(kTestFormName),
-                                   /*user_initiated=*/false);
+                                   /*user_initiated=*/false,
+                                   /*is_main_frame=*/true);
 
     [delegate verify];
   }

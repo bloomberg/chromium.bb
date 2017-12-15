@@ -59,7 +59,8 @@
 // Invoked by WebStateObserverBridge::DocumentSubmitted.
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated;
+                     userInitiated:(BOOL)userInitiated
+                       isMainFrame:(BOOL)isMainFrame;
 
 // Invoked by WebStateObserverBridge::FormActivityRegistered.
 - (void)webState:(web::WebState*)webState
@@ -116,7 +117,8 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void DidSuppressDialog(web::WebState* web_state) override;
   void DocumentSubmitted(web::WebState* web_state,
                          const std::string& form_name,
-                         bool user_initiated) override;
+                         bool user_initiated,
+                         bool is_main_frame) override;
   void FormActivityRegistered(web::WebState* web_state,
                               const FormActivityParams& params) override;
   void FaviconUrlUpdated(web::WebState* web_state,

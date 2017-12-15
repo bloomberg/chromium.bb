@@ -2467,7 +2467,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // is visible.
   BOOL submittedByUser = [context[kUserIsInteractingKey] boolValue] ||
                          [_webViewProxy keyboardAccessory];
-  _webStateImpl->OnDocumentSubmitted(formName, submittedByUser);
+  _webStateImpl->OnDocumentSubmitted(formName, submittedByUser,
+                                     [context[kIsMainFrame] boolValue]);
   return YES;
 }
 
@@ -2481,6 +2482,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       !message->GetString("value", &params.value)) {
     params.input_missing = true;
   }
+
+  params.is_main_frame = [context[kIsMainFrame] boolValue];
 
   _webStateImpl->OnFormActivityRegistered(params);
   return YES;

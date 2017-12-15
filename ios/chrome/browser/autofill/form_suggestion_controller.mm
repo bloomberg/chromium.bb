@@ -188,6 +188,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   NSString* strongType = base::SysUTF8ToNSString(params.type);
   NSString* strongValue =
       base::SysUTF8ToNSString(_suggestionState.get()->typed_value);
+  BOOL is_main_frame = params.is_main_frame;
 
   // Build a block for each provider that will invoke its completion with YES
   // if the provider can provide suggestions for the specified form/field/type
@@ -210,6 +211,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
                                              fieldType:strongFieldType
                                                   type:strongType
                                             typedValue:strongValue
+                                           isMainFrame:is_main_frame
                                               webState:webState
                                      completionHandler:completion];
         };
