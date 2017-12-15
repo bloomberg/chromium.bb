@@ -5,6 +5,9 @@
 #include "chrome/browser/loader/predictor_resource_throttle.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/browser/resource_request_info.h"
@@ -27,7 +30,7 @@ bool IsNavigationRequest(net::URLRequest* request) {
 PredictorResourceThrottle::PredictorResourceThrottle(
     net::URLRequest* request,
     chrome_browser_net::Predictor* predictor)
-    : request_(request), predictor_(predictor) {}
+    : request_(request), predictor_(predictor), weak_factory_(this) {}
 
 PredictorResourceThrottle::~PredictorResourceThrottle() {}
 
@@ -68,8 +71,6 @@ void PredictorResourceThrottle::WillStartRequest(bool* defer) {
     predictor_->LearnFromNavigation(referring_scheme_host, request_scheme_host);
   }
 
-  // Subresources for main frames are predicted when navigation starts, in
-  // PredictorTabHelper, so only handle predictions for subframes here.
   // If the referring host is equal to the request host, then the predictor has
   // already made any/all predictions when navigating to the referring host.
   // Don't update the RecentlySeen() time because the timed cache is already
@@ -77,10 +78,7 @@ void PredictorResourceThrottle::WillStartRequest(bool* defer) {
   if (IsNavigationRequest(request_) &&
       referring_scheme_host != request_scheme_host) {
     predictor_->timed_cache()->SetRecentlySeen(request_scheme_host);
-    if (resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
-      predictor_->PredictFrameSubresources(request_scheme_host,
-                                           request_->site_for_cookies());
-    }
+    DispatchPredictions(request_scheme_host, request_->site_for_cookies());
   }
 }
 
@@ -115,10 +113,26 @@ void PredictorResourceThrottle::WillRedirectRequest(
   }
 
   predictor_->timed_cache()->SetRecentlySeen(new_scheme_host);
-  predictor_->PredictFrameSubresources(new_scheme_host,
-                                       redirect_info.new_site_for_cookies);
+  DispatchPredictions(new_scheme_host, redirect_info.new_site_for_cookies);
 }
 
 const char* PredictorResourceThrottle::GetNameForLogging() const {
   return "PredictorResourceThrottle";
+}
+
+void PredictorResourceThrottle::DispatchPredictions(
+    const GURL& url,
+    const GURL& site_for_cookies) {
+  // Dispatch predictions asynchronously to avoid blocking the actual request
+  // from going out to the network.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PredictorResourceThrottle::DoPredict,
+                     weak_factory_.GetWeakPtr(), url, site_for_cookies));
+}
+
+void PredictorResourceThrottle::DoPredict(const GURL& url,
+                                          const GURL& site_for_cookies) {
+  TRACE_EVENT0("loading", "PredictorResourceThrottle::DoPredict");
+  predictor_->PredictFrameSubresources(url, site_for_cookies);
 }
