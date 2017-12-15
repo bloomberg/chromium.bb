@@ -12,4 +12,9 @@ interface DataPipeGetter {
   // size was known, the callback is instead called with the net::Error
   // |status|.
   Read(handle<data_pipe_producer> pipe) => (int32 status, uint64 size);
+
+  // Makes a clone so there can be multiple handles to this interface. This
+  // doesn't imply the data itself is cloned: this can be an inexpensive
+  // operation.
+  Clone(DataPipeGetter& request);
 };

@@ -111,7 +111,7 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
       WebString::FromUTF16(state.http_body.http_content_type));
   if (state.http_body.request_body != nullptr) {
     item.SetHTTPBody(
-        GetWebHTTPBodyForRequestBody(state.http_body.request_body));
+        GetWebHTTPBodyForRequestBody(*state.http_body.request_body));
   }
 
   item.SetScrollAnchorData({WebString::FromUTF16(state.scroll_anchor_selector),

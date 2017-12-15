@@ -39,7 +39,7 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
 
 // Takes a ResourceRequestBody and converts into WebHTTPBody.
 blink::WebHTTPBody GetWebHTTPBodyForRequestBody(
-    const scoped_refptr<ResourceRequestBody>& input);
+    const ResourceRequestBody& input);
 
 // Takes a WebHTTPBody and converts into a ResourceRequestBody.
 scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(

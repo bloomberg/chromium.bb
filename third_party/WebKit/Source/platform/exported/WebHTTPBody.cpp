@@ -30,10 +30,12 @@
 
 #include "public/platform/WebHTTPBody.h"
 
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "platform/FileMetadata.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/FormDataEncoder.h"
+#include "services/network/public/interfaces/data_pipe_getter.mojom-blink.h"
 
 namespace blink {
 
@@ -85,9 +87,13 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
       result.type = Element::kTypeBlob;
       result.blob_uuid = element.blob_uuid_;
       break;
-    default:
-      NOTREACHED();
-      return false;
+    case FormDataElement::kDataPipe:
+      result.type = Element::kTypeDataPipe;
+      network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
+      (*element.data_pipe_getter_->GetPtr())
+          ->Clone(mojo::MakeRequest(&data_pipe_getter));
+      result.data_pipe_getter = data_pipe_getter.PassInterface().PassHandle();
+      break;
   }
 
   return true;
@@ -121,6 +127,19 @@ void WebHTTPBody::AppendFileRange(const WebString& file_path,
 void WebHTTPBody::AppendBlob(const WebString& uuid) {
   EnsureMutable();
   private_->AppendBlob(uuid, nullptr);
+}
+
+void WebHTTPBody::AppendDataPipe(mojo::ScopedMessagePipeHandle message_pipe) {
+  EnsureMutable();
+
+  // Convert the raw message pipe to network::mojom::blink::DataPipeGetter.
+  network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
+  data_pipe_getter.Bind(network::mojom::blink::DataPipeGetterPtrInfo(
+      std::move(message_pipe), 0u));
+
+  auto wrapped =
+      base::MakeRefCounted<WrappedDataPipeGetter>(std::move(data_pipe_getter));
+  private_->AppendDataPipe(std::move(wrapped));
 }
 
 long long WebHTTPBody::Identifier() const {

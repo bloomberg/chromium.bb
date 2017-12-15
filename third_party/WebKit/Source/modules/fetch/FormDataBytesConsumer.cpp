@@ -7,23 +7,47 @@
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"
 #include "modules/fetch/BlobBytesConsumer.h"
+#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
+#include "platform/network/FormDataEncoder.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/TextCodec.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
 namespace {
 
-bool IsSimple(const EncodedFormData* form_data) {
+enum class FormDataType {
+  // Has only data elements.
+  kSimple,
+  // Can have data, file, and blob elements (no data pipes).
+  kComplex,
+  // Can have data and data pipe elements (no files and blobs).
+  kDataPipeAndDataOnly
+};
+
+FormDataType GetType(const EncodedFormData* form_data) {
+  FormDataType type = FormDataType::kSimple;
   for (const auto& element : form_data->Elements()) {
-    if (element.type_ != FormDataElement::kData)
-      return false;
+    switch (element.type_) {
+      case FormDataElement::kData:
+        break;
+      case FormDataElement::kEncodedFile:
+      case FormDataElement::kEncodedBlob:
+        DCHECK_NE(type, FormDataType::kDataPipeAndDataOnly);
+        type = FormDataType::kComplex;
+        break;
+      case FormDataElement::kDataPipe:
+        DCHECK_NE(type, FormDataType::kComplex);
+        type = FormDataType::kDataPipeAndDataOnly;
+        break;
+    }
   }
-  return true;
+  return type;
 }
 
 class SimpleFormDataBytesConsumer : public BytesConsumer {
@@ -93,22 +117,265 @@ class SimpleFormDataBytesConsumer : public BytesConsumer {
   String DebugName() const override { return "SimpleFormDataBytesConsumer"; }
 
  private:
-  // either one of |m_formData| and |m_flattenFormData| is usable at a time.
+  // Either one of |form_data_| and |flatten_form_data_| is usable at a time.
   scoped_refptr<EncodedFormData> form_data_;
   Vector<char> flatten_form_data_;
   size_t flatten_form_data_offset_ = 0;
   PublicState state_ = PublicState::kReadableOrWaiting;
 };
 
+class DataPipeAndDataBytesConsumer final : public BytesConsumer {
+ public:
+  DataPipeAndDataBytesConsumer(ExecutionContext* execution_context,
+                               EncodedFormData* form_data)
+      : execution_context_(execution_context) {
+    // Make a copy in case |form_data| will mutate while we read it. Copy()
+    // works fine; we don't need to DeepCopy() the data and data pipe getter:
+    // data is just a Vector<char> and data pipe getter can be shared.
+    form_data_ = form_data->Copy();
+    form_data_->SetBoundary(FormDataEncoder::GenerateUniqueBoundaryString());
+    iter_ = form_data_->MutableElements().begin();
+  }
+
+  Result BeginRead(const char** buffer, size_t* available) override {
+    *buffer = nullptr;
+    *available = 0;
+    if (state_ == PublicState::kClosed)
+      return Result::kDone;
+    if (state_ == PublicState::kErrored)
+      return Result::kError;
+
+    if (iter_ == form_data_->MutableElements().end()) {
+      Close();
+      return Result::kDone;
+    }
+
+    // Currently reading bytes.
+    if (iter_->type_ == FormDataElement::kData) {
+      // Create the bytes consumer if there isn't one yet.
+      if (!simple_consumer_) {
+        scoped_refptr<EncodedFormData> simple_data =
+            EncodedFormData::Create(iter_->data_);
+        simple_consumer_ =
+            new SimpleFormDataBytesConsumer(std::move(simple_data));
+        if (client_)
+          simple_consumer_->SetClient(client_);
+      }
+      // Read from the bytes consumer.
+      Result result = simple_consumer_->BeginRead(buffer, available);
+      if (result == Result::kError) {
+        SetError();
+        return Result::kError;
+      }
+      // If done, continue to the next element.
+      if (result == Result::kDone) {
+        simple_consumer_ = nullptr;
+        ++iter_;
+        return BeginRead(buffer, available);
+      }
+      return result;
+    }
+
+    // Currently reading a data pipe.
+    if (iter_->type_ == FormDataElement::kDataPipe) {
+      // Create the data pipe consumer if there isn't one yet.
+      if (!data_pipe_consumer_) {
+        network::mojom::blink::DataPipeGetterPtr* data_pipe_getter =
+            iter_->data_pipe_getter_->GetPtr();
+        mojo::DataPipe data_pipe;
+        (*data_pipe_getter)
+            ->Read(
+                std::move(data_pipe.producer_handle),
+                WTF::Bind(&DataPipeAndDataBytesConsumer::DataPipeGetterCallback,
+                          WrapWeakPersistent(this)));
+        std::unique_ptr<WebDataConsumerHandle> consumer_handle =
+            Platform::Current()->CreateDataConsumerHandle(
+                std::move(data_pipe.consumer_handle));
+        data_pipe_consumer_ = new BytesConsumerForDataConsumerHandle(
+            execution_context_, std::move(consumer_handle));
+        if (client_)
+          data_pipe_consumer_->SetClient(client_);
+      }
+
+      // Read from the data pipe consumer.
+      Result result = data_pipe_consumer_->BeginRead(buffer, available);
+      if (result == Result::kError) {
+        SetError();
+        return Result::kError;
+      }
+
+      if (result == Result::kDone) {
+        // We've finished reading from the data pipe, but we're not done
+        // until we get the DataPipeGetterCallback signalling success.
+        if (!was_data_pipe_getter_callback_called_)
+          return Result::kShouldWait;
+
+        // We're done. Move on to the next element.
+        was_data_pipe_getter_callback_called_ = false;
+        data_pipe_consumer_ = nullptr;
+        ++iter_;
+        return BeginRead(buffer, available);
+      }
+      return result;
+    }
+
+    NOTREACHED() << "Invalid type: " << iter_->type_;
+    return Result::kError;
+  }
+
+  Result EndRead(size_t read_size) override {
+    if (state_ == PublicState::kClosed)
+      return Result::kDone;
+    if (state_ == PublicState::kErrored)
+      return Result::kError;
+
+    if (simple_consumer_) {
+      Result result = simple_consumer_->EndRead(read_size);
+      if (result == Result::kError) {
+        SetError();
+        return Result::kError;
+      }
+      // Even if this consumer is done, there may still be more elements, so
+      // return Ok.
+      DCHECK(result == Result::kOk || result == Result::kDone);
+      return Result::kOk;
+    }
+    if (data_pipe_consumer_) {
+      Result result = data_pipe_consumer_->EndRead(read_size);
+      if (result == Result::kError) {
+        SetError();
+        return Result::kError;
+      }
+      // Even if this consumer is done, there may still be more elements, so
+      // return Ok.
+      DCHECK(result == Result::kOk || result == Result::kDone);
+      return Result::kOk;
+    }
+
+    NOTREACHED() << "No consumer. BeginRead() was not called?";
+    return Result::kError;
+  }
+
+  scoped_refptr<EncodedFormData> DrainAsFormData() override {
+    if (state_ == PublicState::kClosed || state_ == PublicState::kErrored)
+      return nullptr;
+    // According to the DrainAsFormData() contract, we can only return bytes
+    // that haven't already been read. So if reading has already started,
+    // give up and return null.
+    if (simple_consumer_ || data_pipe_consumer_)
+      return nullptr;
+    Close();
+    return std::move(form_data_);
+  }
+
+  void SetClient(Client* client) override {
+    DCHECK(!client_);
+    DCHECK(client);
+    client_ = client;
+    if (simple_consumer_)
+      simple_consumer_->SetClient(client_);
+    else if (data_pipe_consumer_)
+      data_pipe_consumer_->SetClient(client_);
+  }
+
+  void ClearClient() override {
+    client_ = nullptr;
+    if (simple_consumer_)
+      simple_consumer_->ClearClient();
+    else if (data_pipe_consumer_)
+      data_pipe_consumer_->ClearClient();
+  }
+
+  void Cancel() override {
+    if (state_ == PublicState::kClosed || state_ == PublicState::kErrored)
+      return;
+    if (simple_consumer_)
+      simple_consumer_->Cancel();
+    else if (data_pipe_consumer_)
+      data_pipe_consumer_->Cancel();
+    Close();
+  }
+
+  PublicState GetPublicState() const override { return state_; }
+
+  Error GetError() const override {
+    DCHECK_EQ(state_, PublicState::kErrored);
+    return error_;
+  }
+
+  String DebugName() const override { return "DataPipeAndDataBytesConsumer"; }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(execution_context_);
+    visitor->Trace(client_);
+    visitor->Trace(simple_consumer_);
+    visitor->Trace(data_pipe_consumer_);
+    BytesConsumer::Trace(visitor);
+  }
+
+ private:
+  void DataPipeGetterCallback(int32_t status, uint64_t size) {
+    switch (state_) {
+      case PublicState::kErrored:
+        return;
+      case PublicState::kClosed:
+        NOTREACHED();
+        return;
+      case PublicState::kReadableOrWaiting:
+        break;
+    }
+
+    DCHECK(data_pipe_consumer_);
+    auto client = client_;
+    if (status != 0)  // 0 is net::OK.
+      SetError();
+    else
+      was_data_pipe_getter_callback_called_ = true;
+
+    if (client)
+      client->OnStateChange();
+  }
+
+  void Close() {
+    if (state_ == PublicState::kClosed)
+      return;
+    DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
+    state_ = PublicState::kClosed;
+    ClearClient();
+    simple_consumer_ = nullptr;
+    data_pipe_consumer_ = nullptr;
+  }
+
+  void SetError() {
+    if (state_ == PublicState::kErrored)
+      return;
+    DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
+    state_ = PublicState::kErrored;
+    error_ = Error("error");
+    ClearClient();
+    simple_consumer_ = nullptr;
+    data_pipe_consumer_ = nullptr;
+  }
+
+  Member<ExecutionContext> execution_context_;
+  PublicState state_ = PublicState::kReadableOrWaiting;
+  scoped_refptr<EncodedFormData> form_data_;
+  Vector<FormDataElement>::iterator iter_;
+  Error error_;
+  Member<BytesConsumer::Client> client_;
+  Member<SimpleFormDataBytesConsumer> simple_consumer_;
+  Member<BytesConsumerForDataConsumerHandle> data_pipe_consumer_;
+  bool was_data_pipe_getter_callback_called_ = false;
+};
+
 class ComplexFormDataBytesConsumer final : public BytesConsumer {
  public:
   ComplexFormDataBytesConsumer(ExecutionContext* execution_context,
                                scoped_refptr<EncodedFormData> form_data,
-                               BytesConsumer* consumer)
+                               BytesConsumer* consumer_for_testing)
       : form_data_(std::move(form_data)) {
-    if (consumer) {
-      // For testing.
-      blob_bytes_consumer_ = consumer;
+    if (consumer_for_testing) {
+      blob_bytes_consumer_ = consumer_for_testing;
       return;
     }
 
@@ -138,6 +405,9 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
             blob_data->AppendBlob(element.optional_blob_data_handle_, 0,
                                   element.optional_blob_data_handle_->size());
           }
+          break;
+        case FormDataElement::kDataPipe:
+          NOTREACHED() << "This consumer can't handle data pipes.";
           break;
       }
     }
@@ -223,13 +493,28 @@ FormDataBytesConsumer::FormDataBytesConsumer(
 FormDataBytesConsumer::FormDataBytesConsumer(
     ExecutionContext* execution_context,
     scoped_refptr<EncodedFormData> form_data,
-    BytesConsumer* consumer)
-    : impl_(IsSimple(form_data.get())
-                ? static_cast<BytesConsumer*>(
-                      new SimpleFormDataBytesConsumer(std::move(form_data)))
-                : static_cast<BytesConsumer*>(
-                      new ComplexFormDataBytesConsumer(execution_context,
-                                                       std::move(form_data),
-                                                       consumer))) {}
+    BytesConsumer* consumer_for_testing)
+    : impl_(GetImpl(execution_context,
+                    std::move(form_data),
+                    consumer_for_testing)) {}
+
+// static
+BytesConsumer* FormDataBytesConsumer::GetImpl(
+    ExecutionContext* execution_context,
+    scoped_refptr<EncodedFormData> form_data,
+    BytesConsumer* consumer_for_testing) {
+  DCHECK(form_data);
+  switch (GetType(form_data.get())) {
+    case FormDataType::kSimple:
+      return new SimpleFormDataBytesConsumer(std::move(form_data));
+    case FormDataType::kComplex:
+      return new ComplexFormDataBytesConsumer(
+          execution_context, std::move(form_data), consumer_for_testing);
+    case FormDataType::kDataPipeAndDataOnly:
+      return new DataPipeAndDataBytesConsumer(execution_context,
+                                              form_data.get());
+  }
+  return nullptr;
+}
 
 }  // namespace blink

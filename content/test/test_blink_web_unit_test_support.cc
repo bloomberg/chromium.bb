@@ -21,6 +21,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/app/mojo/mojo_init.h"
+#include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
@@ -225,6 +226,12 @@ std::unique_ptr<blink::WebURLLoaderFactory>
 TestBlinkWebUnitTestSupport::CreateDefaultURLLoaderFactory() {
   return std::make_unique<WebURLLoaderFactoryWithMock>(
       weak_factory_.GetWeakPtr());
+}
+
+std::unique_ptr<blink::WebDataConsumerHandle>
+TestBlinkWebUnitTestSupport::CreateDataConsumerHandle(
+    mojo::ScopedDataPipeConsumerHandle handle) {
+  return std::make_unique<WebDataConsumerHandleImpl>(std::move(handle));
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {

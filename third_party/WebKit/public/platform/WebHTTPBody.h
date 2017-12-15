@@ -35,6 +35,7 @@
 #include "WebData.h"
 #include "WebString.h"
 #include "WebURL.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 #if INSIDE_BLINK
 #include "base/memory/scoped_refptr.h"
@@ -47,7 +48,13 @@ class EncodedFormData;
 class WebHTTPBody {
  public:
   struct Element {
-    enum Type { kTypeData, kTypeFile, kTypeBlob, kTypeFileSystemURL } type;
+    enum Type {
+      kTypeData,
+      kTypeFile,
+      kTypeBlob,
+      kTypeFileSystemURL,
+      kTypeDataPipe,
+    } type;
     WebData data;
     WebString file_path;
     long long file_start;
@@ -55,6 +62,10 @@ class WebHTTPBody {
     double modification_time;
     WebURL file_system_url;
     WebString blob_uuid;
+    // |data_pipe_getter| is a network::mojom::DataPipeGetterPtr. It's declared
+    // as a generic ScopedMessagePipeHandle so it can be "cast" between Blink
+    // and non-Blink variant types.
+    mojo::ScopedMessagePipeHandle data_pipe_getter;
   };
 
   ~WebHTTPBody() { Reset(); }
@@ -88,6 +99,11 @@ class WebHTTPBody {
                                              long long file_length,
                                              double modification_time);
   BLINK_PLATFORM_EXPORT void AppendBlob(const WebString& uuid);
+  // |data_pipe_getter| is a network::mojom::DataPipeGetterPtr. It's declared
+  // as a generic ScopedMessagePipeHandle so it can be "cast" between Blink
+  // and non-Blink variant types.
+  BLINK_PLATFORM_EXPORT void AppendDataPipe(
+      mojo::ScopedMessagePipeHandle data_pipe_getter);
 
   BLINK_PLATFORM_EXPORT void SetUniqueBoundary();
 

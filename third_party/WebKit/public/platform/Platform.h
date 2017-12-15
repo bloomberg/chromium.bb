@@ -343,7 +343,7 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  // Returns a WebDataConsumerHandle for given a mojo data pipe endpoint.
+  // Returns a WebDataConsumerHandle for a given mojo data pipe endpoint.
   virtual std::unique_ptr<WebDataConsumerHandle> CreateDataConsumerHandle(
       mojo::ScopedDataPipeConsumerHandle handle) {
     return nullptr;

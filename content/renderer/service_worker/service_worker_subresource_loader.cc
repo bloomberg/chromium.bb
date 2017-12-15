@@ -398,8 +398,8 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     return;
   }
 
-  // Handle a blob response body. Ideally we'd just get a data pipe from
-  // SWFetchDispatcher, and this could be treated the same as a stream response.
+  // Handle a blob response body. Ideally we'd just get a data pipe and this
+  // could be treated the same as a stream response.
   // See:
   // https://docs.google.com/a/google.com/document/d/1_ROmusFvd8ATwIZa29-P6Ls5yyLjfld0KvKchVfA84Y/edit?usp=drive_web
   // TODO(kinuko): This code is hacked up on top of the legacy API, migrate
