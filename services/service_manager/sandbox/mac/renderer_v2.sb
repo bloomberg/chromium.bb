@@ -19,7 +19,10 @@
   (path "/dev/autofs_nowait")
   (path "/dev/fd"))
 
-(allow file-write-data (path "/dev/null"))
+(allow file-write-data
+  (require-all
+    (path "/dev/null")
+    (vnode-type CHARACTER-DEVICE)))
 
 ; Reads from /Library.
 (allow file-read-data (subpath "/Library/Fonts"))
