@@ -41,10 +41,6 @@ namespace network_time {
 class NetworkTimeTracker;
 }
 
-namespace physical_web {
-class PhysicalWebDataSource;
-}
-
 namespace rappor {
 class RapporServiceImpl;
 }
@@ -126,9 +122,6 @@ class ApplicationContext {
   // Gets the ComponentUpdateService.
   virtual component_updater::ComponentUpdateService*
   GetComponentUpdateService() = 0;
-
-  // Gets the PhysicalWebDataSource.
-  virtual physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

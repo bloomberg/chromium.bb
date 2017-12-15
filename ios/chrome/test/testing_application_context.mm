@@ -158,9 +158,3 @@ TestingApplicationContext::GetComponentUpdateService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
-
-physical_web::PhysicalWebDataSource*
-TestingApplicationContext::GetPhysicalWebDataSource() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}

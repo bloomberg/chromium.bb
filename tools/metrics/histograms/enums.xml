@@ -33713,6 +33713,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PhysicalWebInitialStateIosChrome">
+  <obsolete>
+    Obsolete as of November 2017.
+  </obsolete>
   <int value="0" label="OPTOUT_BTOFF_LOCOFF_UNAUTH"/>
   <int value="1" label="OPTOUT_BTOFF_LOCOFF_AUTH"/>
   <int value="2" label="OPTOUT_BTOFF_LOCON_UNAUTH"/>

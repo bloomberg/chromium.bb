@@ -81,10 +81,6 @@ const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
 const char kIosSettingsSigninPromoDisplayedCount[] =
     "ios.settings.signin_promo_displayed_count";
 
-// Whether the user has enabled the Physical Web feature to surface URLs
-// broadcast by nearby devices.
-const char kIosPhysicalWebEnabled[] = "ios.physical_web_enabled";
-
 // True if the previous session exited cleanly.
 // This can be different from kStabilityExitedCleanly, because the last run of
 // the program may not have included a browsing session, and thus the last run

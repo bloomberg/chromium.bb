@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/physical_web/physical_web_constants.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prefs/pref_observer_bridge.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
@@ -35,7 +34,6 @@
 #import "ios/chrome/browser/ui/settings/dataplan_usage_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/do_not_track_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/handoff_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/physical_web_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -71,7 +69,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeWebServicesShowSuggestions,
   ItemTypeWebServicesSendUsageData,
   ItemTypeWebServicesDoNotTrack,
-  ItemTypeWebServicesPhysicalWeb,
   ItemTypeClearBrowsingDataClear,
 };
 
@@ -101,7 +98,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)showSuggestionsFooterItem;
 - (CollectionViewItem*)clearBrowsingDetailItem;
 - (CollectionViewItem*)sendUsageDetailItem;
-- (CollectionViewItem*)physicalWebDetailItem;
 - (CollectionViewItem*)doNotTrackDetailItem;
 
 @end
@@ -193,11 +189,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
         toSectionWithIdentifier:SectionIdentifierWebServices];
   }
 
-  if (experimental_flags::IsPhysicalWebEnabled()) {
-    [model addItem:[self physicalWebDetailItem]
-        toSectionWithIdentifier:SectionIdentifierWebServices];
-  }
-
   // Footer Section
   [model addSectionWithIdentifier:SectionIdentifierWebServicesFooter];
   [model addItem:[self showSuggestionsFooterItem]
@@ -265,18 +256,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                     detailText:detailText];
 
   return _sendUsageDetailItem;
-}
-
-- (CollectionViewItem*)physicalWebDetailItem {
-  PrefService* prefService = GetApplicationContext()->GetLocalState();
-  int preferenceState = prefService->GetInteger(prefs::kIosPhysicalWebEnabled);
-  BOOL enabled = [PhysicalWebCollectionViewController
-      shouldEnableForPreferenceState:preferenceState];
-  NSString* detailText = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                                 : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  return [self detailItemWithType:ItemTypeWebServicesPhysicalWeb
-                          titleId:IDS_IOS_OPTIONS_ENABLE_PHYSICAL_WEB
-                       detailText:detailText];
 }
 
 - (CollectionViewItem*)doNotTrackDetailItem {
@@ -349,10 +328,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeWebServicesDoNotTrack:
       controller = [[DoNotTrackCollectionViewController alloc]
           initWithPrefs:_browserState->GetPrefs()];
-      break;
-    case ItemTypeWebServicesPhysicalWeb:
-      controller = [[PhysicalWebCollectionViewController alloc]
-          initWithPrefs:GetApplicationContext()->GetLocalState()];
       break;
     case ItemTypeClearBrowsingDataClear:
       controller = [[ClearBrowsingDataCollectionViewController alloc]

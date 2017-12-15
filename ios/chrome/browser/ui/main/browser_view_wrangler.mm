@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
-#import "ios/chrome/browser/physical_web/start_physical_web_discovery.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
@@ -213,12 +212,6 @@
 
   // The internal state of the Handoff Manager depends on the current BVC.
   [self updateDeviceSharingManager];
-
-  // By default, Physical Web discovery will not be started if the browser
-  // launches into an Incognito tab. On switching modes, check if discovery
-  // should be started.
-  StartPhysicalWebDiscovery(GetApplicationContext()->GetLocalState(),
-                            [self currentBrowserState]);
 }
 
 #pragma mark - BrowserViewInformation methods

@@ -114,7 +114,7 @@ AutocompleteProviderClientImpl::GetKeywordExtensionsDelegate(
 
 physical_web::PhysicalWebDataSource*
 AutocompleteProviderClientImpl::GetPhysicalWebDataSource() {
-  return GetApplicationContext()->GetPhysicalWebDataSource();
+  return nullptr;
 }
 
 std::string AutocompleteProviderClientImpl::GetAcceptLanguages() const {
