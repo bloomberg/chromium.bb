@@ -73,6 +73,8 @@ class APIRequestHandler {
   // Responds to the request with the given |request_id|, calling the callback
   // with the given |response| arguments.
   // Invalid ids are ignored.
+  // Warning: This can run arbitrary JS code, so the |context| may be
+  // invalidated after this!
   void CompleteRequest(int request_id,
                        const base::ListValue& response,
                        const std::string& error);

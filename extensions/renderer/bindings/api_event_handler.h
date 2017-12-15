@@ -69,6 +69,8 @@ class APIEventHandler {
 
   // Notifies all listeners of the event with the given |event_name| in the
   // specified |context|, sending the included |arguments|.
+  // Warning: This runs arbitrary JS code, so the |context| may be invalidated
+  // after this!
   void FireEventInContext(const std::string& event_name,
                           v8::Local<v8::Context> context,
                           const base::ListValue& arguments,

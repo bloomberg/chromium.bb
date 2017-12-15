@@ -37,6 +37,9 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) final;
 
+  // Fires the event to any listeners.
+  // Warning: This can run arbitrary JS code, so the |context| may be
+  // invalidated after this!
   void Fire(v8::Local<v8::Context> context,
             std::vector<v8::Local<v8::Value>>* args,
             const EventFilteringInfo* filter);
