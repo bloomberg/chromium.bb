@@ -15,8 +15,7 @@ using testing::ElementsAre;
 namespace base {
 
 TEST(RefCountedMemoryUnitTest, RefCountedStaticMemory) {
-  scoped_refptr<RefCountedMemory> mem = new RefCountedStaticMemory(
-      "static mem00", 10);
+  auto mem = MakeRefCounted<RefCountedStaticMemory>("static mem00", 10);
 
   EXPECT_EQ(10U, mem->size());
   EXPECT_EQ("static mem", std::string(mem->front_as<char>(), mem->size()));
@@ -30,16 +29,16 @@ TEST(RefCountedMemoryUnitTest, RefCountedBytes) {
 
   EXPECT_EQ(0U, data.size());
 
-  EXPECT_EQ(2U, mem->size());
+  ASSERT_EQ(2U, mem->size());
   EXPECT_EQ(45U, mem->front()[0]);
   EXPECT_EQ(99U, mem->front()[1]);
 
   scoped_refptr<RefCountedMemory> mem2;
   {
-    unsigned char data2[] = { 12, 11, 99 };
-    mem2 = new RefCountedBytes(data2, 3);
+    const unsigned char kData[] = {12, 11, 99};
+    mem2 = MakeRefCounted<RefCountedBytes>(kData, arraysize(kData));
   }
-  EXPECT_EQ(3U, mem2->size());
+  ASSERT_EQ(3U, mem2->size());
   EXPECT_EQ(12U, mem2->front()[0]);
   EXPECT_EQ(11U, mem2->front()[1]);
   EXPECT_EQ(99U, mem2->front()[2]);
@@ -65,20 +64,17 @@ TEST(RefCountedMemoryUnitTest, RefCountedString) {
 
   EXPECT_EQ(0U, s.size());
 
-  EXPECT_EQ(10U, mem->size());
+  ASSERT_EQ(10U, mem->size());
   EXPECT_EQ('d', mem->front()[0]);
   EXPECT_EQ('e', mem->front()[1]);
+  EXPECT_EQ('e', mem->front()[9]);
 }
 
 TEST(RefCountedMemoryUnitTest, Equals) {
   std::string s1("same");
   scoped_refptr<RefCountedMemory> mem1 = RefCountedString::TakeString(&s1);
 
-  std::vector<unsigned char> d2;
-  d2.push_back('s');
-  d2.push_back('a');
-  d2.push_back('m');
-  d2.push_back('e');
+  std::vector<unsigned char> d2 = {'s', 'a', 'm', 'e'};
   scoped_refptr<RefCountedMemory> mem2 = RefCountedBytes::TakeVector(&d2);
 
   EXPECT_TRUE(mem1->Equals(mem2));
