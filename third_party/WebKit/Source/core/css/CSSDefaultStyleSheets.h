@@ -65,6 +65,8 @@ class CSSDefaultStyleSheets
     return fullscreen_style_sheet_.Get();
   }
 
+  void PrepareForLeakDetection();
+
   // Media Controls UA stylesheet loading is handled by the media_controls
   // module.
   class CORE_EXPORT UAStyleSheetLoader {
@@ -85,6 +87,7 @@ class CSSDefaultStyleSheets
 
  private:
   CSSDefaultStyleSheets();
+  void InitializeDefaultStyles();
 
   Member<RuleSet> default_style_;
   Member<RuleSet> default_quirks_style_;

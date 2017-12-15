@@ -7,6 +7,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "core/CoreInitializer.h"
+#include "core/css/CSSDefaultStyleSheets.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -61,6 +62,9 @@ void BlinkLeakDetector::PrepareForLeakDetection(WebFrame* frame) {
   // FIXME: HTML5 Notification should be closed because notification affects
   // the result of number of DOM objects.
   V8PerIsolateData::From(isolate)->ClearScriptRegexpContext();
+
+  // Clear lazily loaded style sheets.
+  CSSDefaultStyleSheets::Instance().PrepareForLeakDetection();
 }
 
 void BlinkLeakDetector::CollectGarbage() {
