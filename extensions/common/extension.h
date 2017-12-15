@@ -44,17 +44,22 @@ class PermissionsParser;
 // RuntimeData is protected by a lock.
 class Extension : public base::RefCountedThreadSafe<Extension> {
  public:
+  // Do not renumber or reorder these values, as they are stored on-disk in the
+  // user's preferences.
   enum State {
     DISABLED = 0,
-    ENABLED,
+    ENABLED = 1,
+
     // An external extension that the user uninstalled. We should not reinstall
     // such extensions on startup.
-    EXTERNAL_EXTENSION_UNINSTALLED,
+    EXTERNAL_EXTENSION_UNINSTALLED = 2,
+
     // DEPRECATED: Special state for component extensions.
-    // Maintained as a placeholder since states may be stored to disk.
-    ENABLED_COMPONENT_DEPRECATED,
-    // Add new states here as this enum is stored in prefs.
-    NUM_STATES
+    // ENABLED_COMPONENT_DEPRECATED = 3,
+
+    // Do not add more values. State is being removed.
+    // https://crbug.com/794205.
+    NUM_STATES = 4,
   };
 
   // A base class for parsed manifest data that APIs want to store on
