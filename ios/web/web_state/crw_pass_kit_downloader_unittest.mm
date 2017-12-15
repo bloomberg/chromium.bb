@@ -8,6 +8,8 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/test/web_test.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -39,6 +41,7 @@ class CRWPassKitDownloaderTest : public WebTest {
  protected:
   void SetUp() override {
     WebTest::SetUp();
+    feature_list_.InitAndDisableFeature(web::features::kNewPassKitDownload);
     completion_handler_success_ = false;
     fetcher_factory_.reset(new net::TestURLFetcherFactory());
     downloader_ = [[CRWPassKitDownloader alloc]
@@ -76,6 +79,8 @@ class CRWPassKitDownloaderTest : public WebTest {
   // set from the completion handler based on whether actual data is equal to
   // expected data.
   bool completion_handler_success_;
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests case where CRWPassKitDownloader successfully downloads data.

@@ -11,7 +11,7 @@ const base::Feature kSlimNavigationManager{"SlimNavigationManager",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNewPassKitDownload{"NewPassKitDownload",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNewFileDownload{"NewFileDownload",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
