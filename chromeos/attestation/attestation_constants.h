@@ -10,6 +10,11 @@
 namespace chromeos {
 namespace attestation {
 
+enum VerifiedAccessType {
+  DEFAULT_VA,  // The default Verified Access server.
+  TEST_VA,     // The test Verified Access server.
+};
+
 // Key types supported by the Chrome OS attestation subsystem.
 enum AttestationKeyType {
   // The key will be associated with the device itself and will be available
