@@ -17,6 +17,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebMediaStream.h"
 
 namespace blink {
@@ -168,9 +169,12 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
       audio_bits_per_second_(0),
       video_bits_per_second_(0),
       state_(State::kInactive),
+      // MediaStream recording should use DOM manipulation task source.
+      // https://www.w3.org/TR/mediastream-recording/
       dispatch_scheduled_event_runner_(AsyncMethodRunner<MediaRecorder>::Create(
           this,
-          &MediaRecorder::DispatchScheduledEvent)) {
+          &MediaRecorder::DispatchScheduledEvent,
+          context->GetTaskRunner(TaskType::kDOMManipulation))) {
   DCHECK(stream_->getTracks().size());
 
   recorder_handler_ = Platform::Current()->CreateMediaRecorderHandler();

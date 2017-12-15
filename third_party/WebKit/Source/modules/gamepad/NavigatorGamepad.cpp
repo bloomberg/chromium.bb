@@ -33,6 +33,7 @@
 #include "modules/gamepad/GamepadDispatcher.h"
 #include "modules/gamepad/GamepadEvent.h"
 #include "modules/gamepad/GamepadList.h"
+#include "public/platform/TaskType.h"
 
 namespace {
 
@@ -173,8 +174,10 @@ void NavigatorGamepad::DispatchOneEvent() {
   DomWindow()->DispatchEvent(
       GamepadEvent::Create(event_name, false, true, gamepad));
 
-  if (!pending_events_.IsEmpty())
+  if (!pending_events_.IsEmpty()) {
+    DCHECK(dispatch_one_event_runner_);
     dispatch_one_event_runner_->RunAsync();
+  }
 }
 
 NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
@@ -182,9 +185,13 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
       DOMWindowClient(navigator.DomWindow()),
       PlatformEventController(
           navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
-      dispatch_one_event_runner_(AsyncMethodRunner<NavigatorGamepad>::Create(
-          this,
-          &NavigatorGamepad::DispatchOneEvent)) {
+      dispatch_one_event_runner_(
+          navigator.GetFrame() ? AsyncMethodRunner<NavigatorGamepad>::Create(
+                                     this,
+                                     &NavigatorGamepad::DispatchOneEvent,
+                                     navigator.GetFrame()->GetTaskRunner(
+                                         TaskType::kMiscPlatformAPI))
+                               : nullptr) {
   if (navigator.DomWindow())
     navigator.DomWindow()->RegisterEventListenerObserver(this);
 }
@@ -197,11 +204,13 @@ const char* NavigatorGamepad::SupplementName() {
 
 void NavigatorGamepad::RegisterWithDispatcher() {
   GamepadDispatcher::Instance().AddController(this);
-  dispatch_one_event_runner_->Unpause();
+  if (dispatch_one_event_runner_)
+    dispatch_one_event_runner_->Unpause();
 }
 
 void NavigatorGamepad::UnregisterWithDispatcher() {
-  dispatch_one_event_runner_->Pause();
+  if (dispatch_one_event_runner_)
+    dispatch_one_event_runner_->Pause();
   GamepadDispatcher::Instance().RemoveController(this);
 }
 
@@ -245,7 +254,8 @@ void NavigatorGamepad::DidRemoveAllEventListeners(LocalDOMWindow*) {
 
 void NavigatorGamepad::DidRemoveGamepadEventListeners() {
   has_event_listener_ = false;
-  dispatch_one_event_runner_->Stop();
+  if (dispatch_one_event_runner_)
+    dispatch_one_event_runner_->Stop();
   pending_events_.clear();
   StopUpdating();
 }
@@ -268,8 +278,10 @@ void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
         // recreate the buffer.
         gamepads_ = GamepadList::Create();
       }
-      if (!pending_events_.IsEmpty())
+      if (!pending_events_.IsEmpty()) {
+        DCHECK(dispatch_one_event_runner_);
         dispatch_one_event_runner_->RunAsync();
+      }
     }
     SampleGamepads<Gamepad>(gamepads_.Get());
   }

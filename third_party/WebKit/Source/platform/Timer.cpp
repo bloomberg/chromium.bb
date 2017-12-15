@@ -46,7 +46,6 @@ TimerBase::TimerBase(scoped_refptr<WebTaskRunner> web_task_runner)
       thread_(CurrentThread()),
 #endif
       weak_ptr_factory_(this) {
-  DCHECK(web_task_runner_);
 }
 
 TimerBase::~TimerBase() {

@@ -45,8 +45,10 @@ class AsyncMethodRunner final
  public:
   typedef void (TargetClass::*TargetMethod)();
 
-  static AsyncMethodRunner* Create(TargetClass* object, TargetMethod method) {
-    return new AsyncMethodRunner(object, method);
+  static AsyncMethodRunner* Create(TargetClass* object,
+                                   TargetMethod method,
+                                   scoped_refptr<WebTaskRunner> task_runner) {
+    return new AsyncMethodRunner(object, method, std::move(task_runner));
   }
 
   ~AsyncMethodRunner() {}
@@ -112,8 +114,12 @@ class AsyncMethodRunner final
   void Trace(blink::Visitor* visitor) { visitor->Trace(object_); }
 
  private:
-  AsyncMethodRunner(TargetClass* object, TargetMethod method)
-      : timer_(this, &AsyncMethodRunner<TargetClass>::Fired),
+  AsyncMethodRunner(TargetClass* object,
+                    TargetMethod method,
+                    scoped_refptr<WebTaskRunner> task_runner)
+      : timer_(std::move(task_runner),
+               this,
+               &AsyncMethodRunner<TargetClass>::Fired),
         object_(object),
         method_(method),
         paused_(false),
@@ -121,7 +127,7 @@ class AsyncMethodRunner final
 
   void Fired(TimerBase*) { (object_->*method_)(); }
 
-  Timer<AsyncMethodRunner<TargetClass>> timer_;
+  TaskRunnerTimer<AsyncMethodRunner<TargetClass>> timer_;
 
   Member<TargetClass> object_;
   TargetMethod method_;

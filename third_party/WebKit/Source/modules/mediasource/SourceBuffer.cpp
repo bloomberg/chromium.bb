@@ -54,6 +54,7 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/MathExtras.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebSourceBuffer.h"
 
 #ifndef BLINK_SBLOG
@@ -129,12 +130,14 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
       pending_append_data_offset_(0),
       append_buffer_async_part_runner_(AsyncMethodRunner<SourceBuffer>::Create(
           this,
-          &SourceBuffer::AppendBufferAsyncPart)),
+          &SourceBuffer::AppendBufferAsyncPart,
+          GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent))),
       pending_remove_start_(-1),
       pending_remove_end_(-1),
       remove_async_part_runner_(AsyncMethodRunner<SourceBuffer>::Create(
           this,
-          &SourceBuffer::RemoveAsyncPart)) {
+          &SourceBuffer::RemoveAsyncPart,
+          GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent))) {
   BLINK_SBLOG << __func__ << " this=" << this;
 
   DCHECK(web_source_buffer_);
