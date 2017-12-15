@@ -172,7 +172,7 @@ PageSwitcherVertical::PageSwitcherVertical(PaginationModel* model)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  buttons_->SetLayoutManager(new views::BoxLayout(
+  buttons_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), kButtonPadding));
 
   AddChildView(buttons_);

@@ -189,7 +189,8 @@ base::string16 TranslateBubbleView::GetWindowTitle() const {
 }
 
 void TranslateBubbleView::Init() {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   should_always_translate_ = model_->ShouldAlwaysTranslate();
   if (Use2016Q2UI() && !is_in_incognito_window_) {

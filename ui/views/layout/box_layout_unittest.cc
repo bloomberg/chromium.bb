@@ -26,15 +26,14 @@ class BoxLayoutTest : public testing::Test {
 }  // namespace
 
 TEST_F(BoxLayoutTest, Empty) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 20);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(10), 20));
   EXPECT_EQ(gfx::Size(20, 20), layout->GetPreferredSize(host_.get()));
 }
 
 TEST_F(BoxLayoutTest, AlignmentHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
   View* v1 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(10, 10));
@@ -47,8 +46,8 @@ TEST_F(BoxLayoutTest, AlignmentHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, AlignmentVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(10, 10));
@@ -61,9 +60,8 @@ TEST_F(BoxLayoutTest, AlignmentVertical) {
 }
 
 TEST_F(BoxLayoutTest, SetInsideBorderInsets) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(20, 10));
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(20, 10)));
   View* v1 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(10, 10));
@@ -84,8 +82,8 @@ TEST_F(BoxLayoutTest, SetInsideBorderInsets) {
 }
 
 TEST_F(BoxLayoutTest, Spacing) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(7), 8);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(7), 8));
   View* v1 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(10, 20));
@@ -98,8 +96,8 @@ TEST_F(BoxLayoutTest, Spacing) {
 }
 
 TEST_F(BoxLayoutTest, Overflow) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(10, 20));
@@ -130,9 +128,8 @@ TEST_F(BoxLayoutTest, Overflow) {
 }
 
 TEST_F(BoxLayoutTest, NoSpace) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(10), 10));
   View* childView = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(childView);
   host_->SetBounds(0, 0, 10, 10);
@@ -141,9 +138,8 @@ TEST_F(BoxLayoutTest, NoSpace) {
 }
 
 TEST_F(BoxLayoutTest, InvisibleChild) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(10), 10));
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   v1->SetVisible(false);
   host_->AddChildView(v1);
@@ -156,8 +152,8 @@ TEST_F(BoxLayoutTest, InvisibleChild) {
 }
 
 TEST_F(BoxLayoutTest, UseHeightForWidth) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
   ProportionallySizedView* v2 = new ProportionallySizedView(2);
@@ -190,7 +186,8 @@ TEST_F(BoxLayoutTest, EmptyPreferredSize) {
     BoxLayout::Orientation orientation = i == 0 ? BoxLayout::kHorizontal :
                                                   BoxLayout::kVertical;
     host_->RemoveAllChildViews(true);
-    host_->SetLayoutManager(new BoxLayout(orientation, gfx::Insets(), 5));
+    host_->SetLayoutManager(
+        std::make_unique<BoxLayout>(orientation, gfx::Insets(), 5));
     View* v1 = new StaticSizedView(gfx::Size());
     host_->AddChildView(v1);
     View* v2 = new StaticSizedView(gfx::Size(10, 10));
@@ -211,8 +208,8 @@ TEST_F(BoxLayoutTest, EmptyPreferredSize) {
 // empty preferred size, simultaneously.
 TEST_F(BoxLayoutTest, EmptyPreferredSizeWithFlexLayoutAndChildSpacing) {
   host_->RemoveAllChildViews(true);
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(), 5);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(), 5));
   View* v1 = new StaticSizedView(gfx::Size());
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(10, 10));
@@ -227,9 +224,8 @@ TEST_F(BoxLayoutTest, EmptyPreferredSizeWithFlexLayoutAndChildSpacing) {
 }
 
 TEST_F(BoxLayoutTest, MainAxisAlignmentHorizontal) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(10), 10));
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
@@ -264,8 +260,8 @@ TEST_F(BoxLayoutTest, MainAxisAlignmentHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, MainAxisAlignmentVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
@@ -300,9 +296,8 @@ TEST_F(BoxLayoutTest, MainAxisAlignmentVertical) {
 }
 
 TEST_F(BoxLayoutTest, CrossAxisAlignmentHorizontal) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(10), 10));
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
@@ -343,8 +338,8 @@ TEST_F(BoxLayoutTest, CrossAxisAlignmentHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, CrossAxisAlignmentVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
@@ -385,9 +380,8 @@ TEST_F(BoxLayoutTest, CrossAxisAlignmentVertical) {
 }
 
 TEST_F(BoxLayoutTest, FlexAll) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(10), 10));
   layout->SetDefaultFlex(1);
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
@@ -406,8 +400,8 @@ TEST_F(BoxLayoutTest, FlexAll) {
 }
 
 TEST_F(BoxLayoutTest, FlexGrowVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
@@ -463,8 +457,8 @@ TEST_F(BoxLayoutTest, FlexGrowVertical) {
 }
 
 TEST_F(BoxLayoutTest, FlexGrowHorizontalWithRemainder) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
   layout->SetDefaultFlex(1);
   std::vector<View*> views;
   for (int i = 0; i < 5; ++i) {
@@ -487,8 +481,8 @@ TEST_F(BoxLayoutTest, FlexGrowHorizontalWithRemainder) {
 }
 
 TEST_F(BoxLayoutTest, FlexGrowHorizontalWithRemainder2) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
   layout->SetDefaultFlex(1);
   std::vector<View*> views;
   for (int i = 0; i < 4; ++i) {
@@ -510,9 +504,8 @@ TEST_F(BoxLayoutTest, FlexGrowHorizontalWithRemainder2) {
 }
 
 TEST_F(BoxLayoutTest, FlexShrinkHorizontal) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(10), 10));
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
@@ -570,8 +563,8 @@ TEST_F(BoxLayoutTest, FlexShrinkHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, FlexShrinkVerticalWithRemainder) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(20, 20));
@@ -620,8 +613,8 @@ TEST_F(BoxLayoutTest, FlexShrinkVerticalWithRemainder) {
 }
 
 TEST_F(BoxLayoutTest, MinimumCrossAxisVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
   layout->set_minimum_cross_axis_size(30);
@@ -630,8 +623,8 @@ TEST_F(BoxLayoutTest, MinimumCrossAxisVertical) {
 }
 
 TEST_F(BoxLayoutTest, MinimumCrossAxisHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
   layout->set_minimum_cross_axis_size(30);
@@ -640,8 +633,8 @@ TEST_F(BoxLayoutTest, MinimumCrossAxisHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, MarginsUncollapsedHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   v1->SetProperty(kMarginsKey, new gfx::Insets(5, 5, 5, 5));
   host_->AddChildView(v1);
@@ -657,9 +650,8 @@ TEST_F(BoxLayoutTest, MarginsUncollapsedHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, MarginsCollapsedHorizontal) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   v1->SetProperty(kMarginsKey, new gfx::Insets(5, 5, 5, 5));
   host_->AddChildView(v1);
@@ -675,8 +667,8 @@ TEST_F(BoxLayoutTest, MarginsCollapsedHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, MarginsUncollapsedVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   v1->SetProperty(kMarginsKey, new gfx::Insets(5, 5, 5, 5));
   host_->AddChildView(v1);
@@ -692,9 +684,8 @@ TEST_F(BoxLayoutTest, MarginsUncollapsedVertical) {
 }
 
 TEST_F(BoxLayoutTest, MarginsCollapsedVertical) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kVertical, gfx::Insets(0, 0), 0, true);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::kVertical, gfx::Insets(0, 0), 0, true));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   v1->SetProperty(kMarginsKey, new gfx::Insets(5, 5, 5, 5));
   host_->AddChildView(v1);
@@ -710,9 +701,10 @@ TEST_F(BoxLayoutTest, MarginsCollapsedVertical) {
 }
 
 TEST_F(BoxLayoutTest, UnbalancedMarginsUncollapsedHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-  layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  host_->SetLayoutManager(layout);
+  auto layout_owner = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
+  layout_owner->set_cross_axis_alignment(
+      BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  BoxLayout* layout = host_->SetLayoutManager(std::move(layout_owner));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   v1->SetProperty(kMarginsKey, new gfx::Insets(5, 5, 4, 4));
   host_->AddChildView(v1);
@@ -728,10 +720,11 @@ TEST_F(BoxLayoutTest, UnbalancedMarginsUncollapsedHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, UnbalancedMarginsCollapsedHorizontal) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true);
-  layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  host_->SetLayoutManager(layout);
+  auto layout_owner = std::make_unique<BoxLayout>(BoxLayout::kHorizontal,
+                                                  gfx::Insets(0, 0), 0, true);
+  layout_owner->set_cross_axis_alignment(
+      BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  BoxLayout* layout = host_->SetLayoutManager(std::move(layout_owner));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   v1->SetProperty(kMarginsKey, new gfx::Insets(5, 5, 4, 4));
   host_->AddChildView(v1);
@@ -747,9 +740,10 @@ TEST_F(BoxLayoutTest, UnbalancedMarginsCollapsedHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, UnbalancedMarginsUncollapsedVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
-  layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  host_->SetLayoutManager(layout);
+  auto layout_owner = std::make_unique<BoxLayout>(BoxLayout::kVertical);
+  layout_owner->set_cross_axis_alignment(
+      BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  BoxLayout* layout = host_->SetLayoutManager(std::move(layout_owner));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   v1->SetProperty(kMarginsKey, new gfx::Insets(4, 5, 5, 3));
   host_->AddChildView(v1);
@@ -765,10 +759,11 @@ TEST_F(BoxLayoutTest, UnbalancedMarginsUncollapsedVertical) {
 }
 
 TEST_F(BoxLayoutTest, UnbalancedMarginsCollapsedVertical) {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kVertical, gfx::Insets(0, 0), 0, true);
-  layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  host_->SetLayoutManager(layout);
+  auto layout_owner = std::make_unique<BoxLayout>(BoxLayout::kVertical,
+                                                  gfx::Insets(0, 0), 0, true);
+  layout_owner->set_cross_axis_alignment(
+      BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  BoxLayout* layout = host_->SetLayoutManager(std::move(layout_owner));
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   v1->SetProperty(kMarginsKey, new gfx::Insets(4, 5, 5, 3));
   host_->AddChildView(v1);
@@ -785,8 +780,8 @@ TEST_F(BoxLayoutTest, UnbalancedMarginsCollapsedVertical) {
 
 TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignEnd) {
   {
-    BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-    host_->SetLayoutManager(layout);
+    BoxLayout* layout = host_->SetLayoutManager(
+        std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
     layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
     View* v1 = new StaticSizedView(gfx::Size(20, 4));
     v1->SetProperty(kMarginsKey, new gfx::Insets(3, 0, 0, 0));
@@ -799,9 +794,8 @@ TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignEnd) {
   }
   host_->RemoveAllChildViews(true);
   {
-    BoxLayout* layout =
-        new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true);
-    host_->SetLayoutManager(layout);
+    BoxLayout* layout = host_->SetLayoutManager(std::make_unique<BoxLayout>(
+        BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true));
     layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
     View* v1 = new StaticSizedView(gfx::Size(20, 4));
     v1->SetProperty(kMarginsKey, new gfx::Insets(3, 0, 0, 0));
@@ -816,8 +810,8 @@ TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignEnd) {
 
 TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignStretch) {
   {
-    BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-    host_->SetLayoutManager(layout);
+    BoxLayout* layout = host_->SetLayoutManager(
+        std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
     layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
     View* v1 = new StaticSizedView(gfx::Size(20, 4));
     v1->SetProperty(kMarginsKey, new gfx::Insets(3, 0, 0, 0));
@@ -830,9 +824,8 @@ TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignStretch) {
   }
   host_->RemoveAllChildViews(true);
   {
-    BoxLayout* layout =
-        new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true);
-    host_->SetLayoutManager(layout);
+    BoxLayout* layout = host_->SetLayoutManager(std::make_unique<BoxLayout>(
+        BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true));
     layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
     View* v1 = new StaticSizedView(gfx::Size(20, 4));
     v1->SetProperty(kMarginsKey, new gfx::Insets(3, 0, 0, 0));
@@ -847,8 +840,8 @@ TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignStretch) {
 
 TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignStart) {
   {
-    BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
-    host_->SetLayoutManager(layout);
+    BoxLayout* layout = host_->SetLayoutManager(
+        std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
     layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     View* v1 = new StaticSizedView(gfx::Size(20, 4));
     v1->SetProperty(kMarginsKey, new gfx::Insets(0, 0, 3, 0));
@@ -861,9 +854,8 @@ TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignStart) {
   }
   host_->RemoveAllChildViews(true);
   {
-    BoxLayout* layout =
-        new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true);
-    host_->SetLayoutManager(layout);
+    BoxLayout* layout = host_->SetLayoutManager(std::make_unique<BoxLayout>(
+        BoxLayout::kHorizontal, gfx::Insets(0, 0), 0, true));
     layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     View* v1 = new StaticSizedView(gfx::Size(20, 4));
     v1->SetProperty(kMarginsKey, new gfx::Insets(0, 0, 3, 0));
@@ -877,8 +869,8 @@ TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignStart) {
 }
 
 TEST_F(BoxLayoutTest, NegativeBetweenChildSpacing) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(), -10);
-  host_->SetLayoutManager(layout);
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(), -10));
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(20, 15));

@@ -50,8 +50,8 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       search_box_view_(nullptr),
       contents_view_(nullptr),
       app_list_view_(app_list_view) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(), 0));
   model_->AddObserver(this);
 }
 

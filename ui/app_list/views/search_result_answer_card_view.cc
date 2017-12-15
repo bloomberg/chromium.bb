@@ -35,12 +35,12 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       : Button(this), view_delegate_(view_delegate) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     // Center the card horizontally in the container.
-    views::BoxLayout* answer_container_layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal,
-                             gfx::Insets(kVerticalPadding, kHorizontalPadding));
+    auto answer_container_layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kHorizontal,
+        gfx::Insets(kVerticalPadding, kHorizontalPadding));
     answer_container_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-    SetLayoutManager(answer_container_layout);
+    SetLayoutManager(std::move(answer_container_layout));
   }
 
   ~SearchAnswerContainerView() override {
@@ -151,7 +151,7 @@ SearchResultAnswerCardView::SearchResultAnswerCardView(
     : search_answer_container_view_(
           new SearchAnswerContainerView(view_delegate)) {
   AddChildView(search_answer_container_view_);
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
 SearchResultAnswerCardView::~SearchResultAnswerCardView() {}

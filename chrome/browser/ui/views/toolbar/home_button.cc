@@ -102,7 +102,7 @@ int HomePageUndoBubble::GetDialogButtons() const {
 }
 
 void HomePageUndoBubble::Init() {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   base::string16 undo_string =
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_BUBBLE_UNDO);

@@ -147,8 +147,8 @@ class ClickActivator : public ui::EventHandler {
 // ItemView ////////////////////////////////////////////////////////////////////
 
 ItemView::ItemView(const message_center::NotificationItem& item) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(), 0));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(), 0));
 
   const gfx::FontList font_list = GetTextFontList();
 
@@ -185,7 +185,7 @@ const char* CompactTitleMessageView::GetClassName() const {
 }
 
 CompactTitleMessageView::CompactTitleMessageView() {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   const gfx::FontList& font_list = GetTextFontList();
 
@@ -295,7 +295,7 @@ gfx::Size LargeImageView::GetResizedImageSize() {
 
 LargeImageContainerView::LargeImageContainerView()
     : image_view_(new LargeImageView()) {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(kLargeImageContainerPadding));
   SetBackground(
       views::CreateSolidBackground(message_center::kImageBackgroundColor));
@@ -440,8 +440,8 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
 
 NotificationViewMD::NotificationViewMD(const Notification& notification)
     : MessageView(notification), clickable_(notification.clickable()) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(), 0));
 
   control_buttons_view_ =
       std::make_unique<NotificationControlButtonsView>(this);
@@ -454,37 +454,37 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
 
   // |content_row_| contains title, message, image, progressbar, etc...
   content_row_ = new views::View();
-  views::BoxLayout* content_row_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kContentRowPadding, 0);
+  auto* content_row_layout =
+      content_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal, kContentRowPadding, 0));
   content_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  content_row_->SetLayoutManager(content_row_layout);
   AddChildView(content_row_);
 
   // |left_content_| contains most contents like title, message, etc...
   left_content_ = new views::View();
-  left_content_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
+  left_content_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(), 0));
   left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
   content_row_->AddChildView(left_content_);
   content_row_layout->SetFlexForView(left_content_, 1);
 
   // |right_content_| contains notification icon and small image.
   right_content_ = new views::View();
-  right_content_->SetLayoutManager(new views::FillLayout());
+  right_content_->SetLayoutManager(std::make_unique<views::FillLayout>());
   content_row_->AddChildView(right_content_);
 
   // |action_row_| contains inline action buttons and inline textfield.
   actions_row_ = new views::View();
   actions_row_->SetVisible(false);
-  actions_row_->SetLayoutManager(new views::FillLayout());
+  actions_row_->SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(actions_row_);
 
   // |action_buttons_row_| contains inline action buttons.
   action_buttons_row_ = new views::View();
-  action_buttons_row_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, kActionsRowPadding,
-                           kActionsRowHorizontalSpacing));
+  action_buttons_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, kActionsRowPadding,
+      kActionsRowHorizontalSpacing));
   action_buttons_row_->SetBackground(
       views::CreateSolidBackground(kActionsRowBackgroundColor));
   action_buttons_row_->SetVisible(false);

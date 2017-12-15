@@ -101,8 +101,8 @@ TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
   set_adjust_if_offscreen(true);
   EnableCanvasFlippingForRTLUI(true);
 
-  SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(),
-                                 kSpacingBetweenButtons));
+  SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::kHorizontal, gfx::Insets(), kSpacingBetweenButtons));
   CreateButtons();
 
   // After buttons are created, check if there is enough room between handles to

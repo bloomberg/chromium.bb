@@ -222,7 +222,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   SetPreferredSize(gfx::Size(kPreferredWidth, kSearchBoxPreferredHeight));
   UpdateSearchBoxBorder();
   AddChildView(content_container_);
@@ -230,11 +230,12 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   content_container_->SetBackground(
       std::make_unique<SearchBoxBackground>(background_color_));
 
-  box_layout_ = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
-      kInnerPadding - views::LayoutProvider::Get()->GetDistanceMetric(
-                          views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
-  content_container_->SetLayoutManager(box_layout_);
+  box_layout_ =
+      content_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
+          kInnerPadding -
+              views::LayoutProvider::Get()->GetDistanceMetric(
+                  views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
   box_layout_->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   box_layout_->set_minimum_cross_axis_size(kSearchBoxPreferredHeight);

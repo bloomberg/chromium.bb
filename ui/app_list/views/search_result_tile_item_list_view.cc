@@ -47,7 +47,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
       search_box_(search_box),
       is_play_store_app_search_enabled_(
           features::IsPlayStoreAppSearchEnabled()) {
-  SetLayoutManager(new views::BoxLayout(
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
       gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
       kBetweenItemSpacing));

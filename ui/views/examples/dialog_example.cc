@@ -37,8 +37,7 @@ class DialogExample::Delegate : public virtual DialogType {
   explicit Delegate(DialogExample* parent) : parent_(parent) {}
 
   void InitDelegate() {
-    LayoutManager* fill_layout = new FillLayout();
-    this->SetLayoutManager(fill_layout);
+    this->SetLayoutManager(std::make_unique<FillLayout>());
     Label* body = new Label(parent_->body_->text());
     body->SetMultiLine(true);
     body->SetHorizontalAlignment(gfx::ALIGN_LEFT);

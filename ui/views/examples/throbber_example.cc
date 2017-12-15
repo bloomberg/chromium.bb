@@ -63,7 +63,7 @@ ThrobberExample::~ThrobberExample() {
 }
 
 void ThrobberExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(new FillLayout());
+  container->SetLayoutManager(std::make_unique<FillLayout>());
   container->AddChildView(new ThrobberView());
 }
 

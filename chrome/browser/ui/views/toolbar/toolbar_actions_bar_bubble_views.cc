@@ -78,10 +78,10 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
 
   if (icon && label) {
     views::View* parent = new views::View();
-    parent->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                             ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                 views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+    parent->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kHorizontal, gfx::Insets(),
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            views::DISTANCE_RELATED_CONTROL_VERTICAL)));
     parent->AddChildView(icon.release());
     parent->AddChildView(label.release());
     return parent;
@@ -123,7 +123,7 @@ bool ToolbarActionsBarBubbleViews::Close() {
 
 void ToolbarActionsBarBubbleViews::Init() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  SetLayoutManager(new views::BoxLayout(
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 

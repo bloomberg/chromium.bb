@@ -110,7 +110,7 @@ class InformationTextArea : public views::View {
     label_->SetHorizontalAlignment(align);
     label_->SetBorder(views::CreateEmptyBorder(2, 2, 2, 4));
 
-    SetLayoutManager(new views::FillLayout());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     AddChildView(label_);
     SetBackground(views::CreateSolidBackground(
         color_utils::AlphaBlend(SK_ColorBLACK,
@@ -166,7 +166,8 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
       1, GetNativeTheme()->GetSystemColor(
              ui::NativeTheme::kColorId_MenuBorderColor)));
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   auxiliary_text_ = new InformationTextArea(gfx::ALIGN_RIGHT, 0);
   preedit_ = new InformationTextArea(gfx::ALIGN_LEFT, kMinPreeditAreaWidth);
   candidate_area_ = new views::View;
@@ -180,7 +181,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
     AddChildView(auxiliary_text_);
     auxiliary_text_->SetBorderFromPosition(InformationTextArea::TOP);
     candidate_area_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical));
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   } else {
     AddChildView(preedit_);
     AddChildView(auxiliary_text_);
@@ -188,7 +189,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
     auxiliary_text_->SetAlignment(gfx::ALIGN_LEFT);
     auxiliary_text_->SetBorderFromPosition(InformationTextArea::BOTTOM);
     candidate_area_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal));
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
   }
 }
 
@@ -255,13 +256,13 @@ void CandidateWindowView::UpdateCandidates(
         auxiliary_text_->SetAlignment(gfx::ALIGN_RIGHT);
         auxiliary_text_->SetBorderFromPosition(InformationTextArea::TOP);
         candidate_area_->SetLayoutManager(
-            new views::BoxLayout(views::BoxLayout::kVertical));
+            std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
       } else {
         ReorderChildView(auxiliary_text_, 1);
         auxiliary_text_->SetAlignment(gfx::ALIGN_LEFT);
         auxiliary_text_->SetBorderFromPosition(InformationTextArea::BOTTOM);
         candidate_area_->SetLayoutManager(
-            new views::BoxLayout(views::BoxLayout::kHorizontal));
+            std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
       }
     }
 

@@ -20,9 +20,9 @@ ToggleButtonExample::~ToggleButtonExample() {}
 
 void ToggleButtonExample::CreateExampleView(View* container) {
   button_ = new ToggleButton(this);
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
+  auto layout = std::make_unique<BoxLayout>(BoxLayout::kVertical);
   layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  container->SetLayoutManager(layout);
+  container->SetLayoutManager(std::move(layout));
   container->AddChildView(button_);
 }
 

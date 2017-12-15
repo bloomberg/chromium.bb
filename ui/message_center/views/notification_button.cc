@@ -24,7 +24,7 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
   // background changes to show touch feedback
   SetBackground(views::CreateSolidBackground(kNotificationBackgroundColor));
   set_notify_enter_exit_on_child(true);
-  SetLayoutManager(new views::BoxLayout(
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
       gfx::Insets(kButtonVerticalPadding,
                   message_center::kButtonHorizontalPadding),

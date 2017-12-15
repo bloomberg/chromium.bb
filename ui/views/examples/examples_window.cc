@@ -155,7 +155,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
 
     if (combobox_model_.GetItemCount() > 0) {
       layout->StartRow(1, 0);
-      example_shown_->SetLayoutManager(new FillLayout());
+      example_shown_->SetLayoutManager(std::make_unique<FillLayout>());
       example_shown_->AddChildView(combobox_model_.GetItemViewAt(0));
       layout->AddView(example_shown_);
     }

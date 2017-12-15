@@ -205,7 +205,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     : BubbleDialogDelegateView(init_params.anchor_view,
                                GetArrowAlignment(init_params.anchor_alignment)),
       params_(init_params),
-      layout_(new BottomAlignedBoxLayout(this)),
+      layout_(nullptr),
       delegate_(init_params.delegate),
       preferred_width_(init_params.min_width),
       bubble_border_(new BubbleBorder(
@@ -232,8 +232,9 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       views::Painter::CreateSolidRoundRectPainter(
           SK_ColorBLACK, bubble_border_->GetBorderCornerRadius()));
 
-  layout_->SetDefaultFlex(1);
-  SetLayoutManager(layout_);
+  auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
+  layout->SetDefaultFlex(1);
+  layout_ = SetLayoutManager(std::move(layout));
 }
 
 TrayBubbleView::~TrayBubbleView() {

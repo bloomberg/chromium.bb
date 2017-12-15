@@ -39,7 +39,7 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   views::StyledLabel* dialog_label =
       new views::StyledLabel(controller_->GetMainText(), /*listener=*/nullptr);
