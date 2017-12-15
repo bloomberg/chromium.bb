@@ -411,6 +411,13 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   info->home_page.url = ManifestURL::GetHomepageURL(&extension).spec();
   info->home_page.specified = ManifestURL::SpecifiedHomepageURL(&extension);
 
+  // Developer and web store URLs.
+  // TODO(dschuyler) after MD extensions releases (expected in m64), look into
+  // removing the |home_page.url| and |home_page.specified| above.
+  info->manifest_home_page_url =
+      ManifestURL::GetManifestHomePageURL(&extension).spec();
+  info->web_store_url = ManifestURL::GetWebStoreURL(&extension).spec();
+
   info->id = extension.id();
 
   // Incognito access.

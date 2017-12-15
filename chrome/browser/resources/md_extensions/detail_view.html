@@ -163,7 +163,7 @@
         margin: 0;
       }
 
-      #remove-extension {
+      button[is='cr-link-row'] {
         width: 100%;
       }
 
@@ -364,6 +364,14 @@
           <button class="icon-external" is="paper-icon-button-light"
               aria-labelledby="optionLabel" actionable></button>
         </div>
+        <button class="hr" hidden="[[!data.manifestHomePageUrl.length]]"
+            is="cr-link-row" icon-class="icon-external" id="developerWebsite"
+            label="$i18n{developerWebsite}" on-tap="onDeveloperWebSiteTap_">
+        </button>
+        <button class="hr" hidden="[[!data.webStoreUrl.length]]"
+            is="cr-link-row" icon-class="icon-external" id="viewInStore"
+            label="$i18n{viewInStore}" on-tap="onViewInStoreTap_">
+        </button>
         <div class="section block">
           <div class="section-title">$i18n{itemSource}</div>
           <div id="source" class="section-content">

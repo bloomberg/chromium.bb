@@ -207,6 +207,7 @@ namespace developerPrivate {
     Location location;
     DOMString? locationText;
     ManifestError[] manifestErrors;
+    DOMString manifestHomePageUrl;
     boolean mustRemainInstalled;
     DOMString name;
     boolean offlineEnabled;
@@ -223,6 +224,7 @@ namespace developerPrivate {
     boolean userMayModify;
     DOMString version;
     ExtensionView[] views;
+    DOMString webStoreUrl;
   };
 
   dictionary ProfileInfo {
@@ -598,7 +600,7 @@ namespace developerPrivate {
     static void openDevTools(OpenDevToolsProperties properties,
                              optional VoidCallback callback);
 
-    // Delete reported extension erors.
+    // Delete reported extension errors.
     // |properties| : The properties specifying the errors to remove.
     static void deleteExtensionErrors(
         DeleteExtensionErrorsProperties properties,

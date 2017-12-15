@@ -5,6 +5,7 @@
 #include "extensions/common/manifest_url_handlers.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
@@ -38,17 +39,28 @@ const GURL ManifestURL::GetHomepageURL(const Extension* extension) {
   const GURL& homepage_url = Get(extension, keys::kHomepageURL);
   if (homepage_url.is_valid())
     return homepage_url;
+  return GetWebStoreURL(extension);
+}
+
+// static
+bool ManifestURL::SpecifiedHomepageURL(const Extension* extension) {
+  return Get(extension, keys::kHomepageURL).is_valid();
+}
+
+// static
+const GURL ManifestURL::GetManifestHomePageURL(const Extension* extension) {
+  const GURL& homepage_url = Get(extension, keys::kHomepageURL);
+  return homepage_url.is_valid() ? homepage_url : GURL::EmptyGURL();
+}
+
+// static
+const GURL ManifestURL::GetWebStoreURL(const Extension* extension) {
   bool use_webstore_url = UpdatesFromGallery(extension) &&
                           !SharedModuleInfo::IsSharedModule(extension);
   return use_webstore_url
              ? GURL(extension_urls::GetWebstoreItemDetailURLPrefix() +
                     extension->id())
              : GURL::EmptyGURL();
-}
-
-// static
-bool ManifestURL::SpecifiedHomepageURL(const Extension* extension) {
-  return Get(extension, keys::kHomepageURL).is_valid();
 }
 
 // static
