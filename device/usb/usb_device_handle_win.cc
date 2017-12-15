@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -24,7 +25,6 @@
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_win.h"
 #include "device/usb/usb_service.h"
-#include "net/base/io_buffer.h"
 
 namespace device {
 
@@ -157,16 +157,17 @@ void UsbDeviceHandleWin::ClearHalt(uint8_t endpoint, ResultCallback callback) {
   }
 }
 
-void UsbDeviceHandleWin::ControlTransfer(UsbTransferDirection direction,
-                                         UsbControlTransferType request_type,
-                                         UsbControlTransferRecipient recipient,
-                                         uint8_t request,
-                                         uint16_t value,
-                                         uint16_t index,
-                                         scoped_refptr<net::IOBuffer> buffer,
-                                         size_t length,
-                                         unsigned int timeout,
-                                         TransferCallback callback) {
+void UsbDeviceHandleWin::ControlTransfer(
+    UsbTransferDirection direction,
+    UsbControlTransferType request_type,
+    UsbControlTransferRecipient recipient,
+    uint8_t request,
+    uint16_t value,
+    uint16_t index,
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t length,
+    unsigned int timeout,
+    TransferCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!device_) {
@@ -199,9 +200,9 @@ void UsbDeviceHandleWin::ControlTransfer(UsbTransferDirection direction,
       } else if (((value >> 8) == USB_CONFIGURATION_DESCRIPTOR_TYPE) ||
                  ((value >> 8) == USB_STRING_DESCRIPTOR_TYPE)) {
         size_t size = sizeof(USB_DESCRIPTOR_REQUEST) + length;
-        scoped_refptr<net::IOBuffer> request_buffer(new net::IOBuffer(size));
+        auto request_buffer = base::MakeRefCounted<base::RefCountedBytes>(size);
         USB_DESCRIPTOR_REQUEST* descriptor_request =
-            reinterpret_cast<USB_DESCRIPTOR_REQUEST*>(request_buffer->data());
+            request_buffer->front_as<USB_DESCRIPTOR_REQUEST>();
         descriptor_request->ConnectionIndex = device_->port_number();
         descriptor_request->SetupPacket.bmRequest = BMREQUEST_DEVICE_TO_HOST;
         descriptor_request->SetupPacket.bRequest = USB_REQUEST_GET_DESCRIPTOR;
@@ -213,8 +214,8 @@ void UsbDeviceHandleWin::ControlTransfer(UsbTransferDirection direction,
         request->MaybeStartWatching(
             DeviceIoControl(hub_handle_.Get(),
                             IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION,
-                            request_buffer->data(), size,
-                            request_buffer->data(), size, nullptr,
+                            request_buffer->front(), size,
+                            request_buffer->front(), size, nullptr,
                             request->overlapped()),
             base::BindOnce(&UsbDeviceHandleWin::GotDescriptorFromNodeConnection,
                            weak_factory_.GetWeakPtr(), std::move(callback),
@@ -247,19 +248,20 @@ void UsbDeviceHandleWin::IsochronousTransferIn(
 
 void UsbDeviceHandleWin::IsochronousTransferOut(
     uint8_t endpoint_number,
-    scoped_refptr<net::IOBuffer> buffer,
+    scoped_refptr<base::RefCountedBytes> buffer,
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
     IsochronousTransferCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void UsbDeviceHandleWin::GenericTransfer(UsbTransferDirection direction,
-                                         uint8_t endpoint_number,
-                                         scoped_refptr<net::IOBuffer> buffer,
-                                         size_t length,
-                                         unsigned int timeout,
-                                         TransferCallback callback) {
+void UsbDeviceHandleWin::GenericTransfer(
+    UsbTransferDirection direction,
+    uint8_t endpoint_number,
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t length,
+    unsigned int timeout,
+    TransferCallback callback) {
   // This one must be callable from any thread.
 }
 
@@ -300,7 +302,7 @@ std::unique_ptr<UsbDeviceHandleWin::Request> UsbDeviceHandleWin::UnlinkRequest(
 void UsbDeviceHandleWin::GotNodeConnectionInformation(
     TransferCallback callback,
     void* node_connection_info_ptr,
-    scoped_refptr<net::IOBuffer> buffer,
+    scoped_refptr<base::RefCountedBytes> buffer,
     size_t buffer_length,
     Request* request_ptr,
     DWORD win32_result,
@@ -319,7 +321,7 @@ void UsbDeviceHandleWin::GotNodeConnectionInformation(
 
   DCHECK_EQ(bytes_transferred, sizeof(USB_NODE_CONNECTION_INFORMATION_EX));
   bytes_transferred = std::min(sizeof(USB_DEVICE_DESCRIPTOR), buffer_length);
-  memcpy(buffer->data(), &node_connection_info->DeviceDescriptor,
+  memcpy(buffer->front(), &node_connection_info->DeviceDescriptor,
          bytes_transferred);
   std::move(callback).Run(UsbTransferStatus::COMPLETED, buffer,
                           bytes_transferred);
@@ -327,8 +329,8 @@ void UsbDeviceHandleWin::GotNodeConnectionInformation(
 
 void UsbDeviceHandleWin::GotDescriptorFromNodeConnection(
     TransferCallback callback,
-    scoped_refptr<net::IOBuffer> request_buffer,
-    scoped_refptr<net::IOBuffer> original_buffer,
+    scoped_refptr<base::RefCountedBytes> request_buffer,
+    scoped_refptr<base::RefCountedBytes> original_buffer,
     size_t original_buffer_length,
     Request* request_ptr,
     DWORD win32_result,
@@ -344,8 +346,8 @@ void UsbDeviceHandleWin::GotDescriptorFromNodeConnection(
 
   DCHECK_GE(bytes_transferred, sizeof(USB_DESCRIPTOR_REQUEST));
   bytes_transferred -= sizeof(USB_DESCRIPTOR_REQUEST);
-  memcpy(original_buffer->data(),
-         request_buffer->data() + sizeof(USB_DESCRIPTOR_REQUEST),
+  memcpy(original_buffer->front(),
+         request_buffer->front() + sizeof(USB_DESCRIPTOR_REQUEST),
          bytes_transferred);
   std::move(callback).Run(UsbTransferStatus::COMPLETED, original_buffer,
                           bytes_transferred);

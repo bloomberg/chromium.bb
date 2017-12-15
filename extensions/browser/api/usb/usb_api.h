@@ -20,7 +20,10 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/usb.h"
-#include "net/base/io_buffer.h"
+
+namespace base {
+class RefCountedBytes;
+}
 
 namespace extensions {
 
@@ -58,7 +61,7 @@ class UsbTransferFunction : public UsbConnectionFunction {
   ~UsbTransferFunction() override;
 
   void OnCompleted(device::UsbTransferStatus status,
-                   scoped_refptr<net::IOBuffer> data,
+                   scoped_refptr<base::RefCountedBytes> data,
                    size_t length);
 };
 
@@ -347,7 +350,7 @@ class UsbIsochronousTransferFunction : public UsbConnectionFunction {
   ResponseAction Run() override;
 
   void OnCompleted(
-      scoped_refptr<net::IOBuffer> data,
+      scoped_refptr<base::RefCountedBytes> data,
       const std::vector<device::UsbDeviceHandle::IsochronousPacket>& packets);
 
   DISALLOW_COPY_AND_ASSIGN(UsbIsochronousTransferFunction);

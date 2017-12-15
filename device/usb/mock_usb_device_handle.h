@@ -10,8 +10,8 @@
 
 #include <vector>
 
+#include "base/memory/ref_counted_memory.h"
 #include "device/usb/usb_device_handle.h"
-#include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
@@ -73,7 +73,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override {
@@ -87,7 +87,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                      uint8_t request,
                      uint16_t value,
                      uint16_t index,
-                     scoped_refptr<net::IOBuffer> buffer,
+                     scoped_refptr<base::RefCountedBytes> buffer,
                      size_t length,
                      unsigned int timeout,
                      TransferCallback& callback));
@@ -105,7 +105,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                     IsochronousTransferCallback& callback));
 
   void IsochronousTransferOut(uint8_t endpoint,
-                              scoped_refptr<net::IOBuffer> buffer,
+                              scoped_refptr<base::RefCountedBytes> buffer,
                               const std::vector<uint32_t>& packet_lengths,
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override {
@@ -114,14 +114,14 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
   MOCK_METHOD5(IsochronousTransferOutInternal,
                void(uint8_t endpoint,
-                    scoped_refptr<net::IOBuffer> buffer,
+                    scoped_refptr<base::RefCountedBytes> buffer,
                     const std::vector<uint32_t>& packet_lengths,
                     unsigned int timeout,
                     IsochronousTransferCallback& callback));
 
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override {
@@ -131,7 +131,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   MOCK_METHOD6(GenericTransferInternal,
                void(UsbTransferDirection direction,
                     uint8_t endpoint,
-                    scoped_refptr<net::IOBuffer> buffer,
+                    scoped_refptr<base::RefCountedBytes> buffer,
                     size_t length,
                     unsigned int timeout,
                     TransferCallback& callback));

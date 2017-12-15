@@ -3,8 +3,5 @@ include_rules = [
   "+dbus",
   "+jni",
 
-  "-net",
-  "+net/base",
-
   "+third_party/libusb",
 ]

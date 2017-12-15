@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -25,7 +26,6 @@
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
-#include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
@@ -107,13 +107,12 @@ uint32_t Checksum(const std::string& data) {
   return sum;
 }
 
-void DumpMessage(bool outgoing, const char* data, size_t length) {
+void DumpMessage(bool outgoing, const uint8_t* data, size_t length) {
 #if 0
   std::string result = "";
   if (length == kHeaderSize) {
     for (size_t i = 0; i < 24; ++i) {
-      result += base::StringPrintf("%02x",
-          data[i] > 0 ? data[i] : (data[i] + 0x100) & 0xFF);
+      result += base::StringPrintf("%02x", data[i]);
       if ((i + 1) % 4 == 0)
         result += " ";
     }
@@ -434,22 +433,20 @@ void AndroidUsbDevice::Queue(std::unique_ptr<AdbMessage> message) {
   header.push_back(body_length);
   header.push_back(Checksum(message->body));
   header.push_back(message->command ^ 0xffffffff);
-  scoped_refptr<net::IOBufferWithSize> header_buffer =
-      new net::IOBufferWithSize(kHeaderSize);
-  memcpy(header_buffer.get()->data(), &header[0], kHeaderSize);
+  auto header_buffer = base::MakeRefCounted<base::RefCountedBytes>(
+      reinterpret_cast<uint8_t*>(header.data()), kHeaderSize);
   outgoing_queue_.push(header_buffer);
 
   // Queue body.
   if (!message->body.empty()) {
-    scoped_refptr<net::IOBufferWithSize> body_buffer =
-        new net::IOBufferWithSize(body_length);
-    memcpy(body_buffer->data(), message->body.data(), message->body.length());
+    auto body_buffer = base::MakeRefCounted<base::RefCountedBytes>(body_length);
+    memcpy(body_buffer->front(), message->body.data(), message->body.length());
     if (append_zero)
       body_buffer->data()[body_length - 1] = 0;
     outgoing_queue_.push(body_buffer);
     if (zero_mask_ && (body_length & zero_mask_) == 0) {
       // Send a zero length packet.
-      outgoing_queue_.push(new net::IOBufferWithSize(0));
+      outgoing_queue_.push(base::MakeRefCounted<base::RefCountedBytes>(0));
     }
   }
   ProcessOutgoing();
@@ -463,7 +460,7 @@ void AndroidUsbDevice::ProcessOutgoing() {
 
   BulkMessage message = outgoing_queue_.front();
   outgoing_queue_.pop();
-  DumpMessage(true, message->data(), message->size());
+  DumpMessage(true, message->front(), message->size());
 
   usb_handle_->GenericTransfer(
       UsbTransferDirection::OUTBOUND, outbound_address_, message,
@@ -472,9 +469,10 @@ void AndroidUsbDevice::ProcessOutgoing() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void AndroidUsbDevice::OutgoingMessageSent(UsbTransferStatus status,
-                                           scoped_refptr<net::IOBuffer> buffer,
-                                           size_t result) {
+void AndroidUsbDevice::OutgoingMessageSent(
+    UsbTransferStatus status,
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t result) {
   if (status != UsbTransferStatus::COMPLETED)
     return;
 
@@ -489,7 +487,7 @@ void AndroidUsbDevice::ReadHeader() {
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kHeaderSize);
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(kHeaderSize);
   usb_handle_->GenericTransfer(
       UsbTransferDirection::INBOUND, inbound_address_, buffer, kHeaderSize,
       kUsbTimeout,
@@ -497,7 +495,7 @@ void AndroidUsbDevice::ReadHeader() {
 }
 
 void AndroidUsbDevice::ParseHeader(UsbTransferStatus status,
-                                   scoped_refptr<net::IOBuffer> buffer,
+                                   scoped_refptr<base::RefCountedBytes> buffer,
                                    size_t result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -512,9 +510,9 @@ void AndroidUsbDevice::ParseHeader(UsbTransferStatus status,
     return;
   }
 
-  DumpMessage(false, buffer->data(), result);
+  DumpMessage(false, buffer->front(), result);
   std::vector<uint32_t> header(6);
-  memcpy(&header[0], buffer->data(), result);
+  memcpy(&header[0], buffer->front(), result);
   std::unique_ptr<AdbMessage> message(
       new AdbMessage(header[0], header[1], header[2], ""));
   uint32_t data_length = header[3];
@@ -546,8 +544,7 @@ void AndroidUsbDevice::ReadBody(std::unique_ptr<AdbMessage> message,
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer =
-      new net::IOBuffer(static_cast<size_t>(data_length));
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(data_length);
   usb_handle_->GenericTransfer(
       UsbTransferDirection::INBOUND, inbound_address_, buffer, data_length,
       kUsbTimeout,
@@ -559,7 +556,7 @@ void AndroidUsbDevice::ParseBody(std::unique_ptr<AdbMessage> message,
                                  uint32_t data_length,
                                  uint32_t data_check,
                                  UsbTransferStatus status,
-                                 scoped_refptr<net::IOBuffer> buffer,
+                                 scoped_refptr<base::RefCountedBytes> buffer,
                                  size_t result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -577,8 +574,8 @@ void AndroidUsbDevice::ParseBody(std::unique_ptr<AdbMessage> message,
     return;
   }
 
-  DumpMessage(false, buffer->data(), data_length);
-  message->body = std::string(buffer->data(), result);
+  DumpMessage(false, buffer->front(), data_length);
+  message->body = std::string(buffer->front_as<char>(), result);
   if (Checksum(message->body) != data_check) {
     TransferError(UsbTransferStatus::TRANSFER_ERROR);
     return;

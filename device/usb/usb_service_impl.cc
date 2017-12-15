@@ -14,6 +14,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -26,7 +27,6 @@
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_error.h"
 #include "device/usb/webusb_descriptors.h"
-#include "net/base/io_buffer.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_WIN)
@@ -38,8 +38,6 @@
 #include "base/strings/string_util.h"
 #include "device/base/device_info_query_win.h"
 #endif  // OS_WIN
-
-using net::IOBufferWithSize;
 
 namespace device {
 

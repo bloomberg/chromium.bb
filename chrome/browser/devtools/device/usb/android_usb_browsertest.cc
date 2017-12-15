@@ -12,6 +12,7 @@
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -30,7 +31,6 @@
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
-#include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -193,21 +193,21 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override {}
 
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override {
     if (direction == device::UsbTransferDirection::OUTBOUND) {
       if (remaining_body_length_ == 0) {
         std::vector<uint32_t> header(6);
-        memcpy(&header[0], buffer->data(), length);
+        memcpy(&header[0], buffer->front(), length);
         current_message_.reset(
             new AdbMessage(header[0], header[1], header[2], std::string()));
         remaining_body_length_ = header[3];
@@ -218,7 +218,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
         }
       } else {
         DCHECK(current_message_.get());
-        current_message_->body += std::string(buffer->data(), length);
+        current_message_->body += std::string(buffer->front_as<char>(), length);
         remaining_body_length_ -= length;
       }
 
@@ -354,9 +354,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
     Query query = std::move(queries_.front());
     queries_.pop();
-    std::copy(output_buffer_.begin(),
-              output_buffer_.begin() + query.size,
-              query.buffer->data());
+    std::copy(output_buffer_.begin(), output_buffer_.begin() + query.size,
+              query.buffer->front());
     output_buffer_.erase(output_buffer_.begin(),
                          output_buffer_.begin() + query.size);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -371,7 +370,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                              IsochronousTransferCallback callback) override {}
 
   void IsochronousTransferOut(uint8_t endpoint_number,
-                              scoped_refptr<net::IOBuffer> buffer,
+                              scoped_refptr<base::RefCountedBytes> buffer,
                               const std::vector<uint32_t>& packet_lengths,
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override {}
@@ -381,11 +380,11 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
   struct Query {
     TransferCallback callback;
-    scoped_refptr<net::IOBuffer> buffer;
+    scoped_refptr<base::RefCountedBytes> buffer;
     size_t size;
 
     Query(TransferCallback callback,
-          scoped_refptr<net::IOBuffer> buffer,
+          scoped_refptr<base::RefCountedBytes> buffer,
           int size)
         : callback(std::move(callback)), buffer(buffer), size(size) {}
   };
