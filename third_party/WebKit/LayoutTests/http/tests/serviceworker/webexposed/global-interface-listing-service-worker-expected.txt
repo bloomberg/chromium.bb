@@ -134,6 +134,14 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface CookieStore
+    attribute @@toStringTag
+    method constructor
+    method delete
+    method get
+    method getAll
+    method has
+    method set
 interface CountQueuingStrategy
     method constructor
     method size
@@ -2574,6 +2582,7 @@ interface WritableStream
     attribute console
     attribute internals
     getter clients
+    getter cookieStore
     getter onabortpayment
     getter onactivate
     getter onbackgroundfetchabort
@@ -2593,6 +2602,7 @@ interface WritableStream
     method fetch
     method gc
     method skipWaiting
+    setter cookieStore
     setter onabortpayment
     setter onactivate
     setter onbackgroundfetchabort

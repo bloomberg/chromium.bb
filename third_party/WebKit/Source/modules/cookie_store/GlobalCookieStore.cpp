@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/cookie_store/CookieStore.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "services/network/public/interfaces/restricted_cookie_manager.mojom-blink.h"
@@ -36,21 +37,10 @@ class GlobalCookieStoreImpl final
     return *supplement;
   }
 
-  CookieStore* GetCookieStore();
-
-  virtual void Trace(blink::Visitor* visitor) {
-    visitor->Trace(cookie_store_);
-    Supplement<T>::Trace(visitor);
-  }
-
- private:
-  explicit GlobalCookieStoreImpl(T& supplementable)
-      : Supplement<T>(supplementable) {}
-
-  static const char* GetName() { return "CookieStore"; }
-
-  CookieStore* GetCookieStore(ExecutionContext* execution_context) {
+  CookieStore* GetCookieStore(T& scope) {
     if (!cookie_store_) {
+      ExecutionContext* execution_context = scope.GetExecutionContext();
+
       network::mojom::blink::RestrictedCookieManagerPtr cookie_manager_ptr;
       service_manager::InterfaceProvider* interface_provider =
           execution_context->GetInterfaceProvider();
@@ -63,21 +53,32 @@ class GlobalCookieStoreImpl final
     return cookie_store_;
   }
 
+  virtual void Trace(blink::Visitor* visitor) {
+    visitor->Trace(cookie_store_);
+    Supplement<T>::Trace(visitor);
+  }
+
+ private:
+  explicit GlobalCookieStoreImpl(T& supplementable)
+      : Supplement<T>(supplementable) {}
+
+  static const char* GetName() { return "CookieStore"; }
+
   Member<CookieStore> cookie_store_;
 };
-
-template <>
-CookieStore* GlobalCookieStoreImpl<LocalDOMWindow>::GetCookieStore() {
-  LocalDOMWindow* window = GetSupplementable();
-  return GetCookieStore(window->document());
-}
-
-// TODO(crbug.com/729800): Add ServiceWorkerGlobalScope overload.
 
 }  // namespace
 
 CookieStore* GlobalCookieStore::cookieStore(LocalDOMWindow& window) {
-  return GlobalCookieStoreImpl<LocalDOMWindow>::From(window).GetCookieStore();
+  return GlobalCookieStoreImpl<LocalDOMWindow>::From(window).GetCookieStore(
+      window);
+}
+
+CookieStore* GlobalCookieStore::cookieStore(ServiceWorkerGlobalScope& worker) {
+  // ServiceWorkerGlobalScope is Supplementable<WorkerGlobalScope>, not
+  // Supplementable<ServiceWorkerGlobalScope>.
+  return GlobalCookieStoreImpl<WorkerGlobalScope>::From(worker).GetCookieStore(
+      worker);
 }
 
 }  // namespace blink

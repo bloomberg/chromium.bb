@@ -177,8 +177,13 @@ void ExtractCookieURLs(ScriptState* script_state,
     Document* document = ToDocument(execution_context);
     cookie_url = document->CookieURL();
     site_for_cookies = document->SiteForCookies();
+  } else if (execution_context->IsServiceWorkerGlobalScope()) {
+    ServiceWorkerGlobalScope* scope =
+        ToServiceWorkerGlobalScope(execution_context);
+    // TODO(crbug.com/729800): Correct values?
+    cookie_url = scope->Url();
+    site_for_cookies = scope->Url();
   } else {
-    // TODO(crbug.com/729800): Add branch for service workers.
     NOTIMPLEMENTED();
   }
 }
@@ -388,6 +393,10 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
 // static
 void CookieStore::OnSetCanonicalCookieResult(ScriptPromiseResolver* resolver,
                                              bool backend_success) {
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state->ContextIsValid())
+    return;
+
   if (!backend_success) {
     resolver->Reject(DOMException::Create(
         kUnknownError, "An unknown error occured while writing the cookie."));
