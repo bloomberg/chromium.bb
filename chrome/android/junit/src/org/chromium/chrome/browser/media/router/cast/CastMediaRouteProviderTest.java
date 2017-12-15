@@ -78,11 +78,11 @@ public class CastMediaRouteProviderTest {
         setUpMediaRouter(mock(MediaRouter.class));
 
         CastSession mockSession = mock(CastSession.class);
-        mProvider.onSessionCreated(mockSession);
+        mProvider.onSessionStarted(mockSession);
 
         MediaRoute route = new MediaRoute("sink", SUPPORTED_SOURCE, "");
         mProvider.addRoute(route, "", -1);
-        mProvider.onSessionClosed();
+        mProvider.onSessionEnded();
 
         verify(mMockManager).onRouteClosed(route.id);
     }
@@ -110,7 +110,7 @@ public class CastMediaRouteProviderTest {
 
         MediaRoute route = new MediaRoute("sinkId", SUPPORTED_AUTOJOIN_SOURCE, "presentationId");
         mProvider.addRoute(route, "https://example.com", 1);
-        mProvider.onSessionCreated(mockSession);
+        mProvider.onSessionStarted(mockSession);
         mProvider.joinRoute(SUPPORTED_AUTOJOIN_SOURCE, "auto-join", "https://example.com", 1, -1);
 
         verify(mMockManager)
@@ -129,7 +129,7 @@ public class CastMediaRouteProviderTest {
 
         MediaRoute route = new MediaRoute("sinkId", SUPPORTED_AUTOJOIN_SOURCE, "presentationId");
         mProvider.addRoute(route, "https://example.com", 1);
-        mProvider.onSessionCreated(mockSession);
+        mProvider.onSessionStarted(mockSession);
         mProvider.joinRoute(SUPPORTED_AUTOJOIN_SOURCE, "auto-join", "", 1, -1);
 
         verify(mMockManager).onRouteRequestError("No matching route", -1);
@@ -146,7 +146,7 @@ public class CastMediaRouteProviderTest {
 
         MediaRoute route = new MediaRoute("sinkId", SUPPORTED_AUTOJOIN_SOURCE, "presentationId");
         mProvider.addRoute(route, "", 1);
-        mProvider.onSessionCreated(mockSession);
+        mProvider.onSessionStarted(mockSession);
         mProvider.joinRoute(SUPPORTED_AUTOJOIN_SOURCE, "auto-join", "", 1, -1);
 
         verify(mMockManager).onRouteRequestError("No matching route", -1);

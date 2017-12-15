@@ -36,10 +36,6 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
     private ClientRecord mLastRemovedRouteRecord;
     private final Map<String, ClientRecord> mClientRecords = new HashMap<String, ClientRecord>();
 
-    // There can be only one Cast session at the same time on Android.
-    private CastSession mSession;
-    private CreateRouteRequest mPendingCreateRouteRequest;
-
     /**
      * @return Initialized {@link CastMediaRouteProvider} object.
      */
@@ -47,26 +43,20 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         return new CastMediaRouteProvider(ChromeMediaRouter.getAndroidMediaRouter(), manager);
     }
 
-    public void onLaunchError() {
-        for (String routeId : mRoutes.keySet()) {
-            mManager.onRouteClosedWithError(routeId, "Launch error");
-        }
-        mRoutes.clear();
+    @Override
+    public void onSessionStartFailed() {
+        super.onSessionStartFailed();
         mClientRecords.clear();
     }
 
-    public void onSessionStopAction() {
-        if (mSession == null) return;
-
-        for (String routeId : mRoutes.keySet()) closeRoute(routeId);
-    }
-
-    public void onSessionCreated(CastSession session) {
-        mSession = session;
+    @Override
+    public void onSessionStarted(CastSession session) {
+        super.onSessionStarted(session);
         mMessageHandler.onSessionCreated(mSession);
     }
 
-    public void onSessionClosed() {
+    @Override
+    public void onSessionEnded() {
         if (mSession == null) return;
 
         if (mClientRecords.isEmpty()) {
@@ -84,10 +74,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
 
         mSession = null;
 
-        if (mPendingCreateRouteRequest != null) {
-            launchSession(mPendingCreateRouteRequest);
-            mPendingCreateRouteRequest = null;
-        } else if (mAndroidMediaRouter != null) {
+        if (mAndroidMediaRouter != null) {
             mAndroidMediaRouter.selectRoute(mAndroidMediaRouter.getDefaultRoute());
         }
     }
@@ -147,20 +134,16 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
             return;
         }
 
-        CreateRouteRequest createRouteRequest = new CreateRouteRequest(
-                source, sink, presentationId, origin, tabId, isIncognito, nativeRequestId, this);
+        CreateRouteRequest createRouteRequest = new CreateRouteRequest(source, sink, presentationId,
+                origin, tabId, isIncognito, nativeRequestId, this, mMessageHandler);
 
-        // Since we only have one session, close it before starting a new one.
-        if (mSession != null) {
-            mPendingCreateRouteRequest = createRouteRequest;
-            mSession.stopApplication();
-            return;
-        }
-
-        launchSession(createRouteRequest);
+        ChromeCastSessionManager.get().requestSessionLaunch(createRouteRequest);
     }
 
-    private void launchSession(CreateRouteRequest request) {
+    @Override
+    public void onSessionStarting(
+            ChromeCastSessionManager.CastSessionLaunchRequest sessionLaunchRequest) {
+        CreateRouteRequest request = (CreateRouteRequest) sessionLaunchRequest;
         MediaSink sink = request.getSink();
         MediaSource source = request.getSource();
 
@@ -177,7 +160,6 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
                 sendReceiverAction(clientRecord.routeId, sink, clientId, "cast");
             }
         }
-        request.start();
     }
 
     @Override
@@ -221,7 +203,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
             if (sink != null) sendReceiverAction(routeId, sink, client.clientId, "stop");
         }
 
-        mSession.stopApplication();
+        ChromeCastSessionManager.get().stopApplication();
     }
 
     @Override

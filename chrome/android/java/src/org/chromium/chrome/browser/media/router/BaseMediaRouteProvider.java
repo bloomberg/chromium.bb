@@ -9,6 +9,8 @@ import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.media.router.cast.CastSession;
+import org.chromium.chrome.browser.media.router.cast.ChromeCastSessionManager;
 import org.chromium.chrome.browser.media.router.cast.DiscoveryCallback;
 import org.chromium.chrome.browser.media.router.cast.MediaSink;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
@@ -25,7 +27,9 @@ import javax.annotation.Nullable;
 /**
  * A {@link BaseMediaRouteProvider} common implementation for MediaRouteProviders.
  */
-public abstract class BaseMediaRouteProvider implements MediaRouteProvider, DiscoveryDelegate {
+public abstract class BaseMediaRouteProvider
+        implements MediaRouteProvider, DiscoveryDelegate,
+                   ChromeCastSessionManager.CastSessionManagerListener {
     private static final String TAG = "MediaRouter";
 
     protected static final List<MediaSink> NO_SINKS = Collections.emptyList();
@@ -36,6 +40,9 @@ public abstract class BaseMediaRouteProvider implements MediaRouteProvider, Disc
             new HashMap<String, DiscoveryCallback>();
     protected final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
     protected Handler mHandler = new Handler();
+
+    // There can be only one Cast session at the same time on Android.
+    protected CastSession mSession;
 
     protected BaseMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {
         mAndroidMediaRouter = androidMediaRouter;
@@ -157,4 +164,32 @@ public abstract class BaseMediaRouteProvider implements MediaRouteProvider, Disc
 
     @Override
     public abstract void sendStringMessage(String routeId, String message, int nativeCallbackId);
+
+    // ChromeCastSessionObserver implementation.
+    @Override
+    public abstract void onSessionStarting(
+            ChromeCastSessionManager.CastSessionLaunchRequest originalRequest);
+
+    @Override
+    public abstract void onSessionEnded();
+
+    @Override
+    public void onSessionStartFailed() {
+        for (String routeId : mRoutes.keySet()) {
+            mManager.onRouteClosedWithError(routeId, "Launch error");
+        }
+        mRoutes.clear();
+    };
+
+    @Override
+    public void onSessionStarted(CastSession session) {
+        mSession = session;
+    }
+
+    @Override
+    public void onSessionStopAction() {
+        if (mSession == null) return;
+
+        for (String routeId : mRoutes.keySet()) closeRoute(routeId);
+    }
 }
