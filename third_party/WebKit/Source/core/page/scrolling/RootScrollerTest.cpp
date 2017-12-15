@@ -109,9 +109,9 @@ class RootScrollerTest : public ::testing::Test,
     RunPendingTasks();
   }
 
-  WebViewImpl* GetWebView() const { return helper_.WebView(); }
+  WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
 
-  Page& GetPage() const { return *helper_.WebView()->GetPage(); }
+  Page& GetPage() const { return *GetWebView()->GetPage(); }
 
   LocalFrame* MainFrame() const {
     return GetWebView()->MainFrameImpl()->GetFrame();

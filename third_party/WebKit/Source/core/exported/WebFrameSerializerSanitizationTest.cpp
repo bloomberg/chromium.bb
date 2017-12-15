@@ -191,7 +191,7 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
         url, testing::CoreTestDataPath(file_path.Utf8().data()), mime_type);
   }
 
-  WebViewImpl* WebView() { return helper_.WebView(); }
+  WebViewImpl* WebView() { return helper_.GetWebView(); }
 
   WebLocalFrameImpl* MainFrameImpl() { return helper_.LocalMainFrame(); }
 

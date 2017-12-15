@@ -118,7 +118,7 @@ class ExternalPopupMenuTest : public ::testing::Test {
     WebView()->UpdateAllLifecyclePhases();
   }
 
-  WebViewImpl* WebView() const { return helper_.WebView(); }
+  WebViewImpl* WebView() const { return helper_.GetWebView(); }
   const ExternalPopupMenuWebFrameClient& Client() const {
     return web_frame_client_;
   }

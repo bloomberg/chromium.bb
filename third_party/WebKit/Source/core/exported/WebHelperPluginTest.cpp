@@ -61,7 +61,7 @@ class WebHelperPluginTest : public ::testing::Test {
 
 TEST_F(WebHelperPluginTest, CreateAndDestroyAfterWebViewDestruction) {
   plugin_.reset(WebHelperPlugin::Create(
-      "hello", helper_.WebView()->MainFrame()->ToWebLocalFrame()));
+      "hello", helper_.GetWebView()->MainFrame()->ToWebLocalFrame()));
   EXPECT_TRUE(plugin_);
   EXPECT_TRUE(plugin_->GetPlugin());
 
@@ -70,7 +70,7 @@ TEST_F(WebHelperPluginTest, CreateAndDestroyAfterWebViewDestruction) {
 
 TEST_F(WebHelperPluginTest, CreateAndDestroyBeforeWebViewDestruction) {
   plugin_.reset(WebHelperPlugin::Create(
-      "hello", helper_.WebView()->MainFrame()->ToWebLocalFrame()));
+      "hello", helper_.GetWebView()->MainFrame()->ToWebLocalFrame()));
   EXPECT_TRUE(plugin_);
   EXPECT_TRUE(plugin_->GetPlugin());
 
@@ -81,7 +81,7 @@ TEST_F(WebHelperPluginTest, CreateFailsWithPlaceholder) {
   frame_client_.SetCreatePlaceholder(true);
 
   plugin_.reset(WebHelperPlugin::Create(
-      "hello", helper_.WebView()->MainFrame()->ToWebLocalFrame()));
+      "hello", helper_.GetWebView()->MainFrame()->ToWebLocalFrame()));
   EXPECT_EQ(nullptr, plugin_.get());
 }
 

@@ -82,7 +82,7 @@ class PageOverlayTest : public ::testing::Test {
               GetWebView()->IsAcceleratedCompositingActive());
   }
 
-  WebViewImpl* GetWebView() const { return helper_.WebView(); }
+  WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
 
   std::unique_ptr<PageOverlay> CreateSolidYellowOverlay() {
     return PageOverlay::Create(

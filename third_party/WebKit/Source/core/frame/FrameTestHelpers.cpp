@@ -297,9 +297,9 @@ WebViewImpl* WebViewHelper::InitializeAndLoad(
   Initialize(web_frame_client, web_view_client, web_widget_client,
              update_settings_func);
 
-  LoadFrame(WebView()->MainFrameImpl(), url);
+  LoadFrame(GetWebView()->MainFrameImpl(), url);
 
-  return WebView();
+  return GetWebView();
 }
 
 WebViewImpl* WebViewHelper::InitializeRemote(
@@ -353,7 +353,7 @@ void WebViewHelper::SetViewportSize(const WebSize& viewport_size) {
 
 void WebViewHelper::Resize(WebSize size) {
   test_web_view_client_->ClearAnimationScheduled();
-  WebView()->Resize(size);
+  GetWebView()->Resize(size);
   EXPECT_FALSE(test_web_view_client_->AnimationScheduled());
   test_web_view_client_->ClearAnimationScheduled();
 }

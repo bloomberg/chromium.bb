@@ -262,7 +262,7 @@ class WebViewHelper {
 
   void Reset();
 
-  WebViewImpl* WebView() const { return web_view_; }
+  WebViewImpl* GetWebView() const { return web_view_; }
 
   WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
