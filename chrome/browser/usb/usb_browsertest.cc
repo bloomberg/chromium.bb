@@ -6,9 +6,8 @@
 #include <string>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/supports_user_data.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -63,13 +62,6 @@ class FakeChooserView : public ChooserController::View {
 
 class FakeChooserService : public device::mojom::UsbChooserService {
  public:
-  static void Create(device::mojom::UsbChooserServiceRequest request,
-                     RenderFrameHost* render_frame_host) {
-    mojo::MakeStrongBinding(
-        base::MakeUnique<FakeChooserService>(render_frame_host),
-        std::move(request));
-  }
-
   explicit FakeChooserService(RenderFrameHost* render_frame_host)
       : render_frame_host_(render_frame_host) {}
 
@@ -90,46 +82,26 @@ class FakeChooserService : public device::mojom::UsbChooserService {
   DISALLOW_COPY_AND_ASSIGN(FakeChooserService);
 };
 
-const char kUSBBrowserTest_ActiveTabObserverKey[] =
-    "usb_browsertest_active_tab_observer";
-
-class ActiveTabObserver : public content::WebContentsObserver,
-                          public base::SupportsUserData::Data {
+class TestContentBrowserClient : public ChromeContentBrowserClient {
  public:
-  static void Set(content::WebContents* contents) {
-    auto observer = base::MakeUnique<ActiveTabObserver>(contents);
-    contents->SetUserData(kUSBBrowserTest_ActiveTabObserverKey,
-                          std::move(observer));
-  }
+  TestContentBrowserClient() {}
+  ~TestContentBrowserClient() override {}
 
-  explicit ActiveTabObserver(content::WebContents* contents)
-      : content::WebContentsObserver(contents) {
-    registry_.AddInterface(base::Bind(&FakeChooserService::Create));
+  // ChromeContentBrowserClient:
+  void CreateUsbChooserService(
+      content::RenderFrameHost* render_frame_host,
+      device::mojom::UsbChooserServiceRequest request) override {
+    mojo::MakeStrongBinding(
+        std::make_unique<FakeChooserService>(render_frame_host),
+        std::move(request));
   }
-  ~ActiveTabObserver() override = default;
 
  private:
-  // content::WebContentsObserver:
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override {
-    registry_.TryBindInterface(interface_name, interface_pipe,
-                               render_frame_host);
-  }
-
-  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*> registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActiveTabObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
 };
 
 class WebUsbTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
   void SetUpOnMainThread() override {
     embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -141,6 +113,9 @@ class WebUsbTest : public InProcessBrowserTest {
     // thus may expose ordering bugs not normally encountered.
     UsbChooserContextFactory::GetForProfile(browser()->profile());
 
+    original_content_browser_client_ =
+        content::SetBrowserClientForTesting(&test_content_browser_client_);
+
     ui_test_utils::NavigateToURL(
         browser(),
         embedded_test_server()->GetURL("localhost", "/simple_page.html"));
@@ -149,8 +124,10 @@ class WebUsbTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
     EXPECT_THAT(render_frame_host->GetLastCommittedOrigin().Serialize(),
                 testing::StartsWith("http://localhost:"));
-    ActiveTabObserver::Set(
-        browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
+  void TearDown() override {
+    content::SetBrowserClientForTesting(original_content_browser_client_);
   }
 
   void AddMockDevice(const std::string& serial_number) {
@@ -169,6 +146,8 @@ class WebUsbTest : public InProcessBrowserTest {
  private:
   std::unique_ptr<MockDeviceClient> device_client_;
   scoped_refptr<MockUsbDevice> mock_device_;
+  TestContentBrowserClient test_content_browser_client_;
+  content::ContentBrowserClient* original_content_browser_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebUsbTest, RequestAndGetDevices) {

@@ -600,4 +600,12 @@ bool ContentBrowserClient::ShouldForceDownloadResource(
   return false;
 }
 
+void ContentBrowserClient::CreateUsbDeviceManager(
+    RenderFrameHost* render_frame_host,
+    device::mojom::UsbDeviceManagerRequest request) {}
+
+void ContentBrowserClient::CreateUsbChooserService(
+    RenderFrameHost* render_frame_host,
+    device::mojom::UsbChooserServiceRequest request) {}
+
 }  // namespace content

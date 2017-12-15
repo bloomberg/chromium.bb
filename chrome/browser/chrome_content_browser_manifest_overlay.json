@@ -71,8 +71,6 @@
           "chrome::mojom::OpenSearchDocumentDescriptionHandler",
           "chrome::mojom::PrerenderCanceler",
           "contextual_search::mojom::ContextualSearchJsApiService",
-          "device::mojom::UsbChooserService",
-          "device::mojom::UsbDeviceManager",
           "dom_distiller::mojom::DistillabilityService",
           "dom_distiller::mojom::DistillerJavaScriptService",
           "extensions::KeepAlive",

@@ -995,6 +995,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DeleteWebBluetoothService(
       WebBluetoothServiceImpl* web_bluetooth_service);
 
+  // Creates connections to WebUSB interfaces bound to this frame.
+  void CreateUsbDeviceManager(device::mojom::UsbDeviceManagerRequest request);
+  void CreateUsbChooserService(device::mojom::UsbChooserServiceRequest request);
+
   void CreateAudioOutputStreamFactory(
       mojom::RendererAudioOutputStreamFactoryRequest request);
 
