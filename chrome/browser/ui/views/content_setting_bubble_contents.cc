@@ -570,7 +570,7 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
   if (extra_views.size() == 1)
     return extra_views.front();
   views::View* container = new views::View();
-  container->SetLayoutManager(new views::BoxLayout(
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       layout->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   for (auto* extra_view : extra_views)

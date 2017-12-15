@@ -118,7 +118,7 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
 #endif
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  SetLayoutManager(new views::BoxLayout(
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
@@ -126,7 +126,7 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     views::View* label_container = new views::View();
     int indent =
         provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
-    label_container->SetLayoutManager(new views::BoxLayout(
+    label_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(0, indent),
         provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
     views::ImageView* icon = new views::ImageView();

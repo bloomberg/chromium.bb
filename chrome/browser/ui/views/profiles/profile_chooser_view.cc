@@ -787,12 +787,12 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
 
   // Sets an overall horizontal layout.
   views::View* view = new views::View();
-  views::BoxLayout* layout = new views::BoxLayout(
+  auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(kMenuEdgeMargin),
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  view->SetLayoutManager(layout);
+  view->SetLayoutManager(std::move(layout));
 
   // Adds the sync problem icon.
   views::ImageView* sync_problem_icon = new views::ImageView();
@@ -804,11 +804,11 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
   views::View* vertical_view = new views::View();
   const int small_vertical_spacing =
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
-  views::BoxLayout* vertical_layout = new views::BoxLayout(
+  auto vertical_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), small_vertical_spacing);
   vertical_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  vertical_view->SetLayoutManager(vertical_layout);
+  vertical_view->SetLayoutManager(std::move(vertical_layout));
 
   // Adds the title.
   views::Label* title_label = new views::Label(
@@ -859,7 +859,7 @@ views::View* ProfileChooserView::CreateDiceSyncErrorView(
   // of hover_button->SetBorder() because the latter creates a border with the
   // same color as the button.
   views::View* view = new views::View();
-  view->SetLayoutManager(new views::FillLayout());
+  view->SetLayoutManager(std::make_unique<views::FillLayout>());
   view->SetBorder(
       views::CreateSolidBorder(kMenuEdgeMargin, SK_ColorTRANSPARENT));
   auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
@@ -898,9 +898,9 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       account_consistency_enabled
           ? provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI)
           : provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
-  view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           gfx::Insets(content_list_vert_spacing, 0), 0));
+  view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(content_list_vert_spacing, 0),
+      0));
 
   auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
       GetProfileBadgeType(browser_->profile()), avatar_item.icon);
@@ -950,13 +950,12 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       browser_->profile()->GetOriginalProfile());
   if (signin_manager->IsSigninAllowed()) {
     views::View* extra_links_view = new views::View();
-    views::BoxLayout* extra_links_layout = new views::BoxLayout(
+    extra_links_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical,
         gfx::Insets(provider->GetDistanceMetric(
                         views::DISTANCE_RELATED_CONTROL_VERTICAL),
                     kMenuEdgeMargin),
-        kMenuEdgeMargin);
-    extra_links_view->SetLayoutManager(extra_links_layout);
+        kMenuEdgeMargin));
     views::Label* promo =
         new views::Label(l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
     promo->SetMultiLine(true);
@@ -997,7 +996,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   // future, once the final asset is ready.
   constexpr int kIllustrationPromoOverlap = 48;
   views::View* view = new views::View();
-  view->SetLayoutManager(new views::BoxLayout(
+  view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), -kIllustrationPromoOverlap));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -1008,7 +1007,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   view->AddChildView(illustration);
 
   views::View* promo_button_view = new views::View();
-  promo_button_view->SetLayoutManager(new views::BoxLayout(
+  promo_button_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
       gfx::Insets(0, kMenuEdgeMargin, kMenuEdgeMargin, kMenuEdgeMargin),
       kMenuEdgeMargin));

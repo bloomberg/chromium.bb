@@ -2105,7 +2105,7 @@ void BrowserView::InitViews() {
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND)));
   contents_container_->AddChildView(devtools_web_view_);
   contents_container_->AddChildView(contents_web_view_);
-  contents_container_->SetLayoutManager(new ContentsLayoutManager(
+  contents_container_->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
       devtools_web_view_, contents_web_view_));
   AddChildView(contents_container_);
   set_contents_view(contents_container_);
@@ -2119,9 +2119,10 @@ void BrowserView::InitViews() {
   if (IsExperimentalTabStripEnabled()) {
     tabstrip_ = new TabStripExperimental(browser_->tab_strip_model());
     top_container_->AddChildView(tabstrip_);  // Takes ownership.
-  } else
-#endif
+  } else {  // Avoid a "} else" which will trigger presubmit warning.
+#else
   {
+#endif
     // TabStrip takes ownership of the controller.
     BrowserTabStripController* tabstrip_controller =
         new BrowserTabStripController(browser_->tab_strip_model(), this);
@@ -2150,7 +2151,7 @@ void BrowserView::InitViews() {
 
   immersive_mode_controller_->Init(this);
 
-  BrowserViewLayout* browser_view_layout = new BrowserViewLayout;
+  auto browser_view_layout = std::make_unique<BrowserViewLayout>();
   browser_view_layout->Init(new BrowserViewLayoutDelegateImpl(this),
                             browser(),
                             this,
@@ -2161,7 +2162,7 @@ void BrowserView::InitViews() {
                             contents_container_,
                             GetContentsLayoutManager(),
                             immersive_mode_controller_.get());
-  SetLayoutManager(browser_view_layout);
+  SetLayoutManager(std::move(browser_view_layout));
 
 #if defined(OS_WIN)
   // Create a custom JumpList and add it to an observer of TabRestoreService

@@ -63,7 +63,7 @@ ChromeCleanerDialog::ChromeCleanerDialog(
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   views::Label* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_EXPLANATION));
   label->SetMultiLine(true);
@@ -132,7 +132,7 @@ views::View* ChromeCleanerDialog::CreateFootnoteView() {
   DCHECK(dialog_controller_);
 
   views::View* footnote_view = new views::View();
-  footnote_view->SetLayoutManager(new views::BoxLayout(
+  footnote_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, ChromeLayoutProvider::Get()->GetInsetsMetric(
                                        views::INSETS_DIALOG_SUBSECTION)));
   logs_permission_checkbox_ = new views::Checkbox(

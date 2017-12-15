@@ -103,7 +103,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(
   set_margins(
       provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL));
 
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   DCHECK(delegate_->GetMessageText().empty());
   remember_decision_checkbox_ =

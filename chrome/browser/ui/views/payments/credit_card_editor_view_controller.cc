@@ -191,14 +191,14 @@ CreditCardEditorViewController::CreateHeaderView() {
   // 6dp is added to the bottom padding, for a total of 12 between the icons and
   // the first input field.
   constexpr int kRowBottomPadding = 6;
-  views::BoxLayout* layout = new views::BoxLayout(
+  auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
       gfx::Insets(kRowBottomPadding, kPaymentRequestRowHorizontalInsets),
       kRowVerticalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  view->SetLayoutManager(layout);
+  view->SetLayoutManager(std::move(layout));
 
   // "Cards accepted" label is "hint" grey.
   view->AddChildView(CreateHintLabel(GetAcceptedCardTypesText(
@@ -208,9 +208,8 @@ CreditCardEditorViewController::CreateHeaderView() {
   // 8dp padding is required between icons.
   constexpr int kPaddingBetweenCardIcons = 8;
   std::unique_ptr<views::View> icons_row = base::MakeUnique<views::View>();
-  views::BoxLayout* icons_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kPaddingBetweenCardIcons);
-  icons_row->SetLayoutManager(icons_layout);
+  icons_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(), kPaddingBetweenCardIcons));
 
   std::string selected_network =
       credit_card_to_edit_ ? autofill::data_util::GetPaymentRequestData(
@@ -246,9 +245,9 @@ CreditCardEditorViewController::CreateHeaderView() {
   // link.
   if (IsEditingServerCard()) {
     std::unique_ptr<views::View> data_source = base::MakeUnique<views::View>();
-    auto data_source_layout = base::MakeUnique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(), kPaddingBetweenCardIcons);
-    data_source->SetLayoutManager(data_source_layout.release());
+    data_source->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kHorizontal, gfx::Insets(),
+        kPaddingBetweenCardIcons));
 
     // "From Google Payments".
     data_source->AddChildView(
@@ -346,7 +345,7 @@ CreditCardEditorViewController::CreateExtraViewForField(
     return nullptr;
 
   std::unique_ptr<views::View> button_view = base::MakeUnique<views::View>();
-  button_view->SetLayoutManager(new views::FillLayout);
+  button_view->SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // The button to add new billing addresses.
   std::unique_ptr<views::Button> add_button(

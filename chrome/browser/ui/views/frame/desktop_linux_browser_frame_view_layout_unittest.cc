@@ -11,8 +11,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
 
-using NNBFVL = DesktopLinuxBrowserFrameViewLayout;
-
 namespace {
 
 constexpr int kWindowWidth = 500;
@@ -140,15 +138,16 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
     delegate_.reset(new TestLayoutDelegate);
     nav_button_provider_ = base::MakeUnique<::TestNavButtonProvider>();
-    layout_manager_ = new NNBFVL(nav_button_provider_.get());
-    layout_manager_->set_delegate(delegate_.get());
-    layout_manager_->set_extra_caption_y(0);
-    layout_manager_->set_forced_window_caption_spacing_for_test(0);
+    auto layout = std::make_unique<DesktopLinuxBrowserFrameViewLayout>(
+        nav_button_provider_.get());
+    layout->set_delegate(delegate_.get());
+    layout->set_extra_caption_y(0);
+    layout->set_forced_window_caption_spacing_for_test(0);
     widget_ = new views::Widget;
     widget_->Init(CreateParams(views::Widget::InitParams::TYPE_POPUP));
     root_view_ = widget_->GetRootView();
     root_view_->SetSize(gfx::Size(kWindowWidth, kWindowWidth));
-    root_view_->SetLayoutManager(layout_manager_);
+    layout_manager_ = root_view_->SetLayoutManager(std::move(layout));
 
     minimize_button_ = InitWindowCaptionButton(VIEW_ID_MINIMIZE_BUTTON);
     maximize_button_ = InitWindowCaptionButton(VIEW_ID_MAXIMIZE_BUTTON);
@@ -194,7 +193,7 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
   views::Widget* widget_ = nullptr;
   views::View* root_view_ = nullptr;
-  NNBFVL* layout_manager_ = nullptr;
+  DesktopLinuxBrowserFrameViewLayout* layout_manager_ = nullptr;
   std::unique_ptr<TestLayoutDelegate> delegate_;
   std::unique_ptr<views::NavButtonProvider> nav_button_provider_;
 

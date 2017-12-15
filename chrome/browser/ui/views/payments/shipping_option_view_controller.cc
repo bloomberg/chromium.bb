@@ -112,7 +112,7 @@ base::string16 ShippingOptionViewController::GetSheetTitle() {
 }
 
 void ShippingOptionViewController::FillContentView(views::View* content_view) {
-  content_view->SetLayoutManager(new views::FillLayout);
+  content_view->SetLayoutManager(std::make_unique<views::FillLayout>());
   content_view->AddChildView(shipping_option_list_.CreateListView().release());
 }
 

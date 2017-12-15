@@ -54,7 +54,7 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
   chip_container_->SetBackground(base::MakeUnique<BackgroundWith1PxBorder>(
       tab_bg_color, tab_border_color));
   chip_container_->AddChildView(chip_label_);
-  chip_container_->SetLayoutManager(new views::FillLayout());
+  chip_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(chip_container_);
 
   trailing_label_ =

@@ -120,7 +120,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
         gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-    card_info_container->SetLayoutManager(box_layout.release());
+    card_info_container->SetLayoutManager(std::move(box_layout));
 
     base::string16 label = instrument_->GetLabel();
     if (!label.empty())
@@ -213,7 +213,7 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  content_view->SetLayoutManager(layout.release());
+  content_view->SetLayoutManager(std::move(layout));
 
   base::string16 sub_header =
       GetCardTypesAreAcceptedText(spec()->supported_card_types_set());
@@ -231,9 +231,9 @@ std::unique_ptr<views::View>
 PaymentMethodViewController::CreateExtraFooterView() {
   auto extra_view = base::MakeUnique<views::View>();
 
-  extra_view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                           kPaymentRequestButtonSpacing));
+  extra_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      kPaymentRequestButtonSpacing));
 
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD));

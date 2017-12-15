@@ -364,8 +364,9 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
       base::MakeUnique<views::View>();
 
   trailing_buttons_container->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
-                           kPaymentRequestButtonSpacing));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal,
+                                         gfx::Insets(),
+                                         kPaymentRequestButtonSpacing));
 
 #if defined(OS_MACOSX)
   AddSecondaryButton(trailing_buttons_container.get());

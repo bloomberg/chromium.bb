@@ -151,7 +151,7 @@ base::string16 OutdatedUpgradeBubbleView::GetDialogButtonLabel(
 }
 
 void OutdatedUpgradeBubbleView::Init() {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   views::Label* text_label =
       new views::Label(l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TEXT));
   text_label->SetMultiLine(true);

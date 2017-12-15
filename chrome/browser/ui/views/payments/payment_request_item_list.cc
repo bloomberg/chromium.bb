@@ -202,10 +202,9 @@ void PaymentRequestItemList::Clear() {
 std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
   std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
 
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           gfx::Insets(kPaymentRequestRowVerticalInsets, 0), 0);
-  content_view->SetLayoutManager(layout);
+  content_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical,
+      gfx::Insets(kPaymentRequestRowVerticalInsets, 0), 0));
 
   for (auto& item : items_)
     content_view->AddChildView(item.release());

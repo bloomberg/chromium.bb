@@ -53,7 +53,7 @@ ImeWindowView::ImeWindowView(ImeWindow* ime_window,
   web_view_->SetFocusBehavior(FocusBehavior::NEVER);
   AddChildView(web_view_);
 
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   Layout();
 
   // TODO(shuchen): supports auto cursor/composition aligning for

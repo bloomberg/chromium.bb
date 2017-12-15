@@ -216,7 +216,7 @@ std::unique_ptr<views::View> CreateSiteSettingsLink(
   site_settings_link->set_listener(listener);
   site_settings_link->SetUnderline(false);
   auto link_section = std::make_unique<views::View>();
-  link_section->SetLayoutManager(new views::BoxLayout(
+  link_section->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(0, side_margin)));
   link_section->AddChildView(site_settings_link);
   return link_section;
@@ -329,7 +329,7 @@ BubbleHeaderView::BubbleHeaderView(
   layout->StartRow(0, label_column_status);
   reset_decisions_label_container_ = new views::View();
   reset_decisions_label_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal));
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
   layout->AddView(reset_decisions_label_container_, 1, 1, GridLayout::FILL,
                   GridLayout::LEADING);
 
@@ -413,14 +413,14 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
       (password_reuse_button_container_->width() - kSpacingBetweenButtons) >=
       (change_password_button_->CalculatePreferredSize().width() +
        whitelist_password_reuse_button_->CalculatePreferredSize().width());
-  views::BoxLayout* layout =
-      new views::BoxLayout(can_fit_in_one_line ? views::BoxLayout::kHorizontal
-                                               : views::BoxLayout::kVertical,
-                           gfx::Insets(), kSpacingBetweenButtons);
+  auto layout = std::make_unique<views::BoxLayout>(
+      can_fit_in_one_line ? views::BoxLayout::kHorizontal
+                          : views::BoxLayout::kVertical,
+      gfx::Insets(), kSpacingBetweenButtons);
   // Make buttons left-aligned. For RTL languages, buttons will automatically
   // become right-aligned.
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  password_reuse_button_container_->SetLayoutManager(layout);
+  password_reuse_button_container_->SetLayoutManager(std::move(layout));
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
   password_reuse_button_container_->AddChildView(change_password_button_);
@@ -935,9 +935,8 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
 
 views::View* PageInfoBubbleView::CreateSiteSettingsView() {
   views::View* site_settings_view = new views::View();
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical);
-  site_settings_view->SetLayoutManager(box_layout);
+  auto* box_layout = site_settings_view->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
 

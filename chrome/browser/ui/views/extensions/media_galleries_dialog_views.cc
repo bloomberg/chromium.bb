@@ -131,7 +131,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   const int small_vertical_padding =
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
   ScrollableView* scroll_container = new ScrollableView();
-  scroll_container->SetLayoutManager(new views::BoxLayout(
+  scroll_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), small_vertical_padding));
   scroll_container->SetBorder(
       views::CreateEmptyBorder(vertical_padding, 0, vertical_padding, 0));

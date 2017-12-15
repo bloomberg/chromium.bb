@@ -154,8 +154,9 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     contents_container_->AddChildView(devtools_web_view_);
     contents_container_->AddChildView(contents_web_view_);
     ContentsLayoutManager* contents_layout_manager =
-        new ContentsLayoutManager(devtools_web_view_, contents_web_view_);
-    contents_container_->SetLayoutManager(contents_layout_manager);
+        contents_container_->SetLayoutManager(
+            std::make_unique<ContentsLayoutManager>(devtools_web_view_,
+                                                    contents_web_view_));
 
     root_view_->AddChildView(contents_container_);
 

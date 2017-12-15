@@ -86,7 +86,7 @@ void AutoSigninFirstRunDialogView::InitWindow() {
   SetBorder(views::CreateEmptyBorder(
       ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
                                                                  views::TEXT)));
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   std::pair<base::string16, gfx::Range> text_content =
       controller_->GetAutoSigninText();

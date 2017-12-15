@@ -120,7 +120,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
                  placeholder_offsets[1] + volume_name.length()),
       bold_style);
 
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   AddChildView(label);
 }

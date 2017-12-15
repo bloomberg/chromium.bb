@@ -251,9 +251,9 @@ void ExtensionInstalledBubbleView::Init() {
   // Extra info can include a promo for signing into sync.
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  std::unique_ptr<views::BoxLayout> layout(new views::BoxLayout(
+  auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   layout->set_minimum_cross_axis_size(kRightColumnWidth);
   // Indent by the size of the icon.
   layout->set_inside_border_insets(gfx::Insets(
@@ -263,7 +263,7 @@ void ExtensionInstalledBubbleView::Init() {
       0, 0));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  SetLayoutManager(layout.release());
+  SetLayoutManager(std::move(layout));
 
   if (controller_->options() & ExtensionInstalledBubble::HOW_TO_USE)
     AddChildView(CreateLabel(controller_->GetHowToUseDescription()));

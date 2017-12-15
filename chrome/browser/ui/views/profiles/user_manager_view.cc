@@ -63,7 +63,7 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
     const GURL& url)
     : parent_(parent), web_view_(web_view), email_address_(email_address) {
   AddChildView(web_view_);
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   web_view_->GetWebContents()->SetDelegate(this);
   web_view_->LoadInitialURL(url);
@@ -322,7 +322,7 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
   web_view_ = new views::WebView(system_profile);
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_F4, ui::EF_ALT_DOWN));
 

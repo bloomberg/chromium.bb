@@ -65,7 +65,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(box_layout.release());
+  SetLayoutManager(std::move(box_layout));
 
   AddChildView(new views::Label(l10n_util::GetStringUTF16(string_specifier)));
   if (activation_action == ActivationAction::DO_NOT_ACTIVATE) {

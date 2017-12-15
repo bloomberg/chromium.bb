@@ -224,8 +224,7 @@ ManagePasswordItemsView::ManagePasswordItemsView(
   DCHECK_EQ(password_manager::ui::MANAGE_STATE, model()->state());
 
   if (model()->local_credentials().empty()) {
-    views::LayoutManager* layout = new views::FillLayout();
-    SetLayoutManager(layout);
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     views::Label* no_passwords_label = new views::Label(
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS),
         CONTEXT_BODY_TEXT_SMALL);

@@ -381,7 +381,7 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent),
       observed_browser_(this) {
-  SetLayoutManager(new views::FillLayout);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   const autofill::PasswordForm& form = parent_->model()->pending_password();
   CredentialsItemView* credential;
   base::string16 upper_text, lower_text = form.username_value;
@@ -893,8 +893,7 @@ views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
 }
 
 void ManagePasswordsBubbleView::Init() {
-  SetLayoutManager(new views::FillLayout);
-
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   CreateChild();
 }
 

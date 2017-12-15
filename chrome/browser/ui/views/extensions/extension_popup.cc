@@ -55,7 +55,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
     : BubbleDialogDelegateView(anchor_view, arrow), host_(host) {
   inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
   set_margins(gfx::Insets());
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(GetExtensionView(host));
   GetExtensionView(host)->set_container(this);
   // ExtensionPopup closes itself on very specific de-activation conditions.

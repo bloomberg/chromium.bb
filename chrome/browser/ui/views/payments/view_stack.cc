@@ -13,7 +13,7 @@
 ViewStack::ViewStack()
     : slide_in_animator_(base::MakeUnique<views::BoundsAnimator>(this)),
       slide_out_animator_(base::MakeUnique<views::BoundsAnimator>(this)) {
-  SetLayoutManager(new views::FillLayout());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   slide_out_animator_->AddObserver(this);
   slide_in_animator_->AddObserver(this);
