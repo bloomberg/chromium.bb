@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "components/viz/common/switches.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
@@ -844,6 +845,8 @@ void WindowServer::CreateFrameSinkManager() {
   viz::mojom::FrameSinkManagerParamsPtr params =
       viz::mojom::FrameSinkManagerParams::New();
   params->restart_id = viz_restart_id_++;
+  params->number_of_frames_to_activation_deadline =
+      switches::GetDeadlineToSynchronizeSurfaces();
   params->frame_sink_manager = std::move(frame_sink_manager_request);
   params->frame_sink_manager_client = frame_sink_manager_client.PassInterface();
   gpu_host_->CreateFrameSinkManager(std::move(params));
