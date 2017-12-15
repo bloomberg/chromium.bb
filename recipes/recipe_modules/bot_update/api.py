@@ -34,10 +34,15 @@ class BotUpdateApi(recipe_api.RecipeApi):
     bot_update_path = self.resource('bot_update.py')
     kwargs.setdefault('infra_step', True)
 
-    env_prefixes = {
-        'PATH': [self.m.depot_tools.root],
-    }
-    with self.m.context(env_prefixes=env_prefixes):
+    # On buildbot we have to put this on the FRONT of path, to combat the
+    # 'automatic' depot_tools. However, on LUCI, there is no automatic
+    # depot_tools, so it's safer to put it at the END of path, where it won't
+    # accidentally override e.g. python, vpython, etc.
+    key = 'env_prefixes'
+    if self.m.runtime.is_luci:
+      key = 'env_suffixes'
+
+    with self.m.context(**{key: {'PATH': [self.m.depot_tools.root]}}):
       return self.m.python(name, bot_update_path, cmd, **kwargs)
 
   @property

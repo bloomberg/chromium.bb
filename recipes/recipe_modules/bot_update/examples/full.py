@@ -10,6 +10,7 @@ DEPS = [
   'recipe_engine/path',
   'recipe_engine/platform',
   'recipe_engine/properties',
+  'recipe_engine/runtime',
 ]
 
 def RunSteps(api):
@@ -92,6 +93,10 @@ def GenTests(api):
       patch=False,
       revision='abc'
   )
+  yield api.test('basic_luci') + api.properties(
+      patch=False,
+      revision='abc'
+  ) + api.runtime(is_experimental=False, is_luci=True)
   yield api.test('with_manifest_name_no_patch') + api.properties(
       manifest_name='checkout',
       patch=False
