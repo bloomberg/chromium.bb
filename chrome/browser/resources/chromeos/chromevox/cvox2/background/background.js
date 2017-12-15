@@ -15,6 +15,7 @@ goog.require('BackgroundKeyboardHandler');
 goog.require('BrailleCommandHandler');
 goog.require('ChromeVoxState');
 goog.require('CommandHandler');
+goog.require('DesktopAutomationHandler');
 goog.require('FindHandler');
 goog.require('LiveRegions');
 goog.require('MediaAutomationHandler');
@@ -28,7 +29,6 @@ goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxBackground');
 goog.require('cvox.ChromeVoxEditableTextBase');
-goog.require('cvox.ClassicEarcons');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.NavBraille');
 
@@ -56,22 +56,6 @@ Background = function() {
   this.whitelist_ = ['chromevox_next_test'];
 
   /**
-   * A list of site substring patterns to blacklist ChromeVox Classic,
-   * putting ChromeVox into classic Compat mode.
-   * @type {!Set<string>}
-   * @private
-   */
-  this.classicBlacklist_ = new Set();
-
-  /**
-   * Regular expression for blacklisting classic.
-   * @type {RegExp}
-   * @private
-   */
-  this.classicBlacklistRegExp_ = Background.globsToRegExp_(
-      chrome.runtime.getManifest()['content_scripts'][0]['exclude_globs']);
-
-  /**
    * @type {cursors.Range}
    * @private
    */
@@ -84,31 +68,19 @@ Background = function() {
   }
 
   /** @type {!cvox.AbstractEarcons} @private */
-  this.classicEarcons_ = cvox.ChromeVox.earcons || new cvox.ClassicEarcons();
-
-  /** @type {!cvox.AbstractEarcons} @private */
   this.nextEarcons_ = new NextEarcons();
 
-  // Turn cvox.ChromeVox.earcons into a getter that returns either the
-  // Next earcons or the Classic earcons depending on the current mode.
+  // Read-only earcons.
   Object.defineProperty(cvox.ChromeVox, 'earcons', {
     get: (function() {
-           if (this.mode === ChromeVoxMode.FORCE_NEXT ||
-               this.mode === ChromeVoxMode.NEXT) {
-             return this.nextEarcons_;
-           } else {
-             return this.classicEarcons_;
-           }
+           return this.nextEarcons_;
          }).bind(this)
   });
 
   if (cvox.ChromeVox.isChromeOS) {
     Object.defineProperty(cvox.ChromeVox, 'modKeyStr', {
       get: function() {
-        return (this.mode == ChromeVoxMode.CLASSIC ||
-                this.mode == ChromeVoxMode.CLASSIC_COMPAT) ?
-            'Search+Shift' :
-            'Search';
+        return 'Search';
       }.bind(this)
     });
 
@@ -149,13 +121,6 @@ Background = function() {
   /** @type {!LiveRegions} @private */
   this.liveRegions_ = new LiveRegions(this);
 
-  /**
-   * Stores the mode as computed the last time a current range was set.
-   * @type {?ChromeVoxMode}
-   * @private
-   */
-  this.mode_ = null;
-
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       this.onAccessibilityGesture_);
 
@@ -179,37 +144,19 @@ Background = function() {
     this.chromeChannel_ = desktop.chromeChannel;
   }.bind(this));
 
-  // Record a metric with the mode we're in on startup.
-  var useNext = localStorage['useClassic'] != 'true';
-  chrome.metricsPrivate.recordBoolean(
-      'Accessibility.CrosChromeVoxNext', useNext);
+  CommandHandler.init();
+  FindHandler.init();
 
   Notifications.onStartup();
 };
 
 /**
  * Map from gesture names (AXGesture defined in ui/accessibility/ax_enums.idl)
- *     to commands when in Classic mode.
+ *     to commands.
  * @type {Object<string, string>}
  * @const
  */
-Background.GESTURE_CLASSIC_COMMAND_MAP = {
-  'click': 'forceClickOnCurrentItem',
-  'swipeUp1': 'backward',
-  'swipeDown1': 'forward',
-  'swipeLeft1': 'left',
-  'swipeRight1': 'right',
-  'swipeUp2': 'jumpToTop',
-  'swipeDown2': 'readFromHere',
-};
-
-/**
- * Map from gesture names (AXGesture defined in ui/accessibility/ax_enums.idl)
- *     to commands when in Classic mode.
- * @type {Object<string, string>}
- * @const
- */
-Background.GESTURE_NEXT_COMMAND_MAP = {
+Background.GESTURE_COMMAND_MAP = {
   'click': 'forceClickOnCurrentItem',
   'swipeUp1': 'previousLine',
   'swipeDown1': 'nextLine',
@@ -229,110 +176,6 @@ Background.prototype = {
    */
   get focusRecoveryMap() {
     return this.focusRecoveryMap_;
-  },
-
-  /**
-   * @override
-   */
-  getMode: function() {
-    var useNext = localStorage['useClassic'] !== 'true';
-
-    var target;
-    if (!this.getCurrentRange()) {
-      chrome.automation.getFocus(function(focus) {
-        target = focus;
-      });
-    } else {
-      target = this.getCurrentRange().start.node;
-    }
-
-    if (!target)
-      return useNext ? ChromeVoxMode.FORCE_NEXT : ChromeVoxMode.CLASSIC;
-
-    // Closure complains, but clearly, |target| is not null.
-    var topLevelRoot =
-        AutomationUtil.getTopLevelRoot(/** @type {!AutomationNode} */ (target));
-    if (!topLevelRoot)
-      return useNext ? ChromeVoxMode.FORCE_NEXT : ChromeVoxMode.CLASSIC_COMPAT;
-
-    var docUrl = topLevelRoot.docUrl || '';
-    var nextSite = this.isWhitelistedForNext_(docUrl);
-    var classicCompat = this.isWhitelistedForClassicCompat_(docUrl);
-    if (classicCompat && !useNext)
-      return ChromeVoxMode.CLASSIC_COMPAT;
-    else if (nextSite)
-      return ChromeVoxMode.NEXT;
-    else if (!useNext)
-      return ChromeVoxMode.CLASSIC;
-    else
-      return ChromeVoxMode.FORCE_NEXT;
-  },
-
-  /**
-   * Handles a mode change.
-   * @param {ChromeVoxMode} newMode
-   * @param {?ChromeVoxMode} oldMode Can be null at startup when no range was
-   *  previously set.
-   * @private
-   */
-  onModeChanged_: function(newMode, oldMode) {
-    this.keyboardHandler_.onModeChanged(newMode, oldMode);
-    CommandHandler.onModeChanged(newMode, oldMode);
-    FindHandler.onModeChanged(newMode, oldMode);
-
-    // The below logic handles transition between the classic engine
-    // (content script) and next engine (no content script) as well as
-    // misc states that are not handled above.
-
-    // Classic modes do not use the new focus highlight.
-    if (newMode == ChromeVoxMode.CLASSIC)
-      chrome.accessibilityPrivate.setFocusRing([]);
-
-    // Switch on/off content scripts.
-    // note that |this.currentRange_| can *change* because the request is
-    // async. Save it to ensure we're looking at the currentRange at this moment
-    // in time.
-    var cur = this.currentRange_;
-    chrome.tabs.query({active: true, lastFocusedWindow: true}, function(tabs) {
-      if (newMode == ChromeVoxMode.CLASSIC) {
-        // Generally, we don't want to inject classic content scripts as it is
-        // done by the extension system at document load. The exception is when
-        // we toggle classic on manually as part of a user command.
-        if (oldMode == ChromeVoxMode.FORCE_NEXT) {
-          cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
-        }
-      } else if (newMode === ChromeVoxMode.FORCE_NEXT) {
-        this.disableClassicChromeVox_();
-      } else {
-        // If we're focused in the desktop tree, do nothing.
-        if (cur && !cur.isWebRange())
-          return;
-
-        // If we're entering classic compat mode or next mode for just one tab,
-        // disable Classic for that tab only.
-        this.disableClassicChromeVox_(tabs);
-      }
-    }.bind(this));
-
-    // Switching into either compat or classic.
-    if (oldMode === ChromeVoxMode.NEXT ||
-        oldMode === ChromeVoxMode.FORCE_NEXT) {
-      // Make sure we cancel the progress loading sound just in case.
-      cvox.ChromeVox.earcons.cancelEarcon(cvox.Earcon.PAGE_START_LOADING);
-      (new PanelCommand(PanelCommandType.DISABLE_MENUS)).send();
-    }
-
-    // Switching out of next, force next, or uninitialized (on startup).
-    if (newMode === ChromeVoxMode.NEXT ||
-        newMode === ChromeVoxMode.FORCE_NEXT) {
-      (new PanelCommand(PanelCommandType.ENABLE_MENUS)).send();
-      if (cvox.TabsApiHandler)
-        cvox.TabsApiHandler.shouldOutputSpeechAndBraille = false;
-    } else {
-      // |newMode| is either classic or compat.
-      if (cvox.TabsApiHandler)
-        cvox.TabsApiHandler.shouldOutputSpeechAndBraille = true;
-    }
   },
 
   /**
@@ -359,12 +202,6 @@ Background.prototype = {
     ChromeVoxState.observers.forEach(function(observer) {
       observer.onCurrentRangeChanged(newRange);
     });
-    var oldMode = this.mode_;
-    var newMode = this.getMode();
-    if (oldMode != newMode) {
-      this.onModeChanged_(newMode, oldMode);
-      this.mode_ = newMode;
-    }
 
     if (this.currentRange_) {
       var start = this.currentRange_.start.node;
@@ -481,9 +318,6 @@ Background.prototype = {
    * @return {boolean} True if evt was processed.
    */
   onBrailleKeyEvent: function(evt, content) {
-    if (this.mode === ChromeVoxMode.CLASSIC)
-      return false;
-
     switch (evt.command) {
       case cvox.BrailleKeyCommand.PAN_LEFT:
         CommandHandler.onCommand('previousObject');
@@ -521,73 +355,6 @@ Background.prototype = {
         return false;
     }
     return true;
-  },
-
-  /**
-   * Returns true if the url should have Classic running.
-   * @return {boolean}
-   * @private
-   */
-  shouldEnableClassicForUrl_: function(url) {
-    return this.mode != ChromeVoxMode.FORCE_NEXT &&
-        !this.isBlacklistedForClassic_(url) && !this.isWhitelistedForNext_(url);
-  },
-
-  /**
-   * Compat mode is on if any of the following are true:
-   * 1. a url is blacklisted for Classic.
-   * 2. the current range is not within web content.
-   * @param {string} url
-   * @return {boolean}
-   */
-  isWhitelistedForClassicCompat_: function(url) {
-    return (this.isBlacklistedForClassic_(url) ||
-            (this.getCurrentRange() && !this.getCurrentRange().isWebRange() &&
-             this.getCurrentRange().start.node.state[StateType.FOCUSED])) ||
-        false;
-  },
-
-  /**
-   * @param {string} url
-   * @return {boolean}
-   * @private
-   */
-  isBlacklistedForClassic_: function(url) {
-    if (this.classicBlacklistRegExp_.test(url))
-      return true;
-    url = url.substring(0, url.indexOf('#')) || url;
-    return this.classicBlacklist_.has(url);
-  },
-
-  /**
-   * @param {string} url
-   * @return {boolean} Whether the given |url| is whitelisted.
-   * @private
-   */
-  isWhitelistedForNext_: function(url) {
-    return this.whitelist_.some(function(item) {
-      return url.indexOf(item) != -1;
-    });
-  },
-
-  /**
-   * Disables classic ChromeVox in current web content.
-   * @param {Array<Tab>=} opt_tabs The tabs where ChromeVox scripts should be
-   * disabled. If null, will disable ChromeVox everywhere.
-   */
-  disableClassicChromeVox_: function(opt_tabs) {
-    var disableChromeVoxCommand = {
-      message: 'SYSTEM_COMMAND',
-      command: 'killChromeVox'
-    };
-
-    if (opt_tabs) {
-      for (var i = 0, tab; tab = opt_tabs[i]; i++)
-        chrome.tabs.sendMessage(tab.id, disableChromeVoxCommand);
-    } else {
-      // Send to all ChromeVox clients.
-      cvox.ExtensionBridge.send(disableChromeVoxCommand);
-    }
   },
 
   /**
@@ -667,14 +434,9 @@ Background.prototype = {
       case 'next':
         if (action == 'getIsClassicEnabled') {
           var url = msg['url'];
-          var isClassicEnabled = this.shouldEnableClassicForUrl_(url);
+          var isClassicEnabled = false;
           port.postMessage(
               {target: 'next', isClassicEnabled: isClassicEnabled});
-        } else if (action == 'enableClassicCompatForUrl') {
-          var url = msg['url'];
-          this.classicBlacklist_.add(url);
-          if (this.currentRange_ && this.currentRange_.start.node)
-            this.setCurrentRange(this.currentRange_);
         } else if (action == 'onCommand') {
           CommandHandler.onCommand(msg['command']);
         } else if (action == 'flushNextUtterance') {
@@ -703,35 +465,9 @@ Background.prototype = {
    * @private
    */
   onAccessibilityGesture_: function(gesture) {
-    // If we're in classic mode, some gestures need to be handled by the
-    // content script. Other gestures are universal and will be handled in
-    // this function.
-    if (this.mode == ChromeVoxMode.CLASSIC) {
-      if (this.handleClassicGesture_(gesture))
-        return;
-    }
-
-    var command = Background.GESTURE_NEXT_COMMAND_MAP[gesture];
+    var command = Background.GESTURE_COMMAND_MAP[gesture];
     if (command)
       CommandHandler.onCommand(command);
-  },
-
-  /**
-   * Handles accessibility gestures from the touch screen when in CLASSIC
-   * mode, by forwarding a command to the content script.
-   * @param {string} gesture The gesture to handle, based on the AXGesture enum
-   *     defined in ui/accessibility/ax_enums.idl
-   * @return {boolean} True if this gesture was handled.
-   * @private
-   */
-  handleClassicGesture_: function(gesture) {
-    var command = Background.GESTURE_CLASSIC_COMMAND_MAP[gesture];
-    if (!command)
-      return false;
-
-    var msg = {'message': 'USER_COMMAND', 'command': command};
-    cvox.ExtensionBridge.send(msg);
-    return true;
   },
 
   /**

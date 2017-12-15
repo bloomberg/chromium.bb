@@ -8,23 +8,11 @@
  *     object and to facilitate mocking for tests.
  */
 
-goog.provide('ChromeVoxMode');
 goog.provide('ChromeVoxState');
 goog.provide('ChromeVoxStateObserver');
 
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
-
-/**
- * All possible modes ChromeVox can run.
- * @enum {string}
- */
-ChromeVoxMode = {
-  CLASSIC: 'classic',
-  CLASSIC_COMPAT: 'classic_compat',
-  NEXT: 'next',
-  FORCE_NEXT: 'force_next'
-};
 
 /**
  * An interface implemented by objects that want to observe ChromeVox state
@@ -67,19 +55,6 @@ ChromeVoxState.backgroundTts;
 ChromeVoxState.isReadingContinuously;
 
 ChromeVoxState.prototype = {
-  /** @type {ChromeVoxMode} */
-  get mode() {
-    return this.getMode();
-  },
-
-  /**
-   * @return {ChromeVoxMode} The current mode.
-   * @protected
-   */
-  getMode: function() {
-    return ChromeVoxMode.NEXT;
-  },
-
   /** @type {cursors.Range} */
   get currentRange() {
     return this.getCurrentRange();
