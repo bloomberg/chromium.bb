@@ -135,7 +135,6 @@ struct GPU_EXPORT Capabilities {
   bool texture_storage = false;
   bool discard_framebuffer = false;
   bool sync_query = false;
-  bool future_sync_points = false;
   bool blend_equation_advanced = false;
   bool blend_equation_advanced_coherent = false;
   bool texture_rg = false;
