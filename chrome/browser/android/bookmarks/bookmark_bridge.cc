@@ -439,6 +439,36 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetChildAt(
       env, child->id(), GetBookmarkType(child));
 }
 
+jint BookmarkBridge::GetTotalBookmarkCount(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jlong id,
+    jint type) {
+  DCHECK(IsLoaded());
+
+  std::queue<const BookmarkNode*> nodes;
+  const BookmarkNode* parent = GetNodeByID(id, type);
+  DCHECK(parent->is_folder());
+
+  int count = 0;
+  nodes.push(parent);
+  while (!nodes.empty()) {
+    const BookmarkNode* node = nodes.front();
+    nodes.pop();
+
+    for (int i = 0; i < node->child_count(); ++i) {
+      const BookmarkNode* child = node->GetChild(i);
+      if (child->is_folder()) {
+        nodes.push(child);
+      } else {
+        count += 1;
+      }
+    }
+  }
+
+  return count;
+}
+
 void BookmarkBridge::SetBookmarkTitle(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
                                        jlong id,
