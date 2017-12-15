@@ -171,14 +171,14 @@ class PrerenderingTest : public ::testing::Test {
         WebString::FromUTF8(base_url), blink::testing::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
     web_view_helper_.Initialize();
-    web_view_helper_.WebView()->SetPrerendererClient(&prerenderer_client_);
+    web_view_helper_.GetWebView()->SetPrerendererClient(&prerenderer_client_);
 
-    FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
+    FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
                                 std::string(base_url) + file_name);
   }
 
   void NavigateAway() {
-    FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
+    FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
                                 "about:blank");
   }
 

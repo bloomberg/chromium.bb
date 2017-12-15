@@ -123,7 +123,7 @@ class VisualViewportTest
         blink::testing::CoreTestDataPath(WebString::FromUTF8(fileName)));
   }
 
-  WebViewImpl* WebView() const { return helper_.WebView(); }
+  WebViewImpl* WebView() const { return helper_.GetWebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
   static void ConfigureSettings(WebSettings* settings) {

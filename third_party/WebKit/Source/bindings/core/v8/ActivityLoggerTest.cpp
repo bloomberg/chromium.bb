@@ -77,11 +77,11 @@ class ActivityLoggerTest : public ::testing::Test {
     V8DOMActivityLogger::SetActivityLogger(kIsolatedWorldId, String(),
                                            WTF::WrapUnique(activity_logger_));
     web_view_helper_.Initialize();
-    script_controller_ = &web_view_helper_.WebView()
+    script_controller_ = &web_view_helper_.GetWebView()
                               ->MainFrameImpl()
                               ->GetFrame()
                               ->GetScriptController();
-    FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
+    FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
                                 "about:blank");
   }
 
@@ -90,7 +90,8 @@ class ActivityLoggerTest : public ::testing::Test {
   void ExecuteScriptInMainWorld(const String& script) const {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
     script_controller_->ExecuteScriptInMainWorld(script);
-    PumpPendingRequestsForFrameToLoad(web_view_helper_.WebView()->MainFrame());
+    PumpPendingRequestsForFrameToLoad(
+        web_view_helper_.GetWebView()->MainFrame());
   }
 
   void ExecuteScriptInIsolatedWorld(const String& script) const {
@@ -100,7 +101,8 @@ class ActivityLoggerTest : public ::testing::Test {
     Vector<v8::Local<v8::Value>> results;
     script_controller_->ExecuteScriptInIsolatedWorld(kIsolatedWorldId, sources,
                                                      nullptr);
-    PumpPendingRequestsForFrameToLoad(web_view_helper_.WebView()->MainFrame());
+    PumpPendingRequestsForFrameToLoad(
+        web_view_helper_.GetWebView()->MainFrame());
   }
 
   bool VerifyActivities(const String& activities) {

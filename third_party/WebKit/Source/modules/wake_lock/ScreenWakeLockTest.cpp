@@ -75,15 +75,15 @@ class ScreenWakeLockTest : public ::testing::Test {
   }
 
   void LoadFrame() {
-    FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
+    FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
                                 "http://example.com/foo.html");
-    web_view_helper_.WebView()->UpdateAllLifecyclePhases();
+    web_view_helper_.GetWebView()->UpdateAllLifecyclePhases();
   }
 
   LocalFrame* GetFrame() {
-    DCHECK(web_view_helper_.WebView());
-    DCHECK(web_view_helper_.WebView()->MainFrameImpl());
-    return web_view_helper_.WebView()->MainFrameImpl()->GetFrame();
+    DCHECK(web_view_helper_.GetWebView());
+    DCHECK(web_view_helper_.GetWebView()->MainFrameImpl());
+    return web_view_helper_.GetWebView()->MainFrameImpl()->GetFrame();
   }
 
   Screen* GetScreen() {
@@ -107,16 +107,16 @@ class ScreenWakeLockTest : public ::testing::Test {
   }
 
   void Show() {
-    DCHECK(web_view_helper_.WebView());
-    web_view_helper_.WebView()->SetVisibilityState(
+    DCHECK(web_view_helper_.GetWebView());
+    web_view_helper_.GetWebView()->SetVisibilityState(
         mojom::blink::PageVisibilityState::kVisible, false);
     // Let the notification sink through the mojo pipes.
     testing::RunPendingTasks();
   }
 
   void Hide() {
-    DCHECK(web_view_helper_.WebView());
-    web_view_helper_.WebView()->SetVisibilityState(
+    DCHECK(web_view_helper_.GetWebView());
+    web_view_helper_.GetWebView()->SetVisibilityState(
         mojom::blink::PageVisibilityState::kHidden, false);
     // Let the notification sink through the mojo pipes.
     testing::RunPendingTasks();

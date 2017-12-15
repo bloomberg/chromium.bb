@@ -130,10 +130,10 @@ class BrowserControlsTest : public ::testing::Test {
         GetWebView()->MainFrameImpl()->GetDocument().GetElementById(id));
   }
 
-  WebViewImpl* GetWebView() const { return helper_.WebView(); }
+  WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
   VisualViewport& GetVisualViewport() const {
-    return helper_.WebView()->GetPage()->GetVisualViewport();
+    return helper_.GetWebView()->GetPage()->GetVisualViewport();
   }
 
  private:

@@ -2486,13 +2486,13 @@ bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
   if (!element || !element->GetLayoutObject())
     return false;
 
-  DCHECK(web_view_helper_.WebView());
+  DCHECK(web_view_helper_.GetWebView());
   element->scrollIntoViewIfNeeded();
 
   // TODO(bokan): Technically incorrect, event positions should be in viewport
   // space. crbug.com/371902.
   IntPoint center =
-      web_view_helper_.WebView()
+      web_view_helper_.GetWebView()
           ->MainFrameImpl()
           ->GetFrameView()
           ->ContentsToScreen(
@@ -2506,14 +2506,15 @@ bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
   event.x = center.X();
   event.y = center.Y();
 
-  web_view_helper_.WebView()->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view_helper_.GetWebView()->HandleInputEvent(
+      WebCoalescedInputEvent(event));
   RunPendingTasks();
   return true;
 }
 
 bool WebViewTest::TapElementById(WebInputEvent::Type type,
                                  const WebString& id) {
-  DCHECK(web_view_helper_.WebView());
+  DCHECK(web_view_helper_.GetWebView());
   Element* element = static_cast<Element*>(
       web_view_helper_.LocalMainFrame()->GetDocument().GetElementById(id));
   return TapElement(type, element);
@@ -3388,7 +3389,7 @@ class ViewCreatingWebViewClient : public FrameTestHelpers::TestWebViewClient {
   void DidFocus() override { did_focus_called_ = true; }
 
   bool DidFocusCalled() const { return did_focus_called_; }
-  WebView* CreatedWebView() const { return web_view_helper_.WebView(); }
+  WebView* CreatedWebView() const { return web_view_helper_.GetWebView(); }
 
  private:
   FrameTestHelpers::WebViewHelper web_view_helper_;
@@ -3766,7 +3767,7 @@ TEST_P(WebViewTest, AddFrameInNavigateUnload) {
   RegisterMockedHttpURLLoad("add_frame_in_unload.html");
   web_view_helper_.InitializeAndLoad(base_url_ + "add_frame_in_unload.html",
                                      &frame_client);
-  FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
+  FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
                               "about:blank");
   EXPECT_EQ(0, frame_client.Count());
   web_view_helper_.Reset();
@@ -3778,7 +3779,7 @@ TEST_P(WebViewTest, AddFrameInChildInNavigateUnload) {
   RegisterMockedHttpURLLoad("add_frame_in_unload.html");
   web_view_helper_.InitializeAndLoad(
       base_url_ + "add_frame_in_unload_wrapper.html", &frame_client);
-  FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
+  FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
                               "about:blank");
   EXPECT_EQ(1, frame_client.Count());
   web_view_helper_.Reset();
@@ -4431,7 +4432,7 @@ TEST_P(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult) {
   FrameTestHelpers::WebViewHelper main_web_view;
   main_web_view.InitializeAndLoad("about:blank", nullptr, &client);
 
-  WebLocalFrame* frame = main_web_view.WebView()->MainFrameImpl();
+  WebLocalFrame* frame = main_web_view.GetWebView()->MainFrameImpl();
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> v8_value =
       frame->ExecuteScriptAndReturnValue(WebScriptSource(
@@ -4584,7 +4585,7 @@ TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
 
   WebLocalFrame* frame = web_view_helper_.LocalMainFrame();
   Document* document =
-      ToLocalFrame(web_view_helper_.WebView()->GetPage()->MainFrame())
+      ToLocalFrame(web_view_helper_.GetWebView()->GetPage()->MainFrame())
           ->GetDocument();
 
   // Add a beforeunload handler in the main frame. Make sure firing
@@ -4608,7 +4609,7 @@ TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
         ->ToWebLocalFrame()
         ->DispatchBeforeUnloadEvent(false);
 
-    Document* child_document = ToLocalFrame(web_view_helper_.WebView()
+    Document* child_document = ToLocalFrame(web_view_helper_.GetWebView()
                                                 ->GetPage()
                                                 ->MainFrame()
                                                 ->Tree()
@@ -4642,7 +4643,7 @@ TEST_P(WebViewTest, NestedPagePauses) {
 
 TEST_P(WebViewTest, ClosingPageIsPaused) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  Page* page = web_view_helper_.WebView()->GetPage();
+  Page* page = web_view_helper_.GetWebView()->GetPage();
   EXPECT_FALSE(page->Paused());
 
   web_view->SetOpenedByDOM();

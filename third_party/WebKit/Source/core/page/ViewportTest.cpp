@@ -124,7 +124,7 @@ TEST_F(ViewportTest, viewport1) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -143,7 +143,7 @@ TEST_F(ViewportTest, viewport2) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -162,7 +162,7 @@ TEST_F(ViewportTest, viewport3) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -181,7 +181,7 @@ TEST_F(ViewportTest, viewport4) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(160, constraints.layout_size.Width());
@@ -200,7 +200,7 @@ TEST_F(ViewportTest, viewport5) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(640, constraints.layout_size.Width());
@@ -219,7 +219,7 @@ TEST_F(ViewportTest, viewport6) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(200, constraints.layout_size.Width());
@@ -238,7 +238,7 @@ TEST_F(ViewportTest, viewport7) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1280, constraints.layout_size.Width());
@@ -257,7 +257,7 @@ TEST_F(ViewportTest, viewport8) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1280, constraints.layout_size.Width());
@@ -276,7 +276,7 @@ TEST_F(ViewportTest, viewport9) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1280, constraints.layout_size.Width());
@@ -295,7 +295,7 @@ TEST_F(ViewportTest, viewport10) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1280, constraints.layout_size.Width());
@@ -314,7 +314,7 @@ TEST_F(ViewportTest, viewport11) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -333,7 +333,7 @@ TEST_F(ViewportTest, viewport12) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(640, constraints.layout_size.Width());
@@ -352,7 +352,7 @@ TEST_F(ViewportTest, viewport13) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1280, constraints.layout_size.Width());
@@ -371,7 +371,7 @@ TEST_F(ViewportTest, viewport14) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -390,7 +390,7 @@ TEST_F(ViewportTest, viewport15) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -409,7 +409,7 @@ TEST_F(ViewportTest, viewport16) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -428,7 +428,7 @@ TEST_F(ViewportTest, viewport17) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -447,7 +447,7 @@ TEST_F(ViewportTest, viewport18) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(64, constraints.layout_size.Width());
@@ -466,7 +466,7 @@ TEST_F(ViewportTest, viewport19) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(160, constraints.layout_size.Width());
@@ -485,7 +485,7 @@ TEST_F(ViewportTest, viewport20) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -504,7 +504,7 @@ TEST_F(ViewportTest, viewport21) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -523,7 +523,7 @@ TEST_F(ViewportTest, viewport22) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -542,7 +542,7 @@ TEST_F(ViewportTest, viewport23) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -561,7 +561,7 @@ TEST_F(ViewportTest, viewport24) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -580,7 +580,7 @@ TEST_F(ViewportTest, viewport25) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -599,7 +599,7 @@ TEST_F(ViewportTest, viewport26) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -618,7 +618,7 @@ TEST_F(ViewportTest, viewport27) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -637,7 +637,7 @@ TEST_F(ViewportTest, viewport28) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(352, constraints.layout_size.Width());
@@ -656,7 +656,7 @@ TEST_F(ViewportTest, viewport29) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(700, constraints.layout_size.Width());
@@ -675,7 +675,7 @@ TEST_F(ViewportTest, viewport30) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(200, constraints.layout_size.Width());
@@ -694,7 +694,7 @@ TEST_F(ViewportTest, viewport31) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -713,7 +713,7 @@ TEST_F(ViewportTest, viewport32) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -732,7 +732,7 @@ TEST_F(ViewportTest, viewport33) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -751,7 +751,7 @@ TEST_F(ViewportTest, viewport34) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(640, constraints.layout_size.Width());
@@ -770,7 +770,7 @@ TEST_F(ViewportTest, viewport35) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1280, constraints.layout_size.Width());
@@ -789,7 +789,7 @@ TEST_F(ViewportTest, viewport36) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_NEAR(636.36, constraints.layout_size.Width(), 0.01f);
@@ -808,7 +808,7 @@ TEST_F(ViewportTest, viewport37) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -827,7 +827,7 @@ TEST_F(ViewportTest, viewport38) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(640, constraints.layout_size.Width());
@@ -846,7 +846,7 @@ TEST_F(ViewportTest, viewport39) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(200, constraints.layout_size.Width());
@@ -865,7 +865,7 @@ TEST_F(ViewportTest, viewport40) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(700, constraints.layout_size.Width());
@@ -884,7 +884,7 @@ TEST_F(ViewportTest, viewport41) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1000, constraints.layout_size.Width());
@@ -903,7 +903,7 @@ TEST_F(ViewportTest, viewport42) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -922,7 +922,7 @@ TEST_F(ViewportTest, viewport43) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(64, constraints.layout_size.Width());
@@ -941,7 +941,7 @@ TEST_F(ViewportTest, viewport44) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(10000, constraints.layout_size.Width());
@@ -960,7 +960,7 @@ TEST_F(ViewportTest, viewport45) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(3200, constraints.layout_size.Width());
@@ -979,7 +979,7 @@ TEST_F(ViewportTest, viewport46) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(32, constraints.layout_size.Width());
@@ -998,7 +998,7 @@ TEST_F(ViewportTest, viewport47) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1017,7 +1017,7 @@ TEST_F(ViewportTest, viewport48) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(3000, constraints.layout_size.Width());
@@ -1036,7 +1036,7 @@ TEST_F(ViewportTest, viewport49) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1055,7 +1055,7 @@ TEST_F(ViewportTest, viewport50) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1074,7 +1074,7 @@ TEST_F(ViewportTest, viewport51) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1093,7 +1093,7 @@ TEST_F(ViewportTest, viewport52) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1112,7 +1112,7 @@ TEST_F(ViewportTest, viewport53) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1131,7 +1131,7 @@ TEST_F(ViewportTest, viewport54) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1150,7 +1150,7 @@ TEST_F(ViewportTest, viewport55) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1169,7 +1169,7 @@ TEST_F(ViewportTest, viewport56) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1188,7 +1188,7 @@ TEST_F(ViewportTest, viewport57) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1207,7 +1207,7 @@ TEST_F(ViewportTest, viewport58) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(3200, constraints.layout_size.Width());
@@ -1226,7 +1226,7 @@ TEST_F(ViewportTest, viewport59) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1245,7 +1245,7 @@ TEST_F(ViewportTest, viewport60) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(32, constraints.layout_size.Width());
@@ -1264,7 +1264,7 @@ TEST_F(ViewportTest, viewport61) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1283,7 +1283,7 @@ TEST_F(ViewportTest, viewport62) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1302,7 +1302,7 @@ TEST_F(ViewportTest, viewport63) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1321,7 +1321,7 @@ TEST_F(ViewportTest, viewport64) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1340,7 +1340,7 @@ TEST_F(ViewportTest, viewport65) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(100, constraints.layout_size.Width());
@@ -1359,7 +1359,7 @@ TEST_F(ViewportTest, viewport66) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(100, constraints.layout_size.Width());
@@ -1378,7 +1378,7 @@ TEST_F(ViewportTest, viewport67) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1397,7 +1397,7 @@ TEST_F(ViewportTest, viewport68) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1416,7 +1416,7 @@ TEST_F(ViewportTest, viewport69) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(100, constraints.layout_size.Width());
@@ -1435,7 +1435,7 @@ TEST_F(ViewportTest, viewport70) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(100, constraints.layout_size.Width());
@@ -1454,7 +1454,7 @@ TEST_F(ViewportTest, viewport71) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1473,7 +1473,7 @@ TEST_F(ViewportTest, viewport72) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(100, constraints.layout_size.Width());
@@ -1492,7 +1492,7 @@ TEST_F(ViewportTest, viewport73) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(100, constraints.layout_size.Width());
@@ -1511,7 +1511,7 @@ TEST_F(ViewportTest, viewport74) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(100, constraints.layout_size.Width());
@@ -1530,7 +1530,7 @@ TEST_F(ViewportTest, viewport75) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(64, constraints.layout_size.Width());
@@ -1549,7 +1549,7 @@ TEST_F(ViewportTest, viewport76) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(32, constraints.layout_size.Width());
@@ -1568,7 +1568,7 @@ TEST_F(ViewportTest, viewport77) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1280, constraints.layout_size.Width());
@@ -1587,7 +1587,7 @@ TEST_F(ViewportTest, viewport78) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(100, constraints.layout_size.Width());
@@ -1606,7 +1606,7 @@ TEST_F(ViewportTest, viewport79) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1625,7 +1625,7 @@ TEST_F(ViewportTest, viewport80) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -1644,7 +1644,7 @@ TEST_F(ViewportTest, viewport81) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(3000, constraints.layout_size.Width());
@@ -1663,7 +1663,7 @@ TEST_F(ViewportTest, viewport82) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(400, constraints.layout_size.Width());
@@ -1682,7 +1682,7 @@ TEST_F(ViewportTest, viewport83) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1701,7 +1701,7 @@ TEST_F(ViewportTest, viewport84) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1720,7 +1720,7 @@ TEST_F(ViewportTest, viewport85) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(540, constraints.layout_size.Width());
@@ -1739,7 +1739,7 @@ TEST_F(ViewportTest, viewport86) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_NEAR(457.14, constraints.layout_size.Width(), 0.01f);
@@ -1758,7 +1758,7 @@ TEST_F(ViewportTest, viewport87) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1777,7 +1777,7 @@ TEST_F(ViewportTest, viewport88) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1796,7 +1796,7 @@ TEST_F(ViewportTest, viewport90) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(700, constraints.layout_size.Width());
@@ -1815,7 +1815,7 @@ TEST_F(ViewportTest, viewport100) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(400, constraints.layout_size.Width());
@@ -1834,7 +1834,7 @@ TEST_F(ViewportTest, viewport101) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(400, constraints.layout_size.Width());
@@ -1853,7 +1853,7 @@ TEST_F(ViewportTest, viewport102) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(400, constraints.layout_size.Width());
@@ -1872,7 +1872,7 @@ TEST_F(ViewportTest, viewport103) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(400, constraints.layout_size.Width());
@@ -1891,7 +1891,7 @@ TEST_F(ViewportTest, viewport104) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1910,7 +1910,7 @@ TEST_F(ViewportTest, viewport105) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1929,7 +1929,7 @@ TEST_F(ViewportTest, viewport106) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1948,7 +1948,7 @@ TEST_F(ViewportTest, viewport107) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1967,7 +1967,7 @@ TEST_F(ViewportTest, viewport108) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -1986,7 +1986,7 @@ TEST_F(ViewportTest, viewport109) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2005,7 +2005,7 @@ TEST_F(ViewportTest, viewport110) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2024,7 +2024,7 @@ TEST_F(ViewportTest, viewport111) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2043,7 +2043,7 @@ TEST_F(ViewportTest, viewport112) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(400, constraints.layout_size.Width());
@@ -2062,7 +2062,7 @@ TEST_F(ViewportTest, viewport113) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2081,7 +2081,7 @@ TEST_F(ViewportTest, viewport114) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2100,7 +2100,7 @@ TEST_F(ViewportTest, viewport115) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(400, constraints.layout_size.Width());
@@ -2119,7 +2119,7 @@ TEST_F(ViewportTest, viewport116) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(400, constraints.layout_size.Width());
@@ -2138,7 +2138,7 @@ TEST_F(ViewportTest, viewport117) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2157,7 +2157,7 @@ TEST_F(ViewportTest, viewport118) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2176,7 +2176,7 @@ TEST_F(ViewportTest, viewport119) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2195,7 +2195,7 @@ TEST_F(ViewportTest, viewport120) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2214,7 +2214,7 @@ TEST_F(ViewportTest, viewport121) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2233,7 +2233,7 @@ TEST_F(ViewportTest, viewport122) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2252,7 +2252,7 @@ TEST_F(ViewportTest, viewport123) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2271,7 +2271,7 @@ TEST_F(ViewportTest, viewport124) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2290,7 +2290,7 @@ TEST_F(ViewportTest, viewport125) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2309,7 +2309,7 @@ TEST_F(ViewportTest, viewport126) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2328,7 +2328,7 @@ TEST_F(ViewportTest, viewport127) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2347,7 +2347,7 @@ TEST_F(ViewportTest, viewport129) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(123, constraints.layout_size.Width());
@@ -2366,7 +2366,7 @@ TEST_F(ViewportTest, viewport130) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2385,7 +2385,7 @@ TEST_F(ViewportTest, viewport131) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2404,7 +2404,7 @@ TEST_F(ViewportTest, viewport132) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2423,7 +2423,7 @@ TEST_F(ViewportTest, viewport133) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2442,7 +2442,7 @@ TEST_F(ViewportTest, viewport134) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(160, constraints.layout_size.Width());
@@ -2461,7 +2461,7 @@ TEST_F(ViewportTest, viewport135) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2480,7 +2480,7 @@ TEST_F(ViewportTest, viewport136) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2499,7 +2499,7 @@ TEST_F(ViewportTest, viewport137) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
@@ -2518,7 +2518,7 @@ TEST_F(ViewportTest, viewport138) {
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_NEAR(123.0f, constraints.layout_size.Width(), 0.01);
@@ -2537,7 +2537,7 @@ TEST_F(ViewportTest, viewportLegacyHandheldFriendly) {
       base_url_ + "viewport/viewport-legacy-handheldfriendly.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2563,7 +2563,7 @@ TEST_F(ViewportTest, viewportLegacyMergeQuirk1) {
       base_url_ + "viewport/viewport-legacy-merge-quirk-1.html", nullptr,
       nullptr, nullptr, SetQuirkViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(640, constraints.layout_size.Width());
@@ -2582,7 +2582,7 @@ TEST_F(ViewportTest, viewportLegacyMergeQuirk2) {
       base_url_ + "viewport/viewport-legacy-merge-quirk-2.html", nullptr,
       nullptr, nullptr, SetQuirkViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   // This quirk allows content attributes of meta viewport tags to be merged.
   page->GetSettings().SetViewportMetaMergeContentQuirk(true);
@@ -2604,7 +2604,7 @@ TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWithoutContent) {
       base_url_ + "viewport/viewport-legacy-mobileoptimized.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2624,7 +2624,7 @@ TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWith0) {
       base_url_ + "viewport/viewport-legacy-mobileoptimized-2.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2644,7 +2644,7 @@ TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWith400) {
       base_url_ + "viewport/viewport-legacy-mobileoptimized-2.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2664,7 +2664,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering2) {
       base_url_ + "viewport/viewport-legacy-ordering-2.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2684,7 +2684,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering3) {
       base_url_ + "viewport/viewport-legacy-ordering-3.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2704,7 +2704,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering4) {
       base_url_ + "viewport/viewport-legacy-ordering-4.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2724,7 +2724,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering5) {
       base_url_ + "viewport/viewport-legacy-ordering-5.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2744,7 +2744,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering6) {
       base_url_ + "viewport/viewport-legacy-ordering-6.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2764,7 +2764,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering7) {
       base_url_ + "viewport/viewport-legacy-ordering-7.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2784,7 +2784,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering8) {
       base_url_ + "viewport/viewport-legacy-ordering-8.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
 
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
@@ -2804,7 +2804,7 @@ TEST_F(ViewportTest, viewportLegacyEmptyAtViewportDoesntOverrideViewportMeta) {
       base_url_ + "viewport/viewport-legacy-ordering-10.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 800, 600);
 
   EXPECT_EQ(5000, constraints.layout_size.Width());
@@ -2818,7 +2818,7 @@ TEST_F(ViewportTest, viewportLegacyDefaultValueChangedByXHTMLMP) {
       base_url_ + "viewport/viewport-legacy-xhtmlmp.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2839,7 +2839,7 @@ TEST_F(ViewportTest,
       base_url_ + "viewport/viewport-legacy-xhtmlmp-misplaced-doctype.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(640, constraints.layout_size.Width());
@@ -2858,7 +2858,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPOrdering) {
       base_url_ + "viewport/viewport-legacy-xhtmlmp-ordering.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(640, constraints.layout_size.Width());
@@ -2877,7 +2877,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd) {
       base_url_ + "viewport/viewport-legacy-xhtmlmp.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(320, constraints.layout_size.Width());
@@ -2922,8 +2922,8 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScale) {
       base_url_ + "viewport/viewport-limits-adjusted-for-no-user-scale.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
 
-  web_view_helper.WebView()->UpdateAllLifecyclePhases();
-  Page* page = web_view_helper.WebView()->GetPage();
+  web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 10, 10);
 
   EXPECT_FALSE(page->GetViewportDescription().user_zoom);
@@ -2940,8 +2940,8 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForUserScale) {
       base_url_ + "viewport/viewport-limits-adjusted-for-user-scale.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
 
-  web_view_helper.WebView()->UpdateAllLifecyclePhases();
-  Page* page = web_view_helper.WebView()->GetPage();
+  web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 10, 10);
 
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
@@ -2958,24 +2958,24 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
       base_url_ +
           "viewport/viewport-gpu-rasterization-disabled-without-viewport.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_FALSE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_FALSE(web_view_helper.GetWebView()
                    ->MatchesHeuristicsForGpuRasterizationForTesting());
   // Also test that setting enableViewport to false (as on desktop Chrome)
   // supports GPU raster unconditionally.
   web_view_helper.InitializeAndLoad(
       base_url_ +
       "viewport/viewport-gpu-rasterization-disabled-without-viewport.html");
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
   RegisterMockedHttpURLLoad("viewport/viewport-gpu-rasterization.html");
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-gpu-rasterization.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
   RegisterMockedHttpURLLoad(
@@ -2984,48 +2984,48 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
       base_url_ +
           "viewport/viewport-gpu-rasterization-expanded-heuristics.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
   RegisterMockedHttpURLLoad("viewport/viewport-1.html");
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-1.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
   RegisterMockedHttpURLLoad("viewport/viewport-15.html");
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-15.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
   RegisterMockedHttpURLLoad("viewport/viewport-130.html");
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-130.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
   RegisterMockedHttpURLLoad("viewport/viewport-legacy-handheldfriendly.html");
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-legacy-handheldfriendly.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
   RegisterMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized.html");
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-legacy-handheldfriendly.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
-  web_view_helper.WebView()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.WebView()
+  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 }
 
@@ -3052,7 +3052,7 @@ TEST_F(ViewportTest, viewportWarnings1) {
       base_url_ + "viewport/viewport-warnings-1.html", &web_frame_client,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_TRUE(web_frame_client.messages.IsEmpty());
@@ -3075,7 +3075,7 @@ TEST_F(ViewportTest, viewportWarnings2) {
       base_url_ + "viewport/viewport-warnings-2.html", &web_frame_client,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
@@ -3102,7 +3102,7 @@ TEST_F(ViewportTest, viewportWarnings3) {
       base_url_ + "viewport/viewport-warnings-3.html", &web_frame_client,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
@@ -3131,7 +3131,7 @@ TEST_F(ViewportTest, viewportWarnings4) {
       base_url_ + "viewport/viewport-warnings-4.html", &web_frame_client,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
@@ -3160,7 +3160,7 @@ TEST_F(ViewportTest, viewportWarnings5) {
       base_url_ + "viewport/viewport-warnings-5.html", &web_frame_client,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
@@ -3190,7 +3190,7 @@ TEST_F(ViewportTest, viewportWarnings6) {
       base_url_ + "viewport/viewport-warnings-6.html", &web_frame_client,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
@@ -3218,7 +3218,7 @@ TEST_F(ViewportTest, viewportWarnings7) {
       base_url_ + "viewport/viewport-warnings-7.html", &web_frame_client,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(0U, web_frame_client.messages.size());
@@ -3234,7 +3234,7 @@ TEST_F(ViewportTest, viewportWarnings8) {
       base_url_ + "viewport/viewport-warnings-8.html", &web_frame_client,
       nullptr, nullptr, SetViewportSettings);
 
-  Page* page = web_view_helper.WebView()->GetPage();
+  Page* page = web_view_helper.GetWebView()->GetPage();
   RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(0U, web_frame_client.messages.size());

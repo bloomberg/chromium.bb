@@ -101,7 +101,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
       web_view_helper_.Initialize(nullptr, nullptr, &client);
   web_view->Resize(WebSize(800, 1200));
   LoadFrame(web_view->MainFrameImpl(), base_url_ + file_name);
-  document_ = web_view_helper_.WebView()
+  document_ = web_view_helper_.GetWebView()
                   ->MainFrameImpl()
                   ->GetDocument()
                   .Unwrap<Document>();

@@ -113,7 +113,7 @@ class ScrollingCoordinatorTest : public ::testing::Test,
     return layer ? layer->PlatformLayer() : nullptr;
   }
 
-  WebViewImpl* GetWebView() const { return helper_.WebView(); }
+  WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
   WebLayerTreeView* GetWebLayerTreeView() const {

@@ -63,7 +63,7 @@ Document& SimTest::GetDocument() {
 }
 
 WebViewImpl& SimTest::WebView() {
-  return *web_view_helper_.WebView();
+  return *web_view_helper_.GetWebView();
 }
 
 WebLocalFrameImpl& SimTest::MainFrame() {

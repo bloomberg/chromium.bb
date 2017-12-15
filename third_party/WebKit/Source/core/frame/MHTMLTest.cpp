@@ -109,11 +109,11 @@ class MHTMLTest : public ::testing::Test {
   }
 
   void LoadURLInTopFrame(const WebURL& url) {
-    FrameTestHelpers::LoadFrame(helper_.WebView()->MainFrameImpl(),
+    FrameTestHelpers::LoadFrame(helper_.GetWebView()->MainFrameImpl(),
                                 url.GetString().Utf8().data());
   }
 
-  Page* GetPage() const { return helper_.WebView()->GetPage(); }
+  Page* GetPage() const { return helper_.GetWebView()->GetPage(); }
 
   void AddResource(const char* url,
                    const char* mime,

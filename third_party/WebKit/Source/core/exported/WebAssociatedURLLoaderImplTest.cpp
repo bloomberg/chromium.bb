@@ -247,7 +247,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   }
 
   WebLocalFrameImpl* MainFrame() const {
-    return helper_.WebView()->MainFrameImpl();
+    return helper_.GetWebView()->MainFrameImpl();
   }
 
  protected:

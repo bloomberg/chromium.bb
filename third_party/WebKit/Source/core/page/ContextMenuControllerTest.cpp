@@ -57,7 +57,7 @@ class ContextMenuControllerTest : public ::testing::Test {
 
   bool ShowContextMenu(const ContextMenu* context_menu,
                        WebMenuSourceType source) {
-    return web_view_helper_.WebView()
+    return web_view_helper_.GetWebView()
         ->GetPage()
         ->GetContextMenuController()
         .ShowContextMenu(context_menu, source);
@@ -68,7 +68,7 @@ class ContextMenuControllerTest : public ::testing::Test {
         web_view_helper_.LocalMainFrame()->GetDocument());
   }
 
-  Page* GetPage() { return web_view_helper_.WebView()->GetPage(); }
+  Page* GetPage() { return web_view_helper_.GetWebView()->GetPage(); }
 
   const TestWebFrameClientImpl& GetWebFrameClient() const {
     return web_frame_client_;
